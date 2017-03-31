@@ -1,0 +1,72 @@
+ext {
+
+    android = [
+            compileSdkVersion: 25,
+            buildToolsVersion: "25.0.2",
+            minSdkVersion    : 15,
+            targetSdkVersion : 25,
+            versionCode      : 1,
+            versionName      : "3.3.8" //3位版本号
+    ]
+
+    dependVersion = [
+            support: "25.2.0"
+    ]
+
+    dependencies = [
+            //------------- 分包  ------------
+            multidex                  : "com.android.support:multidex:1.0.1",
+
+            //---------------bug 反馈----------------
+            bugtags                   : "com.bugtags.library:bugtags-lib:latest.integration",
+
+            // ------------- Android -------------
+            supportV4                 : "com.android.support:support-v4:${dependVersion.support}",
+            appcompatV7               : "com.android.support:appcompat-v7:${dependVersion.support}",
+            design                    : "com.android.support:design:${dependVersion.support}",
+            cardview                  : "com.android.support:cardview-v7:${dependVersion.support}",
+            junit                     : "junit:junit:4.12",
+
+            // ------------- reyclerview ------------
+            recyclerview              : "com.android.support:recyclerview-v7:${dependVersion.support}",
+            recyclerview_animators    : "jp.wasabeef:recyclerview-animators:2.2.5",
+            recyclerview_divider      : "com.yqritc:recyclerview-flexibledivider:1.4.0",
+
+            // ------------- 网络请求 -------------
+            retrofit                  : 'com.squareup.retrofit2:retrofit:2.2.0',
+            retrofit_rxjava           : 'com.squareup.retrofit2:adapter-rxjava2:2.2.0',
+            retrofit_converter_gson   : 'com.squareup.retrofit2:converter-gson:2.2.0',
+            okhttp_logging_interceptor: 'com.squareup.okhttp3:logging-interceptor:3.6.0',
+
+            // ------------- 图片加载 -------------
+            glide                     : 'com.github.bumptech.glide:glide:3.7.0',
+
+            // ------------- 通信 -------------
+            eventbus                  : 'org.greenrobot:eventbus:3.0.0',
+
+            // ------------- RxAndroid -------------
+            rxAndroid                 : 'io.reactivex.rxjava2:rxandroid:2.0.1',
+            rxJava                    : 'io.reactivex.rxjava2:rxjava:2.0.1',
+
+            // ------------- json解析 -------------
+            gson                      : 'com.google.code.gson:gson:2.8.0',
+
+            // ------------- log打印工具 -------------
+            logger                    : 'com.orhanobut:logger:1.15',
+
+            greendao                  : 'org.greenrobot:greendao:3.2.0',
+
+            // ------------- ButterKnife -------------
+            butterknife               : 'com.jakewharton:butterknife:8.4.0',
+            butterknifeCompiler       : 'com.jakewharton:butterknife-compiler:8.4.0',
+
+            // ------------- LeakCanary -------------
+            leakcanaryAndroid         : 'com.squareup.leakcanary:leakcanary-android:1.5',
+            leakcanaryAndroidNoOp     : 'com.squareup.leakcanary:leakcanary-android-no-op:1.5',
+
+            // ------------- 约束控件 -------------
+            constraintLayout          : 'com.android.support.constraint:constraint-layout:1.0.0-alpha7',
+            topsnackbar               : 'com.androidadvance:topsnackbar:1.1.1'
+    ]
+
+}

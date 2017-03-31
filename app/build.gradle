@@ -1,0 +1,179 @@
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion rootProject.ext.android.compileSdkVersion
+    buildToolsVersion rootProject.ext.android.buildToolsVersion
+
+    defaultConfig {
+        applicationId "com.icourt.alpha"
+        minSdkVersion rootProject.ext.android.minSdkVersion
+        targetSdkVersion rootProject.ext.android.targetSdkVersion
+        multiDexEnabled true
+        versionCode rootProject.ext.android.versionCode
+        versionName rootProject.ext.android.versionName
+    }
+
+
+    applicationVariants.all { variant ->
+        variant.outputs.each { output ->
+            def outputFile = output.outputFile
+            if (outputFile != null && outputFile.name.endsWith('.apk')) {
+                def fileName = outputFile.name.replace(".apk", "-${defaultConfig.versionName}.apk")
+                output.outputFile = new File(outputFile.parent, fileName)
+            }
+        }
+    }
+    //签名
+    signingConfigs {
+        debug {
+            try {
+                def signP = getSigningProperties(true)
+                storeFile file(signP[0])
+
+                v2SigningEnabled false
+            } catch (ex) {
+                ex.printStackTrace()
+            }
+        }
+        preview {
+            try {
+                def signP = getSigningProperties(true)
+                storeFile file(signP[0])
+
+                v2SigningEnabled false
+            } catch (ex) {
+                ex.printStackTrace()
+            }
+        }
+        release {
+            try {
+                def signP = getSigningProperties(false)
+                storeFile file(signP[0])
+                storePassword signP[1]
+                keyAlias signP[2]
+                keyPassword signP[3]
+
+                v2SigningEnabled false
+            } catch (ex) {
+                ex.printStackTrace()
+            }
+        }
+
+    }
+
+    buildTypes {
+        debug {
+//            ndk {
+//                abiFilters = ["armeabi"]
+//            }
+            buildConfigField "boolean", "IS_DEBUG", "true"
+            buildConfigField "int", "URL_CONFIG", "0"
+            versionNameSuffix "_debug"
+            minifyEnabled false
+            zipAlignEnabled false
+            shrinkResources false
+            signingConfig signingConfigs.release
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
+        }
+        preview {
+            buildConfigField "boolean", "IS_DEBUG", "true"
+            buildConfigField "int", "URL_CONFIG", "1"
+            versionNameSuffix "_preview"
+            minifyEnabled false
+            zipAlignEnabled false
+            shrinkResources false
+            signingConfig signingConfigs.release
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
+        }
+
+        release {
+            buildConfigField "boolean", "IS_DEBUG", "false"
+            buildConfigField "int", "URL_CONFIG", "2"
+            shrinkResources false   // 移除无用的resource文件
+            zipAlignEnabled false        //Zipalign优化
+            minifyEnabled false     //混淆
+            signingConfig signingConfigs.release
+            pseudoLocalesEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
+        }
+
+
+    }
+    packagingOptions {
+        exclude 'META-INF/ASL2.0'
+        exclude 'META-INF/LICENSE'
+        exclude 'META-INF/NOTICE'
+        exclude 'META-INF/MANIFEST.MF'
+        exclude 'sign.properties'
+        exclude 'keystore.jks'
+    }
+    //执行lint检查，有任何的错误或者警告提示，都会终止构建，我们可以将其关掉。
+    lintOptions {
+        abortOnError false
+    }
+
+    dataBinding {
+        enabled = true
+    }
+
+    dexOptions {
+        jumboMode = true  //支持最大工程模式
+        javaMaxHeapSize "8g"
+        // incremental true //使用增量模式
+
+        preDexLibraries = false //预编译
+        threadCount = "8" //线程数目
+    }
+}
+
+dependencies {
+    compile fileTree(include: ['*.jar'], dir: 'libs')
+    compile rootProject.ext.dependencies.constraintLayout
+    // compile rootProject.ext.dependencies.junit
+    compile rootProject.ext.dependencies.multidex
+    compile rootProject.ext.dependencies.bugtags
+    //------------  Android support  -----------
+    compile rootProject.ext.dependencies.supportV4
+    compile rootProject.ext.dependencies.design
+    compile rootProject.ext.dependencies.appcompatV7
+    compile rootProject.ext.dependencies.cardview
+    //------------  recyclerview  -------------
+    compile rootProject.ext.dependencies.recyclerview
+    compile rootProject.ext.dependencies.recyclerview_animators
+    compile rootProject.ext.dependencies.recyclerview_divider
+    //------------  json解析  --------------
+    compile rootProject.ext.dependencies.gson
+    //------------  通信  --------------
+    compile rootProject.ext.dependencies.eventbus
+    //------------  网络  ----------
+    compile rootProject.ext.dependencies.retrofit
+    compile rootProject.ext.dependencies.retrofit_rxjava
+    compile rootProject.ext.dependencies.retrofit_converter_gson
+    compile rootProject.ext.dependencies.okhttp_logging_interceptor
+    //------------  rxAndroid-----------
+    compile rootProject.ext.dependencies.rxAndroid
+    //compile rootProject.ext.dependencies.rxJava
+
+    compile rootProject.ext.dependencies.topsnackbar
+}
+
+
+String[] getSigningProperties(boolean isDebug) {
+    File propFile = new File('sign.properties')
+    if (propFile.exists()) {
+        def Properties props = new Properties()
+        props.load(new FileInputStream(propFile))
+        if (isDebug) {
+            def signP = new String[1];
+            signP[0] = props['DEBUG_STORE_FILE']
+            return signP
+        } else {
+            def signP = new String[4];
+            signP[0] = props['STORE_FILE']
+            signP[1] = props['STORE_PASSWORD']
+            signP[2] = props['KEY_ALIAS']
+            signP[3] = props['KEY_PASSWORD']
+            return signP
+        }
+    }
+}

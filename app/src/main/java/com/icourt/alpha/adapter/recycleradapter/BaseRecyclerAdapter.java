@@ -1,0 +1,267 @@
+package com.icourt.alpha.adapter.recycleradapter;
+
+import android.databinding.ViewDataBinding;
+import android.support.annotation.IdRes;
+import android.support.annotation.LayoutRes;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.support.annotation.UiThread;
+import android.support.v7.widget.RecyclerView;
+import android.util.SparseArray;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.TextView;
+
+import com.icourt.alpha.utils.SnackbarUtils;
+
+/**
+ * ClassName BaseRecyclerAdapter
+ * Description
+ * Company
+ * author  youxuan  E-mail:xuanyouwu@163.com
+ * date createTime：2015/9/10 10:05
+ * version
+ */
+public abstract class BaseRecyclerAdapter extends RecyclerView.Adapter<BaseRecyclerAdapter.ViewHolder> {
+
+    @LayoutRes
+    public abstract int bindView(int viewtype);
+
+    public Object getItem(int position) {
+        return null;
+    }
+
+    private HeaderFooterAdapter parentHeaderFooterAdapter;//包裹的父adapter
+
+    @Nullable
+    public HeaderFooterAdapter getParentHeaderFooterAdapter() {
+        return parentHeaderFooterAdapter;
+    }
+
+    public void setParentHeaderFooterAdapter(HeaderFooterAdapter parentHeaderFooterAdapter) {
+        this.parentHeaderFooterAdapter = parentHeaderFooterAdapter;
+    }
+
+    @Override
+    public ViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewtype) {
+        ViewHolder viewHolder = new ViewHolder(LayoutInflater.from(viewGroup.getContext())
+                .inflate(bindView(viewtype), viewGroup, false));
+        return viewHolder;
+    }
+
+    public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener, View.OnLongClickListener {
+        private SparseArray<View> holder = null;
+        private ViewDataBinding binding;
+
+        @Nullable
+        public ViewDataBinding getBinding() {
+            return binding;
+        }
+
+        public void setBinding(ViewDataBinding binding) {
+            this.binding = binding;
+        }
+
+        public ViewHolder(View itemView) {
+            super(itemView);
+            itemView.setOnClickListener(this);
+            itemView.setOnLongClickListener(this);
+        }
+
+        /**
+         * 获取子控件
+         *
+         * @param id
+         * @param <T>
+         * @return
+         */
+        @Nullable
+        public <T extends View> T obtainView(@IdRes int id) {
+            if (null == holder) holder = new SparseArray<>();
+            View view = holder.get(id);
+            if (null != view) return (T) view;
+            view = itemView.findViewById(id);
+            if (null == view) return null;
+            holder.put(id, view);
+            return (T) view;
+        }
+
+        @Nullable
+        public <T> T obtainView(@IdRes int id, Class<T> viewClazz) {
+            View view = obtainView(id);
+            if (null == view) return null;
+            return (T) view;
+        }
+
+
+        public ViewHolder bindChildClick(@IdRes int id) {
+            View view = obtainView(id);
+            if (view == null) return this;
+            view.setOnClickListener(this);
+            return this;
+        }
+
+        /**
+         * 子控件绑定局部点击事件
+         *
+         * @param v
+         * @return
+         */
+        public ViewHolder bindChildClick(View v) {
+            if (v == null) return this;
+            if (obtainView(v.getId()) == null)
+                return this;
+            v.setOnClickListener(this);
+            return this;
+        }
+
+
+        public ViewHolder bindChildLongClick(@IdRes int id) {
+            View view = obtainView(id);
+            if (view == null) return this;
+            view.setOnLongClickListener(this);
+            return this;
+        }
+
+        public ViewHolder bindChildLongClick(View v) {
+            if (v == null) return this;
+            if (obtainView(v.getId()) == null)
+                return this;
+            v.setOnLongClickListener(this);
+            return this;
+        }
+
+        /**
+         * 文本控件赋值
+         *
+         * @param id
+         * @param text
+         */
+        public ViewHolder setText(@IdRes int id, CharSequence text) {
+            View view = obtainView(id);
+            if (view instanceof TextView) {
+                ((TextView) view).setText(text);
+            }
+            return this;
+        }
+
+
+        @Override
+        public boolean onLongClick(View v) {
+            if (onItemLongClickListener != null && v.getId() == this.itemView.getId()) {
+                onItemLongClickListener.onItemLongClick(BaseRecyclerAdapter.this, this, v, getAdapterPosition());
+                return true;
+            } else if (onItemChildLongClickListener != null && v.getId() != this.itemView.getId()) {
+                onItemChildLongClickListener.onItemChildLongClick(BaseRecyclerAdapter.this, this, v, getAdapterPosition());
+                return true;
+            }
+            return false;
+        }
+
+        @Override
+        public void onClick(View v) {
+            if (onItemClickListener != null && v.getId() == this.itemView.getId()) {
+                onItemClickListener.onItemClick(BaseRecyclerAdapter.this, this, v, getAdapterPosition());
+            } else if (onItemChildClickListener != null && v.getId() != this.itemView.getId()) {
+                onItemChildClickListener.onItemChildClick(BaseRecyclerAdapter.this, this, v, getAdapterPosition());
+            }
+        }
+
+
+    }
+
+    protected OnItemClickListener onItemClickListener;
+
+    public OnItemClickListener getOnItemClickListener() {
+        return onItemClickListener;
+    }
+
+    public void setOnItemClickListener(OnItemClickListener onItemClickListener) {
+        this.onItemClickListener = onItemClickListener;
+    }
+
+
+    protected OnItemLongClickListener onItemLongClickListener;
+
+    public OnItemLongClickListener getOnItemLongClickListener() {
+        return onItemLongClickListener;
+    }
+
+    public void setOnItemLongClickListener(OnItemLongClickListener onItemLongClickListener) {
+        this.onItemLongClickListener = onItemLongClickListener;
+    }
+
+
+    public interface OnItemClickListener {
+        void onItemClick(BaseRecyclerAdapter adapter, ViewHolder holder, View view, int position);
+    }
+
+    public interface OnItemLongClickListener {
+        void onItemLongClick(BaseRecyclerAdapter adapter, ViewHolder holder, View view, int position);
+    }
+
+
+    public interface OnItemChildClickListener {
+        void onItemChildClick(BaseRecyclerAdapter adapter, ViewHolder holder, View view, int position);
+    }
+
+    public interface OnItemChildLongClickListener {
+        void onItemChildLongClick(BaseRecyclerAdapter adapter, ViewHolder holder, View view, int position);
+    }
+
+
+    protected OnItemChildClickListener onItemChildClickListener;
+    protected OnItemChildLongClickListener onItemChildLongClickListener;
+
+    public OnItemChildLongClickListener getOnItemChildLongClickListener() {
+        return onItemChildLongClickListener;
+    }
+
+    public void setOnItemChildLongClickListener(OnItemChildLongClickListener onItemChildLongClickListener) {
+        this.onItemChildLongClickListener = onItemChildLongClickListener;
+    }
+
+    public OnItemChildClickListener getOnItemChildClickListener() {
+        return onItemChildClickListener;
+    }
+
+    public void setOnItemChildClickListener(OnItemChildClickListener onItemChildClickListener) {
+        this.onItemChildClickListener = onItemChildClickListener;
+    }
+
+
+    /**
+     * Toast提示
+     * 缺陷 有的rom 会禁用掉taost 比如huawei rom
+     *
+     * @param notice
+     */
+    @UiThread
+    protected void showToast(@NonNull CharSequence notice) {
+    }
+
+    /**
+     * 顶部的snackBar
+     *
+     * @param view   最好根布局,避免计算时间 如activity的decotor view
+     * @param notice
+     */
+    @UiThread
+    protected void showTopSnackBar(@NonNull View view, @NonNull CharSequence notice) {
+        SnackbarUtils.showTopSnackBar(view, notice);
+    }
+
+    /**
+     * 底部的snackBar android默认在底部
+     *
+     * @param view   最好根布局,避免计算时间 如activity的decotor view
+     * @param notice
+     */
+    @UiThread
+    protected void showBottomSnackBar(@NonNull View view, @NonNull CharSequence notice) {
+        SnackbarUtils.showBottomSnack(view, notice);
+    }
+
+}
+
