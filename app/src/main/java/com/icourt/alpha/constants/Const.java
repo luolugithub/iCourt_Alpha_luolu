@@ -10,4 +10,5 @@ package com.icourt.alpha.constants;
 
 public class Const {
     public static final String SHARE_PREFERENCES_FILE_NAME = "icourt_cache_data";//SharedPreferences 文件名称
+
 }

@@ -13,6 +13,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.icourt.alpha.http.ApiService;
+import com.icourt.alpha.http.RetrofitService;
 import com.icourt.alpha.utils.SnackbarUtils;
 
 /**
@@ -261,6 +263,18 @@ public abstract class BaseRecyclerAdapter extends RecyclerView.Adapter<BaseRecyc
     @UiThread
     protected void showBottomSnackBar(@NonNull View view, @NonNull CharSequence notice) {
         SnackbarUtils.showBottomSnack(view, notice);
+    }
+
+    /**
+     * 接口 http通信
+     *
+     * @return
+     */
+    @NonNull
+    protected final ApiService getApi() {
+        return RetrofitService
+                .getInstance()
+                .getApiService();
     }
 
 }

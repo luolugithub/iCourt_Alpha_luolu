@@ -35,6 +35,16 @@ android {
                 ex.printStackTrace()
             }
         }
+        test {
+            try {
+                def signP = getSigningProperties(true)
+                storeFile file(signP[0])
+
+                v2SigningEnabled false
+            } catch (ex) {
+                ex.printStackTrace()
+            }
+        }
         preview {
             try {
                 def signP = getSigningProperties(true)
@@ -75,9 +85,19 @@ android {
             signingConfig signingConfigs.release
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
         }
-        preview {
+        innertest {
             buildConfigField "boolean", "IS_DEBUG", "true"
             buildConfigField "int", "URL_CONFIG", "1"
+            versionNameSuffix "_test"
+            minifyEnabled false
+            zipAlignEnabled false
+            shrinkResources false
+            signingConfig signingConfigs.release
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
+        }
+        preview {
+            buildConfigField "boolean", "IS_DEBUG", "true"
+            buildConfigField "int", "URL_CONFIG", "2"
             versionNameSuffix "_preview"
             minifyEnabled false
             zipAlignEnabled false
@@ -88,7 +108,7 @@ android {
 
         release {
             buildConfigField "boolean", "IS_DEBUG", "false"
-            buildConfigField "int", "URL_CONFIG", "2"
+            buildConfigField "int", "URL_CONFIG", "3"
             shrinkResources false   // 移除无用的resource文件
             zipAlignEnabled false        //Zipalign优化
             minifyEnabled false     //混淆

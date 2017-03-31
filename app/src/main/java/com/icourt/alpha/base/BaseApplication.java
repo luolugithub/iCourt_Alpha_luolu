@@ -5,8 +5,12 @@ import android.app.Application;
 import android.os.Bundle;
 import android.support.multidex.MultiDexApplication;
 
+import com.icourt.alpha.BuildConfig;
 import com.icourt.alpha.utils.AppManager;
 import com.icourt.alpha.utils.LogUtils;
+import com.icourt.alpha.utils.logger.AndroidLogAdapter;
+import com.icourt.alpha.utils.logger.LogLevel;
+import com.icourt.alpha.utils.logger.Logger;
 
 /**
  * Description
@@ -25,12 +29,24 @@ public class BaseApplication extends MultiDexApplication
         super.onCreate();
         baseApplication = this;
         this.registerActivityLifecycleCallbacks(this);
+        initLogger();
     }
 
     public static BaseApplication getApplication() {
         return baseApplication;
     }
 
+    /**
+     * 初始化比较友好的日志工具
+     */
+    private void initLogger() {
+        Logger.init("logger")                 // default PRETTYLOGGER or use just init()
+                .methodCount(0)                 // default 2
+                .hideThreadInfo()               // default shown
+                .logLevel(BuildConfig.IS_DEBUG ? LogLevel.FULL : LogLevel.NONE)        // default LogLevel.FULL
+                .methodOffset(0)                // default 0
+                .logAdapter(new AndroidLogAdapter()); //default AndroidLogAdapter
+    }
 
     @Override
     public void onActivityCreated(Activity activity, Bundle savedInstanceState) {

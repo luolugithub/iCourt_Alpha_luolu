@@ -8,14 +8,21 @@ import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 
+import com.google.gson.JsonElement;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.DemoAdapter;
 import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.entity.bean.DemoEntity;
+import com.icourt.alpha.http.callback.SimpleCallBack;
+import com.icourt.alpha.http.httpmodel.ResEntity;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 /**
  * Description
@@ -50,5 +57,17 @@ public class DemoActivity extends BaseActivity {
             demoEntityList.add(new DemoEntity("name_" + i, new Random().nextInt(50) + 10));
         }
         demoAdapter.bindData(true, demoEntityList);
+
+        testhttp();
+    }
+
+    public void testhttp() {
+        getApi().getGroups(5)
+                .enqueue(new SimpleCallBack<JsonElement>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
+
+                    }
+                });
     }
 }

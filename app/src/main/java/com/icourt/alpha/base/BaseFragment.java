@@ -5,6 +5,8 @@ import android.support.annotation.NonNull;
 import android.support.annotation.StringRes;
 import android.support.annotation.UiThread;
 
+import com.icourt.alpha.http.ApiService;
+import com.icourt.alpha.http.RetrofitService;
 import com.icourt.alpha.utils.SnackbarUtils;
 
 /**
@@ -16,7 +18,17 @@ import com.icourt.alpha.utils.SnackbarUtils;
  */
 
 public class BaseFragment extends Fragment {
-
+    /**
+     * 接口 http通信
+     *
+     * @return
+     */
+    @NonNull
+    protected final ApiService getApi() {
+        return RetrofitService
+                .getInstance()
+                .getApiService();
+    }
     /**
      * Toast提示
      * 缺陷 有的rom 会禁用掉taost 比如huawei rom

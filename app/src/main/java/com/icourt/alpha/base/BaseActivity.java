@@ -1,5 +1,6 @@
 package com.icourt.alpha.base;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -7,6 +8,8 @@ import android.support.annotation.StringRes;
 import android.support.annotation.UiThread;
 import android.support.v7.app.AppCompatActivity;
 
+import com.icourt.alpha.http.ApiService;
+import com.icourt.alpha.http.RetrofitService;
 import com.icourt.alpha.utils.SnackbarUtils;
 
 /**
@@ -27,14 +30,28 @@ public class BaseActivity extends AppCompatActivity {
         activity = this;
     }
 
-    protected BaseActivity getActivity() {
+    protected final BaseActivity getActivity() {
         return activity;
     }
 
 
-    protected BaseActivity getContext() {
+    protected final BaseActivity getContext() {
         return getActivity();
     }
+
+
+    /**
+     * 接口 http通信
+     *
+     * @return
+     */
+    @NonNull
+    protected final ApiService getApi() {
+        return RetrofitService
+                .getInstance()
+                .getApiService();
+    }
+
 
     /**
      * Toast提示
