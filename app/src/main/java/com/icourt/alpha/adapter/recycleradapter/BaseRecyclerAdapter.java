@@ -1,5 +1,6 @@
 package com.icourt.alpha.adapter.recycleradapter;
 
+import android.app.Activity;
 import android.databinding.ViewDataBinding;
 import android.support.annotation.IdRes;
 import android.support.annotation.LayoutRes;
@@ -251,7 +252,11 @@ public abstract class BaseRecyclerAdapter extends RecyclerView.Adapter<BaseRecyc
      */
     @UiThread
     protected void showTopSnackBar(@NonNull View view, @NonNull CharSequence notice) {
-        SnackbarUtils.showTopSnackBar(view, notice);
+        if (view != null && view.getContext() instanceof Activity) {
+            SnackbarUtils.showTopSnackBar((Activity) view.getContext(), notice);
+        } else {
+            SnackbarUtils.showTopSnackBar(view, notice);
+        }
     }
 
     /**
