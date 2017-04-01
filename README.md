@@ -2,7 +2,9 @@
 #上线打包日志  
  eg. 2017/1/28 v3.3.8  
 #打包配置  
- 已在gradle与Hconst中配置完成，主要有四个环境  
+ 已在gradle与Hconst中配置完成;  
+ 暂时不混淆代码,采用360加固服务;  
+ http主要有四个环境  
  1. debug     开发版   https://dev.alphalawyer.cn/  
  2. innertest 内测版   https://test.alphalawyer.cn/  
  3. preview   预览版   https://pre.alphalawyer.cn／  
