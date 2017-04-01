@@ -41,6 +41,7 @@ public class RetrofitService {
     private ApiService apiCacheRetryService;//http协议缓存 重连 适合做数据获取
     public String token;
 
+
     public static RetrofitService getInstance() {
         if (retrofitService == null) {
             retrofitService = new RetrofitService();

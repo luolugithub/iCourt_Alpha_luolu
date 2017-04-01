@@ -19,6 +19,11 @@ import retrofit2.http.Query;
  */
 public interface ApiService {
 
+    /**
+     *  获取组详情
+     * @param id 组id
+     * @return
+     */
     @GET("api/v1/auth/groups")
     Call<ResEntity<JsonElement>> getGroups(@Query("id") int id);
 }

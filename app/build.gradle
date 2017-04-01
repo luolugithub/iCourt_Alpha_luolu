@@ -13,7 +13,13 @@ android {
         versionName rootProject.ext.android.versionName
 
         manifestPlaceholders = [UMENG_CHANNEL_VALUE: "Other"]//default_channel
+        ndk {
+            //请勿轻易修改
+            //abiFilters "armeabi", "armeabi-v7a", "arm64-v8a", "x86"
+            abiFilters "armeabi","arm64-v8a", "x86"
+        }
     }
+
     //渠道Flavors_打包
     productFlavors {
         BaiDu {}
@@ -206,7 +212,6 @@ dependencies {
     //------------  rxAndroid-----------
     compile rootProject.ext.dependencies.rxAndroid
     //compile rootProject.ext.dependencies.rxJava
-
     compile rootProject.ext.dependencies.topsnackbar
 }
 
