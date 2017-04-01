@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="titleView" type="id"></item>     <!-- 标题布局 -->
+    <item name="titleBack" type="id"></item>     <!-- 标题返回 -->
+    <item name="titleContent" type="id"></item>  <!-- 标题内容 -->
+
+
+</resources>

@@ -6,7 +6,7 @@ import android.view.View;
 import com.icourt.alpha.R;
 import com.icourt.alpha.base.BaseActivity;
 
-public class MainActivity extends BaseActivity {
+public class MainActivity extends BaseActivity  {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -19,5 +19,6 @@ public class MainActivity extends BaseActivity {
             }
         });
     }
+
 
 }

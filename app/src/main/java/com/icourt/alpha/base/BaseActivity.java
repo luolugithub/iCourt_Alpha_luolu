@@ -7,7 +7,9 @@ import android.support.annotation.Nullable;
 import android.support.annotation.StringRes;
 import android.support.annotation.UiThread;
 import android.support.v7.app.AppCompatActivity;
+import android.view.View;
 
+import com.icourt.alpha.R;
 import com.icourt.alpha.http.ApiService;
 import com.icourt.alpha.http.RetrofitService;
 import com.icourt.alpha.utils.SnackbarUtils;
@@ -20,7 +22,7 @@ import com.icourt.alpha.utils.SnackbarUtils;
  * version
  */
 
-public class BaseActivity extends AppCompatActivity {
+public class BaseActivity extends AppCompatActivity implements View.OnClickListener{
 
     private BaseActivity activity;
 
@@ -113,5 +115,14 @@ public class BaseActivity extends AppCompatActivity {
     @UiThread
     protected final void showBottomSnackBar(@StringRes int resId) {
         this.showBottomSnackBar(getString(resId));
+    }
+
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.titleBack:
+                finish();
+                break;
+        }
     }
 }

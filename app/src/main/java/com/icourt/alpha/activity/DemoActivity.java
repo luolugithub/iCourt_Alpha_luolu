@@ -7,6 +7,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.view.View;
 
 import com.google.gson.JsonElement;
 import com.icourt.alpha.R;
@@ -60,6 +61,7 @@ public class DemoActivity extends BaseActivity {
 
         testhttp();
     }
+
 
     public void testhttp() {
         getApi().getGroups(5)
