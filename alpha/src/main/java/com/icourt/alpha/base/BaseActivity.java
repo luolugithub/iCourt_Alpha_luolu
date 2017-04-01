@@ -1,6 +1,5 @@
 package com.icourt.alpha.base;
 
-import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -10,8 +9,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 
 import com.icourt.alpha.R;
-import com.icourt.alpha.http.ApiService;
-import com.icourt.alpha.http.RetrofitService;
+import com.icourt.alpha.http.AlphaApiService;
+import com.icourt.alpha.http.RetrofitServiceFactory;
 import com.icourt.alpha.utils.SnackbarUtils;
 
 /**
@@ -22,7 +21,7 @@ import com.icourt.alpha.utils.SnackbarUtils;
  * version
  */
 
-public class BaseActivity extends AppCompatActivity implements View.OnClickListener{
+public class BaseActivity extends AppCompatActivity implements View.OnClickListener {
 
     private BaseActivity activity;
 
@@ -48,10 +47,8 @@ public class BaseActivity extends AppCompatActivity implements View.OnClickListe
      * @return
      */
     @NonNull
-    protected final ApiService getApi() {
-        return RetrofitService
-                .getInstance()
-                .getApiService();
+    protected final AlphaApiService getApi() {
+        return RetrofitServiceFactory.provideAlphaService();
     }
 
 

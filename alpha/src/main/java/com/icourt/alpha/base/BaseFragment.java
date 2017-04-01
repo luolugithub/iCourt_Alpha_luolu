@@ -5,8 +5,8 @@ import android.support.annotation.NonNull;
 import android.support.annotation.StringRes;
 import android.support.annotation.UiThread;
 
-import com.icourt.alpha.http.ApiService;
-import com.icourt.alpha.http.RetrofitService;
+import com.icourt.alpha.http.AlphaApiService;
+import com.icourt.alpha.http.RetrofitServiceFactory;
 import com.icourt.alpha.utils.SnackbarUtils;
 
 /**
@@ -24,10 +24,8 @@ public class BaseFragment extends Fragment {
      * @return
      */
     @NonNull
-    protected final ApiService getApi() {
-        return RetrofitService
-                .getInstance()
-                .getApiService();
+    protected final AlphaApiService getApi() {
+        return RetrofitServiceFactory.provideAlphaService();
     }
     /**
      * Toast提示

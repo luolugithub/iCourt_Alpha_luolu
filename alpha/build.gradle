@@ -213,6 +213,8 @@ dependencies {
     compile rootProject.ext.dependencies.rxAndroid
     //compile rootProject.ext.dependencies.rxJava
     compile rootProject.ext.dependencies.topsnackbar
+
+    compile project(':api')
 }
 
 

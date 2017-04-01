@@ -14,8 +14,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.icourt.alpha.http.ApiService;
-import com.icourt.alpha.http.RetrofitService;
+import com.icourt.alpha.http.AlphaApiService;
+import com.icourt.alpha.http.RetrofitServiceFactory;
 import com.icourt.alpha.utils.SnackbarUtils;
 
 /**
@@ -276,10 +276,8 @@ public abstract class BaseRecyclerAdapter extends RecyclerView.Adapter<BaseRecyc
      * @return
      */
     @NonNull
-    protected final ApiService getApi() {
-        return RetrofitService
-                .getInstance()
-                .getApiService();
+    protected final AlphaApiService getApi() {
+        return RetrofitServiceFactory.provideAlphaService();
     }
 
 }

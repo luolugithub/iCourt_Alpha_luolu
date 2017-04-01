@@ -17,7 +17,7 @@ import retrofit2.http.Query;
  * @Field("limit") int limit,
  * @Field("maxId") int maxId,
  */
-public interface ApiService {
+public interface AlphaApiService {
 
     /**
      *  获取组详情
