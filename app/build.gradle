@@ -11,8 +11,37 @@ android {
         multiDexEnabled true
         versionCode rootProject.ext.android.versionCode
         versionName rootProject.ext.android.versionName
+
+        manifestPlaceholders = [UMENG_CHANNEL_VALUE: "Other"]//default_channel
+    }
+    //渠道Flavors_打包
+    productFlavors {
+        BaiDu {}
+//        XiaoMi {}
+//        Tencent {}
+//        HuaWei {}
+//        c360 {}
+//        Oppo {}
+//        MeiZu {}
+//        WanDouJia {}
+
+//        WebSite {}
+//        LianXiang {}
+//        Upgrade {}
+//        WeChat {}
+//        GuanDianTong {}
+//        Share {}
+//        AnZhi {}
+//        Other {}
+//        Samsung {}
+//        _91 {}
+//        Android {}
     }
 
+    //批量配置
+    productFlavors.all { flavor ->
+        flavor.manifestPlaceholders = [UMENG_CHANNEL_VALUE: name]
+    }
 
     applicationVariants.all { variant ->
         variant.outputs.each { output ->
@@ -84,6 +113,7 @@ android {
             shrinkResources false
             signingConfig signingConfigs.release
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
+            manifestPlaceholders = [NIM_APPKEY: rootProject.ext.nimAppKey.debugAppKey]
         }
         innertest {
             buildConfigField "boolean", "IS_DEBUG", "true"
@@ -94,6 +124,7 @@ android {
             shrinkResources false
             signingConfig signingConfigs.release
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
+            manifestPlaceholders = [NIM_APPKEY: rootProject.ext.nimAppKey.testAppKey]
         }
         preview {
             buildConfigField "boolean", "IS_DEBUG", "true"
@@ -104,6 +135,7 @@ android {
             shrinkResources false
             signingConfig signingConfigs.release
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
+            manifestPlaceholders = [NIM_APPKEY: rootProject.ext.nimAppKey.previewAppKey]
         }
 
         release {
@@ -115,6 +147,7 @@ android {
             signingConfig signingConfigs.release
             pseudoLocalesEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
+            manifestPlaceholders = [NIM_APPKEY: rootProject.ext.nimAppKey.releaseAppKey]
         }
 
 

@@ -22,4 +22,8 @@
             android:screenOrientation="portrait" />
     </application>
 
+    <!-- 网易云信appkey配置 -->
+    <meta-data
+        android:name="com.netease.nim.appKey"
+        android:value="${NIM_APPKEY}" />
 </manifest>

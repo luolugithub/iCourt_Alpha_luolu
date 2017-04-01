@@ -5,12 +5,19 @@ ext {
             buildToolsVersion: "25.0.2",
             minSdkVersion    : 15,
             targetSdkVersion : 25,
-            versionCode      : 1,
-            versionName      : "3.3.8" //3位版本号
+            versionCode      : 2,
+            versionName      : "1.0.2" //3位版本号
     ]
 
     dependVersion = [
             support: "25.2.0"
+    ]
+
+    nimAppKey=[
+            debugAppKey: "b0888ddeed001121372f4c050e1de737",   //云信开发appkey
+            testAppKey: "4767e87cb6cb9c86946956cc3ecf605c",    //云信内测appkey
+            previewAppKey: "c8c7a60c918645e80229e500f4c0e58f", //云信预览appkey
+            releaseAppKey: "c8c7a60c918645e80229e500f4c0e58f"  //云信正式appkey
     ]
 
     dependencies = [

@@ -9,6 +9,13 @@
  2. innertest 内测版   https://test.alphalawyer.cn/  
  3. preview   预览版   https://pre.alphalawyer.cn／  
  4. release   正式版   https://alphalawyer.cn/  
+ 
+ 云信配置 com.netease.nim.appKey
+ 1. 云信开发版 b0888ddeed001121372f4c050e1de737
+ 2. 云信开内测版 4767e87cb6cb9c86946956cc3ecf605c
+ 3. 云信预览版 c8c7a60c918645e80229e500f4c0e58f
+ 4. 云信正式版 c8c7a60c918645e80229e500f4c0e58f
+ 
 #日志跟踪tag
 1. 自定义LogUtils
 2. 网络"http"
