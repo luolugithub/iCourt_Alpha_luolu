@@ -1,6 +1,7 @@
 package com.icourt.alpha.base;
 
 import android.os.Bundle;
+import android.support.annotation.LayoutRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.StringRes;
@@ -13,6 +14,9 @@ import com.icourt.alpha.http.AlphaApiService;
 import com.icourt.alpha.http.RetrofitServiceFactory;
 import com.icourt.alpha.utils.SnackbarUtils;
 
+import butterknife.ButterKnife;
+import butterknife.Unbinder;
+
 /**
  * Description
  * Company Beijing guokeyuzhou
@@ -21,7 +25,7 @@ import com.icourt.alpha.utils.SnackbarUtils;
  * version
  */
 
-public class BaseActivity extends AppCompatActivity implements View.OnClickListener {
+public abstract class BaseActivity extends AppCompatActivity implements View.OnClickListener {
 
     private BaseActivity activity;
 
@@ -121,5 +125,10 @@ public class BaseActivity extends AppCompatActivity implements View.OnClickListe
                 finish();
                 break;
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
     }
 }

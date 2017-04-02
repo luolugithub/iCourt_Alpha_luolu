@@ -9,14 +9,14 @@ android {
         minSdkVersion rootProject.ext.android.minSdkVersion
         targetSdkVersion rootProject.ext.android.targetSdkVersion
         multiDexEnabled true
-        versionCode rootProject.ext.android.versionCode
-        versionName rootProject.ext.android.versionName
+        versionCode 2
+        versionName "1.0.2" //3位版本号
 
         manifestPlaceholders = [UMENG_CHANNEL_VALUE: "Other"]//default_channel
         ndk {
             //请勿轻易修改
             //abiFilters "armeabi", "armeabi-v7a", "arm64-v8a", "x86"
-            abiFilters "armeabi","arm64-v8a", "x86"
+            abiFilters "armeabi", "arm64-v8a", "x86"
         }
     }
 
@@ -60,50 +60,12 @@ android {
     }
     //签名
     signingConfigs {
-        debug {
-            try {
-                def signP = getSigningProperties(true)
-                storeFile file(signP[0])
-
-                v2SigningEnabled false
-            } catch (ex) {
-                ex.printStackTrace()
-            }
-        }
-        test {
-            try {
-                def signP = getSigningProperties(true)
-                storeFile file(signP[0])
-
-                v2SigningEnabled false
-            } catch (ex) {
-                ex.printStackTrace()
-            }
-        }
-        preview {
-            try {
-                def signP = getSigningProperties(true)
-                storeFile file(signP[0])
-
-                v2SigningEnabled false
-            } catch (ex) {
-                ex.printStackTrace()
-            }
-        }
         release {
-            try {
-                def signP = getSigningProperties(false)
-                storeFile file(signP[0])
-                storePassword signP[1]
-                keyAlias signP[2]
-                keyPassword signP[3]
-
-                v2SigningEnabled false
-            } catch (ex) {
-                ex.printStackTrace()
-            }
+            keyAlias 'keystore'
+            keyPassword 'icourt@123'
+            storeFile file('keystore.jks')
+            storePassword 'icourt@123'
         }
-
     }
 
     buildTypes {
@@ -200,21 +162,19 @@ dependencies {
     compile rootProject.ext.dependencies.recyclerview
     compile rootProject.ext.dependencies.recyclerview_animators
     compile rootProject.ext.dependencies.recyclerview_divider
-    //------------  json解析  --------------
-    compile rootProject.ext.dependencies.gson
     //------------  通信  --------------
     compile rootProject.ext.dependencies.eventbus
     //------------  网络  ----------
-    compile rootProject.ext.dependencies.retrofit
-    compile rootProject.ext.dependencies.retrofit_rxjava
-    compile rootProject.ext.dependencies.retrofit_converter_gson
-    compile rootProject.ext.dependencies.okhttp_logging_interceptor
+    compile project(':api')
     //------------  rxAndroid-----------
     compile rootProject.ext.dependencies.rxAndroid
     //compile rootProject.ext.dependencies.rxJava
     compile rootProject.ext.dependencies.topsnackbar
+    compile rootProject.ext.dependencies.glide
+    compile rootProject.ext.dependencies.xrefreshview
+    compile 'com.jakewharton:butterknife:8.5.1'
+    annotationProcessor 'com.jakewharton:butterknife-compiler:8.5.1'
 
-    compile project(':api')
 }
 
 

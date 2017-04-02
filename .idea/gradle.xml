@@ -9,6 +9,7 @@
           <set>
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/alpha" />
+            <option value="$PROJECT_DIR$/api" />
           </set>
         </option>
         <option name="resolveModulePerSourceSet" value="false" />
