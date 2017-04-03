@@ -1,5 +1,7 @@
 package com.icourt.alpha.adapter.recycleradapter;
 
+import android.support.annotation.CallSuper;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -134,6 +136,7 @@ public abstract class BaseArrayRecyclerAdapter<T> extends BaseRecyclerAdapter {
     }
 
 
+    @CallSuper
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
         onBindHoder(holder, getData(position), position);

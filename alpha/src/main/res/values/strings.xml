@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Alpha</string>
+    <string name="dialog_loading_ch"> 加载中...</string>
 </resources>

@@ -1,4 +1,4 @@
-package com.icourt.alpha.dialog;
+package com.icourt.alpha.widget.dialog;
 
 /**
  * Description

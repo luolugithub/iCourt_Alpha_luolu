@@ -4,7 +4,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <com.andview.refreshview.XRefreshView
+    <com.icourt.alpha.view.xrefreshlayout.RefreshaLayout
         android:id="@+id/xrefreshview"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
@@ -13,6 +13,6 @@
             android:id="@+id/recyclerView"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
-    </com.andview.refreshview.XRefreshView>
+    </com.icourt.alpha.view.xrefreshlayout.RefreshaLayout>
 
 </LinearLayout>

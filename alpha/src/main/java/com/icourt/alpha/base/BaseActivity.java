@@ -1,6 +1,8 @@
 package com.icourt.alpha.base;
 
+import android.databinding.DataBindingUtil;
 import android.os.Bundle;
+import android.support.annotation.CallSuper;
 import android.support.annotation.LayoutRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -12,7 +14,9 @@ import android.view.View;
 import com.icourt.alpha.R;
 import com.icourt.alpha.http.AlphaApiService;
 import com.icourt.alpha.http.RetrofitServiceFactory;
+import com.icourt.alpha.interfaces.ProgressHUDImp;
 import com.icourt.alpha.utils.SnackbarUtils;
+import com.kaopiz.kprogresshud.KProgressHUD;
 
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
@@ -25,25 +29,55 @@ import butterknife.Unbinder;
  * version
  */
 
-public abstract class BaseActivity extends AppCompatActivity implements View.OnClickListener {
+public abstract class BaseActivity
+        extends AppCompatActivity
+        implements ProgressHUDImp, View.OnClickListener {
 
-    private BaseActivity activity;
-
-    @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        activity = this;
-    }
 
     protected final BaseActivity getActivity() {
-        return activity;
+        return this;
     }
 
 
     protected final BaseActivity getContext() {
-        return getActivity();
+        return this;
     }
 
+
+    /**
+     * 初始化布局 标准方法 非被动调用与回调[DataBinding更加自由 ] 请主动调用
+     */
+    @CallSuper
+    protected void initView() {
+        View titleBack = findViewById(R.id.titleBack);
+        if (titleBack != null) {
+            titleBack.setOnClickListener(this);
+        }
+    }
+
+    /**
+     * 获取数据 标准方法 请主动调用
+     *
+     * @param isRefresh 是否刷新
+     */
+    protected void getData(boolean isRefresh) {
+
+    }
+
+    private KProgressHUD progressHUD;
+
+    /**
+     * 获取 菊花加载对话框
+     *
+     * @return
+     */
+    private KProgressHUD getSvProgressHUD() {
+        if (progressHUD == null) {
+            progressHUD = KProgressHUD.create(getContext())
+                    .setStyle(KProgressHUD.Style.SPIN_INDETERMINATE);
+        }
+        return progressHUD;
+    }
 
     /**
      * 接口 http通信
@@ -118,6 +152,7 @@ public abstract class BaseActivity extends AppCompatActivity implements View.OnC
         this.showBottomSnackBar(getString(resId));
     }
 
+    @CallSuper
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
@@ -131,4 +166,49 @@ public abstract class BaseActivity extends AppCompatActivity implements View.OnC
     protected void onDestroy() {
         super.onDestroy();
     }
+
+
+    /**
+     * 展示加载对话框
+     *
+     * @param id
+     */
+    public final void showLoadingDialog(@StringRes int id) {
+        this.showLoadingDialog(getString(id));
+    }
+
+    /***
+     *  展示加载对话框
+     * @param notice
+     */
+    @Override
+    public void showLoadingDialog(@Nullable String notice) {
+        KProgressHUD currSVProgressHUD = getSvProgressHUD();
+        currSVProgressHUD.setLabel(notice);
+        if (!currSVProgressHUD.isShowing()) {
+            currSVProgressHUD.show();
+        }
+    }
+
+    /**
+     * 取消加载对话框
+     */
+    @Override
+    public void dismissLoadingDialog() {
+        if (isShowLoading()) {
+            progressHUD.dismiss();
+        }
+    }
+
+    /**
+     * 加载对话框是否展示中
+     *
+     * @return
+     */
+    @Override
+    public boolean isShowLoading() {
+        return progressHUD != null && progressHUD.isShowing();
+    }
+
+
 }

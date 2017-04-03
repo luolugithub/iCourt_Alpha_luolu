@@ -1,13 +1,16 @@
 package com.icourt.alpha.base;
 
-import android.app.Fragment;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.annotation.StringRes;
 import android.support.annotation.UiThread;
+import android.support.v4.app.Fragment;
 
 import com.icourt.alpha.http.AlphaApiService;
 import com.icourt.alpha.http.RetrofitServiceFactory;
+import com.icourt.alpha.interfaces.ProgressHUDImp;
 import com.icourt.alpha.utils.SnackbarUtils;
+import com.kaopiz.kprogresshud.KProgressHUD;
 
 /**
  * Description
@@ -17,7 +20,9 @@ import com.icourt.alpha.utils.SnackbarUtils;
  * version
  */
 
-public class BaseFragment extends Fragment {
+public class BaseFragment
+        extends Fragment
+        implements ProgressHUDImp {
     /**
      * 接口 http通信
      *
@@ -27,6 +32,7 @@ public class BaseFragment extends Fragment {
     protected final AlphaApiService getApi() {
         return RetrofitServiceFactory.provideAlphaService();
     }
+
     /**
      * Toast提示
      * 缺陷 有的rom 会禁用掉taost 比如huawei rom
@@ -87,5 +93,53 @@ public class BaseFragment extends Fragment {
     @UiThread
     protected final void showBottomSnackBar(@StringRes int resId) {
         this.showBottomSnackBar(getString(resId));
+    }
+
+    private KProgressHUD progressHUD;
+
+    /**
+     * 获取 菊花加载对话框
+     *
+     * @return
+     */
+    private KProgressHUD getSvProgressHUD() {
+        if (progressHUD == null) {
+            progressHUD = KProgressHUD.create(getActivity())
+                    .setStyle(KProgressHUD.Style.SPIN_INDETERMINATE);
+        }
+        return progressHUD;
+    }
+
+    /***
+     *  展示加载对话框
+     * @param notice
+     */
+    @Override
+    public void showLoadingDialog(@Nullable String notice) {
+        KProgressHUD currSVProgressHUD = getSvProgressHUD();
+        currSVProgressHUD.setLabel(notice);
+        if (!currSVProgressHUD.isShowing()) {
+            currSVProgressHUD.show();
+        }
+    }
+
+    /**
+     * 取消加载对话框
+     */
+    @Override
+    public void dismissLoadingDialog() {
+        if (isShowLoading()) {
+            progressHUD.dismiss();
+        }
+    }
+
+    /**
+     * 加载对话框是否展示中
+     *
+     * @return
+     */
+    @Override
+    public boolean isShowLoading() {
+        return progressHUD != null && progressHUD.isShowing();
     }
 }

@@ -1,6 +1,7 @@
 package com.icourt.alpha.adapter.recycleradapter;
 
 import android.app.Activity;
+import android.content.Context;
 import android.databinding.ViewDataBinding;
 import android.support.annotation.IdRes;
 import android.support.annotation.LayoutRes;
@@ -17,6 +18,7 @@ import android.widget.TextView;
 import com.icourt.alpha.http.AlphaApiService;
 import com.icourt.alpha.http.RetrofitServiceFactory;
 import com.icourt.alpha.utils.SnackbarUtils;
+import com.kaopiz.kprogresshud.KProgressHUD;
 
 /**
  * ClassName BaseRecyclerAdapter
@@ -278,6 +280,53 @@ public abstract class BaseRecyclerAdapter extends RecyclerView.Adapter<BaseRecyc
     @NonNull
     protected final AlphaApiService getApi() {
         return RetrofitServiceFactory.provideAlphaService();
+    }
+
+
+    private KProgressHUD progressHUD;
+
+    /**
+     * 获取 菊花加载对话框
+     *
+     * @return
+     */
+    private KProgressHUD getSvProgressHUD(@NonNull Context context) {
+        if (progressHUD == null) {
+            progressHUD = KProgressHUD.create(context)
+                    .setStyle(KProgressHUD.Style.SPIN_INDETERMINATE);
+        }
+        return progressHUD;
+    }
+
+    /***
+     *  展示加载对话框
+     * @param notice
+     */
+    public void showLoadingDialog(@NonNull Context context, @Nullable String notice) {
+        if (context == null) return;
+        KProgressHUD currSVProgressHUD = getSvProgressHUD(context);
+        currSVProgressHUD.setLabel(notice);
+        if (!currSVProgressHUD.isShowing()) {
+            currSVProgressHUD.show();
+        }
+    }
+
+    /**
+     * 取消加载对话框
+     */
+    public void dismissLoadingDialog() {
+        if (isShowLoading()) {
+            progressHUD.dismiss();
+        }
+    }
+
+    /**
+     * 加载对话框是否展示中
+     *
+     * @return
+     */
+    public boolean isShowLoading() {
+        return progressHUD != null && progressHUD.isShowing();
     }
 
 }
