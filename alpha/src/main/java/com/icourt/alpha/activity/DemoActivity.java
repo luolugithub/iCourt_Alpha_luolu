@@ -123,4 +123,5 @@ public class DemoActivity extends BaseRecyclerActivity<com.icourt.alpha.entity.b
                 });
     }
 
+
 }

@@ -46,7 +46,7 @@ public class AlphaClient extends SimpleClient implements HttpLoggingInterceptor.
     }
 
     private AlphaClient(Context context) {
-        attachBaseUrl(context, HConst.BASE_HTTP, this, this);
+        attachBaseUrl(context, BuildConfig.API_URL, this, this);
     }
 
     @Override

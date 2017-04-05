@@ -11,6 +11,12 @@ import com.umeng.socialize.bean.SHARE_MEDIA;
 public class MainActivity extends BaseUmengActivity {
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        checkAppUpdate(this);
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);

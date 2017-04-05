@@ -15,65 +15,6 @@ public class HConst {
 
     public static String cookie = "";
 
-    //开发服务器
-    public static final String BASE_DEBUG_URL = "https://dev.alphalawyer.cn/";
-
-    //测试服务器
-    public static final String BASE_TEST_URL = "https://test.alphalawyer.cn/";
-
-    //正式服务器
-    public static final String BASE_PREVIEW_URL = "https://pre.alphalawyer.cn／";
-
-    //正式服务器
-    public static final String BASE_RELEASE_URL = "https://alphalawyer.cn/";
-
-
-    public static String BASE_HTTP = BASE_DEBUG_URL;
-
-    /**
-     * 动态切换 url
-     * 有效期 是同一个版本
-     */
-    public static final String DYNAMIC_SWITCHING_BASE_URL = String.format("%s_%s", BuildConfig.VERSION_NAME, "baseUrl");
-
-    static {
-        switch (BuildConfig.URL_CONFIG) {
-            case 0:
-                BASE_HTTP = BASE_DEBUG_URL;
-                break;
-            case 1:
-                BASE_HTTP = BASE_TEST_URL;
-                break;
-            case 2:
-                BASE_HTTP = BASE_PREVIEW_URL;
-                break;
-            case 3:
-                BASE_HTTP = BASE_RELEASE_URL;
-                break;
-        }
-        /*try {
-            //开发者动态改变的地址
-            String userBaseUrl = SpUtils.getInstance().getStringData(DYNAMIC_SWITCHING_BASE_URL, "");
-            if (TextUtils.equals(userBaseUrl, BASE_DEBUG_URL)
-                    || TextUtils.equals(userBaseUrl, BASE_PREVIEW_URL)
-                    || TextUtils.equals(userBaseUrl, BASE_RELEASE_URL)) {
-                BASE_HTTP = userBaseUrl;
-                if (TextUtils.equals(userBaseUrl, BASE_DEBUG_URL)) {
-                    BASE_SHARE_HTTP = BASE_DEBUG_URL;
-                } else if (TextUtils.equals(userBaseUrl, BASE_PREVIEW_URL)) {
-                    BASE_SHARE_HTTP = BASE_PREVIEW_URL;
-                } else if (TextUtils.equals(userBaseUrl, BASE_RELEASE_URL)) {
-                    BASE_SHARE_HTTP = BASE_RELEASE_SHARE_URL;
-                }
-            }
-        } catch (Exception e) {
-        }*/
-
-
-        //BASE_HTTP = "http://next.tcmmooc.com/";
-    }
-
-
     /**
      * 网络缓存最大值
      */

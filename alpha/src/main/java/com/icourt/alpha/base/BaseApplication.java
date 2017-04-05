@@ -7,13 +7,16 @@ import android.support.multidex.MultiDexApplication;
 
 import com.icourt.alpha.BuildConfig;
 import com.icourt.alpha.http.HConst;
+import com.icourt.alpha.utils.ActivityLifecycleTaskCallbacks;
 import com.icourt.alpha.utils.AppManager;
 import com.icourt.alpha.utils.LogUtils;
 import com.icourt.alpha.utils.logger.AndroidLogAdapter;
 import com.icourt.alpha.utils.logger.LogLevel;
 import com.icourt.alpha.utils.logger.Logger;
+import com.umeng.socialize.Config;
 import com.umeng.socialize.PlatformConfig;
 import com.umeng.socialize.UMShareAPI;
+import com.umeng.socialize.utils.Log;
 
 /**
  * Description
@@ -23,12 +26,13 @@ import com.umeng.socialize.UMShareAPI;
  * version
  */
 
-public class BaseApplication extends MultiDexApplication
-        implements Application.ActivityLifecycleCallbacks {
+public class BaseApplication extends MultiDexApplication {
 
     {// 友盟登陆/分享初始化
         PlatformConfig.setWeixin(HConst.WX_APPID, HConst.WX_APPSECRET);
         //PlatformConfig.setQQZone("1104872033", "lLB4ODaOnpLNzIxD");
+        Config.isJumptoAppStore = false; //其中qq 微信会跳转到下载界面进行下载，其他应用会跳到应用商店进行下载
+        Log.LOG = BuildConfig.IS_DEBUG;//umeng sdk日志跟踪
     }
 
     private static BaseApplication baseApplication;
@@ -37,7 +41,7 @@ public class BaseApplication extends MultiDexApplication
     public void onCreate() {
         super.onCreate();
         baseApplication = this;
-        this.registerActivityLifecycleCallbacks(this);
+        this.registerActivityLifecycleCallbacks(new ActivityLifecycleTaskCallbacks());
         UMShareAPI.get(this);
         initLogger();
     }
@@ -58,40 +62,4 @@ public class BaseApplication extends MultiDexApplication
                 .logAdapter(new AndroidLogAdapter()); //default AndroidLogAdapter
     }
 
-    @Override
-    public void onActivityCreated(Activity activity, Bundle savedInstanceState) {
-        AppManager.getAppManager().addActivity(activity);
-        LogUtils.d("===========>onActivityCreated:" + activity + " savedInstanceState:" + savedInstanceState);
-    }
-
-    @Override
-    public void onActivityStarted(Activity activity) {
-        LogUtils.d("===========>onActivityStarted:" + activity);
-    }
-
-    @Override
-    public void onActivityResumed(Activity activity) {
-        LogUtils.d("===========>onActivityResumed:" + activity);
-    }
-
-    @Override
-    public void onActivityPaused(Activity activity) {
-        LogUtils.d("===========>onActivityPaused:" + activity);
-    }
-
-    @Override
-    public void onActivityStopped(Activity activity) {
-        LogUtils.d("===========>onActivityStopped:" + activity);
-    }
-
-    @Override
-    public void onActivitySaveInstanceState(Activity activity, Bundle outState) {
-        LogUtils.d("===========>onActivitySaveInstanceState:" + activity);
-    }
-
-    @Override
-    public void onActivityDestroyed(Activity activity) {
-        AppManager.getAppManager().removeActivity(activity);
-        LogUtils.d("===========>onActivityDestroyed:" + activity);
-    }
 }

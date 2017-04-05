@@ -10,7 +10,7 @@ android {
         targetSdkVersion rootProject.ext.android.targetSdkVersion
         multiDexEnabled true
         versionCode 3
-        versionName "2.0.0" //3位版本号
+        versionName "v2.0.0" //3位版本号
 
         manifestPlaceholders = [UMENG_CHANNEL_VALUE: "Other"]//default_channel
         ndk {
@@ -74,7 +74,8 @@ android {
 //                abiFilters = ["armeabi"]
 //            }
             buildConfigField "boolean", "IS_DEBUG", "true"
-            buildConfigField "int", "URL_CONFIG", "0"
+            buildConfigField "String", "API_URL", rootProject.ext.alphaAPIUrl.api_url_debug
+            buildConfigField "String", "APK_UPDATE_URL", rootProject.ext.alphaApkUpdateUrl.apk_update_url_debug
             versionNameSuffix "_debug"
             minifyEnabled false
             zipAlignEnabled false
@@ -85,7 +86,8 @@ android {
         }
         innertest {
             buildConfigField "boolean", "IS_DEBUG", "true"
-            buildConfigField "int", "URL_CONFIG", "1"
+            buildConfigField "String", "API_URL", rootProject.ext.alphaAPIUrl.api_url_test
+            buildConfigField "String", "APK_UPDATE_URL", rootProject.ext.alphaApkUpdateUrl.apk_update_url_test
             versionNameSuffix "_test"
             minifyEnabled false
             zipAlignEnabled false
@@ -96,7 +98,8 @@ android {
         }
         preview {
             buildConfigField "boolean", "IS_DEBUG", "true"
-            buildConfigField "int", "URL_CONFIG", "2"
+            buildConfigField "String", "API_URL", rootProject.ext.alphaAPIUrl.api_url_preview
+            buildConfigField "String", "APK_UPDATE_URL", rootProject.ext.alphaApkUpdateUrl.apk_update_url_preview
             versionNameSuffix "_preview"
             minifyEnabled false
             zipAlignEnabled false
@@ -108,7 +111,8 @@ android {
 
         release {
             buildConfigField "boolean", "IS_DEBUG", "false"
-            buildConfigField "int", "URL_CONFIG", "3"
+            buildConfigField "String", "API_URL", rootProject.ext.alphaAPIUrl.api_url_release
+            buildConfigField "String", "APK_UPDATE_URL", rootProject.ext.alphaApkUpdateUrl.apk_update_url_release
             shrinkResources false   // 移除无用的resource文件
             zipAlignEnabled false        //Zipalign优化
             minifyEnabled false     //混淆

@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.text.TextUtils;
 
 import com.google.gson.JsonParseException;
+import com.icourt.alpha.http.exception.ResponseException;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.http.httpmodel.ResPageEntity;
 import com.icourt.alpha.utils.AppManager;
@@ -24,25 +25,6 @@ import retrofit2.Response;
  * @time 2016-04-20 18:38
  */
 public abstract class SimplePageCallBack<T> extends BaseCallBack<ResPageEntity<T>> {
-
-    public static class ResponseException extends RuntimeException {
-        public final int code;
-        public final String message;
-
-
-        public ResponseException(int code, String message) {
-            this.code = code;
-            this.message = message;
-        }
-
-        @Override
-        public String toString() {
-            return "ResponseException{" +
-                    "code=" + code +
-                    ", message='" + message + '\'' +
-                    '}';
-        }
-    }
 
     @Override
     protected void dispatchHttpSuccess(Call<ResPageEntity<T>> call, Response<ResPageEntity<T>> response) {

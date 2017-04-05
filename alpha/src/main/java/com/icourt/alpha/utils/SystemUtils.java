@@ -651,4 +651,17 @@ public class SystemUtils {
         }
         return drawable;
     }
+
+
+    /**
+     * 是否销毁或者正在销毁
+     *
+     * @return
+     */
+    public static final boolean isDestroyOrFinishing(@NonNull Activity activity) {
+        if (activity == null) return true;
+        boolean destroyed = Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1 &&
+                activity.isDestroyed();
+        return destroyed || activity.isFinishing();
+    }
 }

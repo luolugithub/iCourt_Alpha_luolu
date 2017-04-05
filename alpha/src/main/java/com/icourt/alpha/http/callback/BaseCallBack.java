@@ -1,11 +1,21 @@
 package com.icourt.alpha.http.callback;
 
+import android.app.Activity;
+import android.support.annotation.CallSuper;
 import android.text.TextUtils;
 
+import com.google.gson.JsonParseException;
+import com.icourt.alpha.http.exception.ResponseException;
+import com.icourt.alpha.utils.AppManager;
+import com.icourt.alpha.utils.LogUtils;
+import com.icourt.alpha.utils.SnackbarUtils;
 import com.icourt.alpha.utils.StringUtils;
 
 import java.io.EOFException;
 import java.io.IOException;
+import java.net.ConnectException;
+import java.net.SocketException;
+import java.net.SocketTimeoutException;
 import java.nio.charset.Charset;
 
 import okhttp3.MediaType;
@@ -41,11 +51,72 @@ public abstract class BaseCallBack<T> implements Callback<T> {
 
     public abstract void onSuccess(Call<T> call, Response<T> response);
 
+    @CallSuper
     @Override
     public void onFailure(Call<T> call, Throwable t) {
+        if (t instanceof ResponseException) {
+            defNotify(((ResponseException) t).message);
 
+        } else if (t instanceof retrofit2.HttpException) {
+            retrofit2.HttpException httpException = (retrofit2.HttpException) t;
+            String combHttpExceptionStr = String.format("%s:%s", httpException.code(), httpException.message());
+            defNotify(combHttpExceptionStr);
+
+            sendLimitHttpLog(call, t, "http状态异常:" + combHttpExceptionStr);
+        } else if (t instanceof JsonParseException) {
+            defNotify("解析异常,PHP在弄啥呢？");
+
+            sendLimitHttpLog(call, t, "json解析异常");
+        } else if (t instanceof java.net.UnknownHostException) {
+            defNotify("网络已断开,请检查网络");
+        } else if (t instanceof ConnectException) {
+            defNotify("服务器拒绝连接或代理错误");
+        } else if (t instanceof SocketException) {
+            defNotify("网络不稳定或服务器繁忙");
+        } else if (t instanceof SocketTimeoutException) {
+            defNotify("服务器响应超时");
+
+            sendLimitHttpLog(call, t, "服务器响应超时");
+        } else {
+            defNotify("未知异常");
+        }
+        LogUtils.d("http", "------->throwable:" + t);
     }
 
+    /**
+     * 系统可能屏蔽通知[典型的华为]
+     * 替代为Snackbar
+     *
+     * @param noticeStr
+     */
+    public void defNotify(String noticeStr) {
+        if (TextUtils.isEmpty(noticeStr)) return;
+        Activity currentActivity = null;
+        try {
+            currentActivity = AppManager.getAppManager().currentActivity();
+        } catch (Exception e) {
+        }
+        if (currentActivity != null && !currentActivity.isFinishing()) {
+            try {
+                SnackbarUtils.showTopSnackBarWithError(currentActivity, noticeStr);
+            } catch (Throwable e) {
+            }
+        }
+/*
+        boolean enableNotification = SystemUtils.isEnableNotification(BaseApplication.getApplication());
+        if (enableNotification) {
+            ToastUtils.showFillToast(noticeStr);
+        } else {
+            try {
+                Activity topActivity = AppManager.getAppManager().currentActivity();
+                if (topActivity != null && !topActivity.isFinishing()) {
+                    SnackbarUtils.showSnack(topActivity, noticeStr);
+                }
+            } catch (Exception e) {
+            }
+        }*/
+
+    }
 
     /**
      * 发送http错误日志
@@ -66,7 +137,7 @@ public abstract class BaseCallBack<T> implements Callback<T> {
                 //httpLogBuilder.append("\nheaders:" + (request.headers() != null ? request.headers().toString() : "null"));
                 httpLogBuilder.append("\nbody:" + body2String(request.body()));
             }
-           // httpLogBuilder.append("\nuid:" + getLoginUid());
+            // httpLogBuilder.append("\nuid:" + getLoginUid());
             httpLogBuilder.append("\n错误信息:" + t.toString());
 
             sendHttpLog(httpLogBuilder.toString());
