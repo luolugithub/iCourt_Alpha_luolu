@@ -13,7 +13,7 @@ import com.icourt.alpha.utils.SpUtils;
  */
 public class HConst {
 
-    public static String cookie="";
+    public static String cookie = "";
 
     //开发服务器
     public static final String BASE_DEBUG_URL = "https://dev.alphalawyer.cn/";
@@ -103,5 +103,10 @@ public class HConst {
 
     // Android 渠道
     public static final String OS_TYPE = "1";
+
+
+    public static final String WX_APPID = "wxa3502404446fe64e";//微信appid
+    public static final String WX_APPSECRET = "609cb731d035eeea37431b9d11115078";//微信AppSecret
+
 
 }

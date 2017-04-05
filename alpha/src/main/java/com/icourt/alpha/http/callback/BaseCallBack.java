@@ -2,7 +2,6 @@ package com.icourt.alpha.http.callback;
 
 import android.text.TextUtils;
 
-import com.bugtags.library.Bugtags;
 import com.icourt.alpha.utils.StringUtils;
 
 import java.io.EOFException;

@@ -6,11 +6,14 @@ import android.os.Bundle;
 import android.support.multidex.MultiDexApplication;
 
 import com.icourt.alpha.BuildConfig;
+import com.icourt.alpha.http.HConst;
 import com.icourt.alpha.utils.AppManager;
 import com.icourt.alpha.utils.LogUtils;
 import com.icourt.alpha.utils.logger.AndroidLogAdapter;
 import com.icourt.alpha.utils.logger.LogLevel;
 import com.icourt.alpha.utils.logger.Logger;
+import com.umeng.socialize.PlatformConfig;
+import com.umeng.socialize.UMShareAPI;
 
 /**
  * Description
@@ -22,6 +25,12 @@ import com.icourt.alpha.utils.logger.Logger;
 
 public class BaseApplication extends MultiDexApplication
         implements Application.ActivityLifecycleCallbacks {
+
+    {// 友盟登陆/分享初始化
+        PlatformConfig.setWeixin(HConst.WX_APPID, HConst.WX_APPSECRET);
+        //PlatformConfig.setQQZone("1104872033", "lLB4ODaOnpLNzIxD");
+    }
+
     private static BaseApplication baseApplication;
 
     @Override
@@ -29,6 +38,7 @@ public class BaseApplication extends MultiDexApplication
         super.onCreate();
         baseApplication = this;
         this.registerActivityLifecycleCallbacks(this);
+        UMShareAPI.get(this);
         initLogger();
     }
 

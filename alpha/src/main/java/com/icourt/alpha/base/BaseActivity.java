@@ -15,6 +15,7 @@ import com.icourt.alpha.R;
 import com.icourt.alpha.http.AlphaApiService;
 import com.icourt.alpha.http.RetrofitServiceFactory;
 import com.icourt.alpha.interfaces.ProgressHUDImp;
+import com.icourt.alpha.utils.LogUtils;
 import com.icourt.alpha.utils.SnackbarUtils;
 import com.kaopiz.kprogresshud.KProgressHUD;
 
@@ -71,6 +72,7 @@ public abstract class BaseActivity
      *
      * @return
      */
+    @NonNull
     private KProgressHUD getSvProgressHUD() {
         if (progressHUD == null) {
             progressHUD = KProgressHUD.create(getContext())
@@ -173,6 +175,7 @@ public abstract class BaseActivity
      *
      * @param id
      */
+    @UiThread
     public final void showLoadingDialog(@StringRes int id) {
         this.showLoadingDialog(getString(id));
     }
@@ -181,6 +184,7 @@ public abstract class BaseActivity
      *  展示加载对话框
      * @param notice
      */
+    @UiThread
     @Override
     public void showLoadingDialog(@Nullable String notice) {
         KProgressHUD currSVProgressHUD = getSvProgressHUD();
@@ -193,6 +197,7 @@ public abstract class BaseActivity
     /**
      * 取消加载对话框
      */
+    @UiThread
     @Override
     public void dismissLoadingDialog() {
         if (isShowLoading()) {
@@ -210,5 +215,14 @@ public abstract class BaseActivity
         return progressHUD != null && progressHUD.isShowing();
     }
 
+
+    /**
+     * 日志输出
+     *
+     * @param log 日志内容
+     */
+    public void log(String log) {
+        LogUtils.d(log);
+    }
 
 }

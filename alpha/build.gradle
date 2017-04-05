@@ -9,8 +9,8 @@ android {
         minSdkVersion rootProject.ext.android.minSdkVersion
         targetSdkVersion rootProject.ext.android.targetSdkVersion
         multiDexEnabled true
-        versionCode 2
-        versionName "1.0.2" //3位版本号
+        versionCode 3
+        versionName "2.0.0" //3位版本号
 
         manifestPlaceholders = [UMENG_CHANNEL_VALUE: "Other"]//default_channel
         ndk {
@@ -152,7 +152,7 @@ dependencies {
     compile rootProject.ext.dependencies.constraintLayout
     // compile rootProject.ext.dependencies.junit
     compile rootProject.ext.dependencies.multidex
-    compile rootProject.ext.dependencies.bugtags
+    //compile rootProject.ext.dependencies.bugtags
     //------------  Android support  -----------
     compile rootProject.ext.dependencies.supportV4
     compile rootProject.ext.dependencies.design

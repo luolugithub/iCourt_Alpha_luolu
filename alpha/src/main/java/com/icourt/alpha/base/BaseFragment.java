@@ -9,6 +9,7 @@ import android.support.v4.app.Fragment;
 import com.icourt.alpha.http.AlphaApiService;
 import com.icourt.alpha.http.RetrofitServiceFactory;
 import com.icourt.alpha.interfaces.ProgressHUDImp;
+import com.icourt.alpha.utils.LogUtils;
 import com.icourt.alpha.utils.SnackbarUtils;
 import com.kaopiz.kprogresshud.KProgressHUD;
 
@@ -141,5 +142,15 @@ public class BaseFragment
     @Override
     public boolean isShowLoading() {
         return progressHUD != null && progressHUD.isShowing();
+    }
+
+
+    /**
+     * 日志输出
+     *
+     * @param log 日志内容
+     */
+    public void log(String log) {
+        LogUtils.d(log);
     }
 }
