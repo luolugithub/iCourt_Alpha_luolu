@@ -25,6 +25,7 @@ import com.umeng.socialize.utils.Log;
 import java.net.Proxy;
 import java.util.concurrent.TimeUnit;
 
+import io.realm.Realm;
 import okhttp3.OkHttpClient;
 
 /**
@@ -51,9 +52,14 @@ public class BaseApplication extends MultiDexApplication {
         super.onCreate();
         baseApplication = this;
         initActivityLifecycleCallbacks();
+        initRealm();
         initUMShare();
         initLogger();
         initDownloader();
+    }
+
+    private void initRealm() {
+        Realm.init(this);
     }
 
     public static BaseApplication getApplication() {

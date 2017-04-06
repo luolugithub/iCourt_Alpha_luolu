@@ -10,8 +10,9 @@
         android:layout_width="368dp"
         android:layout_height="551dp"
         android:orientation="vertical"
-        tools:layout_editor_absoluteY="8dp"
-        tools:layout_editor_absoluteX="8dp">
+        tools:layout_editor_absoluteX="8dp"
+        tools:layout_editor_absoluteY="8dp">
+
         <Button
             android:id="@+id/bt_demo"
             android:layout_width="wrap_content"
@@ -19,21 +20,30 @@
             android:text="demoActivity" />
 
         <Button
+            android:id="@+id/bt_db"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="数据库demo" />
+
+        <Button
             android:id="@+id/bt_login"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="微信登陆" />
+
         <Switch
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
+
         <CheckBox
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="勾选"/>
+            android:text="勾选" />
+
         <RadioButton
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="勾选"/>
+            android:text="勾选" />
 
         <TextView
             android:layout_width="wrap_content"

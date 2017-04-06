@@ -56,6 +56,9 @@
         <activity
             android:name=".activity.DemoActivity"
             android:screenOrientation="portrait" />
+        <activity
+            android:name=".activity.DemoRealmActivity"
+            android:screenOrientation="portrait" />
 
 
         <!-- 网易云信appkey配置 -->

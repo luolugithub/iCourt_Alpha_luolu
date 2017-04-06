@@ -14,7 +14,7 @@ public class MainActivity extends BaseAppUpdateActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        checkAppUpdate(this);
+       // checkAppUpdate(this);
     }
 
     @Override
@@ -36,6 +36,12 @@ public class MainActivity extends BaseAppUpdateActivity {
                 } else {
                     showTopSnackBar(R.string.umeng_wexin_uninstalled);
                 }*/
+            }
+        });
+        findViewById(R.id.bt_db).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                DemoRealmActivity.launch(getActivity());
             }
         });
     }
