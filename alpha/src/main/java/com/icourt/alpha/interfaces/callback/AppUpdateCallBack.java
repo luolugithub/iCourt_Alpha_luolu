@@ -21,7 +21,7 @@ public abstract class AppUpdateCallBack extends BaseCallBack<AppVersionEntity> {
     @Override
     protected final void dispatchHttpSuccess(Call<AppVersionEntity> call, Response<AppVersionEntity> response) {
         if (response.body() != null) {
-            if (!TextUtils.isEmpty(response.body().downloadUrl)) {
+            if (!TextUtils.isEmpty(response.body().install_url)) {
                 onSuccess(call, response);
             } else {
                 onFailure(call, new ResponseException(-100, "下载地址为null"));

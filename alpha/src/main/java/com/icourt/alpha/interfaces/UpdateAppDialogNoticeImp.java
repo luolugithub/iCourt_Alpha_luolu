@@ -27,11 +27,10 @@ public interface UpdateAppDialogNoticeImp {
      * 请求文件写入权限
      *
      * @param context
-     * @param reqCode   请求码
-     * @param rationale 权限描述
+     * @param reqCode 请求码
      * @return
      */
-    void requestFilePermission(@NonNull Context context, int reqCode, String rationale);
+    void requestFilePermission(@NonNull Context context, int reqCode);
 
     /**
      * 检查更新
@@ -54,6 +53,14 @@ public interface UpdateAppDialogNoticeImp {
      * @param appVersionEntity 新版本特性描述
      */
     void showAppUpdateDialog(@NonNull Context context, @NonNull AppVersionEntity appVersionEntity);
+
+    /**
+     * 本地是否包含apk文件
+     *
+     * @param url
+     * @return
+     */
+    boolean hasLocalApkFile(String url);
 
     /**
      * 是否应该更新

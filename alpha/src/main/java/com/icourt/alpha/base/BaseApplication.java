@@ -2,6 +2,7 @@ package com.icourt.alpha.base;
 
 import android.app.Activity;
 import android.app.Application;
+import android.content.Context;
 import android.os.Bundle;
 import android.support.multidex.MultiDexApplication;
 
@@ -13,10 +14,18 @@ import com.icourt.alpha.utils.LogUtils;
 import com.icourt.alpha.utils.logger.AndroidLogAdapter;
 import com.icourt.alpha.utils.logger.LogLevel;
 import com.icourt.alpha.utils.logger.Logger;
+import com.liulishuo.filedownloader.FileDownloader;
+import com.liulishuo.filedownloader.util.FileDownloadHelper;
+import com.liulishuo.filedownloader.util.FileDownloadLog;
 import com.umeng.socialize.Config;
 import com.umeng.socialize.PlatformConfig;
 import com.umeng.socialize.UMShareAPI;
 import com.umeng.socialize.utils.Log;
+
+import java.net.Proxy;
+import java.util.concurrent.TimeUnit;
+
+import okhttp3.OkHttpClient;
 
 /**
  * Description
@@ -41,13 +50,29 @@ public class BaseApplication extends MultiDexApplication {
     public void onCreate() {
         super.onCreate();
         baseApplication = this;
-        this.registerActivityLifecycleCallbacks(new ActivityLifecycleTaskCallbacks());
-        UMShareAPI.get(this);
+        initActivityLifecycleCallbacks();
+        initUMShare();
         initLogger();
+        initDownloader();
     }
 
     public static BaseApplication getApplication() {
         return baseApplication;
+    }
+
+
+    /**
+     * 初始化activity生命周期监听
+     */
+    public void initActivityLifecycleCallbacks() {
+        this.registerActivityLifecycleCallbacks(new ActivityLifecycleTaskCallbacks());
+    }
+
+    /**
+     * 初始化umeng
+     */
+    private void initUMShare() {
+        UMShareAPI.get(this);
     }
 
     /**
@@ -60,6 +85,41 @@ public class BaseApplication extends MultiDexApplication {
                 .logLevel(BuildConfig.IS_DEBUG ? LogLevel.FULL : LogLevel.NONE)        // default LogLevel.FULL
                 .methodOffset(0)                // default 0
                 .logAdapter(new AndroidLogAdapter()); //default AndroidLogAdapter
+    }
+
+    /**
+     * 初始化下载
+     */
+    private void initDownloader() {
+
+       /* //方式1
+        FileDownloader.init(getApplicationContext());
+        */
+
+
+        //方式2
+        FileDownloadLog.NEED_LOG = BuildConfig.IS_DEBUG;
+
+        /**
+         * just for cache Application's Context, and ':filedownloader' progress will NOT be launched
+         * by below code, so please do not worry about performance.
+         * @see FileDownloader#init(Context)
+         */
+        FileDownloader.init(getApplicationContext(),
+                new FileDownloadHelper.OkHttpClientCustomMaker() { // is not has to provide.
+                    @Override
+                    public OkHttpClient customMake() {
+// just for OkHttpClient customize.
+                        final OkHttpClient.Builder builder = new OkHttpClient.Builder();
+                        // you can set the connection timeout.
+                        builder.connectTimeout(35_000, TimeUnit.MILLISECONDS);
+                        // you can set the HTTP proxy.
+                        builder.proxy(Proxy.NO_PROXY);
+                        // etc.
+                        return builder.build();
+                    }
+                });
+
     }
 
 }

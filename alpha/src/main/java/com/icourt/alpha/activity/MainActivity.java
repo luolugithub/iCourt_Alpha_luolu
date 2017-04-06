@@ -5,10 +5,11 @@ import android.view.View;
 
 import com.icourt.alpha.R;
 import com.icourt.alpha.base.BaseActivity;
+import com.icourt.alpha.base.BaseAppUpdateActivity;
 import com.icourt.alpha.base.BaseUmengActivity;
 import com.umeng.socialize.bean.SHARE_MEDIA;
 
-public class MainActivity extends BaseUmengActivity {
+public class MainActivity extends BaseAppUpdateActivity {
 
     @Override
     protected void onResume() {
