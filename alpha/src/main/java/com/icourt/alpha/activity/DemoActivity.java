@@ -9,13 +9,10 @@ import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 
-import com.andview.refreshview.XRefreshView;
 import com.google.gson.JsonElement;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.DemoAdapter;
 import com.icourt.alpha.adapter.recycleradapter.BaseArrayRecyclerAdapter;
-import com.icourt.alpha.adapter.recycleradapter.adapterObserver.DataChangeAdapterObserver;
-import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.base.BaseRecyclerActivity;
 import com.icourt.alpha.entity.bean.DemoEntity;
 import com.icourt.alpha.http.callback.SimpleCallBack;
@@ -65,6 +62,7 @@ public class DemoActivity extends BaseRecyclerActivity<com.icourt.alpha.entity.b
     @Override
     protected void initView() {
         super.initView();
+        setTitle("xrefreshDemo");
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setAdapter(demoAdapter = new DemoAdapter());
         demoAdapter.registerAdapterDataObserver(dataChangeAdapterObserver);

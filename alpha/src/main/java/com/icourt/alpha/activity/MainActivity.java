@@ -4,9 +4,7 @@ import android.os.Bundle;
 import android.view.View;
 
 import com.icourt.alpha.R;
-import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.base.BaseAppUpdateActivity;
-import com.icourt.alpha.base.BaseUmengActivity;
 import com.umeng.socialize.bean.SHARE_MEDIA;
 
 public class MainActivity extends BaseAppUpdateActivity {
@@ -23,6 +21,8 @@ public class MainActivity extends BaseAppUpdateActivity {
     @Override
     protected void initView() {
         super.initView();
+        setTitle("alpha");
+        unregisterClick(R.id.titleBack);
         registerClick(R.id.bt_demo);
         registerClick(R.id.bt_login);
         registerClick(R.id.bt_db);

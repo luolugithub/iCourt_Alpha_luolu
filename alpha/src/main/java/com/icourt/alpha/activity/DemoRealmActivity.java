@@ -34,8 +34,7 @@ import butterknife.OnClick;
 public class DemoRealmActivity extends BaseActivity implements BaseRecyclerAdapter.OnItemChildClickListener {
 
 
-    public static void launch(@NonNull Context context)
-    {
+    public static void launch(@NonNull Context context) {
         if (context == null) return;
         Intent intent = new Intent(context, DemoRealmActivity.class);
         context.startActivity(intent);
@@ -69,6 +68,7 @@ public class DemoRealmActivity extends BaseActivity implements BaseRecyclerAdapt
     @Override
     protected void initView() {
         super.initView();
+        setTitle("realm demo");
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         recyclerView.setAdapter(flowerAdapter = new FlowerAdapter());
         flowerAdapter.setOnItemChildClickListener(this);

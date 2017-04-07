@@ -8,6 +8,8 @@ import android.support.annotation.Nullable;
 import android.support.annotation.StringRes;
 import android.support.annotation.UiThread;
 import android.view.View;
+import android.widget.CheckedTextView;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.icourt.alpha.R;
@@ -48,10 +50,9 @@ public abstract class BaseActivity
      */
     @CallSuper
     protected void initView() {
-        View titleBack = findViewById(R.id.titleBack);
-        if (titleBack != null) {
-            titleBack.setOnClickListener(this);
-        }
+        registerClick(R.id.titleBack);
+        registerClick(R.id.titleAction);
+        registerClick(R.id.titleAction2);
     }
 
     /**
@@ -62,15 +63,16 @@ public abstract class BaseActivity
     @Override
     public final void setTitle(CharSequence title) {
         super.setTitle(title);
-        View titleText = findViewById(R.id.titleContent);
-        if (titleText instanceof TextView) {
-            ((TextView) titleText).setText(title);
+        TextView titleTextView = getTitleTextView();
+        if (titleTextView != null) {
+            titleTextView.setText(title);
         }
     }
 
     /**
      * @return 标题中的textView
      */
+    @Nullable
     @CheckResult
     public TextView getTitleTextView() {
         View titleText = findViewById(R.id.titleContent);
@@ -85,12 +87,69 @@ public abstract class BaseActivity
     @Override
     public final void setTitle(@StringRes int titleId) {
         super.setTitle(titleId);
-        View titleText = findViewById(R.id.titleContent);
-        if (titleText instanceof TextView) {
-            ((TextView) titleText).setText(getString(titleId));
+        TextView titleTextView = getTitleTextView();
+        if (titleTextView != null) {
+            titleTextView.setText(getString(titleId));
         }
     }
 
+    /**
+     * @return title返回/取消的view
+     */
+    @Nullable
+    @CheckResult
+    public final View getTitleBackView() {
+        return findViewById(R.id.titleBack);
+    }
+
+    /**
+     * @return 标题返回的image
+     */
+    @Nullable
+    @CheckResult
+    public final ImageView getTitleBackImage() {
+        View titleBackImage = getTitleBackView();
+        return (titleBackImage instanceof ImageView) ? (ImageView) titleBackImage : null;
+    }
+
+    /**
+     * @return 标题返回／取消的TextView
+     */
+    @Nullable
+    @CheckResult
+    public final CheckedTextView getTitleBackTextView() {
+        View titleBackTextView = getTitleBackView();
+        return (titleBackTextView instanceof CheckedTextView) ? (CheckedTextView) titleBackTextView : null;
+    }
+
+    /**
+     * @return 标题操作图片按钮
+     */
+    @Nullable
+    public ImageView getTitleActionImage() {
+        View titleActionImage = findViewById(R.id.titleAction);
+        return (titleActionImage instanceof ImageView) ? (ImageView) titleActionImage : null;
+    }
+
+    /**
+     * @return 标题操作图片按钮 第二个
+     */
+    @Nullable
+    @CheckResult
+    public ImageView getTitleActionImage2() {
+        View titleActionImage = findViewById(R.id.titleAction2);
+        return (titleActionImage instanceof ImageView) ? (ImageView) titleActionImage : null;
+    }
+
+    /**
+     * @return 标题操作TextView
+     */
+    @Nullable
+    @CheckResult
+    public TextView getTitleActionTextView() {
+        View titleActionText = findViewById(R.id.titleAction);
+        return (titleActionText instanceof CheckedTextView) ? (CheckedTextView) titleActionText : null;
+    }
 
     /**
      * 获取数据 标准方法 请主动调用
