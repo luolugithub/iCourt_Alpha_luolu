@@ -14,22 +14,31 @@ public class MainActivity extends BaseAppUpdateActivity {
     @Override
     protected void onResume() {
         super.onResume();
-       // checkAppUpdate(this);
+        // checkAppUpdate(this);
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        findViewById(R.id.bt_demo).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+        initView();
+    }
+
+    @Override
+    protected void initView() {
+        super.initView();
+        registerClick(R.id.bt_demo);
+        registerClick(R.id.bt_login);
+        registerClick(R.id.bt_db);
+    }
+
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.bt_demo:
                 DemoActivity.launch(getContext());
-            }
-        });
-        findViewById(R.id.bt_login).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+                break;
+            case R.id.bt_login: {
                 doOauth(SHARE_MEDIA.WEIXIN);
                 /*if (isInstall(SHARE_MEDIA.WEIXIN)) {
                     doOauth(SHARE_MEDIA.WEIXIN);
@@ -37,14 +46,13 @@ public class MainActivity extends BaseAppUpdateActivity {
                     showTopSnackBar(R.string.umeng_wexin_uninstalled);
                 }*/
             }
-        });
-        findViewById(R.id.bt_db).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+            break;
+            case R.id.bt_db:
                 DemoRealmActivity.launch(getActivity());
-            }
-        });
+                break;
+            default:
+                super.onClick(v);
+                break;
+        }
     }
-
-
 }

@@ -13,6 +13,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.annotation.CallSuper;
+import android.support.annotation.IdRes;
 import android.support.annotation.LayoutRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -72,9 +73,6 @@ public abstract class BaseActivity
     protected final BaseActivity getContext() {
         return this;
     }
-
-
-
 
 
     /**
@@ -183,6 +181,53 @@ public abstract class BaseActivity
     @UiThread
     protected final void showBottomSnackBar(@StringRes int resId) {
         this.showBottomSnackBar(getString(resId));
+    }
+
+
+    /**
+     * 注册事件点击监听⌚
+     *
+     * @param v
+     * @param <V>
+     * @return
+     */
+    @Nullable
+    protected final <V extends View> V registerClick(@NonNull V v) {
+        if (v != null) {
+            v.setOnClickListener(this);
+        }
+        return v;
+    }
+
+    @Nullable
+    protected final void registerClick(@IdRes int id) {
+        View viewById = findViewById(id);
+        if (viewById != null) {
+            viewById.setOnClickListener(this);
+        }
+    }
+
+    @Nullable
+    protected final void unregisterClick(@IdRes int id) {
+        View viewById = findViewById(id);
+        if (viewById != null) {
+            viewById.setOnClickListener(null);
+        }
+    }
+
+    /**
+     * 取消事件点击监听⌚
+     *
+     * @param v
+     * @param <V>
+     * @return
+     */
+    @Nullable
+    protected final <V extends View> V unregisterClick(@NonNull V v) {
+        if (v != null) {
+            v.setOnClickListener(null);
+        }
+        return v;
     }
 
     @CallSuper
