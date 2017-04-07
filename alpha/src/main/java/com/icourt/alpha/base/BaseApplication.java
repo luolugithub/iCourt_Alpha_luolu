@@ -6,6 +6,8 @@ import android.content.Context;
 import android.os.Bundle;
 import android.support.multidex.MultiDexApplication;
 
+import com.bugtags.library.Bugtags;
+import com.bugtags.library.BugtagsOptions;
 import com.icourt.alpha.BuildConfig;
 import com.icourt.alpha.http.HConst;
 import com.icourt.alpha.utils.ActivityLifecycleTaskCallbacks;
@@ -56,6 +58,22 @@ public class BaseApplication extends MultiDexApplication {
         initUMShare();
         initLogger();
         initDownloader();
+        initBugtags();
+    }
+
+    private void initBugtags() {
+        BugtagsOptions options = new BugtagsOptions.Builder()
+                .trackingCrashLog(!BuildConfig.IS_DEBUG)//是否收集crash !BuildConfig.IS_DEBUG
+                //  trackingLocation(true).//是否获取位置
+                .startAsync(true)
+                .trackingConsoleLog(true)//是否收集console log
+                .uploadDataOnlyViaWiFi(true)//wifi 上传
+                .trackingUserSteps(true)//是否收集用户操作步骤
+                //.trackingNetworkURLFilter("(.*)")//自定义网络请求跟踪的 url 规则，默认 null
+                .versionName(BuildConfig.VERSION_NAME)//自定义版本名称
+                .versionCode(BuildConfig.VERSION_CODE)//自定义版本号
+                .build();
+        Bugtags.start("10420c3f18b352cf5613d9eb786a6e09", this, Bugtags.BTGInvocationEventNone, options);
     }
 
     private void initRealm() {

@@ -26,6 +26,7 @@ public class MainActivity extends BaseAppUpdateActivity {
         registerClick(R.id.bt_demo);
         registerClick(R.id.bt_login);
         registerClick(R.id.bt_db);
+        registerClick(R.id.bt_bugs);
     }
 
     @Override
@@ -51,6 +52,9 @@ public class MainActivity extends BaseAppUpdateActivity {
             break;
             case R.id.bt_db:
                 DemoRealmActivity.launch(getActivity());
+                break;
+            case R.id.bt_bugs:
+                BugtagsDemoActivity.launch(getContext());
                 break;
             default:
                 super.onClick(v);

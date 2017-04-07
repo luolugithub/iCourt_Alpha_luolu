@@ -1,5 +1,6 @@
 apply plugin: 'com.android.application'
 apply plugin: 'realm-android'
+apply plugin: 'com.bugtags.library.plugin'
 android {
     compileSdkVersion rootProject.ext.android.compileSdkVersion
     buildToolsVersion rootProject.ext.android.buildToolsVersion
@@ -151,12 +152,21 @@ android {
     }
 }
 
+bugtags {
+    //自动上传符号表功能配置，如果需要根据 build varint 配置，请参考插件详细使用说明
+    appKey "10420c3f18b352cf5613d9eb786a6e09"
+    appSecret "b70c4385c5e9727d48ba1ee4d95c8b94"
+    mappingUploadEnabled true
+
+    //网络跟踪功能配置(企业版)
+    //trackingNetworkEnabled true
+}
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     compile rootProject.ext.dependencies.constraintLayout
     // compile rootProject.ext.dependencies.junit
     compile rootProject.ext.dependencies.multidex
-    //compile rootProject.ext.dependencies.bugtags
+    compile rootProject.ext.dependencies.bugtags
     //------------  Android support  -----------
     compile rootProject.ext.dependencies.supportV4
     compile rootProject.ext.dependencies.design
