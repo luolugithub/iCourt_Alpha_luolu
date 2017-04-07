@@ -11,17 +11,13 @@ import com.umeng.socialize.bean.SHARE_MEDIA;
 
 public class MainActivity extends BaseAppUpdateActivity {
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        // checkAppUpdate(this);
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         initView();
+        getData(true);
     }
 
     @Override
@@ -30,6 +26,12 @@ public class MainActivity extends BaseAppUpdateActivity {
         registerClick(R.id.bt_demo);
         registerClick(R.id.bt_login);
         registerClick(R.id.bt_db);
+    }
+
+    @Override
+    protected void getData(boolean isRefresh) {
+        super.getData(isRefresh);
+        checkAppUpdate(this);
     }
 
     @Override
