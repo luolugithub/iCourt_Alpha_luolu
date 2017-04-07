@@ -190,25 +190,8 @@ dependencies {
     annotationProcessor 'com.jakewharton:butterknife-compiler:8.5.1'
     compile 'com.kaopiz:kprogresshud:1.0.5'
     compile 'com.liulishuo.filedownloader:library:1.3.0'
+    compile 'q.rorbin:badgeview:1.1.0'
+    compile 'cn.finalteam:galleryfinal:1.4.8.7'
+    compile 'com.github.mcxtzhang:SuspensionIndexBar:V1.0.0'
 }
 
-
-String[] getSigningProperties(boolean isDebug) {
-    File propFile = new File('sign.properties')
-    if (propFile.exists()) {
-        def Properties props = new Properties()
-        props.load(new FileInputStream(propFile))
-        if (isDebug) {
-            def signP = new String[1];
-            signP[0] = props['DEBUG_STORE_FILE']
-            return signP
-        } else {
-            def signP = new String[4];
-            signP[0] = props['STORE_FILE']
-            signP[1] = props['STORE_PASSWORD']
-            signP[2] = props['KEY_ALIAS']
-            signP[3] = props['KEY_PASSWORD']
-            return signP
-        }
-    }
-}

@@ -34,7 +34,8 @@ import butterknife.OnClick;
 public class DemoRealmActivity extends BaseActivity implements BaseRecyclerAdapter.OnItemChildClickListener {
 
 
-    public static void launch(@NonNull Context context) {
+    public static void launch(@NonNull Context context)
+    {
         if (context == null) return;
         Intent intent = new Intent(context, DemoRealmActivity.class);
         context.startActivity(intent);

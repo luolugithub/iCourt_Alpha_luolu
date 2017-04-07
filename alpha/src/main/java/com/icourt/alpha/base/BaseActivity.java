@@ -1,55 +1,23 @@
 package com.icourt.alpha.base;
 
-import android.Manifest;
-import android.app.Activity;
-import android.app.ProgressDialog;
-import android.content.Context;
-import android.content.DialogInterface;
-import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.databinding.DataBindingUtil;
-import android.graphics.Color;
-import android.net.Uri;
-import android.os.Bundle;
-import android.os.Environment;
 import android.support.annotation.CallSuper;
+import android.support.annotation.CheckResult;
 import android.support.annotation.IdRes;
-import android.support.annotation.LayoutRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.StringRes;
 import android.support.annotation.UiThread;
-import android.support.v7.app.AlertDialog;
-import android.text.TextUtils;
 import android.view.View;
+import android.widget.TextView;
 
-import com.icourt.alpha.BuildConfig;
 import com.icourt.alpha.R;
-import com.icourt.alpha.entity.bean.AppVersionEntity;
 import com.icourt.alpha.http.AlphaApiService;
 import com.icourt.alpha.http.RetrofitServiceFactory;
-import com.icourt.alpha.http.callback.BaseCallBack;
 import com.icourt.alpha.interfaces.ProgressHUDImp;
-import com.icourt.alpha.interfaces.UpdateAppDialogNoticeImp;
-import com.icourt.alpha.interfaces.callback.AppUpdateCallBack;
 import com.icourt.alpha.utils.LogUtils;
-import com.icourt.alpha.utils.Md5Utils;
 import com.icourt.alpha.utils.SnackbarUtils;
-import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.utils.SystemUtils;
 import com.kaopiz.kprogresshud.KProgressHUD;
-import com.liulishuo.filedownloader.BaseDownloadTask;
-import com.liulishuo.filedownloader.FileDownloadListener;
-import com.liulishuo.filedownloader.FileDownloader;
-import com.liulishuo.filedownloader.exception.FileDownloadHttpException;
-import com.liulishuo.filedownloader.exception.FileDownloadOutOfSpaceException;
-
-import java.io.File;
-
-import butterknife.ButterKnife;
-import butterknife.Unbinder;
-import retrofit2.Call;
-import retrofit2.Response;
 
 /**
  * Description
@@ -85,6 +53,44 @@ public abstract class BaseActivity
             titleBack.setOnClickListener(this);
         }
     }
+
+    /**
+     * 设置页面标题 固定id R.id.titleContent
+     *
+     * @param title
+     */
+    @Override
+    public final void setTitle(CharSequence title) {
+        super.setTitle(title);
+        View titleText = findViewById(R.id.titleContent);
+        if (titleText instanceof TextView) {
+            ((TextView) titleText).setText(title);
+        }
+    }
+
+    /**
+     * @return 标题中的textView
+     */
+    @CheckResult
+    public TextView getTitleTextView() {
+        View titleText = findViewById(R.id.titleContent);
+        return (titleText instanceof TextView) ? (TextView) titleText : null;
+    }
+
+    /**
+     * 设置页面标题 固定id R.id.titleContent
+     *
+     * @param titleId
+     */
+    @Override
+    public final void setTitle(@StringRes int titleId) {
+        super.setTitle(titleId);
+        View titleText = findViewById(R.id.titleContent);
+        if (titleText instanceof TextView) {
+            ((TextView) titleText).setText(getString(titleId));
+        }
+    }
+
 
     /**
      * 获取数据 标准方法 请主动调用

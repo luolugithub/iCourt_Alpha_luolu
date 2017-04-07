@@ -4,6 +4,8 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
+    <include layout="@layout/layout_title_type_1" />
+
     <com.icourt.alpha.view.xrefreshlayout.RefreshaLayout
         android:id="@+id/xrefreshview"
         android:layout_width="match_parent"

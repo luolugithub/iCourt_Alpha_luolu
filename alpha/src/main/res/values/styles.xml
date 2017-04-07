@@ -9,11 +9,13 @@
         <item name="colorAccent">@color/colorAccent
         </item>                    <!-- 选中[checkbox选中颜色，editxtext指示器颜色]颜色 -->
         <item name="android:textColorPrimary">@color/textColorPrimary</item>  <!-- 主体文字颜色 -->
+        <item name="android:textSize">@dimen/alpha_font_size_comm</item>      <!-- 主体文字大小 -->
         <item name="colorButtonNormal">@color/colorButtonNormal</item>        <!-- button颜色 -->
         <item name="colorControlNormal">@color/colorControlNormal
         </item>                               <!-- 表示CheckBox、EditText、Switch、Spinner、RadioButton等控件默认时的色调  -->
         <item name="android:windowNoTitle">true</item>
         <item name="android:windowIsTranslucent">false</item>
+        <item name="android:windowBackground">@color/alpha_background_window</item>
         <!--<item name="android:windowAnimationStyle">@style/activity_base_anim</item>-->
     </style>
 

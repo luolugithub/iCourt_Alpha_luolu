@@ -3,7 +3,7 @@
     <color name="colorPrimary">#ed6c00</color>
     <color name="colorPrimaryDark">#BFed6c00</color>
     <color name="colorAccent">#17AF6C</color>
-    <color name="textColorPrimary">@android:color/black</color>
+    <color name="textColorPrimary">#FF4A4A4A</color>
     <color name="colorButtonNormal">#ed6c00</color>
     <color name="colorControlNormal">#ed6c00</color>
 

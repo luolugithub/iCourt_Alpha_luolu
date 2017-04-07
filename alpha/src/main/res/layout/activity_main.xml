@@ -7,11 +7,13 @@
     tools:context="com.icourt.alpha.activity.MainActivity">
 
     <LinearLayout
-        android:layout_width="368dp"
-        android:layout_height="551dp"
+        android:layout_width="584dp"
+        android:layout_height="871dp"
         android:orientation="vertical"
-        tools:layout_editor_absoluteX="8dp"
-        tools:layout_editor_absoluteY="8dp">
+        tools:layout_editor_absoluteY="8dp"
+        tools:layout_editor_absoluteX="8dp">
+
+        <include layout="@layout/layout_title_type_1" />
 
         <Button
             android:id="@+id/bt_demo"

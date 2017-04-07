@@ -3,6 +3,8 @@
     <item name="titleView" type="id"></item>           <!-- 标题布局 -->
     <item name="titleBack" type="id"></item>           <!-- 标题返回 -->
     <item name="titleContent" type="id"></item>        <!-- 标题内容 -->
+    <item name="titleAction" type="id"></item>         <!-- 标题右边操作按钮/图片 -->
+    <item name="titleAction2" type="id"></item>         <!-- 标题右边第二个操作按钮/图片 -->
     <item name="contentEmptyText" type="id"></item>    <!-- 内容为空 -->
 
 </resources>
