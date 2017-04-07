@@ -163,7 +163,7 @@ bugtags {
 }
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
-    compile rootProject.ext.dependencies.constraintLayout
+    //compile rootProject.ext.dependencies.constraintLayout
     // compile rootProject.ext.dependencies.junit
     compile rootProject.ext.dependencies.multidex
     compile rootProject.ext.dependencies.bugtags
