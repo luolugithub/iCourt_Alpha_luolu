@@ -23,7 +23,7 @@ import java.util.Map;
 /**
  * ClassName JsonUtils
  * Description  json处理工具类，暂时核心封装Gson解析方式
- * Company
+ * Company icourt
  * author  youxuan  E-mail:xuanyouwu@163.com
  * date 创建时间：2015/6/17 9:43
  * version

@@ -4,7 +4,7 @@ import android.webkit.JavascriptInterface;
 
 /**
  * Description  js分享接口定义
- * Company Beijing guokeyuzhou
+ * Company Beijing icourt
  * author  youxuan  E-mail:xuanyouwu@163.com
  * date createTime：17/2/4
  * version

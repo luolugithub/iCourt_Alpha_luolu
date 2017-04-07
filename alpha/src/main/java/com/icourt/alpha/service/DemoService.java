@@ -7,7 +7,7 @@ import android.support.annotation.Nullable;
 
 /**
  * Description
- * Company Beijing guokeyuzhou
+ * Company Beijing icourt
  * author  youxuan  E-mail:xuanyouwu@163.com
  * date createTime：17/3/29
  * version

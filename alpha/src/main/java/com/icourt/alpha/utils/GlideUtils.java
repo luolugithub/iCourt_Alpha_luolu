@@ -15,7 +15,7 @@ import com.icourt.alpha.R;
 /**
  * Description
  * Glide 工具类
- * Company Beijing
+ * Company Beijing icourt
  * author  youxuan  E-mail:xuanyouwu@163.com
  * date createTime：16/7/11
  * version

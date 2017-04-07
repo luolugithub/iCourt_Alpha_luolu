@@ -10,7 +10,7 @@ import com.icourt.alpha.constants.Const;
 
 /**
  * Description
- * Company Beijing guokeyuzhou
+ * Company Beijing icourt
  * author  youxuan  E-mail:xuanyouwu@163.com
  * date createTime：16/7/3
  * version

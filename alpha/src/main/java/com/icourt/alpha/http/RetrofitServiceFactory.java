@@ -2,7 +2,11 @@ package com.icourt.alpha.http;
 
 
 /**
- * Created by Administrator on 2016/4/27.
+ * Description
+ * Company Beijing icourt
+ * author  youxuan  E-mail:xuanyouwu@163.com
+ * date createTime：17/3/29
+ * version
  */
 public class RetrofitServiceFactory {
 

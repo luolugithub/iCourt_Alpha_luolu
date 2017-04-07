@@ -13,7 +13,7 @@ import com.icourt.alpha.R;
 
 /**
  * Description snackBar提示工具类
- * Company Beijing guokeyuzhou
+ * Company Beijing icourt
  * author  youxuan  E-mail:xuanyouwu@163.com
  * date createTime：16/6/21
  * version

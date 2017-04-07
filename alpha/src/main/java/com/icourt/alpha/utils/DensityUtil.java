@@ -4,7 +4,7 @@ import android.content.Context;
 
 /**
  * Description 单位换算工具
- * Company Beijing guokeyuzhou
+ * Company Beijing icourt
  * author  youxuan  E-mail:xuanyouwu@163.com
  * date createTime：16/6/23
  * version

@@ -2,7 +2,7 @@ package com.icourt.alpha.constants;
 
 /**
  * Description 常量配置定义
- * Company Beijing guokeyuzhou
+ * Company Beijing icourt
  * author  youxuan  E-mail:xuanyouwu@163.com
  * date createTime：17/3/29
  * version

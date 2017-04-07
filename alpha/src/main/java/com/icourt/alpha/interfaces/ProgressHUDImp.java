@@ -5,7 +5,7 @@ import android.support.annotation.StringRes;
 
 /**
  * Description  加载对话框定义
- * Company Beijing
+ * Company Beijing icourt
  * author  youxuan  E-mail:xuanyouwu@163.com
  * date createTime：17/2/4
  * version

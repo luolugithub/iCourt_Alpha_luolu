@@ -18,9 +18,12 @@ import okhttp3.Response;
 import okhttp3.logging.HttpLoggingInterceptor;
 
 /**
- * Created by asange on 2017/4/1.
+ * Description
+ * Company Beijing icourt
+ * author  youxuan  E-mail:xuanyouwu@163.com
+ * date createTime：17/3/29
+ * version
  */
-
 public class AlphaClient extends SimpleClient implements HttpLoggingInterceptor.Logger, Interceptor {
     private static AlphaClient mInstance;
 
