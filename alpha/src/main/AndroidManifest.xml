@@ -66,6 +66,9 @@
             android:name=".activity.AboutActivity"
             android:screenOrientation="portrait" />
 
+        <activity
+            android:name=".activity.UpdatePhoneOrMailActivity"
+            android:screenOrientation="portrait" />
 
         <!-- 网易云信appkey配置 -->
         <meta-data
@@ -97,5 +100,8 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/provider_paths" />
         </provider>
+
+
+
     </application>
 </manifest>

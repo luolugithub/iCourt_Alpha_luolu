@@ -42,6 +42,18 @@
         android:layout_height="wrap_content"
         android:text="关于" />
 
+    <Button
+        android:id="@+id/bt_phone"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="电话" />
+
+    <Button
+        android:id="@+id/bt_email"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="邮箱" />
+
     <Switch
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />

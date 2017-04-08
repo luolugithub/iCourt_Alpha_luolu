@@ -7,6 +7,7 @@ import java.util.List;
 
 import retrofit2.Call;
 import retrofit2.http.GET;
+import retrofit2.http.POST;
 import retrofit2.http.Query;
 import retrofit2.http.Url;
 
@@ -52,5 +53,23 @@ public interface AlphaApiService {
      */
     @GET("api/v1/auth/groups")
     Call<ResEntity<List<String>>> getPageData(@Query("id") int id);
+
+    /**
+     * 修改律师电话信息
+     *
+     * @param phone
+     * @return
+     */
+    @POST("api/v1/auth/update")
+    Call<ResEntity<String>> updateUserPhone(@Query("phone") String phone);
+
+    /**
+     * 修改律师邮箱信息
+     *
+     * @param email
+     * @return
+     */
+    @POST("api/v1/auth/update")
+    Call<ResEntity<String>> updateUserEmail(@Query("email") String email);
 
 }

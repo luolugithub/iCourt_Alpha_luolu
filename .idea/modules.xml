@@ -4,6 +4,9 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/ICourtApplication.iml" filepath="$PROJECT_DIR$/ICourtApplication.iml" />
       <module fileurl="file://$PROJECT_DIR$/alpha/alpha.iml" filepath="$PROJECT_DIR$/alpha/alpha.iml" />
+      <module fileurl="file://$PROJECT_DIR$/alpha/alpha.iml" filepath="$PROJECT_DIR$/alpha/alpha.iml" />
+      <module fileurl="file://$PROJECT_DIR$/alpha_android_2.0.iml" filepath="$PROJECT_DIR$/alpha_android_2.0.iml" />
+      <module fileurl="file://$PROJECT_DIR$/api/api.iml" filepath="$PROJECT_DIR$/api/api.iml" />
       <module fileurl="file://$PROJECT_DIR$/api/api.iml" filepath="$PROJECT_DIR$/api/api.iml" />
     </modules>
   </component>
