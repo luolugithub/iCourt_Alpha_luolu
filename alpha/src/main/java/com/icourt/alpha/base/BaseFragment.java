@@ -1,10 +1,14 @@
 package com.icourt.alpha.base;
 
+import android.support.annotation.IdRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.StringRes;
 import android.support.annotation.UiThread;
 import android.support.v4.app.Fragment;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.ViewParent;
 
 import com.icourt.alpha.http.AlphaApiService;
 import com.icourt.alpha.http.RetrofitServiceFactory;
@@ -23,7 +27,100 @@ import com.kaopiz.kprogresshud.KProgressHUD;
 
 public class BaseFragment
         extends Fragment
-        implements ProgressHUDImp {
+        implements ProgressHUDImp
+        , View.OnClickListener {
+
+
+    /**
+     * 如果当前的父亲不是手机窗体上的时候,移除掉
+     *
+     * @param v
+     * @param <V>
+     * @return
+     */
+    protected final <V extends View> V removeParent(@NonNull V v) {
+        if (v != null) {
+            ViewParent parent = v.getParent();
+            if (parent != null && parent instanceof ViewGroup) {
+                ViewGroup group = (ViewGroup) parent;
+                group.removeView(v);
+            }
+        }
+        return v;
+    }
+
+    protected void initView() {
+
+    }
+
+    /**
+     * 获取数据 标准方法 请主动调用
+     *
+     * @param isRefresh 是否刷新
+     */
+    protected void getData(boolean isRefresh) {
+
+    }
+
+    /**
+     * 注册事件点击监听⌚
+     *
+     * @param v
+     * @param <V>
+     * @return
+     */
+    @Nullable
+    protected final <V extends View> V registerClick(@NonNull V v) {
+        if (v != null) {
+            v.setOnClickListener(this);
+        }
+        return v;
+    }
+
+    @Nullable
+    @Override
+    public View getView() {
+        return super.getView();
+    }
+
+
+    /**
+     * 是否应该填充布局
+     *
+     * @return
+     */
+    protected final boolean shouldAddView() {
+        return getView() == null;
+    }
+
+    /**
+     * 查找控件
+     *
+     * @param id
+     * @return
+     */
+    @Nullable
+    protected View findViewById(@IdRes int id) {
+        return getView() != null ? getView().findViewById(id) : null;
+    }
+
+    @Nullable
+    protected final void registerClick(@IdRes int id) {
+        View viewById = findViewById(id);
+        if (viewById != null) {
+            viewById.setOnClickListener(this);
+        }
+    }
+
+    @Nullable
+    protected final void unregisterClick(@IdRes int id) {
+        View viewById = findViewById(id);
+        if (viewById != null) {
+            viewById.setOnClickListener(null);
+        }
+    }
+
+
     /**
      * 接口 http通信
      *
@@ -152,5 +249,10 @@ public class BaseFragment
      */
     public void log(String log) {
         LogUtils.d(log);
+    }
+
+    @Override
+    public void onClick(View v) {
+
     }
 }
