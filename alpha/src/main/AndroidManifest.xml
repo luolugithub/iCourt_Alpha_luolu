@@ -62,6 +62,9 @@
         <activity
             android:name=".activity.BugtagsDemoActivity"
             android:screenOrientation="portrait" />
+        <activity
+            android:name=".activity.AboutActivity"
+            android:screenOrientation="portrait" />
 
 
         <!-- 网易云信appkey配置 -->

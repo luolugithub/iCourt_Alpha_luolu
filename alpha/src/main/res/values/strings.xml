@@ -1,6 +1,11 @@
 <resources>
     <string name="app_name">Alpha</string>
+    <string name="icourt_name">北京新橙科技有限公司</string>
     <string name="dialog_loading_ch"> 加载中...</string>
     <string name="umeng_auth">授权请求中...</string>
     <string name="umeng_wexin_uninstalled">请安装微信</string>
+
+
+    <string name="my_center_check_update_text">检查更新</string>
+    <string name="my_center_have_new_version_text">有新版本,点此更新</string>
 </resources>

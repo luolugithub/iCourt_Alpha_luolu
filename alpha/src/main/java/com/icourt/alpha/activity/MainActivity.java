@@ -27,12 +27,13 @@ public class MainActivity extends BaseAppUpdateActivity {
         registerClick(R.id.bt_login);
         registerClick(R.id.bt_db);
         registerClick(R.id.bt_bugs);
+        registerClick(R.id.bt_about);
     }
 
     @Override
     protected void getData(boolean isRefresh) {
         super.getData(isRefresh);
-        checkAppUpdate(this);
+       // checkAppUpdate(getContext());
     }
 
     @Override
@@ -55,6 +56,9 @@ public class MainActivity extends BaseAppUpdateActivity {
                 break;
             case R.id.bt_bugs:
                 BugtagsDemoActivity.launch(getContext());
+                break;
+            case R.id.bt_about:
+                AboutActivity.launch(getContext());
                 break;
             default:
                 super.onClick(v);

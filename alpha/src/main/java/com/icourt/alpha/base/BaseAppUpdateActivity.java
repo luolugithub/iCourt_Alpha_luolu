@@ -64,13 +64,12 @@ public class BaseAppUpdateActivity extends BaseUmengActivity implements
     @Override
     public final void checkAppUpdate(@NonNull final Context context) {
         if (context == null) return;
-        getApi().getNewVersionAppInfo(BuildConfig.APK_UPDATE_URL)
-                .enqueue(new AppUpdateCallBack() {
-                    @Override
-                    public void onSuccess(Call<AppVersionEntity> call, Response<AppVersionEntity> response) {
-                        showAppUpdateDialog(getActivity(), response.body());
-                    }
-                });
+        checkAppUpdate(new AppUpdateCallBack() {
+            @Override
+            public void onSuccess(Call<AppVersionEntity> call, Response<AppVersionEntity> response) {
+                showAppUpdateDialog(getActivity(), response.body());
+            }
+        });
     }
 
     @Override

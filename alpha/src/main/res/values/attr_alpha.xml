@@ -20,10 +20,11 @@
     <!-- 字体大小相对单位 为zeplin 聚合单位 [四舍五入]   -->
     <dimen name="alpha_font_size_title">17sp</dimen>            <!-- 页面标题字体大小 -->
     <dimen name="alpha_font_size_comm">16sp</dimen>             <!-- 页面普通字体大小 -->
-    <dimen name="alpha_font_size_comm_medium">14.5sp</dimen>    <!-- 页面普通小字体 -->
+    <dimen name="alpha_font_size_comm_medium">15sp</dimen>      <!-- 页面普通小字体 -->
+
     <dimen name="alpha_font_size_mini">14sp</dimen>             <!-- 页面小字体 -->
-    <dimen name="alpha_font_size_mini_medium">12sp</dimen>      <!-- 页面中等小字体 -->
-    <dimen name="alpha_font_size_mini_lowest">11sp</dimen>      <!-- 页面最小字体 -->
+    <dimen name="alpha_font_size_mini_medium">13sp</dimen>      <!-- 页面中等小字体 -->
+    <dimen name="alpha_font_size_mini_lowest">12sp</dimen>      <!-- 页面最小字体 -->
 
     <!-- 布局的内容边距 常见左边距;右边距; -->
     <dimen name="alpha_padding_content">11.5dp</dimen>          <!-- 内容边距 -->
