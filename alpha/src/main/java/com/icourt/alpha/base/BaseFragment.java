@@ -77,6 +77,11 @@ public class BaseFragment
         return v;
     }
 
+    /**
+     * 获取fragment的根布局
+     *
+     * @return
+     */
     @Nullable
     @Override
     public View getView() {

@@ -1,18 +1,16 @@
 package com.icourt.alpha.base;
 
-import android.app.Activity;
-import android.app.Application;
 import android.content.Context;
-import android.os.Bundle;
+import android.graphics.Color;
 import android.support.multidex.MultiDexApplication;
 
 import com.bugtags.library.Bugtags;
 import com.bugtags.library.BugtagsOptions;
 import com.icourt.alpha.BuildConfig;
+import com.icourt.alpha.R;
 import com.icourt.alpha.http.HConst;
 import com.icourt.alpha.utils.ActivityLifecycleTaskCallbacks;
-import com.icourt.alpha.utils.AppManager;
-import com.icourt.alpha.utils.LogUtils;
+import com.icourt.alpha.utils.GlideImageLoader;
 import com.icourt.alpha.utils.logger.AndroidLogAdapter;
 import com.icourt.alpha.utils.logger.LogLevel;
 import com.icourt.alpha.utils.logger.Logger;
@@ -27,6 +25,11 @@ import com.umeng.socialize.utils.Log;
 import java.net.Proxy;
 import java.util.concurrent.TimeUnit;
 
+import cn.finalteam.galleryfinal.CoreConfig;
+import cn.finalteam.galleryfinal.FunctionConfig;
+import cn.finalteam.galleryfinal.GalleryFinal;
+import cn.finalteam.galleryfinal.ImageLoader;
+import cn.finalteam.galleryfinal.ThemeConfig;
 import io.realm.Realm;
 import okhttp3.OkHttpClient;
 
@@ -59,22 +62,9 @@ public class BaseApplication extends MultiDexApplication {
         initLogger();
         initDownloader();
         initBugtags();
+        initGalleryFinal();
     }
 
-    private void initBugtags() {
-        BugtagsOptions options = new BugtagsOptions.Builder()
-                .trackingCrashLog(!BuildConfig.IS_DEBUG)//是否收集crash !BuildConfig.IS_DEBUG
-                //  trackingLocation(true).//是否获取位置
-                .startAsync(true)
-                .trackingConsoleLog(true)//是否收集console log
-                .uploadDataOnlyViaWiFi(true)//wifi 上传
-                .trackingUserSteps(true)//是否收集用户操作步骤
-                //.trackingNetworkURLFilter("(.*)")//自定义网络请求跟踪的 url 规则，默认 null
-                .versionName(BuildConfig.VERSION_NAME)//自定义版本名称
-                .versionCode(BuildConfig.VERSION_CODE)//自定义版本号
-                .build();
-        Bugtags.start("10420c3f18b352cf5613d9eb786a6e09", this, Bugtags.BTGInvocationEventNone, options);
-    }
 
     private void initRealm() {
         Realm.init(this);
@@ -145,5 +135,50 @@ public class BaseApplication extends MultiDexApplication {
                 });
 
     }
+
+    /**
+     * 配置galleryfinal
+     */
+    private void initGalleryFinal() {
+        ThemeConfig themeConfig = new ThemeConfig.Builder()
+                .setTitleBarTextColor(getResources().getColor(R.color.alpha_font_color_black))
+                .setTitleBarBgColor(Color.WHITE)
+                .setTitleBarIconColor(getResources().getColor(R.color.alpha_font_color_orange))
+                .build();
+
+        FunctionConfig.Builder functionConfigBuilder = new FunctionConfig.Builder();
+        ImageLoader imageLoader = new GlideImageLoader();
+        functionConfigBuilder.setMutiSelectMaxSize(9);
+        functionConfigBuilder.setEnableEdit(true);
+        functionConfigBuilder.setEnableRotate(true);
+        functionConfigBuilder.setRotateReplaceSource(true);
+        functionConfigBuilder.setEnableCrop(true);
+        functionConfigBuilder.setCropSquare(true);
+        functionConfigBuilder.setEnableCamera(true);
+        functionConfigBuilder.setEnablePreview(true);
+
+        CoreConfig coreConfig = new CoreConfig.Builder(this, imageLoader, themeConfig)
+                .setFunctionConfig(functionConfigBuilder.build())
+                .setPauseOnScrollListener(null)
+                .setNoAnimcation(false)
+                .build();
+        GalleryFinal.init(coreConfig);
+    }
+
+    private void initBugtags() {
+        BugtagsOptions options = new BugtagsOptions.Builder()
+                .trackingCrashLog(!BuildConfig.IS_DEBUG)//是否收集crash !BuildConfig.IS_DEBUG
+                //  trackingLocation(true).//是否获取位置
+                .startAsync(true)
+                .trackingConsoleLog(true)//是否收集console log
+                .uploadDataOnlyViaWiFi(true)//wifi 上传
+                .trackingUserSteps(true)//是否收集用户操作步骤
+                //.trackingNetworkURLFilter("(.*)")//自定义网络请求跟踪的 url 规则，默认 null
+                .versionName(BuildConfig.VERSION_NAME)//自定义版本名称
+                .versionCode(BuildConfig.VERSION_CODE)//自定义版本号
+                .build();
+        Bugtags.start("10420c3f18b352cf5613d9eb786a6e09", this, Bugtags.BTGInvocationEventNone, options);
+    }
+
 
 }
