@@ -1,14 +1,12 @@
 package com.icourt.alpha.http;
 
-import com.google.gson.JsonElement;
-import com.icourt.alpha.BuildConfig;
 import com.icourt.alpha.entity.bean.AppVersionEntity;
-import com.icourt.alpha.http.callback.BaseCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
+
+import java.util.List;
 
 import retrofit2.Call;
 import retrofit2.http.GET;
-import retrofit2.http.Path;
 import retrofit2.http.Query;
 import retrofit2.http.Url;
 
@@ -37,11 +35,22 @@ public interface AlphaApiService {
             @Url String url);
 
     /**
-     * 获取组详情
+     * demo 数据获取[非分页]
      *
-     * @param id 组id
+     * @param id
      * @return
      */
     @GET("api/v1/auth/groups")
-    Call<ResEntity<JsonElement>> getGroups(@Query("id") int id);
+    Call<ResEntity<String>> getData(@Query("id") int id);
+
+
+    /**
+     * demo 分页数据获取
+     *
+     * @param id
+     * @return
+     */
+    @GET("api/v1/auth/groups")
+    Call<ResEntity<List<String>>> getPageData(@Query("id") int id);
+
 }

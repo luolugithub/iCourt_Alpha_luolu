@@ -1,18 +1,12 @@
 package com.icourt.alpha.base;
 
-import android.os.Bundle;
 import android.support.annotation.CallSuper;
 import android.support.annotation.CheckResult;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.view.Menu;
-import android.view.View;
 
 import com.andview.refreshview.XRefreshView;
 import com.icourt.alpha.adapter.recycleradapter.BaseArrayRecyclerAdapter;
 import com.icourt.alpha.adapter.recycleradapter.adapterObserver.DataChangeAdapterObserver;
-import com.icourt.alpha.http.callback.SimplePageCallBack;
-import com.icourt.alpha.http.httpmodel.ResPageEntity;
 import com.icourt.alpha.view.xrefreshlayout.RefreshaLayout;
 
 import retrofit2.Call;
@@ -60,7 +54,7 @@ public abstract class BaseRecyclerActivity<T> extends BaseActivity implements XR
      *
      * @param isRefresh 是否刷新 true 将会清除adapter中的集合
      * @param call
-     */
+     *//*
     public void getPageData(final boolean isRefresh, @NonNull Call<ResPageEntity<T>> call) {
         if (call != null && !call.isExecuted()) {
             call.enqueue(new SimplePageCallBack<T>() {
@@ -88,7 +82,7 @@ public abstract class BaseRecyclerActivity<T> extends BaseActivity implements XR
                 }
             });
         }
-    }
+    }*/
 
     @Override
     public void onRefresh() {

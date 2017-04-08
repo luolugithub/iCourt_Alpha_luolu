@@ -9,7 +9,6 @@ import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 
-import com.google.gson.JsonElement;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.DemoAdapter;
 import com.icourt.alpha.adapter.recycleradapter.BaseArrayRecyclerAdapter;
@@ -112,10 +111,18 @@ public class DemoActivity extends BaseRecyclerActivity<com.icourt.alpha.entity.b
 
 
     public void testhttp() {
-        getApi().getGroups(5)
-                .enqueue(new SimpleCallBack<JsonElement>() {
+        getApi().getData(5)
+                .enqueue(new SimpleCallBack<String>() {
                     @Override
-                    public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
+                    public void onSuccess(Call<ResEntity<String>> call, Response<ResEntity<String>> response) {
+
+                    }
+                });
+
+        getApi().getPageData(6)
+                .enqueue(new SimpleCallBack<List<String>>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<List<String>>> call, Response<ResEntity<List<String>>> response) {
 
                     }
                 });

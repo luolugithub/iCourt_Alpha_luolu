@@ -1,6 +1,8 @@
 package com.icourt.alpha.http.httpmodel;
 
+import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
+import com.icourt.alpha.utils.BooleanTypeAdapter;
 
 /**
  * @author xuanyouwu
@@ -12,17 +14,26 @@ import com.google.gson.annotations.SerializedName;
  */
 
 public class ResEntity<T> {
-
     private static final String FIELD_SUCCEED = "succeed";
     private static final String FIELD_MESSAGE = "message";
     private static final String FIELD_RESULT = "result";
 
-    @SerializedName(FIELD_MESSAGE)
+    @SerializedName(value = FIELD_MESSAGE, alternate = {"resultMess"})
     public String message;
 
-    @SerializedName(FIELD_SUCCEED)
+    @JsonAdapter(BooleanTypeAdapter.class)
+    @SerializedName(value = FIELD_SUCCEED, alternate = {"resultCode"})
     public boolean succeed;
 
-    @SerializedName(FIELD_RESULT)
+    @SerializedName(value = FIELD_RESULT, alternate = {"data"})
     public T result;
+
+    @Override
+    public String toString() {
+        return "ResEntity{" +
+                "message='" + message + '\'' +
+                ", succeed=" + succeed +
+                ", result=" + result +
+                '}';
+    }
 }
