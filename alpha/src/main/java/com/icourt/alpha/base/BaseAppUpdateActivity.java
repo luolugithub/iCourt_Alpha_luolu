@@ -4,9 +4,7 @@ import android.Manifest;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.net.Uri;
 import android.os.Environment;
 import android.support.annotation.CallSuper;
 import android.support.annotation.NonNull;
@@ -18,6 +16,7 @@ import com.icourt.alpha.entity.bean.AppVersionEntity;
 import com.icourt.alpha.http.callback.BaseCallBack;
 import com.icourt.alpha.interfaces.UpdateAppDialogNoticeImp;
 import com.icourt.alpha.interfaces.callback.AppUpdateCallBack;
+import com.icourt.alpha.utils.ApkUtils;
 import com.icourt.alpha.utils.Md5Utils;
 import com.icourt.alpha.utils.StringUtils;
 import com.liulishuo.filedownloader.BaseDownloadTask;
@@ -242,12 +241,7 @@ public class BaseAppUpdateActivity extends BaseUmengActivity implements
      * @param apkFile
      */
     protected void installApk(File apkFile) {
-        if (apkFile != null && apkFile.exists()) {
-            Intent intent = new Intent(Intent.ACTION_VIEW);
-            intent.setDataAndType(Uri.fromFile(apkFile),
-                    "application/vnd.android.package-archive");
-            getContext().startActivity(intent);
-        }
+        ApkUtils.installApk(getContext(), apkFile);
     }
 
     private void pauseDownloadApk() {
