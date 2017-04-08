@@ -44,11 +44,16 @@ public class DemoActivity extends BaseRecyclerActivity<com.icourt.alpha.entity.b
     RefreshaLayout xrefreshview;
     DemoAdapter demoAdapter;
 
+    /**
+     * @param context
+     */
     public static void launch(@NonNull Context context) {
         if (context == null) return;
         Intent intent = new Intent(context, DemoActivity.class);
+        intent.setAction("getCourse");
         context.startActivity(intent);
     }
+
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -117,6 +122,7 @@ public class DemoActivity extends BaseRecyclerActivity<com.icourt.alpha.entity.b
                     public void onSuccess(Call<ResEntity<String>> call, Response<ResEntity<String>> response) {
 
                     }
+
                 });
 
         getApi().getPageData(6)

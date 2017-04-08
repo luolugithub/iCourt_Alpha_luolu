@@ -54,6 +54,9 @@
             </intent-filter>
         </activity>
         <activity
+            android:name=".activity.TestActivity"
+            android:screenOrientation="portrait" />
+        <activity
             android:name=".activity.DemoActivity"
             android:screenOrientation="portrait" />
         <activity
@@ -91,6 +94,10 @@
             android:exported="true"
             android:screenOrientation="portrait"
             android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+        <activity
+            android:name=".activity.TestActivity"
+            android:screenOrientation="portrait" />
+
         <provider
             android:name="android.support.v4.content.FileProvider"
             android:authorities="com.icourt.alpha.provider"

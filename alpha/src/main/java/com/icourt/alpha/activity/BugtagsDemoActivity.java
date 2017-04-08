@@ -1,6 +1,5 @@
 package com.icourt.alpha.activity;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -45,6 +44,7 @@ public class BugtagsDemoActivity extends BaseActivity {
         setContentView(R.layout.activity_bugtags);
         ButterKnife.bind(this);
         initView();
+        DemoActivity.launch(getContext());
     }
 
     @Override

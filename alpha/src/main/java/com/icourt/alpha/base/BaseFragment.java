@@ -30,6 +30,7 @@ public class BaseFragment
         implements ProgressHUDImp
         , View.OnClickListener {
 
+    protected View rootView;
 
     /**
      * 如果当前的父亲不是手机窗体上的时候,移除掉
@@ -61,6 +62,7 @@ public class BaseFragment
     protected void getData(boolean isRefresh) {
 
     }
+
 
     /**
      * 注册事件点击监听⌚

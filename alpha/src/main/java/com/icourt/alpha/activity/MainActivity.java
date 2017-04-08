@@ -1,76 +1,149 @@
 package com.icourt.alpha.activity;
 
 import android.os.Bundle;
+import android.support.annotation.IdRes;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
+import android.util.SparseArray;
 import android.view.View;
+import android.widget.FrameLayout;
+import android.widget.ImageButton;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 
 import com.icourt.alpha.R;
 import com.icourt.alpha.base.BaseAppUpdateActivity;
-import com.umeng.socialize.bean.SHARE_MEDIA;
+import com.icourt.alpha.fragment.TabFindFragment;
+import com.icourt.alpha.fragment.TabMineFragment;
+import com.icourt.alpha.fragment.TabNewsFragment;
+import com.icourt.alpha.fragment.TabTaskFragment;
 
-public class MainActivity extends BaseAppUpdateActivity {
+import butterknife.BindView;
+import butterknife.ButterKnife;
+import butterknife.OnClick;
 
+public class MainActivity extends BaseAppUpdateActivity implements RadioGroup.OnCheckedChangeListener {
+
+
+    @BindView(R.id.main_fl_content)
+    FrameLayout mainFlContent;
+    @BindView(R.id.tab_news)
+    RadioButton tabNews;
+    @BindView(R.id.tab_task)
+    RadioButton tabTask;
+    @BindView(R.id.tab_voice)
+    ImageButton tabVoice;
+    @BindView(R.id.tab_find)
+    RadioButton tabFind;
+    @BindView(R.id.tab_mine)
+    RadioButton tabMine;
+    @BindView(R.id.rg_main_tab)
+    RadioGroup rgMainTab;
+    private Fragment currentFragment;
+    private final SparseArray<Fragment> fragmentSparseArray = new SparseArray<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        ButterKnife.bind(this);
         initView();
-        getData(true);
     }
 
     @Override
     protected void initView() {
         super.initView();
-        setTitle("alpha");
-        unregisterClick(R.id.titleBack);
-        registerClick(R.id.bt_demo);
-        registerClick(R.id.bt_login);
-        registerClick(R.id.bt_db);
-        registerClick(R.id.bt_bugs);
-        registerClick(R.id.bt_about);
-        registerClick(R.id.bt_phone);
-        registerClick(R.id.bt_email);
+        rgMainTab.setOnCheckedChangeListener(this);
+        addOrShowFragment(getTabFragment(rgMainTab.getCheckedRadioButtonId()));
     }
 
     @Override
-    protected void getData(boolean isRefresh) {
-        super.getData(isRefresh);
-        // checkAppUpdate(getContext());
+    public void onCheckedChanged(RadioGroup group, @IdRes int checkedId) {
+        addOrShowFragment(getTabFragment(checkedId));
     }
 
+    @OnClick({R.id.tab_voice})
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
-            case R.id.bt_demo:
-                DemoActivity.launch(getContext());
-                break;
-            case R.id.bt_login: {
-                doOauth(SHARE_MEDIA.WEIXIN);
-                /*if (isInstall(SHARE_MEDIA.WEIXIN)) {
-                    doOauth(SHARE_MEDIA.WEIXIN);
-                } else {
-                    showTopSnackBar(R.string.umeng_wexin_uninstalled);
-                }*/
-            }
-            break;
-            case R.id.bt_db:
-                DemoRealmActivity.launch(getActivity());
-                break;
-            case R.id.bt_bugs:
-                BugtagsDemoActivity.launch(getContext());
-                break;
-            case R.id.bt_about:
-                AboutActivity.launch(getContext());
-                break;
-            case R.id.bt_phone:
-                UpdatePhoneOrMailActivity.launch(this, UpdatePhoneOrMailActivity.UPDATE_PHONE_TYPE, "18888887777");
-                break;
-            case R.id.bt_email:
-                UpdatePhoneOrMailActivity.launch(this, UpdatePhoneOrMailActivity.UPDATE_EMAIL_TYPE, "zhaolu@icourt.cc");
+            case R.id.tab_voice:
+                showTopSnackBar("语音....");
                 break;
             default:
                 super.onClick(v);
                 break;
         }
     }
+
+    /**
+     * 获取对应fragment
+     *
+     * @param checkedId
+     * @return
+     */
+    private Fragment getTabFragment(@IdRes int checkedId) {
+        Fragment fragment = fragmentSparseArray.get(checkedId);
+        if (fragment == null) {
+            switch (checkedId) {
+                case R.id.tab_news:
+                    putTabFragment(checkedId, TabNewsFragment.newInstance());
+                    break;
+                case R.id.tab_task:
+                    putTabFragment(checkedId, TabTaskFragment.newInstance());
+                    break;
+                case R.id.tab_find:
+                    putTabFragment(checkedId, TabFindFragment.newInstance());
+                    break;
+                case R.id.tab_mine:
+                    putTabFragment(checkedId, TabMineFragment.newInstance());
+                    break;
+            }
+            return fragmentSparseArray.get(checkedId);
+        } else {
+            return fragment;
+        }
+    }
+
+    /**
+     * 存放对应fragment
+     *
+     * @param checkedId
+     * @param fragment
+     */
+    private void putTabFragment(@IdRes int checkedId, Fragment fragment) {
+        fragmentSparseArray.put(checkedId, fragment);
+    }
+
+
+    /**
+     * 添加或者显示碎片
+     *
+     * @param fragment
+     */
+    private void addOrShowFragment(Fragment fragment) {
+        if (fragment == null) return;
+        if (fragment == currentFragment) return;
+        FragmentManager fm = getSupportFragmentManager();
+        FragmentTransaction transaction = fm.beginTransaction();
+        if (!fragment.isAdded()) { // 如果当前fragment添加，则添加到Fragment管理器中
+            if (currentFragment == null) {
+                transaction
+                        .add(R.id.main_fl_content, fragment)
+                        .commit();
+            } else {
+                transaction.hide(currentFragment)
+                        .add(R.id.main_fl_content, fragment)
+                        .commit();
+            }
+        } else {
+            transaction
+                    .hide(currentFragment)
+                    .show(fragment)
+                    .commit();
+        }
+        currentFragment = fragment;
+    }
+
+
 }

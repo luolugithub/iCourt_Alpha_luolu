@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RadioGroup xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/rg_main_tab"
+    android:layout_width="match_parent"
+    android:layout_height="50dp"
+    android:background="@android:color/white"
+    android:elevation="1dp"
+    android:gravity="center_vertical"
+    android:orientation="horizontal">
+
+    <RadioButton
+        android:id="@+id/tab_news"
+        style="@style/mainPageRadioButtonStyple"
+        android:layout_weight="1"
+        android:checked="true"
+        android:drawableTop="@drawable/tab_news"
+        android:text="消息" />
+
+    <RadioButton
+        android:id="@+id/tab_task"
+        style="@style/mainPageRadioButtonStyple"
+        android:layout_weight="1"
+        android:drawableTop="@drawable/tab_task"
+        android:text="任务" />
+
+
+    <ImageButton
+        android:id="@+id/tab_voice"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="-8dp"
+        android:layout_weight="1"
+        android:background="@android:color/white"
+        android:scaleType="fitCenter"
+        android:src="@mipmap/tab_voice" />
+
+    <RadioButton
+        android:id="@+id/tab_find"
+        style="@style/mainPageRadioButtonStyple"
+        android:layout_weight="1"
+        android:drawableTop="@drawable/tab_find"
+        android:text="探索" />
+
+    <RadioButton
+        android:id="@+id/tab_mine"
+        style="@style/mainPageRadioButtonStyple"
+        android:layout_weight="1"
+        android:drawableTop="@drawable/tab_mine"
+        android:text="我的" />
+
+</RadioGroup>
