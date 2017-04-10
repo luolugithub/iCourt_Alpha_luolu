@@ -7,16 +7,21 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.StringRes;
 import android.support.annotation.UiThread;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.view.View;
 import android.widget.CheckedTextView;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.icourt.alpha.R;
+import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.icourt.alpha.http.AlphaApiService;
 import com.icourt.alpha.http.RetrofitServiceFactory;
 import com.icourt.alpha.interfaces.ProgressHUDImp;
 import com.icourt.alpha.utils.LogUtils;
+import com.icourt.alpha.utils.LoginInfoUtils;
 import com.icourt.alpha.utils.SnackbarUtils;
 import com.icourt.alpha.utils.SystemUtils;
 import com.kaopiz.kprogresshud.KProgressHUD;
@@ -375,5 +380,82 @@ public abstract class BaseActivity
         return SystemUtils.isDestroyOrFinishing(BaseActivity.this);
     }
 
+
+    /**
+     * 添加或者显示碎片
+     *
+     * @param targetFragment  将要添加／显示的fragment
+     * @param currentFragment 正在显示的fragment
+     * @param containerViewId 替换的viewid
+     * @return 当前已经显示的fragment
+     */
+    protected final Fragment addOrShowFragment(@NonNull Fragment targetFragment, Fragment currentFragment, @IdRes int containerViewId) {
+        if (targetFragment == null) return currentFragment;
+        if (targetFragment == currentFragment) return currentFragment;
+        FragmentManager fm = getSupportFragmentManager();
+        FragmentTransaction transaction = fm.beginTransaction();
+        if (!targetFragment.isAdded()) { // 如果当前fragment添加，则添加到Fragment管理器中
+            if (currentFragment == null) {
+                transaction
+                        .add(containerViewId, targetFragment)
+                        .commit();
+            } else {
+                transaction.hide(currentFragment)
+                        .add(containerViewId, targetFragment)
+                        .commit();
+            }
+        } else {
+            transaction
+                    .hide(currentFragment)
+                    .show(targetFragment)
+                    .commit();
+        }
+        return targetFragment;
+    }
+
+
+    /**
+     * @return 登陆信息
+     */
+    @Nullable
+    @CheckResult
+    protected final AlphaUserInfo getLoginUserInfo() {
+        return LoginInfoUtils.getLoginUserInfo();
+    }
+
+
+    /**
+     * 清除登陆信息
+     */
+    protected final void clearLoginUserInfo() {
+        LoginInfoUtils.clearLoginUserInfo();
+    }
+
+    /**
+     * 保存登陆信息
+     *
+     * @param alphaUserInfo
+     */
+    protected final void saveLoginUserInfo(AlphaUserInfo alphaUserInfo) {
+        LoginInfoUtils.saveLoginUserInfo(alphaUserInfo);
+    }
+
+    /**
+     * @return 是否登陆
+     */
+    public boolean isUserLogin() {
+        return LoginInfoUtils.isUserLogin();
+    }
+
+    /**
+     * 获取登陆的token
+     *
+     * @return
+     */
+    @Nullable
+    @CheckResult
+    public String getUserToken() {
+        return LoginInfoUtils.getUserToken();
+    }
 
 }

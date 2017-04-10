@@ -3,6 +3,7 @@ package com.icourt.alpha.utils;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.bugtags.library.Bugtags;
 import com.icourt.alpha.BuildConfig;
 
 /**
@@ -71,6 +72,11 @@ public class LogUtils {
                 Log.d(tag, msg);
             }
         }
+    }
+
+    public static void feedToServer(String errorlog) {
+        if(TextUtils.isEmpty(errorlog)) return;
+        Bugtags.sendFeedback(errorlog);
     }
 
 }

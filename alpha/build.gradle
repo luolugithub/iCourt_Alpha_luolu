@@ -84,6 +84,12 @@ android {
             signingConfig signingConfigs.release
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
             manifestPlaceholders = [NIM_APPKEY: rootProject.ext.nimAppKey.debugAppKey]
+
+            //用正式
+            buildConfigField "String", "API_URL", rootProject.ext.alphaAPIUrl.api_url_release
+            buildConfigField "String", "APK_UPDATE_URL", rootProject.ext.alphaApkUpdateUrl.apk_update_url_release
+            manifestPlaceholders = [NIM_APPKEY: rootProject.ext.nimAppKey.releaseAppKey]
+
         }
         innertest {
             buildConfigField "boolean", "IS_DEBUG", "true"
@@ -193,5 +199,14 @@ dependencies {
     compile 'q.rorbin:badgeview:1.1.0'
     compile 'cn.finalteam:galleryfinal:1.4.8.7'
     compile 'com.github.mcxtzhang:SuspensionIndexBar:V1.0.0'
+
+    // 基础功能 (必需)
+    compile 'com.netease.nimlib:basesdk:3.2.0'
+    // 音视频需要
+//    compile 'com.netease.nimlib:avchat:3.2.0'
+    // 聊天室需要
+//    compile 'com.netease.nimlib:chatroom:3.2.0'
+    compile 'com.vanniktech:emoji-one:0.4.0'
+    //compile 'com.getui:sdk:2.10.2.0'
 }
 

@@ -9,6 +9,8 @@ import android.support.annotation.Nullable;
 import android.support.annotation.StringRes;
 import android.support.annotation.UiThread;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -152,7 +154,7 @@ public abstract class BaseFragment
      */
     @Nullable
     protected View findViewById(@IdRes int id) {
-        return getView() != null ? getView().findViewById(id) : null;
+        return rootView != null ? rootView.findViewById(id) : null;
     }
 
     @Nullable
@@ -305,5 +307,37 @@ public abstract class BaseFragment
     @Override
     public void onClick(View v) {
 
+    }
+
+    /**
+     * 添加或者显示碎片
+     *
+     * @param targetFragment  将要添加／显示的fragment
+     * @param currentFragment 正在显示的fragment
+     * @param containerViewId 替换的viewid
+     * @return 当前执行显示的fragment
+     */
+    protected final Fragment addOrShowFragment(FragmentManager fragmentManager, @NonNull Fragment targetFragment, Fragment currentFragment, @IdRes int containerViewId) {
+        if (targetFragment == null) return currentFragment;
+        if (targetFragment == currentFragment) return currentFragment;
+        FragmentManager fm = fragmentManager;
+        FragmentTransaction transaction = fm.beginTransaction();
+        if (!targetFragment.isAdded()) { // 如果当前fragment添加，则添加到Fragment管理器中
+            if (currentFragment == null) {
+                transaction
+                        .add(containerViewId, targetFragment)
+                        .commit();
+            } else {
+                transaction.hide(currentFragment)
+                        .add(containerViewId, targetFragment)
+                        .commit();
+            }
+        } else {
+            transaction
+                    .hide(currentFragment)
+                    .show(targetFragment)
+                    .commit();
+        }
+        return targetFragment;
     }
 }
