@@ -1,13 +1,16 @@
 package com.icourt.alpha.entity.bean;
 
+import com.icourt.alpha.http.httpmodel.ResEntity;
+
 import java.io.Serializable;
 import java.util.List;
 
 /**
  * Created by icourt on 16/11/8.
+ * 注意这个接口 直接返回对象
  */
 
-public class AlphaUserInfo implements Serializable {
+public class AlphaUserInfo extends ResEntity<String> implements Serializable {
 
 
     /**
@@ -32,17 +35,39 @@ public class AlphaUserInfo implements Serializable {
     private String phone;
     private String mail;
     private String calendarPKid;
-    private String resultCode;
     private String photo;
     private String pic;
     private String userId;
     private String officeId;
     private String officename;
-    private String resultMess;
     private String token;
     private String refreshToken;
     private String name;
     private List<GroupBean> groups;
+
+    public String getThirdpartId() {
+        return thirdpartId;
+    }
+
+    public void setThirdpartId(String thirdpartId) {
+        this.thirdpartId = thirdpartId;
+    }
+
+    public String getChatToken() {
+        return chatToken;
+    }
+
+    public void setChatToken(String chatToken) {
+        this.chatToken = chatToken;
+    }
+
+    public Long getLoginTime() {
+        return loginTime;
+    }
+
+    public void setLoginTime(Long loginTime) {
+        this.loginTime = loginTime;
+    }
 
     public String getPhone() {
         return phone;
@@ -66,14 +91,6 @@ public class AlphaUserInfo implements Serializable {
 
     public void setCalendarPKid(String calendarPKid) {
         this.calendarPKid = calendarPKid;
-    }
-
-    public String getResultCode() {
-        return resultCode;
-    }
-
-    public void setResultCode(String resultCode) {
-        this.resultCode = resultCode;
     }
 
     public String getPhoto() {
@@ -116,14 +133,6 @@ public class AlphaUserInfo implements Serializable {
         this.officename = officename;
     }
 
-    public String getResultMess() {
-        return resultMess;
-    }
-
-    public void setResultMess(String resultMess) {
-        this.resultMess = resultMess;
-    }
-
     public String getToken() {
         return token;
     }
@@ -148,35 +157,11 @@ public class AlphaUserInfo implements Serializable {
         this.name = name;
     }
 
-//    public List<GroupBean> getGroups() {
-//        return groups;
-//    }
+    public List<GroupBean> getGroups() {
+        return groups;
+    }
 
     public void setGroups(List<GroupBean> groups) {
         this.groups = groups;
-    }
-
-    public String getThirdpartId() {
-        return thirdpartId;
-    }
-
-    public void setThirdpartId(String thirdpartId) {
-        this.thirdpartId = thirdpartId;
-    }
-
-    public String getChatToken() {
-        return chatToken;
-    }
-
-    public void setChatToken(String chatToken) {
-        this.chatToken = chatToken;
-    }
-
-    public Long getLoginTime() {
-        return loginTime;
-    }
-
-    public void setLoginTime(Long loginTime) {
-        this.loginTime = loginTime;
     }
 }

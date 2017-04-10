@@ -9,6 +9,8 @@ import android.widget.ImageView;
 
 import com.icourt.alpha.R;
 import com.icourt.alpha.base.BaseActivity;
+import com.icourt.alpha.entity.bean.AlphaUserInfo;
+import com.icourt.alpha.http.AlphaClient;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -52,6 +54,10 @@ public class WelcomeActivity extends BaseActivity implements Animation.Animation
     @Override
     public void onAnimationEnd(Animation animation) {
         if (isUserLogin()) {
+            AlphaUserInfo loginUserInfo = getLoginUserInfo();
+            AlphaClient.getInstance().setToken(loginUserInfo.getToken());
+            AlphaClient.getInstance().setOfficeId(loginUserInfo.getOfficeId());
+            
             MainActivity.launch(getContext());
         } else {
             LoginSelectActivity.launch(getContext());

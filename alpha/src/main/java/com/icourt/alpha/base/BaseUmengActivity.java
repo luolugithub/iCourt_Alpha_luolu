@@ -2,6 +2,7 @@ package com.icourt.alpha.base;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.annotation.CallSuper;
 import android.support.annotation.CheckResult;
 
@@ -9,10 +10,13 @@ import com.icourt.alpha.R;
 import com.icourt.alpha.utils.SpUtils;
 import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.utils.SystemUtils;
+import com.umeng.socialize.ShareAction;
 import com.umeng.socialize.UMAuthListener;
 import com.umeng.socialize.UMShareAPI;
+import com.umeng.socialize.UMShareListener;
 import com.umeng.socialize.bean.SHARE_MEDIA;
 
+import java.io.File;
 import java.util.Map;
 
 /**
@@ -147,6 +151,56 @@ public class BaseUmengActivity extends BaseActivity implements UMAuthListener {
             return umShareAPI.isInstall(getContext(), shareMedia);
         }
         return false;
+    }
+
+
+    protected void shareDemo() {
+        try {
+            String ROOTPATH = Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator;
+            String apkPath = ROOTPATH + "test.txt";
+            File file = new File(apkPath);
+            shareFile2WeiXin(file);
+        } catch (Exception e) {
+            showTopSnackBar("error:" + e);
+        }
+    }
+
+    /**
+     * 注意文件大小不超过10MB
+     *
+     * @param file
+     */
+    protected void shareFile2WeiXin(File file) {
+        if (file != null && file.exists()) {
+            //  if(file.length()>10mb)
+            new ShareAction(getActivity())
+                    .setPlatform(SHARE_MEDIA.WEIXIN)
+                    .withSubject(file.getName())//文件名
+                    .withFile(file)
+                    .setCallback(new UMShareListener() {
+                        @Override
+                        public void onStart(SHARE_MEDIA share_media) {
+                            log("------sta");
+                        }
+
+                        @Override
+                        public void onResult(SHARE_MEDIA share_media) {
+                            showTopSnackBar("分享成功");
+                            log("------res");
+                        }
+
+                        @Override
+                        public void onError(SHARE_MEDIA share_media, Throwable throwable) {
+                            log("------erro:+" + throwable);
+                            showTopSnackBar("分享失败:" + StringUtils.throwable2string(throwable));
+                            //Bugtags.sendFeedback("分享失败:"+StringUtils.throwable2string(throwable));
+                        }
+
+                        @Override
+                        public void onCancel(SHARE_MEDIA share_media) {
+                        }
+                    }).share();
+        }
     }
 
 }

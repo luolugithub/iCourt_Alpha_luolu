@@ -27,8 +27,6 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 import butterknife.Unbinder;
 
-import static com.icourt.alpha.utils.LoginInfoUtils.clearLoginUserInfo;
-
 /**
  * Description
  * Company Beijing icourt
@@ -170,7 +168,6 @@ public class TabMineFragment extends BaseFragment {
      * 退出登录
      */
     private void loginOut() {
-        clearLoginUserInfo();
         //  groupContactBeanDao.deleteAll();
         //  personContactBeanDao.deleteAll();
         NIMClient.getService(AuthService.class).logout();

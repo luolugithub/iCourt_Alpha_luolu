@@ -6,13 +6,11 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.view.View;
-import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.icourt.alpha.R;
-import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.utils.SystemUtils;
 
 import butterknife.BindView;
@@ -26,7 +24,7 @@ import butterknife.OnClick;
  * date createTime：2017/4/10
  * version 1.0.0
  */
-public class LoginWithPwdActivity extends BaseActivity {
+public class LoginWithPwdActivity extends LoginBaseActivity {
 
     @BindView(R.id.et_mail)
     EditText etMail;
@@ -47,7 +45,6 @@ public class LoginWithPwdActivity extends BaseActivity {
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);//全屏
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login_with_pwd);
         ButterKnife.bind(this);
@@ -67,15 +64,14 @@ public class LoginWithPwdActivity extends BaseActivity {
                 } else if (TextUtils.isEmpty(etPwd.getText())) {
                     showTopSnackBar(getString(R.string.input_password_text));
                 } else {
-                    pwdLogin();
+                    loginWithPwd(etMail.getText().toString(), etPwd.getText().toString());
                 }
                 break;
             case R.id.wechat_login_text:
+                loginWithWeiXin();
                 break;
         }
     }
 
-    private void pwdLogin() {
 
-    }
 }
