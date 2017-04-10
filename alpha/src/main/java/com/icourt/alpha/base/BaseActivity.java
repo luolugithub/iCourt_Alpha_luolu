@@ -310,8 +310,10 @@ public abstract class BaseActivity
         }
     }
 
+    @CallSuper
     @Override
     protected void onDestroy() {
+        dismissLoadingDialog();
         super.onDestroy();
     }
 
@@ -333,6 +335,7 @@ public abstract class BaseActivity
     @UiThread
     @Override
     public void showLoadingDialog(@Nullable String notice) {
+        if (isDestroyOrFinishing()) return;
         KProgressHUD currSVProgressHUD = getSvProgressHUD();
         currSVProgressHUD.setLabel(notice);
         if (!currSVProgressHUD.isShowing()) {

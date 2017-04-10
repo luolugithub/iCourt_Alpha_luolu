@@ -90,6 +90,14 @@ public interface AlphaApiService {
     @POST("v2/weixinlogin/getTokenByOpenidAndUnionid")
     Call<ResEntity<AlphaUserInfo>> loginWithWeiXin(@Body RequestBody info);
 
+    /**
+     * 账号密码登陆
+     *
+     * @param info json请求体
+     * @return
+     */
+    @POST("api/v1/auth/login")
+    Call<AlphaUserInfo> loginWithPwd(@Body RequestBody info);
 
     /**
      * 获取云信登陆的token
