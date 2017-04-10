@@ -2,27 +2,44 @@ package com.icourt.alpha.base;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.os.Environment;
 import android.support.multidex.MultiDexApplication;
 
 import com.bugtags.library.Bugtags;
 import com.bugtags.library.BugtagsOptions;
 import com.icourt.alpha.BuildConfig;
 import com.icourt.alpha.R;
+import com.icourt.alpha.activity.IMChatActivity;
+import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.icourt.alpha.http.HConst;
 import com.icourt.alpha.utils.ActivityLifecycleTaskCallbacks;
 import com.icourt.alpha.utils.GlideImageLoader;
+import com.icourt.alpha.utils.LoginInfoUtils;
+import com.icourt.alpha.utils.SystemUtils;
+import com.icourt.alpha.utils.UserPreferences;
 import com.icourt.alpha.utils.logger.AndroidLogAdapter;
 import com.icourt.alpha.utils.logger.LogLevel;
 import com.icourt.alpha.utils.logger.Logger;
+import com.icourt.alpha.widget.nim.AlphaMessageNotifierCustomization;
+import com.icourt.alpha.widget.parser.CustomAttachParser;
 import com.liulishuo.filedownloader.FileDownloader;
 import com.liulishuo.filedownloader.util.FileDownloadHelper;
 import com.liulishuo.filedownloader.util.FileDownloadLog;
+import com.netease.nimlib.sdk.NIMClient;
+import com.netease.nimlib.sdk.SDKOptions;
+import com.netease.nimlib.sdk.auth.LoginInfo;
+import com.netease.nimlib.sdk.msg.MsgService;
+import com.netease.nimlib.sdk.msg.model.IMMessage;
+import com.netease.nimlib.sdk.team.constant.TeamFieldEnum;
+import com.netease.nimlib.sdk.team.model.IMMessageFilter;
+import com.netease.nimlib.sdk.team.model.UpdateTeamAttachment;
 import com.umeng.socialize.Config;
 import com.umeng.socialize.PlatformConfig;
 import com.umeng.socialize.UMShareAPI;
 import com.umeng.socialize.utils.Log;
 
 import java.net.Proxy;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import cn.finalteam.galleryfinal.CoreConfig;
@@ -58,12 +75,97 @@ public class BaseApplication extends MultiDexApplication {
         baseApplication = this;
         initActivityLifecycleCallbacks();
         initRealm();
+        initYunXin();
         initUMShare();
         initLogger();
         initDownloader();
         initBugtags();
         initGalleryFinal();
     }
+
+    private void initYunXin() {
+        LoginInfo loginInfo = null;
+        AlphaUserInfo loginUserInfo = LoginInfoUtils.getLoginUserInfo();
+        if (loginUserInfo != null) {
+            loginInfo = new LoginInfo(loginUserInfo.getThirdpartId(), loginUserInfo.getChatToken());
+        }
+        SDKOptions options = new SDKOptions();
+
+        // 如果将新消息通知提醒托管给SDK完成，需要添加以下配置。
+        com.netease.nimlib.sdk.StatusBarNotificationConfig config = UserPreferences.getStatusConfig();
+        if (config == null) {
+            config = new com.netease.nimlib.sdk.StatusBarNotificationConfig();
+        }
+        // 点击通知需要跳转到的界面
+        config.notificationEntrance = IMChatActivity.class;//通知栏提醒的响应intent的activity类型
+        config.notificationSmallIconId = R.mipmap.android_app_icon;//状态栏提醒的小图标的资源ID
+
+        // 通知铃声的uri字符串
+//        config.notificationSound = "android.resource://com.netease.nim.demo/raw/msg";
+
+        // 呼吸灯配置
+        config.ledARGB = Color.GREEN;//呼吸灯的颜色 The color of the led.
+        config.ledOnMs = 1000;//呼吸灯亮时的持续时间（毫秒）
+        config.ledOffMs = 1500;//呼吸灯熄灭时的持续时间（毫秒）
+
+        options.statusBarNotificationConfig = config;
+        UserPreferences.setStatusConfig(config);
+
+        // 配置保存图片，文件，log等数据的目录
+        String sdkPath = Environment.getExternalStorageDirectory() + "/" + getPackageName() + "/nim";
+        options.sdkStorageRootPath = sdkPath;
+
+        // 配置数据库加密秘钥
+        options.databaseEncryptKey = "NETEASE";
+
+        // 配置是否需要预下载附件缩略图
+        options.preloadAttach = true;
+
+//        // 配置附件缩略图的尺寸大小，
+//        options.thumbnailSize = MsgViewHolderThumbBase.getImageMaxEdge();
+
+//        // 用户信息提供者
+//        options.userInfoProvider = infoProvider;
+
+        // 定制通知栏提醒文案（可选，如果不定制将采用SDK默认文案）
+        options.messageNotifierCustomization = new AlphaMessageNotifierCustomization(this);
+
+        // 在线多端同步未读数
+        options.sessionReadAck = true;
+        NIMClient.init(this, loginInfo, options);
+        if (SystemUtils.isMainProcess(this)) {
+//             注册通知消息过滤器
+            registerIMMessageFilter();
+//             初始化消息提醒
+            NIMClient.toggleNotification(false);
+            NIMClient.toggleNotification(UserPreferences.getNotificationToggle());
+            NIMClient.updateStatusBarNotificationConfig(UserPreferences.getStatusConfig());
+            NIMClient.getService(MsgService.class).registerCustomAttachmentParser(new CustomAttachParser());
+        }
+    }
+
+    /**
+     * 通知消息过滤器（如果过滤则该消息不存储不上报）
+     */
+    private void registerIMMessageFilter() {
+        NIMClient.getService(MsgService.class).registerIMMessageFilter(new IMMessageFilter() {
+            @Override
+            public boolean shouldIgnore(IMMessage message) {
+                if (UserPreferences.getMsgIgnore() && message.getAttachment() != null) {
+                    if (message.getAttachment() instanceof UpdateTeamAttachment) {
+                        UpdateTeamAttachment attachment = (UpdateTeamAttachment) message.getAttachment();
+                        for (Map.Entry<TeamFieldEnum, Object> field : attachment.getUpdatedFields().entrySet()) {
+                            if (field.getKey() == TeamFieldEnum.ICON) {
+                                return true;
+                            }
+                        }
+                    }
+                }
+                return false;
+            }
+        });
+    }
+
 
 
     private void initRealm() {

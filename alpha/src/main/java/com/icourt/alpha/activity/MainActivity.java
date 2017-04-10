@@ -1,11 +1,13 @@
 package com.icourt.alpha.activity;
 
+import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.IdRes;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentTransaction;
 import android.util.SparseArray;
+import android.view.GestureDetector;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
@@ -18,6 +20,7 @@ import com.icourt.alpha.fragment.TabFindFragment;
 import com.icourt.alpha.fragment.TabMineFragment;
 import com.icourt.alpha.fragment.TabNewsFragment;
 import com.icourt.alpha.fragment.TabTaskFragment;
+import com.icourt.alpha.interfaces.OnTabDoubleClickListener;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -25,6 +28,13 @@ import butterknife.OnClick;
 
 public class MainActivity extends BaseAppUpdateActivity implements RadioGroup.OnCheckedChangeListener {
 
+    public static void launch(Context context) {
+        if (context == null) return;
+        Intent intent = new Intent(context, MainActivity.class);
+        //intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        context.startActivity(intent);
+    }
 
     @BindView(R.id.main_fl_content)
     FrameLayout mainFlContent;
@@ -42,6 +52,29 @@ public class MainActivity extends BaseAppUpdateActivity implements RadioGroup.On
     RadioGroup rgMainTab;
     private Fragment currentFragment;
     private final SparseArray<Fragment> fragmentSparseArray = new SparseArray<>();
+    private GestureDetector tabGestureDetector;
+    private GestureDetector.SimpleOnGestureListener tabGestureListener = new GestureDetector.SimpleOnGestureListener() {
+        @Override
+        public boolean onDoubleTap(MotionEvent e) {
+            Fragment currFragment = currentFragment;
+            if (currFragment instanceof OnTabDoubleClickListener) {
+                ((OnTabDoubleClickListener) currFragment).onTabDoubleClick(currFragment, null, null);
+            }
+            return super.onDoubleTap(e);
+        }
+    };
+    private View.OnTouchListener tabTouchListener = new View.OnTouchListener() {
+        @Override
+        public boolean onTouch(View v, MotionEvent event) {
+            switch (v.getId()) {
+                case R.id.tab_news:
+                    return tabGestureDetector.onTouchEvent(event);
+                default:
+                    break;
+            }
+            return false;
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,12 +88,14 @@ public class MainActivity extends BaseAppUpdateActivity implements RadioGroup.On
     protected void initView() {
         super.initView();
         rgMainTab.setOnCheckedChangeListener(this);
-        addOrShowFragment(getTabFragment(rgMainTab.getCheckedRadioButtonId()));
+        tabGestureDetector = new GestureDetector(getContext(), tabGestureListener);
+        tabNews.setOnTouchListener(tabTouchListener);
+        currentFragment = addOrShowFragment(getTabFragment(rgMainTab.getCheckedRadioButtonId()), currentFragment, R.id.main_fl_content);
     }
 
     @Override
     public void onCheckedChanged(RadioGroup group, @IdRes int checkedId) {
-        addOrShowFragment(getTabFragment(checkedId));
+        currentFragment = addOrShowFragment(getTabFragment(checkedId), currentFragment, R.id.main_fl_content);
     }
 
     @OnClick({R.id.tab_voice})
@@ -114,36 +149,5 @@ public class MainActivity extends BaseAppUpdateActivity implements RadioGroup.On
     private void putTabFragment(@IdRes int checkedId, Fragment fragment) {
         fragmentSparseArray.put(checkedId, fragment);
     }
-
-
-    /**
-     * 添加或者显示碎片
-     *
-     * @param fragment
-     */
-    private void addOrShowFragment(Fragment fragment) {
-        if (fragment == null) return;
-        if (fragment == currentFragment) return;
-        FragmentManager fm = getSupportFragmentManager();
-        FragmentTransaction transaction = fm.beginTransaction();
-        if (!fragment.isAdded()) { // 如果当前fragment添加，则添加到Fragment管理器中
-            if (currentFragment == null) {
-                transaction
-                        .add(R.id.main_fl_content, fragment)
-                        .commit();
-            } else {
-                transaction.hide(currentFragment)
-                        .add(R.id.main_fl_content, fragment)
-                        .commit();
-            }
-        } else {
-            transaction
-                    .hide(currentFragment)
-                    .show(fragment)
-                    .commit();
-        }
-        currentFragment = fragment;
-    }
-
 
 }

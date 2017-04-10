@@ -5,7 +5,381 @@
     <string name="umeng_auth">授权请求中...</string>
     <string name="umeng_wexin_uninstalled">请安装微信</string>
 
+    <string name="wx_errcode_success">授权成功</string>
+    <string name="wx_errcode_cancel">取消授权</string>
+    <string name="wx_errcode_deny">拒绝授权</string>
+    <string name="wx_errcode_unknown">未知错误</string>
+    <string name="wx_uninstalled_text">微信暂未安装,请及时安装微信应用</string>
 
+    <string name="drawer_open">开</string>
+    <string name="drawer_close">关</string>
+
+    <string name="wechat_count_login">使用微信帐号登录</string>
+    <string name="alpha_count_login">使用账户密码登录</string>
+    <string name="mail_address_text">邮箱地址</string>
+    <string name="mail_password_text">密码</string>
+    <string name="login_text">登录</string>
+    <string name="login_error_text">登录失败</string>
+    <string name="input_mail_text">请输入邮箱地址</string>
+    <string name="input_password_text">请输入密码</string>
+
+    <string name="main_meau_message">消息</string>
+    <string name="main_meau_search">搜索</string>
+    <string name="main_meau_explorer">探索</string>
+    <string name="main_meau_my">我的</string>
+    <string name="audio_scan_text">语音识别</string>
+
+    <string name="explorer_project">项目</string>
+    <string name="explorer_task">任务</string>
+    <string name="explorer_timer">计时</string>
+    <string name="explorer_contact">联系人</string>
+
+    <string name="title_popup_camera">拍照</string>
+    <string name="title_popup_photo_album">本地相册</string>
+
+
+    <!-- 消息 -->
+    <string name="message_title_address_book">通讯录</string>
+    <string name="message_title_menu_new_group">新建讨论组</string>
+    <string name="message_title_menu_new_task">新建任务</string>
+    <string name="message_title_menu_new_timer">新建计时</string>
+    <string name="message_title_clear_away">扫一扫</string>
+    <string name="message_statu_hint_no_login">未登录</string>
+    <string name="message_statu_hint_nim_status_connecting">连接中...</string>
+    <string name="message_statu_hint_nim_status_logining">登录中...</string>
+    <string name="message_statu_hint_multiport_logging">正在使用</string>
+    <string name="message_statu_hint_computer_version">Alpha电脑版</string>
+    <string name="message_statu_hint_web_version">Alpha网页版</string>
+    <string name="message_statu_hint_mobile_version">Alpha移动版</string>
+    <string name="message_no_recent_list">还没有会话，在通讯录中找个人聊聊吧！</string>
+    <string name="message_start_chat">开始聊天</string>
+    <string name="message_cancle_ding_one_msg_text">取消钉了一条消息</string>
+    <string name="message_ding_one_msg_text">钉了一条消息</string>
+    <string name="message_have_at_me_text">[有人@了你]</string>
+    <string name="message_my_add_group_text">我加入的讨论组</string>
+    <string name="message_all_group_text">所有的讨论组</string>
+    <string name="message_pigeonhole_group_text">已归档的讨论组</string>
+    <string name="message_group_public_text">公开</string>
+    <string name="message_group_private_text">私密</string>
+    <string name="message_group_name_text">讨论组名称</string>
+    <string name="message_group_target_text">讨论组目标(可选)</string>
+    <string name="message_group_member_text">讨论组成员</string>
+    <string name="message_group_topic_text">讨论组话题</string>
+    <string name="message_group_targets_text">讨论组目标</string>
+    <string name="message_group_file_text">文件</string>
+    <string name="message_group_ding_msg_text">钉的消息</string>
+    <string name="message_group_set_top_text">置顶</string>
+    <string name="message_group_set_msg_nodisturb_text">消息免打扰</string>
+    <string name="message_group_set_pigeonhole_text">归档小组</string>
+    <string name="message_group_set_goto_text">离开小组</string>
+    <string name="message_group_set_add_text">加入小组</string>
+    <string name="message_new_group_public_text">所内的任何成员都可以加入讨论组</string>
+    <string name="message_new_group_private_text">只有受邀的成员才可以加入讨论组</string>
+    <string name="message_new_group_add_text">新建</string>
+    <string name="message_new_group_text">创建讨论组</string>
+    <string name="message_new_group_name_error_text">名称太短，至少2个字母或文字</string>
+    <string name="message_new_group_check_member_text">选择成员</string>
+    <string name="chat_please_input_text">请输入要发送的内容</string>
+    <string name="photo_album">相册</string>
+    <string name="photo_artwork_master">原图</string>
+    <string name="send_message_text">发送</string>
+    <string name="receive_one_message">您收到一条消息</string>
+    <string name="receive_one_file_message">您收到一条文件消息</string>
+    <string name="all_group_members">所有人</string>
+    <string name="check_at_group_member">选择提及的人</string>
+    <string name="image_save_local">保存到相册</string>
+    <string name="message_all_file">所有人</string>
+    <string name="message_my_file">我自己</string>
+    <string name="message_transmit">转发</string>
+    <string name="message_download">下载</string>
+    <string name="message_copy">复制</string>
+    <string name="message_ding">钉</string>
+    <string name="message_cancle_ding">取消钉</string>
+    <string name="message_collect">收藏</string>
+    <string name="message_cancle_collect">取消收藏</string>
+    <string name="message_turn_task">转任务</string>
+    <string name="message_turn_timering">转计时</string>
+    <string name="message_recall">撤回</string>
+
+    <!--项目 -->
+    <string name="progect_tab_item_task_text">任务</string>
+    <string name="progect_tab_item_survey_text">概览</string>
+    <string name="progect_tab_item_file_text">文档</string>
+
+    <string name="progect_customer_name_text">案由</string>
+    <string name="progect_opposite_name_text">程序</string>
+    <string name="progect_category_name_text">原告</string>
+    <string name="progect_clock_name_text">被告</string>
+    <string name="progect_member_name_text">第三人</string>
+
+    <string name="progect_member_lvs_text">律师</string>
+    <string name="progect_member_names_text">项目成员</string>
+
+    <!-- 智能搜索-->
+    <string name="search_edittext_hint_text">请输入关键词检索</string>
+    <string name="search_audio_speck_text">请说出搜索内容</string>
+    <string name="search_text_hint_text">请点选搜索引擎</string>
+    <string name="search_text_max_num_text">最多选择5种引擎</string>
+    <string name="search_history_text">搜索历史</string>
+    <string name="search_clear_text">清空搜索历史</string>
+    <string name="search_audio_loading_text">正在识别</string>
+    <string name="search_text">智能搜索</string>
+
+    <!-- 计时 -->
+    <string name="notimer_bottom_first_line_text">不饱食以终日，不弃功于寸阴</string>
+    <string name="notimer_bottom_second_line_text">总结一下今天的工作吧</string>
+    <string name="havetimer_bottom_stop_text">停止</string>
+    <string name="timer_statistics_today_text">今天</string>
+    <string name="timer_statistics_yesterday_text">昨天</string>
+    <string name="timer_statistics_thisweek_text">当周</string>
+    <string name="timer_statistics_thimonth_text">当月</string>
+    <string name="timer_ing_text">正在计时</string>
+    <string name="timer_ing_workdesc_text">工作描述</string>
+    <string name="timer_ing_workdesc_edithint_text">请输入工作描述</string>
+    <string name="timer_ing_work_project_text">所属项目</string>
+    <string name="timer_ing_work_type_text">工作类别</string>
+    <string name="no_timer_ing_work_type_text">暂无工作类别</string>
+    <string name="timer_ing_project_select_text">选填</string>
+    <string name="timer_ing_delete_timer_text">删除计时</string>
+    <string name="timer_ing_is_delete_timer_text">是非成败转头空，确定要删除吗?</string>
+    <string name="timer_edit_timer_text">编辑计时</string>
+    <string name="timer_new_timer_text">新建计时</string>
+    <string name="timer_is_save_timer_text">莫等忘了保存，枉叹此行成空</string>
+    <string name="timer_edit_add_five_minute_text">+5分钟</string>
+    <string name="timer_edit_add_ten_minute_text">+10分钟</string>
+    <string name="timer_edit_add_thirty_minute_text">+30分钟</string>
+    <string name="timer_edit_add_one_hours_text">+1小时</string>
+    <string name="timer_edit_add_two_hours_text">+2小时</string>
+    <string name="timer_not_add_name_text">暂未添加描述</string>
+    <string name="timer_not_add_prohect_text">暂未绑定项目</string>
+    <string name="timer_edit_save_text">保存</string>
+    <array name="timer_list_null_text_arr">
+        <item>初看春花红|转眼已成冬</item>
+        <item>一年容易又到头|韶光逝去无影踪</item>
+    </array>
+
+    <!-- 任务 -->
+    <string name="task_min_time">1970-01-01</string>
+    <string name="task_max_time">2090-01-01</string>
+    <string name="task_finish_dialog_msg_text">该任务由多人负责,确定完成?</string>
+    <string name="task_list_null_text">暂无任务</string>
+    <string name="task_list_null_text_future">人生本有尽|宇宙永无穷</string>
+    <array name="task_list_null_text_normal_arr">
+        <item>忙处人多闲处少|闲处光阴几人晓</item>
+        <item>因过竹院逢僧话|偷得浮生半日闲</item>
+    </array>
+    <array name="task_list_null_text_due_arr">
+        <item>回首向来萧瑟处，归去|也无风雨也无晴</item>
+        <item>古今多少事|都付笑谈中</item>
+    </array>
+    <string name="task_list_group_null_text">暂无任务组</string>
+    <string name="task_list_desc_null_text">暂无任务描述</string>
+    <string name="new_task_detail_text">查看任务</string>
+    <string name="new_task_text">新建任务</string>
+    <string name="task_name_text">任务名称</string>
+    <string name="task_end_time_text">截止日期</string>
+    <string name="task_group_text">任务组</string>
+    <string name="task_creater_text">创建人</string>
+    <string name="task_allocation_text">分配人</string>
+    <string name="task_group_name_text">任务组名称</string>
+    <string name="manage_task_group_text">管理任务组</string>
+    <string name="add_task_group_text">添加任务组</string>
+    <string name="update_task_group_text">编辑任务组</string>
+    <string name="task_principal_text">负责人</string>
+    <string name="null_task_principal_text">暂无负责人</string>
+    <string name="task_desc_text">任务详情</string>
+    <string name="task_sontask_text">检查项</string>
+    <string name="task_add_sontask_text">添加检查项</string>
+    <string name="task_send_comment_text">发表评论...</string>
+    <string name="task_no_comment_text">暂无评论</string>
+    <string name="task_descedti_hint_text">请输入</string>
+    <string name="task_nameedti_hint_text">请输入任务名称</string>
+    <string name="task_project_hint_text">请选择</string>
+    <string name="task_edit_text">编辑</string>
+    <string name="task_edit_finish_text">完成</string>
+    <string name="delete_text">删除</string>
+    <string name="cancle_text">取消</string>
+    <string name="is_delete_task_text">是非成败转头空，确定要删除吗?</string>
+    <string name="more_user_is_delete_task_text">该任务为多人任务，确定要删除吗?</string>
+    <string name="select_object_text">选择查看对象</string>
+    <string name="null_select_object_text">暂无查看对象</string>
+    <string name="select_other_object_text">查看他人</string>
+    <string name="select_me_object_text">只看自己</string>
+    <string name="select_other_matter_text">其他成员</string>
+    <string name="select_me_allot_object_text">我分配的任务</string>
+    <string name="select_me_finish_object_text">已完成的任务</string>
+    <string name="select_other_member_task_text">查看其它成员任务</string>
+    <string name="select_me_already_finish_text">已完成</string>
+    <string name="select_me_not_finish_text">未完成</string>
+    <string name="input_task_name_text">请输入任务名称</string>
+    <string name="input_task_time_text">请选择截止日期</string>
+    <string name="task_my_attention_text">我关注的</string>
+
+    <string name="delete_group_retain_task_text">删除任务组,保留组内任务</string>
+    <string name="delete_group_all_task_text">删除任务组内所有任务</string>
+
+
+    <!-- 项目 -->
+    <string name="find_project">查找项目</string>
+    <string name="project_client">(客户)</string>
+    <string name="project_competentCourt">管辖法院</string>
+    <string name="project_judges">法官</string>
+    <string name="project_clerks">书记员</string>
+    <string name="project_arbitrators">仲裁员</string>
+    <string name="project_principal">负责人</string>
+    <string name="project_secretaries">仲裁秘书</string>
+    <string name="project_responsible_lawyer">主办律师</string>
+    <string name="project_assist_lawywe">协办律师</string>
+    <string name="project_originating_lawyer">案源律师</string>
+    <string name="project_other_lawywe">其它参与人</string>
+    <string name="projectr_lawywe">参与人</string>
+    <string name="project_beforehand_register">预立项</string>
+    <string name="project_servering">进行中</string>
+    <string name="project_settled">已完结</string>
+    <string name="project_shelved">已搁置</string>
+    <string name="project_lately_update">最近修改</string>
+    <string name="null_project">啊多么痛的领悟|你得先有个项目</string>
+    <string name="null_files">暂无文件</string>
+    <string name="my_participation_project">我参与的项目</string>
+    <string name="downloading_file_text">下载中...</string>
+    <string name="download_error_file_text">下载失败</string>
+    <string name="download_file_not_open_text">暂不支持预览此类文件，请使用其他App打开</string>
+
+    <string name="document_by_name_up_sort">按文档名升序排序</string>
+    <string name="document_by_name_down_sort">按文档名降序排序</string>
+
+    <string name="document_by_time_up_sort">按修改时间升序排序</string>
+    <string name="document_by_time_down_sort">按修改时间降序排序</string>
+
+    <string name="document_by_size_up_sort">按文件大小升序排序</string>
+    <string name="document_by_size_down_sort">按文件大小降序排序</string>
+
+    <!-- 联系人 -->
+    <string name="contact_text">联系人</string>
+    <string name="groups_text">团队</string>
+    <string name="search_contact_text">搜索联系人</string>
+    <string name="synchronization_contact_text">同步联系人</string>
+    <string name="my_start_contact">我关注的</string>
+    <string name="add_contact_text">添加联系人</string>
+    <string name="add_person_contact_text">添加个人联系人</string>
+    <string name="add_group_contact_text">添加机构联系人</string>
+    <string name="contact_group_text">负责团队</string>
+    <string name="add_custom_tag_text">添加自定义标签</string>
+    <string name="person_contact_warn_top_text">已存在同名联系人,您可以继续添加</string>
+    <string name="group_contact_warn_top_text">已存在同名机构,无法新建</string>
+    <string name="is_give_up_contact_info_text">是否放弃您已编辑好的信息?</string>
+    <!-- 电话标签 -->
+    <array name="contact_phone_tag_array">
+        <item>主要</item>
+        <item>工作</item>
+        <item>家庭</item>
+        <item>手机</item>
+    </array>
+    <!-- 邮箱标签 -->
+    <array name="contact_email_tag_array">
+        <item>主要</item>
+        <item>工作</item>
+        <item>私人</item>
+    </array>
+    <!-- 地址标签 -->
+    <array name="contact_address_tag_array">
+        <item>工作</item>
+        <item>家庭</item>
+    </array>
+    <!-- 证件标签 -->
+    <array name="contact_papers_tag_array">
+        <item>身份证</item>
+        <item>护照</item>
+        <item>军官证</item>
+    </array>
+    <!-- 即时通讯标签 -->
+    <array name="contact_im_account_tag_array">
+        <item>微信</item>
+        <item>QQ</item>
+    </array>
+    <!-- 重要日期标签 -->
+    <array name="contact_date_tag_array">
+        <item>生日</item>
+    </array>
+    <!-- 工作单位标签 -->
+    <array name="contact_enterprise_tag_array">
+        <item>工作单位</item>
+        <item>职务</item>
+    </array>
+
+    <!-- 机构联系人:地址标签 -->
+    <array name="enterprise_contact_address_tag_array">
+        <item>办公</item>
+        <item>注册地址</item>
+    </array>
+    <!-- 机构联系人:邮箱标签 -->
+    <array name="enterprise_contact_email_tag_array">
+        <item>主要</item>
+        <item>商务</item>
+        <item>法务</item>
+    </array>
+    <!-- 机构联系人:日期标签 -->
+    <array name="enterprise_contact_date_tag_array">
+        <item>注册日期</item>
+    </array>
+    <!-- 机构联系人:证件标签 -->
+    <array name="enterprise_contact_parper_tag_array">
+        <item>营业执照</item>
+        <item>组织机构代码证</item>
+        <item>税务登记证</item>
+        <item>卫生许可证</item>
+    </array>
+
+    <!-- 联系人:联络人标签 -->
+    <array name="enterprise_contact_liaison_tag_array">
+        <item>CEO</item>
+        <item>母公司</item>
+        <item>子公司</item>
+    </array>
+
+    <!-- 语音命令 -->
+    <string name="you_can_ask_like_this_text">你可以这样问我</string>
+    <string name="no_scan_instruct_text">未能正确识别您的指令</string>
+    <string name="voice_instruct_one_text">开始计时</string>
+    <string name="voice_instruct_two_text">停止计时</string>
+    <string name="voice_instruct_three_text">搜索Alpha</string>
+    <string name="voice_instruct_four_text">明天上午开会</string>
+    <string name="voice_instruct_five_text">扫一扫</string>
+
+    <!-- 个人中心 -->
+    <string name="my_center_phone_text">电话</string>
+    <string name="my_center_phone_num_text">电话号码</string>
+    <string name="my_center_mail_text">邮箱</string>
+    <string name="my_center_mail_address_text">邮箱地址</string>
+    <string name="my_center_clear_cache_text">清除缓存</string>
+    <string name="my_center_clear_cache_succee_text">清除缓存成功</string>
+    <string name="my_center_clear_cache_error_text">清除缓存失败</string>
+    <string name="my_center_about_text">关于</string>
     <string name="my_center_check_update_text">检查更新</string>
     <string name="my_center_have_new_version_text">有新版本,点此更新</string>
+    <string name="my_center_help_text">帮助与反馈</string>
+    <string name="my_center_loginout_text">退出</string>
+    <string name="my_center_select_image_text">从相册选择图片</string>
+    <string name="my_center_camera_text">拍照</string>
+    <string name="my_center_collect_text">我收藏的消息</string>
+    <string name="my_center_null_collect_text">暂无收藏的消息</string>
+    <string name="my_center_atme_text">提及我的</string>
+    <string name="my_center_null_atme_text">暂无提及我的消息</string>
+    <string name="my_center_my_file_text">我的文件</string>
+
+    <array name="my_center_isloginout_text_arr">
+        <item>此情应是长相守|你若无心我便休</item>
+        <item>我断不思量|你莫思量我</item>
+    </array>
+
+    <!-- error -->
+    <string name="error_please_check_network">网络连接失败,请检查您的网络设置.</string>
+    <string name="error_timeout">请求超时,请稍后重试.</string>
+    <string name="error_not_found_server">Not found server in the network.</string>
+    <string name="error_url_error">URL error.</string>
+    <string name="error_not_found_cache">Not found cache.</string>
+    <string name="error_system_unsupport_method">The system unsupport request method.</string>
+    <string name="error_parse_data_error">Parse data error.</string>
+    <string name="error_unknow">Unknow error.</string>
+
 </resources>

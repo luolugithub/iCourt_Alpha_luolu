@@ -34,9 +34,12 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
+import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
+
+import com.icourt.alpha.R;
 
 import java.io.File;
 import java.lang.reflect.Field;
@@ -44,8 +47,6 @@ import java.lang.reflect.Method;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import com.icourt.alpha.R;
 
 public class SystemUtils {
 
@@ -521,6 +522,57 @@ public class SystemUtils {
      */
     public static boolean isMainThread() {
         return Looper.myLooper() == Looper.getMainLooper();
+    }
+
+
+    /**
+     * 是否在主进程
+     *
+     * @param context
+     * @return
+     */
+    public static boolean isMainProcess(Context context) {
+        if (context != null) {
+            String packageName = context.getPackageName();
+            String processName = getProcessName(context);
+            return packageName.equals(processName);
+        }
+        return false;
+    }
+
+    /**
+     * 获取当前进程名
+     *
+     * @param context
+     * @return 进程名
+     */
+    public static final String getProcessName(Context context) {
+        String processName = null;
+
+        // ActivityManager
+        ActivityManager am = ((ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE));
+
+        while (true) {
+            for (ActivityManager.RunningAppProcessInfo info : am.getRunningAppProcesses()) {
+                if (info.pid == android.os.Process.myPid()) {
+                    processName = info.processName;
+
+                    break;
+                }
+            }
+
+            // go home
+            if (!TextUtils.isEmpty(processName)) {
+                return processName;
+            }
+
+            // take a rest and again
+            try {
+                Thread.sleep(100L);
+            } catch (InterruptedException ex) {
+                ex.printStackTrace();
+            }
+        }
     }
 
     /**

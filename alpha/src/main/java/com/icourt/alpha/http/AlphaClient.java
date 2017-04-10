@@ -38,6 +38,7 @@ public class AlphaClient extends SimpleClient implements HttpLoggingInterceptor.
         return mInstance;
     }
 
+    private String officeId;
     private String token;
 
     public void setToken(String token) {
@@ -46,6 +47,14 @@ public class AlphaClient extends SimpleClient implements HttpLoggingInterceptor.
 
     public String getToken() {
         return String.valueOf(token);
+    }
+
+    public String getOfficeId() {
+        return String.valueOf(officeId);
+    }
+
+    public void setOfficeId(String officeId) {
+        this.officeId = officeId;
     }
 
     private AlphaClient(Context context) {

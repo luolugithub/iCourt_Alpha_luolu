@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:id="@+id/whole_have_timering_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/top_bottom_line_layout_bg"
+        android:gravity="center_vertical"
+        android:visibility="gone"
+        >
+
+        <TextView
+            android:id="@+id/whole_have_timering_desc_text"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="暂无添加描述"
+            android:paddingTop="10dp"
+            android:maxLines="1"
+            android:ellipsize="end"
+            android:singleLine="true"
+            android:paddingBottom="10dp"
+            android:paddingLeft="5dp"
+            android:textColor="@color/time_week_text_color"
+            android:textSize="12dp" />
+
+        <Chronometer
+            android:id="@+id/whole_have_timering_charonometer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="14dp"
+            android:textColor="@color/search_cutline_color"
+            android:textSize="12dp" />
+
+        <ImageView
+            android:id="@+id/whole_have_timering_stopview"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingLeft="12.5dp"
+            android:src="@drawable/orange_side_dot_bg" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/whole_no_have_timering_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+
+        android:background="@drawable/top_bottom_line_layout_bg"
+        android:gravity="center_vertical"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true">
+
+        <TextView
+            android:id="@+id/whole_no_timering_desc_text"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp"
+            android:paddingLeft="5dp"
+            android:text="别忘了计时哦"
+            android:textColor="@color/time_week_text_color"
+            android:textSize="12dp" />
+
+        <ImageView
+            android:id="@+id/whole_no_timering_start_view"
+            android:layout_width="40dp"
+            android:layout_height="match_parent"
+            android:scaleType="center"
+            android:src="@mipmap/icon_start_highlight_16"
+            android:textSize="12dp" />
+
+        <ImageView
+            android:id="@+id/whole_no_timering_add_view"
+            android:layout_width="40dp"
+            android:layout_height="match_parent"
+            android:scaleType="center"
+            android:src="@mipmap/icon_timer_add_16" />
+    </LinearLayout>
+</RelativeLayout>

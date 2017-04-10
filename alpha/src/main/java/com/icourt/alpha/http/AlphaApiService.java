@@ -1,11 +1,17 @@
 package com.icourt.alpha.http;
 
+import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.icourt.alpha.entity.bean.AppVersionEntity;
+import com.icourt.alpha.entity.bean.LoginIMToken;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 
 import java.util.List;
 
+import okhttp3.RequestBody;
 import retrofit2.Call;
+import retrofit2.http.Body;
+import retrofit2.http.Field;
+import retrofit2.http.FormUrlEncoded;
 import retrofit2.http.GET;
 import retrofit2.http.POST;
 import retrofit2.http.Query;
@@ -57,11 +63,12 @@ public interface AlphaApiService {
     /**
      * 修改律师电话信息
      *
-     * @param phone
+     * @param phone 手机号码 不包含+86国际代码的字符串
      * @return
      */
     @POST("api/v1/auth/update")
-    Call<ResEntity<String>> updateUserPhone(@Query("phone") String phone);
+    @FormUrlEncoded
+    Call<ResEntity<String>> updateUserPhone(@Field("phone") String phone);
 
     /**
      * 修改律师邮箱信息
@@ -70,6 +77,25 @@ public interface AlphaApiService {
      * @return
      */
     @POST("api/v1/auth/update")
-    Call<ResEntity<String>> updateUserEmail(@Query("email") String email);
+    @FormUrlEncoded
+    Call<ResEntity<String>> updateUserEmail(@Field("email") String email);
 
+    /**
+     * 微信登陆
+     * <p>
+     * 将"opneid" "unionid" "uniqueDevice"="device"; "deviceType"="android" 组合成json
+     *
+     * @return
+     */
+    @POST("v2/weixinlogin/getTokenByOpenidAndUnionid")
+    Call<ResEntity<AlphaUserInfo>> loginWithWeiXin(@Body RequestBody info);
+
+
+    /**
+     * 获取云信登陆的token
+     *
+     * @return
+     */
+    @GET("api/v2/chat/msg/token")
+    Call<ResEntity<LoginIMToken>> getChatToken();
 }

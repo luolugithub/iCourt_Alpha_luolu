@@ -63,7 +63,7 @@ public class SpUtils {
 
     public SpUtils remove(String key) {
         if (sp.contains(key)) {
-            getEditor().remove(key);
+            getEditor().remove(key).commit();
         }
         return this;
     }

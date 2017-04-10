@@ -1,8 +1,10 @@
 package com.icourt.alpha.fragment;
 
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.AppBarLayout;
+import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,14 +15,19 @@ import android.widget.TextView;
 
 import com.icourt.alpha.R;
 import com.icourt.alpha.activity.AboutActivity;
+import com.icourt.alpha.activity.LoginSelectActivity;
 import com.icourt.alpha.activity.UpdatePhoneOrMailActivity;
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.utils.GlideUtils;
+import com.netease.nimlib.sdk.NIMClient;
+import com.netease.nimlib.sdk.auth.AuthService;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import butterknife.Unbinder;
+
+import static com.icourt.alpha.utils.LoginInfoUtils.clearLoginUserInfo;
 
 /**
  * Description
@@ -140,9 +147,34 @@ public class TabMineFragment extends BaseFragment {
                 AboutActivity.launch(getContext());
                 break;
             case R.id.my_center_clear_loginout_layout://退出
-
+                showLoginOutConfirmDialog();
                 break;
         }
+    }
+
+    private void showLoginOutConfirmDialog() {
+        new AlertDialog.Builder(getActivity())
+                .setTitle("提示")
+                .setMessage(getResources().getStringArray(R.array.my_center_isloginout_text_arr)[Math.random() > 0.5 ? 1 : 0].replace("|", "\n"))
+                .setPositiveButton("确认", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        loginOut();
+                    }
+                })
+                .setNegativeButton("取消", null)
+                .create().show();
+    }
+
+    /**
+     * 退出登录
+     */
+    private void loginOut() {
+        clearLoginUserInfo();
+        //  groupContactBeanDao.deleteAll();
+        //  personContactBeanDao.deleteAll();
+        NIMClient.getService(AuthService.class).logout();
+        LoginSelectActivity.launch(getContext());
     }
 
     @Override
