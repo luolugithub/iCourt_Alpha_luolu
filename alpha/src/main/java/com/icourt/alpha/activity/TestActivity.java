@@ -62,7 +62,8 @@ public class TestActivity extends BaseAppUpdateActivity {
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.bt_demo:
-                DemoActivity.launch(getContext());
+                shareDemo();
+               // DemoActivity.launch(getContext());
                 break;
             case R.id.bt_json:
                 test();
