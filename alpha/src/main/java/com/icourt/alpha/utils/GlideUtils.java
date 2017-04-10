@@ -12,6 +12,7 @@ import android.widget.ImageView;
 import com.bumptech.glide.Glide;
 import com.icourt.alpha.utils.transformations.GlideCircleTransform;
 import com.icourt.alpha.R;
+
 /**
  * Description
  * Glide 工具类
@@ -65,15 +66,7 @@ public class GlideUtils {
      * @return
      */
     public static boolean canLoadImage(Activity activity) {
-        if (activity == null) {
-            return false;
-        }
-        boolean destroyed = Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1 &&
-                activity.isDestroyed();
-        if (destroyed || activity.isFinishing()) {
-            return false;
-        }
-        return true;
+        return !SystemUtils.isDestroyOrFinishing(activity);
     }
 
 
@@ -90,19 +83,16 @@ public class GlideUtils {
     public static void loadUser(Context context, String path, ImageView imageView) {
         if (context == null) return;
         if (imageView == null) return;
-        if (context instanceof Activity) {
-            if (((Activity) context).isFinishing())
-                return;
+        if (canLoadImage(context)) {
+            Glide.with(context)
+                    .load(path)
+                    .transform(new GlideCircleTransform(context))
+                    .placeholder(R.mipmap.avatar_default_80)
+                    .error(R.mipmap.avatar_default_80)
+                    .crossFade()
+                    .into(imageView);
         }
-        Glide.with(context)
-                .load(path)
-                .transform(new GlideCircleTransform(context))
-                .placeholder(R.mipmap.avatar_default_80)
-                .error(R.mipmap.avatar_default_80)
-                .crossFade()
-                .into(imageView);
     }
-
 
 
     /**
