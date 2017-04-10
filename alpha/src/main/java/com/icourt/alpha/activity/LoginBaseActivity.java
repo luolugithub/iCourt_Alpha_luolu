@@ -32,7 +32,7 @@ import retrofit2.Call;
 import retrofit2.Response;
 
 /**
- * Description
+ * Description  登陆基类封装
  * Company Beijing icourt
  * author  youxuan  E-mail:xuanyouwu@163.com
  * date createTime：2017/4/10
@@ -44,6 +44,7 @@ public class LoginBaseActivity extends BaseUmengActivity {
     protected void onCreate(Bundle savedInstanceState) {
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);//全屏
         super.onCreate(savedInstanceState);
+        clearLoginUserInfo();
     }
 
     /**
