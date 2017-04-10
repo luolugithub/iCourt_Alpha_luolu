@@ -23,6 +23,7 @@ import butterknife.Unbinder;
  */
 public class TabFindFragment extends BaseFragment {
 
+
     @BindView(R.id.seekBar)
     SeekBar seekBar;
     Unbinder unbinder;
@@ -35,12 +36,19 @@ public class TabFindFragment extends BaseFragment {
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        if (shouldAddView()) {
-            rootView = inflater.inflate(R.layout.fragment_tab_find, container, false);
-        }
-        removeParent(rootView);
-        unbinder = ButterKnife.bind(this, rootView);
-        return rootView;
+        View view = super.onCreateView(R.layout.fragment_tab_find, inflater, container, savedInstanceState);
+        unbinder = ButterKnife.bind(this, view);
+        return view;
+    }
+
+    @Override
+    protected void initView() {
+        log("==========initView:" + this);
+    }
+
+    @Override
+    protected void getData(boolean isRefresh) {
+
     }
 
     @Override

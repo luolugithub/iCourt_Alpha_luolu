@@ -1,11 +1,15 @@
 package com.icourt.alpha.base;
 
+import android.os.Bundle;
+import android.support.annotation.CallSuper;
 import android.support.annotation.IdRes;
+import android.support.annotation.LayoutRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.StringRes;
 import android.support.annotation.UiThread;
 import android.support.v4.app.Fragment;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
@@ -25,7 +29,7 @@ import com.kaopiz.kprogresshud.KProgressHUD;
  * version
  */
 
-public class BaseFragment
+public abstract class BaseFragment
         extends Fragment
         implements ProgressHUDImp
         , View.OnClickListener {
@@ -50,18 +54,17 @@ public class BaseFragment
         return v;
     }
 
-    protected void initView() {
-
-    }
+    /**
+     * 初始化布局 标准方法 主动调用
+     */
+    protected abstract void initView();
 
     /**
-     * 获取数据 标准方法 请主动调用
+     * 获取数据 标准方法 主动调用
      *
      * @param isRefresh 是否刷新
      */
-    protected void getData(boolean isRefresh) {
-
-    }
+    protected abstract void getData(boolean isRefresh);
 
 
     /**
@@ -97,8 +100,49 @@ public class BaseFragment
      * @return
      */
     protected final boolean shouldAddView() {
-        return getView() == null;
+        return rootView == null;
     }
+
+    /***
+     *  解决oncreateview调用多次
+     * @param layoutId
+     * @param container
+     * @return
+     */
+    protected final View onCreateView(@LayoutRes int layoutId, LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceStater) {
+        if (shouldAddView()) {
+            rootView = inflater.inflate(layoutId, container, false);
+        }
+        removeParent(rootView);
+        return rootView;
+    }
+
+
+    /**
+     * 是否已经初始化过
+     */
+    private boolean isAlreadyInit;
+
+    /**
+     * 是否已经初始化过
+     *
+     * @return
+     */
+    public boolean isAlreadyInit() {
+        return isAlreadyInit;
+    }
+
+    @CallSuper
+    @Override
+    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        if (!isAlreadyInit) {
+            isAlreadyInit = true;
+            initView();
+            getData(true);
+        }
+    }
+
 
     /**
      * 查找控件

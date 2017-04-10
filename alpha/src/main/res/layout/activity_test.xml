@@ -13,6 +13,12 @@
         android:text="demoActivity" />
 
     <Button
+        android:id="@+id/bt_fragment"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="viewpager+fragment" />
+
+    <Button
         android:id="@+id/bt_json"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

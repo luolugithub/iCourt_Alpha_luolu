@@ -5,13 +5,15 @@ import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.RadioButton;
+import android.widget.Button;
 
 import com.icourt.alpha.R;
+import com.icourt.alpha.activity.TestActivity;
 import com.icourt.alpha.base.BaseFragment;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 import butterknife.Unbinder;
 
 /**
@@ -24,9 +26,9 @@ import butterknife.Unbinder;
 public class TabNewsFragment extends BaseFragment {
 
 
-    @BindView(R.id.radioButton)
-    RadioButton radioButton;
     Unbinder unbinder;
+    @BindView(R.id.bt_demo)
+    Button btDemo;
 
     public static TabNewsFragment newInstance() {
         return new TabNewsFragment();
@@ -36,12 +38,31 @@ public class TabNewsFragment extends BaseFragment {
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        if (shouldAddView()) {
-            rootView = inflater.inflate(R.layout.fragment_tab_news, container, false);
+        View view = super.onCreateView(R.layout.fragment_tab_news, inflater, container, savedInstanceState);
+        unbinder = ButterKnife.bind(this, view);
+        return view;
+    }
+
+    @Override
+    protected void initView() {
+        log("==========initView:" + this + "  " + btDemo);
+    }
+
+    @Override
+    protected void getData(boolean isRefresh) {
+
+    }
+
+
+    @OnClick({R.id.bt_demo})
+    @Override
+    public void onClick(View v) {
+        super.onClick(v);
+        switch (v.getId()) {
+            case R.id.bt_demo:
+                TestActivity.launch(getContext());
+                break;
         }
-        removeParent(rootView);
-        unbinder = ButterKnife.bind(this, rootView);
-        return rootView;
     }
 
     @Override
@@ -49,5 +70,4 @@ public class TabNewsFragment extends BaseFragment {
         super.onDestroyView();
         unbinder.unbind();
     }
-
 }

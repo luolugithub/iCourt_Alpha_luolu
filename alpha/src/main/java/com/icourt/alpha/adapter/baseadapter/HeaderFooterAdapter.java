@@ -1,4 +1,4 @@
-package com.icourt.alpha.adapter.recycleradapter;
+package com.icourt.alpha.adapter.baseadapter;
 
 import android.content.Context;
 import android.support.annotation.NonNull;

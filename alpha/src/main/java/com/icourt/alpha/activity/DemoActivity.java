@@ -11,7 +11,7 @@ import android.support.v7.widget.RecyclerView;
 
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.DemoAdapter;
-import com.icourt.alpha.adapter.recycleradapter.BaseArrayRecyclerAdapter;
+import com.icourt.alpha.adapter.baseadapter.BaseArrayRecyclerAdapter;
 import com.icourt.alpha.base.BaseRecyclerActivity;
 import com.icourt.alpha.entity.bean.DemoEntity;
 import com.icourt.alpha.http.callback.SimpleCallBack;

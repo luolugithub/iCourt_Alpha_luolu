@@ -49,6 +49,7 @@ public class TestActivity extends BaseAppUpdateActivity {
         registerClick(R.id.bt_bugs);
         registerClick(R.id.bt_about);
         registerClick(R.id.bt_json);
+        registerClick(R.id.bt_fragment);
     }
 
     @Override
@@ -83,6 +84,9 @@ public class TestActivity extends BaseAppUpdateActivity {
                 break;
             case R.id.bt_about:
                 AboutActivity.launch(getContext());
+                break;
+            case R.id.bt_fragment:
+                DemoViewPagerActivity.launch(getContext());
                 break;
             default:
                 super.onClick(v);

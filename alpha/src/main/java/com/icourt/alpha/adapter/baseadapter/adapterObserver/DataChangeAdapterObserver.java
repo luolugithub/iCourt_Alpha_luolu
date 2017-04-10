@@ -1,4 +1,4 @@
-package com.icourt.alpha.adapter.recycleradapter.adapterObserver;
+package com.icourt.alpha.adapter.baseadapter.adapterObserver;
 
 import android.support.annotation.CallSuper;
 import android.support.v7.widget.RecyclerView;

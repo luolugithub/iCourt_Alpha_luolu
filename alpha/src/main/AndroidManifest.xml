@@ -63,6 +63,9 @@
             android:name=".activity.DemoRealmActivity"
             android:screenOrientation="portrait" />
         <activity
+            android:name=".activity.DemoViewPagerActivity"
+            android:screenOrientation="portrait" />
+        <activity
             android:name=".activity.BugtagsDemoActivity"
             android:screenOrientation="portrait" />
         <activity
@@ -94,9 +97,6 @@
             android:exported="true"
             android:screenOrientation="portrait"
             android:theme="@android:style/Theme.Translucent.NoTitleBar" />
-        <activity
-            android:name=".activity.TestActivity"
-            android:screenOrientation="portrait" />
 
         <provider
             android:name="android.support.v4.content.FileProvider"
@@ -107,7 +107,6 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/provider_paths" />
         </provider>
-
 
 
     </application>

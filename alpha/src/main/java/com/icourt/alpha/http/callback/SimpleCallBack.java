@@ -1,18 +1,9 @@
 package com.icourt.alpha.http.callback;
 
-import android.app.Activity;
-import android.text.TextUtils;
+import android.support.annotation.CallSuper;
 
-import com.google.gson.JsonParseException;
 import com.icourt.alpha.http.exception.ResponseException;
 import com.icourt.alpha.http.httpmodel.ResEntity;
-import com.icourt.alpha.utils.AppManager;
-import com.icourt.alpha.utils.LogUtils;
-import com.icourt.alpha.utils.SnackbarUtils;
-
-import java.net.ConnectException;
-import java.net.SocketException;
-import java.net.SocketTimeoutException;
 
 import retrofit2.Call;
 import retrofit2.Response;
@@ -25,6 +16,7 @@ import retrofit2.Response;
  */
 public abstract class SimpleCallBack<T> extends BaseCallBack<ResEntity<T>> {
 
+    @CallSuper
     @Override
     protected void dispatchHttpSuccess(Call<ResEntity<T>> call, Response<ResEntity<T>> response) {
         if (response.body() != null && response.body().succeed) {

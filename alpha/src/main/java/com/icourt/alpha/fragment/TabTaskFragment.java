@@ -35,12 +35,19 @@ public class TabTaskFragment extends BaseFragment {
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        if (shouldAddView()) {
-            rootView = inflater.inflate(R.layout.fragment_tab_task, container, false);
-        }
-        removeParent(rootView);
-        unbinder = ButterKnife.bind(this, rootView);
-        return rootView;
+        View view = super.onCreateView(R.layout.fragment_tab_task, inflater, container, savedInstanceState);
+        unbinder = ButterKnife.bind(this, view);
+        return view;
+    }
+
+    @Override
+    protected void initView() {
+        log("==========initView:" + this);
+    }
+
+    @Override
+    protected void getData(boolean isRefresh) {
+
     }
 
     @Override

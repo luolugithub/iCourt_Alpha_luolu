@@ -1,4 +1,4 @@
-package com.icourt.alpha.adapter.recycleradapter;
+package com.icourt.alpha.adapter.baseadapter;
 
 import android.databinding.DataBindingUtil;
 import android.view.ViewGroup;

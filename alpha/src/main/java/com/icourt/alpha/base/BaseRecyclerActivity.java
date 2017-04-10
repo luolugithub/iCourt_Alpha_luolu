@@ -2,15 +2,11 @@ package com.icourt.alpha.base;
 
 import android.support.annotation.CallSuper;
 import android.support.annotation.CheckResult;
-import android.support.annotation.NonNull;
 
 import com.andview.refreshview.XRefreshView;
-import com.icourt.alpha.adapter.recycleradapter.BaseArrayRecyclerAdapter;
-import com.icourt.alpha.adapter.recycleradapter.adapterObserver.DataChangeAdapterObserver;
+import com.icourt.alpha.adapter.baseadapter.BaseArrayRecyclerAdapter;
+import com.icourt.alpha.adapter.baseadapter.adapterObserver.DataChangeAdapterObserver;
 import com.icourt.alpha.view.xrefreshlayout.RefreshaLayout;
-
-import retrofit2.Call;
-import retrofit2.Response;
 
 /**
  * Description  适合recyclerView 列表布局 的activity

@@ -1,12 +1,7 @@
 package com.icourt.alpha.adapter;
 
-import android.view.View;
-
 import com.icourt.alpha.R;
-import com.icourt.alpha.adapter.recycleradapter.BaseArrayRecyclerAdapter;
-import com.icourt.alpha.adapter.recycleradapter.BaseRecyclerAdapter;
-import com.icourt.alpha.db.BaseDao;
-import com.icourt.alpha.db.dbdao.FlowerDao;
+import com.icourt.alpha.adapter.baseadapter.BaseArrayRecyclerAdapter;
 import com.icourt.alpha.db.dbmodel.FlowerModel;
 
 /**
