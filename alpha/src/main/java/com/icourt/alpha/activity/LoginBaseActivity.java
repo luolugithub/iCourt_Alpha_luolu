@@ -137,7 +137,7 @@ public class LoginBaseActivity extends BaseUmengActivity {
                         if (response.body().result == null) {
                             dismissLoadingDialog();
                         } else {
-                            result.setOfficeId(response.body().result.thirdpartId);
+                            result.setThirdpartId(response.body().result.thirdpartId);
                             result.setChatToken(response.body().result.chatToken);
                             result.setLoginTime(System.currentTimeMillis());
 

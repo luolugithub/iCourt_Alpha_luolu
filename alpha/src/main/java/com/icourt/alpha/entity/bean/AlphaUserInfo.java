@@ -164,4 +164,25 @@ public class AlphaUserInfo extends ResEntity<String> implements Serializable {
     public void setGroups(List<GroupBean> groups) {
         this.groups = groups;
     }
+
+    @Override
+    public String toString() {
+        return "AlphaUserInfo{" +
+                "thirdpartId='" + thirdpartId + '\'' +
+                ", chatToken='" + chatToken + '\'' +
+                ", loginTime=" + loginTime +
+                ", phone='" + phone + '\'' +
+                ", mail='" + mail + '\'' +
+                ", calendarPKid='" + calendarPKid + '\'' +
+                ", photo='" + photo + '\'' +
+                ", pic='" + pic + '\'' +
+                ", userId='" + userId + '\'' +
+                ", officeId='" + officeId + '\'' +
+                ", officename='" + officename + '\'' +
+                ", token='" + token + '\'' +
+                ", refreshToken='" + refreshToken + '\'' +
+                ", name='" + name + '\'' +
+                ", groups=" + groups +
+                '}';
+    }
 }

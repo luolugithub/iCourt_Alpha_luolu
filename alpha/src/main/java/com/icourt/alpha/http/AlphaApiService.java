@@ -2,6 +2,7 @@ package com.icourt.alpha.http;
 
 import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.icourt.alpha.entity.bean.AppVersionEntity;
+import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.icourt.alpha.entity.bean.LoginIMToken;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 
@@ -14,6 +15,7 @@ import retrofit2.http.Field;
 import retrofit2.http.FormUrlEncoded;
 import retrofit2.http.GET;
 import retrofit2.http.POST;
+import retrofit2.http.Path;
 import retrofit2.http.Query;
 import retrofit2.http.Url;
 
@@ -106,4 +108,13 @@ public interface AlphaApiService {
      */
     @GET("api/v2/chat/msg/token")
     Call<ResEntity<LoginIMToken>> getChatToken();
+
+    /**
+     * 获取团队联系人列表
+     *
+     * @param officeId 在登陆信息中有
+     * @return
+     */
+    @GET("api/v1/auth/q/allByOfficeId/{officeId}")
+    Call<ResEntity<List<GroupContactBean>>> getGroupContacts(@Path("officeId") String officeId);
 }

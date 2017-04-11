@@ -5,10 +5,7 @@ import android.support.annotation.NonNull;
 import io.realm.Realm;
 import io.realm.RealmConfiguration;
 import io.realm.RealmMigration;
-import io.realm.RealmModel;
 import io.realm.RealmObject;
-import io.realm.RealmQuery;
-import io.realm.RealmResults;
 
 /**
  * Description
@@ -42,6 +39,7 @@ public class BaseRealmObjectDao<T extends RealmObject> extends BaseDao<T> {
 
     @Override
     public void delete(T t) {
+        if (!isRealmAvailable()) return;
         try {
             realm.beginTransaction();
             t.deleteFromRealm();

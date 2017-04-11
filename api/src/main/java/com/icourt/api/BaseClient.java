@@ -1,7 +1,7 @@
 package com.icourt.api;
 
-import android.content.Context;
-
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.icourt.api.impl.IRetrofit;
 
 import okhttp3.OkHttpClient;
@@ -18,12 +18,27 @@ public class BaseClient implements IRetrofit {
 
     private Retrofit mRetrofit;
 
+    /**
+     * 自定义gson
+     *
+     * @return
+     */
+    protected Gson createGson() {
+        return new GsonBuilder()
+                .setLenient()// json宽松
+                .serializeNulls()
+                .enableComplexMapKeySerialization()//支持Map的key为复杂对象的形式
+                .setPrettyPrinting()// 调教格式
+                .disableHtmlEscaping() //默认是GSON把HTML 转义的
+                .create();
+    }
+
     @Override
     public void attachBaseUrl(OkHttpClient client, String baseUrl) {
         mRetrofit = new Retrofit.Builder()
                 .baseUrl(baseUrl)
                 //.addConverterFactory(ProtoConverterFactory.create())//适合数据同步
-                .addConverterFactory(GsonConverterFactory.create())
+                .addConverterFactory(GsonConverterFactory.create(createGson()))
                 .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
                 .client(client)
                 .build();

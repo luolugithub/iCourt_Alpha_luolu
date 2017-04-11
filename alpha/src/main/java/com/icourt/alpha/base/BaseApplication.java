@@ -37,6 +37,8 @@ import com.umeng.socialize.Config;
 import com.umeng.socialize.PlatformConfig;
 import com.umeng.socialize.UMShareAPI;
 import com.umeng.socialize.utils.Log;
+import com.vanniktech.emoji.EmojiManager;
+import com.vanniktech.emoji.one.EmojiOneProvider;
 
 import java.net.Proxy;
 import java.util.Map;
@@ -75,12 +77,17 @@ public class BaseApplication extends MultiDexApplication {
         baseApplication = this;
         initActivityLifecycleCallbacks();
         initRealm();
+        initEmoji();
         initYunXin();
         initUMShare();
         initLogger();
         initDownloader();
         initBugtags();
         initGalleryFinal();
+    }
+
+    private void initEmoji() {
+        EmojiManager.install(new EmojiOneProvider());
     }
 
     private void initYunXin() {
@@ -165,7 +172,6 @@ public class BaseApplication extends MultiDexApplication {
             }
         });
     }
-
 
 
     private void initRealm() {

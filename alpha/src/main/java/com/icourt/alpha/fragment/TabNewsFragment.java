@@ -66,11 +66,6 @@ public class TabNewsFragment extends BaseFragment implements OnTabDoubleClickLis
                 ContactListFragment.newInstance()));
     }
 
-    @Override
-    protected void getData(boolean isRefresh) {
-
-    }
-
     @OnClick({R.id.ivActionAdd})
     @Override
     public void onClick(View v) {

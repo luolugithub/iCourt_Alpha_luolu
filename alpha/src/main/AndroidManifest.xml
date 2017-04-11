@@ -94,6 +94,9 @@
         <activity
             android:name=".activity.UpdatePhoneOrMailActivity"
             android:screenOrientation="portrait" />
+        <activity
+            android:name=".activity.ContactSearchActivity"
+            android:screenOrientation="portrait" />
 
         <!-- umeng appkey配置 -->
         <meta-data

@@ -2,6 +2,7 @@ package com.icourt.alpha.base;
 
 import android.os.Bundle;
 import android.support.annotation.CallSuper;
+import android.support.annotation.CheckResult;
 import android.support.annotation.IdRes;
 import android.support.annotation.LayoutRes;
 import android.support.annotation.NonNull;
@@ -16,10 +17,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
 
+import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.icourt.alpha.http.AlphaApiService;
 import com.icourt.alpha.http.RetrofitServiceFactory;
 import com.icourt.alpha.interfaces.ProgressHUDImp;
 import com.icourt.alpha.utils.LogUtils;
+import com.icourt.alpha.utils.LoginInfoUtils;
 import com.icourt.alpha.utils.SnackbarUtils;
 import com.kaopiz.kprogresshud.KProgressHUD;
 
@@ -62,11 +65,13 @@ public abstract class BaseFragment
     protected abstract void initView();
 
     /**
-     * 获取数据 标准方法 主动调用
+     * 获取数据 标准方法 非主动调用
      *
      * @param isRefresh 是否刷新
      */
-    protected abstract void getData(boolean isRefresh);
+    protected void getData(boolean isRefresh) {
+
+    }
 
 
     /**
@@ -141,7 +146,6 @@ public abstract class BaseFragment
         if (!isAlreadyInit) {
             isAlreadyInit = true;
             initView();
-            getData(true);
         }
     }
 
@@ -339,5 +343,49 @@ public abstract class BaseFragment
                     .commit();
         }
         return targetFragment;
+    }
+
+    /**
+     * @return 登陆信息
+     */
+    @Nullable
+    @CheckResult
+    protected final AlphaUserInfo getLoginUserInfo() {
+        return LoginInfoUtils.getLoginUserInfo();
+    }
+
+
+    /**
+     * 清除登陆信息
+     */
+    protected final void clearLoginUserInfo() {
+        LoginInfoUtils.clearLoginUserInfo();
+    }
+
+    /**
+     * 保存登陆信息
+     *
+     * @param alphaUserInfo
+     */
+    protected final void saveLoginUserInfo(AlphaUserInfo alphaUserInfo) {
+        LoginInfoUtils.saveLoginUserInfo(alphaUserInfo);
+    }
+
+    /**
+     * @return 是否登陆
+     */
+    public boolean isUserLogin() {
+        return LoginInfoUtils.isUserLogin();
+    }
+
+    /**
+     * 获取登陆的token
+     *
+     * @return
+     */
+    @Nullable
+    @CheckResult
+    public String getUserToken() {
+        return LoginInfoUtils.getUserToken();
     }
 }
