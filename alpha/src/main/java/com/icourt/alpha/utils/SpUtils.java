@@ -99,7 +99,7 @@ public class SpUtils {
         return this;
     }
 
-    public SpUtils putData(String key, Object o) {
+    public SpUtils putObjectData(String key, Object o) {
         if (o != null) {
             try {
                 getEditor().putString(key, JsonUtils.Gson2String(o)).commit();

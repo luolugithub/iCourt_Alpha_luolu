@@ -85,7 +85,6 @@ public class ContactSearchActivity extends BaseActivity {
     protected void initView() {
         super.initView();
         AlphaUserInfo loginUserInfo = getLoginUserInfo();
-        log("------------>user:" + loginUserInfo);
         contactDbService = new ContactDbService(loginUserInfo == null ? "" : loginUserInfo.getUserId());
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setAdapter(imContactAdapter = new IMContactAdapter());

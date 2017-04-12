@@ -110,6 +110,17 @@ public interface AlphaApiService {
     Call<ResEntity<LoginIMToken>> getChatToken();
 
     /**
+     * 刷新登陆refreshToken过时
+     * 注意请求的key是 refreshToekn
+     * 注意这个api 不支持post
+     *
+     * @param refreshToken 已经登陆的refreshToken
+     * @return
+     */
+    @GET("api/v1/auth/refresh")
+    Call<ResEntity<AlphaUserInfo>> refreshToken(@Query("refreshToekn") String refreshToken);
+
+    /**
      * 获取团队联系人列表
      *
      * @param officeId 在登陆信息中有

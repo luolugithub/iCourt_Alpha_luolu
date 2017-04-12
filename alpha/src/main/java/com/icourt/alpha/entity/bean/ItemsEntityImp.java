@@ -11,34 +11,19 @@ import android.support.annotation.DrawableRes;
  */
 public interface ItemsEntityImp {
 
-    /*public CharSequence itemTitle;
-    public int ItemType;
-    public int ItemIconRes;
-    public String ItemIcon;
-
-    public ItemsEntity(CharSequence itemTitle, int itemIconRes) {
-        this.itemTitle = itemTitle;
-        ItemIconRes = itemIconRes;
-    }
-
-    public ItemsEntity(CharSequence itemTitle, int itemType, int itemIconRes) {
-        this.itemTitle = itemTitle;
-        ItemType = itemType;
-        ItemIconRes = itemIconRes;
-    }*/
     /**
      * item的标题
      *
      * @return
      */
-    public abstract CharSequence getItemTitle();
+    CharSequence getItemTitle();
 
     /**
      * item的类型
      *
      * @return
      */
-    public abstract int getItemType();
+    int getItemType();
 
     /**
      * item的icon
@@ -46,12 +31,12 @@ public interface ItemsEntityImp {
      * @return
      */
     @DrawableRes
-    public abstract int getItemIconRes();
+    int getItemIconRes();
 
     /**
      * item的网络图片
      *
      * @return
      */
-    public abstract String getItemIcon();
+    String getItemIcon();
 }

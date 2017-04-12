@@ -80,7 +80,6 @@ public class ContactListFragment extends BaseFragment {
     @Override
     protected void initView() {
         loginUserInfo = getLoginUserInfo();
-        log("------------>user:" + loginUserInfo);
         contactDbService = new ContactDbService(loginUserInfo == null ? "" : loginUserInfo.getUserId());
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getContext());
         recyclerView.setLayoutManager(linearLayoutManager);
