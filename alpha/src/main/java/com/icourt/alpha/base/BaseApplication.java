@@ -2,7 +2,9 @@ package com.icourt.alpha.base;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.os.Build;
 import android.os.Environment;
+import android.os.StrictMode;
 import android.support.multidex.MultiDexApplication;
 
 import com.bugtags.library.Bugtags;
@@ -75,6 +77,7 @@ public class BaseApplication extends MultiDexApplication {
     public void onCreate() {
         super.onCreate();
         baseApplication = this;
+        initStrictMode();
         initActivityLifecycleCallbacks();
         initRealm();
         initEmoji();
@@ -84,6 +87,17 @@ public class BaseApplication extends MultiDexApplication {
         initDownloader();
         initBugtags();
         initGalleryFinal();
+    }
+
+    /**
+     * 初始化StrictMode
+     */
+    private void initStrictMode() {
+        //必须添加  否则FileUriExposedException
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            StrictMode.VmPolicy.Builder builder = new StrictMode.VmPolicy.Builder();
+            StrictMode.setVmPolicy(builder.build());
+        }
     }
 
     private void initEmoji() {

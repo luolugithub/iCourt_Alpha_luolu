@@ -12,6 +12,7 @@ import com.andview.refreshview.XRefreshView;
 import com.icourt.alpha.R;
 import com.icourt.alpha.activity.ContactSearchActivity;
 import com.icourt.alpha.adapter.IMContactAdapter;
+import com.icourt.alpha.adapter.ItemActionAdapter;
 import com.icourt.alpha.adapter.baseadapter.HeaderFooterAdapter;
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.db.convertor.IConvertModel;
@@ -20,6 +21,7 @@ import com.icourt.alpha.db.dbmodel.ContactDbModel;
 import com.icourt.alpha.db.dbservice.ContactDbService;
 import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.icourt.alpha.entity.bean.GroupContactBean;
+import com.icourt.alpha.entity.bean.ItemsEntity;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.CustomIndexBarDataHelper;
@@ -29,6 +31,7 @@ import com.mcxtzhang.indexlib.IndexBar.widget.IndexBar;
 import com.mcxtzhang.indexlib.suspension.SuspensionDecoration;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import butterknife.BindView;
@@ -54,6 +57,8 @@ public class ContactListFragment extends BaseFragment {
     RefreshLayout refreshLayout;
     Unbinder unbinder;
     AlphaUserInfo loginUserInfo;
+    RecyclerView headerRecyclerView;
+    ItemActionAdapter<ItemsEntity> itemsEntityItemActionAdapter;
     HeaderFooterAdapter<IMContactAdapter> headerFooterAdapter;
     IMContactAdapter imContactAdapter;
     SuspensionDecoration mDecoration;
@@ -87,7 +92,15 @@ public class ContactListFragment extends BaseFragment {
         recyclerView.addItemDecoration(mDecoration);
 
         headerFooterAdapter = new HeaderFooterAdapter<IMContactAdapter>(imContactAdapter = new IMContactAdapter());
-        View headerView = HeaderFooterAdapter.inflaterView(getContext(), R.layout.header_search_comm, recyclerView);
+        View headerView = HeaderFooterAdapter.inflaterView(getContext(), R.layout.header_contact_search, recyclerView);
+        headerRecyclerView = (RecyclerView) headerView.findViewById(R.id.headerRecyclerView);
+        headerRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        headerRecyclerView.setAdapter(itemsEntityItemActionAdapter = new ItemActionAdapter<ItemsEntity>());
+        itemsEntityItemActionAdapter.bindData(true, Arrays.asList(new ItemsEntity("我加入的讨论组", R.mipmap.tab_message),
+                new ItemsEntity("所有讨论组", R.mipmap.tab_message),
+                new ItemsEntity("已归档讨论组", R.mipmap.tab_message)));
+
+
         headerView.findViewById(R.id.rl_comm_search).setOnClickListener(this);
         headerFooterAdapter.addHeader(headerView);
 
