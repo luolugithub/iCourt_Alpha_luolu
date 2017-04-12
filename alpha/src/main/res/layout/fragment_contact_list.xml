@@ -6,11 +6,17 @@
     android:background="@android:color/white"
     android:orientation="vertical">
 
-    <android.support.v7.widget.RecyclerView
-        android:id="@+id/recyclerView"
+    <com.icourt.alpha.view.xrefreshlayout.RefreshLayout
+        android:id="@id/refreshLayout"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        />
+        android:layout_height="match_parent">
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@id/recyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+    </com.icourt.alpha.view.xrefreshlayout.RefreshLayout>
+
 
     <com.mcxtzhang.indexlib.IndexBar.widget.IndexBar
         android:id="@+id/recyclerIndexBar"

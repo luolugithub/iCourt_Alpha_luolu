@@ -42,7 +42,6 @@ public class TestActivity extends BaseAppUpdateActivity {
     protected void initView() {
         super.initView();
         setTitle("test");
-        unregisterClick(R.id.titleBack);
         registerClick(R.id.bt_demo);
         registerClick(R.id.bt_login);
         registerClick(R.id.bt_db);
@@ -63,7 +62,7 @@ public class TestActivity extends BaseAppUpdateActivity {
         switch (v.getId()) {
             case R.id.bt_demo:
                 shareDemo();
-               // DemoActivity.launch(getContext());
+                // DemoActivity.launch(getContext());
                 break;
             case R.id.bt_json:
                 test();

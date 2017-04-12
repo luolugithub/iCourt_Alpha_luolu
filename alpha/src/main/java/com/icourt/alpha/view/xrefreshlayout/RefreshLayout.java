@@ -1,10 +1,7 @@
 package com.icourt.alpha.view.xrefreshlayout;
 
 import android.content.Context;
-import android.graphics.drawable.Drawable;
 import android.support.annotation.DrawableRes;
-import android.support.annotation.IdRes;
-import android.support.annotation.LayoutRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.StringRes;
 import android.support.v7.widget.RecyclerView;
@@ -16,22 +13,22 @@ import com.andview.refreshview.XRefreshView;
 import com.icourt.alpha.R;
 
 /**
- * Description 自定义xrefresh  @{@link com.andview.refreshview.XRefreshView}
+ * Description 自定义xrefresh  @{@link XRefreshView}
  * Company Beijing icourt
  * author  youxuan  E-mail:xuanyouwu@163.com
  * date createTime：2017/4/2
  * version 1.0.0
  */
-public class RefreshaLayout extends XRefreshView {
+public class RefreshLayout extends XRefreshView {
 
-    public RefreshaLayout(Context context) {
+    public RefreshLayout(Context context) {
         this(context, null);
     }
 
     private View defalutContentEmptyView;
     private TextView contentEmptyText;
 
-    public RefreshaLayout(Context context, AttributeSet attrs) {
+    public RefreshLayout(Context context, AttributeSet attrs) {
         super(context, attrs);
         defalutContentEmptyView = View.inflate(context, R.layout.refresh_empty_view, null);
         setEmptyView(defalutContentEmptyView);

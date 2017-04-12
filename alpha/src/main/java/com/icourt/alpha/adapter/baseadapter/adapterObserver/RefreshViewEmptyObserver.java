@@ -3,7 +3,7 @@ package com.icourt.alpha.adapter.baseadapter.adapterObserver;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 
-import com.icourt.alpha.view.xrefreshlayout.RefreshaLayout;
+import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 
 /**
  * Description
@@ -14,20 +14,20 @@ import com.icourt.alpha.view.xrefreshlayout.RefreshaLayout;
  */
 public class RefreshViewEmptyObserver extends DataChangeAdapterObserver {
 
-    private RefreshaLayout refreshaLayout;
+    private RefreshLayout refreshLayout;
     private RecyclerView.Adapter adapter;
 
     public RefreshViewEmptyObserver(
-            @NonNull RefreshaLayout refreshaLayout,
+            @NonNull RefreshLayout refreshLayout,
             @NonNull RecyclerView.Adapter adapter) {
-        this.refreshaLayout = refreshaLayout;
+        this.refreshLayout = refreshLayout;
         this.adapter = adapter;
     }
 
     @Override
     protected void updateUI() {
-        if (refreshaLayout != null) {
-            refreshaLayout.enableEmptyViewWithAdapter(adapter);
+        if (refreshLayout != null) {
+            refreshLayout.enableEmptyViewWithAdapter(adapter);
         }
     }
 }

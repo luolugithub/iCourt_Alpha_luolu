@@ -9,7 +9,7 @@ import com.icourt.alpha.adapter.baseadapter.BaseArrayRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.adapterObserver.DataChangeAdapterObserver;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
-import com.icourt.alpha.view.xrefreshlayout.RefreshaLayout;
+import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 
 import java.util.List;
 
@@ -28,7 +28,7 @@ public abstract class BaseRecyclerActivity<T> extends BaseActivity implements XR
     protected DataChangeAdapterObserver dataChangeAdapterObserver = new DataChangeAdapterObserver() {
         @Override
         protected void updateUI() {
-            RefreshaLayout refreshaLayout = getRefreshLayout();
+            RefreshLayout refreshaLayout = getRefreshLayout();
             if (refreshaLayout == null) return;
             refreshaLayout.enableEmptyViewWithAdapter(getRecyclerAdapter());
         }
@@ -38,12 +38,12 @@ public abstract class BaseRecyclerActivity<T> extends BaseActivity implements XR
     protected abstract BaseArrayRecyclerAdapter<T> getRecyclerAdapter();
 
     @CheckResult
-    protected abstract RefreshaLayout getRefreshLayout();
+    protected abstract RefreshLayout getRefreshLayout();
 
     @Override
     protected void initView() {
         super.initView();
-        RefreshaLayout refreshLayout = getRefreshLayout();
+        RefreshLayout refreshLayout = getRefreshLayout();
         if (refreshLayout != null) {
             refreshLayout.setXRefreshViewListener(this);
             refreshLayout.setPullLoadEnable(true);
@@ -68,7 +68,7 @@ public abstract class BaseRecyclerActivity<T> extends BaseActivity implements XR
                     if (recyclerAdapter != null) {
                         recyclerAdapter.bindData(isRefresh, response.body().result);
                     }
-                    RefreshaLayout refreshLayout = getRefreshLayout();
+                    RefreshLayout refreshLayout = getRefreshLayout();
                     if (refreshLayout != null) {
                         refreshLayout.stopRefresh();
                         refreshLayout.stopLoadMore();
@@ -78,7 +78,7 @@ public abstract class BaseRecyclerActivity<T> extends BaseActivity implements XR
                 @Override
                 public void onFailure(Call<ResEntity<List<T>>> call, Throwable t) {
                     super.onFailure(call, t);
-                    RefreshaLayout refreshLayout = getRefreshLayout();
+                    RefreshLayout refreshLayout = getRefreshLayout();
                     if (refreshLayout != null) {
                         refreshLayout.stopRefresh();
                         refreshLayout.stopLoadMore();

@@ -57,6 +57,7 @@ public class ContactSearchActivity extends BaseActivity {
     RecyclerView recyclerView;
     @BindView(R.id.softKeyboardSizeWatchLayout)
     SoftKeyboardSizeWatchLayout softKeyboardSizeWatchLayout;
+    ContactDbService contactDbService;
 
     public static void launch(@NonNull Context context, View searchLayout) {
         if (context == null) return;
@@ -83,6 +84,9 @@ public class ContactSearchActivity extends BaseActivity {
     @Override
     protected void initView() {
         super.initView();
+        AlphaUserInfo loginUserInfo = getLoginUserInfo();
+        log("------------>user:" + loginUserInfo);
+        contactDbService = new ContactDbService(loginUserInfo == null ? "" : loginUserInfo.getUserId());
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setAdapter(imContactAdapter = new IMContactAdapter());
         recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
@@ -93,7 +97,7 @@ public class ContactSearchActivity extends BaseActivity {
                     case RecyclerView.SCROLL_STATE_DRAGGING: {
                         if (softKeyboardSizeWatchLayout != null
                                 && softKeyboardSizeWatchLayout.isSoftKeyboardPop()) {
-                            SystemUtils.hideSoftKeyBoard(getActivity(), etContactName);
+                            SystemUtils.hideSoftKeyBoard(getActivity(), etContactName, true);
                         }
                     }
                     break;
@@ -146,17 +150,17 @@ public class ContactSearchActivity extends BaseActivity {
     @Override
     protected void getData(boolean isRefresh) {
         super.getData(isRefresh);
-        AlphaUserInfo loginUserInfo = getLoginUserInfo();
-        log("------------>user:" + loginUserInfo);
-        ContactDbService contactDbService = new ContactDbService(loginUserInfo == null ? "" : loginUserInfo.getUserId());
-        RealmResults<ContactDbModel> name = contactDbService.contains("name", etContactName.getText().toString());
-        if (name == null) {
-            imContactAdapter.clearData();
-            return;
+        try {
+            RealmResults<ContactDbModel> name = contactDbService.contains("name", etContactName.getText().toString());
+            if (name == null) {
+                imContactAdapter.clearData();
+                return;
+            }
+            List<GroupContactBean> contactBeen = ListConvertor.convertList(new ArrayList<IConvertModel<GroupContactBean>>(name));
+            imContactAdapter.bindData(true, contactBeen);
+        } catch (Throwable e) {
+            e.printStackTrace();
         }
-        List<GroupContactBean> contactBeen = ListConvertor.convertList(new ArrayList<IConvertModel<GroupContactBean>>(name));
-        imContactAdapter.bindData(true, contactBeen);
-        contactDbService.releaseService();
     }
 
     @OnClick({R.id.tv_search_cancel})
@@ -168,6 +172,14 @@ public class ContactSearchActivity extends BaseActivity {
                 SystemUtils.hideSoftKeyBoard(getActivity(), etContactName, true);
                 finish();
                 break;
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (contactDbService != null) {
+            contactDbService.releaseService();
         }
     }
 }

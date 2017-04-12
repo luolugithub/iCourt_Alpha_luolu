@@ -6,5 +6,7 @@
     <item name="titleAction" type="id"></item>         <!-- 标题右边操作按钮/图片 -->
     <item name="titleAction2" type="id"></item>         <!-- 标题右边第二个操作按钮/图片 -->
     <item name="contentEmptyText" type="id"></item>    <!-- 内容为空 -->
-    <item name="adapter_item_tag_key" type="id"/>
+    <item name="adapter_item_tag_key" type="id" />
+    <item name="recyclerView" type="id" />
+    <item name="refreshLayout" type="id" />
 </resources>

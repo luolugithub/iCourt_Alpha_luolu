@@ -9,6 +9,6 @@ package com.icourt.alpha.constants;
  */
 public class DbConfig {
 
-    public static final String DB_REALM_CONTACT = "db_realm_contact_%s.realm";//联系人数据库
+    public static final String DB_REALM_CONTACT = "db_realm_contacts_%s.realm";//联系人数据库
 
 }

@@ -8,6 +8,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.andview.refreshview.XRefreshView;
 import com.icourt.alpha.R;
 import com.icourt.alpha.activity.ContactSearchActivity;
 import com.icourt.alpha.adapter.IMContactAdapter;
@@ -23,6 +24,7 @@ import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.CustomIndexBarDataHelper;
 import com.icourt.alpha.utils.DensityUtil;
+import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 import com.mcxtzhang.indexlib.IndexBar.widget.IndexBar;
 import com.mcxtzhang.indexlib.suspension.SuspensionDecoration;
 
@@ -48,12 +50,14 @@ public class ContactListFragment extends BaseFragment {
     RecyclerView recyclerView;
     @BindView(R.id.recyclerIndexBar)
     IndexBar recyclerIndexBar;
+    @BindView(R.id.refreshLayout)
+    RefreshLayout refreshLayout;
     Unbinder unbinder;
     AlphaUserInfo loginUserInfo;
     HeaderFooterAdapter<IMContactAdapter> headerFooterAdapter;
     IMContactAdapter imContactAdapter;
     SuspensionDecoration mDecoration;
-
+    ContactDbService contactDbService;
 
     public static ContactListFragment newInstance() {
         return new ContactListFragment();
@@ -72,6 +76,7 @@ public class ContactListFragment extends BaseFragment {
     protected void initView() {
         loginUserInfo = getLoginUserInfo();
         log("------------>user:" + loginUserInfo);
+        contactDbService = new ContactDbService(loginUserInfo == null ? "" : loginUserInfo.getUserId());
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getContext());
         recyclerView.setLayoutManager(linearLayoutManager);
 
@@ -91,13 +96,25 @@ public class ContactListFragment extends BaseFragment {
                 //.setmPressedShowTextView(mTvSideBarHint)//设置HintTextView
                 .setNeedRealIndex(true)
                 .setmLayoutManager(linearLayoutManager);
+
+        refreshLayout.setXRefreshViewListener(new XRefreshView.SimpleXRefreshListener() {
+            @Override
+            public void onRefresh(boolean isPullDown) {
+                super.onRefresh(isPullDown);
+                getData(true);
+            }
+        });
+        refreshLayout.setAutoRefresh(true);
+        refreshLayout.startRefresh();
     }
 
     @Override
     public void onResume() {
         super.onResume();
         getContactsFromDb();
-        getData(true);
+        if (refreshLayout != null) {
+            refreshLayout.startRefresh();
+        }
     }
 
     @Override
@@ -114,22 +131,28 @@ public class ContactListFragment extends BaseFragment {
      * 从数据库获取所有联系人
      */
     private void getContactsFromDb() {
-        ContactDbService contactDbService = new ContactDbService(loginUserInfo == null ? "" : loginUserInfo.getUserId());
-        RealmResults<ContactDbModel> contactDbModels = contactDbService.queryAll();
-        if (contactDbModels != null) {
-            List<GroupContactBean> contactBeen = ListConvertor.convertList(new ArrayList<IConvertModel<GroupContactBean>>(contactDbModels));
-            log("------------>load from db:" + contactBeen);
-            filterRobot(contactBeen);
-            imContactAdapter.bindData(true, contactBeen);
-            updateIndexBar(contactBeen);
+        try {
+            RealmResults<ContactDbModel> contactDbModels = contactDbService.queryAll();
+            if (contactDbModels != null) {
+                List<GroupContactBean> contactBeen = ListConvertor.convertList(new ArrayList<IConvertModel<GroupContactBean>>(contactDbModels));
+                log("------------>load from db:" + contactBeen);
+                filterRobot(contactBeen);
+                imContactAdapter.bindData(true, contactBeen);
+                updateIndexBar(contactBeen);
+            }
+        } catch (Throwable e) {
+            e.printStackTrace();
         }
-        contactDbService.releaseService();
     }
 
+    /**
+     * 获取联系人
+     *
+     * @param isRefresh 是否刷新
+     */
     @Override
     protected void getData(boolean isRefresh) {
-        if (loginUserInfo == null) return;
-        getApi().getGroupContacts(loginUserInfo.getOfficeId())
+        getApi().getGroupContacts(loginUserInfo == null ? "" : loginUserInfo.getOfficeId())
                 .enqueue(new SimpleCallBack<List<GroupContactBean>>() {
                     @Override
                     public void onSuccess(Call<ResEntity<List<GroupContactBean>>> call, Response<ResEntity<List<GroupContactBean>>> response) {
@@ -141,10 +164,23 @@ public class ContactListFragment extends BaseFragment {
                             imContactAdapter.bindData(true, data);
                             updateIndexBar(data);
                         }
+                        refreshLayout.stopRefresh();
+                    }
+
+                    @Override
+                    public void onFailure(Call<ResEntity<List<GroupContactBean>>> call, Throwable t) {
+                        super.onFailure(call, t);
+                        refreshLayout.stopRefresh();
                     }
                 });
     }
 
+    /**
+     * 过滤掉 机器人（robot == 1）
+     *
+     * @param data
+     * @return
+     */
     private List<GroupContactBean> filterRobot(List<GroupContactBean> data) {
         if (data != null) {
             //过滤
@@ -160,6 +196,11 @@ public class ContactListFragment extends BaseFragment {
         return data;
     }
 
+    /**
+     * 更新indextBar
+     *
+     * @param data
+     */
     private void updateIndexBar(List<GroupContactBean> data) {
         List<GroupContactBean> wrapDatas = new ArrayList<GroupContactBean>(data);
         GroupContactBean headerContactBean = new GroupContactBean();
@@ -176,14 +217,18 @@ public class ContactListFragment extends BaseFragment {
 
     /**
      * 异步插入联系人
+     * 先删除所有联系人
      *
      * @param data
      */
     private void insertAsynContact(List<GroupContactBean> data) {
         if (data == null) return;
-        ContactDbService contactDbService = new ContactDbService(loginUserInfo == null ? "" : loginUserInfo.getUserId());
-        contactDbService.insertAsyn(new ArrayList<IConvertModel<ContactDbModel>>(data));
-        contactDbService.releaseService();
+        try {
+            contactDbService.deleteAll();
+            contactDbService.insertAsyn(new ArrayList<IConvertModel<ContactDbModel>>(data));
+        } catch (Throwable e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -192,4 +237,11 @@ public class ContactListFragment extends BaseFragment {
         unbinder.unbind();
     }
 
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if (contactDbService != null) {
+            contactDbService.releaseService();
+        }
+    }
 }

@@ -61,6 +61,7 @@ public class GroupContactBean extends GroupContactActionEntity implements IConve
 
     @Override
     public ContactDbModel convert2Model() {
+        if (TextUtils.isEmpty(userId)) return null;
         return new ContactDbModel(userId,
                 userName,
                 name,

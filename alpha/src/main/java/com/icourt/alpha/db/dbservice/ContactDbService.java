@@ -35,6 +35,16 @@ public class ContactDbService extends BaseRealmService<ContactDbModel, ContactDa
         }
     }
 
+
+    /**
+     * 全部删除
+     */
+    public void deleteAll() {
+        if (isServiceAvailable()) {
+            dao.delete(ContactDbModel.class);
+        }
+    }
+
     /**
      * 批量异步插入
      *

@@ -6,7 +6,7 @@
 
     <include layout="@layout/layout_title_type_1" />
 
-    <com.icourt.alpha.view.xrefreshlayout.RefreshaLayout
+    <com.icourt.alpha.view.xrefreshlayout.RefreshLayout
         android:id="@+id/xrefreshview"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
@@ -15,6 +15,6 @@
             android:id="@+id/recyclerView"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
-    </com.icourt.alpha.view.xrefreshlayout.RefreshaLayout>
+    </com.icourt.alpha.view.xrefreshlayout.RefreshLayout>
 
 </LinearLayout>

@@ -19,6 +19,13 @@ public class ListConvertor {
     private ListConvertor() {
     }
 
+    /**
+     * 自动过滤为空的实体
+     *
+     * @param from
+     * @param <T>
+     * @return
+     */
     @Nullable
     @CheckResult
     public static <T> List<T> convertList(@NonNull List<IConvertModel<T>> from) {

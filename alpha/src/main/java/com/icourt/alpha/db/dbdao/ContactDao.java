@@ -22,6 +22,16 @@ public class ContactDao extends BaseRealmObjectDao<ContactDbModel> {
             public void migrate(DynamicRealm realm, long oldVersion, long newVersion) {
 
             }
+
+            @Override
+            public int hashCode() {
+                return DbConfig.DB_REALM_CONTACT.hashCode();
+            }
+
+            @Override
+            public boolean equals(Object o) {
+                return (o instanceof RealmMigration);
+            }
         });
     }
 

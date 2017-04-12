@@ -4,6 +4,7 @@ import com.icourt.alpha.db.convertor.IConvertModel;
 import com.icourt.alpha.entity.bean.GroupContactBean;
 
 import io.realm.RealmObject;
+import io.realm.annotations.PrimaryKey;
 
 /**
  * Description  联系人数据库模型
@@ -15,6 +16,7 @@ import io.realm.RealmObject;
 public class ContactDbModel extends RealmObject
         implements IConvertModel<GroupContactBean> {
 
+    @PrimaryKey
     public String userId;
     public String userName;
     public String name;
