@@ -14,7 +14,9 @@ import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
+import android.view.KeyEvent;
 import android.view.View;
+import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.TextView;
 
@@ -27,12 +29,15 @@ import com.icourt.alpha.db.dbmodel.ContactDbModel;
 import com.icourt.alpha.db.dbservice.ContactDbService;
 import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.icourt.alpha.entity.bean.GroupContactBean;
+import com.icourt.alpha.utils.SystemUtils;
+import com.icourt.alpha.view.SoftKeyboardSizeWatchLayout;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 import io.realm.RealmResults;
 
 /**
@@ -50,6 +55,8 @@ public class ContactSearchActivity extends BaseActivity {
     TextView tvSearchCancel;
     @BindView(R.id.recyclerView)
     RecyclerView recyclerView;
+    @BindView(R.id.softKeyboardSizeWatchLayout)
+    SoftKeyboardSizeWatchLayout softKeyboardSizeWatchLayout;
 
     public static void launch(@NonNull Context context, View searchLayout) {
         if (context == null) return;
@@ -78,6 +85,26 @@ public class ContactSearchActivity extends BaseActivity {
         super.initView();
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setAdapter(imContactAdapter = new IMContactAdapter());
+        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+                super.onScrollStateChanged(recyclerView, newState);
+                switch (newState) {
+                    case RecyclerView.SCROLL_STATE_DRAGGING: {
+                        if (softKeyboardSizeWatchLayout != null
+                                && softKeyboardSizeWatchLayout.isSoftKeyboardPop()) {
+                            SystemUtils.hideSoftKeyBoard(getActivity(), etContactName);
+                        }
+                    }
+                    break;
+                }
+            }
+
+            @Override
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+            }
+        });
         etContactName.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -95,6 +122,22 @@ public class ContactSearchActivity extends BaseActivity {
                     imContactAdapter.clearData();
                 } else {
                     getData(true);
+                }
+            }
+        });
+        etContactName.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                switch (actionId) {
+                    case EditorInfo.IME_ACTION_SEARCH: {
+                        SystemUtils.hideSoftKeyBoard(getActivity(), etContactName);
+                        if (!TextUtils.isEmpty(etContactName.getText())) {
+                            getData(true);
+                        }
+                    }
+                    return true;
+                    default:
+                        return false;
                 }
             }
         });
@@ -116,4 +159,15 @@ public class ContactSearchActivity extends BaseActivity {
         contactDbService.releaseService();
     }
 
+    @OnClick({R.id.tv_search_cancel})
+    @Override
+    public void onClick(View v) {
+        super.onClick(v);
+        switch (v.getId()) {
+            case R.id.tv_search_cancel:
+                SystemUtils.hideSoftKeyBoard(getActivity(), etContactName, true);
+                finish();
+                break;
+        }
+    }
 }
