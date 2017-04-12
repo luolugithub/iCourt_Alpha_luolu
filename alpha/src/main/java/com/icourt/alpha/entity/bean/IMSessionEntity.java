@@ -14,9 +14,14 @@ public class IMSessionEntity {
 
     public Team team;
     public RecentContact recentContact;
+    public IMBodyEntity customIMBody;//自定义消息体 请提前解析
 
-    public IMSessionEntity(Team team, RecentContact recentContact) {
+    public IMSessionEntity(
+            Team team,
+            RecentContact recentContact,
+            IMBodyEntity customIMBody) {
         this.team = team;
         this.recentContact = recentContact;
+        this.customIMBody = customIMBody;
     }
 }

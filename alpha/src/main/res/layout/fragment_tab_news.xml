@@ -5,31 +5,36 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <RelativeLayout
+    <android.support.design.widget.AppBarLayout
+        android:id="@id/titleView"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/alpha_background_title"
-        android:gravity="center_vertical"
-        android:orientation="horizontal">
+        android:layout_height="wrap_content">
 
-        <android.support.design.widget.TabLayout
-            android:id="@+id/tabLayout"
-            style="@style/AlphaTabLayout"
-            android:layout_width="wrap_content"
-            android:layout_height="40dp"
-            app:tabMinWidth="70dp"
-            app:tabMode="scrollable" />
-
-        <ImageView
-            android:id="@+id/ivActionAdd"
-            android:layout_width="wrap_content"
+        <RelativeLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_alignParentRight="true"
-            android:padding="10dp"
-            android:src="@mipmap/header_icon_add" />
+            android:background="@color/alpha_background_title"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
 
-    </RelativeLayout>
+            <android.support.design.widget.TabLayout
+                android:id="@+id/tabLayout"
+                style="@style/AlphaTabLayout"
+                android:layout_width="wrap_content"
+                android:layout_height="40dp"
+                app:tabMinWidth="70dp"
+                app:tabMode="scrollable" />
 
+            <ImageView
+                android:id="@+id/ivActionAdd"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                android:padding="10dp"
+                android:src="@mipmap/header_icon_add" />
+
+        </RelativeLayout>
+    </android.support.design.widget.AppBarLayout>
 
     <android.support.v4.view.ViewPager
         android:id="@+id/viewPager"
