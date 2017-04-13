@@ -74,6 +74,21 @@ public class ContactDbService extends BaseRealmService<ContactDbModel, ContactDa
     }
 
     /**
+     * 查询得到第一条对应实体
+     *
+     * @param fieldName
+     * @param value
+     * @return
+     */
+    public ContactDbModel queryFirst(String fieldName, String value) {
+        if (isServiceAvailable()) {
+            return dao.queryFirst(ContactDbModel.class, fieldName, value);
+        }
+        return null;
+    }
+
+
+    /**
      * 查询所有
      *
      * @return

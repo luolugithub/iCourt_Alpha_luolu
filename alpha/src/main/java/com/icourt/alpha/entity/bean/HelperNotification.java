@@ -9,6 +9,7 @@ import java.io.Serializable;
  * @data 创建时间:17/3/30
  */
 
+@Deprecated
 public class HelperNotification implements Serializable {
 
 //    TASK_DETAILS_EDIT("TASK","TASK_DETAILS","TASK_DETAILS_EDIT","{0}编辑了任务"),
