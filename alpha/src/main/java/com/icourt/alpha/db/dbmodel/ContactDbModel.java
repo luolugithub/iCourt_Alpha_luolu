@@ -49,4 +49,17 @@ public class ContactDbModel extends RealmObject
                 pic,
                 robot);
     }
+
+    @Override
+    public String toString() {
+        return "ContactDbModel{" +
+                "userId='" + userId + '\'' +
+                ", userName='" + userName + '\'' +
+                ", name='" + name + '\'' +
+                ", phone='" + phone + '\'' +
+                ", email='" + email + '\'' +
+                ", pic='" + pic + '\'' +
+                ", robot=" + robot +
+                '}';
+    }
 }

@@ -174,10 +174,10 @@ public class BaseUmengActivity extends BaseActivity implements UMAuthListener {
     protected void shareFile2WeiXin(File file) {
         if (file != null && file.exists()) {
             //  if(file.length()>10mb)
-            UMImage umImage=new UMImage(this,"http://i.ce.cn/fashion/news/201704/11/W020170411297208606486.jpg");
+            UMImage umImage = new UMImage(this, "http://i.ce.cn/fashion/news/201704/11/W020170411297208606486.jpg");
             new ShareAction(getActivity())
                     .setPlatform(SHARE_MEDIA.WEIXIN)
-                    .withExtra(umImage)
+                    .withMedia(umImage)
                  /*   .withSubject(file.getName())//文件名
                     .withFile(file)*/
                     .setCallback(new UMShareListener() {

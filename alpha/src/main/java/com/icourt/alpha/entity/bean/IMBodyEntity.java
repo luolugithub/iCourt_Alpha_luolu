@@ -26,4 +26,23 @@ public class IMBodyEntity extends FileInfoEntity {
     public String action_tid;
     public String action_groupId;
 
+    @Override
+    public String toString() {
+        return "IMBodyEntity{" +
+                "show_type=" + show_type +
+                ", pinMsg=" + pinMsg +
+                ", groupId='" + groupId + '\'' +
+                ", name='" + name + '\'' +
+                ", id='" + id + '\'' +
+                ", pic='" + pic + '\'' +
+                ", tid='" + tid + '\'' +
+                ", content='" + content + '\'' +
+                ", route='" + route + '\'' +
+                ", atAll=" + atAll +
+                ", atBeanList=" + atBeanList +
+                ", time=" + time +
+                ", action_tid='" + action_tid + '\'' +
+                ", action_groupId='" + action_groupId + '\'' +
+                '}';
+    }
 }

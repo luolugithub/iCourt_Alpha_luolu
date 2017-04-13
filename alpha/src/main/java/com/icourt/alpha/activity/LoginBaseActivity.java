@@ -16,7 +16,6 @@ import com.icourt.alpha.http.callback.BaseCallBack;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.exception.ResponseException;
 import com.icourt.alpha.http.httpmodel.ResEntity;
-import com.icourt.alpha.utils.LogUtils;
 import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.utils.UserPreferences;
 import com.icourt.api.RequestUtils;
@@ -205,7 +204,6 @@ public class LoginBaseActivity extends BaseUmengActivity {
     }
 
     public void feedBackYunXinLog(String errorlog) {
-        LogUtils.feedToServer("云信登陆异常:" + errorlog);
     }
 
     @Nullable

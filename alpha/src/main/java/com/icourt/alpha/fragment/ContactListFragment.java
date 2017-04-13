@@ -147,7 +147,6 @@ public class ContactListFragment extends BaseFragment {
             RealmResults<ContactDbModel> contactDbModels = contactDbService.queryAll();
             if (contactDbModels != null) {
                 List<GroupContactBean> contactBeen = ListConvertor.convertList(new ArrayList<IConvertModel<GroupContactBean>>(contactDbModels));
-                log("------------>load from db:" + contactBeen);
                 filterRobot(contactBeen);
                 imContactAdapter.bindData(true, contactBeen);
                 updateIndexBar(contactBeen);
@@ -172,6 +171,7 @@ public class ContactListFragment extends BaseFragment {
                             List<GroupContactBean> data = response.body().result;
                             //插入数据库
                             insertAsynContact(data);
+                            getRobos();
                             filterRobot(data);
                             imContactAdapter.bindData(true, data);
                             updateIndexBar(data);
@@ -237,10 +237,31 @@ public class ContactListFragment extends BaseFragment {
         if (data == null) return;
         try {
             contactDbService.deleteAll();
-            contactDbService.insertAsyn(new ArrayList<IConvertModel<ContactDbModel>>(data));
+            contactDbService.insertOrUpdateAsyn(new ArrayList<IConvertModel<ContactDbModel>>(data));
         } catch (Throwable e) {
             e.printStackTrace();
         }
+    }
+
+    /**
+     * 获取机器人
+     */
+    private void getRobos() {
+        getApi().getRobos()
+                .enqueue(new SimpleCallBack<List<GroupContactBean>>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<List<GroupContactBean>>> call, Response<ResEntity<List<GroupContactBean>>> response) {
+                        if (response.body().result != null
+                                && contactDbService != null) {
+                            contactDbService.insertOrUpdateAsyn(new ArrayList<IConvertModel<ContactDbModel>>(response.body().result));
+                        }
+                    }
+
+                    @Override
+                    public void defNotify(String noticeStr) {
+                        //super.defNotify(noticeStr);
+                    }
+                });
     }
 
     @Override

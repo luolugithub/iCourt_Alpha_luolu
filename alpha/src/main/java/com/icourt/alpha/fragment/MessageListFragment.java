@@ -16,12 +16,14 @@ import com.icourt.alpha.adapter.IMSessionAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.HeaderFooterAdapter;
 import com.icourt.alpha.base.BaseFragment;
+import com.icourt.alpha.db.dbmodel.ContactDbModel;
 import com.icourt.alpha.db.dbservice.ContactDbService;
 import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.icourt.alpha.entity.bean.IMBodyEntity;
 import com.icourt.alpha.entity.bean.IMSessionEntity;
 import com.icourt.alpha.utils.JsonUtils;
+import com.icourt.alpha.utils.LogUtils;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 import com.netease.nimlib.sdk.NIMClient;
 import com.netease.nimlib.sdk.RequestCallbackWrapper;
@@ -64,7 +66,7 @@ public class MessageListFragment extends BaseFragment implements BaseRecyclerAda
     @BindView(R.id.refreshLayout)
     RefreshLayout refreshLayout;
     HeaderFooterAdapter<IMSessionAdapter> headerFooterAdapter;
-    ContactDbService contactDbService;
+    AlphaUserInfo loginUserInfo;
 
     public static MessageListFragment newInstance() {
         return new MessageListFragment();
@@ -80,8 +82,7 @@ public class MessageListFragment extends BaseFragment implements BaseRecyclerAda
 
     @Override
     protected void initView() {
-        AlphaUserInfo loginUserInfo = getLoginUserInfo();
-        contactDbService = new ContactDbService(loginUserInfo == null ? "" : loginUserInfo.getUserId());
+        loginUserInfo = getLoginUserInfo();
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         headerFooterAdapter = new HeaderFooterAdapter<IMSessionAdapter>(imSessionAdapter = new IMSessionAdapter());
         headerFooterAdapter.addHeader(HeaderFooterAdapter.inflaterView(getContext(), R.layout.header_search_comm, recyclerView));
@@ -134,6 +135,7 @@ public class MessageListFragment extends BaseFragment implements BaseRecyclerAda
             @Override
             public void subscribe(ObservableEmitter<List<IMSessionEntity>> e) throws Exception {
                 if (e.isDisposed()) return;
+                ContactDbService contactDbService = new ContactDbService(loginUserInfo == null ? "" : loginUserInfo.getUserId());
                 List<IMSessionEntity> imSessionEntities = new ArrayList<>();
 
                 for (int i = 0; i < recentContacts.size(); i++) {
@@ -143,21 +145,22 @@ public class MessageListFragment extends BaseFragment implements BaseRecyclerAda
                     Team team = null;
                     GroupContactBean contactBean = null;
                     //查询得到team信息
-                    if (recentContact.getSessionType() == SessionTypeEnum.Team) {//群聊
+                    if (recentContact.getSessionType() == SessionTypeEnum.Team) {
+                        //群聊
                         team = NIMClient
                                 .getService(TeamService.class)
                                 .queryTeamBlock(recentContact.getContactId());
                     } else if (recentContact.getSessionType() == SessionTypeEnum.P2P)//单聊
-                    {//查询本地联系人信息
-                        if (contactDbService != null) {
-                           /* ContactDbModel contactDbModel = contactDbService.queryFirst("userId", recentContact.getContactId());
+                    {
+                        //查询本地联系人信息
+                        if (contactDbService != null && !TextUtils.isEmpty(recentContact.getContactId())) {
+                            ContactDbModel contactDbModel = contactDbService.queryFirst("userId", recentContact.getContactId().toUpperCase());
                             if (contactDbModel != null) {
                                 contactBean = contactDbModel.convert2Model();
-                            }*/
+                            }
                         }
+                        log("-----i："+i+"   "+contactBean+"  "+recentContact.getContactId());
                     }
-
-                    log("------------->content:" + recentContact.getContent());
                     //解析自定义的消息体
                     IMBodyEntity customIMBody = null;
                     if (!TextUtils.isEmpty(recentContact.getContent())) {
@@ -171,6 +174,7 @@ public class MessageListFragment extends BaseFragment implements BaseRecyclerAda
                     //装饰实体
                     imSessionEntities.add(new IMSessionEntity(team, recentContact, customIMBody, contactBean));
                 }
+                contactDbService.releaseService();
                 e.onNext(imSessionEntities);
                 e.onComplete();
             }
@@ -221,13 +225,15 @@ public class MessageListFragment extends BaseFragment implements BaseRecyclerAda
                 && !subscribe.isDisposed()) {
             subscribe.dispose();
         }
-        if (contactDbService != null) {
-            contactDbService.releaseService();
-        }
     }
 
     @Override
     public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
-
+        IMSessionEntity data = imSessionAdapter.getData(position - headerFooterAdapter.getHeaderCount());
+        log("--------->data:" + data);
+        if (data != null) {
+            LogUtils.logObject(data.recentContact);
+            log("----------->team:" + data.team);
+        }
     }
 }

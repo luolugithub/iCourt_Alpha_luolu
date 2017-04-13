@@ -22,6 +22,7 @@ import android.widget.TextView;
 
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.IMContactAdapter;
+import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.db.convertor.IConvertModel;
 import com.icourt.alpha.db.convertor.ListConvertor;
@@ -47,7 +48,7 @@ import io.realm.RealmResults;
  * date createTime：2017/4/11
  * version 1.0.0
  */
-public class ContactSearchActivity extends BaseActivity {
+public class ContactSearchActivity extends BaseActivity implements BaseRecyclerAdapter.OnItemClickListener {
     IMContactAdapter imContactAdapter;
     @BindView(R.id.et_contact_name)
     EditText etContactName;
@@ -88,6 +89,7 @@ public class ContactSearchActivity extends BaseActivity {
         contactDbService = new ContactDbService(loginUserInfo == null ? "" : loginUserInfo.getUserId());
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setAdapter(imContactAdapter = new IMContactAdapter());
+        imContactAdapter.setOnItemClickListener(this);
         recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
@@ -156,10 +158,29 @@ public class ContactSearchActivity extends BaseActivity {
                 return;
             }
             List<GroupContactBean> contactBeen = ListConvertor.convertList(new ArrayList<IConvertModel<GroupContactBean>>(name));
+            fiterRobots(contactBeen);
             imContactAdapter.bindData(true, contactBeen);
         } catch (Throwable e) {
             e.printStackTrace();
         }
+    }
+
+    /**
+     * 过滤掉机器人
+     *
+     * @param contactBeen
+     */
+    private List<GroupContactBean> fiterRobots(List<GroupContactBean> contactBeen) {
+        if (contactBeen != null) {
+            for (int i = contactBeen.size() - 1; i >= 0; i--) {
+                GroupContactBean groupContactBean = contactBeen.get(i);
+                if (contactBeen == null) continue;
+                if (groupContactBean.robot == 1) {
+                    contactBeen.remove(i);
+                }
+            }
+        }
+        return contactBeen;
     }
 
     @OnClick({R.id.tv_search_cancel})
@@ -180,5 +201,10 @@ public class ContactSearchActivity extends BaseActivity {
         if (contactDbService != null) {
             contactDbService.releaseService();
         }
+    }
+
+    @Override
+    public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
+        log("---------->" + imContactAdapter.getData(position));
     }
 }

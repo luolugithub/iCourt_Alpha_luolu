@@ -23,4 +23,14 @@ public class IMSessionEntity {
         this.customIMBody = customIMBody;
         this.contactBean = contactBean;
     }
+
+    @Override
+    public String toString() {
+        return "IMSessionEntity{" +
+                "team=" + team +
+                ", recentContact=" + recentContact +
+                ", customIMBody=" + customIMBody +
+                ", contactBean=" + contactBean +
+                '}';
+    }
 }

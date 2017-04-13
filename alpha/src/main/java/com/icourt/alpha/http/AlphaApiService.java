@@ -128,4 +128,12 @@ public interface AlphaApiService {
      */
     @GET("api/v1/auth/q/allByOfficeId/{officeId}")
     Call<ResEntity<List<GroupContactBean>>> getGroupContacts(@Path("officeId") String officeId);
+
+    /**
+     * 获取机器人
+     *
+     * @return
+     */
+    @GET("api/v1/auth/up/getRobot")
+    Call<ResEntity<List<GroupContactBean>>> getRobos();
 }

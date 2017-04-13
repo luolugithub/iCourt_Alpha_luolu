@@ -18,7 +18,11 @@ import android.widget.RadioGroup;
 
 import com.icourt.alpha.R;
 import com.icourt.alpha.base.BaseActivity;
+import com.icourt.alpha.db.convertor.IConvertModel;
+import com.icourt.alpha.db.dbmodel.ContactDbModel;
+import com.icourt.alpha.db.dbservice.ContactDbService;
 import com.icourt.alpha.entity.bean.AlphaUserInfo;
+import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.icourt.alpha.fragment.TabFindFragment;
 import com.icourt.alpha.fragment.TabMineFragment;
 import com.icourt.alpha.fragment.TabNewsFragment;
@@ -27,6 +31,9 @@ import com.icourt.alpha.http.AlphaClient;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.OnTabDoubleClickListener;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -107,6 +114,8 @@ public class MainActivity extends BaseActivity implements RadioGroup.OnCheckedCh
     }
 
     MyHandler mHandler = new MyHandler();
+    ContactDbService contactDbService;
+    AlphaUserInfo loginUserInfo;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -114,11 +123,14 @@ public class MainActivity extends BaseActivity implements RadioGroup.OnCheckedCh
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
         initView();
+        getRobos();
     }
 
     @Override
     protected void initView() {
         super.initView();
+        loginUserInfo = getLoginUserInfo();
+        contactDbService = new ContactDbService(loginUserInfo == null ? "" : loginUserInfo.getUserId());
         rgMainTab.setOnCheckedChangeListener(this);
         tabGestureDetector = new GestureDetector(getContext(), tabGestureListener);
         tabNews.setOnTouchListener(tabTouchListener);
@@ -212,11 +224,35 @@ public class MainActivity extends BaseActivity implements RadioGroup.OnCheckedCh
                 });
     }
 
+    /**
+     * 获取机器人
+     */
+    private void getRobos() {
+        getApi().getRobos()
+                .enqueue(new SimpleCallBack<List<GroupContactBean>>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<List<GroupContactBean>>> call, Response<ResEntity<List<GroupContactBean>>> response) {
+                        if (response.body().result != null
+                                && contactDbService != null) {
+                            contactDbService.insertOrUpdateAsyn(new ArrayList<IConvertModel<ContactDbModel>>(response.body().result));
+                        }
+                    }
+
+                    @Override
+                    public void defNotify(String noticeStr) {
+                        //super.defNotify(noticeStr);
+                    }
+                });
+    }
+
     @Override
     protected void onDestroy() {
         super.onDestroy();
         if (mHandler != null) {
             mHandler.removeCallbacksAndMessages(null);
+        }
+        if (contactDbService != null) {
+            contactDbService.releaseService();
         }
     }
 }
