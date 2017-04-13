@@ -1,16 +1,22 @@
 package com.icourt.alpha.adapter;
 
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.baseadapter.BaseArrayRecyclerAdapter;
+import com.icourt.alpha.entity.bean.AlphaUserInfo;
+import com.icourt.alpha.entity.bean.HelperNotification;
 import com.icourt.alpha.entity.bean.IMBodyEntity;
 import com.icourt.alpha.entity.bean.IMSessionEntity;
 import com.icourt.alpha.utils.ActionConstants;
 import com.icourt.alpha.utils.DateUtils;
-import com.netease.nimlib.sdk.msg.attachment.MsgAttachment;
+import com.icourt.alpha.utils.GlideUtils;
+import com.icourt.alpha.utils.IMUtils;
+import com.icourt.alpha.utils.LoginInfoUtils;
+import com.icourt.alpha.widget.parser.HelperNotificationParser;
 import com.netease.nimlib.sdk.msg.constant.SessionTypeEnum;
 import com.vanniktech.emoji.EmojiTextView;
 
@@ -22,6 +28,24 @@ import com.vanniktech.emoji.EmojiTextView;
  * version 1.0.0
  */
 public class IMSessionAdapter extends BaseArrayRecyclerAdapter<IMSessionEntity> {
+
+    AlphaUserInfo alphaUserInfo;
+
+    /**
+     * 获取登陆昵称
+     *
+     * @return
+     */
+    private String getLoginUserName() {
+        if (alphaUserInfo != null) {
+            return alphaUserInfo.getName();
+        }
+        return null;
+    }
+
+    public IMSessionAdapter() {
+        alphaUserInfo = LoginInfoUtils.getLoginUserInfo();
+    }
 
     @Override
     public int bindView(int viewtype) {
@@ -52,19 +76,21 @@ public class IMSessionAdapter extends BaseArrayRecyclerAdapter<IMSessionEntity> 
             //4.设置消息体展示
             if (imSessionEntity.recentContact.getAttachment() != null) {
                 //目前主要机器人item采用
-                setItemData(imSessionEntity.recentContact.getAttachment(),
+                setItemData(imSessionEntity,
                         ivSessionIcon,
                         tvSessionTitle,
                         tvSessionContent);
             } else if (imSessionEntity.customIMBody != null) {
 
                 //展示自定义消息
+                //单聊
                 if (imSessionEntity.recentContact.getSessionType() == SessionTypeEnum.P2P) {
-                    setItemDataTeam(imSessionEntity.customIMBody,
+                    setItemDataTeam(imSessionEntity,
                             ivSessionIcon,
                             tvSessionTitle,
                             tvSessionContent);
-                } else if (imSessionEntity.recentContact.getSessionType() == SessionTypeEnum.Team) {
+                } else if (imSessionEntity.recentContact.getSessionType() == SessionTypeEnum.Team) //群聊
+                {
                     setItemDataP2P(imSessionEntity.customIMBody,
                             ivSessionIcon,
                             tvSessionTitle,
@@ -77,13 +103,111 @@ public class IMSessionAdapter extends BaseArrayRecyclerAdapter<IMSessionEntity> 
     /**
      * 展示自定义消息 team
      *
-     * @param customIMBody
+     * @param imSessionEntity
      * @param ivSessionIcon
      * @param tvSessionTitle
      * @param tvSessionContent
      */
-    private void setItemDataTeam(IMBodyEntity customIMBody, ImageView ivSessionIcon, TextView tvSessionTitle, EmojiTextView tvSessionContent) {
-        if (customIMBody == null) return;
+    private void setItemDataTeam(IMSessionEntity imSessionEntity, ImageView ivSessionIcon, TextView tvSessionTitle, EmojiTextView tvSessionContent) {
+        if (imSessionEntity == null) return;
+        //标题
+        if (tvSessionTitle != null) {
+            if (imSessionEntity.customIMBody != null) {
+                tvSessionTitle.setText(imSessionEntity.customIMBody.name);
+            } else if (imSessionEntity.contactBean != null) {
+                tvSessionTitle.setText(imSessionEntity.contactBean.name);
+            }
+        }
+        //头像
+        if (ivSessionIcon != null) {
+            String iconUrl = null;
+            if (imSessionEntity.customIMBody != null) {
+                iconUrl = imSessionEntity.customIMBody.pic;
+            }
+            if (TextUtils.isEmpty(iconUrl) && imSessionEntity.contactBean != null) {
+                iconUrl = imSessionEntity.contactBean.pic;
+            }
+            if (GlideUtils.canLoadImage(ivSessionIcon.getContext())) {
+                GlideUtils.loadUser(ivSessionIcon.getContext(), iconUrl, ivSessionIcon);
+            }
+        }
+
+        //内容
+        if (tvSessionContent != null) {
+            if (imSessionEntity.customIMBody != null) {
+                switch (imSessionEntity.customIMBody.show_type) {
+                    case ActionConstants.IM_MESSAGE_TEXT_SHOWTYPE:
+                        tvSessionContent.setText(imSessionEntity.customIMBody.content);
+                        break;
+                    case ActionConstants.IM_MESSAGE_FILE_SHOWTYPE:
+                        tvSessionContent.setText(IMUtils.isPIC(imSessionEntity.customIMBody.fileName) ? "[ 图片 ]" : "[ 文件 ]");
+                        break;
+                    case ActionConstants.IM_MESSAGE_PIN_SHOWTYPE:
+                        setDingViewTeam(imSessionEntity.customIMBody, tvSessionContent);
+                        break;
+                    case ActionConstants.IM_MESSAGE_AT_SHOWTYPE:
+                        break;
+                    case ActionConstants.IM_MESSAGE_SYSTEM_SHOWTYPE:
+                        break;
+                    default:
+                        tvSessionContent.setText(imSessionEntity.customIMBody.content);
+                        break;
+                }
+            }
+        }
+    }
+
+    private void setAtViewState() {
+
+    }
+
+
+    /**
+     * 设置钉的状态 群聊
+     *
+     * @param imBodyEntity
+     * @param tvSessionContent
+     */
+    private void setDingViewTeam(IMBodyEntity imBodyEntity, EmojiTextView tvSessionContent) {
+        if (imBodyEntity == null) return;
+        if (imBodyEntity.pinMsg == null) return;
+        if (tvSessionContent == null) return;
+        switch (imBodyEntity.pinMsg.isPining) {
+            case 0:
+                if (TextUtils.equals(getLoginUserName(), imBodyEntity.name)) {
+                    tvSessionContent.setText(tvSessionContent.getResources().getString(R.string.message_cancle_ding_one_msg_text));
+                } else {
+                    tvSessionContent.setText(imBodyEntity.name + ": " + tvSessionContent.getResources().getString(R.string.message_cancle_ding_one_msg_text));
+                }
+                break;
+            case 1:
+                if (TextUtils.equals(getLoginUserName(), imBodyEntity.name)) {
+                    tvSessionContent.setText(tvSessionContent.getResources().getString(R.string.message_ding_one_msg_text));
+                } else {
+                    tvSessionContent.setText(imBodyEntity.name + ": " + tvSessionContent.getResources().getString(R.string.message_ding_one_msg_text));
+                }
+                break;
+        }
+    }
+
+    /**
+     * 设置钉的状态 单聊
+     *
+     * @param imBodyEntity
+     * @param tvSessionContent
+     */
+    private void setDingViewP2P(IMBodyEntity imBodyEntity, EmojiTextView tvSessionContent) {
+        if (imBodyEntity == null) return;
+        if (imBodyEntity.pinMsg == null) return;
+        if (tvSessionContent == null) return;
+        switch (imBodyEntity.pinMsg.isPining) {
+            case 0:
+                tvSessionContent.setText(tvSessionContent.getResources().getString(R.string.message_cancle_ding_one_msg_text));
+                break;
+            case 1:
+                tvSessionContent.setText(tvSessionContent.getResources().getString(R.string.message_ding_one_msg_text));
+                break;
+        }
     }
 
     /**
@@ -101,24 +225,29 @@ public class IMSessionAdapter extends BaseArrayRecyclerAdapter<IMSessionEntity> 
     /**
      * 初始化附件 主要是机器人
      *
-     * @param attachment
+     * @param imSessionEntity
      * @param ivSessionIcon
      * @param tvSessionTitle
      * @param tvSessionContent
      */
-    private void setItemData(MsgAttachment attachment, ImageView ivSessionIcon, TextView tvSessionTitle, EmojiTextView tvSessionContent) {
-        if (attachment == null) return;
-         /*   HelperNotification helperNotification = HelperNotificationParser.getHelperNotification(recentContact.getAttachment().toJson(false));
-                if (recentContact.getSessionType() == SessionTypeEnum.P2P) {
-                    GroupContactBean groupContactBean = getContactByDB(recentContact.getContactId());
-                    holder.photoTextView.setVisibility(View.GONE);
-                    if (groupContactBean != null) {
-                        holder.nameView.setText(groupContactBean.getName());
-                        if (!UIUtils.isNull(groupContactBean.getPic()))
-                            holder.photoView.setImageURI(Uri.parse(groupContactBean.getPic()));
-                    }
-                    holder.contentView.setText(helperNotification.getContent());
-                }*/
+    private void setItemData(IMSessionEntity imSessionEntity, ImageView ivSessionIcon, TextView tvSessionTitle, EmojiTextView tvSessionContent) {
+        if (imSessionEntity == null) return;
+        if (imSessionEntity.recentContact == null) return;
+        if (imSessionEntity.recentContact.getAttachment() == null) return;
+        if (imSessionEntity.contactBean == null) return;
+        if (imSessionEntity.recentContact.getSessionType() == SessionTypeEnum.P2P) {
+            if (tvSessionTitle != null) {
+                tvSessionTitle.setText(imSessionEntity.contactBean.name);
+            }
+            if (ivSessionIcon != null && GlideUtils.canLoadImage(ivSessionIcon.getContext())) {
+                GlideUtils.loadUser(ivSessionIcon.getContext(), imSessionEntity.contactBean.pic, ivSessionIcon);
+            }
+            HelperNotification helperNotification = HelperNotificationParser.getHelperNotification(imSessionEntity.recentContact.getAttachment().toJson(false));
+            if (helperNotification != null) {
+                tvSessionContent.setText(helperNotification.getContent());
+            }
+
+        }
     }
 
     /**

@@ -15,6 +15,7 @@ import com.umeng.socialize.UMAuthListener;
 import com.umeng.socialize.UMShareAPI;
 import com.umeng.socialize.UMShareListener;
 import com.umeng.socialize.bean.SHARE_MEDIA;
+import com.umeng.socialize.media.UMImage;
 
 import java.io.File;
 import java.util.Map;
@@ -173,10 +174,12 @@ public class BaseUmengActivity extends BaseActivity implements UMAuthListener {
     protected void shareFile2WeiXin(File file) {
         if (file != null && file.exists()) {
             //  if(file.length()>10mb)
+            UMImage umImage=new UMImage(this,"http://i.ce.cn/fashion/news/201704/11/W020170411297208606486.jpg");
             new ShareAction(getActivity())
                     .setPlatform(SHARE_MEDIA.WEIXIN)
-                    .withSubject(file.getName())//文件名
-                    .withFile(file)
+                    .withExtra(umImage)
+                 /*   .withSubject(file.getName())//文件名
+                    .withFile(file)*/
                     .setCallback(new UMShareListener() {
                         @Override
                         public void onStart(SHARE_MEDIA share_media) {

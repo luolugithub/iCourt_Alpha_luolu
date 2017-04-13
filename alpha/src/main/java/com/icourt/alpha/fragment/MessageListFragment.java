@@ -16,6 +16,9 @@ import com.icourt.alpha.adapter.IMSessionAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.HeaderFooterAdapter;
 import com.icourt.alpha.base.BaseFragment;
+import com.icourt.alpha.db.dbservice.ContactDbService;
+import com.icourt.alpha.entity.bean.AlphaUserInfo;
+import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.icourt.alpha.entity.bean.IMBodyEntity;
 import com.icourt.alpha.entity.bean.IMSessionEntity;
 import com.icourt.alpha.utils.JsonUtils;
@@ -25,6 +28,7 @@ import com.netease.nimlib.sdk.RequestCallbackWrapper;
 import com.netease.nimlib.sdk.ResponseCode;
 import com.netease.nimlib.sdk.msg.MsgService;
 import com.netease.nimlib.sdk.msg.constant.MsgTypeEnum;
+import com.netease.nimlib.sdk.msg.constant.SessionTypeEnum;
 import com.netease.nimlib.sdk.msg.model.RecentContact;
 import com.netease.nimlib.sdk.team.TeamService;
 import com.netease.nimlib.sdk.team.model.Team;
@@ -60,6 +64,7 @@ public class MessageListFragment extends BaseFragment implements BaseRecyclerAda
     @BindView(R.id.refreshLayout)
     RefreshLayout refreshLayout;
     HeaderFooterAdapter<IMSessionAdapter> headerFooterAdapter;
+    ContactDbService contactDbService;
 
     public static MessageListFragment newInstance() {
         return new MessageListFragment();
@@ -75,6 +80,8 @@ public class MessageListFragment extends BaseFragment implements BaseRecyclerAda
 
     @Override
     protected void initView() {
+        AlphaUserInfo loginUserInfo = getLoginUserInfo();
+        contactDbService = new ContactDbService(loginUserInfo == null ? "" : loginUserInfo.getUserId());
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         headerFooterAdapter = new HeaderFooterAdapter<IMSessionAdapter>(imSessionAdapter = new IMSessionAdapter());
         headerFooterAdapter.addHeader(HeaderFooterAdapter.inflaterView(getContext(), R.layout.header_search_comm, recyclerView));
@@ -128,14 +135,27 @@ public class MessageListFragment extends BaseFragment implements BaseRecyclerAda
             public void subscribe(ObservableEmitter<List<IMSessionEntity>> e) throws Exception {
                 if (e.isDisposed()) return;
                 List<IMSessionEntity> imSessionEntities = new ArrayList<>();
+
                 for (int i = 0; i < recentContacts.size(); i++) {
                     RecentContact recentContact = recentContacts.get(i);
                     if (recentContact == null) continue;
 
+                    Team team = null;
+                    GroupContactBean contactBean = null;
                     //查询得到team信息
-                    Team team = NIMClient
-                            .getService(TeamService.class)
-                            .queryTeamBlock(recentContact.getContactId());
+                    if (recentContact.getSessionType() == SessionTypeEnum.Team) {//群聊
+                        team = NIMClient
+                                .getService(TeamService.class)
+                                .queryTeamBlock(recentContact.getContactId());
+                    } else if (recentContact.getSessionType() == SessionTypeEnum.P2P)//单聊
+                    {//查询本地联系人信息
+                        if (contactDbService != null) {
+                           /* ContactDbModel contactDbModel = contactDbService.queryFirst("userId", recentContact.getContactId());
+                            if (contactDbModel != null) {
+                                contactBean = contactDbModel.convert2Model();
+                            }*/
+                        }
+                    }
 
                     log("------------->content:" + recentContact.getContent());
                     //解析自定义的消息体
@@ -149,7 +169,7 @@ public class MessageListFragment extends BaseFragment implements BaseRecyclerAda
                     }
 
                     //装饰实体
-                    imSessionEntities.add(new IMSessionEntity(team, recentContact, customIMBody));
+                    imSessionEntities.add(new IMSessionEntity(team, recentContact, customIMBody, contactBean));
                 }
                 e.onNext(imSessionEntities);
                 e.onComplete();
@@ -200,6 +220,9 @@ public class MessageListFragment extends BaseFragment implements BaseRecyclerAda
         if (subscribe != null
                 && !subscribe.isDisposed()) {
             subscribe.dispose();
+        }
+        if (contactDbService != null) {
+            contactDbService.releaseService();
         }
     }
 
