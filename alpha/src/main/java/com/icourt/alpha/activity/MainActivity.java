@@ -3,6 +3,8 @@ package com.icourt.alpha.activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.annotation.IdRes;
 import android.support.v4.app.Fragment;
 import android.util.SparseArray;
@@ -15,18 +17,24 @@ import android.widget.RadioButton;
 import android.widget.RadioGroup;
 
 import com.icourt.alpha.R;
-import com.icourt.alpha.base.BaseAppUpdateActivity;
+import com.icourt.alpha.base.BaseActivity;
+import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.icourt.alpha.fragment.TabFindFragment;
 import com.icourt.alpha.fragment.TabMineFragment;
 import com.icourt.alpha.fragment.TabNewsFragment;
 import com.icourt.alpha.fragment.TabTaskFragment;
+import com.icourt.alpha.http.AlphaClient;
+import com.icourt.alpha.http.callback.SimpleCallBack;
+import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.OnTabDoubleClickListener;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import retrofit2.Call;
+import retrofit2.Response;
 
-public class MainActivity extends BaseAppUpdateActivity implements RadioGroup.OnCheckedChangeListener {
+public class MainActivity extends BaseActivity implements RadioGroup.OnCheckedChangeListener {
 
     public static void launch(Context context) {
         if (context == null) return;
@@ -50,10 +58,10 @@ public class MainActivity extends BaseAppUpdateActivity implements RadioGroup.On
     RadioButton tabMine;
     @BindView(R.id.rg_main_tab)
     RadioGroup rgMainTab;
-    private Fragment currentFragment;
-    private final SparseArray<Fragment> fragmentSparseArray = new SparseArray<>();
-    private GestureDetector tabGestureDetector;
-    private GestureDetector.SimpleOnGestureListener tabGestureListener = new GestureDetector.SimpleOnGestureListener() {
+    Fragment currentFragment;
+    final SparseArray<Fragment> fragmentSparseArray = new SparseArray<>();
+    GestureDetector tabGestureDetector;
+    GestureDetector.SimpleOnGestureListener tabGestureListener = new GestureDetector.SimpleOnGestureListener() {
         @Override
         public boolean onDoubleTap(MotionEvent e) {
             Fragment currFragment = currentFragment;
@@ -63,7 +71,7 @@ public class MainActivity extends BaseAppUpdateActivity implements RadioGroup.On
             return super.onDoubleTap(e);
         }
     };
-    private View.OnTouchListener tabTouchListener = new View.OnTouchListener() {
+    View.OnTouchListener tabTouchListener = new View.OnTouchListener() {
         @Override
         public boolean onTouch(View v, MotionEvent event) {
             switch (v.getId()) {
@@ -75,6 +83,30 @@ public class MainActivity extends BaseAppUpdateActivity implements RadioGroup.On
             return false;
         }
     };
+
+    class MyHandler extends Handler {
+        public static final int TYPE_TOKEN_REFRESH = 101;//token刷新
+
+        /**
+         * 刷新登陆token
+         */
+        public void addTokenRefreshTask() {
+            this.removeMessages(TYPE_TOKEN_REFRESH);
+            this.sendEmptyMessageDelayed(TYPE_TOKEN_REFRESH, 2_000);
+        }
+
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+            switch (msg.what) {
+                case TYPE_TOKEN_REFRESH:
+                    refreshToken();
+                    break;
+            }
+        }
+    }
+
+    MyHandler mHandler = new MyHandler();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -91,6 +123,12 @@ public class MainActivity extends BaseAppUpdateActivity implements RadioGroup.On
         tabGestureDetector = new GestureDetector(getContext(), tabGestureListener);
         tabNews.setOnTouchListener(tabTouchListener);
         currentFragment = addOrShowFragment(getTabFragment(rgMainTab.getCheckedRadioButtonId()), currentFragment, R.id.main_fl_content);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        mHandler.addTokenRefreshTask();
     }
 
     @Override
@@ -150,4 +188,35 @@ public class MainActivity extends BaseAppUpdateActivity implements RadioGroup.On
         fragmentSparseArray.put(checkedId, fragment);
     }
 
+    /**
+     * 刷新登陆的token
+     */
+    protected final void refreshToken() {
+        AlphaUserInfo loginUserInfo = getLoginUserInfo();
+        if (loginUserInfo == null) return;
+        getApi().refreshToken(loginUserInfo.getRefreshToken())
+                .enqueue(new SimpleCallBack<AlphaUserInfo>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<AlphaUserInfo>> call, Response<ResEntity<AlphaUserInfo>> response) {
+                        if (response.body().result != null) {
+                            AlphaClient.getInstance().setOfficeId(response.body().result.getOfficeId());
+                            AlphaClient.getInstance().setToken(response.body().result.getToken());
+                            saveLoginUserInfo(response.body().result);
+                        }
+                    }
+
+                    @Override
+                    public void defNotify(String noticeStr) {
+                        //super.defNotify(noticeStr);
+                    }
+                });
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (mHandler != null) {
+            mHandler.removeCallbacksAndMessages(null);
+        }
+    }
 }

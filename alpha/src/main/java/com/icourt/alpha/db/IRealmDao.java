@@ -1,12 +1,9 @@
 package com.icourt.alpha.db;
 
-import com.icourt.alpha.utils.LogUtils;
-
 import java.util.List;
 
 import io.realm.Case;
 import io.realm.RealmModel;
-import io.realm.RealmObject;
 import io.realm.RealmQuery;
 import io.realm.RealmResults;
 
@@ -31,7 +28,11 @@ public interface IRealmDao<T extends RealmModel> {
 
     List<T> insert(Iterable<T> objects);
 
+    void insertAsyn(Iterable<T> objects);
+
     List<T> insertOrUpdate(Iterable<T> objects);
+
+    void insertOrUpdateAsyn(Iterable<T> objects);
 
     void delete(Class<T> c, String fieldName, String value);
 
@@ -43,7 +44,7 @@ public interface IRealmDao<T extends RealmModel> {
 
     RealmResults<T> contains(Class<T> c, String fieldName, String value);
 
-    RealmResults<T> contains(Class<T> c, String fieldName, String value,Case casing);
+    RealmResults<T> contains(Class<T> c, String fieldName, String value, Case casing);
 
     T queryFirst(Class<T> c, String fieldName, String value);
 

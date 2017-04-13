@@ -1,6 +1,7 @@
 package com.icourt.alpha.adapter.baseadapter;
 
 import android.content.Context;
+import android.support.annotation.LayoutRes;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -37,7 +38,7 @@ public class HeaderFooterAdapter<T extends RecyclerView.Adapter> extends Recycle
     }
 
 
-    public static View inflaterView(Context context, int id, RecyclerView recyclerView) {
+    public static View inflaterView(Context context, @LayoutRes int id, RecyclerView recyclerView) {
         return LayoutInflater.from(context)
                 .inflate(id, recyclerView, false);
     }

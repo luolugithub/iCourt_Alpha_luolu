@@ -45,10 +45,6 @@ public class TabTaskFragment extends BaseFragment {
         log("==========initView:" + this);
     }
 
-    @Override
-    protected void getData(boolean isRefresh) {
-
-    }
 
     @Override
     public void onDestroyView() {

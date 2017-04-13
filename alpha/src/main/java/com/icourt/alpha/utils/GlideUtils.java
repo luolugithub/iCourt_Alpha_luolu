@@ -2,16 +2,18 @@ package com.icourt.alpha.utils;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.res.ColorStateList;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
+import android.support.v4.graphics.drawable.DrawableCompat;
 import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
-import com.icourt.alpha.utils.transformations.GlideCircleTransform;
 import com.icourt.alpha.R;
+import com.icourt.alpha.utils.transformations.GlideCircleTransform;
 
 /**
  * Description
@@ -121,6 +123,27 @@ public class GlideUtils {
         return drawable;
     }
 
+
+    /**
+     * 为图片着色
+     *
+     * <?xml version="1.0" encoding="utf-8"?>
+     * <selector xmlns:android="http://schemas.android.com/apk/res/android">
+     * <item android:color="#FF4081" android:state_pressed="true" />
+     * <item android:color="#3F51B5" />
+     * </selector>
+     *
+     * eg.  ivButton.setImageDrawable(tintDrawable(src,ColorStateList.valueOf(Color.WHITE)));
+     *
+     * @param drawable
+     * @param colors
+     * @return
+     */
+    public static Drawable getTintedDrawable(Drawable drawable, ColorStateList colors) {
+        final Drawable wrappedDrawable = DrawableCompat.wrap(drawable);
+        DrawableCompat.setTintList(wrappedDrawable, colors);
+        return wrappedDrawable;
+    }
 
 }
 

@@ -2,11 +2,19 @@ package com.icourt.alpha.base;
 
 import android.support.annotation.CallSuper;
 import android.support.annotation.CheckResult;
+import android.support.annotation.NonNull;
 
 import com.andview.refreshview.XRefreshView;
 import com.icourt.alpha.adapter.baseadapter.BaseArrayRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.adapterObserver.DataChangeAdapterObserver;
-import com.icourt.alpha.view.xrefreshlayout.RefreshaLayout;
+import com.icourt.alpha.http.callback.SimpleCallBack;
+import com.icourt.alpha.http.httpmodel.ResEntity;
+import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
+
+import java.util.List;
+
+import retrofit2.Call;
+import retrofit2.Response;
 
 /**
  * Description  适合recyclerView 列表布局 的activity
@@ -20,7 +28,7 @@ public abstract class BaseRecyclerActivity<T> extends BaseActivity implements XR
     protected DataChangeAdapterObserver dataChangeAdapterObserver = new DataChangeAdapterObserver() {
         @Override
         protected void updateUI() {
-            RefreshaLayout refreshaLayout = getRefreshLayout();
+            RefreshLayout refreshaLayout = getRefreshLayout();
             if (refreshaLayout == null) return;
             refreshaLayout.enableEmptyViewWithAdapter(getRecyclerAdapter());
         }
@@ -30,12 +38,12 @@ public abstract class BaseRecyclerActivity<T> extends BaseActivity implements XR
     protected abstract BaseArrayRecyclerAdapter<T> getRecyclerAdapter();
 
     @CheckResult
-    protected abstract RefreshaLayout getRefreshLayout();
+    protected abstract RefreshLayout getRefreshLayout();
 
     @Override
     protected void initView() {
         super.initView();
-        RefreshaLayout refreshLayout = getRefreshLayout();
+        RefreshLayout refreshLayout = getRefreshLayout();
         if (refreshLayout != null) {
             refreshLayout.setXRefreshViewListener(this);
             refreshLayout.setPullLoadEnable(true);
@@ -50,35 +58,36 @@ public abstract class BaseRecyclerActivity<T> extends BaseActivity implements XR
      *
      * @param isRefresh 是否刷新 true 将会清除adapter中的集合
      * @param call
-     *//*
-    public void getPageData(final boolean isRefresh, @NonNull Call<ResPageEntity<T>> call) {
+     */
+    public void getPageData(final boolean isRefresh, @NonNull Call<ResEntity<List<T>>> call) {
         if (call != null && !call.isExecuted()) {
-            call.enqueue(new SimplePageCallBack<T>() {
+            call.enqueue(new SimpleCallBack<List<T>>() {
                 @Override
-                public void onSuccess(Call<ResPageEntity<T>> call, Response<ResPageEntity<T>> response) {
+                public void onSuccess(Call<ResEntity<List<T>>> call, Response<ResEntity<List<T>>> response) {
                     BaseArrayRecyclerAdapter<T> recyclerAdapter = getRecyclerAdapter();
                     if (recyclerAdapter != null) {
-                        recyclerAdapter.bindData(isRefresh, response.body().pageData);
+                        recyclerAdapter.bindData(isRefresh, response.body().result);
                     }
-                    RefreshaLayout refreshLayout = getRefreshLayout();
+                    RefreshLayout refreshLayout = getRefreshLayout();
                     if (refreshLayout != null) {
                         refreshLayout.stopRefresh();
-                        refreshLayout.stopRefresh();
+                        refreshLayout.stopLoadMore();
                     }
                 }
 
                 @Override
-                public void onFailure(Call<ResPageEntity<T>> call, Throwable t) {
+                public void onFailure(Call<ResEntity<List<T>>> call, Throwable t) {
                     super.onFailure(call, t);
-                    RefreshaLayout refreshLayout = getRefreshLayout();
+                    RefreshLayout refreshLayout = getRefreshLayout();
                     if (refreshLayout != null) {
                         refreshLayout.stopRefresh();
-                        refreshLayout.stopRefresh();
+                        refreshLayout.stopLoadMore();
                     }
                 }
             });
         }
-    }*/
+    }
+
 
     @Override
     public void onRefresh() {

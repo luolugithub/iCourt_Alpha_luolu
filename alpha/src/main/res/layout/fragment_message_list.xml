@@ -1,119 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<com.icourt.alpha.view.xrefreshlayout.RefreshLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@id/refreshLayout"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:layout_height="match_parent">
 
-    <RelativeLayout
-        android:id="@+id/fragment_message_list_top_search_layout"
+    <android.support.v7.widget.RecyclerView
+        android:id="@id/recyclerView"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="10dp"
-        android:background="@drawable/helper_item_center_bg"
-        android:focusable="true"
-        android:focusableInTouchMode="true">
+        android:layout_height="match_parent"
+        android:background="@android:color/white" />
 
-        <LinearLayout
-            android:id="@+id/fragment_message_list_top_search_default_layout"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_centerInParent="true"
-            android:gravity="center"
-            android:orientation="horizontal"
-            android:padding="5dp">
+</com.icourt.alpha.view.xrefreshlayout.RefreshLayout>
 
-            <ImageView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:src="@mipmap/icon_search_16" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="10dp"
-                android:text="@string/search_contact_text"
-                android:textColor="@color/edit_hint_text_color"
-                android:textSize="12dp" />
-        </LinearLayout>
-
-        <EditText
-            android:id="@+id/fragment_message_list_top_search_edittext"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@null"
-            android:imeOptions="actionSearch"
-            android:padding="5dp"
-            android:singleLine="true"
-            android:textColor="@color/search_history_keyword_color"
-            android:textSize="12dp"
-            android:visibility="gone" />
-    </RelativeLayout>
-
-    <TextView
-        android:id="@+id/fragment_message_no_network_view"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/message_nonet_hint_bg"
-        android:gravity="center"
-        android:padding="10dp"
-        android:textColor="@color/search_cutline_color"
-        android:textSize="12dp"
-        android:visibility="gone" />
-
-    <include layout="@layout/whole_timeing_layout" />
-
-    <FrameLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
-
-        <android.support.v7.widget.RecyclerView
-            android:id="@+id/fragment_message_list_recyclerview"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:overScrollMode="never">
-
-        </android.support.v7.widget.RecyclerView>
-
-        <RelativeLayout
-            android:id="@+id/message_fragment_empty_layout"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:visibility="gone">
-
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerHorizontal="true"
-                android:layout_marginTop="140dp"
-                android:gravity="center"
-                android:orientation="vertical">
-
-                <ImageView
-                    android:layout_width="60dp"
-                    android:layout_height="60dp"
-                    android:src="@mipmap/icon_placeholder_user" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/message_no_recent_list" />
-            </LinearLayout>
-
-            <TextView
-                android:id="@+id/message_fragment_empty_start_chat_view"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentBottom="true"
-                android:layout_centerHorizontal="true"
-                android:layout_marginBottom="40dp"
-                android:background="@drawable/orange_circle_bg"
-                android:paddingBottom="10dp"
-                android:paddingLeft="28dp"
-                android:paddingRight="28dp"
-                android:paddingTop="10dp"
-                android:text="@string/message_start_chat"
-                android:textColor="@android:color/white"
-                android:textSize="15dp" />
-        </RelativeLayout>
-    </FrameLayout>
-</LinearLayout>

@@ -1,19 +1,21 @@
 package com.icourt.alpha.widget.nim;
 
 import android.app.Application;
+import android.text.TextUtils;
 
+import com.google.gson.JsonParseException;
 import com.icourt.alpha.R;
 import com.icourt.alpha.entity.bean.HelperNotification;
-import com.icourt.alpha.entity.bean.IMBodyBean;
+import com.icourt.alpha.entity.bean.IMBodyEntity;
 import com.icourt.alpha.utils.ActionConstants;
+import com.icourt.alpha.utils.JsonUtils;
 import com.icourt.alpha.widget.parser.HelperNotificationParser;
-import com.icourt.alpha.widget.parser.IMBodyParser;
 import com.netease.nimlib.sdk.msg.MessageNotifierCustomization;
 import com.netease.nimlib.sdk.msg.constant.SessionTypeEnum;
 import com.netease.nimlib.sdk.msg.model.IMMessage;
 
 /**
- * Description
+ * Description  需要强化 直接拷贝与老项目
  * Company Beijing icourt
  * author  youxuan  E-mail:xuanyouwu@163.com
  * date createTime：2017/4/10
@@ -34,42 +36,50 @@ public class AlphaMessageNotifierCustomization implements MessageNotifierCustomi
                 content = helperNotification.getContent();
             }
         } else {
-            IMBodyBean imBodyBean = IMBodyParser.getIMBodyBean(message.getContent());
-            if (imBodyBean != null) {
-                switch (imBodyBean.getShow_type()) {
-                    case ActionConstants.IM_MESSAGE_TEXT_SHOWTYPE:
-                        if (message.getSessionType() == SessionTypeEnum.P2P)
-                            content = imBodyBean.getContent();
-                        else
-                            content = nick + ":" + imBodyBean.getContent();
-                        break;
-                    case ActionConstants.IM_MESSAGE_FILE_SHOWTYPE:
-                        if (message.getSessionType() == SessionTypeEnum.P2P)
-                            content = application.getString(R.string.receive_one_file_message);
-                        else
-                            content = nick + ":" + application.getString(R.string.receive_one_file_message);
-                        break;
-                    case ActionConstants.IM_MESSAGE_PIN_SHOWTYPE:
-                        if (imBodyBean.getPinMsg() != null) {
-                            if ("0".equals(imBodyBean.getPinMsg().getIsPining())) {
-                                if (message.getSessionType() == SessionTypeEnum.P2P)
-                                    content = application.getString(R.string.message_cancle_ding_one_msg_text);
-                                else
-                                    content = nick + ":" + application.getString(R.string.message_cancle_ding_one_msg_text);
-                            } else if ("1".equals(imBodyBean.getPinMsg().getIsPining())) {
-                                if (message.getSessionType() == SessionTypeEnum.P2P)
-                                    content = application.getString(R.string.message_ding_one_msg_text);
-                                else
-                                    content = nick + ":" + application.getString(R.string.message_ding_one_msg_text);
-                            }
-                        }
-                        break;
-                    case ActionConstants.IM_MESSAGE_AT_SHOWTYPE:
-                        if (message.getSessionType() == SessionTypeEnum.Team)
-                            content = nick + ":" + application.getString(R.string.message_have_at_me_text);
-                        break;
+            if (!TextUtils.isEmpty(message.getContent())) {
+                IMBodyEntity imBodyEntity = null;
+                try {
+                    imBodyEntity = JsonUtils.Gson2Bean(message.getContent(), IMBodyEntity.class);
+                } catch (JsonParseException e) {
                 }
+                if (imBodyEntity != null) {
+                    switch (imBodyEntity.show_type) {
+                        case ActionConstants.IM_MESSAGE_TEXT_SHOWTYPE:
+                            if (message.getSessionType() == SessionTypeEnum.P2P)
+                                content = imBodyEntity.content;
+                            else
+                                content = nick + ":" + imBodyEntity.content;
+                            break;
+                        case ActionConstants.IM_MESSAGE_FILE_SHOWTYPE:
+                            if (message.getSessionType() == SessionTypeEnum.P2P)
+                                content = application.getString(R.string.receive_one_file_message);
+                            else
+                                content = nick + ":" + application.getString(R.string.receive_one_file_message);
+                            break;
+                        case ActionConstants.IM_MESSAGE_PIN_SHOWTYPE:
+                            if (imBodyEntity.pinMsg != null) {
+                                if ("0".equals(imBodyEntity.pinMsg.isPining)) {
+                                    if (message.getSessionType() == SessionTypeEnum.P2P)
+                                        content = application.getString(R.string.message_cancle_ding_one_msg_text);
+                                    else
+                                        content = nick + ":" + application.getString(R.string.message_cancle_ding_one_msg_text);
+                                } else if ("1".equals(imBodyEntity.pinMsg.isPining)) {
+                                    if (message.getSessionType() == SessionTypeEnum.P2P)
+                                        content = application.getString(R.string.message_ding_one_msg_text);
+                                    else
+                                        content = nick + ":" + application.getString(R.string.message_ding_one_msg_text);
+                                }
+                            }
+                            break;
+                        case ActionConstants.IM_MESSAGE_AT_SHOWTYPE:
+                            if (message.getSessionType() == SessionTypeEnum.Team)
+                                content = nick + ":" + application.getString(R.string.message_have_at_me_text);
+                            break;
+                    }
+                }
+
             }
+
         }
         return content;
     }

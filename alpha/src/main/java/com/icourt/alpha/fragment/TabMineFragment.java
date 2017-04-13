@@ -113,10 +113,6 @@ public class TabMineFragment extends BaseFragment {
         myCenterMailTextview.setText("zhaolu@icourt.cc");
     }
 
-    @Override
-    protected void getData(boolean isRefresh) {
-
-    }
 
     @OnClick({R.id.my_center_phone_layout, R.id.my_center_mail_layout, R.id.my_center_collect_layout, R.id.my_center_at_layout, R.id.my_center_file_layout, R.id.my_center_clear_cache_layout, R.id.my_center_clear_about_layout, R.id.my_center_clear_loginout_layout})
     @Override

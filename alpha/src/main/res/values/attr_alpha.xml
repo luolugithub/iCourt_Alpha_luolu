@@ -14,7 +14,7 @@
 
 
     <!--  【统一单位定义区域】 -->
-    <dimen name="alpha_height_divider">0.4dp</dimen>          <!-- 分割线高度 -->
+    <dimen name="alpha_height_divider">0.5dp</dimen>          <!-- 分割线高度 -->
     <dimen name="alpha_height_title">44dp</dimen>            <!-- 页面标题布局高度 -->
 
     <!-- 字体大小相对单位 为zeplin 聚合单位 [四舍五入]   -->

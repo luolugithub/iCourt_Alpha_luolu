@@ -16,7 +16,7 @@ import com.icourt.alpha.base.BaseRecyclerActivity;
 import com.icourt.alpha.entity.bean.DemoEntity;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
-import com.icourt.alpha.view.xrefreshlayout.RefreshaLayout;
+import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,7 +41,7 @@ public class DemoActivity extends BaseRecyclerActivity<com.icourt.alpha.entity.b
     @BindView(R.id.recyclerView)
     RecyclerView recyclerView;
     @BindView(R.id.xrefreshview)
-    RefreshaLayout xrefreshview;
+    RefreshLayout xrefreshview;
     DemoAdapter demoAdapter;
 
     /**
@@ -83,7 +83,7 @@ public class DemoActivity extends BaseRecyclerActivity<com.icourt.alpha.entity.b
     }
 
     @Override
-    protected RefreshaLayout getRefreshLayout() {
+    protected RefreshLayout getRefreshLayout() {
         return xrefreshview;
     }
 

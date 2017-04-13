@@ -1,1 +1,1 @@
-include ':alpha', ':api'
+include ':alpha', ':api', ':javatest'

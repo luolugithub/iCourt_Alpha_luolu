@@ -7,7 +7,6 @@ import android.view.View;
 import android.widget.TextView;
 
 import com.icourt.alpha.R;
-import com.umeng.socialize.bean.SHARE_MEDIA;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -49,7 +48,7 @@ public class LoginSelectActivity extends LoginBaseActivity {
         super.onClick(v);
         switch (v.getId()) {
             case R.id.loginWeixinBtn:
-                doOauth(SHARE_MEDIA.WEIXIN);
+                loginWithWeiXin();
                 break;
             case R.id.actionLoginWithPwd:
                 LoginWithPwdActivity.launch(getContext());
