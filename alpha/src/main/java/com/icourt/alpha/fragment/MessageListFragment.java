@@ -10,12 +10,14 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.andview.refreshview.XRefreshView;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.IMSessionAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.HeaderFooterAdapter;
 import com.icourt.alpha.base.BaseFragment;
+import com.icourt.alpha.constants.RecentContactExtConfig;
 import com.icourt.alpha.db.dbmodel.ContactDbModel;
 import com.icourt.alpha.db.dbservice.ContactDbService;
 import com.icourt.alpha.entity.bean.AlphaUserInfo;
@@ -39,7 +41,9 @@ import com.netease.nimlib.sdk.team.TeamService;
 import com.netease.nimlib.sdk.team.model.Team;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -236,11 +240,31 @@ public class MessageListFragment extends BaseFragment implements BaseRecyclerAda
     @Override
     public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
         IMSessionEntity data = imSessionAdapter.getData(position - headerFooterAdapter.getHeaderCount());
+        if (data != null) {
+            if (data.recentContact.getSessionType() == SessionTypeEnum.Team) {
+                setDontDisturbs(data.recentContact.getContactId());
+            }
+        }
         log("--------->data:" + data);
         if (data != null) {
             LogUtils.logObject("-------->contact:", data.recentContact);
             LogUtils.logObject("-------->team:", data.team);
         }
+    }
+
+    /**
+     * 设置消息免打扰
+     *
+     * @param teamId
+     */
+    private void setDontDisturbs(String teamId) {
+        getApi().setNoDisturbing(teamId)
+                .enqueue(new SimpleCallBack<JsonElement>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
+
+                    }
+                });
     }
 
     /**
@@ -270,24 +294,40 @@ public class MessageListFragment extends BaseFragment implements BaseRecyclerAda
             @Override
             public void subscribe(ObservableEmitter<List<IMSessionEntity>> e) throws Exception {
                 if (e.isDisposed()) return;
-                List<IMSessionEntity> imSessionEntities = imSessionAdapter.getData();
-                for (int i = 0; i < imSessionDontDisturbEntities.size(); i++) {
-                    IMSessionDontDisturbEntity imSessionDontDisturbEntity = imSessionDontDisturbEntities.get(i);
-                    if (imSessionDontDisturbEntity == null) continue;
 
-                    for (int j = 0; j < imSessionEntities.size(); j++) {
-                        IMSessionEntity imSessionEntity = imSessionEntities.get(j);
-                        if (imSessionEntity != null
-                                && imSessionEntity.recentContact != null
-                                && imSessionEntity.recentContact.getSessionType() == SessionTypeEnum.Team) {
+
+                //先将以前免打扰的 关闭
+                List<IMSessionEntity> imSessionEntities = imSessionAdapter.getData();
+                for (int i = 0; i < imSessionEntities.size(); i++) {
+                    IMSessionEntity imSessionEntity = imSessionEntities.get(i);
+                    if (imSessionEntity != null
+                            && imSessionEntity.recentContact != null
+                            && imSessionEntity.recentContact.getSessionType() == SessionTypeEnum.Team) {
+                        Map<String, Object> extendMap = imSessionEntity.recentContact.getExtension();
+                        if (extendMap == null) {
+                            extendMap = new HashMap<String, Object>();
+                        }
+                        extendMap.put(RecentContactExtConfig.EXT_SETTING_DONT_DISTURB, false);
+                        NIMClient.getService(TeamService.class)
+                                .muteTeam(imSessionEntity.recentContact.getContactId(), false);
+
+                        //将新同步的免打扰开启
+                        for (int j = 0; j < imSessionDontDisturbEntities.size(); j++) {
+                            IMSessionDontDisturbEntity imSessionDontDisturbEntity = imSessionDontDisturbEntities.get(j);
+                            if (imSessionDontDisturbEntity == null) continue;
 
                             if (TextUtils.equals(imSessionDontDisturbEntity.groupId, imSessionEntity.recentContact.getContactId())) {
                                 NIMClient.getService(TeamService.class)
-                                        .muteTeam(imSessionEntity.recentContact.getContactId(), true);
+                                        .muteTeam(imSessionDontDisturbEntity.groupId, true);
+                                extendMap.put(RecentContactExtConfig.EXT_SETTING_DONT_DISTURB, true);
                             }
                         }
+                        imSessionEntity.recentContact.setExtension(extendMap);
+                        NIMClient.getService(MsgService.class)
+                                .updateRecent(imSessionEntity.recentContact);
                     }
                 }
+
                 e.onNext(imSessionEntities);
                 e.onComplete();
             }
@@ -296,6 +336,7 @@ public class MessageListFragment extends BaseFragment implements BaseRecyclerAda
                 .subscribe(new Consumer<List<IMSessionEntity>>() {
                     @Override
                     public void accept(List<IMSessionEntity> imSessionEntities) throws Exception {
+                        log("--------------->yes");
                         imSessionAdapter.notifyDataSetChanged();
                     }
                 });

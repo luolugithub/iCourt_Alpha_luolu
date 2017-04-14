@@ -11,6 +11,7 @@ import android.widget.TextView;
 
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.baseadapter.BaseArrayRecyclerAdapter;
+import com.icourt.alpha.constants.RecentContactExtConfig;
 import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.icourt.alpha.entity.bean.AtEntity;
 import com.icourt.alpha.entity.bean.HelperNotification;
@@ -20,11 +21,12 @@ import com.icourt.alpha.utils.ActionConstants;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.GlideUtils;
 import com.icourt.alpha.utils.IMUtils;
+import com.icourt.alpha.utils.LogUtils;
 import com.icourt.alpha.utils.LoginInfoUtils;
 import com.icourt.alpha.utils.SpannableUtils;
 import com.icourt.alpha.widget.parser.HelperNotificationParser;
 import com.netease.nimlib.sdk.msg.constant.SessionTypeEnum;
-import com.netease.nimlib.sdk.team.model.Team;
+import com.netease.nimlib.sdk.msg.model.RecentContact;
 import com.vanniktech.emoji.EmojiTextView;
 
 import q.rorbin.badgeview.Badge;
@@ -133,21 +135,29 @@ public class IMSessionAdapter extends BaseArrayRecyclerAdapter<IMSessionEntity> 
                         tvSessionContent);
             }
 
+            LogUtils.d("-------------->pos:" + position);
             //5.设置消息免打扰
-            setItemDontDisturbs(imSessionEntity.team, ivSessionNotDisturb);
+            setItemDontDisturbs(imSessionEntity.recentContact, ivSessionNotDisturb);
         }
     }
 
     /**
      * 展示消息免打扰的icon
      *
-     * @param team
+     * @param recentContact
      * @param ivSessionNotDisturb
      */
-    private void setItemDontDisturbs(Team team, ImageView ivSessionNotDisturb) {
-        if (team == null) return;
+    private void setItemDontDisturbs(RecentContact recentContact, ImageView ivSessionNotDisturb) {
         if (ivSessionNotDisturb == null) return;
-        ivSessionNotDisturb.setVisibility(team.mute() ? View.VISIBLE : View.GONE);
+        boolean isDontDisturb = false;
+        if (recentContact.getExtension() != null) {
+            Object o = recentContact.getExtension().get(RecentContactExtConfig.EXT_SETTING_DONT_DISTURB);
+            if (o instanceof Boolean) {
+                isDontDisturb = ((Boolean) o).booleanValue();
+            }
+        }
+        ivSessionNotDisturb.setVisibility(isDontDisturb
+                ? View.VISIBLE : View.GONE);
     }
 
     /**

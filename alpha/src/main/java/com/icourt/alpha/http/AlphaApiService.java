@@ -1,5 +1,6 @@
 package com.icourt.alpha.http;
 
+import com.google.gson.JsonElement;
 import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.icourt.alpha.entity.bean.AppVersionEntity;
 import com.icourt.alpha.entity.bean.GroupContactBean;
@@ -146,4 +147,14 @@ public interface AlphaApiService {
      */
     @GET("api/v2/chat/group/getNoDisturbing")
     Call<ResEntity<List<IMSessionDontDisturbEntity>>> getDontDisturbs();
+
+    /**
+     * 设置消息免打扰
+     *
+     * @param groupId 群组id
+     * @return
+     */
+    @POST("api/v2/chat/group/setNoDisturbing")
+    @FormUrlEncoded
+    Call<ResEntity<JsonElement>> setNoDisturbing(@Field("groupId") String groupId);
 }
