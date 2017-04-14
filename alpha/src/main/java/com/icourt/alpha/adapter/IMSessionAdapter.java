@@ -24,6 +24,7 @@ import com.icourt.alpha.utils.LoginInfoUtils;
 import com.icourt.alpha.utils.SpannableUtils;
 import com.icourt.alpha.widget.parser.HelperNotificationParser;
 import com.netease.nimlib.sdk.msg.constant.SessionTypeEnum;
+import com.netease.nimlib.sdk.team.model.Team;
 import com.vanniktech.emoji.EmojiTextView;
 
 import q.rorbin.badgeview.Badge;
@@ -98,6 +99,7 @@ public class IMSessionAdapter extends BaseArrayRecyclerAdapter<IMSessionEntity> 
         View view_session_top = holder.obtainView(R.id.view_session_top);
         TextView tvSessionTitle = holder.obtainView(R.id.tv_session_title);
         EmojiTextView tvSessionContent = holder.obtainView(R.id.tv_session_content);
+        ImageView ivSessionNotDisturb = holder.obtainView(R.id.iv_session_not_disturb);
         tvSessionContent.setText(imSessionEntity.recentContact.getContent());
         if (imSessionEntity.recentContact != null) {
             if (holder instanceof IMSessionViewHolder) {
@@ -130,7 +132,22 @@ public class IMSessionAdapter extends BaseArrayRecyclerAdapter<IMSessionEntity> 
                 setItemData(imSessionEntity,
                         tvSessionContent);
             }
+
+            //5.设置消息免打扰
+            setItemDontDisturbs(imSessionEntity.team, ivSessionNotDisturb);
         }
+    }
+
+    /**
+     * 展示消息免打扰的icon
+     *
+     * @param team
+     * @param ivSessionNotDisturb
+     */
+    private void setItemDontDisturbs(Team team, ImageView ivSessionNotDisturb) {
+        if (team == null) return;
+        if (ivSessionNotDisturb == null) return;
+        ivSessionNotDisturb.setVisibility(team.mute() ? View.VISIBLE : View.GONE);
     }
 
     /**

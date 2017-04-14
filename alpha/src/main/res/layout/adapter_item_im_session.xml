@@ -55,11 +55,22 @@
                 android:layout_marginBottom="10dp"
                 android:layout_marginRight="10dp"
                 android:layout_marginTop="5dp"
+                android:layout_toLeftOf="@+id/iv_session_not_disturb"
                 android:ellipsize="end"
                 android:maxLines="1"
                 android:text="标题"
                 android:textColor="@color/alpha_font_color_gray"
                 android:textSize="@dimen/alpha_font_size_mini_medium" />
+
+            <ImageView
+                android:id="@+id/iv_session_not_disturb"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                android:layout_below="@+id/tv_session_title"
+                android:layout_marginRight="10dp"
+                android:layout_marginTop="5dp"
+                android:src="@mipmap/icon_mute" />
 
             <View
                 android:id="@+id/view_session_top"

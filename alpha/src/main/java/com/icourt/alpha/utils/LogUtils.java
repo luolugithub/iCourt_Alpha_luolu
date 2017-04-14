@@ -88,6 +88,17 @@ public class LogUtils {
         }
     }
 
+    /**
+     * 打印任何对象
+     *
+     * @param obj
+     */
+    public static void logObject(String tag, Object obj) {
+        if (isDebug) {
+            d(tag + " " + reflect(obj));
+        }
+    }
+
     public static Map<String, Object> reflect(Object obj) {
         if (obj == null) return null;
         Map<String, Object> data = new HashMap<>();

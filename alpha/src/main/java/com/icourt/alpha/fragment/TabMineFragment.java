@@ -21,6 +21,11 @@ import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.utils.GlideUtils;
 import com.netease.nimlib.sdk.NIMClient;
 import com.netease.nimlib.sdk.auth.AuthService;
+import com.umeng.socialize.UMAuthListener;
+import com.umeng.socialize.UMShareAPI;
+import com.umeng.socialize.bean.SHARE_MEDIA;
+
+import java.util.Map;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -87,6 +92,8 @@ public class TabMineFragment extends BaseFragment {
     @BindView(R.id.my_center_clear_help_layout)
     LinearLayout myCenterClearHelpLayout;
 
+    private UMShareAPI mShareAPI;
+
     public static TabMineFragment newInstance() {
         return new TabMineFragment();
     }
@@ -102,6 +109,7 @@ public class TabMineFragment extends BaseFragment {
 
     @Override
     protected void initView() {
+        mShareAPI = UMShareAPI.get(getContext());
         titleBack.setVisibility(View.INVISIBLE);
         titleContent.setText("个人中心");
         if (GlideUtils.canLoadImage(this)) {
@@ -167,12 +175,53 @@ public class TabMineFragment extends BaseFragment {
         //  groupContactBeanDao.deleteAll();
         //  personContactBeanDao.deleteAll();
         NIMClient.getService(AuthService.class).logout();
-        LoginSelectActivity.launch(getContext());
+        //撤销微信授权
+        if (!mShareAPI.isAuthorize(getActivity(), SHARE_MEDIA.WEIXIN)) {
+            dismissLoadingDialog();
+            LoginSelectActivity.launch(getContext());
+        } else {
+            mShareAPI.deleteOauth(getActivity(), SHARE_MEDIA.WEIXIN, new UMAuthListener() {
+                @Override
+                public void onStart(SHARE_MEDIA share_media) {
+                    showLoadingDialog(null);
+                }
+
+                @Override
+                public void onComplete(SHARE_MEDIA share_media, int i, Map<String, String> map) {
+                    exit();
+                }
+
+                @Override
+                public void onError(SHARE_MEDIA share_media, int i, Throwable throwable) {
+                    exit();
+                }
+
+
+                @Override
+                public void onCancel(SHARE_MEDIA share_media, int i) {
+                    exit();
+                }
+
+                private void exit() {
+                    dismissLoadingDialog();
+                    LoginSelectActivity.launch(getContext());
+                }
+
+            });
+        }
     }
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
         unbinder.unbind();
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if (mShareAPI != null) {
+            mShareAPI.release();
+        }
     }
 }

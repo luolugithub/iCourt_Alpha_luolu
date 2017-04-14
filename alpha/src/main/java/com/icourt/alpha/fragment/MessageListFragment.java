@@ -21,7 +21,10 @@ import com.icourt.alpha.db.dbservice.ContactDbService;
 import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.icourt.alpha.entity.bean.IMBodyEntity;
+import com.icourt.alpha.entity.bean.IMSessionDontDisturbEntity;
 import com.icourt.alpha.entity.bean.IMSessionEntity;
+import com.icourt.alpha.http.callback.SimpleCallBack;
+import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.JsonUtils;
 import com.icourt.alpha.utils.LogUtils;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
@@ -48,6 +51,8 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
+import retrofit2.Call;
+import retrofit2.Response;
 
 /**
  * Description
@@ -144,6 +149,7 @@ public class MessageListFragment extends BaseFragment implements BaseRecyclerAda
 
                     Team team = null;
                     GroupContactBean contactBean = null;
+                    //群聊
                     //查询得到team信息
                     if (recentContact.getSessionType() == SessionTypeEnum.Team) {
                         //群聊
@@ -159,7 +165,6 @@ public class MessageListFragment extends BaseFragment implements BaseRecyclerAda
                                 contactBean = contactDbModel.convert2Model();
                             }
                         }
-                        log("-----i："+i+"   "+contactBean+"  "+recentContact.getContactId());
                     }
                     //解析自定义的消息体
                     IMBodyEntity customIMBody = null;
@@ -184,6 +189,7 @@ public class MessageListFragment extends BaseFragment implements BaseRecyclerAda
                     @Override
                     public void accept(List<IMSessionEntity> imSessionEntities) throws Exception {
                         imSessionAdapter.bindData(true, imSessionEntities);
+                        getDontDisturbs();
                     }
                 });
     }
@@ -232,8 +238,67 @@ public class MessageListFragment extends BaseFragment implements BaseRecyclerAda
         IMSessionEntity data = imSessionAdapter.getData(position - headerFooterAdapter.getHeaderCount());
         log("--------->data:" + data);
         if (data != null) {
-            LogUtils.logObject(data.recentContact);
-            log("----------->team:" + data.team);
+            LogUtils.logObject("-------->contact:", data.recentContact);
+            LogUtils.logObject("-------->team:", data.team);
         }
     }
+
+    /**
+     * 获取消息免打扰
+     */
+    private void getDontDisturbs() {
+        getApi().getDontDisturbs()
+                .enqueue(new SimpleCallBack<List<IMSessionDontDisturbEntity>>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<List<IMSessionDontDisturbEntity>>> call, Response<ResEntity<List<IMSessionDontDisturbEntity>>> response) {
+                        if (response.body().result != null && imSessionAdapter != null) {
+                            updateLocalDontDisturbs(response.body().result);
+                        }
+                    }
+                });
+    }
+
+
+    /**
+     * 更新 消息免打扰【群聊】 UI 数据库
+     *
+     * @param imSessionDontDisturbEntities 网络同步的免打扰对象
+     */
+    private void updateLocalDontDisturbs(final List<IMSessionDontDisturbEntity> imSessionDontDisturbEntities) {
+        if (imSessionDontDisturbEntities == null) return;
+        subscribe = Observable.create(new ObservableOnSubscribe<List<IMSessionEntity>>() {
+            @Override
+            public void subscribe(ObservableEmitter<List<IMSessionEntity>> e) throws Exception {
+                if (e.isDisposed()) return;
+                List<IMSessionEntity> imSessionEntities = imSessionAdapter.getData();
+                for (int i = 0; i < imSessionDontDisturbEntities.size(); i++) {
+                    IMSessionDontDisturbEntity imSessionDontDisturbEntity = imSessionDontDisturbEntities.get(i);
+                    if (imSessionDontDisturbEntity == null) continue;
+
+                    for (int j = 0; j < imSessionEntities.size(); j++) {
+                        IMSessionEntity imSessionEntity = imSessionEntities.get(j);
+                        if (imSessionEntity != null
+                                && imSessionEntity.recentContact != null
+                                && imSessionEntity.recentContact.getSessionType() == SessionTypeEnum.Team) {
+
+                            if (TextUtils.equals(imSessionDontDisturbEntity.groupId, imSessionEntity.recentContact.getContactId())) {
+                                NIMClient.getService(TeamService.class)
+                                        .muteTeam(imSessionEntity.recentContact.getContactId(), true);
+                            }
+                        }
+                    }
+                }
+                e.onNext(imSessionEntities);
+                e.onComplete();
+            }
+        }).subscribeOn(Schedulers.newThread())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Consumer<List<IMSessionEntity>>() {
+                    @Override
+                    public void accept(List<IMSessionEntity> imSessionEntities) throws Exception {
+                        imSessionAdapter.notifyDataSetChanged();
+                    }
+                });
+    }
+
 }

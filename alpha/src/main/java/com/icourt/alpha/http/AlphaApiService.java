@@ -3,6 +3,7 @@ package com.icourt.alpha.http;
 import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.icourt.alpha.entity.bean.AppVersionEntity;
 import com.icourt.alpha.entity.bean.GroupContactBean;
+import com.icourt.alpha.entity.bean.IMSessionDontDisturbEntity;
 import com.icourt.alpha.entity.bean.LoginIMToken;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 
@@ -136,4 +137,13 @@ public interface AlphaApiService {
      */
     @GET("api/v1/auth/up/getRobot")
     Call<ResEntity<List<GroupContactBean>>> getRobos();
+
+    /**
+     * 获取消息免打扰列表  非免打扰的team 不返回
+     * 【注意】 目前单聊没有免打扰 是群聊免打扰
+     *
+     * @return
+     */
+    @GET("api/v2/chat/group/getNoDisturbing")
+    Call<ResEntity<List<IMSessionDontDisturbEntity>>> getDontDisturbs();
 }
