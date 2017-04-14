@@ -258,6 +258,7 @@ public class BaseApplication extends MultiDexApplication {
 
     }
 
+
     /**
      * 配置galleryfinal
      */
