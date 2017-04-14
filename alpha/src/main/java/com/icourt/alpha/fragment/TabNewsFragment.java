@@ -1,5 +1,6 @@
 package com.icourt.alpha.fragment;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.TabLayout;
@@ -14,6 +15,7 @@ import com.icourt.alpha.R;
 import com.icourt.alpha.activity.TestActivity;
 import com.icourt.alpha.adapter.baseadapter.BaseFragmentAdapter;
 import com.icourt.alpha.base.BaseFragment;
+import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.interfaces.OnTabDoubleClickListener;
 
 import java.util.Arrays;
@@ -30,7 +32,8 @@ import butterknife.Unbinder;
  * date createTime：2017/4/8
  * version 1.0.0
  */
-public class TabNewsFragment extends BaseFragment implements OnTabDoubleClickListener {
+public class TabNewsFragment extends BaseFragment
+        implements OnTabDoubleClickListener, OnFragmentCallBackListener {
 
 
     Unbinder unbinder;
@@ -40,6 +43,7 @@ public class TabNewsFragment extends BaseFragment implements OnTabDoubleClickLis
     ImageView ivActionAdd;
     @BindView(R.id.viewPager)
     ViewPager viewPager;
+    OnFragmentCallBackListener parentFragmentCallBackListener;
 
     private BaseFragmentAdapter baseFragmentAdapter;
 
@@ -47,6 +51,14 @@ public class TabNewsFragment extends BaseFragment implements OnTabDoubleClickLis
         return new TabNewsFragment();
     }
 
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        try {
+            parentFragmentCallBackListener = (OnFragmentCallBackListener) context;
+        } catch (ClassCastException e) {
+        }
+    }
 
     @Nullable
     @Override
@@ -86,6 +98,37 @@ public class TabNewsFragment extends BaseFragment implements OnTabDoubleClickLis
     @Override
     public void onTabDoubleClick(Fragment targetFragment, View v, Bundle bundle) {
         if (targetFragment != TabNewsFragment.this) return;
+        Fragment item = baseFragmentAdapter.getItem(0);
+        if (item instanceof OnTabDoubleClickListener) {
+            ((OnTabDoubleClickListener) item).onTabDoubleClick(item, v, bundle);
+        }
     }
 
+    @Override
+    public void OnFragmentCallBack(Fragment fragment, Bundle params) {
+        if (fragment == baseFragmentAdapter.getItem(0))//更新消息数量
+        {
+            if (params != null) {
+                //动态修改tabLayout 指示器
+                //方式1：
+                // tabLayout.getTabAt(0).setText("未使用(%s)");
+
+                //方式2:
+                StringBuilder newsTabBuilder = new StringBuilder("消息");
+                int unReadNum = params.getInt("unReadNum");
+                if (unReadNum > 99) {
+                    newsTabBuilder.append("...");
+                } else if (unReadNum > 0) {
+                    newsTabBuilder.append("(" + unReadNum + ")");
+                }
+                baseFragmentAdapter.bindTitle(true,
+                        Arrays.asList(newsTabBuilder.toString(), "通讯录"));
+                if (getParentFragment() instanceof OnFragmentCallBackListener) {
+                    ((OnFragmentCallBackListener) getParentFragment()).OnFragmentCallBack(TabNewsFragment.this, params);
+                } else if (parentFragmentCallBackListener != null) {
+                    parentFragmentCallBackListener.OnFragmentCallBack(TabNewsFragment.this, params);
+                }
+            }
+        }
+    }
 }

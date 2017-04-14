@@ -32,6 +32,15 @@ public class LoginInfoUtils {
         return null;
     }
 
+    /**
+     * @return 登陆信息
+     */
+    @Nullable
+    @CheckResult
+    public static final String getLoginUserId() {
+        AlphaUserInfo loginUserInfo = getLoginUserInfo();
+        return loginUserInfo == null ? "" : loginUserInfo.getUserId();
+    }
 
     /**
      * 清除登陆信息

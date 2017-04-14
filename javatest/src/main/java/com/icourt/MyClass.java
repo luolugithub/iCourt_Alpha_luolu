@@ -23,6 +23,7 @@ public class MyClass {
         System.out.println("isPic3:" + isPIC("http://xx.jpg"));
         System.out.println("isPic4:" + isPIC("http://"));
         System.out.println("isPic4:" + isPIC("http://.q"));
+
     }
 
     /**

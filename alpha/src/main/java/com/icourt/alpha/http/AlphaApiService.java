@@ -149,6 +149,24 @@ public interface AlphaApiService {
     Call<ResEntity<List<IMSessionDontDisturbEntity>>> getDontDisturbs();
 
     /**
+     * 是否置顶
+     *
+     * @param p2pId
+     * @return
+     */
+    @GET("api/v2/chat/group/isStarred")
+    Call<ResEntity<Integer>> isSetTop(@Query("p2pId") String p2pId);
+
+
+    /**
+     * 置顶
+     *
+     * @param p2pId
+     * @return
+     */
+    @GET("api/v2/chat/group/setStarred")
+    Call<ResEntity<Integer>> setTop(@Query("p2pId") String p2pId);
+    /**
      * 设置消息免打扰
      *
      * @param groupId 群组id

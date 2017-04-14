@@ -5,6 +5,8 @@ import android.text.TextUtils;
 import com.icourt.alpha.db.convertor.IConvertModel;
 import com.icourt.alpha.db.dbmodel.ContactDbModel;
 
+import java.io.Serializable;
+
 /**
  * Description  联系人模型
  * Company Beijing icourt
@@ -12,7 +14,8 @@ import com.icourt.alpha.db.dbmodel.ContactDbModel;
  * date createTime：2017/4/10
  * version 1.0.0
  */
-public class GroupContactBean extends GroupContactActionEntity implements IConvertModel<ContactDbModel> {
+public class GroupContactBean extends GroupContactActionEntity
+        implements IConvertModel<ContactDbModel>,Serializable {
 
     public String userId;
     public String userName;

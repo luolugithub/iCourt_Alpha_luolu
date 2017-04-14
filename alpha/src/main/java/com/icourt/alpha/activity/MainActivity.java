@@ -2,6 +2,7 @@ package com.icourt.alpha.activity;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -9,6 +10,7 @@ import android.support.annotation.IdRes;
 import android.support.v4.app.Fragment;
 import android.util.SparseArray;
 import android.view.GestureDetector;
+import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.FrameLayout;
@@ -30,7 +32,13 @@ import com.icourt.alpha.fragment.TabTaskFragment;
 import com.icourt.alpha.http.AlphaClient;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
+import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.interfaces.OnTabDoubleClickListener;
+import com.icourt.alpha.utils.DensityUtil;
+import com.icourt.alpha.utils.SimpleViewGestureListener;
+import com.netease.nimlib.sdk.NIMClient;
+import com.netease.nimlib.sdk.StatusCode;
+import com.netease.nimlib.sdk.msg.MsgService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,15 +46,18 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import q.rorbin.badgeview.Badge;
+import q.rorbin.badgeview.QBadgeView;
 import retrofit2.Call;
 import retrofit2.Response;
 
-public class MainActivity extends BaseActivity implements RadioGroup.OnCheckedChangeListener {
+public class MainActivity extends BaseActivity
+        implements RadioGroup.OnCheckedChangeListener
+        , OnFragmentCallBackListener {
 
     public static void launch(Context context) {
         if (context == null) return;
         Intent intent = new Intent(context, MainActivity.class);
-        //intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         context.startActivity(intent);
     }
@@ -67,7 +78,6 @@ public class MainActivity extends BaseActivity implements RadioGroup.OnCheckedCh
     RadioGroup rgMainTab;
     Fragment currentFragment;
     final SparseArray<Fragment> fragmentSparseArray = new SparseArray<>();
-    GestureDetector tabGestureDetector;
     GestureDetector.SimpleOnGestureListener tabGestureListener = new GestureDetector.SimpleOnGestureListener() {
         @Override
         public boolean onDoubleTap(MotionEvent e) {
@@ -76,18 +86,6 @@ public class MainActivity extends BaseActivity implements RadioGroup.OnCheckedCh
                 ((OnTabDoubleClickListener) currFragment).onTabDoubleClick(currFragment, null, null);
             }
             return super.onDoubleTap(e);
-        }
-    };
-    View.OnTouchListener tabTouchListener = new View.OnTouchListener() {
-        @Override
-        public boolean onTouch(View v, MotionEvent event) {
-            switch (v.getId()) {
-                case R.id.tab_news:
-                    return tabGestureDetector.onTouchEvent(event);
-                default:
-                    break;
-            }
-            return false;
         }
     };
 
@@ -132,10 +130,10 @@ public class MainActivity extends BaseActivity implements RadioGroup.OnCheckedCh
         loginUserInfo = getLoginUserInfo();
         contactDbService = new ContactDbService(loginUserInfo == null ? "" : loginUserInfo.getUserId());
         rgMainTab.setOnCheckedChangeListener(this);
-        tabGestureDetector = new GestureDetector(getContext(), tabGestureListener);
-        tabNews.setOnTouchListener(tabTouchListener);
+        new SimpleViewGestureListener(tabNews, tabGestureListener);
         currentFragment = addOrShowFragment(getTabFragment(rgMainTab.getCheckedRadioButtonId()), currentFragment, R.id.main_fl_content);
     }
+
 
     @Override
     protected void onResume() {
@@ -243,6 +241,58 @@ public class MainActivity extends BaseActivity implements RadioGroup.OnCheckedCh
                         //super.defNotify(noticeStr);
                     }
                 });
+    }
+
+    public Badge tabNewsBadge;
+
+    private Badge getTabNewsBadge() {
+        if (tabNewsBadge == null) {
+            tabNewsBadge = new QBadgeView(getContext())
+                    .bindTarget(rgMainTab);
+            tabNewsBadge.setBadgeGravity(Gravity.START | Gravity.TOP);
+            tabNewsBadge.setGravityOffset(DensityUtil.px2dip(getContext(), 0.5f * tabNews.getWidth()), 0, true);
+            tabNewsBadge.setBadgeTextSize(10, true);
+            tabNewsBadge.stroke(Color.WHITE, 1, true);
+            tabNewsBadge.setBadgePadding(3, true);
+        }
+        return tabNewsBadge;
+    }
+
+    /**
+     * 更新消息提醒
+     *
+     * @param badge
+     * @param num
+     */
+    private void updateBadge(Badge badge, int num) {
+        if (badge != null && num >= 0) {
+            if (num > 99) {
+                badge.setBadgeText("...");
+            } else {
+                badge.setBadgeNumber(num);
+            }
+        }
+    }
+
+    /**
+     * 获取 本地未读消息
+     *
+     * @return
+     */
+    private int getLocalUnReadNum() {
+        if (NIMClient.getStatus() == StatusCode.LOGINED) {
+            return NIMClient.getService(MsgService.class).getTotalUnreadCount();
+        }
+        return 0;
+    }
+
+    @Override
+    public void OnFragmentCallBack(Fragment fragment, Bundle params) {
+        if (fragment == getTabFragment(R.id.tab_news)) {
+            if (params != null) {
+                updateBadge(getTabNewsBadge(), params.getInt("unReadNum"));
+            }
+        }
     }
 
     @Override

@@ -428,6 +428,16 @@ public abstract class BaseActivity
 
 
     /**
+     * @return 登陆uid
+     */
+    @Nullable
+    @CheckResult
+    protected final String getLoginUserId() {
+        return LoginInfoUtils.getLoginUserId();
+    }
+
+
+    /**
      * 清除登陆信息
      */
     protected final void clearLoginUserInfo() {

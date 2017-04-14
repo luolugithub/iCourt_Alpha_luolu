@@ -1,7 +1,10 @@
 package com.icourt.alpha.fragment;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
+import android.support.v4.view.ViewCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
@@ -27,6 +30,8 @@ import com.icourt.alpha.entity.bean.IMSessionDontDisturbEntity;
 import com.icourt.alpha.entity.bean.IMSessionEntity;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
+import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
+import com.icourt.alpha.interfaces.OnTabDoubleClickListener;
 import com.icourt.alpha.utils.JsonUtils;
 import com.icourt.alpha.utils.LogUtils;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
@@ -65,7 +70,8 @@ import retrofit2.Response;
  * date createTime：2017/4/10
  * version 1.0.0
  */
-public class MessageListFragment extends BaseFragment implements BaseRecyclerAdapter.OnItemClickListener {
+public class MessageListFragment extends BaseFragment
+        implements BaseRecyclerAdapter.OnItemClickListener, OnTabDoubleClickListener {
 
     Unbinder unbinder;
     IMSessionAdapter imSessionAdapter;
@@ -74,12 +80,26 @@ public class MessageListFragment extends BaseFragment implements BaseRecyclerAda
     RecyclerView recyclerView;
     @BindView(R.id.refreshLayout)
     RefreshLayout refreshLayout;
+    LinearLayoutManager linearLayoutManager;
     HeaderFooterAdapter<IMSessionAdapter> headerFooterAdapter;
     AlphaUserInfo loginUserInfo;
+    OnFragmentCallBackListener parentFragmentCallBackListener;
+    int unReadNewsNum;//未读消息数量
+
 
     public static MessageListFragment newInstance() {
         return new MessageListFragment();
     }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        try {
+            parentFragmentCallBackListener = (OnFragmentCallBackListener) context;
+        } catch (ClassCastException e) {
+        }
+    }
+
 
     @Nullable
     @Override
@@ -92,7 +112,9 @@ public class MessageListFragment extends BaseFragment implements BaseRecyclerAda
     @Override
     protected void initView() {
         loginUserInfo = getLoginUserInfo();
-        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        linearLayoutManager = new LinearLayoutManager(getContext());
+        linearLayoutManager.setStackFromEnd(true);
+        recyclerView.setLayoutManager(linearLayoutManager);
         headerFooterAdapter = new HeaderFooterAdapter<IMSessionAdapter>(imSessionAdapter = new IMSessionAdapter());
         headerFooterAdapter.addHeader(HeaderFooterAdapter.inflaterView(getContext(), R.layout.header_search_comm, recyclerView));
         recyclerView.setAdapter(headerFooterAdapter);
@@ -147,9 +169,11 @@ public class MessageListFragment extends BaseFragment implements BaseRecyclerAda
                 ContactDbService contactDbService = new ContactDbService(loginUserInfo == null ? "" : loginUserInfo.getUserId());
                 List<IMSessionEntity> imSessionEntities = new ArrayList<>();
 
+                unReadNewsNum = 0;
                 for (int i = 0; i < recentContacts.size(); i++) {
                     RecentContact recentContact = recentContacts.get(i);
                     if (recentContact == null) continue;
+                    unReadNewsNum += recentContact.getUnreadCount();
 
                     Team team = null;
                     GroupContactBean contactBean = null;
@@ -193,9 +217,24 @@ public class MessageListFragment extends BaseFragment implements BaseRecyclerAda
                     @Override
                     public void accept(List<IMSessionEntity> imSessionEntities) throws Exception {
                         imSessionAdapter.bindData(true, imSessionEntities);
+                        callParentUpdateUnReadNum(unReadNewsNum);
                         getDontDisturbs();
                     }
                 });
+    }
+
+    /**
+     * unReadNum
+     * 请求父容器更新未读消息数量
+     */
+    private void callParentUpdateUnReadNum(int unReadNum) {
+        Bundle bundle = new Bundle();
+        bundle.putInt("unReadNum", unReadNum);
+        if (getParentFragment() instanceof OnFragmentCallBackListener) {
+            ((OnFragmentCallBackListener) getParentFragment()).OnFragmentCallBack(MessageListFragment.this, bundle);
+        } else if (parentFragmentCallBackListener != null) {
+            parentFragmentCallBackListener.OnFragmentCallBack(MessageListFragment.this, bundle);
+        }
     }
 
     /**
@@ -340,6 +379,39 @@ public class MessageListFragment extends BaseFragment implements BaseRecyclerAda
                         imSessionAdapter.notifyDataSetChanged();
                     }
                 });
+    }
+
+    @Override
+    public void onTabDoubleClick(Fragment targetFragment, View v, Bundle bundle) {
+        if (targetFragment != MessageListFragment.this) return;
+        int nextUnReadItem = findNextUnReadItem(linearLayoutManager.findFirstVisibleItemPosition(), -1);
+        if (nextUnReadItem != -1&&ViewCompat.canScrollVertically(recyclerView, 1)) {
+            linearLayoutManager.scrollToPositionWithOffset(nextUnReadItem + headerFooterAdapter.getHeaderCount(), 0);
+        } else {
+            linearLayoutManager.scrollToPositionWithOffset(0, 0);
+        }
+    }
+
+
+    /**
+     * 找到下一个未读消息位置
+     *
+     * @param start
+     * @param defaultUnFind
+     * @return
+     */
+    private int findNextUnReadItem(int start, int defaultUnFind) {
+        if (start < 0) return defaultUnFind;
+        List<IMSessionEntity> data = imSessionAdapter.getData();
+        for (int i = start; i < data.size(); i++) {
+            IMSessionEntity imSessionEntity = data.get(i);
+            if (imSessionEntity != null
+                    && imSessionEntity.recentContact != null
+                    && imSessionEntity.recentContact.getUnreadCount() > 0) {
+                return i;
+            }
+        }
+        return defaultUnFind;
     }
 
 }

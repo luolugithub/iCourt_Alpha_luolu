@@ -22,7 +22,6 @@ import android.widget.TextView;
 
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.IMContactAdapter;
-import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.db.convertor.IConvertModel;
 import com.icourt.alpha.db.convertor.ListConvertor;
@@ -48,7 +47,7 @@ import io.realm.RealmResults;
  * date createTime：2017/4/11
  * version 1.0.0
  */
-public class ContactSearchActivity extends BaseActivity implements BaseRecyclerAdapter.OnItemClickListener {
+public class ContactSearchActivity extends BaseActivity {
     IMContactAdapter imContactAdapter;
     @BindView(R.id.et_contact_name)
     EditText etContactName;
@@ -89,7 +88,6 @@ public class ContactSearchActivity extends BaseActivity implements BaseRecyclerA
         contactDbService = new ContactDbService(loginUserInfo == null ? "" : loginUserInfo.getUserId());
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setAdapter(imContactAdapter = new IMContactAdapter());
-        imContactAdapter.setOnItemClickListener(this);
         recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
@@ -203,8 +201,4 @@ public class ContactSearchActivity extends BaseActivity implements BaseRecyclerA
         }
     }
 
-    @Override
-    public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
-        log("---------->" + imContactAdapter.getData(position));
-    }
 }
