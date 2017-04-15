@@ -42,7 +42,7 @@ import butterknife.OnClick;
 import io.realm.RealmResults;
 
 /**
- * Description 联系人搜索
+ * Description 联系人搜索【本地数据库】【屏蔽机器人 本地数据库缓存了机器人】
  * Company Beijing icourt
  * author  youxuan  E-mail:xuanyouwu@163.com
  * date createTime：2017/4/11

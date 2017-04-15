@@ -21,12 +21,12 @@ import retrofit2.Call;
 import retrofit2.Response;
 
 /**
- * @author 创建人:lu.zhao
- *         <p>
- *         关于
- * @data 创建时间:16/12/8
+ * Description  关于界面
+ * Company Beijing icourt
+ * author  youxuan  E-mail:xuanyouwu@163.com
+ * date createTime：2017/3/31
+ * version 1.0.0
  */
-
 public class AboutActivity extends BaseAppUpdateActivity {
 
     public static void launch(@NonNull Context context) {

@@ -51,6 +51,13 @@ import q.rorbin.badgeview.QBadgeView;
 import retrofit2.Call;
 import retrofit2.Response;
 
+/**
+ * Description
+ * Company Beijing icourt
+ * author  youxuan  E-mail:xuanyouwu@163.com
+ * date createTime：2017/3/31
+ * version 1.0.0
+ */
 public class MainActivity extends BaseActivity
         implements RadioGroup.OnCheckedChangeListener
         , OnFragmentCallBackListener {

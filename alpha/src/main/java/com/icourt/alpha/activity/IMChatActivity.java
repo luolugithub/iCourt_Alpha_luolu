@@ -3,7 +3,7 @@ package com.icourt.alpha.activity;
 import com.icourt.alpha.base.BaseActivity;
 
 /**
- * Description
+ * Description  im聊天界面
  * Company Beijing icourt
  * author  youxuan  E-mail:xuanyouwu@163.com
  * date createTime：2017/4/10

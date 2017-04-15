@@ -16,7 +16,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 
 /**
- * Description
+ * Description  spalash页面
  * Company Beijing icourt
  * author  youxuan  E-mail:xuanyouwu@163.com
  * date createTime：2017/4/10
@@ -57,7 +57,7 @@ public class WelcomeActivity extends BaseActivity implements Animation.Animation
             AlphaUserInfo loginUserInfo = getLoginUserInfo();
             AlphaClient.getInstance().setToken(loginUserInfo.getToken());
             AlphaClient.getInstance().setOfficeId(loginUserInfo.getOfficeId());
-            
+
             MainActivity.launch(getContext());
         } else {
             LoginSelectActivity.launch(getContext());

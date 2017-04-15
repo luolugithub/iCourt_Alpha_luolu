@@ -27,11 +27,11 @@ import com.icourt.alpha.utils.SystemUtils;
 import com.kaopiz.kprogresshud.KProgressHUD;
 
 /**
- * Description
+ * Description  基类封装
  * Company Beijing icourt
  * author  youxuan  E-mail:xuanyouwu@163.com
  * date createTime：17/3/28
- * version
+ * version 1.0.0
  */
 
 public abstract class BaseActivity
@@ -40,11 +40,17 @@ public abstract class BaseActivity
         , View.OnClickListener {
 
 
+    /**
+     * @return 上下文
+     */
     protected final BaseActivity getActivity() {
         return this;
     }
 
 
+    /**
+     * @return 上下文
+     */
     protected final BaseActivity getContext() {
         return this;
     }
@@ -66,7 +72,7 @@ public abstract class BaseActivity
      * @param title
      */
     @Override
-    public final void setTitle(CharSequence title) {
+    public final void setTitle(@Nullable CharSequence title) {
         super.setTitle(title);
         TextView titleTextView = getTitleTextView();
         if (titleTextView != null) {

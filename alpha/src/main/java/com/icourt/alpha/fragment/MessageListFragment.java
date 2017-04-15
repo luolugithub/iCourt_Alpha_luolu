@@ -72,7 +72,7 @@ import retrofit2.Call;
 import retrofit2.Response;
 
 /**
- * Description
+ * Description  会话列表
  * Company Beijing icourt
  * author  youxuan  E-mail:xuanyouwu@163.com
  * date createTime：2017/4/10
