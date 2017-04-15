@@ -21,7 +21,6 @@ import com.icourt.alpha.utils.ActionConstants;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.GlideUtils;
 import com.icourt.alpha.utils.IMUtils;
-import com.icourt.alpha.utils.LogUtils;
 import com.icourt.alpha.utils.LoginInfoUtils;
 import com.icourt.alpha.utils.SpannableUtils;
 import com.icourt.alpha.widget.parser.HelperNotificationParser;
@@ -135,7 +134,6 @@ public class IMSessionAdapter extends BaseArrayRecyclerAdapter<IMSessionEntity> 
                         tvSessionContent);
             }
 
-            LogUtils.d("-------------->pos:" + position);
             //5.设置消息免打扰
             setItemDontDisturbs(imSessionEntity.recentContact, ivSessionNotDisturb);
         }

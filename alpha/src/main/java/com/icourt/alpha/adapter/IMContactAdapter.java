@@ -1,14 +1,11 @@
 package com.icourt.alpha.adapter;
 
 import android.text.TextUtils;
-import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.icourt.alpha.R;
-import com.icourt.alpha.activity.ContactDetailActivity;
 import com.icourt.alpha.adapter.baseadapter.BaseArrayRecyclerAdapter;
-import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.icourt.alpha.utils.GlideUtils;
 
@@ -19,11 +16,7 @@ import com.icourt.alpha.utils.GlideUtils;
  * date createTime：2017/4/11
  * version 1.0.0
  */
-public class IMContactAdapter extends BaseArrayRecyclerAdapter<GroupContactBean> implements BaseRecyclerAdapter.OnItemClickListener {
-    public IMContactAdapter() {
-        this.setOnItemClickListener(this);
-    }
-
+public class IMContactAdapter extends BaseArrayRecyclerAdapter<GroupContactBean> {
     @Override
     public int bindView(int viewtype) {
         return R.layout.adapter_item_im_contact;
@@ -39,9 +32,4 @@ public class IMContactAdapter extends BaseArrayRecyclerAdapter<GroupContactBean>
                 ? groupContactBean.userName : groupContactBean.name);
     }
 
-    @Override
-    public void onItemClick(BaseRecyclerAdapter adapter, ViewHolder holder, View view, int position) {
-        GroupContactBean data = getData(position - (getParentHeaderFooterAdapter() == null ? 0 : getParentHeaderFooterAdapter().getHeaderCount()));
-        ContactDetailActivity.launch(view.getContext(), data);
-    }
 }

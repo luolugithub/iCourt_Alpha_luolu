@@ -10,9 +10,11 @@ import android.view.ViewGroup;
 
 import com.andview.refreshview.XRefreshView;
 import com.icourt.alpha.R;
+import com.icourt.alpha.activity.ContactDetailActivity;
 import com.icourt.alpha.activity.ContactSearchActivity;
 import com.icourt.alpha.adapter.IMContactAdapter;
 import com.icourt.alpha.adapter.ItemActionAdapter;
+import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.HeaderFooterAdapter;
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.db.convertor.IConvertModel;
@@ -48,7 +50,7 @@ import retrofit2.Response;
  * date createTime：2017/4/10
  * version 1.0.0
  */
-public class ContactListFragment extends BaseFragment {
+public class ContactListFragment extends BaseFragment implements BaseRecyclerAdapter.OnItemClickListener {
     @BindView(R.id.recyclerView)
     RecyclerView recyclerView;
     @BindView(R.id.recyclerIndexBar)
@@ -91,6 +93,7 @@ public class ContactListFragment extends BaseFragment {
         recyclerView.addItemDecoration(mDecoration);
 
         headerFooterAdapter = new HeaderFooterAdapter<IMContactAdapter>(imContactAdapter = new IMContactAdapter());
+        imContactAdapter.setOnItemClickListener(this);
         View headerView = HeaderFooterAdapter.inflaterView(getContext(), R.layout.header_contact_search, recyclerView);
         headerRecyclerView = (RecyclerView) headerView.findViewById(R.id.headerRecyclerView);
         headerRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
@@ -265,7 +268,6 @@ public class ContactListFragment extends BaseFragment {
     }
 
 
-
     @Override
     public void onDestroyView() {
         super.onDestroyView();
@@ -278,5 +280,13 @@ public class ContactListFragment extends BaseFragment {
         if (contactDbService != null) {
             contactDbService.releaseService();
         }
+    }
+
+    @Override
+    public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
+        GroupContactBean data = imContactAdapter.getData(position -
+                (imContactAdapter.getParentHeaderFooterAdapter() == null
+                        ? 0 : imContactAdapter.getParentHeaderFooterAdapter().getHeaderCount()));
+        ContactDetailActivity.launch(getContext(), data, false, false);
     }
 }

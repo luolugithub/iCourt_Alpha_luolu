@@ -269,6 +269,11 @@ public abstract class BaseActivity
         return v;
     }
 
+    /**
+     * 注册控件的点击监听
+     *
+     * @param id
+     */
     @Nullable
     protected final void registerClick(@IdRes int id) {
         View viewById = findViewById(id);
@@ -277,12 +282,33 @@ public abstract class BaseActivity
         }
     }
 
+    /**
+     * 取消注册控件的点击监听
+     *
+     * @param id
+     */
     @Nullable
-    protected final void unregisterClick(@IdRes int id) {
+    protected final void unRegisterClick(@IdRes int id) {
         View viewById = findViewById(id);
         if (viewById != null) {
             viewById.setOnClickListener(null);
         }
+    }
+
+    /**
+     * 设置控件隐藏或者展示
+     *
+     * @param v
+     * @param isVisible
+     * @param <V>
+     * @return
+     */
+    @Nullable
+    protected final <V extends View> V setViewVisible(@NonNull V v, boolean isVisible) {
+        if (v != null) {
+            v.setVisibility(isVisible ? View.VISIBLE : View.GONE);
+        }
+        return v;
     }
 
     /**
@@ -293,7 +319,7 @@ public abstract class BaseActivity
      * @return
      */
     @Nullable
-    protected final <V extends View> V unregisterClick(@NonNull V v) {
+    protected final <V extends View> V unRegisterClick(@NonNull V v) {
         if (v != null) {
             v.setOnClickListener(null);
         }

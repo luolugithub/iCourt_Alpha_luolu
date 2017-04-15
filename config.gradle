@@ -87,7 +87,7 @@ ext {
             // ------------- 约束控件 -------------
             constraintLayout          : 'com.android.support.constraint:constraint-layout:1.0.0-alpha7',
             topsnackbar               : 'com.androidadvance:topsnackbar:1.1.1',
-            xrefreshview              : "com.huxq17.xrefreshview:xrefreshview:3.6.5"
+            xrefreshview              : "com.huxq17.xrefreshview:xrefreshview:3.6.6"
 
     ]
 

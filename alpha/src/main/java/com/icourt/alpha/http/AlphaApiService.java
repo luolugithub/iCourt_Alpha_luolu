@@ -6,6 +6,7 @@ import com.icourt.alpha.entity.bean.AppVersionEntity;
 import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.icourt.alpha.entity.bean.IMSessionDontDisturbEntity;
 import com.icourt.alpha.entity.bean.LoginIMToken;
+import com.icourt.alpha.entity.bean.SetTopEntity;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 
 import java.util.List;
@@ -160,12 +161,25 @@ public interface AlphaApiService {
 
     /**
      * 置顶
+     * 【注意】 这个接口只支持post
      *
      * @param p2pId
      * @return
      */
-    @GET("api/v2/chat/group/setStarred")
-    Call<ResEntity<Integer>> setTop(@Query("p2pId") String p2pId);
+    @POST("api/v2/chat/group/setStarred")
+    @FormUrlEncoded
+    Call<ResEntity<List<SetTopEntity>>> setTop(@Field("p2pId") String p2pId);
+
+
+    /**
+     * 获取置顶
+     * 【注意】 这个接口只支持post
+     *
+     * @return
+     */
+    @POST("api/v2/chat/group/setStarred")
+    Call<ResEntity<List<SetTopEntity>>> getTop();
+
     /**
      * 设置消息免打扰
      *

@@ -28,13 +28,16 @@ import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.icourt.alpha.entity.bean.IMBodyEntity;
 import com.icourt.alpha.entity.bean.IMSessionDontDisturbEntity;
 import com.icourt.alpha.entity.bean.IMSessionEntity;
+import com.icourt.alpha.entity.bean.SetTopEntity;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.interfaces.OnTabDoubleClickListener;
+import com.icourt.alpha.utils.ActionConstants;
 import com.icourt.alpha.utils.JsonUtils;
 import com.icourt.alpha.utils.LogUtils;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
+import com.icourt.alpha.widget.comparators.IMSessionEntityComparator;
 import com.netease.nimlib.sdk.NIMClient;
 import com.netease.nimlib.sdk.RequestCallbackWrapper;
 import com.netease.nimlib.sdk.ResponseCode;
@@ -45,7 +48,12 @@ import com.netease.nimlib.sdk.msg.model.RecentContact;
 import com.netease.nimlib.sdk.team.TeamService;
 import com.netease.nimlib.sdk.team.model.Team;
 
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
+
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -85,6 +93,7 @@ public class MessageListFragment extends BaseFragment
     AlphaUserInfo loginUserInfo;
     OnFragmentCallBackListener parentFragmentCallBackListener;
     int unReadNewsNum;//未读消息数量
+    IMSessionEntityComparator imSessionEntityComparator = new IMSessionEntityComparator();
 
 
     public static MessageListFragment newInstance() {
@@ -111,6 +120,7 @@ public class MessageListFragment extends BaseFragment
 
     @Override
     protected void initView() {
+        EventBus.getDefault().register(this);
         loginUserInfo = getLoginUserInfo();
         linearLayoutManager = new LinearLayoutManager(getContext());
         linearLayoutManager.setStackFromEnd(true);
@@ -128,6 +138,42 @@ public class MessageListFragment extends BaseFragment
         });
         refreshLayout.setAutoRefresh(true);
         refreshLayout.startRefresh();
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onMessageEvent(List<SetTopEntity> setTopEntities) {
+        if (setTopEntities == null) return;
+        updateUIwithTopEntities(setTopEntities);
+    }
+
+    /**
+     * 更新 UI 置顶会话优先显示
+     *
+     * @param setTopEntities
+     */
+    private void updateUIwithTopEntities(List<SetTopEntity> setTopEntities) {
+        if (setTopEntities == null) return;
+        for (IMSessionEntity item : imSessionAdapter.getData()) {
+            if (item != null
+                    && item.recentContact != null) {
+
+                item.recentContact.setTag(ActionConstants.MESSAGE_GROUP_NO_TOP);
+                NIMClient.getService(MsgService.class).updateRecent(item.recentContact);
+
+                for (SetTopEntity setTopEntity : setTopEntities) {
+                    if (setTopEntity != null
+                            && TextUtils.equals(setTopEntity.p2pId, item.recentContact.getContactId().toUpperCase())) {
+
+                        //设置为置顶并更新本地
+                        item.recentContact.setTag(ActionConstants.MESSAGE_GROUP_TOP);
+                        NIMClient.getService(MsgService.class).updateRecent(item.recentContact);
+                    }
+                }
+            }
+        }
+
+        Collections.sort(imSessionAdapter.getData(), imSessionEntityComparator);
+        imSessionAdapter.notifyDataSetChanged();
     }
 
     /**
@@ -216,9 +262,13 @@ public class MessageListFragment extends BaseFragment
                 .subscribe(new Consumer<List<IMSessionEntity>>() {
                     @Override
                     public void accept(List<IMSessionEntity> imSessionEntities) throws Exception {
+                        Collections.sort(imSessionEntities, imSessionEntityComparator);
                         imSessionAdapter.bindData(true, imSessionEntities);
+
                         callParentUpdateUnReadNum(unReadNewsNum);
+
                         getDontDisturbs();
+                        getTopSession();
                     }
                 });
     }
@@ -274,6 +324,7 @@ public class MessageListFragment extends BaseFragment
                 && !subscribe.isDisposed()) {
             subscribe.dispose();
         }
+        EventBus.getDefault().unregister(this);
     }
 
     @Override
@@ -375,7 +426,6 @@ public class MessageListFragment extends BaseFragment
                 .subscribe(new Consumer<List<IMSessionEntity>>() {
                     @Override
                     public void accept(List<IMSessionEntity> imSessionEntities) throws Exception {
-                        log("--------------->yes");
                         imSessionAdapter.notifyDataSetChanged();
                     }
                 });
@@ -385,7 +435,7 @@ public class MessageListFragment extends BaseFragment
     public void onTabDoubleClick(Fragment targetFragment, View v, Bundle bundle) {
         if (targetFragment != MessageListFragment.this) return;
         int nextUnReadItem = findNextUnReadItem(linearLayoutManager.findFirstVisibleItemPosition(), -1);
-        if (nextUnReadItem != -1&&ViewCompat.canScrollVertically(recyclerView, 1)) {
+        if (nextUnReadItem != -1 && ViewCompat.canScrollVertically(recyclerView, 1)) {
             linearLayoutManager.scrollToPositionWithOffset(nextUnReadItem + headerFooterAdapter.getHeaderCount(), 0);
         } else {
             linearLayoutManager.scrollToPositionWithOffset(0, 0);
@@ -412,6 +462,20 @@ public class MessageListFragment extends BaseFragment
             }
         }
         return defaultUnFind;
+    }
+
+    /**
+     * 获取置顶的会话
+     */
+    private void getTopSession() {
+        getApi().getTop()
+                .enqueue(new SimpleCallBack<List<SetTopEntity>>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<List<SetTopEntity>>> call, Response<ResEntity<List<SetTopEntity>>> response) {
+                        if (response.body().result == null) return;
+                        updateUIwithTopEntities(response.body().result);
+                    }
+                });
     }
 
 }
