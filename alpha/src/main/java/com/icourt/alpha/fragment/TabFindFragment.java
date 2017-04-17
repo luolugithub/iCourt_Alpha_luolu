@@ -3,6 +3,7 @@ package com.icourt.alpha.fragment;
 import android.os.Bundle;
 import android.support.annotation.IdRes;
 import android.support.annotation.IntDef;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.util.SparseArray;
@@ -13,9 +14,13 @@ import android.widget.FrameLayout;
 
 import com.icourt.alpha.R;
 import com.icourt.alpha.base.BaseFragment;
+import com.icourt.alpha.entity.bean.ItemsEntity;
+import com.icourt.alpha.utils.SpUtils;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.Arrays;
+import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -30,7 +35,37 @@ import butterknife.Unbinder;
  */
 public class TabFindFragment extends BaseFragment {
 
-    public static String KEY_TYPE_FRAGMENT = "type_fragment";
+    /**
+     * 生成菜单数据
+     *
+     * @param tabFindFragment
+     * @return
+     */
+    public static List<ItemsEntity> generateMenuData(@NonNull TabFindFragment tabFindFragment) {
+        if (tabFindFragment != null) {
+            switch (tabFindFragment.getShowChildFragmentType()) {
+                case TYPE_FRAGMENT_PROJECT:
+                    return Arrays.asList(new ItemsEntity("计时", TYPE_FRAGMENT_TIMING, R.mipmap.ic_launcher),
+                            new ItemsEntity("客户", TYPE_FRAGMENT_CUSTOMER, R.mipmap.ic_launcher),
+                            new ItemsEntity("搜索", TYPE_FRAGMENT_SEARCH, R.mipmap.ic_launcher));
+                case TYPE_FRAGMENT_TIMING:
+                    return Arrays.asList(new ItemsEntity("项目", TYPE_FRAGMENT_PROJECT, R.mipmap.ic_launcher),
+                            new ItemsEntity("客户", TYPE_FRAGMENT_CUSTOMER, R.mipmap.ic_launcher),
+                            new ItemsEntity("搜索", TYPE_FRAGMENT_SEARCH, R.mipmap.ic_launcher));
+                case TYPE_FRAGMENT_CUSTOMER:
+                    return Arrays.asList(new ItemsEntity("项目", TYPE_FRAGMENT_PROJECT, R.mipmap.ic_launcher),
+                            new ItemsEntity("计时", TYPE_FRAGMENT_TIMING, R.mipmap.ic_launcher),
+                            new ItemsEntity("搜索", TYPE_FRAGMENT_SEARCH, R.mipmap.ic_launcher));
+                case TYPE_FRAGMENT_SEARCH:
+                    return Arrays.asList(new ItemsEntity("项目", TYPE_FRAGMENT_PROJECT, R.mipmap.ic_launcher),
+                            new ItemsEntity("计时", TYPE_FRAGMENT_TIMING, R.mipmap.ic_launcher),
+                            new ItemsEntity("客户", TYPE_FRAGMENT_CUSTOMER, R.mipmap.ic_launcher));
+            }
+        }
+        return null;
+    }
+
+    public static String KEY_TYPE_FRAGMENT = "type_TabFindFragment_fragment";
 
     public static final int TYPE_FRAGMENT_PROJECT = 0;
     public static final int TYPE_FRAGMENT_TIMING = 1;
@@ -65,13 +100,35 @@ public class TabFindFragment extends BaseFragment {
         return view;
     }
 
+    /**
+     * 类型转化
+     *
+     * @param type
+     * @return
+     */
+    @ChildFragmentType
+    public static final int convert2ChildFragmentType(int type) {
+        switch (type) {
+            case TYPE_FRAGMENT_PROJECT:
+                return TYPE_FRAGMENT_PROJECT;
+            case TYPE_FRAGMENT_TIMING:
+                return TYPE_FRAGMENT_TIMING;
+            case TYPE_FRAGMENT_CUSTOMER:
+                return TYPE_FRAGMENT_CUSTOMER;
+            case TYPE_FRAGMENT_SEARCH:
+                return TYPE_FRAGMENT_SEARCH;
+        }
+        return TYPE_FRAGMENT_PROJECT;
+    }
+
     @Override
     protected void initView() {
-        showFragment(TYPE_FRAGMENT_PROJECT);
+        showFragment(convert2ChildFragmentType(getShowChildFragmentType()));
     }
 
     private void showFragment(@ChildFragmentType int type) {
         currentFragment = addOrShowFragment(getTabFragment(type), currentFragment, R.id.tab_find_frame);
+        saveChildFragmentType(type);
     }
 
 
@@ -102,6 +159,29 @@ public class TabFindFragment extends BaseFragment {
         } else {
             return fragment;
         }
+    }
+
+    /**
+     * 正在显示的child
+     *
+     * @return
+     */
+    public static int getShowChildFragmentType() {
+        return SpUtils.getInstance().getIntData(KEY_TYPE_FRAGMENT, 0);
+    }
+
+    /**
+     * 上次显示的child
+     *
+     * @return
+     */
+    @ChildFragmentType
+    public static int getLastChildFragmentType() {
+        return convert2ChildFragmentType(SpUtils.getInstance().getIntData(KEY_TYPE_FRAGMENT, 0));
+    }
+
+    private static void saveChildFragmentType(@ChildFragmentType int type) {
+        SpUtils.getInstance().putData(KEY_TYPE_FRAGMENT, type);
     }
 
     /**

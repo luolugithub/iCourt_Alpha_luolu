@@ -25,7 +25,7 @@ import com.icourt.alpha.db.dbmodel.ContactDbModel;
 import com.icourt.alpha.db.dbservice.ContactDbService;
 import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.icourt.alpha.entity.bean.GroupContactBean;
-import com.icourt.alpha.entity.bean.ItemsEntity;
+import com.icourt.alpha.entity.bean.ItemsEntityImp;
 import com.icourt.alpha.fragment.TabFindFragment;
 import com.icourt.alpha.fragment.TabMineFragment;
 import com.icourt.alpha.fragment.TabNewsFragment;
@@ -45,7 +45,6 @@ import com.netease.nimlib.sdk.StatusCode;
 import com.netease.nimlib.sdk.msg.MsgService;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import butterknife.BindView;
@@ -151,13 +150,28 @@ public class MainActivity extends BaseActivity
         contactDbService = new ContactDbService(loginUserInfo == null ? "" : loginUserInfo.getUserId());
         rgMainTab.setOnCheckedChangeListener(this);
         new SimpleViewGestureListener(tabNews, onSimpleViewGestureListener);
-        tabNews.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View v) {
-                return false;
-            }
-        });
+        initTabFind();
         currentFragment = addOrShowFragment(getTabFragment(rgMainTab.getCheckedRadioButtonId()), currentFragment, R.id.main_fl_content);
+    }
+
+    /**
+     * 初始化发现tab
+     */
+    private void initTabFind() {
+        switch (TabFindFragment.getLastChildFragmentType()) {
+            case TabFindFragment.TYPE_FRAGMENT_PROJECT:
+                tabFind.setText("项目");
+                break;
+            case TabFindFragment.TYPE_FRAGMENT_TIMING:
+                tabFind.setText("计时");
+                break;
+            case TabFindFragment.TYPE_FRAGMENT_CUSTOMER:
+                tabFind.setText("客户");
+                break;
+            case TabFindFragment.TYPE_FRAGMENT_SEARCH:
+                tabFind.setText("搜索");
+                break;
+        }
     }
 
     @OnLongClick({R.id.tab_find})
@@ -165,34 +179,46 @@ public class MainActivity extends BaseActivity
         switch (v.getId()) {
             case R.id.tab_find: {
                 if (!tabFind.isChecked()) return false;
-                changeTabFindChild(v);
+                showTabFindMenu(v);
             }
             break;
         }
         return true;
     }
 
-    private void changeTabFindChild(View v) {
-        if (currentFragment instanceof INotifyFragment) {
-            new ListActionItemPop(getContext(), Arrays.asList(new ItemsEntity("计时", R.mipmap.ic_launcher),
-                    new ItemsEntity("客户", R.mipmap.ic_launcher),
-                    new ItemsEntity("搜索", R.mipmap.ic_launcher))).withOnItemClick(new BaseListActionItemPop.OnItemClickListener() {
+    /**
+     * 展示发现页面切换菜单
+     *
+     * @param v
+     */
+    private void showTabFindMenu(View v) {
+        if (currentFragment instanceof INotifyFragment && currentFragment instanceof TabFindFragment) {
+            TabFindFragment tabFindFragment = (TabFindFragment) currentFragment;
+            new ListActionItemPop(getContext(), TabFindFragment.generateMenuData(tabFindFragment)).withOnItemClick(new BaseListActionItemPop.OnItemClickListener() {
                 @Override
                 public void onItemClick(BaseListActionItemPop listActionItemPop, BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
                     listActionItemPop.dismiss();
-                    Bundle bundle = new Bundle();
-                    switch (position) {
-                        case 0:
-                            bundle.putInt(TabFindFragment.KEY_TYPE_FRAGMENT, TabFindFragment.TYPE_FRAGMENT_PROJECT);
-                            break;
-                        case 1:
-                            bundle.putInt(TabFindFragment.KEY_TYPE_FRAGMENT, TabFindFragment.TYPE_FRAGMENT_CUSTOMER);
-                            break;
-                        case 2:
-                            bundle.putInt(TabFindFragment.KEY_TYPE_FRAGMENT, TabFindFragment.TYPE_FRAGMENT_SEARCH);
-                            break;
+                    Object item = adapter.getItem(position);
+                    if (item instanceof ItemsEntityImp) {
+                        ItemsEntityImp itemsEntityImp = (ItemsEntityImp) item;
+                        Bundle bundle = new Bundle();
+                        switch (itemsEntityImp.getItemType()) {
+                            case TabFindFragment.TYPE_FRAGMENT_PROJECT:
+                                bundle.putInt(TabFindFragment.KEY_TYPE_FRAGMENT, TabFindFragment.TYPE_FRAGMENT_PROJECT);
+                                break;
+                            case TabFindFragment.TYPE_FRAGMENT_CUSTOMER:
+                                bundle.putInt(TabFindFragment.KEY_TYPE_FRAGMENT, TabFindFragment.TYPE_FRAGMENT_CUSTOMER);
+                                break;
+                            case TabFindFragment.TYPE_FRAGMENT_SEARCH:
+                                bundle.putInt(TabFindFragment.KEY_TYPE_FRAGMENT, TabFindFragment.TYPE_FRAGMENT_SEARCH);
+                                break;
+                            case TabFindFragment.TYPE_FRAGMENT_TIMING:
+                                bundle.putInt(TabFindFragment.KEY_TYPE_FRAGMENT, TabFindFragment.TYPE_FRAGMENT_TIMING);
+                                break;
+                        }
+                        ((INotifyFragment) currentFragment).notifyFragmentUpdate(currentFragment, bundle);
+                        tabFind.setText(itemsEntityImp.getItemTitle());
                     }
-                    ((INotifyFragment) currentFragment).notifyFragmentUpdate(currentFragment, bundle);
                 }
             }).showUpCenter(v, DensityUtil.dip2px(getContext(), 10));
         }
