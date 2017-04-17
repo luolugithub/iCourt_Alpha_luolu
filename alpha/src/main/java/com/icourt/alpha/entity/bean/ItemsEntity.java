@@ -16,13 +16,13 @@ public class ItemsEntity implements ItemsEntityImp {
 
     public ItemsEntity(CharSequence itemTitle, int itemIconRes) {
         this.itemTitle = itemTitle;
-        itemIconRes = itemIconRes;
+        this.itemIconRes = itemIconRes;
     }
 
     public ItemsEntity(CharSequence itemTitle, int itemType, int itemIconRes) {
         this.itemTitle = itemTitle;
-        itemType = itemType;
-        itemIconRes = itemIconRes;
+        this.itemType = itemType;
+        this.itemIconRes = itemIconRes;
     }
 
     @Override

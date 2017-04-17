@@ -2,6 +2,7 @@ package com.icourt.alpha.fragment;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -269,14 +270,9 @@ public class ContactListFragment extends BaseFragment implements BaseRecyclerAda
 
 
     @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        unbinder.unbind();
-    }
-
-    @Override
     public void onDestroy() {
         super.onDestroy();
+        unbinder.unbind();
         if (contactDbService != null) {
             contactDbService.releaseService();
         }
@@ -288,5 +284,10 @@ public class ContactListFragment extends BaseFragment implements BaseRecyclerAda
                 (imContactAdapter.getParentHeaderFooterAdapter() == null
                         ? 0 : imContactAdapter.getParentHeaderFooterAdapter().getHeaderCount()));
         ContactDetailActivity.launch(getContext(), data, false, false);
+    }
+
+    @Override
+    public void notifyFragmentUpdate(Fragment targetFrgament, Bundle bundle) {
+
     }
 }

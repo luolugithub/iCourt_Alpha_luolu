@@ -478,4 +478,8 @@ public class MessageListFragment extends BaseFragment
                 });
     }
 
+    @Override
+    public void notifyFragmentUpdate(Fragment targetFrgament, Bundle bundle) {
+
+    }
 }

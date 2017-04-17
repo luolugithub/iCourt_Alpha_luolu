@@ -131,4 +131,9 @@ public class TabNewsFragment extends BaseFragment
             }
         }
     }
+
+    @Override
+    public void notifyFragmentUpdate(Fragment targetFrgament, Bundle bundle) {
+
+    }
 }

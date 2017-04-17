@@ -24,15 +24,13 @@
         android:text="任务" />
 
 
-    <ImageButton
+    <TextView
         android:id="@+id/tab_voice"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="-8dp"
-        android:layout_weight="1"
-        android:background="@android:color/transparent"
-        android:scaleType="fitCenter"
-        android:src="@mipmap/tab_voice" />
+        style="@style/mainPageRadioButtonStyple"
+        android:background="?attr/selectableItemBackground"
+        android:drawableTop="@drawable/tab_find"
+        android:gravity="center"
+        android:text="计时" />
 
     <RadioButton
         android:id="@+id/tab_find"

@@ -20,6 +20,7 @@ import android.view.ViewParent;
 import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.icourt.alpha.http.AlphaApiService;
 import com.icourt.alpha.http.RetrofitServiceFactory;
+import com.icourt.alpha.interfaces.INotifyFragment;
 import com.icourt.alpha.interfaces.ProgressHUDImp;
 import com.icourt.alpha.utils.LogUtils;
 import com.icourt.alpha.utils.LoginInfoUtils;
@@ -37,7 +38,8 @@ import com.kaopiz.kprogresshud.KProgressHUD;
 public abstract class BaseFragment
         extends Fragment
         implements ProgressHUDImp
-        , View.OnClickListener {
+        , View.OnClickListener,
+        INotifyFragment {
 
     protected View rootView;
 
@@ -321,10 +323,10 @@ public abstract class BaseFragment
      * @param containerViewId 替换的viewid
      * @return 当前执行显示的fragment
      */
-    protected final Fragment addOrShowFragment(FragmentManager fragmentManager, @NonNull Fragment targetFragment, Fragment currentFragment, @IdRes int containerViewId) {
+    protected final Fragment addOrShowFragment(@NonNull Fragment targetFragment, Fragment currentFragment, @IdRes int containerViewId) {
         if (targetFragment == null) return currentFragment;
         if (targetFragment == currentFragment) return currentFragment;
-        FragmentManager fm = fragmentManager;
+        FragmentManager fm = getChildFragmentManager();
         FragmentTransaction transaction = fm.beginTransaction();
         if (!targetFragment.isAdded()) { // 如果当前fragment添加，则添加到Fragment管理器中
             if (currentFragment == null) {

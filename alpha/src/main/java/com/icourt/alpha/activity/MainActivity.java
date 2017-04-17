@@ -9,22 +9,23 @@ import android.os.Message;
 import android.support.annotation.IdRes;
 import android.support.v4.app.Fragment;
 import android.util.SparseArray;
-import android.view.GestureDetector;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.FrameLayout;
-import android.widget.ImageButton;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
+import android.widget.TextView;
 
 import com.icourt.alpha.R;
+import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.db.convertor.IConvertModel;
 import com.icourt.alpha.db.dbmodel.ContactDbModel;
 import com.icourt.alpha.db.dbservice.ContactDbService;
 import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.icourt.alpha.entity.bean.GroupContactBean;
+import com.icourt.alpha.entity.bean.ItemsEntity;
 import com.icourt.alpha.fragment.TabFindFragment;
 import com.icourt.alpha.fragment.TabMineFragment;
 import com.icourt.alpha.fragment.TabNewsFragment;
@@ -32,20 +33,25 @@ import com.icourt.alpha.fragment.TabTaskFragment;
 import com.icourt.alpha.http.AlphaClient;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
+import com.icourt.alpha.interfaces.INotifyFragment;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.interfaces.OnTabDoubleClickListener;
 import com.icourt.alpha.utils.DensityUtil;
 import com.icourt.alpha.utils.SimpleViewGestureListener;
+import com.icourt.alpha.widget.popupwindow.BaseListActionItemPop;
+import com.icourt.alpha.widget.popupwindow.ListActionItemPop;
 import com.netease.nimlib.sdk.NIMClient;
 import com.netease.nimlib.sdk.StatusCode;
 import com.netease.nimlib.sdk.msg.MsgService;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import butterknife.OnLongClick;
 import q.rorbin.badgeview.Badge;
 import q.rorbin.badgeview.QBadgeView;
 import retrofit2.Call;
@@ -62,13 +68,6 @@ public class MainActivity extends BaseActivity
         implements RadioGroup.OnCheckedChangeListener
         , OnFragmentCallBackListener {
 
-    public static void launch(Context context) {
-        if (context == null) return;
-        Intent intent = new Intent(context, MainActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        context.startActivity(intent);
-    }
-
     @BindView(R.id.main_fl_content)
     FrameLayout mainFlContent;
     @BindView(R.id.tab_news)
@@ -76,23 +75,37 @@ public class MainActivity extends BaseActivity
     @BindView(R.id.tab_task)
     RadioButton tabTask;
     @BindView(R.id.tab_voice)
-    ImageButton tabVoice;
+    TextView tabVoice;
     @BindView(R.id.tab_find)
     RadioButton tabFind;
     @BindView(R.id.tab_mine)
     RadioButton tabMine;
     @BindView(R.id.rg_main_tab)
     RadioGroup rgMainTab;
+
+    public static void launch(Context context) {
+        if (context == null) return;
+        Intent intent = new Intent(context, MainActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        context.startActivity(intent);
+    }
+
     Fragment currentFragment;
     final SparseArray<Fragment> fragmentSparseArray = new SparseArray<>();
-    GestureDetector.SimpleOnGestureListener tabGestureListener = new GestureDetector.SimpleOnGestureListener() {
+    SimpleViewGestureListener.OnSimpleViewGestureListener onSimpleViewGestureListener = new SimpleViewGestureListener.OnSimpleViewGestureListener() {
         @Override
-        public boolean onDoubleTap(MotionEvent e) {
-            Fragment currFragment = currentFragment;
-            if (currFragment instanceof OnTabDoubleClickListener) {
-                ((OnTabDoubleClickListener) currFragment).onTabDoubleClick(currFragment, null, null);
+        public boolean onDoubleTap(View v, MotionEvent e) {
+            if (v == null) super.onDoubleTap(v, e);
+            switch (v.getId()) {
+                case R.id.tab_news: {
+                    Fragment currFragment = currentFragment;
+                    if (currFragment instanceof OnTabDoubleClickListener) {
+                        ((OnTabDoubleClickListener) currFragment).onTabDoubleClick(currFragment, null, null);
+                    }
+                }
+                break;
             }
-            return super.onDoubleTap(e);
+            return super.onDoubleTap(v, e);
         }
     };
 
@@ -137,10 +150,53 @@ public class MainActivity extends BaseActivity
         loginUserInfo = getLoginUserInfo();
         contactDbService = new ContactDbService(loginUserInfo == null ? "" : loginUserInfo.getUserId());
         rgMainTab.setOnCheckedChangeListener(this);
-        new SimpleViewGestureListener(tabNews, tabGestureListener);
+        new SimpleViewGestureListener(tabNews, onSimpleViewGestureListener);
+        tabNews.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                return false;
+            }
+        });
         currentFragment = addOrShowFragment(getTabFragment(rgMainTab.getCheckedRadioButtonId()), currentFragment, R.id.main_fl_content);
     }
 
+    @OnLongClick({R.id.tab_find})
+    public boolean onLongClick(View v) {
+        switch (v.getId()) {
+            case R.id.tab_find: {
+                if (!tabFind.isChecked()) return false;
+                changeTabFindChild(v);
+            }
+            break;
+        }
+        return true;
+    }
+
+    private void changeTabFindChild(View v) {
+        if (currentFragment instanceof INotifyFragment) {
+            new ListActionItemPop(getContext(), Arrays.asList(new ItemsEntity("计时", R.mipmap.ic_launcher),
+                    new ItemsEntity("客户", R.mipmap.ic_launcher),
+                    new ItemsEntity("搜索", R.mipmap.ic_launcher))).withOnItemClick(new BaseListActionItemPop.OnItemClickListener() {
+                @Override
+                public void onItemClick(BaseListActionItemPop listActionItemPop, BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
+                    listActionItemPop.dismiss();
+                    Bundle bundle = new Bundle();
+                    switch (position) {
+                        case 0:
+                            bundle.putInt(TabFindFragment.KEY_TYPE_FRAGMENT, TabFindFragment.TYPE_FRAGMENT_PROJECT);
+                            break;
+                        case 1:
+                            bundle.putInt(TabFindFragment.KEY_TYPE_FRAGMENT, TabFindFragment.TYPE_FRAGMENT_CUSTOMER);
+                            break;
+                        case 2:
+                            bundle.putInt(TabFindFragment.KEY_TYPE_FRAGMENT, TabFindFragment.TYPE_FRAGMENT_SEARCH);
+                            break;
+                    }
+                    ((INotifyFragment) currentFragment).notifyFragmentUpdate(currentFragment, bundle);
+                }
+            }).showUpCenter(v, DensityUtil.dip2px(getContext(), 10));
+        }
+    }
 
     @Override
     protected void onResume() {
