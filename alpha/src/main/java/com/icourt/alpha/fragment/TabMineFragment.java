@@ -17,6 +17,7 @@ import android.widget.TextView;
 import com.icourt.alpha.R;
 import com.icourt.alpha.activity.AboutActivity;
 import com.icourt.alpha.activity.LoginSelectActivity;
+import com.icourt.alpha.activity.MyFileTabActivity;
 import com.icourt.alpha.activity.UpdatePhoneOrMailActivity;
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.utils.GlideUtils;
@@ -141,7 +142,7 @@ public class TabMineFragment extends BaseFragment {
 
                 break;
             case R.id.my_center_file_layout://我的文件
-
+                MyFileTabActivity.launch(getContext());
                 break;
             case R.id.my_center_clear_cache_layout://清除缓存
 

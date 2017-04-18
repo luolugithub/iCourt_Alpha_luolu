@@ -314,6 +314,10 @@ public abstract class BaseFragment
     public void onClick(View v) {
 
     }
+    @Override
+    public void notifyFragmentUpdate(Fragment targetFrgament, Bundle bundle) {
+
+    }
 
     /**
      * 添加或者显示碎片

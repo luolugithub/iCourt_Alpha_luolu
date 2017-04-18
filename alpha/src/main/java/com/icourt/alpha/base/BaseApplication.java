@@ -1,6 +1,5 @@
 package com.icourt.alpha.base;
 
-import android.content.Context;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Environment;
@@ -232,25 +231,30 @@ public class BaseApplication extends MultiDexApplication {
         FileDownloader.init(getApplicationContext());
         */
 
-
         //方式2
         FileDownloadLog.NEED_LOG = BuildConfig.IS_DEBUG;
 
-        /**
-         * just for cache Application's Context, and ':filedownloader' progress will NOT be launched
-         * by below code, so please do not worry about performance.
-         * @see FileDownloader#init(Context)
-         */
         FileDownloader.init(getApplicationContext(),
-                new FileDownloadHelper.OkHttpClientCustomMaker() { // is not has to provide.
+                new FileDownloadHelper.OkHttpClientCustomMaker() {
                     @Override
                     public OkHttpClient customMake() {
-// just for OkHttpClient customize.
                         final OkHttpClient.Builder builder = new OkHttpClient.Builder();
                         // you can set the connection timeout.
                         builder.connectTimeout(35_000, TimeUnit.MILLISECONDS);
                         // you can set the HTTP proxy.
                         builder.proxy(Proxy.NO_PROXY);
+
+                      /*  builder.addInterceptor(new Interceptor() {
+                            @Override
+                            public Response intercept(Chain chain) throws IOException {
+                                Request request = chain.request();
+                                Request requestBuilder = request.newBuilder()
+                                        .addHeader("Cookie", "officeId==" + AlphaClient.getInstance().getOfficeId())
+                                        .addHeader("token", AlphaClient.getInstance().getToken())
+                                        .build();
+                                return chain.proceed(requestBuilder);
+                            }
+                        });*/
                         // etc.
                         return builder.build();
                     }

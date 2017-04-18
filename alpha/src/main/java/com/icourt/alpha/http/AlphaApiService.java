@@ -4,6 +4,7 @@ import com.google.gson.JsonElement;
 import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.icourt.alpha.entity.bean.AppVersionEntity;
 import com.icourt.alpha.entity.bean.GroupContactBean;
+import com.icourt.alpha.entity.bean.IMFileEntity;
 import com.icourt.alpha.entity.bean.IMSessionDontDisturbEntity;
 import com.icourt.alpha.entity.bean.LoginIMToken;
 import com.icourt.alpha.entity.bean.SetTopEntity;
@@ -189,4 +190,19 @@ public interface AlphaApiService {
     @POST("api/v2/chat/group/setNoDisturbing")
     @FormUrlEncoded
     Call<ResEntity<JsonElement>> setNoDisturbing(@Field("groupId") String groupId);
+
+    /**
+     * 根据不同类型获取文件列表
+     *
+     * @param type     TYPE_ALL_FILE = 0;  TYPE_MY_FILE = 1;
+     * @param pageNum
+     * @param pageSize
+     * @return
+     */
+    @GET("api/v2/chat/msg/findFileMsg")
+    Call<ResEntity<List<IMFileEntity>>> getFilesByType(
+            @Query("type") int type,
+            @Query("pageNum") int pageNum,
+            @Query("pageSize") int pageSize
+    );
 }

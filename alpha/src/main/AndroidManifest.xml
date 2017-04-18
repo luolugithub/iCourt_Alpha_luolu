@@ -103,6 +103,15 @@
         <activity
             android:name=".activity.IMFileListActivity"
             android:screenOrientation="portrait" />
+        <activity
+            android:name=".activity.ImagePagerActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".activity.MyFileTabActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".activity.FileDetailsActivity"
+            android:screenOrientation="portrait" />
 
         <!-- umeng appkey配置 -->
         <meta-data

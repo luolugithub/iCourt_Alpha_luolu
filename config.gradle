@@ -18,6 +18,13 @@ ext {
             api_url_release: "\"https://alphalawyer.cn/ilaw/\""//正式
     ]
 
+    alphaHostUrl = [
+            host_url_debug  : "\"https://dev.alphalawyer.cn/\"",//开发
+            host_url_test   : "\"https://test.alphalawyer.cn/\"",//内测
+            host_url_preview: "\"https://pre.alphalawyer.cn／\"",//预览
+            host_url_release: "\"https://alphalawyer.cn/\""//正式
+    ]
+
     alphaApkUpdateUrl = [
             apk_update_url_debug  : "\"http://api.fir.im/apps/latest/586650afca87a82c430016a5?api_token=2e8154d4f6d9500a4b037219b3fac385\"",//开发
             apk_update_url_test   : "\"http://api.fir.im/apps/latest/586650afca87a82c430016a5?api_token=2e8154d4f6d9500a4b037219b3fac385\"",//内测

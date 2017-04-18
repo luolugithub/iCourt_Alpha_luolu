@@ -180,7 +180,7 @@ public class ContactListFragment extends BaseFragment implements BaseRecyclerAda
                             imContactAdapter.bindData(true, data);
                             updateIndexBar(data);
                         }
-                        refreshLayout.stopRefresh();
+                        stopRefresh();
                     }
 
                     @Override
@@ -189,6 +189,13 @@ public class ContactListFragment extends BaseFragment implements BaseRecyclerAda
                         refreshLayout.stopRefresh();
                     }
                 });
+    }
+
+    private void stopRefresh() {
+        if (refreshLayout != null) {
+            refreshLayout.stopRefresh();
+            refreshLayout.stopLoadMore();
+        }
     }
 
     /**

@@ -76,6 +76,7 @@ android {
 //            }
             buildConfigField "boolean", "IS_DEBUG", "true"
             buildConfigField "String", "API_URL", rootProject.ext.alphaAPIUrl.api_url_debug
+            buildConfigField "String", "HOST_URL", rootProject.ext.alphaHostUrl.host_url_debug
             buildConfigField "String", "APK_UPDATE_URL", rootProject.ext.alphaApkUpdateUrl.apk_update_url_debug
             versionNameSuffix "_debug"
             minifyEnabled false
@@ -87,6 +88,7 @@ android {
 
             //用正式
             buildConfigField "String", "API_URL", rootProject.ext.alphaAPIUrl.api_url_release
+            buildConfigField "String", "HOST_URL", rootProject.ext.alphaHostUrl.host_url_release
             buildConfigField "String", "APK_UPDATE_URL", rootProject.ext.alphaApkUpdateUrl.apk_update_url_release
             manifestPlaceholders = [NIM_APPKEY: rootProject.ext.nimAppKey.releaseAppKey]
 
@@ -94,6 +96,7 @@ android {
         innertest {
             buildConfigField "boolean", "IS_DEBUG", "true"
             buildConfigField "String", "API_URL", rootProject.ext.alphaAPIUrl.api_url_test
+            buildConfigField "String", "HOST_URL", rootProject.ext.alphaHostUrl.host_url_test
             buildConfigField "String", "APK_UPDATE_URL", rootProject.ext.alphaApkUpdateUrl.apk_update_url_test
             versionNameSuffix "_test"
             minifyEnabled false
@@ -106,6 +109,7 @@ android {
         preview {
             buildConfigField "boolean", "IS_DEBUG", "true"
             buildConfigField "String", "API_URL", rootProject.ext.alphaAPIUrl.api_url_preview
+            buildConfigField "String", "HOST_URL", rootProject.ext.alphaHostUrl.host_url_preview
             buildConfigField "String", "APK_UPDATE_URL", rootProject.ext.alphaApkUpdateUrl.apk_update_url_preview
             versionNameSuffix "_preview"
             minifyEnabled false
@@ -119,6 +123,7 @@ android {
         release {
             buildConfigField "boolean", "IS_DEBUG", "false"
             buildConfigField "String", "API_URL", rootProject.ext.alphaAPIUrl.api_url_release
+            buildConfigField "String", "HOST_URL", rootProject.ext.alphaHostUrl.host_url_release
             buildConfigField "String", "APK_UPDATE_URL", rootProject.ext.alphaApkUpdateUrl.apk_update_url_release
             shrinkResources false   // 移除无用的resource文件
             zipAlignEnabled false        //Zipalign优化

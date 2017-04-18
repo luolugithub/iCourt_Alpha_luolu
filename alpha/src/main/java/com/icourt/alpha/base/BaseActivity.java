@@ -1,7 +1,13 @@
 package com.icourt.alpha.base;
 
+import android.content.Context;
+import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.support.annotation.CallSuper;
 import android.support.annotation.CheckResult;
+import android.support.annotation.ColorInt;
+import android.support.annotation.ColorRes;
+import android.support.annotation.DrawableRes;
 import android.support.annotation.IdRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -19,12 +25,15 @@ import com.icourt.alpha.R;
 import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.icourt.alpha.http.AlphaApiService;
 import com.icourt.alpha.http.RetrofitServiceFactory;
+import com.icourt.alpha.interfaces.IContextResourcesImp;
 import com.icourt.alpha.interfaces.ProgressHUDImp;
 import com.icourt.alpha.utils.LogUtils;
 import com.icourt.alpha.utils.LoginInfoUtils;
 import com.icourt.alpha.utils.SnackbarUtils;
 import com.icourt.alpha.utils.SystemUtils;
 import com.kaopiz.kprogresshud.KProgressHUD;
+
+import static com.umeng.socialize.utils.DeviceConfig.context;
 
 /**
  * Description  基类封装
@@ -37,7 +46,7 @@ import com.kaopiz.kprogresshud.KProgressHUD;
 public abstract class BaseActivity
         extends BasePermisionActivity
         implements ProgressHUDImp
-        , View.OnClickListener {
+        , View.OnClickListener,IContextResourcesImp {
 
 
     /**
@@ -501,6 +510,22 @@ public abstract class BaseActivity
     @CheckResult
     public String getUserToken() {
         return LoginInfoUtils.getUserToken();
+    }
+
+    @Override
+    public final int getContextColor(@ColorRes int id) {
+        return getContextColor(id, Color.BLACK);
+    }
+
+    @Override
+    public final int getContextColor(@ColorRes int id, @ColorInt int defaultColor) {
+        return SystemUtils.getColor(context, id, defaultColor);
+    }
+
+    @Nullable
+    @Override
+    public Drawable getDrawable(Context context, @DrawableRes int id) {
+        return SystemUtils.getDrawable(context, id);
     }
 
 }
