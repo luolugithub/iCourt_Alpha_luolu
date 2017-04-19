@@ -90,7 +90,7 @@ public class SpannableUtils {
      */
     public static SpannableString getTextForegroundColorSpan(CharSequence originalText, String targetText, int foregroundColor) {
         if (TextUtils.isEmpty(targetText)) {
-            return null;
+            return new SpannableString(originalText);
         }
         Pattern pattern = Pattern.compile(targetText);
         Matcher matcher = pattern.matcher(originalText);

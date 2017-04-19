@@ -4,6 +4,7 @@ import com.google.gson.JsonElement;
 import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.icourt.alpha.entity.bean.AppVersionEntity;
 import com.icourt.alpha.entity.bean.GroupContactBean;
+import com.icourt.alpha.entity.bean.IMAtEntity;
 import com.icourt.alpha.entity.bean.IMFileEntity;
 import com.icourt.alpha.entity.bean.IMSessionDontDisturbEntity;
 import com.icourt.alpha.entity.bean.LoginIMToken;
@@ -29,9 +30,8 @@ import retrofit2.http.Url;
  * @time 2016-06-02 14:26
  * <p>
  * 分页公共参数 整形  请大家按照这个【顺序】写
- * @Field("start") int start,
- * @Field("limit") int limit,
- * @Field("maxId") int maxId,
+ * @Query("pageNum") int pageNum,
+ * @Query("pageSize") int pageSize
  */
 public interface AlphaApiService {
 
@@ -205,4 +205,17 @@ public interface AlphaApiService {
             @Query("pageNum") int pageNum,
             @Query("pageSize") int pageSize
     );
+
+    /**
+     * 获取  @我  的消息
+     * 【注意 这个接口只能post】
+     *
+     * @param pageNum
+     * @param pageSize
+     * @return
+     */
+    @POST("api/v2/chat/getAtMsg")
+    @FormUrlEncoded
+    Call<ResEntity<List<IMAtEntity>>> getAtMeMsg(@Field("pageNum") int pageNum,
+                                                 @Field("pageSize") int pageSize);
 }

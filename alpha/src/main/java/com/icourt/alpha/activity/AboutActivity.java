@@ -10,6 +10,7 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.icourt.alpha.BuildConfig;
 import com.icourt.alpha.R;
 import com.icourt.alpha.base.BaseAppUpdateActivity;
 import com.icourt.alpha.entity.bean.AppVersionEntity;
@@ -61,6 +62,7 @@ public class AboutActivity extends BaseAppUpdateActivity {
         super.initView();
         setTitle("关于");
         registerClick(aboutCheckIsUpdateView);
+        aboutVersonTextview.setText(BuildConfig.VERSION_NAME);
     }
 
     @Override

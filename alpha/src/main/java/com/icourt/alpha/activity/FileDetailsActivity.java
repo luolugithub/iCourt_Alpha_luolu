@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.AppBarLayout;
+import android.support.v7.widget.CardView;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.CheckedTextView;
@@ -69,6 +70,8 @@ public class FileDetailsActivity extends BaseActivity {
     TextView fileUploadTime;
     @BindView(R.id.file_from_tv)
     TextView fileFromTv;
+    @BindView(R.id.file_img_card)
+    CardView fileImgCard;
 
     public static void launch(@NonNull Context context, IMFileEntity imFileEntity) {
         if (context == null) return;
@@ -113,7 +116,7 @@ public class FileDetailsActivity extends BaseActivity {
         //纯图片
         if (isPic()) {
             fileTypeCommLl.setVisibility(View.GONE);
-            fileImg.setVisibility(View.VISIBLE);
+            fileImgCard.setVisibility(View.VISIBLE);
             if (GlideUtils.canLoadImage(getContext())) {
                 Glide.with(getContext())
                         .load(getCombPicUrl((item != null && item.content != null)
@@ -123,7 +126,7 @@ public class FileDetailsActivity extends BaseActivity {
             }
         } else {
             fileTypeCommLl.setVisibility(View.VISIBLE);
-            fileImg.setVisibility(View.GONE);
+            fileImgCard.setVisibility(View.GONE);
             if (item != null && item.content != null) {
                 fileTypeIv.setImageResource(getFileIcon40(item.content.file));
                 fileTitleTv.setText(item.content.file);

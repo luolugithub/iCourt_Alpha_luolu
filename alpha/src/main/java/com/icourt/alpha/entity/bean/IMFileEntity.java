@@ -6,6 +6,7 @@ import com.google.gson.TypeAdapter;
 import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
+import com.icourt.alpha.base.BaseImEntity;
 import com.icourt.alpha.utils.JsonUtils;
 
 import java.io.IOException;
@@ -18,16 +19,7 @@ import java.io.Serializable;
  * date createTime：2017/4/18
  * version 1.0.0
  */
-public class IMFileEntity implements Serializable {
-
-    public String groupId;
-    public String createId;
-    public int open;//0 单聊 1 群聊
-    public String createName;
-    public String pic;
-    public String groupName;
-    public long createDate;
-    public String tid;//云信id
+public class IMFileEntity extends BaseImEntity implements Serializable {
 
     //注意服务器返回的是字符串包裹的json对象
     @JsonAdapter(PathFileInfoAdapter.class)
@@ -48,20 +40,6 @@ public class IMFileEntity implements Serializable {
         }
     }
 
-    @Override
-    public String toString() {
-        return "IMFileEntity{" +
-                "groupId='" + groupId + '\'' +
-                ", createId='" + createId + '\'' +
-                ", open=" + open +
-                ", createName='" + createName + '\'' +
-                ", pic='" + pic + '\'' +
-                ", groupName='" + groupName + '\'' +
-                ", createDate=" + createDate +
-                ", tid='" + tid + '\'' +
-                ", content=" + content +
-                '}';
-    }
 
     public static class PathFileInfoAdapter extends TypeAdapter<PathFileInfo> {
 
