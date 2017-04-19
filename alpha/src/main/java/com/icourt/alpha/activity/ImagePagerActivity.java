@@ -4,6 +4,7 @@ import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -13,12 +14,14 @@ import android.support.v4.view.ViewPager;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.baseadapter.BasePagerAdapter;
-import com.icourt.alpha.base.BaseActivity;
+import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
+import com.icourt.alpha.base.BaseUmengActivity;
 import com.icourt.alpha.utils.ActionConstants;
 import com.icourt.alpha.utils.FileUtils;
 import com.icourt.alpha.utils.GlideUtils;
@@ -26,6 +29,7 @@ import com.icourt.alpha.utils.Md5Utils;
 import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.view.HackyViewPager;
 import com.icourt.alpha.view.TouchImageView;
+import com.icourt.alpha.widget.dialog.BottomActionDialog;
 import com.liulishuo.filedownloader.BaseDownloadTask;
 import com.liulishuo.filedownloader.FileDownloadListener;
 import com.liulishuo.filedownloader.FileDownloader;
@@ -38,6 +42,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
+
 /**
  * @author xuanyouwu
  * @email xuanyouwu@163.com
@@ -46,7 +51,7 @@ import butterknife.OnClick;
  * 图片浏览器
  */
 
-public class ImagePagerActivity extends BaseActivity implements BasePagerAdapter.OnPagerItemClickListener, BasePagerAdapter.OnPagerItemLongClickListener {
+public class ImagePagerActivity extends BaseUmengActivity implements BasePagerAdapter.OnPagerItemClickListener, BasePagerAdapter.OnPagerItemLongClickListener {
 
     private static final int CODE_PERMISSION_FILE = 1009;
 
@@ -182,22 +187,94 @@ public class ImagePagerActivity extends BaseActivity implements BasePagerAdapter
         }
     }
 
+    /**
+     * 获取当前image url
+     *
+     * @return
+     */
+    private String getCurrImageUrl() {
+        if (urls != null && urls.length > 0) {
+            return urls[imagePager.getCurrentItem()];
+        }
+        return null;
+    }
+
     @OnClick({R.id.download_img})
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.download_img:
-                if (urls != null && urls.length > 0) {
-                    if (checkPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-                        downloadFile(urls[imagePager.getCurrentItem()]);
-                    } else {
-                        reqPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, "下载文件需要文件写入权限!", CODE_PERMISSION_FILE);
-                    }
-                }
+                checkPermissionOrDownload();
                 break;
             default:
                 super.onClick(v);
                 break;
+        }
+    }
+
+    /**
+     * imageView 点击事件
+     *
+     * @param adapter
+     * @param v       点击的控件
+     * @param pos     点击的位置[在adapter中]
+     */
+    @Override
+    public void OnItemClick(BasePagerAdapter adapter, View v, int pos) {
+
+    }
+
+    /**
+     * imageView 长按事件
+     *
+     * @param adapter
+     * @param v       点击的控件
+     * @param pos     点击的位置[在adapter中]
+     * @return
+     */
+    @Override
+    public boolean OnItemLongClick(BasePagerAdapter adapter, final View v, final int pos) {
+        if (v instanceof ImageView) {
+            ImageView imageView = (ImageView) v;
+            final Drawable drawable = imageView.getDrawable();
+            if (drawable != null) {
+                new BottomActionDialog(getContext(),
+                        null,
+                        Arrays.asList("分享", "转发", "保存到项目"),
+                        new BottomActionDialog.OnActionItemClickListener() {
+                            @Override
+                            public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
+                                dialog.dismiss();
+                                switch (position) {
+                                    case 0:
+                                        shareImage2WeiXin(drawable);
+                                        break;
+                                    case 1:
+                                        //TODO  转发到享聊
+                                        showTopSnackBar("未完成");
+                                        break;
+                                    case 2:
+                                        //TODO  保存到项目
+                                        showTopSnackBar("未完成");
+                                        break;
+                                }
+                            }
+                        }).show();
+                return true;
+            }
+        }
+        return false;
+    }
+
+
+    /**
+     * 检查权限或者下载
+     */
+    private void checkPermissionOrDownload() {
+        if (checkPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+            downloadFile(getCurrImageUrl());
+        } else {
+            reqPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, "下载文件需要文件写入权限!", CODE_PERMISSION_FILE);
         }
     }
 
@@ -261,30 +338,6 @@ public class ImagePagerActivity extends BaseActivity implements BasePagerAdapter
 
     }
 
-    /**
-     * imageView 点击事件
-     *
-     * @param adapter
-     * @param v       点击的控件
-     * @param pos     点击的位置[在adapter中]
-     */
-    @Override
-    public void OnItemClick(BasePagerAdapter adapter, View v, int pos) {
-
-    }
-
-    /**
-     * imageView 长按事件
-     *
-     * @param adapter
-     * @param v       点击的控件
-     * @param pos     点击的位置[在adapter中]
-     * @return
-     */
-    @Override
-    public boolean OnItemLongClick(BasePagerAdapter adapter, View v, int pos) {
-        return false;
-    }
 
     class ImagePagerAdapter extends BasePagerAdapter<String> {
 
@@ -300,6 +353,7 @@ public class ImagePagerActivity extends BaseActivity implements BasePagerAdapter
                 log("---------->load url:pos:" + pos + "  url:" + s);
                 Glide.with(getContext())
                         .load(s)
+                        .thumbnail(0.5f)//先拿一半
                         .into(touchImageView);
             }
         }

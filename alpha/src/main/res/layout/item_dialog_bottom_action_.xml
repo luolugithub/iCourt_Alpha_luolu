@@ -12,5 +12,5 @@
     android:paddingRight="10dp"
     android:paddingTop="13dp"
     android:text="item_data"
-    android:textColor="@color/alpha_font_color_black"
+    android:textColor="#2A79F6"
     android:textSize="@dimen/alpha_font_size_title" />

@@ -151,7 +151,7 @@ public class FileDetailsActivity extends BaseActivity {
     }
 
     /**
-     * 查看原图
+     * 获取原图地址
      *
      * @param path
      * @return
@@ -203,7 +203,8 @@ public class FileDetailsActivity extends BaseActivity {
                 break;
             case R.id.file_img:
                 if (item != null && item.content != null) {
-                    ImagePagerActivity.launch(getContext(), new String[]{getOriginalPicUrl(item.content.path)});
+                    ImagePagerActivity.launch(getContext(),
+                            new String[]{getOriginalPicUrl(item.content.path)});
                 }
                 break;
             case R.id.file_type_comm_ll:

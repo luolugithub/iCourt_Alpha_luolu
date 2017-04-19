@@ -1,12 +1,18 @@
 package com.icourt.alpha.base;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.os.Environment;
 import android.support.annotation.CallSuper;
 import android.support.annotation.CheckResult;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.text.TextUtils;
 
 import com.icourt.alpha.R;
+import com.icourt.alpha.utils.FileUtils;
+import com.icourt.alpha.utils.IMUtils;
 import com.icourt.alpha.utils.SpUtils;
 import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.utils.SystemUtils;
@@ -155,54 +161,107 @@ public class BaseUmengActivity extends BaseActivity implements UMAuthListener {
     }
 
 
-    protected void shareDemo() {
-        try {
-            String ROOTPATH = Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator;
-            String apkPath = ROOTPATH + "test.txt";
-            File file = new File(apkPath);
-            shareFile2WeiXin(file);
-        } catch (Exception e) {
-            showTopSnackBar("error:" + e);
+    /**
+     * 分享图片到微信
+     *
+     * @param url 原图地址
+     */
+    protected void shareImage2WeiXin(@NonNull String url) {
+        shareImage2WeiXin(url, null);
+    }
+
+    /**
+     * 分享图片到微信
+     *
+     * @param bitmap
+     */
+    protected void shareImage2WeiXin(@NonNull Bitmap bitmap) {
+        if (bitmap == null) return;
+        UMImage umImage = new UMImage(getContext(), bitmap);
+        new ShareAction(getActivity())
+                .setPlatform(SHARE_MEDIA.WEIXIN)
+                .withMedia(umImage)
+                .setCallback(new SimpleUmShareListener())
+                .share();
+    }
+
+    protected void shareImage2WeiXin(@NonNull Drawable drawable) {
+        if (drawable == null) return;
+        shareImage2WeiXin(FileUtils.drawableToBitmap(drawable));
+    }
+
+    /**
+     * 分享图片到微信
+     *
+     * @param url      原图地址
+     * @param thumbUrl 缩放图地址
+     */
+    protected void shareImage2WeiXin(@NonNull String url, @Nullable String thumbUrl) {
+        if (TextUtils.isEmpty(url)) {
+            showTopSnackBar("分享地址为null");
+            return;
         }
+        UMImage umImage = new UMImage(getContext(), url);
+        if (!TextUtils.isEmpty(thumbUrl)) {
+            UMImage thumb = new UMImage(getContext(), thumbUrl);
+            umImage.setThumb(thumb);
+        }
+        new ShareAction(getActivity())
+                .setPlatform(SHARE_MEDIA.WEIXIN)
+                .withMedia(umImage)
+                .setCallback(new SimpleUmShareListener())
+                .share();
     }
 
     /**
      * 注意文件大小不超过10MB
+     * 分享文件到微信
      *
      * @param file
      */
     protected void shareFile2WeiXin(File file) {
         if (file != null && file.exists()) {
-            //  if(file.length()>10mb)
-            UMImage umImage = new UMImage(this, "http://i.ce.cn/fashion/news/201704/11/W020170411297208606486.jpg");
-            new ShareAction(getActivity())
-                    .setPlatform(SHARE_MEDIA.WEIXIN)
-                    .withMedia(umImage)
-                 /*   .withSubject(file.getName())//文件名
-                    .withFile(file)*/
-                    .setCallback(new UMShareListener() {
-                        @Override
-                        public void onStart(SHARE_MEDIA share_media) {
-                            log("------sta");
-                        }
+            if (file.length() >= 10 * 1024 * 1024) {
+                showTopSnackBar("文件大小超过10MB!");
+                return;
+            }
+            if (IMUtils.isPIC(file.getName())) {
+                UMImage umImage = new UMImage(this, file);
+                new ShareAction(getActivity())
+                        .setPlatform(SHARE_MEDIA.WEIXIN)
+                        .withMedia(umImage)
+                        .setCallback(new SimpleUmShareListener())
+                        .share();
+            } else {
+                new ShareAction(getActivity())
+                        .setPlatform(SHARE_MEDIA.WEIXIN)
+                        .withSubject(file.getName())//文件名
+                        .withFile(file)
+                        .setCallback(new SimpleUmShareListener())
+                        .share();
+            }
+        }
+    }
 
-                        @Override
-                        public void onResult(SHARE_MEDIA share_media) {
-                            showTopSnackBar("分享成功");
-                            log("------res");
-                        }
+    class SimpleUmShareListener implements UMShareListener {
 
-                        @Override
-                        public void onError(SHARE_MEDIA share_media, Throwable throwable) {
-                            log("------erro:+" + throwable);
-                            showTopSnackBar("分享失败:" + StringUtils.throwable2string(throwable));
-                            //Bugtags.sendFeedback("分享失败:"+StringUtils.throwable2string(throwable));
-                        }
+        @Override
+        public void onStart(SHARE_MEDIA share_media) {
+        }
 
-                        @Override
-                        public void onCancel(SHARE_MEDIA share_media) {
-                        }
-                    }).share();
+        @Override
+        public void onResult(SHARE_MEDIA share_media) {
+        }
+
+        @Override
+        public void onError(SHARE_MEDIA share_media, Throwable throwable) {
+            log("--------->share error:+" + throwable);
+            showTopSnackBar("分享失败:" + StringUtils.throwable2string(throwable));
+            postLog2Bugtags("分享失败:", StringUtils.throwable2string(throwable));
+        }
+
+        @Override
+        public void onCancel(SHARE_MEDIA share_media) {
         }
     }
 

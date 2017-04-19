@@ -16,11 +16,13 @@ import android.support.annotation.UiThread;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.CheckedTextView;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.bugtags.library.Bugtags;
 import com.icourt.alpha.R;
 import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.icourt.alpha.http.AlphaApiService;
@@ -46,7 +48,7 @@ import static com.umeng.socialize.utils.DeviceConfig.context;
 public abstract class BaseActivity
         extends BasePermisionActivity
         implements ProgressHUDImp
-        , View.OnClickListener,IContextResourcesImp {
+        , View.OnClickListener, IContextResourcesImp {
 
 
     /**
@@ -413,6 +415,24 @@ public abstract class BaseActivity
      */
     public void log(String log) {
         LogUtils.d(log);
+    }
+
+    /**
+     * 发送日志到bugtags上面去
+     *
+     * @param tag
+     * @param log
+     */
+    protected void postLog2Bugtags(String tag, String log) {
+        if (!TextUtils.isEmpty(tag) && !TextUtils.isEmpty(log)) {
+            StringBuilder stringBuilder = new StringBuilder(tag);
+            stringBuilder.append("\n");
+            stringBuilder.append(log);
+            stringBuilder.append("\n");
+            stringBuilder.append("uid:");
+            stringBuilder.append(getLoginUserId());
+            Bugtags.sendFeedback(stringBuilder.toString());
+        }
     }
 
     /**
