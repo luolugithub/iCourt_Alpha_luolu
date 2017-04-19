@@ -4,8 +4,7 @@ import com.google.gson.JsonElement;
 import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.icourt.alpha.entity.bean.AppVersionEntity;
 import com.icourt.alpha.entity.bean.GroupContactBean;
-import com.icourt.alpha.entity.bean.IMAtEntity;
-import com.icourt.alpha.entity.bean.IMFileEntity;
+import com.icourt.alpha.entity.bean.IMStringWrapEntity;
 import com.icourt.alpha.entity.bean.IMSessionDontDisturbEntity;
 import com.icourt.alpha.entity.bean.LoginIMToken;
 import com.icourt.alpha.entity.bean.SetTopEntity;
@@ -200,7 +199,7 @@ public interface AlphaApiService {
      * @return
      */
     @GET("api/v2/chat/msg/findFileMsg")
-    Call<ResEntity<List<IMFileEntity>>> getFilesByType(
+    Call<ResEntity<List<IMStringWrapEntity>>> getFilesByType(
             @Query("type") int type,
             @Query("pageNum") int pageNum,
             @Query("pageSize") int pageSize
@@ -210,12 +209,24 @@ public interface AlphaApiService {
      * 获取  @我  的消息
      * 【注意 这个接口只能post】
      *
-     * @param pageNum
-     * @param pageSize
+     * @param pageNum  第n页
+     * @param pageSize 每页获取条目数量
      * @return
      */
     @POST("api/v2/chat/getAtMsg")
     @FormUrlEncoded
-    Call<ResEntity<List<IMAtEntity>>> getAtMeMsg(@Field("pageNum") int pageNum,
+    Call<ResEntity<List<IMStringWrapEntity>>> getAtMeMsg(@Field("pageNum") int pageNum,
                                                  @Field("pageSize") int pageSize);
+
+    /**
+     * 获取我收藏的消息
+     * [注意] 这个接口只支持post
+     *
+     * @param pageNum  第n页
+     * @param pageSize 每页获取条目数量
+     * @return
+     */
+    @GET("api/v2/chat/msg/getStarSign")
+    Call<ResEntity<List<IMStringWrapEntity>>> getMyCollectedMessages(@Query("pageNum") int pageNum,
+                                                         @Query("pageSize") int pageSize);
 }

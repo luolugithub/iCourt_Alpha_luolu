@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:padding="10dp">
+
+    <TextView
+        android:id="@+id/file_upload_time"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:text="4-01"
+        android:textColor="@color/alpha_font_color_gray"
+        android:textSize="@dimen/alpha_font_size_mini_lowest" />
+
+    <TextView
+        android:id="@+id/file_from_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:text="来自: bug提交"
+        android:textColor="@color/alpha_font_color_gray"
+        android:textSize="@dimen/alpha_font_size_mini" />
+
+</LinearLayout>

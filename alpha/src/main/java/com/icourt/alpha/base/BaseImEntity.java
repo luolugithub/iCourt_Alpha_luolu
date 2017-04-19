@@ -1,5 +1,7 @@
 package com.icourt.alpha.base;
 
+import java.io.Serializable;
+
 /**
  * Description
  * Company Beijing icourt
@@ -7,7 +9,7 @@ package com.icourt.alpha.base;
  * date createTime：2017/4/19
  * version 1.0.0
  */
-public class BaseImEntity {
+public class BaseImEntity implements Serializable {
     public String groupId;
     public String createId;
     public int open;//0 单聊 1 群聊

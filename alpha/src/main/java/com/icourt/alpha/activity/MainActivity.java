@@ -240,7 +240,6 @@ public class MainActivity extends BaseActivity
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.tab_voice:
-                showTopSnackBar("语音....");
                 break;
             default:
                 super.onClick(v);

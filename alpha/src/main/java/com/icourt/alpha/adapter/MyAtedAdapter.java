@@ -6,7 +6,7 @@ import android.widget.TextView;
 
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.baseadapter.BaseArrayRecyclerAdapter;
-import com.icourt.alpha.entity.bean.IMAtEntity;
+import com.icourt.alpha.entity.bean.IMStringWrapEntity;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.GlideUtils;
 import com.icourt.alpha.utils.SpannableUtils;
@@ -19,7 +19,7 @@ import com.icourt.alpha.utils.SystemUtils;
  * date createTime：2017/4/19
  * version 1.0.0
  */
-public class MyAtedAdapter extends BaseArrayRecyclerAdapter<IMAtEntity> {
+public class MyAtedAdapter extends BaseArrayRecyclerAdapter<IMStringWrapEntity> {
     @Override
     public int bindView(int viewtype) {
         return R.layout.adapter_my_ated;
@@ -27,7 +27,7 @@ public class MyAtedAdapter extends BaseArrayRecyclerAdapter<IMAtEntity> {
 
 
     @Override
-    public void onBindHoder(ViewHolder holder, IMAtEntity imAtEntity, int position) {
+    public void onBindHoder(ViewHolder holder, IMStringWrapEntity imAtEntity, int position) {
         if (imAtEntity == null) return;
         ImageView at_user_iv = holder.obtainView(R.id.at_user_iv);
         TextView at_user_tv = holder.obtainView(R.id.at_user_tv);
