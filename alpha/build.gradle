@@ -10,7 +10,7 @@ android {
         minSdkVersion rootProject.ext.android.minSdkVersion
         targetSdkVersion rootProject.ext.android.targetSdkVersion
         multiDexEnabled true
-        versionCode 3
+        versionCode 6
         versionName "v2.0.0" //3位版本号
 
         manifestPlaceholders = [UMENG_CHANNEL_VALUE: "Other"]//default_channel

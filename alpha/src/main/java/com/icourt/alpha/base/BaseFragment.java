@@ -394,4 +394,14 @@ public abstract class BaseFragment
     public String getUserToken() {
         return LoginInfoUtils.getUserToken();
     }
+
+    /**
+     * @return 登陆uid
+     */
+    @Nullable
+    @CheckResult
+    protected final String getLoginUserId() {
+        return LoginInfoUtils.getLoginUserId();
+    }
+
 }

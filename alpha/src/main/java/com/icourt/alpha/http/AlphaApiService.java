@@ -7,6 +7,7 @@ import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.icourt.alpha.entity.bean.IMStringWrapEntity;
 import com.icourt.alpha.entity.bean.IMSessionDontDisturbEntity;
 import com.icourt.alpha.entity.bean.LoginIMToken;
+import com.icourt.alpha.entity.bean.SearchEngineEntity;
 import com.icourt.alpha.entity.bean.SetTopEntity;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 
@@ -216,7 +217,7 @@ public interface AlphaApiService {
     @POST("api/v2/chat/getAtMsg")
     @FormUrlEncoded
     Call<ResEntity<List<IMStringWrapEntity>>> getAtMeMsg(@Field("pageNum") int pageNum,
-                                                 @Field("pageSize") int pageSize);
+                                                         @Field("pageSize") int pageSize);
 
     /**
      * 获取我收藏的消息
@@ -228,5 +229,11 @@ public interface AlphaApiService {
      */
     @GET("api/v2/chat/msg/getStarSign")
     Call<ResEntity<List<IMStringWrapEntity>>> getMyCollectedMessages(@Query("pageNum") int pageNum,
-                                                         @Query("pageSize") int pageSize);
+                                                                     @Query("pageSize") int pageSize);
+
+    /**
+     * 获取搜索引擎列表
+     */
+    @GET("api/v2/site/getSiteList")
+    Call<ResEntity<List<SearchEngineEntity>>> getSearchEngines();
 }
