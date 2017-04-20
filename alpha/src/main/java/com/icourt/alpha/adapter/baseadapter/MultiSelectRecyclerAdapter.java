@@ -75,11 +75,11 @@ public abstract class MultiSelectRecyclerAdapter<T> extends BaseArrayRecyclerAda
     }
 
     /**
-     * 获取选中的items
+     * 获取选中的items 位置
      *
      * @return
      */
-    public List<Integer> getSelectedData() {
+    public List<Integer> getSelectedPositions() {
         List<Integer> selected = new ArrayList<>();
         for (int i = 0; i < getItemCount(); i++) {
             boolean itemSelected = selectedArray.get(i, false);
@@ -88,6 +88,23 @@ public abstract class MultiSelectRecyclerAdapter<T> extends BaseArrayRecyclerAda
             }
         }
         return selected;
+    }
+
+    /**
+     * 获取选中的数据
+     *
+     * @return
+     */
+    public ArrayList<T> getSelectedData() {
+        ArrayList<T> selectedArray = new ArrayList<>();
+        List<Integer> selectedData = getSelectedPositions();
+        for (int i = 0; i < selectedData.size(); i++) {
+            T item = getItem(selectedData.get(i));
+            if (item != null) {
+                selectedArray.add(item);
+            }
+        }
+        return selectedArray;
     }
 
 

@@ -216,7 +216,7 @@ public class MainActivity extends BaseActivity
                                 bundle.putInt(TabFindFragment.KEY_TYPE_FRAGMENT, TabFindFragment.TYPE_FRAGMENT_TIMING);
                                 break;
                         }
-                        ((INotifyFragment) currentFragment).notifyFragmentUpdate(currentFragment, bundle);
+                        ((INotifyFragment) currentFragment).notifyFragmentUpdate(currentFragment,0,bundle);
                         tabFind.setText(itemsEntityImp.getItemTitle());
                     }
                 }

@@ -208,7 +208,7 @@ public class TabFindFragment extends BaseFragment {
      * @param bundle
      */
     @Override
-    public void notifyFragmentUpdate(Fragment targetFrgament, Bundle bundle) {
+    public void notifyFragmentUpdate(Fragment targetFrgament,int type, Bundle bundle) {
         if (targetFrgament != TabFindFragment.this) return;
         if (bundle == null) return;
         switch (bundle.getInt(KEY_TYPE_FRAGMENT, -1)) {

@@ -12,5 +12,5 @@ import android.support.v4.app.Fragment;
  */
 public interface INotifyFragment {
 
-    void notifyFragmentUpdate(Fragment targetFrgament, Bundle bundle);
+    void notifyFragmentUpdate(Fragment targetFrgament,int type,Bundle bundle);
 }

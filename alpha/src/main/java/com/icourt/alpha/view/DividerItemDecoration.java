@@ -1,4 +1,4 @@
-package com.icourt.alpha.widget;
+package com.icourt.alpha.view;
 
 import android.graphics.Canvas;
 import android.graphics.Color;

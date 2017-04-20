@@ -2,7 +2,6 @@ package com.icourt.alpha.fragment;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -293,8 +292,4 @@ public class ContactListFragment extends BaseFragment implements BaseRecyclerAda
         ContactDetailActivity.launch(getContext(), data, false, false);
     }
 
-    @Override
-    public void notifyFragmentUpdate(Fragment targetFrgament, Bundle bundle) {
-
-    }
 }

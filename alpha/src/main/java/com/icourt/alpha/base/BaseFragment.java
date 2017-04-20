@@ -315,7 +315,7 @@ public abstract class BaseFragment
 
     }
     @Override
-    public void notifyFragmentUpdate(Fragment targetFrgament, Bundle bundle) {
+    public void notifyFragmentUpdate(Fragment targetFrgament,int type,Bundle bundle) {
 
     }
 

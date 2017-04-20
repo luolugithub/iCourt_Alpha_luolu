@@ -115,9 +115,13 @@
         <activity
             android:name=".activity.MyCollectedMsgActivity"
             android:screenOrientation="portrait" />
-        <activity
+      <activity
             android:name=".activity.MyAtedActivity"
             android:screenOrientation="portrait" />
+        <activity
+            android:name=".activity.SearchTabActivity"
+            android:screenOrientation="portrait" />
+
 
         <!-- umeng appkey配置 -->
         <meta-data

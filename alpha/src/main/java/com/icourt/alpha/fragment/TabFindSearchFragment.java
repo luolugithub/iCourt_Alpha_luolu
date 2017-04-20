@@ -2,8 +2,8 @@ package com.icourt.alpha.fragment;
 
 import android.graphics.Color;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -22,9 +22,13 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.icourt.alpha.R;
+import com.icourt.alpha.activity.SearchTabActivity;
 import com.icourt.alpha.adapter.SearchEngineAdapter;
 import com.icourt.alpha.adapter.SearchHistoryAdapter;
+import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.base.BaseFragment;
+import com.icourt.alpha.db.convertor.IConvertModel;
+import com.icourt.alpha.db.convertor.ListConvertor;
 import com.icourt.alpha.db.dbmodel.SearchEngineModel;
 import com.icourt.alpha.db.dbmodel.SearhHistoryModel;
 import com.icourt.alpha.db.dbservice.SearchHistroyDbService;
@@ -33,8 +37,9 @@ import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.ItemDecorationUtils;
 import com.icourt.alpha.utils.SystemUtils;
-import com.icourt.alpha.widget.DividerItemDecoration;
+import com.icourt.alpha.view.DividerItemDecoration;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.BindView;
@@ -126,6 +131,21 @@ public class TabFindSearchFragment extends BaseFragment {
         historyRecyclerView.setLayoutManager(historyLayoutManager);
         historyRecyclerView.addItemDecoration(ItemDecorationUtils.getCommTrans10Divider(getContext(), true));
         historyRecyclerView.setAdapter(searchHistoryAdapter = new SearchHistoryAdapter());
+        searchHistoryAdapter.setOnItemClickListener(new BaseRecyclerAdapter.OnItemClickListener() {
+            @Override
+            public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
+                SearhHistoryModel item = searchHistoryAdapter.getItem(position);
+                if (item != null) {
+                    RealmList<SearchEngineModel> searchEngines = item.searchEngines;
+                    ArrayList<SearchEngineEntity> searchEngineEntities = new ArrayList<SearchEngineEntity>();
+                    if (searchEngines != null) {
+                        searchEngineEntities.addAll(ListConvertor.convertList(new ArrayList<IConvertModel<SearchEngineEntity>>(searchEngines)));
+                    }
+                    launchH5Search(item.keyWord, searchEngineEntities);
+                }
+            }
+        });
+
 
         searchEdit.addTextChangedListener(new TextWatcher() {
             @Override
@@ -151,18 +171,23 @@ public class TabFindSearchFragment extends BaseFragment {
                         SystemUtils.hideSoftKeyBoard(getActivity(), v);
                         if (!TextUtils.isEmpty(v.getText()) && searchHistroyDbService != null) {
 
+                            ArrayList<SearchEngineEntity> selectedData = searchEngineAdapter.getSelectedData();
+                            launchH5Search(v.getText().toString(), selectedData);
+
                             SearhHistoryModel searhHistoryModel = new SearhHistoryModel();
                             searhHistoryModel.keyWord = v.getText().toString();
-
-                            List<Integer> selectedData = searchEngineAdapter.getSelectedData();
                             RealmList<SearchEngineModel> searchEngines = new RealmList<SearchEngineModel>();
                             for (int i = 0; i < selectedData.size(); i++) {
-                                SearchEngineEntity item = searchEngineAdapter.getItem(selectedData.get(i));
+                                SearchEngineEntity item = searchEngineAdapter.getItem(i);
                                 if (item != null) {
                                     searchEngines.add(item.convert2Model());
                                 }
                             }
                             searhHistoryModel.searchEngines = searchEngines;
+                            //清理本地
+                            if (searchHistoryAdapter.getItemCount() >= 100) {
+                                searchHistroyDbService.deleteAll();
+                            }
                             searchHistroyDbService.insert(searhHistoryModel);
                             getSearhHistory();
                         }
@@ -178,6 +203,26 @@ public class TabFindSearchFragment extends BaseFragment {
         getSearhHistory();
     }
 
+    /**
+     * h5搜索
+     *
+     * @param keyWord
+     * @param searchEngineEntities
+     */
+    private void launchH5Search(@NonNull String keyWord, @Nullable ArrayList<SearchEngineEntity> searchEngineEntities) {
+        if (TextUtils.isEmpty(keyWord)) return;
+        if (searchEngineEntities == null) {
+            searchEngineEntities = new ArrayList<SearchEngineEntity>();
+        }
+        if (searchEngineEntities.isEmpty() && searchEngineAdapter.getItemCount() > 0) {
+            searchEngineEntities.add(searchEngineAdapter.getItem(0));
+        }
+        SearchTabActivity.launch(getContext(),
+                keyWord,
+                searchEngineEntities);
+    }
+
+
     @Override
     protected void getData(boolean isRefresh) {
         super.getData(isRefresh);
@@ -191,6 +236,7 @@ public class TabFindSearchFragment extends BaseFragment {
 
     }
 
+
     /**
      * 获取 搜索历史记录
      */
@@ -201,12 +247,8 @@ public class TabFindSearchFragment extends BaseFragment {
         }
     }
 
-    @Override
-    public void notifyFragmentUpdate(Fragment targetFrgament, Bundle bundle) {
 
-    }
-
-    @OnClick({R.id.search_input_clear_btn, R.id.search_history_clear_btn})
+    @OnClick({R.id.search_input_clear_btn, R.id.search_history_clear_btn, R.id.search_audio_btn})
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
@@ -218,6 +260,8 @@ public class TabFindSearchFragment extends BaseFragment {
                 if (searchHistroyDbService != null) {
                     searchHistroyDbService.deleteAll();
                 }
+                break;
+            case R.id.search_audio_btn:
                 break;
             default:
                 super.onClick(v);

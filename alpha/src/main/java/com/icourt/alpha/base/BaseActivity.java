@@ -148,6 +148,7 @@ public abstract class BaseActivity
      * @return 标题操作图片按钮
      */
     @Nullable
+    @CheckResult
     public ImageView getTitleActionImage() {
         View titleActionImage = findViewById(R.id.titleAction);
         return (titleActionImage instanceof ImageView) ? (ImageView) titleActionImage : null;
