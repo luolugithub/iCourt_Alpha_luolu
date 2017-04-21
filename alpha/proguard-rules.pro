@@ -23,3 +23,10 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+-keep @io.realm.annotations.RealmModule class *
+-keep class * extends io.realm.RealmObject
+-keep class io.realm.*Proxy{ *;}
+-keep class io.realm.ValidationList {* ;}
+-dontwarn javax.**
+-dontwarn io.realm.**

@@ -50,7 +50,7 @@ public abstract class BaseRecyclerAdapter extends RecyclerView.Adapter<BaseRecyc
      * @param adapterPos
      * @return
      */
-    protected int getRealPos(int adapterPos) {
+    public int getRealPos(int adapterPos) {
         return adapterPos - (getParentHeaderFooterAdapter() == null
                 ? 0 : getParentHeaderFooterAdapter().getHeaderCount());
 

@@ -13,7 +13,9 @@ import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
 import android.text.TextUtils;
 import android.view.View;
+import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.icourt.alpha.R;
@@ -53,8 +55,19 @@ public class SearchTabActivity extends BaseActivity {
     ViewPager viewPager;
     @BindView(R.id.tabLayout)
     TabLayout tabLayout;
+    @BindView(R.id.bottom_back_iv)
+    ImageButton bottomBackIv;
+    @BindView(R.id.bottom_forward_iv)
+    ImageButton bottomForwardIv;
+    @BindView(R.id.bottom_refresh_iv)
+    ImageButton bottomRefreshIv;
+    @BindView(R.id.bottom_share_iv)
+    ImageButton bottomShareIv;
+    @BindView(R.id.search_bottom_layout)
+    LinearLayout searchBottomLayout;
     @BindView(R.id.main_content)
     CoordinatorLayout mainContent;
+
     private BaseFragmentAdapter baseFragmentAdapter;
 
     public static void launch(@NonNull Context context,

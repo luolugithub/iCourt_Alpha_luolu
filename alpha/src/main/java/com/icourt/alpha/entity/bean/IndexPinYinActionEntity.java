@@ -9,7 +9,7 @@ import com.mcxtzhang.indexlib.IndexBar.bean.BaseIndexPinyinBean;
  * date createTime：2017/4/11
  * version 1.0.0
  */
-public abstract class GroupContactActionEntity extends BaseIndexPinyinBean {
+public abstract class IndexPinYinActionEntity extends BaseIndexPinyinBean {
 
     public boolean isNotNeedToPinyin;//不需要拼音排序
 

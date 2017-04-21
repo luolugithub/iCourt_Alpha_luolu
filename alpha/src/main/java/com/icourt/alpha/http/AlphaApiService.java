@@ -3,6 +3,7 @@ package com.icourt.alpha.http;
 import com.google.gson.JsonElement;
 import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.icourt.alpha.entity.bean.AppVersionEntity;
+import com.icourt.alpha.entity.bean.CustomerEntity;
 import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.icourt.alpha.entity.bean.IMStringWrapEntity;
 import com.icourt.alpha.entity.bean.IMSessionDontDisturbEntity;
@@ -236,4 +237,28 @@ public interface AlphaApiService {
      */
     @GET("api/v2/site/getSiteList")
     Call<ResEntity<List<SearchEngineEntity>>> getSearchEngines();
+
+    /**
+     * 获取客户列表
+     *
+     * @param pageNum
+     * @param pageSize
+     * @return
+     */
+    @GET("api/v2/contact")
+    Call<ResEntity<List<CustomerEntity>>> getCustomers(@Query("pageNum") int pageNum,
+                                                       @Query("pageSize") int pageSize);
+
+    /**
+     * 获取客户列表
+     *
+     * @param pageNum
+     * @param pageSize
+     * @param isView   是否关注的 关注==1
+     * @return
+     */
+    @GET("api/v2/contact")
+    Call<ResEntity<List<CustomerEntity>>> getCustomers(@Query("pageNum") int pageNum,
+                                                       @Query("pageSize") int pageSize,
+                                                       @Query("isView") int isView);
 }

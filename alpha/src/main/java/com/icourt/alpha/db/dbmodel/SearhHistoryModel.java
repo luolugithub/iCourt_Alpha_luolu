@@ -2,6 +2,7 @@ package com.icourt.alpha.db.dbmodel;
 
 import io.realm.RealmList;
 import io.realm.RealmObject;
+import io.realm.annotations.RealmClass;
 
 /**
  * Description
@@ -10,6 +11,7 @@ import io.realm.RealmObject;
  * date createTime：2017/4/20
  * version 1.0.0
  */
+@RealmClass
 public class SearhHistoryModel extends RealmObject {
     public String keyWord;
     public RealmList<SearchEngineModel> searchEngines;

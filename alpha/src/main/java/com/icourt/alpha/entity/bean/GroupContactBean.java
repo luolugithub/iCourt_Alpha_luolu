@@ -14,7 +14,7 @@ import java.io.Serializable;
  * date createTime：2017/4/10
  * version 1.0.0
  */
-public class GroupContactBean extends GroupContactActionEntity
+public class GroupContactBean extends IndexPinYinActionEntity
         implements IConvertModel<ContactDbModel>,Serializable {
 
     public String userId;

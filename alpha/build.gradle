@@ -1,6 +1,6 @@
 apply plugin: 'com.android.application'
-apply plugin: 'realm-android'
 apply plugin: 'com.bugtags.library.plugin'
+apply plugin: 'realm-android'
 android {
     compileSdkVersion rootProject.ext.android.compileSdkVersion
     buildToolsVersion rootProject.ext.android.buildToolsVersion
@@ -87,11 +87,17 @@ android {
             manifestPlaceholders = [NIM_APPKEY: rootProject.ext.nimAppKey.debugAppKey]
 
             //用正式
-            buildConfigField "String", "API_URL", rootProject.ext.alphaAPIUrl.api_url_release
-            buildConfigField "String", "HOST_URL", rootProject.ext.alphaHostUrl.host_url_release
-            buildConfigField "String", "APK_UPDATE_URL", rootProject.ext.alphaApkUpdateUrl.apk_update_url_release
-            manifestPlaceholders = [NIM_APPKEY: rootProject.ext.nimAppKey.releaseAppKey]
+            /* buildConfigField "String", "API_URL", rootProject.ext.alphaAPIUrl.api_url_release
+             buildConfigField "String", "HOST_URL", rootProject.ext.alphaHostUrl.host_url_release
+             buildConfigField "String", "APK_UPDATE_URL", rootProject.ext.alphaApkUpdateUrl.apk_update_url_release
+             manifestPlaceholders = [NIM_APPKEY: rootProject.ext.nimAppKey.releaseAppKey]
+ */
 
+            //测试用
+            buildConfigField "String", "API_URL", rootProject.ext.alphaAPIUrl.api_url_test
+            buildConfigField "String", "HOST_URL", rootProject.ext.alphaHostUrl.host_url_test
+            buildConfigField "String", "APK_UPDATE_URL", rootProject.ext.alphaApkUpdateUrl.apk_update_url_test
+            manifestPlaceholders = [NIM_APPKEY: rootProject.ext.nimAppKey.testAppKey]
         }
         innertest {
             buildConfigField "boolean", "IS_DEBUG", "true"
@@ -156,7 +162,7 @@ android {
     dexOptions {
         jumboMode = true  //支持最大工程模式
         javaMaxHeapSize "8g"
-        // incremental true //使用增量模式
+        //incremental false//使用增量模式
 
         preDexLibraries = false //预编译
         threadCount = "8" //线程数目
