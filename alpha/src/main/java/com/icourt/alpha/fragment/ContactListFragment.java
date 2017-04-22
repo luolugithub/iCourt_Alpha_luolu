@@ -12,6 +12,7 @@ import com.andview.refreshview.XRefreshView;
 import com.icourt.alpha.R;
 import com.icourt.alpha.activity.ContactDetailActivity;
 import com.icourt.alpha.activity.ContactSearchActivity;
+import com.icourt.alpha.activity.GroupListActivity;
 import com.icourt.alpha.adapter.IMContactAdapter;
 import com.icourt.alpha.adapter.ItemActionAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
@@ -98,6 +99,7 @@ public class ContactListFragment extends BaseFragment implements BaseRecyclerAda
         headerRecyclerView = (RecyclerView) headerView.findViewById(R.id.headerRecyclerView);
         headerRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         headerRecyclerView.setAdapter(itemsEntityItemActionAdapter = new ItemActionAdapter<ItemsEntity>());
+        itemsEntityItemActionAdapter.setOnItemClickListener(this);
         itemsEntityItemActionAdapter.bindData(true, Arrays.asList(new ItemsEntity("我加入的讨论组", R.mipmap.tab_message),
                 new ItemsEntity("所有讨论组", R.mipmap.tab_message),
                 new ItemsEntity("已归档讨论组", R.mipmap.tab_message)));
@@ -286,10 +288,26 @@ public class ContactListFragment extends BaseFragment implements BaseRecyclerAda
 
     @Override
     public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
-        GroupContactBean data = imContactAdapter.getData(position -
-                (imContactAdapter.getParentHeaderFooterAdapter() == null
-                        ? 0 : imContactAdapter.getParentHeaderFooterAdapter().getHeaderCount()));
-        ContactDetailActivity.launch(getContext(), data, false, false);
+        if (adapter == imContactAdapter) {
+            GroupContactBean data = imContactAdapter.getData(position -
+                    (imContactAdapter.getParentHeaderFooterAdapter() == null
+                            ? 0 : imContactAdapter.getParentHeaderFooterAdapter().getHeaderCount()));
+            ContactDetailActivity.launch(getContext(), data, false, false);
+        } else if (adapter == itemsEntityItemActionAdapter) {
+            ItemsEntity item = itemsEntityItemActionAdapter.getItem(position);
+            if (item != null) {
+                switch (position) {
+                    case 0:
+                        GroupListActivity.launch(getContext(),
+                                GroupListActivity.GROUP_TYPE_MY_JOIN);
+                        break;
+                    case 1:
+                        GroupListActivity.launch(getContext(),
+                                GroupListActivity.GROUP_TYPE_TYPE_ALL);
+                        break;
+                }
+            }
+        }
     }
 
 }

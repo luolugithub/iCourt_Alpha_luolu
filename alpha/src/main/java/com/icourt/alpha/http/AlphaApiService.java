@@ -5,11 +5,14 @@ import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.icourt.alpha.entity.bean.AppVersionEntity;
 import com.icourt.alpha.entity.bean.CustomerEntity;
 import com.icourt.alpha.entity.bean.GroupContactBean;
-import com.icourt.alpha.entity.bean.IMStringWrapEntity;
+import com.icourt.alpha.entity.bean.GroupEntity;
 import com.icourt.alpha.entity.bean.IMSessionDontDisturbEntity;
+import com.icourt.alpha.entity.bean.IMStringWrapEntity;
 import com.icourt.alpha.entity.bean.LoginIMToken;
+import com.icourt.alpha.entity.bean.PageEntity;
 import com.icourt.alpha.entity.bean.SearchEngineEntity;
 import com.icourt.alpha.entity.bean.SetTopEntity;
+import com.icourt.alpha.entity.bean.TaskEntity;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 
 import java.util.List;
@@ -261,4 +264,46 @@ public interface AlphaApiService {
     Call<ResEntity<List<CustomerEntity>>> getCustomers(@Query("pageNum") int pageNum,
                                                        @Query("pageSize") int pageSize,
                                                        @Query("isView") int isView);
+
+    /**
+     * 获取所有任务
+     *
+     * @return
+     */
+    @GET("api/v2/taskflow/queryTaskByDue")
+    Call<ResEntity<PageEntity<TaskEntity>>> getAllTask();
+
+    /**
+     * 获取我加入的讨论组
+     *
+     * @return
+     */
+    @GET("api/v2/chat/group/inGroup")
+    Call<ResEntity<List<GroupEntity>>> getMyJoinedGroups();
+
+    /**
+     * 获取所有的讨论组
+     *
+     * @return
+     */
+    @GET("api/v2/chat/group/LawyerGroup")
+    Call<ResEntity<List<GroupEntity>>> getAllGroups();
+
+
+    /**
+     * 搜索我加入的讨论组
+     *
+     * @return
+     */
+    @GET("api/v2/chat/group/inGroup")
+    Call<ResEntity<List<GroupEntity>>> searchInMyJoinedGroup(@Query("name") String groupName);
+
+    /**
+     * 搜索 全部的讨论组
+     *
+     * @return
+     */
+    @GET("api/v2/chat/group/LawyerGroup")
+    Call<ResEntity<List<GroupEntity>>> searchInAllGroup(@Query("name") String groupName);
+
 }

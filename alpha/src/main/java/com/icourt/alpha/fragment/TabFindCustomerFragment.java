@@ -14,6 +14,7 @@ import com.icourt.alpha.R;
 import com.icourt.alpha.activity.CustomerSearchActivity;
 import com.icourt.alpha.activity.MyCollectedCustomersActivity;
 import com.icourt.alpha.adapter.CustomerAdapter;
+import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.HeaderFooterAdapter;
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.db.convertor.IConvertModel;
@@ -26,14 +27,17 @@ import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.CustomIndexBarDataHelper;
 import com.icourt.alpha.utils.DensityUtil;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
+import com.icourt.alpha.widget.dialog.BottomActionDialog;
 import com.mcxtzhang.indexlib.IndexBar.widget.IndexBar;
 import com.mcxtzhang.indexlib.suspension.SuspensionDecoration;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 import butterknife.Unbinder;
 import io.realm.RealmResults;
 import retrofit2.Call;
@@ -151,14 +155,23 @@ public class TabFindCustomerFragment extends BaseFragment {
                 });
     }
 
+    @OnClick({R.id.titleAction})
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.rl_comm_search:
-                CustomerSearchActivity.launch(getContext(),v);
+                CustomerSearchActivity.launch(getContext(), v);
                 break;
             case R.id.header_customer_collected:
                 MyCollectedCustomersActivity.launch(getContext());
+                break;
+            case R.id.titleAction:
+                new BottomActionDialog(getContext(), "添加联系人", Arrays.asList("个人联系人", "机构联系人"), new BottomActionDialog.OnActionItemClickListener() {
+                    @Override
+                    public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
+                        dialog.dismiss();
+                    }
+                }).show();
                 break;
             default:
                 super.onClick(v);

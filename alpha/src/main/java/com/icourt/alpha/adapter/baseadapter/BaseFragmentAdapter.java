@@ -63,8 +63,8 @@ public class BaseFragmentAdapter extends FragmentPagerAdapter {
     }
 
     @Override
-    public Fragment getItem(int arg0) {
-        return fragmentsList.get(arg0);
+    public Fragment getItem(int position) {
+        return fragmentsList.get(position);
     }
 
     @Override

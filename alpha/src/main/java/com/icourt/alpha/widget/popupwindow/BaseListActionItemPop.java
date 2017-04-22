@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.support.annotation.NonNull;
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
@@ -41,6 +42,11 @@ public class BaseListActionItemPop<T>
     private RecyclerView recyclerView;
     private BaseArrayRecyclerAdapter<T> adapter;
     private OnItemClickListener listener;
+    private CardView popCard;
+
+    public CardView getPopCard() {
+        return popCard;
+    }
 
     private BaseListActionItemPop() {
     }
@@ -71,6 +77,7 @@ public class BaseListActionItemPop<T>
     }
 
     private void initView() {
+        popCard = (CardView) getContentView().findViewById(R.id.pop_card);
         recyclerView = (RecyclerView) getContentView().findViewById(R.id.recyclerView);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(context);
         linearLayoutManager.setAutoMeasureEnabled(true);
