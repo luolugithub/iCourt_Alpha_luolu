@@ -13,7 +13,6 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.andview.refreshview.XRefreshView;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.IMSessionAdapter;
@@ -330,11 +329,6 @@ public class MessageListFragment extends BaseFragment
     @Override
     public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
         IMSessionEntity data = imSessionAdapter.getData(position - headerFooterAdapter.getHeaderCount());
-        if (data != null) {
-            if (data.recentContact.getSessionType() == SessionTypeEnum.Team) {
-                setDontDisturbs(data.recentContact.getContactId());
-            }
-        }
         log("--------->data:" + data);
         if (data != null) {
             LogUtils.logObject("-------->contact:", data.recentContact);
@@ -342,20 +336,6 @@ public class MessageListFragment extends BaseFragment
         }
     }
 
-    /**
-     * 设置消息免打扰
-     *
-     * @param teamId
-     */
-    private void setDontDisturbs(String teamId) {
-        getApi().setNoDisturbing(teamId)
-                .enqueue(new SimpleCallBack<JsonElement>() {
-                    @Override
-                    public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
-
-                    }
-                });
-    }
 
     /**
      * 获取消息免打扰

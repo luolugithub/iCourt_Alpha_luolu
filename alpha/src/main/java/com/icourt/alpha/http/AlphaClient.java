@@ -83,7 +83,7 @@ public class AlphaClient extends SimpleClient implements HttpLoggingInterceptor.
     public Response intercept(Chain chain) throws IOException {
         Request request = chain.request();
         Request requestBuilder = request.newBuilder()
-                .addHeader("Cookie", getOfficeId())
+                .addHeader("Cookie", "officeId=" + getOfficeId())
                 .addHeader("token", getToken())
                 .addHeader("osVer", String.valueOf(Build.VERSION.SDK_INT))
                 .addHeader("osType", HConst.OS_TYPE)

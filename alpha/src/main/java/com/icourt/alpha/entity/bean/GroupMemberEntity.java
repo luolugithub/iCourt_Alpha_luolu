@@ -7,21 +7,19 @@ import android.text.TextUtils;
 import com.icourt.alpha.view.recyclerviewDivider.ISuspensionAction;
 import com.icourt.alpha.view.recyclerviewDivider.ISuspensionInterface;
 
-import java.io.Serializable;
-
 /**
  * Description
  * Company Beijing icourt
  * author  youxuan  E-mail:xuanyouwu@163.com
- * date createTime：2017/4/22
+ * date createTime：2017/4/23
  * version 1.0.0
  */
-public class GroupEntity implements ISuspensionInterface, ISuspensionAction, Serializable {
+public class GroupMemberEntity implements ISuspensionInterface, ISuspensionAction {
     public String suspensionTag;
-    public String id;
-    public String tid;
+    public String memberId;
+    public String groupId;
     public String name;
-    public String description;
+    public String pic;
 
     @Override
     public boolean isShowSuspension() {

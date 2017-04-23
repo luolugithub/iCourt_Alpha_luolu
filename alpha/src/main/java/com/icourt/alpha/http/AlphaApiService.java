@@ -6,6 +6,7 @@ import com.icourt.alpha.entity.bean.AppVersionEntity;
 import com.icourt.alpha.entity.bean.CustomerEntity;
 import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.icourt.alpha.entity.bean.GroupEntity;
+import com.icourt.alpha.entity.bean.GroupMemberEntity;
 import com.icourt.alpha.entity.bean.IMSessionDontDisturbEntity;
 import com.icourt.alpha.entity.bean.IMStringWrapEntity;
 import com.icourt.alpha.entity.bean.LoginIMToken;
@@ -165,6 +166,15 @@ public interface AlphaApiService {
 
 
     /**
+     * 是否置顶
+     *
+     * @param groupId
+     * @return
+     */
+    @GET("api/v2/chat/group/isStarred")
+    Call<ResEntity<Integer>> isGroupSetTop(@Query("groupId") String groupId);
+
+    /**
      * 置顶
      * 【注意】 这个接口只支持post
      *
@@ -174,6 +184,16 @@ public interface AlphaApiService {
     @POST("api/v2/chat/group/setStarred")
     @FormUrlEncoded
     Call<ResEntity<List<SetTopEntity>>> setTop(@Field("p2pId") String p2pId);
+
+    /**
+     * 讨论组 置顶
+     *
+     * @param groupId
+     * @return
+     */
+    @POST("api/v2/chat/group/setStarred")
+    @FormUrlEncoded
+    Call<ResEntity<List<SetTopEntity>>> setGroupTop(@Field("groupId") String groupId);
 
 
     /**
@@ -193,7 +213,27 @@ public interface AlphaApiService {
      */
     @POST("api/v2/chat/group/setNoDisturbing")
     @FormUrlEncoded
-    Call<ResEntity<JsonElement>> setNoDisturbing(@Field("groupId") String groupId);
+    Call<ResEntity<Integer>> setNoDisturbing(@Field("groupId") String groupId);
+
+
+    /**
+     * 加入群组
+     *
+     * @param groupId
+     * @return
+     */
+    @POST("api/v2/chat/group/mem/addPersional")
+    @FormUrlEncoded
+    Call<ResEntity<JsonElement>> joinGroup(@Field("groupId") String groupId);
+
+    /**
+     * 退出讨论组
+     * @param groupId
+     * @return
+     */
+    @POST("api/v2/chat/group/mem/deletePersional")
+    @FormUrlEncoded
+    Call<ResEntity<JsonElement>> quitGroup(@Field("groupId") String groupId);
 
     /**
      * 根据不同类型获取文件列表
@@ -305,5 +345,23 @@ public interface AlphaApiService {
      */
     @GET("api/v2/chat/group/LawyerGroup")
     Call<ResEntity<List<GroupEntity>>> searchInAllGroup(@Query("name") String groupName);
+
+    /**
+     * 获取 讨论组详情
+     *
+     * @param tid
+     * @return
+     */
+    @GET("api/v2/chat/group/findGroupByTid")
+    Call<ResEntity<JsonElement>> getGroupByTid(@Query("tid") String tid);
+
+    /**
+     * 获取 讨论组成员列表
+     *
+     * @param tid
+     * @return
+     */
+    @GET("api/v2/chat/group/mems/{tid}")
+    Call<ResEntity<List<GroupMemberEntity>>> getGroupMemeber(@Path("tid") String tid);
 
 }

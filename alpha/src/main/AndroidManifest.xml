@@ -134,6 +134,12 @@
         <activity
             android:name=".activity.GroupSearchActivity"
             android:screenOrientation="portrait" />
+        <activity
+            android:name=".activity.GroupDetailActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".activity.GroupMemberActivity"
+            android:screenOrientation="portrait" />
 
         <!-- umeng appkey配置 -->
         <meta-data
