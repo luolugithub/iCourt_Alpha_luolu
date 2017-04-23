@@ -4,12 +4,14 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
 import com.andview.refreshview.XRefreshView;
+import com.gjiazhe.wavesidebar.WaveSideBar;
 import com.icourt.alpha.R;
 import com.icourt.alpha.activity.CustomerSearchActivity;
 import com.icourt.alpha.activity.MyCollectedCustomersActivity;
@@ -24,15 +26,16 @@ import com.icourt.alpha.db.dbservice.CustomerDbService;
 import com.icourt.alpha.entity.bean.CustomerEntity;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
-import com.icourt.alpha.utils.CustomIndexBarDataHelper;
 import com.icourt.alpha.utils.DensityUtil;
+import com.icourt.alpha.utils.IndexUtils;
+import com.icourt.alpha.utils.PinyinComparator;
+import com.icourt.alpha.view.recyclerviewDivider.SuspensionDecoration;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 import com.icourt.alpha.widget.dialog.BottomActionDialog;
-import com.mcxtzhang.indexlib.IndexBar.widget.IndexBar;
-import com.mcxtzhang.indexlib.suspension.SuspensionDecoration;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import butterknife.BindView;
@@ -51,6 +54,7 @@ import retrofit2.Response;
  * version 1.0.0
  */
 public class TabFindCustomerFragment extends BaseFragment {
+    private static final String STRING_TOP = "↑︎";
 
     @BindView(R.id.titleAction)
     ImageView titleAction;
@@ -62,9 +66,10 @@ public class TabFindCustomerFragment extends BaseFragment {
     CustomerAdapter customerAdapter;
     HeaderFooterAdapter<CustomerAdapter> headerFooterAdapter;
     @BindView(R.id.recyclerIndexBar)
-    IndexBar recyclerIndexBar;
+    WaveSideBar recyclerIndexBar;
     SuspensionDecoration mDecoration;
     CustomerDbService customerDbService;
+    LinearLayoutManager linearLayoutManager;
 
     public static TabFindCustomerFragment newInstance() {
         return new TabFindCustomerFragment();
@@ -81,14 +86,8 @@ public class TabFindCustomerFragment extends BaseFragment {
     @Override
     protected void initView() {
         customerDbService = new CustomerDbService(getLoginUserId());
-        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getContext());
+        linearLayoutManager = new LinearLayoutManager(getContext());
         recyclerView.setLayoutManager(linearLayoutManager);
-
-        mDecoration = new SuspensionDecoration(getActivity(), null);
-        mDecoration.setColorTitleBg(0xFFf4f4f4);
-        mDecoration.setColorTitleFont(0xFF4a4a4a);
-        mDecoration.setTitleFontSize(DensityUtil.sp2px(getContext(), 16));
-        recyclerView.addItemDecoration(mDecoration);
 
         headerFooterAdapter = new HeaderFooterAdapter<>(customerAdapter = new CustomerAdapter());
         View headerView = HeaderFooterAdapter.inflaterView(getContext(), R.layout.header_customer_search, recyclerView);
@@ -97,12 +96,33 @@ public class TabFindCustomerFragment extends BaseFragment {
         View rl_comm_search = headerView.findViewById(R.id.rl_comm_search);
         registerClick(rl_comm_search);
         headerFooterAdapter.addHeader(headerView);
+
+        mDecoration = new SuspensionDecoration(getActivity(), null);
+        mDecoration.setColorTitleBg(0xFFf4f4f4);
+        mDecoration.setColorTitleFont(0xFF4a4a4a);
+        mDecoration.setTitleFontSize(DensityUtil.sp2px(getContext(), 16));
+        mDecoration.setHeaderViewCount(headerFooterAdapter.getHeaderCount());
+        recyclerView.addItemDecoration(mDecoration);
+        recyclerIndexBar.setOnSelectIndexItemListener(new WaveSideBar.OnSelectIndexItemListener() {
+            @Override
+            public void onSelectIndexItem(String index) {
+                if (TextUtils.equals(index, STRING_TOP)) {
+                    linearLayoutManager.scrollToPositionWithOffset(0, 0);
+                    return;
+                }
+                for (int i = 0; i < customerAdapter.getItemCount(); i++) {
+                    CustomerEntity item = customerAdapter.getItem(i);
+                    if (item != null && TextUtils.equals(item.getSuspensionTag(), index)) {
+                        linearLayoutManager
+                                .scrollToPositionWithOffset(i + headerFooterAdapter.getHeaderCount(), 0);
+                        return;
+                    }
+                }
+            }
+        });
+
         recyclerView.setAdapter(headerFooterAdapter);
 
-        recyclerIndexBar
-                //.setmPressedShowTextView(mTvSideBarHint)//设置HintTextView
-                .setNeedRealIndex(true)
-                .setmLayoutManager(linearLayoutManager);
 
         refreshLayout.setXRefreshViewListener(new XRefreshView.SimpleXRefreshListener() {
             @Override
@@ -142,9 +162,13 @@ public class TabFindCustomerFragment extends BaseFragment {
                     @Override
                     public void onSuccess(Call<ResEntity<List<CustomerEntity>>> call, Response<ResEntity<List<CustomerEntity>>> response) {
                         stopRefresh();
-                        customerAdapter.bindData(isRefresh, response.body().result);
-                        updateIndexBar(response.body().result);
-                        insert2Db(response.body().result);
+                        if (response.body().result != null) {
+                            customerAdapter.bindData(true, response.body().result);
+                            IndexUtils.setSuspensions(getContext(), response.body().result);
+                            Collections.sort(response.body().result, new PinyinComparator<CustomerEntity>());
+                            updateIndexBar(response.body().result);
+                            insert2Db(response.body().result);
+                        }
                     }
 
                     @Override
@@ -199,14 +223,11 @@ public class TabFindCustomerFragment extends BaseFragment {
      * @param data
      */
     private void updateIndexBar(List<CustomerEntity> data) {
-        List<CustomerEntity> wrapDatas = new ArrayList<CustomerEntity>(data);
-        CustomerEntity customerEntity = new CustomerEntity();
-        customerEntity.isNotNeedToPinyin = true;
-        customerEntity.setBaseIndexTag("↑︎");
-        wrapDatas.add(0, customerEntity);
         try {
-            recyclerIndexBar.setDataHelper(new CustomIndexBarDataHelper()).setmSourceDatas(wrapDatas).invalidate();
-            mDecoration.setmDatas(wrapDatas);
+            ArrayList<String> suspensions = IndexUtils.getSuspensions(data);
+            suspensions.add(0, STRING_TOP);
+            recyclerIndexBar.setIndexItems(suspensions.toArray(new String[suspensions.size()]));
+            mDecoration.setmDatas(data);
         } catch (Exception e) {
             e.printStackTrace();
         }

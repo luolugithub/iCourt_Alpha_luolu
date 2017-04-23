@@ -87,16 +87,16 @@ android {
             manifestPlaceholders = [NIM_APPKEY: rootProject.ext.nimAppKey.debugAppKey]
 
             //用正式
-             buildConfigField "String", "API_URL", rootProject.ext.alphaAPIUrl.api_url_release
-             buildConfigField "String", "HOST_URL", rootProject.ext.alphaHostUrl.host_url_release
-             buildConfigField "String", "APK_UPDATE_URL", rootProject.ext.alphaApkUpdateUrl.apk_update_url_release
-             manifestPlaceholders = [NIM_APPKEY: rootProject.ext.nimAppKey.releaseAppKey]
+            buildConfigField "String", "API_URL", rootProject.ext.alphaAPIUrl.api_url_release
+            buildConfigField "String", "HOST_URL", rootProject.ext.alphaHostUrl.host_url_release
+            buildConfigField "String", "APK_UPDATE_URL", rootProject.ext.alphaApkUpdateUrl.apk_update_url_release
+            manifestPlaceholders = [NIM_APPKEY: rootProject.ext.nimAppKey.releaseAppKey]
 
             //测试用
-          /*  buildConfigField "String", "API_URL", rootProject.ext.alphaAPIUrl.api_url_test
-            buildConfigField "String", "HOST_URL", rootProject.ext.alphaHostUrl.host_url_test
-            buildConfigField "String", "APK_UPDATE_URL", rootProject.ext.alphaApkUpdateUrl.apk_update_url_test
-            manifestPlaceholders = [NIM_APPKEY: rootProject.ext.nimAppKey.testAppKey]*/
+            /*  buildConfigField "String", "API_URL", rootProject.ext.alphaAPIUrl.api_url_test
+              buildConfigField "String", "HOST_URL", rootProject.ext.alphaHostUrl.host_url_test
+              buildConfigField "String", "APK_UPDATE_URL", rootProject.ext.alphaApkUpdateUrl.apk_update_url_test
+              manifestPlaceholders = [NIM_APPKEY: rootProject.ext.nimAppKey.testAppKey]*/
         }
         innertest {
             buildConfigField "boolean", "IS_DEBUG", "true"
@@ -208,7 +208,7 @@ dependencies {
     compile 'com.liulishuo.filedownloader:library:1.3.0'
     compile 'q.rorbin:badgeview:1.1.0'
     compile 'cn.finalteam:galleryfinal:1.4.8.7'
-    compile 'com.github.mcxtzhang:SuspensionIndexBar:V1.0.0'
+    compile 'com.gjiazhe:wavesidebar:1.3'
 
     // 基础功能 (必需)
     compile 'com.netease.nimlib:basesdk:3.2.0'

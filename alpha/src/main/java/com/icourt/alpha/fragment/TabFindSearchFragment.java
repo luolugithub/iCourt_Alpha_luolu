@@ -37,7 +37,7 @@ import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.ItemDecorationUtils;
 import com.icourt.alpha.utils.SystemUtils;
-import com.icourt.alpha.view.DividerItemDecoration;
+import com.icourt.alpha.view.recyclerviewDivider.DividerItemDecoration;
 
 import java.util.ArrayList;
 import java.util.List;

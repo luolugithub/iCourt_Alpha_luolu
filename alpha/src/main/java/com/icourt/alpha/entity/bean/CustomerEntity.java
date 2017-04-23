@@ -1,9 +1,13 @@
 package com.icourt.alpha.entity.bean;
 
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.text.TextUtils;
 
 import com.icourt.alpha.db.convertor.IConvertModel;
 import com.icourt.alpha.db.dbmodel.CustomerDbModel;
+import com.icourt.alpha.view.recyclerviewDivider.ISuspensionAction;
+import com.icourt.alpha.view.recyclerviewDivider.ISuspensionInterface;
 
 import java.io.Serializable;
 
@@ -14,7 +18,11 @@ import java.io.Serializable;
  * date createTime：2017/4/21
  * version 1.0.0
  */
-public class CustomerEntity extends IndexPinYinActionEntity implements IConvertModel<CustomerDbModel>, Serializable {
+public class CustomerEntity implements IConvertModel<CustomerDbModel>,
+        Serializable,
+        ISuspensionInterface,
+        ISuspensionAction {
+    public String suspensionTag;
 
     public String pkid;
     public String contactType;
@@ -41,16 +49,23 @@ public class CustomerEntity extends IndexPinYinActionEntity implements IConvertM
 
 
     @Override
-    public String getTarget() {
-        if (!TextUtils.isEmpty(name)) {
-            return name;
-        }
-        return "#";
+    public boolean isShowSuspension() {
+        return true;
     }
 
     @Override
     public String getSuspensionTag() {
-        String suspensionTag = super.getSuspensionTag();
-        return TextUtils.isEmpty(suspensionTag) ? "" : suspensionTag;
+        return TextUtils.isEmpty(suspensionTag) ? "#" : suspensionTag;
+    }
+
+    @Nullable
+    @Override
+    public String getTargetField() {
+        return name;
+    }
+
+    @Override
+    public void setSuspensionTag(@NonNull String suspensionTag) {
+        this.suspensionTag = suspensionTag;
     }
 }

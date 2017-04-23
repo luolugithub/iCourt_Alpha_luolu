@@ -19,12 +19,15 @@
     </com.icourt.alpha.view.xrefreshlayout.RefreshLayout>
 
 
-    <com.mcxtzhang.indexlib.IndexBar.widget.IndexBar
+    <com.gjiazhe.wavesidebar.WaveSideBar
         android:id="@+id/recyclerIndexBar"
-        android:layout_width="20dp"
-        android:layout_height="300dp"
-        android:layout_gravity="right|center_vertical"
-        android:layout_marginTop="40dp"
-        app:indexBarPressBackground="#39000000"
-        app:indexBarTextSize="12dp" />
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingRight="8dp"
+        app:sidebar_lazy_respond="false"
+        app:sidebar_max_offset="80dp"
+        app:sidebar_position="right"
+        app:sidebar_text_alignment="center"
+        app:sidebar_text_color="@color/alpha_font_color_black"
+        app:sidebar_text_size="@dimen/alpha_font_size_mini" />
 </FrameLayout>

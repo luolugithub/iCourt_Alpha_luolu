@@ -9,11 +9,13 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.AppBarLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.andview.refreshview.XRefreshView;
+import com.gjiazhe.wavesidebar.WaveSideBar;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.GroupAdapter;
 import com.icourt.alpha.adapter.baseadapter.HeaderFooterAdapter;
@@ -22,15 +24,17 @@ import com.icourt.alpha.entity.bean.GroupEntity;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.ActionConstants;
-import com.icourt.alpha.utils.CustomIndexBarDataHelper;
 import com.icourt.alpha.utils.DensityUtil;
+import com.icourt.alpha.utils.IndexUtils;
+import com.icourt.alpha.utils.PinyinComparator;
+import com.icourt.alpha.view.recyclerviewDivider.ISuspensionInterface;
+import com.icourt.alpha.view.recyclerviewDivider.SuspensionDecoration;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
-import com.mcxtzhang.indexlib.IndexBar.widget.IndexBar;
-import com.mcxtzhang.indexlib.suspension.SuspensionDecoration;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import butterknife.BindView;
@@ -46,11 +50,12 @@ import retrofit2.Response;
  * version 1.0.0
  */
 public class GroupListActivity extends BaseActivity {
+    private static final String STRING_TOP = "↑︎";
     private static final String KEY_GROUP_QUERY_TYPE = "GroupQueryType";
     public static final int GROUP_TYPE_MY_JOIN = 0;
     public static final int GROUP_TYPE_TYPE_ALL = 1;
     @BindView(R.id.recyclerIndexBar)
-    IndexBar recyclerIndexBar;
+    WaveSideBar recyclerIndexBar;
 
     @IntDef({GROUP_TYPE_MY_JOIN,
             GROUP_TYPE_TYPE_ALL})
@@ -72,6 +77,7 @@ public class GroupListActivity extends BaseActivity {
     HeaderFooterAdapter<GroupAdapter> headerFooterAdapter;
     GroupAdapter groupAdapter;
     SuspensionDecoration mDecoration;
+    LinearLayoutManager linearLayoutManager;
 
     public static void launch(@NonNull Context context, @GroupQueryType int type) {
         if (context == null) return;
@@ -110,24 +116,40 @@ public class GroupListActivity extends BaseActivity {
                 setTitle("所有讨论组");
                 break;
         }
-        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getContext());
+        linearLayoutManager = new LinearLayoutManager(getContext());
         recyclerView.setLayoutManager(linearLayoutManager);
-        mDecoration = new SuspensionDecoration(getActivity(), null);
-        mDecoration.setColorTitleBg(0xFFf4f4f4);
-        mDecoration.setColorTitleFont(0xFF4a4a4a);
-        mDecoration.setTitleFontSize(DensityUtil.sp2px(getContext(), 16));
-        recyclerView.addItemDecoration(mDecoration);
-
         headerFooterAdapter = new HeaderFooterAdapter<>(groupAdapter = new GroupAdapter());
         View headerView = HeaderFooterAdapter.inflaterView(getContext(), R.layout.header_search_comm, recyclerView);
         View rl_comm_search = headerView.findViewById(R.id.rl_comm_search);
         registerClick(rl_comm_search);
         headerFooterAdapter.addHeader(headerView);
+
+        mDecoration = new SuspensionDecoration(getActivity(), null);
+        mDecoration.setColorTitleBg(0xFFf4f4f4);
+        mDecoration.setColorTitleFont(0xFF4a4a4a);
+        mDecoration.setTitleFontSize(DensityUtil.sp2px(getContext(), 16));
+        mDecoration.setHeaderViewCount(headerFooterAdapter.getHeaderCount());
+        recyclerView.addItemDecoration(mDecoration);
+
         recyclerView.setAdapter(headerFooterAdapter);
-        recyclerIndexBar
-                //.setmPressedShowTextView(mTvSideBarHint)//设置HintTextView
-                .setNeedRealIndex(true)
-                .setmLayoutManager(linearLayoutManager);
+        recyclerIndexBar.setOnSelectIndexItemListener(new WaveSideBar.OnSelectIndexItemListener() {
+            @Override
+            public void onSelectIndexItem(String index) {
+                if (TextUtils.equals(index, STRING_TOP)) {
+                    linearLayoutManager.scrollToPositionWithOffset(0, 0);
+                    return;
+                }
+                for (int i = 0; i < groupAdapter.getItemCount(); i++) {
+                    GroupEntity item = groupAdapter.getItem(i);
+                    if (item != null && TextUtils.equals(item.getSuspensionTag(), index)) {
+                        linearLayoutManager
+                                .scrollToPositionWithOffset(i + headerFooterAdapter.getHeaderCount(), 0);
+                        return;
+                    }
+                }
+            }
+        });
+
         refreshLayout.setXRefreshViewListener(new XRefreshView.SimpleXRefreshListener() {
             @Override
             public void onRefresh(boolean isPullDown) {
@@ -143,7 +165,7 @@ public class GroupListActivity extends BaseActivity {
     @Override
     protected void getData(final boolean isRefresh) {
         super.getData(isRefresh);
-        Call<ResEntity<List<GroupEntity>>> groupsCall;
+        final Call<ResEntity<List<GroupEntity>>> groupsCall;
         switch (getGroupQueryType()) {
             case GROUP_TYPE_MY_JOIN:
                 groupsCall = getApi().getMyJoinedGroups();
@@ -156,8 +178,12 @@ public class GroupListActivity extends BaseActivity {
             @Override
             public void onSuccess(Call<ResEntity<List<GroupEntity>>> call, Response<ResEntity<List<GroupEntity>>> response) {
                 stopRefresh();
-                groupAdapter.bindData(isRefresh, response.body().result);
-                updateIndexBar(groupAdapter.getData());
+                if (response.body().result != null) {
+                    IndexUtils.setSuspensions(getContext(), response.body().result);
+                    Collections.sort(response.body().result, new PinyinComparator<GroupEntity>());
+                    groupAdapter.bindData(true, response.body().result);
+                    updateIndexBar(groupAdapter.getData());
+                }
             }
 
             @Override
@@ -168,20 +194,21 @@ public class GroupListActivity extends BaseActivity {
         });
     }
 
+    private void setSu(List<? extends ISuspensionInterface> da) {
+
+    }
+
     /**
      * 更新indextBar
      *
      * @param data
      */
     private void updateIndexBar(List<GroupEntity> data) {
-        List<GroupEntity> wrapDatas = new ArrayList<GroupEntity>(data);
-        GroupEntity headerGroupEntity = new GroupEntity();
-        headerGroupEntity.isNotNeedToPinyin = true;
-        headerGroupEntity.setBaseIndexTag("↑︎");
-        wrapDatas.add(0, headerGroupEntity);
         try {
-            recyclerIndexBar.setDataHelper(new CustomIndexBarDataHelper()).setmSourceDatas(wrapDatas).invalidate();
-            mDecoration.setmDatas(wrapDatas);
+            ArrayList<String> suspensions = IndexUtils.getSuspensions(data);
+            suspensions.add(0, STRING_TOP);
+            recyclerIndexBar.setIndexItems(suspensions.toArray(new String[suspensions.size()]));
+            mDecoration.setmDatas(data);
         } catch (Exception e) {
             e.printStackTrace();
         }

@@ -1,4 +1,4 @@
-package com.icourt.alpha.view;
+package com.icourt.alpha.view.recyclerviewDivider;
 
 import android.graphics.Canvas;
 import android.graphics.Color;

@@ -23,7 +23,7 @@ import android.widget.TextView;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.baseadapter.BaseArrayRecyclerAdapter;
 import com.icourt.alpha.entity.bean.ItemsEntityImp;
-import com.icourt.alpha.view.DividerItemDecoration;
+import com.icourt.alpha.view.recyclerviewDivider.DividerItemDecoration;
 
 import java.util.List;
 

@@ -14,7 +14,7 @@ import java.util.List;
  * version
  */
 public abstract class BaseArrayRecyclerAdapter<T> extends BaseRecyclerAdapter {
-    public final List<T> dataList = new ArrayList<T>();
+    private final List<T> dataList = new ArrayList<T>();
 
     public List<T> getData() {
         return dataList;
