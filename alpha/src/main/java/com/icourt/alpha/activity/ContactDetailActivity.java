@@ -11,7 +11,6 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.AppBarLayout;
 import android.text.TextUtils;
 import android.view.View;
-import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Switch;
@@ -119,7 +118,8 @@ public class ContactDetailActivity extends BaseActivity {
     @OnClick({R.id.contact_send_msg_tv
             , R.id.contact_phone_ll
             , R.id.contact_email_ll
-            , R.id.contact_file_tv})
+            , R.id.contact_file_tv
+            , R.id.contact_setTop_switch})
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
@@ -148,6 +148,9 @@ public class ContactDetailActivity extends BaseActivity {
             case R.id.contact_file_tv:
                 IMFileListActivity.launch(getContext());
                 break;
+            case R.id.contact_setTop_switch:
+                setTop();
+                break;
             default:
                 super.onClick(v);
                 break;
@@ -158,19 +161,12 @@ public class ContactDetailActivity extends BaseActivity {
     protected void getData(boolean isRefresh) {
         super.getData(isRefresh);
         showLoadingDialog(null);
-        contactSetTopSwitch.setOnCheckedChangeListener(null);
         getApi().isSetTop(groupContactBean.userId)
                 .enqueue(new SimpleCallBack<Integer>() {
                     @Override
                     public void onSuccess(Call<ResEntity<Integer>> call, Response<ResEntity<Integer>> response) {
                         dismissLoadingDialog();
                         contactSetTopSwitch.setChecked(response.body().result != null && response.body().result.intValue() == 1);
-                        contactSetTopSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-                            @Override
-                            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                                setTop();
-                            }
-                        });
                     }
 
                     @Override
@@ -182,6 +178,7 @@ public class ContactDetailActivity extends BaseActivity {
 
 
     }
+
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {

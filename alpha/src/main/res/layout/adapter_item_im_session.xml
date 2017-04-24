@@ -47,7 +47,7 @@
                 android:textColor="@color/alpha_font_color_black"
                 android:textSize="@dimen/alpha_font_size_comm" />
 
-            <com.vanniktech.emoji.EmojiTextView
+            <TextView
                 android:id="@+id/tv_session_content"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

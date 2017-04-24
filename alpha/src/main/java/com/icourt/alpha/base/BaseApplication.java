@@ -38,8 +38,6 @@ import com.umeng.socialize.Config;
 import com.umeng.socialize.PlatformConfig;
 import com.umeng.socialize.UMShareAPI;
 import com.umeng.socialize.utils.Log;
-import com.vanniktech.emoji.EmojiManager;
-import com.vanniktech.emoji.one.EmojiOneProvider;
 
 import java.net.Proxy;
 import java.util.Map;
@@ -100,7 +98,8 @@ public class BaseApplication extends MultiDexApplication {
     }
 
     private void initEmoji() {
-        EmojiManager.install(new EmojiOneProvider());
+
+        //EmojiManager.install(new EmojiOneProvider());
     }
 
     private void initYunXin() {

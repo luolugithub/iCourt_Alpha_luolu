@@ -26,7 +26,6 @@ import com.icourt.alpha.utils.SpannableUtils;
 import com.icourt.alpha.widget.parser.HelperNotificationParser;
 import com.netease.nimlib.sdk.msg.constant.SessionTypeEnum;
 import com.netease.nimlib.sdk.msg.model.RecentContact;
-import com.vanniktech.emoji.EmojiTextView;
 
 import q.rorbin.badgeview.Badge;
 import q.rorbin.badgeview.QBadgeView;
@@ -99,7 +98,7 @@ public class IMSessionAdapter extends BaseArrayRecyclerAdapter<IMSessionEntity> 
         TextView tvSessionTime = holder.obtainView(R.id.tv_session_time);
         View view_session_top = holder.obtainView(R.id.view_session_top);
         TextView tvSessionTitle = holder.obtainView(R.id.tv_session_title);
-        EmojiTextView tvSessionContent = holder.obtainView(R.id.tv_session_content);
+        TextView tvSessionContent = holder.obtainView(R.id.tv_session_content);
         ImageView ivSessionNotDisturb = holder.obtainView(R.id.iv_session_not_disturb);
         tvSessionContent.setText(imSessionEntity.recentContact.getContent());
         if (imSessionEntity.recentContact != null) {
@@ -230,7 +229,7 @@ public class IMSessionAdapter extends BaseArrayRecyclerAdapter<IMSessionEntity> 
      * @param imSessionEntity
      * @param tvSessionContent
      */
-    private void setItemData(IMSessionEntity imSessionEntity, EmojiTextView tvSessionContent) {
+    private void setItemData(IMSessionEntity imSessionEntity, TextView tvSessionContent) {
         if (imSessionEntity == null) return;
         //内容
         if (tvSessionContent != null) {
@@ -268,7 +267,7 @@ public class IMSessionAdapter extends BaseArrayRecyclerAdapter<IMSessionEntity> 
      * @param imSessionEntity
      * @param tvSessionContent
      */
-    private void setAtViewState(IMSessionEntity imSessionEntity, EmojiTextView tvSessionContent) {
+    private void setAtViewState(IMSessionEntity imSessionEntity, TextView tvSessionContent) {
         if (imSessionEntity == null) return;
         if (tvSessionContent == null) return;
         if (imSessionEntity.customIMBody == null) return;
@@ -317,7 +316,7 @@ public class IMSessionAdapter extends BaseArrayRecyclerAdapter<IMSessionEntity> 
      * @param imBodyEntity
      * @param tvSessionContent
      */
-    private void setDingViewTeam(IMBodyEntity imBodyEntity, EmojiTextView tvSessionContent) {
+    private void setDingViewTeam(IMBodyEntity imBodyEntity, TextView tvSessionContent) {
         if (imBodyEntity == null) return;
         if (imBodyEntity.pinMsg == null) return;
         if (tvSessionContent == null) return;
@@ -346,7 +345,7 @@ public class IMSessionAdapter extends BaseArrayRecyclerAdapter<IMSessionEntity> 
      * @param imBodyEntity
      * @param tvSessionContent
      */
-    private void setDingViewP2P(IMBodyEntity imBodyEntity, EmojiTextView tvSessionContent) {
+    private void setDingViewP2P(IMBodyEntity imBodyEntity, TextView tvSessionContent) {
         if (imBodyEntity == null) return;
         if (imBodyEntity.pinMsg == null) return;
         if (tvSessionContent == null) return;
@@ -368,7 +367,7 @@ public class IMSessionAdapter extends BaseArrayRecyclerAdapter<IMSessionEntity> 
      * @param tvSessionTitle
      * @param tvSessionContent
      */
-    private void setItemData(IMSessionEntity imSessionEntity, ImageView ivSessionIcon, TextView tvSessionTitle, EmojiTextView tvSessionContent) {
+    private void setItemData(IMSessionEntity imSessionEntity, ImageView ivSessionIcon, TextView tvSessionTitle, TextView tvSessionContent) {
         if (imSessionEntity == null) return;
         if (imSessionEntity.recentContact == null) return;
         if (imSessionEntity.recentContact.getAttachment() == null) return;

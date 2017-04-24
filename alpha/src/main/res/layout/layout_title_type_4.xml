@@ -41,6 +41,7 @@
             android:layout_height="38dp"
             android:background="?attr/selectableItemBackground"
             android:padding="10dp"
+            android:scaleType="center"
             android:src="@mipmap/header_icon_star_solid" />
 
         <ImageView

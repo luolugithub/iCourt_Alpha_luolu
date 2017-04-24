@@ -140,7 +140,9 @@
         <activity
             android:name=".activity.GroupMemberActivity"
             android:screenOrientation="portrait" />
-
+        <activity
+            android:name=".activity.ChatActivity"
+            android:screenOrientation="portrait" />
         <!-- umeng appkey配置 -->
         <meta-data
             android:name="UMENG_APPKEY"

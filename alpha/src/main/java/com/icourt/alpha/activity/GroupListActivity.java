@@ -18,6 +18,7 @@ import com.andview.refreshview.XRefreshView;
 import com.gjiazhe.wavesidebar.WaveSideBar;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.GroupAdapter;
+import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.HeaderFooterAdapter;
 import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.entity.bean.GroupEntity;
@@ -56,13 +57,14 @@ import static com.icourt.alpha.entity.event.GroupActionEvent.GROUP_ACTION_QUIT;
  * date createTime：2017/4/22
  * version 1.0.0
  */
-public class GroupListActivity extends BaseActivity {
+public class GroupListActivity extends BaseActivity implements BaseRecyclerAdapter.OnItemClickListener {
     private static final String STRING_TOP = "↑︎";
     private static final String KEY_GROUP_QUERY_TYPE = "GroupQueryType";
     public static final int GROUP_TYPE_MY_JOIN = 0;
     public static final int GROUP_TYPE_TYPE_ALL = 1;
     @BindView(R.id.recyclerIndexBar)
     WaveSideBar recyclerIndexBar;
+
 
     @IntDef({GROUP_TYPE_MY_JOIN,
             GROUP_TYPE_TYPE_ALL})
@@ -127,6 +129,7 @@ public class GroupListActivity extends BaseActivity {
         linearLayoutManager = new LinearLayoutManager(getContext());
         recyclerView.setLayoutManager(linearLayoutManager);
         headerFooterAdapter = new HeaderFooterAdapter<>(groupAdapter = new GroupAdapter());
+        groupAdapter.setOnItemClickListener(this);
         View headerView = HeaderFooterAdapter.inflaterView(getContext(), R.layout.header_search_comm, recyclerView);
         View rl_comm_search = headerView.findViewById(R.id.rl_comm_search);
         registerClick(rl_comm_search);
@@ -261,6 +264,26 @@ public class GroupListActivity extends BaseActivity {
             default:
                 super.onClick(v);
                 break;
+        }
+    }
+
+    @Override
+    public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
+        if (adapter == groupAdapter) {
+            GroupEntity item = groupAdapter.getItem(groupAdapter.getRealPos(position));
+            if (item != null) {
+                switch (getGroupQueryType()) {
+                    case GROUP_TYPE_MY_JOIN:
+                        ChatActivity.launchTEAM(getContext(),
+                                item.tid,
+                                item.id,
+                                item.name);
+                        break;
+                    case GROUP_TYPE_TYPE_ALL:
+                        GroupDetailActivity.launch(getContext(), item);
+                        break;
+                }
+            }
         }
     }
 

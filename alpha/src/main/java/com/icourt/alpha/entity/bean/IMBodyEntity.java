@@ -25,6 +25,8 @@ public class IMBodyEntity extends FileInfoEntity {
     public long time;
     public String action_tid;
     public String action_groupId;
+    public String path;
+    public String file;
 
     @Override
     public String toString() {

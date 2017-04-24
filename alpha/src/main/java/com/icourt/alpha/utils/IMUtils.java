@@ -4,6 +4,7 @@ import android.text.TextUtils;
 import android.widget.ImageView;
 
 import com.icourt.alpha.view.TextDrawable;
+import com.netease.nimlib.sdk.msg.model.IMMessage;
 
 import java.util.Arrays;
 import java.util.List;
@@ -99,6 +100,44 @@ public class IMUtils {
             ivSessionIcon.setImageDrawable(icon);
         }
 
+    }
+
+    /**
+     * 输出message
+     *
+     * @param tag
+     * @param message
+     */
+    public static void logIMMessage(String tag, IMMessage message) {
+        try {
+            StringBuilder sb = new StringBuilder(tag);
+            if (message == null) {
+                sb.append("null");
+            } else {
+                sb.append("\nUuid:" + message.getUuid());
+                sb.append("\nsessionId:" + message.getSessionId());
+                sb.append("\nsessionType:" + message.getSessionType());
+                //sb.append("\nfromNick:" + message.getFromNick());
+                sb.append("\nmsgType:" + message.getMsgType());
+                sb.append("\nstatus:" + message.getStatus());
+                sb.append("\ndirect:" + message.getDirect());
+                sb.append("\ncontent:" + message.getContent());
+
+                sb.append("\ntime:" + message.getTime());
+                sb.append("\nfromAccount:" + message.getFromAccount());
+                sb.append("\nattachment:" + message.getAttachment());
+                sb.append("\nattachStatus:" + message.getAttachStatus());
+                sb.append("\nremoteExtension:" + message.getRemoteExtension());
+                sb.append("\nlocalExtension:" + message.getLocalExtension());
+                sb.append("\npushContent:" + message.getPushContent());
+                sb.append("\npushPayload:" + message.getPushPayload());
+                sb.append("\nisRemoteRead:" + message.isRemoteRead());
+                sb.append("\nfromClientType:" + message.getFromClientType());
+            }
+            LogUtils.d(sb.toString());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
 }
