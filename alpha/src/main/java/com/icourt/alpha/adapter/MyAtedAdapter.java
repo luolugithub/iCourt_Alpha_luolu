@@ -40,11 +40,15 @@ public class MyAtedAdapter extends BaseArrayRecyclerAdapter<IMStringWrapEntity> 
             String originalText = imAtEntity.content.content;
             String targetText = null;
             try {
-                targetText = originalText.substring(originalText.indexOf("@"), originalText.indexOf(" "));
-            } catch (IndexOutOfBoundsException e) {
+                targetText = originalText.substring(originalText.trim().indexOf("@"), originalText.trim().indexOf(" "));
+            } catch (Exception e) {
             }
             if (TextUtils.isEmpty(targetText) && originalText.startsWith("@")) {
-                targetText = originalText;
+                if (originalText.trim().startsWith("@所有人")) {
+                    targetText = "@所有人";
+                } else {
+                    targetText = originalText;
+                }
             }
             SpannableUtils.setTextForegroundColorSpan(at_content_tv,
                     originalText,

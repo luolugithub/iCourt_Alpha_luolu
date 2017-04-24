@@ -19,15 +19,19 @@ import com.google.gson.JsonElement;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.GroupMemberAdapter;
 import com.icourt.alpha.base.BaseActivity;
+import com.icourt.alpha.entity.bean.GroupDetailEntity;
 import com.icourt.alpha.entity.bean.GroupEntity;
 import com.icourt.alpha.entity.bean.GroupMemberEntity;
 import com.icourt.alpha.entity.bean.SetTopEntity;
+import com.icourt.alpha.entity.event.GroupActionEvent;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.netease.nimlib.sdk.NIMClient;
 import com.netease.nimlib.sdk.RequestCallback;
 import com.netease.nimlib.sdk.team.TeamService;
 import com.netease.nimlib.sdk.team.model.Team;
+
+import org.greenrobot.eventbus.EventBus;
 
 import java.io.Serializable;
 import java.util.List;
@@ -135,15 +139,21 @@ public class GroupDetailActivity extends BaseActivity {
     protected void getData(boolean isRefresh) {
         super.getData(isRefresh);
         showLoadingDialog(null);
-        getApi().getGroupByTid(getIntent().getStringExtra(KEY_GROUP_ID))
-                .enqueue(new SimpleCallBack<JsonElement>() {
+        getApi().getGroupByTid(getIntent().getStringExtra(KEY_TID))
+                .enqueue(new SimpleCallBack<GroupDetailEntity>() {
                     @Override
-                    public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
+                    public void onSuccess(Call<ResEntity<GroupDetailEntity>> call, Response<ResEntity<GroupDetailEntity>> response) {
                         dismissLoadingDialog();
+                        if (response.body().result != null) {
+                            groupNameTv.setText(response.body().result.name);
+                            groupDescTv.setText(response.body().result.description);
+                            groupJoinOrQuitBtn.setSelected(response.body().result.isJoin == 1);
+                            groupJoinOrQuitBtn.setText(groupJoinOrQuitBtn.isSelected() ? "退出讨论组" : "加入讨论组");
+                        }
                     }
 
                     @Override
-                    public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
+                    public void onFailure(Call<ResEntity<GroupDetailEntity>> call, Throwable t) {
                         super.onFailure(call, t);
                         dismissLoadingDialog();
                     }
@@ -204,8 +214,11 @@ public class GroupDetailActivity extends BaseActivity {
                 setGroupNoDisturbing();
                 break;
             case R.id.group_join_or_quit_btn:
-                //quitGroup();
-                joinGroup();
+                if (v.isSelected()) {
+                    quitGroup();
+                } else {
+                    joinGroup();
+                }
                 break;
             default:
                 super.onClick(v);
@@ -304,6 +317,9 @@ public class GroupDetailActivity extends BaseActivity {
                     @Override
                     public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
                         dismissLoadingDialog();
+                        getData(true);
+                        EventBus.getDefault().post(
+                                new GroupActionEvent(GroupActionEvent.GROUP_ACTION_JOIN, getIntent().getStringExtra(KEY_GROUP_ID)));
                     }
 
                     @Override
@@ -320,14 +336,20 @@ public class GroupDetailActivity extends BaseActivity {
     private void quitGroup() {
         showLoadingDialog(null);
         getApi().quitGroup(getIntent().getStringExtra(KEY_GROUP_ID))
-                .enqueue(new SimpleCallBack<JsonElement>() {
+                .enqueue(new SimpleCallBack<Integer>() {
                     @Override
-                    public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
+                    public void onSuccess(Call<ResEntity<Integer>> call, Response<ResEntity<Integer>> response) {
                         dismissLoadingDialog();
+                        if (response.body().result != null
+                                && response.body().result == 1) {
+                            EventBus.getDefault().post(
+                                    new GroupActionEvent(GroupActionEvent.GROUP_ACTION_QUIT, getIntent().getStringExtra(KEY_GROUP_ID)));
+                            finish();
+                        }
                     }
 
                     @Override
-                    public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
+                    public void onFailure(Call<ResEntity<Integer>> call, Throwable t) {
                         super.onFailure(call, t);
                         dismissLoadingDialog();
                     }

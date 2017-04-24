@@ -185,6 +185,12 @@
                     android:layout_marginRight="10dp" />
             </LinearLayout>
 
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/alpha_height_divider"
+                android:layout_marginLeft="40dp"
+                android:background="@color/alpha_divider_color" />
+
             <LinearLayout
                 android:id="@+id/group_disturb_ll"
                 android:layout_width="match_parent"

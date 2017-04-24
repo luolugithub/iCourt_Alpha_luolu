@@ -44,4 +44,16 @@ public class GroupEntity implements ISuspensionInterface, ISuspensionAction, Ser
     public void setSuspensionTag(@NonNull String suspensionTag) {
         this.suspensionTag = suspensionTag;
     }
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (o == null) return false;
+        if (getClass() != o.getClass())
+            return false;
+        final GroupEntity other = (GroupEntity) o;
+        return TextUtils.equals(this.id, other.id);
+    }
 }

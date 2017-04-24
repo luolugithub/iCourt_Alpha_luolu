@@ -21,6 +21,7 @@ import com.icourt.alpha.adapter.GroupAdapter;
 import com.icourt.alpha.adapter.baseadapter.HeaderFooterAdapter;
 import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.entity.bean.GroupEntity;
+import com.icourt.alpha.entity.event.GroupActionEvent;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.ActionConstants;
@@ -29,6 +30,10 @@ import com.icourt.alpha.utils.IndexUtils;
 import com.icourt.alpha.utils.PinyinComparator;
 import com.icourt.alpha.view.recyclerviewDivider.SuspensionDecoration;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
+
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -40,6 +45,9 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import retrofit2.Call;
 import retrofit2.Response;
+
+import static com.icourt.alpha.entity.event.GroupActionEvent.GROUP_ACTION_JOIN;
+import static com.icourt.alpha.entity.event.GroupActionEvent.GROUP_ACTION_QUIT;
 
 /**
  * Description 讨论组列表
@@ -107,6 +115,7 @@ public class GroupListActivity extends BaseActivity {
     @Override
     protected void initView() {
         super.initView();
+        EventBus.getDefault().register(this);
         switch (getGroupQueryType()) {
             case GROUP_TYPE_MY_JOIN:
                 setTitle("我加入的讨论组");
@@ -159,6 +168,23 @@ public class GroupListActivity extends BaseActivity {
         refreshLayout.setPullRefreshEnable(true);
         refreshLayout.setAutoRefresh(true);
         refreshLayout.startRefresh();
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onGroupEvent(GroupActionEvent event) {
+        if (event == null) return;
+        switch (event.action) {
+            case GROUP_ACTION_JOIN:
+                if (getGroupQueryType() == GROUP_TYPE_MY_JOIN) {
+                    refreshLayout.startRefresh();
+                }
+                break;
+            case GROUP_ACTION_QUIT:
+                if (getGroupQueryType() == GROUP_TYPE_MY_JOIN) {
+                    refreshLayout.startRefresh();
+                }
+                break;
+        }
     }
 
     @Override
@@ -236,6 +262,11 @@ public class GroupListActivity extends BaseActivity {
                 super.onClick(v);
                 break;
         }
+    }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        EventBus.getDefault().unregister(this);
     }
 }

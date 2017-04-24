@@ -5,6 +5,7 @@ import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.icourt.alpha.entity.bean.AppVersionEntity;
 import com.icourt.alpha.entity.bean.CustomerEntity;
 import com.icourt.alpha.entity.bean.GroupContactBean;
+import com.icourt.alpha.entity.bean.GroupDetailEntity;
 import com.icourt.alpha.entity.bean.GroupEntity;
 import com.icourt.alpha.entity.bean.GroupMemberEntity;
 import com.icourt.alpha.entity.bean.IMSessionDontDisturbEntity;
@@ -233,7 +234,7 @@ public interface AlphaApiService {
      */
     @POST("api/v2/chat/group/mem/deletePersional")
     @FormUrlEncoded
-    Call<ResEntity<JsonElement>> quitGroup(@Field("groupId") String groupId);
+    Call<ResEntity<Integer>> quitGroup(@Field("groupId") String groupId);
 
     /**
      * 根据不同类型获取文件列表
@@ -353,7 +354,7 @@ public interface AlphaApiService {
      * @return
      */
     @GET("api/v2/chat/group/findGroupByTid")
-    Call<ResEntity<JsonElement>> getGroupByTid(@Query("tid") String tid);
+    Call<ResEntity<GroupDetailEntity>> getGroupByTid(@Query("tid") String tid);
 
     /**
      * 获取 讨论组成员列表
