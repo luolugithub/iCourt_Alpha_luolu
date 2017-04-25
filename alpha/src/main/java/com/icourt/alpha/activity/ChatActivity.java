@@ -280,14 +280,15 @@ public class ChatActivity extends ChatBaseActivity {
             }
         });
         mySelectPhotoLayout = new MySelectPhotoLayout(getContext());
-        mySelectPhotoLayout.setOnImageSendListener(new MySelectPhotoLayout.OnImageSendListener() {
+        mySelectPhotoLayout.setOnImageSendListener(new MySelectPhotoLayout.OnBottomChatPanelListener() {
             @Override
-            public void onImageSend(List<String> pics) {
+            public boolean requestImageSend(List<String> pics) {
                 log("---------->onImageSend:" + pics);
+                return true;
             }
 
             @Override
-            public void openPhotos() {
+            public void requestOpenPhotos() {
                 checkAndOpenPhotos();
             }
 
@@ -398,6 +399,19 @@ public class ChatActivity extends ChatBaseActivity {
             public void onRefresh(boolean isPullDown) {
                 super.onRefresh(isPullDown);
                 getData(true);
+            }
+        });
+        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+                super.onScrollStateChanged(recyclerView, newState);
+                switch (newState) {
+                    case RecyclerView.SCROLL_STATE_DRAGGING: {
+                        ekBar.reset();
+                        /*    SystemUtils.hideSoftKeyBoard(getActivity(), etContactName, true);*/
+                    }
+                    break;
+                }
             }
         });
     }

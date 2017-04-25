@@ -177,9 +177,6 @@ public class MyXhsEmoticonsKeyBoard extends sj.keyboard.widget.AutoHeightLayout 
     }
 
 
-    protected void checkVoice() {
-    }
-
     protected void showText() {
         mRlInput.setVisibility(VISIBLE);
     }
@@ -197,6 +194,9 @@ public class MyXhsEmoticonsKeyBoard extends sj.keyboard.widget.AutoHeightLayout 
         } else if (FUNC_TYPE_APPPS == key) {
             mBtnFace.setImageResource(R.mipmap.icon_emoji_normal);
             mBtnMultimedia.setImageResource(R.mipmap.icon_photos_active);
+        } else {
+            mBtnFace.setImageResource(R.mipmap.icon_emoji_normal);
+            mBtnMultimedia.setImageResource(R.mipmap.icon_photos_normal);
         }
     }
 

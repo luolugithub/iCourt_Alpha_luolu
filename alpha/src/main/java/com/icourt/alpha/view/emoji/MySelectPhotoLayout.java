@@ -6,17 +6,21 @@ import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.CheckBox;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.PhotosListAdapter;
+import com.icourt.alpha.entity.bean.LocalImageEntity;
 import com.icourt.alpha.utils.ImageUtils;
 import com.icourt.alpha.utils.SystemUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -29,18 +33,18 @@ import java.util.List;
 public class MySelectPhotoLayout extends LinearLayout implements View.OnClickListener {
 
 
-    public interface OnImageSendListener {
+    public interface OnBottomChatPanelListener {
         /**
          * 多图选中 发送
          *
          * @param pics
          */
-        void onImageSend(List<String> pics);
+        boolean requestImageSend(List<String> pics);
 
         /**
          * 请求打开本地相册
          */
-        void openPhotos();
+        void requestOpenPhotos();
 
         /**
          * 请求文件权限
@@ -48,17 +52,18 @@ public class MySelectPhotoLayout extends LinearLayout implements View.OnClickLis
         void requestFilePermission();
     }
 
-    public void setOnImageSendListener(OnImageSendListener onImageSendListener) {
+    public void setOnImageSendListener(OnBottomChatPanelListener onImageSendListener) {
         this.onImageSendListener = onImageSendListener;
     }
 
-    OnImageSendListener onImageSendListener;
+    OnBottomChatPanelListener onImageSendListener;
     LayoutInflater inflater;
     RecyclerView photoDispRecyclerView;
     TextView chatSelectFromAlbumBtn;
     TextView chatSendPhotoBtn;
     private View view;
     TextView btn_photo_file_permission;
+    CheckBox cb_original_photo;
     PhotosListAdapter photosListAdapter;
 
 
@@ -87,6 +92,7 @@ public class MySelectPhotoLayout extends LinearLayout implements View.OnClickLis
         chatSendPhotoBtn.setOnClickListener(this);
         btn_photo_file_permission = (TextView) view.findViewById(R.id.btn_photo_file_permission);
         btn_photo_file_permission.setOnClickListener(this);
+        cb_original_photo = (CheckBox) view.findViewById(R.id.cb_original_photo);
 
         photoDispRecyclerView.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
         photoDispRecyclerView.setAdapter(photosListAdapter = new PhotosListAdapter());
@@ -108,12 +114,42 @@ public class MySelectPhotoLayout extends LinearLayout implements View.OnClickLis
         switch (v.getId()) {
             case R.id.chat_select_from_album_btn:
                 if (onImageSendListener != null) {
-                    onImageSendListener.openPhotos();
+                    onImageSendListener.requestOpenPhotos();
                 }
                 break;
             case R.id.chat_send_photo_btn:
                 if (onImageSendListener != null) {
-                    onImageSendListener.onImageSend(null);
+                    if (cb_original_photo.isChecked()) {
+                        ArrayList<LocalImageEntity> selectedData = photosListAdapter.getSelectedData();
+                        List<String> photoList = new ArrayList<>();
+                        for (int i = 0; i < selectedData.size(); i++) {
+                            LocalImageEntity localImageEntity = selectedData.get(i);
+                            if (localImageEntity != null) {
+                                photoList.add(TextUtils.isEmpty(localImageEntity.photoPath)
+                                        ? localImageEntity.thumbPath : localImageEntity.photoPath);
+                            }
+                        }
+                        //原图
+                        if (onImageSendListener.requestImageSend(photoList)) {
+                            photosListAdapter.clearSelected();
+                            cb_original_photo.setChecked(false);
+                        }
+                    } else {
+                        ArrayList<LocalImageEntity> selectedData = photosListAdapter.getSelectedData();
+                        List<String> photoList = new ArrayList<>();
+                        for (int i = 0; i < selectedData.size(); i++) {
+                            LocalImageEntity localImageEntity = selectedData.get(i);
+                            if (localImageEntity != null) {
+                                photoList.add(TextUtils.isEmpty(localImageEntity.thumbPath)
+                                        ? localImageEntity.photoPath : localImageEntity.thumbPath);
+                            }
+                        }
+                        //缩略图
+                        if (onImageSendListener.requestImageSend(photoList)) {
+                            photosListAdapter.clearSelected();
+                            cb_original_photo.setChecked(false);
+                        }
+                    }
                 }
                 break;
             case R.id.btn_photo_file_permission:
