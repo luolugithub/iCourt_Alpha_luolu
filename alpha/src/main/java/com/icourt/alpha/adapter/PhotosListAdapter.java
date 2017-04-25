@@ -1,7 +1,7 @@
 package com.icourt.alpha.adapter;
 
 import android.view.View;
-import android.widget.CheckBox;
+import android.widget.CheckedTextView;
 import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
@@ -36,10 +36,11 @@ public class PhotosListAdapter
     public void onBindSelectableHolder(ViewHolder holder, LocalImageEntity localImageEntity, boolean selected, int position) {
         if (localImageEntity == null) return;
         ImageView photo_item_iv = holder.obtainView(R.id.photo_item_iv);
-        CheckBox photo_item_cb = holder.obtainView(R.id.photo_item_cb);
+        CheckedTextView photo_item_cb = holder.obtainView(R.id.photo_item_cb);
         if (GlideUtils.canLoadImage(photo_item_iv.getContext())) {
             Glide.with(photo_item_iv.getContext())
                     .load(localImageEntity.thumbPath)
+                    .dontAnimate()
                     .into(photo_item_iv);
         }
         photo_item_cb.setChecked(selected);
@@ -47,12 +48,10 @@ public class PhotosListAdapter
 
     @Override
     public void onItemClick(BaseRecyclerAdapter adapter, ViewHolder holder, View view, int position) {
-        this.toggleSelected(position);
-    }
-
-    @Override
-    public int getItemCount() {
-        return 20;
-       // return super.getItemCount();
+        PhotosListAdapter.this.toggleSelectedWithoutUpdateUI(position);
+        CheckedTextView photo_item_cb = holder.obtainView(R.id.photo_item_cb);
+        if (photo_item_cb != null) {
+            photo_item_cb.setChecked(isSelected(position));
+        }
     }
 }

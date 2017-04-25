@@ -1,8 +1,12 @@
 package com.icourt.alpha.activity;
 
+import android.Manifest;
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -27,6 +31,7 @@ import com.icourt.alpha.entity.bean.IMBodyEntity;
 import com.icourt.alpha.entity.bean.IMCustomerMessageEntity;
 import com.icourt.alpha.utils.IMUtils;
 import com.icourt.alpha.utils.JsonUtils;
+import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.view.emoji.MySelectPhotoLayout;
 import com.icourt.alpha.view.emoji.MyXhsEmoticonsKeyBoard;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
@@ -42,6 +47,7 @@ import com.sj.emoji.EmojiBean;
 import com.sj.emoji.EmojiDisplay;
 import com.sj.emoji.EmojiSpan;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -49,6 +55,9 @@ import java.util.regex.Matcher;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import cn.finalteam.galleryfinal.FunctionConfig;
+import cn.finalteam.galleryfinal.GalleryFinal;
+import cn.finalteam.galleryfinal.model.PhotoInfo;
 import sj.keyboard.adpater.EmoticonsAdapter;
 import sj.keyboard.adpater.PageSetAdapter;
 import sj.keyboard.data.EmoticonPageEntity;
@@ -70,6 +79,11 @@ import static com.netease.nimlib.sdk.msg.model.QueryDirectionEnum.QUERY_OLD;
  * version 1.0.0
  */
 public class ChatActivity extends ChatBaseActivity {
+    private static final int REQUEST_CODE_CAMERA = 1000;
+    private static final int REQUEST_CODE_GALLERY = 1001;
+
+    private static final int REQ_CODE_PERMISSION_CAMERA = 1100;
+    private static final int REQ_CODE_PERMISSION_ACCESS_FILE = 1101;
 
     private static final String KEY_UID = "key_uid";
     private static final String KEY_TID = "key_tid";
@@ -95,6 +109,28 @@ public class ChatActivity extends ChatBaseActivity {
     RefreshLayout refreshLayout;
     @BindView(R.id.ek_bar)
     MyXhsEmoticonsKeyBoard ekBar;
+    MySelectPhotoLayout mySelectPhotoLayout;
+    private GalleryFinal.OnHanlderResultCallback mOnHanlderResultCallback = new GalleryFinal.OnHanlderResultCallback() {
+        @Override
+        public void onHanlderSuccess(int reqeustCode, List<PhotoInfo> resultList) {
+            if (resultList != null) {
+            /*    List<IMImageBean> imageBeanList = new ArrayList<>();
+                for (PhotoInfo photoInfo : resultList) {
+                    IMImageBean imImage = new IMImageBean();
+                    imImage.setThumbPath(photoInfo.getPhotoPath());
+                    imImage.setPhotoPath(photoInfo.getPhotoPath());
+                    imageBeanList.add(imImage);
+                }
+                sendImageMsg(imageBeanList, false);*/
+            }
+        }
+
+        @Override
+        public void onHanlderFailure(int requestCode, String errorMsg) {
+
+        }
+    };
+
 
     ChatAdapter chatAdapter;
     LinearLayoutManager linearLayoutManager;
@@ -237,7 +273,32 @@ public class ChatActivity extends ChatBaseActivity {
         PageSetAdapter pageSetAdapter = new PageSetAdapter();
         pageSetAdapter.add(xhsPageSetEntity);
         ekBar.setAdapter(pageSetAdapter);
-        ekBar.addFuncView(new MySelectPhotoLayout(getContext()));
+        ekBar.setOnRequestOpenCameraListener(new MyXhsEmoticonsKeyBoard.OnRequestOpenCameraListener() {
+            @Override
+            public void onRequestOpenCamera() {
+                checkAndOpenCamera();
+            }
+        });
+        mySelectPhotoLayout = new MySelectPhotoLayout(getContext());
+        mySelectPhotoLayout.setOnImageSendListener(new MySelectPhotoLayout.OnImageSendListener() {
+            @Override
+            public void onImageSend(List<String> pics) {
+                log("---------->onImageSend:" + pics);
+            }
+
+            @Override
+            public void openPhotos() {
+                checkAndOpenPhotos();
+            }
+
+            @Override
+            public void requestFilePermission() {
+                reqPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                        "我们需要文件读写权限!",
+                        REQ_CODE_PERMISSION_ACCESS_FILE);
+            }
+        });
+        ekBar.addFuncView(mySelectPhotoLayout);
 
 
         class EmojiFilter extends EmoticonFilter {
@@ -286,11 +347,31 @@ public class ChatActivity extends ChatBaseActivity {
         ekBar.getEtChat().addEmoticonFilter(new EmojiFilter());
     }
 
-    private void scrollToBottom() {
+    /**
+     * 打开相机
+     */
+    private void checkAndOpenCamera() {
+        if (checkPermission(Manifest.permission.CAMERA)) {
+            Uri picUri = Uri.fromFile(new File(SystemUtils.getFileDiskCache(getContext()) + File.separator
+                    + System.currentTimeMillis() + ".png"));
+            SystemUtils.doTakePhotoAction(getContext(), picUri, REQUEST_CODE_CAMERA);
+        } else {
+            reqPermission(Manifest.permission.CAMERA, "我们需要拍照权限!", REQ_CODE_PERMISSION_CAMERA);
+        }
     }
 
-    private void OnSendBtnClick(String txt) {
-
+    /**
+     * 打开相册
+     */
+    private void checkAndOpenPhotos() {
+        if (checkPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+            FunctionConfig config = new FunctionConfig.Builder()
+                    .setMutiSelectMaxSize(9)
+                    .build();
+            GalleryFinal.openGalleryMuti(REQUEST_CODE_GALLERY, config, mOnHanlderResultCallback);
+        } else {
+            reqPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, "我们需要文件读写权限!", REQ_CODE_PERMISSION_ACCESS_FILE);
+        }
     }
 
 
@@ -517,6 +598,42 @@ public class ChatActivity extends ChatBaseActivity {
                 break;
             default:
                 super.onClick(v);
+                break;
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        switch (requestCode) {
+            case REQUEST_CODE_CAMERA:
+                if (resultCode == Activity.RESULT_OK && data != null) {
+                    String imageRealPathFromURI = SystemUtils.getImageRealPathFromURI(data.getData(), getContentResolver());
+                    log("------------>uriL:" + imageRealPathFromURI);
+                }
+                break;
+            default:
+                super.onActivityResult(requestCode, resultCode, data);
+                break;
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        switch (requestCode) {
+            case REQ_CODE_PERMISSION_CAMERA:
+                if (grantResults[0] == PackageManager.PERMISSION_DENIED) {
+                    showTopSnackBar("相机权限被拒绝!");
+                }
+                break;
+            case REQ_CODE_PERMISSION_ACCESS_FILE:
+                if (grantResults[0] == PackageManager.PERMISSION_DENIED) {
+                    showTopSnackBar("文件读写权限被拒绝!");
+                } else {
+                    mySelectPhotoLayout.refreshFile();
+                }
+                break;
+            default:
+                super.onRequestPermissionsResult(requestCode, permissions, grantResults);
                 break;
         }
     }

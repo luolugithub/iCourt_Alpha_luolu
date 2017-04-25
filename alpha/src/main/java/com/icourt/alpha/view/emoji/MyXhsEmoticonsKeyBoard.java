@@ -40,6 +40,20 @@ public class MyXhsEmoticonsKeyBoard extends sj.keyboard.widget.AutoHeightLayout 
     public static final int FUNC_TYPE_EMOTION = -1;
     public static final int FUNC_TYPE_APPPS = -2;
 
+
+    public interface OnRequestOpenCameraListener {
+        /**
+         * 请求拍照
+         */
+        void onRequestOpenCamera();
+    }
+
+    public void setOnRequestOpenCameraListener(OnRequestOpenCameraListener onRequestOpenCameraListener) {
+        this.onRequestOpenCameraListener = onRequestOpenCameraListener;
+    }
+
+    OnRequestOpenCameraListener onRequestOpenCameraListener;
+
     protected LayoutInflater mInflater;
 
     protected EmoticonsEditText mEtChat;
@@ -47,6 +61,7 @@ public class MyXhsEmoticonsKeyBoard extends sj.keyboard.widget.AutoHeightLayout 
     protected RelativeLayout mRlInput;
     protected ImageView mBtnMultimedia;
     protected Button mBtnSend;
+    protected ImageView btn_camera;
     protected FuncLayout mLyKvml;
 
     protected EmoticonsFuncView mEmoticonsFuncView;
@@ -78,10 +93,13 @@ public class MyXhsEmoticonsKeyBoard extends sj.keyboard.widget.AutoHeightLayout 
         mBtnMultimedia = ((ImageView) findViewById(R.id.btn_multimedia));
         mBtnSend = ((Button) findViewById(R.id.btn_send));
         mLyKvml = ((FuncLayout) findViewById(R.id.ly_kvml));
+        btn_camera = (ImageView) findViewById(R.id.btn_camera);
 
         mBtnFace.setOnClickListener(this);
         mBtnMultimedia.setOnClickListener(this);
         mEtChat.setOnBackKeyClickListener(this);
+        btn_camera.setOnClickListener(this);
+
     }
 
     protected void initFuncView() {
@@ -125,10 +143,10 @@ public class MyXhsEmoticonsKeyBoard extends sj.keyboard.widget.AutoHeightLayout 
             public void afterTextChanged(Editable s) {
                 if (!TextUtils.isEmpty(s)) {
                     mBtnSend.setVisibility(VISIBLE);
-                    mBtnMultimedia.setVisibility(GONE);
+                    // mBtnMultimedia.setVisibility(GONE);
                     mBtnSend.setBackgroundResource(com.keyboard.view.R.drawable.btn_send_bg);
                 } else {
-                    mBtnMultimedia.setVisibility(VISIBLE);
+                    // mBtnMultimedia.setVisibility(VISIBLE);
                     mBtnSend.setVisibility(GONE);
                 }
             }
@@ -154,7 +172,8 @@ public class MyXhsEmoticonsKeyBoard extends sj.keyboard.widget.AutoHeightLayout 
     public void reset() {
         EmoticonsKeyboardUtils.closeSoftKeyboard(this);
         mLyKvml.hideAllFuncView();
-        mBtnFace.setImageResource(com.keyboard.view.R.drawable.icon_face_nomal);
+        mBtnFace.setImageResource(R.mipmap.icon_emoji_normal);
+        mBtnMultimedia.setImageResource(R.mipmap.icon_photos_normal);
     }
 
 
@@ -173,9 +192,11 @@ public class MyXhsEmoticonsKeyBoard extends sj.keyboard.widget.AutoHeightLayout 
     @Override
     public void onFuncChange(int key) {
         if (FUNC_TYPE_EMOTION == key) {
-            mBtnFace.setImageResource(R.drawable.icon_face_pop);
-        } else {
-            mBtnFace.setImageResource(R.drawable.icon_face_nomal);
+            mBtnFace.setImageResource(R.mipmap.icon_emoji_active);
+            mBtnMultimedia.setImageResource(R.mipmap.icon_photos_normal);
+        } else if (FUNC_TYPE_APPPS == key) {
+            mBtnFace.setImageResource(R.mipmap.icon_emoji_normal);
+            mBtnMultimedia.setImageResource(R.mipmap.icon_photos_active);
         }
     }
 
@@ -233,6 +254,10 @@ public class MyXhsEmoticonsKeyBoard extends sj.keyboard.widget.AutoHeightLayout 
             toggleFuncView(FUNC_TYPE_EMOTION);
         } else if (i == R.id.btn_multimedia) {
             toggleFuncView(FUNC_TYPE_APPPS);
+        } else if (i == R.id.btn_camera) {
+            if (onRequestOpenCameraListener != null) {
+                onRequestOpenCameraListener.onRequestOpenCamera();
+            }
         }
     }
 

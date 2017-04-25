@@ -6,6 +6,7 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.os.PersistableBundle;
 import android.support.annotation.IdRes;
 import android.support.v4.app.Fragment;
 import android.util.SparseArray;
@@ -381,6 +382,11 @@ public class MainActivity extends BaseActivity
                 updateBadge(getTabNewsBadge(), params.getInt("unReadNum"));
             }
         }
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState, PersistableBundle outPersistentState) {
+        //super.onSaveInstanceState(outState, outPersistentState); //解决bug 崩溃后出现重影
     }
 
     @Override

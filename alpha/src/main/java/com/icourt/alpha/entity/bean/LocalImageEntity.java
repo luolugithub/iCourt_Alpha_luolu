@@ -7,7 +7,7 @@ package com.icourt.alpha.entity.bean;
  * date createTime：2017/4/24
  * version 1.0.0
  */
-public class LocalImageEntity {
+public class LocalImageEntity extends PhotoInfo{
     public long size;
     public String thumbPath;
     public String name;
