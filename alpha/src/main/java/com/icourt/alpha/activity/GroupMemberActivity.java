@@ -1,5 +1,6 @@
 package com.icourt.alpha.activity;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -9,6 +10,7 @@ import android.support.design.widget.AppBarLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -16,6 +18,7 @@ import com.andview.refreshview.XRefreshView;
 import com.gjiazhe.wavesidebar.WaveSideBar;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.GroupMemberAdapter;
+import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.entity.bean.GroupMemberEntity;
 import com.icourt.alpha.http.callback.SimpleCallBack;
@@ -43,10 +46,10 @@ import retrofit2.Response;
  * date createTime：2017/4/23
  * version 1.0.0
  */
-public class GroupMemberActivity extends BaseActivity {
+public class GroupMemberActivity extends BaseActivity implements BaseRecyclerAdapter.OnItemClickListener {
     private static final String STRING_TOP = "↑︎";
-    private static final String KEY_TID = "key_tid";
-    private static final String ACTION_SELECT = "key_tid";
+    private static final String KEY_GROUP_ID = "key_tid";
+    private static final String ACTION_SELECT = "action_select";
     private static final String KEY_GROUP_NAME = "key_groupName";
     @BindView(R.id.titleBack)
     ImageView titleBack;
@@ -66,25 +69,26 @@ public class GroupMemberActivity extends BaseActivity {
 
     public static void launch(
             @NonNull Context context,
-            @NonNull String tid,
+            @NonNull String groupId,
             @Nullable String groupName) {
         if (context == null) return;
-        if (TextUtils.isEmpty(tid)) return;
+        if (TextUtils.isEmpty(groupId)) return;
         Intent intent = new Intent(context, GroupMemberActivity.class);
-        intent.putExtra(KEY_TID, tid);
+        intent.putExtra(KEY_GROUP_ID, groupId);
         intent.putExtra(KEY_GROUP_NAME, groupName);
         context.startActivity(intent);
     }
 
     public static void launchSelect(
-            @NonNull Context context,
-            @NonNull String tid) {
+            @NonNull Activity context,
+            @NonNull String groupId,
+            int reqCode) {
         if (context == null) return;
-        if (TextUtils.isEmpty(tid)) return;
+        if (TextUtils.isEmpty(groupId)) return;
         Intent intent = new Intent(context, GroupMemberActivity.class);
-        intent.putExtra(KEY_TID, tid);
+        intent.putExtra(KEY_GROUP_ID, groupId);
         intent.setAction(ACTION_SELECT);
-        context.startActivity(intent);
+        context.startActivityForResult(intent, reqCode);
     }
 
     @Override
@@ -106,6 +110,7 @@ public class GroupMemberActivity extends BaseActivity {
         }
         linearLayoutManager = new LinearLayoutManager(getContext());
         recyclerView.setAdapter(groupMemberAdapter = new GroupMemberAdapter(GroupMemberAdapter.VIEW_TYPE_ITEM));
+        groupMemberAdapter.setOnItemClickListener(this);
         recyclerView.setLayoutManager(linearLayoutManager);
         mDecoration = new SuspensionDecoration(getActivity(), null);
         mDecoration.setColorTitleBg(0xFFf4f4f4);
@@ -148,7 +153,7 @@ public class GroupMemberActivity extends BaseActivity {
     @Override
     protected void getData(final boolean isRefresh) {
         super.getData(isRefresh);
-        getApi().getGroupMemeber(getIntent().getStringExtra(KEY_TID))
+        getApi().getGroupMemeber(getIntent().getStringExtra(KEY_GROUP_ID))
                 .enqueue(new SimpleCallBack<List<GroupMemberEntity>>() {
                     @Override
                     public void onSuccess(Call<ResEntity<List<GroupMemberEntity>>> call, Response<ResEntity<List<GroupMemberEntity>>> response) {
@@ -156,6 +161,15 @@ public class GroupMemberActivity extends BaseActivity {
                         if (response.body().result != null) {
                             IndexUtils.setSuspensions(getContext(), response.body().result);
                             Collections.sort(response.body().result, new PinyinComparator<GroupMemberEntity>());
+
+                            if (TextUtils.equals(ACTION_SELECT, getIntent().getAction())) {
+                                GroupMemberEntity groupMemberEntity = new GroupMemberEntity();
+                                groupMemberEntity.isShowSuspension = false;
+                                groupMemberEntity.name = "所有人";
+                                response.body().result.add(0, groupMemberEntity);
+                            }
+
+
                             groupMemberAdapter.bindData(true, response.body().result);
                             updateIndexBar(response.body().result);
                         }
@@ -196,6 +210,16 @@ public class GroupMemberActivity extends BaseActivity {
         if (refreshLayout != null) {
             refreshLayout.stopRefresh();
             refreshLayout.stopLoadMore();
+        }
+    }
+
+    @Override
+    public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
+        if (TextUtils.equals(getIntent().getAction(), ACTION_SELECT)) {
+            Intent intent = getIntent();
+            intent.putExtra("key_member", groupMemberAdapter.getItem(groupMemberAdapter.getRealPos(position)));
+            setResult(RESULT_OK, intent);
+            finish();
         }
     }
 }

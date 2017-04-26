@@ -16,6 +16,7 @@ import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
 import android.text.Spannable;
 import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -27,6 +28,7 @@ import com.andview.refreshview.XRefreshView;
 import com.google.gson.JsonParseException;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.ChatAdapter;
+import com.icourt.alpha.entity.bean.GroupMemberEntity;
 import com.icourt.alpha.entity.bean.IMBodyEntity;
 import com.icourt.alpha.entity.bean.IMCustomerMessageEntity;
 import com.icourt.alpha.utils.IMUtils;
@@ -48,6 +50,7 @@ import com.sj.emoji.EmojiDisplay;
 import com.sj.emoji.EmojiSpan;
 
 import java.io.File;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -68,6 +71,7 @@ import sj.keyboard.interfaces.EmoticonFilter;
 import sj.keyboard.interfaces.PageViewInstantiateListener;
 import sj.keyboard.utils.EmoticonsKeyboardUtils;
 import sj.keyboard.widget.EmoticonPageView;
+import sj.keyboard.widget.EmoticonsEditText;
 
 import static com.netease.nimlib.sdk.msg.model.QueryDirectionEnum.QUERY_OLD;
 
@@ -81,6 +85,7 @@ import static com.netease.nimlib.sdk.msg.model.QueryDirectionEnum.QUERY_OLD;
 public class ChatActivity extends ChatBaseActivity {
     private static final int REQUEST_CODE_CAMERA = 1000;
     private static final int REQUEST_CODE_GALLERY = 1001;
+    private static final int REQUEST_CODE_AT_MEMBER = 1002;
 
     private static final int REQ_CODE_PERMISSION_CAMERA = 1100;
     private static final int REQ_CODE_PERMISSION_ACCESS_FILE = 1101;
@@ -346,6 +351,36 @@ public class ChatActivity extends ChatBaseActivity {
         }
         // add a filter
         ekBar.getEtChat().addEmoticonFilter(new EmojiFilter());
+        ekBar.getEtChat().addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (s.toString().substring(start).trim().equals("@")) {
+                    openAtMember();
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+        });
+    }
+
+    /**
+     * 打开@某人的界面
+     */
+    private void openAtMember() {
+        if (getIntent().getIntExtra(KEY_CHAT_TYPE, 0) == CHAT_TYPE_TEAM) {
+            GroupMemberActivity.launchSelect(
+                    getActivity(),
+                    getIntent().getStringExtra(KEY_GROUP_ID),
+                    REQUEST_CODE_AT_MEMBER);
+        }
     }
 
     /**
@@ -625,10 +660,33 @@ public class ChatActivity extends ChatBaseActivity {
                     log("------------>uriL:" + imageRealPathFromURI);
                 }
                 break;
+            case REQUEST_CODE_AT_MEMBER:
+                if (resultCode == Activity.RESULT_OK && data != null) {
+                    Serializable key_member = data.getSerializableExtra("key_member");
+                    if (key_member instanceof GroupMemberEntity) {
+                        GroupMemberEntity groupMemberEntity = (GroupMemberEntity) key_member;
+                        appendAtMember(groupMemberEntity);
+                    }
+                }
+                break;
             default:
                 super.onActivityResult(requestCode, resultCode, data);
                 break;
         }
+    }
+
+    /**
+     * 追加@某人
+     *
+     * @param groupMemberEntity
+     */
+    private void appendAtMember(GroupMemberEntity groupMemberEntity) {
+        if (groupMemberEntity == null) return;
+        EmoticonsEditText etChat = ekBar.getEtChat();
+        Editable text = etChat.getText();
+        text.append(String.format("%s ", groupMemberEntity.name));
+        etChat.setText(text);
+        etChat.setSelection(etChat.getText().length());
     }
 
     @Override

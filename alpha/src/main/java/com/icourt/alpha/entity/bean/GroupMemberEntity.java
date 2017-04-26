@@ -7,6 +7,8 @@ import android.text.TextUtils;
 import com.icourt.alpha.view.recyclerviewDivider.ISuspensionAction;
 import com.icourt.alpha.view.recyclerviewDivider.ISuspensionInterface;
 
+import java.io.Serializable;
+
 /**
  * Description
  * Company Beijing icourt
@@ -14,16 +16,17 @@ import com.icourt.alpha.view.recyclerviewDivider.ISuspensionInterface;
  * date createTime：2017/4/23
  * version 1.0.0
  */
-public class GroupMemberEntity implements ISuspensionInterface, ISuspensionAction {
+public class GroupMemberEntity implements ISuspensionInterface, ISuspensionAction, Serializable {
     public String suspensionTag;
     public String memberId;
     public String groupId;
     public String name;
     public String pic;
+    public boolean isShowSuspension=true;
 
     @Override
     public boolean isShowSuspension() {
-        return true;
+        return isShowSuspension;
     }
 
     @NonNull
