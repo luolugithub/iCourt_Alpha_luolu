@@ -22,10 +22,12 @@ import java.util.List;
 import okhttp3.RequestBody;
 import retrofit2.Call;
 import retrofit2.http.Body;
+import retrofit2.http.DELETE;
 import retrofit2.http.Field;
 import retrofit2.http.FormUrlEncoded;
 import retrofit2.http.GET;
 import retrofit2.http.POST;
+import retrofit2.http.PUT;
 import retrofit2.http.Path;
 import retrofit2.http.Query;
 import retrofit2.http.Url;
@@ -136,8 +138,17 @@ public interface AlphaApiService {
      * @param officeId 在登陆信息中有
      * @return
      */
+    @Deprecated
     @GET("api/v1/auth/q/allByOfficeId/{officeId}")
     Call<ResEntity<List<GroupContactBean>>> getGroupContacts(@Path("officeId") String officeId);
+
+    /***
+     * 获取匹配联系人
+     * @param name
+     * @return
+     */
+    @GET("api/v1/auth/up/getAllLawyerByName")
+    Call<ResEntity<List<GroupMemberEntity>>> queryGroupContacts(@Query("name") String name);
 
     /**
      * 获取机器人
@@ -229,6 +240,7 @@ public interface AlphaApiService {
 
     /**
      * 退出讨论组
+     *
      * @param groupId
      * @return
      */
@@ -266,7 +278,7 @@ public interface AlphaApiService {
 
     /**
      * 获取我收藏的消息
-     * [注意] 这个接口只支持post
+     * 文档地址:https://www.showdoc.cc/1620156?page_id=14892528
      *
      * @param pageNum  第n页
      * @param pageSize 每页获取条目数量
@@ -316,9 +328,12 @@ public interface AlphaApiService {
 
     /**
      * 获取我加入的讨论组
+     * <p>
+     * 新版 groupQueryAll()
      *
      * @return
      */
+    @Deprecated
     @GET("api/v2/chat/group/inGroup")
     Call<ResEntity<List<GroupEntity>>> getMyJoinedGroups();
 
@@ -327,6 +342,7 @@ public interface AlphaApiService {
      *
      * @return
      */
+    @Deprecated
     @GET("api/v2/chat/group/LawyerGroup")
     Call<ResEntity<List<GroupEntity>>> getAllGroups();
 
@@ -353,6 +369,7 @@ public interface AlphaApiService {
      * @param tid
      * @return
      */
+    @Deprecated
     @GET("api/v2/chat/group/findGroupByTid")
     Call<ResEntity<GroupDetailEntity>> getGroupByTid(@Query("tid") String tid);
 
@@ -365,4 +382,119 @@ public interface AlphaApiService {
     @GET("api/v2/chat/group/mems/{tid}")
     Call<ResEntity<List<GroupMemberEntity>>> getGroupMemeber(@Path("tid") String tid);
 
+
+    /**
+     * 创建群组
+     * 文档地址:https://www.showdoc.cc/1620156?page_id=14892528
+     *
+     * @return
+     */
+    @POST("http://192.168.20.76:8082/ilaw/api/v3/im/groups")
+    Call<ResEntity<JsonElement>> groupCreate(@Body RequestBody groupInfo);
+
+
+    /**
+     * 更新 群组
+     * 文档地址:https://www.showdoc.cc/1620156?page_id=14892528
+     *
+     * @param groupInfo
+     * @return
+     */
+    @PUT("http://192.168.20.76:8082/ilaw/api/v3/im/groups")
+    Call<ResEntity<JsonElement>> groupUpdate(@Body RequestBody groupInfo);
+
+    /**
+     * 获取所有群组
+     * 文档地址:https://www.showdoc.cc/1620156?page_id=14892528
+     *
+     * @return
+     */
+    @GET("http://192.168.20.76:8082/ilaw/api/v3/im/groups")
+    Call<ResEntity<List<GroupEntity>>> groupQueryAll();
+
+    /**
+     * 获取 群组 详情
+     * 文档地址:https://www.showdoc.cc/1620156?page_id=14892528
+     *
+     * @return
+     */
+    @GET("http://192.168.20.76:8082/ilaw/api/v3/im/groups/{tid}")
+    Call<ResEntity<GroupDetailEntity>> groupQueryDetail(@Path("tid") String tid);
+
+
+    /**
+     * 群组添加成员
+     * 文档地址:https://www.showdoc.cc/1620156?page_id=14892528
+     *
+     * @param groupId 群组id 非云信id
+     * @param members {members":["xx1","xx2","xx3"] msg_id":12321 //当前群组的最新消息id,获取不到则不传}
+     * @return
+     */
+    @POST("http://192.168.20.76:8082/ilaw/api/v3/im/groups/{groupId}/members")
+    Call<ResEntity<JsonElement>> groupMemberAdd(@Path("groupId") String groupId,
+                                                @Body RequestBody members);
+
+    /**
+     * 群组 移除成员
+     * 文档地址:https://www.showdoc.cc/1620156?page_id=14892528
+     *
+     * @param groupId
+     * @param userId
+     * @return
+     */
+    @DELETE("http://192.168.20.76:8082/ilaw/api/v3/im/groups/{groupId}/members/{userId}")
+    Call<ResEntity<JsonElement>> groupMemberRemove(@Path("groupId") String groupId,
+                                                   @Path("groupId") String userId);
+
+
+    /**
+     * 添加 消息
+     * 文档地址:https://www.showdoc.cc/1620156?page_id=14893618
+     *
+     * @param msg 消息体
+     * @return
+     */
+    @POST("http://192.168.20.76:8082/ilaw/api/v3/im/msgs")
+    Call<ResEntity<JsonElement>> msgAdd(@Body RequestBody msg);
+
+    /**
+     * 收藏 消息
+     * 文档地址:https://www.showdoc.cc/1620156?page_id=14893618
+     *
+     * @param msgId
+     * @return
+     */
+    @POST("http://192.168.20.76:8082/ilaw/api/v3/im/msgs/stars/{msgId}")
+    Call<ResEntity<JsonElement>> msgCollect(@Path("msgId") String msgId);
+
+    /**
+     * 取消收藏 消息
+     * 文档地址:https://www.showdoc.cc/1620156?page_id=14893618
+     *
+     * @param msgId
+     * @return
+     */
+    @DELETE("http://192.168.20.76:8082/ilaw/api/v3/im/msgs/stars/{msgId}")
+    Call<ResEntity<JsonElement>> msgCollectCancel(@Path("msgId") String msgId);
+
+
+    /**
+     * 撤回 消息
+     * 文档地址:https://www.showdoc.cc/1620156?page_id=14893618
+     *
+     * @param msgId
+     * @return
+     */
+    @POST("http://192.168.20.76:8082/ilaw/api/v3/im/msgs/{msgId}")
+    Call<ResEntity<JsonElement>> msgRevoke(@Path("msgId") String msgId);
+
+
+    /**
+     * 查询所有联系人【客户端理解为联系人】
+     * 文档地址:https://www.showdoc.cc/1620156?page_id=14893618
+     *
+     * @return
+     */
+    @GET("http://192.168.20.76:8082/ilaw/api/v3/im/users")
+    Call<ResEntity<List<GroupContactBean>>> usersQuery();
 }

@@ -120,7 +120,13 @@ public abstract class BaseDao<T extends RealmModel> implements IRealmDao<T> {
         realm.executeTransactionAsync(new Realm.Transaction() {
             @Override
             public void execute(Realm bgRealm) {
-                bgRealm.copyToRealmOrUpdate(objects);
+                try {
+                    bgRealm.copyToRealmOrUpdate(objects);
+                } catch (io.realm.exceptions.RealmException e) {
+                    e.printStackTrace();
+                } catch (java.lang.IllegalArgumentException e) {
+                    e.printStackTrace();
+                }
             }
         });
     }

@@ -12,7 +12,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 
 import com.icourt.alpha.R;
-import com.icourt.alpha.activity.TestActivity;
+import com.icourt.alpha.activity.GroupCreateActivity;
 import com.icourt.alpha.adapter.baseadapter.BaseFragmentAdapter;
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
@@ -84,7 +84,8 @@ public class TabNewsFragment extends BaseFragment
         super.onClick(v);
         switch (v.getId()) {
             case R.id.ivActionAdd:
-                TestActivity.launch(getContext());
+                GroupCreateActivity.launch(getContext());
+               // TestActivity.launch(getContext());
                 break;
         }
     }

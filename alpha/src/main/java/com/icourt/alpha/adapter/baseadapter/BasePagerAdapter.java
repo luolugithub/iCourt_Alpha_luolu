@@ -109,6 +109,12 @@ public abstract class BasePagerAdapter<T> extends PagerAdapter implements View.O
         return null;
     }
 
+    public void putItem(int pos, T t) {
+        if (pos >= 0 && pos < getCount()) {
+            datas.set(pos, t);
+        }
+    }
+
 
     /**
      * 绑定布局id

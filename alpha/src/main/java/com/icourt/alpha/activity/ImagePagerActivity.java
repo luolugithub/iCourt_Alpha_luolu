@@ -27,6 +27,7 @@ import com.icourt.alpha.utils.FileUtils;
 import com.icourt.alpha.utils.GlideUtils;
 import com.icourt.alpha.utils.Md5Utils;
 import com.icourt.alpha.utils.StringUtils;
+import com.icourt.alpha.utils.UrlUtils;
 import com.icourt.alpha.view.HackyViewPager;
 import com.icourt.alpha.view.TouchImageView;
 import com.icourt.alpha.widget.dialog.BottomActionDialog;
@@ -347,8 +348,26 @@ public class ImagePagerActivity extends BaseUmengActivity implements BasePagerAd
         }
 
         @Override
-        public void bindDataToItem(String s, ViewGroup container, View itemView, int pos) {
-            TouchImageView touchImageView = (TouchImageView) itemView.findViewById(R.id.imageView);
+        public void bindDataToItem(final String s, ViewGroup container, View itemView, final int pos) {
+            final TouchImageView touchImageView = (TouchImageView) itemView.findViewById(R.id.imageView);
+            final TextView img_look_original_tv = (TextView) itemView.findViewById(R.id.img_look_original_tv);
+
+            img_look_original_tv.setVisibility(isLoadOriginalPicUrl(s) ? View.GONE : View.VISIBLE);
+            img_look_original_tv.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    String originalPicUrl = getOriginalPicUrl(s);
+                    putItem(pos, originalPicUrl);
+                    if (GlideUtils.canLoadImage(getContext())) {
+                        img_look_original_tv.setVisibility(View.GONE);
+                        log("---------->load Original url:pos:" + pos + "  url:" + s);
+                        Glide.with(getContext())
+                                .load(originalPicUrl)
+                                .thumbnail(0.5f)//先拿一半
+                                .into(touchImageView);
+                    }
+                }
+            });
             if (GlideUtils.canLoadImage(getContext())) {
                 log("---------->load url:pos:" + pos + "  url:" + s);
                 Glide.with(getContext())
@@ -356,6 +375,32 @@ public class ImagePagerActivity extends BaseUmengActivity implements BasePagerAd
                         .thumbnail(0.5f)//先拿一半
                         .into(touchImageView);
             }
+        }
+
+        /**
+         * 是否加载的高清原图 包含sfile 并且不含width
+         * https://alphalawyer.cn/ilaw/api/v2/file/download?sFileId=64880&token=xxx&width=480;
+         *
+         * @return
+         */
+        private boolean isLoadOriginalPicUrl(String url) {
+            if (!TextUtils.isEmpty(url)) {
+                if (!TextUtils.isEmpty(UrlUtils.getParam("sFileId", url))
+                        && !TextUtils.isEmpty(UrlUtils.getParam("width", url))) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        /**
+         * 获取原图地址
+         *
+         * @param url
+         * @return
+         */
+        private String getOriginalPicUrl(String url) {
+            return UrlUtils.removeParam("width", url);
         }
 
         @Override

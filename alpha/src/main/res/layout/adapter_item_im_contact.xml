@@ -15,6 +15,13 @@
         android:paddingBottom="10dp"
         android:paddingTop="10dp">
 
+        <CheckedTextView
+            android:id="@+id/ctv_contact"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_margin="10dp"
+            android:background="@drawable/sl_checkbox" />
+
         <ImageView
             android:id="@+id/iv_contact_icon"
             android:layout_width="32dp"

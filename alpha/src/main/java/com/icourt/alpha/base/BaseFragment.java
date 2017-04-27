@@ -25,6 +25,7 @@ import com.icourt.alpha.interfaces.ProgressHUDImp;
 import com.icourt.alpha.utils.LogUtils;
 import com.icourt.alpha.utils.LoginInfoUtils;
 import com.icourt.alpha.utils.SnackbarUtils;
+import com.icourt.alpha.utils.ToastUtils;
 import com.kaopiz.kprogresshud.KProgressHUD;
 
 /**
@@ -198,7 +199,7 @@ public abstract class BaseFragment
      */
     @UiThread
     protected final void showToast(@NonNull CharSequence notice) {
-
+        ToastUtils.showToast(notice);
     }
 
     /**
@@ -209,7 +210,7 @@ public abstract class BaseFragment
      */
     @UiThread
     protected final void showToast(@StringRes int resId) {
-        this.showToast(getString(resId));
+        ToastUtils.showToast(resId);
     }
 
     /**

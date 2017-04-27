@@ -18,11 +18,11 @@ public class ResEntity<T> {
     private static final String FIELD_MESSAGE = "message";
     private static final String FIELD_RESULT = "result";
 
-    @SerializedName(value = FIELD_MESSAGE, alternate = {"resultMess"})
+    @SerializedName(value = FIELD_MESSAGE, alternate = {"resultMess", "resultMsg"})
     public String message;
 
     @JsonAdapter(BooleanTypeAdapter.class)
-    @SerializedName(value = FIELD_SUCCEED, alternate = {"resultCode"})
+    @SerializedName(value = FIELD_SUCCEED, alternate = {"resultCode", "isSuccess"})
     public boolean succeed;
 
     @SerializedName(value = FIELD_RESULT, alternate = {"data"})

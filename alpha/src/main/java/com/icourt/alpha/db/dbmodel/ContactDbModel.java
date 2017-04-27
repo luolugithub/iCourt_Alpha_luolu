@@ -44,7 +44,6 @@ public class ContactDbModel extends RealmObject
     @Override
     public GroupContactBean convert2Model() {
         return new GroupContactBean(userId,
-                userName,
                 name,
                 phone,
                 email,

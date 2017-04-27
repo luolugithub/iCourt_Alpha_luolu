@@ -1,6 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.icourt.alpha.view.TouchImageView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/imageView"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:src="@drawable/bg_gf_crop_texture" />
+    android:layout_height="match_parent">
+
+    <com.icourt.alpha.view.TouchImageView xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/imageView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:src="@drawable/bg_gf_crop_texture" />
+
+    <TextView
+        android:id="@+id/img_look_original_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|center"
+        android:padding="15dp"
+        android:text="查看原图"
+        android:visibility="gone"
+        android:textColor="@android:color/white"
+        android:textSize="@dimen/alpha_font_size_mini" />
+</FrameLayout>

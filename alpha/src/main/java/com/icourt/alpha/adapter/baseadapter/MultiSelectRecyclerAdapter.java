@@ -135,8 +135,9 @@ public abstract class MultiSelectRecyclerAdapter<T> extends BaseArrayRecyclerAda
      */
     public boolean toggleSelected(int pos) {
         if (pos >= 0 && pos < getItemCount()) {
-            boolean itemSelected = selectedArray.get(pos, false);
-            selectedArray.put(pos, !itemSelected);
+            int headerCount = getParentHeaderFooterAdapter() != null ? getParentHeaderFooterAdapter().getHeaderCount() : 0;
+            boolean itemSelected = selectedArray.get(pos - headerCount, false);
+            selectedArray.put(pos - headerCount, !itemSelected);
             this.notifyItemChanged(pos);
             return true;
         }

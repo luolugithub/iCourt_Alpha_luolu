@@ -73,6 +73,14 @@ public class GroupListActivity extends BaseActivity implements BaseRecyclerAdapt
 
     }
 
+    public static void launch(@NonNull Context context, @GroupQueryType int type) {
+        if (context == null) return;
+        Intent intent = new Intent(context, GroupListActivity.class);
+        intent.putExtra(KEY_GROUP_QUERY_TYPE, type);
+        context.startActivity(intent);
+    }
+
+
     @BindView(R.id.titleBack)
     ImageView titleBack;
     @BindView(R.id.titleContent)
@@ -87,13 +95,6 @@ public class GroupListActivity extends BaseActivity implements BaseRecyclerAdapt
     GroupAdapter groupAdapter;
     SuspensionDecoration mDecoration;
     LinearLayoutManager linearLayoutManager;
-
-    public static void launch(@NonNull Context context, @GroupQueryType int type) {
-        if (context == null) return;
-        Intent intent = new Intent(context, GroupListActivity.class);
-        intent.putExtra(KEY_GROUP_QUERY_TYPE, type);
-        context.startActivity(intent);
-    }
 
     @GroupQueryType
     private int getGroupQueryType() {
@@ -196,10 +197,12 @@ public class GroupListActivity extends BaseActivity implements BaseRecyclerAdapt
         final Call<ResEntity<List<GroupEntity>>> groupsCall;
         switch (getGroupQueryType()) {
             case GROUP_TYPE_MY_JOIN:
-                groupsCall = getApi().getMyJoinedGroups();
+                //groupsCall = getApi().getMyJoinedGroups();
+                groupsCall = getApi().groupQueryAll();
                 break;
             default:
-                groupsCall = getApi().getAllGroups();
+                //groupsCall = getApi().getAllGroups();
+                groupsCall = getApi().groupQueryAll();
                 break;
         }
         groupsCall.enqueue(new SimpleCallBack<List<GroupEntity>>() {

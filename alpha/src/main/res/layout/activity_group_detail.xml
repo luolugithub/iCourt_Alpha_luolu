@@ -258,7 +258,7 @@
             android:layout_height="38dp"
             android:background="?attr/selectableItemBackground"
             android:padding="10dp"
-            android:src="@mipmap/topbar_pin" />
+            android:src="@mipmap/ic_settings" />
     </LinearLayout>
 
 </FrameLayout>

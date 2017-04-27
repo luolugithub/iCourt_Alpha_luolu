@@ -21,7 +21,7 @@ public class GroupEntity implements ISuspensionInterface, ISuspensionAction, Ser
     public String id;
     public String tid;
     public String name;
-    public String description;
+    public String intro;
 
     @Override
     public boolean isShowSuspension() {

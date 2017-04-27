@@ -1,5 +1,6 @@
 package com.icourt.alpha.activity;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -21,6 +22,7 @@ import com.google.gson.JsonElement;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.GroupMemberAdapter;
 import com.icourt.alpha.base.BaseActivity;
+import com.icourt.alpha.constants.Const;
 import com.icourt.alpha.entity.bean.GroupDetailEntity;
 import com.icourt.alpha.entity.bean.GroupEntity;
 import com.icourt.alpha.entity.bean.GroupMemberEntity;
@@ -55,6 +57,8 @@ public class GroupDetailActivity extends BaseActivity {
     private static final String KEY_GROUP_ID = "key_group_id";
     private static final String KEY_TID = "key_tid";//云信id
     private static final String KEY_GROUP = "key_group";
+
+    private static final int REQ_CODE_INVITATION_MEMBER = 1002;
 
     @BindView(R.id.group_name_tv)
     TextView groupNameTv;
@@ -121,36 +125,46 @@ public class GroupDetailActivity extends BaseActivity {
         setContentView(R.layout.activity_group_detail);
         ButterKnife.bind(this);
         initView();
-        getData(true);
     }
 
     @Override
     protected void initView() {
         super.initView();
+        ImageView titleActionImage = getTitleActionImage();
+        setViewVisible(titleActionImage, false);
         Serializable serializableExtra = getIntent().getSerializableExtra(KEY_GROUP);
         if (serializableExtra instanceof GroupEntity) {
             groupEntity = (GroupEntity) serializableExtra;
             groupNameTv.setText(groupEntity.name);
-            groupDescTv.setText(groupEntity.description);
+            groupDescTv.setText(groupEntity.intro);
         }
         groupMemberRecyclerView.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
-        groupMemberRecyclerView.setAdapter(groupMemberAdapter = new GroupMemberAdapter(GroupMemberAdapter.VIEW_TYPE_GRID));
+        groupMemberRecyclerView.setAdapter(groupMemberAdapter = new GroupMemberAdapter(Const.VIEW_TYPE_GRID));
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        getData(true);
     }
 
     @Override
     protected void getData(boolean isRefresh) {
         super.getData(isRefresh);
         showLoadingDialog(null);
-        getApi().getGroupByTid(getIntent().getStringExtra(KEY_TID))
+        getApi().groupQueryDetail(getIntent().getStringExtra(KEY_TID))
                 .enqueue(new SimpleCallBack<GroupDetailEntity>() {
                     @Override
                     public void onSuccess(Call<ResEntity<GroupDetailEntity>> call, Response<ResEntity<GroupDetailEntity>> response) {
                         dismissLoadingDialog();
                         if (response.body().result != null) {
                             groupNameTv.setText(response.body().result.name);
-                            groupDescTv.setText(response.body().result.description);
+                            groupDescTv.setText(response.body().result.intro);
                             groupJoinOrQuitBtn.setSelected(response.body().result.isJoin == 1);
                             groupJoinOrQuitBtn.setText(groupJoinOrQuitBtn.isSelected() ? "退出讨论组" : "加入讨论组");
+                            ImageView titleActionImage = getTitleActionImage();
+
+                            setViewVisible(titleActionImage, TextUtils.equals(getLoginUserId(), response.body().result.admin_id));
                         }
                     }
 
@@ -200,9 +214,9 @@ public class GroupDetailActivity extends BaseActivity {
                 showTopSnackBar("未完成");
                 break;
             case R.id.group_member_invite_tv:
-                GroupMemberActivity.launch(getContext(),
+                GroupMemberActivity.launchInvitation(getContext(),
                         getIntent().getStringExtra(KEY_GROUP_ID),
-                        groupEntity != null ? groupEntity.name : null);
+                        REQ_CODE_INVITATION_MEMBER);
                 break;
             case R.id.group_member_arrow_iv:
                 GroupMemberActivity.launch(getContext(),
@@ -366,5 +380,18 @@ public class GroupDetailActivity extends BaseActivity {
                         dismissLoadingDialog();
                     }
                 });
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        switch (requestCode) {
+            case REQ_CODE_INVITATION_MEMBER:
+                if (requestCode == Activity.RESULT_OK && data != null) {
+                }
+                break;
+            default:
+                super.onActivityResult(requestCode, resultCode, data);
+                break;
+        }
     }
 }

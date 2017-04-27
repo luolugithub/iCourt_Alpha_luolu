@@ -21,8 +21,6 @@ import com.icourt.alpha.utils.IMUtils;
 import com.icourt.alpha.utils.SpannableUtils;
 import com.icourt.alpha.utils.SystemUtils;
 
-import static com.icourt.alpha.utils.LoginInfoUtils.getUserToken;
-
 /**
  * Description
  * Company Beijing icourt
@@ -153,7 +151,7 @@ public class ImUserMessageDetailAdapter extends BaseArrayRecyclerAdapter<IMStrin
         if (GlideUtils.canLoadImage(file_img.getContext())) {
             Glide.with(file_img.getContext())
                     .load(getCombPicUrl((imFileEntity != null && imFileEntity.content != null)
-                            ? imFileEntity.content.path : ""))
+                            ? imFileEntity.content.path : "", "640"))
                     .placeholder(R.drawable.bg_round_rect_gray)
                     .into(file_img);
         }
@@ -192,6 +190,16 @@ public class ImUserMessageDetailAdapter extends BaseArrayRecyclerAdapter<IMStrin
                 ImageView file_img = holder.obtainView(R.id.file_img);
                 try {
                     Glide.clear(file_img);
+//                    try {-
+//                        Glide.with(file_img.getContext())
+//                                .load("")
+//                                .downloadOnly(Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL)
+//                                .get();
+//                    } catch (InterruptedException e) {
+//                        e.printStackTrace();
+//                    } catch (ExecutionException e) {
+//                        e.printStackTrace();
+//                    }
                 } catch (IllegalArgumentException e) {
                     e.printStackTrace();
                 }
@@ -206,7 +214,7 @@ public class ImUserMessageDetailAdapter extends BaseArrayRecyclerAdapter<IMStrin
      * @param path
      * @return
      */
-    private String getCombPicUrl(String path) {
+    private String getCombPicUrl(String path, String width) {
         StringBuilder urlBuilder = new StringBuilder(BuildConfig.HOST_URL);
         urlBuilder.append(Const.HTTP_DOWNLOAD_FILE);
         urlBuilder.append("?sFileId=");
@@ -214,7 +222,7 @@ public class ImUserMessageDetailAdapter extends BaseArrayRecyclerAdapter<IMStrin
         urlBuilder.append("&token=");
         urlBuilder.append(loginToken);
         urlBuilder.append("&width=");
-        urlBuilder.append("480");
+        urlBuilder.append("640");
         return urlBuilder.toString();
     }
 
@@ -226,26 +234,11 @@ public class ImUserMessageDetailAdapter extends BaseArrayRecyclerAdapter<IMStrin
                 IMStringWrapEntity item = getItem(getRealPos(position));
                 if (item != null && item.content != null) {
                     ImagePagerActivity.launch(view.getContext(),
-                            new String[]{getOriginalPicUrl(item.content.path)});
+                            new String[]{getCombPicUrl(item.content.path, "1920")});
                 }
                 break;
         }
     }
 
-    /**
-     * 获取原图地址
-     *
-     * @param path
-     * @return
-     */
-    private String getOriginalPicUrl(String path) {
-        StringBuilder urlBuilder = new StringBuilder(BuildConfig.HOST_URL);
-        urlBuilder.append(Const.HTTP_DOWNLOAD_FILE);
-        urlBuilder.append("?sFileId=");
-        urlBuilder.append(path);
-        urlBuilder.append("&token=");
-        urlBuilder.append(getUserToken());
-        return urlBuilder.toString();
-    }
 
 }

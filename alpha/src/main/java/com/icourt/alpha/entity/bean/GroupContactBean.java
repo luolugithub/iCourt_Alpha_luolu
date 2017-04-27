@@ -3,6 +3,7 @@ package com.icourt.alpha.entity.bean;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
+import com.google.gson.annotations.SerializedName;
 import com.icourt.alpha.db.convertor.IConvertModel;
 import com.icourt.alpha.db.dbmodel.ContactDbModel;
 import com.icourt.alpha.view.recyclerviewDivider.ISuspensionAction;
@@ -21,8 +22,9 @@ public class GroupContactBean
         implements IConvertModel<ContactDbModel>, Serializable, ISuspensionInterface, ISuspensionAction {
 
     public String suspensionTag;
+
+    @SerializedName(value = "userId",alternate ="user_id" )
     public String userId;
-    public String userName;
     public String name;
     public String phone;
     public String email;
@@ -32,9 +34,8 @@ public class GroupContactBean
     public GroupContactBean() {
     }
 
-    public GroupContactBean(String userId, String userName, String name, String phone, String email, String pic, int robot) {
+    public GroupContactBean(String userId, String name, String phone, String email, String pic, int robot) {
         this.userId = userId;
-        this.userName = userName;
         this.name = name;
         this.phone = phone;
         this.email = email;
@@ -46,7 +47,6 @@ public class GroupContactBean
     public String toString() {
         return "GroupContactBean{" +
                 "userId='" + userId + '\'' +
-                ", userName='" + userName + '\'' +
                 ", name='" + name + '\'' +
                 ", phone='" + phone + '\'' +
                 ", email='" + email + '\'' +
@@ -60,7 +60,7 @@ public class GroupContactBean
     public ContactDbModel convert2Model() {
         if (TextUtils.isEmpty(userId)) return null;
         return new ContactDbModel(userId,
-                userName,
+                null,
                 name,
                 phone,
                 email,
@@ -76,7 +76,6 @@ public class GroupContactBean
     @NonNull
     @Override
     public String getSuspensionTag() {
-
         return TextUtils.isEmpty(suspensionTag) ? "#" : suspensionTag;
     }
 

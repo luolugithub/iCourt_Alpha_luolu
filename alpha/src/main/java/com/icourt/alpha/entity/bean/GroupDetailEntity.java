@@ -10,4 +10,6 @@ package com.icourt.alpha.entity.bean;
 public class GroupDetailEntity extends GroupEntity {
     public int isJoin;
     public int count;
+    public boolean is_private;
+    public String admin_id;
 }

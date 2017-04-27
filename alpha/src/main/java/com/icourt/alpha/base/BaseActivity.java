@@ -33,6 +33,7 @@ import com.icourt.alpha.utils.LogUtils;
 import com.icourt.alpha.utils.LoginInfoUtils;
 import com.icourt.alpha.utils.SnackbarUtils;
 import com.icourt.alpha.utils.SystemUtils;
+import com.icourt.alpha.utils.ToastUtils;
 import com.kaopiz.kprogresshud.KProgressHUD;
 
 import static com.umeng.socialize.utils.DeviceConfig.context;
@@ -50,6 +51,7 @@ public abstract class BaseActivity
         implements ProgressHUDImp
         , View.OnClickListener, IContextResourcesImp {
 
+    public static final String KEY_ACTIVITY_RESULT = "ActivityResult";
 
     /**
      * @return 上下文
@@ -217,7 +219,7 @@ public abstract class BaseActivity
      */
     @UiThread
     protected final void showToast(@NonNull CharSequence notice) {
-        //TODO
+        ToastUtils.showToast(notice);
     }
 
     /**
@@ -228,7 +230,7 @@ public abstract class BaseActivity
      */
     @UiThread
     protected final void showToast(@StringRes int resId) {
-        this.showToast(getString(resId));
+        ToastUtils.showToast(resId);
     }
 
     /**

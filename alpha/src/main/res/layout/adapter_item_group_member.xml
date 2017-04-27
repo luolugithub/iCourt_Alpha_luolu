@@ -6,6 +6,14 @@
     android:orientation="horizontal"
     android:padding="10dp">
 
+    <CheckedTextView
+        android:id="@+id/member_selected_ctv"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:layout_marginRight="10dp"
+        android:background="@drawable/sl_checkbox"
+        android:button="@null" />
+
     <ImageView
         android:id="@+id/member_icon_iv"
         android:layout_width="30dp"

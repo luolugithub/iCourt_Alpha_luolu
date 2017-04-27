@@ -48,10 +48,10 @@ public class PhotosListAdapter
 
     @Override
     public void onItemClick(BaseRecyclerAdapter adapter, ViewHolder holder, View view, int position) {
-        PhotosListAdapter.this.toggleSelectedWithoutUpdateUI(position);
-        CheckedTextView photo_item_cb = holder.obtainView(R.id.photo_item_cb);
+        PhotosListAdapter.this.toggleSelected(position);
+   /*     CheckedTextView photo_item_cb = holder.obtainView(R.id.photo_item_cb);
         if (photo_item_cb != null) {
             photo_item_cb.setChecked(isSelected(position));
-        }
+        }*/
     }
 }

@@ -40,6 +40,6 @@ public class SearchEngineAdapter extends MultiSelectRecyclerAdapter<SearchEngine
 
     @Override
     public void onItemClick(BaseRecyclerAdapter adapter, ViewHolder holder, View view, int position) {
-        toggleSelected(getRealPos(position));
+        toggleSelected(position);
     }
 }
