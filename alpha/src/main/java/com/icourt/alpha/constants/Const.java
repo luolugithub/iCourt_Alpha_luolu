@@ -37,4 +37,16 @@ public class Const {
     @Retention(RetentionPolicy.SOURCE)
     public @interface ChoiceType {
     }
+
+
+    public static final int CHAT_TYPE_P2P = 0;//单聊
+    public static final int CHAT_TYPE_TEAM = 1;//群聊
+
+
+    @IntDef({CHAT_TYPE_P2P,
+            CHAT_TYPE_TEAM})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface CHAT_TYPE {
+
+    }
 }

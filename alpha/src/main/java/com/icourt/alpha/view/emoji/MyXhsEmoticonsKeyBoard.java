@@ -43,6 +43,13 @@ public class MyXhsEmoticonsKeyBoard extends sj.keyboard.widget.AutoHeightLayout 
 
     public interface OnRequestOpenCameraListener {
         /**
+         * 请求发送
+         *
+         * @param inputText
+         */
+        void onRequestSendText(EmoticonsEditText inputText);
+
+        /**
          * 请求拍照
          */
         void onRequestOpenCamera();
@@ -92,6 +99,7 @@ public class MyXhsEmoticonsKeyBoard extends sj.keyboard.widget.AutoHeightLayout 
         mRlInput = ((RelativeLayout) findViewById(R.id.rl_input));
         mBtnMultimedia = ((ImageView) findViewById(R.id.btn_multimedia));
         mBtnSend = ((Button) findViewById(R.id.btn_send));
+        mBtnSend.setOnClickListener(this);
         mLyKvml = ((FuncLayout) findViewById(R.id.ly_kvml));
         btn_camera = (ImageView) findViewById(R.id.btn_camera);
 
@@ -257,6 +265,10 @@ public class MyXhsEmoticonsKeyBoard extends sj.keyboard.widget.AutoHeightLayout 
         } else if (i == R.id.btn_camera) {
             if (onRequestOpenCameraListener != null) {
                 onRequestOpenCameraListener.onRequestOpenCamera();
+            }
+        } else if (i == R.id.btn_send) {
+            if (onRequestOpenCameraListener != null) {
+                onRequestOpenCameraListener.onRequestSendText(mEtChat);
             }
         }
     }

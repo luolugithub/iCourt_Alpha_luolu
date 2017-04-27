@@ -25,18 +25,24 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.andview.refreshview.XRefreshView;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.ChatAdapter;
+import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.icourt.alpha.entity.bean.GroupMemberEntity;
 import com.icourt.alpha.entity.bean.IMBodyEntity;
 import com.icourt.alpha.entity.bean.IMCustomerMessageEntity;
+import com.icourt.alpha.entity.bean.MsgPostEntity;
+import com.icourt.alpha.http.callback.SimpleCallBack;
+import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.IMUtils;
 import com.icourt.alpha.utils.JsonUtils;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.view.emoji.MySelectPhotoLayout;
 import com.icourt.alpha.view.emoji.MyXhsEmoticonsKeyBoard;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
+import com.icourt.api.RequestUtils;
 import com.netease.nimlib.sdk.NIMClient;
 import com.netease.nimlib.sdk.RequestCallback;
 import com.netease.nimlib.sdk.msg.MessageBuilder;
@@ -61,6 +67,8 @@ import butterknife.ButterKnife;
 import cn.finalteam.galleryfinal.FunctionConfig;
 import cn.finalteam.galleryfinal.GalleryFinal;
 import cn.finalteam.galleryfinal.model.PhotoInfo;
+import retrofit2.Call;
+import retrofit2.Response;
 import sj.keyboard.adpater.EmoticonsAdapter;
 import sj.keyboard.adpater.PageSetAdapter;
 import sj.keyboard.data.EmoticonPageEntity;
@@ -73,6 +81,8 @@ import sj.keyboard.utils.EmoticonsKeyboardUtils;
 import sj.keyboard.widget.EmoticonPageView;
 import sj.keyboard.widget.EmoticonsEditText;
 
+import static com.icourt.alpha.constants.Const.CHAT_TYPE_P2P;
+import static com.icourt.alpha.constants.Const.CHAT_TYPE_TEAM;
 import static com.netease.nimlib.sdk.msg.model.QueryDirectionEnum.QUERY_OLD;
 
 /**
@@ -280,6 +290,14 @@ public class ChatActivity extends ChatBaseActivity {
         ekBar.setAdapter(pageSetAdapter);
         ekBar.setOnRequestOpenCameraListener(new MyXhsEmoticonsKeyBoard.OnRequestOpenCameraListener() {
             @Override
+            public void onRequestSendText(EmoticonsEditText inputText) {
+                if (TextUtils.isEmpty(inputText.getText())) {
+                    return;
+                }
+                sendTextMsg(inputText.getText().toString());
+            }
+
+            @Override
             public void onRequestOpenCamera() {
                 checkAndOpenCamera();
             }
@@ -369,6 +387,39 @@ public class ChatActivity extends ChatBaseActivity {
 
             }
         });
+    }
+
+    /**
+     * 发送文本吧消息
+     *
+     * @param text
+     */
+    private void sendTextMsg(String text) {
+        AlphaUserInfo loginUserInfo = getLoginUserInfo();
+        if (loginUserInfo == null) return;
+        MsgPostEntity msgPostEntity = MsgPostEntity.createTextMsg(loginUserInfo.getName()
+                , getIntent().getStringExtra(KEY_TID)
+                , text);
+        String jsonBody = null;
+        try {
+            jsonBody = JsonUtils.Gson2String(msgPostEntity);
+        } catch (JsonParseException e) {
+            e.printStackTrace();
+        }
+        showLoadingDialog(null);
+        getApi().msgAdd(RequestUtils.createJsonBody(jsonBody))
+                .enqueue(new SimpleCallBack<JsonElement>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
+                        dismissLoadingDialog();
+                    }
+
+                    @Override
+                    public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
+                        super.onFailure(call, t);
+                        dismissLoadingDialog();
+                    }
+                });
     }
 
     /**

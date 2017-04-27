@@ -1,7 +1,6 @@
 package com.icourt.alpha.activity;
 
 import android.os.Bundle;
-import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
 
 import com.icourt.alpha.base.BaseActivity;
@@ -13,8 +12,6 @@ import com.netease.nimlib.sdk.msg.MsgServiceObserve;
 import com.netease.nimlib.sdk.msg.model.IMMessage;
 import com.netease.nimlib.sdk.msg.model.MessageReceipt;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
 import java.util.List;
 
 /**
@@ -25,16 +22,6 @@ import java.util.List;
  * version 1.0.0
  */
 public abstract class ChatBaseActivity extends BaseActivity implements INIMessageListener {
-    public static final int CHAT_TYPE_P2P = 1;//单聊
-    public static final int CHAT_TYPE_TEAM = 2;//群聊
-
-
-    @IntDef({CHAT_TYPE_P2P,
-            CHAT_TYPE_TEAM})
-    @Retention(RetentionPolicy.SOURCE)
-    public @interface CHAT_TYPE {
-
-    }
 
     /**
      * 收到消息
