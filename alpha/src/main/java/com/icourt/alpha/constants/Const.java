@@ -49,4 +49,29 @@ public class Const {
     public @interface CHAT_TYPE {
 
     }
+
+
+    //文档地址 https://www.showdoc.cc/1620156?page_id=14893614
+    public static final int MSG_TYPE_TXT = 0;     //文本消息
+    public static final int MSG_TYPE_FILE = 1;    //文件消息
+    public static final int MSG_TYPE_DING = 2;    //钉消息
+    public static final int MSG_TYPE_AT = 3;      //@消息
+    public static final int MSG_TYPE_SYS = 4;     //系统辅助消息
+    public static final int MSG_TYPE_LINK = 5;    //链接消息
+    public static final int MSG_TYPE_ALPHA = 6;   //alpha系统内业务消息
+    public static final int MSG_TYPE_VOICE = 7;   //文件消息
+
+
+    @IntDef({MSG_TYPE_TXT,
+            MSG_TYPE_FILE,
+            MSG_TYPE_DING,
+            MSG_TYPE_AT,
+            MSG_TYPE_SYS,
+            MSG_TYPE_LINK,
+            MSG_TYPE_ALPHA,
+            MSG_TYPE_VOICE})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface MSG_TYPE {
+
+    }
 }

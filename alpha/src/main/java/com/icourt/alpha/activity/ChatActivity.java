@@ -59,7 +59,9 @@ import java.io.File;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 
 import butterknife.BindView;
@@ -67,6 +69,7 @@ import butterknife.ButterKnife;
 import cn.finalteam.galleryfinal.FunctionConfig;
 import cn.finalteam.galleryfinal.GalleryFinal;
 import cn.finalteam.galleryfinal.model.PhotoInfo;
+import okhttp3.RequestBody;
 import retrofit2.Call;
 import retrofit2.Response;
 import sj.keyboard.adpater.EmoticonsAdapter;
@@ -125,6 +128,7 @@ public class ChatActivity extends ChatBaseActivity {
     @BindView(R.id.ek_bar)
     MyXhsEmoticonsKeyBoard ekBar;
     MySelectPhotoLayout mySelectPhotoLayout;
+    AlphaUserInfo loginUserInfo;
     private GalleryFinal.OnHanlderResultCallback mOnHanlderResultCallback = new GalleryFinal.OnHanlderResultCallback() {
         @Override
         public void onHanlderSuccess(int reqeustCode, List<PhotoInfo> resultList) {
@@ -307,6 +311,14 @@ public class ChatActivity extends ChatBaseActivity {
             @Override
             public boolean requestImageSend(List<String> pics) {
                 log("---------->onImageSend:" + pics);
+                if (pics != null && pics.size() > 0) {
+                    for (int i = 0; i < pics.size(); i++) {
+                        String path = pics.get(i);
+                        if (!TextUtils.isEmpty(path)) {
+                            uploadFile2Sfile(new File(path));
+                        }
+                    }
+                }
                 return true;
             }
 
@@ -395,11 +407,59 @@ public class ChatActivity extends ChatBaseActivity {
      * @param text
      */
     private void sendTextMsg(String text) {
-        AlphaUserInfo loginUserInfo = getLoginUserInfo();
         if (loginUserInfo == null) return;
         MsgPostEntity msgPostEntity = MsgPostEntity.createTextMsg(loginUserInfo.getName()
                 , getIntent().getStringExtra(KEY_TID)
                 , text);
+        String jsonBody = null;
+        try {
+            jsonBody = JsonUtils.Gson2String(msgPostEntity);
+        } catch (JsonParseException e) {
+            e.printStackTrace();
+        }
+        showLoadingDialog(null);
+        getApi().msgAdd(RequestUtils.createJsonBody(jsonBody))
+                .enqueue(new SimpleCallBack<JsonElement>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
+                        dismissLoadingDialog();
+                    }
+
+                    @Override
+                    public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
+                        super.onFailure(call, t);
+                        dismissLoadingDialog();
+                    }
+                });
+    }
+
+
+    private void uploadFile2Sfile(File file) {
+        if (file != null && file.exists()) {
+            Map<String, RequestBody> photos = new HashMap<>();
+            photos.put("file\"; filename=\"icon.png", RequestUtils.createImgBody(file));
+            getApi().groupUploadFile(getIntent().getStringExtra(KEY_GROUP_ID), photos)
+                    .enqueue(new SimpleCallBack<JsonElement>() {
+                        @Override
+                        public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
+                            sendFileMsg("");
+                        }
+                    });
+        } else {
+            showTopSnackBar("文件已不存在!");
+        }
+    }
+
+    /**
+     * 发送文件消息
+     *
+     * @param url
+     */
+    private void sendFileMsg(String url) {
+        if (loginUserInfo == null) return;
+        MsgPostEntity msgPostEntity = MsgPostEntity.createFileMsg(loginUserInfo.getName()
+                , getIntent().getStringExtra(KEY_TID)
+                , url);
         String jsonBody = null;
         try {
             jsonBody = JsonUtils.Gson2String(msgPostEntity);
@@ -465,6 +525,7 @@ public class ChatActivity extends ChatBaseActivity {
     @Override
     protected void initView() {
         super.initView();
+        loginUserInfo = getLoginUserInfo();
         setTitle(getIntent().getStringExtra(KEY_TITLE));
         ImageView titleActionImage2 = getTitleActionImage2();
         if (titleActionImage2 != null) {
