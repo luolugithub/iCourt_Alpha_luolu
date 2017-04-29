@@ -172,7 +172,7 @@ public class GroupCreateActivity extends BaseActivity {
         JsonArray memberArray = new JsonArray();
         for (GroupContactBean groupContactBean : imContactAdapter.getData()) {
             if (groupContactBean != null) {
-                memberArray.add(groupContactBean.userId);
+                memberArray.add(groupContactBean.accid);
             }
         }
         groupJsonObject.add("members", memberArray);

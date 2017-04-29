@@ -41,7 +41,7 @@ public class MyXhsEmoticonsKeyBoard extends sj.keyboard.widget.AutoHeightLayout 
     public static final int FUNC_TYPE_APPPS = -2;
 
 
-    public interface OnRequestOpenCameraListener {
+    public interface OnRequestActionListener {
         /**
          * 请求发送
          *
@@ -53,13 +53,18 @@ public class MyXhsEmoticonsKeyBoard extends sj.keyboard.widget.AutoHeightLayout 
          * 请求拍照
          */
         void onRequestOpenCamera();
+
+        /**
+         * @xxx
+         */
+        void onRequestAtMemeber();
     }
 
-    public void setOnRequestOpenCameraListener(OnRequestOpenCameraListener onRequestOpenCameraListener) {
-        this.onRequestOpenCameraListener = onRequestOpenCameraListener;
+    public void setRequestActionListener(OnRequestActionListener requestActionListener) {
+        this.requestActionListener = requestActionListener;
     }
 
-    OnRequestOpenCameraListener onRequestOpenCameraListener;
+    OnRequestActionListener requestActionListener;
 
     protected LayoutInflater mInflater;
 
@@ -69,6 +74,7 @@ public class MyXhsEmoticonsKeyBoard extends sj.keyboard.widget.AutoHeightLayout 
     protected ImageView mBtnMultimedia;
     protected Button mBtnSend;
     protected ImageView btn_camera;
+    protected ImageView chat_bottom_at_btn;
     protected FuncLayout mLyKvml;
 
     protected EmoticonsFuncView mEmoticonsFuncView;
@@ -102,6 +108,8 @@ public class MyXhsEmoticonsKeyBoard extends sj.keyboard.widget.AutoHeightLayout 
         mBtnSend.setOnClickListener(this);
         mLyKvml = ((FuncLayout) findViewById(R.id.ly_kvml));
         btn_camera = (ImageView) findViewById(R.id.btn_camera);
+        chat_bottom_at_btn = (ImageView) findViewById(R.id.chat_bottom_at_btn);
+        chat_bottom_at_btn.setOnClickListener(this);
 
         mBtnFace.setOnClickListener(this);
         mBtnMultimedia.setOnClickListener(this);
@@ -263,12 +271,16 @@ public class MyXhsEmoticonsKeyBoard extends sj.keyboard.widget.AutoHeightLayout 
         } else if (i == R.id.btn_multimedia) {
             toggleFuncView(FUNC_TYPE_APPPS);
         } else if (i == R.id.btn_camera) {
-            if (onRequestOpenCameraListener != null) {
-                onRequestOpenCameraListener.onRequestOpenCamera();
+            if (requestActionListener != null) {
+                requestActionListener.onRequestOpenCamera();
             }
         } else if (i == R.id.btn_send) {
-            if (onRequestOpenCameraListener != null) {
-                onRequestOpenCameraListener.onRequestSendText(mEtChat);
+            if (requestActionListener != null) {
+                requestActionListener.onRequestSendText(mEtChat);
+            }
+        } else if (i == R.id.chat_bottom_at_btn) {
+            if (requestActionListener != null) {
+                requestActionListener.onRequestAtMemeber();
             }
         }
     }

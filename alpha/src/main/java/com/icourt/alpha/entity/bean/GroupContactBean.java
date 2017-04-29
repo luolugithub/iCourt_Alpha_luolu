@@ -23,7 +23,8 @@ public class GroupContactBean
 
     public String suspensionTag;
 
-    @SerializedName(value = "userId",alternate ="user_id" )
+    public String accid;
+    @SerializedName(value = "userId", alternate = "user_id")
     public String userId;
     public String name;
     public String phone;
@@ -34,7 +35,8 @@ public class GroupContactBean
     public GroupContactBean() {
     }
 
-    public GroupContactBean(String userId, String name, String phone, String email, String pic, int robot) {
+    public GroupContactBean(String accid, String userId, String name, String phone, String email, String pic, int robot) {
+        this.accid = accid;
         this.userId = userId;
         this.name = name;
         this.phone = phone;
@@ -46,7 +48,9 @@ public class GroupContactBean
     @Override
     public String toString() {
         return "GroupContactBean{" +
-                "userId='" + userId + '\'' +
+                "suspensionTag='" + suspensionTag + '\'' +
+                ", accid='" + accid + '\'' +
+                ", userId='" + userId + '\'' +
                 ", name='" + name + '\'' +
                 ", phone='" + phone + '\'' +
                 ", email='" + email + '\'' +
@@ -55,11 +59,10 @@ public class GroupContactBean
                 '}';
     }
 
-
     @Override
     public ContactDbModel convert2Model() {
-        if (TextUtils.isEmpty(userId)) return null;
-        return new ContactDbModel(userId,
+        if (TextUtils.isEmpty(accid)) return null;
+        return new ContactDbModel(accid, userId,
                 null,
                 name,
                 phone,

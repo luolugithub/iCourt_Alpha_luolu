@@ -16,7 +16,6 @@ import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
 import android.text.Spannable;
 import android.text.TextUtils;
-import android.text.TextWatcher;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -26,18 +25,15 @@ import android.widget.TextView;
 
 import com.andview.refreshview.XRefreshView;
 import com.google.gson.JsonElement;
-import com.google.gson.JsonParseException;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.ChatAdapter;
-import com.icourt.alpha.entity.bean.AlphaUserInfo;
-import com.icourt.alpha.entity.bean.GroupMemberEntity;
-import com.icourt.alpha.entity.bean.IMBodyEntity;
+import com.icourt.alpha.constants.Const;
+import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.icourt.alpha.entity.bean.IMCustomerMessageEntity;
-import com.icourt.alpha.entity.bean.MsgPostEntity;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
+import com.icourt.alpha.interfaces.callback.SimpleTextWatcher;
 import com.icourt.alpha.utils.IMUtils;
-import com.icourt.alpha.utils.JsonUtils;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.view.emoji.MySelectPhotoLayout;
 import com.icourt.alpha.view.emoji.MyXhsEmoticonsKeyBoard;
@@ -56,7 +52,6 @@ import com.sj.emoji.EmojiDisplay;
 import com.sj.emoji.EmojiSpan;
 
 import java.io.File;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -106,9 +101,7 @@ public class ChatActivity extends ChatBaseActivity {
     private static final String KEY_UID = "key_uid";
     private static final String KEY_TID = "key_tid";
     private static final String KEY_GROUP_ID = "key_group_id";
-
     private static final String KEY_TITLE = "key_title";
-
     private static final String KEY_CHAT_TYPE = "key_chat_type";
 
     @BindView(R.id.titleBack)
@@ -128,19 +121,20 @@ public class ChatActivity extends ChatBaseActivity {
     @BindView(R.id.ek_bar)
     MyXhsEmoticonsKeyBoard ekBar;
     MySelectPhotoLayout mySelectPhotoLayout;
-    AlphaUserInfo loginUserInfo;
+    ChatAdapter chatAdapter;
+    LinearLayoutManager linearLayoutManager;
+    int pageIndex;
+    int pageSize = 20;
+    final List<GroupContactBean> atContactList = new ArrayList<>();
     private GalleryFinal.OnHanlderResultCallback mOnHanlderResultCallback = new GalleryFinal.OnHanlderResultCallback() {
         @Override
         public void onHanlderSuccess(int reqeustCode, List<PhotoInfo> resultList) {
             if (resultList != null) {
-            /*    List<IMImageBean> imageBeanList = new ArrayList<>();
                 for (PhotoInfo photoInfo : resultList) {
-                    IMImageBean imImage = new IMImageBean();
-                    imImage.setThumbPath(photoInfo.getPhotoPath());
-                    imImage.setPhotoPath(photoInfo.getPhotoPath());
-                    imageBeanList.add(imImage);
+                    if (photoInfo != null) {
+                        uploadFile2Sfile(new File(photoInfo.getPhotoPath()));
+                    }
                 }
-                sendImageMsg(imageBeanList, false);*/
             }
         }
 
@@ -149,12 +143,6 @@ public class ChatActivity extends ChatBaseActivity {
 
         }
     };
-
-
-    ChatAdapter chatAdapter;
-    LinearLayoutManager linearLayoutManager;
-    int pageIndex;
-    int pageSize = 20;
 
 
     /**
@@ -172,6 +160,32 @@ public class ChatActivity extends ChatBaseActivity {
         intent.putExtra(KEY_TITLE, title);
         intent.putExtra(KEY_CHAT_TYPE, CHAT_TYPE_P2P);
         context.startActivity(intent);
+    }
+
+
+    @Const.CHAT_TYPE
+    @Override
+    protected int getIMChatType() {
+        switch (getIntent().getIntExtra(KEY_CHAT_TYPE, 0)) {
+            case CHAT_TYPE_P2P:
+                return CHAT_TYPE_P2P;
+            case CHAT_TYPE_TEAM:
+                return CHAT_TYPE_TEAM;
+            default:
+                return CHAT_TYPE_TEAM;
+        }
+    }
+
+    @Override
+    protected String getIMChatId() {
+        switch (getIMChatType()) {
+            case CHAT_TYPE_P2P:
+                return getIntent().getStringExtra(KEY_UID);
+            case CHAT_TYPE_TEAM:
+                return getIntent().getStringExtra(KEY_TID);
+            default:
+                return getIntent().getStringExtra(KEY_TID);
+        }
     }
 
     /**
@@ -202,6 +216,10 @@ public class ChatActivity extends ChatBaseActivity {
         getData(true);
     }
 
+
+    /**
+     * 初始化表情
+     */
     private void initEmoticonsKeyBoardBar() {
         // source data
         ArrayList<EmojiBean> emojiArray = new ArrayList<>();
@@ -292,18 +310,20 @@ public class ChatActivity extends ChatBaseActivity {
         PageSetAdapter pageSetAdapter = new PageSetAdapter();
         pageSetAdapter.add(xhsPageSetEntity);
         ekBar.setAdapter(pageSetAdapter);
-        ekBar.setOnRequestOpenCameraListener(new MyXhsEmoticonsKeyBoard.OnRequestOpenCameraListener() {
+        ekBar.setRequestActionListener(new MyXhsEmoticonsKeyBoard.OnRequestActionListener() {
             @Override
             public void onRequestSendText(EmoticonsEditText inputText) {
-                if (TextUtils.isEmpty(inputText.getText())) {
-                    return;
-                }
-                sendTextMsg(inputText.getText().toString());
+                dispatchEditTextSend(inputText);
             }
 
             @Override
             public void onRequestOpenCamera() {
                 checkAndOpenCamera();
+            }
+
+            @Override
+            public void onRequestAtMemeber() {
+                openAtMember();
             }
         });
         mySelectPhotoLayout = new MySelectPhotoLayout(getContext());
@@ -381,24 +401,47 @@ public class ChatActivity extends ChatBaseActivity {
         }
         // add a filter
         ekBar.getEtChat().addEmoticonFilter(new EmojiFilter());
-        ekBar.getEtChat().addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-            }
-
+        ekBar.getEtChat().addTextChangedListener(new SimpleTextWatcher() {
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 if (s.toString().substring(start).trim().equals("@")) {
                     openAtMember();
                 }
             }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-
-            }
         });
+    }
+
+    /**
+     * 分发是发送文本消息 还是@消息
+     *
+     * @param inputText
+     */
+    private void dispatchEditTextSend(EmoticonsEditText inputText) {
+        if (TextUtils.isEmpty(inputText.getText())) {
+            return;
+        }
+        String txt = inputText.getText().toString();
+        if (txt.contains("@")) {
+            if (txt.contains("@所有人")) {
+                sendAtMsg(txt, true, null);
+            } else {
+                List<String> accIds = new ArrayList<String>();
+                for (GroupContactBean atBean : atContactList) {
+                    if (atBean != null && txt.contains(String.format("@%s", atBean.name))) {
+                        accIds.add(atBean.accid);
+                    }
+                }
+                atContactList.clear();
+                if (!accIds.isEmpty()) {
+                    sendAtMsg(txt, false, accIds);
+                } else {
+                    sendTextMsg(txt);
+                }
+            }
+        } else {
+            sendTextMsg(txt);
+        }
+        inputText.setText("");
     }
 
     /**
@@ -407,30 +450,8 @@ public class ChatActivity extends ChatBaseActivity {
      * @param text
      */
     private void sendTextMsg(String text) {
-        if (loginUserInfo == null) return;
-        MsgPostEntity msgPostEntity = MsgPostEntity.createTextMsg(loginUserInfo.getName()
-                , getIntent().getStringExtra(KEY_TID)
-                , text);
-        String jsonBody = null;
-        try {
-            jsonBody = JsonUtils.Gson2String(msgPostEntity);
-        } catch (JsonParseException e) {
-            e.printStackTrace();
-        }
-        showLoadingDialog(null);
-        getApi().msgAdd(RequestUtils.createJsonBody(jsonBody))
-                .enqueue(new SimpleCallBack<JsonElement>() {
-                    @Override
-                    public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
-                        dismissLoadingDialog();
-                    }
-
-                    @Override
-                    public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
-                        super.onFailure(call, t);
-                        dismissLoadingDialog();
-                    }
-                });
+        if (TextUtils.isEmpty(text)) return;
+        super.sendIMTextMsg(text);
     }
 
 
@@ -456,40 +477,30 @@ public class ChatActivity extends ChatBaseActivity {
      * @param url
      */
     private void sendFileMsg(String url) {
-        if (loginUserInfo == null) return;
-        MsgPostEntity msgPostEntity = MsgPostEntity.createFileMsg(loginUserInfo.getName()
-                , getIntent().getStringExtra(KEY_TID)
-                , url);
-        String jsonBody = null;
-        try {
-            jsonBody = JsonUtils.Gson2String(msgPostEntity);
-        } catch (JsonParseException e) {
-            e.printStackTrace();
-        }
-        showLoadingDialog(null);
-        getApi().msgAdd(RequestUtils.createJsonBody(jsonBody))
-                .enqueue(new SimpleCallBack<JsonElement>() {
-                    @Override
-                    public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
-                        dismissLoadingDialog();
-                    }
+        super.sendIMFileMsg(url);
+    }
 
-                    @Override
-                    public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
-                        super.onFailure(call, t);
-                        dismissLoadingDialog();
-                    }
-                });
+
+    /**
+     * 发送@消息
+     *
+     * @param text
+     * @param isAtAll 是否是at所有人;@所有人 accid可空; 否则不可空
+     * @param accIds
+     */
+    private void sendAtMsg(@NonNull String text, boolean isAtAll, @Nullable List<String> accIds) {
+        if (TextUtils.isEmpty(text)) return;
+        super.sendIMAtMsg(text, isAtAll, accIds);
     }
 
     /**
      * 打开@某人的界面
      */
     private void openAtMember() {
-        if (getIntent().getIntExtra(KEY_CHAT_TYPE, 0) == CHAT_TYPE_TEAM) {
-            GroupMemberActivity.launchSelect(
+        if (getIMChatType() == CHAT_TYPE_TEAM) {
+            ContactListActivity.launchSelect(
                     getActivity(),
-                    getIntent().getStringExtra(KEY_GROUP_ID),
+                    Const.CHOICE_TYPE_SINGLE,
                     REQUEST_CODE_AT_MEMBER);
         }
     }
@@ -525,7 +536,6 @@ public class ChatActivity extends ChatBaseActivity {
     @Override
     protected void initView() {
         super.initView();
-        loginUserInfo = getLoginUserInfo();
         setTitle(getIntent().getStringExtra(KEY_TITLE));
         ImageView titleActionImage2 = getTitleActionImage2();
         if (titleActionImage2 != null) {
@@ -537,15 +547,26 @@ public class ChatActivity extends ChatBaseActivity {
         }
 
         linearLayoutManager = new LinearLayoutManager(getContext());
-        linearLayoutManager.setReverseLayout(true);
         recyclerView.setLayoutManager(linearLayoutManager);
         recyclerView.setHasFixedSize(true);
-        recyclerView.setAdapter(chatAdapter = new ChatAdapter(getUserToken()));
+        recyclerView.setAdapter(chatAdapter = new ChatAdapter(getLoadedLoginToken()));
         refreshLayout.setXRefreshViewListener(new XRefreshView.SimpleXRefreshListener() {
             @Override
             public void onRefresh(boolean isPullDown) {
                 super.onRefresh(isPullDown);
-                getData(true);
+                getData(false);
+            }
+
+            @Override
+            public void onLoadMore(boolean isSilence) {
+                super.onLoadMore(isSilence);
+                log("------------->11:" + isSilence);
+            }
+
+            @Override
+            public void onRelease(float direction) {
+                super.onRelease(direction);
+                log("------------->12:" + direction);
             }
         });
         recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
@@ -565,6 +586,28 @@ public class ChatActivity extends ChatBaseActivity {
 
 
     /**
+     * 是否应该滚动(最后一条可见);非是否可以滚动
+     *
+     * @return
+     */
+    private boolean shouldScrollToBottom() {
+        if (linearLayoutManager != null) {
+            return (linearLayoutManager.findLastVisibleItemPosition() + 1)
+                    >= linearLayoutManager.getItemCount();
+        }
+        return false;
+    }
+
+    /**
+     * 滚动到底部
+     */
+    private void scrollToBottom() {
+        if (linearLayoutManager != null) {
+            linearLayoutManager.scrollToPositionWithOffset(linearLayoutManager.getItemCount() - 1, 0);
+        }
+    }
+
+    /**
      * 获取历史消息
      *
      * @param isRefresh 是否刷新
@@ -573,15 +616,18 @@ public class ChatActivity extends ChatBaseActivity {
     protected void getData(final boolean isRefresh) {
         super.getData(isRefresh);
         NIMClient.getService(MsgService.class)
-                .queryMessageListEx(getLastMessage(), QUERY_OLD, pageSize, false)
+                .queryMessageListEx(getLastMessage(), QUERY_OLD, pageSize, true)
                 .setCallback(new RequestCallback<List<IMMessage>>() {
                     @Override
                     public void onSuccess(List<IMMessage> param) {
-                        chatAdapter.addItems(convert2CustomerMessages(param));
+                        chatAdapter.addItems(0, convert2CustomerMessages(param));
                         if (param != null && param.size() > 0) {
                             pageIndex += 1;
                         }
                         stopRefresh();
+                        if (isRefresh) {
+                            scrollToBottom();
+                        }
                     }
 
                     @Override
@@ -604,17 +650,17 @@ public class ChatActivity extends ChatBaseActivity {
      * @return
      */
     private IMMessage getLastMessage() {
-        switch (getIntent().getIntExtra(KEY_CHAT_TYPE, 0)) {
+        switch (getIMChatType()) {
             case CHAT_TYPE_P2P:
                 if (chatAdapter.getItemCount() > 0) {
-                    return chatAdapter.getItem(chatAdapter.getData().size() - 1).imMessage;
+                    return chatAdapter.getItem(0).imMessage;
                 }
-                return MessageBuilder.createEmptyMessage(getAccount(), SessionTypeEnum.P2P, 0);
+                return MessageBuilder.createEmptyMessage(getIMChatId(), SessionTypeEnum.P2P, 0);
             case CHAT_TYPE_TEAM:
                 if (chatAdapter.getItemCount() > 0) {
-                    return chatAdapter.getItem(chatAdapter.getData().size() - 1).imMessage;
+                    return chatAdapter.getItem(0).imMessage;
                 }
-                return MessageBuilder.createEmptyMessage(getAccount(), SessionTypeEnum.Team, 0);
+                return MessageBuilder.createEmptyMessage(getIMChatId(), SessionTypeEnum.Team, 0);
             default: {
                 return null;
             }
@@ -629,51 +675,6 @@ public class ChatActivity extends ChatBaseActivity {
         }
     }
 
-    /**
-     * 转化成自定义的消息体
-     *
-     * @param param
-     * @return
-     */
-    private List<IMCustomerMessageEntity> convert2CustomerMessages(List<IMMessage> param) {
-        List<IMCustomerMessageEntity> customerMessageEntities = new ArrayList<>();
-        if (param != null) {
-            for (IMMessage message : param) {
-                if (message != null) {
-                    IMCustomerMessageEntity customerMessageEntity = new IMCustomerMessageEntity();
-                    customerMessageEntity.imMessage = message;
-                    customerMessageEntity.customIMBody = getIMBody(message);
-                    customerMessageEntities.add(customerMessageEntity);
-                }
-            }
-        }
-        return customerMessageEntities;
-    }
-
-    /**
-     * 是否是当前聊天组对话
-     *
-     * @param sessionId
-     * @return
-     */
-    private boolean isCurrentRoomSession(String sessionId) {
-        return TextUtils.equals(sessionId, getAccount());
-    }
-
-    /**
-     * 获取账号 与云信挂钩
-     *
-     * @return
-     */
-    private String getAccount() {
-        switch (getIntent().getIntExtra(KEY_CHAT_TYPE, 0)) {
-            case CHAT_TYPE_P2P:
-                return getIntent().getStringExtra(KEY_UID);
-            case CHAT_TYPE_TEAM:
-                return getIntent().getStringExtra(KEY_TID);
-        }
-        return "";
-    }
 
     @Override
     public void onMessageReceived(List<IMMessage> list) {
@@ -689,18 +690,14 @@ public class ChatActivity extends ChatBaseActivity {
                 customerMessageEntities.add(customerMessageEntity);
             }
         }
-        chatAdapter.addItems(0, customerMessageEntities);
-    }
-
-    private IMBodyEntity getIMBody(IMMessage message) {
-        IMBodyEntity imBodyEntity = null;
-        try {
-            log("--------------->customBody:" + message.getContent());
-            imBodyEntity = JsonUtils.Gson2Bean(message.getContent(), IMBodyEntity.class);
-        } catch (JsonParseException e) {
-            e.printStackTrace();
+        if (!customerMessageEntities.isEmpty()) {
+            if (shouldScrollToBottom()) {
+                chatAdapter.addItems(customerMessageEntities);
+                scrollToBottom();
+            } else {
+                chatAdapter.addItems(customerMessageEntities);
+            }
         }
-        return imBodyEntity;
     }
 
     @Override
@@ -743,7 +740,7 @@ public class ChatActivity extends ChatBaseActivity {
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.titleAction2:
-                switch (getIntent().getIntExtra(KEY_CHAT_TYPE, 0)) {
+                switch (getIMChatType()) {
                     case CHAT_TYPE_P2P:
                         ContactDetailActivity.launch(
                                 getContext(),
@@ -774,10 +771,9 @@ public class ChatActivity extends ChatBaseActivity {
                 break;
             case REQUEST_CODE_AT_MEMBER:
                 if (resultCode == Activity.RESULT_OK && data != null) {
-                    Serializable key_member = data.getSerializableExtra("key_member");
-                    if (key_member instanceof GroupMemberEntity) {
-                        GroupMemberEntity groupMemberEntity = (GroupMemberEntity) key_member;
-                        appendAtMember(groupMemberEntity);
+                    GroupContactBean result = (GroupContactBean) data.getSerializableExtra(KEY_ACTIVITY_RESULT);
+                    if (result != null) {
+                        appendAtMember(result);
                     }
                 }
                 break;
@@ -787,16 +783,22 @@ public class ChatActivity extends ChatBaseActivity {
         }
     }
 
+
     /**
      * 追加@某人
      *
-     * @param groupMemberEntity
+     * @param contactBean
      */
-    private void appendAtMember(GroupMemberEntity groupMemberEntity) {
-        if (groupMemberEntity == null) return;
+    private void appendAtMember(GroupContactBean contactBean) {
+        if (contactBean == null) return;
+        atContactList.add(contactBean);
         EmoticonsEditText etChat = ekBar.getEtChat();
         Editable text = etChat.getText();
-        text.append(String.format("%s ", groupMemberEntity.name));
+        if (TextUtils.isEmpty(text)) {
+            text.append(String.format("@%s ", contactBean.name));
+        } else {
+            text.append(String.format(" @%s ", contactBean.name));
+        }
         etChat.setText(text);
         etChat.setSelection(etChat.getText().length());
     }

@@ -18,18 +18,26 @@ import android.widget.LinearLayout;
 import android.widget.Switch;
 import android.widget.TextView;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
 import com.icourt.alpha.R;
-import com.icourt.alpha.adapter.GroupMemberAdapter;
+import com.icourt.alpha.adapter.IMContactAdapter;
+import com.icourt.alpha.adapter.baseadapter.adapterObserver.DataChangeAdapterObserver;
 import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.constants.Const;
+import com.icourt.alpha.db.dbmodel.ContactDbModel;
+import com.icourt.alpha.db.dbservice.ContactDbService;
+import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.icourt.alpha.entity.bean.GroupDetailEntity;
 import com.icourt.alpha.entity.bean.GroupEntity;
-import com.icourt.alpha.entity.bean.GroupMemberEntity;
 import com.icourt.alpha.entity.bean.SetTopEntity;
 import com.icourt.alpha.entity.event.GroupActionEvent;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
+import com.icourt.alpha.utils.JsonUtils;
+import com.icourt.api.RequestUtils;
 import com.netease.nimlib.sdk.NIMClient;
 import com.netease.nimlib.sdk.RequestCallback;
 import com.netease.nimlib.sdk.team.TeamService;
@@ -38,6 +46,7 @@ import com.netease.nimlib.sdk.team.model.Team;
 import org.greenrobot.eventbus.EventBus;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.BindView;
@@ -95,9 +104,17 @@ public class GroupDetailActivity extends BaseActivity {
     @BindView(R.id.titleAction)
     ImageView titleAction;
     GroupEntity groupEntity;
-    GroupMemberAdapter groupMemberAdapter;
+    IMContactAdapter contactAdapter;
     @BindView(R.id.group_join_or_quit_btn)
     Button groupJoinOrQuitBtn;
+    final ArrayList<GroupContactBean> groupContactBeens = new ArrayList<>();
+    ContactDbService contactDbService;
+    DataChangeAdapterObserver dataChangeAdapterObserver = new DataChangeAdapterObserver() {
+        @Override
+        protected void updateUI() {
+            groupMemberNumTv.setText(String.format("成员(%s)", contactAdapter.getItemCount()));
+        }
+    };
 
     public static void launch(@NonNull Context context, String groupId, String tid) {
         if (context == null) return;
@@ -130,6 +147,7 @@ public class GroupDetailActivity extends BaseActivity {
     @Override
     protected void initView() {
         super.initView();
+        contactDbService = new ContactDbService(getLoginUserId());
         ImageView titleActionImage = getTitleActionImage();
         setViewVisible(titleActionImage, false);
         Serializable serializableExtra = getIntent().getSerializableExtra(KEY_GROUP);
@@ -138,8 +156,11 @@ public class GroupDetailActivity extends BaseActivity {
             groupNameTv.setText(groupEntity.name);
             groupDescTv.setText(groupEntity.intro);
         }
-        groupMemberRecyclerView.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
-        groupMemberRecyclerView.setAdapter(groupMemberAdapter = new GroupMemberAdapter(Const.VIEW_TYPE_GRID));
+        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false);
+        linearLayoutManager.setAutoMeasureEnabled(true);
+        groupMemberRecyclerView.setLayoutManager(linearLayoutManager);
+        groupMemberRecyclerView.setAdapter(contactAdapter = new IMContactAdapter(Const.VIEW_TYPE_GRID));
+        contactAdapter.registerAdapterDataObserver(dataChangeAdapterObserver);
     }
 
     @Override
@@ -165,6 +186,8 @@ public class GroupDetailActivity extends BaseActivity {
                             ImageView titleActionImage = getTitleActionImage();
 
                             setViewVisible(titleActionImage, TextUtils.equals(getLoginUserId(), response.body().result.admin_id));
+
+                            queryMembersByUids(response.body().result.members);
                         }
                     }
 
@@ -174,26 +197,34 @@ public class GroupDetailActivity extends BaseActivity {
                         dismissLoadingDialog();
                     }
                 });
-        getGroupMembers();
         getIsSetGroupTop();
         getIsSetGroupNoDisturbing();
     }
 
     /**
-     * 获取讨论组成员列表
+     * 根据uid 查询本地联系人
+     *
+     * @param members
      */
-    private void getGroupMembers() {
-        getApi().getGroupMemeber(getIntent().getStringExtra(KEY_GROUP_ID))
-                .enqueue(new SimpleCallBack<List<GroupMemberEntity>>() {
-                    @Override
-                    public void onSuccess(Call<ResEntity<List<GroupMemberEntity>>> call, Response<ResEntity<List<GroupMemberEntity>>> response) {
-                        groupMemberAdapter.bindData(true, response.body().result);
-                        if (groupMemberNumTv != null) {
-                            groupMemberNumTv.setText(String.format("成员(%s)", groupMemberAdapter.getItemCount()));
+    private void queryMembersByUids(List<String> members) {
+        if (members != null) {
+            groupContactBeens.clear();
+            if (contactDbService != null) {
+                //最多展示20个
+                for (int i = 0; i < Math.min(members.size(), 20); i++) {
+                    String uid = members.get(i);
+                    if (!TextUtils.isEmpty(uid)) {
+                        ContactDbModel contactDbModel = contactDbService.queryFirst("accid", uid);
+                        if (contactDbModel != null) {
+                            groupContactBeens.add(contactDbModel.convert2Model());
                         }
                     }
-                });
+                }
+            }
+            contactAdapter.bindData(true, groupContactBeens);
+        }
     }
+
 
     @OnClick({R.id.group_ding_tv,
             R.id.group_file_tv,
@@ -214,14 +245,14 @@ public class GroupDetailActivity extends BaseActivity {
                 showTopSnackBar("未完成");
                 break;
             case R.id.group_member_invite_tv:
-                GroupMemberActivity.launchInvitation(getContext(),
-                        getIntent().getStringExtra(KEY_GROUP_ID),
+                ContactListActivity.launchSelect(getActivity(),
+                        Const.CHOICE_TYPE_MULTIPLE,
                         REQ_CODE_INVITATION_MEMBER);
                 break;
             case R.id.group_member_arrow_iv:
-                GroupMemberActivity.launch(getContext(),
+               /* GroupMemberActivity.launch(getContext(),
                         getIntent().getStringExtra(KEY_GROUP_ID),
-                        groupEntity != null ? groupEntity.name : null);
+                        groupEntity != null ? groupEntity.name : null);*/
                 break;
             case R.id.group_setTop_switch:
                 setGroupTop();
@@ -386,12 +417,61 @@ public class GroupDetailActivity extends BaseActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         switch (requestCode) {
             case REQ_CODE_INVITATION_MEMBER:
-                if (requestCode == Activity.RESULT_OK && data != null) {
+                if (resultCode == Activity.RESULT_OK && data != null) {
+                    List<GroupContactBean> result = (List<GroupContactBean>) data.getSerializableExtra(KEY_ACTIVITY_RESULT);
+                    if (result != null) {
+                        invitationMembers(result);
+                    }
                 }
                 break;
             default:
                 super.onActivityResult(requestCode, resultCode, data);
                 break;
+        }
+    }
+
+    /**
+     * 邀请成员
+     *
+     * @param contactBeanArrayList
+     */
+    private void invitationMembers(List<GroupContactBean> contactBeanArrayList) {
+        if (contactBeanArrayList == null) return;
+        JsonArray userIdArray = new JsonArray();//使用accid
+        for (GroupContactBean groupContactBean : contactBeanArrayList) {
+            if (groupContactBean != null) {
+                userIdArray.add(groupContactBean.accid);
+            }
+        }
+        JsonObject param = new JsonObject();
+        param.add("members", userIdArray);
+        String paramJsonStr = null;
+        try {
+            paramJsonStr = JsonUtils.Gson2String(param);
+        } catch (JsonParseException e) {
+            e.printStackTrace();
+        }
+        showLoadingDialog(null);
+        getApi().groupMemberAdd(getIntent().getStringExtra(KEY_TID), RequestUtils.createJsonBody(paramJsonStr))
+                .enqueue(new SimpleCallBack<JsonElement>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
+                        dismissLoadingDialog();
+                    }
+
+                    @Override
+                    public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
+                        super.onFailure(call, t);
+                        dismissLoadingDialog();
+                    }
+                });
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (contactDbService != null) {
+            contactDbService.releaseService();
         }
     }
 }

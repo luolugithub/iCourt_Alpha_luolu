@@ -59,7 +59,7 @@ public class Const {
     public static final int MSG_TYPE_SYS = 4;     //系统辅助消息
     public static final int MSG_TYPE_LINK = 5;    //链接消息
     public static final int MSG_TYPE_ALPHA = 6;   //alpha系统内业务消息
-    public static final int MSG_TYPE_VOICE = 7;   //文件消息
+    public static final int MSG_TYPE_VOICE = 7;   //语音消息
 
 
     @IntDef({MSG_TYPE_TXT,

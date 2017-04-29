@@ -12,6 +12,9 @@ import com.icourt.alpha.entity.bean.IMCustomerMessageEntity;
 import com.icourt.alpha.utils.GlideUtils;
 import com.icourt.alpha.utils.IMUtils;
 
+import static com.netease.nimlib.sdk.msg.constant.MsgDirectionEnum.In;
+import static com.netease.nimlib.sdk.msg.constant.MsgDirectionEnum.Out;
+
 /**
  * Description
  * Company Beijing icourt
@@ -78,15 +81,51 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMCustomerMessageEntit
 
     @Override
     public int getItemViewType(int position) {
-
         IMCustomerMessageEntity item = getItem(position);
-        if (item != null && item.customIMBody != null) {
-            if (IMUtils.isPIC(item.customIMBody.file)) {
-                return TYPE_LEFT_IMAGE;
+        if (item != null && item.imMessage != null && item.customIMBody != null) {
+            if (item.imMessage.getDirect() == In) {
+                switch (item.customIMBody.show_type) {
+                    case Const.MSG_TYPE_TXT:
+                        return TYPE_LEFT_TXT;
+                    case Const.MSG_TYPE_FILE:
+                        if (item.customIMBody.ext != null && IMUtils.isPIC(item.customIMBody.ext.name)) {
+                            return TYPE_RIGHT_IMAGE;
+                        } else {
+                            return TYPE_RIGHT_FILE;
+                        }
+                    case Const.MSG_TYPE_DING:
+                        //TODO 钉 即将细分 文本 文件图片
+                        return TYPE_LEFT_DING_TXT;
+                    case Const.MSG_TYPE_AT:
+                        return TYPE_LEFT_TXT;
+                    case Const.MSG_TYPE_SYS:
+                        return TYPE_LEFT_TXT;
+                    case Const.MSG_TYPE_LINK:
+                        return TYPE_LEFT_TXT;
+                }
+            } else if (item.imMessage.getDirect() == Out) {
+                switch (item.customIMBody.show_type) {
+                    case Const.MSG_TYPE_TXT:
+                        return TYPE_RIGHT_TXT;
+                    case Const.MSG_TYPE_FILE:
+                        if (item.customIMBody.ext != null && IMUtils.isPIC(item.customIMBody.ext.name)) {
+                            return TYPE_RIGHT_IMAGE;
+                        } else {
+                            return TYPE_RIGHT_FILE;
+                        }
+                    case Const.MSG_TYPE_DING:
+                        //TODO 钉 即将细分 文本 文件图片
+                        return TYPE_RIGHT_DING_TXT;
+                    case Const.MSG_TYPE_AT:
+                        return TYPE_RIGHT_TXT;
+                    case Const.MSG_TYPE_SYS:
+                        return TYPE_RIGHT_TXT;
+                    case Const.MSG_TYPE_LINK:
+                        return TYPE_RIGHT_TXT;
+                }
             }
         }
         return TYPE_LEFT_TXT;
-        // return super.getItemViewType(position);
     }
 
     @Override
@@ -116,7 +155,6 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMCustomerMessageEntit
                 setTypeLeftDingFile(holder, imMessage, position);
                 break;
 
-
             case TYPE_RIGHT_TXT:
                 setTypeRightTxt(holder, imMessage, position);
                 break;
@@ -142,10 +180,11 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMCustomerMessageEntit
     private void setCommonUserIcon(ViewHolder holder, IMCustomerMessageEntity imMessage, int position) {
         ImageView chat_user_icon_iv = holder.obtainView(R.id.chat_user_icon_iv);
         if (chat_user_icon_iv != null) {
-            GlideUtils
+            // TODO 拿本地头像
+     /*       GlideUtils
                     .loadUser(chat_user_icon_iv.getContext(),
                             imMessage.customIMBody != null ? imMessage.customIMBody.pic : "",
-                            chat_user_icon_iv);
+                            chat_user_icon_iv);*/
         }
     }
 
@@ -159,11 +198,10 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMCustomerMessageEntit
     private void setTypeLeftTxt(ViewHolder holder, IMCustomerMessageEntity imMessage, int position) {
         TextView textView = holder.obtainView(R.id.chat_txt_tv);
         if (imMessage.customIMBody != null) {
-            textView.setText("" + imMessage.customIMBody.content);
+            textView.setText(imMessage.customIMBody.content);
         } else {
-            textView.setText("" + position);
+            textView.setText("null");
         }
-
     }
 
     /**
@@ -176,9 +214,14 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMCustomerMessageEntit
     private void setTypeLeftImage(ViewHolder holder, IMCustomerMessageEntity imMessage, int position) {
         ImageView chat_image_iv = holder.obtainView(R.id.chat_image_iv);
         if (GlideUtils.canLoadImage(chat_image_iv.getContext())) {
-            Glide.with(chat_image_iv.getContext())
-                    .load(imMessage.customIMBody != null ? getFileUrl(imMessage.customIMBody.path, 360) : "")
-                    .into(chat_image_iv);
+            if (imMessage.customIMBody != null && imMessage.customIMBody.ext != null) {
+                Glide.with(chat_image_iv.getContext())
+                        .load(getFileUrl(imMessage.customIMBody.ext.path, 360))
+                        .into(chat_image_iv);
+            } else {
+                //TODO 加载失败的图片
+            }
+
         }
     }
 
@@ -233,11 +276,16 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMCustomerMessageEntit
      * 初始化右边 文本布局
      *
      * @param holder
-     * @param o
+     * @param customIMBody
      * @param position
      */
-    private void setTypeRightTxt(ViewHolder holder, Object o, int position) {
-
+    private void setTypeRightTxt(ViewHolder holder, IMCustomerMessageEntity customIMBody, int position) {
+        TextView textView = holder.obtainView(R.id.chat_txt_tv);
+        if (customIMBody != null && customIMBody.customIMBody != null) {
+            textView.setText(customIMBody.customIMBody.content);
+        } else {
+            textView.setText("null");
+        }
     }
 
     /**

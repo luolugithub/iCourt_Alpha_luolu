@@ -10,6 +10,6 @@ import com.netease.nimlib.sdk.msg.model.IMMessage;
  * version 1.0.0
  */
 public class IMCustomerMessageEntity {
-    public IMBodyEntity customIMBody;//自定义消息体 请提前解析
+    public IMMessageCustomBody customIMBody;//自定义消息体 请提前解析
     public IMMessage imMessage;
 }

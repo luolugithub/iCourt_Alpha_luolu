@@ -392,7 +392,7 @@ public interface AlphaApiService {
      *
      * @return
      */
-    @POST("http://192.168.20.76:8082/ilaw/api/v3/im/groups")
+    @POST("http://10.25.115.31:8083/ilaw/api/v3/im/groups")
     Call<ResEntity<JsonElement>> groupCreate(@Body RequestBody groupInfo);
 
 
@@ -403,7 +403,7 @@ public interface AlphaApiService {
      * @param groupInfo
      * @return
      */
-    @PUT("http://192.168.20.76:8082/ilaw/api/v3/im/groups")
+    @PUT("http://10.25.115.31:8083/ilaw/api/v3/im/groups")
     Call<ResEntity<JsonElement>> groupUpdate(@Body RequestBody groupInfo);
 
     /**
@@ -412,7 +412,7 @@ public interface AlphaApiService {
      *
      * @return
      */
-    @GET("http://192.168.20.76:8082/ilaw/api/v3/im/groups")
+    @GET("http://10.25.115.31:8083/ilaw/api/v3/im/groups")
     Call<ResEntity<List<GroupEntity>>> groupQueryAll();
 
     /**
@@ -421,7 +421,7 @@ public interface AlphaApiService {
      *
      * @return
      */
-    @GET("http://192.168.20.76:8082/ilaw/api/v3/im/groups/{tid}")
+    @GET("http://10.25.115.31:8083/ilaw/api/v3/im/groups/{tid}")
     Call<ResEntity<GroupDetailEntity>> groupQueryDetail(@Path("tid") String tid);
 
 
@@ -433,7 +433,7 @@ public interface AlphaApiService {
      * @param members {members":["xx1","xx2","xx3"] msg_id":12321 //当前群组的最新消息id,获取不到则不传}
      * @return
      */
-    @POST("http://192.168.20.76:8082/ilaw/api/v3/im/groups/{groupId}/members")
+    @POST("http://10.25.115.31:8083/ilaw/api/v3/im/groups/{groupId}/members")
     Call<ResEntity<JsonElement>> groupMemberAdd(@Path("groupId") String groupId,
                                                 @Body RequestBody members);
 
@@ -445,7 +445,7 @@ public interface AlphaApiService {
      * @param userId
      * @return
      */
-    @DELETE("http://192.168.20.76:8082/ilaw/api/v3/im/groups/{groupId}/members/{userId}")
+    @DELETE("http://10.25.115.31:8083/ilaw/api/v3/im/groups/{groupId}/members/{userId}")
     Call<ResEntity<JsonElement>> groupMemberRemove(@Path("groupId") String groupId,
                                                    @Path("groupId") String userId);
 
@@ -457,7 +457,7 @@ public interface AlphaApiService {
      * @param msg 消息体
      * @return
      */
-    @POST("http://192.168.20.76:8082/ilaw/api/v3/im/msgs")
+    @POST("http://10.25.115.31:8083/ilaw/api/v3/im/msgs")
     Call<ResEntity<JsonElement>> msgAdd(@Body RequestBody msg);
 
     /**
@@ -467,7 +467,7 @@ public interface AlphaApiService {
      * @param msgId
      * @return
      */
-    @POST("http://192.168.20.76:8082/ilaw/api/v3/im/msgs/stars/{msgId}")
+    @POST("http://10.25.115.31:8083/ilaw/api/v3/im/msgs/stars/{msgId}")
     Call<ResEntity<JsonElement>> msgCollect(@Path("msgId") String msgId);
 
     /**
@@ -477,7 +477,7 @@ public interface AlphaApiService {
      * @param msgId
      * @return
      */
-    @DELETE("http://192.168.20.76:8082/ilaw/api/v3/im/msgs/stars/{msgId}")
+    @DELETE("http://10.25.115.31:8083/ilaw/api/v3/im/msgs/stars/{msgId}")
     Call<ResEntity<JsonElement>> msgCollectCancel(@Path("msgId") String msgId);
 
 
@@ -488,7 +488,7 @@ public interface AlphaApiService {
      * @param msgId
      * @return
      */
-    @POST("http://192.168.20.76:8082/ilaw/api/v3/im/msgs/{msgId}")
+    @POST("http://10.25.115.31:8083/ilaw/api/v3/im/msgs/{msgId}")
     Call<ResEntity<JsonElement>> msgRevoke(@Path("msgId") String msgId);
 
 
@@ -498,7 +498,7 @@ public interface AlphaApiService {
      *
      * @return
      */
-    @GET("http://192.168.20.76:8082/ilaw/api/v3/im/users")
+    @GET("http://10.25.115.31:8083/ilaw/api/v3/im/users")
     Call<ResEntity<List<GroupContactBean>>> usersQuery();
 
     /**

@@ -1,5 +1,7 @@
 package com.icourt.alpha.entity.bean;
 
+import java.util.List;
+
 /**
  * Description
  * Company Beijing icourt
@@ -12,4 +14,5 @@ public class GroupDetailEntity extends GroupEntity {
     public int count;
     public boolean is_private;
     public String admin_id;
+    public List<String> members;
 }

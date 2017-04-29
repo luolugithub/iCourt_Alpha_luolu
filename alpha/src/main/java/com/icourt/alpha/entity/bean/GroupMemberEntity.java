@@ -16,6 +16,7 @@ import java.io.Serializable;
  * date createTime：2017/4/23
  * version 1.0.0
  */
+@Deprecated
 public class GroupMemberEntity implements ISuspensionInterface, ISuspensionAction, Serializable {
     public String suspensionTag;
     public String memberId;

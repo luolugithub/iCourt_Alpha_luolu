@@ -233,7 +233,7 @@ public class MessageListFragment extends BaseFragment
                     {
                         //查询本地联系人信息
                         if (contactDbService != null && !TextUtils.isEmpty(recentContact.getContactId())) {
-                            ContactDbModel contactDbModel = contactDbService.queryFirst("userId", recentContact.getContactId().toUpperCase());
+                            ContactDbModel contactDbModel = contactDbService.queryFirst("accid", recentContact.getContactId().toUpperCase());
                             if (contactDbModel != null) {
                                 contactBean = contactDbModel.convert2Model();
                             }

@@ -21,6 +21,7 @@ import static com.icourt.alpha.constants.Const.VIEW_TYPE_ITEM;
  * date createTime：2017/4/23
  * version 1.0.0
  */
+@Deprecated
 public class GroupMemberAdapter extends MultiSelectRecyclerAdapter<GroupMemberEntity> {
 
 

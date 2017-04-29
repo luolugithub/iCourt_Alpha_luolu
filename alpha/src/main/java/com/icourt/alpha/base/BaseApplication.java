@@ -10,7 +10,7 @@ import com.bugtags.library.Bugtags;
 import com.bugtags.library.BugtagsOptions;
 import com.icourt.alpha.BuildConfig;
 import com.icourt.alpha.R;
-import com.icourt.alpha.activity.IMChatActivity;
+import com.icourt.alpha.activity.ChatActivity;
 import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.icourt.alpha.http.HConst;
 import com.icourt.alpha.utils.ActivityLifecycleTaskCallbacks;
@@ -116,7 +116,7 @@ public class BaseApplication extends MultiDexApplication {
             config = new com.netease.nimlib.sdk.StatusBarNotificationConfig();
         }
         // 点击通知需要跳转到的界面
-        config.notificationEntrance = IMChatActivity.class;//通知栏提醒的响应intent的activity类型
+        config.notificationEntrance = ChatActivity.class;//通知栏提醒的响应intent的activity类型
         config.notificationSmallIconId = R.mipmap.android_app_icon;//状态栏提醒的小图标的资源ID
 
         // 通知铃声的uri字符串

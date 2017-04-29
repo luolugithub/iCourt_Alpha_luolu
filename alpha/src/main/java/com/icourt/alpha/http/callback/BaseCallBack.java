@@ -64,7 +64,7 @@ public abstract class BaseCallBack<T> implements Callback<T> {
 
             sendLimitHttpLog(call, t, "http状态异常:" + combHttpExceptionStr);
         } else if (t instanceof JsonParseException) {
-            defNotify("解析异常,PHP在弄啥呢？");
+            defNotify("服务器Json格式错误");
 
             sendLimitHttpLog(call, t, "json解析异常");
         } else if (t instanceof java.net.UnknownHostException) {
