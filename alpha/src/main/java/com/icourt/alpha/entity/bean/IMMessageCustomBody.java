@@ -20,6 +20,8 @@ public class IMMessageCustomBody {
     public String fromPic;      //头像,暂时本地用
     public String to;
     private int ope;            //0点对点，1群聊
+
+    @Const.MSG_TYPE
     public int show_type;
     public long send_time;
     public String magic_id;
@@ -97,6 +99,28 @@ public class IMMessageCustomBody {
                 UUID.randomUUID().toString(),
                 PLATFORM_ANDROID);
         imMessageCustomBody.ext = IMMessageExtBody.createAtExtBody(usersAccids, isAtall);
+        return imMessageCustomBody;
+    }
+
+    /**
+     * 构建 钉的消息
+     *
+     * @param chatType
+     * @param name
+     * @param to
+     * @param isDing
+     * @param dingMsgId
+     * @return
+     */
+    public static IMMessageCustomBody createDingMsg(@Const.CHAT_TYPE int chatType, String name, String to, boolean isDing, String dingMsgId) {
+        IMMessageCustomBody imMessageCustomBody = new IMMessageCustomBody(chatType,
+                Const.MSG_TYPE_DING,
+                name,
+                to,
+                null,
+                UUID.randomUUID().toString(),
+                PLATFORM_ANDROID);
+        imMessageCustomBody.ext = IMMessageExtBody.createDingExtBody(isDing, dingMsgId);
         return imMessageCustomBody;
     }
 }

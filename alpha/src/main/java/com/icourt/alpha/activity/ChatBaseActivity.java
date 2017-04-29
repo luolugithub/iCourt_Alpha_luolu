@@ -1,13 +1,20 @@
 package com.icourt.alpha.activity;
 
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.CheckResult;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
+import android.view.View;
+import android.widget.TextView;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
+import com.icourt.alpha.R;
+import com.icourt.alpha.adapter.ChatAdapter;
+import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.constants.Const;
 import com.icourt.alpha.db.dbservice.ContactDbService;
@@ -18,6 +25,7 @@ import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.INIMessageListener;
 import com.icourt.alpha.utils.JsonUtils;
+import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.api.RequestUtils;
 import com.netease.nimlib.sdk.NIMClient;
 import com.netease.nimlib.sdk.Observer;
@@ -32,6 +40,15 @@ import java.util.List;
 import retrofit2.Call;
 import retrofit2.Response;
 
+import static com.icourt.alpha.constants.Const.MSG_TYPE_ALPHA;
+import static com.icourt.alpha.constants.Const.MSG_TYPE_AT;
+import static com.icourt.alpha.constants.Const.MSG_TYPE_DING;
+import static com.icourt.alpha.constants.Const.MSG_TYPE_FILE;
+import static com.icourt.alpha.constants.Const.MSG_TYPE_LINK;
+import static com.icourt.alpha.constants.Const.MSG_TYPE_SYS;
+import static com.icourt.alpha.constants.Const.MSG_TYPE_TXT;
+import static com.icourt.alpha.constants.Const.MSG_TYPE_VOICE;
+
 /**
  * Description 聊天基类
  * Company Beijing icourt
@@ -39,7 +56,7 @@ import retrofit2.Response;
  * date createTime：2017/4/24
  * version 1.0.0
  */
-public abstract class ChatBaseActivity extends BaseActivity implements INIMessageListener {
+public abstract class ChatBaseActivity extends BaseActivity implements INIMessageListener, BaseRecyclerAdapter.OnItemLongClickListener {
 
     /**
      * 收到消息
@@ -312,5 +329,163 @@ public abstract class ChatBaseActivity extends BaseActivity implements INIMessag
         return imBodyEntity;
     }
 
+    @Override
+    public void onItemLongClick(BaseRecyclerAdapter adapter, final BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
+        if (adapter instanceof ChatAdapter) {
+            ChatAdapter chatAdapter = (ChatAdapter) adapter;
+            final IMCustomerMessageEntity imCustomerMessageEntity = chatAdapter.getItem(position);
+            if (imCustomerMessageEntity == null) return;
+            if (imCustomerMessageEntity.customIMBody == null) return;
+            switch (imCustomerMessageEntity.customIMBody.show_type) {
+                case MSG_TYPE_AT:
+                case MSG_TYPE_TXT:
+                    new AlertDialog.Builder(getContext())
+                            .setItems(new CharSequence[]{"复制", "钉", "收藏", "转任务"}, new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    switch (which) {
+                                        case 0:
+                                            TextView chat_txt_tv = holder.obtainView(R.id.chat_txt_tv);
+                                            msgActionCopy(chat_txt_tv);
+                                            break;
+                                        case 1:
+                                            msgActionDing(true, imCustomerMessageEntity.customIMBody.id);
+                                            break;
+                                        case 2:
+                                            msgActionCollect(imCustomerMessageEntity.customIMBody.id);
+                                            //msgActionCollectCancel(imCustomerMessageEntity.customIMBody.id);
+                                            break;
+                                        case 3:
+                                            msgActionConver2Task(imCustomerMessageEntity.customIMBody);
+                                            break;
+                                    }
+                                }
+                            }).show();
+                    break;
+                case MSG_TYPE_FILE:
+                    new AlertDialog.Builder(getContext())
+                            .setItems(new CharSequence[]{"钉", "收藏", "转任务"}, new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    switch (which) {
+                                        case 0:
+                                            msgActionDing(true, imCustomerMessageEntity.customIMBody.id);
+                                            break;
+                                        case 1:
+                                            msgActionCollect(imCustomerMessageEntity.customIMBody.id);
+                                            //msgActionCollectCancel(imCustomerMessageEntity.customIMBody.id);
+                                            break;
+                                        case 2:
+                                            msgActionConver2Task(imCustomerMessageEntity.customIMBody);
+                                            break;
+                                    }
+                                }
+                            }).show();
+                    break;
+                case MSG_TYPE_DING:
+                    break;
+                case MSG_TYPE_SYS:
+                    break;
+                case MSG_TYPE_LINK:
+                    break;
+                case MSG_TYPE_ALPHA://暂时不用处理
+                    break;
+                case MSG_TYPE_VOICE://暂时不用处理
+                    break;
+            }
+        }
 
+    }
+
+    /**
+     * 消息转任务
+     *
+     * @param customIMBody
+     */
+    protected final void msgActionConver2Task(IMMessageCustomBody customIMBody) {
+        //TODO 转任务
+    }
+
+
+    /**
+     * 消息复制
+     *
+     * @param textView
+     */
+    protected final void msgActionCopy(TextView textView) {
+        if (textView == null) return;
+        if (TextUtils.isEmpty(textView.getText())) return;
+        SystemUtils.copyToClipboard(getContext(), "msg", textView.getText());
+        showTopSnackBar("复制成功");
+    }
+
+    /**
+     * 钉消息
+     *
+     * @param isDing    钉 true 取消钉 false
+     * @param dingMsgId
+     */
+    protected final void msgActionDing(boolean isDing, String dingMsgId) {
+        IMMessageCustomBody msgPostEntity = IMMessageCustomBody.createDingMsg(getIMChatType(),
+                getLoadedLoginName(),
+                getIMChatId(),
+                isDing,
+                dingMsgId);
+        String jsonBody = null;
+        try {
+            jsonBody = JsonUtils.Gson2String(msgPostEntity);
+        } catch (JsonParseException e) {
+            e.printStackTrace();
+        }
+        getApi().msgAdd(RequestUtils.createJsonBody(jsonBody))
+                .enqueue(new SimpleCallBack<JsonElement>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
+                    }
+
+                    @Override
+                    public void defNotify(String noticeStr) {
+                        //super.defNotify(noticeStr);
+                    }
+                });
+    }
+
+    /**
+     * 收藏消息
+     *
+     * @param msgId
+     */
+    protected final void msgActionCollect(String msgId) {
+        getApi().msgCollect(msgId)
+                .enqueue(new SimpleCallBack<JsonElement>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
+                    }
+
+                    @Override
+                    public void defNotify(String noticeStr) {
+                        //super.defNotify(noticeStr);
+                    }
+                });
+    }
+
+    /**
+     * 收藏消息 取消
+     *
+     * @param msgId
+     */
+    protected final void msgActionCollectCancel(String msgId) {
+        getApi().msgCollectCancel(msgId)
+                .enqueue(new SimpleCallBack<JsonElement>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
+
+                    }
+
+                    @Override
+                    public void defNotify(String noticeStr) {
+                        //super.defNotify(noticeStr);
+                    }
+                });
+    }
 }

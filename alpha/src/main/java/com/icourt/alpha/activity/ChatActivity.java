@@ -551,6 +551,7 @@ public class ChatActivity extends ChatBaseActivity {
         recyclerView.setLayoutManager(linearLayoutManager);
         recyclerView.setHasFixedSize(true);
         recyclerView.setAdapter(chatAdapter = new ChatAdapter(getLoadedLoginToken()));
+        chatAdapter.setOnItemLongClickListener(this);
         recyclerView.addItemDecoration(new ChatItemDecoration(getContext(), chatAdapter));
         refreshLayout.setXRefreshViewListener(new XRefreshView.SimpleXRefreshListener() {
             @Override
@@ -825,4 +826,7 @@ public class ChatActivity extends ChatBaseActivity {
                 break;
         }
     }
+
+
+
 }

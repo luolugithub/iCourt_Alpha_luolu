@@ -97,7 +97,7 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMCustomerMessageEntit
         }
         return R.layout.adapter_item_chat_left_txt;
     }
-
+    
     @Override
     public int getItemViewType(int position) {
         IMCustomerMessageEntity item = getItem(position);

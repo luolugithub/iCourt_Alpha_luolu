@@ -41,6 +41,11 @@ public final class IMMessageExtBody {
         this.is_all = is_all;
     }
 
+    public IMMessageExtBody(String id, boolean pin) {
+        this.id = id;
+        this.pin = pin;
+    }
+
     /**
      * 构建 扩展的at消息
      *
@@ -51,6 +56,18 @@ public final class IMMessageExtBody {
     public static IMMessageExtBody createAtExtBody(List<String> users, boolean is_all) {
         return new IMMessageExtBody(users, is_all);
     }
+
+    /**
+     * 构建 扩展的钉消息
+     *
+     * @param isPing
+     * @param pingMsgId
+     * @return
+     */
+    public static IMMessageExtBody createDingExtBody(boolean isPing, String pingMsgId) {
+        return new IMMessageExtBody(pingMsgId, isPing);
+    }
+
 
     public IMMessageExtBody() {
     }
