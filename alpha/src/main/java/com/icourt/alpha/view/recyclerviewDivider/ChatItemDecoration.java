@@ -26,6 +26,7 @@ public class ChatItemDecoration extends RecyclerView.ItemDecoration {
     private static final int DEFAULE_COLOR_LINE = 0xFFE7E7E7;
     private float lineHeight;//线条高度
     private float dividerHeight;//整个分割线高度
+    private ITimeDividerInterface iTimeDividerInterface;
 
     private float sp2px(@NonNull Context context, int sp) {
         return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, sp, context.getResources().getDisplayMetrics());
@@ -35,54 +36,61 @@ public class ChatItemDecoration extends RecyclerView.ItemDecoration {
         return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, context.getResources().getDisplayMetrics());
     }
 
-    public ChatItemDecoration(@NonNull Context context) {
-        mPaint = new Paint();
-        mPaint.setTextSize(mTextSize = sp2px(context, 13));
-        mPaint.setColor(DEFAULE_COLOR_TEXT);
-        mPaint.setAntiAlias(true);
-        mBounds = new Rect();
-        lineHeight = dp2px(context, 1);
-        dividerHeight = mTextSize * 3;
+    public ChatItemDecoration(@NonNull Context context, @NonNull ITimeDividerInterface iTimeDividerInterface) {
+        this.mPaint = new Paint();
+        this.mPaint.setTextSize(mTextSize = sp2px(context, 13));
+        this.mPaint.setColor(DEFAULE_COLOR_TEXT);
+        this.mPaint.setAntiAlias(true);
+        this.mBounds = new Rect();
+        this.lineHeight = dp2px(context, 1);
+        this.dividerHeight = mTextSize * 3;
+        this.iTimeDividerInterface = iTimeDividerInterface;
     }
 
     @Override
     public void onDraw(Canvas c, RecyclerView parent, RecyclerView.State state) {
-        //super.onDraw(c, parent, state);
+        if (iTimeDividerInterface == null) {
+            super.onDraw(c, parent, state);
+            return;
+        }
         final int childCount = parent.getChildCount();
         for (int i = 0; i < childCount; i++) {
             final RecyclerView.LayoutParams params = (RecyclerView.LayoutParams) parent.getChildAt(i)
                     .getLayoutParams();
-            int position = params.getViewLayoutPosition();
-            if (position % 3 != 0) continue;//注意 这里为模拟 找到你adapter中的时间分割点
-            final View child = parent.getChildAt(i);
-            String tag = "上午 10:36";//模拟数据
-            mPaint.setColor(DEFAULE_COLOR_TEXT);
-            mPaint.getTextBounds(tag, 0, tag.length(), mBounds);
-            if (mBounds.width() >= child.getWidth()) {
-                c.drawText(tag, 0, child.getBottom(), mPaint);
-            } else {
-                float txtStartX = (child.getWidth() - mBounds.width()) / 2;
-                float txtEndX = txtStartX + mBounds.width();
-                float dividerCenterY = dividerHeight / 2 + child.getBottom();
+            //int position = params.getViewLayoutPosition();
+            int adapterPosition = params.getViewAdapterPosition();
+            if (iTimeDividerInterface.isShowTimeDivider(adapterPosition)) {
 
-                //画中间文本
-                c.drawText(tag, txtStartX, dividerCenterY + mTextSize * 0.25f, mPaint);
+                final View child = parent.getChildAt(i);
+                String tag = iTimeDividerInterface.getShowTime(adapterPosition);
+                mPaint.setColor(DEFAULE_COLOR_TEXT);
+                mPaint.getTextBounds(tag, 0, tag.length(), mBounds);
+                if (mBounds.width() >= child.getWidth()) {
+                    c.drawText(tag, 0, child.getBottom(), mPaint);
+                } else {
+                    float txtStartX = (child.getWidth() - mBounds.width()) / 2;
+                    float txtEndX = txtStartX + mBounds.width();
+                    float dividerCenterY = dividerHeight / 2 + child.getBottom();
 
-                float lineWidth = mTextSize * 2;
-                float lineTxtMargin = mTextSize;
+                    //画中间文本
+                    c.drawText(tag, txtStartX, dividerCenterY + mTextSize * 0.25f, mPaint);
 
-                float leftLineStartX = txtStartX - lineWidth - lineTxtMargin;
-                float leftLineEndX = leftLineStartX + lineWidth;
+                    float lineWidth = mTextSize * 2;
+                    float lineTxtMargin = mTextSize;
 
-                float rightLineStartX = txtEndX + lineTxtMargin;
-                float rightLineEndX = rightLineStartX + lineWidth;
+                    float leftLineStartX = txtStartX - lineWidth - lineTxtMargin;
+                    float leftLineEndX = leftLineStartX + lineWidth;
 
-                //画两边的线条
-                if (leftLineStartX > 0 && rightLineEndX < child.getWidth()) {
-                    mPaint.setColor(DEFAULE_COLOR_LINE);
-                    c.drawRect(leftLineStartX, dividerCenterY - lineHeight * 0.5f, leftLineEndX, dividerCenterY + lineHeight * 0.5f, mPaint);
-                    mPaint.setColor(DEFAULE_COLOR_LINE);
-                    c.drawRect(rightLineStartX, dividerCenterY - lineHeight * 0.5f, rightLineEndX, dividerCenterY + lineHeight * 0.5f, mPaint);
+                    float rightLineStartX = txtEndX + lineTxtMargin;
+                    float rightLineEndX = rightLineStartX + lineWidth;
+
+                    //画两边的线条
+                    if (leftLineStartX > 0 && rightLineEndX < child.getWidth()) {
+                        mPaint.setColor(DEFAULE_COLOR_LINE);
+                        c.drawRect(leftLineStartX, dividerCenterY - lineHeight * 0.5f, leftLineEndX, dividerCenterY + lineHeight * 0.5f, mPaint);
+                        mPaint.setColor(DEFAULE_COLOR_LINE);
+                        c.drawRect(rightLineStartX, dividerCenterY - lineHeight * 0.5f, rightLineEndX, dividerCenterY + lineHeight * 0.5f, mPaint);
+                    }
                 }
             }
         }
@@ -92,6 +100,10 @@ public class ChatItemDecoration extends RecyclerView.ItemDecoration {
     @Override
     public void getItemOffsets(Rect outRect, View view, RecyclerView parent, RecyclerView.State state) {
         super.getItemOffsets(outRect, view, parent, state);
-        outRect.set(0, 0, 0, (int) dividerHeight);
+        final RecyclerView.LayoutParams params = (RecyclerView.LayoutParams) view.getLayoutParams();
+        int adapterPosition = params.getViewAdapterPosition();
+        if (iTimeDividerInterface != null && iTimeDividerInterface.isShowTimeDivider(adapterPosition)) {
+            outRect.set(0, 0, 0, (int) dividerHeight);
+        }
     }
 }

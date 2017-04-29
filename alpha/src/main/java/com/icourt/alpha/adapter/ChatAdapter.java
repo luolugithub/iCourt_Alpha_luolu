@@ -1,5 +1,6 @@
 package com.icourt.alpha.adapter;
 
+import android.support.annotation.NonNull;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -9,8 +10,15 @@ import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.baseadapter.BaseArrayRecyclerAdapter;
 import com.icourt.alpha.constants.Const;
 import com.icourt.alpha.entity.bean.IMCustomerMessageEntity;
+import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.GlideUtils;
 import com.icourt.alpha.utils.IMUtils;
+import com.icourt.alpha.view.recyclerviewDivider.ITimeDividerInterface;
+
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.Set;
 
 import static com.netease.nimlib.sdk.msg.constant.MsgDirectionEnum.In;
 import static com.netease.nimlib.sdk.msg.constant.MsgDirectionEnum.Out;
@@ -22,7 +30,18 @@ import static com.netease.nimlib.sdk.msg.constant.MsgDirectionEnum.Out;
  * date createTime：2017/4/24
  * version 1.0.0
  */
-public class ChatAdapter extends BaseArrayRecyclerAdapter<IMCustomerMessageEntity> {
+public class ChatAdapter extends BaseArrayRecyclerAdapter<IMCustomerMessageEntity> implements ITimeDividerInterface {
+    private Set<Long> timeShowArray = new HashSet<>();//时间分割线消息
+    private Comparator<Long> longComparator = new Comparator<Long>() {
+        @Override
+        public int compare(Long o1, Long o2) {
+            if (o1 != null && o2 != null) {
+                return o1.compareTo(o2);
+            }
+            return 0;
+        }
+    };
+    private final int TIME_DIVIDER = 5 * 60 * 1_000;
 
     //左边布局 类型
     private static final int TYPE_LEFT_TXT = 0;
@@ -131,6 +150,10 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMCustomerMessageEntit
     @Override
     public void onBindHoder(ViewHolder holder, IMCustomerMessageEntity imMessage, int position) {
         if (imMessage == null) return;
+
+        //分割时间段
+        addTimeDividerArray(imMessage, position);
+
         //加载头像
         setCommonUserIcon(holder, imMessage, position);
 
@@ -176,7 +199,40 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMCustomerMessageEntit
         }
     }
 
+    /**
+     * 处理时间分割线
+     *
+     * @param imMessage
+     * @param position
+     */
+    private void addTimeDividerArray(IMCustomerMessageEntity imMessage, int position) {
+        if (imMessage == null) return;
+        if (imMessage.imMessage == null) return;
 
+        //消息时间本身已经有序
+
+        //用云信的时间
+        if (timeShowArray.isEmpty()) {
+            timeShowArray.add(imMessage.imMessage.getTime());
+        } else {
+            if (!timeShowArray.contains(imMessage.imMessage.getTime())) {
+                if (imMessage.imMessage.getTime() - Collections.max(timeShowArray, longComparator).longValue() >= TIME_DIVIDER) {
+                    timeShowArray.add(imMessage.imMessage.getTime());
+                } else if (Collections.min(timeShowArray, longComparator).longValue() - imMessage.imMessage.getTime() >= TIME_DIVIDER) {
+                    timeShowArray.add(imMessage.imMessage.getTime());
+                }
+            }
+        }
+    }
+
+
+    /**
+     * 设置头像
+     *
+     * @param holder
+     * @param imMessage
+     * @param position
+     */
     private void setCommonUserIcon(ViewHolder holder, IMCustomerMessageEntity imMessage, int position) {
         ImageView chat_user_icon_iv = holder.obtainView(R.id.chat_user_icon_iv);
         if (chat_user_icon_iv != null) {
@@ -361,5 +417,32 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMCustomerMessageEntit
         urlBuilder.append("&width=");
         urlBuilder.append(width);
         return urlBuilder.toString();
+    }
+
+
+    /**
+     * 是否显示时间 时间间隔5分钟
+     *
+     * @param pos
+     * @return
+     */
+    @Override
+    public boolean isShowTimeDivider(int pos) {
+        IMCustomerMessageEntity item = getItem(pos);
+        return item != null && item.imMessage != null && timeShowArray.contains(item.imMessage.getTime());
+    }
+
+    /**
+     * 显示的时间字符串 isShowTimeDivider=true 不可以返回null
+     *
+     * @param pos
+     * @return
+     */
+    @NonNull
+    @Override
+    public String getShowTime(int pos) {
+        IMCustomerMessageEntity item = getItem(pos);
+        return item != null && item.imMessage != null ?
+                DateUtils.getTimeShowString(item.imMessage.getTime(), true) : "null";
     }
 }
