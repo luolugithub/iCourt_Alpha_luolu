@@ -58,6 +58,7 @@
             android:layout_marginLeft="8dp"
             android:background="@drawable/btn_send_bg_disable"
             android:text="@string/btn_text_send"
+            android:visibility="gone"
             android:textColor="@color/btn_send_textcolor"
             android:textSize="12sp" />
     </LinearLayout>

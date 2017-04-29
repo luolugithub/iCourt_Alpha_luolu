@@ -24,5 +24,7 @@
         android:paddingLeft="15dp"
         android:paddingRight="10dp"
         android:paddingTop="10dp"
-        android:text="消息dsjhghhgghv" />
+        android:textColor="@color/alpha_font_color_black"
+        android:textSize="@dimen/alpha_font_size_comm"
+        android:text="消息 hahaha" />
 </LinearLayout>

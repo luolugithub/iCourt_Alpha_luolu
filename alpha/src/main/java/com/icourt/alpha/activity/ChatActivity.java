@@ -37,6 +37,7 @@ import com.icourt.alpha.utils.IMUtils;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.view.emoji.MySelectPhotoLayout;
 import com.icourt.alpha.view.emoji.MyXhsEmoticonsKeyBoard;
+import com.icourt.alpha.view.recyclerviewDivider.ChatItemDecoration;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 import com.icourt.api.RequestUtils;
 import com.netease.nimlib.sdk.NIMClient;
@@ -549,6 +550,7 @@ public class ChatActivity extends ChatBaseActivity {
         linearLayoutManager = new LinearLayoutManager(getContext());
         recyclerView.setLayoutManager(linearLayoutManager);
         recyclerView.setHasFixedSize(true);
+        recyclerView.addItemDecoration(new ChatItemDecoration(getContext()));
         recyclerView.setAdapter(chatAdapter = new ChatAdapter(getLoadedLoginToken()));
         refreshLayout.setXRefreshViewListener(new XRefreshView.SimpleXRefreshListener() {
             @Override
