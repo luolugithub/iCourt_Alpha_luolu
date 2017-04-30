@@ -37,6 +37,7 @@ import com.icourt.alpha.entity.event.GroupActionEvent;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.JsonUtils;
+import com.icourt.alpha.utils.StringUtils;
 import com.icourt.api.RequestUtils;
 import com.netease.nimlib.sdk.NIMClient;
 import com.netease.nimlib.sdk.RequestCallback;
@@ -150,6 +151,8 @@ public class GroupDetailActivity extends BaseActivity {
         contactDbService = new ContactDbService(getLoginUserId());
         ImageView titleActionImage = getTitleActionImage();
         setViewVisible(titleActionImage, false);
+        setViewVisible(groupMemberInviteTv, false);
+        setViewVisible(groupJoinOrQuitBtn, false);
         Serializable serializableExtra = getIntent().getSerializableExtra(KEY_GROUP);
         if (serializableExtra instanceof GroupEntity) {
             groupEntity = (GroupEntity) serializableExtra;
@@ -185,8 +188,24 @@ public class GroupDetailActivity extends BaseActivity {
                             groupJoinOrQuitBtn.setText(groupJoinOrQuitBtn.isSelected() ? "退出讨论组" : "加入讨论组");
                             ImageView titleActionImage = getTitleActionImage();
 
-                            setViewVisible(titleActionImage, TextUtils.equals(getLoginUserId(), response.body().result.admin_id));
+                            boolean isAdmin = StringUtils.equalsIgnoreCase(getLoginUserId(), response.body().result.admin_id, false);
 
+                            //管理员设置按钮展示
+                            setViewVisible(titleActionImage, isAdmin);
+
+                            //邀请按钮展示
+                            setViewVisible(groupMemberInviteTv, response.body().result.is_private);
+
+                            //加入/退出的展示
+                            if (isAdmin) {
+                                setViewVisible(groupJoinOrQuitBtn, false);
+                            } else {
+                                setViewVisible(groupJoinOrQuitBtn, true);
+                                boolean joined = StringUtils.containsIgnoreCase(response.body().result.members, getLoginUserId());
+                                groupJoinOrQuitBtn.setText(joined ? "退出讨论组" : "加入讨论组");
+                            }
+
+                            //查询本地uid对应的头像
                             queryMembersByUids(response.body().result.members);
                         }
                     }
@@ -200,6 +219,7 @@ public class GroupDetailActivity extends BaseActivity {
         getIsSetGroupTop();
         getIsSetGroupNoDisturbing();
     }
+
 
     /**
      * 根据uid 查询本地联系人
@@ -277,6 +297,9 @@ public class GroupDetailActivity extends BaseActivity {
                 } else {
                     joinGroup();
                 }
+                break;
+            case R.id.titleAction:
+                GroupSettingActivity.launch(getContext());
                 break;
             default:
                 super.onClick(v);

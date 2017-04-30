@@ -8,6 +8,7 @@ import com.icourt.alpha.view.recyclerviewDivider.ISuspensionAction;
 import com.icourt.alpha.view.recyclerviewDivider.ISuspensionInterface;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * Description
@@ -22,6 +23,12 @@ public class GroupEntity implements ISuspensionInterface, ISuspensionAction, Ser
     public String tid;
     public String name;
     public String intro;
+
+
+    //附属信息
+    public String admin_id;
+    public String create_id;
+    public List<String> members;
 
     @Override
     public boolean isShowSuspension() {

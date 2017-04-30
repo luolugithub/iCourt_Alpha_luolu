@@ -1,15 +1,19 @@
 package com.icourt.alpha.entity.bean;
 
+import com.icourt.alpha.constants.Const;
+
 import java.util.List;
 
 /**
- * Description
+ * Description 【模型 请勿轻易修改】
  * Company Beijing icourt
  * author  youxuan  E-mail:xuanyouwu@163.com
  * date createTime：2017/4/28
  * version 1.0.0
  */
 public final class IMMessageExtBody {
+    //【模型 请勿轻易修改】
+
     //文件消息 file
     public String repo_id;
     public String path;
@@ -35,6 +39,20 @@ public final class IMMessageExtBody {
     public String thumb;
     public String desc;
     public String url;
+
+
+    //包裹的消息
+    public String from;         //发送方名称
+    public String fromPic;      //头像,暂时本地用
+    public String to;           //对方id uid或者tid
+    @Const.CHAT_TYPE
+    private int ope;            //0点对点，1群聊
+    @Const.MSG_TYPE
+    public int show_type;
+    public long send_time;
+    public String magic_id;
+    public String platform;
+    public IMMessageExtBody ext;
 
     private IMMessageExtBody(List<String> users, boolean is_all) {
         this.users = users;

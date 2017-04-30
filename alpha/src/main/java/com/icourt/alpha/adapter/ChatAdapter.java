@@ -1,6 +1,7 @@
 package com.icourt.alpha.adapter;
 
 import android.support.annotation.NonNull;
+import android.text.TextUtils;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -97,7 +98,7 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMCustomerMessageEntit
         }
         return R.layout.adapter_item_chat_left_txt;
     }
-    
+
     @Override
     public int getItemViewType(int position) {
         IMCustomerMessageEntity item = getItem(position);
@@ -296,11 +297,25 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMCustomerMessageEntit
      * 初始化左边 钉的文本布局
      *
      * @param holder
-     * @param o
+     * @param imMessage
      * @param position
      */
-    private void setTypeLeftDingTxt(ViewHolder holder, Object o, int position) {
+    private void setTypeLeftDingTxt(ViewHolder holder, IMCustomerMessageEntity imMessage, int position) {
+        if (imMessage == null) return;
+        if (imMessage.customIMBody == null) return;
+        TextView chat_ding_title = holder.obtainView(R.id.chat_ding_title);
+        TextView chat_ding_content_tv = holder.obtainView(R.id.chat_ding_content_tv);
+        ImageView chat_ding_source_user_icon_iv = holder.obtainView(R.id.chat_ding_source_user_icon_iv);
 
+        TextView chat_ding_source_user_name_tv = holder.obtainView(R.id.chat_ding_source_user_name_tv);
+        chat_ding_title.setText(TextUtils.isEmpty(imMessage.customIMBody.content) ? "钉了一条消息" : imMessage.customIMBody.content);
+        if (imMessage.customIMBody.ext != null) {
+            chat_ding_content_tv.setText(TextUtils.isEmpty(imMessage.customIMBody.ext.content) ? "文本消息" : imMessage.customIMBody.ext.content);
+            chat_ding_source_user_name_tv.setText(imMessage.customIMBody.ext.name);
+        } else {
+            chat_ding_content_tv.setText("文本消息");
+            chat_ding_source_user_name_tv.setText("好友");
+        }
     }
 
 
@@ -370,11 +385,25 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMCustomerMessageEntit
      * 初始化右边 钉的文本布局
      *
      * @param holder
-     * @param o
+     * @param imMessage
      * @param position
      */
-    private void setTypeRightDingTxt(ViewHolder holder, Object o, int position) {
+    private void setTypeRightDingTxt(ViewHolder holder, IMCustomerMessageEntity imMessage, int position) {
+        if (imMessage == null) return;
+        if (imMessage.customIMBody == null) return;
+        TextView chat_ding_title = holder.obtainView(R.id.chat_ding_title);
+        TextView chat_ding_content_tv = holder.obtainView(R.id.chat_ding_content_tv);
+        ImageView chat_ding_source_user_icon_iv = holder.obtainView(R.id.chat_ding_source_user_icon_iv);
 
+        TextView chat_ding_source_user_name_tv = holder.obtainView(R.id.chat_ding_source_user_name_tv);
+        chat_ding_title.setText(TextUtils.isEmpty(imMessage.customIMBody.content) ? "钉了一条消息" : imMessage.customIMBody.content);
+        if (imMessage.customIMBody.ext != null) {
+            chat_ding_content_tv.setText(TextUtils.isEmpty(imMessage.customIMBody.ext.content) ? "文本消息" : imMessage.customIMBody.ext.content);
+            chat_ding_source_user_name_tv.setText(imMessage.customIMBody.ext.name);
+        } else {
+            chat_ding_content_tv.setText("文本消息");
+            chat_ding_source_user_name_tv.setText("好友");
+        }
     }
 
 

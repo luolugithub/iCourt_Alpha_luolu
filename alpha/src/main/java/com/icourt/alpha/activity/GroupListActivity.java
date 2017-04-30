@@ -29,6 +29,7 @@ import com.icourt.alpha.utils.ActionConstants;
 import com.icourt.alpha.utils.DensityUtil;
 import com.icourt.alpha.utils.IndexUtils;
 import com.icourt.alpha.utils.PinyinComparator;
+import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.view.recyclerviewDivider.SuspensionDecoration;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 
@@ -281,11 +282,40 @@ public class GroupListActivity extends BaseActivity implements BaseRecyclerAdapt
                                 item.name);
                         break;
                     case GROUP_TYPE_TYPE_ALL:
-                        GroupDetailActivity.launch(getContext(), item);
+                        if (isMyJionedGroup(item)) {
+                            ChatActivity.launchTEAM(getContext(),
+                                    item.tid,
+                                    item.id,
+                                    item.name);
+                        } else {
+                            GroupDetailActivity.launch(getContext(), item);
+                        }
                         break;
                 }
             }
         }
+    }
+
+
+    /**
+     * 是否是我加入的群组
+     *
+     * @param item
+     * @return
+     */
+    private boolean isMyJionedGroup(GroupEntity item) {
+        if (item != null) {
+            String loginUserId = getLoginUserId();
+            if (StringUtils.equalsIgnoreCase(loginUserId, item.admin_id, false)) {
+                return true;
+            }
+            //创建者可能离开群组
+           /* if (StringUtils.equalsIgnoreCase(loginUserId, item.create_id, false)) {
+                return true;
+            }*/
+            return StringUtils.containsIgnoreCase(item.members, loginUserId);
+        }
+        return false;
     }
 
     @Override

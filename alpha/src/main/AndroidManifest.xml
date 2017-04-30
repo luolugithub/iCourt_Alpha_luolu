@@ -141,6 +141,10 @@
             android:screenOrientation="portrait"
             android:windowSoftInputMode="stateHidden" />
         <activity
+            android:name=".activity.GroupSettingActivity"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="stateHidden" />
+        <activity
             android:name=".activity.ChatActivity"
             android:alwaysRetainTaskState="true"
             android:configChanges="orientation|keyboardHidden|navigation"
