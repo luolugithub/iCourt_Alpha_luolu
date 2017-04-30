@@ -11,4 +11,6 @@ public class GroupDetailEntity extends GroupEntity {
     public int isJoin;
     public int count;
     public boolean is_private;
+    public boolean member_invite;
+    public boolean chat_history;
 }

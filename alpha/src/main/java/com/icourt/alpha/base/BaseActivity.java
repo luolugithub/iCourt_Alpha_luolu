@@ -346,6 +346,20 @@ public abstract class BaseActivity
         return v;
     }
 
+    /**
+     * 获取控件的文本
+     *
+     * @param textView
+     * @param defaultString
+     * @return
+     */
+    protected final String getTextString(TextView textView, String defaultString) {
+        if (textView != null && !TextUtils.isEmpty(textView.getText())) {
+            return textView.getText().toString();
+        }
+        return defaultString;
+    }
+
     @CallSuper
     @Override
     public void onClick(View v) {

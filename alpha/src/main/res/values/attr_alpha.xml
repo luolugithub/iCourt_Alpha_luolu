@@ -6,8 +6,7 @@
 
 
     <color name="alpha_divider_color">#ededed</color>                        <!-- 分割线 -->
-    <color name="alpha_font_color_title">@color/alpha_font_color_black
-    </color>                     <!-- 标题字体颜色-->
+    <color name="alpha_font_color_title">#FF030303</color>                     <!-- 标题字体颜色-->
     <color name="alpha_font_color_black">#FF4A4A4A</color>                   <!-- 普通黑色-->
     <color name="alpha_font_color_gray">#FF8c8f92</color>                    <!-- 普通灰色 -->
     <color name="alpha_font_color_orange">#FFed6c00</color>
@@ -27,6 +26,6 @@
     <dimen name="alpha_font_size_mini_lowest">12sp</dimen>      <!-- 页面最小字体 -->
 
     <!-- 布局的内容边距 常见左边距;右边距; -->
-    <dimen name="alpha_padding_content">11.5dp</dimen>          <!-- 内容边距 -->
+    <dimen name="alpha_padding_content">15dp</dimen>          <!-- 内容边距 -->
 
 </resources>

@@ -96,7 +96,7 @@
                 android:id="@+id/group_member_iv"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:src="@mipmap/icon_member_16" />
+                android:src="@mipmap/ic_members" />
 
             <TextView
                 android:id="@+id/group_member_num_tv"

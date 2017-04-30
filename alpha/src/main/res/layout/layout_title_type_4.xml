@@ -16,7 +16,8 @@
         <ImageView
             android:id="@id/titleBack"
             android:layout_width="38dp"
-            android:layout_height="38dp"
+            android:layout_height="match_parent"
+            android:layout_marginLeft="5dp"
             android:background="?attr/selectableItemBackground"
             android:padding="10dp"
             android:src="@mipmap/header_icon_back" />
@@ -38,7 +39,7 @@
         <ImageView
             android:id="@id/titleAction"
             android:layout_width="38dp"
-            android:layout_height="38dp"
+            android:layout_height="match_parent"
             android:background="?attr/selectableItemBackground"
             android:padding="10dp"
             android:scaleType="center"
@@ -47,7 +48,8 @@
         <ImageView
             android:id="@id/titleAction2"
             android:layout_width="38dp"
-            android:layout_height="38dp"
+            android:layout_height="match_parent"
+            android:layout_marginRight="5dp"
             android:background="?attr/selectableItemBackground"
             android:padding="10dp"
             android:src="@mipmap/header_icon_add" />

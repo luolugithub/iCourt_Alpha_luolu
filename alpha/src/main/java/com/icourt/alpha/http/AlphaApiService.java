@@ -415,8 +415,9 @@ public interface AlphaApiService {
      * @param groupInfo
      * @return
      */
-    @PUT("http://10.25.115.31:8083/ilaw/api/v3/im/groups")
-    Call<ResEntity<JsonElement>> groupUpdate(@Body RequestBody groupInfo);
+    @PUT("http://10.25.115.31:8083/ilaw/api/v3/im/groups/{tid}")
+    Call<ResEntity<JsonElement>> groupUpdate(@Path("tid") String tid,
+                                             @Body RequestBody groupInfo);
 
     /**
      * 获取群组

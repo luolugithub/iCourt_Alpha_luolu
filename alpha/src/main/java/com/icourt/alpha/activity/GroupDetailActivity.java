@@ -116,6 +116,7 @@ public class GroupDetailActivity extends BaseActivity {
             groupMemberNumTv.setText(String.format("成员(%s)", contactAdapter.getItemCount()));
         }
     };
+    GroupDetailEntity groupDetailEntity;
 
     public static void launch(@NonNull Context context, String groupId, String tid) {
         if (context == null) return;
@@ -182,6 +183,8 @@ public class GroupDetailActivity extends BaseActivity {
                     public void onSuccess(Call<ResEntity<GroupDetailEntity>> call, Response<ResEntity<GroupDetailEntity>> response) {
                         dismissLoadingDialog();
                         if (response.body().result != null) {
+                            groupDetailEntity = response.body().result;
+
                             groupNameTv.setText(response.body().result.name);
                             groupDescTv.setText(response.body().result.intro);
                             groupJoinOrQuitBtn.setSelected(response.body().result.isJoin == 1);
@@ -299,7 +302,7 @@ public class GroupDetailActivity extends BaseActivity {
                 }
                 break;
             case R.id.titleAction:
-                GroupSettingActivity.launch(getContext());
+                GroupSettingActivity.launch(getContext(),groupDetailEntity);
                 break;
             default:
                 super.onClick(v);
