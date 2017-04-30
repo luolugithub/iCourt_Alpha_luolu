@@ -8,16 +8,24 @@ import android.widget.TextView;
 import com.bumptech.glide.Glide;
 import com.icourt.alpha.BuildConfig;
 import com.icourt.alpha.R;
-import com.icourt.alpha.activity.FileDetailsActivity;
 import com.icourt.alpha.adapter.baseadapter.BaseArrayRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.constants.Const;
+import com.icourt.alpha.entity.bean.IMMessageCustomBody;
 import com.icourt.alpha.entity.bean.IMStringWrapEntity;
 import com.icourt.alpha.utils.ActionConstants;
-import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.FileUtils;
 import com.icourt.alpha.utils.GlideUtils;
 import com.icourt.alpha.utils.IMUtils;
+
+import static com.icourt.alpha.constants.Const.MSG_TYPE_ALPHA;
+import static com.icourt.alpha.constants.Const.MSG_TYPE_AT;
+import static com.icourt.alpha.constants.Const.MSG_TYPE_DING;
+import static com.icourt.alpha.constants.Const.MSG_TYPE_FILE;
+import static com.icourt.alpha.constants.Const.MSG_TYPE_LINK;
+import static com.icourt.alpha.constants.Const.MSG_TYPE_SYS;
+import static com.icourt.alpha.constants.Const.MSG_TYPE_TXT;
+import static com.icourt.alpha.constants.Const.MSG_TYPE_VOICE;
 
 /**
  * Description 更用户相关的适配器[我的文件消息 我收藏的消息]
@@ -26,7 +34,7 @@ import com.icourt.alpha.utils.IMUtils;
  * date createTime：2017/4/17
  * version 1.0.0
  */
-public class ImUserMessageAdapter extends BaseArrayRecyclerAdapter<IMStringWrapEntity> implements BaseRecyclerAdapter.OnItemClickListener {
+public class ImUserMessageAdapter extends BaseArrayRecyclerAdapter<IMMessageCustomBody> implements BaseRecyclerAdapter.OnItemClickListener {
     private static final int VIEW_TYPE_TEXT = 0;
     private static final int VIEW_TYPE_FILE = 1;
     private static final int VIEW_TYPE_FILE_IMG = 2;
@@ -60,20 +68,23 @@ public class ImUserMessageAdapter extends BaseArrayRecyclerAdapter<IMStringWrapE
 
     @Override
     public int getItemViewType(int position) {
-        IMStringWrapEntity item = getItem(position);
-        if (item != null
-                && item.content != null) {
-            switch (item.content.show_type) {
-                case IMStringWrapEntity.StringWrapIMContent.MSG_TYPE_TEXT:
+        IMMessageCustomBody item = getItem(position);
+        if (item != null) {
+            switch (item.show_type) {
+                case MSG_TYPE_TXT:
                     return VIEW_TYPE_TEXT;
-                case IMStringWrapEntity.StringWrapIMContent.MSG_TYPE_FILE:
-                    return isPic(item.content.file) ? VIEW_TYPE_FILE_IMG : VIEW_TYPE_FILE;
-                case IMStringWrapEntity.StringWrapIMContent.MSG_TYPE_DING:
+                case MSG_TYPE_FILE:
+                    return isPic(item.ext != null ? item.ext.path : "") ? VIEW_TYPE_FILE_IMG : VIEW_TYPE_FILE;
+                case MSG_TYPE_DING:
                     return VIEW_TYPE_DING;
-                case IMStringWrapEntity.StringWrapIMContent.MSG_TYPE_AT:
+                case MSG_TYPE_AT:
                     return VIEW_TYPE_AT;
-                case IMStringWrapEntity.StringWrapIMContent.MSG_TYPE_SYS:
+                case MSG_TYPE_SYS:
                     return VIEW_TYPE_SYS;
+                case MSG_TYPE_LINK://TODO 处理链接消息
+                case MSG_TYPE_ALPHA:
+                case MSG_TYPE_VOICE:
+                    break;
             }
         }
         return super.getItemViewType(position);
@@ -81,8 +92,8 @@ public class ImUserMessageAdapter extends BaseArrayRecyclerAdapter<IMStringWrapE
 
 
     @Override
-    public void onBindHoder(ViewHolder holder, IMStringWrapEntity imFileEntity, int position) {
-        if (imFileEntity == null) return;
+    public void onBindHoder(ViewHolder holder, IMMessageCustomBody imFileEntity, int position) {
+   /*     if (imFileEntity == null) return;
         ImageView file_from_user_iv = holder.obtainView(R.id.file_from_user_iv);
         TextView file_from_user_tv = holder.obtainView(R.id.file_from_user_tv);
         TextView file_from_time_tv = holder.obtainView(R.id.file_from_time_tv);
@@ -106,7 +117,7 @@ public class ImUserMessageAdapter extends BaseArrayRecyclerAdapter<IMStringWrapE
             case VIEW_TYPE_FILE:
                 setViewFileCommFile(holder, imFileEntity);
                 break;
-        }
+        }*/
     }
 
     /**
@@ -206,7 +217,7 @@ public class ImUserMessageAdapter extends BaseArrayRecyclerAdapter<IMStringWrapE
 
     @Override
     public void onItemClick(BaseRecyclerAdapter adapter, ViewHolder holder, View view, int position) {
-        IMStringWrapEntity item = getItem(getRealPos(position));
-        FileDetailsActivity.launch(view.getContext(), item);
+       /* IMStringWrapEntity item = getItem(getRealPos(position));
+        FileDetailsActivity.launch(view.getContext(), item);*/
     }
 }

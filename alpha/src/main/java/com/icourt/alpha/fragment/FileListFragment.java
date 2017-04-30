@@ -14,7 +14,7 @@ import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.ImUserMessageAdapter;
 import com.icourt.alpha.adapter.baseadapter.adapterObserver.RefreshViewEmptyObserver;
 import com.icourt.alpha.base.BaseFragment;
-import com.icourt.alpha.entity.bean.IMStringWrapEntity;
+import com.icourt.alpha.entity.bean.IMMessageCustomBody;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.ActionConstants;
@@ -108,9 +108,9 @@ public class FileListFragment extends BaseFragment {
             pageIndex = 0;
         }
         getApi().getFilesByType(getArguments().getInt(KEY_FILE_TYPE), pageIndex, ActionConstants.DEFAULT_PAGE_SIZE)
-                .enqueue(new SimpleCallBack<List<IMStringWrapEntity>>() {
+                .enqueue(new SimpleCallBack<List<IMMessageCustomBody>>() {
                     @Override
-                    public void onSuccess(Call<ResEntity<List<IMStringWrapEntity>>> call, Response<ResEntity<List<IMStringWrapEntity>>> response) {
+                    public void onSuccess(Call<ResEntity<List<IMMessageCustomBody>>> call, Response<ResEntity<List<IMMessageCustomBody>>> response) {
                         fileAdapter.bindData(isRefresh, response.body().result);
                         stopRefresh();
                         pageIndex += 1;
@@ -118,7 +118,7 @@ public class FileListFragment extends BaseFragment {
                     }
 
                     @Override
-                    public void onFailure(Call<ResEntity<List<IMStringWrapEntity>>> call, Throwable t) {
+                    public void onFailure(Call<ResEntity<List<IMMessageCustomBody>>> call, Throwable t) {
                         super.onFailure(call, t);
                         stopRefresh();
                     }

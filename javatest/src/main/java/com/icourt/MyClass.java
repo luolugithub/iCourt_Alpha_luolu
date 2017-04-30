@@ -24,6 +24,17 @@ public class MyClass {
         System.out.println("isPic4:" + isPIC("http://"));
         System.out.println("isPic4:" + isPIC("http://.q"));
 
+        Boolean b1 = null;
+        if (b1) {//java.lang.NullPointerException
+            log("-------->b:" + b1);
+        } else {
+            log("-------->b2:" + b1);
+        }
+
+    }
+
+    private static void log(String log) {
+        System.out.println(log);
     }
 
     /**

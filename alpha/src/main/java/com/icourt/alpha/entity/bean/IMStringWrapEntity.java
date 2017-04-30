@@ -19,6 +19,7 @@ import java.io.Serializable;
  * date createTime：2017/4/18
  * version 1.0.0
  */
+@Deprecated
 public class IMStringWrapEntity extends BaseImEntity implements Serializable {
 
     //注意服务器返回的是字符串包裹的json对象
@@ -26,6 +27,7 @@ public class IMStringWrapEntity extends BaseImEntity implements Serializable {
     public StringWrapIMContent content;
 
 
+    @Deprecated
     public static class StringWrapIMContent implements Serializable {
         public static final int MSG_TYPE_TEXT = 0;
         public static final int MSG_TYPE_FILE = 1;

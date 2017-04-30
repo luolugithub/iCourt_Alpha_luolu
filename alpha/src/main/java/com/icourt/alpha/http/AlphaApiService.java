@@ -1,6 +1,7 @@
 package com.icourt.alpha.http;
 
 import com.google.gson.JsonElement;
+import com.icourt.alpha.constants.Const;
 import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.icourt.alpha.entity.bean.AppVersionEntity;
 import com.icourt.alpha.entity.bean.CustomerEntity;
@@ -8,8 +9,8 @@ import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.icourt.alpha.entity.bean.GroupDetailEntity;
 import com.icourt.alpha.entity.bean.GroupEntity;
 import com.icourt.alpha.entity.bean.GroupMemberEntity;
+import com.icourt.alpha.entity.bean.IMMessageCustomBody;
 import com.icourt.alpha.entity.bean.IMSessionDontDisturbEntity;
-import com.icourt.alpha.entity.bean.IMStringWrapEntity;
 import com.icourt.alpha.entity.bean.LoginIMToken;
 import com.icourt.alpha.entity.bean.PageEntity;
 import com.icourt.alpha.entity.bean.SearchEngineEntity;
@@ -260,7 +261,7 @@ public interface AlphaApiService {
      * @return
      */
     @GET("api/v2/chat/msg/findFileMsg")
-    Call<ResEntity<List<IMStringWrapEntity>>> getFilesByType(
+    Call<ResEntity<List<IMMessageCustomBody>>> getFilesByType(
             @Query("type") int type,
             @Query("pageNum") int pageNum,
             @Query("pageSize") int pageSize
@@ -274,10 +275,9 @@ public interface AlphaApiService {
      * @param pageSize 每页获取条目数量
      * @return
      */
-    @POST("api/v2/chat/getAtMsg")
-    @FormUrlEncoded
-    Call<ResEntity<List<IMStringWrapEntity>>> getAtMeMsg(@Field("pageNum") int pageNum,
-                                                         @Field("pageSize") int pageSize);
+    @GET("http://10.25.115.31:8083/ilaw/api/v3/im/msgs/ats")
+    Call<ResEntity<List<IMMessageCustomBody>>> getAtMeMsg(@Query("pageNum") int pageNum,
+                                                          @Query("pageSize") int pageSize);
 
     /**
      * 获取我收藏的消息
@@ -288,8 +288,20 @@ public interface AlphaApiService {
      * @return
      */
     @GET("api/v2/chat/msg/getStarSign")
-    Call<ResEntity<List<IMStringWrapEntity>>> getMyCollectedMessages(@Query("pageNum") int pageNum,
-                                                                     @Query("pageSize") int pageSize);
+    Call<ResEntity<List<IMMessageCustomBody>>> getMyCollectedMessages(@Query("pageNum") int pageNum,
+                                                                      @Query("pageSize") int pageSize);
+
+    /**
+     * 获取钉的消息
+     * 文档地址 https://www.showdoc.cc/1620156?page_id=14899073
+     *
+     * @param ope
+     * @param to
+     * @return
+     */
+    @GET("http://10.25.115.31:8083/ilaw/api/v3/im/msgs/pins")
+    Call<ResEntity<List<IMMessageCustomBody>>> getDingMessages(@Query("ope") @Const.CHAT_TYPE int ope,
+                                                               @Query("to") String to);
 
     /**
      * 获取搜索引擎列表
@@ -468,7 +480,7 @@ public interface AlphaApiService {
      * @return
      */
     @POST("http://10.25.115.31:8083/ilaw/api/v3/im/msgs/stars/{msgId}")
-    Call<ResEntity<JsonElement>> msgCollect(@Path("msgId") String msgId);
+    Call<ResEntity<Boolean>> msgCollect(@Path("msgId") String msgId);
 
     /**
      * 取消收藏 消息
@@ -478,7 +490,7 @@ public interface AlphaApiService {
      * @return
      */
     @DELETE("http://10.25.115.31:8083/ilaw/api/v3/im/msgs/stars/{msgId}")
-    Call<ResEntity<JsonElement>> msgCollectCancel(@Path("msgId") String msgId);
+    Call<ResEntity<Boolean>> msgCollectCancel(@Path("msgId") String msgId);
 
 
     /**

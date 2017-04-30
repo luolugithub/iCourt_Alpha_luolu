@@ -237,8 +237,9 @@ public class GroupDetailActivity extends BaseActivity {
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.group_ding_tv:
-                //TODO  钉的消息列表
-                showTopSnackBar("未完成");
+                ChatMsgClassfyActivity.launchDing(getContext(),
+                        Const.CHAT_TYPE_TEAM,
+                        getIntent().getStringExtra(KEY_TID));
                 break;
             case R.id.group_file_tv:
                 //TODO  文件列表

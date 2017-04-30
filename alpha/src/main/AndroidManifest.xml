@@ -113,7 +113,7 @@
             android:name=".activity.FileDetailsActivity"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".activity.MyCollectedMsgActivity"
+            android:name=".activity.ChatMsgClassfyActivity"
             android:screenOrientation="portrait" />
         <activity
             android:name=".activity.MyAtedActivity"

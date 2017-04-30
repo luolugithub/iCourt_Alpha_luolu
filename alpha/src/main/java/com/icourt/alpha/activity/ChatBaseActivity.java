@@ -5,7 +5,6 @@ import android.os.Bundle;
 import android.support.annotation.CheckResult;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.TextView;
@@ -26,6 +25,7 @@ import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.INIMessageListener;
 import com.icourt.alpha.utils.JsonUtils;
 import com.icourt.alpha.utils.SystemUtils;
+import com.icourt.alpha.widget.dialog.AlertListDialog;
 import com.icourt.api.RequestUtils;
 import com.netease.nimlib.sdk.NIMClient;
 import com.netease.nimlib.sdk.Observer;
@@ -339,7 +339,9 @@ public abstract class ChatBaseActivity extends BaseActivity implements INIMessag
             switch (imCustomerMessageEntity.customIMBody.show_type) {
                 case MSG_TYPE_AT:
                 case MSG_TYPE_TXT:
-                    new AlertDialog.Builder(getContext())
+                    new AlertListDialog.ListBuilder(getContext())
+                            .setDividerColorRes(R.color.alpha_divider_color)
+                            .setDividerHeightRes(R.dimen.alpha_height_divider)
                             .setItems(new CharSequence[]{"复制", "钉", "收藏", "转任务"}, new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
@@ -363,7 +365,9 @@ public abstract class ChatBaseActivity extends BaseActivity implements INIMessag
                             }).show();
                     break;
                 case MSG_TYPE_FILE:
-                    new AlertDialog.Builder(getContext())
+                    new AlertListDialog.ListBuilder(getContext())
+                            .setDividerColorRes(R.color.alpha_divider_color)
+                            .setDividerHeightRes(R.dimen.alpha_height_divider)
                             .setItems(new CharSequence[]{"钉", "收藏", "转任务"}, new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
@@ -380,7 +384,8 @@ public abstract class ChatBaseActivity extends BaseActivity implements INIMessag
                                             break;
                                     }
                                 }
-                            }).show();
+                            })
+                            .show();
                     break;
                 case MSG_TYPE_DING:
                     break;
@@ -442,11 +447,6 @@ public abstract class ChatBaseActivity extends BaseActivity implements INIMessag
                     @Override
                     public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
                     }
-
-                    @Override
-                    public void defNotify(String noticeStr) {
-                        //super.defNotify(noticeStr);
-                    }
                 });
     }
 
@@ -457,14 +457,14 @@ public abstract class ChatBaseActivity extends BaseActivity implements INIMessag
      */
     protected final void msgActionCollect(String msgId) {
         getApi().msgCollect(msgId)
-                .enqueue(new SimpleCallBack<JsonElement>() {
+                .enqueue(new SimpleCallBack<Boolean>() {
                     @Override
-                    public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
-                    }
-
-                    @Override
-                    public void defNotify(String noticeStr) {
-                        //super.defNotify(noticeStr);
+                    public void onSuccess(Call<ResEntity<Boolean>> call, Response<ResEntity<Boolean>> response) {
+                        if (response.body().result != null && response.body().result.booleanValue()) {
+                            showTopSnackBar("收藏成功");
+                        } else {
+                            showTopSnackBar("收藏失败");
+                        }
                     }
                 });
     }
@@ -476,15 +476,14 @@ public abstract class ChatBaseActivity extends BaseActivity implements INIMessag
      */
     protected final void msgActionCollectCancel(String msgId) {
         getApi().msgCollectCancel(msgId)
-                .enqueue(new SimpleCallBack<JsonElement>() {
+                .enqueue(new SimpleCallBack<Boolean>() {
                     @Override
-                    public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
-
-                    }
-
-                    @Override
-                    public void defNotify(String noticeStr) {
-                        //super.defNotify(noticeStr);
+                    public void onSuccess(Call<ResEntity<Boolean>> call, Response<ResEntity<Boolean>> response) {
+                        if (response.body().result != null && response.body().result.booleanValue()) {
+                            showTopSnackBar("取消收藏成功");
+                        } else {
+                            showTopSnackBar("取消收藏失败");
+                        }
                     }
                 });
     }

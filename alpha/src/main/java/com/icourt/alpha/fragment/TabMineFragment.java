@@ -15,9 +15,9 @@ import android.widget.TextView;
 
 import com.icourt.alpha.R;
 import com.icourt.alpha.activity.AboutActivity;
+import com.icourt.alpha.activity.ChatMsgClassfyActivity;
 import com.icourt.alpha.activity.LoginSelectActivity;
 import com.icourt.alpha.activity.MyAtedActivity;
-import com.icourt.alpha.activity.MyCollectedMsgActivity;
 import com.icourt.alpha.activity.MyFileTabActivity;
 import com.icourt.alpha.activity.UpdatePhoneOrMailActivity;
 import com.icourt.alpha.base.BaseFragment;
@@ -137,7 +137,7 @@ public class TabMineFragment extends BaseFragment {
                 UpdatePhoneOrMailActivity.launch(getContext(), UpdatePhoneOrMailActivity.UPDATE_EMAIL_TYPE, myCenterMailTextview.getText().toString().trim());
                 break;
             case R.id.my_center_collect_layout://收藏
-                MyCollectedMsgActivity.launch(getContext());
+                ChatMsgClassfyActivity.launchMyCollected(getContext());
                 break;
             case R.id.my_center_at_layout://提及我的
                 MyAtedActivity.launch(getContext());
