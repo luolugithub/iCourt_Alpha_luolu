@@ -419,13 +419,26 @@ public interface AlphaApiService {
     Call<ResEntity<JsonElement>> groupUpdate(@Body RequestBody groupInfo);
 
     /**
+     * 获取群组
+     * 文档地址:https://www.showdoc.cc/1620156?page_id=14892528
+     *
+     * @param run_status 0：正常 1：归档 ，不传为所有
+     * @param is_private true: 公开；false:私密 ，不传为所有
+     * @return
+     */
+    @GET("http://10.25.115.31:8083/ilaw/api/v3/im/groups")
+    Call<ResEntity<List<GroupEntity>>> groupsQuery(@Query("run_status") int run_status,
+                                                   @Query("is_private") boolean is_private);
+
+
+    /**
      * 获取所有群组
      * 文档地址:https://www.showdoc.cc/1620156?page_id=14892528
      *
      * @return
      */
     @GET("http://10.25.115.31:8083/ilaw/api/v3/im/groups")
-    Call<ResEntity<List<GroupEntity>>> groupQueryAll();
+    Call<ResEntity<List<GroupEntity>>> groupsQueryAll();
 
     /**
      * 获取 群组 详情
