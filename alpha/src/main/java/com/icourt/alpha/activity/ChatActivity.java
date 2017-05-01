@@ -65,6 +65,7 @@ import butterknife.ButterKnife;
 import cn.finalteam.galleryfinal.FunctionConfig;
 import cn.finalteam.galleryfinal.GalleryFinal;
 import cn.finalteam.galleryfinal.model.PhotoInfo;
+import io.reactivex.functions.Consumer;
 import okhttp3.RequestBody;
 import retrofit2.Call;
 import retrofit2.Response;
@@ -104,6 +105,9 @@ public class ChatActivity extends ChatBaseActivity {
     private static final String KEY_GROUP_ID = "key_group_id";
     private static final String KEY_TITLE = "key_title";
     private static final String KEY_CHAT_TYPE = "key_chat_type";
+
+    //本地同步的联系人
+    protected final List<GroupContactBean> localContactList = new ArrayList<>();
 
     @BindView(R.id.titleBack)
     ImageView titleBack;
@@ -214,7 +218,24 @@ public class ChatActivity extends ChatBaseActivity {
         ButterKnife.bind(this);
         initView();
         initEmoticonsKeyBoardBar();
+        getLocalContacts();
         getData(true);
+    }
+
+    /**
+     * 获取本地联系人
+     */
+    private void getLocalContacts() {
+        queryAllContactFromDbAsync(new Consumer<List<GroupContactBean>>() {
+            @Override
+            public void accept(List<GroupContactBean> groupContactBeen) throws Exception {
+                if (groupContactBeen != null && !groupContactBeen.isEmpty()) {
+                    localContactList.clear();
+                    localContactList.addAll(groupContactBeen);
+                    chatAdapter.notifyDataSetChanged();
+                }
+            }
+        });
     }
 
 
@@ -422,7 +443,8 @@ public class ChatActivity extends ChatBaseActivity {
             return;
         }
         String txt = inputText.getText().toString();
-        if (txt.contains("@")) {
+        sendIMLinkMsg(txt);
+       /* if (txt.contains("@")) {
             if (txt.contains("@所有人")) {
                 sendAtMsg(txt, true, null);
             } else {
@@ -441,7 +463,7 @@ public class ChatActivity extends ChatBaseActivity {
             }
         } else {
             sendTextMsg(txt);
-        }
+        }*/
         inputText.setText("");
     }
 
@@ -550,7 +572,7 @@ public class ChatActivity extends ChatBaseActivity {
         linearLayoutManager = new LinearLayoutManager(getContext());
         recyclerView.setLayoutManager(linearLayoutManager);
         recyclerView.setHasFixedSize(true);
-        recyclerView.setAdapter(chatAdapter = new ChatAdapter(getLoadedLoginToken()));
+        recyclerView.setAdapter(chatAdapter = new ChatAdapter(getLoadedLoginToken(),localContactList));
         chatAdapter.setOnItemLongClickListener(this);
         recyclerView.addItemDecoration(new ChatItemDecoration(getContext(), chatAdapter));
         refreshLayout.setXRefreshViewListener(new XRefreshView.SimpleXRefreshListener() {
@@ -716,7 +738,7 @@ public class ChatActivity extends ChatBaseActivity {
     @Override
     public void onMessageRevoke(IMMessage message) {
         log("----------------->onMessageRevoke:" + message);
-        deleteFromDb(message);
+        deleteMsgFromDb(message);
         if (isCurrentRoomSession(message.getSessionId())) {
             removeFromAdapter(message.getSessionId());
         }
@@ -826,7 +848,6 @@ public class ChatActivity extends ChatBaseActivity {
                 break;
         }
     }
-
 
 
 }

@@ -91,4 +91,15 @@ public class GroupContactBean
     public void setSuspensionTag(@NonNull String suspensionTag) {
         this.suspensionTag = suspensionTag;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (o == null) return false;
+        if (getClass() != o.getClass())
+            return false;
+        final GroupContactBean other = (GroupContactBean) o;
+        return TextUtils.equals(this.accid, other.accid);
+    }
 }

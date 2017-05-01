@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.support.annotation.CheckResult;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.annotation.UiThread;
 import android.text.TextUtils;
 import android.view.View;
 
@@ -15,15 +16,21 @@ import com.icourt.alpha.adapter.ChatAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.constants.Const;
+import com.icourt.alpha.db.convertor.IConvertModel;
+import com.icourt.alpha.db.convertor.ListConvertor;
+import com.icourt.alpha.db.dbmodel.ContactDbModel;
 import com.icourt.alpha.db.dbservice.ContactDbService;
 import com.icourt.alpha.entity.bean.AlphaUserInfo;
+import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.icourt.alpha.entity.bean.IMCustomerMessageEntity;
 import com.icourt.alpha.entity.bean.IMMessageCustomBody;
+import com.icourt.alpha.http.RetrofitServiceFactory;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.INIMessageListener;
 import com.icourt.alpha.utils.JsonUtils;
 import com.icourt.alpha.utils.SystemUtils;
+import com.icourt.alpha.utils.UrlUtils;
 import com.icourt.alpha.widget.dialog.AlertListDialog;
 import com.icourt.api.RequestUtils;
 import com.netease.nimlib.sdk.NIMClient;
@@ -33,11 +40,21 @@ import com.netease.nimlib.sdk.msg.MsgServiceObserve;
 import com.netease.nimlib.sdk.msg.constant.MsgDirectionEnum;
 import com.netease.nimlib.sdk.msg.model.IMMessage;
 import com.netease.nimlib.sdk.msg.model.MessageReceipt;
+import com.trello.rxlifecycle2.android.ActivityEvent;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import io.reactivex.Observable;
+import io.reactivex.ObservableEmitter;
+import io.reactivex.ObservableOnSubscribe;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.functions.Consumer;
+import io.reactivex.schedulers.Schedulers;
+import io.realm.RealmResults;
+import okhttp3.Request;
 import retrofit2.Call;
 import retrofit2.Response;
 
@@ -150,6 +167,60 @@ public abstract class ChatBaseActivity extends BaseActivity implements INIMessag
         registerObservers(true);
     }
 
+
+    /**
+     * 查询本地联系人
+     *
+     * @return
+     */
+    @UiThread
+    @Nullable
+    @CheckResult
+    protected final List<GroupContactBean> queryAllContactFromDb() {
+        if (contactDbService != null && contactDbService.isServiceAvailable()) {
+            RealmResults<ContactDbModel> contactDbModels = contactDbService.queryAll();
+            if (contactDbModels != null) {
+                List<GroupContactBean> contactBeen = ListConvertor.convertList(new ArrayList<IConvertModel<GroupContactBean>>(contactDbModels));
+                return contactBeen;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * 异步查询本地联系人
+     */
+    protected final void queryAllContactFromDbAsync(@NonNull Consumer<List<GroupContactBean>> consumer) {
+        if (consumer == null) return;
+        Observable.create(new ObservableOnSubscribe<List<GroupContactBean>>() {
+            @Override
+            public void subscribe(ObservableEmitter<List<GroupContactBean>> e) throws Exception {
+                ContactDbService threadContactDbService = null;
+                try {
+                    if (!e.isDisposed()) {
+                        threadContactDbService = new ContactDbService(getLoadedLoginUserId());
+                        RealmResults<ContactDbModel> contactDbModels = threadContactDbService.queryAll();
+                        if (contactDbModels != null) {
+                            List<GroupContactBean> contactBeen = ListConvertor.convertList(new ArrayList<IConvertModel<GroupContactBean>>(contactDbModels));
+                            e.onNext(contactBeen);
+                        }
+                        e.onComplete();
+                    }
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                } finally {
+                    if (threadContactDbService != null) {
+                        threadContactDbService.releaseService();
+                    }
+                }
+            }
+        }).compose(this.<List<GroupContactBean>>bindUntilEvent(ActivityEvent.DESTROY))
+                .subscribeOn(Schedulers.newThread())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(consumer);
+    }
+
+
     @Override
     protected void onDestroy() {
         registerObservers(false);
@@ -172,7 +243,7 @@ public abstract class ChatBaseActivity extends BaseActivity implements INIMessag
      *
      * @param message
      */
-    protected void deleteFromDb(IMMessage message) {
+    protected void deleteMsgFromDb(IMMessage message) {
         if (message == null) return;
         NIMClient.getService(MsgService.class).deleteChattingHistory(message);
     }
@@ -292,6 +363,29 @@ public abstract class ChatBaseActivity extends BaseActivity implements INIMessag
     }
 
 
+    protected final void sendIMLinkMsg(String url) {
+        if (TextUtils.isEmpty(url)) return;
+        Request request = new Request.Builder().url(url).build();
+        RetrofitServiceFactory.provideOkHttpClient()
+                .newCall(request)
+                .enqueue(new okhttp3.Callback() {
+                    @Override
+                    public void onFailure(okhttp3.Call call, IOException e) {
+                        log("--------->ex:" + e);
+                    }
+
+                    @Override
+                    public void onResponse(okhttp3.Call call, okhttp3.Response response) throws IOException {
+                        if (response != null && response.body() != null) {
+                            String value = response.body().string();
+                            log("--------->html_text:" + value);
+                            String htmlTitle = UrlUtils.getHtmlLabel(value, "title");
+                            log("--------->html_title:" + htmlTitle);
+                        }
+                    }
+                });
+    }
+
     /**
      * 转化成自定义的消息体
      *
@@ -352,8 +446,8 @@ public abstract class ChatBaseActivity extends BaseActivity implements INIMessag
                 case MSG_TYPE_FILE:
                     menuItems.clear();
                     menuItems.addAll(Arrays.asList("钉", "收藏", "转任务"));
-                    if (imCustomerMessageEntity.imMessage.getDirect()
-                            == MsgDirectionEnum.Out && canRevokeMsg(imCustomerMessageEntity.imMessage.getTime())) {
+                    if (imCustomerMessageEntity.imMessage.getDirect() == MsgDirectionEnum.Out
+                            && canRevokeMsg(imCustomerMessageEntity.imMessage.getTime())) {
                         menuItems.add("撤回");
                     }
                     break;

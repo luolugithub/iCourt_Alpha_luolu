@@ -538,4 +538,5 @@ public interface AlphaApiService {
     @Multipart
     Call<ResEntity<JsonElement>> groupUploadFile(@Query("groupId") String groupId, @PartMap Map<String, RequestBody> params
     );
+
 }

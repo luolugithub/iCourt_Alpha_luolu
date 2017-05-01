@@ -17,7 +17,6 @@ public class IMMessageCustomBody {
     public String id;
     public String name;
     public String from;
-    public String fromPic;      //头像,暂时本地用
     public String to;
 
     @Const.CHAT_TYPE

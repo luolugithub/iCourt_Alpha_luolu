@@ -2,6 +2,9 @@ package com.icourt.alpha.utils;
 
 import android.text.TextUtils;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 /**
  * Description
  * Company Beijing icourt
@@ -18,7 +21,7 @@ public class UrlUtils {
      * @param key
      * @return
      */
-    public static String getParam(String key, String url) {
+    public static final String getParam(String key, String url) {
         if (!TextUtils.isEmpty(key)) {
             if (!TextUtils.isEmpty(url)) {
                 String urlKey = key + "=";
@@ -43,11 +46,30 @@ public class UrlUtils {
      * @param url
      * @return
      */
-    public static String removeParam(String key, String url) {
+    public static final String removeParam(String key, String url) {
         String value = getParam(key, url);
         if (!TextUtils.isEmpty(value)) {
             return url.replace(String.format("%s=%s", key, value), "");
         }
         return url;
+    }
+
+    /**
+     * 获取html中的指定标签的值
+     *
+     * @param htmlString
+     * @param labelName
+     * @return
+     */
+    public static final String getHtmlLabel(String htmlString, String labelName) {
+        if (!TextUtils.isEmpty(htmlString)
+                && !TextUtils.isEmpty(labelName)) {
+            Pattern pa = Pattern.compile(String.format("<%s>.*?</%s>", labelName, labelName));//源码中标题正则表达式
+            Matcher ma = pa.matcher(htmlString);
+            while (ma.find()) {
+                return ma.group();
+            }
+        }
+        return null;
     }
 }

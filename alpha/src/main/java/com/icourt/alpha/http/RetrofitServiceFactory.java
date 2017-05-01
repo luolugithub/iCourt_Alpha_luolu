@@ -1,6 +1,8 @@
 package com.icourt.alpha.http;
 
 
+import okhttp3.OkHttpClient;
+
 /**
  * Description
  * Company Beijing icourt
@@ -17,6 +19,17 @@ public class RetrofitServiceFactory {
             alphaApiService = AlphaClient.getInstance().createService(AlphaApiService.class);
         }
         return alphaApiService;
+    }
+
+    private static OkHttpClient mOkHttpClient;
+
+    public static final OkHttpClient provideOkHttpClient() {
+        if (mOkHttpClient == null) {
+            synchronized (RetrofitServiceFactory.class) {
+                mOkHttpClient = new OkHttpClient();
+            }
+        }
+        return mOkHttpClient;
     }
 }
 

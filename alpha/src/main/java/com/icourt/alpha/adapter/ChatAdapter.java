@@ -10,6 +10,7 @@ import com.icourt.alpha.BuildConfig;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.baseadapter.BaseArrayRecyclerAdapter;
 import com.icourt.alpha.constants.Const;
+import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.icourt.alpha.entity.bean.IMCustomerMessageEntity;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.GlideUtils;
@@ -19,6 +20,7 @@ import com.icourt.alpha.view.recyclerviewDivider.ITimeDividerInterface;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import static com.netease.nimlib.sdk.msg.constant.MsgDirectionEnum.In;
@@ -33,6 +35,7 @@ import static com.netease.nimlib.sdk.msg.constant.MsgDirectionEnum.Out;
  */
 public class ChatAdapter extends BaseArrayRecyclerAdapter<IMCustomerMessageEntity> implements ITimeDividerInterface {
     private Set<Long> timeShowArray = new HashSet<>();//时间分割线消息
+    private final int TIME_DIVIDER = 5 * 60 * 1_000;
     private Comparator<Long> longComparator = new Comparator<Long>() {
         @Override
         public int compare(Long o1, Long o2) {
@@ -42,7 +45,6 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMCustomerMessageEntit
             return 0;
         }
     };
-    private final int TIME_DIVIDER = 5 * 60 * 1_000;
 
     //左边布局 类型
     private static final int TYPE_LEFT_TXT = 0;
@@ -62,9 +64,30 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMCustomerMessageEntit
     private static final int TYPE_RIGHT_DING_FILE = 105;
 
     private String loginToken;
+    private List<GroupContactBean> contactBeanList;//本地联系人
 
-    public ChatAdapter(String loginToken) {
+    /**
+     * 获取本地头像
+     *
+     * @param accid
+     * @return
+     */
+    public String getUserIcon(String accid) {
+        if (contactBeanList != null) {
+            GroupContactBean groupContactBean = new GroupContactBean();
+            groupContactBean.accid = accid;
+            int indexOf = contactBeanList.indexOf(groupContactBean);
+            if (indexOf >= 0) {
+                groupContactBean = contactBeanList.get(indexOf);
+                return groupContactBean.pic;
+            }
+        }
+        return null;
+    }
+
+    public ChatAdapter(String loginToken, List<GroupContactBean> contactBeanList) {
         this.loginToken = loginToken;
+        this.contactBeanList = contactBeanList;
     }
 
     @Override
@@ -228,7 +251,7 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMCustomerMessageEntit
 
 
     /**
-     * 设置头像
+     * 设置头像 本地匹配头像
      *
      * @param holder
      * @param imMessage
@@ -236,12 +259,12 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMCustomerMessageEntit
      */
     private void setCommonUserIcon(ViewHolder holder, IMCustomerMessageEntity imMessage, int position) {
         ImageView chat_user_icon_iv = holder.obtainView(R.id.chat_user_icon_iv);
-        if (chat_user_icon_iv != null) {
-            // TODO 拿本地头像
-     /*       GlideUtils
+        if (chat_user_icon_iv != null && imMessage != null && imMessage.customIMBody != null) {
+            String userHeadImg = getUserIcon(imMessage.customIMBody.from);
+            GlideUtils
                     .loadUser(chat_user_icon_iv.getContext(),
-                            imMessage.customIMBody != null ? imMessage.customIMBody.pic : "",
-                            chat_user_icon_iv);*/
+                            TextUtils.isEmpty(userHeadImg) ? "" : userHeadImg,
+                            chat_user_icon_iv);
         }
     }
 
@@ -306,7 +329,11 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMCustomerMessageEntit
         TextView chat_ding_title = holder.obtainView(R.id.chat_ding_title);
         TextView chat_ding_content_tv = holder.obtainView(R.id.chat_ding_content_tv);
         ImageView chat_ding_source_user_icon_iv = holder.obtainView(R.id.chat_ding_source_user_icon_iv);
-
+        String userHeadImg = getUserIcon(imMessage.customIMBody.ext != null ? imMessage.customIMBody.ext.from : "");
+        GlideUtils
+                .loadUser(chat_ding_source_user_icon_iv.getContext(),
+                        TextUtils.isEmpty(userHeadImg) ? "" : userHeadImg,
+                        chat_ding_source_user_icon_iv);
         TextView chat_ding_source_user_name_tv = holder.obtainView(R.id.chat_ding_source_user_name_tv);
         chat_ding_title.setText(TextUtils.isEmpty(imMessage.customIMBody.content) ? "钉了一条消息" : imMessage.customIMBody.content);
         if (imMessage.customIMBody.ext != null) {
@@ -394,7 +421,11 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMCustomerMessageEntit
         TextView chat_ding_title = holder.obtainView(R.id.chat_ding_title);
         TextView chat_ding_content_tv = holder.obtainView(R.id.chat_ding_content_tv);
         ImageView chat_ding_source_user_icon_iv = holder.obtainView(R.id.chat_ding_source_user_icon_iv);
-
+        String userHeadImg = getUserIcon(imMessage.customIMBody.ext != null ? imMessage.customIMBody.ext.from : "");
+        GlideUtils
+                .loadUser(chat_ding_source_user_icon_iv.getContext(),
+                        TextUtils.isEmpty(userHeadImg) ? "" : userHeadImg,
+                        chat_ding_source_user_icon_iv);
         TextView chat_ding_source_user_name_tv = holder.obtainView(R.id.chat_ding_source_user_name_tv);
         chat_ding_title.setText(TextUtils.isEmpty(imMessage.customIMBody.content) ? "钉了一条消息" : imMessage.customIMBody.content);
         if (imMessage.customIMBody.ext != null) {
