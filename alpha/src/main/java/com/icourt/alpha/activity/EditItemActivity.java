@@ -69,8 +69,11 @@ public class EditItemActivity extends BaseActivity {
     protected void initView() {
         super.initView();
         setTitle(getIntent().getStringExtra(KEY_TITLE));
-        valueInputEt.setText(getIntent().getStringExtra(KEY_DEFAULT_VALUE));
         setViewVisible(valueInputClearIv, false);
+        TextView titleActionTextView = getTitleActionTextView();
+        if (titleActionTextView != null) {
+            titleActionTextView.setText("确定");
+        }
         valueInputEt.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -87,6 +90,8 @@ public class EditItemActivity extends BaseActivity {
                 valueInputClearIv.setVisibility(TextUtils.isEmpty(s) ? View.GONE : View.VISIBLE);
             }
         });
+        valueInputEt.setText(getIntent().getStringExtra(KEY_DEFAULT_VALUE));
+        valueInputEt.setSelection(getTextString(valueInputEt, "").length());
     }
 
     @OnClick({R.id.value_input_clear_iv})

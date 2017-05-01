@@ -514,7 +514,7 @@ public interface AlphaApiService {
      * @param msgId
      * @return
      */
-    @POST("http://10.25.115.31:8083/ilaw/api/v3/im/msgs/{msgId}")
+    @DELETE("http://10.25.115.31:8083/ilaw/api/v3/im/msgs/{msgId}")
     Call<ResEntity<JsonElement>> msgRevoke(@Path("msgId") String msgId);
 
 

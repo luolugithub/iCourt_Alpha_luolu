@@ -18,9 +18,15 @@ import com.icourt.alpha.utils.Md5Utils;
 import com.liulishuo.filedownloader.BaseDownloadTask;
 import com.liulishuo.filedownloader.FileDownloadLargeFileListener;
 import com.liulishuo.filedownloader.FileDownloader;
+import com.trello.rxlifecycle2.android.ActivityEvent;
 import com.umeng.socialize.bean.SHARE_MEDIA;
 
 import java.io.File;
+import java.util.concurrent.TimeUnit;
+
+import io.reactivex.Observable;
+import io.reactivex.functions.Action;
+import io.reactivex.functions.Consumer;
 
 /**
  * Description
@@ -43,6 +49,24 @@ public class TestActivity extends BaseAppUpdateActivity {
         setContentView(R.layout.activity_test);
         initView();
         getData(true);
+        testRxLife();
+    }
+
+    private void testRxLife() {
+        Observable.interval(1, TimeUnit.SECONDS)
+                .doOnDispose(new Action() {
+                    @Override
+                    public void run() throws Exception {
+                        LogUtils.d("=============>已经停止");
+                    }
+                })
+                .compose(this.<Long>bindUntilEvent(ActivityEvent.DESTROY))
+                .subscribe(new Consumer<Long>() {
+                    @Override
+                    public void accept(Long aLong) throws Exception {
+                        LogUtils.d("=============>al:" + aLong);
+                    }
+                });
     }
 
     @Override

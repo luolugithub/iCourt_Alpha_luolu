@@ -18,9 +18,9 @@
             android:id="@+id/group_name_ll"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:background="?attr/selectableItemBackground"
             android:gravity="center_vertical"
             android:orientation="horizontal"
-            android:background="?attr/selectableItemBackground"
             android:paddingLeft="8dp"
             android:paddingRight="8dp">
 
@@ -62,9 +62,9 @@
             android:id="@+id/group_desc_ll"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:background="?attr/selectableItemBackground"
             android:gravity="center_vertical"
             android:orientation="horizontal"
-            android:background="?attr/selectableItemBackground"
 
             android:paddingLeft="8dp"
             android:paddingRight="8dp">
@@ -72,7 +72,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:drawableLeft="@mipmap/ic_members"
+                android:drawableLeft="@mipmap/icon_task_group_18_copy"
                 android:drawablePadding="20dp"
                 android:gravity="center"
                 android:padding="12dp"
@@ -110,16 +110,17 @@
             android:id="@+id/group_set_private_ll"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:background="?attr/selectableItemBackground"
             android:gravity="center_vertical"
             android:orientation="horizontal"
             android:paddingLeft="8dp"
-            android:background="?attr/selectableItemBackground"
             android:paddingRight="8dp">
 
             <TextView
+                android:id="@+id/textView2"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:drawableLeft="@mipmap/ic_members"
+                android:drawableLeft="@mipmap/ic_lock"
                 android:drawablePadding="20dp"
                 android:gravity="center"
                 android:padding="12dp"
@@ -149,16 +150,16 @@
             android:id="@+id/group_set_invite_ll"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:background="?attr/selectableItemBackground"
             android:gravity="center_vertical"
             android:orientation="horizontal"
-            android:background="?attr/selectableItemBackground"
             android:paddingLeft="8dp"
             android:paddingRight="8dp">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:drawableLeft="@mipmap/ic_members"
+                android:drawableLeft="@mipmap/ic_user_add"
                 android:drawablePadding="20dp"
                 android:gravity="center"
                 android:padding="12dp"
@@ -188,16 +189,16 @@
             android:id="@+id/group_set_look_msg_ll"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:background="?attr/selectableItemBackground"
             android:gravity="center_vertical"
             android:orientation="horizontal"
-            android:background="?attr/selectableItemBackground"
             android:paddingLeft="8dp"
             android:paddingRight="8dp">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:drawableLeft="@mipmap/ic_members"
+                android:drawableLeft="@mipmap/ic_crown"
                 android:drawablePadding="20dp"
                 android:gravity="center"
                 android:padding="12dp"

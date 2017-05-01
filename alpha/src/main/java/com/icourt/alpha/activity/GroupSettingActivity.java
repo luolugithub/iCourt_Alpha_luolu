@@ -103,6 +103,11 @@ public class GroupSettingActivity extends BaseActivity {
             groupSetInviteSwitch.setChecked(groupDetailEntity.member_invite);
             groupSetLookSwitch.setChecked(groupDetailEntity.chat_history);
         }
+
+        TextView titleActionTextView = getTitleActionTextView();
+        if (titleActionTextView != null) {
+            titleActionTextView.setText("完成");
+        }
     }
 
     @OnClick({R.id.group_name_ll, R.id.group_desc_ll})

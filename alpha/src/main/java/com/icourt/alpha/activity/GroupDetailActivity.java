@@ -78,8 +78,6 @@ public class GroupDetailActivity extends BaseActivity {
     TextView groupDingTv;
     @BindView(R.id.group_file_tv)
     TextView groupFileTv;
-    @BindView(R.id.group_member_iv)
-    ImageView groupMemberIv;
     @BindView(R.id.group_member_num_tv)
     TextView groupMemberNumTv;
     @BindView(R.id.group_member_invite_tv)
@@ -197,7 +195,7 @@ public class GroupDetailActivity extends BaseActivity {
                             setViewVisible(titleActionImage, isAdmin);
 
                             //邀请按钮展示
-                            setViewVisible(groupMemberInviteTv, response.body().result.is_private);
+                            setViewVisible(groupMemberInviteTv, !response.body().result.is_private);
 
                             //加入/退出的展示
                             if (isAdmin) {

@@ -11,7 +11,7 @@
         android:layout_height="wrap_content"
         android:background="@android:color/white"
         android:orientation="vertical"
-        android:padding="10dp">
+        android:padding="15dp">
 
         <EditText
             android:id="@+id/group_name_et"
@@ -20,19 +20,22 @@
             android:background="@null"
             android:hint="讨论组名称"
             android:singleLine="true"
-            android:textSize="19dp" />
+            android:textColor="@color/alpha_font_color_black"
+            android:textSize="22dp" />
 
         <EditText
             android:id="@+id/group_desc_et"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
+            android:layout_marginTop="15dp"
             android:background="@null"
             android:gravity="top"
             android:hint="讨论目标(可选)"
             android:maxLength="400"
             android:maxLines="5"
-            android:minLines="3" />
+            android:minLines="3"
+            android:textColor="@color/alpha_font_color_black"
+            android:textSize="@dimen/alpha_font_size_comm" />
 
         <View
             android:layout_width="match_parent"
@@ -43,17 +46,20 @@
             android:id="@+id/group_disturb_ll"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:gravity="center_vertical"
             android:orientation="horizontal">
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:drawableLeft="@mipmap/icon_clock_16"
+                android:drawableLeft="@mipmap/ic_lock"
                 android:drawablePadding="@dimen/dp10"
-                android:paddingBottom="10dp"
-                android:paddingTop="10dp"
-                android:text="私密" />
+                android:paddingBottom="12dp"
+                android:paddingTop="12dp"
+                android:text="私密"
+                android:textColor="@color/alpha_font_color_black"
+                android:textSize="@dimen/alpha_font_size_comm" />
 
             <Switch
                 android:id="@+id/group_private_switch"
@@ -72,29 +78,24 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@android:color/white"
-            android:paddingBottom="10dp"
-            android:paddingTop="10dp">
+            android:gravity="center_vertical">
 
-            <ImageView
-                android:id="@+id/group_member_iv"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:src="@mipmap/icon_member_16" />
 
             <TextView
                 android:id="@+id/group_member_num_tv"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="10dp"
                 android:layout_toLeftOf="@+id/group_member_invite_tv"
                 android:layout_toRightOf="@+id/group_member_iv"
                 android:layout_weight="1"
+                android:drawableLeft="@mipmap/ic_members"
+                android:drawablePadding="10dp"
                 android:gravity="center_vertical"
-                android:paddingBottom="10dp"
-                android:paddingTop="10dp"
+                android:paddingBottom="12dp"
+                android:paddingTop="12dp"
                 android:text="成员(0)"
-                android:textColor="@color/alpha_font_color_gray"
-                android:textSize="@dimen/alpha_font_size_mini" />
+                android:textColor="@color/alpha_font_color_black"
+                android:textSize="@dimen/alpha_font_size_comm" />
 
             <TextView
                 android:id="@+id/group_member_invite_tv"
@@ -102,13 +103,13 @@
                 android:layout_height="wrap_content"
                 android:layout_alignParentRight="true"
                 android:background="?attr/selectableItemBackground"
-                android:drawableLeft="@mipmap/icon_timer_add_16"
+                android:drawableLeft="@mipmap/ic_add_circle_gray"
                 android:drawablePadding="5dp"
                 android:paddingBottom="10dp"
                 android:paddingTop="10dp"
                 android:text="邀请成员"
-                android:textColor="@color/alpha_font_color_gray"
-                android:textSize="@dimen/alpha_font_size_mini" />
+                android:textColor="@color/alpha_font_color_black"
+                android:textSize="@dimen/alpha_font_size_comm" />
 
             <View
                 android:id="@+id/group_title_divider"
@@ -125,6 +126,7 @@
                 android:layout_height="wrap_content"
                 android:layout_alignLeft="@+id/group_title_divider"
                 android:layout_below="@+id/group_title_divider"
+                android:layout_marginLeft="30dp"
                 android:gravity="center_vertical"
                 android:orientation="horizontal">
 

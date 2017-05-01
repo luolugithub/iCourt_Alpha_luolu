@@ -21,7 +21,7 @@
                 android:id="@+id/tabLayout"
                 style="@style/AlphaTabLayout"
                 android:layout_width="wrap_content"
-                android:layout_height="40dp"
+                android:layout_height="@dimen/alpha_height_title"
                 app:tabMinWidth="70dp"
                 app:tabMode="scrollable" />
 

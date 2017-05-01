@@ -87,11 +87,11 @@ android {
             manifestPlaceholders = [NIM_APPKEY: rootProject.ext.nimAppKey.debugAppKey]
 
             //用正式
-           /* buildConfigField "String", "API_URL", rootProject.ext.alphaAPIUrl.api_url_release
-            buildConfigField "String", "HOST_URL", rootProject.ext.alphaHostUrl.host_url_release
-            buildConfigField "String", "APK_UPDATE_URL", rootProject.ext.alphaApkUpdateUrl.apk_update_url_release
-            manifestPlaceholders = [NIM_APPKEY: rootProject.ext.nimAppKey.releaseAppKey]
-            *///测试用
+            /* buildConfigField "String", "API_URL", rootProject.ext.alphaAPIUrl.api_url_release
+             buildConfigField "String", "HOST_URL", rootProject.ext.alphaHostUrl.host_url_release
+             buildConfigField "String", "APK_UPDATE_URL", rootProject.ext.alphaApkUpdateUrl.apk_update_url_release
+             manifestPlaceholders = [NIM_APPKEY: rootProject.ext.nimAppKey.releaseAppKey]
+             *///测试用
             /*  buildConfigField "String", "API_URL", rootProject.ext.alphaAPIUrl.api_url_test
               buildConfigField "String", "HOST_URL", rootProject.ext.alphaHostUrl.host_url_test
               buildConfigField "String", "APK_UPDATE_URL", rootProject.ext.alphaApkUpdateUrl.apk_update_url_test
@@ -201,6 +201,9 @@ dependencies {
     compile rootProject.ext.dependencies.topsnackbar
     compile rootProject.ext.dependencies.glide
     compile rootProject.ext.dependencies.xrefreshview
+    compile 'com.trello.rxlifecycle2:rxlifecycle:2.0.1'
+    compile 'com.trello.rxlifecycle2:rxlifecycle-android:2.0.1'
+
     compile 'com.jakewharton:butterknife:8.5.1'
     annotationProcessor 'com.jakewharton:butterknife-compiler:8.5.1'
     compile 'com.kaopiz:kprogresshud:1.0.5'

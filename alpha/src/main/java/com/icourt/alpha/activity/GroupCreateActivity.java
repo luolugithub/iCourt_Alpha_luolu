@@ -68,8 +68,6 @@ public class GroupCreateActivity extends BaseActivity {
     Switch groupPrivateSwitch;
     @BindView(R.id.group_disturb_ll)
     LinearLayout groupDisturbLl;
-    @BindView(R.id.group_member_iv)
-    ImageView groupMemberIv;
     @BindView(group_member_num_tv)
     TextView groupMemberNumTv;
     @BindView(R.id.group_member_invite_tv)

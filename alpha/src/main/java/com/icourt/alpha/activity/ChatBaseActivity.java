@@ -7,7 +7,6 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.view.View;
-import android.widget.TextView;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
@@ -31,10 +30,12 @@ import com.netease.nimlib.sdk.NIMClient;
 import com.netease.nimlib.sdk.Observer;
 import com.netease.nimlib.sdk.msg.MsgService;
 import com.netease.nimlib.sdk.msg.MsgServiceObserve;
+import com.netease.nimlib.sdk.msg.constant.MsgDirectionEnum;
 import com.netease.nimlib.sdk.msg.model.IMMessage;
 import com.netease.nimlib.sdk.msg.model.MessageReceipt;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import retrofit2.Call;
@@ -335,57 +336,26 @@ public abstract class ChatBaseActivity extends BaseActivity implements INIMessag
             ChatAdapter chatAdapter = (ChatAdapter) adapter;
             final IMCustomerMessageEntity imCustomerMessageEntity = chatAdapter.getItem(position);
             if (imCustomerMessageEntity == null) return;
+            if (imCustomerMessageEntity.imMessage == null) return;
             if (imCustomerMessageEntity.customIMBody == null) return;
+            final List<String> menuItems = new ArrayList<>();
             switch (imCustomerMessageEntity.customIMBody.show_type) {
                 case MSG_TYPE_AT:
                 case MSG_TYPE_TXT:
-                    new AlertListDialog.ListBuilder(getContext())
-                            .setDividerColorRes(R.color.alpha_divider_color)
-                            .setDividerHeightRes(R.dimen.alpha_height_divider)
-                            .setItems(new CharSequence[]{"复制", "钉", "收藏", "转任务"}, new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    switch (which) {
-                                        case 0:
-                                            TextView chat_txt_tv = holder.obtainView(R.id.chat_txt_tv);
-                                            msgActionCopy(chat_txt_tv);
-                                            break;
-                                        case 1:
-                                            msgActionDing(true, imCustomerMessageEntity.customIMBody.id);
-                                            break;
-                                        case 2:
-                                            msgActionCollect(imCustomerMessageEntity.customIMBody.id);
-                                            //msgActionCollectCancel(imCustomerMessageEntity.customIMBody.id);
-                                            break;
-                                        case 3:
-                                            msgActionConver2Task(imCustomerMessageEntity.customIMBody);
-                                            break;
-                                    }
-                                }
-                            }).show();
+                    menuItems.clear();
+                    menuItems.addAll(Arrays.asList("复制", "钉", "收藏", "转任务"));
+                    if (imCustomerMessageEntity.imMessage.getDirect() == MsgDirectionEnum.Out
+                            && canRevokeMsg(imCustomerMessageEntity.imMessage.getTime())) {
+                        menuItems.add("撤回");
+                    }
                     break;
                 case MSG_TYPE_FILE:
-                    new AlertListDialog.ListBuilder(getContext())
-                            .setDividerColorRes(R.color.alpha_divider_color)
-                            .setDividerHeightRes(R.dimen.alpha_height_divider)
-                            .setItems(new CharSequence[]{"钉", "收藏", "转任务"}, new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    switch (which) {
-                                        case 0:
-                                            msgActionDing(true, imCustomerMessageEntity.customIMBody.id);
-                                            break;
-                                        case 1:
-                                            msgActionCollect(imCustomerMessageEntity.customIMBody.id);
-                                            //msgActionCollectCancel(imCustomerMessageEntity.customIMBody.id);
-                                            break;
-                                        case 2:
-                                            msgActionConver2Task(imCustomerMessageEntity.customIMBody);
-                                            break;
-                                    }
-                                }
-                            })
-                            .show();
+                    menuItems.clear();
+                    menuItems.addAll(Arrays.asList("钉", "收藏", "转任务"));
+                    if (imCustomerMessageEntity.imMessage.getDirect()
+                            == MsgDirectionEnum.Out && canRevokeMsg(imCustomerMessageEntity.imMessage.getTime())) {
+                        menuItems.add("撤回");
+                    }
                     break;
                 case MSG_TYPE_DING:
                     break;
@@ -398,8 +368,54 @@ public abstract class ChatBaseActivity extends BaseActivity implements INIMessag
                 case MSG_TYPE_VOICE://暂时不用处理
                     break;
             }
+            showMsgActionDialog(imCustomerMessageEntity.customIMBody, menuItems);
         }
 
+    }
+
+    /**
+     * 2分钟以内 可以撤回消息
+     *
+     * @param msgTime
+     * @return
+     */
+    protected final boolean canRevokeMsg(long msgTime) {
+        return System.currentTimeMillis() < msgTime + 2 * 60 * 1_000;
+    }
+
+    /**
+     * 消息操作菜单
+     * "复制", "钉", "收藏","取消收藏", "转任务","撤回"
+     *
+     * @param customIMBody
+     * @param menuItems
+     */
+    private void showMsgActionDialog(final IMMessageCustomBody customIMBody, final List<String> menuItems) {
+        if (customIMBody == null) return;
+        if (menuItems == null) return;
+        if (menuItems.isEmpty()) return;
+        new AlertListDialog.ListBuilder(getContext())
+                .setDividerColorRes(R.color.alpha_divider_color)
+                .setDividerHeightRes(R.dimen.alpha_height_divider)
+                .setItems((String[]) menuItems.toArray(new String[menuItems.size()]), new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        String actionName = menuItems.get(which);
+                        if (TextUtils.equals(actionName, "复制")) {
+                            msgActionCopy(customIMBody.content);
+                        } else if (TextUtils.equals(actionName, "钉")) {
+                            msgActionDing(true, customIMBody.id);
+                        } else if (TextUtils.equals(actionName, "收藏")) {
+                            msgActionCollect(customIMBody.id);
+                        } else if (TextUtils.equals(actionName, "取消收藏")) {
+                            msgActionCollectCancel(customIMBody.id);
+                        } else if (TextUtils.equals(actionName, "转任务")) {
+                            msgActionConver2Task(customIMBody);
+                        } else if (TextUtils.equals(actionName, "撤回")) {
+                            msgActionRevoke(customIMBody.id);
+                        }
+                    }
+                }).show();
     }
 
     /**
@@ -415,12 +431,11 @@ public abstract class ChatBaseActivity extends BaseActivity implements INIMessag
     /**
      * 消息复制
      *
-     * @param textView
+     * @param charSequence
      */
-    protected final void msgActionCopy(TextView textView) {
-        if (textView == null) return;
-        if (TextUtils.isEmpty(textView.getText())) return;
-        SystemUtils.copyToClipboard(getContext(), "msg", textView.getText());
+    protected final void msgActionCopy(CharSequence charSequence) {
+        if (TextUtils.isEmpty(charSequence)) return;
+        SystemUtils.copyToClipboard(getContext(), "msg", charSequence);
         showTopSnackBar("复制成功");
     }
 
@@ -484,6 +499,22 @@ public abstract class ChatBaseActivity extends BaseActivity implements INIMessag
                         } else {
                             showTopSnackBar("取消收藏失败");
                         }
+                    }
+                });
+    }
+
+    /**
+     * 消息撤回
+     *
+     * @param msgId
+     */
+    protected final void msgActionRevoke(String msgId) {
+        if (TextUtils.isEmpty(msgId)) return;
+        getApi().msgRevoke(msgId)
+                .enqueue(new SimpleCallBack<JsonElement>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
+
                     }
                 });
     }
