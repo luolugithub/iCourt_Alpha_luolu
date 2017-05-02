@@ -13,6 +13,7 @@ import com.icourt.alpha.entity.bean.IMMessageCustomBody;
 import com.icourt.alpha.entity.bean.IMSessionDontDisturbEntity;
 import com.icourt.alpha.entity.bean.LoginIMToken;
 import com.icourt.alpha.entity.bean.PageEntity;
+import com.icourt.alpha.entity.bean.ProjectEntity;
 import com.icourt.alpha.entity.bean.SearchEngineEntity;
 import com.icourt.alpha.entity.bean.SetTopEntity;
 import com.icourt.alpha.entity.bean.TaskEntity;
@@ -554,4 +555,27 @@ public interface AlphaApiService {
     Call<ResEntity<JsonElement>> groupUploadFile(@Query("groupId") String groupId, @PartMap Map<String, RequestBody> params
     );
 
+    /**
+     * 项目列表
+     *
+     * @param pageindex
+     * @param pagesize
+     * @param orderby
+     * @param ordertype
+     * @param status
+     * @param matterType
+     * @param attorneyType
+     * @param myStar
+     * @return
+     */
+    @GET("api/v1/matters")
+    Call<ResEntity<List<ProjectEntity>>> projectQueryAll(@Query("pageindex") int pageindex,
+                                                         @Query("pagesize") int pagesize,
+                                                         @Query("orderby")  String orderby,
+                                                         @Query("ordertype") String ordertype,
+                                                         @Query("status") String status,
+                                                         @Query("matterType") String matterType,
+                                                         @Query("attorneyType") String attorneyType,
+                                                         @Query("myStar") String myStar
+    );
 }

@@ -18,6 +18,7 @@ import java.util.Arrays;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 import butterknife.Unbinder;
 
 /**
@@ -39,6 +40,8 @@ public class TabFindProjectFragment extends BaseFragment {
     ViewPager viewPager;
     Unbinder unbinder;
     BaseFragmentAdapter baseFragmentAdapter;
+    @BindView(R.id.titleAction2)
+    ImageView titleAction2;
 
     public static TabFindProjectFragment newInstance() {
         return new TabFindProjectFragment();
@@ -57,10 +60,20 @@ public class TabFindProjectFragment extends BaseFragment {
         baseFragmentAdapter = new BaseFragmentAdapter(getChildFragmentManager());
         viewPager.setAdapter(baseFragmentAdapter);
         tabLayout.setupWithViewPager(viewPager);
-        baseFragmentAdapter.bindTitle(true, Arrays.asList("我的项目", "参与的项目"));
+        baseFragmentAdapter.bindTitle(true, Arrays.asList("全部", "我关注的", "我参与的"));
         baseFragmentAdapter.bindData(true,
-                Arrays.asList(MyProjectFragment.newInstance(),
-                        MyProjectFragment.newInstance()));
+                Arrays.asList(MyProjectFragment.newInstance(MyProjectFragment.TYPE_ALL_PROJECT),
+                        MyProjectFragment.newInstance(MyProjectFragment.TYPE_MY_ATTENTION_PROJECT), MyProjectFragment.newInstance(MyProjectFragment.TYPE_MY_PARTIC_PROJECT)));
+    }
+
+    @OnClick({R.id.titleAction, R.id.titleAction2})
+    public void onViewClicked(View view) {
+        switch (view.getId()) {
+            case R.id.titleAction:
+                break;
+            case R.id.titleAction2:
+                break;
+        }
     }
 
     @Override

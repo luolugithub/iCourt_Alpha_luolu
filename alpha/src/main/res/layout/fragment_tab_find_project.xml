@@ -31,7 +31,15 @@
                 android:layout_height="38dp"
                 android:background="?attr/selectableItemBackground"
                 android:padding="10dp"
-                android:src="@mipmap/tab_search_on" />
+                android:src="@mipmap/header_icon_analytics" />
+
+            <ImageView
+                android:id="@id/titleAction2"
+                android:layout_width="38dp"
+                android:layout_height="38dp"
+                android:background="?attr/selectableItemBackground"
+                android:padding="10dp"
+                android:src="@mipmap/header_icon_add" />
         </LinearLayout>
 
     </android.support.design.widget.AppBarLayout>

@@ -1,24 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<com.icourt.alpha.view.xrefreshlayout.RefreshLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@id/refreshLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
+    app:isHeightMatchParent="false">
 
-    <CheckedTextView
-        android:id="@+id/checkedTextView2"
+    <android.support.v7.widget.RecyclerView
+        android:id="@id/recyclerView"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="CheckedTextView" />
-
-    <ToggleButton
-        android:id="@+id/toggleButton"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="ToggleButton" />
-
-    <RadioButton
-        android:id="@+id/radioButton"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="RadioButton" />
-</LinearLayout>
+        android:layout_height="match_parent"
+        android:paddingLeft="@dimen/dp10"
+        android:paddingRight="@dimen/dp10"
+        android:paddingTop="@dimen/dp10"
+        android:clipToPadding="false"
+         />
+</com.icourt.alpha.view.xrefreshlayout.RefreshLayout>
