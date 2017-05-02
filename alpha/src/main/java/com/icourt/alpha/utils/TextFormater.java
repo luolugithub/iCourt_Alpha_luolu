@@ -7,10 +7,6 @@ import android.text.Spanned;
 import android.text.TextUtils;
 import android.text.style.ForegroundColorSpan;
 
-import com.github.promeg.pinyinhelper.Pinyin;
-import com.icourt.alpha.entity.bean.FileBean;
-import com.icourt.alpha.entity.bean.FileBoxBean;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
@@ -323,53 +319,7 @@ public class TextFormater {
         return lists;
     }
 
-    public static void convert(List<FileBean> fileBeanList) {
-        if (null != fileBeanList && !fileBeanList.isEmpty()) {
-            int size = fileBeanList.size();
-            for (int i = 0; i < size; ++i) {
-                FileBean fileBean = fileBeanList.get(i);
-                StringBuilder pySb = new StringBuilder();
-                String target = fileBean.getFileName();
-                if (target.length() > 0) {
-                    target = target.substring(0, 1);
-                    for (int i1 = 0; i1 < target.length(); ++i1) {
-                        pySb.append(Pinyin.toPinyin(target.charAt(i1)).toUpperCase());
-                    }
-                    if (pySb.toString().length() > 0) {
-                        if (pySb.toString().substring(0, 1).matches("[A-Z]")) {
-                            fileBean.setSortLetters(pySb.toString().substring(0, 1));
-                        } else {
-                            fileBean.setSortLetters("#");
-                        }
-                    }
-                }
-            }
-        }
-    }
 
-    public static void convertBox(List<FileBoxBean> fileBeanList) {
-        if (null != fileBeanList && !fileBeanList.isEmpty()) {
-            int size = fileBeanList.size();
-            for (int i = 0; i < size; ++i) {
-                FileBoxBean fileBean = fileBeanList.get(i);
-                StringBuilder pySb = new StringBuilder();
-                String target = fileBean.getName();
-                if (target.length() > 0) {
-                    target = target.substring(0, 1);
-                    for (int i1 = 0; i1 < target.length(); ++i1) {
-                        pySb.append(Pinyin.toPinyin(target.charAt(i1)).toUpperCase());
-                    }
-                    if (pySb.toString().length() > 0) {
-                        if (pySb.toString().substring(0, 1).matches("[A-Z]")) {
-                            fileBean.setSortLetters(pySb.toString().substring(0, 1));
-                        } else {
-                            fileBean.setSortLetters("#");
-                        }
-                    }
-                }
-            }
-        }
-    }
 
     /**
      * 关键字高亮变色

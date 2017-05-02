@@ -14,7 +14,7 @@ import android.text.TextUtils;
 import com.icourt.alpha.R;
 
 /**
- * Description
+ * Description  权限基类
  * Company Beijing icourt
  * author  youxuan  E-mail:xuanyouwu@163.com
  * date createTime：2017/4/5

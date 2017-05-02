@@ -17,4 +17,17 @@ public class NailEntity extends FileInfoEntity {
     public String id;
     public String content;
     public List<AtEntity> atBeanList;//被at的人集合
+
+    @Override
+    public String toString() {
+        return "NailEntity{" +
+                "show_type=" + show_type +
+                ", isPining=" + isPining +
+                ", name='" + name + '\'' +
+                ", pic='" + pic + '\'' +
+                ", id='" + id + '\'' +
+                ", content='" + content + '\'' +
+                ", atBeanList=" + atBeanList +
+                '}';
+    }
 }

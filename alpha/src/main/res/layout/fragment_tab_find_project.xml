@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <android.support.design.widget.AppBarLayout xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:id="@id/titleView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/alpha_height_title"
+            android:background="@color/alpha_background_title"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <android.support.design.widget.TabLayout
+                android:id="@+id/tabLayout"
+                style="@style/AlphaTabLayout"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@color/alpha_background_title"
+                android:layout_weight="1"
+                app:tabMode="scrollable" />
+
+            <ImageView
+                android:id="@id/titleAction"
+                android:layout_width="38dp"
+                android:layout_height="38dp"
+                android:background="?attr/selectableItemBackground"
+                android:padding="10dp"
+                android:src="@mipmap/tab_search_on" />
+        </LinearLayout>
+
+    </android.support.design.widget.AppBarLayout>
+
+    <android.support.v4.view.ViewPager
+        android:id="@+id/viewPager"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
+</LinearLayout>

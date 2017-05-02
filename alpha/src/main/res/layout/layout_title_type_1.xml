@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <android.support.design.widget.AppBarLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@id/titleView"
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
@@ -10,12 +11,14 @@
         android:layout_height="@dimen/alpha_height_title"
         android:background="@color/alpha_background_title"
         android:gravity="center_vertical"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        app:layout_scrollFlags="scroll|enterAlways|snap">
 
         <ImageView
             android:id="@id/titleBack"
             android:layout_width="38dp"
-            android:layout_height="38dp"
+            android:layout_height="match_parent"
+            android:layout_marginLeft="5dp"
             android:background="?attr/selectableItemBackground"
             android:padding="10dp"
             android:src="@mipmap/header_icon_back" />
@@ -37,7 +40,8 @@
         <ImageView
             android:id="@id/titleAction"
             android:layout_width="38dp"
-            android:layout_height="38dp"
+            android:layout_height="match_parent"
+            android:layout_marginRight="5dp"
             android:background="?attr/selectableItemBackground"
             android:padding="10dp"
             android:src="@mipmap/header_icon_add" />

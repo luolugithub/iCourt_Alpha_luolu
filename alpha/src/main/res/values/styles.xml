@@ -93,7 +93,7 @@
 
     <style name="AnimBottom" parent="@android:style/Animation.Translucent">
         <item name="android:windowEnterAnimation">@anim/push_bottom_in</item>
-        <item name="android:windowExitAnimation">@anim/push_buttom_out</item>
+        <item name="android:windowExitAnimation">@anim/push_bottom_out</item>
     </style>
 
     <style name="AnimTop" parent="@android:style/Animation.Translucent">
@@ -141,5 +141,12 @@
         <item name="android:textSize">16sp</item>
         <item name="android:textColor">@color/alpha_font_color_gray</item>
         <item name="textAllCaps">true</item>
+    </style>
+
+
+    <style name="AnimBottomDialog" parent="@android:style/Animation">
+        <item name="android:windowEnterAnimation">@anim/push_bottom_in</item>
+        <item name="android:windowExitAnimation">@anim/push_bottom_out</item>
+        <item name="android:windowNoTitle">true</item>
     </style>
 </resources>

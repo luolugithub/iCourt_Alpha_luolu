@@ -24,6 +24,7 @@ public class BaseRealmObjectDao<T extends RealmObject> extends BaseDao<T> {
                 .name(realmName)
                 .encryptionKey(encryptionKey)
                 .schemaVersion(schemaVersion)
+                .deleteRealmIfMigrationNeeded()
                 .migration(migration)
                 .build()));
     }
@@ -32,6 +33,7 @@ public class BaseRealmObjectDao<T extends RealmObject> extends BaseDao<T> {
         super(Realm.getInstance(new RealmConfiguration.Builder()
                 .name(realmName)
                 .schemaVersion(schemaVersion)
+                .deleteRealmIfMigrationNeeded()
                 .migration(migration)
                 .build()));
     }

@@ -3,6 +3,7 @@ package com.icourt.alpha.activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.view.View;
 
@@ -13,7 +14,19 @@ import com.icourt.alpha.base.BaseAppUpdateActivity;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.JsonUtils;
 import com.icourt.alpha.utils.LogUtils;
+import com.icourt.alpha.utils.Md5Utils;
+import com.liulishuo.filedownloader.BaseDownloadTask;
+import com.liulishuo.filedownloader.FileDownloadLargeFileListener;
+import com.liulishuo.filedownloader.FileDownloader;
+import com.trello.rxlifecycle2.android.ActivityEvent;
 import com.umeng.socialize.bean.SHARE_MEDIA;
+
+import java.io.File;
+import java.util.concurrent.TimeUnit;
+
+import io.reactivex.Observable;
+import io.reactivex.functions.Action;
+import io.reactivex.functions.Consumer;
 
 /**
  * Description
@@ -36,6 +49,24 @@ public class TestActivity extends BaseAppUpdateActivity {
         setContentView(R.layout.activity_test);
         initView();
         getData(true);
+        testRxLife();
+    }
+
+    private void testRxLife() {
+        Observable.interval(1, TimeUnit.SECONDS)
+                .doOnDispose(new Action() {
+                    @Override
+                    public void run() throws Exception {
+                        LogUtils.d("=============>已经停止");
+                    }
+                })
+                .compose(this.<Long>bindUntilEvent(ActivityEvent.DESTROY))
+                .subscribe(new Consumer<Long>() {
+                    @Override
+                    public void accept(Long aLong) throws Exception {
+                        LogUtils.d("=============>al:" + aLong);
+                    }
+                });
     }
 
     @Override
@@ -51,17 +82,23 @@ public class TestActivity extends BaseAppUpdateActivity {
         registerClick(R.id.bt_fragment);
     }
 
+    public static final String URL_DOC = "https://test.alphalawyer.cn/ilaw/api/v1/documents/download?filePath=%2FiCourt%2Fzhaolu%EF%BC%8D%E4%B8%93%E7%94%A8one&fileName=%25E6%25B5%258B%25E8%25AF%2595%25E6%25B5%258B%25E8%25AF%2595%25E6%25B5%258B%25E8%25AF%2595%25E6%25B5%258B%25E8%25AF%2595-54.docx";
+
+    public String token = "eyJhbGciOiJIUzI1NiJ9.eyJvZmZpY2VfaWQiOiI0ZDc5MmUzMTZhMDUxMWU2YWE3NjAwMTYzZTE2MmFkZCIsImRldmljZVR5cGUiOiJhbmRyb2lkIiwib2ZmaWNlX25hbWUiOiJpQ291cnQiLCJ1c2VyX2lkIjoiNTM4QkM5QzhGQ0IzMTFFNjg0MzM3MDEwNkZBRUNFMkUiLCJ1c2VyX25hbWUiOiLotbXlsI_mvZ4iLCJpc3MiOiJpTGF3LmNvbSIsImV4cCI6MTQ5MjY5MTg2MjIzNSwiaWF0IjoxNDkyMDg3MDYyMjM1fQ.1wjJgpvZmrV7q4OG8FGapcH6uehtXV3XhHb4N-WdUKM";
+
     @Override
     protected void getData(boolean isRefresh) {
         super.getData(isRefresh);
         checkAppUpdate(getContext());
+
     }
 
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.bt_demo:
-                shareDemo();
+                testDownload();
+                //shareDemo();
                 // DemoActivity.launch(getContext());
                 break;
             case R.id.bt_json:
@@ -91,6 +128,57 @@ public class TestActivity extends BaseAppUpdateActivity {
             default:
                 super.onClick(v);
                 break;
+        }
+    }
+
+    private void testDownload() {
+        if (Environment.isExternalStorageEmulated()) {
+            String ROOTPATH = Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator;
+            String token = "eyJhbGciOiJIUzI1NiJ9.eyJvZmZpY2VfaWQiOiI0ZDc5MmUzMTZhMDUxMWU2YWE3NjAwMTYzZTE2MmFkZCIsImRldmljZVR5cGUiOiJhbmRyb2lkIiwib2ZmaWNlX25hbWUiOiJpQ291cnQiLCJ1c2VyX2lkIjoiNTM4QkM5QzhGQ0IzMTFFNjg0MzM3MDEwNkZBRUNFMkUiLCJ1c2VyX25hbWUiOiLotbXlsI_mvZ4iLCJpc3MiOiJpTGF3LmNvbSIsImV4cCI6MTQ5MjY5MTg2MjIzNSwiaWF0IjoxNDkyMDg3MDYyMjM1fQ.1wjJgpvZmrV7q4OG8FGapcH6uehtXV3XhHb4N-WdUKM";
+            FileDownloader
+                    .getImpl()
+                    .create(URL_DOC + "&token?" + token)
+                    .addHeader("token", token)
+                    .addHeader("Accept-Encoding", "identity")
+                    .setPath(ROOTPATH + Md5Utils.md5(URL_DOC, URL_DOC) + ".apk")
+                    .setListener(new FileDownloadLargeFileListener() {
+                        @Override
+                        protected void pending(BaseDownloadTask task, long soFarBytes, long totalBytes) {
+                            task.getLargeFileTotalBytes();
+
+                            log("-------------->pending:soFarBytes:" + soFarBytes + " totalBytes:" + totalBytes + "  ntask.getLargeFileTotalBytes():" + task.getLargeFileTotalBytes() + "     task.getSmallFileTotalBytes():" + task.getSmallFileTotalBytes());
+                        }
+
+                        @Override
+                        protected void progress(BaseDownloadTask task, long soFarBytes, long totalBytes) {
+                            log("-------------->progress:soFarBytes:" + soFarBytes + " totalBytes:" + totalBytes);
+
+                        }
+
+                        @Override
+                        protected void paused(BaseDownloadTask task, long soFarBytes, long totalBytes) {
+
+                        }
+
+                        @Override
+                        protected void completed(BaseDownloadTask task) {
+
+                        }
+
+                        @Override
+                        protected void error(BaseDownloadTask task, Throwable e) {
+                            log("-------------->error:" + e);
+
+                        }
+
+                        @Override
+                        protected void warn(BaseDownloadTask task) {
+                            log("-------------->warn:");
+
+                        }
+                    }).start();
+        } else {
+            showTopSnackBar("sd卡不可用!");
         }
     }
 

@@ -20,26 +20,123 @@ import android.view.ViewParent;
 import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.icourt.alpha.http.AlphaApiService;
 import com.icourt.alpha.http.RetrofitServiceFactory;
+import com.icourt.alpha.interfaces.INotifyFragment;
 import com.icourt.alpha.interfaces.ProgressHUDImp;
 import com.icourt.alpha.utils.LogUtils;
 import com.icourt.alpha.utils.LoginInfoUtils;
 import com.icourt.alpha.utils.SnackbarUtils;
+import com.icourt.alpha.utils.ToastUtils;
 import com.kaopiz.kprogresshud.KProgressHUD;
+import com.trello.rxlifecycle2.LifecycleProvider;
+import com.trello.rxlifecycle2.LifecycleTransformer;
+import com.trello.rxlifecycle2.RxLifecycle;
+import com.trello.rxlifecycle2.android.FragmentEvent;
+import com.trello.rxlifecycle2.android.RxLifecycleAndroid;
+
+import io.reactivex.Observable;
+import io.reactivex.subjects.BehaviorSubject;
 
 /**
- * Description
- * Company Beijing guokeyuzhou
+ * Description fragment基类封装
+ * Company Beijing icourt
  * author  youxuan  E-mail:xuanyouwu@163.com
  * date createTime：17/3/28
- * version
+ * version 1.0.0
  */
 
 public abstract class BaseFragment
         extends Fragment
-        implements ProgressHUDImp
-        , View.OnClickListener {
-
+        implements ProgressHUDImp,
+        View.OnClickListener,
+        INotifyFragment,
+        LifecycleProvider<FragmentEvent> {
+    private final BehaviorSubject<FragmentEvent> lifecycleSubject = BehaviorSubject.create();
     protected View rootView;
+
+    @Override
+    @NonNull
+    @CheckResult
+    public final Observable<FragmentEvent> lifecycle() {
+        return lifecycleSubject.hide();
+    }
+
+    @Override
+    @NonNull
+    @CheckResult
+    public final <T> LifecycleTransformer<T> bindUntilEvent(@NonNull FragmentEvent event) {
+        return RxLifecycle.bindUntilEvent(lifecycleSubject, event);
+    }
+
+    @Override
+    @NonNull
+    @CheckResult
+    public final <T> LifecycleTransformer<T> bindToLifecycle() {
+        return RxLifecycleAndroid.bindFragment(lifecycleSubject);
+    }
+
+    @Override
+    @CallSuper
+    public void onAttach(android.app.Activity activity) {
+        super.onAttach(activity);
+        lifecycleSubject.onNext(FragmentEvent.ATTACH);
+    }
+
+    @Override
+    @CallSuper
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        lifecycleSubject.onNext(FragmentEvent.CREATE);
+    }
+
+    @Override
+    @CallSuper
+    public void onStart() {
+        super.onStart();
+        lifecycleSubject.onNext(FragmentEvent.START);
+    }
+
+    @Override
+    @CallSuper
+    public void onResume() {
+        super.onResume();
+        lifecycleSubject.onNext(FragmentEvent.RESUME);
+    }
+
+    @Override
+    @CallSuper
+    public void onPause() {
+        lifecycleSubject.onNext(FragmentEvent.PAUSE);
+        super.onPause();
+    }
+
+    @Override
+    @CallSuper
+    public void onStop() {
+        lifecycleSubject.onNext(FragmentEvent.STOP);
+        super.onStop();
+    }
+
+    @Override
+    @CallSuper
+    public void onDestroyView() {
+        lifecycleSubject.onNext(FragmentEvent.DESTROY_VIEW);
+        super.onDestroyView();
+    }
+
+    @Override
+    @CallSuper
+    public void onDestroy() {
+        lifecycleSubject.onNext(FragmentEvent.DESTROY);
+        super.onDestroy();
+    }
+
+    @Override
+    @CallSuper
+    public void onDetach() {
+        lifecycleSubject.onNext(FragmentEvent.DETACH);
+        super.onDetach();
+    }
+
 
     /**
      * 如果当前的父亲不是手机窗体上的时候,移除掉
@@ -143,6 +240,7 @@ public abstract class BaseFragment
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        lifecycleSubject.onNext(FragmentEvent.CREATE_VIEW);
         if (!isAlreadyInit) {
             isAlreadyInit = true;
             initView();
@@ -196,7 +294,7 @@ public abstract class BaseFragment
      */
     @UiThread
     protected final void showToast(@NonNull CharSequence notice) {
-
+        ToastUtils.showToast(notice);
     }
 
     /**
@@ -207,7 +305,7 @@ public abstract class BaseFragment
      */
     @UiThread
     protected final void showToast(@StringRes int resId) {
-        this.showToast(getString(resId));
+        ToastUtils.showToast(resId);
     }
 
     /**
@@ -313,6 +411,11 @@ public abstract class BaseFragment
 
     }
 
+    @Override
+    public void notifyFragmentUpdate(Fragment targetFrgament, int type, Bundle bundle) {
+
+    }
+
     /**
      * 添加或者显示碎片
      *
@@ -321,10 +424,10 @@ public abstract class BaseFragment
      * @param containerViewId 替换的viewid
      * @return 当前执行显示的fragment
      */
-    protected final Fragment addOrShowFragment(FragmentManager fragmentManager, @NonNull Fragment targetFragment, Fragment currentFragment, @IdRes int containerViewId) {
+    protected final Fragment addOrShowFragment(@NonNull Fragment targetFragment, Fragment currentFragment, @IdRes int containerViewId) {
         if (targetFragment == null) return currentFragment;
         if (targetFragment == currentFragment) return currentFragment;
-        FragmentManager fm = fragmentManager;
+        FragmentManager fm = getChildFragmentManager();
         FragmentTransaction transaction = fm.beginTransaction();
         if (!targetFragment.isAdded()) { // 如果当前fragment添加，则添加到Fragment管理器中
             if (currentFragment == null) {
@@ -388,4 +491,14 @@ public abstract class BaseFragment
     public String getUserToken() {
         return LoginInfoUtils.getUserToken();
     }
+
+    /**
+     * @return 登陆uid
+     */
+    @Nullable
+    @CheckResult
+    protected final String getLoginUserId() {
+        return LoginInfoUtils.getLoginUserId();
+    }
+
 }

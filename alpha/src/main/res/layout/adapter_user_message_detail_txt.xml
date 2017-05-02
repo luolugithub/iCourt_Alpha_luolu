@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <include layout="@layout/adapter_user_message_detail_user" />
+
+    <TextView
+        android:id="@+id/item_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ellipsize="end"
+        android:maxLines="3"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:text="文本内容"
+        android:textColor="@color/alpha_font_color_gray"
+        android:textSize="@dimen/alpha_font_size_mini" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/alpha_height_divider"
+        android:layout_marginTop="10dp"
+        android:background="@color/alpha_divider_color" />
+
+    <include layout="@layout/adapter_user_message_detail_from" />
+</LinearLayout>

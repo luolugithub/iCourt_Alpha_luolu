@@ -1,0 +1,60 @@
+package com.icourt.alpha.adapter;
+
+import android.text.TextUtils;
+import android.widget.ImageView;
+import android.widget.TextView;
+
+import com.icourt.alpha.R;
+import com.icourt.alpha.adapter.baseadapter.BaseArrayRecyclerAdapter;
+import com.icourt.alpha.entity.bean.IMMessageCustomBody;
+import com.icourt.alpha.utils.DateUtils;
+import com.icourt.alpha.utils.SpannableUtils;
+import com.icourt.alpha.utils.SystemUtils;
+
+/**
+ * Description
+ * Company Beijing icourt
+ * author  youxuan  E-mail:xuanyouwu@163.com
+ * date createTime：2017/4/19
+ * version 1.0.0
+ */
+public class MyAtedAdapter extends BaseArrayRecyclerAdapter<IMMessageCustomBody> {
+    @Override
+    public int bindView(int viewtype) {
+        return R.layout.adapter_my_ated;
+    }
+
+
+    @Override
+    public void onBindHoder(ViewHolder holder, IMMessageCustomBody imAtEntity, int position) {
+        if (imAtEntity == null) return;
+        ImageView at_user_iv = holder.obtainView(R.id.at_user_iv);
+        TextView at_user_tv = holder.obtainView(R.id.at_user_tv);
+        TextView at_time_tv = holder.obtainView(R.id.at_time_tv);
+        TextView at_content_tv = holder.obtainView(R.id.at_content_tv);
+
+        //GlideUtils.loadUser(at_user_iv.getContext(), imAtEntity.pic, at_user_iv);
+
+        at_user_tv.setText(imAtEntity.name);
+        at_time_tv.setText(DateUtils.getTimeShowString(imAtEntity.send_time, true));
+        if (!TextUtils.isEmpty(imAtEntity.content)) {
+            String originalText = imAtEntity.content;
+            String targetText = null;
+            try {
+                targetText = originalText.substring(originalText.trim().indexOf("@"), originalText.trim().indexOf(" "));
+            } catch (Exception e) {
+            }
+            if (TextUtils.isEmpty(targetText) && originalText.startsWith("@")) {
+                if (originalText.trim().startsWith("@所有人")) {
+                    targetText = "@所有人";
+                } else {
+                    targetText = originalText;
+                }
+            }
+            SpannableUtils.setTextForegroundColorSpan(at_content_tv,
+                    originalText,
+                    targetText,
+                    SystemUtils.getColor(at_content_tv.getContext(), R.color.alpha_font_color_orange));
+        }
+    }
+}

@@ -4,15 +4,20 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import com.andview.refreshview.XRefreshView;
+import com.gjiazhe.wavesidebar.WaveSideBar;
 import com.icourt.alpha.R;
+import com.icourt.alpha.activity.ContactDetailActivity;
 import com.icourt.alpha.activity.ContactSearchActivity;
+import com.icourt.alpha.activity.GroupListActivity;
 import com.icourt.alpha.adapter.IMContactAdapter;
 import com.icourt.alpha.adapter.ItemActionAdapter;
+import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.HeaderFooterAdapter;
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.db.convertor.IConvertModel;
@@ -24,14 +29,15 @@ import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.icourt.alpha.entity.bean.ItemsEntity;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
-import com.icourt.alpha.utils.CustomIndexBarDataHelper;
 import com.icourt.alpha.utils.DensityUtil;
+import com.icourt.alpha.utils.IndexUtils;
+import com.icourt.alpha.utils.PinyinComparator;
+import com.icourt.alpha.view.recyclerviewDivider.SuspensionDecoration;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
-import com.mcxtzhang.indexlib.IndexBar.widget.IndexBar;
-import com.mcxtzhang.indexlib.suspension.SuspensionDecoration;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import butterknife.BindView;
@@ -42,17 +48,18 @@ import retrofit2.Call;
 import retrofit2.Response;
 
 /**
- * Description
+ * Description  联系人列表
  * Company Beijing icourt
  * author  youxuan  E-mail:xuanyouwu@163.com
  * date createTime：2017/4/10
  * version 1.0.0
  */
-public class ContactListFragment extends BaseFragment {
+public class ContactListFragment extends BaseFragment implements BaseRecyclerAdapter.OnItemClickListener {
+    private static final String STRING_TOP = "↑︎";
     @BindView(R.id.recyclerView)
     RecyclerView recyclerView;
     @BindView(R.id.recyclerIndexBar)
-    IndexBar recyclerIndexBar;
+    WaveSideBar recyclerIndexBar;
     @BindView(R.id.refreshLayout)
     RefreshLayout refreshLayout;
     Unbinder unbinder;
@@ -63,6 +70,7 @@ public class ContactListFragment extends BaseFragment {
     IMContactAdapter imContactAdapter;
     SuspensionDecoration mDecoration;
     ContactDbService contactDbService;
+    LinearLayoutManager linearLayoutManager;
 
     public static ContactListFragment newInstance() {
         return new ContactListFragment();
@@ -81,20 +89,17 @@ public class ContactListFragment extends BaseFragment {
     protected void initView() {
         loginUserInfo = getLoginUserInfo();
         contactDbService = new ContactDbService(loginUserInfo == null ? "" : loginUserInfo.getUserId());
-        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getContext());
+        linearLayoutManager = new LinearLayoutManager(getContext());
         recyclerView.setLayoutManager(linearLayoutManager);
 
-        mDecoration = new SuspensionDecoration(getActivity(), null);
-        mDecoration.setColorTitleBg(0xFFf4f4f4);
-        mDecoration.setColorTitleFont(0xFF4a4a4a);
-        mDecoration.setTitleFontSize(DensityUtil.sp2px(getContext(), 16));
-        recyclerView.addItemDecoration(mDecoration);
 
         headerFooterAdapter = new HeaderFooterAdapter<IMContactAdapter>(imContactAdapter = new IMContactAdapter());
+        imContactAdapter.setOnItemClickListener(this);
         View headerView = HeaderFooterAdapter.inflaterView(getContext(), R.layout.header_contact_search, recyclerView);
         headerRecyclerView = (RecyclerView) headerView.findViewById(R.id.headerRecyclerView);
         headerRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         headerRecyclerView.setAdapter(itemsEntityItemActionAdapter = new ItemActionAdapter<ItemsEntity>());
+        itemsEntityItemActionAdapter.setOnItemClickListener(this);
         itemsEntityItemActionAdapter.bindData(true, Arrays.asList(new ItemsEntity("我加入的讨论组", R.mipmap.tab_message),
                 new ItemsEntity("所有讨论组", R.mipmap.tab_message),
                 new ItemsEntity("已归档讨论组", R.mipmap.tab_message)));
@@ -103,11 +108,32 @@ public class ContactListFragment extends BaseFragment {
         headerView.findViewById(R.id.rl_comm_search).setOnClickListener(this);
         headerFooterAdapter.addHeader(headerView);
 
+
+        mDecoration = new SuspensionDecoration(getActivity(), null);
+        mDecoration.setColorTitleBg(0xFFf4f4f4);
+        mDecoration.setColorTitleFont(0xFF4a4a4a);
+        mDecoration.setTitleFontSize(DensityUtil.sp2px(getContext(), 16));
+        mDecoration.setHeaderViewCount(headerFooterAdapter.getHeaderCount());
+        recyclerView.addItemDecoration(mDecoration);
+        recyclerIndexBar.setOnSelectIndexItemListener(new WaveSideBar.OnSelectIndexItemListener() {
+            @Override
+            public void onSelectIndexItem(String index) {
+                if (TextUtils.equals(index, STRING_TOP)) {
+                    linearLayoutManager.scrollToPositionWithOffset(0, 0);
+                    return;
+                }
+                for (int i = 0; i < imContactAdapter.getItemCount(); i++) {
+                    GroupContactBean item = imContactAdapter.getItem(i);
+                    if (item != null && TextUtils.equals(item.getSuspensionTag(), index)) {
+                        linearLayoutManager
+                                .scrollToPositionWithOffset(i + headerFooterAdapter.getHeaderCount(), 0);
+                        return;
+                    }
+                }
+            }
+        });
+
         recyclerView.setAdapter(headerFooterAdapter);
-        recyclerIndexBar
-                //.setmPressedShowTextView(mTvSideBarHint)//设置HintTextView
-                .setNeedRealIndex(true)
-                .setmLayoutManager(linearLayoutManager);
 
         refreshLayout.setXRefreshViewListener(new XRefreshView.SimpleXRefreshListener() {
             @Override
@@ -147,8 +173,9 @@ public class ContactListFragment extends BaseFragment {
             RealmResults<ContactDbModel> contactDbModels = contactDbService.queryAll();
             if (contactDbModels != null) {
                 List<GroupContactBean> contactBeen = ListConvertor.convertList(new ArrayList<IConvertModel<GroupContactBean>>(contactDbModels));
-                log("------------>load from db:" + contactBeen);
                 filterRobot(contactBeen);
+                IndexUtils.setSuspensions(getContext(), contactBeen);
+                Collections.sort(contactBeen, new PinyinComparator<GroupContactBean>());
                 imContactAdapter.bindData(true, contactBeen);
                 updateIndexBar(contactBeen);
             }
@@ -164,7 +191,7 @@ public class ContactListFragment extends BaseFragment {
      */
     @Override
     protected void getData(boolean isRefresh) {
-        getApi().getGroupContacts(loginUserInfo == null ? "" : loginUserInfo.getOfficeId())
+        getApi().usersQuery()
                 .enqueue(new SimpleCallBack<List<GroupContactBean>>() {
                     @Override
                     public void onSuccess(Call<ResEntity<List<GroupContactBean>>> call, Response<ResEntity<List<GroupContactBean>>> response) {
@@ -172,19 +199,29 @@ public class ContactListFragment extends BaseFragment {
                             List<GroupContactBean> data = response.body().result;
                             //插入数据库
                             insertAsynContact(data);
+                            getRobos();
                             filterRobot(data);
+                            IndexUtils.setSuspensions(getContext(), data);
+                            Collections.sort(data, new PinyinComparator<GroupContactBean>());
                             imContactAdapter.bindData(true, data);
                             updateIndexBar(data);
                         }
-                        refreshLayout.stopRefresh();
+                        stopRefresh();
                     }
 
                     @Override
                     public void onFailure(Call<ResEntity<List<GroupContactBean>>> call, Throwable t) {
                         super.onFailure(call, t);
-                        refreshLayout.stopRefresh();
+                        stopRefresh();
                     }
                 });
+    }
+
+    private void stopRefresh() {
+        if (refreshLayout != null) {
+            refreshLayout.stopRefresh();
+            refreshLayout.stopLoadMore();
+        }
     }
 
     /**
@@ -214,14 +251,11 @@ public class ContactListFragment extends BaseFragment {
      * @param data
      */
     private void updateIndexBar(List<GroupContactBean> data) {
-        List<GroupContactBean> wrapDatas = new ArrayList<GroupContactBean>(data);
-        GroupContactBean headerContactBean = new GroupContactBean();
-        headerContactBean.isNotNeedToPinyin = true;
-        headerContactBean.setBaseIndexTag("↑︎");
-        wrapDatas.add(0, headerContactBean);
         try {
-            recyclerIndexBar.setDataHelper(new CustomIndexBarDataHelper()).setmSourceDatas(wrapDatas).invalidate();
-            mDecoration.setmDatas(wrapDatas);
+            ArrayList<String> suspensions = IndexUtils.getSuspensions(data);
+            suspensions.add(0, STRING_TOP);
+            recyclerIndexBar.setIndexItems(suspensions.toArray(new String[suspensions.size()]));
+            mDecoration.setmDatas(data);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -237,23 +271,65 @@ public class ContactListFragment extends BaseFragment {
         if (data == null) return;
         try {
             contactDbService.deleteAll();
-            contactDbService.insertAsyn(new ArrayList<IConvertModel<ContactDbModel>>(data));
+            contactDbService.insertOrUpdateAsyn(new ArrayList<IConvertModel<ContactDbModel>>(data));
         } catch (Throwable e) {
             e.printStackTrace();
         }
     }
 
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        unbinder.unbind();
+    /**
+     * 获取机器人
+     */
+    private void getRobos() {
+        getApi().getRobos()
+                .enqueue(new SimpleCallBack<List<GroupContactBean>>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<List<GroupContactBean>>> call, Response<ResEntity<List<GroupContactBean>>> response) {
+                        if (response.body().result != null
+                                && contactDbService != null) {
+                            contactDbService.insertOrUpdateAsyn(new ArrayList<IConvertModel<ContactDbModel>>(response.body().result));
+                        }
+                    }
+
+                    @Override
+                    public void defNotify(String noticeStr) {
+                        //super.defNotify(noticeStr);
+                    }
+                });
     }
+
 
     @Override
     public void onDestroy() {
         super.onDestroy();
+        unbinder.unbind();
         if (contactDbService != null) {
             contactDbService.releaseService();
         }
     }
+
+    @Override
+    public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
+        if (adapter == imContactAdapter) {
+            GroupContactBean data = imContactAdapter.getData(position -
+                    (imContactAdapter.getParentHeaderFooterAdapter() == null
+                            ? 0 : imContactAdapter.getParentHeaderFooterAdapter().getHeaderCount()));
+            ContactDetailActivity.launch(getContext(), data, false, false);
+        } else if (adapter == itemsEntityItemActionAdapter) {
+            ItemsEntity item = itemsEntityItemActionAdapter.getItem(position);
+            if (item != null) {
+                switch (position) {
+                    case 0:
+                        GroupListActivity.launch(getContext(),
+                                GroupListActivity.GROUP_TYPE_MY_JOIN);
+                        break;
+                    case 1:
+                        GroupListActivity.launch(getContext(),
+                                GroupListActivity.GROUP_TYPE_TYPE_ALL);
+                        break;
+                }
+            }
+        }
+    }
+
 }

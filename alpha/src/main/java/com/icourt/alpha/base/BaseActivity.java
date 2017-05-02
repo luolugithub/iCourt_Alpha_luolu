@@ -1,7 +1,14 @@
 package com.icourt.alpha.base;
 
+import android.content.Context;
+import android.graphics.Color;
+import android.graphics.drawable.Drawable;
+import android.os.Bundle;
 import android.support.annotation.CallSuper;
 import android.support.annotation.CheckResult;
+import android.support.annotation.ColorInt;
+import android.support.annotation.ColorRes;
+import android.support.annotation.DrawableRes;
 import android.support.annotation.IdRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -10,41 +17,64 @@ import android.support.annotation.UiThread;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.CheckedTextView;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.bugtags.library.Bugtags;
 import com.icourt.alpha.R;
 import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.icourt.alpha.http.AlphaApiService;
 import com.icourt.alpha.http.RetrofitServiceFactory;
+import com.icourt.alpha.interfaces.IContextResourcesImp;
 import com.icourt.alpha.interfaces.ProgressHUDImp;
 import com.icourt.alpha.utils.LogUtils;
 import com.icourt.alpha.utils.LoginInfoUtils;
 import com.icourt.alpha.utils.SnackbarUtils;
 import com.icourt.alpha.utils.SystemUtils;
+import com.icourt.alpha.utils.ToastUtils;
 import com.kaopiz.kprogresshud.KProgressHUD;
+import com.trello.rxlifecycle2.LifecycleProvider;
+import com.trello.rxlifecycle2.LifecycleTransformer;
+import com.trello.rxlifecycle2.RxLifecycle;
+import com.trello.rxlifecycle2.android.ActivityEvent;
+import com.trello.rxlifecycle2.android.RxLifecycleAndroid;
+
+import io.reactivex.Observable;
+import io.reactivex.subjects.BehaviorSubject;
+
+import static com.umeng.socialize.utils.DeviceConfig.context;
 
 /**
- * Description
+ * Description  基类封装
  * Company Beijing icourt
  * author  youxuan  E-mail:xuanyouwu@163.com
  * date createTime：17/3/28
- * version
+ * version 1.0.0
  */
 
-public abstract class BaseActivity
+public class BaseActivity
         extends BasePermisionActivity
-        implements ProgressHUDImp
-        , View.OnClickListener {
+        implements ProgressHUDImp,
+        View.OnClickListener,
+        IContextResourcesImp,
+        LifecycleProvider<ActivityEvent> {
+    private final BehaviorSubject<ActivityEvent> lifecycleSubject = BehaviorSubject.create();
+    public static final String KEY_ACTIVITY_RESULT = "ActivityResult";
 
-
+    /**
+     * @return 上下文
+     */
     protected final BaseActivity getActivity() {
         return this;
     }
 
 
+    /**
+     * @return 上下文
+     */
     protected final BaseActivity getContext() {
         return this;
     }
@@ -66,7 +96,7 @@ public abstract class BaseActivity
      * @param title
      */
     @Override
-    public final void setTitle(CharSequence title) {
+    public final void setTitle(@Nullable CharSequence title) {
         super.setTitle(title);
         TextView titleTextView = getTitleTextView();
         if (titleTextView != null) {
@@ -131,6 +161,7 @@ public abstract class BaseActivity
      * @return 标题操作图片按钮
      */
     @Nullable
+    @CheckResult
     public ImageView getTitleActionImage() {
         View titleActionImage = findViewById(R.id.titleAction);
         return (titleActionImage instanceof ImageView) ? (ImageView) titleActionImage : null;
@@ -199,7 +230,7 @@ public abstract class BaseActivity
      */
     @UiThread
     protected final void showToast(@NonNull CharSequence notice) {
-        //TODO
+        ToastUtils.showToast(notice);
     }
 
     /**
@@ -210,7 +241,7 @@ public abstract class BaseActivity
      */
     @UiThread
     protected final void showToast(@StringRes int resId) {
-        this.showToast(getString(resId));
+        ToastUtils.showToast(resId);
     }
 
     /**
@@ -269,6 +300,11 @@ public abstract class BaseActivity
         return v;
     }
 
+    /**
+     * 注册控件的点击监听
+     *
+     * @param id
+     */
     @Nullable
     protected final void registerClick(@IdRes int id) {
         View viewById = findViewById(id);
@@ -277,12 +313,33 @@ public abstract class BaseActivity
         }
     }
 
+    /**
+     * 取消注册控件的点击监听
+     *
+     * @param id
+     */
     @Nullable
-    protected final void unregisterClick(@IdRes int id) {
+    protected final void unRegisterClick(@IdRes int id) {
         View viewById = findViewById(id);
         if (viewById != null) {
             viewById.setOnClickListener(null);
         }
+    }
+
+    /**
+     * 设置控件隐藏或者展示
+     *
+     * @param v
+     * @param isVisible
+     * @param <V>
+     * @return
+     */
+    @Nullable
+    protected final <V extends View> V setViewVisible(@NonNull V v, boolean isVisible) {
+        if (v != null) {
+            v.setVisibility(isVisible ? View.VISIBLE : View.GONE);
+        }
+        return v;
     }
 
     /**
@@ -293,11 +350,25 @@ public abstract class BaseActivity
      * @return
      */
     @Nullable
-    protected final <V extends View> V unregisterClick(@NonNull V v) {
+    protected final <V extends View> V unRegisterClick(@NonNull V v) {
         if (v != null) {
             v.setOnClickListener(null);
         }
         return v;
+    }
+
+    /**
+     * 获取控件的文本
+     *
+     * @param textView
+     * @param defaultString
+     * @return
+     */
+    protected final String getTextString(TextView textView, String defaultString) {
+        if (textView != null && !TextUtils.isEmpty(textView.getText())) {
+            return textView.getText().toString();
+        }
+        return defaultString;
     }
 
     @CallSuper
@@ -308,13 +379,6 @@ public abstract class BaseActivity
                 finish();
                 break;
         }
-    }
-
-    @CallSuper
-    @Override
-    protected void onDestroy() {
-        dismissLoadingDialog();
-        super.onDestroy();
     }
 
 
@@ -375,6 +439,24 @@ public abstract class BaseActivity
     }
 
     /**
+     * 发送日志到bugtags上面去
+     *
+     * @param tag
+     * @param log
+     */
+    protected void postLog2Bugtags(String tag, String log) {
+        if (!TextUtils.isEmpty(tag) && !TextUtils.isEmpty(log)) {
+            StringBuilder stringBuilder = new StringBuilder(tag);
+            stringBuilder.append("\n");
+            stringBuilder.append(log);
+            stringBuilder.append("\n");
+            stringBuilder.append("uid:");
+            stringBuilder.append(getLoginUserId());
+            Bugtags.sendFeedback(stringBuilder.toString());
+        }
+    }
+
+    /**
      * activity是否销毁或者即将销毁
      *
      * @return
@@ -417,6 +499,88 @@ public abstract class BaseActivity
     }
 
 
+    @Override
+    public final int getContextColor(@ColorRes int id) {
+        return getContextColor(id, Color.BLACK);
+    }
+
+    @Override
+    public final int getContextColor(@ColorRes int id, @ColorInt int defaultColor) {
+        return SystemUtils.getColor(context, id, defaultColor);
+    }
+
+    @Nullable
+    @Override
+    public Drawable getDrawable(Context context, @DrawableRes int id) {
+        return SystemUtils.getDrawable(context, id);
+    }
+
+    @Override
+    @NonNull
+    @CheckResult
+    public final Observable<ActivityEvent> lifecycle() {
+        return lifecycleSubject.hide();
+    }
+
+    @Override
+    @NonNull
+    @CheckResult
+    public final <T> LifecycleTransformer<T> bindUntilEvent(@NonNull ActivityEvent event) {
+        return RxLifecycle.bindUntilEvent(lifecycleSubject, event);
+    }
+
+    @Override
+    @NonNull
+    @CheckResult
+    public final <T> LifecycleTransformer<T> bindToLifecycle() {
+        return RxLifecycleAndroid.bindActivity(lifecycleSubject);
+    }
+
+    @Override
+    @CallSuper
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        lifecycleSubject.onNext(ActivityEvent.CREATE);
+    }
+
+    @Override
+    @CallSuper
+    protected void onStart() {
+        super.onStart();
+        lifecycleSubject.onNext(ActivityEvent.START);
+    }
+
+    @Override
+    @CallSuper
+    protected void onResume() {
+        super.onResume();
+        lifecycleSubject.onNext(ActivityEvent.RESUME);
+    }
+
+    @Override
+    @CallSuper
+    protected void onPause() {
+        lifecycleSubject.onNext(ActivityEvent.PAUSE);
+        super.onPause();
+    }
+
+    @Override
+    @CallSuper
+    protected void onStop() {
+        lifecycleSubject.onNext(ActivityEvent.STOP);
+        super.onStop();
+    }
+
+
+    @CallSuper
+    @Override
+    protected void onDestroy() {
+        dismissLoadingDialog();
+        lifecycleSubject.onNext(ActivityEvent.DESTROY);
+        super.onDestroy();
+    }
+
+
     /**
      * @return 登陆信息
      */
@@ -424,6 +588,16 @@ public abstract class BaseActivity
     @CheckResult
     protected final AlphaUserInfo getLoginUserInfo() {
         return LoginInfoUtils.getLoginUserInfo();
+    }
+
+
+    /**
+     * @return 登陆uid
+     */
+    @Nullable
+    @CheckResult
+    protected final String getLoginUserId() {
+        return LoginInfoUtils.getLoginUserId();
     }
 
 

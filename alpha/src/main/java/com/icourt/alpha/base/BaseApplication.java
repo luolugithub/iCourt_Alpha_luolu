@@ -1,6 +1,5 @@
 package com.icourt.alpha.base;
 
-import android.content.Context;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Environment;
@@ -11,7 +10,7 @@ import com.bugtags.library.Bugtags;
 import com.bugtags.library.BugtagsOptions;
 import com.icourt.alpha.BuildConfig;
 import com.icourt.alpha.R;
-import com.icourt.alpha.activity.IMChatActivity;
+import com.icourt.alpha.activity.ChatActivity;
 import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.icourt.alpha.http.HConst;
 import com.icourt.alpha.utils.ActivityLifecycleTaskCallbacks;
@@ -39,8 +38,6 @@ import com.umeng.socialize.Config;
 import com.umeng.socialize.PlatformConfig;
 import com.umeng.socialize.UMShareAPI;
 import com.umeng.socialize.utils.Log;
-import com.vanniktech.emoji.EmojiManager;
-import com.vanniktech.emoji.one.EmojiOneProvider;
 
 import java.net.Proxy;
 import java.util.Map;
@@ -101,7 +98,8 @@ public class BaseApplication extends MultiDexApplication {
     }
 
     private void initEmoji() {
-        EmojiManager.install(new EmojiOneProvider());
+
+        //EmojiManager.install(new EmojiOneProvider());
     }
 
     private void initYunXin() {
@@ -118,7 +116,7 @@ public class BaseApplication extends MultiDexApplication {
             config = new com.netease.nimlib.sdk.StatusBarNotificationConfig();
         }
         // 点击通知需要跳转到的界面
-        config.notificationEntrance = IMChatActivity.class;//通知栏提醒的响应intent的activity类型
+        config.notificationEntrance = ChatActivity.class;//通知栏提醒的响应intent的activity类型
         config.notificationSmallIconId = R.mipmap.android_app_icon;//状态栏提醒的小图标的资源ID
 
         // 通知铃声的uri字符串
@@ -232,31 +230,37 @@ public class BaseApplication extends MultiDexApplication {
         FileDownloader.init(getApplicationContext());
         */
 
-
         //方式2
         FileDownloadLog.NEED_LOG = BuildConfig.IS_DEBUG;
 
-        /**
-         * just for cache Application's Context, and ':filedownloader' progress will NOT be launched
-         * by below code, so please do not worry about performance.
-         * @see FileDownloader#init(Context)
-         */
         FileDownloader.init(getApplicationContext(),
-                new FileDownloadHelper.OkHttpClientCustomMaker() { // is not has to provide.
+                new FileDownloadHelper.OkHttpClientCustomMaker() {
                     @Override
                     public OkHttpClient customMake() {
-// just for OkHttpClient customize.
                         final OkHttpClient.Builder builder = new OkHttpClient.Builder();
                         // you can set the connection timeout.
                         builder.connectTimeout(35_000, TimeUnit.MILLISECONDS);
                         // you can set the HTTP proxy.
                         builder.proxy(Proxy.NO_PROXY);
+
+                      /*  builder.addInterceptor(new Interceptor() {
+                            @Override
+                            public Response intercept(Chain chain) throws IOException {
+                                Request request = chain.request();
+                                Request requestBuilder = request.newBuilder()
+                                        .addHeader("Cookie", "officeId==" + AlphaClient.getInstance().getOfficeId())
+                                        .addHeader("token", AlphaClient.getInstance().getToken())
+                                        .build();
+                                return chain.proceed(requestBuilder);
+                            }
+                        });*/
                         // etc.
                         return builder.build();
                     }
                 });
 
     }
+
 
     /**
      * 配置galleryfinal

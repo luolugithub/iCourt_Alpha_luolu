@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center"
+    android:orientation="vertical"
+    android:background="?attr/selectableItemBackground"
+    android:padding="5dp">
+
+    <ImageView
+        android:id="@+id/menu_icon_iv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@mipmap/icon_camera" />
+
+    <TextView
+        android:id="@+id/menu_title_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dp"
+        android:text="menu"
+        android:textColor="@color/alpha_font_color_black"
+        android:textSize="@dimen/alpha_font_size_mini" />
+</LinearLayout>

@@ -13,6 +13,7 @@ import java.util.List;
  * @data 创建时间:16/12/9
  */
 
+@Deprecated
 public class GroupBean implements Parcelable, Serializable {
 
 

@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.icourt.alpha.view.emoji.MyXhsEmoticonsKeyBoard xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/ek_bar"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <include layout="@layout/layout_title_type_4" />
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <com.icourt.alpha.view.xrefreshlayout.RefreshLayout
+                android:id="@id/refreshLayout"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <android.support.v7.widget.RecyclerView
+                    android:id="@id/recyclerView"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent" />
+
+            </com.icourt.alpha.view.xrefreshlayout.RefreshLayout>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="right|bottom"
+                android:layout_margin="10dp"
+                android:background="@mipmap/bg_unread_number"
+                android:gravity="center"
+                android:paddingBottom="7dp"
+                android:paddingTop="5dp"
+                android:text="12"
+                android:textColor="@android:color/white"
+                android:textSize="@dimen/alpha_font_size_mini" />
+        </FrameLayout>
+
+    </LinearLayout>
+</com.icourt.alpha.view.emoji.MyXhsEmoticonsKeyBoard>

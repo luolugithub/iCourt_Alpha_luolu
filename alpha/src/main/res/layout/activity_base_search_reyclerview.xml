@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.icourt.alpha.view.SoftKeyboardSizeWatchLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/softKeyboardSizeWatchLayout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@android:color/white">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingBottom="10dp"
+            android:paddingLeft="10dp"
+            android:paddingTop="10dp"
+            android:transitionName="searchLayout">
+
+            <EditText
+                android:id="@+id/et_input_name"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@drawable/bg_round_rect_gray"
+                android:drawableLeft="@mipmap/icon_search_14"
+                android:drawablePadding="8dp"
+                android:hint="搜索"
+                android:imeActionLabel="搜索"
+                android:imeOptions="actionSearch"
+                android:maxLines="1"
+                android:padding="10dp"
+                android:singleLine="true"
+                android:textSize="@dimen/alpha_font_size_mini" />
+
+            <TextView
+                android:id="@+id/tv_search_cancel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="10dp"
+                android:text="取消"
+                android:textColor="@color/alpha_font_color_orange" />
+        </LinearLayout>
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/recyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+    </LinearLayout>
+</com.icourt.alpha.view.SoftKeyboardSizeWatchLayout>

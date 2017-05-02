@@ -716,4 +716,41 @@ public class SystemUtils {
                 activity.isDestroyed();
         return destroyed || activity.isFinishing();
     }
+
+    /**
+     * 拨打电话
+     *
+     * @param context
+     * @param phone
+     */
+    public static final void callPhone(Context context, String phone) {
+        if (context == null) return;
+        if (TextUtils.isEmpty(phone)) return;
+        if (TextUtils.isEmpty(phone.trim())) return;
+        Intent intent = new Intent();
+        intent.setAction(Intent.ACTION_CALL);
+        Uri data = Uri.parse("tel:" + phone.trim());
+        intent.setData(data);
+        context.startActivity(intent);
+    }
+
+    /**
+     * 发送到邮件
+     *
+     * @param context
+     * @param email
+     * @throws android.content.ActivityNotFoundException
+     */
+    public static void sendEmail(Context context, String email) throws android.content.ActivityNotFoundException {
+        if (context == null) return;
+        if (TextUtils.isEmpty(email)) return;
+        if (TextUtils.isEmpty(email.trim())) return;
+        Intent i = new Intent(Intent.ACTION_SEND);
+        i.putExtra(Intent.EXTRA_EMAIL, new String[]{email.trim()});
+        i.putExtra(Intent.EXTRA_SUBJECT, "标题");
+        i.setType("message/rfc822");
+        i.putExtra(Intent.EXTRA_TEXT, "body of email");
+        context.startActivity(Intent.createChooser(i, "Send mail"));
+    }
+
 }

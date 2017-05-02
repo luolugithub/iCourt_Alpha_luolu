@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center_horizontal"
+    android:orientation="vertical">
+
+    <include layout="@layout/layout_title_type_0" />
+
+    <ImageView
+        android:id="@+id/contact_icon_iv"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:layout_marginTop="20dp"
+        android:src="@mipmap/avatar_default_24" />
+
+    <TextView
+        android:id="@+id/contact_name_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:padding="15dp"
+        android:text="姓名"
+        android:textColor="@color/alpha_font_color_gray"
+        android:textSize="16dp" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@android:color/white"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:id="@+id/contact_phone_ll"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="?attr/selectableItemBackground"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="?attr/selectableItemBackground"
+                android:drawableLeft="@mipmap/icon_phone_16"
+                android:drawablePadding="@dimen/dp10"
+                android:padding="10dp"
+                android:text="@string/my_center_phone_text" />
+
+            <TextView
+                android:id="@+id/contact_phone_tv"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:drawablePadding="@dimen/dp10"
+                android:drawableRight="@mipmap/arrow_right"
+                android:ellipsize="end"
+                android:gravity="right|center_vertical"
+                android:maxLines="1"
+                android:padding="10dp"
+                android:text="1558776e264" />
+        </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/alpha_height_divider"
+            android:background="@color/alpha_divider_color" />
+
+
+        <LinearLayout
+            android:id="@+id/contact_email_ll"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="?attr/selectableItemBackground"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="?attr/selectableItemBackground"
+                android:drawableLeft="@mipmap/icon_mail_16"
+                android:drawablePadding="@dimen/dp10"
+                android:padding="10dp"
+                android:text="@string/my_center_phone_text" />
+
+            <TextView
+                android:id="@+id/contact_email_tv"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:drawablePadding="@dimen/dp10"
+                android:drawableRight="@mipmap/arrow_right"
+                android:ellipsize="end"
+                android:gravity="right|center_vertical"
+                android:maxLines="1"
+                android:padding="10dp"
+                android:text="xuaxhughgd@163.com" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/contact_file_android_top_ll"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:background="@android:color/white"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/contact_file_tv"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="?attr/selectableItemBackground"
+            android:drawableLeft="@mipmap/icon_mail_16"
+            android:drawablePadding="@dimen/dp10"
+            android:drawableRight="@mipmap/arrow_right"
+            android:padding="10dp"
+            android:text="文件" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/alpha_height_divider"
+            android:background="@color/alpha_divider_color" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:padding="10dp"
+                android:text="置顶聊天" />
+
+            <Switch
+                android:id="@+id/contact_setTop_switch"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="10dp" />
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/contact_send_msg_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="10dp"
+        android:background="@drawable/orange_circle_bg"
+        android:gravity="center"
+        android:paddingBottom="10dp"
+        android:paddingLeft="30dp"
+        android:paddingRight="30dp"
+        android:paddingTop="10dp"
+        android:text="发送消息"
+        android:textColor="@color/white"
+        android:textSize="@dimen/alpha_font_size_mini_lowest"
+        android:visibility="visible" />
+
+</LinearLayout>

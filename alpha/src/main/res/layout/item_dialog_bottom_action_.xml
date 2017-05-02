@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/tv_action_bottom_dialog"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="?attr/selectableItemBackground"
+    android:ellipsize="end"
+    android:gravity="center"
+    android:maxLines="1"
+    android:paddingBottom="13dp"
+    android:paddingLeft="10dp"
+    android:paddingRight="10dp"
+    android:paddingTop="13dp"
+    android:text="item_data"
+    android:textColor="#2A79F6"
+    android:textSize="@dimen/alpha_font_size_title" />

@@ -50,12 +50,12 @@ public class ContactDbService extends BaseRealmService<ContactDbModel, ContactDa
      *
      * @param from
      */
-    public void insertAsyn(List<IConvertModel<ContactDbModel>> from) {
+    public void insertOrUpdateAsyn(List<IConvertModel<ContactDbModel>> from) {
         if (isServiceAvailable()) {
             List<ContactDbModel> contactDbModels
                     = ListConvertor.convertList(from);
             if (contactDbModels != null) {
-                dao.insertAsyn(contactDbModels);
+                dao.insertOrUpdateAsyn(contactDbModels);
             }
         }
     }

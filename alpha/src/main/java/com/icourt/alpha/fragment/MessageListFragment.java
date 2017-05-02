@@ -1,7 +1,10 @@
 package com.icourt.alpha.fragment;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
+import android.support.v4.view.ViewCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
@@ -16,13 +19,24 @@ import com.icourt.alpha.adapter.IMSessionAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.HeaderFooterAdapter;
 import com.icourt.alpha.base.BaseFragment;
+import com.icourt.alpha.constants.RecentContactExtConfig;
+import com.icourt.alpha.db.dbmodel.ContactDbModel;
 import com.icourt.alpha.db.dbservice.ContactDbService;
 import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.icourt.alpha.entity.bean.IMBodyEntity;
+import com.icourt.alpha.entity.bean.IMSessionDontDisturbEntity;
 import com.icourt.alpha.entity.bean.IMSessionEntity;
+import com.icourt.alpha.entity.bean.SetTopEntity;
+import com.icourt.alpha.http.callback.SimpleCallBack;
+import com.icourt.alpha.http.httpmodel.ResEntity;
+import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
+import com.icourt.alpha.interfaces.OnTabDoubleClickListener;
+import com.icourt.alpha.utils.ActionConstants;
 import com.icourt.alpha.utils.JsonUtils;
+import com.icourt.alpha.utils.LogUtils;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
+import com.icourt.alpha.widget.comparators.IMSessionEntityComparator;
 import com.netease.nimlib.sdk.NIMClient;
 import com.netease.nimlib.sdk.RequestCallbackWrapper;
 import com.netease.nimlib.sdk.ResponseCode;
@@ -33,8 +47,15 @@ import com.netease.nimlib.sdk.msg.model.RecentContact;
 import com.netease.nimlib.sdk.team.TeamService;
 import com.netease.nimlib.sdk.team.model.Team;
 
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
+
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -46,15 +67,18 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
+import retrofit2.Call;
+import retrofit2.Response;
 
 /**
- * Description
+ * Description  会话列表
  * Company Beijing icourt
  * author  youxuan  E-mail:xuanyouwu@163.com
  * date createTime：2017/4/10
  * version 1.0.0
  */
-public class MessageListFragment extends BaseFragment implements BaseRecyclerAdapter.OnItemClickListener {
+public class MessageListFragment extends BaseFragment
+        implements BaseRecyclerAdapter.OnItemClickListener, OnTabDoubleClickListener {
 
     Unbinder unbinder;
     IMSessionAdapter imSessionAdapter;
@@ -63,12 +87,27 @@ public class MessageListFragment extends BaseFragment implements BaseRecyclerAda
     RecyclerView recyclerView;
     @BindView(R.id.refreshLayout)
     RefreshLayout refreshLayout;
+    LinearLayoutManager linearLayoutManager;
     HeaderFooterAdapter<IMSessionAdapter> headerFooterAdapter;
-    ContactDbService contactDbService;
+    AlphaUserInfo loginUserInfo;
+    OnFragmentCallBackListener parentFragmentCallBackListener;
+    int unReadNewsNum;//未读消息数量
+    IMSessionEntityComparator imSessionEntityComparator = new IMSessionEntityComparator();
+
 
     public static MessageListFragment newInstance() {
         return new MessageListFragment();
     }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        try {
+            parentFragmentCallBackListener = (OnFragmentCallBackListener) context;
+        } catch (ClassCastException e) {
+        }
+    }
+
 
     @Nullable
     @Override
@@ -80,9 +119,11 @@ public class MessageListFragment extends BaseFragment implements BaseRecyclerAda
 
     @Override
     protected void initView() {
-        AlphaUserInfo loginUserInfo = getLoginUserInfo();
-        contactDbService = new ContactDbService(loginUserInfo == null ? "" : loginUserInfo.getUserId());
-        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        EventBus.getDefault().register(this);
+        loginUserInfo = getLoginUserInfo();
+        linearLayoutManager = new LinearLayoutManager(getContext());
+        linearLayoutManager.setStackFromEnd(true);
+        recyclerView.setLayoutManager(linearLayoutManager);
         headerFooterAdapter = new HeaderFooterAdapter<IMSessionAdapter>(imSessionAdapter = new IMSessionAdapter());
         headerFooterAdapter.addHeader(HeaderFooterAdapter.inflaterView(getContext(), R.layout.header_search_comm, recyclerView));
         recyclerView.setAdapter(headerFooterAdapter);
@@ -96,6 +137,42 @@ public class MessageListFragment extends BaseFragment implements BaseRecyclerAda
         });
         refreshLayout.setAutoRefresh(true);
         refreshLayout.startRefresh();
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onMessageEvent(List<SetTopEntity> setTopEntities) {
+        if (setTopEntities == null) return;
+        updateUIwithTopEntities(setTopEntities);
+    }
+
+    /**
+     * 更新 UI 置顶会话优先显示
+     *
+     * @param setTopEntities
+     */
+    private void updateUIwithTopEntities(List<SetTopEntity> setTopEntities) {
+        if (setTopEntities == null) return;
+        for (IMSessionEntity item : imSessionAdapter.getData()) {
+            if (item != null
+                    && item.recentContact != null) {
+
+                item.recentContact.setTag(ActionConstants.MESSAGE_GROUP_NO_TOP);
+                NIMClient.getService(MsgService.class).updateRecent(item.recentContact);
+
+                for (SetTopEntity setTopEntity : setTopEntities) {
+                    if (setTopEntity != null
+                            && TextUtils.equals(setTopEntity.p2pId, item.recentContact.getContactId().toUpperCase())) {
+
+                        //设置为置顶并更新本地
+                        item.recentContact.setTag(ActionConstants.MESSAGE_GROUP_TOP);
+                        NIMClient.getService(MsgService.class).updateRecent(item.recentContact);
+                    }
+                }
+            }
+        }
+
+        Collections.sort(imSessionAdapter.getData(), imSessionEntityComparator);
+        imSessionAdapter.notifyDataSetChanged();
     }
 
     /**
@@ -134,30 +211,34 @@ public class MessageListFragment extends BaseFragment implements BaseRecyclerAda
             @Override
             public void subscribe(ObservableEmitter<List<IMSessionEntity>> e) throws Exception {
                 if (e.isDisposed()) return;
+                ContactDbService contactDbService = new ContactDbService(loginUserInfo == null ? "" : loginUserInfo.getUserId());
                 List<IMSessionEntity> imSessionEntities = new ArrayList<>();
 
+                unReadNewsNum = 0;
                 for (int i = 0; i < recentContacts.size(); i++) {
                     RecentContact recentContact = recentContacts.get(i);
                     if (recentContact == null) continue;
+                    unReadNewsNum += recentContact.getUnreadCount();
 
                     Team team = null;
                     GroupContactBean contactBean = null;
+                    //群聊
                     //查询得到team信息
-                    if (recentContact.getSessionType() == SessionTypeEnum.Team) {//群聊
+                    if (recentContact.getSessionType() == SessionTypeEnum.Team) {
+                        //群聊
                         team = NIMClient
                                 .getService(TeamService.class)
                                 .queryTeamBlock(recentContact.getContactId());
                     } else if (recentContact.getSessionType() == SessionTypeEnum.P2P)//单聊
-                    {//查询本地联系人信息
-                        if (contactDbService != null) {
-                           /* ContactDbModel contactDbModel = contactDbService.queryFirst("userId", recentContact.getContactId());
+                    {
+                        //查询本地联系人信息
+                        if (contactDbService != null && !TextUtils.isEmpty(recentContact.getContactId())) {
+                            ContactDbModel contactDbModel = contactDbService.queryFirst("accid", recentContact.getContactId().toUpperCase());
                             if (contactDbModel != null) {
                                 contactBean = contactDbModel.convert2Model();
-                            }*/
+                            }
                         }
                     }
-
-                    log("------------->content:" + recentContact.getContent());
                     //解析自定义的消息体
                     IMBodyEntity customIMBody = null;
                     if (!TextUtils.isEmpty(recentContact.getContent())) {
@@ -171,6 +252,7 @@ public class MessageListFragment extends BaseFragment implements BaseRecyclerAda
                     //装饰实体
                     imSessionEntities.add(new IMSessionEntity(team, recentContact, customIMBody, contactBean));
                 }
+                contactDbService.releaseService();
                 e.onNext(imSessionEntities);
                 e.onComplete();
             }
@@ -179,9 +261,29 @@ public class MessageListFragment extends BaseFragment implements BaseRecyclerAda
                 .subscribe(new Consumer<List<IMSessionEntity>>() {
                     @Override
                     public void accept(List<IMSessionEntity> imSessionEntities) throws Exception {
+                        Collections.sort(imSessionEntities, imSessionEntityComparator);
                         imSessionAdapter.bindData(true, imSessionEntities);
+
+                        callParentUpdateUnReadNum(unReadNewsNum);
+
+                        getDontDisturbs();
+                        getTopSession();
                     }
                 });
+    }
+
+    /**
+     * unReadNum
+     * 请求父容器更新未读消息数量
+     */
+    private void callParentUpdateUnReadNum(int unReadNum) {
+        Bundle bundle = new Bundle();
+        bundle.putInt("unReadNum", unReadNum);
+        if (getParentFragment() instanceof OnFragmentCallBackListener) {
+            ((OnFragmentCallBackListener) getParentFragment()).OnFragmentCallBack(MessageListFragment.this, bundle);
+        } else if (parentFragmentCallBackListener != null) {
+            parentFragmentCallBackListener.OnFragmentCallBack(MessageListFragment.this, bundle);
+        }
     }
 
     /**
@@ -221,13 +323,139 @@ public class MessageListFragment extends BaseFragment implements BaseRecyclerAda
                 && !subscribe.isDisposed()) {
             subscribe.dispose();
         }
-        if (contactDbService != null) {
-            contactDbService.releaseService();
-        }
+        EventBus.getDefault().unregister(this);
     }
 
     @Override
     public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
-
+        IMSessionEntity data = imSessionAdapter.getData(position - headerFooterAdapter.getHeaderCount());
+        log("--------->data:" + data);
+        if (data != null) {
+            LogUtils.logObject("-------->contact:", data.recentContact);
+            LogUtils.logObject("-------->team:", data.team);
+        }
     }
+
+
+    /**
+     * 获取消息免打扰
+     */
+    private void getDontDisturbs() {
+        getApi().getDontDisturbs()
+                .enqueue(new SimpleCallBack<List<IMSessionDontDisturbEntity>>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<List<IMSessionDontDisturbEntity>>> call, Response<ResEntity<List<IMSessionDontDisturbEntity>>> response) {
+                        if (response.body().result != null && imSessionAdapter != null) {
+                            updateLocalDontDisturbs(response.body().result);
+                        }
+                    }
+                });
+    }
+
+
+    /**
+     * 更新 消息免打扰【群聊】 UI 数据库
+     *
+     * @param imSessionDontDisturbEntities 网络同步的免打扰对象
+     */
+    private void updateLocalDontDisturbs(final List<IMSessionDontDisturbEntity> imSessionDontDisturbEntities) {
+        if (imSessionDontDisturbEntities == null) return;
+        subscribe = Observable.create(new ObservableOnSubscribe<List<IMSessionEntity>>() {
+            @Override
+            public void subscribe(ObservableEmitter<List<IMSessionEntity>> e) throws Exception {
+                if (e.isDisposed()) return;
+
+
+                //先将以前免打扰的 关闭
+                List<IMSessionEntity> imSessionEntities = imSessionAdapter.getData();
+                for (int i = 0; i < imSessionEntities.size(); i++) {
+                    IMSessionEntity imSessionEntity = imSessionEntities.get(i);
+                    if (imSessionEntity != null
+                            && imSessionEntity.recentContact != null
+                            && imSessionEntity.recentContact.getSessionType() == SessionTypeEnum.Team) {
+                        Map<String, Object> extendMap = imSessionEntity.recentContact.getExtension();
+                        if (extendMap == null) {
+                            extendMap = new HashMap<String, Object>();
+                        }
+                        extendMap.put(RecentContactExtConfig.EXT_SETTING_DONT_DISTURB, false);
+                        NIMClient.getService(TeamService.class)
+                                .muteTeam(imSessionEntity.recentContact.getContactId(), false);
+
+                        //将新同步的免打扰开启
+                        for (int j = 0; j < imSessionDontDisturbEntities.size(); j++) {
+                            IMSessionDontDisturbEntity imSessionDontDisturbEntity = imSessionDontDisturbEntities.get(j);
+                            if (imSessionDontDisturbEntity == null) continue;
+
+                            if (TextUtils.equals(imSessionDontDisturbEntity.groupId, imSessionEntity.recentContact.getContactId())) {
+                                NIMClient.getService(TeamService.class)
+                                        .muteTeam(imSessionDontDisturbEntity.groupId, true);
+                                extendMap.put(RecentContactExtConfig.EXT_SETTING_DONT_DISTURB, true);
+                            }
+                        }
+                        imSessionEntity.recentContact.setExtension(extendMap);
+                        NIMClient.getService(MsgService.class)
+                                .updateRecent(imSessionEntity.recentContact);
+                    }
+                }
+
+                e.onNext(imSessionEntities);
+                e.onComplete();
+            }
+        }).subscribeOn(Schedulers.newThread())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Consumer<List<IMSessionEntity>>() {
+                    @Override
+                    public void accept(List<IMSessionEntity> imSessionEntities) throws Exception {
+                        imSessionAdapter.notifyDataSetChanged();
+                    }
+                });
+    }
+
+    @Override
+    public void onTabDoubleClick(Fragment targetFragment, View v, Bundle bundle) {
+        if (targetFragment != MessageListFragment.this) return;
+        int nextUnReadItem = findNextUnReadItem(linearLayoutManager.findFirstVisibleItemPosition(), -1);
+        if (nextUnReadItem != -1 && ViewCompat.canScrollVertically(recyclerView, 1)) {
+            linearLayoutManager.scrollToPositionWithOffset(nextUnReadItem + headerFooterAdapter.getHeaderCount(), 0);
+        } else {
+            linearLayoutManager.scrollToPositionWithOffset(0, 0);
+        }
+    }
+
+
+    /**
+     * 找到下一个未读消息位置
+     *
+     * @param start
+     * @param defaultUnFind
+     * @return
+     */
+    private int findNextUnReadItem(int start, int defaultUnFind) {
+        if (start < 0) return defaultUnFind;
+        List<IMSessionEntity> data = imSessionAdapter.getData();
+        for (int i = start; i < data.size(); i++) {
+            IMSessionEntity imSessionEntity = data.get(i);
+            if (imSessionEntity != null
+                    && imSessionEntity.recentContact != null
+                    && imSessionEntity.recentContact.getUnreadCount() > 0) {
+                return i;
+            }
+        }
+        return defaultUnFind;
+    }
+
+    /**
+     * 获取置顶的会话
+     */
+    private void getTopSession() {
+        getApi().getTop()
+                .enqueue(new SimpleCallBack<List<SetTopEntity>>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<List<SetTopEntity>>> call, Response<ResEntity<List<SetTopEntity>>> response) {
+                        if (response.body().result == null) return;
+                        updateUIwithTopEntities(response.body().result);
+                    }
+                });
+    }
+
 }

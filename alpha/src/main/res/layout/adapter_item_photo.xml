@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="match_parent">
+
+    <ImageView
+        android:id="@+id/photo_item_iv"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:adjustViewBounds="true"
+        android:maxWidth="200dp"
+        android:src="@mipmap/avatar_default_24" />
+
+    <CheckedTextView
+        android:id="@+id/photo_item_cb"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:layout_gravity="right"
+        android:layout_margin="10dp"
+        android:background="@drawable/sl_checkbox" />
+
+</FrameLayout>

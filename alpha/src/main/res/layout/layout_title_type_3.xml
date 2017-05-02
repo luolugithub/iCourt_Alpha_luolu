@@ -10,6 +10,8 @@
         android:layout_height="@dimen/alpha_height_title"
         android:background="@color/alpha_background_title"
         android:gravity="center_vertical"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        app:layout_scrollFlags="scroll|enterAlways|snap"
         android:orientation="horizontal">
 
         <CheckedTextView
@@ -20,6 +22,7 @@
             android:gravity="center"
             android:paddingLeft="10dp"
             android:paddingRight="10dp"
+            android:layout_marginLeft="5dp"
             android:text="取消"
             android:textColor="@color/alpha_font_color_gray"
             android:textSize="@dimen/alpha_font_size_mini" />
@@ -46,6 +49,7 @@
             android:gravity="center"
             android:paddingLeft="10dp"
             android:paddingRight="10dp"
+            android:layout_marginRight="5dp"
             android:text="保存"
             android:textColor="@color/alpha_font_color_orange"
             android:textSize="@dimen/alpha_font_size_mini" />

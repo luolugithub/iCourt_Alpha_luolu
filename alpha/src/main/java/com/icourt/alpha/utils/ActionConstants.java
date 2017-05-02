@@ -93,7 +93,7 @@ public class ActionConstants {
 
     public static final int REFRESH_RECYCLERVIEW_TAG = 1;//刷新
     public static final int LOADMORE_RECYCLERVIEW_TAG = 2;//加载更多
-    public static final int DEFAULT_PAGE_SIZE = 15;//每页加载数量
+    public static final int DEFAULT_PAGE_SIZE = 20;//每页加载数量
 
     public static final String FILE_DOWNLOAD_PATH = "alpha_download";//下载文件保存路径
 

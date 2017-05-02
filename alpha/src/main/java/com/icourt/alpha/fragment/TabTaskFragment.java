@@ -2,35 +2,46 @@ package com.icourt.alpha.fragment;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.design.widget.AppBarLayout;
+import android.support.design.widget.TabLayout;
+import android.support.v4.view.ViewPager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.CheckedTextView;
+import android.widget.ImageView;
 
 import com.icourt.alpha.R;
+import com.icourt.alpha.adapter.baseadapter.BaseFragmentAdapter;
 import com.icourt.alpha.base.BaseFragment;
+
+import java.util.Arrays;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
 
 /**
- * Description
+ * Description  任务tab页面
  * Company Beijing icourt
  * author  youxuan  E-mail:xuanyouwu@163.com
  * date createTime：2017/4/8
  * version 1.0.0
  */
 public class TabTaskFragment extends BaseFragment {
-
-    @BindView(R.id.checkedTextView)
-    CheckedTextView checkedTextView;
+    @BindView(R.id.tabLayout)
+    TabLayout tabLayout;
+    @BindView(R.id.titleAction)
+    ImageView titleAction;
+    @BindView(R.id.titleView)
+    AppBarLayout titleView;
+    @BindView(R.id.viewPager)
+    ViewPager viewPager;
     Unbinder unbinder;
+    BaseFragmentAdapter baseFragmentAdapter;
 
     public static TabTaskFragment newInstance() {
         return new TabTaskFragment();
     }
-
 
     @Nullable
     @Override
@@ -42,13 +53,22 @@ public class TabTaskFragment extends BaseFragment {
 
     @Override
     protected void initView() {
-        log("==========initView:" + this);
+        baseFragmentAdapter = new BaseFragmentAdapter(getChildFragmentManager());
+        viewPager.setAdapter(baseFragmentAdapter);
+        tabLayout.setupWithViewPager(viewPager);
+        baseFragmentAdapter.bindTitle(true, Arrays.asList("全部", "新任务", "我关注的", "我部门的"));
+        baseFragmentAdapter.bindData(true,
+                Arrays.asList(
+                        TaskFragment.newInstance(0),
+                        TaskFragment.newInstance(1),
+                        TaskFragment.newInstance(2),
+                        TaskFragment.newInstance(3)));
     }
-
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
         unbinder.unbind();
     }
+
 }

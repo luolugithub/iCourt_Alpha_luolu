@@ -10,4 +10,12 @@ package com.icourt.alpha.entity.bean;
 public class AtEntity {
     public String userId;
     public String name;
+
+    @Override
+    public String toString() {
+        return "AtEntity{" +
+                "userId='" + userId + '\'' +
+                ", name='" + name + '\'' +
+                '}';
+    }
 }

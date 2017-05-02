@@ -51,6 +51,7 @@ public abstract class BaseDao<T extends RealmModel> implements IRealmDao<T> {
             retlT = realm.copyToRealm(t);
             realm.commitTransaction();
         } catch (Exception e) {
+            e.printStackTrace();
             realm.cancelTransaction();
         }
         return retlT;
@@ -65,6 +66,7 @@ public abstract class BaseDao<T extends RealmModel> implements IRealmDao<T> {
             retlT = realm.copyToRealmOrUpdate(t);
             realm.commitTransaction();
         } catch (Exception e) {
+            e.printStackTrace();
             realm.cancelTransaction();
         }
         return retlT;
@@ -80,6 +82,7 @@ public abstract class BaseDao<T extends RealmModel> implements IRealmDao<T> {
             ts = realm.copyToRealm(objects);
             realm.commitTransaction();
         } catch (Exception e) {
+            e.printStackTrace();
             realm.cancelTransaction();
         }
         return ts;
@@ -105,6 +108,7 @@ public abstract class BaseDao<T extends RealmModel> implements IRealmDao<T> {
             ts = realm.copyToRealmOrUpdate(objects);
             realm.commitTransaction();
         } catch (Exception e) {
+            e.printStackTrace();
             realm.cancelTransaction();
         }
         return ts;
@@ -116,7 +120,13 @@ public abstract class BaseDao<T extends RealmModel> implements IRealmDao<T> {
         realm.executeTransactionAsync(new Realm.Transaction() {
             @Override
             public void execute(Realm bgRealm) {
-                bgRealm.copyToRealmOrUpdate(objects);
+                try {
+                    bgRealm.copyToRealmOrUpdate(objects);
+                } catch (io.realm.exceptions.RealmException e) {
+                    e.printStackTrace();
+                } catch (java.lang.IllegalArgumentException e) {
+                    e.printStackTrace();
+                }
             }
         });
     }
@@ -130,6 +140,7 @@ public abstract class BaseDao<T extends RealmModel> implements IRealmDao<T> {
             all.deleteAllFromRealm();
             realm.commitTransaction();
         } catch (Exception e) {
+            e.printStackTrace();
             realm.cancelTransaction();
         }
     }
@@ -143,6 +154,7 @@ public abstract class BaseDao<T extends RealmModel> implements IRealmDao<T> {
             realm.delete(c);
             realm.commitTransaction();
         } catch (Exception e) {
+            e.printStackTrace();
             realm.cancelTransaction();
         }
     }

@@ -3,19 +3,21 @@ package com.icourt.alpha.entity.bean;
 import java.util.List;
 
 /**
- * Description
+ * Description  文档地址 https://www.showdoc.cc/1620156?page_id=14893614
  * Company Beijing icourt
  * author  youxuan  E-mail:xuanyouwu@163.com
  * date createTime：2017/4/12
  * version 1.0.0
  */
+@Deprecated
 public class IMBodyEntity extends FileInfoEntity {
 
-    public int show_type;// 0: 文本消息; 1:文件 ; 2: 钉消息;  3:@消息  4:通知消息
+    public String id;//消息id
+    public int show_type;// 消息类型 https://www.showdoc.cc/1620156?page_id=14893614
     public NailEntity pinMsg;//被钉的消息
     public String groupId;//组id
     public String name;// 发消息人name
-    public String id;//消息id
+
     public String pic;//发消息人头像
     public String tid;//云信组/对方 id
     public String content;//文本内容
@@ -25,5 +27,26 @@ public class IMBodyEntity extends FileInfoEntity {
     public long time;
     public String action_tid;
     public String action_groupId;
+    public String path;
+    public String file;
 
+    @Override
+    public String toString() {
+        return "IMBodyEntity{" +
+                "show_type=" + show_type +
+                ", pinMsg=" + pinMsg +
+                ", groupId='" + groupId + '\'' +
+                ", name='" + name + '\'' +
+                ", id='" + id + '\'' +
+                ", pic='" + pic + '\'' +
+                ", tid='" + tid + '\'' +
+                ", content='" + content + '\'' +
+                ", route='" + route + '\'' +
+                ", atAll=" + atAll +
+                ", atBeanList=" + atBeanList +
+                ", time=" + time +
+                ", action_tid='" + action_tid + '\'' +
+                ", action_groupId='" + action_groupId + '\'' +
+                '}';
+    }
 }

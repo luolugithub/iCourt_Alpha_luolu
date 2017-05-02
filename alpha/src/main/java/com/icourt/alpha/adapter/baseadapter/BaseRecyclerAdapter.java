@@ -44,6 +44,18 @@ public abstract class BaseRecyclerAdapter extends RecyclerView.Adapter<BaseRecyc
         return parentHeaderFooterAdapter;
     }
 
+    /**
+     * 获取真实位置
+     *
+     * @param adapterPos
+     * @return
+     */
+    public int getRealPos(int adapterPos) {
+        return adapterPos - (getParentHeaderFooterAdapter() == null
+                ? 0 : getParentHeaderFooterAdapter().getHeaderCount());
+
+    }
+
     public void setParentHeaderFooterAdapter(HeaderFooterAdapter parentHeaderFooterAdapter) {
         this.parentHeaderFooterAdapter = parentHeaderFooterAdapter;
     }

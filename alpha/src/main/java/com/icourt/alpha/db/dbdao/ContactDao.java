@@ -16,7 +16,7 @@ import io.realm.RealmMigration;
  */
 public class ContactDao extends BaseRealmObjectDao<ContactDbModel> {
     public ContactDao(String uid) {
-        super(String.format(DbConfig.DB_REALM_CONTACT, uid), 1, new RealmMigration() {
+        super(String.format(DbConfig.DB_REALM_CONTACT, uid), 2, new RealmMigration() {
 
             @Override
             public void migrate(DynamicRealm realm, long oldVersion, long newVersion) {

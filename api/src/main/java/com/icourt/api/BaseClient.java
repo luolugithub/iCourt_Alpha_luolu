@@ -26,7 +26,6 @@ public class BaseClient implements IRetrofit {
     protected Gson createGson() {
         return new GsonBuilder()
                 .setLenient()// json宽松
-                .serializeNulls()
                 .enableComplexMapKeySerialization()//支持Map的key为复杂对象的形式
                 .setPrettyPrinting()// 调教格式
                 .disableHtmlEscaping() //默认是GSON把HTML 转义的

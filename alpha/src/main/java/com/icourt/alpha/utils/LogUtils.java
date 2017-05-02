@@ -3,8 +3,11 @@ package com.icourt.alpha.utils;
 import android.text.TextUtils;
 import android.util.Log;
 
-import com.bugtags.library.Bugtags;
 import com.icourt.alpha.BuildConfig;
+
+import java.lang.reflect.Field;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author xuanyouwu
@@ -74,9 +77,65 @@ public class LogUtils {
         }
     }
 
-    public static void feedToServer(String errorlog) {
-        if(TextUtils.isEmpty(errorlog)) return;
-        Bugtags.sendFeedback(errorlog);
+    /**
+     * 打印任何对象
+     *
+     * @param obj
+     */
+    public static void logObject(Object obj) {
+        if (isDebug) {
+            d("------>" + reflect(obj));
+        }
+    }
+
+    /**
+     * 打印任何对象
+     *
+     * @param obj
+     */
+    public static void logObject(String tag, Object obj) {
+        if (isDebug) {
+            d(tag + " " + reflect(obj));
+        }
+    }
+
+    public static Map<String, Object> reflect(Object obj) {
+        if (obj == null) return null;
+        Map<String, Object> data = new HashMap<>();
+        Field[] fields = obj.getClass().getDeclaredFields();
+        for (int j = 0; j < fields.length; j++) {
+            fields[j].setAccessible(true);
+            // 字段值
+            if (fields[j].getType().getName().equals(
+                    java.lang.String.class.getName())) {
+                // String type
+                try {
+                    data.put(fields[j].getName(), fields[j].get(obj));
+                } catch (IllegalArgumentException e) {
+                    e.printStackTrace();
+                } catch (IllegalAccessException e) {
+                    e.printStackTrace();
+                }
+            } else if (fields[j].getType().getName().equals(
+                    java.lang.Integer.class.getName())
+                    || fields[j].getType().getName().equals("int")) {
+                // Integer type
+                try {
+                    data.put(fields[j].getName(), fields[j].getInt(obj));
+                } catch (IllegalArgumentException e) {
+                    e.printStackTrace();
+                } catch (IllegalAccessException e) {
+                    e.printStackTrace();
+                }
+            } else {
+                try {
+                    data.put(fields[j].getName(), fields[j].get(obj));
+                } catch (IllegalAccessException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return data;
     }
 
 }

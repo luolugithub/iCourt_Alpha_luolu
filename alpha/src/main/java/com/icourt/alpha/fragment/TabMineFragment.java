@@ -15,12 +15,20 @@ import android.widget.TextView;
 
 import com.icourt.alpha.R;
 import com.icourt.alpha.activity.AboutActivity;
+import com.icourt.alpha.activity.ChatMsgClassfyActivity;
 import com.icourt.alpha.activity.LoginSelectActivity;
+import com.icourt.alpha.activity.MyAtedActivity;
+import com.icourt.alpha.activity.MyFileTabActivity;
 import com.icourt.alpha.activity.UpdatePhoneOrMailActivity;
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.utils.GlideUtils;
 import com.netease.nimlib.sdk.NIMClient;
 import com.netease.nimlib.sdk.auth.AuthService;
+import com.umeng.socialize.UMAuthListener;
+import com.umeng.socialize.UMShareAPI;
+import com.umeng.socialize.bean.SHARE_MEDIA;
+
+import java.util.Map;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -87,6 +95,8 @@ public class TabMineFragment extends BaseFragment {
     @BindView(R.id.my_center_clear_help_layout)
     LinearLayout myCenterClearHelpLayout;
 
+    private UMShareAPI mShareAPI;
+
     public static TabMineFragment newInstance() {
         return new TabMineFragment();
     }
@@ -102,6 +112,7 @@ public class TabMineFragment extends BaseFragment {
 
     @Override
     protected void initView() {
+        mShareAPI = UMShareAPI.get(getContext());
         titleBack.setVisibility(View.INVISIBLE);
         titleContent.setText("个人中心");
         if (GlideUtils.canLoadImage(this)) {
@@ -126,16 +137,15 @@ public class TabMineFragment extends BaseFragment {
                 UpdatePhoneOrMailActivity.launch(getContext(), UpdatePhoneOrMailActivity.UPDATE_EMAIL_TYPE, myCenterMailTextview.getText().toString().trim());
                 break;
             case R.id.my_center_collect_layout://收藏
-
+                ChatMsgClassfyActivity.launchMyCollected(getContext());
                 break;
             case R.id.my_center_at_layout://提及我的
-
+                MyAtedActivity.launch(getContext());
                 break;
             case R.id.my_center_file_layout://我的文件
-
+                MyFileTabActivity.launch(getContext());
                 break;
             case R.id.my_center_clear_cache_layout://清除缓存
-
                 break;
             case R.id.my_center_clear_about_layout://关于
                 AboutActivity.launch(getContext());
@@ -167,7 +177,40 @@ public class TabMineFragment extends BaseFragment {
         //  groupContactBeanDao.deleteAll();
         //  personContactBeanDao.deleteAll();
         NIMClient.getService(AuthService.class).logout();
-        LoginSelectActivity.launch(getContext());
+        //撤销微信授权
+        if (!mShareAPI.isAuthorize(getActivity(), SHARE_MEDIA.WEIXIN)) {
+            dismissLoadingDialog();
+            LoginSelectActivity.launch(getContext());
+        } else {
+            mShareAPI.deleteOauth(getActivity(), SHARE_MEDIA.WEIXIN, new UMAuthListener() {
+                @Override
+                public void onStart(SHARE_MEDIA share_media) {
+                    showLoadingDialog(null);
+                }
+
+                @Override
+                public void onComplete(SHARE_MEDIA share_media, int i, Map<String, String> map) {
+                    exit();
+                }
+
+                @Override
+                public void onError(SHARE_MEDIA share_media, int i, Throwable throwable) {
+                    exit();
+                }
+
+
+                @Override
+                public void onCancel(SHARE_MEDIA share_media, int i) {
+                    exit();
+                }
+
+                private void exit() {
+                    dismissLoadingDialog();
+                    LoginSelectActivity.launch(getContext());
+                }
+
+            });
+        }
     }
 
     @Override
@@ -175,4 +218,13 @@ public class TabMineFragment extends BaseFragment {
         super.onDestroyView();
         unbinder.unbind();
     }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if (mShareAPI != null) {
+            mShareAPI.release();
+        }
+    }
+
 }
