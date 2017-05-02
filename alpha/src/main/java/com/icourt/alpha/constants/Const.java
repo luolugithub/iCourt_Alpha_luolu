@@ -1,6 +1,7 @@
 package com.icourt.alpha.constants;
 
 import android.support.annotation.IntDef;
+import android.support.annotation.StringDef;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -72,6 +73,29 @@ public class Const {
             MSG_TYPE_VOICE})
     @Retention(RetentionPolicy.SOURCE)
     public @interface MSG_TYPE {
+
+    }
+
+    public static final String PROJECT_TYPE_DISPUTE = "0";//争议解决
+    public static final String PROJECT_TYPE_NOJUDICIAL = "1";//非诉专项
+    public static final String PROJECT_TYPE_COUNSELOR = "2";//常年顾问
+    public static final String PROJECT_TYPE_AFFAIR = "3";//内部事务
+
+    @StringDef({PROJECT_TYPE_DISPUTE, PROJECT_TYPE_NOJUDICIAL, PROJECT_TYPE_COUNSELOR, PROJECT_TYPE_AFFAIR})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface PROJECT_TYPE {
+
+    }
+
+    public static final String PROJECT_ORDER_STATUS = "status";//项目状态
+    public static final String PROJECT_ORDER_NAME = "name";//项目名称
+    public static final String PROJECT_ORDER_MATTERTYPE = "matterType";//项目类型
+    public static final String PROJECT_ORDER_OPENDATE = "openDate";//创建时间
+    public static final String PROJECT_ORDER_CLOSEDATE = "closeDate";//结束时间
+
+    @StringDef({PROJECT_ORDER_STATUS, PROJECT_ORDER_NAME, PROJECT_ORDER_MATTERTYPE, PROJECT_ORDER_OPENDATE,PROJECT_ORDER_CLOSEDATE})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface PROJECT_ORDERBY {
 
     }
 }

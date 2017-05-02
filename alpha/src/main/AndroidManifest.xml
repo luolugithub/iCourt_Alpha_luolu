@@ -160,6 +160,10 @@
             android:name=".activity.EditItemActivity"
             android:screenOrientation="portrait" />
 
+        <activity
+            android:name=".activity.ProjectDetailActivity"
+            android:screenOrientation="portrait" />
+
 
         <!-- umeng appkey配置 -->
         <meta-data
