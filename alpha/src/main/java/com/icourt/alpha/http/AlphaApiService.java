@@ -474,8 +474,20 @@ public interface AlphaApiService {
      */
     @DELETE("http://10.25.115.31:8083/ilaw/api/v3/im/groups/{groupId}/members/{userId}")
     Call<ResEntity<JsonElement>> groupMemberRemove(@Path("groupId") String groupId,
-                                                   @Path("groupId") String userId);
+                                                   @Path("userId") String userId);
 
+
+    /**
+     * 批量移除成员
+     * 文档地址:https://www.showdoc.cc/1620156?page_id=14892528
+     *
+     * @param group_tid
+     * @param body
+     * @return
+     */
+    @POST("http://10.25.115.31:8083/ilaw/api/v3/im/groups/{group_tid}/members/delete")
+    Call<ResEntity<JsonElement>> groupMemberRemoves(@Path("group_tid") String group_tid,
+                                                    @Body RequestBody body);
 
     /**
      * 添加 消息
@@ -552,7 +564,8 @@ public interface AlphaApiService {
      */
     @POST("api/v2/file/upload")
     @Multipart
-    Call<ResEntity<JsonElement>> groupUploadFile(@Query("groupId") String groupId, @PartMap Map<String, RequestBody> params
+    Call<ResEntity<JsonElement>> groupUploadFile(@Query("groupId") String groupId,
+                                                 @PartMap Map<String, RequestBody> params
     );
 
     /**

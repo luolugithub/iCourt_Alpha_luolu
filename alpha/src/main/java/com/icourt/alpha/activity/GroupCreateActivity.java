@@ -31,6 +31,7 @@ import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.api.RequestUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.BindView;
@@ -51,6 +52,7 @@ import static com.icourt.alpha.R.id.group_member_num_tv;
 public class GroupCreateActivity extends BaseActivity {
 
     private static final int REQ_CODE_SELECT_USER = 1001;
+    private static final int REQ_CODE_DEL_USER = 1002;
 
     @BindView(R.id.titleBack)
     CheckedTextView titleBack;
@@ -116,7 +118,8 @@ public class GroupCreateActivity extends BaseActivity {
         imContactAdapter.registerAdapterDataObserver(dataChangeAdapterObserver);
     }
 
-    @OnClick({R.id.group_member_invite_tv, R.id.group_member_arrow_iv})
+    @OnClick({R.id.group_member_invite_tv,
+            R.id.group_member_arrow_iv})
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
@@ -139,8 +142,11 @@ public class GroupCreateActivity extends BaseActivity {
                         REQ_CODE_SELECT_USER);
                 break;
             case R.id.group_member_arrow_iv:
-             /*   ContactListActivity.launchSelect(getContext(),
-                        REQ_CODE_SELECT_USER);*/
+                GroupMemberDelActivity.launchForResult(getActivity(),
+                        null,
+                        (ArrayList<GroupContactBean>) imContactAdapter.getData(),
+                        false,
+                        REQ_CODE_DEL_USER);
                 break;
             default:
                 super.onClick(v);
@@ -196,6 +202,21 @@ public class GroupCreateActivity extends BaseActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         switch (requestCode) {
             case REQ_CODE_SELECT_USER:
+                if (resultCode == Activity.RESULT_OK && data != null) {
+                    List<GroupContactBean> result = (List<GroupContactBean>) data.getSerializableExtra(KEY_ACTIVITY_RESULT);
+                    if (result != null) {
+                        imContactAdapter.getData();
+                        for (int i = result.size() - 1; i >= 0; i--) {
+                            GroupContactBean contactBean = result.get(i);
+                            if (imContactAdapter.getData().contains(contactBean)) {
+                                result.remove(i);
+                            }
+                        }
+                        imContactAdapter.addItems(result);
+                    }
+                }
+                break;
+            case REQ_CODE_DEL_USER:
                 if (resultCode == Activity.RESULT_OK && data != null) {
                     List<GroupContactBean> result = (List<GroupContactBean>) data.getSerializableExtra(KEY_ACTIVITY_RESULT);
                     if (result != null) {

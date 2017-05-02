@@ -1,6 +1,7 @@
 package com.icourt.alpha.http.callback;
 
 import android.support.annotation.CallSuper;
+import android.text.TextUtils;
 
 import com.icourt.alpha.http.exception.ResponseException;
 import com.icourt.alpha.http.httpmodel.ResEntity;
@@ -24,7 +25,7 @@ public abstract class SimpleCallBack<T> extends BaseCallBack<ResEntity<T>> {
         } else {
             onFailure(call,
                     response.body() != null ?
-                            new ResponseException(-2, response.body().message)
+                            new ResponseException(-2, TextUtils.isEmpty(response.body().message) ? "succeed=false;message=null" : response.body().message)
                             : new ResponseException(-1, "响应为null"));
         }
     }

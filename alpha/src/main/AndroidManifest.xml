@@ -137,10 +137,6 @@
             android:name=".activity.GroupDetailActivity"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".activity.GroupMemberActivity"
-            android:screenOrientation="portrait"
-            android:windowSoftInputMode="stateHidden" />
-        <activity
             android:name=".activity.GroupSettingActivity"
             android:screenOrientation="portrait"
             android:windowSoftInputMode="stateAlwaysHidden" />
@@ -158,6 +154,10 @@
             android:windowSoftInputMode="stateHidden" />
         <activity
             android:name=".activity.EditItemActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".activity.GroupMemberDelActivity"
+            android:windowSoftInputMode="stateAlwaysHidden"
             android:screenOrientation="portrait" />
 
         <activity

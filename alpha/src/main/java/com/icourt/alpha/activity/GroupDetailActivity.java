@@ -272,9 +272,10 @@ public class GroupDetailActivity extends BaseActivity {
                         REQ_CODE_INVITATION_MEMBER);
                 break;
             case R.id.group_member_arrow_iv:
-               /* GroupMemberActivity.launch(getContext(),
-                        getIntent().getStringExtra(KEY_GROUP_ID),
-                        groupEntity != null ? groupEntity.name : null);*/
+                GroupMemberDelActivity.launchForResult(getActivity(),
+                        getIntent().getStringExtra(KEY_TID),
+                        (ArrayList<GroupContactBean>) contactAdapter.getData(),
+                        true, 2001);
                 break;
             case R.id.group_setTop_switch:
                 setGroupTop();
@@ -300,7 +301,7 @@ public class GroupDetailActivity extends BaseActivity {
                 }
                 break;
             case R.id.titleAction:
-                GroupSettingActivity.launch(getContext(),groupDetailEntity);
+                GroupSettingActivity.launch(getContext(), groupDetailEntity);
                 break;
             default:
                 super.onClick(v);
