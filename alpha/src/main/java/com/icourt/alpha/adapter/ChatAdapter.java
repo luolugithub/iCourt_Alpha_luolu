@@ -2,6 +2,7 @@ package com.icourt.alpha.adapter;
 
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -53,6 +54,7 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMCustomerMessageEntit
     private static final int TYPE_LEFT_DING_TXT = 3;
     private static final int TYPE_LEFT_DING_IMAGE = 4;
     private static final int TYPE_LEFT_DING_FILE = 5;
+    private static final int TYPE_LEFT_LINK = 6;
 
 
     //右边布局 类型
@@ -62,6 +64,7 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMCustomerMessageEntit
     private static final int TYPE_RIGHT_DING_TXT = 103;
     private static final int TYPE_RIGHT_DING_IMAGE = 104;
     private static final int TYPE_RIGHT_DING_FILE = 105;
+    private static final int TYPE_RIGHT_LINK = 106;
 
     private String loginToken;
     private List<GroupContactBean> contactBeanList;//本地联系人
@@ -105,6 +108,8 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMCustomerMessageEntit
                 return R.layout.adapter_item_chat_left_ding_image;
             case TYPE_LEFT_DING_FILE:
                 return R.layout.adapter_item_chat_left_ding_file;
+            case TYPE_LEFT_LINK:
+                return R.layout.adapter_item_chat_left_link;
 
             case TYPE_RIGHT_TXT:
                 return R.layout.adapter_item_chat_right_txt;
@@ -118,6 +123,8 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMCustomerMessageEntit
                 return R.layout.adapter_item_chat_right_ding_image;
             case TYPE_RIGHT_DING_FILE:
                 return R.layout.adapter_item_chat_right_ding_file;
+            case TYPE_RIGHT_LINK:
+                return R.layout.adapter_item_chat_right_link;
         }
         return R.layout.adapter_item_chat_left_txt;
     }
@@ -144,7 +151,7 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMCustomerMessageEntit
                     case Const.MSG_TYPE_SYS:
                         return TYPE_LEFT_TXT;
                     case Const.MSG_TYPE_LINK:
-                        return TYPE_LEFT_TXT;
+                        return TYPE_LEFT_LINK;
                 }
             } else if (item.imMessage.getDirect() == Out) {
                 switch (item.customIMBody.show_type) {
@@ -164,7 +171,7 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMCustomerMessageEntit
                     case Const.MSG_TYPE_SYS:
                         return TYPE_RIGHT_TXT;
                     case Const.MSG_TYPE_LINK:
-                        return TYPE_RIGHT_TXT;
+                        return TYPE_RIGHT_LINK;
                 }
             }
         }
@@ -201,6 +208,10 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMCustomerMessageEntit
             case TYPE_LEFT_DING_FILE:
                 setTypeLeftDingFile(holder, imMessage, position);
                 break;
+            case TYPE_LEFT_LINK:
+                setTypeLeftLink(holder, imMessage, position);
+                break;
+
 
             case TYPE_RIGHT_TXT:
                 setTypeRightTxt(holder, imMessage, position);
@@ -220,8 +231,12 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMCustomerMessageEntit
             case TYPE_RIGHT_DING_FILE:
                 setTypeRightDingFile(holder, imMessage, position);
                 break;
+            case TYPE_RIGHT_LINK:
+                setTypeRightLink(holder, imMessage, position);
+                break;
         }
     }
+
 
     /**
      * 处理时间分割线
@@ -369,6 +384,37 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMCustomerMessageEntit
 
     }
 
+    /**
+     * 初始化左边 链接布局
+     *
+     * @param holder
+     * @param imMessage
+     * @param position
+     */
+    private void setTypeLeftLink(ViewHolder holder, IMCustomerMessageEntity imMessage, int position) {
+        if (holder == null) return;
+        if (imMessage == null) return;
+        if (imMessage.customIMBody == null) return;
+        if (imMessage.customIMBody.ext == null) return;
+        TextView chat_link_title_tv = holder.obtainView(R.id.chat_link_title_tv);
+        ImageView chat_lin_thumb_iv = holder.obtainView(R.id.chat_lin_thumb_iv);
+        TextView chat_link_url_tv = holder.obtainView(R.id.chat_link_url_tv);
+        TextView chat_link_desc_tv = holder.obtainView(R.id.chat_link_desc_tv);
+        String thumb = imMessage.customIMBody.ext.thumb;
+        if (!TextUtils.isEmpty(thumb) && thumb.startsWith("http")) {
+            chat_lin_thumb_iv.setVisibility(View.VISIBLE);
+            Glide.with(chat_lin_thumb_iv.getContext())
+                    .load(thumb)
+                    .into(chat_lin_thumb_iv);
+        } else {
+            chat_lin_thumb_iv.setVisibility(View.GONE);
+        }
+        chat_link_title_tv.setText(imMessage.customIMBody.ext.title);
+        chat_link_title_tv.setVisibility(TextUtils.isEmpty(imMessage.customIMBody.ext.title) ? View.GONE : View.VISIBLE);
+
+        chat_link_url_tv.setText(imMessage.customIMBody.ext.url);
+        chat_link_desc_tv.setText(imMessage.customIMBody.ext.desc);
+    }
 
     /**
      * 初始化右边 文本布局
@@ -459,6 +505,17 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMCustomerMessageEntit
      */
     private void setTypeRightDingFile(ViewHolder holder, Object o, int position) {
 
+    }
+
+    /**
+     * 初始化 右边链接布局
+     *
+     * @param holder
+     * @param imMessage
+     * @param position
+     */
+    private void setTypeRightLink(ViewHolder holder, IMCustomerMessageEntity imMessage, int position) {
+        setTypeLeftLink(holder, imMessage, position);
     }
 
     /**

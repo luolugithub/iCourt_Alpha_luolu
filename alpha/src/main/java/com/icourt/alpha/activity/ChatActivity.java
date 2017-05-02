@@ -443,27 +443,30 @@ public class ChatActivity extends ChatBaseActivity {
             return;
         }
         String txt = inputText.getText().toString();
-        sendIMLinkMsg(txt);
-       /* if (txt.contains("@")) {
-            if (txt.contains("@所有人")) {
-                sendAtMsg(txt, true, null);
-            } else {
-                List<String> accIds = new ArrayList<String>();
-                for (GroupContactBean atBean : atContactList) {
-                    if (atBean != null && txt.contains(String.format("@%s", atBean.name))) {
-                        accIds.add(atBean.accid);
+        if (isIMLinkText(txt)) {
+            sendIMLinkMsg(txt);
+        } else {
+            if (txt.contains("@")) {
+                if (txt.contains("@所有人")) {
+                    sendAtMsg(txt, true, null);
+                } else {
+                    List<String> accIds = new ArrayList<String>();
+                    for (GroupContactBean atBean : atContactList) {
+                        if (atBean != null && txt.contains(String.format("@%s", atBean.name))) {
+                            accIds.add(atBean.accid);
+                        }
+                    }
+                    atContactList.clear();
+                    if (!accIds.isEmpty()) {
+                        sendAtMsg(txt, false, accIds);
+                    } else {
+                        sendTextMsg(txt);
                     }
                 }
-                atContactList.clear();
-                if (!accIds.isEmpty()) {
-                    sendAtMsg(txt, false, accIds);
-                } else {
-                    sendTextMsg(txt);
-                }
+            } else {
+                sendTextMsg(txt);
             }
-        } else {
-            sendTextMsg(txt);
-        }*/
+        }
         inputText.setText("");
     }
 
@@ -572,7 +575,7 @@ public class ChatActivity extends ChatBaseActivity {
         linearLayoutManager = new LinearLayoutManager(getContext());
         recyclerView.setLayoutManager(linearLayoutManager);
         recyclerView.setHasFixedSize(true);
-        recyclerView.setAdapter(chatAdapter = new ChatAdapter(getLoadedLoginToken(),localContactList));
+        recyclerView.setAdapter(chatAdapter = new ChatAdapter(getLoadedLoginToken(), localContactList));
         chatAdapter.setOnItemLongClickListener(this);
         recyclerView.addItemDecoration(new ChatItemDecoration(getContext(), chatAdapter));
         refreshLayout.setXRefreshViewListener(new XRefreshView.SimpleXRefreshListener() {

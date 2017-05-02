@@ -494,7 +494,9 @@ public interface AlphaApiService {
      * @return
      */
     @POST("http://10.25.115.31:8083/ilaw/api/v3/im/msgs/stars/{msgId}")
-    Call<ResEntity<Boolean>> msgCollect(@Path("msgId") String msgId);
+    Call<ResEntity<Boolean>> msgCollect(@Path("msgId") String msgId,
+                                        @Query("ope") @Const.CHAT_TYPE int ope,
+                                        @Query("to") String to);
 
     /**
      * 取消收藏 消息
@@ -504,8 +506,21 @@ public interface AlphaApiService {
      * @return
      */
     @DELETE("http://10.25.115.31:8083/ilaw/api/v3/im/msgs/stars/{msgId}")
-    Call<ResEntity<Boolean>> msgCollectCancel(@Path("msgId") String msgId);
+    Call<ResEntity<Boolean>> msgCollectCancel(@Path("msgId") String msgId,
+                                              @Query("ope") @Const.CHAT_TYPE int ope,
+                                              @Query("to") String to);
 
+    /**
+     * 获取收藏的消息ids
+     * 接口地址:https://www.showdoc.cc/1620156?page_id=14899067
+     *
+     * @param ope
+     * @param to
+     * @return
+     */
+    @GET("http://10.25.115.31:8083/ilaw/api/v3/im/msgs/stars/ids")
+    Call<ResEntity<List<String>>> msgQueryAllCollectedIds(@Query("ope") @Const.CHAT_TYPE int ope,
+                                                          @Query("to") String to);
 
     /**
      * 撤回 消息

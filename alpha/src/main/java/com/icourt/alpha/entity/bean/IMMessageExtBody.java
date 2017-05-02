@@ -64,6 +64,13 @@ public final class IMMessageExtBody {
         this.pin = pin;
     }
 
+    public IMMessageExtBody(String title, String thumb, String desc, String url) {
+        this.title = title;
+        this.thumb = thumb;
+        this.desc = desc;
+        this.url = url;
+    }
+
     /**
      * 构建 扩展的at消息
      *
@@ -86,6 +93,19 @@ public final class IMMessageExtBody {
         return new IMMessageExtBody(pingMsgId, isPing);
     }
 
+
+    /**
+     * 构建 扩展的链接消息
+     *
+     * @param title
+     * @param thumb
+     * @param desc
+     * @param url
+     * @return
+     */
+    public static IMMessageExtBody createLinkExtBody(String title, String thumb, String desc, String url) {
+        return new IMMessageExtBody(title, thumb, desc, url);
+    }
 
     public IMMessageExtBody() {
     }

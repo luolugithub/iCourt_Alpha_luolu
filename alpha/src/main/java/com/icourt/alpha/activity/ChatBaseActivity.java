@@ -76,6 +76,8 @@ import static com.icourt.alpha.constants.Const.MSG_TYPE_VOICE;
  */
 public abstract class ChatBaseActivity extends BaseActivity implements INIMessageListener, BaseRecyclerAdapter.OnItemLongClickListener {
 
+    //收藏的消息列表
+    protected final List<String> msgCollectedIdsList = new ArrayList<>();
     /**
      * 收到消息
      */
@@ -165,6 +167,28 @@ public abstract class ChatBaseActivity extends BaseActivity implements INIMessag
         loadedLoginUserInfo = getLoginUserInfo();
         contactDbService = new ContactDbService(getLoginUserId());
         registerObservers(true);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        getMsgCollectedIds();
+    }
+
+    /**
+     * 获取已经收藏的id列表
+     */
+    private void getMsgCollectedIds() {
+        getApi().msgQueryAllCollectedIds(getIMChatType(), getIMChatId())
+                .enqueue(new SimpleCallBack<List<String>>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<List<String>>> call, Response<ResEntity<List<String>>> response) {
+                        if (response.body().result != null) {
+                            msgCollectedIdsList.clear();
+                            msgCollectedIdsList.addAll(response.body().result);
+                        }
+                    }
+                });
     }
 
 
@@ -362,28 +386,105 @@ public abstract class ChatBaseActivity extends BaseActivity implements INIMessag
                 });
     }
 
+    /**
+     * 是否是http链接
+     *
+     * @param text
+     * @return
+     */
+    protected final boolean isIMLinkText(String text) {
+        return UrlUtils.isHttpLink(text);
+    }
 
-    protected final void sendIMLinkMsg(String url) {
+    /**
+     * 发送纯链接的消息
+     *
+     * @param url
+     */
+    protected final void sendIMLinkMsg(final String url) {
         if (TextUtils.isEmpty(url)) return;
-        Request request = new Request.Builder().url(url).build();
-        RetrofitServiceFactory.provideOkHttpClient()
-                .newCall(request)
-                .enqueue(new okhttp3.Callback() {
-                    @Override
-                    public void onFailure(okhttp3.Call call, IOException e) {
-                        log("--------->ex:" + e);
-                    }
-
-                    @Override
-                    public void onResponse(okhttp3.Call call, okhttp3.Response response) throws IOException {
-                        if (response != null && response.body() != null) {
-                            String value = response.body().string();
-                            log("--------->html_text:" + value);
-                            String htmlTitle = UrlUtils.getHtmlLabel(value, "title");
-                            log("--------->html_title:" + htmlTitle);
+        try {
+            Request request = new Request.Builder().url(url).build();
+            RetrofitServiceFactory.provideOkHttpClient()
+                    .newCall(request)
+                    .enqueue(new okhttp3.Callback() {
+                        @Override
+                        public void onFailure(okhttp3.Call call, IOException e) {
+                            sendIMLinkMsgInner(url, null, null, null);
                         }
+
+                        @Override
+                        public void onResponse(okhttp3.Call call, okhttp3.Response response) throws IOException {
+                            if (response != null && response.body() != null) {
+                                String value = response.body().string();
+                                String htmlTitle = UrlUtils.getHtmlLabel(value, "title");
+                                if (!TextUtils.isEmpty(htmlTitle)) {
+                                    htmlTitle = htmlTitle.replaceAll("<title>", "");
+                                    if (!TextUtils.isEmpty(htmlTitle)) {
+                                        htmlTitle = htmlTitle.replaceAll("</title>", "");
+                                    }
+                                }
+                                String htmlDescription = getHtmlDescription(value);
+                                String htmlImage = UrlUtils.getHtmlFirstImage(value);
+
+                                sendIMLinkMsgInner(url, htmlTitle, htmlDescription, htmlImage);
+                            }
+                        }
+                    });
+        } catch (Exception e) {
+            //view-source:错误
+            e.printStackTrace();
+            sendIMLinkMsgInner(url, null, null, null);
+        }
+    }
+
+
+    /**
+     * 发送链接 消息
+     *
+     * @param url
+     * @param htmlTitle
+     * @param htmlDescription
+     * @param htmlImage
+     */
+    private void sendIMLinkMsgInner(String url, String htmlTitle, String htmlDescription, String htmlImage) {
+        if (TextUtils.isEmpty(url)) return;
+        IMMessageCustomBody msgPostEntity = IMMessageCustomBody.createLinkMsg(getIMChatType(),
+                getLoadedLoginName(),
+                getIMChatId(),
+                url,
+                htmlTitle,
+                htmlDescription,
+                htmlImage);
+        String jsonBody = null;
+        try {
+            jsonBody = JsonUtils.Gson2String(msgPostEntity);
+        } catch (JsonParseException e) {
+            e.printStackTrace();
+        }
+        getApi().msgAdd(RequestUtils.createJsonBody(jsonBody))
+                .enqueue(new SimpleCallBack<JsonElement>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
+
                     }
                 });
+    }
+
+    /**
+     * <meta name="keywords" content="正则表达式,html"/>
+     * <meta name="description" content="正则表达式,html"/>
+     * 优先keywords
+     *
+     * @param htmlString
+     * @return
+     */
+    private String getHtmlDescription(String htmlString) {
+        String htmlKeywordslabel = UrlUtils.getHtmlKeywordslabel(htmlString);
+        if (TextUtils.isEmpty(htmlKeywordslabel)) {
+            return UrlUtils.getHtmlDescriptionlabel(htmlString);
+        }
+        return htmlKeywordslabel;
     }
 
     /**
@@ -437,7 +538,10 @@ public abstract class ChatBaseActivity extends BaseActivity implements INIMessag
                 case MSG_TYPE_AT:
                 case MSG_TYPE_TXT:
                     menuItems.clear();
-                    menuItems.addAll(Arrays.asList("复制", "钉", "收藏", "转任务"));
+                    menuItems.addAll(Arrays.asList("复制",
+                            "钉",
+                            msgCollectedIdsList.contains(imCustomerMessageEntity.customIMBody.id) ? "取消收藏" : "收藏",
+                            "转任务"));
                     if (imCustomerMessageEntity.imMessage.getDirect() == MsgDirectionEnum.Out
                             && canRevokeMsg(imCustomerMessageEntity.imMessage.getTime())) {
                         menuItems.add("撤回");
@@ -445,13 +549,18 @@ public abstract class ChatBaseActivity extends BaseActivity implements INIMessag
                     break;
                 case MSG_TYPE_FILE:
                     menuItems.clear();
-                    menuItems.addAll(Arrays.asList("钉", "收藏", "转任务"));
+                    menuItems.addAll(Arrays.asList("钉",
+                            msgCollectedIdsList.contains(imCustomerMessageEntity.customIMBody.id) ? "取消收藏" : "收藏",
+                            "转任务"));
                     if (imCustomerMessageEntity.imMessage.getDirect() == MsgDirectionEnum.Out
                             && canRevokeMsg(imCustomerMessageEntity.imMessage.getTime())) {
                         menuItems.add("撤回");
                     }
                     break;
-                case MSG_TYPE_DING:
+                case MSG_TYPE_DING://不能撤回 收藏的是钉的消息体,钉的消息[文本]可以转任务
+                    menuItems.clear();
+                    menuItems.addAll(Arrays.asList(msgCollectedIdsList.contains(imCustomerMessageEntity.customIMBody.id) ? "取消收藏" : "收藏"
+                            , "转任务"));
                     break;
                 case MSG_TYPE_SYS:
                     break;
@@ -564,12 +673,13 @@ public abstract class ChatBaseActivity extends BaseActivity implements INIMessag
      *
      * @param msgId
      */
-    protected final void msgActionCollect(String msgId) {
-        getApi().msgCollect(msgId)
+    protected final void msgActionCollect(final String msgId) {
+        getApi().msgCollect(msgId,getIMChatType(),getIMChatId())
                 .enqueue(new SimpleCallBack<Boolean>() {
                     @Override
                     public void onSuccess(Call<ResEntity<Boolean>> call, Response<ResEntity<Boolean>> response) {
                         if (response.body().result != null && response.body().result.booleanValue()) {
+                            msgCollectedIdsList.add(msgId);
                             showTopSnackBar("收藏成功");
                         } else {
                             showTopSnackBar("收藏失败");
@@ -583,13 +693,14 @@ public abstract class ChatBaseActivity extends BaseActivity implements INIMessag
      *
      * @param msgId
      */
-    protected final void msgActionCollectCancel(String msgId) {
-        getApi().msgCollectCancel(msgId)
+    protected final void msgActionCollectCancel(final String msgId) {
+        getApi().msgCollectCancel(msgId,getIMChatType(),getIMChatId())
                 .enqueue(new SimpleCallBack<Boolean>() {
                     @Override
                     public void onSuccess(Call<ResEntity<Boolean>> call, Response<ResEntity<Boolean>> response) {
                         if (response.body().result != null && response.body().result.booleanValue()) {
                             showTopSnackBar("取消收藏成功");
+                            msgCollectedIdsList.remove(msgId);
                         } else {
                             showTopSnackBar("取消收藏失败");
                         }

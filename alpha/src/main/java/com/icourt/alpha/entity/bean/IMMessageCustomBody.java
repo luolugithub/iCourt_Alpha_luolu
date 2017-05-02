@@ -81,6 +81,26 @@ public class IMMessageCustomBody {
     }
 
     /**
+     * 构建文件消息体
+     *
+     * @param name 发送方的名字
+     * @param to   接收人id，这个需要根据ope判断
+     * @param url  链接
+     * @return
+     */
+    public static IMMessageCustomBody createLinkMsg(@Const.CHAT_TYPE int chatType, String name, String to, String url, String htmlTitle, String htmlDescription, String htmlImage) {
+        IMMessageCustomBody imMessageCustomBody = new IMMessageCustomBody(chatType,
+                Const.MSG_TYPE_LINK,
+                name,
+                to,
+                null,
+                UUID.randomUUID().toString(),
+                PLATFORM_ANDROID);
+        imMessageCustomBody.ext = IMMessageExtBody.createLinkExtBody(htmlTitle, htmlImage, htmlDescription, url);
+        return imMessageCustomBody;
+    }
+
+    /**
      * 构建AT消息
      *
      * @param chatType
