@@ -32,7 +32,6 @@ import com.icourt.alpha.db.dbservice.ContactDbService;
 import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.icourt.alpha.entity.bean.GroupDetailEntity;
 import com.icourt.alpha.entity.bean.GroupEntity;
-import com.icourt.alpha.entity.bean.SetTopEntity;
 import com.icourt.alpha.entity.event.GroupActionEvent;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
@@ -46,7 +45,6 @@ import com.netease.nimlib.sdk.team.model.Team;
 
 import org.greenrobot.eventbus.EventBus;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -55,6 +53,8 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 import retrofit2.Call;
 import retrofit2.Response;
+
+import static com.icourt.alpha.constants.Const.CHAT_TYPE_TEAM;
 
 /**
  * Description  群组详情
@@ -66,7 +66,6 @@ import retrofit2.Response;
 public class GroupDetailActivity extends BaseActivity {
     private static final String KEY_GROUP_ID = "key_group_id";
     private static final String KEY_TID = "key_tid";//云信id
-    private static final String KEY_GROUP = "key_group";
 
     private static final int REQ_CODE_INVITATION_MEMBER = 1002;
 
@@ -116,7 +115,8 @@ public class GroupDetailActivity extends BaseActivity {
     };
     GroupDetailEntity groupDetailEntity;
 
-    public static void launch(@NonNull Context context, String groupId, String tid) {
+
+    public static void launchTEAM(@NonNull Context context, String groupId, String tid) {
         if (context == null) return;
         if (TextUtils.isEmpty(groupId)) return;
         if (TextUtils.isEmpty(tid)) return;
@@ -126,15 +126,10 @@ public class GroupDetailActivity extends BaseActivity {
         context.startActivity(intent);
     }
 
-    public static void launch(@NonNull Context context, @NonNull GroupEntity groupEntity) {
-        if (context == null) return;
-        if (groupEntity == null) return;
-        Intent intent = new Intent(context, GroupDetailActivity.class);
-        intent.putExtra(KEY_GROUP_ID, groupEntity.id);
-        intent.putExtra(KEY_TID, groupEntity.tid);
-        intent.putExtra(KEY_GROUP, groupEntity);
-        context.startActivity(intent);
+    protected String getIMChatId() {
+        return getIntent().getStringExtra(KEY_TID);
     }
+
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -152,12 +147,6 @@ public class GroupDetailActivity extends BaseActivity {
         setViewVisible(titleActionImage, false);
         setViewVisible(groupMemberInviteTv, false);
         setViewVisible(groupJoinOrQuitBtn, false);
-        Serializable serializableExtra = getIntent().getSerializableExtra(KEY_GROUP);
-        if (serializableExtra instanceof GroupEntity) {
-            groupEntity = (GroupEntity) serializableExtra;
-            groupNameTv.setText(groupEntity.name);
-            groupDescTv.setText(groupEntity.intro);
-        }
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false);
         linearLayoutManager.setAutoMeasureEnabled(true);
         groupMemberRecyclerView.setLayoutManager(linearLayoutManager);
@@ -217,7 +206,7 @@ public class GroupDetailActivity extends BaseActivity {
                         dismissLoadingDialog();
                     }
                 });
-        getIsSetGroupTop();
+        getSetTopSessions();
         getIsSetGroupNoDisturbing();
     }
 
@@ -259,7 +248,7 @@ public class GroupDetailActivity extends BaseActivity {
         switch (v.getId()) {
             case R.id.group_ding_tv:
                 ChatMsgClassfyActivity.launchDing(getContext(),
-                        Const.CHAT_TYPE_TEAM,
+                        CHAT_TYPE_TEAM,
                         getIntent().getStringExtra(KEY_TID));
                 break;
             case R.id.group_file_tv:
@@ -278,10 +267,18 @@ public class GroupDetailActivity extends BaseActivity {
                         true, 2001);
                 break;
             case R.id.group_setTop_switch:
-                setGroupTop();
+                if (!groupSetTopSwitch.isChecked()) {
+                    setGroupTopCancel();
+                } else {
+                    setGroupTop();
+                }
                 break;
             case R.id.group_not_disturb_switch:
-                setGroupNoDisturbing();
+                if (!groupNotDisturbSwitch.isChecked()) {
+                    setGroupNoDisturbingCancel();
+                } else {
+                    setGroupNoDisturbing();
+                }
                 break;
             case R.id.group_join_or_quit_btn:
                 if (v.isSelected()) {
@@ -309,18 +306,23 @@ public class GroupDetailActivity extends BaseActivity {
         }
     }
 
+
     /**
-     * 获取讨论组 是否被置顶
+     * 获取所有置顶的会话ids
      */
-    private void getIsSetGroupTop() {
-        getApi().isGroupSetTop(getIntent().getStringExtra(KEY_GROUP_ID))
-                .enqueue(new SimpleCallBack<Integer>() {
+    private void getSetTopSessions() {
+        getApi().setTopQueryAllIds()
+                .enqueue(new SimpleCallBack<List<String>>() {
                     @Override
-                    public void onSuccess(Call<ResEntity<Integer>> call, Response<ResEntity<Integer>> response) {
-                        groupSetTopSwitch.setChecked(response.body().result != null && response.body().result == 1);
+                    public void onSuccess(Call<ResEntity<List<String>>> call, Response<ResEntity<List<String>>> response) {
+                        if (response.body().result != null) {
+                            groupSetTopSwitch.setChecked(response.body()
+                                    .result.contains(getIMChatId()));
+                        }
                     }
                 });
     }
+
 
     /**
      * 云信状态码  http://dev.netease.im/docs?doc=nim_status_code
@@ -352,15 +354,45 @@ public class GroupDetailActivity extends BaseActivity {
      */
     private void setGroupTop() {
         showLoadingDialog(null);
-        getApi().setGroupTop(getIntent().getStringExtra(KEY_GROUP_ID))
-                .enqueue(new SimpleCallBack<List<SetTopEntity>>() {
+        getApi().sessionSetTop(CHAT_TYPE_TEAM, getIMChatId())
+                .enqueue(new SimpleCallBack<Boolean>() {
                     @Override
-                    public void onSuccess(Call<ResEntity<List<SetTopEntity>>> call, Response<ResEntity<List<SetTopEntity>>> response) {
+                    public void onSuccess(Call<ResEntity<Boolean>> call, Response<ResEntity<Boolean>> response) {
                         dismissLoadingDialog();
+                        if (response.body().result != null && response.body().result.booleanValue()) {
+                            groupSetTopSwitch.setChecked(true);
+                        } else {
+                            groupSetTopSwitch.setChecked(false);
+                        }
                     }
 
                     @Override
-                    public void onFailure(Call<ResEntity<List<SetTopEntity>>> call, Throwable t) {
+                    public void onFailure(Call<ResEntity<Boolean>> call, Throwable t) {
+                        super.onFailure(call, t);
+                        dismissLoadingDialog();
+                    }
+                });
+    }
+
+    /**
+     *
+     */
+    private void setGroupTopCancel() {
+        showLoadingDialog(null);
+        getApi().sessionSetTopCancel(CHAT_TYPE_TEAM, getIMChatId())
+                .enqueue(new SimpleCallBack<Boolean>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<Boolean>> call, Response<ResEntity<Boolean>> response) {
+                        dismissLoadingDialog();
+                        if (response.body().result != null && response.body().result.booleanValue()) {
+                            groupSetTopSwitch.setChecked(false);
+                        } else {
+                            groupSetTopSwitch.setChecked(true);
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<ResEntity<Boolean>> call, Throwable t) {
                         super.onFailure(call, t);
                         dismissLoadingDialog();
                     }
@@ -372,18 +404,47 @@ public class GroupDetailActivity extends BaseActivity {
      */
     private void setGroupNoDisturbing() {
         showLoadingDialog(null);
-        getApi().setNoDisturbing(getIntent().getStringExtra(KEY_GROUP_ID))
-                .enqueue(new SimpleCallBack<Integer>() {
+        getApi().sessionNoDisturbing(CHAT_TYPE_TEAM, getIMChatId())
+                .enqueue(new SimpleCallBack<Boolean>() {
                     @Override
-                    public void onSuccess(Call<ResEntity<Integer>> call, Response<ResEntity<Integer>> response) {
+                    public void onSuccess(Call<ResEntity<Boolean>> call, Response<ResEntity<Boolean>> response) {
                         dismissLoadingDialog();
-                        boolean checked = response.body().result != null && response.body().result == 1;
-                        groupNotDisturbSwitch.setChecked(checked);
-                        NIMClient.getService(TeamService.class).muteTeam(getIntent().getStringExtra(KEY_TID), checked);
+                        if (response.body().result != null && response.body().result) {
+                            groupNotDisturbSwitch.setChecked(true);
+                            NIMClient.getService(TeamService.class).muteTeam(getIntent().getStringExtra(KEY_TID), true);
+                        } else {
+                            groupNotDisturbSwitch.setChecked(false);
+                        }
                     }
 
                     @Override
-                    public void onFailure(Call<ResEntity<Integer>> call, Throwable t) {
+                    public void onFailure(Call<ResEntity<Boolean>> call, Throwable t) {
+                        super.onFailure(call, t);
+                        dismissLoadingDialog();
+                    }
+                });
+    }
+
+    /**
+     * 讨论组聊天取消免打扰
+     */
+    private void setGroupNoDisturbingCancel() {
+        showLoadingDialog(null);
+        getApi().sessionNoDisturbingCancel(CHAT_TYPE_TEAM, getIMChatId())
+                .enqueue(new SimpleCallBack<Boolean>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<Boolean>> call, Response<ResEntity<Boolean>> response) {
+                        dismissLoadingDialog();
+                        if (response.body().result != null && response.body().result) {
+                            groupNotDisturbSwitch.setChecked(false);
+                            NIMClient.getService(TeamService.class).muteTeam(getIntent().getStringExtra(KEY_TID), false);
+                        } else {
+                            groupNotDisturbSwitch.setChecked(true);
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<ResEntity<Boolean>> call, Throwable t) {
                         super.onFailure(call, t);
                         dismissLoadingDialog();
                     }

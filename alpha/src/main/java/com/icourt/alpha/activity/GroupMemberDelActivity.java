@@ -98,6 +98,7 @@ public class GroupMemberDelActivity extends BaseActivity implements BaseRecycler
     @Override
     protected void initView() {
         super.initView();
+        setTitle("讨论组成员");
         TextView titleActionTextView = getTitleActionTextView();
         if (titleActionTextView != null) {
             titleActionTextView.setText("删除");

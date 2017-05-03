@@ -777,7 +777,7 @@ public class ChatActivity extends ChatBaseActivity {
                                 false
                         );
                     case CHAT_TYPE_TEAM:
-                        GroupDetailActivity.launch(getContext(),
+                        GroupDetailActivity.launchTEAM(getContext(),
                                 getIntent().getStringExtra(KEY_GROUP_ID),
                                 getIntent().getStringExtra(KEY_TID));
                 }

@@ -288,7 +288,7 @@ public class GroupListActivity extends BaseActivity implements BaseRecyclerAdapt
                                     item.id,
                                     item.name);
                         } else {
-                            GroupDetailActivity.launch(getContext(), item);
+                            GroupDetailActivity.launchTEAM(getContext(), item.id,item.tid);
                         }
                         break;
                 }

@@ -45,7 +45,9 @@ import com.trello.rxlifecycle2.android.ActivityEvent;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
@@ -77,7 +79,9 @@ import static com.icourt.alpha.constants.Const.MSG_TYPE_VOICE;
 public abstract class ChatBaseActivity extends BaseActivity implements INIMessageListener, BaseRecyclerAdapter.OnItemLongClickListener {
 
     //收藏的消息列表
-    protected final List<String> msgCollectedIdsList = new ArrayList<>();
+    protected final Set<String> msgCollectedIdsList = new HashSet<>();
+    //钉的消息列表
+    protected final Set<String> msgDingedIdsList = new HashSet<>();
     /**
      * 收到消息
      */
@@ -173,6 +177,24 @@ public abstract class ChatBaseActivity extends BaseActivity implements INIMessag
     protected void onResume() {
         super.onResume();
         getMsgCollectedIds();
+        getMsgDingedIds();
+    }
+
+
+    /**
+     * 获取被钉的ids列表
+     */
+    private void getMsgDingedIds() {
+        getApi().msgQueryAllDingIds(getIMChatType(), getIMChatId())
+                .enqueue(new SimpleCallBack<List<String>>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<List<String>>> call, Response<ResEntity<List<String>>> response) {
+                        if (response.body().result != null) {
+                            msgDingedIdsList.clear();
+                            msgDingedIdsList.addAll(response.body().result);
+                        }
+                    }
+                });
     }
 
     /**
@@ -312,15 +334,11 @@ public abstract class ChatBaseActivity extends BaseActivity implements INIMessag
             e.printStackTrace();
         }
         getApi().msgAdd(RequestUtils.createJsonBody(jsonBody))
-                .enqueue(new SimpleCallBack<JsonElement>() {
+                .enqueue(new SimpleCallBack<Boolean>() {
                     @Override
-                    public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
+                    public void onSuccess(Call<ResEntity<Boolean>> call, Response<ResEntity<Boolean>> response) {
                     }
 
-                    @Override
-                    public void defNotify(String noticeStr) {
-                        //super.defNotify(noticeStr);
-                    }
                 });
     }
 
@@ -345,14 +363,9 @@ public abstract class ChatBaseActivity extends BaseActivity implements INIMessag
             e.printStackTrace();
         }
         getApi().msgAdd(RequestUtils.createJsonBody(jsonBody))
-                .enqueue(new SimpleCallBack<JsonElement>() {
+                .enqueue(new SimpleCallBack<Boolean>() {
                     @Override
-                    public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
-                    }
-
-                    @Override
-                    public void defNotify(String noticeStr) {
-                        //super.defNotify(noticeStr);
+                    public void onSuccess(Call<ResEntity<Boolean>> call, Response<ResEntity<Boolean>> response) {
                     }
                 });
     }
@@ -374,14 +387,9 @@ public abstract class ChatBaseActivity extends BaseActivity implements INIMessag
             e.printStackTrace();
         }
         getApi().msgAdd(RequestUtils.createJsonBody(jsonBody))
-                .enqueue(new SimpleCallBack<JsonElement>() {
+                .enqueue(new SimpleCallBack<Boolean>() {
                     @Override
-                    public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
-                    }
-
-                    @Override
-                    public void defNotify(String noticeStr) {
-                        //super.defNotify(noticeStr);
+                    public void onSuccess(Call<ResEntity<Boolean>> call, Response<ResEntity<Boolean>> response) {
                     }
                 });
     }
@@ -463,9 +471,9 @@ public abstract class ChatBaseActivity extends BaseActivity implements INIMessag
             e.printStackTrace();
         }
         getApi().msgAdd(RequestUtils.createJsonBody(jsonBody))
-                .enqueue(new SimpleCallBack<JsonElement>() {
+                .enqueue(new SimpleCallBack<Boolean>() {
                     @Override
-                    public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
+                    public void onSuccess(Call<ResEntity<Boolean>> call, Response<ResEntity<Boolean>> response) {
 
                     }
                 });
@@ -539,8 +547,8 @@ public abstract class ChatBaseActivity extends BaseActivity implements INIMessag
                 case MSG_TYPE_TXT:
                     menuItems.clear();
                     menuItems.addAll(Arrays.asList("复制",
-                            "钉",
-                            msgCollectedIdsList.contains(imCustomerMessageEntity.customIMBody.id) ? "取消收藏" : "收藏",
+                            isDinged(imCustomerMessageEntity.customIMBody.id) ? "取消钉" : "钉",
+                            isCollected(imCustomerMessageEntity.customIMBody.id) ? "取消收藏" : "收藏",
                             "转任务"));
                     if (imCustomerMessageEntity.imMessage.getDirect() == MsgDirectionEnum.Out
                             && canRevokeMsg(imCustomerMessageEntity.imMessage.getTime())) {
@@ -549,8 +557,9 @@ public abstract class ChatBaseActivity extends BaseActivity implements INIMessag
                     break;
                 case MSG_TYPE_FILE:
                     menuItems.clear();
-                    menuItems.addAll(Arrays.asList("钉",
-                            msgCollectedIdsList.contains(imCustomerMessageEntity.customIMBody.id) ? "取消收藏" : "收藏",
+                    menuItems.addAll(Arrays.asList(
+                            isDinged(imCustomerMessageEntity.customIMBody.id) ? "取消钉" : "钉",
+                            isCollected(imCustomerMessageEntity.customIMBody.id) ? "取消收藏" : "收藏",
                             "转任务"));
                     if (imCustomerMessageEntity.imMessage.getDirect() == MsgDirectionEnum.Out
                             && canRevokeMsg(imCustomerMessageEntity.imMessage.getTime())) {
@@ -559,7 +568,8 @@ public abstract class ChatBaseActivity extends BaseActivity implements INIMessag
                     break;
                 case MSG_TYPE_DING://不能撤回 收藏的是钉的消息体,钉的消息[文本]可以转任务
                     menuItems.clear();
-                    menuItems.addAll(Arrays.asList(msgCollectedIdsList.contains(imCustomerMessageEntity.customIMBody.id) ? "取消收藏" : "收藏"
+                    menuItems.addAll(Arrays.asList(
+                            isCollected(imCustomerMessageEntity.customIMBody.id) ? "取消收藏" : "收藏"
                             , "转任务"));
                     break;
                 case MSG_TYPE_SYS:
@@ -573,7 +583,26 @@ public abstract class ChatBaseActivity extends BaseActivity implements INIMessag
             }
             showMsgActionDialog(imCustomerMessageEntity.customIMBody, menuItems);
         }
+    }
 
+    /**
+     * 是否被钉过
+     *
+     * @param msgId
+     * @return
+     */
+    private boolean isDinged(String msgId) {
+        return msgDingedIdsList.contains(msgId);
+    }
+
+    /**
+     * 是否收藏过
+     *
+     * @param msgId
+     * @return
+     */
+    private boolean isCollected(String msgId) {
+        return msgCollectedIdsList.contains(msgId);
     }
 
     /**
@@ -608,6 +637,8 @@ public abstract class ChatBaseActivity extends BaseActivity implements INIMessag
                             msgActionCopy(customIMBody.content);
                         } else if (TextUtils.equals(actionName, "钉")) {
                             msgActionDing(true, customIMBody.id);
+                        } else if (TextUtils.equals(actionName, "取消钉")) {
+                            msgActionDing(false, customIMBody.id);
                         } else if (TextUtils.equals(actionName, "收藏")) {
                             msgActionCollect(customIMBody.id);
                         } else if (TextUtils.equals(actionName, "取消收藏")) {
@@ -648,7 +679,7 @@ public abstract class ChatBaseActivity extends BaseActivity implements INIMessag
      * @param isDing    钉 true 取消钉 false
      * @param dingMsgId
      */
-    protected final void msgActionDing(boolean isDing, String dingMsgId) {
+    protected final void msgActionDing(final boolean isDing, final String dingMsgId) {
         IMMessageCustomBody msgPostEntity = IMMessageCustomBody.createDingMsg(getIMChatType(),
                 getLoadedLoginName(),
                 getIMChatId(),
@@ -661,9 +692,16 @@ public abstract class ChatBaseActivity extends BaseActivity implements INIMessag
             e.printStackTrace();
         }
         getApi().msgAdd(RequestUtils.createJsonBody(jsonBody))
-                .enqueue(new SimpleCallBack<JsonElement>() {
+                .enqueue(new SimpleCallBack<Boolean>() {
                     @Override
-                    public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
+                    public void onSuccess(Call<ResEntity<Boolean>> call, Response<ResEntity<Boolean>> response) {
+                        if (response.body().result != null && response.body().result.booleanValue()) {
+                            if (!isDing) {//取消钉
+                                msgDingedIdsList.remove(dingMsgId);
+                            } else {//钉
+                                msgDingedIdsList.add(dingMsgId);
+                            }
+                        }
                     }
                 });
     }
@@ -674,7 +712,7 @@ public abstract class ChatBaseActivity extends BaseActivity implements INIMessag
      * @param msgId
      */
     protected final void msgActionCollect(final String msgId) {
-        getApi().msgCollect(msgId,getIMChatType(),getIMChatId())
+        getApi().msgCollect(msgId, getIMChatType(), getIMChatId())
                 .enqueue(new SimpleCallBack<Boolean>() {
                     @Override
                     public void onSuccess(Call<ResEntity<Boolean>> call, Response<ResEntity<Boolean>> response) {
@@ -694,7 +732,7 @@ public abstract class ChatBaseActivity extends BaseActivity implements INIMessag
      * @param msgId
      */
     protected final void msgActionCollectCancel(final String msgId) {
-        getApi().msgCollectCancel(msgId,getIMChatType(),getIMChatId())
+        getApi().msgCollectCancel(msgId, getIMChatType(), getIMChatId())
                 .enqueue(new SimpleCallBack<Boolean>() {
                     @Override
                     public void onSuccess(Call<ResEntity<Boolean>> call, Response<ResEntity<Boolean>> response) {

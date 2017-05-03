@@ -1,6 +1,5 @@
 package com.icourt.alpha.adapter;
 
-import android.support.annotation.IntDef;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -11,12 +10,6 @@ import com.icourt.alpha.adapter.baseadapter.BaseArrayRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.entity.bean.GroupEntity;
 import com.icourt.alpha.utils.IMUtils;
-
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-
-import static com.icourt.alpha.activity.GroupListActivity.GROUP_TYPE_MY_JOIN;
-import static com.icourt.alpha.activity.GroupListActivity.GROUP_TYPE_TYPE_ALL;
 
 /**
  * Description
@@ -49,6 +42,7 @@ public class GroupAdapter extends BaseArrayRecyclerAdapter<GroupEntity> implemen
     @Override
     public void onItemClick(BaseRecyclerAdapter adapter, ViewHolder holder, View view, int position) {
         GroupEntity item = getItem(getRealPos(position));
-        GroupDetailActivity.launch(view.getContext(), item);
+        if (item == null) return;
+        GroupDetailActivity.launchTEAM(view.getContext(), item.id, item.tid);
     }
 }

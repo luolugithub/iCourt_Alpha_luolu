@@ -189,6 +189,7 @@ public interface AlphaApiService {
      * @return
      */
     @GET("api/v2/chat/group/isStarred")
+    @Deprecated
     Call<ResEntity<Integer>> isGroupSetTop(@Query("groupId") String groupId);
 
     /**
@@ -210,6 +211,7 @@ public interface AlphaApiService {
      */
     @POST("api/v2/chat/group/setStarred")
     @FormUrlEncoded
+    @Deprecated
     Call<ResEntity<List<SetTopEntity>>> setGroupTop(@Field("groupId") String groupId);
 
 
@@ -230,6 +232,7 @@ public interface AlphaApiService {
      */
     @POST("api/v2/chat/group/setNoDisturbing")
     @FormUrlEncoded
+    @Deprecated
     Call<ResEntity<Integer>> setNoDisturbing(@Field("groupId") String groupId);
 
 
@@ -497,7 +500,7 @@ public interface AlphaApiService {
      * @return
      */
     @POST("http://10.25.115.31:8083/ilaw/api/v3/im/msgs")
-    Call<ResEntity<JsonElement>> msgAdd(@Body RequestBody msg);
+    Call<ResEntity<Boolean>> msgAdd(@Body RequestBody msg);
 
     /**
      * 收藏 消息
@@ -536,6 +539,17 @@ public interface AlphaApiService {
                                                           @Query("to") String to);
 
     /**
+     * 获取所有钉的消息id
+     *
+     * @param ope
+     * @param to
+     * @return
+     */
+    @GET("http://10.25.115.31:8083/ilaw/api/v3/im/msgs/pins/ids")
+    Call<ResEntity<List<String>>> msgQueryAllDingIds(@Query("ope") @Const.CHAT_TYPE int ope,
+                                                     @Query("to") String to);
+
+    /**
      * 撤回 消息
      * 文档地址:https://www.showdoc.cc/1620156?page_id=14893618
      *
@@ -554,6 +568,64 @@ public interface AlphaApiService {
      */
     @GET("http://10.25.115.31:8083/ilaw/api/v3/im/users")
     Call<ResEntity<List<GroupContactBean>>> usersQuery();
+
+    /**
+     * 获取置顶的会话ids
+     * 文档地址:https://www.showdoc.cc/1620156?page_id=14902507
+     *
+     * @return
+     */
+    @GET("http://10.25.115.31:8083/ilaw/api/v3/im/chats/sticks/ids")
+    Call<ResEntity<List<String>>> setTopQueryAllIds();
+
+    /**
+     * 会话置顶
+     *
+     * @param ope
+     * @param to
+     * @return
+     */
+    @POST("http://10.25.115.31:8083/ilaw/api/v3/im/chats/sticks")
+    @FormUrlEncoded
+    Call<ResEntity<Boolean>> sessionSetTop(@Field("ope") @Const.CHAT_TYPE int ope,
+                                           @Field("to") String to);
+
+    /**
+     * 会话取消置顶
+     * 文档地址:https://www.showdoc.cc/1620156?page_id=14902507
+     *
+     * @param ope
+     * @param to
+     * @return
+     */
+    @DELETE("http://10.25.115.31:8083/ilaw/api/v3/im/chats/sticks")
+    Call<ResEntity<Boolean>> sessionSetTopCancel(@Query("ope") @Const.CHAT_TYPE int ope,
+                                                 @Query("to") String to);
+
+    /**
+     * 会话免打扰
+     * 文档地址:https://www.showdoc.cc/1620156?page_id=14902507
+     *
+     * @param ope
+     * @param to
+     * @return
+     */
+    @POST("http://10.25.115.31:8083/ilaw/api/v3/im/chats/nodisturbing")
+    @FormUrlEncoded
+    Call<ResEntity<Boolean>> sessionNoDisturbing(@Const.CHAT_TYPE @Field("ope") int ope,
+                                                 @Field("to") String to);
+
+    /**
+     * 取消会话免打扰
+     * 文档地址:https://www.showdoc.cc/1620156?page_id=14902507
+     *
+     * @param ope
+     * @param to
+     * @return
+     */
+    @DELETE("http://10.25.115.31:8083/ilaw/api/v3/im/chats/nodisturbing")
+    Call<ResEntity<Boolean>> sessionNoDisturbingCancel(@Query("ope") @Const.CHAT_TYPE int ope,
+                                                       @Query("to") String to);
 
     /**
      * 群组文件上传
@@ -584,7 +656,7 @@ public interface AlphaApiService {
     @GET("api/v1/matters")
     Call<ResEntity<List<ProjectEntity>>> projectQueryAll(@Query("pageindex") int pageindex,
                                                          @Query("pagesize") int pagesize,
-                                                         @Query("orderby")  String orderby,
+                                                         @Query("orderby") String orderby,
                                                          @Query("ordertype") String ordertype,
                                                          @Query("status") String status,
                                                          @Query("matterType") String matterType,
