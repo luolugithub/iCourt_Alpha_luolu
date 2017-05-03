@@ -8,6 +8,7 @@ import java.util.List;
  * author  youxuan  E-mail:xuanyouwu@163.com
  * date createTime：2017/4/12
  * version 1.0.0
+ * {@link IMMessageCustomBody}
  */
 @Deprecated
 public class IMBodyEntity extends FileInfoEntity {

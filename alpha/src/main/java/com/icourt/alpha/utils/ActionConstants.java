@@ -106,14 +106,23 @@ public class ActionConstants {
     public static final int PROJECT_STATUS_SHELVED = 7;//已搁置
 
     //消息类型
+    @Deprecated
     public static final int IM_MESSAGE_TEXT_SHOWTYPE = 0;//文本消息
+    @Deprecated
     public static final int IM_MESSAGE_FILE_SHOWTYPE = 1;//文件消息
+    @Deprecated
     public static final int IM_MESSAGE_PIN_SHOWTYPE = 2;//钉消息
+    @Deprecated
     public static final int IM_MESSAGE_AT_SHOWTYPE = 3;//@消息
+    @Deprecated
     public static final int IM_MESSAGE_NEW_GROUP_SHOWTYPE = 5;//web端新建讨论组头部信息
+    @Deprecated
     public static final int IM_MESSAGE_SYSTEM_SHOWTYPE = 6;//通知消息
+    @Deprecated
     public static final int IM_MESSAGE_CONTACT_UPDATE_SHOWTYPE = 100;//联系人更新通知
+    @Deprecated
     public static final int IM_MESSAGE_SET_TOP_SHOWTYPE = 101;//设置置顶通知
+    @Deprecated
     public static final int IM_MESSAGE_LEAVE_GROUP_SHOWTYPE = 102;//离开讨论组通知
 
     public static final int START_GROUPMEMBERS_ACTIVITY_REQUEST_CODE = 1;//at选择讨论组成员requestcode

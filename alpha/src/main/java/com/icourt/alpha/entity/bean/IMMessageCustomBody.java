@@ -15,12 +15,12 @@ import java.util.UUID;
 public class IMMessageCustomBody {
     public static final String PLATFORM_ANDROID = "ANDROID";
     public String id;
-    public String name;
-    public String from;
+    public String name;// 发送人名字,
+    public String from;//发送人id,
     public String to;
 
     @Const.CHAT_TYPE
-    private int ope;            //0点对点，1群聊
+    public int ope;            //0点对点，1群聊
 
     @Const.MSG_TYPE
     public int show_type;

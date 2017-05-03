@@ -39,7 +39,7 @@ public class GroupMemberActionAdapter extends MultiSelectRecyclerAdapter<GroupCo
             } else if (!isSelectable() && ctv_contact.getVisibility() != View.GONE) {
                 ctv_contact.setVisibility(View.GONE);
             }
-            ctv_contact.setSelected(selected);
+            ctv_contact.setBackgroundResource(selected ? R.mipmap.checkmark : 0);
         }
     }
 }

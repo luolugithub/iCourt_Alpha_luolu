@@ -11,11 +11,11 @@ import android.widget.TextView;
 
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.baseadapter.BaseArrayRecyclerAdapter;
+import com.icourt.alpha.constants.Const;
 import com.icourt.alpha.constants.RecentContactExtConfig;
 import com.icourt.alpha.entity.bean.AlphaUserInfo;
-import com.icourt.alpha.entity.bean.AtEntity;
 import com.icourt.alpha.entity.bean.HelperNotification;
-import com.icourt.alpha.entity.bean.IMBodyEntity;
+import com.icourt.alpha.entity.bean.IMMessageCustomBody;
 import com.icourt.alpha.entity.bean.IMSessionEntity;
 import com.icourt.alpha.utils.ActionConstants;
 import com.icourt.alpha.utils.DateUtils;
@@ -29,6 +29,9 @@ import com.netease.nimlib.sdk.msg.model.RecentContact;
 
 import q.rorbin.badgeview.Badge;
 import q.rorbin.badgeview.QBadgeView;
+
+import static com.icourt.alpha.constants.Const.CHAT_TYPE_P2P;
+import static com.icourt.alpha.constants.Const.CHAT_TYPE_TEAM;
 
 /**
  * Description 消息通知回话列表
@@ -166,23 +169,22 @@ public class IMSessionAdapter extends BaseArrayRecyclerAdapter<IMSessionEntity> 
     public void setSessionIcon(IMSessionEntity imSessionEntity, ImageView ivSessionIcon) {
         if (ivSessionIcon == null) return;
         if (imSessionEntity == null) return;
-        if (imSessionEntity.recentContact == null) return;
-        //头像
-        if (imSessionEntity.recentContact.getSessionType() == SessionTypeEnum.P2P) {//单聊
-            String iconUrl = null;
-            if (imSessionEntity.contactBean != null) {
-                iconUrl = imSessionEntity.contactBean.pic;
-            } else if (TextUtils.isEmpty(iconUrl) && imSessionEntity.customIMBody != null) {
-                iconUrl = imSessionEntity.customIMBody.pic;
-            }
-            if (GlideUtils.canLoadImage(ivSessionIcon.getContext())) {
-                GlideUtils.loadUser(ivSessionIcon.getContext(), iconUrl, ivSessionIcon);
-            }
-        } else if (imSessionEntity.recentContact.getSessionType() == SessionTypeEnum.Team) //群聊
-        {
-            if (imSessionEntity.team != null) {
-                setTeamIcon(imSessionEntity.team.getName(), ivSessionIcon);
-            }
+        if (imSessionEntity.customIMBody == null) return;
+        switch (imSessionEntity.customIMBody.ope) {
+            case CHAT_TYPE_P2P:
+                String iconUrl = null;
+                if (imSessionEntity.contactBean != null) {
+                    iconUrl = imSessionEntity.contactBean.pic;
+                }
+                if (GlideUtils.canLoadImage(ivSessionIcon.getContext())) {
+                    GlideUtils.loadUser(ivSessionIcon.getContext(), iconUrl, ivSessionIcon);
+                }
+                break;
+            case CHAT_TYPE_TEAM:
+                if (imSessionEntity.team != null) {
+                    setTeamIcon(imSessionEntity.team.getName(), ivSessionIcon);
+                }
+                break;
         }
     }
 
@@ -207,18 +209,22 @@ public class IMSessionAdapter extends BaseArrayRecyclerAdapter<IMSessionEntity> 
     public void setSessionTitle(IMSessionEntity imSessionEntity, TextView tvSessionTitle) {
         if (tvSessionTitle == null) return;
         if (imSessionEntity == null) return;
-        if (imSessionEntity.recentContact == null) return;
-        if (imSessionEntity.recentContact.getSessionType() == SessionTypeEnum.P2P) {
-            if (imSessionEntity.contactBean != null) {
-                tvSessionTitle.setText(imSessionEntity.contactBean.name);
-            } else if (imSessionEntity.customIMBody != null) {
-                tvSessionTitle.setText(imSessionEntity.customIMBody.name);
-            }
-        } else if (imSessionEntity.recentContact.getSessionType() == SessionTypeEnum.Team) //群聊
-        {
-            if (imSessionEntity.team != null) {
-                tvSessionTitle.setText(imSessionEntity.team.getName());
-            }
+        if (imSessionEntity.customIMBody == null) return;
+        switch (imSessionEntity.customIMBody.ope) {
+            case CHAT_TYPE_P2P:
+                if (imSessionEntity.contactBean != null) {
+                    tvSessionTitle.setText(imSessionEntity.contactBean.name);
+                } else {
+                    tvSessionTitle.setText("用户或被移除");
+                }
+                break;
+            case CHAT_TYPE_TEAM:
+                if (imSessionEntity.team != null) {
+                    tvSessionTitle.setText(imSessionEntity.team.getName());
+                } else {
+                    tvSessionTitle.setText("TEAM信息未查询到");
+                }
+                break;
         }
     }
 
@@ -231,133 +237,78 @@ public class IMSessionAdapter extends BaseArrayRecyclerAdapter<IMSessionEntity> 
      */
     private void setItemData(IMSessionEntity imSessionEntity, TextView tvSessionContent) {
         if (imSessionEntity == null) return;
-        //内容
-        if (tvSessionContent != null) {
-            if (imSessionEntity.customIMBody != null) {
-                switch (imSessionEntity.customIMBody.show_type) {
-                    case ActionConstants.IM_MESSAGE_FILE_SHOWTYPE:
-                        tvSessionContent.setText(IMUtils.isPIC(imSessionEntity.customIMBody.fileName) ? "[ 图片 ]" : "[ 文件 ]");
-                        break;
-                    case ActionConstants.IM_MESSAGE_PIN_SHOWTYPE:
-                        if (imSessionEntity.recentContact != null) {
-                            if (imSessionEntity.recentContact.getSessionType() == SessionTypeEnum.P2P) {
-                                setDingViewP2P(imSessionEntity.customIMBody, tvSessionContent);
-                            } else if (imSessionEntity.recentContact.getSessionType() == SessionTypeEnum.Team) {
-                                setDingViewTeam(imSessionEntity.customIMBody, tvSessionContent);
-                            }
-                        }
-                        break;
-                    case ActionConstants.IM_MESSAGE_AT_SHOWTYPE:
-                        setAtViewState(imSessionEntity, tvSessionContent);
-                        break;
-                    case ActionConstants.IM_MESSAGE_TEXT_SHOWTYPE:
-                    case ActionConstants.IM_MESSAGE_SYSTEM_SHOWTYPE:
-                    default:
-                        tvSessionContent.setText(imSessionEntity.customIMBody.content);
-                        break;
-                }
-            }
-        }
-    }
-
-
-    /**
-     * 设置@显示
-     *
-     * @param imSessionEntity
-     * @param tvSessionContent
-     */
-    private void setAtViewState(IMSessionEntity imSessionEntity, TextView tvSessionContent) {
-        if (imSessionEntity == null) return;
-        if (tvSessionContent == null) return;
         if (imSessionEntity.customIMBody == null) return;
-        if (isShowAtMe(imSessionEntity)) {
-            int color = 0xFFed6c00;
-            String targetText = tvSessionContent.getResources().getString(R.string.message_have_at_me_text);
-            CharSequence originalText = targetText + imSessionEntity.customIMBody.content;
-            SpannableUtils.setTextForegroundColorSpan(tvSessionContent, originalText, targetText, color);
-        } else {
-            tvSessionContent.setText(imSessionEntity.customIMBody.content);
-        }
-    }
-
-    /**
-     * 是否展示 "[有人@了你]"  @所有人 也展示"[有人@了你]"
-     */
-    private boolean isShowAtMe(IMSessionEntity imSessionEntity) {
-        if (imSessionEntity != null
-                && imSessionEntity.recentContact != null
-                && imSessionEntity.recentContact.getUnreadCount() > 0) {
-            if (imSessionEntity.customIMBody != null) {
-                if (imSessionEntity.customIMBody.atAll == 1)//@所有人
-                {
-                    return true;
-                } else if (imSessionEntity.customIMBody.atAll == 0) //单个@ ===>检查是否是@me
-                {
-                    if (imSessionEntity.customIMBody.atBeanList != null) {
-                        for (AtEntity atEntity : imSessionEntity.customIMBody.atBeanList) {
-                            if (atEntity == null) continue;
-                            if (TextUtils.equals(atEntity.userId, getLoginUserId())) {
-                                return true;
+        if (tvSessionContent == null) return;
+        IMMessageCustomBody customIMBody = imSessionEntity.customIMBody;
+        //内容
+        switch (customIMBody.show_type) {
+            case Const.MSG_TYPE_TXT:    //文本消息
+                tvSessionContent.setText(customIMBody.content);
+                break;
+            case Const.MSG_TYPE_FILE:     //文件消息
+                if (customIMBody.ext != null) {
+                    tvSessionContent.setText(IMUtils.isPIC(imSessionEntity.customIMBody.ext.path) ? "[ 图片 ]" : "[ 文件 ]");
+                } else {
+                    tvSessionContent.setText("[ 文件 ]");
+                }
+                break;
+            case Const.MSG_TYPE_DING:   //钉消息
+                if (customIMBody.ext != null) {
+                    StringBuilder dingStringBuilder = new StringBuilder();
+                    switch (customIMBody.ope) {
+                        case CHAT_TYPE_P2P:
+                            break;
+                        case CHAT_TYPE_TEAM:
+                            if (!TextUtils.isEmpty(customIMBody.ext.name)) {
+                                dingStringBuilder.append(customIMBody.ext.name + " : ");
                             }
-                        }
+                            break;
                     }
-
-                }
-            }
-
-        }
-        return false;
-    }
-
-    /**
-     * 设置钉的状态 群聊
-     *
-     * @param imBodyEntity
-     * @param tvSessionContent
-     */
-    private void setDingViewTeam(IMBodyEntity imBodyEntity, TextView tvSessionContent) {
-        if (imBodyEntity == null) return;
-        if (imBodyEntity.pinMsg == null) return;
-        if (tvSessionContent == null) return;
-        switch (imBodyEntity.pinMsg.isPining) {
-            case 0:
-                if (TextUtils.equals(getLoginUserName(), imBodyEntity.name)) {
-                    tvSessionContent.setText(tvSessionContent.getResources().getString(R.string.message_cancle_ding_one_msg_text));
+                    dingStringBuilder.append(customIMBody.content);
+                    tvSessionContent.setText(dingStringBuilder.toString());
                 } else {
-                    tvSessionContent.setText(imBodyEntity.name + ": " + tvSessionContent.getResources().getString(R.string.message_cancle_ding_one_msg_text));
+                    tvSessionContent.setText("钉消息ext null");
                 }
                 break;
-            case 1:
-                if (TextUtils.equals(getLoginUserName(), imBodyEntity.name)) {
-                    tvSessionContent.setText(tvSessionContent.getResources().getString(R.string.message_ding_one_msg_text));
+            case Const.MSG_TYPE_AT://@消息
+                if (customIMBody.ext != null) {
+                    int color = 0xFFed6c00;
+                    if (customIMBody.ext.is_all) {
+                        tvSessionContent.setText("有人@了你");
+                        SpannableUtils.setTextForegroundColorSpan(tvSessionContent, "有人@了你", "有人@了你", color);
+                    } else if (customIMBody.ext.users != null && customIMBody.ext.users.contains(getLoginUserId())) {
+                        tvSessionContent.setText("有人@了你");
+                        SpannableUtils.setTextForegroundColorSpan(tvSessionContent, "有人@了你", "有人@了你", color);
+                    } else {
+                        tvSessionContent.setText(String.format("%s : %s", customIMBody.from, customIMBody.content));
+                    }
                 } else {
-                    tvSessionContent.setText(imBodyEntity.name + ": " + tvSessionContent.getResources().getString(R.string.message_ding_one_msg_text));
+                    tvSessionContent.setText("@消息ext null");
                 }
                 break;
+            case Const.MSG_TYPE_SYS:     //系统辅助消息
+                if (customIMBody.ext != null) {
+                    tvSessionContent.setText(customIMBody.ext.content);
+                } else {
+                    tvSessionContent.setText("sys消息ext null");
+                }
+                break;
+            case Const.MSG_TYPE_LINK://链接消息
+                if (customIMBody.ext != null) {
+                    tvSessionContent.setText(customIMBody.ext.url);
+                } else {
+                    tvSessionContent.setText("link消息ext null");
+                }
+                break;
+            case Const.MSG_TYPE_ALPHA:   //alpha系统内业务消息 2.0.0暂时不处理
+                tvSessionContent.setText("alpha系统内业务消息 2.0.0不支持");
+                break;
+            case Const.MSG_TYPE_VOICE:   //alpha语音消息 2.0.0暂时不处理
+                tvSessionContent.setText("alpha语音消息 2.0.0不支持");
+                break;
         }
     }
 
-
-    /**
-     * 设置钉的状态 单聊
-     *
-     * @param imBodyEntity
-     * @param tvSessionContent
-     */
-    private void setDingViewP2P(IMBodyEntity imBodyEntity, TextView tvSessionContent) {
-        if (imBodyEntity == null) return;
-        if (imBodyEntity.pinMsg == null) return;
-        if (tvSessionContent == null) return;
-        switch (imBodyEntity.pinMsg.isPining) {
-            case 0:
-                tvSessionContent.setText(tvSessionContent.getResources().getString(R.string.message_cancle_ding_one_msg_text));
-                break;
-            case 1:
-                tvSessionContent.setText(tvSessionContent.getResources().getString(R.string.message_ding_one_msg_text));
-                break;
-        }
-    }
 
     /**
      * 初始化附件 主要是机器人

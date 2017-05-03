@@ -15,6 +15,7 @@ import android.view.ViewGroup;
 import com.andview.refreshview.XRefreshView;
 import com.google.gson.JsonParseException;
 import com.icourt.alpha.R;
+import com.icourt.alpha.activity.ChatActivity;
 import com.icourt.alpha.adapter.IMSessionAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.HeaderFooterAdapter;
@@ -24,7 +25,7 @@ import com.icourt.alpha.db.dbmodel.ContactDbModel;
 import com.icourt.alpha.db.dbservice.ContactDbService;
 import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.icourt.alpha.entity.bean.GroupContactBean;
-import com.icourt.alpha.entity.bean.IMBodyEntity;
+import com.icourt.alpha.entity.bean.IMMessageCustomBody;
 import com.icourt.alpha.entity.bean.IMSessionDontDisturbEntity;
 import com.icourt.alpha.entity.bean.IMSessionEntity;
 import com.icourt.alpha.entity.bean.SetTopEntity;
@@ -69,6 +70,9 @@ import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
 import retrofit2.Call;
 import retrofit2.Response;
+
+import static com.icourt.alpha.constants.Const.CHAT_TYPE_P2P;
+import static com.icourt.alpha.constants.Const.CHAT_TYPE_TEAM;
 
 /**
  * Description  会话列表
@@ -125,6 +129,7 @@ public class MessageListFragment extends BaseFragment
         linearLayoutManager.setStackFromEnd(true);
         recyclerView.setLayoutManager(linearLayoutManager);
         headerFooterAdapter = new HeaderFooterAdapter<IMSessionAdapter>(imSessionAdapter = new IMSessionAdapter());
+        imSessionAdapter.setOnItemClickListener(this);
         headerFooterAdapter.addHeader(HeaderFooterAdapter.inflaterView(getContext(), R.layout.header_search_comm, recyclerView));
         recyclerView.setAdapter(headerFooterAdapter);
         imSessionAdapter.setOnItemClickListener(this);
@@ -240,10 +245,10 @@ public class MessageListFragment extends BaseFragment
                         }
                     }
                     //解析自定义的消息体
-                    IMBodyEntity customIMBody = null;
+                    IMMessageCustomBody customIMBody = null;
                     if (!TextUtils.isEmpty(recentContact.getContent())) {
                         try {
-                            customIMBody = JsonUtils.Gson2Bean(recentContact.getContent(), IMBodyEntity.class);
+                            customIMBody = JsonUtils.Gson2Bean(recentContact.getContent(), IMMessageCustomBody.class);
                         } catch (JsonParseException ex) {
                             ex.printStackTrace();
                         }
@@ -256,7 +261,8 @@ public class MessageListFragment extends BaseFragment
                 e.onNext(imSessionEntities);
                 e.onComplete();
             }
-        }).subscribeOn(Schedulers.newThread())
+        }).compose(this.<List<IMSessionEntity>>bindToLifecycle()).
+                subscribeOn(Schedulers.newThread())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Consumer<List<IMSessionEntity>>() {
                     @Override
@@ -328,12 +334,30 @@ public class MessageListFragment extends BaseFragment
 
     @Override
     public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
-        IMSessionEntity data = imSessionAdapter.getData(position - headerFooterAdapter.getHeaderCount());
+        IMSessionEntity data = imSessionAdapter.getData(adapter.getRealPos(position));
+        if (data != null && data.customIMBody != null) {
+            switch (data.customIMBody.ope) {
+                case CHAT_TYPE_P2P:
+                    ChatActivity.launchP2P(getActivity(),
+                            data.recentContact.getContactId(),
+                            data.customIMBody.name);
+                    break;
+                case CHAT_TYPE_TEAM:
+                    if (data.recentContact != null)
+                        ChatActivity.launchTEAM(getActivity(),
+                                data.recentContact.getContactId(),
+                                "",
+                                data.team.getName());
+                    break;
+            }
+        }
+
         log("--------->data:" + data);
         if (data != null) {
             LogUtils.logObject("-------->contact:", data.recentContact);
             LogUtils.logObject("-------->team:", data.team);
         }
+
     }
 
 

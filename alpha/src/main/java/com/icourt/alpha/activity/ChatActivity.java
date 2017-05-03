@@ -157,7 +157,7 @@ public class ChatActivity extends ChatBaseActivity {
      * @param uid
      * @param title
      */
-    public static void launchP2P(@NonNull Context context, @NonNull String uid, String title) {
+    public static final void launchP2P(@NonNull Context context, @NonNull String uid, String title) {
         if (context == null) return;
         if (TextUtils.isEmpty(uid)) return;
         Intent intent = new Intent(context, ChatActivity.class);
