@@ -12,6 +12,7 @@ import com.icourt.alpha.entity.bean.GroupMemberEntity;
 import com.icourt.alpha.entity.bean.IMMessageCustomBody;
 import com.icourt.alpha.entity.bean.IMSessionDontDisturbEntity;
 import com.icourt.alpha.entity.bean.LoginIMToken;
+import com.icourt.alpha.entity.bean.MsgConvert2Task;
 import com.icourt.alpha.entity.bean.PageEntity;
 import com.icourt.alpha.entity.bean.ProjectEntity;
 import com.icourt.alpha.entity.bean.SearchEngineEntity;
@@ -558,6 +559,17 @@ public interface AlphaApiService {
      */
     @DELETE("http://10.25.115.31:8083/ilaw/api/v3/im/msgs/{msgId}")
     Call<ResEntity<JsonElement>> msgRevoke(@Path("msgId") String msgId);
+
+
+    /**
+     * 消息转任务
+     *
+     * @param content
+     * @return
+     */
+    @POST("api/v2/chat/msg/analysisTask")
+    @FormUrlEncoded
+    Call<ResEntity<MsgConvert2Task>> msgConvert2Task(@Field("content") String content);
 
 
     /**

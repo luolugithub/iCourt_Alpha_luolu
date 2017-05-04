@@ -24,6 +24,7 @@ import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.icourt.alpha.entity.bean.IMCustomerMessageEntity;
 import com.icourt.alpha.entity.bean.IMMessageCustomBody;
+import com.icourt.alpha.entity.bean.MsgConvert2Task;
 import com.icourt.alpha.http.RetrofitServiceFactory;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
@@ -575,6 +576,10 @@ public abstract class ChatBaseActivity extends BaseActivity implements INIMessag
                 case MSG_TYPE_SYS:
                     break;
                 case MSG_TYPE_LINK:
+                    menuItems.clear();
+                    menuItems.addAll(Arrays.asList(
+                            isCollected(imCustomerMessageEntity.customIMBody.id) ? "取消收藏" : "收藏"
+                            , "转任务"));
                     break;
                 case MSG_TYPE_ALPHA://暂时不用处理
                     break;
@@ -644,7 +649,7 @@ public abstract class ChatBaseActivity extends BaseActivity implements INIMessag
                         } else if (TextUtils.equals(actionName, "取消收藏")) {
                             msgActionCollectCancel(customIMBody.id);
                         } else if (TextUtils.equals(actionName, "转任务")) {
-                            msgActionConver2Task(customIMBody);
+                            msgActionConvert2Task(customIMBody);
                         } else if (TextUtils.equals(actionName, "撤回")) {
                             msgActionRevoke(customIMBody.id);
                         }
@@ -657,8 +662,42 @@ public abstract class ChatBaseActivity extends BaseActivity implements INIMessag
      *
      * @param customIMBody
      */
-    protected final void msgActionConver2Task(IMMessageCustomBody customIMBody) {
-        //TODO 转任务
+    protected final void msgActionConvert2Task(IMMessageCustomBody customIMBody) {
+        if (customIMBody == null) return;
+        String textContent = "";
+        if (customIMBody.show_type == MSG_TYPE_DING) {
+            if (customIMBody.ext != null) {
+                textContent = customIMBody.ext.content;
+            }
+        } else {
+            textContent = customIMBody.content;
+        }
+        if (TextUtils.isEmpty(textContent)) return;
+        final String textContentFinal = textContent;
+        showLoadingDialog(null);
+        getApi().msgConvert2Task(textContentFinal)
+                .enqueue(new SimpleCallBack<MsgConvert2Task>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<MsgConvert2Task>> call, Response<ResEntity<MsgConvert2Task>> response) {
+                        dismissLoadingDialog();
+                        if (response.body().result != null) {
+                            TaskCreateActivity.launch(getContext(),
+                                    response.body().result.content,
+                                    response.body().result.startTime);
+                        } else {
+                            TaskCreateActivity.launch(getContext(),
+                                    textContentFinal, null);
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<ResEntity<MsgConvert2Task>> call, Throwable t) {
+                        super.onFailure(call, t);
+                        dismissLoadingDialog();
+                        TaskCreateActivity.launch(getContext(),
+                                textContentFinal, null);
+                    }
+                });
     }
 
 
