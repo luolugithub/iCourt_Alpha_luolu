@@ -1,12 +1,32 @@
 package com.icourt;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 public class MyClass {
 
     public static final String NAME = "name_%s";
-
+    private static Comparator<Long> longComparator = new Comparator<Long>() {
+        @Override
+        public int compare(Long o1, Long o2) {
+            if (o1 != null && o2 != null) {
+                return o1.compareTo(o2);
+            }
+            return 0;
+        }
+    };
+    private static Comparator<Long> longComparator2 = new Comparator<Long>() {
+        @Override
+        public int compare(Long o1, Long o2) {
+            if (o1 != null && o2 != null) {
+                return o2.compareTo(o1);
+            }
+            return 0;
+        }
+    };
     public static void main(String[] args) throws Exception {
 
         System.out.println("name hash:" + NAME.hashCode());
@@ -24,12 +44,17 @@ public class MyClass {
         System.out.println("isPic4:" + isPIC("http://"));
         System.out.println("isPic4:" + isPIC("http://.q"));
 
-        Boolean b1 = null;
-        if (b1) {//java.lang.NullPointerException
-            log("-------->b:" + b1);
-        } else {
-            log("-------->b2:" + b1);
-        }
+
+        List<Long> list=new ArrayList<>();
+        list.add(3L);
+        list.add(1L);
+        list.add(4L);
+        list.add(2L);
+        log("------list:"+list);
+        Collections.sort(list,longComparator);
+        log("------list2:"+list);
+        Collections.sort(list,longComparator2);
+        log("------list3:"+list);
 
     }
 

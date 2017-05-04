@@ -1,6 +1,7 @@
 package com.icourt.alpha.entity.bean;
 
 import com.icourt.alpha.constants.Const;
+import com.icourt.alpha.widget.comparators.ILongFieldEntity;
 
 import java.util.List;
 import java.util.UUID;
@@ -12,7 +13,7 @@ import java.util.UUID;
  * date createTime：2017/4/28
  * version 1.0.0
  */
-public class IMMessageCustomBody {
+public class IMMessageCustomBody implements ILongFieldEntity {
     public static final String PLATFORM_ANDROID = "ANDROID";
     public String id;
     public String name;// 发送人名字,
@@ -143,5 +144,10 @@ public class IMMessageCustomBody {
                 PLATFORM_ANDROID);
         imMessageCustomBody.ext = IMMessageExtBody.createDingExtBody(isDing, dingMsgId);
         return imMessageCustomBody;
+    }
+
+    @Override
+    public Long getCompareLongField() {
+        return send_time;
     }
 }

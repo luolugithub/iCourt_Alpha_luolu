@@ -198,10 +198,10 @@ public class GroupListActivity extends BaseActivity implements BaseRecyclerAdapt
         final Call<ResEntity<List<GroupEntity>>> groupsCall;
         switch (getGroupQueryType()) {
             case GROUP_TYPE_MY_JOIN:
-                groupsCall = getApi().groupsQuery(0, false);
+                groupsCall = getApi().groupsQueryJoind(0, true);
                 break;
             default:
-                groupsCall = getApi().groupsQueryAll();
+                groupsCall = getApi().groupsQuery(0, true);
                 break;
         }
         groupsCall.enqueue(new SimpleCallBack<List<GroupEntity>>() {
@@ -288,7 +288,7 @@ public class GroupListActivity extends BaseActivity implements BaseRecyclerAdapt
                                     item.id,
                                     item.name);
                         } else {
-                            GroupDetailActivity.launchTEAM(getContext(), item.id,item.tid);
+                            GroupDetailActivity.launchTEAM(getContext(), item.id, item.tid);
                         }
                         break;
                 }

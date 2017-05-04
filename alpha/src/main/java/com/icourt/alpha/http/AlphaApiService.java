@@ -431,12 +431,40 @@ public interface AlphaApiService {
      *
      * @param run_status 0：正常 1：归档 ，不传为所有
      * @param is_private true: 公开；false:私密 ，不传为所有
+     * @param joined     true: 加入的；false:未加入的 ，不传为已加入的和未加入公开的
      * @return
      */
     @GET("http://10.25.115.31:8083/ilaw/api/v3/im/groups")
     Call<ResEntity<List<GroupEntity>>> groupsQuery(@Query("run_status") int run_status,
-                                                   @Query("is_private") boolean is_private);
+                                                   @Query("is_private") boolean is_private,
+                                                   @Query("joined") boolean joined
+    );
 
+    /**
+     * 获取群组
+     * 文档地址:https://www.showdoc.cc/1620156?page_id=14892528
+     *
+     * @param run_status 0：正常 1：归档 ，不传为所有
+     * @param is_private true: 公开；false:私密 ，不传为所有
+     * @return
+     */
+    @GET("http://10.25.115.31:8083/ilaw/api/v3/im/groups")
+    Call<ResEntity<List<GroupEntity>>> groupsQuery(@Query("run_status") int run_status,
+                                                   @Query("is_private") boolean is_private
+    );
+
+    /**
+     * 获取我加入的群组
+     * 文档地址:https://www.showdoc.cc/1620156?page_id=14892528
+     *
+     * @param run_status
+     * @param joined
+     * @return
+     */
+    @GET("http://10.25.115.31:8083/ilaw/api/v3/im/groups")
+    Call<ResEntity<List<GroupEntity>>> groupsQueryJoind(@Query("run_status") int run_status,
+                                                        @Query("joined") boolean joined
+    );
 
     /**
      * 获取所有群组
@@ -572,6 +600,25 @@ public interface AlphaApiService {
     @FormUrlEncoded
     Call<ResEntity<MsgConvert2Task>> msgConvert2Task(@Field("content") String content);
 
+
+    /**
+     * 查询网络消息
+     * 文档地址:https://www.showdoc.cc/1620156?page_id=14893618
+     *
+     * @param type
+     * @param size
+     * @param mgs_id
+     * @param ope
+     * @param to
+     * @return
+     */
+    @GET("http://10.25.115.31:8083/ilaw/api/v3/im/msgs")
+    Call<ResEntity<List<IMMessageCustomBody>>> msgQueryAll(@Query("type") String type,
+                                                           @Query("size") int size,
+                                                           @Query("mgs_id") String mgs_id,
+                                                           @Query("ope") @Const.CHAT_TYPE int ope,
+                                                           @Query("to") String to
+    );
 
     /**
      * 查询所有联系人【客户端理解为联系人】

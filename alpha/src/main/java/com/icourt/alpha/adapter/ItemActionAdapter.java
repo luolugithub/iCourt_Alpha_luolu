@@ -28,7 +28,7 @@ public class ItemActionAdapter<T extends ItemsEntityImp> extends BaseArrayRecycl
         if (t == null) return;
         ImageView iv_icon = holder.obtainView(R.id.iv_icon);
         TextView tv_name = holder.obtainView(R.id.tv_name);
-        if (TextUtils.isEmpty(t.getItemIcon())) {
+        if (!TextUtils.isEmpty(t.getItemIcon())) {
             GlideUtils.loadUser(iv_icon.getContext(), t.getItemIcon(), iv_icon);
         } else {
             iv_icon.setImageResource(t.getItemIconRes());

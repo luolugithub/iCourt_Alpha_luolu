@@ -100,9 +100,8 @@ public class ContactListFragment extends BaseFragment implements BaseRecyclerAda
         headerRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         headerRecyclerView.setAdapter(itemsEntityItemActionAdapter = new ItemActionAdapter<ItemsEntity>());
         itemsEntityItemActionAdapter.setOnItemClickListener(this);
-        itemsEntityItemActionAdapter.bindData(true, Arrays.asList(new ItemsEntity("我加入的讨论组", R.mipmap.tab_message),
-                new ItemsEntity("所有讨论组", R.mipmap.tab_message),
-                new ItemsEntity("已归档讨论组", R.mipmap.tab_message)));
+        itemsEntityItemActionAdapter.bindData(true, Arrays.asList(new ItemsEntity("我加入的讨论组", R.mipmap.ic_members),
+                new ItemsEntity("所有讨论组", R.mipmap.ic_all_group)));
 
 
         headerView.findViewById(R.id.rl_comm_search).setOnClickListener(this);

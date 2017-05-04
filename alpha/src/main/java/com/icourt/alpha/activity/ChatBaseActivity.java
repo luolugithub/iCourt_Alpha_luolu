@@ -22,7 +22,6 @@ import com.icourt.alpha.db.dbmodel.ContactDbModel;
 import com.icourt.alpha.db.dbservice.ContactDbService;
 import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.icourt.alpha.entity.bean.GroupContactBean;
-import com.icourt.alpha.entity.bean.IMCustomerMessageEntity;
 import com.icourt.alpha.entity.bean.IMMessageCustomBody;
 import com.icourt.alpha.entity.bean.MsgConvert2Task;
 import com.icourt.alpha.http.RetrofitServiceFactory;
@@ -30,6 +29,7 @@ import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.INIMessageListener;
 import com.icourt.alpha.utils.JsonUtils;
+import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.utils.UrlUtils;
 import com.icourt.alpha.widget.dialog.AlertListDialog;
@@ -38,7 +38,6 @@ import com.netease.nimlib.sdk.NIMClient;
 import com.netease.nimlib.sdk.Observer;
 import com.netease.nimlib.sdk.msg.MsgService;
 import com.netease.nimlib.sdk.msg.MsgServiceObserve;
-import com.netease.nimlib.sdk.msg.constant.MsgDirectionEnum;
 import com.netease.nimlib.sdk.msg.model.IMMessage;
 import com.netease.nimlib.sdk.msg.model.MessageReceipt;
 import com.trello.rxlifecycle2.android.ActivityEvent;
@@ -502,15 +501,15 @@ public abstract class ChatBaseActivity extends BaseActivity implements INIMessag
      * @param param
      * @return
      */
-    protected final List<IMCustomerMessageEntity> convert2CustomerMessages(List<IMMessage> param) {
-        List<IMCustomerMessageEntity> customerMessageEntities = new ArrayList<>();
+    protected final List<IMMessageCustomBody> convert2CustomerMessages(List<IMMessage> param) {
+        List<IMMessageCustomBody> customerMessageEntities = new ArrayList<>();
         if (param != null) {
             for (IMMessage message : param) {
                 if (message != null) {
-                    IMCustomerMessageEntity customerMessageEntity = new IMCustomerMessageEntity();
-                    customerMessageEntity.imMessage = message;
-                    customerMessageEntity.customIMBody = getIMBody(message);
-                    customerMessageEntities.add(customerMessageEntity);
+                    IMMessageCustomBody imBody = getIMBody(message);
+                    if (imBody != null) {
+                        customerMessageEntities.add(imBody);
+                    }
                 }
             }
         }
@@ -534,43 +533,51 @@ public abstract class ChatBaseActivity extends BaseActivity implements INIMessag
         return imBodyEntity;
     }
 
+    /**
+     * 是否是发出的消息
+     *
+     * @param from
+     * @return
+     */
+    private boolean isSendMsg(String from) {
+        return StringUtils.equalsIgnoreCase(from, getLoadedLoginUserId(), false);
+    }
+
     @Override
     public void onItemLongClick(BaseRecyclerAdapter adapter, final BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
         if (adapter instanceof ChatAdapter) {
             ChatAdapter chatAdapter = (ChatAdapter) adapter;
-            final IMCustomerMessageEntity imCustomerMessageEntity = chatAdapter.getItem(position);
-            if (imCustomerMessageEntity == null) return;
-            if (imCustomerMessageEntity.imMessage == null) return;
-            if (imCustomerMessageEntity.customIMBody == null) return;
+            final IMMessageCustomBody iMMessageCustomBody = chatAdapter.getItem(position);
+            if (iMMessageCustomBody == null) return;
             final List<String> menuItems = new ArrayList<>();
-            switch (imCustomerMessageEntity.customIMBody.show_type) {
+            switch (iMMessageCustomBody.show_type) {
                 case MSG_TYPE_AT:
                 case MSG_TYPE_TXT:
                     menuItems.clear();
                     menuItems.addAll(Arrays.asList("复制",
-                            isDinged(imCustomerMessageEntity.customIMBody.id) ? "取消钉" : "钉",
-                            isCollected(imCustomerMessageEntity.customIMBody.id) ? "取消收藏" : "收藏",
+                            isDinged(iMMessageCustomBody.id) ? "取消钉" : "钉",
+                            isCollected(iMMessageCustomBody.id) ? "取消收藏" : "收藏",
                             "转任务"));
-                    if (imCustomerMessageEntity.imMessage.getDirect() == MsgDirectionEnum.Out
-                            && canRevokeMsg(imCustomerMessageEntity.imMessage.getTime())) {
+                    if (isSendMsg(iMMessageCustomBody.from)
+                            && canRevokeMsg(iMMessageCustomBody.send_time)) {
                         menuItems.add("撤回");
                     }
                     break;
                 case MSG_TYPE_FILE:
                     menuItems.clear();
                     menuItems.addAll(Arrays.asList(
-                            isDinged(imCustomerMessageEntity.customIMBody.id) ? "取消钉" : "钉",
-                            isCollected(imCustomerMessageEntity.customIMBody.id) ? "取消收藏" : "收藏",
+                            isDinged(iMMessageCustomBody.id) ? "取消钉" : "钉",
+                            isCollected(iMMessageCustomBody.id) ? "取消收藏" : "收藏",
                             "转任务"));
-                    if (imCustomerMessageEntity.imMessage.getDirect() == MsgDirectionEnum.Out
-                            && canRevokeMsg(imCustomerMessageEntity.imMessage.getTime())) {
+                    if (isSendMsg(iMMessageCustomBody.from)
+                            && canRevokeMsg(iMMessageCustomBody.send_time)) {
                         menuItems.add("撤回");
                     }
                     break;
                 case MSG_TYPE_DING://不能撤回 收藏的是钉的消息体,钉的消息[文本]可以转任务
                     menuItems.clear();
                     menuItems.addAll(Arrays.asList(
-                            isCollected(imCustomerMessageEntity.customIMBody.id) ? "取消收藏" : "收藏"
+                            isCollected(iMMessageCustomBody.id) ? "取消收藏" : "收藏"
                             , "转任务"));
                     break;
                 case MSG_TYPE_SYS:
@@ -578,7 +585,7 @@ public abstract class ChatBaseActivity extends BaseActivity implements INIMessag
                 case MSG_TYPE_LINK:
                     menuItems.clear();
                     menuItems.addAll(Arrays.asList(
-                            isCollected(imCustomerMessageEntity.customIMBody.id) ? "取消收藏" : "收藏"
+                            isCollected(iMMessageCustomBody.id) ? "取消收藏" : "收藏"
                             , "转任务"));
                     break;
                 case MSG_TYPE_ALPHA://暂时不用处理
@@ -586,7 +593,7 @@ public abstract class ChatBaseActivity extends BaseActivity implements INIMessag
                 case MSG_TYPE_VOICE://暂时不用处理
                     break;
             }
-            showMsgActionDialog(imCustomerMessageEntity.customIMBody, menuItems);
+            showMsgActionDialog(iMMessageCustomBody, menuItems);
         }
     }
 

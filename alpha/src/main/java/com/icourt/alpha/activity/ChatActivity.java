@@ -29,16 +29,18 @@ import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.ChatAdapter;
 import com.icourt.alpha.constants.Const;
 import com.icourt.alpha.entity.bean.GroupContactBean;
-import com.icourt.alpha.entity.bean.IMCustomerMessageEntity;
+import com.icourt.alpha.entity.bean.IMMessageCustomBody;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.callback.SimpleTextWatcher;
 import com.icourt.alpha.utils.IMUtils;
+import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.view.emoji.MySelectPhotoLayout;
 import com.icourt.alpha.view.emoji.MyXhsEmoticonsKeyBoard;
 import com.icourt.alpha.view.recyclerviewDivider.ChatItemDecoration;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
+import com.icourt.alpha.widget.comparators.LongFieldEntityComparator;
 import com.icourt.api.RequestUtils;
 import com.netease.nimlib.sdk.NIMClient;
 import com.netease.nimlib.sdk.RequestCallback;
@@ -575,7 +577,7 @@ public class ChatActivity extends ChatBaseActivity {
         linearLayoutManager = new LinearLayoutManager(getContext());
         recyclerView.setLayoutManager(linearLayoutManager);
         recyclerView.setHasFixedSize(true);
-        recyclerView.setAdapter(chatAdapter = new ChatAdapter(getLoadedLoginToken(), localContactList));
+        recyclerView.setAdapter(chatAdapter = new ChatAdapter(localContactList));
         chatAdapter.setOnItemLongClickListener(this);
         recyclerView.addItemDecoration(new ChatItemDecoration(getContext(), chatAdapter));
         refreshLayout.setXRefreshViewListener(new XRefreshView.SimpleXRefreshListener() {
@@ -648,13 +650,16 @@ public class ChatActivity extends ChatBaseActivity {
                 .setCallback(new RequestCallback<List<IMMessage>>() {
                     @Override
                     public void onSuccess(List<IMMessage> param) {
-                        chatAdapter.addItems(0, convert2CustomerMessages(param));
-                        if (param != null && param.size() > 0) {
+                        if (param == null || param.isEmpty()) {
+                            //本地为空从网络获取
+                            getMsgFromServer(isRefresh);
+                        } else {
+                            chatAdapter.addItems(0, convert2CustomerMessages(param));
                             pageIndex += 1;
-                        }
-                        stopRefresh();
-                        if (isRefresh) {
-                            scrollToBottom();
+                            stopRefresh();
+                            if (isRefresh) {
+                                scrollToBottom();
+                            }
                         }
                     }
 
@@ -673,6 +678,44 @@ public class ChatActivity extends ChatBaseActivity {
     }
 
     /**
+     * 获取服务器消息
+     */
+    private void getMsgFromServer(final boolean isRefresh) {
+        String type = "latest";
+        String msg_id = null;
+        if (chatAdapter.getItemCount() <= 0) {
+            type = "latest";
+        } else {
+            type = "pre";
+            IMMessageCustomBody item = chatAdapter.getItem(0);
+            if (item != null) {
+                msg_id = item.id;
+            }
+        }
+        getApi().msgQueryAll(type, 20, msg_id, getIMChatType(), getIMChatId())
+                .enqueue(new SimpleCallBack<List<IMMessageCustomBody>>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<List<IMMessageCustomBody>>> call, Response<ResEntity<List<IMMessageCustomBody>>> response) {
+                        if (response.body().result != null) {
+                            Collections.sort(response.body().result, new LongFieldEntityComparator<IMMessageCustomBody>(LongFieldEntityComparator.ORDER.ASC));
+                            chatAdapter.addItems(0, response.body().result);
+                            if (isRefresh) {
+                                scrollToBottom();
+                            }
+                        }
+                        stopRefresh();
+                    }
+
+                    @Override
+                    public void onFailure(Call<ResEntity<List<IMMessageCustomBody>>> call, Throwable t) {
+                        super.onFailure(call, t);
+                        stopRefresh();
+                    }
+                });
+
+    }
+
+    /**
      * 获取最后一条消息
      *
      * @return
@@ -681,12 +724,18 @@ public class ChatActivity extends ChatBaseActivity {
         switch (getIMChatType()) {
             case CHAT_TYPE_P2P:
                 if (chatAdapter.getItemCount() > 0) {
-                    return chatAdapter.getItem(0).imMessage;
+                    IMMessageCustomBody item = chatAdapter.getItem(0);
+                    if (item != null) {
+                        MessageBuilder.createEmptyMessage(getIMChatId(), SessionTypeEnum.P2P, item.send_time);
+                    }
                 }
                 return MessageBuilder.createEmptyMessage(getIMChatId(), SessionTypeEnum.P2P, 0);
             case CHAT_TYPE_TEAM:
                 if (chatAdapter.getItemCount() > 0) {
-                    return chatAdapter.getItem(0).imMessage;
+                    IMMessageCustomBody item = chatAdapter.getItem(0);
+                    if (item != null) {
+                        MessageBuilder.createEmptyMessage(getIMChatId(), SessionTypeEnum.P2P, item.send_time);
+                    }
                 }
                 return MessageBuilder.createEmptyMessage(getIMChatId(), SessionTypeEnum.Team, 0);
             default: {
@@ -707,15 +756,15 @@ public class ChatActivity extends ChatBaseActivity {
     @Override
     public void onMessageReceived(List<IMMessage> list) {
         log("----------------->onMessageReceived:" + list);
-        List<IMCustomerMessageEntity> customerMessageEntities = new ArrayList<>();
+        List<IMMessageCustomBody> customerMessageEntities = new ArrayList<>();
         for (IMMessage message : list) {
             IMUtils.logIMMessage("--------->message:", message);
             if (message != null
                     && isCurrentRoomSession(message.getSessionId())) {
-                IMCustomerMessageEntity customerMessageEntity = new IMCustomerMessageEntity();
-                customerMessageEntity.imMessage = message;
-                customerMessageEntity.customIMBody = getIMBody(message);
-                customerMessageEntities.add(customerMessageEntity);
+                IMMessageCustomBody imBody = getIMBody(message);
+                if (imBody != null) {
+                    customerMessageEntities.add(imBody);
+                }
             }
         }
         if (!customerMessageEntities.isEmpty()) {
@@ -743,20 +792,24 @@ public class ChatActivity extends ChatBaseActivity {
         log("----------------->onMessageRevoke:" + message);
         deleteMsgFromDb(message);
         if (isCurrentRoomSession(message.getSessionId())) {
-            removeFromAdapter(message.getSessionId());
+            IMMessageCustomBody imBody = getIMBody(message);
+            if (imBody != null) {
+                removeFromAdapter(imBody.id);
+            }
+
         }
     }
 
     /**
      * 是列表适配器中移除
      *
-     * @param sessionId
+     * @param msgId
      */
-    private synchronized void removeFromAdapter(String sessionId) {
+    private synchronized void removeFromAdapter(String msgId) {
         for (int i = chatAdapter.getData().size() - 1; i >= 0; i++) {
-            IMCustomerMessageEntity item = chatAdapter.getItem(i);
-            if (item != null && item.imMessage != null) {
-                if (TextUtils.equals(sessionId, item.imMessage.getSessionId())) {
+            IMMessageCustomBody item = chatAdapter.getItem(i);
+            if (item != null) {
+                if (StringUtils.equalsIgnoreCase(msgId, item.id, false)) {
                     chatAdapter.removeItem(item);
                     break;
                 }
