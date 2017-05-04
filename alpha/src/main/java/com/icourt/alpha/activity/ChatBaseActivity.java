@@ -42,6 +42,10 @@ import com.netease.nimlib.sdk.msg.model.IMMessage;
 import com.netease.nimlib.sdk.msg.model.MessageReceipt;
 import com.trello.rxlifecycle2.android.ActivityEvent;
 
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -82,15 +86,6 @@ public abstract class ChatBaseActivity extends BaseActivity implements INIMessag
     protected final Set<String> msgCollectedIdsList = new HashSet<>();
     //钉的消息列表
     protected final Set<String> msgDingedIdsList = new HashSet<>();
-    /**
-     * 收到消息
-     */
-    Observer<List<IMMessage>> incomingMessageObserver = new Observer<List<IMMessage>>() {
-        @Override
-        public void onEvent(List<IMMessage> messages) {
-            onMessageReceived(messages);
-        }
-    };
     /**
      * 收到已读回执
      */
@@ -168,9 +163,16 @@ public abstract class ChatBaseActivity extends BaseActivity implements INIMessag
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        EventBus.getDefault().register(this);
         loadedLoginUserInfo = getLoginUserInfo();
         contactDbService = new ContactDbService(getLoginUserId());
         registerObservers(true);
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public final void onMessageEvent(IMMessageCustomBody customBody) {
+        if (customBody == null) return;
+        onMessageReceived(customBody);
     }
 
     @Override
@@ -273,12 +275,12 @@ public abstract class ChatBaseActivity extends BaseActivity implements INIMessag
         if (contactDbService != null) {
             contactDbService.releaseService();
         }
+        EventBus.getDefault().unregister(this);
         super.onDestroy();
     }
 
     private void registerObservers(boolean register) {
         MsgServiceObserve service = NIMClient.getService(MsgServiceObserve.class);
-        service.observeReceiveMessage(incomingMessageObserver, register);
         service.observeMessageReceipt(messageReceiptObserver, register);
         service.observeMsgStatus(messageStatusObserver, register);
         service.observeRevokeMessage(revokeMessageObserver, register);

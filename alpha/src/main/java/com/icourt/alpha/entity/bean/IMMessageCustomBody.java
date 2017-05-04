@@ -150,4 +150,21 @@ public class IMMessageCustomBody implements ILongFieldEntity {
     public Long getCompareLongField() {
         return send_time;
     }
+
+    @Override
+    public String toString() {
+        return "IMMessageCustomBody{" +
+                "id='" + id + '\'' +
+                ", name='" + name + '\'' +
+                ", from='" + from + '\'' +
+                ", to='" + to + '\'' +
+                ", ope=" + ope +
+                ", show_type=" + show_type +
+                ", send_time=" + send_time +
+                ", magic_id='" + magic_id + '\'' +
+                ", platform='" + platform + '\'' +
+                ", ext=" + ext +
+                ", content='" + content + '\'' +
+                '}';
+    }
 }

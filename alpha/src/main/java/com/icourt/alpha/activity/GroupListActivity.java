@@ -278,17 +278,15 @@ public class GroupListActivity extends BaseActivity implements BaseRecyclerAdapt
                     case GROUP_TYPE_MY_JOIN:
                         ChatActivity.launchTEAM(getContext(),
                                 item.tid,
-                                item.id,
                                 item.name);
                         break;
                     case GROUP_TYPE_TYPE_ALL:
                         if (isMyJionedGroup(item)) {
                             ChatActivity.launchTEAM(getContext(),
                                     item.tid,
-                                    item.id,
                                     item.name);
                         } else {
-                            GroupDetailActivity.launchTEAM(getContext(), item.id, item.tid);
+                            GroupDetailActivity.launchTEAM(getContext(), item.tid);
                         }
                         break;
                 }

@@ -24,16 +24,15 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.andview.refreshview.XRefreshView;
-import com.google.gson.JsonElement;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.ChatAdapter;
 import com.icourt.alpha.constants.Const;
 import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.icourt.alpha.entity.bean.IMMessageCustomBody;
+import com.icourt.alpha.entity.event.NoDisturbingEvent;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.callback.SimpleTextWatcher;
-import com.icourt.alpha.utils.IMUtils;
 import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.view.emoji.MySelectPhotoLayout;
@@ -41,7 +40,6 @@ import com.icourt.alpha.view.emoji.MyXhsEmoticonsKeyBoard;
 import com.icourt.alpha.view.recyclerviewDivider.ChatItemDecoration;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 import com.icourt.alpha.widget.comparators.LongFieldEntityComparator;
-import com.icourt.api.RequestUtils;
 import com.netease.nimlib.sdk.NIMClient;
 import com.netease.nimlib.sdk.RequestCallback;
 import com.netease.nimlib.sdk.msg.MessageBuilder;
@@ -54,12 +52,13 @@ import com.sj.emoji.EmojiBean;
 import com.sj.emoji.EmojiDisplay;
 import com.sj.emoji.EmojiSpan;
 
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.regex.Matcher;
 
 import butterknife.BindView;
@@ -68,7 +67,6 @@ import cn.finalteam.galleryfinal.FunctionConfig;
 import cn.finalteam.galleryfinal.GalleryFinal;
 import cn.finalteam.galleryfinal.model.PhotoInfo;
 import io.reactivex.functions.Consumer;
-import okhttp3.RequestBody;
 import retrofit2.Call;
 import retrofit2.Response;
 import sj.keyboard.adpater.EmoticonsAdapter;
@@ -104,7 +102,6 @@ public class ChatActivity extends ChatBaseActivity {
 
     private static final String KEY_UID = "key_uid";
     private static final String KEY_TID = "key_tid";
-    private static final String KEY_GROUP_ID = "key_group_id";
     private static final String KEY_TITLE = "key_title";
     private static final String KEY_CHAT_TYPE = "key_chat_type";
 
@@ -200,14 +197,12 @@ public class ChatActivity extends ChatBaseActivity {
      *
      * @param context
      * @param tid
-     * @param groupId
      */
-    public static void launchTEAM(@NonNull Context context, String tid, String groupId, String title) {
+    public static void launchTEAM(@NonNull Context context, String tid, String title) {
         if (context == null) return;
         if (TextUtils.isEmpty(tid)) return;
         Intent intent = new Intent(context, ChatActivity.class);
         intent.putExtra(KEY_TID, tid);
-        intent.putExtra(KEY_GROUP_ID, groupId);
         intent.putExtra(KEY_CHAT_TYPE, CHAT_TYPE_TEAM);
         intent.putExtra(KEY_TITLE, title);
         context.startActivity(intent);
@@ -240,6 +235,12 @@ public class ChatActivity extends ChatBaseActivity {
         });
     }
 
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onMessageEvent(NoDisturbingEvent noDisturbingEvent) {
+        if (noDisturbingEvent == null) return;
+        setViewVisible(getTitleActionImage(), noDisturbingEvent.isNoDisturbing);
+        ImageView titleActionImage = getTitleActionImage();
+    }
 
     /**
      * 初始化表情
@@ -484,7 +485,7 @@ public class ChatActivity extends ChatBaseActivity {
 
 
     private void uploadFile2Sfile(File file) {
-        if (file != null && file.exists()) {
+   /*     if (file != null && file.exists()) {
             Map<String, RequestBody> photos = new HashMap<>();
             photos.put("file\"; filename=\"icon.png", RequestUtils.createImgBody(file));
             getApi().groupUploadFile(getIntent().getStringExtra(KEY_GROUP_ID), photos)
@@ -496,7 +497,7 @@ public class ChatActivity extends ChatBaseActivity {
                     });
         } else {
             showTopSnackBar("文件已不存在!");
-        }
+        }*/
     }
 
     /**
@@ -753,43 +754,37 @@ public class ChatActivity extends ChatBaseActivity {
     }
 
 
+    /**
+     * 接受到自定义消息
+     *
+     * @param customBody
+     */
     @Override
-    public void onMessageReceived(List<IMMessage> list) {
-        log("----------------->onMessageReceived:" + list);
-        List<IMMessageCustomBody> customerMessageEntities = new ArrayList<>();
-        for (IMMessage message : list) {
-            IMUtils.logIMMessage("--------->message:", message);
-            if (message != null
-                    && isCurrentRoomSession(message.getSessionId())) {
-                IMMessageCustomBody imBody = getIMBody(message);
-                if (imBody != null) {
-                    customerMessageEntities.add(imBody);
-                }
-            }
-        }
-        if (!customerMessageEntities.isEmpty()) {
-            if (shouldScrollToBottom()) {
-                chatAdapter.addItems(customerMessageEntities);
-                scrollToBottom();
-            } else {
-                chatAdapter.addItems(customerMessageEntities);
-            }
+    public void onMessageReceived(IMMessageCustomBody customBody) {
+        if (customBody == null) return;
+        log("----------------->chat onMessageReceived:" + customBody);
+        if (!isCurrentRoomSession(customBody.to)) return;
+        if (shouldScrollToBottom()) {
+            chatAdapter.addItem(customBody);
+            scrollToBottom();
+        } else {
+            chatAdapter.addItem(customBody);
         }
     }
 
     @Override
     public void onMessageReadAckReceived(List<MessageReceipt> list) {
-        log("----------------->onMessageReadAckReceived:" + list);
+        log("----------------->chat onMessageReadAckReceived:" + list);
     }
 
     @Override
     public void onMessageChanged(IMMessage message) {
-        log("----------------->onMessageChanged:" + message);
+        log("----------------->chat  onMessageChanged:" + message);
     }
 
     @Override
     public void onMessageRevoke(IMMessage message) {
-        log("----------------->onMessageRevoke:" + message);
+        log("----------------->chat onMessageRevoke:" + message);
         deleteMsgFromDb(message);
         if (isCurrentRoomSession(message.getSessionId())) {
             IMMessageCustomBody imBody = getIMBody(message);
@@ -799,6 +794,29 @@ public class ChatActivity extends ChatBaseActivity {
 
         }
     }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        switch (getIMChatType()) {
+            case CHAT_TYPE_P2P:
+                NIMClient.getService(MsgService.class)
+                        .setChattingAccount(getIMChatId(), SessionTypeEnum.P2P);
+                break;
+            case CHAT_TYPE_TEAM:
+                NIMClient.getService(MsgService.class)
+                        .setChattingAccount(getIMChatId(), SessionTypeEnum.Team);
+                break;
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        NIMClient.getService(MsgService.class)
+                .setChattingAccount(MsgService.MSG_CHATTING_ACCOUNT_NONE, SessionTypeEnum.None);
+    }
+
 
     /**
      * 是列表适配器中移除
@@ -831,7 +849,6 @@ public class ChatActivity extends ChatBaseActivity {
                         );
                     case CHAT_TYPE_TEAM:
                         GroupDetailActivity.launchTEAM(getContext(),
-                                getIntent().getStringExtra(KEY_GROUP_ID),
                                 getIntent().getStringExtra(KEY_TID));
                 }
                 break;

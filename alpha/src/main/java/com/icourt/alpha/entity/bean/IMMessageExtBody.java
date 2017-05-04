@@ -109,4 +109,33 @@ public final class IMMessageExtBody {
 
     public IMMessageExtBody() {
     }
+
+    @Override
+    public String toString() {
+        return "IMMessageExtBody{" +
+                "repo_id='" + repo_id + '\'' +
+                ", path='" + path + '\'' +
+                ", name='" + name + '\'' +
+                ", size=" + size +
+                ", id='" + id + '\'' +
+                ", pin=" + pin +
+                ", users=" + users +
+                ", is_all=" + is_all +
+                ", type='" + type + '\'' +
+                ", content='" + content + '\'' +
+                ", title='" + title + '\'' +
+                ", thumb='" + thumb + '\'' +
+                ", desc='" + desc + '\'' +
+                ", url='" + url + '\'' +
+                ", from='" + from + '\'' +
+                ", fromPic='" + fromPic + '\'' +
+                ", to='" + to + '\'' +
+                ", ope=" + ope +
+                ", show_type=" + show_type +
+                ", send_time=" + send_time +
+                ", magic_id='" + magic_id + '\'' +
+                ", platform='" + platform + '\'' +
+                ", ext=" + ext +
+                '}';
+    }
 }

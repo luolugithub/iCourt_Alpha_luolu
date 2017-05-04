@@ -20,7 +20,9 @@
                 android:layout_height="180dp"
                 android:background="#CBEAED"
                 android:gravity="center_horizontal"
-                android:orientation="vertical">
+                android:orientation="vertical"
+                android:paddingLeft="15dp"
+                android:paddingRight="15dp">
 
                 <TextView
                     android:id="@+id/group_name_tv"

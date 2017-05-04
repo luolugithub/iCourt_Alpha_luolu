@@ -3,11 +3,20 @@ package com.icourt.alpha.utils;
 import android.text.TextUtils;
 import android.widget.ImageView;
 
+import com.icourt.alpha.entity.bean.IMMessageCustomBody;
 import com.icourt.alpha.view.TextDrawable;
 import com.netease.nimlib.sdk.msg.model.IMMessage;
+import com.netease.nimlib.sdk.msg.model.RecentContact;
 
 import java.util.Arrays;
 import java.util.List;
+
+import static com.icourt.alpha.constants.Const.MSG_TYPE_AT;
+import static com.icourt.alpha.constants.Const.MSG_TYPE_DING;
+import static com.icourt.alpha.constants.Const.MSG_TYPE_FILE;
+import static com.icourt.alpha.constants.Const.MSG_TYPE_LINK;
+import static com.icourt.alpha.constants.Const.MSG_TYPE_SYS;
+import static com.icourt.alpha.constants.Const.MSG_TYPE_TXT;
 
 /**
  * Description
@@ -103,6 +112,47 @@ public class IMUtils {
     }
 
     /**
+     *    public static final int MSG_TYPE_TXT = 0;     //文本消息
+     public static final int MSG_TYPE_FILE = 1;    //文件消息
+     public static final int MSG_TYPE_DING = 2;    //钉消息
+     public static final int MSG_TYPE_AT = 3;      //@消息
+     public static final int MSG_TYPE_SYS = 4;     //系统辅助消息
+     public static final int MSG_TYPE_LINK = 5;    //链接消息
+     public static final int MSG_TYPE_ALPHA = 6;   //alpha系统内业务消息
+     public static final int MSG_TYPE_VOICE = 7;   //语音消息
+
+     */
+
+    /**
+     * 是否过滤聊天消息
+     * v.2.0.0
+     *
+     * @param imMessageCustomBody
+     * @return
+     */
+    public static boolean isFilterChatIMMessage(IMMessageCustomBody imMessageCustomBody) {
+        if (imMessageCustomBody != null) {
+            switch (imMessageCustomBody.show_type) {
+                case MSG_TYPE_TXT:
+                    return false;
+                case MSG_TYPE_FILE:
+                    return false;
+                case MSG_TYPE_DING:
+                    return false;
+                case MSG_TYPE_AT:
+                    return false;
+                case MSG_TYPE_SYS:
+                    return false;
+                case MSG_TYPE_LINK:
+                    return false;
+                default:
+                    return true;
+            }
+        }
+        return true;
+    }
+
+    /**
      * 输出message
      *
      * @param tag
@@ -140,4 +190,36 @@ public class IMUtils {
         }
     }
 
+
+    /**
+     * 输出 RecentContact
+     *
+     * @param tag
+     * @param recentContact
+     */
+    public static void logRecentContact(String tag, RecentContact recentContact) {
+        try {
+            StringBuilder sb = new StringBuilder(tag);
+            if (recentContact == null) {
+                sb.append("null");
+            } else {
+                sb.append("\nContactId:" + recentContact.getContactId());
+                sb.append("\nFromAccount:" + recentContact.getFromAccount());
+                sb.append("\nFromNick:" + recentContact.getFromNick());
+                sb.append("\nSessionType:" + recentContact.getSessionType());
+                sb.append("\nRecentMessageId:" + recentContact.getRecentMessageId());
+                sb.append("\nMsgType:" + recentContact.getMsgType());
+                sb.append("\nMsgStatus:" + recentContact.getMsgStatus());
+                sb.append("\nUnreadCount:" + recentContact.getUnreadCount());
+                sb.append("\nContent:" + recentContact.getContent());
+                sb.append("\ngetTime:" + recentContact.getTime());
+                sb.append("\nAttachment:" + recentContact.getAttachment());
+                sb.append("\nremoteExtension:" + recentContact.getTag());
+                sb.append("\nExtension:" + recentContact.getExtension());
+            }
+            LogUtils.d(sb.toString());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }

@@ -43,6 +43,6 @@ public class GroupAdapter extends BaseArrayRecyclerAdapter<GroupEntity> implemen
     public void onItemClick(BaseRecyclerAdapter adapter, ViewHolder holder, View view, int position) {
         GroupEntity item = getItem(getRealPos(position));
         if (item == null) return;
-        GroupDetailActivity.launchTEAM(view.getContext(), item.id, item.tid);
+        GroupDetailActivity.launchTEAM(view.getContext(), item.tid);
     }
 }

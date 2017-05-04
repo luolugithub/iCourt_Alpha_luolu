@@ -1,5 +1,6 @@
 package com.icourt.alpha.interfaces;
 
+import com.icourt.alpha.entity.bean.IMMessageCustomBody;
 import com.netease.nimlib.sdk.msg.model.IMMessage;
 import com.netease.nimlib.sdk.msg.model.MessageReceipt;
 
@@ -7,11 +8,11 @@ import java.util.List;
 
 public interface INIMessageListener {
     /**
-     * 收到消息
+     * 自定义消息
      *
-     * @param list
+     * @param customBody
      */
-    void onMessageReceived(List<IMMessage> list);
+    void onMessageReceived(IMMessageCustomBody customBody);
 
     /**
      * 消息回执

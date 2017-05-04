@@ -64,7 +64,6 @@ import static com.icourt.alpha.constants.Const.CHAT_TYPE_TEAM;
  * version 1.0.0
  */
 public class GroupDetailActivity extends BaseActivity {
-    private static final String KEY_GROUP_ID = "key_group_id";
     private static final String KEY_TID = "key_tid";//云信id
 
     private static final int REQ_CODE_INVITATION_MEMBER = 1002;
@@ -116,12 +115,10 @@ public class GroupDetailActivity extends BaseActivity {
     GroupDetailEntity groupDetailEntity;
 
 
-    public static void launchTEAM(@NonNull Context context, String groupId, String tid) {
+    public static void launchTEAM(@NonNull Context context, String tid) {
         if (context == null) return;
-        if (TextUtils.isEmpty(groupId)) return;
         if (TextUtils.isEmpty(tid)) return;
         Intent intent = new Intent(context, GroupDetailActivity.class);
-        intent.putExtra(KEY_GROUP_ID, groupId);
         intent.putExtra(KEY_TID, tid);
         context.startActivity(intent);
     }
@@ -335,7 +332,7 @@ public class GroupDetailActivity extends BaseActivity {
      */
     private void getIsSetGroupNoDisturbing() {
         //先拿网络 保持三端一致
-        getApi().sessionQueryAllsetTopIds()
+        getApi().sessionQueryAllNoDisturbingIds()
                 .enqueue(new SimpleCallBack<List<String>>() {
                     @Override
                     public void onSuccess(Call<ResEntity<List<String>>> call, Response<ResEntity<List<String>>> response) {
@@ -501,13 +498,13 @@ public class GroupDetailActivity extends BaseActivity {
      */
     private void joinGroup() {
         showLoadingDialog(null);
-        getApi().groupJoin(getIntent().getStringExtra(KEY_GROUP_ID))
+        getApi().groupJoin(getIntent().getStringExtra(KEY_TID))
                 .enqueue(new SimpleCallBack<Boolean>() {
                     @Override
                     public void onSuccess(Call<ResEntity<Boolean>> call, Response<ResEntity<Boolean>> response) {
                         getData(true);
                         EventBus.getDefault().post(
-                                new GroupActionEvent(GroupActionEvent.GROUP_ACTION_JOIN, getIntent().getStringExtra(KEY_GROUP_ID)));
+                                new GroupActionEvent(GroupActionEvent.GROUP_ACTION_JOIN, getIntent().getStringExtra(KEY_TID)));
                     }
 
                     @Override
@@ -523,14 +520,14 @@ public class GroupDetailActivity extends BaseActivity {
      */
     private void quitGroup() {
         showLoadingDialog(null);
-        getApi().groupQuit(getIntent().getStringExtra(KEY_GROUP_ID))
+        getApi().groupQuit(getIntent().getStringExtra(KEY_TID))
                 .enqueue(new SimpleCallBack<Boolean>() {
                     @Override
                     public void onSuccess(Call<ResEntity<Boolean>> call, Response<ResEntity<Boolean>> response) {
                         dismissLoadingDialog();
                         if (response.body().result != null && response.body().result.booleanValue()) {
                             EventBus.getDefault().post(
-                                    new GroupActionEvent(GroupActionEvent.GROUP_ACTION_QUIT, getIntent().getStringExtra(KEY_GROUP_ID)));
+                                    new GroupActionEvent(GroupActionEvent.GROUP_ACTION_QUIT, getIntent().getStringExtra(KEY_TID)));
                             finish();
                         }
                     }

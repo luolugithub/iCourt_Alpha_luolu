@@ -15,6 +15,7 @@ import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.icourt.alpha.http.HConst;
 import com.icourt.alpha.utils.ActivityLifecycleTaskCallbacks;
 import com.icourt.alpha.utils.GlideImageLoader;
+import com.icourt.alpha.utils.LogUtils;
 import com.icourt.alpha.utils.LoginInfoUtils;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.utils.UserPreferences;
@@ -170,6 +171,7 @@ public class BaseApplication extends MultiDexApplication {
         NIMClient.getService(MsgService.class).registerIMMessageFilter(new IMMessageFilter() {
             @Override
             public boolean shouldIgnore(IMMessage message) {
+                LogUtils.logObject("--------------->application IMMessageFilter:", message);
                 if (UserPreferences.getMsgIgnore() && message.getAttachment() != null) {
                     if (message.getAttachment() instanceof UpdateTeamAttachment) {
                         UpdateTeamAttachment attachment = (UpdateTeamAttachment) message.getAttachment();

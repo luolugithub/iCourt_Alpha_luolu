@@ -53,14 +53,18 @@ public class Const {
 
 
     //文档地址 https://www.showdoc.cc/1620156?page_id=14893614
-    public static final int MSG_TYPE_TXT = 0;     //文本消息
-    public static final int MSG_TYPE_FILE = 1;    //文件消息
-    public static final int MSG_TYPE_DING = 2;    //钉消息
-    public static final int MSG_TYPE_AT = 3;      //@消息
-    public static final int MSG_TYPE_SYS = 4;     //系统辅助消息
-    public static final int MSG_TYPE_LINK = 5;    //链接消息
-    public static final int MSG_TYPE_ALPHA = 6;   //alpha系统内业务消息
-    public static final int MSG_TYPE_VOICE = 7;   //语音消息
+    public static final int MSG_TYPE_TXT = 0;            //文本消息
+    public static final int MSG_TYPE_FILE = 1;           //文件消息
+    public static final int MSG_TYPE_DING = 2;           //钉消息
+    public static final int MSG_TYPE_AT = 3;             //@消息
+    public static final int MSG_TYPE_SYS = 4;            //系统辅助消息
+    public static final int MSG_TYPE_LINK = 5;           //链接消息
+    public static final int MSG_TYPE_ALPHA = 6;          //alpha系统内业务消息
+    public static final int MSG_TYPE_VOICE = 7;          //语音消息
+    //扩展消息 非展示类型
+    public static final int MSG_TYPE_CONTACT_UPDATE = 100;//联系人更新通知
+    public static final int MSG_TYPE_SET_TOP = 101;       //设置置顶通知
+    public static final int MSG_TYPE_LEAVE_GROUP = 102;   //离开讨论组通知
 
 
     @IntDef({MSG_TYPE_TXT,
@@ -70,7 +74,10 @@ public class Const {
             MSG_TYPE_SYS,
             MSG_TYPE_LINK,
             MSG_TYPE_ALPHA,
-            MSG_TYPE_VOICE})
+            MSG_TYPE_VOICE,
+            MSG_TYPE_CONTACT_UPDATE,
+            MSG_TYPE_SET_TOP,
+            MSG_TYPE_LEAVE_GROUP})
     @Retention(RetentionPolicy.SOURCE)
     public @interface MSG_TYPE {
 
@@ -93,7 +100,7 @@ public class Const {
     public static final String PROJECT_ORDER_OPENDATE = "openDate";//创建时间
     public static final String PROJECT_ORDER_CLOSEDATE = "closeDate";//结束时间
 
-    @StringDef({PROJECT_ORDER_STATUS, PROJECT_ORDER_NAME, PROJECT_ORDER_MATTERTYPE, PROJECT_ORDER_OPENDATE,PROJECT_ORDER_CLOSEDATE})
+    @StringDef({PROJECT_ORDER_STATUS, PROJECT_ORDER_NAME, PROJECT_ORDER_MATTERTYPE, PROJECT_ORDER_OPENDATE, PROJECT_ORDER_CLOSEDATE})
     @Retention(RetentionPolicy.SOURCE)
     public @interface PROJECT_ORDERBY {
 

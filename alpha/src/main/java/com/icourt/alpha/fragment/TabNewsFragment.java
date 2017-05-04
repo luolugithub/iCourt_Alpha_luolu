@@ -17,6 +17,9 @@ import com.icourt.alpha.adapter.baseadapter.BaseFragmentAdapter;
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.interfaces.OnTabDoubleClickListener;
+import com.icourt.alpha.utils.GlobalMessageObserver;
+import com.netease.nimlib.sdk.NIMClient;
+import com.netease.nimlib.sdk.msg.MsgServiceObserve;
 
 import java.util.Arrays;
 
@@ -35,7 +38,6 @@ import butterknife.Unbinder;
 public class TabNewsFragment extends BaseFragment
         implements OnTabDoubleClickListener, OnFragmentCallBackListener {
 
-
     Unbinder unbinder;
     @BindView(R.id.tabLayout)
     TabLayout tabLayout;
@@ -46,9 +48,17 @@ public class TabNewsFragment extends BaseFragment
     OnFragmentCallBackListener parentFragmentCallBackListener;
 
     private BaseFragmentAdapter baseFragmentAdapter;
+    GlobalMessageObserver globalMessageObserver = new GlobalMessageObserver();
 
     public static TabNewsFragment newInstance() {
         return new TabNewsFragment();
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        NIMClient.getService(MsgServiceObserve.class)
+                .observeReceiveMessage(globalMessageObserver, true);
     }
 
     @Override
@@ -85,7 +95,7 @@ public class TabNewsFragment extends BaseFragment
         switch (v.getId()) {
             case R.id.ivActionAdd:
                 GroupCreateActivity.launch(getContext());
-               // TestActivity.launch(getContext());
+                // TestActivity.launch(getContext());
                 break;
         }
     }
@@ -133,4 +143,10 @@ public class TabNewsFragment extends BaseFragment
         }
     }
 
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        NIMClient.getService(MsgServiceObserve.class)
+                .observeReceiveMessage(globalMessageObserver, false);
+    }
 }

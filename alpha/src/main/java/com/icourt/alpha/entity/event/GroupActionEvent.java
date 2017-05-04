@@ -25,10 +25,10 @@ public class GroupActionEvent {
 
     @GROUP_ACTION
     public int action;
-    public String groupId;
+    public String tid;
 
-    public GroupActionEvent(@GROUP_ACTION int action, String groupId) {
+    public GroupActionEvent(@GROUP_ACTION int action, String tid) {
         this.action = action;
-        this.groupId = groupId;
+        this.tid = tid;
     }
 }

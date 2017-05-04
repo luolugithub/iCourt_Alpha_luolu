@@ -1,5 +1,6 @@
 package com.icourt.alpha.base;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.CallSuper;
 import android.support.annotation.CheckResult;
@@ -75,11 +76,11 @@ public abstract class BaseFragment
     }
 
     @Override
-    @CallSuper
-    public void onAttach(android.app.Activity activity) {
-        super.onAttach(activity);
+    public void onAttach(Context context) {
+        super.onAttach(context);
         lifecycleSubject.onNext(FragmentEvent.ATTACH);
     }
+
 
     @Override
     @CallSuper
