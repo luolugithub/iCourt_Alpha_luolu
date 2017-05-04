@@ -162,6 +162,10 @@
         <activity
             android:name=".activity.ProjectDetailActivity"
             android:screenOrientation="portrait" />
+        <activity
+            android:name=".activity.SettingActivity"
+            android:windowSoftInputMode="adjustUnspecified|stateHidden"
+            android:screenOrientation="portrait" />
 
         <activity
             android:name=".activity.TaskCreateActivity"

@@ -85,6 +85,7 @@ public interface AlphaApiService {
      * @param phone 手机号码 不包含+86国际代码的字符串
      * @return
      */
+    @Deprecated
     @POST("api/v1/auth/update")
     @FormUrlEncoded
     Call<ResEntity<String>> updateUserPhone(@Field("phone") String phone);
@@ -95,6 +96,7 @@ public interface AlphaApiService {
      * @param email
      * @return
      */
+    @Deprecated
     @POST("api/v1/auth/update")
     @FormUrlEncoded
     Call<ResEntity<String>> updateUserEmail(@Field("email") String email);
@@ -667,4 +669,19 @@ public interface AlphaApiService {
      */
     @GET("api/v1/matters/{id}")
     Call<ResEntity<List<ProjectDetailEntity>>> projectDetail(@Path("id") String id);
+
+    /**
+     * 获取我的最新信息
+     * @return
+     */
+    @GET("http://10.25.115.31:8083/ilaw/api/v3/im/users/me")
+    Call<ResEntity<AlphaUserInfo>> userInfoQuery();
+
+    /**
+     * 更新用户信息
+     * @param params
+     * @return
+     */
+    @PUT("api/v1/auth/up/update")
+    Call<ResEntity<JsonElement>> updateUserInfo(@PartMap Map<String, String> params);
 }

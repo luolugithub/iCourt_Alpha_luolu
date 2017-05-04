@@ -3,25 +3,28 @@ package com.icourt.alpha.fragment;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.design.widget.AppBarLayout;
 import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
 import com.icourt.alpha.R;
 import com.icourt.alpha.activity.AboutActivity;
 import com.icourt.alpha.activity.ChatMsgClassfyActivity;
 import com.icourt.alpha.activity.LoginSelectActivity;
 import com.icourt.alpha.activity.MyAtedActivity;
 import com.icourt.alpha.activity.MyFileTabActivity;
-import com.icourt.alpha.activity.UpdatePhoneOrMailActivity;
+import com.icourt.alpha.activity.SettingActivity;
 import com.icourt.alpha.base.BaseFragment;
+import com.icourt.alpha.entity.bean.AlphaUserInfo;
+import com.icourt.alpha.http.callback.SimpleCallBack;
+import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.GlideUtils;
+import com.icourt.alpha.utils.transformations.BlurTransformation;
 import com.netease.nimlib.sdk.NIMClient;
 import com.netease.nimlib.sdk.auth.AuthService;
 import com.umeng.socialize.UMAuthListener;
@@ -34,6 +37,8 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import butterknife.Unbinder;
+import retrofit2.Call;
+import retrofit2.Response;
 
 /**
  * Description
@@ -44,56 +49,45 @@ import butterknife.Unbinder;
  */
 public class TabMineFragment extends BaseFragment {
 
-    @BindView(R.id.titleBack)
-    ImageView titleBack;
-    @BindView(R.id.titleContent)
-    TextView titleContent;
-    @BindView(R.id.titleView)
-    AppBarLayout titleView;
     Unbinder unbinder;
-    @BindView(R.id.my_center_photo_view)
-    ImageView myCenterPhotoView;
-    @BindView(R.id.my_center_photo_layout)
-    FrameLayout myCenterPhotoLayout;
-    @BindView(R.id.my_center_name_view)
-    TextView myCenterNameView;
-    @BindView(R.id.my_center_lawplace_view)
-    TextView myCenterLawplaceView;
-    @BindView(R.id.my_center_phone_textview)
-    TextView myCenterPhoneTextview;
-    @BindView(R.id.my_center_phone_layout)
-    LinearLayout myCenterPhoneLayout;
-    @BindView(R.id.my_center_mail_textview)
-    TextView myCenterMailTextview;
-    @BindView(R.id.my_center_mail_layout)
-    LinearLayout myCenterMailLayout;
+    @BindView(R.id.photo_big_image)
+    ImageView photoBigImage;
+    @BindView(R.id.set_image)
+    ImageView setImage;
+    @BindView(R.id.photo_image)
+    ImageView photoImage;
+    @BindView(R.id.user_name_tv)
+    TextView userNameTv;
+    @BindView(R.id.office_name_tv)
+    TextView officeNameTv;
+    @BindView(R.id.today_duraction_tv)
+    TextView todayDuractionTv;
+    @BindView(R.id.month_duraction_tv)
+    TextView monthDuractionTv;
+    @BindView(R.id.done_task_tv)
+    TextView doneTaskTv;
+    @BindView(R.id.my_center_collect_textview)
+    TextView myCenterCollectTextview;
     @BindView(R.id.my_center_collect_layout)
     LinearLayout myCenterCollectLayout;
+    @BindView(R.id.my_center_at_textview)
+    TextView myCenterAtTextview;
     @BindView(R.id.my_center_at_layout)
     LinearLayout myCenterAtLayout;
+    @BindView(R.id.my_center_file_textview)
+    TextView myCenterFileTextview;
     @BindView(R.id.my_center_file_layout)
     LinearLayout myCenterFileLayout;
+    @BindView(R.id.my_center_clear_cache_textview)
+    TextView myCenterClearCacheTextview;
     @BindView(R.id.my_center_clear_cache_layout)
     LinearLayout myCenterClearCacheLayout;
+    @BindView(R.id.my_center_about_count_view)
+    TextView myCenterAboutCountView;
     @BindView(R.id.my_center_clear_about_layout)
     LinearLayout myCenterClearAboutLayout;
     @BindView(R.id.my_center_clear_loginout_layout)
     LinearLayout myCenterClearLoginoutLayout;
-
-    @BindView(R.id.my_center_collect_textview)
-    TextView myCenterCollectTextview;
-    @BindView(R.id.my_center_at_textview)
-    TextView myCenterAtTextview;
-    @BindView(R.id.my_center_file_textview)
-    TextView myCenterFileTextview;
-    @BindView(R.id.my_center_clear_cache_textview)
-    TextView myCenterClearCacheTextview;
-    @BindView(R.id.my_center_about_count_view)
-    TextView myCenterAboutCountView;
-    @BindView(R.id.my_center_alpha_qiyu_msgcount_textview)
-    TextView myCenterAlphaQiyuMsgcountTextview;
-    @BindView(R.id.my_center_clear_help_layout)
-    LinearLayout myCenterClearHelpLayout;
 
     private UMShareAPI mShareAPI;
 
@@ -105,36 +99,51 @@ public class TabMineFragment extends BaseFragment {
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = super.onCreateView(R.layout.fragment_tab_mine, inflater, container, savedInstanceState);
+        View view = super.onCreateView(R.layout.fragment_tab_mine_layout, inflater, container, savedInstanceState);
         unbinder = ButterKnife.bind(this, view);
         return view;
     }
 
     @Override
     protected void initView() {
+        getData(false);
         mShareAPI = UMShareAPI.get(getContext());
-        titleBack.setVisibility(View.INVISIBLE);
-        titleContent.setText("个人中心");
-        if (GlideUtils.canLoadImage(this)) {
-            GlideUtils.loadUser(getContext(), "https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1491804322903&di=06004cfeb2a47c19dfcca762851687dd&imgtype=0&src=http%3A%2F%2Fimage.coolapk.com%2Fapk_logo%2F2015%2F0703%2F257251_1435907700_3237.png", myCenterPhotoView);
-        }
-        myCenterNameView.setText("Alpha");
-        myCenterLawplaceView.setText("iCourt");
-        myCenterPhoneTextview.setText("18888887777");
-        myCenterMailTextview.setText("zhaolu@icourt.cc");
     }
 
+    @Override
+    public void onHiddenChanged(boolean hidden) {
+        if (!hidden) {
+            getData(false);
+        }
+    }
 
-    @OnClick({R.id.my_center_phone_layout, R.id.my_center_mail_layout, R.id.my_center_collect_layout, R.id.my_center_at_layout, R.id.my_center_file_layout, R.id.my_center_clear_cache_layout, R.id.my_center_clear_about_layout, R.id.my_center_clear_loginout_layout})
+    /**
+     * 设置数据
+     *
+     * @param alphaUserInfo
+     */
+    private void setDataToView(AlphaUserInfo alphaUserInfo) {
+        if (alphaUserInfo != null) {
+            GlideUtils.loadUser(getContext(), alphaUserInfo.getPic(), photoImage);
+            if (GlideUtils.canLoadImage(getContext())) {
+                Glide.with(getContext())
+                        .load(alphaUserInfo.getPic())
+                        .bitmapTransform(new BlurTransformation(getContext()))
+                        .crossFade()
+                        .into(photoBigImage);
+            }
+            userNameTv.setText(alphaUserInfo.getName());
+            officeNameTv.setText(alphaUserInfo.getOfficename());
+        }
+    }
+
+    @OnClick({R.id.set_image, R.id.my_center_collect_layout, R.id.my_center_at_layout, R.id.my_center_file_layout, R.id.my_center_clear_cache_layout, R.id.my_center_clear_about_layout, R.id.my_center_clear_loginout_layout})
     @Override
     public void onClick(View v) {
         super.onClick(v);
         switch (v.getId()) {
-            case R.id.my_center_phone_layout://电话
-                UpdatePhoneOrMailActivity.launch(getContext(), UpdatePhoneOrMailActivity.UPDATE_PHONE_TYPE, myCenterPhoneTextview.getText().toString().trim());
-                break;
-            case R.id.my_center_mail_layout://邮箱
-                UpdatePhoneOrMailActivity.launch(getContext(), UpdatePhoneOrMailActivity.UPDATE_EMAIL_TYPE, myCenterMailTextview.getText().toString().trim());
+            case R.id.set_image://设置
+                SettingActivity.launch(getContext());
                 break;
             case R.id.my_center_collect_layout://收藏
                 ChatMsgClassfyActivity.launchMyCollected(getContext());
@@ -174,8 +183,6 @@ public class TabMineFragment extends BaseFragment {
      * 退出登录
      */
     private void loginOut() {
-        //  groupContactBeanDao.deleteAll();
-        //  personContactBeanDao.deleteAll();
         NIMClient.getService(AuthService.class).logout();
         //撤销微信授权
         if (!mShareAPI.isAuthorize(getActivity(), SHARE_MEDIA.WEIXIN)) {
@@ -214,17 +221,21 @@ public class TabMineFragment extends BaseFragment {
     }
 
     @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        unbinder.unbind();
+    protected void getData(boolean isRefresh) {
+        getApi().userInfoQuery().enqueue(new SimpleCallBack<AlphaUserInfo>() {
+            @Override
+            public void onSuccess(Call<ResEntity<AlphaUserInfo>> call, Response<ResEntity<AlphaUserInfo>> response) {
+                setDataToView(response.body().result);
+            }
+        });
     }
 
     @Override
-    public void onDestroy() {
-        super.onDestroy();
+    public void onDestroyView() {
+        super.onDestroyView();
+        unbinder.unbind();
         if (mShareAPI != null) {
             mShareAPI.release();
         }
     }
-
 }
