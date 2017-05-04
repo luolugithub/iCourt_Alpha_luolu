@@ -3,7 +3,7 @@ package com.icourt.alpha.entity.bean;
 import java.util.List;
 
 /**
- * Description  项目实体
+ * Description  项目列表实体
  * Company Beijing icourt
  * author  lu.zhao  E-mail:zhaolu@icourt.cc
  * date createTime：17/5/2

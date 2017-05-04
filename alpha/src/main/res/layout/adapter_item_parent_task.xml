@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="@dimen/dp10">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical">
+
+            <View
+                android:layout_width="31dp"
+                android:layout_height="1dp"
+                android:background="@color/alpha_divider_color" />
+
+            <TextView
+                android:id="@+id/task_time_group_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/dp10"
+                android:layout_marginRight="@dimen/dp10"
+                android:text="今天"
+                android:textColor="@color/alpha_font_color_gray"
+                android:textSize="15sp" />
+
+            <View
+                android:layout_width="31dp"
+                android:layout_height="1dp"
+                android:background="@color/alpha_divider_color" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/task_time_group_count"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:drawablePadding="@dimen/dp10"
+            android:drawableRight="@mipmap/add"
+            android:gravity="center_vertical"
+            android:text="4"
+            android:textColor="@color/alpha_font_color_gray"
+            android:textSize="@dimen/alpha_font_size_mini" />
+
+    </RelativeLayout>
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/parent_item_task_recyclerview"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+    </android.support.v7.widget.RecyclerView>
+</LinearLayout>

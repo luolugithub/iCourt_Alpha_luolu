@@ -160,6 +160,8 @@ public class ProjectDetailBean implements Serializable {
 
     private List<ParticipantsBean> participants;
 
+    private List<MemberBean> memberBeans;
+
     public String getPkId() {
         return pkId;
     }
@@ -494,6 +496,14 @@ public class ProjectDetailBean implements Serializable {
 
     public void setPrincipalAttorneys(List<PrincipalAttorneysBean> principalAttorneys) {
         this.principalAttorneys = principalAttorneys;
+    }
+
+    public List<MemberBean> getMemberBeans() {
+        return memberBeans;
+    }
+
+    public void setMemberBeans(List<MemberBean> memberBeans) {
+        this.memberBeans = memberBeans;
     }
 
     public static class ResponsibleAttorneysBean {
@@ -895,6 +905,54 @@ public class ProjectDetailBean implements Serializable {
 
         public void setName(String name) {
             this.name = name;
+        }
+    }
+
+    public static class MemberBean{
+        private String userId;
+        private String userName;
+        private String roleId;
+        private String roleName;
+        private String pic;
+
+        public String getUserId() {
+            return userId;
+        }
+
+        public void setUserId(String userId) {
+            this.userId = userId;
+        }
+
+        public String getUserName() {
+            return userName;
+        }
+
+        public void setUserName(String userName) {
+            this.userName = userName;
+        }
+
+        public String getRoleId() {
+            return roleId;
+        }
+
+        public void setRoleId(String roleId) {
+            this.roleId = roleId;
+        }
+
+        public String getRoleName() {
+            return roleName;
+        }
+
+        public void setRoleName(String roleName) {
+            this.roleName = roleName;
+        }
+
+        public String getPic() {
+            return pic;
+        }
+
+        public void setPic(String pic) {
+            this.pic = pic;
         }
     }
 }

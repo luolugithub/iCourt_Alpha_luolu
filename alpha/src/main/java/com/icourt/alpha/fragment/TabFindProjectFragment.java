@@ -70,8 +70,10 @@ public class TabFindProjectFragment extends BaseFragment {
     public void onViewClicked(View view) {
         switch (view.getId()) {
             case R.id.titleAction:
+
                 break;
             case R.id.titleAction2:
+
                 break;
         }
     }

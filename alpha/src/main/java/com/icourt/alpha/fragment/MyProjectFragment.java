@@ -19,7 +19,6 @@ import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.ActionConstants;
 import com.icourt.alpha.utils.ItemDecorationUtils;
-import com.icourt.alpha.utils.logger.Logger;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 
 import java.lang.annotation.Retention;
@@ -44,7 +43,8 @@ public class MyProjectFragment extends BaseFragment {
     public static final int TYPE_ALL_PROJECT = 0;//全部
     public static final int TYPE_MY_ATTENTION_PROJECT = 1;//我关注的
     public static final int TYPE_MY_PARTIC_PROJECT = 2;//我参与的
-    private static final String KEY_FILE_TYPE = "key_project_type";
+    private static final String KEY_PROJECT_TYPE = "key_project_type";
+    @Nullable
     @BindView(R.id.recyclerView)
     RecyclerView recyclerView;
     @BindView(R.id.refreshLayout)
@@ -66,7 +66,7 @@ public class MyProjectFragment extends BaseFragment {
     public static MyProjectFragment newInstance(@QueryProjectType int projectType) {
         MyProjectFragment myProjectFragment = new MyProjectFragment();
         Bundle bundle = new Bundle();
-        bundle.putInt(KEY_FILE_TYPE, projectType);
+        bundle.putInt(KEY_PROJECT_TYPE, projectType);
         myProjectFragment.setArguments(bundle);
         return myProjectFragment;
     }
@@ -81,7 +81,7 @@ public class MyProjectFragment extends BaseFragment {
 
     @Override
     protected void initView() {
-        projectType = getArguments().getInt(KEY_FILE_TYPE);
+        projectType = getArguments().getInt(KEY_PROJECT_TYPE);
         if (projectType == TYPE_ALL_PROJECT) {
             attorneyType = "";
             myStar = "";
@@ -121,14 +121,12 @@ public class MyProjectFragment extends BaseFragment {
         if (isRefresh) {
             pageIndex = 1;
         }
-        Logger.e("projectType : "+projectType);
-        Logger.e("attorneyType : "+attorneyType);
-        Logger.e("myStar : "+myStar);
         getApi().projectQueryAll(pageIndex, ActionConstants.DEFAULT_PAGE_SIZE, "", "", "", "", attorneyType, myStar)
                 .enqueue(new SimpleCallBack<List<ProjectEntity>>() {
                     @Override
                     public void onSuccess(Call<ResEntity<List<ProjectEntity>>> call, Response<ResEntity<List<ProjectEntity>>> response) {
                         projectListAdapter.bindData(isRefresh, response.body().result);
+                        enableEmptyView(response.body().result);
                         stopRefresh();
                         pageIndex += 1;
                         enableLoadMore(response.body().result);
@@ -140,6 +138,18 @@ public class MyProjectFragment extends BaseFragment {
                         stopRefresh();
                     }
                 });
+    }
+
+    private void enableEmptyView(List result) {
+        if (refreshLayout != null) {
+            if (result != null) {
+                if (result.size() > 0) {
+                    refreshLayout.enableEmptyView(false);
+                } else {
+                    refreshLayout.enableEmptyView(true);
+                }
+            }
+        }
     }
 
     private void enableLoadMore(List result) {
@@ -156,9 +166,15 @@ public class MyProjectFragment extends BaseFragment {
         }
     }
 
+//    @Override
+//    protected void onDestroyView() {
+//        super.onDestroyView();
+//        unbinder.unbind();
+//    }
+
     @Override
-    public void onDestroyView() {
-        super.onDestroyView();
+    public void onDestroy() {
+        super.onDestroy();
         unbinder.unbind();
     }
 }

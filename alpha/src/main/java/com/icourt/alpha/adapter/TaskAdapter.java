@@ -1,5 +1,7 @@
 package com.icourt.alpha.adapter;
 
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.TextView;
 
@@ -28,16 +30,28 @@ public class TaskAdapter extends BaseArrayRecyclerAdapter<TaskEntity> implements
 
     @Override
     public int bindView(int viewtype) {
-        return R.layout.adapter_item_task;
+        return R.layout.adapter_item_parent_task;
     }
 
     @Override
     public void onBindHoder(ViewHolder holder, TaskEntity taskEntity, int position) {
         if (taskEntity == null) return;
-        TextView task_title_tv = holder.obtainView(R.id.task_title_tv);
-        TextView task_project_belong_tv = holder.obtainView(R.id.task_project_belong_tv);
-        task_title_tv.setText(taskEntity.name);
-        task_project_belong_tv.setText(taskEntity.matter == null ? "" : taskEntity.matter.name);
+        TextView task_title_time_tv = holder.obtainView(R.id.task_time_group_name);
+        TextView task_title_count_tv = holder.obtainView(R.id.task_time_group_count);
+        task_title_time_tv.setText(taskEntity.groupName);
+        task_title_count_tv.setText(String.valueOf(taskEntity.groupTaskCount));
+        RecyclerView recyclerView = holder.obtainView(R.id.parent_item_task_recyclerview);
+
+        if (recyclerView.getLayoutManager() == null) {
+            LinearLayoutManager layoutManager = new LinearLayoutManager(recyclerView.getContext());
+            recyclerView.setLayoutManager(layoutManager);
+        }
+        if (recyclerView.getAdapter() == null) {
+            TaskItemAdapter taskItemAdapter = new TaskItemAdapter();
+            recyclerView.setAdapter(taskItemAdapter);
+            taskItemAdapter.setOnItemClickListener(super.onItemClickListener);
+            taskItemAdapter.bindData(false, taskEntity.taskItemEntitys);
+        }
     }
 
     @Override

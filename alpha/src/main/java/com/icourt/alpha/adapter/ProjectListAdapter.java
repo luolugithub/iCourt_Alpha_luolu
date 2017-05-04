@@ -5,6 +5,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.icourt.alpha.R;
+import com.icourt.alpha.activity.ProjectDetailActivity;
 import com.icourt.alpha.adapter.baseadapter.BaseArrayRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.entity.bean.ProjectEntity;
@@ -62,7 +63,10 @@ public class ProjectListAdapter extends BaseArrayRecyclerAdapter<ProjectEntity> 
 
     @Override
     public void onItemClick(BaseRecyclerAdapter adapter, ViewHolder holder, View view, int position) {
-
+        ProjectEntity projectEntity = (ProjectEntity) adapter.getItem(position);
+        if (projectEntity != null) {
+            ProjectDetailActivity.launch(view.getContext(), projectEntity.pkId, projectEntity.name);
+        }
     }
 
     @Override

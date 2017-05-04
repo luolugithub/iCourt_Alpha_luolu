@@ -14,6 +14,7 @@ import com.icourt.alpha.entity.bean.IMSessionDontDisturbEntity;
 import com.icourt.alpha.entity.bean.LoginIMToken;
 import com.icourt.alpha.entity.bean.MsgConvert2Task;
 import com.icourt.alpha.entity.bean.PageEntity;
+import com.icourt.alpha.entity.bean.ProjectDetailEntity;
 import com.icourt.alpha.entity.bean.ProjectEntity;
 import com.icourt.alpha.entity.bean.SearchEngineEntity;
 import com.icourt.alpha.entity.bean.SetTopEntity;
@@ -675,4 +676,13 @@ public interface AlphaApiService {
                                                          @Query("attorneyType") String attorneyType,
                                                          @Query("myStar") String myStar
     );
+
+    /**
+     * 获取项目概览
+     *
+     * @param id
+     * @return
+     */
+    @GET("api/v1/matters/{id}")
+    Call<ResEntity<List<ProjectDetailEntity>>> projectDetail(@Path("id") String id);
 }
