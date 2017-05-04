@@ -44,7 +44,10 @@
                 android:background="?attr/selectableItemBackground"
                 android:drawableLeft="@mipmap/icon_phone_16"
                 android:drawablePadding="@dimen/dp10"
-                android:padding="10dp"
+                android:paddingBottom="12dp"
+                android:paddingLeft="10dp"
+                android:paddingRight="10dp"
+                android:paddingTop="12dp"
                 android:text="@string/my_center_phone_text" />
 
             <TextView
@@ -80,7 +83,10 @@
                 android:background="?attr/selectableItemBackground"
                 android:drawableLeft="@mipmap/icon_mail_16"
                 android:drawablePadding="@dimen/dp10"
-                android:padding="10dp"
+                android:paddingBottom="12dp"
+                android:paddingLeft="10dp"
+                android:paddingRight="10dp"
+                android:paddingTop="12dp"
                 android:text="@string/my_center_phone_text" />
 
             <TextView
@@ -111,10 +117,13 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="?attr/selectableItemBackground"
-            android:drawableLeft="@mipmap/icon_mail_16"
-            android:drawablePadding="@dimen/dp10"
+            android:drawableLeft="@mipmap/icon_task_group_18_copy"
+            android:drawablePadding="10dp"
             android:drawableRight="@mipmap/arrow_right"
-            android:padding="10dp"
+            android:paddingBottom="12dp"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp"
+            android:paddingTop="12dp"
             android:text="文件" />
 
         <View
@@ -125,13 +134,18 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:gravity="center_vertical"
             android:orientation="horizontal">
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
+                android:drawableLeft="@mipmap/ic_msg_set_top"
+                android:drawablePadding="10dp"
                 android:padding="10dp"
+                android:paddingBottom="12dp"
+                android:paddingTop="12dp"
                 android:text="置顶聊天" />
 
             <Switch
@@ -147,7 +161,7 @@
         android:id="@+id/contact_send_msg_tv"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="10dp"
+        android:layout_margin="20dp"
         android:background="@drawable/orange_circle_bg"
         android:gravity="center"
         android:paddingBottom="10dp"
@@ -156,7 +170,7 @@
         android:paddingTop="10dp"
         android:text="发送消息"
         android:textColor="@color/white"
-        android:textSize="@dimen/alpha_font_size_mini_lowest"
+        android:textSize="@dimen/alpha_font_size_mini"
         android:visibility="visible" />
 
 </LinearLayout>

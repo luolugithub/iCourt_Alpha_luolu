@@ -33,15 +33,15 @@ import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.icourt.alpha.entity.bean.GroupDetailEntity;
 import com.icourt.alpha.entity.bean.GroupEntity;
 import com.icourt.alpha.entity.event.GroupActionEvent;
+import com.icourt.alpha.entity.event.NoDisturbingEvent;
+import com.icourt.alpha.entity.event.SetTopEvent;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.JsonUtils;
 import com.icourt.alpha.utils.StringUtils;
 import com.icourt.api.RequestUtils;
 import com.netease.nimlib.sdk.NIMClient;
-import com.netease.nimlib.sdk.RequestCallback;
 import com.netease.nimlib.sdk.team.TeamService;
-import com.netease.nimlib.sdk.team.model.Team;
 
 import org.greenrobot.eventbus.EventBus;
 
@@ -311,13 +311,18 @@ public class GroupDetailActivity extends BaseActivity {
      * 获取所有置顶的会话ids
      */
     private void getSetTopSessions() {
-        getApi().setTopQueryAllIds()
+        getApi().sessionQueryAllsetTopIds()
                 .enqueue(new SimpleCallBack<List<String>>() {
                     @Override
                     public void onSuccess(Call<ResEntity<List<String>>> call, Response<ResEntity<List<String>>> response) {
                         if (response.body().result != null) {
-                            groupSetTopSwitch.setChecked(response.body()
-                                    .result.contains(getIMChatId()));
+                            boolean isTop = response.body()
+                                    .result.contains(getIMChatId());
+                            groupSetTopSwitch.setChecked(isTop);
+                            EventBus.getDefault().post(new SetTopEvent(isTop, getIMChatId()));
+                        } else {
+                            groupSetTopSwitch.setChecked(false);
+                            EventBus.getDefault().post(new SetTopEvent(false, getIMChatId()));
                         }
                     }
                 });
@@ -329,7 +334,19 @@ public class GroupDetailActivity extends BaseActivity {
      * 获取讨论组 是否免打扰
      */
     private void getIsSetGroupNoDisturbing() {
-        NIMClient.getService(TeamService.class)
+        //先拿网络 保持三端一致
+        getApi().sessionQueryAllsetTopIds()
+                .enqueue(new SimpleCallBack<List<String>>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<List<String>>> call, Response<ResEntity<List<String>>> response) {
+                        if (response.body().result != null) {
+                            groupNotDisturbSwitch.setChecked(response.body().result.contains(getIMChatId()));
+                        } else {
+                            groupNotDisturbSwitch.setChecked(false);
+                        }
+                    }
+                });
+           /*NIMClient.getService(TeamService.class)
                 .queryTeam(getIntent().getStringExtra(KEY_TID))
                 .setCallback(new RequestCallback<Team>() {
                     @Override
@@ -346,7 +363,7 @@ public class GroupDetailActivity extends BaseActivity {
                     public void onException(Throwable exception) {
                         log("-------->onException:" + exception);
                     }
-                });
+                });*/
     }
 
     /**
@@ -361,8 +378,12 @@ public class GroupDetailActivity extends BaseActivity {
                         dismissLoadingDialog();
                         if (response.body().result != null && response.body().result.booleanValue()) {
                             groupSetTopSwitch.setChecked(true);
+                            NIMClient.getService(TeamService.class).muteTeam(getIntent().getStringExtra(KEY_TID), true);
+                            broadSetTopEvent();
                         } else {
                             groupSetTopSwitch.setChecked(false);
+                            NIMClient.getService(TeamService.class).muteTeam(getIntent().getStringExtra(KEY_TID), false);
+                            broadSetTopEvent();
                         }
                     }
 
@@ -386,8 +407,10 @@ public class GroupDetailActivity extends BaseActivity {
                         dismissLoadingDialog();
                         if (response.body().result != null && response.body().result.booleanValue()) {
                             groupSetTopSwitch.setChecked(false);
+                            broadSetTopEvent();
                         } else {
                             groupSetTopSwitch.setChecked(true);
+                            broadSetTopEvent();
                         }
                     }
 
@@ -412,8 +435,11 @@ public class GroupDetailActivity extends BaseActivity {
                         if (response.body().result != null && response.body().result) {
                             groupNotDisturbSwitch.setChecked(true);
                             NIMClient.getService(TeamService.class).muteTeam(getIntent().getStringExtra(KEY_TID), true);
+                            broadNoDisturbingEvent();
                         } else {
                             groupNotDisturbSwitch.setChecked(false);
+                            NIMClient.getService(TeamService.class).muteTeam(getIntent().getStringExtra(KEY_TID), false);
+                            broadNoDisturbingEvent();
                         }
                     }
 
@@ -423,6 +449,22 @@ public class GroupDetailActivity extends BaseActivity {
                         dismissLoadingDialog();
                     }
                 });
+    }
+
+    /**
+     * 广播通知其它页面更新置顶
+     */
+    private void broadSetTopEvent() {
+        if (groupNotDisturbSwitch == null) return;
+        EventBus.getDefault().post(new SetTopEvent(groupSetTopSwitch.isChecked(), getIMChatId()));
+    }
+
+    /**
+     * 广播通知其它页面消息免打扰
+     */
+    private void broadNoDisturbingEvent() {
+        if (groupNotDisturbSwitch == null) return;
+        EventBus.getDefault().post(new NoDisturbingEvent(groupNotDisturbSwitch.isChecked(), getIMChatId()));
     }
 
     /**
@@ -438,8 +480,11 @@ public class GroupDetailActivity extends BaseActivity {
                         if (response.body().result != null && response.body().result) {
                             groupNotDisturbSwitch.setChecked(false);
                             NIMClient.getService(TeamService.class).muteTeam(getIntent().getStringExtra(KEY_TID), false);
+                            broadNoDisturbingEvent();
                         } else {
                             groupNotDisturbSwitch.setChecked(true);
+                            NIMClient.getService(TeamService.class).muteTeam(getIntent().getStringExtra(KEY_TID), true);
+                            broadNoDisturbingEvent();
                         }
                     }
 
@@ -456,18 +501,17 @@ public class GroupDetailActivity extends BaseActivity {
      */
     private void joinGroup() {
         showLoadingDialog(null);
-        getApi().joinGroup(getIntent().getStringExtra(KEY_GROUP_ID))
-                .enqueue(new SimpleCallBack<JsonElement>() {
+        getApi().groupJoin(getIntent().getStringExtra(KEY_GROUP_ID))
+                .enqueue(new SimpleCallBack<Boolean>() {
                     @Override
-                    public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
-                        dismissLoadingDialog();
+                    public void onSuccess(Call<ResEntity<Boolean>> call, Response<ResEntity<Boolean>> response) {
                         getData(true);
                         EventBus.getDefault().post(
                                 new GroupActionEvent(GroupActionEvent.GROUP_ACTION_JOIN, getIntent().getStringExtra(KEY_GROUP_ID)));
                     }
 
                     @Override
-                    public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
+                    public void onFailure(Call<ResEntity<Boolean>> call, Throwable t) {
                         super.onFailure(call, t);
                         dismissLoadingDialog();
                     }
@@ -479,13 +523,12 @@ public class GroupDetailActivity extends BaseActivity {
      */
     private void quitGroup() {
         showLoadingDialog(null);
-        getApi().quitGroup(getIntent().getStringExtra(KEY_GROUP_ID))
-                .enqueue(new SimpleCallBack<Integer>() {
+        getApi().groupQuit(getIntent().getStringExtra(KEY_GROUP_ID))
+                .enqueue(new SimpleCallBack<Boolean>() {
                     @Override
-                    public void onSuccess(Call<ResEntity<Integer>> call, Response<ResEntity<Integer>> response) {
+                    public void onSuccess(Call<ResEntity<Boolean>> call, Response<ResEntity<Boolean>> response) {
                         dismissLoadingDialog();
-                        if (response.body().result != null
-                                && response.body().result == 1) {
+                        if (response.body().result != null && response.body().result.booleanValue()) {
                             EventBus.getDefault().post(
                                     new GroupActionEvent(GroupActionEvent.GROUP_ACTION_QUIT, getIntent().getStringExtra(KEY_GROUP_ID)));
                             finish();
@@ -493,7 +536,7 @@ public class GroupDetailActivity extends BaseActivity {
                     }
 
                     @Override
-                    public void onFailure(Call<ResEntity<Integer>> call, Throwable t) {
+                    public void onFailure(Call<ResEntity<Boolean>> call, Throwable t) {
                         super.onFailure(call, t);
                         dismissLoadingDialog();
                     }

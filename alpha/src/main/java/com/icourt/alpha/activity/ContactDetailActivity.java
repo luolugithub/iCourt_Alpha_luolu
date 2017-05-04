@@ -18,8 +18,9 @@ import android.widget.TextView;
 
 import com.icourt.alpha.R;
 import com.icourt.alpha.base.BaseActivity;
+import com.icourt.alpha.constants.Const;
 import com.icourt.alpha.entity.bean.GroupContactBean;
-import com.icourt.alpha.entity.bean.SetTopEntity;
+import com.icourt.alpha.entity.event.SetTopEvent;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.GlideUtils;
@@ -149,7 +150,11 @@ public class ContactDetailActivity extends BaseActivity {
                 IMFileListActivity.launch(getContext());
                 break;
             case R.id.contact_setTop_switch:
-                setTop();
+                if (!contactSetTopSwitch.isChecked()) {
+                    setTopCancel();
+                } else {
+                    setTop();
+                }
                 break;
             default:
                 super.onClick(v);
@@ -161,22 +166,19 @@ public class ContactDetailActivity extends BaseActivity {
     protected void getData(boolean isRefresh) {
         super.getData(isRefresh);
         showLoadingDialog(null);
-        getApi().isSetTop(groupContactBean.userId)
-                .enqueue(new SimpleCallBack<Integer>() {
+        getApi().sessionQueryAllsetTopIds()
+                .enqueue(new SimpleCallBack<List<String>>() {
                     @Override
-                    public void onSuccess(Call<ResEntity<Integer>> call, Response<ResEntity<Integer>> response) {
-                        dismissLoadingDialog();
-                        contactSetTopSwitch.setChecked(response.body().result != null && response.body().result.intValue() == 1);
-                    }
-
-                    @Override
-                    public void onFailure(Call<ResEntity<Integer>> call, Throwable t) {
-                        super.onFailure(call, t);
-                        dismissLoadingDialog();
+                    public void onSuccess(Call<ResEntity<List<String>>> call, Response<ResEntity<List<String>>> response) {
+                        if (response.body().result != null) {
+                            contactSetTopSwitch.setChecked(response.body().result.contains(groupContactBean.accid));
+                            broadSetTopEvent();
+                        } else {
+                            contactSetTopSwitch.setChecked(false);
+                            broadSetTopEvent();
+                        }
                     }
                 });
-
-
     }
 
 
@@ -200,14 +202,47 @@ public class ContactDetailActivity extends BaseActivity {
      * 置顶
      */
     private void setTop() {
-        getApi().setTop(groupContactBean.userId)
-                .enqueue(new SimpleCallBack<List<SetTopEntity>>() {
+        getApi().sessionSetTop(Const.CHAT_TYPE_P2P, groupContactBean.accid)
+                .enqueue(new SimpleCallBack<Boolean>() {
                     @Override
-                    public void onSuccess(Call<ResEntity<List<SetTopEntity>>> call, Response<ResEntity<List<SetTopEntity>>> response) {
-                        if (response.body().result == null) return;
-                        EventBus.getDefault().post(response.body().result);
+                    public void onSuccess(Call<ResEntity<Boolean>> call, Response<ResEntity<Boolean>> response) {
+                        if (response.body().result != null && response.body().result.booleanValue()) {
+                            contactSetTopSwitch.setChecked(true);
+                            broadSetTopEvent();
+                        } else {
+                            contactSetTopSwitch.setChecked(false);
+                            broadSetTopEvent();
+                        }
                     }
                 });
     }
 
+
+    /**
+     * 广播通知其它页面更新置顶
+     */
+    private void broadSetTopEvent() {
+        if (contactSetTopSwitch == null) return;
+        EventBus.getDefault().post(new SetTopEvent(contactSetTopSwitch.isChecked(), groupContactBean.accid));
+    }
+
+
+    /**
+     * 取消置顶
+     */
+    private void setTopCancel() {
+        getApi().sessionSetTopCancel(Const.CHAT_TYPE_P2P, groupContactBean.accid)
+                .enqueue(new SimpleCallBack<Boolean>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<Boolean>> call, Response<ResEntity<Boolean>> response) {
+                        if (response.body().result != null && response.body().result.booleanValue()) {
+                            contactSetTopSwitch.setChecked(false);
+                            broadSetTopEvent();
+                        } else {
+                            contactSetTopSwitch.setChecked(true);
+                            broadSetTopEvent();
+                        }
+                    }
+                });
+    }
 }

@@ -26,9 +26,10 @@ import com.icourt.alpha.db.dbservice.ContactDbService;
 import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.icourt.alpha.entity.bean.IMMessageCustomBody;
-import com.icourt.alpha.entity.bean.IMSessionDontDisturbEntity;
 import com.icourt.alpha.entity.bean.IMSessionEntity;
-import com.icourt.alpha.entity.bean.SetTopEntity;
+import com.icourt.alpha.entity.event.GroupActionEvent;
+import com.icourt.alpha.entity.event.NoDisturbingEvent;
+import com.icourt.alpha.entity.event.SetTopEvent;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
@@ -65,7 +66,6 @@ import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
 import io.reactivex.ObservableOnSubscribe;
 import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
 import retrofit2.Call;
@@ -86,7 +86,6 @@ public class MessageListFragment extends BaseFragment
 
     Unbinder unbinder;
     IMSessionAdapter imSessionAdapter;
-    Disposable subscribe;
     @BindView(R.id.recyclerView)
     RecyclerView recyclerView;
     @BindView(R.id.refreshLayout)
@@ -144,29 +143,41 @@ public class MessageListFragment extends BaseFragment
         refreshLayout.startRefresh();
     }
 
+
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onMessageEvent(List<SetTopEntity> setTopEntities) {
-        if (setTopEntities == null) return;
-        updateUIwithTopEntities(setTopEntities);
+    public void onMessageEvent(SetTopEvent setTopEvent) {
+        if (setTopEvent == null) return;
+        //TODO 更新消息置顶状态
     }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onMessageEvent(NoDisturbingEvent noDisturbingEvent) {
+        if (noDisturbingEvent == null) return;
+        //TODO 更新消息免打扰状态
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onMessageEvent(GroupActionEvent groupActionEvent) {
+        if (groupActionEvent == null) return;
+        //TODO 删除已经退出的讨论组
+    }
+
 
     /**
      * 更新 UI 置顶会话优先显示
      *
-     * @param setTopEntities
+     * @param setTopIds
      */
-    private void updateUIwithTopEntities(List<SetTopEntity> setTopEntities) {
-        if (setTopEntities == null) return;
+    private void updateUIwithTopEntities(List<String> setTopIds) {
+        if (setTopIds == null) return;
         for (IMSessionEntity item : imSessionAdapter.getData()) {
             if (item != null
                     && item.recentContact != null) {
 
                 item.recentContact.setTag(ActionConstants.MESSAGE_GROUP_NO_TOP);
                 NIMClient.getService(MsgService.class).updateRecent(item.recentContact);
-
-                for (SetTopEntity setTopEntity : setTopEntities) {
-                    if (setTopEntity != null
-                            && TextUtils.equals(setTopEntity.p2pId, item.recentContact.getContactId().toUpperCase())) {
+                for (String id : setTopIds) {
+                    if (TextUtils.equals(id, item.recentContact.getContactId().toUpperCase())) {
 
                         //设置为置顶并更新本地
                         item.recentContact.setTag(ActionConstants.MESSAGE_GROUP_TOP);
@@ -212,7 +223,7 @@ public class MessageListFragment extends BaseFragment
      */
     private void wrapRecentContact(final List<RecentContact> recentContacts) {
         if (recentContacts == null) return;
-        subscribe = Observable.create(new ObservableOnSubscribe<List<IMSessionEntity>>() {
+        Observable.create(new ObservableOnSubscribe<List<IMSessionEntity>>() {
             @Override
             public void subscribe(ObservableEmitter<List<IMSessionEntity>> e) throws Exception {
                 if (e.isDisposed()) return;
@@ -325,10 +336,6 @@ public class MessageListFragment extends BaseFragment
     @Override
     public void onDestroy() {
         super.onDestroy();
-        if (subscribe != null
-                && !subscribe.isDisposed()) {
-            subscribe.dispose();
-        }
         EventBus.getDefault().unregister(this);
     }
 
@@ -365,13 +372,11 @@ public class MessageListFragment extends BaseFragment
      * 获取消息免打扰
      */
     private void getDontDisturbs() {
-        getApi().getDontDisturbs()
-                .enqueue(new SimpleCallBack<List<IMSessionDontDisturbEntity>>() {
+        getApi().sessionQueryAllNoDisturbingIds()
+                .enqueue(new SimpleCallBack<List<String>>() {
                     @Override
-                    public void onSuccess(Call<ResEntity<List<IMSessionDontDisturbEntity>>> call, Response<ResEntity<List<IMSessionDontDisturbEntity>>> response) {
-                        if (response.body().result != null && imSessionAdapter != null) {
-                            updateLocalDontDisturbs(response.body().result);
-                        }
+                    public void onSuccess(Call<ResEntity<List<String>>> call, Response<ResEntity<List<String>>> response) {
+                        updateLocalDontDisturbs(response.body().result);
                     }
                 });
     }
@@ -380,11 +385,11 @@ public class MessageListFragment extends BaseFragment
     /**
      * 更新 消息免打扰【群聊】 UI 数据库
      *
-     * @param imSessionDontDisturbEntities 网络同步的免打扰对象
+     * @param dontDisturbIds 网络同步的免打扰对象
      */
-    private void updateLocalDontDisturbs(final List<IMSessionDontDisturbEntity> imSessionDontDisturbEntities) {
-        if (imSessionDontDisturbEntities == null) return;
-        subscribe = Observable.create(new ObservableOnSubscribe<List<IMSessionEntity>>() {
+    private void updateLocalDontDisturbs(final List<String> dontDisturbIds) {
+        if (dontDisturbIds == null) return;
+        Observable.create(new ObservableOnSubscribe<List<IMSessionEntity>>() {
             @Override
             public void subscribe(ObservableEmitter<List<IMSessionEntity>> e) throws Exception {
                 if (e.isDisposed()) return;
@@ -406,13 +411,11 @@ public class MessageListFragment extends BaseFragment
                                 .muteTeam(imSessionEntity.recentContact.getContactId(), false);
 
                         //将新同步的免打扰开启
-                        for (int j = 0; j < imSessionDontDisturbEntities.size(); j++) {
-                            IMSessionDontDisturbEntity imSessionDontDisturbEntity = imSessionDontDisturbEntities.get(j);
-                            if (imSessionDontDisturbEntity == null) continue;
+                        for (int j = 0; j < dontDisturbIds.size(); j++) {
 
-                            if (TextUtils.equals(imSessionDontDisturbEntity.groupId, imSessionEntity.recentContact.getContactId())) {
+                            if (TextUtils.equals(dontDisturbIds.get(j), imSessionEntity.recentContact.getContactId())) {
                                 NIMClient.getService(TeamService.class)
-                                        .muteTeam(imSessionDontDisturbEntity.groupId, true);
+                                        .muteTeam(imSessionEntity.recentContact.getContactId(), true);
                                 extendMap.put(RecentContactExtConfig.EXT_SETTING_DONT_DISTURB, true);
                             }
                         }
@@ -472,11 +475,10 @@ public class MessageListFragment extends BaseFragment
      * 获取置顶的会话
      */
     private void getTopSession() {
-        getApi().getTop()
-                .enqueue(new SimpleCallBack<List<SetTopEntity>>() {
+        getApi().sessionQueryAllsetTopIds()
+                .enqueue(new SimpleCallBack<List<String>>() {
                     @Override
-                    public void onSuccess(Call<ResEntity<List<SetTopEntity>>> call, Response<ResEntity<List<SetTopEntity>>> response) {
-                        if (response.body().result == null) return;
+                    public void onSuccess(Call<ResEntity<List<String>>> call, Response<ResEntity<List<String>>> response) {
                         updateUIwithTopEntities(response.body().result);
                     }
                 });

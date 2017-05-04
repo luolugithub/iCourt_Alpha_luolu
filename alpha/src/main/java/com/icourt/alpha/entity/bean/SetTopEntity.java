@@ -7,10 +7,11 @@ package com.icourt.alpha.entity.bean;
  * date createTime：2017/4/15
  * version 1.0.0
  */
+@Deprecated
 public class SetTopEntity {
     public String groupId;
     public String memberId;
     public String p2pId;
     public String tid;
-    
+
 }

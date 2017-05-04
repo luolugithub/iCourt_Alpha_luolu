@@ -10,14 +10,12 @@ import com.icourt.alpha.entity.bean.GroupDetailEntity;
 import com.icourt.alpha.entity.bean.GroupEntity;
 import com.icourt.alpha.entity.bean.GroupMemberEntity;
 import com.icourt.alpha.entity.bean.IMMessageCustomBody;
-import com.icourt.alpha.entity.bean.IMSessionDontDisturbEntity;
 import com.icourt.alpha.entity.bean.LoginIMToken;
 import com.icourt.alpha.entity.bean.MsgConvert2Task;
 import com.icourt.alpha.entity.bean.PageEntity;
 import com.icourt.alpha.entity.bean.ProjectDetailEntity;
 import com.icourt.alpha.entity.bean.ProjectEntity;
 import com.icourt.alpha.entity.bean.SearchEngineEntity;
-import com.icourt.alpha.entity.bean.SetTopEntity;
 import com.icourt.alpha.entity.bean.TaskEntity;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 
@@ -165,98 +163,6 @@ public interface AlphaApiService {
     @GET("api/v1/auth/up/getRobot")
     Call<ResEntity<List<GroupContactBean>>> getRobos();
 
-    /**
-     * 获取消息免打扰列表  非免打扰的team 不返回
-     * 【注意】 目前单聊没有免打扰 是群聊免打扰
-     *
-     * @return
-     */
-    @GET("api/v2/chat/group/getNoDisturbing")
-    Call<ResEntity<List<IMSessionDontDisturbEntity>>> getDontDisturbs();
-
-    /**
-     * 是否置顶
-     *
-     * @param p2pId
-     * @return
-     */
-    @GET("api/v2/chat/group/isStarred")
-    Call<ResEntity<Integer>> isSetTop(@Query("p2pId") String p2pId);
-
-
-    /**
-     * 是否置顶
-     *
-     * @param groupId
-     * @return
-     */
-    @GET("api/v2/chat/group/isStarred")
-    @Deprecated
-    Call<ResEntity<Integer>> isGroupSetTop(@Query("groupId") String groupId);
-
-    /**
-     * 置顶
-     * 【注意】 这个接口只支持post
-     *
-     * @param p2pId
-     * @return
-     */
-    @POST("api/v2/chat/group/setStarred")
-    @FormUrlEncoded
-    Call<ResEntity<List<SetTopEntity>>> setTop(@Field("p2pId") String p2pId);
-
-    /**
-     * 讨论组 置顶
-     *
-     * @param groupId
-     * @return
-     */
-    @POST("api/v2/chat/group/setStarred")
-    @FormUrlEncoded
-    @Deprecated
-    Call<ResEntity<List<SetTopEntity>>> setGroupTop(@Field("groupId") String groupId);
-
-
-    /**
-     * 获取置顶
-     * 【注意】 这个接口只支持post
-     *
-     * @return
-     */
-    @POST("api/v2/chat/group/setStarred")
-    Call<ResEntity<List<SetTopEntity>>> getTop();
-
-    /**
-     * 设置消息免打扰
-     *
-     * @param groupId 群组id
-     * @return
-     */
-    @POST("api/v2/chat/group/setNoDisturbing")
-    @FormUrlEncoded
-    @Deprecated
-    Call<ResEntity<Integer>> setNoDisturbing(@Field("groupId") String groupId);
-
-
-    /**
-     * 加入群组
-     *
-     * @param groupId
-     * @return
-     */
-    @POST("api/v2/chat/group/mem/addPersional")
-    @FormUrlEncoded
-    Call<ResEntity<JsonElement>> joinGroup(@Field("groupId") String groupId);
-
-    /**
-     * 退出讨论组
-     *
-     * @param groupId
-     * @return
-     */
-    @POST("api/v2/chat/group/mem/deletePersional")
-    @FormUrlEncoded
-    Call<ResEntity<Integer>> quitGroup(@Field("groupId") String groupId);
 
     /**
      * 根据不同类型获取文件列表
@@ -424,6 +330,27 @@ public interface AlphaApiService {
     @PUT("http://10.25.115.31:8083/ilaw/api/v3/im/groups/{tid}")
     Call<ResEntity<JsonElement>> groupUpdate(@Path("tid") String tid,
                                              @Body RequestBody groupInfo);
+
+
+    /**
+     * 加入讨论组
+     * 文档地址:https://www.showdoc.cc/1620156?page_id=14892528
+     *
+     * @param group_tid
+     * @return
+     */
+    @POST("http://10.25.115.31:8083/ilaw/api/v3/im/groups/{group_tid}/members/joined")
+    Call<ResEntity<Boolean>> groupJoin(@Path("group_tid") String group_tid);
+
+    /**
+     * 退出讨论组
+     * 文档地址:https://www.showdoc.cc/1620156?page_id=14892528
+     *
+     * @param group_tid
+     * @return
+     */
+    @POST("http://10.25.115.31:8083/ilaw/api/v3/im/groups/{group_tid}/members/quit")
+    Call<ResEntity<Boolean>> groupQuit(@Path("group_tid") String group_tid);
 
     /**
      * 获取群组
@@ -636,7 +563,7 @@ public interface AlphaApiService {
      * @return
      */
     @GET("http://10.25.115.31:8083/ilaw/api/v3/im/chats/sticks/ids")
-    Call<ResEntity<List<String>>> setTopQueryAllIds();
+    Call<ResEntity<List<String>>> sessionQueryAllsetTopIds();
 
     /**
      * 会话置顶
@@ -661,6 +588,14 @@ public interface AlphaApiService {
     @DELETE("http://10.25.115.31:8083/ilaw/api/v3/im/chats/sticks")
     Call<ResEntity<Boolean>> sessionSetTopCancel(@Query("ope") @Const.CHAT_TYPE int ope,
                                                  @Query("to") String to);
+
+    /**
+     * 获取所有会话免打扰id
+     *
+     * @return
+     */
+    @GET("http://10.25.115.31:8083/ilaw/api/v3/im/chats/nodisturbing/ids")
+    Call<ResEntity<List<String>>> sessionQueryAllNoDisturbingIds();
 
     /**
      * 会话免打扰
