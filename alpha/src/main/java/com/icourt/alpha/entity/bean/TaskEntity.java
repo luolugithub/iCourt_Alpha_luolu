@@ -11,7 +11,6 @@ import java.util.List;
  */
 public class TaskEntity {
 
-    public String id;
     public String groupName;//分组名称(今天、即将到期)
     public int groupTaskCount;//分组内任务个数
     public List<TaskItemEntity> taskItemEntitys;
@@ -25,6 +24,7 @@ public class TaskEntity {
     }
 
     public static class TaskItemEntity {
+        public String id;
         public String name;//任务名称
         public String taskGroupName;//任务组名称
         public long dueTime;//到期时间

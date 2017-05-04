@@ -10,9 +10,6 @@
         android:id="@id/recyclerView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:paddingLeft="@dimen/dp10"
-        android:paddingRight="@dimen/dp10"
-        android:paddingTop="@dimen/dp10"
         android:clipToPadding="false"
          />
 </com.icourt.alpha.view.xrefreshlayout.RefreshLayout>

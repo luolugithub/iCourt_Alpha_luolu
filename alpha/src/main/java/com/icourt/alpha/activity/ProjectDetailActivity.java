@@ -19,6 +19,7 @@ import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.fragment.MyProjectFragment;
 import com.icourt.alpha.fragment.ProjectDetailFragment;
 import com.icourt.alpha.fragment.ProjectTaskFragment;
+import com.icourt.alpha.fragment.ProjectTimeFragment;
 import com.icourt.alpha.utils.logger.Logger;
 
 import java.util.Arrays;
@@ -94,7 +95,7 @@ public class ProjectDetailActivity extends BaseActivity {
 //                        ProjectDetailFragment.newInstance(projectId),
                         ProjectDetailFragment.newInstance(projectId),
                         ProjectTaskFragment.newInstance(projectId),
-                        MyProjectFragment.newInstance(MyProjectFragment.TYPE_MY_PARTIC_PROJECT),
+                        ProjectTimeFragment.newInstance(projectId),
                         MyProjectFragment.newInstance(MyProjectFragment.TYPE_MY_PARTIC_PROJECT),
                         MyProjectFragment.newInstance(MyProjectFragment.TYPE_MY_PARTIC_PROJECT)));
     }

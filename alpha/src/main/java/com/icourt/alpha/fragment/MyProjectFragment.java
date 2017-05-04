@@ -18,7 +18,6 @@ import com.icourt.alpha.entity.bean.ProjectEntity;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.ActionConstants;
-import com.icourt.alpha.utils.ItemDecorationUtils;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 
 import java.lang.annotation.Retention;
@@ -95,7 +94,6 @@ public class MyProjectFragment extends BaseFragment {
         refreshLayout.setNoticeEmpty(R.mipmap.icon_placeholder_project, R.string.null_project);
         refreshLayout.setMoveForHorizontal(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        recyclerView.addItemDecoration(ItemDecorationUtils.getCommTrans5Divider(getContext(), true));
         recyclerView.setHasFixedSize(true);
         recyclerView.setAdapter(projectListAdapter = new ProjectListAdapter());
         projectListAdapter.registerAdapterDataObserver(new RefreshViewEmptyObserver(refreshLayout, projectListAdapter));
