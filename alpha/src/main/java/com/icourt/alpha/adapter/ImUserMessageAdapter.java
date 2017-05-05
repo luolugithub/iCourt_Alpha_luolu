@@ -1,5 +1,6 @@
 package com.icourt.alpha.adapter;
 
+import android.support.annotation.NonNull;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.ImageView;
@@ -11,12 +12,17 @@ import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.baseadapter.BaseArrayRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.constants.Const;
+import com.icourt.alpha.entity.bean.AlphaUserInfo;
+import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.icourt.alpha.entity.bean.IMMessageCustomBody;
-import com.icourt.alpha.entity.bean.IMStringWrapEntity;
 import com.icourt.alpha.utils.ActionConstants;
+import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.FileUtils;
 import com.icourt.alpha.utils.GlideUtils;
 import com.icourt.alpha.utils.IMUtils;
+import com.icourt.alpha.utils.LoginInfoUtils;
+
+import java.util.List;
 
 import static com.icourt.alpha.constants.Const.MSG_TYPE_ALPHA;
 import static com.icourt.alpha.constants.Const.MSG_TYPE_AT;
@@ -43,9 +49,34 @@ public class ImUserMessageAdapter extends BaseArrayRecyclerAdapter<IMMessageCust
     private static final int VIEW_TYPE_SYS = 5;
 
     private String loginToken;
+    AlphaUserInfo alphaUserInfo;
+    private List<GroupContactBean> contactBeanList;//本地联系人
 
-    public ImUserMessageAdapter(String loginToken) {
-        this.loginToken = loginToken;
+    /**
+     * 获取本地头像
+     *
+     * @param accid
+     * @return
+     */
+    public String getUserIcon(String accid) {
+        if (contactBeanList != null) {
+            GroupContactBean groupContactBean = new GroupContactBean();
+            groupContactBean.accid = accid;
+            int indexOf = contactBeanList.indexOf(groupContactBean);
+            if (indexOf >= 0) {
+                groupContactBean = contactBeanList.get(indexOf);
+                return groupContactBean.pic;
+            }
+        }
+        return "";
+    }
+
+    public ImUserMessageAdapter(@NonNull List<GroupContactBean> contactBeanList) {
+        alphaUserInfo = LoginInfoUtils.getLoginUserInfo();
+        if (alphaUserInfo != null) {
+            this.loginToken = alphaUserInfo.getToken();
+        }
+        this.contactBeanList = contactBeanList;
         this.setOnItemClickListener(this);
     }
 
@@ -93,22 +124,31 @@ public class ImUserMessageAdapter extends BaseArrayRecyclerAdapter<IMMessageCust
 
     @Override
     public void onBindHoder(ViewHolder holder, IMMessageCustomBody imFileEntity, int position) {
-   /*     if (imFileEntity == null) return;
+        if (imFileEntity == null) return;
         ImageView file_from_user_iv = holder.obtainView(R.id.file_from_user_iv);
         TextView file_from_user_tv = holder.obtainView(R.id.file_from_user_tv);
         TextView file_from_time_tv = holder.obtainView(R.id.file_from_time_tv);
 
-        GlideUtils.loadUser(file_from_user_iv.getContext(), imFileEntity.pic, file_from_user_iv);
-        file_from_user_tv.setText(imFileEntity.createName);
-        file_from_time_tv.setText(DateUtils.getTimeShowString(imFileEntity.createDate, true));
+        GlideUtils.loadUser(file_from_user_iv.getContext(),
+                getUserIcon(imFileEntity.from),
+                file_from_user_iv);
+        file_from_user_tv.setText(imFileEntity.name);
+        file_from_time_tv.setText(DateUtils.getTimeShowString(imFileEntity.send_time, true));
 
         switch (holder.getItemViewType()) {
             case VIEW_TYPE_TEXT:
             case VIEW_TYPE_AT:
-            case VIEW_TYPE_SYS:
             case VIEW_TYPE_DING:
                 TextView item_text = holder.obtainView(R.id.item_text);
-                item_text.setText(imFileEntity.content.content);
+                item_text.setText(imFileEntity.content);
+                break;
+            case VIEW_TYPE_SYS:
+                TextView item_text_sys = holder.obtainView(R.id.item_text);
+                if (imFileEntity.ext != null) {
+                    item_text_sys.setText(imFileEntity.ext.content);
+                } else {
+                    item_text_sys.setText("服务器 系统消息 ext null");
+                }
                 break;
             case VIEW_TYPE_FILE_IMG:
                 ImageView file_img = holder.obtainView(R.id.file_img);
@@ -117,7 +157,7 @@ public class ImUserMessageAdapter extends BaseArrayRecyclerAdapter<IMMessageCust
             case VIEW_TYPE_FILE:
                 setViewFileCommFile(holder, imFileEntity);
                 break;
-        }*/
+        }
     }
 
     /**
@@ -126,16 +166,20 @@ public class ImUserMessageAdapter extends BaseArrayRecyclerAdapter<IMMessageCust
      * @param holder
      * @param imFileEntity
      */
-    private void setViewFileCommFile(ViewHolder holder, IMStringWrapEntity imFileEntity) {
+    private void setViewFileCommFile(ViewHolder holder, IMMessageCustomBody imFileEntity) {
         if (holder == null) return;
         if (imFileEntity == null) return;
         if (imFileEntity.content == null) return;
         ImageView file_type_iv = holder.obtainView(R.id.file_type_iv);
         TextView file_title_tv = holder.obtainView(R.id.file_title_tv);
         TextView file_size_tv = holder.obtainView(R.id.file_size_tv);
-        file_type_iv.setImageResource(getFileIcon40(imFileEntity.content.file));
-        file_title_tv.setText(imFileEntity.content.file);
-        file_size_tv.setText(FileUtils.kbFromat(imFileEntity.content.size));
+        if (imFileEntity.ext != null) {
+            file_type_iv.setImageResource(getFileIcon40(imFileEntity.ext.name));
+            file_title_tv.setText(imFileEntity.ext.name);
+            file_size_tv.setText(FileUtils.kbFromat(imFileEntity.ext.size));
+        } else {
+            file_title_tv.setText("服务器 file ext null");
+        }
     }
 
     /**
@@ -144,13 +188,12 @@ public class ImUserMessageAdapter extends BaseArrayRecyclerAdapter<IMMessageCust
      * @param file_img
      * @param imFileEntity
      */
-    private void setViewTypeWithImg(ImageView file_img, IMStringWrapEntity imFileEntity) {
+    private void setViewTypeWithImg(ImageView file_img, IMMessageCustomBody imFileEntity) {
         if (file_img == null) return;
         if (imFileEntity == null) return;
         if (GlideUtils.canLoadImage(file_img.getContext())) {
             Glide.with(file_img.getContext())
-                    .load(getCombPicUrl((imFileEntity != null && imFileEntity.content != null)
-                            ? imFileEntity.content.path : ""))
+                    .load(getCombPicUrl(imFileEntity.ext != null ? imFileEntity.ext.path : ""))
                     .placeholder(R.drawable.bg_round_rect_gray)
                     .into(file_img);
         }

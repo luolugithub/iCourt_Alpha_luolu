@@ -15,10 +15,10 @@ import java.util.UUID;
  */
 public class IMMessageCustomBody implements ILongFieldEntity {
     public static final String PLATFORM_ANDROID = "ANDROID";
-    public String id;
+    public String id;//消息id
     public String name;// 发送人名字,
     public String from;//发送人id,
-    public String to;
+    public String to;//接收人id，这个需要根据ope判断
 
     @Const.CHAT_TYPE
     public int ope;            //0点对点，1群聊

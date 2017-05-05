@@ -201,7 +201,7 @@ public interface AlphaApiService {
      * @param pageSize 每页获取条目数量
      * @return
      */
-    @GET("api/v2/chat/msg/getStarSign")
+    @GET("http://10.25.115.31:8083/ilaw/api/v3/im/msgs/stars")
     Call<ResEntity<List<IMMessageCustomBody>>> getMyCollectedMessages(@Query("pageNum") int pageNum,
                                                                       @Query("pageSize") int pageSize);
 
@@ -672,6 +672,7 @@ public interface AlphaApiService {
 
     /**
      * 获取我的最新信息
+     *
      * @return
      */
     @GET("http://10.25.115.31:8083/ilaw/api/v3/im/users/me")
@@ -679,6 +680,7 @@ public interface AlphaApiService {
 
     /**
      * 更新用户信息
+     *
      * @param params
      * @return
      */

@@ -2,26 +2,26 @@
 <android.support.design.widget.AppBarLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@id/titleView"
+    style="@style/AlphaTitleAppBarLayout"
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
     <!-- 【标题布局 请勿轻易修改】 -->
-    <LinearLayout
+    <LinearLayout xmlns:app="http://schemas.android.com/apk/res-auto"
         android:layout_width="match_parent"
         android:layout_height="@dimen/alpha_height_title"
         android:background="@color/alpha_background_title"
         android:gravity="center_vertical"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
-        app:layout_scrollFlags="scroll|enterAlways|snap"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        app:layout_scrollFlags="scroll|enterAlways|snap">
 
         <ImageView
             android:id="@id/titleBack"
             android:layout_width="38dp"
             android:layout_height="match_parent"
+            android:layout_marginLeft="5dp"
             android:background="?attr/selectableItemBackground"
             android:padding="10dp"
-            android:layout_marginLeft="5dp"
             android:src="@mipmap/header_icon_back" />
 
         <TextView

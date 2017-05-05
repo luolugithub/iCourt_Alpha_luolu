@@ -27,6 +27,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import static com.icourt.alpha.constants.Const.MSG_TYPE_SYS;
+
 /**
  * Description
  * Company Beijing icourt
@@ -66,6 +68,10 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMMessageCustomBody> i
     private static final int TYPE_RIGHT_DING_FILE = 105;
     private static final int TYPE_RIGHT_LINK = 106;
 
+
+    private static final int TYPE_CENTER_SYS = 200;
+
+
     private String loginToken;
     AlphaUserInfo alphaUserInfo;
     private List<GroupContactBean> contactBeanList;//本地联系人
@@ -86,7 +92,7 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMMessageCustomBody> i
                 return groupContactBean.pic;
             }
         }
-        return null;
+        return "";
     }
 
     public ChatAdapter(List<GroupContactBean> contactBeanList) {
@@ -133,6 +139,8 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMMessageCustomBody> i
                 return R.layout.adapter_item_chat_right_ding_file;
             case TYPE_RIGHT_LINK:
                 return R.layout.adapter_item_chat_right_link;
+            case TYPE_CENTER_SYS:
+                return R.layout.adapter_item_chat_sys;
         }
         return R.layout.adapter_item_chat_left_txt;
     }
@@ -151,7 +159,10 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMMessageCustomBody> i
     public int getItemViewType(int position) {
         IMMessageCustomBody item = getItem(position);
         if (item != null) {
-            if (!isSendMsg(item.from)) {
+            //系统消息
+            if (item.show_type == MSG_TYPE_SYS) {
+
+            } else if (!isSendMsg(item.from)) {
                 switch (item.show_type) {
                     case Const.MSG_TYPE_TXT:
                         return TYPE_LEFT_TXT;
@@ -166,7 +177,7 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMMessageCustomBody> i
                         return TYPE_LEFT_DING_TXT;
                     case Const.MSG_TYPE_AT:
                         return TYPE_LEFT_TXT;
-                    case Const.MSG_TYPE_SYS:
+                    case MSG_TYPE_SYS:
                         return TYPE_LEFT_TXT;
                     case Const.MSG_TYPE_LINK:
                         return TYPE_LEFT_LINK;
@@ -186,7 +197,7 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMMessageCustomBody> i
                         return TYPE_RIGHT_DING_TXT;
                     case Const.MSG_TYPE_AT:
                         return TYPE_RIGHT_TXT;
-                    case Const.MSG_TYPE_SYS:
+                    case MSG_TYPE_SYS:
                         return TYPE_RIGHT_TXT;
                     case Const.MSG_TYPE_LINK:
                         return TYPE_RIGHT_LINK;
@@ -252,6 +263,28 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMMessageCustomBody> i
             case TYPE_RIGHT_LINK:
                 setTypeRightLink(holder, imMessageCustomBody, position);
                 break;
+
+            case TYPE_CENTER_SYS:
+                setTypeCenterSys(holder, imMessageCustomBody, position);
+                break;
+        }
+    }
+
+    /**
+     * 设置系统消息
+     *
+     * @param holder
+     * @param imMessageCustomBody
+     * @param position
+     */
+    private void setTypeCenterSys(ViewHolder holder, IMMessageCustomBody imMessageCustomBody, int position) {
+        if (holder == null) return;
+        if (imMessageCustomBody == null) return;
+        TextView chat_sys_tv = holder.obtainView(R.id.chat_sys_tv);
+        if (imMessageCustomBody.ext != null) {
+            chat_sys_tv.setText(imMessageCustomBody.ext.content);
+        } else {
+            chat_sys_tv.setText("系统消息ext null");
         }
     }
 
