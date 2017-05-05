@@ -2,6 +2,8 @@ package com.icourt.alpha.fragment;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
@@ -12,7 +14,6 @@ import android.view.ViewGroup;
 import com.andview.refreshview.XRefreshView;
 import com.gjiazhe.wavesidebar.WaveSideBar;
 import com.icourt.alpha.R;
-import com.icourt.alpha.activity.ContactDetailActivity;
 import com.icourt.alpha.activity.ContactSearchActivity;
 import com.icourt.alpha.activity.GroupListActivity;
 import com.icourt.alpha.adapter.IMContactAdapter;
@@ -27,6 +28,7 @@ import com.icourt.alpha.db.dbservice.ContactDbService;
 import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.icourt.alpha.entity.bean.ItemsEntity;
+import com.icourt.alpha.fragment.dialogfragment.ContactDialogFragment;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.DensityUtil;
@@ -310,10 +312,8 @@ public class ContactListFragment extends BaseFragment implements BaseRecyclerAda
     @Override
     public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
         if (adapter == imContactAdapter) {
-            GroupContactBean data = imContactAdapter.getData(position -
-                    (imContactAdapter.getParentHeaderFooterAdapter() == null
-                            ? 0 : imContactAdapter.getParentHeaderFooterAdapter().getHeaderCount()));
-            ContactDetailActivity.launch(getContext(), data, false, false);
+            GroupContactBean data = imContactAdapter.getData(adapter.getRealPos(position));
+            showContactDialogFragment(data);
         } else if (adapter == itemsEntityItemActionAdapter) {
             ItemsEntity item = itemsEntityItemActionAdapter.getItem(position);
             if (item != null) {
@@ -329,6 +329,23 @@ public class ContactListFragment extends BaseFragment implements BaseRecyclerAda
                 }
             }
         }
+    }
+
+    /**
+     * 展示联系人对话框
+     *
+     * @param data
+     */
+    public void showContactDialogFragment(GroupContactBean data) {
+        if (data == null) return;
+        String tag = "ContactDialogFragment";
+        FragmentTransaction mFragTransaction = getChildFragmentManager().beginTransaction();
+        Fragment fragment = getFragmentManager().findFragmentByTag(tag);
+        if (fragment != null) {
+            mFragTransaction.remove(fragment);
+        }
+        ContactDialogFragment.newInstance(data.accid, "联系人资料", false)
+                .show(mFragTransaction, tag);
     }
 
 }

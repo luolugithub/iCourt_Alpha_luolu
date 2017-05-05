@@ -24,6 +24,7 @@ public class ContactDbModel extends RealmObject
     public String userId;
     public String userName;
     public String name;
+    public String title;
     public String phone;
     public String email;
     public String pic;
@@ -42,10 +43,11 @@ public class ContactDbModel extends RealmObject
     public boolean extBoolean1;
     public boolean extBoolean2;
 
-    public ContactDbModel(String accid, String userId, String userName, String name, String phone, String email, String pic, int robot) {
+    public ContactDbModel(String accid, String userId, String userName, String name, String title, String phone, String email, String pic, int robot) {
         this.accid = accid;
         this.userId = userId;
         this.userName = userName;
+        this.title = title;
         this.name = name;
         this.phone = phone;
         this.email = email;
@@ -61,6 +63,7 @@ public class ContactDbModel extends RealmObject
     public GroupContactBean convert2Model() {
         return new GroupContactBean(accid, userId,
                 name,
+                title,
                 phone,
                 email,
                 pic,

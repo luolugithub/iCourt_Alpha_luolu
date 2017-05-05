@@ -27,6 +27,7 @@ public class GroupContactBean
     @SerializedName(value = "userId", alternate = "user_id")
     public String userId;
     public String name;
+    public String title;
     public String phone;
     public String email;
     public String pic;
@@ -35,10 +36,11 @@ public class GroupContactBean
     public GroupContactBean() {
     }
 
-    public GroupContactBean(String accid, String userId, String name, String phone, String email, String pic, int robot) {
+    public GroupContactBean(String accid, String userId, String name, String title, String phone, String email, String pic, int robot) {
         this.accid = accid;
         this.userId = userId;
         this.name = name;
+        this.title = title;
         this.phone = phone;
         this.email = email;
         this.pic = pic;
@@ -65,6 +67,7 @@ public class GroupContactBean
         return new ContactDbModel(accid, userId,
                 null,
                 name,
+                title,
                 phone,
                 email,
                 pic,

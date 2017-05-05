@@ -329,6 +329,7 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMMessageCustomBody> i
                     .loadUser(chat_user_icon_iv.getContext(),
                             TextUtils.isEmpty(userHeadImg) ? "" : userHeadImg,
                             chat_user_icon_iv);
+            holder.bindChildClick(chat_user_icon_iv);
         }
     }
 

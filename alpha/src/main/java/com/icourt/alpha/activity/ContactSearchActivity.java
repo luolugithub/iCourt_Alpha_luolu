@@ -205,9 +205,8 @@ public class ContactSearchActivity extends BaseActivity implements BaseRecyclerA
 
     @Override
     public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
-        GroupContactBean data = imContactAdapter.getData(position -
-                (imContactAdapter.getParentHeaderFooterAdapter() == null
-                        ? 0 : imContactAdapter.getParentHeaderFooterAdapter().getHeaderCount()));
-        ContactDetailActivity.launch(getContext(), data, false, false);
+        GroupContactBean data = imContactAdapter.getData(adapter.getRealPos(position));
+        if (data == null) return;
+        ContactDetailActivity.launch(getContext(), data.accid, false, false);
     }
 }

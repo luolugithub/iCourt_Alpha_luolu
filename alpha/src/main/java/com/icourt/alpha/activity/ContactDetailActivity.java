@@ -19,6 +19,8 @@ import android.widget.TextView;
 import com.icourt.alpha.R;
 import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.constants.Const;
+import com.icourt.alpha.db.dbmodel.ContactDbModel;
+import com.icourt.alpha.db.dbservice.ContactDbService;
 import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.icourt.alpha.entity.event.SetTopEvent;
 import com.icourt.alpha.http.callback.SimpleCallBack;
@@ -76,19 +78,20 @@ public class ContactDetailActivity extends BaseActivity {
     LinearLayout contactFileAndroidTopLl;
     GroupContactBean groupContactBean;
 
-    private static final String KEY_CONTACT = "contact";
+    private static final String KEY_ACCID = "key_accid";
     private static final String KEY_HIDEN_FILE_ITEM = "hidenFileItem";
     private static final String KEY_HIDEN_SEND_MSG_BTN = "hidenSendMsgBtn";
     private static final int CODE_REQUEST_PERMISSION_CALL_PHONE = 101;
+    ContactDbService contactDbService;
 
     public static void launch(@NonNull Context context,
-                              @Nullable GroupContactBean contactBean,
+                              @Nullable String accId,
                               boolean hidenFileItem,
                               boolean hidenSendMsgBtn) {
         if (context == null) return;
-        if (contactBean == null) return;
+        if (TextUtils.isEmpty(accId)) return;
         Intent intent = new Intent(context, ContactDetailActivity.class);
-        intent.putExtra(KEY_CONTACT, contactBean);
+        intent.putExtra(KEY_ACCID, accId);
         intent.putExtra(KEY_HIDEN_FILE_ITEM, hidenFileItem);
         intent.putExtra(KEY_HIDEN_SEND_MSG_BTN, hidenSendMsgBtn);
         context.startActivity(intent);
@@ -106,12 +109,18 @@ public class ContactDetailActivity extends BaseActivity {
     @Override
     protected void initView() {
         super.initView();
-        groupContactBean = (GroupContactBean) getIntent().getSerializableExtra(KEY_CONTACT);
-        setTitle(groupContactBean.name);
-        contactNameTv.setText(groupContactBean.name);
-        contactPhoneTv.setText(groupContactBean.phone);
-        contactEmailTv.setText(groupContactBean.email);
-        GlideUtils.loadUser(getContext(), groupContactBean.pic, contactIconIv);
+        contactDbService = new ContactDbService(getLoginUserId());
+        ContactDbModel contactDbModel = contactDbService.queryFirst("accid", getIntent().getStringExtra(KEY_ACCID));
+        if (contactDbModel != null) {
+            groupContactBean = contactDbModel.convert2Model();
+            if (groupContactBean != null) {
+                setTitle(groupContactBean.name);
+                contactNameTv.setText(groupContactBean.name);
+                contactPhoneTv.setText(groupContactBean.phone);
+                contactEmailTv.setText(groupContactBean.email);
+                GlideUtils.loadUser(getContext(), groupContactBean.pic, contactIconIv);
+            }
+        }
         setViewVisible(contactFileAndroidTopLl, !getIntent().getBooleanExtra(KEY_HIDEN_FILE_ITEM, false));
         setViewVisible(contactSendMsgTv, !getIntent().getBooleanExtra(KEY_HIDEN_SEND_MSG_BTN, false));
     }
@@ -170,13 +179,21 @@ public class ContactDetailActivity extends BaseActivity {
                 .enqueue(new SimpleCallBack<List<String>>() {
                     @Override
                     public void onSuccess(Call<ResEntity<List<String>>> call, Response<ResEntity<List<String>>> response) {
-                        if (response.body().result != null) {
+                        dismissLoadingDialog();
+                        if (response.body().result != null
+                                && groupContactBean != null) {
                             contactSetTopSwitch.setChecked(response.body().result.contains(groupContactBean.accid));
                             broadSetTopEvent();
                         } else {
                             contactSetTopSwitch.setChecked(false);
                             broadSetTopEvent();
                         }
+                    }
+
+                    @Override
+                    public void onFailure(Call<ResEntity<List<String>>> call, Throwable t) {
+                        super.onFailure(call, t);
+                        dismissLoadingDialog();
                     }
                 });
     }
@@ -202,6 +219,7 @@ public class ContactDetailActivity extends BaseActivity {
      * 置顶
      */
     private void setTop() {
+        if (groupContactBean == null) return;
         getApi().sessionSetTop(Const.CHAT_TYPE_P2P, groupContactBean.accid)
                 .enqueue(new SimpleCallBack<Boolean>() {
                     @Override
@@ -223,6 +241,7 @@ public class ContactDetailActivity extends BaseActivity {
      */
     private void broadSetTopEvent() {
         if (contactSetTopSwitch == null) return;
+        if (groupContactBean == null) return;
         EventBus.getDefault().post(new SetTopEvent(contactSetTopSwitch.isChecked(), groupContactBean.accid));
     }
 
@@ -231,6 +250,7 @@ public class ContactDetailActivity extends BaseActivity {
      * 取消置顶
      */
     private void setTopCancel() {
+        if (groupContactBean == null) return;
         getApi().sessionSetTopCancel(Const.CHAT_TYPE_P2P, groupContactBean.accid)
                 .enqueue(new SimpleCallBack<Boolean>() {
                     @Override
@@ -244,5 +264,13 @@ public class ContactDetailActivity extends BaseActivity {
                         }
                     }
                 });
+    }
+
+    @Override
+    protected void onDestroy() {
+        if (contactDbService != null) {
+            contactDbService.releaseService();
+        }
+        super.onDestroy();
     }
 }

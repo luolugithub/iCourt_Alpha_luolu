@@ -11,6 +11,8 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.AppBarLayout;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
@@ -26,10 +28,12 @@ import android.widget.TextView;
 import com.andview.refreshview.XRefreshView;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.ChatAdapter;
+import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.constants.Const;
 import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.icourt.alpha.entity.bean.IMMessageCustomBody;
 import com.icourt.alpha.entity.event.NoDisturbingEvent;
+import com.icourt.alpha.fragment.dialogfragment.ContactDialogFragment;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.callback.SimpleTextWatcher;
@@ -92,7 +96,7 @@ import static com.netease.nimlib.sdk.msg.model.QueryDirectionEnum.QUERY_OLD;
  * date createTime：2017/4/24
  * version 1.0.0
  */
-public class ChatActivity extends ChatBaseActivity {
+public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapter.OnItemChildClickListener {
     private static final int REQUEST_CODE_CAMERA = 1000;
     private static final int REQUEST_CODE_GALLERY = 1001;
     private static final int REQUEST_CODE_AT_MEMBER = 1002;
@@ -580,6 +584,7 @@ public class ChatActivity extends ChatBaseActivity {
         recyclerView.setHasFixedSize(true);
         recyclerView.setAdapter(chatAdapter = new ChatAdapter(localContactList));
         chatAdapter.setOnItemLongClickListener(this);
+        chatAdapter.setOnItemChildClickListener(this);
         recyclerView.addItemDecoration(new ChatItemDecoration(getContext(), chatAdapter));
         refreshLayout.setXRefreshViewListener(new XRefreshView.SimpleXRefreshListener() {
             @Override
@@ -843,7 +848,7 @@ public class ChatActivity extends ChatBaseActivity {
                     case CHAT_TYPE_P2P:
                         ContactDetailActivity.launch(
                                 getContext(),
-                                null,
+                                getIMChatId(),
                                 false,
                                 false
                         );
@@ -923,4 +928,40 @@ public class ChatActivity extends ChatBaseActivity {
     }
 
 
+    @Override
+    public void onItemChildClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
+        switch (view.getId()) {
+            case R.id.chat_user_icon_iv:
+                IMMessageCustomBody item = chatAdapter.getItem(position);
+                if (item != null) {
+                    switch (getIMChatType()) {
+                        case CHAT_TYPE_P2P:
+                            showContactDialogFragment(item.from, true);
+                            break;
+                        case CHAT_TYPE_TEAM:
+                            showContactDialogFragment(item.from,
+                                    StringUtils.equalsIgnoreCase(item.from, getLoadedLoginUserId(), false));
+                            break;
+                    }
+                }
+                break;
+        }
+    }
+
+    /**
+     * 展示联系人对话框
+     *
+     * @param accid
+     * @param hiddenChatBtn
+     */
+    public void showContactDialogFragment(String accid, boolean hiddenChatBtn) {
+        String tag = "ContactDialogFragment";
+        FragmentTransaction mFragTransaction = getSupportFragmentManager().beginTransaction();
+        Fragment fragment = getSupportFragmentManager().findFragmentByTag(tag);
+        if (fragment != null) {
+            mFragTransaction.remove(fragment);
+        }
+        ContactDialogFragment.newInstance(accid, "成员资料", hiddenChatBtn)
+                .show(mFragTransaction, tag);
+    }
 }
