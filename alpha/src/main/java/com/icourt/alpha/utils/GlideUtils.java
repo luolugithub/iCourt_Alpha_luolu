@@ -96,6 +96,23 @@ public class GlideUtils {
         }
     }
 
+    /**
+     * @param context
+     * @param path
+     * @param imageView
+     */
+    public static void loadPic(Context context, String path, ImageView imageView) {
+        if (imageView == null) return;
+        if (canLoadImage(context)) {
+            Glide.with(context)
+                    .load(path)
+                    .error(R.mipmap.default_img_failed)
+                    .centerCrop()
+                    .into(imageView);
+
+        }
+    }
+
 
     /**
      * 为图片着色
@@ -126,13 +143,13 @@ public class GlideUtils {
 
     /**
      * 为图片着色
-     *
+     * <p>
      * <?xml version="1.0" encoding="utf-8"?>
      * <selector xmlns:android="http://schemas.android.com/apk/res/android">
      * <item android:color="#FF4081" android:state_pressed="true" />
      * <item android:color="#3F51B5" />
      * </selector>
-     *
+     * <p>
      * eg.  ivButton.setImageDrawable(tintDrawable(src,ColorStateList.valueOf(Color.WHITE)));
      *
      * @param drawable

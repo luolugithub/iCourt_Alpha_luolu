@@ -14,6 +14,7 @@ import java.util.List;
 import static com.icourt.alpha.constants.Const.MSG_TYPE_AT;
 import static com.icourt.alpha.constants.Const.MSG_TYPE_DING;
 import static com.icourt.alpha.constants.Const.MSG_TYPE_FILE;
+import static com.icourt.alpha.constants.Const.MSG_TYPE_IMAGE;
 import static com.icourt.alpha.constants.Const.MSG_TYPE_LINK;
 import static com.icourt.alpha.constants.Const.MSG_TYPE_SYS;
 import static com.icourt.alpha.constants.Const.MSG_TYPE_TXT;
@@ -144,6 +145,8 @@ public class IMUtils {
                 case MSG_TYPE_SYS:
                     return false;
                 case MSG_TYPE_LINK:
+                    return false;
+                case MSG_TYPE_IMAGE:
                     return false;
                 default:
                     return true;

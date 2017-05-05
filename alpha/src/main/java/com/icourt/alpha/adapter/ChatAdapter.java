@@ -16,9 +16,10 @@ import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.icourt.alpha.entity.bean.IMMessageCustomBody;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.GlideUtils;
-import com.icourt.alpha.utils.IMUtils;
 import com.icourt.alpha.utils.LoginInfoUtils;
 import com.icourt.alpha.utils.StringUtils;
+import com.icourt.alpha.utils.transformations.FitHeightImgViewTarget;
+import com.icourt.alpha.view.BubbleImageView;
 import com.icourt.alpha.view.recyclerviewDivider.ITimeDividerInterface;
 
 import java.util.Collections;
@@ -167,11 +168,7 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMMessageCustomBody> i
                     case Const.MSG_TYPE_TXT:
                         return TYPE_LEFT_TXT;
                     case Const.MSG_TYPE_FILE:
-                        if (item.ext != null && IMUtils.isPIC(item.ext.name)) {
-                            return TYPE_RIGHT_IMAGE;
-                        } else {
-                            return TYPE_RIGHT_FILE;
-                        }
+                        return TYPE_RIGHT_FILE;
                     case Const.MSG_TYPE_DING:
                         //TODO 钉 即将细分 文本 文件图片
                         return TYPE_LEFT_DING_TXT;
@@ -181,17 +178,15 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMMessageCustomBody> i
                         return TYPE_LEFT_TXT;
                     case Const.MSG_TYPE_LINK:
                         return TYPE_LEFT_LINK;
+                    case Const.MSG_TYPE_IMAGE:
+                        return TYPE_LEFT_IMAGE;
                 }
             } else {
                 switch (item.show_type) {
                     case Const.MSG_TYPE_TXT:
                         return TYPE_RIGHT_TXT;
                     case Const.MSG_TYPE_FILE:
-                        if (item.ext != null && IMUtils.isPIC(item.ext.name)) {
-                            return TYPE_RIGHT_IMAGE;
-                        } else {
-                            return TYPE_RIGHT_FILE;
-                        }
+                        return TYPE_RIGHT_FILE;
                     case Const.MSG_TYPE_DING:
                         //TODO 钉 即将细分 文本 文件图片
                         return TYPE_RIGHT_DING_TXT;
@@ -201,6 +196,8 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMMessageCustomBody> i
                         return TYPE_RIGHT_TXT;
                     case Const.MSG_TYPE_LINK:
                         return TYPE_RIGHT_LINK;
+                    case Const.MSG_TYPE_IMAGE:
+                        return TYPE_RIGHT_IMAGE;
                 }
             }
         }
@@ -354,17 +351,14 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMMessageCustomBody> i
      * @param position
      */
     private void setTypeLeftImage(ViewHolder holder, IMMessageCustomBody imMessageCustomBody, int position) {
-        ImageView chat_image_iv = holder.obtainView(R.id.chat_image_iv);
+        BubbleImageView chat_image_iv = holder.obtainView(R.id.chat_image_iv);
         if (imMessageCustomBody == null) return;
         if (GlideUtils.canLoadImage(chat_image_iv.getContext())) {
+            String picUrl = "";
             if (imMessageCustomBody.ext != null) {
-                Glide.with(chat_image_iv.getContext())
-                        .load(getFileUrl(imMessageCustomBody.ext.path, 360))
-                        .into(chat_image_iv);
-            } else {
-                //TODO 加载失败的图片
+                picUrl = imMessageCustomBody.ext.thumb;
             }
-
+            GlideUtils.loadPic(chat_image_iv.getContext(), picUrl, chat_image_iv);
         }
     }
 
@@ -486,7 +480,19 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMMessageCustomBody> i
      * @param position
      */
     private void setTypeRightImage(ViewHolder holder, IMMessageCustomBody imMessageCustomBody, int position) {
-
+        BubbleImageView chat_image_iv = holder.obtainView(R.id.chat_image_iv);
+        if (imMessageCustomBody == null) return;
+        if (GlideUtils.canLoadImage(chat_image_iv.getContext())) {
+            String picUrl = "";
+            if (imMessageCustomBody.ext != null) {
+                picUrl = imMessageCustomBody.ext.thumb;
+            }
+            Glide.with(chat_image_iv.getContext())
+                    .load(picUrl)
+                    .asBitmap()
+                    .into(new FitHeightImgViewTarget(chat_image_iv));
+           // GlideUtils.loadPic(chat_image_iv.getContext(), picUrl, chat_image_iv);
+        }
     }
 
     /**

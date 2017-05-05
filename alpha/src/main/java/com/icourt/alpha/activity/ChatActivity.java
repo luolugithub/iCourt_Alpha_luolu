@@ -139,8 +139,8 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
         public void onHanlderSuccess(int reqeustCode, List<PhotoInfo> resultList) {
             if (resultList != null) {
                 for (PhotoInfo photoInfo : resultList) {
-                    if (photoInfo != null) {
-                        uploadFile2Sfile(new File(photoInfo.getPhotoPath()));
+                    if (photoInfo != null && !TextUtils.isEmpty(photoInfo.getPhotoPath())) {
+                        sendIMFileMsg(photoInfo.getPhotoPath());
                     }
                 }
             }
@@ -364,7 +364,7 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
                     for (int i = 0; i < pics.size(); i++) {
                         String path = pics.get(i);
                         if (!TextUtils.isEmpty(path)) {
-                            uploadFile2Sfile(new File(path));
+                            sendIMFileMsg(path);
                         }
                     }
                 }
@@ -488,29 +488,13 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
     }
 
 
-    private void uploadFile2Sfile(File file) {
-   /*     if (file != null && file.exists()) {
-            Map<String, RequestBody> photos = new HashMap<>();
-            photos.put("file\"; filename=\"icon.png", RequestUtils.createImgBody(file));
-            getApi().groupUploadFile(getIntent().getStringExtra(KEY_GROUP_ID), photos)
-                    .enqueue(new SimpleCallBack<JsonElement>() {
-                        @Override
-                        public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
-                            sendFileMsg("");
-                        }
-                    });
-        } else {
-            showTopSnackBar("文件已不存在!");
-        }*/
-    }
-
     /**
      * 发送文件消息
      *
-     * @param url
+     * @param path
      */
-    private void sendFileMsg(String url) {
-        super.sendIMFileMsg(url);
+    private void sendFileMsg(String path) {
+        super.sendIMFileMsg(path);
     }
 
 

@@ -61,6 +61,7 @@ public class Const {
     public static final int MSG_TYPE_LINK = 5;           //链接消息
     public static final int MSG_TYPE_ALPHA = 6;          //alpha系统内业务消息
     public static final int MSG_TYPE_VOICE = 7;          //语音消息
+    public static final int MSG_TYPE_IMAGE = 8;          //图片消息
     //扩展消息 非展示类型
     public static final int MSG_TYPE_CONTACT_UPDATE = 100;//联系人更新通知
     public static final int MSG_TYPE_SET_TOP = 101;       //设置置顶通知

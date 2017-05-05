@@ -46,12 +46,16 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
@@ -61,6 +65,7 @@ import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
 import io.realm.RealmResults;
 import okhttp3.Request;
+import okhttp3.RequestBody;
 import retrofit2.Call;
 import retrofit2.Response;
 
@@ -68,6 +73,7 @@ import static com.icourt.alpha.constants.Const.MSG_TYPE_ALPHA;
 import static com.icourt.alpha.constants.Const.MSG_TYPE_AT;
 import static com.icourt.alpha.constants.Const.MSG_TYPE_DING;
 import static com.icourt.alpha.constants.Const.MSG_TYPE_FILE;
+import static com.icourt.alpha.constants.Const.MSG_TYPE_IMAGE;
 import static com.icourt.alpha.constants.Const.MSG_TYPE_LINK;
 import static com.icourt.alpha.constants.Const.MSG_TYPE_SYS;
 import static com.icourt.alpha.constants.Const.MSG_TYPE_TXT;
@@ -375,23 +381,26 @@ public abstract class ChatBaseActivity extends BaseActivity implements INIMessag
     /**
      * 发送文件消息
      *
-     * @param url
+     * @param path
      */
-    protected final void sendIMFileMsg(String url) {
-        IMMessageCustomBody msgPostEntity = IMMessageCustomBody.createFileMsg(getIMChatType(),
-                getLoadedLoginName(),
-                getIMChatId(),
-                url);
-        String jsonBody = null;
-        try {
-            jsonBody = JsonUtils.Gson2String(msgPostEntity);
-        } catch (JsonParseException e) {
-            e.printStackTrace();
+    protected final void sendIMFileMsg(String path) {
+        if (TextUtils.isEmpty(path)) return;
+        File file = new File(path);
+        if (!file.exists()) {
+            showTopSnackBar("文件不存在啦");
         }
-        getApi().msgAdd(RequestUtils.createJsonBody(jsonBody))
+        Map<String, RequestBody> params = new HashMap<>();
+        params.put("ope", RequestUtils.createTextBody(String.valueOf(getIMChatType())));
+        params.put("to", RequestUtils.createTextBody(String.valueOf(getIMChatId())));
+        params.put("name", RequestUtils.createTextBody(getLoadedLoginName()));
+        params.put("magic_id", RequestUtils.createTextBody(UUID.randomUUID().toString()));
+        params.put("platform", RequestUtils.createTextBody(IMMessageCustomBody.PLATFORM_ANDROID));
+        params.put("file\"; filename=\"image.png\"", RequestUtils.createImgBody(file));
+        getApi().msgImageAdd(params)
                 .enqueue(new SimpleCallBack<Boolean>() {
                     @Override
                     public void onSuccess(Call<ResEntity<Boolean>> call, Response<ResEntity<Boolean>> response) {
+
                     }
                 });
     }
@@ -576,6 +585,17 @@ public abstract class ChatBaseActivity extends BaseActivity implements INIMessag
                         menuItems.add("撤回");
                     }
                     break;
+                case MSG_TYPE_IMAGE:
+                    menuItems.clear();
+                    menuItems.addAll(Arrays.asList(
+                            isDinged(iMMessageCustomBody.id) ? "取消钉" : "钉",
+                            isCollected(iMMessageCustomBody.id) ? "取消收藏" : "收藏",
+                            "转任务"));
+                    if (isSendMsg(iMMessageCustomBody.from)
+                            && canRevokeMsg(iMMessageCustomBody.send_time)) {
+                        menuItems.add("撤回");
+                    }
+                    break;
                 case MSG_TYPE_DING://不能撤回 收藏的是钉的消息体,钉的消息[文本]可以转任务
                     menuItems.clear();
                     menuItems.addAll(Arrays.asList(
@@ -668,6 +688,7 @@ public abstract class ChatBaseActivity extends BaseActivity implements INIMessag
 
     /**
      * 消息转任务
+     * 文件 变成附件
      *
      * @param customIMBody
      */
