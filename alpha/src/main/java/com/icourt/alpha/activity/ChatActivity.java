@@ -914,19 +914,24 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
 
     @Override
     public void onItemChildClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
+        IMMessageCustomBody item = chatAdapter.getItem(position);
+        if (item == null) return;
         switch (view.getId()) {
             case R.id.chat_user_icon_iv:
-                IMMessageCustomBody item = chatAdapter.getItem(position);
-                if (item != null) {
-                    switch (getIMChatType()) {
-                        case CHAT_TYPE_P2P:
-                            showContactDialogFragment(item.from, true);
-                            break;
-                        case CHAT_TYPE_TEAM:
-                            showContactDialogFragment(item.from,
-                                    StringUtils.equalsIgnoreCase(item.from, getLoadedLoginUserId(), false));
-                            break;
-                    }
+                switch (getIMChatType()) {
+                    case CHAT_TYPE_P2P:
+                        showContactDialogFragment(item.from, true);
+                        break;
+                    case CHAT_TYPE_TEAM:
+                        showContactDialogFragment(item.from,
+                                StringUtils.equalsIgnoreCase(item.from, getLoadedLoginUserId(), false));
+                        break;
+                }
+                break;
+            case R.id.chat_image_iv:
+                if (item.ext != null) {
+                    ImagePagerActivity.launch(view.getContext(),
+                            new String[]{item.ext.thumb});
                 }
                 break;
         }

@@ -482,6 +482,7 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMMessageCustomBody> i
     private void setTypeRightImage(ViewHolder holder, IMMessageCustomBody imMessageCustomBody, int position) {
         BubbleImageView chat_image_iv = holder.obtainView(R.id.chat_image_iv);
         if (imMessageCustomBody == null) return;
+        holder.bindChildClick(chat_image_iv);
         if (GlideUtils.canLoadImage(chat_image_iv.getContext())) {
             String picUrl = "";
             if (imMessageCustomBody.ext != null) {
