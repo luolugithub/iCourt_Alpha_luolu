@@ -7,6 +7,8 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -24,6 +26,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.IMContactAdapter;
+import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.adapterObserver.DataChangeAdapterObserver;
 import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.constants.Const;
@@ -35,6 +38,7 @@ import com.icourt.alpha.entity.bean.GroupEntity;
 import com.icourt.alpha.entity.event.GroupActionEvent;
 import com.icourt.alpha.entity.event.NoDisturbingEvent;
 import com.icourt.alpha.entity.event.SetTopEvent;
+import com.icourt.alpha.fragment.dialogfragment.ContactDialogFragment;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.JsonUtils;
@@ -63,7 +67,7 @@ import static com.icourt.alpha.constants.Const.CHAT_TYPE_TEAM;
  * date createTime：2017/4/23
  * version 1.0.0
  */
-public class GroupDetailActivity extends BaseActivity {
+public class GroupDetailActivity extends BaseActivity implements BaseRecyclerAdapter.OnItemClickListener {
     private static final String KEY_TID = "key_tid";//云信id
 
     private static final int REQ_CODE_INVITATION_MEMBER = 1002;
@@ -113,6 +117,12 @@ public class GroupDetailActivity extends BaseActivity {
         }
     };
     GroupDetailEntity groupDetailEntity;
+    boolean isAdmin;
+    boolean joined;
+    @BindView(R.id.group_data_ll)
+    LinearLayout groupDataLl;
+    @BindView(R.id.group_session_action_ll)
+    LinearLayout groupSessionActionLl;
 
 
     public static void launchTEAM(@NonNull Context context, String tid) {
@@ -144,10 +154,13 @@ public class GroupDetailActivity extends BaseActivity {
         setViewVisible(titleActionImage, false);
         setViewVisible(groupMemberInviteTv, false);
         setViewVisible(groupJoinOrQuitBtn, false);
+        setViewVisible(groupDataLl, false);
+        setViewVisible(groupSessionActionLl, false);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false);
         linearLayoutManager.setAutoMeasureEnabled(true);
         groupMemberRecyclerView.setLayoutManager(linearLayoutManager);
         groupMemberRecyclerView.setAdapter(contactAdapter = new IMContactAdapter(Const.VIEW_TYPE_GRID));
+        contactAdapter.setOnItemClickListener(this);
         contactAdapter.registerAdapterDataObserver(dataChangeAdapterObserver);
     }
 
@@ -175,21 +188,26 @@ public class GroupDetailActivity extends BaseActivity {
                             groupJoinOrQuitBtn.setText(groupJoinOrQuitBtn.isSelected() ? "退出讨论组" : "加入讨论组");
                             ImageView titleActionImage = getTitleActionImage();
 
-                            boolean isAdmin = StringUtils.equalsIgnoreCase(getLoginUserId(), response.body().result.admin_id, false);
+                            isAdmin = StringUtils.equalsIgnoreCase(getLoginUserId(), response.body().result.admin_id, false);
 
                             //管理员设置按钮展示
                             setViewVisible(titleActionImage, isAdmin);
 
-                            //邀请按钮展示
-                            setViewVisible(groupMemberInviteTv, !response.body().result.is_private);
 
                             //加入/退出的展示
                             if (isAdmin) {
                                 setViewVisible(groupJoinOrQuitBtn, false);
+
+                                //邀请按钮展示
+                                setViewVisible(groupMemberInviteTv, !response.body().result.is_private);
                             } else {
                                 setViewVisible(groupJoinOrQuitBtn, true);
-                                boolean joined = StringUtils.containsIgnoreCase(response.body().result.members, getLoginUserId());
+                                joined = StringUtils.containsIgnoreCase(response.body().result.members, getLoginUserId());
                                 groupJoinOrQuitBtn.setText(joined ? "退出讨论组" : "加入讨论组");
+                                setViewVisible(groupDataLl, joined);
+                                setViewVisible(groupSessionActionLl, joined);
+                                //邀请按钮展示
+                                setViewVisible(groupMemberInviteTv, joined && !response.body().result.is_private);
                             }
 
                             //查询本地uid对应的头像
@@ -261,10 +279,16 @@ public class GroupDetailActivity extends BaseActivity {
                         REQ_CODE_INVITATION_MEMBER);
                 break;
             case R.id.group_member_arrow_iv:
-                GroupMemberDelActivity.launchForResult(getActivity(),
-                        getIntent().getStringExtra(KEY_TID),
-                        (ArrayList<GroupContactBean>) contactAdapter.getData(),
-                        true, 2001);
+                if (groupDetailEntity == null) return;
+                if (isAdmin) {
+                    GroupMemberDelActivity.launchForResult(getActivity(),
+                            getIntent().getStringExtra(KEY_TID),
+                            (ArrayList<GroupContactBean>) contactAdapter.getData(),
+                            true, 2001);
+                } else {
+                    GroupMemberListActivity.launch(getContext(),
+                            groupDetailEntity.tid);
+                }
                 break;
             case R.id.group_setTop_switch:
                 if (!groupSetTopSwitch.isChecked()) {
@@ -281,7 +305,7 @@ public class GroupDetailActivity extends BaseActivity {
                 }
                 break;
             case R.id.group_join_or_quit_btn:
-                if (v.isSelected()) {
+                if (joined) {
                     new AlertDialog.Builder(getContext())
                             .setTitle("提示")
                             .setMessage("是否离开讨论组?")
@@ -603,5 +627,29 @@ public class GroupDetailActivity extends BaseActivity {
         if (contactDbService != null) {
             contactDbService.releaseService();
         }
+    }
+
+    @Override
+    public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
+        GroupContactBean item = contactAdapter.getItem(position);
+        if (item == null) return;
+        showContactDialogFragment(item.accid, StringUtils.equalsIgnoreCase(item.accid, getLoginUserId(), false));
+    }
+
+    /**
+     * 展示联系人对话框
+     *
+     * @param accid
+     * @param hiddenChatBtn
+     */
+    public void showContactDialogFragment(String accid, boolean hiddenChatBtn) {
+        String tag = "ContactDialogFragment";
+        FragmentTransaction mFragTransaction = getSupportFragmentManager().beginTransaction();
+        Fragment fragment = getSupportFragmentManager().findFragmentByTag(tag);
+        if (fragment != null) {
+            mFragTransaction.remove(fragment);
+        }
+        ContactDialogFragment.newInstance(accid, "成员资料", hiddenChatBtn)
+                .show(mFragTransaction, tag);
     }
 }

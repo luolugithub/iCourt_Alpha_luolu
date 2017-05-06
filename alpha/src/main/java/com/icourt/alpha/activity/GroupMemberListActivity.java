@@ -6,6 +6,8 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.AppBarLayout;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
@@ -28,11 +30,13 @@ import com.icourt.alpha.db.convertor.ListConvertor;
 import com.icourt.alpha.db.dbmodel.ContactDbModel;
 import com.icourt.alpha.db.dbservice.ContactDbService;
 import com.icourt.alpha.entity.bean.GroupContactBean;
+import com.icourt.alpha.fragment.dialogfragment.ContactDialogFragment;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.DensityUtil;
 import com.icourt.alpha.utils.IndexUtils;
 import com.icourt.alpha.utils.PinyinComparator;
+import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.view.SoftKeyboardSizeWatchLayout;
 import com.icourt.alpha.view.recyclerviewDivider.SuspensionDecoration;
@@ -109,6 +113,21 @@ public class GroupMemberListActivity extends BaseActivity implements BaseRecycle
         context.startActivityForResult(intent, reqCode);
     }
 
+    /**
+     * 浏览模式
+     *
+     * @param context
+     * @param tid
+     */
+    public static void launch(
+            @NonNull Activity context,
+            @NonNull String tid) {
+        if (context == null) return;
+        if (TextUtils.isEmpty(tid)) return;
+        Intent intent = new Intent(context, GroupMemberListActivity.class);
+        intent.putExtra(KEY_TID, tid);
+        context.startActivity(intent);
+    }
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -183,7 +202,7 @@ public class GroupMemberListActivity extends BaseActivity implements BaseRecycle
                 }
                 break;
             default:
-                setTitle("通讯录");
+                setTitle("成员");
                 setViewVisible(titleActionTextView, false);
                 break;
         }
@@ -361,9 +380,28 @@ public class GroupMemberListActivity extends BaseActivity implements BaseRecycle
                 imContactAdapter.toggleSelected(position);
                 break;
             default:
-                //TODO 进入详情
+                GroupContactBean item = imContactAdapter.getItem(imContactAdapter.getRealPos(position));
+                if (item == null) return;
+                showContactDialogFragment(item.accid, StringUtils.equalsIgnoreCase(item.accid, getLoginUserId(), false));
                 break;
         }
+    }
+
+    /**
+     * 展示联系人对话框
+     *
+     * @param accid
+     * @param hiddenChatBtn
+     */
+    public void showContactDialogFragment(String accid, boolean hiddenChatBtn) {
+        String tag = "ContactDialogFragment";
+        FragmentTransaction mFragTransaction = getSupportFragmentManager().beginTransaction();
+        Fragment fragment = getSupportFragmentManager().findFragmentByTag(tag);
+        if (fragment != null) {
+            mFragTransaction.remove(fragment);
+        }
+        ContactDialogFragment.newInstance(accid, "成员资料", hiddenChatBtn)
+                .show(mFragTransaction, tag);
     }
 
     @Override
