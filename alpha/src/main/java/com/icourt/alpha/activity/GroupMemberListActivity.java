@@ -1,7 +1,6 @@
 package com.icourt.alpha.activity;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -29,6 +28,8 @@ import com.icourt.alpha.db.convertor.ListConvertor;
 import com.icourt.alpha.db.dbmodel.ContactDbModel;
 import com.icourt.alpha.db.dbservice.ContactDbService;
 import com.icourt.alpha.entity.bean.GroupContactBean;
+import com.icourt.alpha.http.callback.SimpleCallBack;
+import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.DensityUtil;
 import com.icourt.alpha.utils.IndexUtils;
 import com.icourt.alpha.utils.PinyinComparator;
@@ -42,22 +43,30 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import io.reactivex.Observable;
+import io.reactivex.ObservableEmitter;
+import io.reactivex.ObservableOnSubscribe;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.functions.Consumer;
+import io.reactivex.schedulers.Schedulers;
 import io.realm.RealmResults;
+import retrofit2.Call;
+import retrofit2.Response;
 
 import static com.icourt.alpha.constants.Const.CHOICE_TYPE_MULTIPLE;
 import static com.icourt.alpha.constants.Const.CHOICE_TYPE_SINGLE;
 
 /**
- * Description  我的联系人
+ * Description  讨论组成员列表
  * Company Beijing icourt
  * author  youxuan  E-mail:xuanyouwu@163.com
- * date createTime：2017/4/27
+ * date createTime：2017/5/6
  * version 1.0.0
  */
-public class ContactListActivity extends BaseActivity implements BaseRecyclerAdapter.OnItemClickListener {
-
+public class GroupMemberListActivity extends BaseActivity implements BaseRecyclerAdapter.OnItemClickListener {
     private static final String STRING_TOP = "↑︎";
     private static final String KEY_SELCTED_TYPE = "key_selcted_type";
+    private static final String KEY_TID = "key_tid";
     @BindView(R.id.titleBack)
     ImageView titleBack;
     @BindView(R.id.titleContent)
@@ -78,30 +87,24 @@ public class ContactListActivity extends BaseActivity implements BaseRecyclerAda
     HeaderFooterAdapter<IMContactAdapter> headerFooterAdapter;
     EditText header_input_et;
 
-    /**
-     * 浏览
-     *
-     * @param context
-     */
-    public static void launch(@NonNull Context context) {
-        if (context == null) return;
-        Intent intent = new Intent(context, ContactListActivity.class);
-        context.startActivity(intent);
-    }
 
     /**
      * 选择
      *
      * @param context
+     * @param tid
      * @param type
      * @param reqCode
      */
     public static void launchSelect(
             @NonNull Activity context,
+            @NonNull String tid,
             @Const.ChoiceType int type,
             int reqCode) {
         if (context == null) return;
-        Intent intent = new Intent(context, ContactListActivity.class);
+        if (TextUtils.isEmpty(tid)) return;
+        Intent intent = new Intent(context, GroupMemberListActivity.class);
+        intent.putExtra(KEY_TID, tid);
         intent.putExtra(KEY_SELCTED_TYPE, type);
         context.startActivityForResult(intent, reqCode);
     }
@@ -120,7 +123,6 @@ public class ContactListActivity extends BaseActivity implements BaseRecyclerAda
     @Override
     protected void initView() {
         super.initView();
-
         contactDbService = new ContactDbService(getLoginUserId());
         linearLayoutManager = new LinearLayoutManager(getContext());
         recyclerView.setLayoutManager(linearLayoutManager);
@@ -238,19 +240,73 @@ public class ContactListActivity extends BaseActivity implements BaseRecyclerAda
     @Override
     protected void getData(final boolean isRefresh) {
         super.getData(isRefresh);
-        try {
-            RealmResults<ContactDbModel> contactDbModels = contactDbService.queryAll();
-            if (contactDbModels != null) {
-                List<GroupContactBean> contactBeen = ListConvertor.convertList(new ArrayList<IConvertModel<GroupContactBean>>(contactDbModels));
-                filterRobot(contactBeen);
-                IndexUtils.setSuspensions(getContext(), contactBeen);
-                Collections.sort(contactBeen, new PinyinComparator<GroupContactBean>());
-                imContactAdapter.bindData(true, contactBeen);
-                updateIndexBar(contactBeen);
+        showLoadingDialog(null);
+        getApi().groupQueryAllMemberIds(getIntent().getStringExtra(KEY_TID))
+                .enqueue(new SimpleCallBack<List<String>>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<List<String>>> call, Response<ResEntity<List<String>>> response) {
+                        dismissLoadingDialog();
+                        queryFromDbByIds(response.body().result);
+                    }
+
+                    @Override
+                    public void onFailure(Call<ResEntity<List<String>>> call, Throwable t) {
+                        super.onFailure(call, t);
+                        dismissLoadingDialog();
+                    }
+                });
+
+    }
+
+    /**
+     * 从本地查询联系人
+     *
+     * @param ids
+     */
+    private void queryFromDbByIds(final List<String> ids) {
+        if (ids == null || ids.isEmpty()) return;
+        Observable.create(new ObservableOnSubscribe<List<GroupContactBean>>() {
+            @Override
+            public void subscribe(ObservableEmitter<List<GroupContactBean>> e) throws Exception {
+                if (e.isDisposed()) return;
+                ContactDbService threadContactDbService = new ContactDbService(getLoginUserId());
+                List<GroupContactBean> groupContactBeans = new ArrayList<>();
+                for (String id : ids) {
+                    if (!TextUtils.isEmpty(id)) {
+                        ContactDbModel accid = threadContactDbService.queryFirst("accid", id);
+                        if (accid != null) {
+                            try {
+                                GroupContactBean contactBean = accid.convert2Model();
+                                if (contactBean != null) {
+                                    groupContactBeans.add(contactBean);
+                                }
+                            } catch (Exception ex) {
+                                ex.printStackTrace();
+                            }
+                        }
+                    }
+                }
+                threadContactDbService.releaseService();
+                e.onNext(groupContactBeans);
+                e.onComplete();
             }
-        } catch (Throwable e) {
-            e.printStackTrace();
-        }
+        }).compose(this.<List<GroupContactBean>>bindToLifecycle())
+                .subscribeOn(Schedulers.newThread())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Consumer<List<GroupContactBean>>() {
+                    @Override
+                    public void accept(List<GroupContactBean> contactBeanList) throws Exception {
+                        try {
+                            filterRobot(contactBeanList);
+                            IndexUtils.setSuspensions(getContext(), contactBeanList);
+                            Collections.sort(contactBeanList, new PinyinComparator<GroupContactBean>());
+                            imContactAdapter.bindData(true, contactBeanList);
+                            updateIndexBar(contactBeanList);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
     }
 
 
@@ -324,6 +380,7 @@ public class ContactListActivity extends BaseActivity implements BaseRecyclerAda
                 break;
         }
     }
+
 
     @Override
     protected void onDestroy() {

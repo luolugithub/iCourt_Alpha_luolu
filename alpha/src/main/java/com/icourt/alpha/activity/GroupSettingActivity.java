@@ -2,11 +2,13 @@ package com.icourt.alpha.activity;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.AppBarLayout;
+import android.support.v7.app.AlertDialog;
 import android.view.View;
 import android.widget.CheckedTextView;
 import android.widget.LinearLayout;
@@ -17,6 +19,8 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.icourt.alpha.R;
 import com.icourt.alpha.base.BaseActivity;
+import com.icourt.alpha.constants.Const;
+import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.icourt.alpha.entity.bean.GroupDetailEntity;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
@@ -41,6 +45,7 @@ public class GroupSettingActivity extends BaseActivity {
     private static final String KEY_GROUP = "key_group";
     private static final int CODE_REQUEST_NAME = 101;
     private static final int CODE_REQUEST_DESC = 102;
+    private static final int CODE_REQUEST_TRANSFER_ADMIN = 103;
 
     @BindView(R.id.titleBack)
     CheckedTextView titleBack;
@@ -110,7 +115,7 @@ public class GroupSettingActivity extends BaseActivity {
         }
     }
 
-    @OnClick({R.id.group_name_ll, R.id.group_desc_ll})
+    @OnClick({R.id.group_name_ll, R.id.group_desc_ll, R.id.group_transfer_admin_ll})
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
@@ -128,6 +133,13 @@ public class GroupSettingActivity extends BaseActivity {
                 break;
             case R.id.titleAction:
                 updateGroupInfo();
+                break;
+            case R.id.group_transfer_admin_ll:
+                if (groupDetailEntity == null) return;
+                GroupMemberListActivity.launchSelect(getActivity(),
+                        groupDetailEntity.tid,
+                        Const.CHOICE_TYPE_SINGLE,
+                        CODE_REQUEST_TRANSFER_ADMIN);
                 break;
             default:
                 super.onClick(v);
@@ -148,10 +160,68 @@ public class GroupSettingActivity extends BaseActivity {
                     groupNameTv.setText(data.getStringExtra(KEY_ACTIVITY_RESULT));
                 }
                 break;
+            case CODE_REQUEST_TRANSFER_ADMIN:
+                if (resultCode == Activity.RESULT_OK && data != null) {
+                    Serializable serializableExtra = data.getSerializableExtra(KEY_ACTIVITY_RESULT);
+                    if (serializableExtra instanceof GroupContactBean) {
+                        showTransferAdminDialog((GroupContactBean) serializableExtra);
+                    }
+                }
+                break;
             default:
                 super.onActivityResult(requestCode, resultCode, data);
                 break;
         }
+    }
+
+
+    /**
+     * 展示确认转让管理员对话框
+     *
+     * @param target
+     */
+    private void showTransferAdminDialog(final GroupContactBean target) {
+        if (target == null) return;
+        new AlertDialog.Builder(getContext())
+                .setTitle("提示")
+                .setMessage("转让管理员")
+                .setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        transferAdmin(target);
+                    }
+                }).setNegativeButton("取消", null)
+                .show();
+    }
+
+    /**
+     * 转让管理员
+     *
+     * @param target
+     */
+    private void transferAdmin(GroupContactBean target) {
+        if (target == null) return;
+        if (groupDetailEntity == null) return;
+        showLoadingDialog(null);
+        getApi().groupTransferAdmin(groupDetailEntity.tid, target.accid)
+                .enqueue(new SimpleCallBack<Boolean>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<Boolean>> call, Response<ResEntity<Boolean>> response) {
+                        dismissLoadingDialog();
+                        if (response.body().result != null && response.body().result.booleanValue()) {
+                            finish();
+                        } else {
+                            showTopSnackBar("转让失败!");
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<ResEntity<Boolean>> call, Throwable t) {
+                        super.onFailure(call, t);
+                        dismissLoadingDialog();
+                    }
+                });
+
     }
 
     /**

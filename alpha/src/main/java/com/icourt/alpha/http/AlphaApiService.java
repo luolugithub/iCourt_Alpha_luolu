@@ -8,7 +8,6 @@ import com.icourt.alpha.entity.bean.CustomerEntity;
 import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.icourt.alpha.entity.bean.GroupDetailEntity;
 import com.icourt.alpha.entity.bean.GroupEntity;
-import com.icourt.alpha.entity.bean.GroupMemberEntity;
 import com.icourt.alpha.entity.bean.IMMessageCustomBody;
 import com.icourt.alpha.entity.bean.LoginIMToken;
 import com.icourt.alpha.entity.bean.MsgConvert2Task;
@@ -149,14 +148,6 @@ public interface AlphaApiService {
     @GET("api/v1/auth/q/allByOfficeId/{officeId}")
     Call<ResEntity<List<GroupContactBean>>> getGroupContacts(@Path("officeId") String officeId);
 
-    /***
-     * 获取匹配联系人
-     * @param name
-     * @return
-     */
-    @GET("api/v1/auth/up/getAllLawyerByName")
-    Call<ResEntity<List<GroupMemberEntity>>> queryGroupContacts(@Query("name") String name);
-
     /**
      * 获取机器人
      *
@@ -255,26 +246,6 @@ public interface AlphaApiService {
     @GET("api/v2/taskflow/queryTaskByDue")
     Call<ResEntity<PageEntity<TaskEntity>>> getAllTask();
 
-    /**
-     * 获取我加入的讨论组
-     * <p>
-     * 新版 groupQueryAll()
-     *
-     * @return
-     */
-    @Deprecated
-    @GET("api/v2/chat/group/inGroup")
-    Call<ResEntity<List<GroupEntity>>> getMyJoinedGroups();
-
-    /**
-     * 获取所有的讨论组
-     *
-     * @return
-     */
-    @Deprecated
-    @GET("api/v2/chat/group/LawyerGroup")
-    Call<ResEntity<List<GroupEntity>>> getAllGroups();
-
 
     /**
      * 搜索我加入的讨论组
@@ -291,25 +262,6 @@ public interface AlphaApiService {
      */
     @GET("api/v2/chat/group/LawyerGroup")
     Call<ResEntity<List<GroupEntity>>> searchInAllGroup(@Query("name") String groupName);
-
-    /**
-     * 获取 讨论组详情
-     *
-     * @param tid
-     * @return
-     */
-    @Deprecated
-    @GET("api/v2/chat/group/findGroupByTid")
-    Call<ResEntity<GroupDetailEntity>> getGroupByTid(@Query("tid") String tid);
-
-    /**
-     * 获取 讨论组成员列表
-     *
-     * @param tid
-     * @return
-     */
-    @GET("api/v2/chat/group/mems/{tid}")
-    Call<ResEntity<List<GroupMemberEntity>>> getGroupMemeber(@Path("tid") String tid);
 
 
     /**
@@ -382,6 +334,16 @@ public interface AlphaApiService {
                                                    @Query("is_private") boolean is_private
     );
 
+
+    /**
+     * 获取讨论组成员id列表
+     *
+     * @param groupTid
+     * @return
+     */
+    @GET("http://192.168.20.77:8083/ilaw/api/v3/im/groups/{groupTid}/members/ids")
+    Call<ResEntity<List<String>>> groupQueryAllMemberIds(@Path("groupTid") String groupTid);
+
     /**
      * 获取我加入的群组
      * 文档地址:https://www.showdoc.cc/1620156?page_id=14892528
@@ -394,6 +356,18 @@ public interface AlphaApiService {
     Call<ResEntity<List<GroupEntity>>> groupsQueryJoind(@Query("run_status") int run_status,
                                                         @Query("joined") boolean joined
     );
+
+    /**
+     * 转让讨论组管理员
+     * 文档地址:https://www.showdoc.cc/1620156?page_id=14913324
+     *
+     * @param groupTid
+     * @param adminId
+     * @return
+     */
+    @PUT("http://192.168.20.77:8083/ilaw/api/v3/im/groups/{groupTid}/admin/{adminId}")
+    Call<ResEntity<Boolean>> groupTransferAdmin(@Path("groupTid") String groupTid,
+                                                @Path("adminId") String adminId);
 
     /**
      * 获取所有群组

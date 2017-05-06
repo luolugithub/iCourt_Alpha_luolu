@@ -515,8 +515,9 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
      */
     private void openAtMember() {
         if (getIMChatType() == CHAT_TYPE_TEAM) {
-            ContactListActivity.launchSelect(
+            GroupMemberListActivity.launchSelect(
                     getActivity(),
+                    getIMChatId(),
                     Const.CHOICE_TYPE_SINGLE,
                     REQUEST_CODE_AT_MEMBER);
         }
