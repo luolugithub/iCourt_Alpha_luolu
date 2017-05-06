@@ -6,7 +6,7 @@
     android:gravity="right"
     android:orientation="horizontal"
     android:padding="10dp">
-
+    
     <com.icourt.alpha.view.BubbleImageView
         android:id="@+id/chat_image_iv"
         android:layout_width="207dp"

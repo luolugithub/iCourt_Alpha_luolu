@@ -10,7 +10,7 @@
         android:layout_width="30dp"
         android:layout_height="30dp"
         android:adjustViewBounds="true"
-        android:src="@mipmap/ic_launcher" />
+        android:src="@mipmap/avatar_default_24" />
 
     <TextView
         android:id="@+id/file_from_user_tv"

@@ -96,7 +96,7 @@ import static com.netease.nimlib.sdk.msg.model.QueryDirectionEnum.QUERY_OLD;
  * date createTime：2017/4/24
  * version 1.0.0
  */
-public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapter.OnItemChildClickListener {
+public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapter.OnItemChildClickListener, BaseRecyclerAdapter.OnItemChildLongClickListener {
     private static final int REQUEST_CODE_CAMERA = 1000;
     private static final int REQUEST_CODE_GALLERY = 1001;
     private static final int REQUEST_CODE_AT_MEMBER = 1002;
@@ -569,6 +569,7 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
         recyclerView.setAdapter(chatAdapter = new ChatAdapter(localContactList));
         chatAdapter.setOnItemLongClickListener(this);
         chatAdapter.setOnItemChildClickListener(this);
+        chatAdapter.setOnItemChildLongClickListener(this);
         recyclerView.addItemDecoration(new ChatItemDecoration(getContext(), chatAdapter));
         refreshLayout.setXRefreshViewListener(new XRefreshView.SimpleXRefreshListener() {
             @Override
@@ -937,6 +938,15 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
         }
     }
 
+    @Override
+    public boolean onItemChildLongClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
+        switch (view.getId()) {
+            case R.id.chat_image_iv:
+                return super.onItemLongClick(adapter, holder, view, position);
+        }
+        return false;
+    }
+
     /**
      * 展示联系人对话框
      *
@@ -953,4 +963,6 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
         ContactDialogFragment.newInstance(accid, "成员资料", hiddenChatBtn)
                 .show(mFragTransaction, tag);
     }
+
+
 }

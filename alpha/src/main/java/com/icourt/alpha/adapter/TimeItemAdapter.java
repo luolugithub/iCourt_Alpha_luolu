@@ -48,7 +48,8 @@ public class TimeItemAdapter extends BaseArrayRecyclerAdapter<TimeEntity.ItemEnt
     }
 
     @Override
-    public void onItemLongClick(BaseRecyclerAdapter adapter, ViewHolder holder, View view, int position) {
+    public boolean onItemLongClick(BaseRecyclerAdapter adapter, ViewHolder holder, View view, int position) {
 
+        return false;
     }
 }

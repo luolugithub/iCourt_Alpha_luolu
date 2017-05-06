@@ -60,13 +60,16 @@ import static com.icourt.alpha.constants.Const.CHAT_TYPE_TEAM;
 public class ChatMsgClassfyActivity extends BaseActivity {
     public static final int MSG_CLASSFY_MY_COLLECTEED = 0;  //我收藏的消息
     public static final int MSG_CLASSFY_CHAT_DING = 1;      //讨论组钉的消息
+    public static final int MSG_CLASSFY_CHAT_FILE = 2;      //讨论组的文件消息
+
     private static final String KEY_CLASSFY_TYPE = "KEY_CLASSFY_TYPE";
     private static final String KEY_ID = "KEY_ID";
     private static final String KEY_CHAT_TYPE = " KEY_CHAT_TYPE";
 
     @IntDef({
             MSG_CLASSFY_MY_COLLECTEED,
-            MSG_CLASSFY_CHAT_DING})
+            MSG_CLASSFY_CHAT_DING,
+            MSG_CLASSFY_CHAT_FILE})
     @Retention(RetentionPolicy.SOURCE)
     public @interface MsgClassfyType {
 
@@ -82,13 +85,14 @@ public class ChatMsgClassfyActivity extends BaseActivity {
      * @param chatType 单聊 群聊
      * @param id       单聊为uid 群聊为群id
      */
-    public static void launchDing(
+    public static void launch(
             @NonNull Context context,
+            @MsgClassfyType int msgClassfyType,
             @Const.CHAT_TYPE int chatType,
             String id) {
         if (context == null) return;
         Intent intent = new Intent(context, ChatMsgClassfyActivity.class);
-        intent.putExtra(KEY_CLASSFY_TYPE, MSG_CLASSFY_CHAT_DING);
+        intent.putExtra(KEY_CLASSFY_TYPE, msgClassfyType);
         intent.putExtra(KEY_ID, id);
         intent.putExtra(KEY_CHAT_TYPE, chatType);
         context.startActivity(intent);
@@ -106,6 +110,7 @@ public class ChatMsgClassfyActivity extends BaseActivity {
         intent.putExtra(KEY_CLASSFY_TYPE, MSG_CLASSFY_MY_COLLECTEED);
         context.startActivity(intent);
     }
+
 
     ImUserMessageAdapter imUserMessageAdapter;
     @BindView(R.id.titleBack)
@@ -128,6 +133,8 @@ public class ChatMsgClassfyActivity extends BaseActivity {
                 return MSG_CLASSFY_MY_COLLECTEED;
             case MSG_CLASSFY_CHAT_DING:
                 return MSG_CLASSFY_CHAT_DING;
+            case MSG_CLASSFY_CHAT_FILE:
+                return MSG_CLASSFY_CHAT_FILE;
             default:
                 return MSG_CLASSFY_MY_COLLECTEED;
         }
@@ -162,6 +169,10 @@ public class ChatMsgClassfyActivity extends BaseActivity {
             case MSG_CLASSFY_CHAT_DING:
                 setTitle("钉的消息");
                 refreshLayout.setNoticeEmpty(R.mipmap.icon_placeholder_task, "暂无钉的消息");
+                break;
+            case MSG_CLASSFY_CHAT_FILE:
+                setTitle("文件");
+                refreshLayout.setNoticeEmpty(R.mipmap.icon_placeholder_task, "暂无文件");
                 break;
             case MSG_CLASSFY_MY_COLLECTEED:
                 setTitle("我收藏的消息");
@@ -204,13 +215,20 @@ public class ChatMsgClassfyActivity extends BaseActivity {
         Call<ResEntity<List<IMMessageCustomBody>>> call = null;
         switch (getMsgClassfyType()) {
             case MSG_CLASSFY_CHAT_DING:
-                call = getApi().getDingMessages(getMsgChatType(), getIntent().getStringExtra(KEY_ID));
+                call = getApi()
+                        .getDingMessages(getMsgChatType(), getIntent().getStringExtra(KEY_ID));
+                break;
+            case MSG_CLASSFY_CHAT_FILE:
+                call = getApi()
+                        .msgQueryFiles(getMsgChatType(), getIntent().getStringExtra(KEY_ID));
                 break;
             case MSG_CLASSFY_MY_COLLECTEED:
-                call = getApi().getMyCollectedMessages(pageIndex, ActionConstants.DEFAULT_PAGE_SIZE);
+                call = getApi()
+                        .getMyCollectedMessages(pageIndex, ActionConstants.DEFAULT_PAGE_SIZE);
                 break;
             default:
-                call = getApi().getMyCollectedMessages(pageIndex, ActionConstants.DEFAULT_PAGE_SIZE);
+                call = getApi()
+                        .getMyCollectedMessages(pageIndex, ActionConstants.DEFAULT_PAGE_SIZE);
                 break;
         }
         call.enqueue(new SimpleCallBack<List<IMMessageCustomBody>>() {

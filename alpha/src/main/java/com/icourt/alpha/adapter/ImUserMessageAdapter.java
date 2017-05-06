@@ -28,13 +28,14 @@ import static com.icourt.alpha.constants.Const.MSG_TYPE_ALPHA;
 import static com.icourt.alpha.constants.Const.MSG_TYPE_AT;
 import static com.icourt.alpha.constants.Const.MSG_TYPE_DING;
 import static com.icourt.alpha.constants.Const.MSG_TYPE_FILE;
+import static com.icourt.alpha.constants.Const.MSG_TYPE_IMAGE;
 import static com.icourt.alpha.constants.Const.MSG_TYPE_LINK;
 import static com.icourt.alpha.constants.Const.MSG_TYPE_SYS;
 import static com.icourt.alpha.constants.Const.MSG_TYPE_TXT;
 import static com.icourt.alpha.constants.Const.MSG_TYPE_VOICE;
 
 /**
- * Description 更用户相关的适配器[我的文件消息 我收藏的消息]
+ * Description 跟用户相关的适配器[我的文件消息 我收藏的消息]
  * Company Beijing icourt
  * author  youxuan  E-mail:xuanyouwu@163.com
  * date createTime：2017/4/17
@@ -47,6 +48,7 @@ public class ImUserMessageAdapter extends BaseArrayRecyclerAdapter<IMMessageCust
     private static final int VIEW_TYPE_DING = 3;
     private static final int VIEW_TYPE_AT = 4;
     private static final int VIEW_TYPE_SYS = 5;
+    private static final int VIEW_TYPE_LINK = 6;
 
     private String loginToken;
     AlphaUserInfo alphaUserInfo;
@@ -87,13 +89,15 @@ public class ImUserMessageAdapter extends BaseArrayRecyclerAdapter<IMMessageCust
             case VIEW_TYPE_AT:
             case VIEW_TYPE_SYS:
             case VIEW_TYPE_DING:
-                return R.layout.adapter_item_text_msg;
+                return R.layout.adapter_item_msg_text;
             case VIEW_TYPE_FILE_IMG:
-                return R.layout.adapter_item_file_type_img;
+                return R.layout.adapter_item_msg_img;
             case VIEW_TYPE_FILE:
-                return R.layout.adapter_item_file_type_comm;
+                return R.layout.adapter_item_msg_file;
+            case VIEW_TYPE_LINK:
+                return R.layout.adapter_item_msg_link;
             default:
-                return R.layout.adapter_item_text_msg;
+                return R.layout.adapter_item_msg_text;
         }
     }
 
@@ -105,14 +109,17 @@ public class ImUserMessageAdapter extends BaseArrayRecyclerAdapter<IMMessageCust
                 case MSG_TYPE_TXT:
                     return VIEW_TYPE_TEXT;
                 case MSG_TYPE_FILE:
-                    return isPic(item.ext != null ? item.ext.path : "") ? VIEW_TYPE_FILE_IMG : VIEW_TYPE_FILE;
+                    return VIEW_TYPE_FILE;
+                case MSG_TYPE_IMAGE:
+                    return VIEW_TYPE_FILE_IMG;
                 case MSG_TYPE_DING:
                     return VIEW_TYPE_DING;
                 case MSG_TYPE_AT:
                     return VIEW_TYPE_AT;
                 case MSG_TYPE_SYS:
                     return VIEW_TYPE_SYS;
-                case MSG_TYPE_LINK://TODO 处理链接消息
+                case MSG_TYPE_LINK:
+                    return VIEW_TYPE_LINK;
                 case MSG_TYPE_ALPHA:
                 case MSG_TYPE_VOICE:
                     break;
@@ -125,15 +132,7 @@ public class ImUserMessageAdapter extends BaseArrayRecyclerAdapter<IMMessageCust
     @Override
     public void onBindHoder(ViewHolder holder, IMMessageCustomBody imFileEntity, int position) {
         if (imFileEntity == null) return;
-        ImageView file_from_user_iv = holder.obtainView(R.id.file_from_user_iv);
-        TextView file_from_user_tv = holder.obtainView(R.id.file_from_user_tv);
-        TextView file_from_time_tv = holder.obtainView(R.id.file_from_time_tv);
-
-        GlideUtils.loadUser(file_from_user_iv.getContext(),
-                getUserIcon(imFileEntity.from),
-                file_from_user_iv);
-        file_from_user_tv.setText(imFileEntity.name);
-        file_from_time_tv.setText(DateUtils.getTimeShowString(imFileEntity.send_time, true));
+        setCommUserInfo(holder, imFileEntity);
 
         switch (holder.getItemViewType()) {
             case VIEW_TYPE_TEXT:
@@ -151,13 +150,81 @@ public class ImUserMessageAdapter extends BaseArrayRecyclerAdapter<IMMessageCust
                 }
                 break;
             case VIEW_TYPE_FILE_IMG:
-                ImageView file_img = holder.obtainView(R.id.file_img);
-                setViewTypeWithImg(file_img, imFileEntity);
+                setViewTypeWithImg(holder, imFileEntity);
                 break;
             case VIEW_TYPE_FILE:
                 setViewFileCommFile(holder, imFileEntity);
                 break;
+            case VIEW_TYPE_LINK:
+                setViewLink(holder, imFileEntity);
+                break;
         }
+    }
+
+    /**
+     * 初始化link消息
+     *
+     * @param holder
+     * @param imFileEntity
+     */
+    private void setViewLink(ViewHolder holder, IMMessageCustomBody imFileEntity) {
+        if (holder == null) return;
+        if (imFileEntity == null) return;
+        TextView msg_link_title_tv = holder.obtainView(R.id.msg_link_title_tv);
+        ImageView msg_link_thumb_iv = holder.obtainView(R.id.msg_link_thumb_iv);
+        TextView msg_link_url_tv = holder.obtainView(R.id.msg_link_url_tv);
+        TextView msg_link_desc_tv = holder.obtainView(R.id.msg_link_desc_tv);
+        if (imFileEntity.ext != null) {
+            if (!TextUtils.isEmpty(imFileEntity.ext.title)) {
+                msg_link_title_tv.setVisibility(View.VISIBLE);
+                msg_link_title_tv.setText(imFileEntity.ext.title);
+            } else {
+                msg_link_title_tv.setVisibility(View.GONE);
+            }
+            msg_link_url_tv.setText(imFileEntity.ext.url);
+
+            if (!TextUtils.isEmpty(imFileEntity.ext.thumb)) {
+                msg_link_thumb_iv.setVisibility(View.VISIBLE);
+                if (GlideUtils.canLoadImage(msg_link_thumb_iv.getContext())) {
+                    Glide.with(msg_link_thumb_iv.getContext())
+                            .load(imFileEntity.ext.thumb)
+                            .into(msg_link_thumb_iv);
+                }
+            } else {
+                msg_link_thumb_iv.setVisibility(View.GONE);
+            }
+
+            if (!TextUtils.isEmpty(imFileEntity.ext.desc)) {
+                msg_link_desc_tv.setVisibility(View.VISIBLE);
+                msg_link_desc_tv.setText(imFileEntity.ext.desc);
+            } else {
+                msg_link_desc_tv.setVisibility(View.GONE);
+            }
+        } else {
+            msg_link_url_tv.setText("link ext null");
+            msg_link_title_tv.setText("link ext null");
+            msg_link_desc_tv.setText("link ext null");
+        }
+    }
+
+    /**
+     * 初始化基本信息
+     *
+     * @param holder
+     * @param imFileEntity
+     */
+    private void setCommUserInfo(ViewHolder holder, IMMessageCustomBody imFileEntity) {
+        if (holder == null) return;
+        if (imFileEntity == null) return;
+        ImageView file_from_user_iv = holder.obtainView(R.id.file_from_user_iv);
+        TextView file_from_user_tv = holder.obtainView(R.id.file_from_user_tv);
+        TextView file_from_time_tv = holder.obtainView(R.id.file_from_time_tv);
+
+        GlideUtils.loadUser(file_from_user_iv.getContext(),
+                getUserIcon(imFileEntity.from),
+                file_from_user_iv);
+        file_from_user_tv.setText(imFileEntity.name);
+        file_from_time_tv.setText(DateUtils.getTimeShowString(imFileEntity.send_time, true));
     }
 
     /**
@@ -185,17 +252,19 @@ public class ImUserMessageAdapter extends BaseArrayRecyclerAdapter<IMMessageCust
     /**
      * 初始化布局 图片
      *
-     * @param file_img
+     * @param holder
      * @param imFileEntity
      */
-    private void setViewTypeWithImg(ImageView file_img, IMMessageCustomBody imFileEntity) {
+    private void setViewTypeWithImg(ViewHolder holder, IMMessageCustomBody imFileEntity) {
+        ImageView file_img = holder.obtainView(R.id.file_img);
         if (file_img == null) return;
         if (imFileEntity == null) return;
         if (GlideUtils.canLoadImage(file_img.getContext())) {
-            Glide.with(file_img.getContext())
-                    .load(getCombPicUrl(imFileEntity.ext != null ? imFileEntity.ext.path : ""))
-                    .placeholder(R.drawable.bg_round_rect_gray)
-                    .into(file_img);
+            String picUrl = "";
+            if (imFileEntity.ext != null) {
+                picUrl = imFileEntity.ext.thumb;
+            }
+            GlideUtils.loadPic(file_img.getContext(), picUrl, file_img);
         }
     }
 

@@ -43,7 +43,6 @@ public final class IMMessageExtBody {
 
     //包裹的消息
     public String from;         //发送方名称
-    public String fromPic;      //头像,暂时本地用
     public String to;           //对方id uid或者tid
     @Const.CHAT_TYPE
     private int ope;            //0点对点，1群聊
@@ -128,7 +127,6 @@ public final class IMMessageExtBody {
                 ", desc='" + desc + '\'' +
                 ", url='" + url + '\'' +
                 ", from='" + from + '\'' +
-                ", fromPic='" + fromPic + '\'' +
                 ", to='" + to + '\'' +
                 ", ope=" + ope +
                 ", show_type=" + show_type +

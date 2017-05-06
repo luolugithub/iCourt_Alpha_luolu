@@ -167,11 +167,9 @@ public abstract class BaseRecyclerAdapter extends RecyclerView.Adapter<BaseRecyc
         @Override
         public boolean onLongClick(View v) {
             if (onItemLongClickListener != null && v.getId() == this.itemView.getId()) {
-                onItemLongClickListener.onItemLongClick(BaseRecyclerAdapter.this, this, v, getAdapterPosition());
-                return true;
+                return onItemLongClickListener.onItemLongClick(BaseRecyclerAdapter.this, this, v, getAdapterPosition());
             } else if (onItemChildLongClickListener != null && v.getId() != this.itemView.getId()) {
-                onItemChildLongClickListener.onItemChildLongClick(BaseRecyclerAdapter.this, this, v, getAdapterPosition());
-                return true;
+                return onItemChildLongClickListener.onItemChildLongClick(BaseRecyclerAdapter.this, this, v, getAdapterPosition());
             }
             return false;
         }
@@ -215,7 +213,7 @@ public abstract class BaseRecyclerAdapter extends RecyclerView.Adapter<BaseRecyc
     }
 
     public interface OnItemLongClickListener {
-        void onItemLongClick(BaseRecyclerAdapter adapter, ViewHolder holder, View view, int position);
+        boolean onItemLongClick(BaseRecyclerAdapter adapter, ViewHolder holder, View view, int position);
     }
 
 
@@ -224,7 +222,7 @@ public abstract class BaseRecyclerAdapter extends RecyclerView.Adapter<BaseRecyc
     }
 
     public interface OnItemChildLongClickListener {
-        void onItemChildLongClick(BaseRecyclerAdapter adapter, ViewHolder holder, View view, int position);
+        boolean onItemChildLongClick(BaseRecyclerAdapter adapter, ViewHolder holder, View view, int position);
     }
 
 

@@ -555,11 +555,11 @@ public abstract class ChatBaseActivity extends BaseActivity implements INIMessag
     }
 
     @Override
-    public void onItemLongClick(BaseRecyclerAdapter adapter, final BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
+    public boolean onItemLongClick(BaseRecyclerAdapter adapter, final BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
         if (adapter instanceof ChatAdapter) {
             ChatAdapter chatAdapter = (ChatAdapter) adapter;
             final IMMessageCustomBody iMMessageCustomBody = chatAdapter.getItem(position);
-            if (iMMessageCustomBody == null) return;
+            if (iMMessageCustomBody == null) return false;
             final List<String> menuItems = new ArrayList<>();
             switch (iMMessageCustomBody.show_type) {
                 case MSG_TYPE_AT:
@@ -607,6 +607,7 @@ public abstract class ChatBaseActivity extends BaseActivity implements INIMessag
                 case MSG_TYPE_LINK:
                     menuItems.clear();
                     menuItems.addAll(Arrays.asList(
+                            isDinged(iMMessageCustomBody.id) ? "取消钉" : "钉",
                             isCollected(iMMessageCustomBody.id) ? "取消收藏" : "收藏"
                             , "转任务"));
                     break;
@@ -617,6 +618,8 @@ public abstract class ChatBaseActivity extends BaseActivity implements INIMessag
             }
             showMsgActionDialog(iMMessageCustomBody, menuItems);
         }
+
+        return true;
     }
 
     /**

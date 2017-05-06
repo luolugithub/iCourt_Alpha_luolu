@@ -244,13 +244,16 @@ public class GroupDetailActivity extends BaseActivity {
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.group_ding_tv:
-                ChatMsgClassfyActivity.launchDing(getContext(),
+                ChatMsgClassfyActivity.launch(getContext(),
+                        ChatMsgClassfyActivity.MSG_CLASSFY_CHAT_DING,
                         CHAT_TYPE_TEAM,
                         getIntent().getStringExtra(KEY_TID));
                 break;
             case R.id.group_file_tv:
-                //TODO  文件列表
-                showTopSnackBar("未完成");
+                ChatMsgClassfyActivity.launch(getContext(),
+                        ChatMsgClassfyActivity.MSG_CLASSFY_CHAT_FILE,
+                        CHAT_TYPE_TEAM,
+                        getIntent().getStringExtra(KEY_TID));
                 break;
             case R.id.group_member_invite_tv:
                 ContactListActivity.launchSelect(getActivity(),

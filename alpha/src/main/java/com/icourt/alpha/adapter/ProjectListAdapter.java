@@ -70,7 +70,8 @@ public class ProjectListAdapter extends BaseArrayRecyclerAdapter<ProjectEntity> 
     }
 
     @Override
-    public void onItemLongClick(BaseRecyclerAdapter adapter, ViewHolder holder, View view, int position) {
+    public boolean onItemLongClick(BaseRecyclerAdapter adapter, ViewHolder holder, View view, int position) {
 
+        return true;
     }
 }

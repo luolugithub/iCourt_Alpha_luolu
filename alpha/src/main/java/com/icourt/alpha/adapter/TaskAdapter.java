@@ -67,7 +67,7 @@ public class TaskAdapter extends BaseArrayRecyclerAdapter<TaskEntity> implements
     }
 
     @Override
-    public void onItemLongClick(BaseRecyclerAdapter adapter, ViewHolder holder, View view, int position) {
+    public boolean onItemLongClick(BaseRecyclerAdapter adapter, ViewHolder holder, View view, int position) {
         new CenterMenuDialog(view.getContext(), null, Arrays.asList(
                 new ItemsEntity("我加入的讨论组", R.mipmap.tab_message),
                 new ItemsEntity("所有讨论组", R.mipmap.tab_message),
@@ -76,5 +76,6 @@ public class TaskAdapter extends BaseArrayRecyclerAdapter<TaskEntity> implements
                 new ItemsEntity("所有讨论组", R.mipmap.tab_message),
                 new ItemsEntity("已归档讨论组", R.mipmap.tab_message)))
                 .show();
+        return true;
     }
 }

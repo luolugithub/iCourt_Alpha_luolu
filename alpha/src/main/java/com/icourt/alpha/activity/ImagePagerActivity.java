@@ -222,7 +222,7 @@ public class ImagePagerActivity extends BaseUmengActivity implements BasePagerAd
      */
     @Override
     public void OnItemClick(BasePagerAdapter adapter, View v, int pos) {
-
+        finish();
     }
 
     /**
@@ -351,7 +351,6 @@ public class ImagePagerActivity extends BaseUmengActivity implements BasePagerAd
         public void bindDataToItem(final String s, ViewGroup container, View itemView, final int pos) {
             final TouchImageView touchImageView = (TouchImageView) itemView.findViewById(R.id.imageView);
             final TextView img_look_original_tv = (TextView) itemView.findViewById(R.id.img_look_original_tv);
-
             img_look_original_tv.setVisibility(isLoadOriginalPicUrl(s) ? View.GONE : View.VISIBLE);
             img_look_original_tv.setOnClickListener(new View.OnClickListener() {
                 @Override

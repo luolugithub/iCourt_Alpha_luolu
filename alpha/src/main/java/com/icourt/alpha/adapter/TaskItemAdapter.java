@@ -49,7 +49,8 @@ public class TaskItemAdapter extends BaseArrayRecyclerAdapter<TaskEntity.TaskIte
     }
 
     @Override
-    public void onItemChildLongClick(BaseRecyclerAdapter adapter, ViewHolder holder, View view, int position) {
+    public boolean onItemChildLongClick(BaseRecyclerAdapter adapter, ViewHolder holder, View view, int position) {
 
+        return false;
     }
 }

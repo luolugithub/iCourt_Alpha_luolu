@@ -17,6 +17,7 @@
         android:background="@drawable/chat_bubble_right_bg"
         android:paddingBottom="10dp"
         android:paddingLeft="10dp"
+        android:gravity="center_vertical"
         android:paddingRight="18dp"
         android:paddingTop="10dp"
         android:text="消息abcdefghijklmnopqrst"
