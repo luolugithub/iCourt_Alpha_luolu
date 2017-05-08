@@ -82,6 +82,18 @@ public final class IMMessageExtBody {
     }
 
     /**
+     * 构建 扩展的图片消息
+     *
+     * @param filePath
+     * @return
+     */
+    public static IMMessageExtBody createPicExtBody(String filePath) {
+        IMMessageExtBody imMessageExtBody = new IMMessageExtBody();
+        imMessageExtBody.thumb = filePath;
+        return imMessageExtBody;
+    }
+
+    /**
      * 构建 扩展的钉消息
      *
      * @param isPing

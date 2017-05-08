@@ -24,9 +24,9 @@ public interface INIMessageListener {
     /**
      * 消息状态改变
      *
-     * @param message
+     * @param customBody
      */
-    void onMessageChanged(IMMessage message);
+    void onMessageChanged(IMMessageCustomBody customBody);
 
     /**
      * 消息 撤回

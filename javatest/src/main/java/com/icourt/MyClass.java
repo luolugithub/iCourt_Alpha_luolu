@@ -27,6 +27,7 @@ public class MyClass {
             return 0;
         }
     };
+
     public static void main(String[] args) throws Exception {
 
         System.out.println("name hash:" + NAME.hashCode());
@@ -45,17 +46,27 @@ public class MyClass {
         System.out.println("isPic4:" + isPIC("http://.q"));
 
 
-        List<Long> list=new ArrayList<>();
+        List<Long> list = new ArrayList<>();
         list.add(3L);
         list.add(1L);
         list.add(4L);
         list.add(2L);
-        log("------list:"+list);
-        Collections.sort(list,longComparator);
-        log("------list2:"+list);
-        Collections.sort(list,longComparator2);
-        log("------list3:"+list);
+        log("------list:" + list);
+        Collections.sort(list, longComparator);
+        log("------list2:" + list);
+        Collections.sort(list, longComparator2);
+        log("------list3:" + list);
 
+      /*  String a = "cdgsgyfgsggfgfggfgfhds";
+        String b = "cdgsgyfgsggfgfggfgfhds0";
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                for (int i = 0; i < 1_000_00; i++) {
+                    String ba = a + "_" + b;
+                }
+            }
+        });*/
     }
 
     private static void log(String log) {

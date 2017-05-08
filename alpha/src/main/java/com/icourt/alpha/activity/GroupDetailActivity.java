@@ -370,24 +370,6 @@ public class GroupDetailActivity extends BaseActivity implements BaseRecyclerAda
                         }
                     }
                 });
-           /*NIMClient.getService(TeamService.class)
-                .queryTeam(getIntent().getStringExtra(KEY_TID))
-                .setCallback(new RequestCallback<Team>() {
-                    @Override
-                    public void onSuccess(Team param) {
-                        groupNotDisturbSwitch.setChecked(param != null && param.mute());
-                    }
-
-                    @Override
-                    public void onFailed(int code) {
-                        log("-------->onFailed:" + code);
-                    }
-
-                    @Override
-                    public void onException(Throwable exception) {
-                        log("-------->onException:" + exception);
-                    }
-                });*/
     }
 
     /**

@@ -73,7 +73,6 @@ public class FileListFragment extends BaseFragment {
     protected final List<GroupContactBean> localContactList = new ArrayList<>();
 
     ImUserMessageAdapter fileAdapter;
-    private int pageIndex = 1;
 
     public static FileListFragment newInstance(@QueryFileType int fileType) {
         FileListFragment fileListFragment = new FileListFragment();
@@ -120,16 +119,22 @@ public class FileListFragment extends BaseFragment {
 
     @Override
     protected void getData(final boolean isRefresh) {
+        String msgid = null;
         if (isRefresh) {
-            pageIndex = 0;
+        } else {
+            if (fileAdapter.getData().isEmpty()) {
+                IMMessageCustomBody item = fileAdapter.getItem(fileAdapter.getData().size() - 1);
+                if (item != null) {
+                    msgid = item.id;
+                }
+            }
         }
-        getApi().getFilesByType(getArguments().getInt(KEY_FILE_TYPE), pageIndex, ActionConstants.DEFAULT_PAGE_SIZE)
+        getApi().getMyFiles(msgid)
                 .enqueue(new SimpleCallBack<List<IMMessageCustomBody>>() {
                     @Override
                     public void onSuccess(Call<ResEntity<List<IMMessageCustomBody>>> call, Response<ResEntity<List<IMMessageCustomBody>>> response) {
                         fileAdapter.bindData(isRefresh, response.body().result);
                         stopRefresh();
-                        pageIndex += 1;
                         enableLoadMore(response.body().result);
                     }
 

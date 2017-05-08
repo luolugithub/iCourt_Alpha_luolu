@@ -36,7 +36,34 @@ public class RequestUtils {
      */
     public static RequestBody createImgBody(File file) {
         if (file != null && file.exists()) {
-            return RequestBody.create(MediaType.parse("image/png"), file);
+            return RequestBody.create(MediaType.parse("image/*"), file);
+        }
+        return null;
+    }
+
+    /**
+     * 构建媒体流请求体
+     *
+     * @param file
+     * @return
+     */
+    public static RequestBody createStreamBody(File file) {
+        if (file != null && file.exists()) {
+            return RequestBody.create(MediaType.parse("application/octet-stream"), file);
+        }
+        return null;
+    }
+
+
+    /**
+     * 构建表单请求体
+     *
+     * @param file
+     * @return
+     */
+    public static RequestBody createFormBody(File file) {
+        if (file != null && file.exists()) {
+            return RequestBody.create(MediaType.parse("multipart/form-data"), file);
         }
         return null;
     }

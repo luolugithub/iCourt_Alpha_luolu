@@ -27,7 +27,7 @@
         app:bubble_arrowOffset="-5dp"
         app:bubble_arrowTop="15dp"
         app:bubble_arrowWidth="8dp"
-        app:bubble_showShadow="true"
+        app:bubble_showShadow="false"
         app:bubble_showText="false" />
 
 </LinearLayout>

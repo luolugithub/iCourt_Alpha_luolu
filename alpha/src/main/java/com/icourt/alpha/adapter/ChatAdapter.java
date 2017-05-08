@@ -4,6 +4,7 @@ import android.support.annotation.NonNull;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
@@ -16,6 +17,7 @@ import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.icourt.alpha.entity.bean.IMMessageCustomBody;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.GlideUtils;
+import com.icourt.alpha.utils.LogUtils;
 import com.icourt.alpha.utils.LoginInfoUtils;
 import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.utils.transformations.FitHeightImgViewTarget;
@@ -28,6 +30,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import static com.icourt.alpha.constants.Const.MSG_STATU_FAIL;
+import static com.icourt.alpha.constants.Const.MSG_STATU_SENDING;
 import static com.icourt.alpha.constants.Const.MSG_TYPE_FILE;
 import static com.icourt.alpha.constants.Const.MSG_TYPE_IMAGE;
 import static com.icourt.alpha.constants.Const.MSG_TYPE_LINK;
@@ -90,9 +94,9 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMMessageCustomBody> i
      * @return
      */
     public String getUserIcon(String accid) {
-        if (contactBeanList != null) {
+        if (contactBeanList != null && !TextUtils.isEmpty(accid)) {
             GroupContactBean groupContactBean = new GroupContactBean();
-            groupContactBean.accid = accid;
+            groupContactBean.accid = accid.toLowerCase();
             int indexOf = contactBeanList.indexOf(groupContactBean);
             if (indexOf >= 0) {
                 groupContactBean = contactBeanList.get(indexOf);
@@ -282,27 +286,35 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMMessageCustomBody> i
 
 
             case TYPE_RIGHT_TXT:
+                setTypeRightCommStatus(holder, imMessageCustomBody, position);
                 setTypeRightTxt(holder, imMessageCustomBody, position);
                 break;
             case TYPE_RIGHT_IMAGE:
+                setTypeRightCommStatus(holder, imMessageCustomBody, position);
                 setTypeRightImage(holder, imMessageCustomBody, position);
                 break;
             case TYPE_RIGHT_FILE:
+                setTypeRightCommStatus(holder, imMessageCustomBody, position);
                 setTypeRightFile(holder, imMessageCustomBody, position);
                 break;
             case TYPE_RIGHT_DING_TXT:
+                setTypeRightCommStatus(holder, imMessageCustomBody, position);
                 setTypeRightDingTxt(holder, imMessageCustomBody, position);
                 break;
             case TYPE_RIGHT_DING_IMAGE:
+                setTypeRightCommStatus(holder, imMessageCustomBody, position);
                 setTypeRightDingImage(holder, imMessageCustomBody, position);
                 break;
             case TYPE_RIGHT_DING_FILE:
+                setTypeRightCommStatus(holder, imMessageCustomBody, position);
                 setTypeRightDingFile(holder, imMessageCustomBody, position);
                 break;
             case TYPE_RIGHT_DING_LINK:
+                setTypeRightCommStatus(holder, imMessageCustomBody, position);
                 setTypeRightDingLink(holder, imMessageCustomBody, position);
                 break;
             case TYPE_RIGHT_LINK:
+                setTypeRightCommStatus(holder, imMessageCustomBody, position);
                 setTypeRightLink(holder, imMessageCustomBody, position);
                 break;
 
@@ -312,6 +324,36 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMMessageCustomBody> i
         }
     }
 
+    /**
+     * 处理消息状态
+     *
+     * @param holder
+     * @param imMessageCustomBody
+     * @param position
+     */
+    private void setTypeRightCommStatus(ViewHolder holder, IMMessageCustomBody imMessageCustomBody, int position) {
+        if (imMessageCustomBody == null) return;
+        LogUtils.d("---------->setTypeRightCommStatus:" + position + "  msg_statu:" + imMessageCustomBody.msg_statu);
+        ProgressBar chat_progress_bar = holder.obtainView(R.id.chat_send_progress_bar);
+        ImageView chat_send_fail_iv = holder.obtainView(R.id.chat_send_fail_iv);
+        holder.bindChildClick(chat_send_fail_iv);
+        if (chat_progress_bar != null) {
+            switch (imMessageCustomBody.msg_statu) {
+                case MSG_STATU_SENDING:
+                    chat_progress_bar.setVisibility(View.VISIBLE);
+                    chat_send_fail_iv.setVisibility(View.GONE);
+                    break;
+                case MSG_STATU_FAIL:
+                    chat_progress_bar.setVisibility(View.GONE);
+                    chat_send_fail_iv.setVisibility(View.VISIBLE);
+                    break;
+                default:
+                    chat_progress_bar.setVisibility(View.GONE);
+                    chat_send_fail_iv.setVisibility(View.GONE);
+                    break;
+            }
+        }
+    }
 
     /**
      * 设置钉link 左边
@@ -591,6 +633,7 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMMessageCustomBody> i
         }
     }
 
+
     /**
      * 初始化右边 图片布局
      *
@@ -612,7 +655,6 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMMessageCustomBody> i
                     .load(picUrl)
                     .asBitmap()
                     .into(new FitHeightImgViewTarget(chat_image_iv));
-            // GlideUtils.loadPic(chat_image_iv.getContext(), picUrl, chat_image_iv);
         }
     }
 
@@ -702,7 +744,29 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMMessageCustomBody> i
      * @param position
      */
     private void setTypeRightLink(ViewHolder holder, IMMessageCustomBody imMessageCustomBody, int position) {
-        setTypeLeftLink(holder, imMessageCustomBody, position);
+        if (holder == null) return;
+        if (imMessageCustomBody == null) return;
+        switch (imMessageCustomBody.msg_statu) {
+            case MSG_STATU_SENDING: {
+                TextView chat_link_title_tv = holder.obtainView(R.id.chat_link_title_tv);
+                ImageView chat_lin_thumb_iv = holder.obtainView(R.id.chat_lin_thumb_iv);
+                TextView chat_link_url_tv = holder.obtainView(R.id.chat_link_url_tv);
+                TextView chat_link_desc_tv = holder.obtainView(R.id.chat_link_desc_tv);
+
+                chat_link_desc_tv.setText("正在解析链接地址");
+                chat_link_desc_tv.setVisibility(View.VISIBLE);
+                chat_link_title_tv.setVisibility(View.GONE);
+                chat_lin_thumb_iv.setVisibility(View.GONE);
+                chat_link_url_tv.setVisibility(View.GONE);
+            }
+            break;
+            case MSG_STATU_FAIL:
+                setTypeLeftLink(holder, imMessageCustomBody, position);
+                break;
+            default:
+                setTypeLeftLink(holder, imMessageCustomBody, position);
+                break;
+        }
     }
 
     /**

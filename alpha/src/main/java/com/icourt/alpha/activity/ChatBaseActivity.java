@@ -28,6 +28,7 @@ import com.icourt.alpha.http.RetrofitServiceFactory;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.INIMessageListener;
+import com.icourt.alpha.utils.GlobalMessageObserver;
 import com.icourt.alpha.utils.JsonUtils;
 import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.utils.SystemUtils;
@@ -36,10 +37,16 @@ import com.icourt.alpha.widget.dialog.AlertListDialog;
 import com.icourt.api.RequestUtils;
 import com.netease.nimlib.sdk.NIMClient;
 import com.netease.nimlib.sdk.Observer;
+import com.netease.nimlib.sdk.RequestCallback;
+import com.netease.nimlib.sdk.msg.MessageBuilder;
 import com.netease.nimlib.sdk.msg.MsgService;
 import com.netease.nimlib.sdk.msg.MsgServiceObserve;
+import com.netease.nimlib.sdk.msg.constant.MsgStatusEnum;
+import com.netease.nimlib.sdk.msg.constant.SessionTypeEnum;
 import com.netease.nimlib.sdk.msg.model.IMMessage;
 import com.netease.nimlib.sdk.msg.model.MessageReceipt;
+import com.netease.nimlib.sdk.team.TeamService;
+import com.netease.nimlib.sdk.team.model.Team;
 import com.trello.rxlifecycle2.android.ActivityEvent;
 
 import org.greenrobot.eventbus.EventBus;
@@ -55,7 +62,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 
 import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
@@ -69,6 +75,9 @@ import okhttp3.RequestBody;
 import retrofit2.Call;
 import retrofit2.Response;
 
+import static com.icourt.alpha.constants.Const.CHAT_TYPE_P2P;
+import static com.icourt.alpha.constants.Const.CHAT_TYPE_TEAM;
+import static com.icourt.alpha.constants.Const.MSG_STATU_FAIL;
 import static com.icourt.alpha.constants.Const.MSG_TYPE_ALPHA;
 import static com.icourt.alpha.constants.Const.MSG_TYPE_AT;
 import static com.icourt.alpha.constants.Const.MSG_TYPE_DING;
@@ -108,7 +117,7 @@ public abstract class ChatBaseActivity extends BaseActivity implements INIMessag
     Observer<IMMessage> messageStatusObserver = new Observer<IMMessage>() {
         @Override
         public void onEvent(IMMessage message) {
-            onMessageChanged(message);
+            onMessageChanged(GlobalMessageObserver.getIMBody(message));
         }
     };
 
@@ -292,6 +301,18 @@ public abstract class ChatBaseActivity extends BaseActivity implements INIMessag
         service.observeRevokeMessage(revokeMessageObserver, register);
     }
 
+
+    /**
+     * 获取云信群组信息
+     *
+     * @param requestCallback
+     */
+    protected final void getTeamINFO(RequestCallback<Team> requestCallback) {
+        NIMClient.getService(TeamService.class)
+                .queryTeam(getIMChatId())
+                .setCallback(requestCallback);
+    }
+
     /**
      * 从本地删除消息
      *
@@ -325,28 +346,71 @@ public abstract class ChatBaseActivity extends BaseActivity implements INIMessag
         return TextUtils.equals(sessionId, getIMChatId());
     }
 
+
     /**
      * 发送文本吧消息
      *
      * @param text
      */
     protected final void sendIMTextMsg(String text) {
-        IMMessageCustomBody msgPostEntity = IMMessageCustomBody.createTextMsg(getIMChatType(),
+        final IMMessageCustomBody msgPostEntity = IMMessageCustomBody.createTextMsg(getIMChatType(),
                 getLoadedLoginName(),
+                getLoadedLoginUserId(),
                 getIMChatId(),
                 text);
+        onMessageReceived(msgPostEntity);
         String jsonBody = null;
         try {
             jsonBody = JsonUtils.Gson2String(msgPostEntity);
         } catch (JsonParseException e) {
             e.printStackTrace();
         }
+        final String finalJsonBody = jsonBody;
         getApi().msgAdd(RequestUtils.createJsonBody(jsonBody))
                 .enqueue(new SimpleCallBack<Boolean>() {
                     @Override
                     public void onSuccess(Call<ResEntity<Boolean>> call, Response<ResEntity<Boolean>> response) {
                     }
 
+                    @Override
+                    public void onFailure(Call<ResEntity<Boolean>> call, Throwable t) {
+                        super.onFailure(call, t);
+                        if (finalJsonBody != null) {
+                            saveSendNimMsg(finalJsonBody, MsgStatusEnum.fail, false);
+                            msgPostEntity.msg_statu = MSG_STATU_FAIL;
+                            updateCustomBody(msgPostEntity);
+                        }
+                    }
+                });
+    }
+
+    /**
+     * 重发消息
+     *
+     * @param msgPostEntity
+     */
+    protected void retrySendCustomBody(final IMMessageCustomBody msgPostEntity) {
+        if (msgPostEntity == null) return;
+        String jsonBody = null;
+        try {
+            jsonBody = JsonUtils.Gson2String(msgPostEntity);
+        } catch (JsonParseException e) {
+            e.printStackTrace();
+        }
+        msgPostEntity.msg_statu = Const.MSG_STATU_SENDING;
+        updateCustomBody(msgPostEntity);
+        getApi().msgAdd(RequestUtils.createJsonBody(jsonBody))
+                .enqueue(new SimpleCallBack<Boolean>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<Boolean>> call, Response<ResEntity<Boolean>> response) {
+                    }
+
+                    @Override
+                    public void onFailure(Call<ResEntity<Boolean>> call, Throwable t) {
+                        super.onFailure(call, t);
+                        msgPostEntity.msg_statu = Const.MSG_STATU_FAIL;
+                        updateCustomBody(msgPostEntity);
+                    }
                 });
     }
 
@@ -358,51 +422,204 @@ public abstract class ChatBaseActivity extends BaseActivity implements INIMessag
      * @param accIds
      */
     protected final void sendIMAtMsg(@NonNull String text, boolean isAtAll, @Nullable List<String> accIds) {
-        IMMessageCustomBody msgPostEntity = IMMessageCustomBody.createAtMsg(getIMChatType(),
+        final IMMessageCustomBody msgPostEntity = IMMessageCustomBody.createAtMsg(getIMChatType(),
                 getLoadedLoginName(),
+                getLoadedLoginUserId(),
                 getIMChatId(),
                 text,
                 isAtAll,
                 accIds);
+        onMessageReceived(msgPostEntity);
         String jsonBody = null;
         try {
             jsonBody = JsonUtils.Gson2String(msgPostEntity);
         } catch (JsonParseException e) {
             e.printStackTrace();
         }
+        final String finalJsonBody = jsonBody;
         getApi().msgAdd(RequestUtils.createJsonBody(jsonBody))
                 .enqueue(new SimpleCallBack<Boolean>() {
                     @Override
                     public void onSuccess(Call<ResEntity<Boolean>> call, Response<ResEntity<Boolean>> response) {
                     }
+
+                    @Override
+                    public void onFailure(Call<ResEntity<Boolean>> call, Throwable t) {
+                        super.onFailure(call, t);
+                        if (finalJsonBody != null) {
+                            saveSendNimMsg(finalJsonBody, MsgStatusEnum.fail, false);
+                            msgPostEntity.msg_statu = MSG_STATU_FAIL;
+                            updateCustomBody(msgPostEntity);
+                        }
+                    }
                 });
     }
 
     /**
-     * 发送文件消息
+     * 发送图片消息
      *
      * @param path
      */
-    protected final void sendIMFileMsg(String path) {
+    protected final void sendIMPicMsg(String path) {
         if (TextUtils.isEmpty(path)) return;
         File file = new File(path);
         if (!file.exists()) {
             showTopSnackBar("文件不存在啦");
+            return;
         }
+
+        final IMMessageCustomBody msgPostEntity = IMMessageCustomBody.createPicMsg(getIMChatType(),
+                getLoadedLoginName(),
+                getLoadedLoginUserId(),
+                getIMChatId(),
+                file.getAbsolutePath());
+        onMessageReceived(msgPostEntity);
+        String jsonBody = null;
+        try {
+            jsonBody = JsonUtils.Gson2String(msgPostEntity);
+        } catch (JsonParseException e) {
+            e.printStackTrace();
+        }
+        final String finalJsonBody = jsonBody;
         Map<String, RequestBody> params = new HashMap<>();
-        params.put("ope", RequestUtils.createTextBody(String.valueOf(getIMChatType())));
-        params.put("to", RequestUtils.createTextBody(String.valueOf(getIMChatId())));
-        params.put("name", RequestUtils.createTextBody(getLoadedLoginName()));
-        params.put("magic_id", RequestUtils.createTextBody(UUID.randomUUID().toString()));
-        params.put("platform", RequestUtils.createTextBody(IMMessageCustomBody.PLATFORM_ANDROID));
-        params.put("file\"; filename=\"image.png\"", RequestUtils.createImgBody(file));
+        params.put("platform", RequestUtils.createTextBody(msgPostEntity.platform));
+        params.put("to", RequestUtils.createTextBody(msgPostEntity.to));
+        params.put("from", RequestUtils.createTextBody(msgPostEntity.from));
+        params.put("ope", RequestUtils.createTextBody(String.valueOf(msgPostEntity.ope)));
+        params.put("name", RequestUtils.createTextBody(msgPostEntity.name));
+        params.put("magic_id", RequestUtils.createTextBody(msgPostEntity.magic_id));
+
+        params.put("file\"; filename=\"image.jpg\"", RequestUtils.createImgBody(file));
         getApi().msgImageAdd(params)
                 .enqueue(new SimpleCallBack<Boolean>() {
                     @Override
                     public void onSuccess(Call<ResEntity<Boolean>> call, Response<ResEntity<Boolean>> response) {
 
                     }
+
+                    @Override
+                    public void onFailure(Call<ResEntity<Boolean>> call, Throwable t) {
+                        super.onFailure(call, t);
+                        if (finalJsonBody != null) {
+                            saveSendNimMsg(finalJsonBody, MsgStatusEnum.fail, false);
+                            msgPostEntity.msg_statu = MSG_STATU_FAIL;
+                            updateCustomBody(msgPostEntity);
+                        }
+                    }
                 });
+    }
+
+    /**
+     * 重新发送图片
+     *
+     * @param msgPostEntity
+     */
+    protected final void retrySendIMPicMsg(final IMMessageCustomBody msgPostEntity) {
+        if (msgPostEntity == null) return;
+        if (msgPostEntity.ext != null
+                && !TextUtils.isEmpty(msgPostEntity.ext.thumb)) {
+            if (!msgPostEntity.ext.thumb.startsWith("http")) {
+                File file = new File(msgPostEntity.ext.thumb);
+                if (!file.exists()) {
+                    showTopSnackBar("文件不存在啦");
+                    return;
+                }
+                String jsonBody = null;
+                try {
+                    jsonBody = JsonUtils.Gson2String(msgPostEntity);
+                } catch (JsonParseException e) {
+                    e.printStackTrace();
+                }
+                final String finalJsonBody = jsonBody;
+                Map<String, RequestBody> params = new HashMap<>();
+                params.put("platform", RequestUtils.createTextBody(msgPostEntity.platform));
+                params.put("to", RequestUtils.createTextBody(msgPostEntity.to));
+                params.put("from", RequestUtils.createTextBody(msgPostEntity.from));
+                params.put("ope", RequestUtils.createTextBody(String.valueOf(msgPostEntity.ope)));
+                params.put("name", RequestUtils.createTextBody(msgPostEntity.name));
+                params.put("magic_id", RequestUtils.createTextBody(msgPostEntity.magic_id));
+
+                params.put("file\"; filename=\"image.jpg\"", RequestUtils.createImgBody(file));
+
+                msgPostEntity.msg_statu = Const.MSG_STATU_SENDING;
+                updateCustomBody(msgPostEntity);
+
+                getApi().msgImageAdd(params)
+                        .enqueue(new SimpleCallBack<Boolean>() {
+                            @Override
+                            public void onSuccess(Call<ResEntity<Boolean>> call, Response<ResEntity<Boolean>> response) {
+
+                            }
+
+                            @Override
+                            public void onFailure(Call<ResEntity<Boolean>> call, Throwable t) {
+                                super.onFailure(call, t);
+                                if (finalJsonBody != null) {
+                                    msgPostEntity.msg_statu = MSG_STATU_FAIL;
+                                    updateCustomBody(msgPostEntity);
+                                }
+                            }
+                        });
+            }
+        }
+    }
+
+
+    /**
+     * 本地保存 将会通知回掉
+     *
+     * @param content
+     */
+    @Nullable
+    private IMMessage saveSendNimMsg(@NonNull String content, MsgStatusEnum msgStatusEnum, boolean notify) {
+        IMMessage mMessage = null;
+        switch (getIMChatType()) {
+            case CHAT_TYPE_P2P:
+                mMessage = MessageBuilder.createTextMessage(getIMChatId(), SessionTypeEnum.P2P, "");
+                break;
+            case CHAT_TYPE_TEAM:
+                mMessage = MessageBuilder.createTextMessage(getIMChatId(), SessionTypeEnum.Team, "");
+                break;
+        }
+        if (mMessage != null) {
+            mMessage.setStatus(msgStatusEnum);
+            mMessage.setContent(content);
+            NIMClient.getService(MsgService.class)
+                    .saveMessageToLocal(mMessage, notify);
+        }
+        return mMessage;
+    }
+
+    /**
+     * 更新消息
+     *
+     * @param mMessage
+     */
+    private void updateNimMsg(IMMessage mMessage) {
+        if (mMessage == null) return;
+        NIMClient.getService(MsgService.class)
+                .updateIMMessageStatus(mMessage);
+    }
+
+    /**
+     * 更新消息状态
+     *
+     * @param mMessage
+     */
+    private void updateNimMsgStatus(IMMessage mMessage) {
+        if (mMessage == null) return;
+        NIMClient.getService(MsgService.class)
+                .updateIMMessageStatus(mMessage);
+    }
+
+    /**
+     * 更新自定义消息
+     *
+     * @param msgPostEntity
+     */
+    private void updateCustomBody(IMMessageCustomBody msgPostEntity) {
+        if (msgPostEntity == null) return;
+        onMessageChanged(msgPostEntity);
     }
 
     /**
@@ -468,24 +685,37 @@ public abstract class ChatBaseActivity extends BaseActivity implements INIMessag
      */
     private void sendIMLinkMsgInner(String url, String htmlTitle, String htmlDescription, String htmlImage) {
         if (TextUtils.isEmpty(url)) return;
-        IMMessageCustomBody msgPostEntity = IMMessageCustomBody.createLinkMsg(getIMChatType(),
+        final IMMessageCustomBody msgPostEntity = IMMessageCustomBody.createLinkMsg(getIMChatType(),
                 getLoadedLoginName(),
+                getLoadedLoginUserId(),
                 getIMChatId(),
                 url,
                 htmlTitle,
                 htmlDescription,
                 htmlImage);
+        onMessageReceived(msgPostEntity);
         String jsonBody = null;
         try {
             jsonBody = JsonUtils.Gson2String(msgPostEntity);
         } catch (JsonParseException e) {
             e.printStackTrace();
         }
+        final String finalJsonBody = jsonBody;
         getApi().msgAdd(RequestUtils.createJsonBody(jsonBody))
                 .enqueue(new SimpleCallBack<Boolean>() {
                     @Override
                     public void onSuccess(Call<ResEntity<Boolean>> call, Response<ResEntity<Boolean>> response) {
 
+                    }
+
+                    @Override
+                    public void onFailure(Call<ResEntity<Boolean>> call, Throwable t) {
+                        super.onFailure(call, t);
+                        if (finalJsonBody != null) {
+                            saveSendNimMsg(finalJsonBody, MsgStatusEnum.fail, false);
+                            msgPostEntity.msg_statu = MSG_STATU_FAIL;
+                            updateCustomBody(msgPostEntity);
+                        }
                     }
                 });
     }
@@ -534,14 +764,7 @@ public abstract class ChatBaseActivity extends BaseActivity implements INIMessag
      * @return
      */
     protected final IMMessageCustomBody getIMBody(IMMessage message) {
-        IMMessageCustomBody imBodyEntity = null;
-        try {
-            log("--------------->customBody:" + message.getContent());
-            imBodyEntity = JsonUtils.Gson2Bean(message.getContent(), IMMessageCustomBody.class);
-        } catch (JsonParseException e) {
-            e.printStackTrace();
-        }
-        return imBodyEntity;
+        return GlobalMessageObserver.getLocalIMBody(message);
     }
 
     /**
@@ -752,17 +975,20 @@ public abstract class ChatBaseActivity extends BaseActivity implements INIMessag
      * @param dingMsgId
      */
     protected final void msgActionDing(final boolean isDing, final String dingMsgId) {
-        IMMessageCustomBody msgPostEntity = IMMessageCustomBody.createDingMsg(getIMChatType(),
+        final IMMessageCustomBody msgPostEntity = IMMessageCustomBody.createDingMsg(getIMChatType(),
                 getLoadedLoginName(),
+                getLoadedLoginUserId(),
                 getIMChatId(),
                 isDing,
                 dingMsgId);
+        onMessageReceived(msgPostEntity);
         String jsonBody = null;
         try {
             jsonBody = JsonUtils.Gson2String(msgPostEntity);
         } catch (JsonParseException e) {
             e.printStackTrace();
         }
+        final String finalJsonBody = jsonBody;
         getApi().msgAdd(RequestUtils.createJsonBody(jsonBody))
                 .enqueue(new SimpleCallBack<Boolean>() {
                     @Override
@@ -775,6 +1001,16 @@ public abstract class ChatBaseActivity extends BaseActivity implements INIMessag
                             }
                         }
                     }
+
+                    @Override
+                    public void onFailure(Call<ResEntity<Boolean>> call, Throwable t) {
+                        super.onFailure(call, t);
+                        if (finalJsonBody != null) {
+                            saveSendNimMsg(finalJsonBody, MsgStatusEnum.fail, false);
+                            msgPostEntity.msg_statu = MSG_STATU_FAIL;
+                            updateCustomBody(msgPostEntity);
+                        }
+                    }
                 });
     }
 
@@ -783,6 +1019,7 @@ public abstract class ChatBaseActivity extends BaseActivity implements INIMessag
      *
      * @param msgId
      */
+
     protected final void msgActionCollect(final String msgId) {
         getApi().msgCollect(msgId, getIMChatType(), getIMChatId())
                 .enqueue(new SimpleCallBack<Boolean>() {

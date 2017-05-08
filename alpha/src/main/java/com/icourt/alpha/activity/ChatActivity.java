@@ -51,6 +51,7 @@ import com.netease.nimlib.sdk.msg.MsgService;
 import com.netease.nimlib.sdk.msg.constant.SessionTypeEnum;
 import com.netease.nimlib.sdk.msg.model.IMMessage;
 import com.netease.nimlib.sdk.msg.model.MessageReceipt;
+import com.netease.nimlib.sdk.team.model.Team;
 import com.sj.emoji.DefEmoticons;
 import com.sj.emoji.EmojiBean;
 import com.sj.emoji.EmojiDisplay;
@@ -140,7 +141,7 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
             if (resultList != null) {
                 for (PhotoInfo photoInfo : resultList) {
                     if (photoInfo != null && !TextUtils.isEmpty(photoInfo.getPhotoPath())) {
-                        sendIMFileMsg(photoInfo.getPhotoPath());
+                        sendIMPicMsg(photoInfo.getPhotoPath());
                     }
                 }
             }
@@ -148,6 +149,24 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
 
         @Override
         public void onHanlderFailure(int requestCode, String errorMsg) {
+
+        }
+    };
+    private RequestCallback<Team> teamCallBack = new RequestCallback<Team>() {
+        @Override
+        public void onSuccess(Team param) {
+            if (param != null) {
+                setViewVisible(getTitleActionImage(), param.mute());
+            }
+        }
+
+        @Override
+        public void onFailed(int code) {
+
+        }
+
+        @Override
+        public void onException(Throwable exception) {
 
         }
     };
@@ -220,6 +239,7 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
         initView();
         initEmoticonsKeyBoardBar();
         getLocalContacts();
+        getTeamINFO(teamCallBack);
         getData(true);
     }
 
@@ -243,7 +263,6 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
     public void onMessageEvent(NoDisturbingEvent noDisturbingEvent) {
         if (noDisturbingEvent == null) return;
         setViewVisible(getTitleActionImage(), noDisturbingEvent.isNoDisturbing);
-        ImageView titleActionImage = getTitleActionImage();
     }
 
     /**
@@ -364,7 +383,7 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
                     for (int i = 0; i < pics.size(); i++) {
                         String path = pics.get(i);
                         if (!TextUtils.isEmpty(path)) {
-                            sendIMFileMsg(path);
+                            sendIMPicMsg(path);
                         }
                     }
                 }
@@ -494,7 +513,7 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
      * @param path
      */
     private void sendFileMsg(String path) {
-        super.sendIMFileMsg(path);
+        super.sendIMPicMsg(path);
     }
 
 
@@ -523,13 +542,16 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
         }
     }
 
+    String path;
+
     /**
      * 打开相机
      */
     private void checkAndOpenCamera() {
         if (checkPermission(Manifest.permission.CAMERA)) {
-            Uri picUri = Uri.fromFile(new File(SystemUtils.getFileDiskCache(getContext()) + File.separator
-                    + System.currentTimeMillis() + ".png"));
+            path = SystemUtils.getFileDiskCache(getContext()) + File.separator
+                    + System.currentTimeMillis() + ".png";
+            Uri picUri = Uri.fromFile(new File(path));
             SystemUtils.doTakePhotoAction(getContext(), picUri, REQUEST_CODE_CAMERA);
         } else {
             reqPermission(Manifest.permission.CAMERA, "我们需要拍照权限!", REQ_CODE_PERMISSION_CAMERA);
@@ -755,11 +777,17 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
         if (customBody == null) return;
         log("----------------->chat onMessageReceived:" + customBody);
         if (!isCurrentRoomSession(customBody.to)) return;
-        if (shouldScrollToBottom()) {
-            chatAdapter.addItem(customBody);
-            scrollToBottom();
-        } else {
-            chatAdapter.addItem(customBody);
+        //自己发送的消息推送回来了
+        if (chatAdapter.getData().contains(customBody)) {
+            customBody.msg_statu = Const.MSG_STATU_SUCCESS;
+            chatAdapter.updateItem(customBody);
+        } else {//别人发送的消息收到
+            if (shouldScrollToBottom()) {
+                chatAdapter.addItem(customBody);
+                scrollToBottom();
+            } else {
+                chatAdapter.addItem(customBody);
+            }
         }
     }
 
@@ -769,8 +797,11 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
     }
 
     @Override
-    public void onMessageChanged(IMMessage message) {
-        log("----------------->chat  onMessageChanged:" + message);
+    public void onMessageChanged(IMMessageCustomBody customBody) {
+        log("----------------->chat  onMessageChanged:" + customBody);
+        if (customBody == null) return;
+        if (!isCurrentRoomSession(customBody.to)) return;
+        chatAdapter.updateItem(customBody);
     }
 
     @Override
@@ -782,7 +813,6 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
             if (imBody != null) {
                 removeFromAdapter(imBody.id);
             }
-
         }
     }
 
@@ -853,9 +883,8 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         switch (requestCode) {
             case REQUEST_CODE_CAMERA:
-                if (resultCode == Activity.RESULT_OK && data != null) {
-                    String imageRealPathFromURI = SystemUtils.getImageRealPathFromURI(data.getData(), getContentResolver());
-                    log("------------>uriL:" + imageRealPathFromURI);
+                if (resultCode == Activity.RESULT_OK) {
+                    sendFileMsg(path);
                 }
                 break;
             case REQUEST_CODE_AT_MEMBER:
@@ -934,6 +963,13 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
                 if (item.ext != null) {
                     ImagePagerActivity.launch(view.getContext(),
                             new String[]{item.ext.thumb});
+                }
+                break;
+            case R.id.chat_send_fail_iv:
+                if (item.show_type == Const.MSG_TYPE_IMAGE) {
+                    retrySendIMPicMsg(item);
+                } else {
+                    retrySendCustomBody(item);
                 }
                 break;
         }

@@ -76,11 +76,30 @@ public class Const {
             MSG_TYPE_LINK,
             MSG_TYPE_ALPHA,
             MSG_TYPE_VOICE,
+            MSG_TYPE_IMAGE,
             MSG_TYPE_CONTACT_UPDATE,
             MSG_TYPE_SET_TOP,
             MSG_TYPE_LEAVE_GROUP})
     @Retention(RetentionPolicy.SOURCE)
     public @interface MSG_TYPE {
+
+    }
+
+    public static final int MSG_STATU_DRAFT = 0;     //草稿
+    public static final int MSG_STATU_SENDING = 1;   //正在发送中
+    public static final int MSG_STATU_SUCCESS = 2;   //发送成功
+    public static final int MSG_STATU_FAIL = 3;      //发送失败
+    public static final int MSG_STATU_READ = 4;      // 消息已读 发送消息时表示对方已看过该消息 接收消息时表示自己已读过，一般仅用于音频消息
+    public static final int MSG_STATU_UNREAD = 5;    //未读状态
+
+    @IntDef({MSG_STATU_DRAFT,
+            MSG_STATU_SENDING,
+            MSG_STATU_SUCCESS,
+            MSG_STATU_FAIL,
+            MSG_STATU_READ,
+            MSG_STATU_UNREAD})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface MSG_STATU {
 
     }
 

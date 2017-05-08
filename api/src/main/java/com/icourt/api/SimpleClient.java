@@ -1,16 +1,11 @@
 package com.icourt.api;
 
 import android.content.Context;
-import android.os.Build;
-import android.text.TextUtils;
 
-import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
 import okhttp3.logging.HttpLoggingInterceptor;
 
 /**
@@ -25,10 +20,11 @@ public class SimpleClient extends BaseClient {
         // ClearableCookieJar cookieJar = new PersistentCookieJar(new SetCookieCache(), new SharedPrefsCookiePersistor(context));
 
         OkHttpClient.Builder builder = new OkHttpClient.Builder();
-        builder.retryOnConnectionFailure(true);
+        //builder.retryOnConnectionFailure(true);
         //builder.cookieJar(cookieJar);
         builder.addInterceptor(interceptor);
         builder.addInterceptor(new HttpLoggingInterceptor(logger).setLevel(HttpLoggingInterceptor.Level.BODY));
+        builder.writeTimeout(apiConfig.SOCKET_WRITE_TIME_OUT, TimeUnit.MILLISECONDS);
         builder.connectTimeout(apiConfig.SOCKET_TIME_OUT, TimeUnit.MILLISECONDS);
         builder.readTimeout(apiConfig.SOCKET_RESPONSE_TIME_OUT, TimeUnit.MILLISECONDS);
 
