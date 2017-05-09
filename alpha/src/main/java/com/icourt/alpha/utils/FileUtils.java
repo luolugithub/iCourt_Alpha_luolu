@@ -7,6 +7,8 @@ import android.graphics.drawable.Drawable;
 import android.os.Environment;
 import android.text.TextUtils;
 
+import com.icourt.alpha.R;
+
 import java.io.File;
 
 /**
@@ -87,5 +89,37 @@ public class FileUtils {
         drawable.setBounds(0, 0, drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight());
         drawable.draw(canvas);
         return bitmap;
+    }
+
+    /**
+     * 获取文件对应图标 40
+     *
+     * @param fileName
+     * @return
+     */
+    public static int getFileIcon40(String fileName) {
+        if (!TextUtils.isEmpty(fileName) && fileName.length() > 0) {
+            String type = fileName.substring(fileName.lastIndexOf(".") + 1);
+            if (ActionConstants.resourcesMap40.containsKey(type)) {
+                return ActionConstants.resourcesMap40.get(type);
+            }
+        }
+        return R.mipmap.filetype_default_40;
+    }
+
+    /**
+     * 获取文件对应图标 20
+     *
+     * @param fileName
+     * @return
+     */
+    public static int getFileIcon20(String fileName) {
+        if (!TextUtils.isEmpty(fileName) && fileName.length() > 0) {
+            String type = fileName.substring(fileName.lastIndexOf(".") + 1);
+            if (ActionConstants.resourcesMap.containsKey(type)) {
+                return ActionConstants.resourcesMap.get(type);
+            }
+        }
+        return R.mipmap.filetype_default_20;
     }
 }

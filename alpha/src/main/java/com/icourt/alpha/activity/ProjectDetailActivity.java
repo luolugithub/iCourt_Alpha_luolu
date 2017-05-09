@@ -19,8 +19,8 @@ import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.baseadapter.BaseFragmentAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.base.BaseActivity;
-import com.icourt.alpha.fragment.MyProjectFragment;
 import com.icourt.alpha.fragment.ProjectDetailFragment;
+import com.icourt.alpha.fragment.ProjectFileBoxFragment;
 import com.icourt.alpha.fragment.ProjectTaskFragment;
 import com.icourt.alpha.fragment.ProjectTimeFragment;
 import com.icourt.alpha.http.callback.SimpleCallBack;
@@ -106,7 +106,7 @@ public class ProjectDetailActivity extends BaseActivity implements OnFragmentCal
                         ProjectDetailFragment.newInstance(projectId),
                         ProjectTaskFragment.newInstance(projectId),
                         ProjectTimeFragment.newInstance(projectId),
-                        MyProjectFragment.newInstance(MyProjectFragment.TYPE_MY_PARTIC_PROJECT)
+                        ProjectFileBoxFragment.newInstance(projectId)
                 ));
     }
 
@@ -160,11 +160,11 @@ public class ProjectDetailActivity extends BaseActivity implements OnFragmentCal
                     public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
                         dialog.dismiss();
                         switch (position) {
-                            case 0:
-                                showTopSnackBar("已完成任务");
+                            case 0://"已完成任务"
+                                ProjectEndTaskActivity.launch(ProjectDetailActivity.this, projectId);
                                 break;
-                            case 1:
-                                showTopSnackBar("管理任务组");
+                            case 1://"管理任务组"
+                                ProjectTaskGroupActivity.launch(ProjectDetailActivity.this, projectId);
                                 break;
                         }
                     }

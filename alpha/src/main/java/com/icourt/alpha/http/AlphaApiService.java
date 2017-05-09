@@ -1,10 +1,12 @@
 package com.icourt.alpha.http;
 
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.icourt.alpha.constants.Const;
 import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.icourt.alpha.entity.bean.AppVersionEntity;
 import com.icourt.alpha.entity.bean.CustomerEntity;
+import com.icourt.alpha.entity.bean.FileBoxBean;
 import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.icourt.alpha.entity.bean.GroupDetailEntity;
 import com.icourt.alpha.entity.bean.GroupEntity;
@@ -16,6 +18,7 @@ import com.icourt.alpha.entity.bean.ProjectDetailEntity;
 import com.icourt.alpha.entity.bean.ProjectEntity;
 import com.icourt.alpha.entity.bean.SearchEngineEntity;
 import com.icourt.alpha.entity.bean.TaskEntity;
+import com.icourt.alpha.entity.bean.TaskGroupEntity;
 import com.icourt.alpha.entity.bean.TimeEntity;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 
@@ -29,6 +32,7 @@ import retrofit2.http.DELETE;
 import retrofit2.http.Field;
 import retrofit2.http.FormUrlEncoded;
 import retrofit2.http.GET;
+import retrofit2.http.Header;
 import retrofit2.http.Multipart;
 import retrofit2.http.POST;
 import retrofit2.http.PUT;
@@ -719,10 +723,73 @@ public interface AlphaApiService {
 
     /**
      * 项目下计时列表
+     *
      * @param matterId
      * @param pageSize
      * @return
      */
     @GET("api/v2/timing/timing/findByMatterId")
-    Call<ResEntity<TimeEntity>> projectQueryTimerList(@Query("matterId") String matterId, @Query("pageSize") int pageSize);
+    Call<ResEntity<TimeEntity>> projectQueryTimerList(@Query("matterId") String matterId, @Query("pageIndex") int pageIndex, @Query("pageSize") int pageSize);
+
+    /**
+     * 获取项目详情文档列表token
+     *
+     * @return
+     */
+    @GET("api/v2/documents/getToken")
+    Call<JsonObject> projectQueryFileBoxToken();
+
+    /**
+     * 获取项目详情文档id
+     *
+     * @param projectId
+     * @return
+     */
+    @GET("api/v2/documents/getRepo/{projectId}")
+    Call<JsonObject> projectQueryDocumentId(@Path("projectId") String projectId);
+
+    /**
+     * 获取项目详情文档列表
+     *
+     * @param authToken
+     * @param seaFileRepoId
+     * @return
+     */
+    @GET("https://box.alphalawyer.cn/api2/repos/{seaFileRepoId}/dir/")
+    Call<ResEntity<List<FileBoxBean>>> projectQueryFileBoxList(@Header("Authorization") String authToken, @Path("seaFileRepoId") String seaFileRepoId);
+
+    /**
+     * 项目下任务列表
+     *
+     * @param projectId
+     * @param stateType 全部任务:－1    已完成:1     未完成:0
+     * @param type 任务和任务组：-1;    任务：0;    任务组：1;
+     * @param pageIndex
+     * @param pageSize
+     * @return
+     */
+    @GET("api/v2/taskflow/queryMatterTask")
+    Call<ResEntity<List<TaskEntity>>> projectQueryTaskList(@Query("matterId") String projectId,
+                                                           @Query("stateType") int stateType,
+                                                           @Query("type") int type,
+                                                           @Query("pageIndex") int pageIndex,
+                                                           @Query("pageSize") int pageSize);
+
+    /**
+     * 项目下任务组列表
+     *
+     * @param projectId
+     * @return
+     */
+    @GET("api/v2/flowmatter/flowbyMatterId")
+    Call<ResEntity<List<TaskGroupEntity>>> projectQueryTaskGroupList(@Query("matterId") String projectId);
+
+    /**
+     * 新建任务组
+     * @param msg
+     * @return
+     */
+    @POST("api/v2/taskflow")
+    Call<ResEntity<TaskGroupEntity>> taskGroupCreate(@Body RequestBody msg);
+
 }
