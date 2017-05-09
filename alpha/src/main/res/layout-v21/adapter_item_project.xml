@@ -6,7 +6,7 @@
     android:layout_height="wrap_content"
     android:foreground="?android:attr/selectableItemBackgroundBorderless"
     app:cardCornerRadius="5dp"
-    app:cardElevation="2dp"
+    app:cardElevation="@dimen/dp0_5"
     app:cardPreventCornerOverlap="true"
     app:cardUseCompatPadding="true"
     tools:targetApi="lollipop">
@@ -52,7 +52,7 @@
 
             <View
                 android:layout_width="match_parent"
-                android:layout_height="@dimen/dp1"
+                android:layout_height="@dimen/alpha_height_divider"
                 android:layout_marginBottom="@dimen/dp10"
                 android:layout_marginTop="@dimen/dp10"
                 android:background="@color/alpha_divider_color" />

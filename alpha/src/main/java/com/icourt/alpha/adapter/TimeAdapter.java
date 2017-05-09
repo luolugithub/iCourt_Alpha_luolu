@@ -1,7 +1,6 @@
 package com.icourt.alpha.adapter;
 
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
+import android.support.annotation.NonNull;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -10,6 +9,10 @@ import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.baseadapter.BaseArrayRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.entity.bean.TimeEntity;
+import com.icourt.alpha.utils.DateUtils;
+import com.icourt.alpha.view.recyclerviewDivider.ITimeDividerInterface;
+
+import java.util.HashMap;
 
 /**
  * Description 计时
@@ -19,10 +22,11 @@ import com.icourt.alpha.entity.bean.TimeEntity;
  * version 2.0.0
  */
 
-public class TimeAdapter extends BaseArrayRecyclerAdapter<TimeEntity> implements BaseRecyclerAdapter.OnItemClickListener, BaseRecyclerAdapter.OnItemLongClickListener {
+public class TimeAdapter extends BaseArrayRecyclerAdapter<TimeEntity.ItemEntity> implements BaseRecyclerAdapter.OnItemClickListener, BaseRecyclerAdapter.OnItemLongClickListener, ITimeDividerInterface {
 
     private static final int TIME_TOP_TYPE = 0;
     private static final int TIME_OTHER_TYPE = 1;
+    private HashMap<Integer, Long> timeShowArray = new HashMap<>();//时间分割线
 
     @Override
     public int getItemViewType(int position) {
@@ -38,19 +42,19 @@ public class TimeAdapter extends BaseArrayRecyclerAdapter<TimeEntity> implements
             case TIME_TOP_TYPE:
                 return R.layout.adapter_item_time_top;
             case TIME_OTHER_TYPE:
-                return R.layout.adapter_item_time_parent;
+                return R.layout.adapter_item_time;
         }
-        return R.layout.adapter_item_time_parent;
+        return R.layout.adapter_item_time;
     }
 
     @Override
-    public void onBindHoder(ViewHolder holder, TimeEntity timeEntity, int position) {
+    public void onBindHoder(ViewHolder holder, TimeEntity.ItemEntity timeEntity, int position) {
         switch (holder.getItemViewType()) {
             case TIME_TOP_TYPE:
                 setTypeTopData(holder, timeEntity);
                 break;
             case TIME_OTHER_TYPE:
-                setTypeOtherData(holder, timeEntity);
+                setTypeOtherData(holder, timeEntity, position);
                 break;
         }
     }
@@ -58,7 +62,7 @@ public class TimeAdapter extends BaseArrayRecyclerAdapter<TimeEntity> implements
     /**
      * 设置顶部数据
      */
-    private void setTypeTopData(ViewHolder holder, TimeEntity timeEntity) {
+    private void setTypeTopData(ViewHolder holder, TimeEntity.ItemEntity timeEntity) {
         TextView totalView = holder.obtainView(R.id.time_top_total_tv);
         ImageView addView = holder.obtainView(R.id.time_top_add_img);
     }
@@ -66,19 +70,32 @@ public class TimeAdapter extends BaseArrayRecyclerAdapter<TimeEntity> implements
     /**
      * 设置列表数据
      */
-    public void setTypeOtherData(ViewHolder holder, TimeEntity timeEntity) {
-        TextView dateView = holder.obtainView(R.id.time_parent_data_tv);
-        RecyclerView recyclerView = holder.obtainView(R.id.time_parent_recyclerview);
-        dateView.setText("5月4日");
-        if (recyclerView.getLayoutManager() == null) {
-            LinearLayoutManager layoutManager = new LinearLayoutManager(recyclerView.getContext());
-            recyclerView.setLayoutManager(layoutManager);
-        }
-        if (recyclerView.getAdapter() == null) {
-            TimeItemAdapter timeItemAdapter = new TimeItemAdapter();
-            recyclerView.setAdapter(timeItemAdapter);
-            timeItemAdapter.bindData(false, timeEntity.itemEntities);
-            timeItemAdapter.setOnItemClickListener(super.onItemClickListener);
+    public void setTypeOtherData(ViewHolder holder, TimeEntity.ItemEntity timeEntity, int position) {
+        addTimeDividerArray(timeEntity, position);
+        TextView durationView = holder.obtainView(R.id.time_item_duration_tv);
+        TextView quantumView = holder.obtainView(R.id.time_item_quantum_tv);
+        ImageView photoView = holder.obtainView(R.id.time_item_user_photo_image);
+        TextView descView = holder.obtainView(R.id.time_item_desc_tv);
+        TextView userNameView = holder.obtainView(R.id.time_item_user_name_tv);
+        TextView typeView = holder.obtainView(R.id.time_item_type_tv);
+        durationView.setText(DateUtils.getTimeDurationDate(timeEntity.useTime));
+        quantumView.setText(DateUtils.getTimeDurationDate(timeEntity.startTime) + "-" + DateUtils.getTimeDurationDate(timeEntity.endTime));
+//        GlideUtils.loadUser(holder.itemView.getContext(), itemEntity.timeUserPic, photoView);
+        descView.setText(timeEntity.name);
+        userNameView.setText(timeEntity.username);
+        typeView.setText(timeEntity.workTypeName);
+    }
+
+    /**
+     * 处理时间分割线
+     *
+     * @param timeEntity
+     */
+    private void addTimeDividerArray(TimeEntity.ItemEntity timeEntity, int position) {
+        if (timeEntity == null) return;
+
+        if (!timeShowArray.containsValue(timeEntity.workDate)) {
+            timeShowArray.put(position, timeEntity.workDate);
         }
     }
 
@@ -90,5 +107,37 @@ public class TimeAdapter extends BaseArrayRecyclerAdapter<TimeEntity> implements
     @Override
     public boolean onItemLongClick(BaseRecyclerAdapter adapter, ViewHolder holder, View view, int position) {
         return false;
+    }
+
+    /**
+     * 是否显示时间
+     *
+     * @param pos
+     * @return
+     */
+    @Override
+    public boolean isShowTimeDivider(int pos) {
+        if (pos != 0) {
+            TimeEntity.ItemEntity item = getItem(pos);
+            return item != null && timeShowArray.get(pos) != null;
+        }
+        return false;
+    }
+
+    /**
+     * 显示的时间字符串 isShowTimeDivider=true 不可以返回null
+     *
+     * @param pos
+     * @return
+     */
+    @NonNull
+    @Override
+    public String getShowTime(int pos) {
+        if (pos != 0) {
+            TimeEntity.ItemEntity item = getItem(pos);
+            return item != null ?
+                    DateUtils.getTimeDate(item.workDate) : "null";
+        }
+        return "";
     }
 }

@@ -62,6 +62,8 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="项目类型图标的重新设计"
+                    android:maxLines="1"
+                    android:ellipsize="end"
                     android:textColor="@color/alpha_font_color_black"
                     android:textSize="16sp" />
 

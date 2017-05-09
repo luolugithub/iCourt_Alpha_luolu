@@ -72,7 +72,7 @@
 
                 <View
                     android:layout_width="match_parent"
-                    android:layout_height="1dp"
+                    android:layout_height="@dimen/alpha_height_divider"
                     android:layout_marginLeft="60dp"
                     android:background="@color/alpha_divider_color" />
 
@@ -116,7 +116,7 @@
 
                 <View
                     android:layout_width="match_parent"
-                    android:layout_height="1dp"
+                    android:layout_height="@dimen/alpha_height_divider"
                     android:layout_marginLeft="60dp"
                     android:background="@color/alpha_divider_color" />
 
@@ -160,7 +160,7 @@
 
                 <View
                     android:layout_width="match_parent"
-                    android:layout_height="1dp"
+                    android:layout_height="@dimen/alpha_height_divider"
                     android:layout_marginLeft="60dp"
                     android:background="@color/alpha_divider_color" />
 
@@ -204,7 +204,7 @@
 
                 <View
                     android:layout_width="match_parent"
-                    android:layout_height="1dp"
+                    android:layout_height="@dimen/alpha_height_divider"
                     android:layout_marginLeft="60dp"
                     android:background="@color/alpha_divider_color" />
 
@@ -231,7 +231,7 @@
 
                 <View
                     android:layout_width="match_parent"
-                    android:layout_height="1dp"
+                    android:layout_height="@dimen/alpha_height_divider"
                     android:layout_marginLeft="60dp"
                     android:background="@color/alpha_divider_color" />
 
@@ -270,12 +270,11 @@
                     android:background="@color/alpha_divider_color"
                     android:gravity="center_vertical"
                     android:orientation="horizontal"
-                    android:padding="@dimen/dp10">
+                    android:padding="@dimen/dp20">
 
                     <TextView
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_marginLeft="@dimen/dp10"
                         android:layout_weight="1"
                         android:text="程序信息"
                         android:textSize="16sp" />
@@ -284,14 +283,14 @@
                         android:id="@+id/project_add_routine"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:padding="@dimen/dp10"
-                        android:src="@mipmap/add" />
+                        android:src="@mipmap/add"
+                        android:visibility="gone" />
                 </LinearLayout>
 
                 <android.support.v4.view.ViewPager
                     android:id="@+id/project_viewpager"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
+                    android:layout_height="500dp">
 
                 </android.support.v4.view.ViewPager>
             </LinearLayout>

@@ -8,7 +8,7 @@ import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.baseadapter.BaseArrayRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.entity.bean.TimeEntity;
-import com.icourt.alpha.utils.GlideUtils;
+import com.icourt.alpha.utils.DateUtils;
 
 /**
  * Description
@@ -17,7 +17,7 @@ import com.icourt.alpha.utils.GlideUtils;
  * date createTime：17/5/4
  * version 2.0.0
  */
-
+@Deprecated
 public class TimeItemAdapter extends BaseArrayRecyclerAdapter<TimeEntity.ItemEntity> implements BaseRecyclerAdapter.OnItemClickListener, BaseRecyclerAdapter.OnItemLongClickListener {
 
 
@@ -34,12 +34,12 @@ public class TimeItemAdapter extends BaseArrayRecyclerAdapter<TimeEntity.ItemEnt
         TextView descView = holder.obtainView(R.id.time_item_desc_tv);
         TextView userNameView = holder.obtainView(R.id.time_item_user_name_tv);
         TextView typeView = holder.obtainView(R.id.time_item_type_tv);
-        durationView.setText("00:23");
-        quantumView.setText("11:00-11:23");
-        GlideUtils.loadUser(holder.itemView.getContext(), itemEntity.timeUserPic, photoView);
-        descView.setText(itemEntity.timeDes);
-        userNameView.setText(itemEntity.timeUserName);
-        typeView.setText(itemEntity.timeType);
+        durationView.setText(DateUtils.getTimeDurationDate(itemEntity.useTime));
+        quantumView.setText(DateUtils.getTimeDurationDate(itemEntity.startTime) + "-" + DateUtils.getTimeDurationDate(itemEntity.endTime));
+//        GlideUtils.loadUser(holder.itemView.getContext(), itemEntity.timeUserPic, photoView);
+        descView.setText(itemEntity.name);
+        userNameView.setText(itemEntity.username);
+        typeView.setText(itemEntity.workTypeName);
     }
 
     @Override

@@ -16,6 +16,7 @@ import com.icourt.alpha.entity.bean.ProjectDetailEntity;
 import com.icourt.alpha.entity.bean.ProjectEntity;
 import com.icourt.alpha.entity.bean.SearchEngineEntity;
 import com.icourt.alpha.entity.bean.TaskEntity;
+import com.icourt.alpha.entity.bean.TimeEntity;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 
 import java.util.List;
@@ -680,6 +681,24 @@ public interface AlphaApiService {
     Call<ResEntity<List<ProjectDetailEntity>>> projectDetail(@Path("id") String id);
 
     /**
+     * 项目添加关注
+     *
+     * @param matterPkid
+     * @return
+     */
+    @PUT("api/v1/matters/addStar")
+    Call<ResEntity<JsonElement>> projectAddStar(@Query("matterPkid") String matterPkid);
+
+    /**
+     * 项目取消关注
+     *
+     * @param matterPkid
+     * @return
+     */
+    @DELETE("api/v1/matters/deleteStar")
+    Call<ResEntity<JsonElement>> projectDeleteStar(@Query("matterPkid") String matterPkid);
+
+    /**
      * 获取我的最新信息
      *
      * @return
@@ -690,9 +709,20 @@ public interface AlphaApiService {
     /**
      * 更新用户信息
      *
-     * @param params
+     * @param id
+     * @param phone
+     * @param email
      * @return
      */
     @PUT("api/v1/auth/up/update")
-    Call<ResEntity<JsonElement>> updateUserInfo(@PartMap Map<String, String> params);
+    Call<ResEntity<JsonElement>> updateUserInfo(@Query("id") String id, @Query("phone") String phone, @Query("email") String email);
+
+    /**
+     * 项目下计时列表
+     * @param matterId
+     * @param pageSize
+     * @return
+     */
+    @GET("api/v2/timing/timing/findByMatterId")
+    Call<ResEntity<TimeEntity>> projectQueryTimerList(@Query("matterId") String matterId, @Query("pageSize") int pageSize);
 }

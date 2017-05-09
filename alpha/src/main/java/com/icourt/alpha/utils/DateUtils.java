@@ -4,6 +4,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
+import java.util.TimeZone;
 
 public class DateUtils {
 
@@ -48,6 +49,7 @@ public class DateUtils {
             return dataString + " " + timeStringBy24;
         }
     }
+
     /**
      * 判断两个日期是否在同一周
      *
@@ -74,6 +76,7 @@ public class DateUtils {
         }
         return false;
     }
+
     /**
      * 根据不同时间段，显示不同时间
      *
@@ -111,5 +114,28 @@ public class DateUtils {
         calendar.setTime(date);
         int intWeek = calendar.get(Calendar.DAY_OF_WEEK) - 1;
         return weekDaysName[intWeek];
+    }
+
+    /**
+     * 获取时长 00:11
+     *
+     * @param milliseconds
+     * @return
+     */
+    public static String getTimeDurationDate(long milliseconds) {
+        SimpleDateFormat formatter = new SimpleDateFormat("HH:mm");
+        formatter.setTimeZone(TimeZone.getTimeZone("GMT+00:00"));
+        return formatter.format(milliseconds);
+    }
+
+    /**
+     * 获取日期 MM月dd日
+     *
+     * @param milliseconds
+     * @return
+     */
+    public static String getTimeDate(long milliseconds) {
+        SimpleDateFormat formatter = new SimpleDateFormat("MM月dd日");
+        return formatter.format(milliseconds);
     }
 }

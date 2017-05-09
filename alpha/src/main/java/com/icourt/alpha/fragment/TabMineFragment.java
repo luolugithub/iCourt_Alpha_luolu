@@ -106,7 +106,7 @@ public class TabMineFragment extends BaseFragment {
 
     @Override
     protected void initView() {
-        getData(false);
+        setDataToView(getLoginUserInfo());
         mShareAPI = UMShareAPI.get(getContext());
     }
 

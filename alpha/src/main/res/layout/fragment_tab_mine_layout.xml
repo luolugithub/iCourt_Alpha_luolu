@@ -213,7 +213,7 @@
 
             <View
                 android:layout_width="match_parent"
-                android:layout_height="1dp"
+                android:layout_height="@dimen/alpha_height_divider"
                 android:layout_marginLeft="39dp"
                 android:background="@color/alpha_divider_color" />
 
@@ -257,7 +257,7 @@
 
             <View
                 android:layout_width="match_parent"
-                android:layout_height="1dp"
+                android:layout_height="@dimen/alpha_height_divider"
                 android:layout_marginLeft="39dp"
                 android:background="@color/alpha_divider_color" />
 
@@ -349,7 +349,7 @@
 
             <View
                 android:layout_width="match_parent"
-                android:layout_height="1dp"
+                android:layout_height="@dimen/alpha_height_divider"
                 android:layout_marginLeft="39dp"
                 android:background="@color/alpha_divider_color" />
 
@@ -402,7 +402,7 @@
 
             <View
                 android:layout_width="match_parent"
-                android:layout_height="1dp"
+                android:layout_height="@dimen/alpha_height_divider"
                 android:layout_marginLeft="39dp"
                 android:background="@color/alpha_divider_color" />
 

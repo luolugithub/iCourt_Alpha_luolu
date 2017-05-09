@@ -10,7 +10,7 @@ import java.util.List;
  * @data 创建时间:16/12/8
  */
 
-
+@Deprecated
 public class ProjectDetailBean implements Serializable {
 
 

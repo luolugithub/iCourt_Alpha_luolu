@@ -1,5 +1,6 @@
 package com.icourt.alpha.entity.bean;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -10,7 +11,7 @@ import java.util.List;
  * version 2.0.0
  */
 
-public class ProjectDetailEntity {
+public class ProjectDetailEntity implements Serializable {
 
 
     /**
@@ -85,8 +86,8 @@ public class ProjectDetailEntity {
     public Object assistAttorneys;//协办律师
     public Object otherAttorneys;//其它参与人
     public Object originatingAttorneys;//案源律师
-    public Object judges;//法官
-    public Object clerks;//书记员
+    public List<JudgeBean> judges;//法官
+    public List<ClerkBean> clerks;//书记员
     public Object arbitrators;// 仲裁员
     public Object secretaries;//仲裁秘书
     public String myStar;//星标
@@ -98,9 +99,8 @@ public class ProjectDetailEntity {
     public List<MembersBean> members;//项目成员
 
 
-
-
-    public static class AttorneysBean {
+    //律师
+    public static class AttorneysBean implements Serializable{
         /**
          * pkId : 3F08509CC44B11E69FB200163E162ADD
          * attorneyPkid : DE9B81AAA02511E69A3800163E0020D1
@@ -117,7 +117,8 @@ public class ProjectDetailEntity {
 
     }
 
-    public static class ClientsBean {
+    //客户
+    public static class ClientsBean implements Serializable{
         /**
          * contactPkid : 5BE0F059C2DA11E69FB200163E162ADD
          * contactName : 深圳市大疆创新科技有限公司
@@ -129,12 +130,13 @@ public class ProjectDetailEntity {
         public String contactPkid;
         public String contactName;
         public String customerPosition;
-        public Object customerPositionName;
+        public String customerPositionName;
         public String type;
 
     }
 
-    public static class LitigantsBean {
+    //其他当事人
+    public static class LitigantsBean implements Serializable{
         /**
          * contactPkid : 9BD98931C29011E69FB200163E162ADD
          * contactName : 从AC按时擦擦趣分期我s
@@ -145,13 +147,14 @@ public class ProjectDetailEntity {
 
         public String contactPkid;
         public String contactName;
-        public Object customerPosition;
-        public Object customerPositionName;
+        public String customerPosition;
+        public String customerPositionName;
         public String type;
 
     }
 
-    public static class GroupsBean {
+    //所属团队
+    public static class GroupsBean implements Serializable{
         /**
          * groupPkid : 62F7E17BA02011E69A3800163E0020D1
          * name : Alpha
@@ -177,7 +180,8 @@ public class ProjectDetailEntity {
         }
     }
 
-    public static class MembersBean {
+    //项目成员
+    public static class MembersBean implements Serializable{
         /**
          * userId : 01CEB4E16D2411E6A5C200163E0020D1
          * userName : 王储
@@ -192,5 +196,17 @@ public class ProjectDetailEntity {
         public String roleName;
         public String pic;
 
+    }
+
+    //法官
+    public static class JudgeBean implements Serializable{
+        public String name;
+        public String phone;
+    }
+
+    //书记员
+    public static class ClerkBean implements Serializable{
+        public String name;
+        public String phone;
     }
 }

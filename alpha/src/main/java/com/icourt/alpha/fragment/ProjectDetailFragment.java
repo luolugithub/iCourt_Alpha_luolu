@@ -1,11 +1,13 @@
 package com.icourt.alpha.fragment;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.view.ViewPager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,14 +17,17 @@ import android.widget.TextView;
 import com.andview.refreshview.XRefreshView;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.ProjectMembersAdapter;
+import com.icourt.alpha.adapter.baseadapter.BaseFragmentAdapter;
 import com.icourt.alpha.adapter.baseadapter.adapterObserver.RefreshViewEmptyObserver;
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.entity.bean.ProjectDetailEntity;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
+import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.utils.ItemDecorationUtils;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 
+import java.util.Arrays;
 import java.util.List;
 
 import butterknife.BindView;
@@ -65,6 +70,8 @@ public class ProjectDetailFragment extends BaseFragment {
 
     private String projectId;
     ProjectMembersAdapter projectMemberAdapter;
+    BaseFragmentAdapter baseFragmentAdapter;
+    OnFragmentCallBackListener onFragmentCallBackListener;
 
     public static ProjectDetailFragment newInstance(@NonNull String projectId) {
         ProjectDetailFragment projectDetailFragment = new ProjectDetailFragment();
@@ -80,6 +87,12 @@ public class ProjectDetailFragment extends BaseFragment {
         View view = super.onCreateView(R.layout.fragment_project_detail_layout, inflater, container, savedInstanceState);
         unbinder = ButterKnife.bind(this, view);
         return view;
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        onFragmentCallBackListener = (OnFragmentCallBackListener) context;
     }
 
     @Override
@@ -117,8 +130,20 @@ public class ProjectDetailFragment extends BaseFragment {
      * @param projectDetailBean
      */
     private void setDataToView(ProjectDetailEntity projectDetailBean) {
+        if (projectName == null)
+            return;
+
         if (projectDetailBean != null) {
             projectName.setText(projectDetailBean.name);
+            if (onFragmentCallBackListener != null) {
+                Bundle bundle = new Bundle();
+                if (TextUtils.isEmpty(projectDetailBean.myStar)) {
+                    bundle.putInt("myStar", 0);
+                } else {
+                    bundle.putInt("myStar", Integer.valueOf(projectDetailBean.myStar));
+                }
+                onFragmentCallBackListener.OnFragmentCallBack(this, bundle);
+            }
             if (projectDetailBean.clients != null) {
                 StringBuilder stringBuilder = new StringBuilder();
                 for (ProjectDetailEntity.ClientsBean clientsBean : projectDetailBean.clients) {
@@ -139,6 +164,12 @@ public class ProjectDetailFragment extends BaseFragment {
                 projectMemberCount.setText("项目成员（" + projectDetailBean.members.size() + "）");
                 projectMemberAdapter.bindData(false, projectDetailBean.members);
             }
+            baseFragmentAdapter = new BaseFragmentAdapter(getChildFragmentManager());
+            projectViewpager.setAdapter(baseFragmentAdapter);
+            baseFragmentAdapter.bindData(true,
+                    Arrays.asList(
+                            ProjectRangeFragment.newInstance(projectDetailBean)
+                    ));
         }
     }
 

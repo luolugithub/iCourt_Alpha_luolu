@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/white"
+    android:orientation="horizontal"
+    android:padding="@dimen/dp15">
+
+    <TextView
+        android:id="@+id/range_key_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="案由"
+        android:layout_marginLeft="@dimen/dp5"
+        android:textColor="@color/alpha_font_color_black"
+        android:textSize="16sp" />
+
+    <TextView
+        android:id="@+id/range_value_tv"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:ellipsize="end"
+        android:gravity="right"
+        android:maxLines="1"
+        android:text="保险纠纷"
+        android:textColor="@color/alpha_font_color_gray"
+        android:textSize="16sp" />
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="@dimen/dp10"
+        android:src="@mipmap/arrow_right" />
+</LinearLayout>

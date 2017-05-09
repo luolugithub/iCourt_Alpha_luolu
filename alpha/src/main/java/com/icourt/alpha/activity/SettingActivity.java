@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.AppBarLayout;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.CheckedTextView;
 import android.widget.EditText;
@@ -22,9 +23,6 @@ import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.GlideUtils;
 import com.icourt.alpha.utils.LoginInfoUtils;
 import com.icourt.alpha.utils.TextFormater;
-
-import java.util.HashMap;
-import java.util.Map;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -89,8 +87,10 @@ public class SettingActivity extends BaseActivity {
     }
 
     @OnClick({R.id.titleAction, R.id.photo_layout})
-    public void onViewClicked(View view) {
-        switch (view.getId()) {
+    @Override
+    public void onClick(View v) {
+        super.onClick(v);
+        switch (v.getId()) {
             case R.id.titleAction:
                 updateInfo();
                 break;
@@ -101,23 +101,21 @@ public class SettingActivity extends BaseActivity {
 
     private void updateInfo() {
         showLoadingDialog("正在修改...");
-        Map<String, String> map = new HashMap<>();
         final String phone = phoneEdittext.getText().toString().trim();
         final String email = emailEdittext.getText().toString().trim();
 
-        map.put("phone", phone);
-        if (TextFormater.isMailNO(email) || "".equals(email)) {
-            map.put("email", email);
-        } else {
+        if (!TextFormater.isMailNO(email) && !TextUtils.isEmpty(email)) {
             showToast("请输入正确的邮箱格式");
             return;
         }
-        map.put("id", alphaUserInfo.getUserId());
-        getApi().updateUserInfo(map).enqueue(new SimpleCallBack<JsonElement>() {
+        if (!TextFormater.isMobileNO(phone) && !TextUtils.isEmpty(phone)) {
+            showToast("请输入正确的手机格式");
+            return;
+        }
+        getApi().updateUserInfo(alphaUserInfo.getUserId(), phone, email).enqueue(new SimpleCallBack<JsonElement>() {
             @Override
             public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
                 dismissLoadingDialog();
-//                EventBus.getDefault().post(new UpdateUserEvent(alphaUserInfo.getPic(), phone, email));
                 alphaUserInfo.setPhone(phone);
                 alphaUserInfo.setMail(email);
                 LoginInfoUtils.clearLoginUserInfo();

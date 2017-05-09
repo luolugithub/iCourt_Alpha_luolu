@@ -16,15 +16,16 @@ import com.icourt.alpha.adapter.TimeAdapter;
 import com.icourt.alpha.adapter.baseadapter.adapterObserver.RefreshViewEmptyObserver;
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.entity.bean.TimeEntity;
-import com.icourt.alpha.utils.ItemDecorationUtils;
+import com.icourt.alpha.http.callback.SimpleCallBack;
+import com.icourt.alpha.http.httpmodel.ResEntity;
+import com.icourt.alpha.view.recyclerviewDivider.TimerItemDecoration;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
+import retrofit2.Call;
+import retrofit2.Response;
 
 /**
  * Description 项目计时
@@ -43,8 +44,8 @@ public class ProjectTimeFragment extends BaseFragment {
     @BindView(R.id.refreshLayout)
     RefreshLayout refreshLayout;
 
+    String projectId;
     TimeAdapter timeAdapter;
-    List<TimeEntity> timeEntitys = new ArrayList<>();
 
     public static ProjectTimeFragment newInstance(@NonNull String projectId) {
         ProjectTimeFragment projectTimeFragment = new ProjectTimeFragment();
@@ -65,13 +66,15 @@ public class ProjectTimeFragment extends BaseFragment {
 
     @Override
     protected void initView() {
+        projectId = getArguments().getString(KEY_PROJECT_ID);
         refreshLayout.setNoticeEmpty(R.mipmap.icon_placeholder_project, R.string.null_project);
         refreshLayout.setMoveForHorizontal(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        recyclerView.addItemDecoration(ItemDecorationUtils.getCommTrans10Divider(getContext(), true));
-        recyclerView.setHasFixedSize(true);
 
         recyclerView.setAdapter(timeAdapter = new TimeAdapter());
+        recyclerView.addItemDecoration(new TimerItemDecoration(getActivity(), timeAdapter));
+        recyclerView.setHasFixedSize(true);
+
         timeAdapter.registerAdapterDataObserver(new RefreshViewEmptyObserver(refreshLayout, timeAdapter));
 
         refreshLayout.setXRefreshViewListener(new XRefreshView.SimpleXRefreshListener() {
@@ -92,30 +95,27 @@ public class ProjectTimeFragment extends BaseFragment {
     }
 
     @Override
-    protected void getData(boolean isRefresh) {
-        if (timeEntitys != null) {
-            timeEntitys.clear();
-        }
-        for (int i = 0; i < 3; i++) {
-            TimeEntity timeEntity = new TimeEntity();
-            if (i == 0) {
-                timeEntitys.add(timeEntity);
-            } else {
-                List<TimeEntity.ItemEntity> itemEntitys = new ArrayList<>();
-                for (int j = 0; j < 3; j++) {
-                    TimeEntity.ItemEntity itemEntity = new TimeEntity.ItemEntity();
-                    itemEntity.timeDes = "项目类型图标的重新设计";
-                    itemEntity.timeUserName = "李妍熙sally";
-                    itemEntity.timeUserPic = "";
-                    itemEntity.timeType = "内部会议";
-                    itemEntitys.add(itemEntity);
+    protected void getData(final boolean isRefresh) {
+        getApi().projectQueryTimerList(projectId, -1).enqueue(new SimpleCallBack<TimeEntity>() {
+            @Override
+            public void onSuccess(Call<ResEntity<TimeEntity>> call, Response<ResEntity<TimeEntity>> response) {
+                stopRefresh();
+                if (response.body().result != null) {
+                    if (response.body().result.items != null) {
+                        if (response.body().result.items.size() > 0) {
+                            response.body().result.items.add(0, new TimeEntity.ItemEntity());
+                        }
+                        timeAdapter.bindData(isRefresh, response.body().result.items);
+                    }
                 }
-                timeEntity.itemEntities = itemEntitys;
-                timeEntitys.add(timeEntity);
             }
-        }
-        timeAdapter.bindData(false, timeEntitys);
-        stopRefresh();
+
+            @Override
+            public void onFailure(Call<ResEntity<TimeEntity>> call, Throwable t) {
+                super.onFailure(call, t);
+                stopRefresh();
+            }
+        });
     }
 
     private void stopRefresh() {
