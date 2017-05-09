@@ -664,7 +664,7 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
                 .setCallback(new RequestCallback<List<IMMessage>>() {
                     @Override
                     public void onSuccess(List<IMMessage> param) {
-                        if (param == null || param.isEmpty()) {
+                        if (param == null || param.size() < pageSize) {
                             //本地为空从网络获取
                             getMsgFromServer(isRefresh);
                         } else {
