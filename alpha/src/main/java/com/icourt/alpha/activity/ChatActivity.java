@@ -592,6 +592,7 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
         ImageView titleActionImage = getTitleActionImage();
         if (titleActionImage != null) {
             titleActionImage.setImageResource(R.mipmap.icon_mute);
+            titleActionImage.setVisibility(View.INVISIBLE);
         }
 
         //显示未读数量状态
@@ -702,7 +703,7 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
                                 scrollToBottom();
                             }
 
-                            if (chatAdapter.getItemCount() > 20) {
+                            if (chatAdapter.getItemCount() < 20) {
                                 setUnreadNum(0);
                                 clearUnReadNum();
                             }

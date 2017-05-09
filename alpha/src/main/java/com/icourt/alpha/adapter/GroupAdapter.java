@@ -1,5 +1,6 @@
 package com.icourt.alpha.adapter;
 
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -9,6 +10,7 @@ import com.icourt.alpha.activity.GroupDetailActivity;
 import com.icourt.alpha.adapter.baseadapter.BaseArrayRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.entity.bean.GroupEntity;
+import com.icourt.alpha.utils.GlideUtils;
 import com.icourt.alpha.utils.IMUtils;
 
 /**
@@ -36,7 +38,11 @@ public class GroupAdapter extends BaseArrayRecyclerAdapter<GroupEntity> implemen
         ImageView group_icon_iv = holder.obtainView(R.id.group_icon_iv);
         TextView group_name_tv = holder.obtainView(R.id.group_name_tv);
         group_name_tv.setText(groupEntity.name);
-        IMUtils.setTeamIcon(groupEntity.name, group_icon_iv);
+        if (TextUtils.isEmpty(groupEntity.pic)) {
+            IMUtils.setTeamIcon(groupEntity.name, group_icon_iv);
+        } else {
+            GlideUtils.loadUser(group_icon_iv.getContext(), groupEntity.pic, group_icon_iv);
+        }
     }
 
     @Override

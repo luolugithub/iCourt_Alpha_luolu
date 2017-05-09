@@ -23,6 +23,7 @@ public class GroupEntity implements ISuspensionInterface, ISuspensionAction, Ser
     public String tid;
     public String name;
     public String intro;
+    public String pic;
 
 
     //附属信息

@@ -320,6 +320,7 @@ public abstract class ChatBaseActivity extends BaseActivity implements INIMessag
 
     @Override
     protected void onDestroy() {
+        clearUnReadNum();
         registerObservers(false);
         if (contactDbService != null) {
             contactDbService.releaseService();
@@ -388,6 +389,7 @@ public abstract class ChatBaseActivity extends BaseActivity implements INIMessag
                 if (e.isDisposed()) return;
                 switch (getIMChatType()) {
                     case CHAT_TYPE_P2P:
+                        //会主动通知recentContact
                         NIMClient.getService(MsgService.class)
                                 .clearUnreadCount(getIMChatId(), SessionTypeEnum.P2P);
                         break;
@@ -399,8 +401,7 @@ public abstract class ChatBaseActivity extends BaseActivity implements INIMessag
                 e.onNext(0);
                 e.onComplete();
             }
-        }).compose(this.<Integer>bindToLifecycle())
-                .subscribeOn(Schedulers.newThread())
+        }).subscribeOn(Schedulers.newThread())
                 .subscribe();
     }
 

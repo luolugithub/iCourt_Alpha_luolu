@@ -160,7 +160,7 @@ public class IMSessionAdapter extends BaseArrayRecyclerAdapter<IMSessionEntity> 
 
 
             //3.设置消息展示的时间
-            setTimeView(tvSessionTime, imSessionEntity.recentContact.getTime());
+            setTimeView(tvSessionTime, imSessionEntity.recentContact.getTime(),position);
 
 
             //4.设置消息体展示
@@ -224,7 +224,13 @@ public class IMSessionAdapter extends BaseArrayRecyclerAdapter<IMSessionEntity> 
             case CHAT_TYPE_TEAM:
                 Team team = getTeam(imSessionEntity.customIMBody.to);
                 if (team != null) {
-                    setTeamIcon(team.getName(), ivSessionIcon);
+                    if (!TextUtils.isEmpty(team.getIcon())) {
+                        GlideUtils.loadUser(ivSessionIcon.getContext(),
+                                team.getIcon(),
+                                ivSessionIcon);
+                    } else {
+                        setTeamIcon(team.getName(), ivSessionIcon);
+                    }
                 }
                 break;
         }
@@ -375,7 +381,7 @@ public class IMSessionAdapter extends BaseArrayRecyclerAdapter<IMSessionEntity> 
      * @param tvSessionTime
      * @param time
      */
-    private void setTimeView(TextView tvSessionTime, long time) {
+    private void setTimeView(TextView tvSessionTime, long time,int pos) {
         if (tvSessionTime == null) return;
         tvSessionTime.setText(DateUtils.getTimeShowString(time, true));
     }
