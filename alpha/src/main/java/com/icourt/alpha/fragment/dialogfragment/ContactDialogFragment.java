@@ -97,7 +97,8 @@ public class ContactDialogFragment extends BaseDialogFragment {
                 window.setGravity(Gravity.BOTTOM);
                 View decorView = window.getDecorView();
                 if (decorView != null) {
-                    decorView.setPadding(0, 0, 0, DensityUtil.dip2px(getContext(), 20));
+                    int dp20 = DensityUtil.dip2px(getContext(), 20);
+                    decorView.setPadding(dp20 / 2, dp20, dp20 / 2, dp20);
                 }
             }
         }

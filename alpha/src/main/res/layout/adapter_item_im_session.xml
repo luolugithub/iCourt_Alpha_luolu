@@ -72,13 +72,6 @@
                 android:layout_marginTop="5dp"
                 android:src="@mipmap/icon_mute" />
 
-            <View
-                android:id="@+id/view_session_top"
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                android:layout_alignParentRight="true"
-                android:layout_gravity="right"
-                android:background="@drawable/im_meau_trigon_bg" />
         </RelativeLayout>
 
 

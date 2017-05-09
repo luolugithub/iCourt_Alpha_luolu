@@ -16,6 +16,7 @@ import com.netease.nimlib.sdk.RequestCallback;
 import com.netease.nimlib.sdk.msg.MsgServiceObserve;
 import com.netease.nimlib.sdk.msg.model.RecentContact;
 import com.netease.nimlib.sdk.team.TeamService;
+import com.netease.nimlib.sdk.team.TeamServiceObserver;
 import com.netease.nimlib.sdk.team.model.Team;
 
 import java.util.ArrayList;
@@ -54,12 +55,23 @@ public abstract class BaseRecentContactFragment extends BaseFragment {
         }
     };
 
+    private Observer<List<Team>> teamUpdateObserver = new Observer<List<Team>>() {
+        @Override
+        public void onEvent(List<Team> teams) {
+            if (teams == null) return;
+            if (teams.isEmpty()) return;
+            teamUpdates(teams);
+        }
+    };
+
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         MsgServiceObserve service = NIMClient.getService(MsgServiceObserve.class);
         service.observeRecentContact(recentContactMessageObserver, true);
         service.observeRecentContactDeleted(deleteRecentContactObserver, true);
+        NIMClient.getService(TeamServiceObserver.class)
+                .observeTeamUpdate(teamUpdateObserver, true);
     }
 
     /**
@@ -121,11 +133,20 @@ public abstract class BaseRecentContactFragment extends BaseFragment {
      */
     protected abstract void recentContactDeleted(@NonNull RecentContact recentContact);
 
+    /**
+     * team更新
+     *
+     * @param teams
+     */
+    protected abstract void teamUpdates(@NonNull List<Team> teams);
+
     @Override
     public void onDestroy() {
         MsgServiceObserve service = NIMClient.getService(MsgServiceObserve.class);
         service.observeRecentContact(recentContactMessageObserver, false);
         service.observeRecentContactDeleted(deleteRecentContactObserver, false);
+        NIMClient.getService(TeamServiceObserver.class)
+                .observeTeamUpdate(teamUpdateObserver, false);
         super.onDestroy();
     }
 }

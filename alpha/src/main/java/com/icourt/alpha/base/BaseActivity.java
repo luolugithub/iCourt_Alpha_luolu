@@ -343,6 +343,22 @@ public class BaseActivity
     }
 
     /**
+     * 设置控件隐藏或者展示
+     *
+     * @param v
+     * @param isVisible
+     * @param <V>
+     * @return
+     */
+    @Nullable
+    protected final <V extends View> V setViewInVisible(@NonNull V v, boolean isVisible) {
+        if (v != null) {
+            v.setVisibility(isVisible ? View.VISIBLE : View.INVISIBLE);
+        }
+        return v;
+    }
+
+    /**
      * 取消事件点击监听⌚
      *
      * @param v

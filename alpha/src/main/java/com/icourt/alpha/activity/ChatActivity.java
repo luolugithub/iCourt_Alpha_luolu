@@ -160,7 +160,7 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
         @Override
         public void onSuccess(Team param) {
             if (param != null) {
-                setViewVisible(getTitleActionImage(), param.mute());
+                setViewInVisible(getTitleActionImage(), param.mute());
             }
         }
 
