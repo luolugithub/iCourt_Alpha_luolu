@@ -445,7 +445,7 @@ public interface AlphaApiService {
      * @return
      */
     @POST("http://192.168.20.180:8083/ilaw/api/v3/im/msgs")
-    Call<ResEntity<Boolean>> msgAdd(@Body RequestBody msg);
+    Call<ResEntity<IMMessageCustomBody>> msgAdd(@Body RequestBody msg);
 
 
     /**
@@ -457,7 +457,7 @@ public interface AlphaApiService {
      */
     @Multipart
     @POST("http://192.168.20.180:8083/ilaw/api/v3/im/msgs/files")
-    Call<ResEntity<Boolean>> msgImageAdd(@PartMap Map<String, RequestBody> params);
+    Call<ResEntity<IMMessageCustomBody>> msgImageAdd(@PartMap Map<String, RequestBody> params);
 
 
     /**

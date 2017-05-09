@@ -68,6 +68,7 @@ import java.util.regex.Matcher;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 import cn.finalteam.galleryfinal.FunctionConfig;
 import cn.finalteam.galleryfinal.GalleryFinal;
 import cn.finalteam.galleryfinal.model.PhotoInfo;
@@ -108,6 +109,7 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
     private static final String KEY_UID = "key_uid";
     private static final String KEY_TID = "key_tid";
     private static final String KEY_TITLE = "key_title";
+    private static final String KEY_UNREAD_NUM = "key_un_read_num";
     private static final String KEY_CHAT_TYPE = "key_chat_type";
 
     //本地同步的联系人
@@ -129,12 +131,15 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
     RefreshLayout refreshLayout;
     @BindView(R.id.ek_bar)
     MyXhsEmoticonsKeyBoard ekBar;
+    @BindView(R.id.chat_unread_num_tv)
+    TextView chatUnreadNumTv;
     MySelectPhotoLayout mySelectPhotoLayout;
     ChatAdapter chatAdapter;
     LinearLayoutManager linearLayoutManager;
     int pageIndex;
     int pageSize = 20;
     final List<GroupContactBean> atContactList = new ArrayList<>();
+
     private GalleryFinal.OnHanlderResultCallback mOnHanlderResultCallback = new GalleryFinal.OnHanlderResultCallback() {
         @Override
         public void onHanlderSuccess(int reqeustCode, List<PhotoInfo> resultList) {
@@ -179,16 +184,40 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
      * @param uid
      * @param title
      */
-    public static final void launchP2P(@NonNull Context context, @NonNull String uid, String title) {
+    public static final void launchP2P(@NonNull Context context,
+                                       @NonNull String uid,
+                                       String title,
+                                       int unReadNum) {
         if (context == null) return;
         if (TextUtils.isEmpty(uid)) return;
         Intent intent = new Intent(context, ChatActivity.class);
         intent.putExtra(KEY_UID, uid);
         intent.putExtra(KEY_TITLE, title);
         intent.putExtra(KEY_CHAT_TYPE, CHAT_TYPE_P2P);
+        intent.putExtra(KEY_UNREAD_NUM, unReadNum);
         context.startActivity(intent);
     }
 
+
+    /**
+     * 启动 群聊
+     *
+     * @param context
+     * @param tid
+     */
+    public static void launchTEAM(@NonNull Context context,
+                                  String tid,
+                                  String title,
+                                  int unReadNum) {
+        if (context == null) return;
+        if (TextUtils.isEmpty(tid)) return;
+        Intent intent = new Intent(context, ChatActivity.class);
+        intent.putExtra(KEY_TID, tid);
+        intent.putExtra(KEY_CHAT_TYPE, CHAT_TYPE_TEAM);
+        intent.putExtra(KEY_TITLE, title);
+        intent.putExtra(KEY_UNREAD_NUM, unReadNum);
+        context.startActivity(intent);
+    }
 
     @Const.CHAT_TYPE
     @Override
@@ -213,22 +242,6 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
             default:
                 return getIntent().getStringExtra(KEY_TID);
         }
-    }
-
-    /**
-     * 启动 群聊
-     *
-     * @param context
-     * @param tid
-     */
-    public static void launchTEAM(@NonNull Context context, String tid, String title) {
-        if (context == null) return;
-        if (TextUtils.isEmpty(tid)) return;
-        Intent intent = new Intent(context, ChatActivity.class);
-        intent.putExtra(KEY_TID, tid);
-        intent.putExtra(KEY_CHAT_TYPE, CHAT_TYPE_TEAM);
-        intent.putExtra(KEY_TITLE, title);
-        context.startActivity(intent);
     }
 
     @Override
@@ -586,6 +599,10 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
             titleActionImage.setImageResource(R.mipmap.icon_mute);
         }
 
+        //显示未读数量状态
+        setViewVisible(chatUnreadNumTv, getIntent().getIntExtra(KEY_UNREAD_NUM, 0) > 0);
+        chatUnreadNumTv.setText(String.format("%s条未读", getIntent().getIntExtra(KEY_UNREAD_NUM, 0)));
+
         linearLayoutManager = new LinearLayoutManager(getContext());
         recyclerView.setLayoutManager(linearLayoutManager);
         recyclerView.setHasFixedSize(true);
@@ -816,28 +833,6 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
         }
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        switch (getIMChatType()) {
-            case CHAT_TYPE_P2P:
-                NIMClient.getService(MsgService.class)
-                        .setChattingAccount(getIMChatId(), SessionTypeEnum.P2P);
-                break;
-            case CHAT_TYPE_TEAM:
-                NIMClient.getService(MsgService.class)
-                        .setChattingAccount(getIMChatId(), SessionTypeEnum.Team);
-                break;
-        }
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        NIMClient.getService(MsgService.class)
-                .setChattingAccount(MsgService.MSG_CHATTING_ACCOUNT_NONE, SessionTypeEnum.None);
-    }
-
 
     /**
      * 是列表适配器中移除
@@ -856,9 +851,14 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
         }
     }
 
+    @OnClick({R.id.chat_unread_num_tv})
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
+            case R.id.chat_unread_num_tv:
+                clearUnReadNum();
+                setViewVisible(chatUnreadNumTv, false);
+                break;
             case R.id.titleAction2:
                 switch (getIMChatType()) {
                     case CHAT_TYPE_P2P:
@@ -915,7 +915,11 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
         if (TextUtils.isEmpty(text)) {
             text.append(String.format("@%s ", contactBean.name));
         } else {
-            text.append(String.format(" @%s ", contactBean.name));
+            if (text.toString().endsWith("@")) {
+                text.append(String.format("%s ", contactBean.name));
+            } else {
+                text.append(String.format(" @%s ", contactBean.name));
+            }
         }
         etChat.setText(text);
         etChat.setSelection(etChat.getText().length());

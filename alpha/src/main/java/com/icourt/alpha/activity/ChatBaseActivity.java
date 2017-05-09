@@ -78,6 +78,7 @@ import retrofit2.Response;
 import static com.icourt.alpha.constants.Const.CHAT_TYPE_P2P;
 import static com.icourt.alpha.constants.Const.CHAT_TYPE_TEAM;
 import static com.icourt.alpha.constants.Const.MSG_STATU_FAIL;
+import static com.icourt.alpha.constants.Const.MSG_STATU_SUCCESS;
 import static com.icourt.alpha.constants.Const.MSG_TYPE_ALPHA;
 import static com.icourt.alpha.constants.Const.MSG_TYPE_AT;
 import static com.icourt.alpha.constants.Const.MSG_TYPE_DING;
@@ -188,13 +189,45 @@ public abstract class ChatBaseActivity extends BaseActivity implements INIMessag
     public final void onMessageEvent(IMMessageCustomBody customBody) {
         if (customBody == null) return;
         onMessageReceived(customBody);
+        handleGlobalDingMsgStatu(customBody);
     }
+
+    /**
+     * 处理全局钉的状态
+     *
+     * @param customBody
+     */
+    private void handleGlobalDingMsgStatu(IMMessageCustomBody customBody) {
+        if (customBody == null) return;
+        switch (customBody.show_type) {
+            case MSG_TYPE_DING://钉消息是全局状态 别人钉了 我只能取消钉
+                if (customBody.ext != null) {
+                    if (customBody.ext.pin) {
+                        msgDingedIdsList.add(customBody.ext.id);
+                    } else {
+                        msgDingedIdsList.remove(customBody.ext.id);
+                    }
+                }
+                break;
+        }
+    }
+
 
     @Override
     protected void onResume() {
         super.onResume();
         getMsgCollectedIds();
         getMsgDingedIds();
+        switch (getIMChatType()) {
+            case CHAT_TYPE_P2P:
+                NIMClient.getService(MsgService.class)
+                        .setChattingAccount(getIMChatId(), SessionTypeEnum.P2P);
+                break;
+            case CHAT_TYPE_TEAM:
+                NIMClient.getService(MsgService.class)
+                        .setChattingAccount(getIMChatId(), SessionTypeEnum.Team);
+                break;
+        }
     }
 
 
@@ -314,6 +347,50 @@ public abstract class ChatBaseActivity extends BaseActivity implements INIMessag
     }
 
     /**
+     * 获取消息未读数量
+     *
+     * @return
+     */
+    protected final int getUnreadNum() {
+
+        return 0;
+    }
+
+    /**
+     * 清除未读数量
+     */
+    protected final void clearUnReadNum() {
+        Observable.create(new ObservableOnSubscribe<Integer>() {
+            @Override
+            public void subscribe(ObservableEmitter<Integer> e) throws Exception {
+                if (e.isDisposed()) return;
+                switch (getIMChatType()) {
+                    case CHAT_TYPE_P2P:
+                        NIMClient.getService(MsgService.class)
+                                .clearUnreadCount(getIMChatId(), SessionTypeEnum.P2P);
+                        break;
+                    case CHAT_TYPE_TEAM:
+                        NIMClient.getService(MsgService.class)
+                                .clearUnreadCount(getIMChatId(), SessionTypeEnum.Team);
+                        break;
+                }
+                e.onNext(0);
+                e.onComplete();
+            }
+        }).compose(this.<Integer>bindToLifecycle())
+                .subscribeOn(Schedulers.newThread())
+                .subscribe();
+    }
+
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        NIMClient.getService(MsgService.class)
+                .setChattingAccount(MsgService.MSG_CHATTING_ACCOUNT_NONE, SessionTypeEnum.None);
+    }
+
+    /**
      * 从本地删除消息
      *
      * @param message
@@ -367,13 +444,17 @@ public abstract class ChatBaseActivity extends BaseActivity implements INIMessag
         }
         final String finalJsonBody = jsonBody;
         getApi().msgAdd(RequestUtils.createJsonBody(jsonBody))
-                .enqueue(new SimpleCallBack<Boolean>() {
+                .enqueue(new SimpleCallBack<IMMessageCustomBody>() {
                     @Override
-                    public void onSuccess(Call<ResEntity<Boolean>> call, Response<ResEntity<Boolean>> response) {
+                    public void onSuccess(Call<ResEntity<IMMessageCustomBody>> call, Response<ResEntity<IMMessageCustomBody>> response) {
+                        if (response.body().result != null) {
+                            response.body().result.msg_statu = MSG_STATU_SUCCESS;
+                            updateCustomBody(response.body().result);
+                        }
                     }
 
                     @Override
-                    public void onFailure(Call<ResEntity<Boolean>> call, Throwable t) {
+                    public void onFailure(Call<ResEntity<IMMessageCustomBody>> call, Throwable t) {
                         super.onFailure(call, t);
                         if (finalJsonBody != null) {
                             saveSendNimMsg(finalJsonBody, MsgStatusEnum.fail, false);
@@ -400,13 +481,17 @@ public abstract class ChatBaseActivity extends BaseActivity implements INIMessag
         msgPostEntity.msg_statu = Const.MSG_STATU_SENDING;
         updateCustomBody(msgPostEntity);
         getApi().msgAdd(RequestUtils.createJsonBody(jsonBody))
-                .enqueue(new SimpleCallBack<Boolean>() {
+                .enqueue(new SimpleCallBack<IMMessageCustomBody>() {
                     @Override
-                    public void onSuccess(Call<ResEntity<Boolean>> call, Response<ResEntity<Boolean>> response) {
+                    public void onSuccess(Call<ResEntity<IMMessageCustomBody>> call, Response<ResEntity<IMMessageCustomBody>> response) {
+                        if (response.body().result != null) {
+                            response.body().result.msg_statu = MSG_STATU_SUCCESS;
+                            updateCustomBody(response.body().result);
+                        }
                     }
 
                     @Override
-                    public void onFailure(Call<ResEntity<Boolean>> call, Throwable t) {
+                    public void onFailure(Call<ResEntity<IMMessageCustomBody>> call, Throwable t) {
                         super.onFailure(call, t);
                         msgPostEntity.msg_statu = Const.MSG_STATU_FAIL;
                         updateCustomBody(msgPostEntity);
@@ -438,13 +523,17 @@ public abstract class ChatBaseActivity extends BaseActivity implements INIMessag
         }
         final String finalJsonBody = jsonBody;
         getApi().msgAdd(RequestUtils.createJsonBody(jsonBody))
-                .enqueue(new SimpleCallBack<Boolean>() {
+                .enqueue(new SimpleCallBack<IMMessageCustomBody>() {
                     @Override
-                    public void onSuccess(Call<ResEntity<Boolean>> call, Response<ResEntity<Boolean>> response) {
+                    public void onSuccess(Call<ResEntity<IMMessageCustomBody>> call, Response<ResEntity<IMMessageCustomBody>> response) {
+                        if (response.body().result != null) {
+                            response.body().result.msg_statu = MSG_STATU_SUCCESS;
+                            updateCustomBody(response.body().result);
+                        }
                     }
 
                     @Override
-                    public void onFailure(Call<ResEntity<Boolean>> call, Throwable t) {
+                    public void onFailure(Call<ResEntity<IMMessageCustomBody>> call, Throwable t) {
                         super.onFailure(call, t);
                         if (finalJsonBody != null) {
                             saveSendNimMsg(finalJsonBody, MsgStatusEnum.fail, false);
@@ -491,14 +580,17 @@ public abstract class ChatBaseActivity extends BaseActivity implements INIMessag
 
         params.put("file\"; filename=\"image.jpg\"", RequestUtils.createImgBody(file));
         getApi().msgImageAdd(params)
-                .enqueue(new SimpleCallBack<Boolean>() {
+                .enqueue(new SimpleCallBack<IMMessageCustomBody>() {
                     @Override
-                    public void onSuccess(Call<ResEntity<Boolean>> call, Response<ResEntity<Boolean>> response) {
-
+                    public void onSuccess(Call<ResEntity<IMMessageCustomBody>> call, Response<ResEntity<IMMessageCustomBody>> response) {
+                        if (response.body().result != null) {
+                            response.body().result.msg_statu = MSG_STATU_SUCCESS;
+                            updateCustomBody(response.body().result);
+                        }
                     }
 
                     @Override
-                    public void onFailure(Call<ResEntity<Boolean>> call, Throwable t) {
+                    public void onFailure(Call<ResEntity<IMMessageCustomBody>> call, Throwable t) {
                         super.onFailure(call, t);
                         if (finalJsonBody != null) {
                             saveSendNimMsg(finalJsonBody, MsgStatusEnum.fail, false);
@@ -545,14 +637,17 @@ public abstract class ChatBaseActivity extends BaseActivity implements INIMessag
                 updateCustomBody(msgPostEntity);
 
                 getApi().msgImageAdd(params)
-                        .enqueue(new SimpleCallBack<Boolean>() {
+                        .enqueue(new SimpleCallBack<IMMessageCustomBody>() {
                             @Override
-                            public void onSuccess(Call<ResEntity<Boolean>> call, Response<ResEntity<Boolean>> response) {
-
+                            public void onSuccess(Call<ResEntity<IMMessageCustomBody>> call, Response<ResEntity<IMMessageCustomBody>> response) {
+                                if (response.body().result != null) {
+                                    response.body().result.msg_statu = MSG_STATU_SUCCESS;
+                                    updateCustomBody(response.body().result);
+                                }
                             }
 
                             @Override
-                            public void onFailure(Call<ResEntity<Boolean>> call, Throwable t) {
+                            public void onFailure(Call<ResEntity<IMMessageCustomBody>> call, Throwable t) {
                                 super.onFailure(call, t);
                                 if (finalJsonBody != null) {
                                     msgPostEntity.msg_statu = MSG_STATU_FAIL;
@@ -702,14 +797,17 @@ public abstract class ChatBaseActivity extends BaseActivity implements INIMessag
         }
         final String finalJsonBody = jsonBody;
         getApi().msgAdd(RequestUtils.createJsonBody(jsonBody))
-                .enqueue(new SimpleCallBack<Boolean>() {
+                .enqueue(new SimpleCallBack<IMMessageCustomBody>() {
                     @Override
-                    public void onSuccess(Call<ResEntity<Boolean>> call, Response<ResEntity<Boolean>> response) {
-
+                    public void onSuccess(Call<ResEntity<IMMessageCustomBody>> call, Response<ResEntity<IMMessageCustomBody>> response) {
+                        if (response.body().result != null) {
+                            response.body().result.msg_statu = MSG_STATU_SUCCESS;
+                            updateCustomBody(response.body().result);
+                        }
                     }
 
                     @Override
-                    public void onFailure(Call<ResEntity<Boolean>> call, Throwable t) {
+                    public void onFailure(Call<ResEntity<IMMessageCustomBody>> call, Throwable t) {
                         super.onFailure(call, t);
                         if (finalJsonBody != null) {
                             saveSendNimMsg(finalJsonBody, MsgStatusEnum.fail, false);
@@ -783,6 +881,7 @@ public abstract class ChatBaseActivity extends BaseActivity implements INIMessag
             ChatAdapter chatAdapter = (ChatAdapter) adapter;
             final IMMessageCustomBody iMMessageCustomBody = chatAdapter.getItem(position);
             if (iMMessageCustomBody == null) return false;
+            if (TextUtils.isEmpty(iMMessageCustomBody.id)) return false;
             final List<String> menuItems = new ArrayList<>();
             switch (iMMessageCustomBody.show_type) {
                 case MSG_TYPE_AT:
@@ -990,10 +1089,10 @@ public abstract class ChatBaseActivity extends BaseActivity implements INIMessag
         }
         final String finalJsonBody = jsonBody;
         getApi().msgAdd(RequestUtils.createJsonBody(jsonBody))
-                .enqueue(new SimpleCallBack<Boolean>() {
+                .enqueue(new SimpleCallBack<IMMessageCustomBody>() {
                     @Override
-                    public void onSuccess(Call<ResEntity<Boolean>> call, Response<ResEntity<Boolean>> response) {
-                        if (response.body().result != null && response.body().result.booleanValue()) {
+                    public void onSuccess(Call<ResEntity<IMMessageCustomBody>> call, Response<ResEntity<IMMessageCustomBody>> response) {
+                        if (response.body().result != null) {
                             if (!isDing) {//取消钉
                                 msgDingedIdsList.remove(dingMsgId);
                             } else {//钉
@@ -1003,7 +1102,7 @@ public abstract class ChatBaseActivity extends BaseActivity implements INIMessag
                     }
 
                     @Override
-                    public void onFailure(Call<ResEntity<Boolean>> call, Throwable t) {
+                    public void onFailure(Call<ResEntity<IMMessageCustomBody>> call, Throwable t) {
                         super.onFailure(call, t);
                         if (finalJsonBody != null) {
                             saveSendNimMsg(finalJsonBody, MsgStatusEnum.fail, false);

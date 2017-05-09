@@ -15,7 +15,9 @@ import com.icourt.alpha.constants.Const;
 import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.icourt.alpha.entity.bean.IMMessageCustomBody;
+import com.icourt.alpha.utils.ActionConstants;
 import com.icourt.alpha.utils.DateUtils;
+import com.icourt.alpha.utils.FileUtils;
 import com.icourt.alpha.utils.GlideUtils;
 import com.icourt.alpha.utils.LogUtils;
 import com.icourt.alpha.utils.LoginInfoUtils;
@@ -405,16 +407,6 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMMessageCustomBody> i
         }
     }
 
-    /**
-     * 设置钉link 右边
-     *
-     * @param holder
-     * @param imMessageCustomBody
-     * @param position
-     */
-    private void setTypeRightDingLink(ViewHolder holder, IMMessageCustomBody imMessageCustomBody, int position) {
-        setTypeLeftDingLink(holder, imMessageCustomBody, position);
-    }
 
     /**
      * 设置系统消息
@@ -488,8 +480,11 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMMessageCustomBody> i
      */
     private void setTypeLeftTxt(ViewHolder holder, IMMessageCustomBody imMessageCustomBody, int position) {
         TextView textView = holder.obtainView(R.id.chat_txt_tv);
-        if (imMessageCustomBody == null) return;
-        textView.setText(imMessageCustomBody.content);
+        if (imMessageCustomBody != null) {
+            textView.setText(imMessageCustomBody.content);
+        } else {
+            textView.setText("null");
+        }
     }
 
     /**
@@ -502,12 +497,18 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMMessageCustomBody> i
     private void setTypeLeftImage(ViewHolder holder, IMMessageCustomBody imMessageCustomBody, int position) {
         BubbleImageView chat_image_iv = holder.obtainView(R.id.chat_image_iv);
         if (imMessageCustomBody == null) return;
+        holder.bindChildClick(chat_image_iv);
+        holder.bindChildLongClick(chat_image_iv);
         if (GlideUtils.canLoadImage(chat_image_iv.getContext())) {
             String picUrl = "";
             if (imMessageCustomBody.ext != null) {
                 picUrl = imMessageCustomBody.ext.thumb;
             }
-            GlideUtils.loadPic(chat_image_iv.getContext(), picUrl, chat_image_iv);
+            Glide.with(chat_image_iv.getContext())
+                    .load(picUrl)
+                    .asBitmap()
+                    .error(R.mipmap.default_img_failed)
+                    .into(new FitHeightImgViewTarget(chat_image_iv));
         }
     }
 
@@ -519,8 +520,36 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMMessageCustomBody> i
      * @param position
      */
     private void setTypeLeftFile(ViewHolder holder, IMMessageCustomBody imMessageCustomBody, int position) {
-
+        if (holder == null) return;
+        if (imMessageCustomBody == null) return;
+        TextView chat_file_name_tv = holder.obtainView(R.id.chat_file_name_tv);
+        ImageView chat_file_icon_iv = holder.obtainView(R.id.chat_file_icon_iv);
+        TextView chat_file_size_tv = holder.obtainView(R.id.chat_file_size_tv);
+        if (imMessageCustomBody.ext != null) {
+            chat_file_icon_iv.setImageResource(getFileIcon40(imMessageCustomBody.ext.name));
+            chat_file_name_tv.setText(imMessageCustomBody.ext.name);
+            chat_file_size_tv.setText(FileUtils.kbFromat(imMessageCustomBody.ext.size));
+        } else {
+            chat_file_name_tv.setText("服务器 file ext null");
+        }
     }
+
+    /**
+     * 获取文件对应图标
+     *
+     * @param fileName
+     * @return
+     */
+    public static int getFileIcon40(String fileName) {
+        if (!TextUtils.isEmpty(fileName) && fileName.length() > 0) {
+            String type = fileName.substring(fileName.lastIndexOf(".") + 1);
+            if (ActionConstants.resourcesMap40.containsKey(type)) {
+                return ActionConstants.resourcesMap40.get(type);
+            }
+        }
+        return R.mipmap.filetype_default_40;
+    }
+
 
     /**
      * 初始化左边 钉的文本布局
@@ -566,11 +595,14 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMMessageCustomBody> i
         ImageView chat_ding_source_user_icon_iv = holder.obtainView(R.id.chat_ding_source_user_icon_iv);
         TextView chat_ding_source_user_name_tv = holder.obtainView(R.id.chat_ding_source_user_name_tv);
         chat_ding_title_tv.setText(imMessageCustomBody.content);
-        if (imMessageCustomBody.ext != null) {
+        if (imMessageCustomBody.ext.ext != null) {
             if (GlideUtils.canLoadImage(chat_ding_content_iamge_iv.getContext())) {
-                GlideUtils.loadPic(chat_ding_source_user_icon_iv.getContext(), imMessageCustomBody.ext.thumb, chat_ding_content_iamge_iv);
+                GlideUtils.loadPic(chat_ding_content_iamge_iv.getContext(), imMessageCustomBody.ext.ext.thumb, chat_ding_content_iamge_iv);
+                GlideUtils.loadUser(chat_ding_source_user_icon_iv.getContext(), getUserIcon(imMessageCustomBody.ext.from), chat_ding_source_user_icon_iv);
             }
-            chat_ding_source_user_name_tv.setText(imMessageCustomBody.ext.from);
+            chat_ding_source_user_name_tv.setText(imMessageCustomBody.ext.name);
+        } else {
+            chat_ding_source_user_name_tv.setText("ext ext null");
         }
     }
 
@@ -583,7 +615,26 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMMessageCustomBody> i
      * @param position
      */
     private void setTypeLeftDingFile(ViewHolder holder, IMMessageCustomBody imMessageCustomBody, int position) {
+        TextView chat_ding_title_tv = holder.obtainView(R.id.chat_ding_title_tv);
+        TextView chat_file_name_tv = holder.obtainView(R.id.chat_file_name_tv);
+        ImageView chat_file_icon_iv = holder.obtainView(R.id.chat_file_icon_iv);
+        TextView chat_file_size_tv = holder.obtainView(R.id.chat_file_size_tv);
+        ImageView chat_ding_source_user_icon_iv = holder.obtainView(R.id.chat_ding_source_user_icon_iv);
+        TextView chat_ding_source_user_name_tv = holder.obtainView(R.id.chat_ding_source_user_name_tv);
+        if (imMessageCustomBody.ext != null) {
+            chat_file_icon_iv.setImageResource(getFileIcon40(imMessageCustomBody.ext.name));
+            chat_file_name_tv.setText(imMessageCustomBody.ext.name);
+            chat_file_size_tv.setText(FileUtils.kbFromat(imMessageCustomBody.ext.size));
+            chat_ding_source_user_name_tv.setText(imMessageCustomBody.ext.from);
+        } else {
+            chat_file_name_tv.setText("服务器 file ext null");
+        }
 
+        String userHeadImg = getUserIcon(imMessageCustomBody.ext != null ? imMessageCustomBody.ext.from : "");
+        GlideUtils.loadUser(chat_ding_source_user_icon_iv.getContext(),
+                TextUtils.isEmpty(userHeadImg) ? "" : userHeadImg,
+                chat_ding_source_user_icon_iv);
+        chat_ding_title_tv.setText(TextUtils.isEmpty(imMessageCustomBody.content) ? "钉了一条消息" : imMessageCustomBody.content);
     }
 
     /**
@@ -625,12 +676,7 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMMessageCustomBody> i
      * @param position
      */
     private void setTypeRightTxt(ViewHolder holder, IMMessageCustomBody imMessageCustomBody, int position) {
-        TextView textView = holder.obtainView(R.id.chat_txt_tv);
-        if (imMessageCustomBody != null) {
-            textView.setText(imMessageCustomBody.content);
-        } else {
-            textView.setText("null");
-        }
+        setTypeLeftTxt(holder, imMessageCustomBody, position);
     }
 
 
@@ -642,20 +688,7 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMMessageCustomBody> i
      * @param position
      */
     private void setTypeRightImage(ViewHolder holder, IMMessageCustomBody imMessageCustomBody, int position) {
-        BubbleImageView chat_image_iv = holder.obtainView(R.id.chat_image_iv);
-        if (imMessageCustomBody == null) return;
-        holder.bindChildClick(chat_image_iv);
-        holder.bindChildLongClick(chat_image_iv);
-        if (GlideUtils.canLoadImage(chat_image_iv.getContext())) {
-            String picUrl = "";
-            if (imMessageCustomBody.ext != null) {
-                picUrl = imMessageCustomBody.ext.thumb;
-            }
-            Glide.with(chat_image_iv.getContext())
-                    .load(picUrl)
-                    .asBitmap()
-                    .into(new FitHeightImgViewTarget(chat_image_iv));
-        }
+        setTypeLeftImage(holder, imMessageCustomBody, position);
     }
 
     /**
@@ -666,7 +699,7 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMMessageCustomBody> i
      * @param position
      */
     private void setTypeRightFile(ViewHolder holder, IMMessageCustomBody imMessageCustomBody, int position) {
-
+        setTypeLeftFile(holder, imMessageCustomBody, position);
     }
 
     /**
@@ -677,24 +710,7 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMMessageCustomBody> i
      * @param position
      */
     private void setTypeRightDingTxt(ViewHolder holder, IMMessageCustomBody imMessageCustomBody, int position) {
-        if (imMessageCustomBody == null) return;
-        TextView chat_ding_title = holder.obtainView(R.id.chat_ding_title);
-        TextView chat_ding_content_tv = holder.obtainView(R.id.chat_ding_content_tv);
-        ImageView chat_ding_source_user_icon_iv = holder.obtainView(R.id.chat_ding_source_user_icon_iv);
-        String userHeadImg = getUserIcon(imMessageCustomBody.ext != null ? imMessageCustomBody.ext.from : "");
-        GlideUtils
-                .loadUser(chat_ding_source_user_icon_iv.getContext(),
-                        TextUtils.isEmpty(userHeadImg) ? "" : userHeadImg,
-                        chat_ding_source_user_icon_iv);
-        TextView chat_ding_source_user_name_tv = holder.obtainView(R.id.chat_ding_source_user_name_tv);
-        chat_ding_title.setText(TextUtils.isEmpty(imMessageCustomBody.content) ? "钉了一条消息" : imMessageCustomBody.content);
-        if (imMessageCustomBody.ext != null) {
-            chat_ding_content_tv.setText(TextUtils.isEmpty(imMessageCustomBody.ext.content) ? "文本消息" : imMessageCustomBody.ext.content);
-            chat_ding_source_user_name_tv.setText(imMessageCustomBody.ext.name);
-        } else {
-            chat_ding_content_tv.setText("文本消息");
-            chat_ding_source_user_name_tv.setText("好友");
-        }
+        setTypeLeftDingTxt(holder, imMessageCustomBody, position);
     }
 
 
@@ -706,22 +722,7 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMMessageCustomBody> i
      * @param position
      */
     private void setTypeRightDingImage(ViewHolder holder, IMMessageCustomBody imMessageCustomBody, int position) {
-        if (holder == null) return;
-        if (imMessageCustomBody == null) return;
-        TextView chat_ding_title_tv = holder.obtainView(R.id.chat_ding_title_tv);
-        ImageView chat_ding_content_iamge_iv = holder.obtainView(R.id.chat_ding_content_iamge_iv);
-        ImageView chat_ding_source_user_icon_iv = holder.obtainView(R.id.chat_ding_source_user_icon_iv);
-        TextView chat_ding_source_user_name_tv = holder.obtainView(R.id.chat_ding_source_user_name_tv);
-        chat_ding_title_tv.setText(imMessageCustomBody.content);
-        if (imMessageCustomBody.ext.ext != null) {
-            if (GlideUtils.canLoadImage(chat_ding_content_iamge_iv.getContext())) {
-                GlideUtils.loadPic(chat_ding_content_iamge_iv.getContext(), imMessageCustomBody.ext.ext.thumb, chat_ding_content_iamge_iv);
-                GlideUtils.loadUser(chat_ding_source_user_icon_iv.getContext(), getUserIcon(imMessageCustomBody.ext.from), chat_ding_source_user_icon_iv);
-            }
-            chat_ding_source_user_name_tv.setText(imMessageCustomBody.ext.name);
-        } else {
-            chat_ding_source_user_name_tv.setText("ext ext null");
-        }
+        setTypeLeftDingImage(holder, imMessageCustomBody, position);
     }
 
 
@@ -733,7 +734,7 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMMessageCustomBody> i
      * @param position
      */
     private void setTypeRightDingFile(ViewHolder holder, IMMessageCustomBody imMessageCustomBody, int position) {
-
+        setTypeLeftDingFile(holder, imMessageCustomBody, position);
     }
 
     /**
@@ -767,6 +768,17 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMMessageCustomBody> i
                 setTypeLeftLink(holder, imMessageCustomBody, position);
                 break;
         }
+    }
+
+    /**
+     * 设置钉link 右边
+     *
+     * @param holder
+     * @param imMessageCustomBody
+     * @param position
+     */
+    private void setTypeRightDingLink(ViewHolder holder, IMMessageCustomBody imMessageCustomBody, int position) {
+        setTypeLeftDingLink(holder, imMessageCustomBody, position);
     }
 
     /**

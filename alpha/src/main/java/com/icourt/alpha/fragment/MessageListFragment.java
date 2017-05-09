@@ -486,13 +486,13 @@ public class MessageListFragment extends BaseRecentContactFragment
                 case CHAT_TYPE_P2P:
                     ChatActivity.launchP2P(getActivity(),
                             data.recentContact.getContactId(),
-                            data.customIMBody.name);
+                            data.customIMBody.name, 0);
                     break;
                 case CHAT_TYPE_TEAM:
                     if (data.recentContact != null)
                         ChatActivity.launchTEAM(getActivity(),
                                 data.recentContact.getContactId(),
-                                data.team.getName());
+                                data.team.getName(), 0);
                     break;
             }
         }

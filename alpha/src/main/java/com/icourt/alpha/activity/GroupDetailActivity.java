@@ -193,23 +193,16 @@ public class GroupDetailActivity extends BaseActivity implements BaseRecyclerAda
                             //管理员设置按钮展示
                             setViewVisible(titleActionImage, isAdmin);
 
+                            setViewVisible(groupJoinOrQuitBtn, true);
+                            joined = StringUtils.containsIgnoreCase(response.body().result.members, getLoginUserId());
+                            groupJoinOrQuitBtn.setText(joined ? "退出讨论组" : "加入讨论组");
+                            setViewVisible(groupSessionActionLl, joined);
+                            //邀请按钮展示
+                            setViewVisible(groupMemberInviteTv, joined && !response.body().result.is_private);
 
-                            //加入/退出的展示
                             if (isAdmin) {
                                 setViewVisible(groupJoinOrQuitBtn, false);
-
-                                //邀请按钮展示
-                                setViewVisible(groupMemberInviteTv, !response.body().result.is_private);
-                            } else {
-                                setViewVisible(groupJoinOrQuitBtn, true);
-                                joined = StringUtils.containsIgnoreCase(response.body().result.members, getLoginUserId());
-                                groupJoinOrQuitBtn.setText(joined ? "退出讨论组" : "加入讨论组");
-                                setViewVisible(groupDataLl, joined);
-                                setViewVisible(groupSessionActionLl, joined);
-                                //邀请按钮展示
-                                setViewVisible(groupMemberInviteTv, joined && !response.body().result.is_private);
                             }
-
                             //查询本地uid对应的头像
                             queryMembersByUids(response.body().result.members);
                         }

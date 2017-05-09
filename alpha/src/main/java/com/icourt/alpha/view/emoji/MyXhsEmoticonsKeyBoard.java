@@ -3,18 +3,15 @@ package com.icourt.alpha.view.emoji;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Rect;
-import android.text.Editable;
-import android.text.TextUtils;
-import android.text.TextWatcher;
 import android.util.AttributeSet;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 import com.icourt.alpha.R;
 
@@ -72,7 +69,7 @@ public class MyXhsEmoticonsKeyBoard extends sj.keyboard.widget.AutoHeightLayout 
     protected ImageView mBtnFace;
     protected RelativeLayout mRlInput;
     protected ImageView mBtnMultimedia;
-    protected Button mBtnSend;
+    protected TextView mBtnSend;
     protected ImageView btn_camera;
     protected ImageView chat_bottom_at_btn;
     protected FuncLayout mLyKvml;
@@ -104,7 +101,7 @@ public class MyXhsEmoticonsKeyBoard extends sj.keyboard.widget.AutoHeightLayout 
         mBtnFace = ((ImageView) findViewById(R.id.btn_face));
         mRlInput = ((RelativeLayout) findViewById(R.id.rl_input));
         mBtnMultimedia = ((ImageView) findViewById(R.id.btn_multimedia));
-        mBtnSend = ((Button) findViewById(R.id.btn_send));
+        mBtnSend = ((TextView) findViewById(R.id.btn_send));
         mBtnSend.setOnClickListener(this);
         mLyKvml = ((FuncLayout) findViewById(R.id.ly_kvml));
         btn_camera = (ImageView) findViewById(R.id.btn_camera);
@@ -145,28 +142,6 @@ public class MyXhsEmoticonsKeyBoard extends sj.keyboard.widget.AutoHeightLayout 
                 return false;
             }
         });
-
-        mEtChat.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-                if (!TextUtils.isEmpty(s)) {
-                    mBtnSend.setVisibility(VISIBLE);
-                    // mBtnMultimedia.setVisibility(GONE);
-                    mBtnSend.setBackgroundResource(com.keyboard.view.R.drawable.btn_send_bg);
-                } else {
-                    // mBtnMultimedia.setVisibility(VISIBLE);
-                    mBtnSend.setVisibility(GONE);
-                }
-            }
-        });
     }
 
     public void setAdapter(PageSetAdapter pageSetAdapter) {
@@ -190,6 +165,7 @@ public class MyXhsEmoticonsKeyBoard extends sj.keyboard.widget.AutoHeightLayout 
         mLyKvml.hideAllFuncView();
         mBtnFace.setImageResource(R.mipmap.icon_emoji_normal);
         mBtnMultimedia.setImageResource(R.mipmap.icon_photos_normal);
+        mBtnSend.setVisibility(VISIBLE);
     }
 
 
@@ -207,12 +183,15 @@ public class MyXhsEmoticonsKeyBoard extends sj.keyboard.widget.AutoHeightLayout 
         if (FUNC_TYPE_EMOTION == key) {
             mBtnFace.setImageResource(R.mipmap.icon_emoji_active);
             mBtnMultimedia.setImageResource(R.mipmap.icon_photos_normal);
+            mBtnSend.setVisibility(VISIBLE);
         } else if (FUNC_TYPE_APPPS == key) {
             mBtnFace.setImageResource(R.mipmap.icon_emoji_normal);
             mBtnMultimedia.setImageResource(R.mipmap.icon_photos_active);
+            mBtnSend.setVisibility(GONE);
         } else {
             mBtnFace.setImageResource(R.mipmap.icon_emoji_normal);
             mBtnMultimedia.setImageResource(R.mipmap.icon_photos_normal);
+            mBtnSend.setVisibility(VISIBLE);
         }
     }
 
@@ -362,7 +341,7 @@ public class MyXhsEmoticonsKeyBoard extends sj.keyboard.widget.AutoHeightLayout 
         return mEtChat;
     }
 
-    public Button getBtnSend() {
+    public TextView getBtnSend() {
         return mBtnSend;
     }
 

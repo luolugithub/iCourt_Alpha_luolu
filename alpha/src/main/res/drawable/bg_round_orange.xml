@@ -3,9 +3,6 @@
     <corners android:radius="360dp" />
 
 
-    <solid android:color="@android:color/white" />
-    <stroke
-        android:width="0.5dp"
-        android:color="#6b8c8f92" />
+    <solid android:color="@color/alpha_font_color_orange" />
 
 </shape>
