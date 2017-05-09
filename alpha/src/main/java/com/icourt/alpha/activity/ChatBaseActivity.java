@@ -45,6 +45,7 @@ import com.netease.nimlib.sdk.msg.constant.MsgStatusEnum;
 import com.netease.nimlib.sdk.msg.constant.SessionTypeEnum;
 import com.netease.nimlib.sdk.msg.model.IMMessage;
 import com.netease.nimlib.sdk.msg.model.MessageReceipt;
+import com.netease.nimlib.sdk.msg.model.RecentContact;
 import com.netease.nimlib.sdk.team.TeamService;
 import com.netease.nimlib.sdk.team.model.Team;
 import com.trello.rxlifecycle2.android.ActivityEvent;
@@ -351,9 +352,30 @@ public abstract class ChatBaseActivity extends BaseActivity implements INIMessag
      *
      * @return
      */
-    protected final int getUnreadNum() {
-
-        return 0;
+    protected final void getUnreadNum(@NonNull Consumer<Integer> consumer) {
+        Observable.create(new ObservableOnSubscribe<Integer>() {
+            @Override
+            public void subscribe(ObservableEmitter<Integer> e) throws Exception {
+                if (e.isDisposed()) return;
+                List<RecentContact> recentContacts = NIMClient.getService(MsgService.class)
+                        .queryRecentContactsBlock();
+                int unreadNum = 0;
+                if (recentContacts != null && !recentContacts.isEmpty()) {
+                    for (RecentContact recentContact : recentContacts) {
+                        if (recentContact != null
+                                && StringUtils.equalsIgnoreCase(recentContact.getContactId(), getIMChatId(), false)) {
+                            unreadNum = recentContact.getUnreadCount();
+                            break;
+                        }
+                    }
+                }
+                e.onNext(unreadNum);
+                e.onComplete();
+            }
+        }).compose(this.<Integer>bindToLifecycle())
+                .subscribeOn(Schedulers.newThread())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(consumer);
     }
 
     /**
@@ -416,11 +438,12 @@ public abstract class ChatBaseActivity extends BaseActivity implements INIMessag
     /**
      * 是否是当前聊天组对话
      *
-     * @param sessionId
+     * @param to
      * @return
      */
-    protected final boolean isCurrentRoomSession(String sessionId) {
-        return TextUtils.equals(sessionId, getIMChatId());
+    protected final boolean isCurrentRoomSession(String to) {
+        return StringUtils.equalsIgnoreCase(to, getIMChatId(), false)
+                || StringUtils.equalsIgnoreCase(to, getLoadedLoginUserId(), false);
     }
 
 

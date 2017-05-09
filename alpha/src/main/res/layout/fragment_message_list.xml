@@ -1,10 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.icourt.alpha.view.xrefreshlayout.RefreshLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@id/refreshLayout"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    app:isHeightMatchParent="false">
+    android:orientation="vertical">
 
     <android.support.v7.widget.RecyclerView
         android:id="@id/recyclerView"
@@ -12,5 +10,5 @@
         android:layout_height="wrap_content"
         android:background="@android:color/white" />
 
-</com.icourt.alpha.view.xrefreshlayout.RefreshLayout>
+</LinearLayout>
 

@@ -15,13 +15,13 @@ public class IMSessionEntity {
     public Team team;//群对象 与contactBean互斥
     public RecentContact recentContact;
     public IMMessageCustomBody customIMBody;//自定义消息体 请提前解析
-    public GroupContactBean contactBean;//联系人实体对象
 
-    public IMSessionEntity(Team team, RecentContact recentContact,IMMessageCustomBody customIMBody, GroupContactBean contactBean) {
+    public boolean isNotDisturb;//是否消息免打扰
+
+    public IMSessionEntity(Team team, RecentContact recentContact, IMMessageCustomBody customIMBody) {
         this.team = team;
         this.recentContact = recentContact;
         this.customIMBody = customIMBody;
-        this.contactBean = contactBean;
     }
 
     @Override
@@ -30,7 +30,6 @@ public class IMSessionEntity {
                 "team=" + team +
                 ", recentContact=" + recentContact +
                 ", customIMBody=" + customIMBody +
-                ", contactBean=" + contactBean +
                 '}';
     }
 }

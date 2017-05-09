@@ -37,6 +37,7 @@ import com.icourt.alpha.fragment.dialogfragment.ContactDialogFragment;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.callback.SimpleTextWatcher;
+import com.icourt.alpha.utils.LogUtils;
 import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.view.emoji.MySelectPhotoLayout;
@@ -109,7 +110,6 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
     private static final String KEY_UID = "key_uid";
     private static final String KEY_TID = "key_tid";
     private static final String KEY_TITLE = "key_title";
-    private static final String KEY_UNREAD_NUM = "key_un_read_num";
     private static final String KEY_CHAT_TYPE = "key_chat_type";
 
     //本地同步的联系人
@@ -136,7 +136,6 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
     MySelectPhotoLayout mySelectPhotoLayout;
     ChatAdapter chatAdapter;
     LinearLayoutManager linearLayoutManager;
-    int pageIndex;
     int pageSize = 20;
     final List<GroupContactBean> atContactList = new ArrayList<>();
 
@@ -181,20 +180,18 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
      * 启动 单聊
      *
      * @param context
-     * @param uid
+     * @param uid     对方id 不可变
      * @param title
      */
     public static final void launchP2P(@NonNull Context context,
                                        @NonNull String uid,
-                                       String title,
-                                       int unReadNum) {
+                                       String title) {
         if (context == null) return;
         if (TextUtils.isEmpty(uid)) return;
         Intent intent = new Intent(context, ChatActivity.class);
         intent.putExtra(KEY_UID, uid);
         intent.putExtra(KEY_TITLE, title);
         intent.putExtra(KEY_CHAT_TYPE, CHAT_TYPE_P2P);
-        intent.putExtra(KEY_UNREAD_NUM, unReadNum);
         context.startActivity(intent);
     }
 
@@ -203,19 +200,17 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
      * 启动 群聊
      *
      * @param context
-     * @param tid
+     * @param tid     云信tid
      */
     public static void launchTEAM(@NonNull Context context,
                                   String tid,
-                                  String title,
-                                  int unReadNum) {
+                                  String title) {
         if (context == null) return;
         if (TextUtils.isEmpty(tid)) return;
         Intent intent = new Intent(context, ChatActivity.class);
         intent.putExtra(KEY_TID, tid);
         intent.putExtra(KEY_CHAT_TYPE, CHAT_TYPE_TEAM);
         intent.putExtra(KEY_TITLE, title);
-        intent.putExtra(KEY_UNREAD_NUM, unReadNum);
         context.startActivity(intent);
     }
 
@@ -600,9 +595,14 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
         }
 
         //显示未读数量状态
-        setViewVisible(chatUnreadNumTv, getIntent().getIntExtra(KEY_UNREAD_NUM, 0) > 0);
-        chatUnreadNumTv.setText(String.format("%s条未读", getIntent().getIntExtra(KEY_UNREAD_NUM, 0)));
-
+        setUnreadNum(0);
+        getUnreadNum(new Consumer<Integer>() {
+            @Override
+            public void accept(Integer integer) throws Exception {
+                if (integer == null) return;
+                setUnreadNum(integer.intValue());
+            }
+        });
         linearLayoutManager = new LinearLayoutManager(getContext());
         recyclerView.setLayoutManager(linearLayoutManager);
         recyclerView.setHasFixedSize(true);
@@ -645,6 +645,16 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
         });
     }
 
+    /**
+     * 0自动隐藏
+     *
+     * @param num
+     */
+    private void setUnreadNum(int num) {
+        setViewVisible(chatUnreadNumTv, num > 20);
+        chatUnreadNumTv.setText(String.format("%s条未读", num));
+    }
+
 
     /**
      * 是否应该滚动(最后一条可见);非是否可以滚动
@@ -681,15 +691,20 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
                 .setCallback(new RequestCallback<List<IMMessage>>() {
                     @Override
                     public void onSuccess(List<IMMessage> param) {
-                        if (param == null || param.size() < pageSize) {
+                        LogUtils.d("----------->query result:" + param);
+                        if (param == null || param.isEmpty()) {
                             //本地为空从网络获取
                             getMsgFromServer(isRefresh);
                         } else {
                             chatAdapter.addItems(0, convert2CustomerMessages(param));
-                            pageIndex += 1;
                             stopRefresh();
                             if (isRefresh) {
                                 scrollToBottom();
+                            }
+
+                            if (chatAdapter.getItemCount() > 20) {
+                                setUnreadNum(0);
+                                clearUnReadNum();
                             }
                         }
                     }
@@ -757,7 +772,7 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
                 if (chatAdapter.getItemCount() > 0) {
                     IMMessageCustomBody item = chatAdapter.getItem(0);
                     if (item != null) {
-                        MessageBuilder.createEmptyMessage(getIMChatId(), SessionTypeEnum.P2P, item.send_time);
+                        return MessageBuilder.createEmptyMessage(getIMChatId(), SessionTypeEnum.P2P, item.send_time);
                     }
                 }
                 return MessageBuilder.createEmptyMessage(getIMChatId(), SessionTypeEnum.P2P, 0);
@@ -765,7 +780,7 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
                 if (chatAdapter.getItemCount() > 0) {
                     IMMessageCustomBody item = chatAdapter.getItem(0);
                     if (item != null) {
-                        MessageBuilder.createEmptyMessage(getIMChatId(), SessionTypeEnum.P2P, item.send_time);
+                        return MessageBuilder.createEmptyMessage(getIMChatId(), SessionTypeEnum.Team, item.send_time);
                     }
                 }
                 return MessageBuilder.createEmptyMessage(getIMChatId(), SessionTypeEnum.Team, 0);
@@ -857,7 +872,7 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
         switch (v.getId()) {
             case R.id.chat_unread_num_tv:
                 clearUnReadNum();
-                setViewVisible(chatUnreadNumTv, false);
+                setUnreadNum(0);
                 break;
             case R.id.titleAction2:
                 switch (getIMChatType()) {

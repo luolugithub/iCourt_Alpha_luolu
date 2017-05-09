@@ -9,5 +9,6 @@ package com.icourt.alpha.constants;
  */
 public interface RecentContactExtConfig {
 
+    @Deprecated
     String EXT_SETTING_DONT_DISTURB = "setting_dont_disturb";//消息免打扰啊 -->bool值
 }

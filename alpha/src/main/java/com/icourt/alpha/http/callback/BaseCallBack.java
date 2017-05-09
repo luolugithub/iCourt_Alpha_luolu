@@ -5,9 +5,11 @@ import android.support.annotation.CallSuper;
 import android.text.TextUtils;
 
 import com.google.gson.JsonParseException;
+import com.icourt.alpha.base.BaseApplication;
 import com.icourt.alpha.http.exception.ResponseException;
 import com.icourt.alpha.utils.AppManager;
 import com.icourt.alpha.utils.LogUtils;
+import com.icourt.alpha.utils.NetUtils;
 import com.icourt.alpha.utils.SnackbarUtils;
 import com.icourt.alpha.utils.StringUtils;
 
@@ -70,7 +72,11 @@ public abstract class BaseCallBack<T> implements Callback<T> {
         } else if (t instanceof java.net.UnknownHostException) {
             defNotify("网络已断开,请检查网络");
         } else if (t instanceof ConnectException) {
-            defNotify("服务器拒绝连接或代理错误");
+            if (NetUtils.hasNetwork(BaseApplication.getApplication())) {
+                defNotify("服务器拒绝连接或代理错误");
+            } else {
+                defNotify("网络未连接");
+            }
         } else if (t instanceof SocketException) {
             defNotify("网络不稳定或服务器繁忙");
         } else if (t instanceof SocketTimeoutException) {
