@@ -7,5 +7,5 @@ package com.icourt.alpha.http;
  * date createTime：2017/5/10
  * version 1.0.0
  */
-public class ApiProjectService {
+public interface ApiProjectService {
 }
