@@ -19,7 +19,9 @@ import android.view.ViewGroup;
 import android.view.ViewParent;
 
 import com.icourt.alpha.entity.bean.AlphaUserInfo;
-import com.icourt.alpha.http.AlphaApiService;
+import com.icourt.alpha.http.ApiAlphaService;
+import com.icourt.alpha.http.ApiChatService;
+import com.icourt.alpha.http.ApiProjectService;
 import com.icourt.alpha.http.RetrofitServiceFactory;
 import com.icourt.alpha.interfaces.INotifyFragment;
 import com.icourt.alpha.interfaces.ProgressHUDImp;
@@ -283,10 +285,29 @@ public abstract class BaseFragment
      * @return
      */
     @NonNull
-    protected final AlphaApiService getApi() {
-        return RetrofitServiceFactory.provideAlphaService();
+    protected final ApiAlphaService getApi() {
+        return RetrofitServiceFactory.getAlphaApiService();
     }
 
+    /**
+     * 接口 http通信
+     *
+     * @return
+     */
+    @NonNull
+    protected final ApiChatService getChatApi() {
+        return RetrofitServiceFactory.getChatApiService();
+    }
+
+    /**
+     * 接口 http通信
+     *
+     * @return
+     */
+    @NonNull
+    protected final ApiProjectService getProjectApi() {
+        return RetrofitServiceFactory.getProjectApiService();
+    }
     /**
      * Toast提示
      * 缺陷 有的rom 会禁用掉taost 比如huawei rom

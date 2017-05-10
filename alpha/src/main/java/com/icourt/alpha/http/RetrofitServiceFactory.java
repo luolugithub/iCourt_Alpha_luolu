@@ -1,6 +1,11 @@
 package com.icourt.alpha.http;
 
 
+import com.icourt.alpha.BuildConfig;
+import com.icourt.alpha.base.BaseApplication;
+
+import java.util.concurrent.ConcurrentHashMap;
+
 import okhttp3.OkHttpClient;
 
 /**
@@ -11,14 +16,29 @@ import okhttp3.OkHttpClient;
  * version
  */
 public class RetrofitServiceFactory {
+    private static final ConcurrentHashMap<Class, Object> ApiServiceMap = new ConcurrentHashMap<>();
 
-    public static AlphaApiService alphaApiService;
+    private static final AlphaClient getClient(String url) {
+        return AlphaClient.getInstance(BaseApplication.getApplication(), url);
+    }
 
-    public static AlphaApiService provideAlphaService() {
-        if (alphaApiService == null) {
-            alphaApiService = AlphaClient.getInstance().createService(AlphaApiService.class);
+    private static final <T> T getApiService(String url, Class<T> t) {
+        if (ApiServiceMap.get(t) == null) {
+            ApiServiceMap.put(t, getClient(url).createService(t));
         }
-        return alphaApiService;
+        return (T) ApiServiceMap.get(t);
+    }
+
+    public static final ApiAlphaService getAlphaApiService() {
+        return getApiService(BuildConfig.API_URL, ApiAlphaService.class);
+    }
+
+    public static final ApiChatService getChatApiService() {
+        return getApiService(BuildConfig.API_CHAT_URL, ApiChatService.class);
+    }
+
+    public static final ApiProjectService getProjectApiService() {
+        return getApiService(BuildConfig.API_URL, ApiProjectService.class);
     }
 
     private static OkHttpClient mOkHttpClient;

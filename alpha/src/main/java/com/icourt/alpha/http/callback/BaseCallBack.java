@@ -16,6 +16,7 @@ import com.icourt.alpha.utils.StringUtils;
 import java.io.EOFException;
 import java.io.IOException;
 import java.net.ConnectException;
+import java.net.NoRouteToHostException;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.nio.charset.Charset;
@@ -71,9 +72,11 @@ public abstract class BaseCallBack<T> implements Callback<T> {
             sendLimitHttpLog(call, t, "json解析异常");
         } else if (t instanceof java.net.UnknownHostException) {
             defNotify("网络已断开,请检查网络");
+        } else if (t instanceof NoRouteToHostException) {
+            defNotify("服务器路由地址错误");
         } else if (t instanceof ConnectException) {
             if (NetUtils.hasNetwork(BaseApplication.getApplication())) {
-                defNotify("服务器拒绝连接或代理错误");
+                defNotify("服务器拒绝连接");
             } else {
                 defNotify("网络未连接");
             }

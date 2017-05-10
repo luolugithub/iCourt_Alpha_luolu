@@ -198,10 +198,10 @@ public class GroupListActivity extends BaseActivity implements BaseRecyclerAdapt
         final Call<ResEntity<List<GroupEntity>>> groupsCall;
         switch (getGroupQueryType()) {
             case GROUP_TYPE_MY_JOIN:
-                groupsCall = getApi().groupsQueryJoind(0, true);
+                groupsCall = getChatApi().groupsQueryJoind(0, true);
                 break;
             default:
-                groupsCall = getApi().groupsQuery(0, true);
+                groupsCall = getChatApi().groupsQuery(0, true);
                 break;
         }
         groupsCall.enqueue(new SimpleCallBack<List<GroupEntity>>() {

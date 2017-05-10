@@ -192,7 +192,7 @@ public class ContactListFragment extends BaseFragment implements BaseRecyclerAda
      */
     @Override
     protected void getData(boolean isRefresh) {
-        getApi().usersQuery()
+        getChatApi().usersQuery()
                 .enqueue(new SimpleCallBack<List<GroupContactBean>>() {
                     @Override
                     public void onSuccess(Call<ResEntity<List<GroupContactBean>>> call, Response<ResEntity<List<GroupContactBean>>> response) {

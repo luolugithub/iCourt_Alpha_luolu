@@ -175,7 +175,7 @@ public class ContactDetailActivity extends BaseActivity {
     protected void getData(boolean isRefresh) {
         super.getData(isRefresh);
         showLoadingDialog(null);
-        getApi().sessionQueryAllsetTopIds()
+        getChatApi().sessionQueryAllsetTopIds()
                 .enqueue(new SimpleCallBack<List<String>>() {
                     @Override
                     public void onSuccess(Call<ResEntity<List<String>>> call, Response<ResEntity<List<String>>> response) {
@@ -220,7 +220,7 @@ public class ContactDetailActivity extends BaseActivity {
      */
     private void setTop() {
         if (groupContactBean == null) return;
-        getApi().sessionSetTop(Const.CHAT_TYPE_P2P, groupContactBean.accid)
+        getChatApi().sessionSetTop(Const.CHAT_TYPE_P2P, groupContactBean.accid)
                 .enqueue(new SimpleCallBack<Boolean>() {
                     @Override
                     public void onSuccess(Call<ResEntity<Boolean>> call, Response<ResEntity<Boolean>> response) {
@@ -251,7 +251,7 @@ public class ContactDetailActivity extends BaseActivity {
      */
     private void setTopCancel() {
         if (groupContactBean == null) return;
-        getApi().sessionSetTopCancel(Const.CHAT_TYPE_P2P, groupContactBean.accid)
+        getChatApi().sessionSetTopCancel(Const.CHAT_TYPE_P2P, groupContactBean.accid)
                 .enqueue(new SimpleCallBack<Boolean>() {
                     @Override
                     public void onSuccess(Call<ResEntity<Boolean>> call, Response<ResEntity<Boolean>> response) {

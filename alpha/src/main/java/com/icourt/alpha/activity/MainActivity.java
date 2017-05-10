@@ -298,8 +298,8 @@ public class MainActivity extends BaseActivity
                     @Override
                     public void onSuccess(Call<ResEntity<AlphaUserInfo>> call, Response<ResEntity<AlphaUserInfo>> response) {
                         if (response.body().result != null) {
-                            AlphaClient.getInstance().setOfficeId(response.body().result.getOfficeId());
-                            AlphaClient.getInstance().setToken(response.body().result.getToken());
+                            AlphaClient.setOfficeId(response.body().result.getOfficeId());
+                            AlphaClient.setToken(response.body().result.getToken());
                             saveLoginUserInfo(response.body().result);
                         }
                     }

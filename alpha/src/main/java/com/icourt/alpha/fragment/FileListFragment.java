@@ -129,7 +129,7 @@ public class FileListFragment extends BaseFragment {
                 }
             }
         }
-        getApi().getMyFiles(msgid)
+        getChatApi().getMyFiles(msgid)
                 .enqueue(new SimpleCallBack<List<IMMessageCustomBody>>() {
                     @Override
                     public void onSuccess(Call<ResEntity<List<IMMessageCustomBody>>> call, Response<ResEntity<List<IMMessageCustomBody>>> response) {

@@ -97,7 +97,7 @@ public class MyAtedActivity extends BaseActivity {
         if (isRefresh) {
             pageIndex = 0;
         }
-        getApi().getAtMeMsg(pageIndex, ActionConstants.DEFAULT_PAGE_SIZE)
+        getChatApi().getAtMeMsg(pageIndex, ActionConstants.DEFAULT_PAGE_SIZE)
                 .enqueue(new SimpleCallBack<List<IMMessageCustomBody>>() {
                     @Override
                     public void onSuccess(Call<ResEntity<List<IMMessageCustomBody>>> call, Response<ResEntity<List<IMMessageCustomBody>>> response) {

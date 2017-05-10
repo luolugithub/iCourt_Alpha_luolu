@@ -215,19 +215,19 @@ public class ChatMsgClassfyActivity extends BaseActivity {
         Call<ResEntity<List<IMMessageCustomBody>>> call = null;
         switch (getMsgClassfyType()) {
             case MSG_CLASSFY_CHAT_DING:
-                call = getApi()
+                call =  getChatApi()
                         .getDingMessages(getMsgChatType(), getIntent().getStringExtra(KEY_ID));
                 break;
             case MSG_CLASSFY_CHAT_FILE:
-                call = getApi()
+                call = getChatApi()
                         .msgQueryFiles(getMsgChatType(), getIntent().getStringExtra(KEY_ID));
                 break;
             case MSG_CLASSFY_MY_COLLECTEED:
-                call = getApi()
+                call = getChatApi()
                         .getMyCollectedMessages(pageIndex, ActionConstants.DEFAULT_PAGE_SIZE);
                 break;
             default:
-                call = getApi()
+                call =  getChatApi()
                         .getMyCollectedMessages(pageIndex, ActionConstants.DEFAULT_PAGE_SIZE);
                 break;
         }

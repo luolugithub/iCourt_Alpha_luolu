@@ -6,6 +6,8 @@ import android.support.annotation.CheckResult;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.UiThread;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.text.TextUtils;
 import android.view.View;
 
@@ -24,6 +26,7 @@ import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.icourt.alpha.entity.bean.IMMessageCustomBody;
 import com.icourt.alpha.entity.bean.MsgConvert2Task;
+import com.icourt.alpha.fragment.dialogfragment.ContactShareDialogFragment;
 import com.icourt.alpha.http.RetrofitServiceFactory;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
@@ -236,7 +239,7 @@ public abstract class ChatBaseActivity extends BaseActivity implements INIMessag
      * 获取被钉的ids列表
      */
     private void getMsgDingedIds() {
-        getApi().msgQueryAllDingIds(getIMChatType(), getIMChatId())
+        getChatApi().msgQueryAllDingIds(getIMChatType(), getIMChatId())
                 .enqueue(new SimpleCallBack<List<String>>() {
                     @Override
                     public void onSuccess(Call<ResEntity<List<String>>> call, Response<ResEntity<List<String>>> response) {
@@ -252,7 +255,7 @@ public abstract class ChatBaseActivity extends BaseActivity implements INIMessag
      * 获取已经收藏的id列表
      */
     private void getMsgCollectedIds() {
-        getApi().msgQueryAllCollectedIds(getIMChatType(), getIMChatId())
+        getChatApi().msgQueryAllCollectedIds(getIMChatType(), getIMChatId())
                 .enqueue(new SimpleCallBack<List<String>>() {
                     @Override
                     public void onSuccess(Call<ResEntity<List<String>>> call, Response<ResEntity<List<String>>> response) {
@@ -467,7 +470,7 @@ public abstract class ChatBaseActivity extends BaseActivity implements INIMessag
             e.printStackTrace();
         }
         final String finalJsonBody = jsonBody;
-        getApi().msgAdd(RequestUtils.createJsonBody(jsonBody))
+        getChatApi().msgAdd(RequestUtils.createJsonBody(jsonBody))
                 .enqueue(new SimpleCallBack<IMMessageCustomBody>() {
                     @Override
                     public void onSuccess(Call<ResEntity<IMMessageCustomBody>> call, Response<ResEntity<IMMessageCustomBody>> response) {
@@ -504,7 +507,7 @@ public abstract class ChatBaseActivity extends BaseActivity implements INIMessag
         }
         msgPostEntity.msg_statu = Const.MSG_STATU_SENDING;
         updateCustomBody(msgPostEntity);
-        getApi().msgAdd(RequestUtils.createJsonBody(jsonBody))
+        getChatApi().msgAdd(RequestUtils.createJsonBody(jsonBody))
                 .enqueue(new SimpleCallBack<IMMessageCustomBody>() {
                     @Override
                     public void onSuccess(Call<ResEntity<IMMessageCustomBody>> call, Response<ResEntity<IMMessageCustomBody>> response) {
@@ -546,7 +549,7 @@ public abstract class ChatBaseActivity extends BaseActivity implements INIMessag
             e.printStackTrace();
         }
         final String finalJsonBody = jsonBody;
-        getApi().msgAdd(RequestUtils.createJsonBody(jsonBody))
+        getChatApi().msgAdd(RequestUtils.createJsonBody(jsonBody))
                 .enqueue(new SimpleCallBack<IMMessageCustomBody>() {
                     @Override
                     public void onSuccess(Call<ResEntity<IMMessageCustomBody>> call, Response<ResEntity<IMMessageCustomBody>> response) {
@@ -603,7 +606,7 @@ public abstract class ChatBaseActivity extends BaseActivity implements INIMessag
         params.put("magic_id", RequestUtils.createTextBody(msgPostEntity.magic_id));
 
         params.put("file\"; filename=\"image.jpg\"", RequestUtils.createImgBody(file));
-        getApi().msgImageAdd(params)
+        getChatApi().msgImageAdd(params)
                 .enqueue(new SimpleCallBack<IMMessageCustomBody>() {
                     @Override
                     public void onSuccess(Call<ResEntity<IMMessageCustomBody>> call, Response<ResEntity<IMMessageCustomBody>> response) {
@@ -660,7 +663,7 @@ public abstract class ChatBaseActivity extends BaseActivity implements INIMessag
                 msgPostEntity.msg_statu = Const.MSG_STATU_SENDING;
                 updateCustomBody(msgPostEntity);
 
-                getApi().msgImageAdd(params)
+                getChatApi().msgImageAdd(params)
                         .enqueue(new SimpleCallBack<IMMessageCustomBody>() {
                             @Override
                             public void onSuccess(Call<ResEntity<IMMessageCustomBody>> call, Response<ResEntity<IMMessageCustomBody>> response) {
@@ -820,7 +823,7 @@ public abstract class ChatBaseActivity extends BaseActivity implements INIMessag
             e.printStackTrace();
         }
         final String finalJsonBody = jsonBody;
-        getApi().msgAdd(RequestUtils.createJsonBody(jsonBody))
+        getChatApi().msgAdd(RequestUtils.createJsonBody(jsonBody))
                 .enqueue(new SimpleCallBack<IMMessageCustomBody>() {
                     @Override
                     public void onSuccess(Call<ResEntity<IMMessageCustomBody>> call, Response<ResEntity<IMMessageCustomBody>> response) {
@@ -962,6 +965,9 @@ public abstract class ChatBaseActivity extends BaseActivity implements INIMessag
                 case MSG_TYPE_VOICE://暂时不用处理
                     break;
             }
+            if (!menuItems.contains("转发")) {
+                menuItems.add("转发");
+            }
             showMsgActionDialog(iMMessageCustomBody, menuItems);
         }
 
@@ -1030,6 +1036,8 @@ public abstract class ChatBaseActivity extends BaseActivity implements INIMessag
                             msgActionConvert2Task(customIMBody);
                         } else if (TextUtils.equals(actionName, "撤回")) {
                             msgActionRevoke(customIMBody.id);
+                        } else if (TextUtils.equals(actionName, "转发")) {
+                            showContactShareDialogFragment(customIMBody.id);
                         }
                     }
                 }).show();
@@ -1112,7 +1120,7 @@ public abstract class ChatBaseActivity extends BaseActivity implements INIMessag
             e.printStackTrace();
         }
         final String finalJsonBody = jsonBody;
-        getApi().msgAdd(RequestUtils.createJsonBody(jsonBody))
+        getChatApi().msgAdd(RequestUtils.createJsonBody(jsonBody))
                 .enqueue(new SimpleCallBack<IMMessageCustomBody>() {
                     @Override
                     public void onSuccess(Call<ResEntity<IMMessageCustomBody>> call, Response<ResEntity<IMMessageCustomBody>> response) {
@@ -1144,7 +1152,7 @@ public abstract class ChatBaseActivity extends BaseActivity implements INIMessag
      */
 
     protected final void msgActionCollect(final String msgId) {
-        getApi().msgCollect(msgId, getIMChatType(), getIMChatId())
+        getChatApi().msgCollect(msgId, getIMChatType(), getIMChatId())
                 .enqueue(new SimpleCallBack<Boolean>() {
                     @Override
                     public void onSuccess(Call<ResEntity<Boolean>> call, Response<ResEntity<Boolean>> response) {
@@ -1164,7 +1172,7 @@ public abstract class ChatBaseActivity extends BaseActivity implements INIMessag
      * @param msgId
      */
     protected final void msgActionCollectCancel(final String msgId) {
-        getApi().msgCollectCancel(msgId, getIMChatType(), getIMChatId())
+        getChatApi().msgCollectCancel(msgId, getIMChatType(), getIMChatId())
                 .enqueue(new SimpleCallBack<Boolean>() {
                     @Override
                     public void onSuccess(Call<ResEntity<Boolean>> call, Response<ResEntity<Boolean>> response) {
@@ -1185,12 +1193,29 @@ public abstract class ChatBaseActivity extends BaseActivity implements INIMessag
      */
     protected final void msgActionRevoke(String msgId) {
         if (TextUtils.isEmpty(msgId)) return;
-        getApi().msgRevoke(msgId)
+        getChatApi().msgRevoke(msgId)
                 .enqueue(new SimpleCallBack<JsonElement>() {
                     @Override
                     public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
 
                     }
                 });
+    }
+
+
+    /**
+     * 展示联系人转发对话框
+     *
+     * @param id
+     */
+    public void showContactShareDialogFragment(String id) {
+        String tag = "ContactShareDialogFragment";
+        FragmentTransaction mFragTransaction = getSupportFragmentManager().beginTransaction();
+        Fragment fragment = getSupportFragmentManager().findFragmentByTag(tag);
+        if (fragment != null) {
+            mFragTransaction.remove(fragment);
+        }
+        ContactShareDialogFragment.newInstance(id)
+                .show(mFragTransaction, tag);
     }
 }

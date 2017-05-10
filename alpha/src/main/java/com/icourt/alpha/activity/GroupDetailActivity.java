@@ -174,7 +174,7 @@ public class GroupDetailActivity extends BaseActivity implements BaseRecyclerAda
     protected void getData(boolean isRefresh) {
         super.getData(isRefresh);
         showLoadingDialog(null);
-        getApi().groupQueryDetail(getIntent().getStringExtra(KEY_TID))
+        getChatApi().groupQueryDetail(getIntent().getStringExtra(KEY_TID))
                 .enqueue(new SimpleCallBack<GroupDetailEntity>() {
                     @Override
                     public void onSuccess(Call<ResEntity<GroupDetailEntity>> call, Response<ResEntity<GroupDetailEntity>> response) {
@@ -328,7 +328,7 @@ public class GroupDetailActivity extends BaseActivity implements BaseRecyclerAda
      * 获取所有置顶的会话ids
      */
     private void getSetTopSessions() {
-        getApi().sessionQueryAllsetTopIds()
+        getChatApi().sessionQueryAllsetTopIds()
                 .enqueue(new SimpleCallBack<List<String>>() {
                     @Override
                     public void onSuccess(Call<ResEntity<List<String>>> call, Response<ResEntity<List<String>>> response) {
@@ -352,7 +352,7 @@ public class GroupDetailActivity extends BaseActivity implements BaseRecyclerAda
      */
     private void getIsSetGroupNoDisturbing() {
         //先拿网络 保持三端一致
-        getApi().sessionQueryAllNoDisturbingIds()
+        getChatApi().sessionQueryAllNoDisturbingIds()
                 .enqueue(new SimpleCallBack<List<String>>() {
                     @Override
                     public void onSuccess(Call<ResEntity<List<String>>> call, Response<ResEntity<List<String>>> response) {
@@ -370,7 +370,7 @@ public class GroupDetailActivity extends BaseActivity implements BaseRecyclerAda
      */
     private void setGroupTop() {
         showLoadingDialog(null);
-        getApi().sessionSetTop(CHAT_TYPE_TEAM, getIMChatId())
+        getChatApi().sessionSetTop(CHAT_TYPE_TEAM, getIMChatId())
                 .enqueue(new SimpleCallBack<Boolean>() {
                     @Override
                     public void onSuccess(Call<ResEntity<Boolean>> call, Response<ResEntity<Boolean>> response) {
@@ -399,7 +399,7 @@ public class GroupDetailActivity extends BaseActivity implements BaseRecyclerAda
      */
     private void setGroupTopCancel() {
         showLoadingDialog(null);
-        getApi().sessionSetTopCancel(CHAT_TYPE_TEAM, getIMChatId())
+        getChatApi().sessionSetTopCancel(CHAT_TYPE_TEAM, getIMChatId())
                 .enqueue(new SimpleCallBack<Boolean>() {
                     @Override
                     public void onSuccess(Call<ResEntity<Boolean>> call, Response<ResEntity<Boolean>> response) {
@@ -426,7 +426,7 @@ public class GroupDetailActivity extends BaseActivity implements BaseRecyclerAda
      */
     private void setGroupNoDisturbing() {
         showLoadingDialog(null);
-        getApi().sessionNoDisturbing(CHAT_TYPE_TEAM, getIMChatId())
+        getChatApi().sessionNoDisturbing(CHAT_TYPE_TEAM, getIMChatId())
                 .enqueue(new SimpleCallBack<Boolean>() {
                     @Override
                     public void onSuccess(Call<ResEntity<Boolean>> call, Response<ResEntity<Boolean>> response) {
@@ -471,7 +471,7 @@ public class GroupDetailActivity extends BaseActivity implements BaseRecyclerAda
      */
     private void setGroupNoDisturbingCancel() {
         showLoadingDialog(null);
-        getApi().sessionNoDisturbingCancel(CHAT_TYPE_TEAM, getIMChatId())
+        getChatApi().sessionNoDisturbingCancel(CHAT_TYPE_TEAM, getIMChatId())
                 .enqueue(new SimpleCallBack<Boolean>() {
                     @Override
                     public void onSuccess(Call<ResEntity<Boolean>> call, Response<ResEntity<Boolean>> response) {
@@ -500,7 +500,7 @@ public class GroupDetailActivity extends BaseActivity implements BaseRecyclerAda
      */
     private void joinGroup() {
         showLoadingDialog(null);
-        getApi().groupJoin(getIntent().getStringExtra(KEY_TID))
+        getChatApi().groupJoin(getIntent().getStringExtra(KEY_TID))
                 .enqueue(new SimpleCallBack<Boolean>() {
                     @Override
                     public void onSuccess(Call<ResEntity<Boolean>> call, Response<ResEntity<Boolean>> response) {
@@ -522,7 +522,7 @@ public class GroupDetailActivity extends BaseActivity implements BaseRecyclerAda
      */
     private void quitGroup() {
         showLoadingDialog(null);
-        getApi().groupQuit(getIntent().getStringExtra(KEY_TID))
+        getChatApi().groupQuit(getIntent().getStringExtra(KEY_TID))
                 .enqueue(new SimpleCallBack<Boolean>() {
                     @Override
                     public void onSuccess(Call<ResEntity<Boolean>> call, Response<ResEntity<Boolean>> response) {
@@ -581,7 +581,7 @@ public class GroupDetailActivity extends BaseActivity implements BaseRecyclerAda
             e.printStackTrace();
         }
         showLoadingDialog(null);
-        getApi().groupMemberAdd(getIntent().getStringExtra(KEY_TID), RequestUtils.createJsonBody(paramJsonStr))
+        getChatApi().groupMemberAdd(getIntent().getStringExtra(KEY_TID), RequestUtils.createJsonBody(paramJsonStr))
                 .enqueue(new SimpleCallBack<JsonElement>() {
                     @Override
                     public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {

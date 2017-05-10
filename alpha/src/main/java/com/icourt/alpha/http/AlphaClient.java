@@ -1,16 +1,17 @@
 package com.icourt.alpha.http;
 
+import android.app.Application;
 import android.content.Context;
 import android.os.Build;
 import android.text.TextUtils;
 
 import com.icourt.alpha.BuildConfig;
-import com.icourt.alpha.base.BaseApplication;
 import com.icourt.alpha.utils.LogUtils;
 import com.icourt.alpha.utils.logger.Logger;
 import com.icourt.api.SimpleClient;
 
 import java.io.IOException;
+import java.util.concurrent.ConcurrentHashMap;
 
 import okhttp3.Interceptor;
 import okhttp3.Request;
@@ -25,40 +26,46 @@ import okhttp3.logging.HttpLoggingInterceptor;
  * version
  */
 public class AlphaClient extends SimpleClient implements HttpLoggingInterceptor.Logger, Interceptor {
-    private static AlphaClient mInstance;
+    private static final ConcurrentHashMap<String, AlphaClient> clientMap = new ConcurrentHashMap<>();
 
-    public static AlphaClient getInstance() {
-        if (mInstance == null) {
-            synchronized (AlphaClient.class) {
-                if (mInstance == null) {
-                    mInstance = new AlphaClient(BaseApplication.getApplication());
-                }
-            }
+    /**
+     * 获取指定主机的地址api服务
+     *
+     * @param context
+     * @param api_url
+     * @return
+     */
+    public static AlphaClient getInstance(Application context, String api_url) {
+        AlphaClient alphaClient;
+        if (clientMap.get(api_url) == null) {
+            clientMap.put(api_url, alphaClient = new AlphaClient(context, api_url));
+        } else {
+            alphaClient = clientMap.get(api_url);
         }
-        return mInstance;
+        return alphaClient;
     }
 
-    private String officeId;
-    private String token;
+    private static String officeId;
+    private static String token;
 
-    public void setToken(String token) {
-        this.token = token;
+    public static void setToken(String tk) {
+        token = tk;
     }
 
-    public String getToken() {
+    public static String getToken() {
         return String.valueOf(token);
     }
 
-    public String getOfficeId() {
+    public static String getOfficeId() {
         return String.valueOf(officeId);
     }
 
-    public void setOfficeId(String officeId) {
-        this.officeId = officeId;
+    public static void setOfficeId(String ofId) {
+        officeId = ofId;
     }
 
-    private AlphaClient(Context context) {
-        attachBaseUrl(context, BuildConfig.API_URL, this, this);
+    private AlphaClient(Context context, String api_url) {
+        attachBaseUrl(context, api_url, this, this);
     }
 
     @Override

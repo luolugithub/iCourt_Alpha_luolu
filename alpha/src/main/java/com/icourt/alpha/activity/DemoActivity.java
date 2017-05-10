@@ -14,8 +14,6 @@ import com.icourt.alpha.adapter.DemoAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseArrayRecyclerAdapter;
 import com.icourt.alpha.base.BaseRecyclerActivity;
 import com.icourt.alpha.entity.bean.DemoEntity;
-import com.icourt.alpha.http.callback.SimpleCallBack;
-import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 
 import java.util.ArrayList;
@@ -24,8 +22,6 @@ import java.util.Random;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import retrofit2.Call;
-import retrofit2.Response;
 
 /**
  * Description
@@ -116,22 +112,7 @@ public class DemoActivity extends BaseRecyclerActivity<com.icourt.alpha.entity.b
 
 
     public void testhttp() {
-        getApi().getData(5)
-                .enqueue(new SimpleCallBack<String>() {
-                    @Override
-                    public void onSuccess(Call<ResEntity<String>> call, Response<ResEntity<String>> response) {
 
-                    }
-
-                });
-
-        getApi().getPageData(6)
-                .enqueue(new SimpleCallBack<List<String>>() {
-                    @Override
-                    public void onSuccess(Call<ResEntity<List<String>>> call, Response<ResEntity<List<String>>> response) {
-
-                    }
-                });
     }
 
 

@@ -55,8 +55,8 @@ public class WelcomeActivity extends BaseActivity implements Animation.Animation
     public void onAnimationEnd(Animation animation) {
         if (isUserLogin()) {
             AlphaUserInfo loginUserInfo = getLoginUserInfo();
-            AlphaClient.getInstance().setToken(loginUserInfo.getToken());
-            AlphaClient.getInstance().setOfficeId(loginUserInfo.getOfficeId());
+            AlphaClient.setToken(loginUserInfo.getToken());
+            AlphaClient.setOfficeId(loginUserInfo.getOfficeId());
 
             MainActivity.launch(getContext());
         } else {

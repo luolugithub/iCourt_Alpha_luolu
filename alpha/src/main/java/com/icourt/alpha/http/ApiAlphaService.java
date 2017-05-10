@@ -1,0 +1,383 @@
+package com.icourt.alpha.http;
+
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.icourt.alpha.entity.bean.AlphaUserInfo;
+import com.icourt.alpha.entity.bean.AppVersionEntity;
+import com.icourt.alpha.entity.bean.CustomerEntity;
+import com.icourt.alpha.entity.bean.FileBoxBean;
+import com.icourt.alpha.entity.bean.GroupContactBean;
+import com.icourt.alpha.entity.bean.GroupEntity;
+import com.icourt.alpha.entity.bean.IMMessageCustomBody;
+import com.icourt.alpha.entity.bean.LoginIMToken;
+import com.icourt.alpha.entity.bean.MsgConvert2Task;
+import com.icourt.alpha.entity.bean.PageEntity;
+import com.icourt.alpha.entity.bean.ProjectDetailEntity;
+import com.icourt.alpha.entity.bean.ProjectEntity;
+import com.icourt.alpha.entity.bean.SearchEngineEntity;
+import com.icourt.alpha.entity.bean.TaskEntity;
+import com.icourt.alpha.entity.bean.TaskGroupEntity;
+import com.icourt.alpha.entity.bean.TimeEntity;
+import com.icourt.alpha.http.httpmodel.ResEntity;
+
+import java.util.List;
+import java.util.Map;
+
+import okhttp3.RequestBody;
+import retrofit2.Call;
+import retrofit2.http.Body;
+import retrofit2.http.DELETE;
+import retrofit2.http.Field;
+import retrofit2.http.FormUrlEncoded;
+import retrofit2.http.GET;
+import retrofit2.http.Header;
+import retrofit2.http.Multipart;
+import retrofit2.http.POST;
+import retrofit2.http.PUT;
+import retrofit2.http.PartMap;
+import retrofit2.http.Path;
+import retrofit2.http.Query;
+import retrofit2.http.Url;
+
+/**
+ * @author xuanyouwu
+ * @email xuanyouwu@163.com
+ * @time 2016-06-02 14:26
+ * <p>
+ * 分页公共参数 整形  请大家按照这个【顺序】写
+ * @Query("pageNum") int pageNum,
+ * @Query("pageSize") int pageSize
+ */
+public interface ApiAlphaService {
+
+
+    /**
+     * 获取新版本app
+     * 文档参考 https://fir.im/docs/version_detection
+     *
+     * @param url fir地址
+     * @return
+     */
+    @GET
+    Call<AppVersionEntity> getNewVersionAppInfo(
+            @Url String url);
+
+    /**
+     * 修改律师电话信息
+     *
+     * @param phone 手机号码 不包含+86国际代码的字符串
+     * @return
+     */
+    @Deprecated
+    @POST("api/v1/auth/update")
+    @FormUrlEncoded
+    Call<ResEntity<String>> updateUserPhone(@Field("phone") String phone);
+
+    /**
+     * 修改律师邮箱信息
+     *
+     * @param email
+     * @return
+     */
+    @Deprecated
+    @POST("api/v1/auth/update")
+    @FormUrlEncoded
+    Call<ResEntity<String>> updateUserEmail(@Field("email") String email);
+
+    /**
+     * 微信登陆
+     * <p>
+     * 将"opneid" "unionid" "uniqueDevice"="device"; "deviceType"="android" 组合成json
+     *
+     * @return
+     */
+    @POST("v2/weixinlogin/getTokenByOpenidAndUnionid")
+    Call<ResEntity<AlphaUserInfo>> loginWithWeiXin(@Body RequestBody info);
+
+    /**
+     * 账号密码登陆
+     *
+     * @param info json请求体
+     * @return
+     */
+    @POST("api/v1/auth/login")
+    Call<AlphaUserInfo> loginWithPwd(@Body RequestBody info);
+
+    /**
+     * 获取云信登陆的token
+     *
+     * @return
+     */
+    @GET("api/v2/chat/msg/token")
+    Call<ResEntity<LoginIMToken>> getChatToken();
+
+    /**
+     * 刷新登陆refreshToken过时
+     * 注意请求的key是 refreshToekn
+     * 注意这个api 不支持post
+     *
+     * @param refreshToken 已经登陆的refreshToken
+     * @return
+     */
+    @GET("api/v1/auth/refresh")
+    Call<ResEntity<AlphaUserInfo>> refreshToken(@Query("refreshToekn") String refreshToken);
+
+    /**
+     * 获取团队联系人列表
+     *
+     * @param officeId 在登陆信息中有
+     * @return
+     */
+    @Deprecated
+    @GET("api/v1/auth/q/allByOfficeId/{officeId}")
+    Call<ResEntity<List<GroupContactBean>>> getGroupContacts(@Path("officeId") String officeId);
+
+    /**
+     * 获取机器人
+     *
+     * @return
+     */
+    @GET("api/v1/auth/up/getRobot")
+    Call<ResEntity<List<GroupContactBean>>> getRobos();
+
+
+    /**
+     * 根据不同类型获取文件列表
+     *
+     * @param type     TYPE_ALL_FILE = 0;  TYPE_MY_FILE = 1;
+     * @param pageNum
+     * @param pageSize
+     * @return
+     */
+    @GET("api/v2/chat/msg/findFileMsg")
+    @Deprecated
+    Call<ResEntity<List<IMMessageCustomBody>>> getFilesByType(
+            @Query("type") int type,
+            @Query("pageNum") int pageNum,
+            @Query("pageSize") int pageSize
+    );
+
+
+    /**
+     * 获取搜索引擎列表
+     */
+    @GET("api/v2/site/getSiteList")
+    Call<ResEntity<List<SearchEngineEntity>>> getSearchEngines();
+
+    /**
+     * 获取客户列表
+     *
+     * @param pageNum
+     * @param pageSize
+     * @return
+     */
+    @GET("api/v2/contact")
+    Call<ResEntity<List<CustomerEntity>>> getCustomers(@Query("pageNum") int pageNum,
+                                                       @Query("pageSize") int pageSize);
+
+    /**
+     * 获取客户列表
+     *
+     * @param pageNum
+     * @param pageSize
+     * @param isView   是否关注的 关注==1
+     * @return
+     */
+    @GET("api/v2/contact")
+    Call<ResEntity<List<CustomerEntity>>> getCustomers(@Query("pageNum") int pageNum,
+                                                       @Query("pageSize") int pageSize,
+                                                       @Query("isView") int isView);
+
+    /**
+     * 获取所有任务
+     *
+     * @return
+     */
+    @GET("api/v2/taskflow/queryTaskByDue")
+    Call<ResEntity<PageEntity<TaskEntity>>> getAllTask();
+
+
+    /**
+     * 搜索我加入的讨论组
+     *
+     * @return
+     */
+    @GET("api/v2/chat/group/inGroup")
+    Call<ResEntity<List<GroupEntity>>> searchInMyJoinedGroup(@Query("name") String groupName);
+
+    /**
+     * 搜索 全部的讨论组
+     *
+     * @return
+     */
+    @GET("api/v2/chat/group/LawyerGroup")
+    Call<ResEntity<List<GroupEntity>>> searchInAllGroup(@Query("name") String groupName);
+
+
+    /**
+     * 消息转任务
+     *
+     * @param content
+     * @return
+     */
+    @POST("api/v2/chat/msg/analysisTask")
+    @FormUrlEncoded
+    Call<ResEntity<MsgConvert2Task>> msgConvert2Task(@Field("content") String content);
+
+
+    /**
+     * 群组文件上传
+     *
+     * @param groupId
+     * @param params
+     * @return
+     */
+    @POST("api/v2/file/upload")
+    @Multipart
+    Call<ResEntity<JsonElement>> groupUploadFile(@Query("groupId") String groupId,
+                                                 @PartMap Map<String, RequestBody> params
+    );
+
+    /**
+     * 项目列表
+     *
+     * @param pageindex
+     * @param pagesize
+     * @param orderby
+     * @param ordertype
+     * @param status
+     * @param matterType
+     * @param attorneyType
+     * @param myStar
+     * @return
+     */
+    @GET("api/v1/matters")
+    Call<ResEntity<List<ProjectEntity>>> projectQueryAll(@Query("pageindex") int pageindex,
+                                                         @Query("pagesize") int pagesize,
+                                                         @Query("orderby") String orderby,
+                                                         @Query("ordertype") String ordertype,
+                                                         @Query("status") String status,
+                                                         @Query("matterType") String matterType,
+                                                         @Query("attorneyType") String attorneyType,
+                                                         @Query("myStar") String myStar
+    );
+
+    /**
+     * 获取项目概览
+     *
+     * @param id
+     * @return
+     */
+    @GET("api/v1/matters/{id}")
+    Call<ResEntity<List<ProjectDetailEntity>>> projectDetail(@Path("id") String id);
+
+    /**
+     * 项目添加关注
+     *
+     * @param matterPkid
+     * @return
+     */
+    @PUT("api/v1/matters/addStar")
+    Call<ResEntity<JsonElement>> projectAddStar(@Query("matterPkid") String matterPkid);
+
+    /**
+     * 项目取消关注
+     *
+     * @param matterPkid
+     * @return
+     */
+    @DELETE("api/v1/matters/deleteStar")
+    Call<ResEntity<JsonElement>> projectDeleteStar(@Query("matterPkid") String matterPkid);
+
+    /**
+     * 获取我的最新信息
+     *
+     * @return
+     */
+    @GET("http://192.168.20.180:8083/im/v1/users/me")
+    Call<ResEntity<AlphaUserInfo>> userInfoQuery();
+
+    /**
+     * 更新用户信息
+     *
+     * @param id
+     * @param phone
+     * @param email
+     * @return
+     */
+    @PUT("api/v1/auth/up/update")
+    Call<ResEntity<JsonElement>> updateUserInfo(@Query("id") String id, @Query("phone") String phone, @Query("email") String email);
+
+    /**
+     * 项目下计时列表
+     *
+     * @param matterId
+     * @param pageSize
+     * @return
+     */
+    @GET("api/v2/timing/timing/findByMatterId")
+    Call<ResEntity<TimeEntity>> projectQueryTimerList(@Query("matterId") String matterId, @Query("pageIndex") int pageIndex, @Query("pageSize") int pageSize);
+
+    /**
+     * 获取项目详情文档列表token
+     *
+     * @return
+     */
+    @GET("api/v2/documents/getToken")
+    Call<JsonObject> projectQueryFileBoxToken();
+
+    /**
+     * 获取项目详情文档id
+     *
+     * @param projectId
+     * @return
+     */
+    @GET("api/v2/documents/getRepo/{projectId}")
+    Call<JsonObject> projectQueryDocumentId(@Path("projectId") String projectId);
+
+    /**
+     * 获取项目详情文档列表
+     *
+     * @param authToken
+     * @param seaFileRepoId
+     * @return
+     */
+    @GET("https://box.alphalawyer.cn/api2/repos/{seaFileRepoId}/dir/")
+    Call<ResEntity<List<FileBoxBean>>> projectQueryFileBoxList(@Header("Authorization") String authToken, @Path("seaFileRepoId") String seaFileRepoId);
+
+    /**
+     * 项目下任务列表
+     *
+     * @param projectId
+     * @param stateType 全部任务:－1    已完成:1     未完成:0
+     * @param type      任务和任务组：-1;    任务：0;    任务组：1;
+     * @param pageIndex
+     * @param pageSize
+     * @return
+     */
+    @GET("api/v2/taskflow/queryMatterTask")
+    Call<ResEntity<List<TaskEntity>>> projectQueryTaskList(@Query("matterId") String projectId,
+                                                           @Query("stateType") int stateType,
+                                                           @Query("type") int type,
+                                                           @Query("pageIndex") int pageIndex,
+                                                           @Query("pageSize") int pageSize);
+
+    /**
+     * 项目下任务组列表
+     *
+     * @param projectId
+     * @return
+     */
+    @GET("api/v2/flowmatter/flowbyMatterId")
+    Call<ResEntity<List<TaskGroupEntity>>> projectQueryTaskGroupList(@Query("matterId") String projectId);
+
+    /**
+     * 新建任务组
+     *
+     * @param msg
+     * @return
+     */
+    @POST("api/v2/taskflow")
+    Call<ResEntity<TaskGroupEntity>> taskGroupCreate(@Body RequestBody msg);
+
+}

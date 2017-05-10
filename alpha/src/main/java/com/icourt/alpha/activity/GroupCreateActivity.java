@@ -181,7 +181,7 @@ public class GroupCreateActivity extends BaseActivity {
         }
         groupJsonObject.add("members", memberArray);
 
-        getApi().groupCreate(RequestUtils.createJsonBody(groupJsonObject.toString()))
+        getChatApi().groupCreate(RequestUtils.createJsonBody(groupJsonObject.toString()))
                 .enqueue(new SimpleCallBack<JsonElement>() {
                     @Override
                     public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {

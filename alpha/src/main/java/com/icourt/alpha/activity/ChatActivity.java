@@ -739,7 +739,7 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
                 msg_id = item.id;
             }
         }
-        getApi().msgQueryAll(type, 20, msg_id, getIMChatType(), getIMChatId())
+        getChatApi().msgQueryAll(type, 20, msg_id, getIMChatType(), getIMChatId())
                 .enqueue(new SimpleCallBack<List<IMMessageCustomBody>>() {
                     @Override
                     public void onSuccess(Call<ResEntity<List<IMMessageCustomBody>>> call, Response<ResEntity<List<IMMessageCustomBody>>> response) {

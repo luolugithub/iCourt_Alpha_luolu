@@ -104,8 +104,8 @@ public class LoginBaseActivity extends BaseUmengActivity {
                     @Override
                     public void onSuccess(Call<ResEntity<AlphaUserInfo>> call, Response<ResEntity<AlphaUserInfo>> response) {
                         if (response.body().result != null) {
-                            AlphaClient.getInstance().setOfficeId(response.body().result.getOfficeId());
-                            AlphaClient.getInstance().setToken(response.body().result.getToken());
+                            AlphaClient.setOfficeId(response.body().result.getOfficeId());
+                            AlphaClient.setToken(response.body().result.getToken());
 
                             //下一步 im的token
                             getChatEaseAccount(response.body().result);
@@ -248,8 +248,8 @@ public class LoginBaseActivity extends BaseUmengActivity {
                     public void onSuccess(Call<AlphaUserInfo> call, Response<AlphaUserInfo> response) {
                         dismissLoadingDialog();
                         if (response.body() != null) {
-                            AlphaClient.getInstance().setOfficeId(response.body().getOfficeId());
-                            AlphaClient.getInstance().setToken(response.body().getToken());
+                            AlphaClient.setOfficeId(response.body().getOfficeId());
+                            AlphaClient.setToken(response.body().getToken());
 
                             //下一步 im的token
                             getChatEaseAccount(response.body());

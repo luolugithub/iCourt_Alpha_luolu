@@ -17,6 +17,13 @@ ext {
             api_url_preview: "\"https://pre.alphalawyer.cn／ilaw/\"",//预览
             api_url_release: "\"https://alphalawyer.cn/ilaw/\""//正式
     ]
+    //聊天api
+    alphaChatAPIUrl = [
+            api_chat_url_debug  : "\"https://devim.alphalawyer.cn/\"",//开发
+            api_chat_url_test   : "\"https://testim.alphalawyer.cn/\"",//内测
+            api_chat_url_preview: "\"https://preim.alphalawyer.cn/\"",//预览
+            api_chat_url_release: "\"https://im.alphalawyer.cn/\""//正式
+    ]
 
     alphaHostUrl = [
             host_url_debug  : "\"https://dev.alphalawyer.cn/\"",//开发

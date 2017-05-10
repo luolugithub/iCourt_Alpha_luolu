@@ -203,7 +203,7 @@ public class GroupSettingActivity extends BaseActivity {
         if (target == null) return;
         if (groupDetailEntity == null) return;
         showLoadingDialog(null);
-        getApi().groupTransferAdmin(groupDetailEntity.tid, target.accid)
+        getChatApi().groupTransferAdmin(groupDetailEntity.tid, target.accid)
                 .enqueue(new SimpleCallBack<Boolean>() {
                     @Override
                     public void onSuccess(Call<ResEntity<Boolean>> call, Response<ResEntity<Boolean>> response) {
@@ -235,7 +235,7 @@ public class GroupSettingActivity extends BaseActivity {
         param.addProperty("member_invite", groupSetInviteSwitch.isChecked());
         param.addProperty("chat_history", groupSetLookSwitch.isChecked());
         showLoadingDialog(null);
-        getApi().groupUpdate(groupDetailEntity.tid, RequestUtils.createJsonBody(param.toString()))
+        getChatApi().groupUpdate(groupDetailEntity.tid, RequestUtils.createJsonBody(param.toString()))
                 .enqueue(new SimpleCallBack<JsonElement>() {
                     @Override
                     public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {

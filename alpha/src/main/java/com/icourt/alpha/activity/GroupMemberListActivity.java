@@ -260,7 +260,7 @@ public class GroupMemberListActivity extends BaseActivity implements BaseRecycle
     protected void getData(final boolean isRefresh) {
         super.getData(isRefresh);
         showLoadingDialog(null);
-        getApi().groupQueryAllMemberIds(getIntent().getStringExtra(KEY_TID))
+        getChatApi().groupQueryAllMemberIds(getIntent().getStringExtra(KEY_TID))
                 .enqueue(new SimpleCallBack<List<String>>() {
                     @Override
                     public void onSuccess(Call<ResEntity<List<String>>> call, Response<ResEntity<List<String>>> response) {

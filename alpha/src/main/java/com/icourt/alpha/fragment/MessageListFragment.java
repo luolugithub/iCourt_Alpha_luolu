@@ -513,7 +513,7 @@ public class MessageListFragment extends BaseRecentContactFragment
      * 获取消息免打扰
      */
     private void getDontDisturbs() {
-        getApi().sessionQueryAllNoDisturbingIds()
+        getChatApi().sessionQueryAllNoDisturbingIds()
                 .enqueue(new SimpleCallBack<List<String>>() {
                     @Override
                     public void onSuccess(Call<ResEntity<List<String>>> call, Response<ResEntity<List<String>>> response) {
@@ -607,7 +607,7 @@ public class MessageListFragment extends BaseRecentContactFragment
      * 获取置顶的会话
      */
     private void getTopSession() {
-        getApi().sessionQueryAllsetTopIds()
+        getChatApi().sessionQueryAllsetTopIds()
                 .enqueue(new SimpleCallBack<List<String>>() {
                     @Override
                     public void onSuccess(Call<ResEntity<List<String>>> call, Response<ResEntity<List<String>>> response) {
