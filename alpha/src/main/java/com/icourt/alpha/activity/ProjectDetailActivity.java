@@ -237,7 +237,7 @@ public class ProjectDetailActivity extends BaseActivity implements OnFragmentCal
     }
 
     @Override
-    public void OnFragmentCallBack(Fragment fragment, Bundle params) {
+    public void onFragmentCallBack(Fragment fragment,int type, Bundle params) {
         if (fragment instanceof ProjectDetailFragment) {
             myStar = params.getInt("myStar");
             if (myStar != 1) {

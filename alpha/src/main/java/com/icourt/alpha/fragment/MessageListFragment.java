@@ -443,9 +443,9 @@ public class MessageListFragment extends BaseRecentContactFragment
         Bundle bundle = new Bundle();
         bundle.putInt("unReadNum", unReadNum);
         if (getParentFragment() instanceof OnFragmentCallBackListener) {
-            ((OnFragmentCallBackListener) getParentFragment()).OnFragmentCallBack(MessageListFragment.this, bundle);
+            ((OnFragmentCallBackListener) getParentFragment()).onFragmentCallBack(MessageListFragment.this,0, bundle);
         } else if (parentFragmentCallBackListener != null) {
-            parentFragmentCallBackListener.OnFragmentCallBack(MessageListFragment.this, bundle);
+            parentFragmentCallBackListener.onFragmentCallBack(MessageListFragment.this, 0,bundle);
         }
     }
 

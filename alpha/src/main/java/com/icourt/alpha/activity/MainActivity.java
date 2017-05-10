@@ -376,7 +376,7 @@ public class MainActivity extends BaseActivity
     }
 
     @Override
-    public void OnFragmentCallBack(Fragment fragment, Bundle params) {
+    public void onFragmentCallBack(Fragment fragment,int type, Bundle params) {
         if (fragment == getTabFragment(R.id.tab_news)) {
             if (params != null) {
                 updateBadge(getTabNewsBadge(), params.getInt("unReadNum"));

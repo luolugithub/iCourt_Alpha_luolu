@@ -33,6 +33,12 @@
             android:textColor="@color/alpha_font_color_black"
             android:textSize="@dimen/alpha_font_size_mini_medium" />
 
+        <CheckedTextView
+            android:id="@+id/ctv_group"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_margin="5dp"
+            android:background="@drawable/sl_checkbox" />
     </LinearLayout>
 
     <View

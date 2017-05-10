@@ -97,6 +97,28 @@ public class GlideUtils {
     }
 
     /**
+     * 加载用户 头像 等 圆角
+     *
+     * @param context
+     * @param path
+     * @param imageView
+     */
+    public static void loadGroup(Context context, String path, ImageView imageView) {
+        if (context == null) return;
+        if (imageView == null) return;
+        if (canLoadImage(context)) {
+            Glide.with(context)
+                    .load(path)
+                    .transform(new GlideCircleTransform(context))
+                    .placeholder(R.mipmap.ic_group_icon_default)
+                    .error(R.mipmap.ic_group_icon_default)
+                    .crossFade()
+                    .into(imageView);
+        }
+    }
+
+
+    /**
      * @param context
      * @param path
      * @param imageView

@@ -4,21 +4,21 @@
     android:layout_height="wrap_content"
     android:orientation="vertical">
 
-    <include layout="@layout/header_search_comm" />
+    <include layout="@layout/header_search_input_text" />
 
     <LinearLayout
-        android:id="@+id/header_customer_collected"
+        android:id="@+id/header_group_item_ll"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center_vertical"
         android:background="?attr/selectableItemBackground"
+        android:gravity="center_vertical"
         android:padding="10dp">
 
         <ImageView
             android:id="@+id/iv_customer_icon"
-            android:layout_width="19dp"
-            android:layout_height="19dp"
-            android:src="@mipmap/icon_star_16" />
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:src="@mipmap/ic_group_icon_default" />
 
         <TextView
             android:id="@+id/tv_customer_name"
@@ -26,17 +26,18 @@
             android:layout_height="wrap_content"
             android:layout_marginLeft="10dp"
             android:layout_weight="1"
+            android:drawableRight="@mipmap/arrow_right"
             android:ellipsize="end"
             android:maxLines="1"
-            android:text="我关注的"
+            android:text="讨论组"
             android:textColor="@color/alpha_font_color_black"
             android:textSize="@dimen/alpha_font_size_mini_medium" />
 
     </LinearLayout>
+
     <View
         android:layout_width="match_parent"
         android:layout_height="@dimen/alpha_height_divider"
         android:layout_marginLeft="42dp"
         android:background="@color/alpha_divider_color" />
-
 </LinearLayout>

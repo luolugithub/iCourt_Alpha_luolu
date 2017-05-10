@@ -11,5 +11,5 @@ import android.support.v4.app.Fragment;
 
 public interface OnFragmentCallBackListener {
 
-    void OnFragmentCallBack(Fragment fragment, Bundle params);
+    void onFragmentCallBack(Fragment fragment, int type, Bundle params);
 }

@@ -294,7 +294,7 @@ public interface ApiAlphaService {
      *
      * @return
      */
-    @GET("http://192.168.20.180:8083/im/v1/users/me")
+    @GET("im/v1/users/me")
     Call<ResEntity<AlphaUserInfo>> userInfoQuery();
 
     /**

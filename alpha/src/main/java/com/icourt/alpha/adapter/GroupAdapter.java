@@ -2,13 +2,14 @@ package com.icourt.alpha.adapter;
 
 import android.text.TextUtils;
 import android.view.View;
+import android.widget.CheckedTextView;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.icourt.alpha.R;
 import com.icourt.alpha.activity.GroupDetailActivity;
-import com.icourt.alpha.adapter.baseadapter.BaseArrayRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
+import com.icourt.alpha.adapter.baseadapter.MultiSelectRecyclerAdapter;
 import com.icourt.alpha.entity.bean.GroupEntity;
 import com.icourt.alpha.utils.GlideUtils;
 import com.icourt.alpha.utils.IMUtils;
@@ -20,7 +21,7 @@ import com.icourt.alpha.utils.IMUtils;
  * date createTime：2017/4/22
  * version 1.0.0
  */
-public class GroupAdapter extends BaseArrayRecyclerAdapter<GroupEntity> implements BaseRecyclerAdapter.OnItemClickListener {
+public class GroupAdapter extends MultiSelectRecyclerAdapter<GroupEntity> implements BaseRecyclerAdapter.OnItemClickListener {
 
 
     public GroupAdapter() {
@@ -33,22 +34,29 @@ public class GroupAdapter extends BaseArrayRecyclerAdapter<GroupEntity> implemen
     }
 
     @Override
-    public void onBindHoder(ViewHolder holder, GroupEntity groupEntity, int position) {
+    public void onBindSelectableHolder(ViewHolder holder, GroupEntity groupEntity, boolean selected, int position) {
         if (groupEntity == null) return;
         ImageView group_icon_iv = holder.obtainView(R.id.group_icon_iv);
         TextView group_name_tv = holder.obtainView(R.id.group_name_tv);
+        CheckedTextView ctv_group = holder.obtainView(R.id.ctv_group);
         group_name_tv.setText(groupEntity.name);
         if (TextUtils.isEmpty(groupEntity.pic)) {
             IMUtils.setTeamIcon(groupEntity.name, group_icon_iv);
         } else {
-            GlideUtils.loadUser(group_icon_iv.getContext(), groupEntity.pic, group_icon_iv);
+            GlideUtils.loadGroup(group_icon_iv.getContext(), groupEntity.pic, group_icon_iv);
         }
+        ctv_group.setBackgroundResource(selected ? R.mipmap.checkmark : 0);
+        ctv_group.setVisibility(selected ? View.VISIBLE : View.GONE);
     }
 
     @Override
     public void onItemClick(BaseRecyclerAdapter adapter, ViewHolder holder, View view, int position) {
-        GroupEntity item = getItem(getRealPos(position));
-        if (item == null) return;
-        GroupDetailActivity.launchTEAM(view.getContext(), item.tid);
+        if (isSelectable()) {
+            toggleSelected(getRealPos(position));
+        } else {
+            GroupEntity item = getItem(getRealPos(position));
+            if (item == null) return;
+            GroupDetailActivity.launchTEAM(view.getContext(), item.tid);
+        }
     }
 }

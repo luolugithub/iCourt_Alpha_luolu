@@ -116,7 +116,7 @@ public class TabNewsFragment extends BaseFragment
     }
 
     @Override
-    public void OnFragmentCallBack(Fragment fragment, Bundle params) {
+    public void onFragmentCallBack(Fragment fragment,int type,Bundle params) {
         if (fragment == baseFragmentAdapter.getItem(0))//更新消息数量
         {
             if (params != null) {
@@ -135,9 +135,9 @@ public class TabNewsFragment extends BaseFragment
                 baseFragmentAdapter.bindTitle(true,
                         Arrays.asList(newsTabBuilder.toString(), "通讯录"));
                 if (getParentFragment() instanceof OnFragmentCallBackListener) {
-                    ((OnFragmentCallBackListener) getParentFragment()).OnFragmentCallBack(TabNewsFragment.this, params);
+                    ((OnFragmentCallBackListener) getParentFragment()).onFragmentCallBack(TabNewsFragment.this,0, params);
                 } else if (parentFragmentCallBackListener != null) {
-                    parentFragmentCallBackListener.OnFragmentCallBack(TabNewsFragment.this, params);
+                    parentFragmentCallBackListener.onFragmentCallBack(TabNewsFragment.this,0, params);
                 }
             }
         }

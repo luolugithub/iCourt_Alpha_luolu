@@ -53,6 +53,7 @@ public abstract class BaseFragment
         View.OnClickListener,
         INotifyFragment,
         LifecycleProvider<FragmentEvent> {
+    protected static final String KEY_FRAGMENT_RESULT = "FragmentResult";
     private final BehaviorSubject<FragmentEvent> lifecycleSubject = BehaviorSubject.create();
     protected View rootView;
 
@@ -133,7 +134,6 @@ public abstract class BaseFragment
         super.onDestroy();
     }
 
-    @Override
     @CallSuper
     public void onDetach() {
         lifecycleSubject.onNext(FragmentEvent.DETACH);
@@ -308,6 +308,7 @@ public abstract class BaseFragment
     protected final ApiProjectService getProjectApi() {
         return RetrofitServiceFactory.getProjectApiService();
     }
+
     /**
      * Toast提示
      * 缺陷 有的rom 会禁用掉taost 比如huawei rom
@@ -436,6 +437,11 @@ public abstract class BaseFragment
     @Override
     public void notifyFragmentUpdate(Fragment targetFrgament, int type, Bundle bundle) {
 
+    }
+
+    @Override
+    public Bundle getFragmentData(int type, Bundle inBundle) {
+        return null;
     }
 
     /**
