@@ -185,7 +185,7 @@ public interface AlphaApiService {
      * @param msg_id
      * @return
      */
-    @GET("http://192.168.20.180:8083/ilaw/api/v3/im/msgs/files/me")
+    @GET("http://192.168.20.180:8083/im/v1/msgs/files/me")
     Call<ResEntity<List<IMMessageCustomBody>>> getMyFiles(@Query("msg_id") String msg_id);
 
     /**
@@ -196,7 +196,7 @@ public interface AlphaApiService {
      * @param pageSize 每页获取条目数量
      * @return
      */
-    @GET("http://192.168.20.180:8083/ilaw/api/v3/im/msgs/ats")
+    @GET("http://192.168.20.180:8083/im/v1/msgs/ats")
     Call<ResEntity<List<IMMessageCustomBody>>> getAtMeMsg(@Query("pageNum") int pageNum,
                                                           @Query("pageSize") int pageSize);
 
@@ -208,7 +208,7 @@ public interface AlphaApiService {
      * @param pageSize 每页获取条目数量
      * @return
      */
-    @GET("http://192.168.20.180:8083/ilaw/api/v3/im/msgs/stars")
+    @GET("http://192.168.20.180:8083/im/v1/msgs/stars")
     Call<ResEntity<List<IMMessageCustomBody>>> getMyCollectedMessages(@Query("pageNum") int pageNum,
                                                                       @Query("pageSize") int pageSize);
 
@@ -220,7 +220,7 @@ public interface AlphaApiService {
      * @param to
      * @return
      */
-    @GET("http://192.168.20.180:8083/ilaw/api/v3/im/msgs/pins")
+    @GET("http://192.168.20.180:8083/im/v1/msgs/pins")
     Call<ResEntity<List<IMMessageCustomBody>>> getDingMessages(@Query("ope") @Const.CHAT_TYPE int ope,
                                                                @Query("to") String to);
 
@@ -286,7 +286,7 @@ public interface AlphaApiService {
      *
      * @return
      */
-    @POST("http://192.168.20.180:8083/ilaw/api/v3/im/groups")
+    @POST("http://192.168.20.180:8083/im/v1/groups")
     Call<ResEntity<JsonElement>> groupCreate(@Body RequestBody groupInfo);
 
 
@@ -297,7 +297,7 @@ public interface AlphaApiService {
      * @param groupInfo
      * @return
      */
-    @PUT("http://192.168.20.180:8083/ilaw/api/v3/im/groups/{tid}")
+    @PUT("http://192.168.20.180:8083/im/v1/groups/{tid}")
     Call<ResEntity<JsonElement>> groupUpdate(@Path("tid") String tid,
                                              @Body RequestBody groupInfo);
 
@@ -309,7 +309,7 @@ public interface AlphaApiService {
      * @param group_tid
      * @return
      */
-    @POST("http://192.168.20.180:8083/ilaw/api/v3/im/groups/{group_tid}/members/joined")
+    @POST("http://192.168.20.180:8083/im/v1/groups/{group_tid}/members/joined")
     Call<ResEntity<Boolean>> groupJoin(@Path("group_tid") String group_tid);
 
     /**
@@ -319,7 +319,7 @@ public interface AlphaApiService {
      * @param group_tid
      * @return
      */
-    @POST("http://192.168.20.180:8083/ilaw/api/v3/im/groups/{group_tid}/members/quit")
+    @POST("http://192.168.20.180:8083/im/v1/groups/{group_tid}/members/quit")
     Call<ResEntity<Boolean>> groupQuit(@Path("group_tid") String group_tid);
 
     /**
@@ -331,7 +331,7 @@ public interface AlphaApiService {
      * @param joined     true: 加入的；false:未加入的 ，不传为已加入的和未加入公开的
      * @return
      */
-    @GET("http://192.168.20.180:8083/ilaw/api/v3/im/groups")
+    @GET("http://192.168.20.180:8083/im/v1/groups")
     Call<ResEntity<List<GroupEntity>>> groupsQuery(@Query("run_status") int run_status,
                                                    @Query("is_private") boolean is_private,
                                                    @Query("joined") boolean joined
@@ -345,7 +345,7 @@ public interface AlphaApiService {
      * @param is_private true: 公开；false:私密 ，不传为所有
      * @return
      */
-    @GET("http://192.168.20.180:8083/ilaw/api/v3/im/groups")
+    @GET("http://192.168.20.180:8083/im/v1/groups")
     Call<ResEntity<List<GroupEntity>>> groupsQuery(@Query("run_status") int run_status,
                                                    @Query("is_private") boolean is_private
     );
@@ -357,7 +357,7 @@ public interface AlphaApiService {
      * @param groupTid
      * @return
      */
-    @GET("http://192.168.20.180:8083/ilaw/api/v3/im/groups/{groupTid}/members/ids")
+    @GET("http://192.168.20.180:8083/im/v1/groups/{groupTid}/members/ids")
     Call<ResEntity<List<String>>> groupQueryAllMemberIds(@Path("groupTid") String groupTid);
 
     /**
@@ -368,7 +368,7 @@ public interface AlphaApiService {
      * @param joined
      * @return
      */
-    @GET("http://192.168.20.180:8083/ilaw/api/v3/im/groups")
+    @GET("http://192.168.20.180:8083/im/v1/groups")
     Call<ResEntity<List<GroupEntity>>> groupsQueryJoind(@Query("run_status") int run_status,
                                                         @Query("joined") boolean joined
     );
@@ -381,7 +381,7 @@ public interface AlphaApiService {
      * @param adminId
      * @return
      */
-    @PUT("http://192.168.20.180:8083/ilaw/api/v3/im/groups/{groupTid}/admin/{adminId}")
+    @PUT("http://192.168.20.180:8083/im/v1/groups/{groupTid}/admin/{adminId}")
     Call<ResEntity<Boolean>> groupTransferAdmin(@Path("groupTid") String groupTid,
                                                 @Path("adminId") String adminId);
 
@@ -391,7 +391,7 @@ public interface AlphaApiService {
      *
      * @return
      */
-    @GET("http://192.168.20.180:8083/ilaw/api/v3/im/groups")
+    @GET("http://192.168.20.180:8083/im/v1/groups")
     Call<ResEntity<List<GroupEntity>>> groupsQueryAll();
 
     /**
@@ -400,7 +400,7 @@ public interface AlphaApiService {
      *
      * @return
      */
-    @GET("http://192.168.20.180:8083/ilaw/api/v3/im/groups/{tid}")
+    @GET("http://192.168.20.180:8083/im/v1/groups/{tid}")
     Call<ResEntity<GroupDetailEntity>> groupQueryDetail(@Path("tid") String tid);
 
 
@@ -412,7 +412,7 @@ public interface AlphaApiService {
      * @param members {members":["xx1","xx2","xx3"] msg_id":12321 //当前群组的最新消息id,获取不到则不传}
      * @return
      */
-    @POST("http://192.168.20.180:8083/ilaw/api/v3/im/groups/{groupId}/members")
+    @POST("http://192.168.20.180:8083/im/v1/groups/{groupId}/members")
     Call<ResEntity<JsonElement>> groupMemberAdd(@Path("groupId") String groupId,
                                                 @Body RequestBody members);
 
@@ -424,7 +424,7 @@ public interface AlphaApiService {
      * @param userId
      * @return
      */
-    @DELETE("http://192.168.20.180:8083/ilaw/api/v3/im/groups/{groupId}/members/{userId}")
+    @DELETE("http://192.168.20.180:8083/im/v1/groups/{groupId}/members/{userId}")
     Call<ResEntity<JsonElement>> groupMemberRemove(@Path("groupId") String groupId,
                                                    @Path("userId") String userId);
 
@@ -437,7 +437,7 @@ public interface AlphaApiService {
      * @param body
      * @return
      */
-    @POST("http://192.168.20.180:8083/ilaw/api/v3/im/groups/{group_tid}/members/delete")
+    @POST("http://192.168.20.180:8083/im/v1/groups/{group_tid}/members/delete")
     Call<ResEntity<JsonElement>> groupMemberRemoves(@Path("group_tid") String group_tid,
                                                     @Body RequestBody body);
 
@@ -448,7 +448,7 @@ public interface AlphaApiService {
      * @param msg 消息体
      * @return
      */
-    @POST("http://192.168.20.180:8083/ilaw/api/v3/im/msgs")
+    @POST("http://192.168.20.180:8083/im/v1/msgs")
     Call<ResEntity<IMMessageCustomBody>> msgAdd(@Body RequestBody msg);
 
 
@@ -460,7 +460,7 @@ public interface AlphaApiService {
      * @return
      */
     @Multipart
-    @POST("http://192.168.20.180:8083/ilaw/api/v3/im/msgs/files")
+    @POST("http://192.168.20.180:8083/im/v1/msgs/files")
     Call<ResEntity<IMMessageCustomBody>> msgImageAdd(@PartMap Map<String, RequestBody> params);
 
 
@@ -471,7 +471,7 @@ public interface AlphaApiService {
      * @param msgId
      * @return
      */
-    @POST("http://192.168.20.180:8083/ilaw/api/v3/im/msgs/stars/{msgId}")
+    @POST("http://192.168.20.180:8083/im/v1/msgs/stars/{msgId}")
     Call<ResEntity<Boolean>> msgCollect(@Path("msgId") String msgId,
                                         @Query("ope") @Const.CHAT_TYPE int ope,
                                         @Query("to") String to);
@@ -483,7 +483,7 @@ public interface AlphaApiService {
      * @param msgId
      * @return
      */
-    @DELETE("http://192.168.20.180:8083/ilaw/api/v3/im/msgs/stars/{msgId}")
+    @DELETE("http://192.168.20.180:8083/im/v1/msgs/stars/{msgId}")
     Call<ResEntity<Boolean>> msgCollectCancel(@Path("msgId") String msgId,
                                               @Query("ope") @Const.CHAT_TYPE int ope,
                                               @Query("to") String to);
@@ -496,7 +496,7 @@ public interface AlphaApiService {
      * @param to
      * @return
      */
-    @GET("http://192.168.20.180:8083/ilaw/api/v3/im/msgs/stars/ids")
+    @GET("http://192.168.20.180:8083/im/v1/msgs/stars/ids")
     Call<ResEntity<List<String>>> msgQueryAllCollectedIds(@Query("ope") @Const.CHAT_TYPE int ope,
                                                           @Query("to") String to);
 
@@ -507,7 +507,7 @@ public interface AlphaApiService {
      * @param to
      * @return
      */
-    @GET("http://192.168.20.180:8083/ilaw/api/v3/im/msgs/pins/ids")
+    @GET("http://192.168.20.180:8083/im/v1/msgs/pins/ids")
     Call<ResEntity<List<String>>> msgQueryAllDingIds(@Query("ope") @Const.CHAT_TYPE int ope,
                                                      @Query("to") String to);
 
@@ -518,7 +518,7 @@ public interface AlphaApiService {
      * @param msgId
      * @return
      */
-    @DELETE("http://192.168.20.180:8083/ilaw/api/v3/im/msgs/{msgId}")
+    @DELETE("http://192.168.20.180:8083/im/v1/msgs/{msgId}")
     Call<ResEntity<JsonElement>> msgRevoke(@Path("msgId") String msgId);
 
 
@@ -544,7 +544,7 @@ public interface AlphaApiService {
      * @param to
      * @return
      */
-    @GET("http://192.168.20.180:8083/ilaw/api/v3/im/msgs")
+    @GET("http://192.168.20.180:8083/im/v1/msgs")
     Call<ResEntity<List<IMMessageCustomBody>>> msgQueryAll(@Query("type") String type,
                                                            @Query("size") int size,
                                                            @Query("mgs_id") String mgs_id,
@@ -559,7 +559,7 @@ public interface AlphaApiService {
      * @param to
      * @return
      */
-    @GET("http://192.168.20.180:8083/ilaw/api/v3/im/msgs/files")
+    @GET("http://192.168.20.180:8083/im/v1/msgs/files")
     Call<ResEntity<List<IMMessageCustomBody>>> msgQueryFiles(@Query("ope") @Const.CHAT_TYPE int ope,
                                                              @Query("to") String to);
 
@@ -569,7 +569,7 @@ public interface AlphaApiService {
      *
      * @return
      */
-    @GET("http://192.168.20.180:8083/ilaw/api/v3/im/users")
+    @GET("http://192.168.20.180:8083/im/v1/users")
     Call<ResEntity<List<GroupContactBean>>> usersQuery();
 
     /**
@@ -578,7 +578,7 @@ public interface AlphaApiService {
      *
      * @return
      */
-    @GET("http://192.168.20.180:8083/ilaw/api/v3/im/chats/sticks/ids")
+    @GET("http://192.168.20.180:8083/im/v1/chats/sticks/ids")
     Call<ResEntity<List<String>>> sessionQueryAllsetTopIds();
 
     /**
@@ -588,7 +588,7 @@ public interface AlphaApiService {
      * @param to
      * @return
      */
-    @POST("http://192.168.20.180:8083/ilaw/api/v3/im/chats/sticks")
+    @POST("http://192.168.20.180:8083/im/v1/chats/sticks")
     @FormUrlEncoded
     Call<ResEntity<Boolean>> sessionSetTop(@Field("ope") @Const.CHAT_TYPE int ope,
                                            @Field("to") String to);
@@ -601,7 +601,7 @@ public interface AlphaApiService {
      * @param to
      * @return
      */
-    @DELETE("http://192.168.20.180:8083/ilaw/api/v3/im/chats/sticks")
+    @DELETE("http://192.168.20.180:8083/im/v1/chats/sticks")
     Call<ResEntity<Boolean>> sessionSetTopCancel(@Query("ope") @Const.CHAT_TYPE int ope,
                                                  @Query("to") String to);
 
@@ -610,7 +610,7 @@ public interface AlphaApiService {
      *
      * @return
      */
-    @GET("http://192.168.20.180:8083/ilaw/api/v3/im/chats/nodisturbing/ids")
+    @GET("http://192.168.20.180:8083/im/v1/chats/nodisturbing/ids")
     Call<ResEntity<List<String>>> sessionQueryAllNoDisturbingIds();
 
     /**
@@ -621,7 +621,7 @@ public interface AlphaApiService {
      * @param to
      * @return
      */
-    @POST("http://192.168.20.180:8083/ilaw/api/v3/im/chats/nodisturbing")
+    @POST("http://192.168.20.180:8083/im/v1/chats/nodisturbing")
     @FormUrlEncoded
     Call<ResEntity<Boolean>> sessionNoDisturbing(@Const.CHAT_TYPE @Field("ope") int ope,
                                                  @Field("to") String to);
@@ -634,7 +634,7 @@ public interface AlphaApiService {
      * @param to
      * @return
      */
-    @DELETE("http://192.168.20.180:8083/ilaw/api/v3/im/chats/nodisturbing")
+    @DELETE("http://192.168.20.180:8083/im/v1/chats/nodisturbing")
     Call<ResEntity<Boolean>> sessionNoDisturbingCancel(@Query("ope") @Const.CHAT_TYPE int ope,
                                                        @Query("to") String to);
 
@@ -707,7 +707,7 @@ public interface AlphaApiService {
      *
      * @return
      */
-    @GET("http://192.168.20.180:8083/ilaw/api/v3/im/users/me")
+    @GET("http://192.168.20.180:8083/im/v1/users/me")
     Call<ResEntity<AlphaUserInfo>> userInfoQuery();
 
     /**
@@ -763,7 +763,7 @@ public interface AlphaApiService {
      *
      * @param projectId
      * @param stateType 全部任务:－1    已完成:1     未完成:0
-     * @param type 任务和任务组：-1;    任务：0;    任务组：1;
+     * @param type      任务和任务组：-1;    任务：0;    任务组：1;
      * @param pageIndex
      * @param pageSize
      * @return
@@ -786,6 +786,7 @@ public interface AlphaApiService {
 
     /**
      * 新建任务组
+     *
      * @param msg
      * @return
      */

@@ -67,25 +67,6 @@ public class IMSessionAdapter extends BaseArrayRecyclerAdapter<IMSessionEntity> 
     private List<Team> teams;
     private List<GroupContactBean> groupContactBeans;
 
-    /**
-     * 获取本地头像
-     *
-     * @param accid
-     * @return
-     */
-    private String getUserIcon(String accid) {
-        if (groupContactBeans != null && !TextUtils.isEmpty(accid)) {
-            GroupContactBean groupContactBean = new GroupContactBean();
-            groupContactBean.accid = accid.toLowerCase();
-            int indexOf = groupContactBeans.indexOf(groupContactBean);
-            if (indexOf >= 0) {
-                groupContactBean = groupContactBeans.get(indexOf);
-                return groupContactBean.pic;
-            }
-        }
-        return "";
-    }
-
     @Nullable
     @CheckResult
     private GroupContactBean getUser(String accid) {
@@ -93,7 +74,9 @@ public class IMSessionAdapter extends BaseArrayRecyclerAdapter<IMSessionEntity> 
             GroupContactBean groupContactBean = new GroupContactBean();
             groupContactBean.accid = accid.toLowerCase();
             int indexOf = groupContactBeans.indexOf(groupContactBean);
-            return groupContactBeans.get(indexOf);
+            if (indexOf >= 0) {
+                return groupContactBeans.get(indexOf);
+            }
         }
         return null;
     }
@@ -101,6 +84,7 @@ public class IMSessionAdapter extends BaseArrayRecyclerAdapter<IMSessionEntity> 
     @Nullable
     @CheckResult
     public Team getTeam(String id) {
+        if (teams == null) return null;
         for (Team team : teams) {
             if (StringUtils.equalsIgnoreCase(id, team.getId(), false)) {
                 return team;
@@ -160,7 +144,7 @@ public class IMSessionAdapter extends BaseArrayRecyclerAdapter<IMSessionEntity> 
 
 
             //3.设置消息展示的时间
-            setTimeView(tvSessionTime, imSessionEntity.recentContact.getTime(),position);
+            setTimeView(tvSessionTime, imSessionEntity.recentContact.getTime(), position);
 
 
             //4.设置消息体展示
@@ -381,7 +365,7 @@ public class IMSessionAdapter extends BaseArrayRecyclerAdapter<IMSessionEntity> 
      * @param tvSessionTime
      * @param time
      */
-    private void setTimeView(TextView tvSessionTime, long time,int pos) {
+    private void setTimeView(TextView tvSessionTime, long time, int pos) {
         if (tvSessionTime == null) return;
         tvSessionTime.setText(DateUtils.getTimeShowString(time, true));
     }
