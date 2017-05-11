@@ -23,6 +23,41 @@ public abstract class SelectedRecyclerAdapter<T> extends BaseArrayRecyclerAdapte
         }
     }
 
+    private boolean selectable;//是否可选
+
+    /**
+     * 设置可选择性
+     *
+     * @param selectable
+     */
+    public void setSelectable(boolean selectable) {
+        if (this.selectable != selectable) {
+            this.selectable = selectable;
+            if (!isSelectable()) {//不可选择的 默认清除上次选中的 子类可以复写
+                selectedPos = defaultSelectedPos;
+            } else {
+                this.notifyDataSetChanged();
+            }
+        }
+    }
+
+    /**
+     * 清除选中的item
+     */
+    public void clearSelected() {
+        if (selectedPos != defaultSelectedPos) {
+            selectedPos = defaultSelectedPos;
+            notifyDataSetChanged();
+        }
+    }
+
+    public boolean isSelectable() {
+        return selectable;
+    }
+
+    public SelectedRecyclerAdapter(boolean selectable) {
+        this.selectable = selectable;
+    }
 
     @Override
     public final void onBindHoder(ViewHolder holder, T t, int position) {

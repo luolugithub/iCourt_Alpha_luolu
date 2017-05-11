@@ -1,11 +1,10 @@
 package com.icourt.alpha.adapter;
 
-import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.icourt.alpha.R;
-import com.icourt.alpha.adapter.baseadapter.BaseArrayRecyclerAdapter;
-import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
+import com.icourt.alpha.adapter.baseadapter.SelectedRecyclerAdapter;
 import com.icourt.alpha.entity.bean.TaskGroupEntity;
 
 /**
@@ -16,21 +15,28 @@ import com.icourt.alpha.entity.bean.TaskGroupEntity;
  * version 2.0.0
  */
 
-public class ProjectTaskGroupAdapter extends BaseArrayRecyclerAdapter<TaskGroupEntity> implements BaseRecyclerAdapter.OnItemClickListener {
+public class ProjectTaskGroupAdapter extends SelectedRecyclerAdapter<TaskGroupEntity> {
+    public ProjectTaskGroupAdapter(boolean selectable) {
+        super(selectable);
+    }
+
     @Override
     public int bindView(int viewtype) {
         return R.layout.adapter_item_task_group_layout;
     }
 
     @Override
-    public void onBindHoder(ViewHolder holder, TaskGroupEntity taskGroupEntity, int position) {
+    public void onBindSelectableHoder(ViewHolder holder, TaskGroupEntity taskGroupEntity, int position, boolean selected) {
         TextView nameView = (TextView) holder.obtainView(R.id.task_group_name);
         TextView countView = (TextView) holder.obtainView(R.id.task_group_count);
+        ImageView task_group_arrow = holder.obtainView(R.id.task_group_arrow);
         nameView.setText(taskGroupEntity.name);
+
+        if (isSelectable()) {
+            task_group_arrow.setImageResource(selected ? R.mipmap.checkmark : 0);
+        } else {
+            task_group_arrow.setImageResource(R.mipmap.arrow_right);
+        }
     }
 
-    @Override
-    public void onItemClick(BaseRecyclerAdapter adapter, ViewHolder holder, View view, int position) {
-
-    }
 }

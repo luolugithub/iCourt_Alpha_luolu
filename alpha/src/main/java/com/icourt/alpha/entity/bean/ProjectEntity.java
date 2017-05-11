@@ -1,5 +1,6 @@
 package com.icourt.alpha.entity.bean;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -10,7 +11,7 @@ import java.util.List;
  * version 2.0.0
  */
 
-public class ProjectEntity {
+public class ProjectEntity implements Serializable {
 
 
     /**

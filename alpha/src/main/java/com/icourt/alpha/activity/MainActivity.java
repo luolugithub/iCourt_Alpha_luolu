@@ -9,6 +9,7 @@ import android.os.Message;
 import android.os.PersistableBundle;
 import android.support.annotation.IdRes;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.util.SparseArray;
 import android.view.Gravity;
 import android.view.MotionEvent;
@@ -31,6 +32,7 @@ import com.icourt.alpha.fragment.TabFindFragment;
 import com.icourt.alpha.fragment.TabMineFragment;
 import com.icourt.alpha.fragment.TabNewsFragment;
 import com.icourt.alpha.fragment.TabTaskFragment;
+import com.icourt.alpha.fragment.dialogfragment.ProjectSelectDialogFragment;
 import com.icourt.alpha.http.AlphaClient;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
@@ -241,11 +243,26 @@ public class MainActivity extends BaseActivity
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.tab_voice:
+                showTestFragment();
                 break;
             default:
                 super.onClick(v);
                 break;
         }
+    }
+
+    /**
+     * 测试
+     */
+    public void showTestFragment() {
+        String tag = ProjectSelectDialogFragment.class.getSimpleName();
+        FragmentTransaction mFragTransaction = getSupportFragmentManager().beginTransaction();
+        Fragment fragment = getSupportFragmentManager().findFragmentByTag(tag);
+        if (fragment != null) {
+            mFragTransaction.remove(fragment);
+        }
+        ProjectSelectDialogFragment.newInstance()
+                .show(mFragTransaction, tag);
     }
 
     /**
@@ -376,7 +393,7 @@ public class MainActivity extends BaseActivity
     }
 
     @Override
-    public void onFragmentCallBack(Fragment fragment,int type, Bundle params) {
+    public void onFragmentCallBack(Fragment fragment, int type, Bundle params) {
         if (fragment == getTabFragment(R.id.tab_news)) {
             if (params != null) {
                 updateBadge(getTabNewsBadge(), params.getInt("unReadNum"));

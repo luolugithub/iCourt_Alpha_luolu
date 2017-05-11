@@ -91,7 +91,7 @@ public class ProjectTaskGroupActivity extends BaseActivity {
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setHasFixedSize(true);
 
-        recyclerView.setAdapter(projectTaskGroupAdapter = new ProjectTaskGroupAdapter());
+        recyclerView.setAdapter(projectTaskGroupAdapter = new ProjectTaskGroupAdapter(false));
         projectTaskGroupAdapter.registerAdapterDataObserver(new RefreshViewEmptyObserver(refreshLayout, projectTaskGroupAdapter));
 
         refreshLayout.setXRefreshViewListener(new XRefreshView.SimpleXRefreshListener() {

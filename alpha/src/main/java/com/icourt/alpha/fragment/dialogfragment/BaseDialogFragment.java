@@ -57,6 +57,7 @@ public abstract class BaseDialogFragment extends DialogFragment
         INotifyFragment,
         LifecycleProvider<FragmentEvent> {
     protected static final String KEY_FRAGMENT_RESULT = "FragmentResult";
+    protected static final String KEY_FRAGMENT_UPDATE_KEY = "fragment_update_key";
     private final BehaviorSubject<FragmentEvent> lifecycleSubject = BehaviorSubject.create();
     protected View rootView;
 
