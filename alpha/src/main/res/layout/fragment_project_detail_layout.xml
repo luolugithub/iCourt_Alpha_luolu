@@ -35,13 +35,14 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_marginLeft="@dimen/dp5"
                     android:gravity="center_vertical"
-                    android:padding="@dimen/dp20">
+                    android:padding="@dimen/dp15">
 
                     <ImageView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:src="@mipmap/icon_contact_18" />
+                        android:src="@mipmap/project_name_icon" />
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -67,7 +68,8 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginLeft="@dimen/dp10"
-                        android:src="@mipmap/arrow_right" />
+                        android:src="@mipmap/arrow_right"
+                        android:visibility="gone" />
                 </LinearLayout>
 
                 <View
@@ -79,13 +81,14 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_marginLeft="@dimen/dp5"
                     android:gravity="center_vertical"
-                    android:padding="@dimen/dp20">
+                    android:padding="@dimen/dp15">
 
                     <ImageView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:src="@mipmap/icon_contact_18" />
+                        android:src="@mipmap/project_customer_icon" />
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -111,7 +114,8 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginLeft="@dimen/dp10"
-                        android:src="@mipmap/arrow_right" />
+                        android:src="@mipmap/arrow_right"
+                        android:visibility="gone" />
                 </LinearLayout>
 
                 <View
@@ -123,13 +127,14 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_marginLeft="@dimen/dp5"
                     android:gravity="center_vertical"
-                    android:padding="@dimen/dp20">
+                    android:padding="@dimen/dp15">
 
                     <ImageView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:src="@mipmap/icon_contact_18" />
+                        android:src="@mipmap/project_type_icon" />
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -155,7 +160,8 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginLeft="@dimen/dp10"
-                        android:src="@mipmap/arrow_right" />
+                        android:src="@mipmap/arrow_right"
+                        android:visibility="gone" />
                 </LinearLayout>
 
                 <View
@@ -167,13 +173,14 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_marginLeft="@dimen/dp5"
                     android:gravity="center_vertical"
-                    android:padding="@dimen/dp20">
+                    android:padding="@dimen/dp15">
 
                     <ImageView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:src="@mipmap/icon_contact_18" />
+                        android:src="@mipmap/project_department_icon" />
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -199,7 +206,8 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginLeft="@dimen/dp10"
-                        android:src="@mipmap/arrow_right" />
+                        android:src="@mipmap/arrow_right"
+                        android:visibility="gone" />
                 </LinearLayout>
 
                 <View
@@ -211,13 +219,14 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_marginLeft="@dimen/dp5"
                     android:gravity="center_vertical"
-                    android:padding="@dimen/dp20">
+                    android:padding="@dimen/dp15">
 
                     <ImageView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:src="@mipmap/icon_contact_18" />
+                        android:src="@mipmap/setting_user" />
 
                     <TextView
                         android:id="@+id/project_member_count"

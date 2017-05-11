@@ -1,18 +1,32 @@
 package com.icourt.alpha.adapter;
 
+import android.app.Dialog;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
+import android.widget.CheckBox;
 import android.widget.TextView;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.baseadapter.BaseArrayRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.entity.bean.ItemsEntity;
 import com.icourt.alpha.entity.bean.TaskEntity;
+import com.icourt.alpha.http.callback.SimpleCallBack;
+import com.icourt.alpha.http.httpmodel.ResEntity;
+import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.widget.dialog.CenterMenuDialog;
+import com.icourt.api.RequestUtils;
 
 import java.util.Arrays;
+
+import retrofit2.Call;
+import retrofit2.Response;
 
 /**
  * Description
@@ -21,11 +35,15 @@ import java.util.Arrays;
  * date createTime：2017/4/21
  * version 1.0.0
  */
-public class TaskAdapter extends BaseArrayRecyclerAdapter<TaskEntity> implements BaseRecyclerAdapter.OnItemClickListener, BaseRecyclerAdapter.OnItemLongClickListener {
+public class TaskAdapter extends BaseArrayRecyclerAdapter<TaskEntity>
+        implements BaseRecyclerAdapter.OnItemClickListener,
+        BaseRecyclerAdapter.OnItemLongClickListener,
+        BaseRecyclerAdapter.OnItemChildClickListener {
 
     public TaskAdapter() {
         this.setOnItemClickListener(this);
         this.setOnItemLongClickListener(this);
+        this.setOnItemChildClickListener(this);
     }
 
     @Override
@@ -50,32 +68,140 @@ public class TaskAdapter extends BaseArrayRecyclerAdapter<TaskEntity> implements
             TaskItemAdapter taskItemAdapter = new TaskItemAdapter();
             recyclerView.setAdapter(taskItemAdapter);
             taskItemAdapter.setOnItemClickListener(super.onItemClickListener);
-            taskItemAdapter.bindData(false, taskEntity.taskItemEntitys);
+            taskItemAdapter.setOnItemChildClickListener(super.onItemChildClickListener);
+            taskItemAdapter.bindData(false, taskEntity.items);
         }
     }
 
     @Override
     public void onItemClick(BaseRecyclerAdapter adapter, ViewHolder holder, View view, int position) {
         new CenterMenuDialog(view.getContext(), null, Arrays.asList(
-                new ItemsEntity("我加入的讨论组", R.mipmap.tab_message),
-                new ItemsEntity("所有讨论组", R.mipmap.tab_message),
-                new ItemsEntity("已归档讨论组", R.mipmap.tab_message),
-                new ItemsEntity("我加入的讨论组", R.mipmap.tab_message),
-                new ItemsEntity("所有讨论组", R.mipmap.tab_message),
-                new ItemsEntity("已归档讨论组", R.mipmap.tab_message)))
+                new ItemsEntity("分配给", R.mipmap.tab_message),
+                new ItemsEntity("到期日", R.mipmap.tab_message),
+                new ItemsEntity("提醒", R.mipmap.tab_message),
+                new ItemsEntity("项目/任务组", R.mipmap.tab_message),
+                new ItemsEntity("开始计时", R.mipmap.tab_message),
+                new ItemsEntity("查看详情", R.mipmap.tab_message)))
                 .show();
     }
 
     @Override
     public boolean onItemLongClick(BaseRecyclerAdapter adapter, ViewHolder holder, View view, int position) {
         new CenterMenuDialog(view.getContext(), null, Arrays.asList(
-                new ItemsEntity("我加入的讨论组", R.mipmap.tab_message),
-                new ItemsEntity("所有讨论组", R.mipmap.tab_message),
-                new ItemsEntity("已归档讨论组", R.mipmap.tab_message),
-                new ItemsEntity("我加入的讨论组", R.mipmap.tab_message),
-                new ItemsEntity("所有讨论组", R.mipmap.tab_message),
-                new ItemsEntity("已归档讨论组", R.mipmap.tab_message)))
+                new ItemsEntity("分配给", R.mipmap.tab_message),
+                new ItemsEntity("到期日", R.mipmap.tab_message),
+                new ItemsEntity("提醒", R.mipmap.tab_message),
+                new ItemsEntity("项目/任务组", R.mipmap.tab_message),
+                new ItemsEntity("开始计时", R.mipmap.tab_message),
+                new ItemsEntity("查看详情", R.mipmap.tab_message)))
                 .show();
         return true;
+    }
+
+    @Override
+    public void onItemChildClick(BaseRecyclerAdapter adapter, ViewHolder holder, View view, int position) {
+        if (adapter instanceof TaskItemAdapter) {
+            TaskEntity.TaskItemEntity itemEntity = (TaskEntity.TaskItemEntity) adapter.getItem(position);
+            if (view instanceof CheckBox) {
+                CheckBox checkbox = (CheckBox) view;
+
+                if (checkbox.isChecked()) {//完成任务
+                    if (itemEntity.attendeeUserEntities != null) {
+                        if (itemEntity.attendeeUserEntities.size() > 1) {
+                            showFinishDialog(view.getContext(), "该任务由多人负责,确定完成?", itemEntity, checkbox);
+                        } else {
+                            updateTask(itemEntity, true, checkbox);
+                        }
+                    } else {
+                        updateTask(itemEntity, true, checkbox);
+                    }
+                } else {
+                    updateTask(itemEntity, false, checkbox);
+                }
+            }
+        }
+    }
+
+    /**
+     * 显示多人任务提醒
+     *
+     * @param context
+     * @param message
+     * @param itemEntity
+     * @param checkbox
+     */
+    private void showFinishDialog(final Context context, String message, final TaskEntity.TaskItemEntity itemEntity, final CheckBox checkbox) {
+        //先new出一个监听器，设置好监听
+        DialogInterface.OnClickListener dialogOnclicListener = new DialogInterface.OnClickListener() {
+
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                switch (which) {
+                    case Dialog.BUTTON_POSITIVE://确定
+                        updateTask(itemEntity, true, checkbox);
+                        break;
+                    case Dialog.BUTTON_NEGATIVE://取消
+                        break;
+                }
+            }
+        };
+        //dialog参数设置
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);  //先得到构造器
+        builder.setTitle("提示"); //设置标题
+        builder.setMessage(message); //设置内容
+        builder.setPositiveButton("确认", dialogOnclicListener);
+        builder.setNegativeButton("取消", dialogOnclicListener);
+        builder.create().show();
+    }
+
+    /**
+     * 修改任务
+     *
+     * @param itemEntity
+     * @param state
+     * @param checkbox
+     */
+    private void updateTask(TaskEntity.TaskItemEntity itemEntity, final boolean state, final CheckBox checkbox) {
+        if (state) {
+            showLoadingDialog(checkbox.getContext(), "完成任务...");
+        } else {
+            showLoadingDialog(checkbox.getContext(), "取消完成任务...");
+        }
+        getApi().taskUpdate(RequestUtils.createJsonBody(getTaskJson(itemEntity, state))).enqueue(new SimpleCallBack<JsonElement>() {
+            @Override
+            public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
+                dismissLoadingDialog();
+                checkbox.setChecked(state);
+            }
+
+            @Override
+            public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
+                super.onFailure(call, t);
+                dismissLoadingDialog();
+                checkbox.setChecked(!state);
+            }
+        });
+    }
+
+    /**
+     * 获取任务json
+     *
+     * @param itemEntity
+     * @param state
+     * @return
+     */
+    private String getTaskJson(TaskEntity.TaskItemEntity itemEntity, boolean state) {
+        try {
+            itemEntity.state = state;
+            JsonObject jsonObject = new JsonObject();
+            jsonObject.addProperty("id", itemEntity.id);
+            jsonObject.addProperty("state", itemEntity.state);
+            jsonObject.addProperty("valid", true);
+            jsonObject.addProperty("updateTime", DateUtils.millis());
+            return jsonObject.toString();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }

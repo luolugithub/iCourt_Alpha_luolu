@@ -1,5 +1,7 @@
 package com.icourt.alpha.adapter;
 
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.CheckBox;
 import android.widget.ImageView;
@@ -9,6 +11,7 @@ import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.baseadapter.BaseArrayRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.entity.bean.TaskEntity;
+import com.icourt.alpha.utils.DateUtils;
 
 /**
  * Description
@@ -34,13 +37,23 @@ public class TaskItemAdapter extends BaseArrayRecyclerAdapter<TaskEntity.TaskIte
         TextView checkListView = holder.obtainView(R.id.task_check_list_tv);
         TextView documentNumView = holder.obtainView(R.id.task_file_num_tv);
         TextView commentNumView = holder.obtainView(R.id.task_comment_num_tv);
+        RecyclerView recyclerView = holder.obtainView(R.id.tasl_member_recyclerview);
 
         taskNameView.setText(taskItemEntity.name);
-        projectNameView.setText(taskItemEntity.taskGroupName);
-        timeView.setText("06:22");
-        checkListView.setText(taskItemEntity.doneItemTaskCount + "/" + taskItemEntity.itemTaskCount);
-        documentNumView.setText(String.valueOf(taskItemEntity.documentCount));
+        projectNameView.setText(taskItemEntity.parentName);
+        timeView.setText(DateUtils.getTimeDurationDate(taskItemEntity.timingSum));
+        checkListView.setText(taskItemEntity.doneItemCount + "/" + taskItemEntity.itemCount);
+        documentNumView.setText(String.valueOf(taskItemEntity.attachmentCount));
         commentNumView.setText(String.valueOf(taskItemEntity.commentCount));
+        if (taskItemEntity.attendeeUserEntities != null) {
+            LinearLayoutManager layoutManager = new LinearLayoutManager(recyclerView.getContext());
+            layoutManager.setOrientation(LinearLayoutManager.HORIZONTAL);
+            layoutManager.setReverseLayout(true);
+            recyclerView.setLayoutManager(layoutManager);
+            TaskUsersAdapter usersAdapter = new TaskUsersAdapter();
+            usersAdapter.bindData(false, taskItemEntity.attendeeUserEntities);
+        }
+        holder.bindChildClick(checkBox);
     }
 
     @Override

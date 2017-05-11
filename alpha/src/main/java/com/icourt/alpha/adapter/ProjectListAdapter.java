@@ -1,5 +1,6 @@
 package com.icourt.alpha.adapter;
 
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -43,19 +44,25 @@ public class ProjectListAdapter extends BaseArrayRecyclerAdapter<ProjectEntity> 
         taskView.setText(projectEntity.unfinishTask + "/" + projectEntity.allTask);
         switch (Integer.valueOf(projectEntity.matterType)) {
             case 0:
-                typeView.setText("争议解决");
+                if (!TextUtils.isEmpty(projectEntity.caseProcessName))
+                    typeView.setText(projectEntity.caseProcessName);
+                else
+                    typeView.setText(projectEntity.matterTypeName);
                 headerIcon.setImageResource(R.mipmap.project_type_dis);
                 break;
             case 1:
-                typeView.setText("非诉专项");
+                if (!TextUtils.isEmpty(projectEntity.caseProcessName))
+                    typeView.setText(projectEntity.caseProcessName);
+                else
+                    typeView.setText(projectEntity.matterTypeName);
                 headerIcon.setImageResource(R.mipmap.project_type_noju);
                 break;
             case 2:
-                typeView.setText("常年顾问");
+                typeView.setText(projectEntity.matterTypeName);
                 headerIcon.setImageResource(R.mipmap.project_type_coun);
                 break;
             case 3:
-                typeView.setText("内部事务");
+                typeView.setText(projectEntity.matterTypeName);
                 headerIcon.setImageResource(R.mipmap.project_type_aff);
                 break;
         }

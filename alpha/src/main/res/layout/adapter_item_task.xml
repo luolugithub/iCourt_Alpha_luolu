@@ -6,15 +6,14 @@
     app:cardCornerRadius="5dp"
     app:cardElevation="2dp"
     app:cardPreventCornerOverlap="true"
-    app:cardUseCompatPadding="true"
-    >
+    app:cardUseCompatPadding="true">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="?attr/selectableItemBackground"
-        android:padding="@dimen/dp10"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:padding="@dimen/dp10">
 
         <CheckBox
             android:id="@+id/task_item_checkbox"
@@ -44,7 +43,6 @@
                     android:ellipsize="end"
                     android:maxLines="1"
                     android:paddingTop="@dimen/dp5"
-                    android:text="任务名称"
                     android:textColor="@color/alpha_font_color_black"
                     android:textSize="@dimen/alpha_font_size_title" />
 
@@ -63,7 +61,6 @@
                 android:layout_marginTop="5dp"
                 android:ellipsize="end"
                 android:maxLines="1"
-                android:text="所属项目"
                 android:textColor="@color/alpha_font_color_gray"
                 android:textSize="@dimen/alpha_font_size_mini_lowest" />
 
@@ -73,63 +70,78 @@
                 android:layout_marginTop="8dp"
                 android:background="@color/alpha_divider_color" />
 
-            <LinearLayout
+            <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp">
 
-                <TextView
-                    android:id="@+id/task_time_tv"
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <TextView
+                        android:id="@+id/task_time_tv"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:drawableLeft="@mipmap/task_time_icon"
+                        android:drawablePadding="5dp"
+                        android:ellipsize="end"
+                        android:gravity="center_vertical"
+                        android:maxLines="1"
+                        android:textColor="@color/alpha_font_color_gray"
+                        android:textSize="@dimen/alpha_font_size_mini" />
+
+                    <TextView
+                        android:id="@+id/task_check_list_tv"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="12dp"
+                        android:drawableLeft="@mipmap/task_son_list_icon"
+                        android:drawablePadding="5dp"
+                        android:ellipsize="end"
+                        android:gravity="center_vertical"
+                        android:maxLines="1"
+                        android:textColor="@color/alpha_font_color_gray"
+                        android:textSize="@dimen/alpha_font_size_mini" />
+
+                    <TextView
+                        android:id="@+id/task_file_num_tv"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="12dp"
+                        android:drawableLeft="@mipmap/task_attachment_icon"
+                        android:drawablePadding="5dp"
+                        android:ellipsize="end"
+                        android:gravity="center_vertical"
+                        android:maxLines="1"
+                        android:textColor="@color/alpha_font_color_gray"
+                        android:textSize="@dimen/alpha_font_size_mini" />
+
+                    <TextView
+                        android:id="@+id/task_comment_num_tv"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="12dp"
+                        android:drawableLeft="@mipmap/task_comment_icon"
+                        android:drawablePadding="5dp"
+                        android:ellipsize="end"
+                        android:gravity="center_vertical"
+                        android:maxLines="1"
+                        android:textColor="@color/alpha_font_color_gray"
+                        android:textSize="@dimen/alpha_font_size_mini" />
+
+
+                </LinearLayout>
+
+                <android.support.v7.widget.RecyclerView
+                    android:id="@+id/tasl_member_recyclerview"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:drawableLeft="@mipmap/icon_clock_16"
-                    android:drawablePadding="5dp"
-                    android:ellipsize="end"
-                    android:gravity="center_vertical"
-                    android:maxLines="1"
-                    android:text="11:30"
-                    android:textSize="@dimen/alpha_font_size_mini" />
+                    android:layout_alignParentRight="true"
+                    android:overScrollMode="never">
 
-                <TextView
-                    android:id="@+id/task_check_list_tv"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="10dp"
-                    android:drawableLeft="@mipmap/icon_task_18"
-                    android:drawablePadding="5dp"
-                    android:ellipsize="end"
-                    android:gravity="center_vertical"
-                    android:maxLines="1"
-                    android:text="1/5"
-                    android:textSize="@dimen/alpha_font_size_mini" />
-
-                <TextView
-                    android:id="@+id/task_file_num_tv"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="10dp"
-                    android:drawableLeft="@mipmap/icon_clock_16"
-                    android:drawablePadding="5dp"
-                    android:ellipsize="end"
-                    android:gravity="center_vertical"
-                    android:maxLines="1"
-                    android:text="5"
-                    android:textSize="@dimen/alpha_font_size_mini" />
-
-                <TextView
-                    android:id="@+id/task_comment_num_tv"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="10dp"
-                    android:drawableLeft="@mipmap/icon_clock_16"
-                    android:drawablePadding="5dp"
-                    android:ellipsize="end"
-                    android:gravity="center_vertical"
-                    android:maxLines="1"
-                    android:text="19"
-                    android:textSize="@dimen/alpha_font_size_mini" />
-
-            </LinearLayout>
+                </android.support.v7.widget.RecyclerView>
+            </RelativeLayout>
         </LinearLayout>
 
 

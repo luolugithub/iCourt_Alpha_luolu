@@ -36,10 +36,13 @@ public class ProjectEntity {
     public String name;
     public String status;
     public String matterType;
+    public String matterTypeName;
     public String statusName;
     public long sumTime;
     public long logTime;
     public String logDescription;
+    public String caseProcess;
+    public String caseProcessName;
     public int permission;
     public int unfinishTask;
     public int allTask;
@@ -49,26 +52,4 @@ public class ProjectEntity {
     public int myStar;
     public List<?> clients;
 
-
-    @Override
-    public String toString() {
-        return "ProjectEntity{" +
-                "pkId='" + pkId + '\'' +
-                ", name='" + name + '\'' +
-                ", status='" + status + '\'' +
-                ", matterType='" + matterType + '\'' +
-                ", statusName='" + statusName + '\'' +
-                ", sumTime=" + sumTime +
-                ", logTime=" + logTime +
-                ", logDescription='" + logDescription + '\'' +
-                ", permission=" + permission +
-                ", unfinishTask=" + unfinishTask +
-                ", allTask=" + allTask +
-                ", openDate=" + openDate +
-                ", closeDate=" + closeDate +
-                ", isJoin=" + isJoin +
-                ", myStar=" + myStar +
-                ", clients=" + clients +
-                '}';
-    }
 }

@@ -26,7 +26,6 @@ import com.icourt.alpha.fragment.ProjectTimeFragment;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
-import com.icourt.alpha.utils.logger.Logger;
 import com.icourt.alpha.widget.dialog.BottomActionDialog;
 
 import java.util.Arrays;
@@ -89,12 +88,15 @@ public class ProjectDetailActivity extends BaseActivity implements OnFragmentCal
         projectId = getIntent().getStringExtra("projectId");
         projectName = getIntent().getStringExtra("projectName");
         myStar = getIntent().getIntExtra("myStar", -1);
-        Logger.e("projectId : " + projectId);
         if (!TextUtils.isEmpty(projectName)) {
             setTitle(projectName);
         }
         titleAction.setImageResource(R.mipmap.header_icon_star_line);
         titleAction2.setImageResource(R.mipmap.header_icon_more);
+
+        //第一次打开默认概览：隐藏更多菜单入口
+        titleAction2.setVisibility(View.GONE);
+
         baseFragmentAdapter = new BaseFragmentAdapter(getSupportFragmentManager());
         detailViewpager.setAdapter(baseFragmentAdapter);
         detailTablayout.setupWithViewPager(detailViewpager);
@@ -108,6 +110,44 @@ public class ProjectDetailActivity extends BaseActivity implements OnFragmentCal
                         ProjectTimeFragment.newInstance(projectId),
                         ProjectFileBoxFragment.newInstance(projectId)
                 ));
+        detailTablayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+            @Override
+            public void onTabSelected(TabLayout.Tab tab) {
+                isShowTitleAction(tab.getPosition());
+            }
+
+            @Override
+            public void onTabUnselected(TabLayout.Tab tab) {
+
+            }
+
+            @Override
+            public void onTabReselected(TabLayout.Tab tab) {
+
+            }
+        });
+    }
+
+    /**
+     * 是否显示更多菜单入口
+     *
+     * @param position
+     */
+    private void isShowTitleAction(int position) {
+        switch (position) {
+            case 0:
+                titleAction2.setVisibility(View.GONE);
+                break;
+            case 1:
+                titleAction2.setVisibility(View.VISIBLE);
+                break;
+            case 2:
+                titleAction2.setVisibility(View.GONE);
+                break;
+            case 3:
+                titleAction2.setVisibility(View.VISIBLE);
+                break;
+        }
     }
 
     @OnClick({R.id.titleAction, R.id.titleAction2})

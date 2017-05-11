@@ -1,13 +1,11 @@
 package com.icourt.alpha.adapter;
 
 import android.support.annotation.NonNull;
-import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.baseadapter.BaseArrayRecyclerAdapter;
-import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.entity.bean.TimeEntity;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.view.recyclerviewDivider.ITimeDividerInterface;
@@ -22,7 +20,7 @@ import java.util.HashMap;
  * version 2.0.0
  */
 
-public class TimeAdapter extends BaseArrayRecyclerAdapter<TimeEntity.ItemEntity> implements BaseRecyclerAdapter.OnItemClickListener, BaseRecyclerAdapter.OnItemLongClickListener, ITimeDividerInterface {
+public class TimeAdapter extends BaseArrayRecyclerAdapter<TimeEntity.ItemEntity> implements ITimeDividerInterface {
 
     private static final int TIME_TOP_TYPE = 0;
     private static final int TIME_OTHER_TYPE = 1;
@@ -97,16 +95,6 @@ public class TimeAdapter extends BaseArrayRecyclerAdapter<TimeEntity.ItemEntity>
         if (!timeShowArray.containsValue(timeEntity.workDate)) {
             timeShowArray.put(position, timeEntity.workDate);
         }
-    }
-
-    @Override
-    public void onItemClick(BaseRecyclerAdapter adapter, ViewHolder holder, View view, int position) {
-        showTopSnackBar(view, "position : " + position);
-    }
-
-    @Override
-    public boolean onItemLongClick(BaseRecyclerAdapter adapter, ViewHolder holder, View view, int position) {
-        return false;
     }
 
     /**

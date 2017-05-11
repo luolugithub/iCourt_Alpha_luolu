@@ -117,6 +117,17 @@ public class DateUtils {
     }
 
     /**
+     * 获得当前时间的毫秒数
+     * <p>
+     * 详见{@link System#currentTimeMillis()}
+     *
+     * @return
+     */
+    public static long millis() {
+        return System.currentTimeMillis();
+    }
+
+    /**
      * 获取时长 00:11
      *
      * @param milliseconds
@@ -125,6 +136,17 @@ public class DateUtils {
     public static String getTimeDurationDate(long milliseconds) {
         SimpleDateFormat formatter = new SimpleDateFormat("HH:mm");
         formatter.setTimeZone(TimeZone.getTimeZone("GMT+00:00"));
+        return formatter.format(milliseconds);
+    }
+
+    /**
+     * 获取日期 yyyy年MM月dd日
+     *
+     * @param milliseconds
+     * @return
+     */
+    public static String getTimeDateFormatYear(long milliseconds) {
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy年MM月dd日");
         return formatter.format(milliseconds);
     }
 
@@ -138,4 +160,24 @@ public class DateUtils {
         SimpleDateFormat formatter = new SimpleDateFormat("MM月dd日");
         return formatter.format(milliseconds);
     }
+
+    /**
+     * 获得天数差
+     *
+     * @param begin
+     * @param end
+     * @return
+     */
+    public static long getDayDiff(Date begin, Date end) {
+        long day = 1;
+        if (end.getTime() < begin.getTime()) {
+            day = -1;
+        } else if (end.getTime() == begin.getTime()) {
+            day = 0;
+        } else {
+            day += (end.getTime() - begin.getTime()) / (24 * 60 * 60 * 1000);
+        }
+        return day;
+    }
+
 }

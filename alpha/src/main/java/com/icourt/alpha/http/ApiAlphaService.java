@@ -356,11 +356,11 @@ public interface ApiAlphaService {
      * @return
      */
     @GET("api/v2/taskflow/queryMatterTask")
-    Call<ResEntity<List<TaskEntity>>> projectQueryTaskList(@Query("matterId") String projectId,
-                                                           @Query("stateType") int stateType,
-                                                           @Query("type") int type,
-                                                           @Query("pageIndex") int pageIndex,
-                                                           @Query("pageSize") int pageSize);
+    Call<ResEntity<TaskEntity>> projectQueryTaskList(@Query("matterId") String projectId,
+                                                     @Query("stateType") int stateType,
+                                                     @Query("type") int type,
+                                                     @Query("pageIndex") int pageIndex,
+                                                     @Query("pageSize") int pageSize);
 
     /**
      * 项目下任务组列表
@@ -379,5 +379,14 @@ public interface ApiAlphaService {
      */
     @POST("api/v2/taskflow")
     Call<ResEntity<TaskGroupEntity>> taskGroupCreate(@Body RequestBody msg);
+
+    /**
+     * 修改任务
+     *
+     * @param msg
+     * @return
+     */
+    @PUT("api/v2/taskflow")
+    Call<ResEntity<JsonElement>> taskUpdate(@Body RequestBody msg);
 
 }

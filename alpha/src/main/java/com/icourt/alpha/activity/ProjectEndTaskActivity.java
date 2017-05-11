@@ -13,7 +13,7 @@ import android.widget.TextView;
 
 import com.andview.refreshview.XRefreshView;
 import com.icourt.alpha.R;
-import com.icourt.alpha.adapter.TaskAdapter;
+import com.icourt.alpha.adapter.TaskItemAdapter;
 import com.icourt.alpha.adapter.baseadapter.adapterObserver.RefreshViewEmptyObserver;
 import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.entity.bean.TaskEntity;
@@ -45,7 +45,7 @@ public class ProjectEndTaskActivity extends BaseActivity {
     @BindView(R.id.refreshLayout)
     RefreshLayout refreshLayout;
 
-    TaskAdapter taskAdapter;
+    TaskItemAdapter taskAdapter;
     String projectId;
     @BindView(R.id.titleBack)
     ImageView titleBack;
@@ -79,7 +79,7 @@ public class ProjectEndTaskActivity extends BaseActivity {
         refreshLayout.setMoveForHorizontal(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setHasFixedSize(true);
-        recyclerView.setAdapter(taskAdapter = new TaskAdapter());
+        recyclerView.setAdapter(taskAdapter = new TaskItemAdapter());
         taskAdapter.registerAdapterDataObserver(new RefreshViewEmptyObserver(refreshLayout, taskAdapter));
         refreshLayout.setXRefreshViewListener(new XRefreshView.SimpleXRefreshListener() {
             @Override
@@ -104,19 +104,19 @@ public class ProjectEndTaskActivity extends BaseActivity {
         if (isRefresh) {
             pageIndex = 1;
         }
-        getApi().projectQueryTaskList(projectId, 1, 0, pageIndex, ActionConstants.DEFAULT_PAGE_SIZE).enqueue(new SimpleCallBack<List<TaskEntity>>() {
+        getApi().projectQueryTaskList(projectId, 1, 0, pageIndex, ActionConstants.DEFAULT_PAGE_SIZE).enqueue(new SimpleCallBack<TaskEntity>() {
             @Override
-            public void onSuccess(Call<ResEntity<List<TaskEntity>>> call, Response<ResEntity<List<TaskEntity>>> response) {
+            public void onSuccess(Call<ResEntity<TaskEntity>> call, Response<ResEntity<TaskEntity>> response) {
                 stopRefresh();
                 if (response.body().result != null) {
-                    taskAdapter.bindData(isRefresh, response.body().result);
+                    taskAdapter.bindData(isRefresh, response.body().result.items);
                     pageIndex += 1;
-                    enableLoadMore(response.body().result);
+                    enableLoadMore(response.body().result.items);
                 }
             }
 
             @Override
-            public void onFailure(Call<ResEntity<List<TaskEntity>>> call, Throwable t) {
+            public void onFailure(Call<ResEntity<TaskEntity>> call, Throwable t) {
                 super.onFailure(call, t);
                 stopRefresh();
             }

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <include layout="@layout/layout_title_type_4" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="@dimen/dp15">
+
+        <CheckBox
+            android:id="@+id/task_item_checkbox"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:button="@null"
+            android:drawableLeft="@drawable/sl_checkbox"
+            android:padding="@dimen/dp5"
+            android:src="@mipmap/tab_explorer" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="@dimen/dp10"
+            android:layout_marginTop="3dp"
+            android:layout_weight="1"
+            android:text="移动端聊天界面左上角返回处，加入外面列表中未读消息总数的提醒"
+            android:textColor="@color/alpha_font_color_black"
+            android:textSize="22sp" />
+    </LinearLayout>
+
+
+
+</LinearLayout>

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:background="@color/white"
+    android:orientation="vertical">
+
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+
+        <ImageView
+            android:id="@+id/photo_group_one_view"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:padding="@dimen/dp2"
+            android:src="@mipmap/avatar_default_24" />
+
+        <ImageView
+            android:id="@+id/photo_group_two_view"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:layout_marginLeft="18dp"
+            android:padding="@dimen/dp2"
+            android:src="@mipmap/avatar_default_24" />
+
+        <RelativeLayout
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:layout_marginLeft="36dp"
+            android:padding="@dimen/dp2">
+
+            <ImageView
+                android:id="@+id/photo_group_three_view"
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:src="@mipmap/avatar_default_24" />
+
+            <TextView
+                android:id="@+id/photo_group_three_count_view"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:textColor="@color/search_cutline_color"
+                android:textSize="8dp" />
+        </RelativeLayout>
+    </RelativeLayout>
+
+</LinearLayout>

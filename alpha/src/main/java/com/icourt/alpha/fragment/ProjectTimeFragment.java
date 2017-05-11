@@ -12,7 +12,9 @@ import android.view.ViewGroup;
 
 import com.andview.refreshview.XRefreshView;
 import com.icourt.alpha.R;
+import com.icourt.alpha.activity.TimerDetailActivity;
 import com.icourt.alpha.adapter.TimeAdapter;
+import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.adapterObserver.RefreshViewEmptyObserver;
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.entity.bean.TimeEntity;
@@ -38,7 +40,7 @@ import retrofit2.Response;
  * version 2.0.0
  */
 
-public class ProjectTimeFragment extends BaseFragment {
+public class ProjectTimeFragment extends BaseFragment implements BaseRecyclerAdapter.OnItemClickListener {
 
     private static final String KEY_PROJECT_ID = "key_project_id";
     Unbinder unbinder;
@@ -78,7 +80,7 @@ public class ProjectTimeFragment extends BaseFragment {
         recyclerView.setAdapter(timeAdapter = new TimeAdapter());
         recyclerView.addItemDecoration(new TimerItemDecoration(getActivity(), timeAdapter));
         recyclerView.setHasFixedSize(true);
-
+        timeAdapter.setOnItemClickListener(this);
         timeAdapter.registerAdapterDataObserver(new RefreshViewEmptyObserver(refreshLayout, timeAdapter));
 
         refreshLayout.setXRefreshViewListener(new XRefreshView.SimpleXRefreshListener() {
@@ -145,5 +147,13 @@ public class ProjectTimeFragment extends BaseFragment {
     public void onDestroyView() {
         super.onDestroyView();
         unbinder.unbind();
+    }
+
+    @Override
+    public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
+        if (holder.getItemViewType() == 1) {
+            TimeEntity.ItemEntity itemEntity = (TimeEntity.ItemEntity) adapter.getItem(position);
+            TimerDetailActivity.launch(view.getContext(), itemEntity);
+        }
     }
 }
