@@ -6,6 +6,13 @@
 
     <include layout="@layout/layout_title_type_1" />
 
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/recyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+    </android.support.v7.widget.RecyclerView>
+
     <Button
         android:id="@+id/bt_demo"
         android:layout_width="wrap_content"

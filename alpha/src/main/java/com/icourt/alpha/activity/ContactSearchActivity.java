@@ -32,6 +32,7 @@ import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.view.SoftKeyboardSizeWatchLayout;
+import com.icourt.alpha.widget.filter.ListFilter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -171,16 +172,7 @@ public class ContactSearchActivity extends BaseActivity implements BaseRecyclerA
      * @param contactBeen
      */
     private List<GroupContactBean> fiterRobots(List<GroupContactBean> contactBeen) {
-        if (contactBeen != null) {
-            for (int i = contactBeen.size() - 1; i >= 0; i--) {
-                GroupContactBean groupContactBean = contactBeen.get(i);
-                if (contactBeen == null) continue;
-                if (groupContactBean.robot == 1) {
-                    contactBeen.remove(i);
-                }
-            }
-        }
-        return contactBeen;
+        return new ListFilter<GroupContactBean>().filter(contactBeen, GroupContactBean.TYPE_ROBOT);
     }
 
     @OnClick({R.id.tv_search_cancel})

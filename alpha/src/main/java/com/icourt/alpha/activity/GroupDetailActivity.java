@@ -199,7 +199,7 @@ public class GroupDetailActivity extends BaseActivity implements BaseRecyclerAda
                             setViewVisible(groupSessionActionLl, joined);
                             //邀请按钮展示
                             setViewVisible(groupMemberInviteTv, joined && !response.body().result.is_private);
-
+                            setViewVisible(groupDataLl, joined);
                             if (isAdmin) {
                                 setViewVisible(groupJoinOrQuitBtn, false);
                             }

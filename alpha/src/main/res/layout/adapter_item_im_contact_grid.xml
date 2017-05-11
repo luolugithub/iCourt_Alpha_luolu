@@ -22,8 +22,8 @@
         android:maxEms="4"
         android:maxLines="1"
         android:text="name"
-        android:visibility="gone"
         android:textColor="@color/alpha_font_color_black"
-        android:textSize="@dimen/alpha_font_size_mini_medium" />
+        android:textSize="@dimen/alpha_font_size_mini_medium"
+        android:visibility="gone" />
 
 </LinearLayout>

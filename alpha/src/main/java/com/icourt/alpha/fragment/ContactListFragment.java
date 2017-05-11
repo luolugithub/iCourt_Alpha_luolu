@@ -36,6 +36,7 @@ import com.icourt.alpha.utils.IndexUtils;
 import com.icourt.alpha.utils.PinyinComparator;
 import com.icourt.alpha.view.recyclerviewDivider.SuspensionDecoration;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
+import com.icourt.alpha.widget.filter.ListFilter;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -226,24 +227,13 @@ public class ContactListFragment extends BaseFragment implements BaseRecyclerAda
     }
 
     /**
-     * 过滤掉 机器人（robot == 1）
+     * 过滤掉 机器人（robot == 100）
      *
      * @param data
      * @return
      */
     private List<GroupContactBean> filterRobot(List<GroupContactBean> data) {
-        if (data != null) {
-            //过滤
-            for (int i = data.size() - 1; i >= 0; i--) {
-                GroupContactBean groupContactBean = data.get(i);
-                if (groupContactBean != null) {
-                    if (groupContactBean.robot == 1) {
-                        data.remove(i);
-                    }
-                }
-            }
-        }
-        return data;
+        return new ListFilter<GroupContactBean>().filter(data, GroupContactBean.TYPE_ROBOT);
     }
 
     /**

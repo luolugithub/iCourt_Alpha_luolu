@@ -8,6 +8,7 @@ import com.icourt.alpha.db.convertor.IConvertModel;
 import com.icourt.alpha.db.dbmodel.ContactDbModel;
 import com.icourt.alpha.view.recyclerviewDivider.ISuspensionAction;
 import com.icourt.alpha.view.recyclerviewDivider.ISuspensionInterface;
+import com.icourt.alpha.widget.filter.IFilterEntity;
 
 import java.io.Serializable;
 
@@ -19,7 +20,13 @@ import java.io.Serializable;
  * version 1.0.0
  */
 public class GroupContactBean
-        implements IConvertModel<ContactDbModel>, Serializable, ISuspensionInterface, ISuspensionAction {
+        implements IConvertModel<ContactDbModel>,
+        Serializable,
+        ISuspensionInterface,
+        ISuspensionAction,
+        IFilterEntity {
+
+    public static final int TYPE_ROBOT = 100;
 
     public String suspensionTag;
 
@@ -31,12 +38,12 @@ public class GroupContactBean
     public String phone;
     public String email;
     public String pic;
-    public int robot;
+    public int type;
 
     public GroupContactBean() {
     }
 
-    public GroupContactBean(String accid, String userId, String name, String title, String phone, String email, String pic, int robot) {
+    public GroupContactBean(String accid, String userId, String name, String title, String phone, String email, String pic, int type) {
         this.accid = accid;
         this.userId = userId;
         this.name = name;
@@ -44,7 +51,7 @@ public class GroupContactBean
         this.phone = phone;
         this.email = email;
         this.pic = pic;
-        this.robot = robot;
+        this.type = type;
     }
 
     @Override
@@ -54,10 +61,11 @@ public class GroupContactBean
                 ", accid='" + accid + '\'' +
                 ", userId='" + userId + '\'' +
                 ", name='" + name + '\'' +
+                ", title='" + title + '\'' +
                 ", phone='" + phone + '\'' +
                 ", email='" + email + '\'' +
                 ", pic='" + pic + '\'' +
-                ", robot=" + robot +
+                ", type=" + type +
                 '}';
     }
 
@@ -71,7 +79,7 @@ public class GroupContactBean
                 phone,
                 email,
                 pic,
-                robot);
+                type);
     }
 
     @Override
@@ -104,5 +112,11 @@ public class GroupContactBean
             return false;
         final GroupContactBean other = (GroupContactBean) o;
         return TextUtils.equals(this.accid, other.accid);
+    }
+
+
+    @Override
+    public boolean isFilter(int type) {
+        return this.type == type;
     }
 }

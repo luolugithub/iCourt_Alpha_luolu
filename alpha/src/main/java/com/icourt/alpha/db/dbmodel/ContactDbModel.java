@@ -28,7 +28,7 @@ public class ContactDbModel extends RealmObject
     public String phone;
     public String email;
     public String pic;
-    public int robot;
+    public int type;
 
     public int extInt1;
     public int extInt2;
@@ -43,7 +43,7 @@ public class ContactDbModel extends RealmObject
     public boolean extBoolean1;
     public boolean extBoolean2;
 
-    public ContactDbModel(String accid, String userId, String userName, String name, String title, String phone, String email, String pic, int robot) {
+    public ContactDbModel(String accid, String userId, String userName, String name, String title, String phone, String email, String pic, int type) {
         this.accid = accid;
         this.userId = userId;
         this.userName = userName;
@@ -52,7 +52,7 @@ public class ContactDbModel extends RealmObject
         this.phone = phone;
         this.email = email;
         this.pic = pic;
-        this.robot = robot;
+        this.type = type;
     }
 
     public ContactDbModel() {
@@ -67,7 +67,7 @@ public class ContactDbModel extends RealmObject
                 phone,
                 email,
                 pic,
-                robot);
+                type);
     }
 
     @Override
@@ -77,10 +77,11 @@ public class ContactDbModel extends RealmObject
                 ", userId='" + userId + '\'' +
                 ", userName='" + userName + '\'' +
                 ", name='" + name + '\'' +
+                ", title='" + title + '\'' +
                 ", phone='" + phone + '\'' +
                 ", email='" + email + '\'' +
                 ", pic='" + pic + '\'' +
-                ", robot=" + robot +
+                ", type=" + type +
                 ", extInt1=" + extInt1 +
                 ", extInt2=" + extInt2 +
                 ", extInt3=" + extInt3 +

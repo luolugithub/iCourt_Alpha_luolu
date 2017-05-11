@@ -40,6 +40,7 @@ import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.view.SoftKeyboardSizeWatchLayout;
 import com.icourt.alpha.view.recyclerviewDivider.SuspensionDecoration;
+import com.icourt.alpha.widget.filter.ListFilter;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -236,24 +237,13 @@ public class GroupMemberListActivity extends BaseActivity implements BaseRecycle
 
 
     /**
-     * 过滤掉 机器人（robot == 1）
+     * 过滤掉 机器人（robot == 100）
      *
      * @param data
      * @return
      */
     private List<GroupContactBean> filterRobot(List<GroupContactBean> data) {
-        if (data != null) {
-            //过滤
-            for (int i = data.size() - 1; i >= 0; i--) {
-                GroupContactBean groupContactBean = data.get(i);
-                if (groupContactBean != null) {
-                    if (groupContactBean.robot == 1) {
-                        data.remove(i);
-                    }
-                }
-            }
-        }
-        return data;
+        return new ListFilter<GroupContactBean>().filter(data, GroupContactBean.TYPE_ROBOT);
     }
 
     @Override

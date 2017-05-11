@@ -5,7 +5,12 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.annotation.NonNull;
+import android.support.design.widget.AppBarLayout;
+import android.support.v7.widget.RecyclerView;
 import android.view.View;
+import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
@@ -24,6 +29,8 @@ import com.umeng.socialize.bean.SHARE_MEDIA;
 import java.io.File;
 import java.util.concurrent.TimeUnit;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
 import io.reactivex.Observable;
 import io.reactivex.functions.Action;
 import io.reactivex.functions.Consumer;
@@ -37,6 +44,31 @@ import io.reactivex.functions.Consumer;
  */
 public class TestActivity extends BaseAppUpdateActivity {
 
+    @BindView(R.id.titleBack)
+    ImageView titleBack;
+    @BindView(R.id.titleContent)
+    TextView titleContent;
+    @BindView(R.id.titleAction)
+    ImageView titleAction;
+    @BindView(R.id.titleView)
+    AppBarLayout titleView;
+    @BindView(R.id.recyclerView)
+    RecyclerView recyclerView;
+    @BindView(R.id.bt_demo)
+    Button btDemo;
+    @BindView(R.id.bt_fragment)
+    Button btFragment;
+    @BindView(R.id.bt_json)
+    Button btJson;
+    @BindView(R.id.bt_db)
+    Button btDb;
+    @BindView(R.id.bt_login)
+    Button btLogin;
+    @BindView(R.id.bt_bugs)
+    Button btBugs;
+    @BindView(R.id.bt_about)
+    Button btAbout;
+
     public static void launch(@NonNull Context context) {
         if (context == null) return;
         Intent intent = new Intent(context, TestActivity.class);
@@ -47,6 +79,7 @@ public class TestActivity extends BaseAppUpdateActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_test);
+        ButterKnife.bind(this);
         initView();
         getData(true);
         testRxLife();
