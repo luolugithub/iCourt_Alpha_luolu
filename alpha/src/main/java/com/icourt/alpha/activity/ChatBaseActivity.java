@@ -26,6 +26,7 @@ import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.icourt.alpha.entity.bean.IMMessageCustomBody;
 import com.icourt.alpha.entity.bean.MsgConvert2Task;
+import com.icourt.alpha.entity.event.GroupActionEvent;
 import com.icourt.alpha.fragment.dialogfragment.ContactShareDialogFragment;
 import com.icourt.alpha.http.RetrofitServiceFactory;
 import com.icourt.alpha.http.callback.SimpleCallBack;
@@ -194,6 +195,15 @@ public abstract class ChatBaseActivity extends BaseActivity implements INIMessag
         if (customBody == null) return;
         onMessageReceived(customBody);
         handleGlobalDingMsgStatu(customBody);
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onGroupEvent(GroupActionEvent event) {
+        if (event == null) return;
+        //已经退出群组 关闭当前聊天窗口
+        if (StringUtils.equalsIgnoreCase(event.tid, getIMChatId(), false)) {
+            finish();
+        }
     }
 
     /**

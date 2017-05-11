@@ -882,7 +882,7 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
                                 getContext(),
                                 getIMChatId(),
                                 false,
-                                false
+                                true
                         );
                     case CHAT_TYPE_TEAM:
                         GroupDetailActivity.launchTEAM(getContext(),

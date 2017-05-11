@@ -134,7 +134,10 @@ public class ContactDetailActivity extends BaseActivity {
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.contact_send_msg_tv:
-                showTopSnackBar("un finish");
+                if (groupContactBean == null) return;
+                ChatActivity.launchP2P(getContext()
+                        , groupContactBean.accid
+                        , groupContactBean.name);
                 break;
             case R.id.contact_phone_ll:
                 if (!TextUtils.isEmpty(contactPhoneTv.getText())) {
