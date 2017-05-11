@@ -6,9 +6,9 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.design.widget.AppBarLayout;
-import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Chronometer;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -16,10 +16,12 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
 import com.icourt.alpha.R;
 import com.icourt.alpha.base.BaseAppUpdateActivity;
+import com.icourt.alpha.entity.bean.TimeEntity;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.JsonUtils;
 import com.icourt.alpha.utils.LogUtils;
 import com.icourt.alpha.utils.Md5Utils;
+import com.icourt.alpha.widget.manager.TimerManager;
 import com.liulishuo.filedownloader.BaseDownloadTask;
 import com.liulishuo.filedownloader.FileDownloadLargeFileListener;
 import com.liulishuo.filedownloader.FileDownloader;
@@ -52,8 +54,6 @@ public class TestActivity extends BaseAppUpdateActivity {
     ImageView titleAction;
     @BindView(R.id.titleView)
     AppBarLayout titleView;
-    @BindView(R.id.recyclerView)
-    RecyclerView recyclerView;
     @BindView(R.id.bt_demo)
     Button btDemo;
     @BindView(R.id.bt_fragment)
@@ -68,6 +68,12 @@ public class TestActivity extends BaseAppUpdateActivity {
     Button btBugs;
     @BindView(R.id.bt_about)
     Button btAbout;
+    @BindView(R.id.bt_timer)
+    Button btTimer;
+    @BindView(R.id.bt_stop_timer)
+    Button btStopTimer;
+    @BindView(R.id.chronometer)
+    Chronometer chronometer;
 
     public static void launch(@NonNull Context context) {
         if (context == null) return;
@@ -113,6 +119,9 @@ public class TestActivity extends BaseAppUpdateActivity {
         registerClick(R.id.bt_about);
         registerClick(R.id.bt_json);
         registerClick(R.id.bt_fragment);
+
+        registerClick(R.id.bt_timer);
+        registerClick(R.id.bt_stop_timer);
     }
 
     public static final String URL_DOC = "https://test.alphalawyer.cn/ilaw/api/v1/documents/download?filePath=%2FiCourt%2Fzhaolu%EF%BC%8D%E4%B8%93%E7%94%A8one&fileName=%25E6%25B5%258B%25E8%25AF%2595%25E6%25B5%258B%25E8%25AF%2595%25E6%25B5%258B%25E8%25AF%2595%25E6%25B5%258B%25E8%25AF%2595-54.docx";
@@ -124,11 +133,24 @@ public class TestActivity extends BaseAppUpdateActivity {
         super.getData(isRefresh);
         checkAppUpdate(getContext());
 
+        TimeEntity.ItemEntity timer = TimerManager.getInstance().getTimer();
+        if (timer != null) {
+            chronometer.setBase(timer.startTime);
+            chronometer.start();
+        }
     }
 
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
+            case R.id.bt_timer:
+                chronometer.start();
+                TimerManager.getInstance().addTimer(new TimeEntity.ItemEntity());
+                break;
+            case R.id.bt_stop_timer:
+                chronometer.stop();
+                TimerManager.getInstance().stopTimer();
+                break;
             case R.id.bt_demo:
                 testDownload();
                 //shareDemo();
@@ -162,6 +184,17 @@ public class TestActivity extends BaseAppUpdateActivity {
                 super.onClick(v);
                 break;
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        TimeEntity.ItemEntity timer = TimerManager.getInstance().getTimer();
+        if (timer != null) {
+            timer.startTime = chronometer.getBase();
+            TimerManager.getInstance().updateTimer(timer);
+        }
+
     }
 
     private void testDownload() {

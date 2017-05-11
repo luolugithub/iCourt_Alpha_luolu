@@ -389,4 +389,21 @@ public interface ApiAlphaService {
     @PUT("api/v2/taskflow")
     Call<ResEntity<JsonElement>> taskUpdate(@Body RequestBody msg);
 
+    /**
+     * 更新计时
+     *
+     * @return
+     */
+    @PUT("api/v2/timing/timing/update")
+    Call<ResEntity<JsonElement>> timingUpdate(@Body RequestBody body);
+
+    /**
+     * 新建计时
+     *
+     * @param body
+     * @return
+     */
+    @PUT("api/v2/timing/timing/add")
+    Call<ResEntity<JsonElement>> timingAdd(@Body RequestBody body);
+
 }

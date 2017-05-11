@@ -248,8 +248,8 @@ public class CircleTimerView extends View {
         //画滚动的外圈
         float x = 0;
         float y = 0;
-        float ovalLineWidth=4 * mCircleStrokeWidth;
-        RectF oval = new RectF(x+ovalLineWidth, y+ovalLineWidth,
+        float ovalLineWidth = 4 * mCircleStrokeWidth;
+        RectF oval = new RectF(x + ovalLineWidth, y + ovalLineWidth,
                 getWidth() - ovalLineWidth, getHeight() - ovalLineWidth);
         canvas.drawArc(oval, -90, (float) Math.toDegrees(mCurrentRadian), false, mCircleOutlinePaint);
         canvas.save();
@@ -394,7 +394,7 @@ public class CircleTimerView extends View {
         return false;
     }
 
-    // Use tri to cal radian
+    // 计算角度
     private float getRadian(float x, float y) {
         float alpha = (float) Math.atan((x - mCx) / (mCy - y));
         // Quadrant

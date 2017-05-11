@@ -14,10 +14,10 @@ import android.util.SparseArray;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.Chronometer;
 import android.widget.FrameLayout;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
-import android.widget.TextView;
 
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
@@ -28,6 +28,7 @@ import com.icourt.alpha.db.dbservice.ContactDbService;
 import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.icourt.alpha.entity.bean.ItemsEntityImp;
+import com.icourt.alpha.entity.bean.TimeEntity;
 import com.icourt.alpha.fragment.TabFindFragment;
 import com.icourt.alpha.fragment.TabMineFragment;
 import com.icourt.alpha.fragment.TabNewsFragment;
@@ -41,6 +42,7 @@ import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.interfaces.OnTabDoubleClickListener;
 import com.icourt.alpha.utils.DensityUtil;
 import com.icourt.alpha.utils.SimpleViewGestureListener;
+import com.icourt.alpha.widget.manager.TimerManager;
 import com.icourt.alpha.widget.popupwindow.BaseListActionItemPop;
 import com.icourt.alpha.widget.popupwindow.ListActionItemPop;
 import com.netease.nimlib.sdk.NIMClient;
@@ -77,7 +79,7 @@ public class MainActivity extends BaseActivity
     @BindView(R.id.tab_task)
     RadioButton tabTask;
     @BindView(R.id.tab_voice)
-    TextView tabVoice;
+    Chronometer tabVoice;
     @BindView(R.id.tab_find)
     RadioButton tabFind;
     @BindView(R.id.tab_mine)
@@ -155,6 +157,8 @@ public class MainActivity extends BaseActivity
         new SimpleViewGestureListener(tabNews, onSimpleViewGestureListener);
         initTabFind();
         currentFragment = addOrShowFragment(getTabFragment(rgMainTab.getCheckedRadioButtonId()), currentFragment, R.id.main_fl_content);
+        resumeTimer();
+
     }
 
     /**
@@ -238,12 +242,27 @@ public class MainActivity extends BaseActivity
         currentFragment = addOrShowFragment(getTabFragment(checkedId), currentFragment, R.id.main_fl_content);
     }
 
+
+    private void resumeTimer() {
+        TimeEntity.ItemEntity timer = TimerManager.getInstance().getTimer();
+        if (timer != null) {
+            tabVoice.setBase(timer.startTime);
+            tabVoice.start();
+        } else {
+            //测试
+            tabVoice.start();
+            TimerManager.getInstance().addTimer(new TimeEntity.ItemEntity());
+        }
+
+    }
+
     @OnClick({R.id.tab_voice})
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.tab_voice:
-                showTestFragment();
+                tabVoice.start();
+                TimerManager.getInstance().addTimer(new TimeEntity.ItemEntity());
                 break;
             default:
                 super.onClick(v);
@@ -414,6 +433,13 @@ public class MainActivity extends BaseActivity
         }
         if (contactDbService != null) {
             contactDbService.releaseService();
+        }
+
+        TimeEntity.ItemEntity timer = TimerManager.getInstance().getTimer();
+        if (timer != null) {
+            timer.startTime = tabVoice.getBase();
+            tabVoice.stop();
+            TimerManager.getInstance().updateTimer(timer);
         }
     }
 }

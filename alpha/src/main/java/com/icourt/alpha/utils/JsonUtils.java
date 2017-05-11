@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;
 import com.google.gson.reflect.TypeToken;
@@ -46,6 +47,14 @@ public class JsonUtils {
 
     public static Gson getGson() {
         return gson;
+    }
+
+
+    public static final JsonObject object2JsonObject(Object object) throws JsonParseException {
+        if (gson != null) {
+            return (JsonObject) gson.toJsonTree(object);
+        }
+        return null;
     }
 
     /**
@@ -138,7 +147,6 @@ public class JsonUtils {
         }
         return map;
     }
-
 
 
     /**
@@ -243,6 +251,7 @@ public class JsonUtils {
         }
         return isNull(value);
     }
+
     public static String isNull(String value) {
         if (value == null || value.length() <= 0 || "null".equals(value)) {
             return "";

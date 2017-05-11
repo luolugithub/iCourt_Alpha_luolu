@@ -24,13 +24,14 @@
         android:text="任务" />
 
 
-    <TextView
+    <Chronometer
         android:id="@+id/tab_voice"
         style="@style/mainPageRadioButtonStyple"
+        android:layout_weight="1"
         android:background="?attr/selectableItemBackground"
         android:drawableTop="@drawable/tab_find"
         android:gravity="center"
-        android:text="计时" />
+        android:text="开始计时" />
 
     <RadioButton
         android:id="@+id/tab_find"
