@@ -2,6 +2,7 @@ package com.icourt.alpha.entity.bean;
 
 import com.icourt.alpha.constants.Const;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -11,7 +12,7 @@ import java.util.List;
  * date createTime：2017/4/28
  * version 1.0.0
  */
-public final class IMMessageExtBody {
+public final class IMMessageExtBody implements Serializable {
     //【模型 请勿轻易修改】
 
     //文件消息 file

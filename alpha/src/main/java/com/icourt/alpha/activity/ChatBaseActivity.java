@@ -2,6 +2,7 @@ package com.icourt.alpha.activity;
 
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.CheckResult;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -107,6 +108,7 @@ public abstract class ChatBaseActivity extends BaseActivity implements INIMessag
     protected final Set<String> msgCollectedIdsList = new HashSet<>();
     //钉的消息列表
     protected final Set<String> msgDingedIdsList = new HashSet<>();
+    protected Handler mHandler = new Handler();
     /**
      * 收到已读回执
      */
@@ -778,7 +780,12 @@ public abstract class ChatBaseActivity extends BaseActivity implements INIMessag
                     .enqueue(new okhttp3.Callback() {
                         @Override
                         public void onFailure(okhttp3.Call call, IOException e) {
-                            sendIMLinkMsgInner(url, null, null, null);
+                            mHandler.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    sendIMLinkMsgInner(url, null, null, null);
+                                }
+                            });
                         }
 
                         @Override
@@ -792,17 +799,27 @@ public abstract class ChatBaseActivity extends BaseActivity implements INIMessag
                                         htmlTitle = htmlTitle.replaceAll("</title>", "");
                                     }
                                 }
-                                String htmlDescription = getHtmlDescription(value);
-                                String htmlImage = UrlUtils.getHtmlFirstImage(value);
-
-                                sendIMLinkMsgInner(url, htmlTitle, htmlDescription, htmlImage);
+                                final String htmlDescription = getHtmlDescription(value);
+                                final String htmlImage = UrlUtils.getHtmlFirstImage(value);
+                                final String finalHtmlTitle = htmlTitle;
+                                mHandler.post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        sendIMLinkMsgInner(url, finalHtmlTitle, htmlDescription, htmlImage);
+                                    }
+                                });
                             }
                         }
                     });
         } catch (Exception e) {
             //view-source:错误
             e.printStackTrace();
-            sendIMLinkMsgInner(url, null, null, null);
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    sendIMLinkMsgInner(url, null, null, null);
+                }
+            });
         }
     }
 

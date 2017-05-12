@@ -9,6 +9,7 @@ import android.widget.TextView;
 import com.bumptech.glide.Glide;
 import com.icourt.alpha.BuildConfig;
 import com.icourt.alpha.R;
+import com.icourt.alpha.activity.FileDetailsActivity;
 import com.icourt.alpha.adapter.baseadapter.BaseArrayRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.constants.Const;
@@ -328,7 +329,7 @@ public class ImUserMessageAdapter extends BaseArrayRecyclerAdapter<IMMessageCust
 
     @Override
     public void onItemClick(BaseRecyclerAdapter adapter, ViewHolder holder, View view, int position) {
-       /* IMStringWrapEntity item = getItem(getRealPos(position));
-        FileDetailsActivity.launch(view.getContext(), item);*/
+        IMMessageCustomBody item = getItem(getRealPos(position));
+        FileDetailsActivity.launch(view.getContext(), item);
     }
 }

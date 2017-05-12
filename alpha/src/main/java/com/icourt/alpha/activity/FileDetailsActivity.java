@@ -16,13 +16,27 @@ import android.widget.TextView;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.ImUserMessageDetailAdapter;
 import com.icourt.alpha.base.BaseActivity;
-import com.icourt.alpha.entity.bean.IMStringWrapEntity;
+import com.icourt.alpha.db.convertor.IConvertModel;
+import com.icourt.alpha.db.convertor.ListConvertor;
+import com.icourt.alpha.db.dbmodel.ContactDbModel;
+import com.icourt.alpha.db.dbservice.ContactDbService;
+import com.icourt.alpha.entity.bean.GroupContactBean;
+import com.icourt.alpha.entity.bean.IMMessageCustomBody;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import io.reactivex.Observable;
+import io.reactivex.ObservableEmitter;
+import io.reactivex.ObservableOnSubscribe;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.functions.Consumer;
+import io.reactivex.schedulers.Schedulers;
+import io.realm.RealmResults;
 
 /**
  * Description
@@ -34,7 +48,7 @@ import butterknife.ButterKnife;
 public class FileDetailsActivity extends BaseActivity {
 
     private static final String KEY_FILE_INFO = "key_file_info";
-    IMStringWrapEntity item;
+    IMMessageCustomBody item;
     @BindView(R.id.titleBack)
     ImageView titleBack;
     @BindView(R.id.titleContent)
@@ -47,8 +61,59 @@ public class FileDetailsActivity extends BaseActivity {
     RecyclerView recyclerView;
     ImUserMessageDetailAdapter imUserMessageDetailAdapter;
 
+    //本地同步的联系人
+    protected final List<GroupContactBean> localContactList = new ArrayList<>();
 
-    public static void launch(@NonNull Context context, IMStringWrapEntity imFileEntity) {
+    /**
+     * 获取本地联系人
+     */
+    private void getLocalContacts() {
+        queryAllContactFromDbAsync(new Consumer<List<GroupContactBean>>() {
+            @Override
+            public void accept(List<GroupContactBean> groupContactBeen) throws Exception {
+                if (groupContactBeen != null && !groupContactBeen.isEmpty()) {
+                    localContactList.clear();
+                    localContactList.addAll(groupContactBeen);
+                    imUserMessageDetailAdapter.notifyDataSetChanged();
+                }
+            }
+        });
+    }
+
+    /**
+     * 异步查询本地联系人
+     */
+    protected final void queryAllContactFromDbAsync(@NonNull Consumer<List<GroupContactBean>> consumer) {
+        if (consumer == null) return;
+        Observable.create(new ObservableOnSubscribe<List<GroupContactBean>>() {
+            @Override
+            public void subscribe(ObservableEmitter<List<GroupContactBean>> e) throws Exception {
+                ContactDbService threadContactDbService = null;
+                try {
+                    if (!e.isDisposed()) {
+                        threadContactDbService = new ContactDbService(getLoginUserId());
+                        RealmResults<ContactDbModel> contactDbModels = threadContactDbService.queryAll();
+                        if (contactDbModels != null) {
+                            List<GroupContactBean> contactBeen = ListConvertor.convertList(new ArrayList<IConvertModel<GroupContactBean>>(contactDbModels));
+                            e.onNext(contactBeen);
+                        }
+                        e.onComplete();
+                    }
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                } finally {
+                    if (threadContactDbService != null) {
+                        threadContactDbService.releaseService();
+                    }
+                }
+            }
+        }).compose(this.<List<GroupContactBean>>bindToLifecycle())
+                .subscribeOn(Schedulers.newThread())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(consumer);
+    }
+
+    public static void launch(@NonNull Context context, IMMessageCustomBody imFileEntity) {
         if (context == null) return;
         if (imFileEntity == null) return;
         Intent intent = new Intent(context, FileDetailsActivity.class);
@@ -62,6 +127,7 @@ public class FileDetailsActivity extends BaseActivity {
         setContentView(R.layout.activity_file_details);
         ButterKnife.bind(this);
         initView();
+        getData(true);
     }
 
     @Override
@@ -73,15 +139,20 @@ public class FileDetailsActivity extends BaseActivity {
             titleActionTextView.setText("跳转");
         }
         Serializable serializableExtra = getIntent().getSerializableExtra(KEY_FILE_INFO);
-        if (serializableExtra instanceof IMStringWrapEntity) {
-            item = (IMStringWrapEntity) serializableExtra;
+        if (serializableExtra instanceof IMMessageCustomBody) {
+            item = (IMMessageCustomBody) serializableExtra;
             recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
             recyclerView.setHasFixedSize(true);
-            recyclerView.setAdapter(imUserMessageDetailAdapter = new ImUserMessageDetailAdapter(getUserToken()));
+            recyclerView.setAdapter(imUserMessageDetailAdapter = new ImUserMessageDetailAdapter(localContactList));
             imUserMessageDetailAdapter.bindData(true, Arrays.asList(item));
         }
     }
 
+    @Override
+    protected void getData(boolean isRefresh) {
+        super.getData(isRefresh);
+        getLocalContacts();
+    }
 
     @Override
     public void onClick(View v) {

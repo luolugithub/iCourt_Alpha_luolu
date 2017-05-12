@@ -4,6 +4,7 @@ import com.icourt.alpha.constants.Const;
 import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.widget.comparators.ILongFieldEntity;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.UUID;
 
@@ -14,7 +15,7 @@ import java.util.UUID;
  * date createTime：2017/4/28
  * version 1.0.0
  */
-public class IMMessageCustomBody implements ILongFieldEntity {
+public class IMMessageCustomBody implements ILongFieldEntity, Serializable {
     public static final String PLATFORM_ANDROID = "ANDROID";
 
     @Const.MSG_STATU

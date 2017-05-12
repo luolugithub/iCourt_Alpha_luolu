@@ -8,7 +8,6 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
-import com.icourt.alpha.BuildConfig;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.baseadapter.BaseArrayRecyclerAdapter;
 import com.icourt.alpha.constants.Const;
@@ -405,6 +404,7 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMMessageCustomBody> i
             chat_link_url_tv.setText("link ext null");
             chat_link_desc_tv.setText("link ext null");
         }
+        holder.bindChildClick(R.id.chat_link_ll);
     }
 
 
@@ -666,6 +666,7 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMMessageCustomBody> i
 
         chat_link_url_tv.setText(imMessageCustomBody.ext.url);
         chat_link_desc_tv.setText(imMessageCustomBody.ext.desc);
+        holder.bindChildClick(R.id.chat_link_ll);
     }
 
     /**
@@ -779,24 +780,6 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMMessageCustomBody> i
      */
     private void setTypeRightDingLink(ViewHolder holder, IMMessageCustomBody imMessageCustomBody, int position) {
         setTypeLeftDingLink(holder, imMessageCustomBody, position);
-    }
-
-    /**
-     * 获取图片地址
-     *
-     * @param fileId
-     * @param width
-     */
-    private String getFileUrl(String fileId, int width) {
-        StringBuilder urlBuilder = new StringBuilder(BuildConfig.HOST_URL);
-        urlBuilder.append(Const.HTTP_DOWNLOAD_FILE);
-        urlBuilder.append("?sFileId=");
-        urlBuilder.append(fileId);
-        urlBuilder.append("&token=");
-        urlBuilder.append(loginToken);
-        urlBuilder.append("&width=");
-        urlBuilder.append(width);
-        return urlBuilder.toString();
     }
 
 

@@ -1009,6 +1009,11 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
                     retrySendCustomBody(item);
                 }
                 break;
+            case R.id.chat_link_ll:
+                if (item.ext != null) {
+                    WebViewActivity.launch(getContext(), item.ext.url);
+                }
+                break;
         }
     }
 

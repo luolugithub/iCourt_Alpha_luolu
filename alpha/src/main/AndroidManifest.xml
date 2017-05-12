@@ -186,6 +186,9 @@
         <activity
             android:name=".activity.TaskCreateActivity"
             android:screenOrientation="portrait" />
+        <activity
+            android:name=".activity.WebViewActivity"
+            android:screenOrientation="portrait" />
         <!-- umeng appkey配置 -->
         <meta-data
             android:name="UMENG_APPKEY"
