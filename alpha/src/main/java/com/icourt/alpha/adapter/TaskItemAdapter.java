@@ -45,13 +45,18 @@ public class TaskItemAdapter extends BaseArrayRecyclerAdapter<TaskEntity.TaskIte
         checkListView.setText(taskItemEntity.doneItemCount + "/" + taskItemEntity.itemCount);
         documentNumView.setText(String.valueOf(taskItemEntity.attachmentCount));
         commentNumView.setText(String.valueOf(taskItemEntity.commentCount));
-        if (taskItemEntity.attendeeUserEntities != null) {
-            LinearLayoutManager layoutManager = new LinearLayoutManager(recyclerView.getContext());
-            layoutManager.setOrientation(LinearLayoutManager.HORIZONTAL);
-            layoutManager.setReverseLayout(true);
-            recyclerView.setLayoutManager(layoutManager);
-            TaskUsersAdapter usersAdapter = new TaskUsersAdapter();
-            usersAdapter.bindData(false, taskItemEntity.attendeeUserEntities);
+        if (taskItemEntity.attendeeUsers != null) {
+            TaskUsersAdapter usersAdapter;
+            if (recyclerView.getLayoutManager() == null) {
+                LinearLayoutManager layoutManager = new LinearLayoutManager(recyclerView.getContext());
+                layoutManager.setOrientation(LinearLayoutManager.HORIZONTAL);
+                layoutManager.setReverseLayout(true);
+                recyclerView.setLayoutManager(layoutManager);
+                usersAdapter = new TaskUsersAdapter();
+                recyclerView.setAdapter(usersAdapter);
+            }
+            usersAdapter = (TaskUsersAdapter) recyclerView.getAdapter();
+            usersAdapter.bindData(true, taskItemEntity.attendeeUsers);
         }
         holder.bindChildClick(checkBox);
     }

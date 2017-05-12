@@ -130,12 +130,11 @@
                         android:textColor="@color/alpha_font_color_gray"
                         android:textSize="@dimen/alpha_font_size_mini" />
 
-
                 </LinearLayout>
 
                 <android.support.v7.widget.RecyclerView
                     android:id="@+id/tasl_member_recyclerview"
-                    android:layout_width="wrap_content"
+                    android:layout_width="130dp"
                     android:layout_height="wrap_content"
                     android:layout_alignParentRight="true"
                     android:overScrollMode="never">

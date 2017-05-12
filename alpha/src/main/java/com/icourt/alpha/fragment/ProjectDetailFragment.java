@@ -142,7 +142,7 @@ public class ProjectDetailFragment extends BaseFragment {
                 } else {
                     bundle.putInt("myStar", Integer.valueOf(projectDetailBean.myStar));
                 }
-                onFragmentCallBackListener.onFragmentCallBack(this,0, bundle);
+                onFragmentCallBackListener.onFragmentCallBack(this, 0, bundle);
             }
             if (projectDetailBean.clients != null) {
                 StringBuilder stringBuilder = new StringBuilder();

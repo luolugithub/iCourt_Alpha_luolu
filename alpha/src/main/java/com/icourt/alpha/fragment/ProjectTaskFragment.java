@@ -16,11 +16,16 @@ import com.icourt.alpha.adapter.TaskAdapter;
 import com.icourt.alpha.adapter.baseadapter.adapterObserver.RefreshViewEmptyObserver;
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.entity.bean.TaskEntity;
+import com.icourt.alpha.entity.event.TaskActionEvent;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.ItemDecorationUtils;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
+
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -75,6 +80,7 @@ public class ProjectTaskFragment extends BaseFragment {
 
     @Override
     protected void initView() {
+        EventBus.getDefault().register(this);
         projectId = getArguments().getString(KEY_PROJECT_ID);
         refreshLayout.setNoticeEmpty(R.mipmap.icon_placeholder_project, R.string.task_list_null_text);
         refreshLayout.setMoveForHorizontal(true);
@@ -95,7 +101,6 @@ public class ProjectTaskFragment extends BaseFragment {
             @Override
             public void onLoadMore(boolean isSilence) {
                 super.onLoadMore(isSilence);
-                getData(false);
             }
         });
         refreshLayout.setAutoRefresh(true);
@@ -186,6 +191,8 @@ public class ProjectTaskFragment extends BaseFragment {
     }
 
     private void clearLists() {
+        if (allTaskEntities != null)
+            allTaskEntities.clear();
         if (todayTaskEntities != null)
             todayTaskEntities.clear();
         if (beAboutToTaskEntities != null)
@@ -200,6 +207,14 @@ public class ProjectTaskFragment extends BaseFragment {
         if (refreshLayout != null) {
             refreshLayout.stopRefresh();
             refreshLayout.stopLoadMore();
+        }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onDeleteTaskEvent(TaskActionEvent event) {
+        if (event == null) return;
+        if (event.action == TaskActionEvent.TASK_DELETE_ACTION) {
+            refreshLayout.startRefresh();
         }
     }
 

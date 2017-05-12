@@ -1,36 +1,108 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <include layout="@layout/layout_title_type_4" />
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <include layout="@layout/layout_title_type_4" />
+
+        <android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:app="http://schemas.android.com/apk/res-auto"
+            android:id="@+id/main_content"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            app:layout_scrollFlags="scroll|exitUntilCollapsed">
+
+
+            <android.support.design.widget.AppBarLayout
+                android:id="@+id/appbar"
+                style="@style/AlphaTitleAppBarLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@color/white"
+                    android:paddingBottom="@dimen/dp50"
+                    app:layout_scrollFlags="scroll|enterAlways">
+
+                    <include layout="@layout/task_detail_top_layout" />
+                </LinearLayout>
+
+                <android.support.design.widget.TabLayout
+                    android:id="@+id/task_tablayout"
+                    android:layout_width="match_parent"
+                    style="@style/AlphaTabLayout"
+                    android:layout_height="44dp"
+                    android:background="@color/white">
+
+                </android.support.design.widget.TabLayout>
+
+            </android.support.design.widget.AppBarLayout>
+
+
+            <android.support.v4.view.ViewPager
+                android:id="@+id/viewpager"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                app:layout_behavior="@string/appbar_scrolling_view_behavior" />
+        </android.support.design.widget.CoordinatorLayout>
+    </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="@dimen/dp15">
+        android:layout_alignParentBottom="true"
+        android:background="@color/white"
+        android:orientation="vertical">
 
-        <CheckBox
-            android:id="@+id/task_item_checkbox"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:button="@null"
-            android:drawableLeft="@drawable/sl_checkbox"
-            android:padding="@dimen/dp5"
-            android:src="@mipmap/tab_explorer" />
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/dp1"
+            android:background="@color/alpha_divider_color" />
 
-        <TextView
-            android:layout_width="0dp"
+        <LinearLayout
+            android:id="@+id/comment_layout"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="@dimen/dp10"
-            android:layout_marginTop="3dp"
-            android:layout_weight="1"
-            android:text="移动端聊天界面左上角返回处，加入外面列表中未读消息总数的提醒"
-            android:textColor="@color/alpha_font_color_black"
-            android:textSize="22sp" />
+            android:gravity="center_vertical"
+            android:background="?android:attr/selectableItemBackground"
+            android:padding="@dimen/dp10">
+
+            <TextView
+                android:id="@+id/comment_edit"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@drawable/bg_message_input"
+                android:gravity="center_vertical"
+                android:paddingBottom="8dp"
+                android:paddingLeft="10dp"
+                android:paddingRight="10dp"
+                android:paddingTop="8dp"
+                android:text="添加评论"
+                android:textColor="@color/alpha_font_color_gray"
+                android:textSize="@dimen/alpha_font_size_mini" />
+
+            <TextView
+                android:id="@+id/comment_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/dp15"
+
+                android:drawableLeft="@mipmap/icon_edit_16"
+                android:drawablePadding="@dimen/dp5"
+                android:text="12条动态"
+                android:textColor="@color/alpha_font_color_black"
+                android:textSize="14sp" />
+        </LinearLayout>
     </LinearLayout>
-
-
-
-</LinearLayout>
+</RelativeLayout>

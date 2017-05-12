@@ -4,6 +4,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.icourt.alpha.entity.bean.AppVersionEntity;
+import com.icourt.alpha.entity.bean.CommentEntity;
 import com.icourt.alpha.entity.bean.CustomerEntity;
 import com.icourt.alpha.entity.bean.FileBoxBean;
 import com.icourt.alpha.entity.bean.GroupContactBean;
@@ -15,6 +16,7 @@ import com.icourt.alpha.entity.bean.PageEntity;
 import com.icourt.alpha.entity.bean.ProjectDetailEntity;
 import com.icourt.alpha.entity.bean.ProjectEntity;
 import com.icourt.alpha.entity.bean.SearchEngineEntity;
+import com.icourt.alpha.entity.bean.TaskCheckItemEntity;
 import com.icourt.alpha.entity.bean.TaskEntity;
 import com.icourt.alpha.entity.bean.TaskGroupEntity;
 import com.icourt.alpha.entity.bean.TimeEntity;
@@ -390,6 +392,15 @@ public interface ApiAlphaService {
     Call<ResEntity<JsonElement>> taskUpdate(@Body RequestBody msg);
 
     /**
+     * 获取任务详情
+     *
+     * @param id
+     * @return
+     */
+    @GET("api/v2/taskflow/{id}")
+    Call<ResEntity<TaskEntity.TaskItemEntity>> taskQueryDetail(@Path("id") String id);
+
+    /**
      * 更新计时
      *
      * @return
@@ -406,4 +417,94 @@ public interface ApiAlphaService {
     @PUT("api/v2/timing/timing/add")
     Call<ResEntity<JsonElement>> timingAdd(@Body RequestBody body);
 
+    /**
+     * 获取任务下检查项列表
+     *
+     * @param taskId
+     * @return
+     */
+    @GET("api/v2/taskflow/taskitem")
+    Call<ResEntity<TaskCheckItemEntity>> taskCheckItemQuery(@Query("taskId") String taskId);
+
+    /**
+     * 修改任务下检查项
+     *
+     * @param body
+     * @return
+     */
+    @PUT("api/v2/taskflow/taskitem")
+    Call<ResEntity<JsonElement>> taskCheckItemUpdate(@Body RequestBody body);
+
+    /**
+     * 删除任务下检查项
+     *
+     * @param id
+     * @return
+     */
+    @DELETE("api/v2/taskflow/taskitem/{id}")
+    Call<ResEntity<JsonElement>> taskCheckItemDelete(@Path("id") String id);
+
+    /**
+     * 添加任务下检查项
+     *
+     * @param body
+     * @return
+     */
+    @POST("api/v2/taskflow/taskitem")
+    Call<ResEntity<JsonElement>> taskCheckItemCreate(@Body RequestBody body);
+
+    /**
+     * 任务添加关注
+     *
+     * @param body
+     * @return
+     */
+    @POST("api/v2/taskflow/attention")
+    Call<ResEntity<JsonElement>> taskAddStar(@Body RequestBody body);
+
+    /**
+     * 任务取消关注
+     *
+     * @param id
+     * @return
+     */
+    @DELETE("api/v2/taskflow/attention/{id}")
+    Call<ResEntity<JsonElement>> taskDeleteStar(@Path("id") String id);
+
+    /**
+     * 删除任务
+     *
+     * @param id
+     * @return
+     */
+    @DELETE("api/v2/taskflow/{id}")
+    Call<ResEntity<JsonElement>> taskDelete(@Path("id") String id);
+
+    /**
+     * 任务添加评论
+     *
+     * @param hostType 被评论的对象类型:100为任务
+     * @param hostId   被评论的对象id
+     * @param content  评论的内容
+     * @return
+     */
+    @POST("api/v2/comment")
+    Call<ResEntity<JsonElement>> commentCreate(@Query("hostType") int hostType,
+                                               @Query("hostId") String hostId,
+                                               @Query("content") String content);
+
+    /**
+     * 获取评论列表
+     *
+     * @param hostType  被评论的对象类型:100为任务
+     * @param hostId    被评论的对象id
+     * @param pageIndex
+     * @param pageSize
+     * @return
+     */
+    @GET("api/v2/comment")
+    Call<ResEntity<CommentEntity>> commentListQuery(@Query("hostType") int hostType,
+                                                    @Query("hostId") String hostId,
+                                                    @Query("pageIndex") int pageIndex,
+                                                    @Query("pageSize") int pageSize);
 }

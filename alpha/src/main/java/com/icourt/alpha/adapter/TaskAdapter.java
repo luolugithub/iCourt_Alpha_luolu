@@ -13,6 +13,7 @@ import android.widget.TextView;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.icourt.alpha.R;
+import com.icourt.alpha.activity.TaskDetailActivity;
 import com.icourt.alpha.adapter.baseadapter.BaseArrayRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.entity.bean.ItemsEntity;
@@ -59,30 +60,35 @@ public class TaskAdapter extends BaseArrayRecyclerAdapter<TaskEntity>
         task_title_time_tv.setText(taskEntity.groupName);
         task_title_count_tv.setText(String.valueOf(taskEntity.groupTaskCount));
         RecyclerView recyclerView = holder.obtainView(R.id.parent_item_task_recyclerview);
-
+        TaskItemAdapter taskItemAdapter;
         if (recyclerView.getLayoutManager() == null) {
             LinearLayoutManager layoutManager = new LinearLayoutManager(recyclerView.getContext());
             recyclerView.setLayoutManager(layoutManager);
-        }
-        if (recyclerView.getAdapter() == null) {
-            TaskItemAdapter taskItemAdapter = new TaskItemAdapter();
+            taskItemAdapter = new TaskItemAdapter();
             recyclerView.setAdapter(taskItemAdapter);
             taskItemAdapter.setOnItemClickListener(super.onItemClickListener);
             taskItemAdapter.setOnItemChildClickListener(super.onItemChildClickListener);
-            taskItemAdapter.bindData(false, taskEntity.items);
         }
+        taskItemAdapter = (TaskItemAdapter) recyclerView.getAdapter();
+
+
+        taskItemAdapter.bindData(true, taskEntity.items);
     }
 
     @Override
     public void onItemClick(BaseRecyclerAdapter adapter, ViewHolder holder, View view, int position) {
-        new CenterMenuDialog(view.getContext(), null, Arrays.asList(
-                new ItemsEntity("分配给", R.mipmap.tab_message),
-                new ItemsEntity("到期日", R.mipmap.tab_message),
-                new ItemsEntity("提醒", R.mipmap.tab_message),
-                new ItemsEntity("项目/任务组", R.mipmap.tab_message),
-                new ItemsEntity("开始计时", R.mipmap.tab_message),
-                new ItemsEntity("查看详情", R.mipmap.tab_message)))
-                .show();
+//        new CenterMenuDialog(view.getContext(), null, Arrays.asList(
+//                new ItemsEntity("分配给", R.mipmap.tab_message),
+//                new ItemsEntity("到期日", R.mipmap.tab_message),
+//                new ItemsEntity("提醒", R.mipmap.tab_message),
+//                new ItemsEntity("项目/任务组", R.mipmap.tab_message),
+//                new ItemsEntity("开始计时", R.mipmap.tab_message),
+//                new ItemsEntity("查看详情", R.mipmap.tab_message)))
+//                .show();
+        if (adapter instanceof TaskItemAdapter) {
+            TaskEntity.TaskItemEntity taskItemEntity = (TaskEntity.TaskItemEntity) adapter.getItem(position);
+            TaskDetailActivity.launch(view.getContext(), taskItemEntity.id);
+        }
     }
 
     @Override
@@ -106,8 +112,8 @@ public class TaskAdapter extends BaseArrayRecyclerAdapter<TaskEntity>
                 CheckBox checkbox = (CheckBox) view;
 
                 if (checkbox.isChecked()) {//完成任务
-                    if (itemEntity.attendeeUserEntities != null) {
-                        if (itemEntity.attendeeUserEntities.size() > 1) {
+                    if (itemEntity.attendeeUsers != null) {
+                        if (itemEntity.attendeeUsers.size() > 1) {
                             showFinishDialog(view.getContext(), "该任务由多人负责,确定完成?", itemEntity, checkbox);
                         } else {
                             updateTask(itemEntity, true, checkbox);

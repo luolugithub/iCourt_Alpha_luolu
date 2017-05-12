@@ -9,6 +9,7 @@ import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.icourt.alpha.R;
@@ -42,6 +43,8 @@ public class ProjectRangeFragment extends BaseFragment {
     TextView rangeNowTv;
     @BindView(R.id.range_recyclerview)
     RecyclerView rangeRecyclerview;
+    @BindView(R.id.caseProcess_layout)
+    LinearLayout caseProcessLayout;
     private ProjectDetailEntity projectDetailEntity;
     Unbinder unbinder;
     ProjectRangeListAdapter projectRangeListAdapter;
@@ -67,7 +70,12 @@ public class ProjectRangeFragment extends BaseFragment {
         projectDetailEntity = (ProjectDetailEntity) getArguments().getSerializable(KEY_PROJECT);
         if (projectDetailEntity != null) {
             List<RangeItemEntity> rangeItemEntities = new ArrayList<>();
-            rangeNameTv.setText(projectDetailEntity.caseProcessName);
+            if (!TextUtils.isEmpty(projectDetailEntity.caseProcessName) && !"null".equals(projectDetailEntity.caseProcessName)) {
+                caseProcessLayout.setVisibility(View.VISIBLE);
+                rangeNameTv.setText(projectDetailEntity.caseProcessName);
+            } else {
+                caseProcessLayout.setVisibility(View.GONE);
+            }
             if (!TextUtils.isEmpty(projectDetailEntity.matterCaseName)) {
                 rangeItemEntities.add(new RangeItemEntity("案由", projectDetailEntity.matterCaseName));
             }
@@ -99,7 +107,7 @@ public class ProjectRangeFragment extends BaseFragment {
             rangeRecyclerview.addItemDecoration(ItemDecorationUtils.getCommMagin5Divider(getContext(), false));
             rangeRecyclerview.setHasFixedSize(true);
             rangeRecyclerview.setAdapter(projectRangeListAdapter = new ProjectRangeListAdapter());
-            projectRangeListAdapter.bindData(false,rangeItemEntities);
+            projectRangeListAdapter.bindData(false, rangeItemEntities);
         }
     }
 

@@ -1,13 +1,54 @@
 package com.icourt.alpha.activity;
 
+import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.design.widget.AppBarLayout;
+import android.support.design.widget.CoordinatorLayout;
+import android.support.design.widget.TabLayout;
+import android.support.v4.view.ViewPager;
+import android.support.v7.app.AlertDialog;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
+import android.view.View;
+import android.widget.CheckBox;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.icourt.alpha.R;
+import com.icourt.alpha.adapter.TaskUsersAdapter;
+import com.icourt.alpha.adapter.baseadapter.BaseFragmentAdapter;
+import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.base.BaseActivity;
+import com.icourt.alpha.entity.bean.TaskEntity;
+import com.icourt.alpha.entity.event.TaskActionEvent;
+import com.icourt.alpha.fragment.TaskCheckItemFragment;
+import com.icourt.alpha.fragment.TaskDetailFragment;
+import com.icourt.alpha.http.callback.SimpleCallBack;
+import com.icourt.alpha.http.httpmodel.ResEntity;
+import com.icourt.alpha.utils.DateUtils;
+import com.icourt.alpha.utils.GlideUtils;
+import com.icourt.alpha.widget.dialog.BottomActionDialog;
+import com.icourt.api.RequestUtils;
+
+import org.greenrobot.eventbus.EventBus;
+
+import java.util.Arrays;
+
+import butterknife.BindView;
+import butterknife.ButterKnife;
+import butterknife.OnClick;
+import retrofit2.Call;
+import retrofit2.Response;
 
 /**
  * Description
@@ -19,17 +60,267 @@ import com.icourt.alpha.base.BaseActivity;
 
 public class TaskDetailActivity extends BaseActivity {
 
+    private static final String KEY_TASK_ID = "key_task_id";
+
+    String taskId;
+    BaseFragmentAdapter baseFragmentAdapter;
+    @BindView(R.id.titleBack)
+    ImageView titleBack;
+    @BindView(R.id.titleContent)
+    TextView titleContent;
+    @BindView(R.id.titleAction)
+    ImageView titleAction;
+    @BindView(R.id.titleAction2)
+    ImageView titleAction2;
+    @BindView(R.id.task_checkbox)
+    CheckBox taskCheckbox;
+    @BindView(R.id.task_name)
+    TextView taskName;
+    @BindView(R.id.task_user_pic)
+    ImageView taskUserPic;
+    @BindView(R.id.task_user_name)
+    TextView taskUserName;
+    @BindView(R.id.task_user_recyclerview)
+    RecyclerView taskUserRecyclerview;
+    @BindView(R.id.task_time)
+    TextView taskTime;
+    @BindView(R.id.task_start_iamge)
+    ImageView taskStartIamge;
+    @BindView(R.id.task_tablayout)
+    TabLayout taskTablayout;
+    @BindView(R.id.appbar)
+    AppBarLayout appbar;
+    @BindView(R.id.viewpager)
+    ViewPager viewpager;
+    @BindView(R.id.titleView)
+    AppBarLayout titleView;
+    @BindView(R.id.task_user_layout)
+    LinearLayout taskUserLayout;
+    @BindView(R.id.task_users_layout)
+    LinearLayout taskUsersLayout;
+    @BindView(R.id.main_content)
+    CoordinatorLayout mainContent;
+    @BindView(R.id.task_time_parent_layout)
+    RelativeLayout taskTimeParentLayout;
+    @BindView(R.id.comment_tv)
+    TextView commentTv;
+
+    int myStar = -1;
+    TaskEntity.TaskItemEntity taskItemEntity;
+    TaskUsersAdapter usersAdapter;
+    @BindView(R.id.comment_layout)
+    LinearLayout commentLayout;
+
     public static void launch(@NonNull Context context, @NonNull String taskId) {
         if (context == null) return;
         if (TextUtils.isEmpty(taskId)) return;
-        Intent intent = new Intent(context, ProjectDetailActivity.class);
-        intent.putExtra("taskId", taskId);
+        Intent intent = new Intent(context, TaskDetailActivity.class);
+        intent.putExtra(KEY_TASK_ID, taskId);
         context.startActivity(intent);
     }
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
+        setContentView(R.layout.activity_task_detail_layout);
+        ButterKnife.bind(this);
+        initView();
     }
+
+    @Override
+    protected void initView() {
+        super.initView();
+        taskId = getIntent().getStringExtra(KEY_TASK_ID);
+        baseFragmentAdapter = new BaseFragmentAdapter(getSupportFragmentManager());
+        viewpager.setAdapter(baseFragmentAdapter);
+        taskTablayout.setupWithViewPager(viewpager);
+        titleAction2.setImageResource(R.mipmap.header_icon_more);
+        getData(false);
+    }
+
+    @OnClick({R.id.titleAction, R.id.titleAction2, R.id.comment_layout})
+    @Override
+    public void onClick(View v) {
+        super.onClick(v);
+        switch (v.getId()) {
+            case R.id.titleAction://关注
+                if (myStar == TaskEntity.UNATTENTIONED) {
+                    addStar();
+                } else {
+                    deleteStar();
+                }
+                break;
+            case R.id.titleAction2://更多
+                showBottomMeau();
+                break;
+            case R.id.comment_layout://更多评论动态
+                CommentListActivity.launch(this, taskId);
+                break;
+        }
+    }
+
+    /**
+     * 显示底部菜单
+     */
+    private void showBottomMeau() {
+        new BottomActionDialog(getContext(),
+                null,
+                Arrays.asList("删除"),
+                new BottomActionDialog.OnActionItemClickListener() {
+                    @Override
+                    public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
+                        dialog.dismiss();
+                        switch (position) {
+                            case 0:
+                                if (taskItemEntity != null) {
+                                    if (taskItemEntity.attendeeUsers != null) {
+                                        if (taskItemEntity.attendeeUsers.size() > 1) {
+                                            showDeleteDialog("该任务为多人任务，确定要删除吗?");
+                                        } else {
+                                            showDeleteDialog("是非成败转头空，确定要删除吗?");
+                                        }
+                                    } else {
+                                        showDeleteDialog("是非成败转头空，确定要删除吗?");
+                                    }
+                                }
+                                break;
+                        }
+                    }
+                }).show();
+    }
+
+    /**
+     * 删除多人任务对话框
+     *
+     * @param message
+     */
+    private void showDeleteDialog(String message) {
+        //先new出一个监听器，设置好监听
+        DialogInterface.OnClickListener dialogOnclicListener = new DialogInterface.OnClickListener() {
+
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                switch (which) {
+                    case Dialog.BUTTON_POSITIVE:
+                        deleteTask();
+                        break;
+                }
+            }
+        };
+        //dialog参数设置
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);  //先得到构造器
+        builder.setTitle("提示"); //设置标题
+        builder.setMessage(message); //设置内容
+        builder.setPositiveButton("确认", dialogOnclicListener);
+        builder.create().show();
+    }
+
+    @Override
+    protected void getData(boolean isRefresh) {
+        showLoadingDialog(null);
+        getApi().taskQueryDetail(taskId).enqueue(new SimpleCallBack<TaskEntity.TaskItemEntity>() {
+            @Override
+            public void onSuccess(Call<ResEntity<TaskEntity.TaskItemEntity>> call, Response<ResEntity<TaskEntity.TaskItemEntity>> response) {
+                dismissLoadingDialog();
+                taskItemEntity = response.body().result;
+                setDataToView(response.body().result);
+            }
+        });
+    }
+
+    /**
+     * 设置数据到view
+     *
+     * @param taskItemEntity
+     */
+    private void setDataToView(TaskEntity.TaskItemEntity taskItemEntity) {
+        if (taskItemEntity != null) {
+            taskName.setText(taskItemEntity.name);
+            myStar = taskItemEntity.attentioned;
+            commentTv.setText(taskItemEntity.commentCount + "条动态");
+            if (myStar == TaskEntity.ATTENTIONED) {
+                titleAction.setImageResource(R.mipmap.header_icon_star_solid);
+            } else {
+                titleAction.setImageResource(R.mipmap.header_icon_star_line);
+            }
+            taskTime.setText(DateUtils.getTimeDurationDate(taskItemEntity.timingSum));
+            baseFragmentAdapter.bindTitle(true, Arrays.asList(
+                    "任务详情", "检查项 " + taskItemEntity.doneItemCount + "/" + taskItemEntity.itemCount, "附件 " + taskItemEntity.attachmentCount
+            ));
+            baseFragmentAdapter.bindData(false, Arrays.asList(
+                    TaskDetailFragment.newInstance(taskItemEntity),
+                    TaskCheckItemFragment.newInstance(taskItemEntity.id),
+                    TaskDetailFragment.newInstance(taskItemEntity)
+            ));
+            if (taskItemEntity.attendeeUsers != null) {
+                if (taskItemEntity.attendeeUsers.size() > 0) {
+                    if (taskItemEntity.attendeeUsers.size() > 1) {
+                        taskUsersLayout.setVisibility(View.VISIBLE);
+                        taskUserLayout.setVisibility(View.GONE);
+                        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
+                        layoutManager.setOrientation(LinearLayoutManager.HORIZONTAL);
+                        layoutManager.setReverseLayout(true);
+                        taskUserRecyclerview.setLayoutManager(layoutManager);
+                        taskUserRecyclerview.setAdapter(usersAdapter = new TaskUsersAdapter());
+                        usersAdapter.bindData(false, taskItemEntity.attendeeUsers);
+                    } else if (taskItemEntity.attendeeUsers.size() == 1) {
+                        taskUsersLayout.setVisibility(View.GONE);
+                        taskUserLayout.setVisibility(View.VISIBLE);
+                        GlideUtils.loadUser(this, taskItemEntity.attendeeUsers.get(0).pic, taskUserPic);
+                        taskUserName.setText(taskItemEntity.attendeeUsers.get(0).userName);
+                    }
+                } else {
+                    taskTimeParentLayout.setVisibility(View.GONE);
+                }
+            }
+        }
+    }
+
+    /**
+     * 添加关注
+     */
+    private void addStar() {
+        showLoadingDialog(null);
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("taskId", taskId);
+        getApi().taskAddStar(RequestUtils.createJsonBody(jsonObject.toString())).enqueue(new SimpleCallBack<JsonElement>() {
+            @Override
+            public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
+                dismissLoadingDialog();
+                myStar = TaskEntity.ATTENTIONED;
+                titleAction.setImageResource(R.mipmap.header_icon_star_solid);
+            }
+        });
+    }
+
+    /**
+     * 取消关注
+     */
+    private void deleteStar() {
+        showLoadingDialog(null);
+        getApi().taskDeleteStar(taskId).enqueue(new SimpleCallBack<JsonElement>() {
+            @Override
+            public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
+                dismissLoadingDialog();
+                myStar = TaskEntity.UNATTENTIONED;
+                titleAction.setImageResource(R.mipmap.header_icon_star_line);
+            }
+        });
+    }
+
+    /**
+     * 删除任务
+     */
+    private void deleteTask() {
+        showLoadingDialog(null);
+        getApi().taskDelete(taskId).enqueue(new SimpleCallBack<JsonElement>() {
+            @Override
+            public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
+                dismissLoadingDialog();
+                EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_DELETE_ACTION));
+                TaskDetailActivity.this.finish();
+            }
+        });
+    }
+
 }
