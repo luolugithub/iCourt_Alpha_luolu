@@ -87,6 +87,7 @@ import sj.keyboard.interfaces.PageViewInstantiateListener;
 import sj.keyboard.utils.EmoticonsKeyboardUtils;
 import sj.keyboard.widget.EmoticonPageView;
 import sj.keyboard.widget.EmoticonsEditText;
+import sj.keyboard.widget.FuncLayout;
 
 import static com.icourt.alpha.constants.Const.CHAT_TYPE_P2P;
 import static com.icourt.alpha.constants.Const.CHAT_TYPE_TEAM;
@@ -465,6 +466,22 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
                 }
             }
         });
+        ekBar.addOnFuncKeyBoardListener(new FuncLayout.OnFuncKeyBoardListener() {
+            @Override
+            public void OnFuncPop(int i) {
+                scrollToBottom();
+            }
+
+            @Override
+            public void OnFuncClose() {
+
+            }
+        });
+
+        ImageView chat_bottom_at_btn = ekBar.getChat_bottom_at_btn();
+        if (chat_bottom_at_btn != null) {
+            chat_bottom_at_btn.setVisibility(getIMChatType() == CHAT_TYPE_TEAM ? View.VISIBLE : View.GONE);
+        }
     }
 
     /**

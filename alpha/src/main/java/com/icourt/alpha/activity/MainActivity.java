@@ -7,9 +7,9 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.os.PersistableBundle;
+import android.os.SystemClock;
 import android.support.annotation.IdRes;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentTransaction;
 import android.util.SparseArray;
 import android.view.Gravity;
 import android.view.MotionEvent;
@@ -33,7 +33,6 @@ import com.icourt.alpha.fragment.TabFindFragment;
 import com.icourt.alpha.fragment.TabMineFragment;
 import com.icourt.alpha.fragment.TabNewsFragment;
 import com.icourt.alpha.fragment.TabTaskFragment;
-import com.icourt.alpha.fragment.dialogfragment.ProjectSelectDialogFragment;
 import com.icourt.alpha.http.AlphaClient;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
@@ -246,14 +245,13 @@ public class MainActivity extends BaseActivity
     private void resumeTimer() {
         TimeEntity.ItemEntity timer = TimerManager.getInstance().getTimer();
         if (timer != null) {
-            tabVoice.setBase(timer.startTime);
+            long timedLength = System.currentTimeMillis() - timer.startTime;
+            if (timedLength < 0) {
+                timedLength = 0;
+            }
+            tabVoice.setBase(SystemClock.elapsedRealtime() - timedLength);
             tabVoice.start();
-        } else {
-            //测试
-            tabVoice.start();
-            TimerManager.getInstance().addTimer(new TimeEntity.ItemEntity());
         }
-
     }
 
     @OnClick({R.id.tab_voice})
@@ -261,6 +259,7 @@ public class MainActivity extends BaseActivity
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.tab_voice:
+                tabVoice.setBase(SystemClock.elapsedRealtime());
                 tabVoice.start();
                 TimerManager.getInstance().addTimer(new TimeEntity.ItemEntity());
                 break;
@@ -270,19 +269,6 @@ public class MainActivity extends BaseActivity
         }
     }
 
-    /**
-     * 测试
-     */
-    public void showTestFragment() {
-        String tag = ProjectSelectDialogFragment.class.getSimpleName();
-        FragmentTransaction mFragTransaction = getSupportFragmentManager().beginTransaction();
-        Fragment fragment = getSupportFragmentManager().findFragmentByTag(tag);
-        if (fragment != null) {
-            mFragTransaction.remove(fragment);
-        }
-        ProjectSelectDialogFragment.newInstance()
-                .show(mFragTransaction, tag);
-    }
 
     /**
      * 获取对应fragment
@@ -433,13 +419,6 @@ public class MainActivity extends BaseActivity
         }
         if (contactDbService != null) {
             contactDbService.releaseService();
-        }
-
-        TimeEntity.ItemEntity timer = TimerManager.getInstance().getTimer();
-        if (timer != null) {
-            timer.startTime = tabVoice.getBase();
-            tabVoice.stop();
-            TimerManager.getInstance().updateTimer(timer);
         }
     }
 }

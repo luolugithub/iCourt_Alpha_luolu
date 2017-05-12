@@ -18,7 +18,7 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="180dp"
-                android:background="#CBEAED"
+                android:background="@mipmap/bg_group_background"
                 android:gravity="center_horizontal"
                 android:orientation="vertical"
                 android:paddingLeft="15dp"
@@ -198,7 +198,8 @@
                     <Switch
                         android:id="@+id/group_setTop_switch"
                         android:layout_width="wrap_content"
-                        android:layout_height="wrap_content" />
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical" />
                 </LinearLayout>
 
                 <View
@@ -229,7 +230,8 @@
                     <Switch
                         android:id="@+id/group_not_disturb_switch"
                         android:layout_width="wrap_content"
-                        android:layout_height="wrap_content" />
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical" />
                 </LinearLayout>
             </LinearLayout>
 
@@ -237,9 +239,12 @@
                 android:id="@+id/group_join_or_quit_btn"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="10dp"
-                android:layout_marginRight="10dp"
+                android:layout_marginBottom="15dp"
+                android:layout_marginLeft="15dp"
+                android:layout_marginRight="15dp"
                 android:layout_marginTop="30dp"
+                android:background="@drawable/bg_round_rect_red"
+                android:padding="10dp"
                 android:text="退出讨论组"
                 android:textColor="@android:color/white" />
         </LinearLayout>

@@ -115,6 +115,10 @@ public class MyXhsEmoticonsKeyBoard extends sj.keyboard.widget.AutoHeightLayout 
 
     }
 
+    public ImageView getChat_bottom_at_btn() {
+        return chat_bottom_at_btn;
+    }
+
     protected void initFuncView() {
         initEmoticonFuncView();
         initEditView();
