@@ -3,6 +3,8 @@ package com.icourt.alpha.fragment;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -21,6 +23,7 @@ import com.icourt.alpha.activity.MyFileTabActivity;
 import com.icourt.alpha.activity.SettingActivity;
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.entity.bean.AlphaUserInfo;
+import com.icourt.alpha.fragment.dialogfragment.DateSelectDialogFragment;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.GlideUtils;
@@ -86,6 +89,8 @@ public class TabMineFragment extends BaseFragment {
     LinearLayout myCenterClearAboutLayout;
     @BindView(R.id.my_center_clear_loginout_layout)
     LinearLayout myCenterClearLoginoutLayout;
+    @BindView(R.id.menu_test)
+    TextView menuTest;
 
     private UMShareAPI mShareAPI;
 
@@ -135,7 +140,14 @@ public class TabMineFragment extends BaseFragment {
         }
     }
 
-    @OnClick({R.id.set_image, R.id.my_center_collect_layout, R.id.my_center_at_layout, R.id.my_center_file_layout, R.id.my_center_clear_cache_layout, R.id.my_center_clear_about_layout, R.id.my_center_clear_loginout_layout})
+    @OnClick({R.id.set_image,
+            R.id.my_center_collect_layout,
+            R.id.my_center_at_layout,
+            R.id.my_center_file_layout,
+            R.id.my_center_clear_cache_layout,
+            R.id.my_center_clear_about_layout,
+            R.id.my_center_clear_loginout_layout,
+            R.id.menu_test})
     @Override
     public void onClick(View v) {
         super.onClick(v);
@@ -160,7 +172,21 @@ public class TabMineFragment extends BaseFragment {
             case R.id.my_center_clear_loginout_layout://退出
                 showLoginOutConfirmDialog();
                 break;
+            case R.id.menu_test:
+                test1();
+                break;
         }
+    }
+
+    private void test1() {
+        String tag = DateSelectDialogFragment.class.getSimpleName();
+        FragmentTransaction mFragTransaction = getChildFragmentManager().beginTransaction();
+        Fragment fragment = getChildFragmentManager().findFragmentByTag(tag);
+        if (fragment != null) {
+            mFragTransaction.remove(fragment);
+        }
+        DateSelectDialogFragment.newInstance()
+                .show(mFragTransaction, tag);
     }
 
     private void showLoginOutConfirmDialog() {

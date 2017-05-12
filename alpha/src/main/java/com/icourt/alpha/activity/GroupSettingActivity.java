@@ -231,7 +231,7 @@ public class GroupSettingActivity extends BaseActivity {
         JsonObject param = new JsonObject();
         param.addProperty("name", getTextString(groupNameTv, ""));
         param.addProperty("intro", getTextString(groupDescTv, ""));
-        param.addProperty("is_private", getTextString(groupSetPrivateSwitch, ""));
+        param.addProperty("is_private", groupSetPrivateSwitch.isChecked());
         param.addProperty("member_invite", groupSetInviteSwitch.isChecked());
         param.addProperty("chat_history", groupSetLookSwitch.isChecked());
         showLoadingDialog(null);

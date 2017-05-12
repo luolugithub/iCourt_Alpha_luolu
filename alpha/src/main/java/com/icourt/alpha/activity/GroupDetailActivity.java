@@ -198,7 +198,11 @@ public class GroupDetailActivity extends BaseActivity implements BaseRecyclerAda
                             groupJoinOrQuitBtn.setText(joined ? "退出讨论组" : "加入讨论组");
                             setViewVisible(groupSessionActionLl, joined);
                             //邀请按钮展示
-                            setViewVisible(groupMemberInviteTv, joined && !response.body().result.is_private);
+                            if (response.body().result.is_private || !response.body().result.member_invite) {
+                                setViewVisible(groupMemberInviteTv, false);
+                            } else {
+                                setViewVisible(groupMemberInviteTv, true);
+                            }
                             setViewVisible(groupDataLl, joined);
                             if (isAdmin) {
                                 setViewVisible(groupJoinOrQuitBtn, false);

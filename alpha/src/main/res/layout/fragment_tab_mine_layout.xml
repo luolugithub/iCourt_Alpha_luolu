@@ -443,6 +443,16 @@
             </LinearLayout>
         </LinearLayout>
 
+        <TextView
+            android:id="@+id/menu_test"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@android:color/white"
+            android:padding="12dp"
+            android:text="测试版专用,其它自动隐藏"
+            android:textColor="@color/alpha_font_color_black"
+            android:textSize="16dp" />
+
         <View
             android:layout_width="match_parent"
             android:layout_height="@dimen/dp30" />

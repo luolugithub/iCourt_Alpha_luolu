@@ -1236,7 +1236,7 @@ public abstract class ChatBaseActivity extends BaseActivity implements INIMessag
      * @param id
      */
     public void showContactShareDialogFragment(String id) {
-        String tag = "ContactShareDialogFragment";
+        String tag = ContactShareDialogFragment.class.getSimpleName();
         FragmentTransaction mFragTransaction = getSupportFragmentManager().beginTransaction();
         Fragment fragment = getSupportFragmentManager().findFragmentByTag(tag);
         if (fragment != null) {
