@@ -100,7 +100,9 @@ public class MessageListFragment extends BaseRecentContactFragment
                 int unReadCount = 0;
                 for (IMSessionEntity sessionEntity : data) {
                     if (sessionEntity != null && sessionEntity.recentContact != null) {
-                        unReadCount += sessionEntity.recentContact.getUnreadCount();
+                        if (!sessionEntity.isNotDisturb) {
+                            unReadCount += sessionEntity.recentContact.getUnreadCount();
+                        }
                     }
                 }
                 callParentUpdateUnReadNum(unReadCount);
@@ -619,6 +621,7 @@ public class MessageListFragment extends BaseRecentContactFragment
                     if (imSessionEntity != null
                             && imSessionEntity.recentContact != null
                             && imSessionEntity.recentContact.getSessionType() == SessionTypeEnum.Team) {
+                        imSessionEntity.isNotDisturb = false;
                         NIMClient.getService(TeamService.class)
                                 .muteTeam(imSessionEntity.recentContact.getContactId(), false);
 
@@ -627,6 +630,7 @@ public class MessageListFragment extends BaseRecentContactFragment
                             if (StringUtils.equalsIgnoreCase(dontDisturbIds.get(j), imSessionEntity.recentContact.getContactId(), false)) {
                                 NIMClient.getService(TeamService.class)
                                         .muteTeam(imSessionEntity.recentContact.getContactId(), true);
+                                imSessionEntity.isNotDisturb = true;
                             }
                         }
                         NIMClient.getService(MsgService.class)

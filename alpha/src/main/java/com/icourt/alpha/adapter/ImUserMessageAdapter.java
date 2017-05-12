@@ -236,7 +236,6 @@ public class ImUserMessageAdapter extends BaseArrayRecyclerAdapter<IMMessageCust
     private void setViewFileCommFile(ViewHolder holder, IMMessageCustomBody imFileEntity) {
         if (holder == null) return;
         if (imFileEntity == null) return;
-        if (imFileEntity.content == null) return;
         ImageView file_type_iv = holder.obtainView(R.id.file_type_iv);
         TextView file_title_tv = holder.obtainView(R.id.file_title_tv);
         TextView file_size_tv = holder.obtainView(R.id.file_size_tv);

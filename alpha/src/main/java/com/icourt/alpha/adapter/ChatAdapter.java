@@ -621,13 +621,13 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMMessageCustomBody> i
         TextView chat_file_size_tv = holder.obtainView(R.id.chat_file_size_tv);
         ImageView chat_ding_source_user_icon_iv = holder.obtainView(R.id.chat_ding_source_user_icon_iv);
         TextView chat_ding_source_user_name_tv = holder.obtainView(R.id.chat_ding_source_user_name_tv);
-        if (imMessageCustomBody.ext != null) {
-            chat_file_icon_iv.setImageResource(getFileIcon40(imMessageCustomBody.ext.name));
-            chat_file_name_tv.setText(imMessageCustomBody.ext.name);
-            chat_file_size_tv.setText(FileUtils.kbFromat(imMessageCustomBody.ext.size));
-            chat_ding_source_user_name_tv.setText(imMessageCustomBody.ext.from);
+        if (imMessageCustomBody.ext.ext != null) {
+            chat_file_icon_iv.setImageResource(getFileIcon40(imMessageCustomBody.ext.ext.name));
+            chat_file_name_tv.setText(imMessageCustomBody.ext.ext.name);
+            chat_file_size_tv.setText(FileUtils.kbFromat(imMessageCustomBody.ext.ext.size));
+            chat_ding_source_user_name_tv.setText(imMessageCustomBody.ext.name);
         } else {
-            chat_file_name_tv.setText("服务器 file ext null");
+            chat_file_name_tv.setText("服务器 file ext ext null");
         }
 
         String userHeadImg = getUserIcon(imMessageCustomBody.ext != null ? imMessageCustomBody.ext.from : "");

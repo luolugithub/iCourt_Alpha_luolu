@@ -47,7 +47,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="10dp"
                     android:layout_toRightOf="@+id/chat_file_name_tv"
-                    android:background="@color/alpha_font_color_gray"
+                    android:background="#FFF3F3F3"
                     android:padding="10dp"
                     android:src="@mipmap/filetype_default_20" />
             </LinearLayout>

@@ -1,13 +1,9 @@
 package com.icourt.alpha.adapter;
 
-import android.graphics.Color;
 import android.support.annotation.CheckResult;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
-import android.view.Gravity;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -18,18 +14,17 @@ import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.icourt.alpha.entity.bean.IMMessageCustomBody;
 import com.icourt.alpha.entity.bean.IMSessionEntity;
+import com.icourt.alpha.utils.ActionConstants;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.GlideUtils;
 import com.icourt.alpha.utils.IMUtils;
 import com.icourt.alpha.utils.LoginInfoUtils;
 import com.icourt.alpha.utils.SpannableUtils;
 import com.icourt.alpha.utils.StringUtils;
+import com.icourt.alpha.view.bgabadgeview.BGABadgeImageView;
 import com.netease.nimlib.sdk.team.model.Team;
 
 import java.util.List;
-
-import q.rorbin.badgeview.Badge;
-import q.rorbin.badgeview.QBadgeView;
 
 import static com.icourt.alpha.constants.Const.CHAT_TYPE_P2P;
 import static com.icourt.alpha.constants.Const.CHAT_TYPE_TEAM;
@@ -104,27 +99,6 @@ public class IMSessionAdapter extends BaseArrayRecyclerAdapter<IMSessionEntity> 
         return R.layout.adapter_item_im_session;
     }
 
-    @Override
-    public ViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewtype) {
-        IMSessionViewHolder viewHolder = new IMSessionViewHolder(LayoutInflater.from(viewGroup.getContext())
-                .inflate(bindView(viewtype), viewGroup, false));
-        return viewHolder;
-    }
-
-    final class IMSessionViewHolder extends ViewHolder {
-        public Badge badge;
-
-        public IMSessionViewHolder(View itemView) {
-            super(itemView);
-            badge = new QBadgeView(itemView.getContext())
-                    .bindTarget(itemView.findViewById(R.id.root));
-            badge.setBadgeGravity(Gravity.START | Gravity.TOP);
-            badge.setGravityOffset(38, 8, true);
-            badge.setBadgeTextSize(10, true);
-            badge.stroke(Color.WHITE, 1, true);
-            badge.setBadgePadding(3, true);
-        }
-    }
 
     @Override
     public void onBindHoder(ViewHolder holder, IMSessionEntity imSessionEntity, int position) {
@@ -136,12 +110,8 @@ public class IMSessionAdapter extends BaseArrayRecyclerAdapter<IMSessionEntity> 
         ImageView ivSessionNotDisturb = holder.obtainView(R.id.iv_session_not_disturb);
         tvSessionContent.setText(imSessionEntity.recentContact.getContent());
         if (imSessionEntity.recentContact != null) {
-            if (holder instanceof IMSessionViewHolder) {
-                //1.设置提示数量
-                setUnreadCount(((IMSessionViewHolder) holder).badge, imSessionEntity.recentContact.getUnreadCount());
-
-            }
-
+            //1.设置提示数量
+            setUnreadCount(holder, imSessionEntity, position);
 
             //3.设置消息展示的时间
             setTimeView(tvSessionTime, imSessionEntity.recentContact.getTime(), position);
@@ -167,7 +137,48 @@ public class IMSessionAdapter extends BaseArrayRecyclerAdapter<IMSessionEntity> 
 
             //5.设置消息免打扰
             setItemDontDisturbs(imSessionEntity, ivSessionNotDisturb);
+
+            //6设置置顶状态
+            setItemSetTop(holder, imSessionEntity, position);
         }
+    }
+
+    private void setItemSetTop(ViewHolder holder, IMSessionEntity imSessionEntity, int position) {
+        if (holder == null) return;
+        if (imSessionEntity == null) return;
+        boolean isSetToped = (imSessionEntity.recentContact.getTag() == ActionConstants.MESSAGE_GROUP_TOP);
+        holder.itemView.setBackgroundResource(isSetToped ? R.drawable.list_view_item_other_touch_bg : R.drawable.list_view_item_touch_bg);
+    }
+
+
+    /**
+     * 设置消息提示红点
+     *
+     * @param holder
+     * @param imSessionEntity
+     * @param position
+     */
+    private void setUnreadCount(ViewHolder holder, IMSessionEntity imSessionEntity, int position) {
+        if (imSessionEntity == null) return;
+        if (imSessionEntity.recentContact == null) return;
+        BGABadgeImageView iv_session_icon = holder.obtainView(R.id.iv_session_icon);
+        int unreadCount = imSessionEntity.recentContact.getUnreadCount();
+        //消息免打扰为小红点
+        if (imSessionEntity.isNotDisturb && unreadCount > 0) {
+            iv_session_icon.showCirclePointBadge();
+        } else {
+            if (unreadCount > 0 && unreadCount <= 99) {
+                //直接显示
+                iv_session_icon.showTextBadge(String.valueOf(unreadCount));
+            } else if (unreadCount > 99) {
+                // 显示...
+                iv_session_icon.showTextBadge("...");
+            } else if (unreadCount <= 0) {
+                //隐藏
+                iv_session_icon.hiddenBadge();
+            }
+        }
+
     }
 
     /**
@@ -371,23 +382,4 @@ public class IMSessionAdapter extends BaseArrayRecyclerAdapter<IMSessionEntity> 
     }
 
 
-    /**
-     * 设置提示数量
-     *
-     * @param badge
-     * @param unreadCount
-     */
-    private void setUnreadCount(Badge badge, int unreadCount) {
-        if (badge == null) return;
-        if (unreadCount > 0 && unreadCount <= 99) {
-            //直接显示
-            badge.setBadgeNumber(unreadCount);
-        } else if (unreadCount > 99) {
-            // 显示...
-            badge.setBadgeText("...");
-        } else if (unreadCount <= 0) {
-            //隐藏
-            badge.setBadgeNumber(0);
-        }
-    }
 }

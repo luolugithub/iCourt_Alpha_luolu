@@ -586,6 +586,7 @@ public class GroupDetailActivity extends BaseActivity implements BaseRecyclerAda
                     @Override
                     public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
                         dismissLoadingDialog();
+                        getData(true);
                     }
 
                     @Override
