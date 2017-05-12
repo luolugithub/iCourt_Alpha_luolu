@@ -87,12 +87,7 @@ public abstract class BaseRecentContactFragment extends BaseFragment {
     protected void initView() {
         registerNimObserver(true);
     }
-
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        registerNimObserver(false);
-    }
+    
 
     private void registerNimObserver(boolean register) {
         MsgServiceObserve service = NIMClient.getService(MsgServiceObserve.class);

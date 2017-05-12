@@ -40,6 +40,7 @@ import com.icourt.alpha.utils.JsonUtils;
 import com.icourt.alpha.utils.LogUtils;
 import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.widget.comparators.IMSessionEntityComparator;
+import com.icourt.alpha.widget.dialog.BottomActionDialog;
 import com.netease.nimlib.sdk.NIMClient;
 import com.netease.nimlib.sdk.RequestCallbackWrapper;
 import com.netease.nimlib.sdk.ResponseCode;
@@ -58,6 +59,7 @@ import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -84,7 +86,7 @@ import static com.icourt.alpha.constants.Const.CHAT_TYPE_TEAM;
  * version 1.0.0
  */
 public class MessageListFragment extends BaseRecentContactFragment
-        implements BaseRecyclerAdapter.OnItemClickListener, OnTabDoubleClickListener {
+        implements BaseRecyclerAdapter.OnItemClickListener, OnTabDoubleClickListener, BaseRecyclerAdapter.OnItemLongClickListener {
 
     private final List<Team> localTeams = new ArrayList<>();
     private final List<GroupContactBean> localGroupContactBeans = new ArrayList<>();
@@ -312,6 +314,7 @@ public class MessageListFragment extends BaseRecentContactFragment
 
     @Override
     protected void initView() {
+        super.initView();
         EventBus.getDefault().register(this);
         loginUserInfo = getLoginUserInfo();
         linearLayoutManager = new LinearLayoutManager(getContext());
@@ -323,6 +326,7 @@ public class MessageListFragment extends BaseRecentContactFragment
         headerFooterAdapter.addHeader(HeaderFooterAdapter.inflaterView(getContext(), R.layout.header_search_comm, recyclerView));
         recyclerView.setAdapter(headerFooterAdapter);
         imSessionAdapter.setOnItemClickListener(this);
+        imSessionAdapter.setOnItemLongClickListener(this);
         getData(true);
     }
 
@@ -688,5 +692,28 @@ public class MessageListFragment extends BaseRecentContactFragment
                         updateUIwithTopEntities(response.body().result);
                     }
                 });
+    }
+
+    @Override
+    public boolean onItemLongClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, final int position) {
+        final IMSessionEntity item = imSessionAdapter.getItem(adapter.getRealPos(position));
+        if (item != null) {
+            new BottomActionDialog(getContext(),
+                    null,
+                    Arrays.asList("删除会话"),
+                    new BottomActionDialog.OnActionItemClickListener() {
+                        @Override
+                        public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int p) {
+                            dialog.dismiss();
+                            imSessionAdapter.getData().remove(item);
+                            imSessionAdapter.notifyDataSetChanged();
+                            if (item.recentContact != null) {
+                                NIMClient.getService(MsgService.class)
+                                        .deleteRecentContact(item.recentContact);
+                            }
+                        }
+                    }).show();
+        }
+        return true;
     }
 }
