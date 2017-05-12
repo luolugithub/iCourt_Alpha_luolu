@@ -405,6 +405,7 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMMessageCustomBody> i
             chat_link_desc_tv.setText("link ext null");
         }
         holder.bindChildClick(R.id.chat_link_ll);
+        holder.bindChildLongClick(R.id.chat_link_ll);
     }
 
 
@@ -661,12 +662,15 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMMessageCustomBody> i
         } else {
             chat_lin_thumb_iv.setVisibility(View.GONE);
         }
-        chat_link_title_tv.setText(imMessageCustomBody.ext.title);
         chat_link_title_tv.setVisibility(TextUtils.isEmpty(imMessageCustomBody.ext.title) ? View.GONE : View.VISIBLE);
+        chat_link_title_tv.setText(imMessageCustomBody.ext.title);
 
         chat_link_url_tv.setText(imMessageCustomBody.ext.url);
+
+        chat_link_desc_tv.setVisibility(TextUtils.isEmpty(imMessageCustomBody.ext.desc) ? View.GONE : View.VISIBLE);
         chat_link_desc_tv.setText(imMessageCustomBody.ext.desc);
         holder.bindChildClick(R.id.chat_link_ll);
+        holder.bindChildLongClick(R.id.chat_link_ll);
     }
 
     /**
@@ -755,11 +759,12 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMMessageCustomBody> i
                 TextView chat_link_url_tv = holder.obtainView(R.id.chat_link_url_tv);
                 TextView chat_link_desc_tv = holder.obtainView(R.id.chat_link_desc_tv);
 
-                chat_link_desc_tv.setText("正在解析链接地址");
-                chat_link_desc_tv.setVisibility(View.VISIBLE);
+
                 chat_link_title_tv.setVisibility(View.GONE);
                 chat_lin_thumb_iv.setVisibility(View.GONE);
                 chat_link_url_tv.setVisibility(View.GONE);
+                chat_link_desc_tv.setVisibility(View.VISIBLE);
+                chat_link_desc_tv.setText("正在解析链接地址");
             }
             break;
             case MSG_STATU_FAIL:

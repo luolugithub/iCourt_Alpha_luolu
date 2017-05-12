@@ -1022,6 +1022,8 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
         switch (view.getId()) {
             case R.id.chat_image_iv:
                 return super.onItemLongClick(adapter, holder, view, position);
+            case R.id.chat_link_ll:
+                return super.onItemLongClick(adapter, holder, view, position);
         }
         return false;
     }

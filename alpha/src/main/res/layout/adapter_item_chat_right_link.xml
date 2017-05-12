@@ -32,6 +32,7 @@
                 android:ellipsize="end"
                 android:gravity="center_vertical"
                 android:maxLines="2"
+                android:minEms="10"
                 android:paddingBottom="10dp"
                 android:paddingLeft="10dp"
                 android:paddingRight="15dp"
@@ -65,11 +66,11 @@
 
                     <TextView
                         android:id="@+id/chat_link_url_tv"
-                        android:layout_width="match_parent"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:ellipsize="end"
                         android:maxLines="1"
-                        android:minEms="7"
+                        android:minEms="10"
                         android:text="http://www.baidu.com"
                         android:textColor="@color/alpha_font_color_orange" />
 
