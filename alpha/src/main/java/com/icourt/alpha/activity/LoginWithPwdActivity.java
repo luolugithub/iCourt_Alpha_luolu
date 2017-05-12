@@ -11,6 +11,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.icourt.alpha.R;
+import com.icourt.alpha.utils.SpUtils;
 import com.icourt.alpha.utils.SystemUtils;
 
 import butterknife.BindView;
@@ -26,6 +27,7 @@ import butterknife.OnClick;
  */
 public class LoginWithPwdActivity extends LoginBaseActivity {
 
+    private static final String KEY_ACCOUNT = "key_account";
     @BindView(R.id.et_mail)
     EditText etMail;
     @BindView(R.id.et_pwd)
@@ -48,6 +50,17 @@ public class LoginWithPwdActivity extends LoginBaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login_with_pwd);
         ButterKnife.bind(this);
+        initView();
+    }
+
+    @Override
+    protected void initView() {
+        super.initView();
+        String account = SpUtils.getInstance().getStringData(KEY_ACCOUNT, "");
+        if (!TextUtils.isEmpty(account)) {
+            etMail.setText(account);
+            etMail.setSelection(etMail.length());
+        }
     }
 
     @OnClick({R.id.pwd_login_rootview, R.id.pwd_login_btn, R.id.wechat_login_text})
@@ -64,6 +77,7 @@ public class LoginWithPwdActivity extends LoginBaseActivity {
                 } else if (TextUtils.isEmpty(etPwd.getText())) {
                     showTopSnackBar(getString(R.string.input_password_text));
                 } else {
+                    SpUtils.getInstance().putData(KEY_ACCOUNT, etPwd.getText().toString());
                     loginWithPwd(etMail.getText().toString(), etPwd.getText().toString());
                 }
                 break;

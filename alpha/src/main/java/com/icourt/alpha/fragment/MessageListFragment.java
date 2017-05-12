@@ -17,6 +17,7 @@ import android.widget.TextView;
 import com.google.gson.JsonParseException;
 import com.icourt.alpha.R;
 import com.icourt.alpha.activity.ChatActivity;
+import com.icourt.alpha.activity.LoginSelectActivity;
 import com.icourt.alpha.adapter.IMSessionAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.HeaderFooterAdapter;
@@ -42,6 +43,9 @@ import com.icourt.alpha.widget.comparators.IMSessionEntityComparator;
 import com.netease.nimlib.sdk.NIMClient;
 import com.netease.nimlib.sdk.RequestCallbackWrapper;
 import com.netease.nimlib.sdk.ResponseCode;
+import com.netease.nimlib.sdk.StatusCode;
+import com.netease.nimlib.sdk.auth.ClientType;
+import com.netease.nimlib.sdk.auth.OnlineClient;
 import com.netease.nimlib.sdk.msg.MsgService;
 import com.netease.nimlib.sdk.msg.constant.MsgTypeEnum;
 import com.netease.nimlib.sdk.msg.constant.SessionTypeEnum;
@@ -84,6 +88,8 @@ public class MessageListFragment extends BaseRecentContactFragment
 
     private final List<Team> localTeams = new ArrayList<>();
     private final List<GroupContactBean> localGroupContactBeans = new ArrayList<>();
+    @BindView(R.id.login_status_tv)
+    TextView loginStatusTv;
     private DataChangeAdapterObserver dataChangeAdapterObserver = new DataChangeAdapterObserver() {
         @Override
         protected void updateUI() {
@@ -200,6 +206,74 @@ public class MessageListFragment extends BaseRecentContactFragment
                     && StringUtils.equalsIgnoreCase(recentContact.getContactId(), item.recentContact.getContactId(), false)) {
                 imSessionAdapter.removeItem(i);
                 break;
+            }
+        }
+    }
+
+    @Override
+    protected void onlineClientEvent(List<OnlineClient> onlineClients) {
+        if (onlineClients == null || onlineClients.size() == 0) {
+            updateLoginStateView(false, "");
+        } else {
+            OnlineClient client = onlineClients.get(0);
+            log("------------>onlineClientEvent:" + client.getOs() + "  gettype:" + client.getClientType());
+            switch (client.getClientType()) {
+                case ClientType.Windows:
+                    updateLoginStateView(true, getString(R.string.message_statu_hint_multiport_logging) + getString(R.string.message_statu_hint_computer_version));
+                    break;
+                case ClientType.Web:
+                    updateLoginStateView(true, getString(R.string.message_statu_hint_multiport_logging) + getString(R.string.message_statu_hint_web_version));
+                    break;
+                case ClientType.iOS:
+                case ClientType.Android:
+                    updateLoginStateView(true, getString(R.string.message_statu_hint_multiport_logging) + getString(R.string.message_statu_hint_mobile_version));
+                    loginout();
+                    break;
+                default:
+                    updateLoginStateView(false, "");
+                    break;
+            }
+        }
+    }
+
+    /**
+     * 更新登陆状态提示
+     *
+     * @param isShow
+     * @param notice
+     */
+    private void updateLoginStateView(boolean isShow, String notice) {
+        if (loginStatusTv == null) return;
+        loginStatusTv.setVisibility(isShow ? View.VISIBLE : View.GONE);
+        loginStatusTv.setText(notice);
+    }
+
+    /**
+     * 退出登陆
+     */
+    private void loginout() {
+        LoginSelectActivity.launch(getContext());
+        if (getActivity() != null) {
+            getActivity().finish();
+        }
+    }
+
+    @Override
+    protected void onUserStatusChanged(StatusCode code) {
+        log("------------>onUserStatusChanged:" + code);
+        if (code.wontAutoLogin()) {
+            loginout();
+        } else {
+            if (code == StatusCode.NET_BROKEN) {
+                updateLoginStateView(true, getString(R.string.error_please_check_network));
+            } else if (code == StatusCode.UNLOGIN) {
+                updateLoginStateView(true, getString(R.string.message_statu_hint_no_login));
+            } else if (code == StatusCode.CONNECTING) {
+                updateLoginStateView(true, getString(R.string.message_statu_hint_nim_status_connecting));
+            } else if (code == StatusCode.LOGINING) {
+                updateLoginStateView(true, getString(R.string.message_statu_hint_nim_status_logining));
+            } else {
+                updateLoginStateView(false, "");
             }
         }
     }
@@ -402,7 +476,7 @@ public class MessageListFragment extends BaseRecentContactFragment
                 for (int i = 0; i < recentContacts.size(); i++) {
                     RecentContact recentContact = recentContacts.get(i);
                     if (recentContact == null) continue;
-
+                    IMUtils.logRecentContact("---------->messageFragment:i  ", recentContact);
                     //解析自定义的消息体
                     IMMessageCustomBody customIMBody = null;
                     if (!TextUtils.isEmpty(recentContact.getContent())) {
@@ -443,9 +517,9 @@ public class MessageListFragment extends BaseRecentContactFragment
         Bundle bundle = new Bundle();
         bundle.putInt("unReadNum", unReadNum);
         if (getParentFragment() instanceof OnFragmentCallBackListener) {
-            ((OnFragmentCallBackListener) getParentFragment()).onFragmentCallBack(MessageListFragment.this,0, bundle);
+            ((OnFragmentCallBackListener) getParentFragment()).onFragmentCallBack(MessageListFragment.this, 0, bundle);
         } else if (parentFragmentCallBackListener != null) {
-            parentFragmentCallBackListener.onFragmentCallBack(MessageListFragment.this, 0,bundle);
+            parentFragmentCallBackListener.onFragmentCallBack(MessageListFragment.this, 0, bundle);
         }
     }
 
@@ -559,7 +633,7 @@ public class MessageListFragment extends BaseRecentContactFragment
                 e.onNext(imSessionEntities);
                 e.onComplete();
             }
-        }).compose(this.<java.util.List<com.icourt.alpha.entity.bean.IMSessionEntity>>bindToLifecycle())
+        }).compose(this.<List<IMSessionEntity>>bindToLifecycle())
                 .subscribeOn(Schedulers.newThread())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Consumer<List<IMSessionEntity>>() {
@@ -615,5 +689,4 @@ public class MessageListFragment extends BaseRecentContactFragment
                     }
                 });
     }
-
 }

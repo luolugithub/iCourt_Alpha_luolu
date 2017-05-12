@@ -1,8 +1,6 @@
 package com.icourt.alpha.fragment;
 
-import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.db.convertor.IConvertModel;
@@ -13,6 +11,9 @@ import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.netease.nimlib.sdk.NIMClient;
 import com.netease.nimlib.sdk.Observer;
 import com.netease.nimlib.sdk.RequestCallback;
+import com.netease.nimlib.sdk.StatusCode;
+import com.netease.nimlib.sdk.auth.AuthServiceObserver;
+import com.netease.nimlib.sdk.auth.OnlineClient;
 import com.netease.nimlib.sdk.msg.MsgServiceObserve;
 import com.netease.nimlib.sdk.msg.model.RecentContact;
 import com.netease.nimlib.sdk.team.TeamService;
@@ -63,15 +64,46 @@ public abstract class BaseRecentContactFragment extends BaseFragment {
             teamUpdates(teams);
         }
     };
+    Observer<List<OnlineClient>> clientsObserver = new Observer<List<OnlineClient>>() {
+        @Override
+        public void onEvent(List<OnlineClient> onlineClients) {
+            onlineClientEvent(onlineClients);
+        }
+    };
+
+    /**
+     * 用户状态变化
+     */
+    Observer<StatusCode> userStatusObserver = new Observer<StatusCode>() {
+
+        @Override
+        public void onEvent(StatusCode code) {
+            onUserStatusChanged(code);
+        }
+    };
+
 
     @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    protected void initView() {
+        registerNimObserver(true);
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        registerNimObserver(false);
+    }
+
+    private void registerNimObserver(boolean register) {
         MsgServiceObserve service = NIMClient.getService(MsgServiceObserve.class);
-        service.observeRecentContact(recentContactMessageObserver, true);
-        service.observeRecentContactDeleted(deleteRecentContactObserver, true);
+        service.observeRecentContact(recentContactMessageObserver, register);
+        service.observeRecentContactDeleted(deleteRecentContactObserver, register);
         NIMClient.getService(TeamServiceObserver.class)
-                .observeTeamUpdate(teamUpdateObserver, true);
+                .observeTeamUpdate(teamUpdateObserver, register);
+        NIMClient.getService(AuthServiceObserver.class)
+                .observeOtherClients(clientsObserver, register);
+        NIMClient.getService(AuthServiceObserver.class)
+                .observeOnlineStatus(userStatusObserver, register);
     }
 
     /**
@@ -133,6 +165,22 @@ public abstract class BaseRecentContactFragment extends BaseFragment {
      */
     protected abstract void recentContactDeleted(@NonNull RecentContact recentContact);
 
+
+    /**
+     * 登陆状态
+     *
+     * @param onlineClients
+     */
+    protected abstract void onlineClientEvent(List<OnlineClient> onlineClients);
+
+
+    /**
+     * 用户登陆状态发生变化
+     *
+     * @param code
+     */
+    protected abstract void onUserStatusChanged(StatusCode code);
+
     /**
      * team更新
      *
@@ -142,11 +190,7 @@ public abstract class BaseRecentContactFragment extends BaseFragment {
 
     @Override
     public void onDestroy() {
-        MsgServiceObserve service = NIMClient.getService(MsgServiceObserve.class);
-        service.observeRecentContact(recentContactMessageObserver, false);
-        service.observeRecentContactDeleted(deleteRecentContactObserver, false);
-        NIMClient.getService(TeamServiceObserver.class)
-                .observeTeamUpdate(teamUpdateObserver, false);
+        registerNimObserver(false);
         super.onDestroy();
     }
 }

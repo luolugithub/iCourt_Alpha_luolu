@@ -25,8 +25,6 @@ import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.GlideUtils;
 import com.icourt.alpha.utils.transformations.BlurTransformation;
-import com.netease.nimlib.sdk.NIMClient;
-import com.netease.nimlib.sdk.auth.AuthService;
 import com.umeng.socialize.UMAuthListener;
 import com.umeng.socialize.UMShareAPI;
 import com.umeng.socialize.bean.SHARE_MEDIA;
@@ -183,7 +181,6 @@ public class TabMineFragment extends BaseFragment {
      * 退出登录
      */
     private void loginOut() {
-        NIMClient.getService(AuthService.class).logout();
         //撤销微信授权
         if (!mShareAPI.isAuthorize(getActivity(), SHARE_MEDIA.WEIXIN)) {
             dismissLoadingDialog();

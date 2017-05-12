@@ -43,6 +43,8 @@ public class LoginBaseActivity extends BaseUmengActivity {
     protected void onCreate(Bundle savedInstanceState) {
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);//全屏
         super.onCreate(savedInstanceState);
+        NIMClient.getService(AuthService.class).logout();
+        deleteOauth(SHARE_MEDIA.WEIXIN);
         clearLoginUserInfo();
     }
 
