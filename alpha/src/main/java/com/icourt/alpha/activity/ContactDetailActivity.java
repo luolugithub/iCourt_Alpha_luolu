@@ -159,7 +159,11 @@ public class ContactDetailActivity extends BaseActivity {
                 }
                 break;
             case R.id.contact_file_tv:
-                IMFileListActivity.launch(getContext());
+                if (groupContactBean == null) return;
+                ChatMsgClassfyActivity.launch(getContext(),
+                        ChatMsgClassfyActivity.MSG_CLASSFY_CHAT_FILE,
+                        Const.CHAT_TYPE_P2P,
+                        groupContactBean.accid);
                 break;
             case R.id.contact_setTop_switch:
                 if (!contactSetTopSwitch.isChecked()) {

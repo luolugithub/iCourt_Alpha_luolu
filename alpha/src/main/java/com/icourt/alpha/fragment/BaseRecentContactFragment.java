@@ -87,7 +87,7 @@ public abstract class BaseRecentContactFragment extends BaseFragment {
     protected void initView() {
         registerNimObserver(true);
     }
-    
+
 
     private void registerNimObserver(boolean register) {
         MsgServiceObserve service = NIMClient.getService(MsgServiceObserve.class);

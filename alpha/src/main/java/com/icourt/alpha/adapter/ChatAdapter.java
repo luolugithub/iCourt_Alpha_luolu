@@ -190,7 +190,7 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMMessageCustomBody> i
                     case Const.MSG_TYPE_TXT:
                         return TYPE_LEFT_TXT;
                     case Const.MSG_TYPE_FILE:
-                        return TYPE_RIGHT_FILE;
+                        return TYPE_LEFT_FILE;
                     case Const.MSG_TYPE_DING:
                         if (item.ext != null) {
                             //钉细分 文本 文件图片 链接

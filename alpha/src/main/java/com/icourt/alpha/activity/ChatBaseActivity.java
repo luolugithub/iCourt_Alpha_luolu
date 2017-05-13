@@ -904,6 +904,7 @@ public abstract class ChatBaseActivity extends BaseActivity implements INIMessag
                 if (message != null) {
                     IMMessageCustomBody imBody = getIMBody(message);
                     if (imBody != null) {
+                        imBody.imMessage = message;
                         customerMessageEntities.add(imBody);
                     }
                 }
@@ -1065,7 +1066,7 @@ public abstract class ChatBaseActivity extends BaseActivity implements INIMessag
                         } else if (TextUtils.equals(actionName, "转任务")) {
                             msgActionConvert2Task(customIMBody);
                         } else if (TextUtils.equals(actionName, "撤回")) {
-                            msgActionRevoke(customIMBody.id);
+                            msgActionRevoke(customIMBody.id, customIMBody.imMessage);
                         } else if (TextUtils.equals(actionName, "转发")) {
                             showContactShareDialogFragment(customIMBody.id);
                         }
@@ -1221,12 +1222,33 @@ public abstract class ChatBaseActivity extends BaseActivity implements INIMessag
      *
      * @param msgId
      */
-    protected final void msgActionRevoke(String msgId) {
+    protected final void msgActionRevoke(@NonNull String msgId, @Nullable final IMMessage imMessage) {
         if (TextUtils.isEmpty(msgId)) return;
+        //网络
         getChatApi().msgRevoke(msgId)
                 .enqueue(new SimpleCallBack<JsonElement>() {
                     @Override
                     public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
+                        if (imMessage != null) {
+                            NIMClient.getService(MsgService.class)
+                                    .revokeMessage(imMessage)
+                                    .setCallback(new RequestCallback<Void>() {
+                                        @Override
+                                        public void onSuccess(Void param) {
+                                            //deleteItem(imMessage, true);
+                                        }
+
+                                        @Override
+                                        public void onFailed(int code) {
+
+                                        }
+
+                                        @Override
+                                        public void onException(Throwable exception) {
+
+                                        }
+                                    });
+                        }
 
                     }
                 });

@@ -101,9 +101,6 @@
             android:name=".activity.ContactDetailActivity"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".activity.IMFileListActivity"
-            android:screenOrientation="portrait" />
-        <activity
             android:name=".activity.ImagePagerActivity"
             android:screenOrientation="portrait" />
         <activity

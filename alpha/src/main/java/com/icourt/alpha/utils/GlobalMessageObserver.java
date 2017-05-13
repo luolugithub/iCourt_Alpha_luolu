@@ -60,6 +60,7 @@ public class GlobalMessageObserver implements Observer<List<IMMessage>> {
             log("----------->globalMessageObserver customBody:" + message.getContent());
             imBodyEntity = JsonUtils.Gson2Bean(message.getContent(), IMMessageCustomBody.class);
             if (imBodyEntity != null && message != null) {
+                imBodyEntity.imMessage = message;
                 switch (message.getStatus()) {
                     case draft:
                         imBodyEntity.msg_statu = Const.MSG_STATU_DRAFT;
@@ -97,6 +98,7 @@ public class GlobalMessageObserver implements Observer<List<IMMessage>> {
     public static final IMMessageCustomBody getLocalIMBody(IMMessage message) {
         IMMessageCustomBody imBodyEntity = getIMBody(message);
         if (imBodyEntity != null && message != null) {
+            imBodyEntity.imMessage = message;
             switch (message.getStatus()) {
                 case sending:
                     imBodyEntity.msg_statu = Const.MSG_STATU_FAIL;
