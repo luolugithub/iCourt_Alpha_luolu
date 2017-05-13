@@ -52,6 +52,7 @@ import com.netease.nimlib.sdk.msg.model.IMMessage;
 import com.netease.nimlib.sdk.msg.model.MessageReceipt;
 import com.netease.nimlib.sdk.msg.model.RecentContact;
 import com.netease.nimlib.sdk.team.TeamService;
+import com.netease.nimlib.sdk.team.TeamServiceObserver;
 import com.netease.nimlib.sdk.team.model.Team;
 import com.trello.rxlifecycle2.android.ActivityEvent;
 
@@ -102,7 +103,8 @@ import static com.icourt.alpha.constants.Const.MSG_TYPE_VOICE;
  * date createTime：2017/4/24
  * version 1.0.0
  */
-public abstract class ChatBaseActivity extends BaseActivity implements INIMessageListener, BaseRecyclerAdapter.OnItemLongClickListener {
+public abstract class ChatBaseActivity
+        extends BaseActivity implements INIMessageListener, BaseRecyclerAdapter.OnItemLongClickListener {
 
     //收藏的消息列表
     protected final Set<String> msgCollectedIdsList = new HashSet<>();
@@ -140,8 +142,23 @@ public abstract class ChatBaseActivity extends BaseActivity implements INIMessag
         }
     };
 
+    private Observer<List<Team>> teamUpdateObserver = new Observer<List<Team>>() {
+        @Override
+        public void onEvent(List<Team> teams) {
+            if (teams == null) return;
+            if (teams.isEmpty()) return;
+            teamUpdates(teams);
+        }
+    };
     private ContactDbService contactDbService;
     private AlphaUserInfo loadedLoginUserInfo;
+
+    /**
+     * team更新
+     *
+     * @param teams
+     */
+    protected abstract void teamUpdates(@NonNull List<Team> teams);
 
     /**
      * 获取登陆人信息
@@ -349,6 +366,8 @@ public abstract class ChatBaseActivity extends BaseActivity implements INIMessag
         service.observeMessageReceipt(messageReceiptObserver, register);
         service.observeMsgStatus(messageStatusObserver, register);
         service.observeRevokeMessage(revokeMessageObserver, register);
+        NIMClient.getService(TeamServiceObserver.class)
+                .observeTeamUpdate(teamUpdateObserver, register);
     }
 
 

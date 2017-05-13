@@ -285,11 +285,18 @@ public class MessageListFragment extends BaseRecentContactFragment
     @Override
     protected void teamUpdates(@NonNull List<Team> teams) {
         for (Team t : teams) {
-            int indexOf = localTeams.indexOf(t);
-            if (indexOf >= 0) {
-                localTeams.set(indexOf, t);
-                imSessionAdapter.notifyDataSetChanged();
-            } else {
+            if (t == null) continue;
+            log("------------->teamUpdate:" + t.getId() + "  t.name:" + t.getName());
+            boolean isExist = false;
+            for (int i = 0; i < localTeams.size(); i++) {
+                Team team = localTeams.get(i);
+                if (team != null && StringUtils.equalsIgnoreCase(team.getId(), t.getId(), false)) {
+                    isExist = true;
+                    localTeams.set(i, t);
+                    imSessionAdapter.notifyDataSetChanged();
+                }
+            }
+            if (!isExist) {
                 localTeams.add(t);
             }
         }

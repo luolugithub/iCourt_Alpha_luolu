@@ -241,6 +241,18 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
     }
 
     @Override
+    protected void teamUpdates(@NonNull List<Team> teams) {
+        if (teams != null & getIMChatType() == CHAT_TYPE_TEAM) {
+            for (Team t : teams) {
+                if (StringUtils.equalsIgnoreCase(t.getId(), getIMChatId(), false)) {
+                    setTitle(String.valueOf(t.getName()));
+                    break;
+                }
+            }
+        }
+    }
+
+    @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
