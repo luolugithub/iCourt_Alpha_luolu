@@ -7,6 +7,7 @@ import com.icourt.alpha.entity.bean.IMMessageCustomBody;
 import com.icourt.alpha.view.TextDrawable;
 import com.netease.nimlib.sdk.msg.model.IMMessage;
 import com.netease.nimlib.sdk.msg.model.RecentContact;
+import com.netease.nimlib.sdk.team.model.Team;
 
 import java.util.Arrays;
 import java.util.List;
@@ -159,8 +160,31 @@ public class IMUtils {
      * 输出message
      *
      * @param tag
+     * @param team
+     */
+    public static void logIMTeam(String tag, Team team) {
+        try {
+            StringBuilder sb = new StringBuilder(tag);
+            if (team == null) {
+                sb.append("null");
+            } else {
+                sb.append("\nid:" + team.getId());
+                sb.append("\nname:" + team.getName());
+                sb.append("\nicon:" + team.getIcon());
+            }
+            LogUtils.d(sb.toString());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * 输出message
+     *
+     * @param tag
      * @param message
      */
+
     public static void logIMMessage(String tag, IMMessage message) {
         try {
             StringBuilder sb = new StringBuilder(tag);

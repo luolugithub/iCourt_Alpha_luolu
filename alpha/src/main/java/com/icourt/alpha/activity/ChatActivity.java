@@ -37,6 +37,7 @@ import com.icourt.alpha.fragment.dialogfragment.ContactDialogFragment;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.callback.SimpleTextWatcher;
+import com.icourt.alpha.utils.IMUtils;
 import com.icourt.alpha.utils.LogUtils;
 import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.utils.SystemUtils;
@@ -244,6 +245,7 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
     protected void teamUpdates(@NonNull List<Team> teams) {
         if (teams != null & getIMChatType() == CHAT_TYPE_TEAM) {
             for (Team t : teams) {
+                IMUtils.logIMTeam("------------>chat teamUpdates:", t);
                 if (StringUtils.equalsIgnoreCase(t.getId(), getIMChatId(), false)) {
                     setTitle(String.valueOf(t.getName()));
                     break;
