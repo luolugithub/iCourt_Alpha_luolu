@@ -13,6 +13,8 @@ import org.greenrobot.eventbus.EventBus;
 import java.util.List;
 
 import static com.bugtags.library.Bugtags.log;
+import static com.netease.nimlib.sdk.msg.constant.MsgTypeEnum.notification;
+import static com.netease.nimlib.sdk.msg.constant.MsgTypeEnum.text;
 
 /**
  * Description    全局消息接收观察者;负责删除一些不需要展示的类型消息 解析自定义消息 并通知其它页面
@@ -30,18 +32,25 @@ public class GlobalMessageObserver implements Observer<List<IMMessage>> {
         for (IMMessage imMessage : messages) {
             if (imMessage != null) {
                 IMUtils.logIMMessage("----------->globalMessageObserver message:", imMessage);
-                if (imMessage.getAttachment() != null)//机器人 alpha小助手
-                {
-
+                if (imMessage.getMsgType() == notification) {//推送删除
+                    NIMClient.getService(MsgService.class)
+                            .deleteChattingHistory(imMessage);
+                } else if (imMessage.getMsgType() == text
+                        && imMessage.getAttachment() != null) {//机器人 alpha小助手
+                    IMUtils.logIMMessage("----------->globalMessageObserver message: alpha小助手", imMessage);
                 } else {
-                    IMMessageCustomBody imBody = getIMBody(imMessage);
-                    //从本地数据库删除
-                    if (imBody == null || IMUtils.isFilterChatIMMessage(imBody)) {
-                        NIMClient.getService(MsgService.class)
-                                .deleteChattingHistory(imMessage);
-                    } else {
-                        //发送给其它页面
-                        EventBus.getDefault().post(imBody);
+                    if (imMessage.getMsgType() == text) {
+                        //自定义消息体一定是text
+                        IMMessageCustomBody imBody = getIMBody(imMessage);
+                        //从本地数据库删除
+                        if (imBody == null || IMUtils.isFilterChatIMMessage(imBody)) {
+                            IMUtils.logIMMessage("----------->globalMessageObserver del message:", imMessage);
+                            NIMClient.getService(MsgService.class)
+                                    .deleteChattingHistory(imMessage);
+                        } else {
+                            //发送给其它页面
+                            EventBus.getDefault().post(imBody);
+                        }
                     }
                 }
             }
@@ -84,9 +93,11 @@ public class GlobalMessageObserver implements Observer<List<IMMessage>> {
             }
         } catch (JsonParseException e) {
             e.printStackTrace();
+            LogUtils.d("--------->getIMBody JsonParseException:" + e);
         }
         return imBodyEntity;
     }
+
 
     /**
      * 解析自定义的消息体

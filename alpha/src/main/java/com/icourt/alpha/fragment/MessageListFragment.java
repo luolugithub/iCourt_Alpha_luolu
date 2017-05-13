@@ -489,15 +489,13 @@ public class MessageListFragment extends BaseRecentContactFragment
                 for (int i = 0; i < recentContacts.size(); i++) {
                     RecentContact recentContact = recentContacts.get(i);
                     if (recentContact == null) continue;
-                    IMUtils.logRecentContact("---------->messageFragment:i  ", recentContact);
                     //解析自定义的消息体
                     IMMessageCustomBody customIMBody = null;
-                    if (!TextUtils.isEmpty(recentContact.getContent())) {
-                        try {
-                            customIMBody = JsonUtils.Gson2Bean(recentContact.getContent(), IMMessageCustomBody.class);
-                        } catch (JsonParseException ex) {
-                            ex.printStackTrace();
-                        }
+                    try {
+                        customIMBody = JsonUtils.Gson2Bean(recentContact.getContent(), IMMessageCustomBody.class);
+                    } catch (JsonParseException ex) {
+                        ex.printStackTrace();
+                        log("------------->解析异常:" + ex + "\n" + recentContact.getContactId() + " \n" + recentContact.getContent());
                     }
                     IMSessionEntity imSessionEntity = new IMSessionEntity(recentContact, customIMBody);
                     imSessionEntity.isNotDisturb = (recentContact.getTag() == ActionConstants.MESSAGE_GROUP_TOP);
@@ -546,6 +544,7 @@ public class MessageListFragment extends BaseRecentContactFragment
             for (int i = recentContacts.size() - 1; i >= 0; i--) {
                 RecentContact item = recentContacts.get(i);
                 if (item == null) continue;
+                IMUtils.logRecentContact("--------->messageFragment:i:" + i, item);
                 //过滤掉其它消息类型
                 if (item.getMsgType() != MsgTypeEnum.custom
                         && item.getMsgType() != MsgTypeEnum.text) {

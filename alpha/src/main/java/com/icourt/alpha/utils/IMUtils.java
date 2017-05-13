@@ -186,6 +186,10 @@ public class IMUtils {
                 sb.append("\npushPayload:" + message.getPushPayload());
                 sb.append("\nisRemoteRead:" + message.isRemoteRead());
                 sb.append("\nfromClientType:" + message.getFromClientType());
+
+                if (message.getAttachment() != null) {
+                    sb.append("\ngetAttachment:" + message.getAttachment().toJson(false));
+                }
             }
             LogUtils.d(sb.toString());
         } catch (Exception e) {
@@ -219,6 +223,9 @@ public class IMUtils {
                 sb.append("\nAttachment:" + recentContact.getAttachment());
                 sb.append("\nremoteExtension:" + recentContact.getTag());
                 sb.append("\nExtension:" + recentContact.getExtension());
+                if (recentContact.getAttachment() != null) {
+                    sb.append("\ngetAttachment:" + recentContact.getAttachment().toJson(false));
+                }
             }
             LogUtils.d(sb.toString());
         } catch (Exception e) {

@@ -34,6 +34,7 @@ import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.INIMessageListener;
 import com.icourt.alpha.utils.GlobalMessageObserver;
+import com.icourt.alpha.utils.IMUtils;
 import com.icourt.alpha.utils.JsonUtils;
 import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.utils.SystemUtils;
@@ -920,6 +921,7 @@ public abstract class ChatBaseActivity
         List<IMMessageCustomBody> customerMessageEntities = new ArrayList<>();
         if (param != null) {
             for (IMMessage message : param) {
+                IMUtils.logIMMessage("-------------->chat:", message);
                 if (message != null) {
                     IMMessageCustomBody imBody = getIMBody(message);
                     if (imBody != null) {
