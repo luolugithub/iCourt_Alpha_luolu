@@ -763,7 +763,10 @@ public abstract class ChatBaseActivity extends BaseActivity implements INIMessag
      * @return
      */
     protected final boolean isIMLinkText(String text) {
-        return UrlUtils.isHttpLink(text);
+        if (!TextUtils.isEmpty(text)) {
+            return text.startsWith("http") && UrlUtils.isHttpLink(text);
+        }
+        return false;
     }
 
     /**

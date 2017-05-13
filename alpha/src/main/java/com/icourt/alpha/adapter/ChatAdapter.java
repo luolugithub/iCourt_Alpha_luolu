@@ -2,6 +2,8 @@ package com.icourt.alpha.adapter;
 
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
+import android.text.method.LinkMovementMethod;
+import android.text.util.Linkify;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
@@ -483,6 +485,8 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMMessageCustomBody> i
         TextView textView = holder.obtainView(R.id.chat_txt_tv);
         if (imMessageCustomBody != null) {
             textView.setText(imMessageCustomBody.content);
+            textView.setAutoLinkMask(Linkify.ALL);
+            textView.setMovementMethod(LinkMovementMethod.getInstance());
         } else {
             textView.setText("null");
         }
@@ -653,6 +657,11 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMMessageCustomBody> i
         ImageView chat_lin_thumb_iv = holder.obtainView(R.id.chat_lin_thumb_iv);
         TextView chat_link_url_tv = holder.obtainView(R.id.chat_link_url_tv);
         TextView chat_link_desc_tv = holder.obtainView(R.id.chat_link_desc_tv);
+        chat_link_title_tv.setVisibility(View.VISIBLE);
+        chat_lin_thumb_iv.setVisibility(View.VISIBLE);
+        chat_link_url_tv.setVisibility(View.VISIBLE);
+        chat_link_desc_tv.setVisibility(View.VISIBLE);
+
         String thumb = imMessageCustomBody.ext.thumb;
         if (!TextUtils.isEmpty(thumb) && thumb.startsWith("http")) {
             chat_lin_thumb_iv.setVisibility(View.VISIBLE);

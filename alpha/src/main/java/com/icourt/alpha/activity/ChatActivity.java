@@ -1011,7 +1011,11 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
                 break;
             case R.id.chat_link_ll:
                 if (item.ext != null) {
-                    WebViewActivity.launch(getContext(), item.ext.url);
+                    if (item.ext.ext != null) {
+                        WebViewActivity.launch(getContext(), item.ext.ext.url);
+                    } else {
+                        WebViewActivity.launch(getContext(), item.ext.url);
+                    }
                 }
                 break;
         }
