@@ -118,22 +118,11 @@ public class IMSessionAdapter extends BaseArrayRecyclerAdapter<IMSessionEntity> 
 
 
             //4.设置消息体展示
-            if (imSessionEntity.recentContact.getAttachment() != null) {
-                //目前主要机器人item采用
-                setItemAlphaData(imSessionEntity,
-                        ivSessionIcon,
-                        tvSessionTitle,
-                        tvSessionContent);
-            } else if (imSessionEntity.customIMBody != null) {
+            setSessionTitle(imSessionEntity, tvSessionTitle);
+            setSessionIcon(imSessionEntity, ivSessionIcon);
+            setItemData(imSessionEntity,
+                    tvSessionContent);
 
-                //展示自定义消息
-                setSessionTitle(imSessionEntity, tvSessionTitle);
-
-                setSessionIcon(imSessionEntity, ivSessionIcon);
-
-                setItemData(imSessionEntity,
-                        tvSessionContent);
-            }
 
             //5.设置消息免打扰
             setItemDontDisturbs(imSessionEntity, ivSessionNotDisturb);
@@ -352,23 +341,6 @@ public class IMSessionAdapter extends BaseArrayRecyclerAdapter<IMSessionEntity> 
         }
     }
 
-
-    /**
-     * 初始化附件 主要是机器人
-     *
-     * @param imSessionEntity
-     * @param ivSessionIcon
-     * @param tvSessionTitle
-     * @param tvSessionContent
-     */
-    private void setItemAlphaData(IMSessionEntity imSessionEntity, ImageView ivSessionIcon, TextView tvSessionTitle, TextView tvSessionContent) {
-        if (imSessionEntity == null) return;
-        if (imSessionEntity.recentContact == null) return;
-        if (imSessionEntity.recentContact.getAttachment() == null) return;
-
-        //TODO 初始化alpha小助手
-        // GlideUtils.ladUser(ivSessionIcon.getContext(), getUserIcon(i), ivSessionIcon);
-    }
 
     /**
      * 设置消息展示的时间

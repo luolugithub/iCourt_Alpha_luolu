@@ -83,6 +83,8 @@ public class ContactDetailActivity extends BaseActivity {
     private static final String KEY_HIDEN_SEND_MSG_BTN = "hidenSendMsgBtn";
     private static final int CODE_REQUEST_PERMISSION_CALL_PHONE = 101;
     ContactDbService contactDbService;
+    @BindView(R.id.user_comm_ll)
+    LinearLayout userCommLl;
 
     public static void launch(@NonNull Context context,
                               @Nullable String accId,
@@ -121,8 +123,15 @@ public class ContactDetailActivity extends BaseActivity {
                 GlideUtils.loadUser(getContext(), groupContactBean.pic, contactIconIv);
             }
         }
-        setViewVisible(contactFileAndroidTopLl, !getIntent().getBooleanExtra(KEY_HIDEN_FILE_ITEM, false));
-        setViewVisible(contactSendMsgTv, !getIntent().getBooleanExtra(KEY_HIDEN_SEND_MSG_BTN, false));
+        if (groupContactBean != null && groupContactBean.type == GroupContactBean.TYPE_ROBOT) {
+            setViewVisible(contactFileAndroidTopLl, true);
+            userCommLl.setVisibility(View.GONE);
+            contactFileTv.setVisibility(View.GONE);
+            setViewVisible(contactSendMsgTv, false);
+        } else {
+            setViewVisible(contactFileAndroidTopLl, !getIntent().getBooleanExtra(KEY_HIDEN_FILE_ITEM, false));
+            setViewVisible(contactSendMsgTv, !getIntent().getBooleanExtra(KEY_HIDEN_SEND_MSG_BTN, false));
+        }
     }
 
     @OnClick({R.id.contact_send_msg_tv

@@ -16,6 +16,7 @@ import android.widget.TextView;
 
 import com.google.gson.JsonParseException;
 import com.icourt.alpha.R;
+import com.icourt.alpha.activity.AlphaSpecialHelperActivity;
 import com.icourt.alpha.activity.ChatActivity;
 import com.icourt.alpha.activity.LoginSelectActivity;
 import com.icourt.alpha.adapter.IMSessionAdapter;
@@ -151,12 +152,14 @@ public class MessageListFragment extends BaseRecentContactFragment
                                 isExist = true;
                                 //解析自定义的消息体
                                 IMMessageCustomBody customIMBody = null;
-                                if (!TextUtils.isEmpty(recentContact.getContent())) {
-                                    try {
-                                        customIMBody = JsonUtils.Gson2Bean(recentContact.getContent(), IMMessageCustomBody.class);
-                                    } catch (JsonParseException ex) {
-                                        ex.printStackTrace();
-                                    }
+                                String jsonBody = recentContact.getContent();
+                                if (recentContact.getMsgType() == MsgTypeEnum.custom && recentContact.getAttachment() != null) {
+                                    jsonBody = recentContact.getAttachment().toJson(false);
+                                }
+                                try {
+                                    customIMBody = JsonUtils.Gson2Bean(jsonBody, IMMessageCustomBody.class);
+                                } catch (JsonParseException ex) {
+                                    ex.printStackTrace();
                                 }
                                 if (customIMBody != null) {
                                     imSessionEntity.customIMBody = customIMBody;
@@ -168,30 +171,42 @@ public class MessageListFragment extends BaseRecentContactFragment
                     if (!isExist) {
                         //解析自定义的消息体
                         IMMessageCustomBody customIMBody = null;
-                        if (!TextUtils.isEmpty(recentContact.getContent())) {
-                            try {
-                                customIMBody = JsonUtils.Gson2Bean(recentContact.getContent(), IMMessageCustomBody.class);
-                            } catch (JsonParseException ex) {
-                                ex.printStackTrace();
-                            }
+                        String jsonBody = recentContact.getContent();
+                        if (recentContact.getMsgType() == MsgTypeEnum.custom && recentContact.getAttachment() != null) {
+                            jsonBody = recentContact.getAttachment().toJson(false);
                         }
-                        //装饰实体
-                        data.add(new IMSessionEntity(recentContact, customIMBody));
+                        try {
+                            customIMBody = JsonUtils.Gson2Bean(jsonBody, IMMessageCustomBody.class);
+                        } catch (JsonParseException ex) {
+                            ex.printStackTrace();
+                        }
+                        if (customIMBody != null) {
+                            //装饰实体
+                            data.add(new IMSessionEntity(recentContact, customIMBody));
+                        }
                     }
                 }
                 Collections.sort(data, imSessionEntityComparator);
                 e.onNext(data);
                 e.onComplete();
             }
-        }).compose(this.<List<IMSessionEntity>>bindToLifecycle())
-                .subscribeOn(Schedulers.newThread())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Consumer<List<IMSessionEntity>>() {
-                    @Override
-                    public void accept(List<IMSessionEntity> imSessionEntities) throws Exception {
-                        imSessionAdapter.bindData(true, imSessionEntities);
-                    }
-                });
+        }).
+
+                compose(this.<List<IMSessionEntity>>bindToLifecycle())
+                .
+
+                        subscribeOn(Schedulers.newThread())
+                .
+
+                        observeOn(AndroidSchedulers.mainThread())
+                .
+
+                        subscribe(new Consumer<List<IMSessionEntity>>() {
+                            @Override
+                            public void accept(List<IMSessionEntity> imSessionEntities) throws Exception {
+                                imSessionAdapter.bindData(true, imSessionEntities);
+                            }
+                        });
     }
 
     /**
@@ -491,12 +506,17 @@ public class MessageListFragment extends BaseRecentContactFragment
                     if (recentContact == null) continue;
                     //解析自定义的消息体
                     IMMessageCustomBody customIMBody = null;
+                    String jsonBody = recentContact.getContent();
+                    if (recentContact.getMsgType() == MsgTypeEnum.custom && recentContact.getAttachment() != null) {
+                        jsonBody = recentContact.getAttachment().toJson(false);
+                    }
                     try {
-                        customIMBody = JsonUtils.Gson2Bean(recentContact.getContent(), IMMessageCustomBody.class);
+                        customIMBody = JsonUtils.Gson2Bean(jsonBody, IMMessageCustomBody.class);
                     } catch (JsonParseException ex) {
                         ex.printStackTrace();
                         log("------------->解析异常:" + ex + "\n" + recentContact.getContactId() + " \n" + recentContact.getContent());
                     }
+                    if (customIMBody == null) continue;
                     IMSessionEntity imSessionEntity = new IMSessionEntity(recentContact, customIMBody);
                     imSessionEntity.isNotDisturb = (recentContact.getTag() == ActionConstants.MESSAGE_GROUP_TOP);
                     //装饰实体
@@ -573,9 +593,14 @@ public class MessageListFragment extends BaseRecentContactFragment
         if (data != null && data.customIMBody != null) {
             switch (data.customIMBody.ope) {
                 case CHAT_TYPE_P2P:
-                    ChatActivity.launchP2P(getActivity(),
-                            data.recentContact.getContactId(),
-                            data.customIMBody.name);
+                    if (data.isRobot()) {
+                        AlphaSpecialHelperActivity.launch(getActivity(),
+                                data.recentContact.getContactId());
+                    } else {
+                        ChatActivity.launchP2P(getActivity(),
+                                data.recentContact.getContactId(),
+                                data.customIMBody.name);
+                    }
                     break;
                 case CHAT_TYPE_TEAM:
                     TextView tvSessionTitle = holder.obtainView(R.id.tv_session_title);

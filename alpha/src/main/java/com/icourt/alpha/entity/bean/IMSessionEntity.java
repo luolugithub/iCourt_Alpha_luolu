@@ -1,5 +1,6 @@
 package com.icourt.alpha.entity.bean;
 
+import com.netease.nimlib.sdk.msg.constant.MsgTypeEnum;
 import com.netease.nimlib.sdk.msg.model.RecentContact;
 
 /**
@@ -15,6 +16,19 @@ public class IMSessionEntity {
     public IMMessageCustomBody customIMBody;//自定义消息体 请提前解析
 
     public boolean isNotDisturb;//是否消息免打扰
+
+    /**
+     * 是否是机器人
+     *
+     * @return
+     */
+    public boolean isRobot() {
+        if (recentContact != null) {
+            return recentContact.getMsgType() == MsgTypeEnum.custom
+                    && recentContact.getAttachment() != null;
+        }
+        return false;
+    }
 
     public IMSessionEntity(RecentContact recentContact, IMMessageCustomBody customIMBody) {
         this.recentContact = recentContact;

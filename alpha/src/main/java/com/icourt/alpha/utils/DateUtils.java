@@ -162,6 +162,15 @@ public class DateUtils {
     }
 
     /**
+     * @param milliseconds
+     * @return
+     */
+    public static String getyyyyMMdd(long milliseconds) {
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy年MM月dd日");
+        return formatter.format(milliseconds);
+    }
+
+    /**
      * 获得天数差
      *
      * @param begin
