@@ -29,12 +29,7 @@ public class TaskUsersAdapter extends BaseArrayRecyclerAdapter<TaskEntity.TaskIt
         GlideUtils.loadUser(imageView.getContext(), attendeeUserEntity.pic, imageView);
 
         if (getItemCount() > 2) {
-//            if (position == 0) {
-//                setFirstParams(holder, 0);
-//            } else {
-//                setFirstParams(holder, -10);
-//            }
-            if (getData().lastIndexOf(attendeeUserEntity) == position) {
+            if (position == 0) {
                 TextDrawable textDrawable = TextDrawable.builder().buildRound(String.valueOf(getData().size()), 0xFF8c8f92);
                 imageView.setImageDrawable(textDrawable);
             }

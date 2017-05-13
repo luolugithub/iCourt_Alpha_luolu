@@ -59,10 +59,10 @@ public class TabTaskFragment extends BaseFragment {
         baseFragmentAdapter.bindTitle(true, Arrays.asList("全部", "新任务", "我关注的", "我部门的"));
         baseFragmentAdapter.bindData(true,
                 Arrays.asList(
-                        TaskFragment.newInstance(0),
-                        TaskFragment.newInstance(1),
-                        TaskFragment.newInstance(2),
-                        TaskFragment.newInstance(3)));
+                        TaskListFragment.newInstance(0),
+                        TaskListFragment.newInstance(1),
+                        TaskListFragment.newInstance(2),
+                        TaskListFragment.newInstance(3)));
     }
 
     @Override

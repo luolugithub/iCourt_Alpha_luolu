@@ -57,6 +57,7 @@ public class ProjectSelectDialogFragment extends BaseDialogFragment
     @BindView(R.id.bt_ok)
     TextView btOk;
     private String projectId;
+    private ProjectEntity projectEntity;
 
     public static ProjectSelectDialogFragment newInstance() {
         return new ProjectSelectDialogFragment();
@@ -65,7 +66,7 @@ public class ProjectSelectDialogFragment extends BaseDialogFragment
     OnProjectTaskGroupSelectListener onProjectTaskGroupSelectListener;
 
     public interface OnProjectTaskGroupSelectListener {
-        void onProjectTaskGroupSelect(String projectId, String taskGroupId);
+        void onProjectTaskGroupSelect(ProjectEntity projectEntity, TaskGroupEntity taskGroupEntity);
     }
 
     @Override
@@ -77,6 +78,7 @@ public class ProjectSelectDialogFragment extends BaseDialogFragment
             e.printStackTrace();
         }
     }
+
 
     @Nullable
     @Override
@@ -138,12 +140,15 @@ public class ProjectSelectDialogFragment extends BaseDialogFragment
                 Bundle fragmentData = fragment.getFragmentData(0, null);
                 if (fragmentData == null) return;
                 Serializable serializable = fragmentData.getSerializable(KEY_FRAGMENT_RESULT);
-                String groupTaskId = null;
+                TaskGroupEntity taskGroupEntity = null;
                 if (serializable instanceof TaskGroupEntity) {
-                    groupTaskId = ((TaskGroupEntity) serializable).id;
+                    taskGroupEntity = (TaskGroupEntity) serializable;
+                }
+                if (getParentFragment() instanceof OnProjectTaskGroupSelectListener) {
+                    onProjectTaskGroupSelectListener = (OnProjectTaskGroupSelectListener) getParentFragment();
                 }
                 if (onProjectTaskGroupSelectListener != null) {
-                    onProjectTaskGroupSelectListener.onProjectTaskGroupSelect(projectId, groupTaskId);
+                    onProjectTaskGroupSelectListener.onProjectTaskGroupSelect(projectEntity, taskGroupEntity);
                 }
                 dismiss();
                 break;
@@ -167,6 +172,7 @@ public class ProjectSelectDialogFragment extends BaseDialogFragment
             if (item0 instanceof INotifyFragment) {
                 Serializable serializable = params.getSerializable(KEY_FRAGMENT_RESULT);
                 if (serializable instanceof ProjectEntity) {
+                    projectEntity = (ProjectEntity) serializable;
                     if (item1 instanceof INotifyFragment) {
                         Bundle bundle = new Bundle();
                         projectId = ((ProjectEntity) serializable).pkId;

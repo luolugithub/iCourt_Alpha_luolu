@@ -2,6 +2,7 @@ package com.icourt.alpha.adapter;
 
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.CheckBox;
 import android.widget.ImageView;
@@ -40,11 +41,42 @@ public class TaskItemAdapter extends BaseArrayRecyclerAdapter<TaskEntity.TaskIte
         RecyclerView recyclerView = holder.obtainView(R.id.tasl_member_recyclerview);
 
         taskNameView.setText(taskItemEntity.name);
-        projectNameView.setText(taskItemEntity.parentName);
-        timeView.setText(DateUtils.getTimeDurationDate(taskItemEntity.timingSum));
-        checkListView.setText(taskItemEntity.doneItemCount + "/" + taskItemEntity.itemCount);
-        documentNumView.setText(String.valueOf(taskItemEntity.attachmentCount));
-        commentNumView.setText(String.valueOf(taskItemEntity.commentCount));
+
+        if (taskItemEntity.matter != null) {
+            if (taskItemEntity.parentFlow != null) {
+                projectNameView.setText(taskItemEntity.matter.name + " - " + taskItemEntity.parentFlow.name);
+            } else {
+                if (!TextUtils.isEmpty(taskItemEntity.parentName))
+                    projectNameView.setText(taskItemEntity.matter.name + " - " +taskItemEntity.parentName);
+                else
+                    projectNameView.setText(taskItemEntity.matter.name);
+            }
+        }
+
+        if (taskItemEntity.timingSum > 0) {
+            timeView.setVisibility(View.VISIBLE);
+            timeView.setText(DateUtils.getTimeDurationDate(taskItemEntity.timingSum));
+        } else {
+            timeView.setVisibility(View.GONE);
+        }
+        if (taskItemEntity.itemCount > 0) {
+            checkListView.setVisibility(View.VISIBLE);
+            checkListView.setText(taskItemEntity.doneItemCount + "/" + taskItemEntity.itemCount);
+        } else {
+            checkListView.setVisibility(View.GONE);
+        }
+        if (taskItemEntity.attachmentCount > 0) {
+            documentNumView.setVisibility(View.VISIBLE);
+            documentNumView.setText(String.valueOf(taskItemEntity.attachmentCount));
+        } else {
+            documentNumView.setVisibility(View.GONE);
+        }
+        if (taskItemEntity.commentCount > 0) {
+            commentNumView.setVisibility(View.VISIBLE);
+            commentNumView.setText(String.valueOf(taskItemEntity.commentCount));
+        } else {
+            commentNumView.setVisibility(View.GONE);
+        }
         if (taskItemEntity.attendeeUsers != null) {
             TaskUsersAdapter usersAdapter;
             if (recyclerView.getLayoutManager() == null) {

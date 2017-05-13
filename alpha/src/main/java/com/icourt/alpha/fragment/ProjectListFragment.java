@@ -75,7 +75,7 @@ public class ProjectListFragment extends BaseFragment implements BaseRecyclerAda
     protected void getData(boolean isRefresh) {
         super.getData(isRefresh);
         showLoadingDialog(null);
-        getApi().projectQueryAll(0, 10000, "", "", "", "", "O", "")
+        getApi().projectSelectListQuery()
                 .enqueue(new SimpleCallBack<List<ProjectEntity>>() {
                     @Override
                     public void onSuccess(Call<ResEntity<List<ProjectEntity>>> call, Response<ResEntity<List<ProjectEntity>>> response) {

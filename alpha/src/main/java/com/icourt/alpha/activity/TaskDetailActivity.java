@@ -15,8 +15,11 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.CheckBox;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
@@ -61,6 +64,8 @@ import retrofit2.Response;
 public class TaskDetailActivity extends BaseActivity {
 
     private static final String KEY_TASK_ID = "key_task_id";
+    private static final int SHOW_DELETE_DIALOG = 0;//删除提示对话框
+    private static final int SHOW_FINISH_DIALOG = 1;//完成任务提示对话框
 
     String taskId;
     BaseFragmentAdapter baseFragmentAdapter;
@@ -138,7 +143,7 @@ public class TaskDetailActivity extends BaseActivity {
         getData(false);
     }
 
-    @OnClick({R.id.titleAction, R.id.titleAction2, R.id.comment_layout})
+    @OnClick({R.id.titleAction, R.id.titleAction2, R.id.comment_layout, R.id.task_checkbox})
     @Override
     public void onClick(View v) {
         super.onClick(v);
@@ -152,6 +157,29 @@ public class TaskDetailActivity extends BaseActivity {
                 break;
             case R.id.titleAction2://更多
                 showBottomMeau();
+                break;
+            case R.id.task_checkbox://  完成／取消完成
+                if (taskItemEntity.state) {
+                    if (taskItemEntity.attendeeUsers != null) {
+                        if (taskItemEntity.attendeeUsers.size() > 1) {
+                            showDeleteDialog("该任务为多人任务，确定要取消完成吗?", SHOW_FINISH_DIALOG);
+                        } else {
+                            updateTask(taskItemEntity, false, taskCheckbox);
+                        }
+                    } else {
+                        updateTask(taskItemEntity, false, taskCheckbox);
+                    }
+                } else {
+                    if (taskItemEntity.attendeeUsers != null) {
+                        if (taskItemEntity.attendeeUsers.size() > 1) {
+                            showDeleteDialog("该任务为多人任务，确定要完成吗?", SHOW_FINISH_DIALOG);
+                        } else {
+                            updateTask(taskItemEntity, true, taskCheckbox);
+                        }
+                    } else {
+                        updateTask(taskItemEntity, true, taskCheckbox);
+                    }
+                }
                 break;
             case R.id.comment_layout://更多评论动态
                 CommentListActivity.launch(this, taskId);
@@ -175,12 +203,12 @@ public class TaskDetailActivity extends BaseActivity {
                                 if (taskItemEntity != null) {
                                     if (taskItemEntity.attendeeUsers != null) {
                                         if (taskItemEntity.attendeeUsers.size() > 1) {
-                                            showDeleteDialog("该任务为多人任务，确定要删除吗?");
+                                            showDeleteDialog("该任务为多人任务，确定要删除吗?", SHOW_DELETE_DIALOG);
                                         } else {
-                                            showDeleteDialog("是非成败转头空，确定要删除吗?");
+                                            showDeleteDialog("是非成败转头空，确定要删除吗?", SHOW_DELETE_DIALOG);
                                         }
                                     } else {
-                                        showDeleteDialog("是非成败转头空，确定要删除吗?");
+                                        showDeleteDialog("是非成败转头空，确定要删除吗?", SHOW_DELETE_DIALOG);
                                     }
                                 }
                                 break;
@@ -194,7 +222,7 @@ public class TaskDetailActivity extends BaseActivity {
      *
      * @param message
      */
-    private void showDeleteDialog(String message) {
+    private void showDeleteDialog(String message, final int type) {
         //先new出一个监听器，设置好监听
         DialogInterface.OnClickListener dialogOnclicListener = new DialogInterface.OnClickListener() {
 
@@ -202,7 +230,15 @@ public class TaskDetailActivity extends BaseActivity {
             public void onClick(DialogInterface dialog, int which) {
                 switch (which) {
                     case Dialog.BUTTON_POSITIVE:
-                        deleteTask();
+                        if (type == SHOW_DELETE_DIALOG) {
+                            deleteTask();
+                        } else if (type == SHOW_FINISH_DIALOG) {
+                            if (taskItemEntity.state) {
+                                updateTask(taskItemEntity, false, taskCheckbox);
+                            }else{
+                                updateTask(taskItemEntity, true, taskCheckbox);
+                            }
+                        }
                         break;
                 }
             }
@@ -238,6 +274,11 @@ public class TaskDetailActivity extends BaseActivity {
             taskName.setText(taskItemEntity.name);
             myStar = taskItemEntity.attentioned;
             commentTv.setText(taskItemEntity.commentCount + "条动态");
+            if (taskItemEntity.state) {
+                taskCheckbox.setChecked(true);
+            } else {
+                taskCheckbox.setChecked(false);
+            }
             if (myStar == TaskEntity.ATTENTIONED) {
                 titleAction.setImageResource(R.mipmap.header_icon_star_solid);
             } else {
@@ -317,10 +358,102 @@ public class TaskDetailActivity extends BaseActivity {
             @Override
             public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
                 dismissLoadingDialog();
-                EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_DELETE_ACTION));
+                EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION));
                 TaskDetailActivity.this.finish();
             }
         });
+    }
+
+    /**
+     * 修改任务
+     *
+     * @param itemEntity
+     * @param state
+     * @param checkbox
+     */
+    private void updateTask(TaskEntity.TaskItemEntity itemEntity, final boolean state, final CheckBox checkbox) {
+        if (state) {
+            showLoadingDialog("完成任务...");
+        } else {
+            showLoadingDialog("取消完成任务...");
+        }
+        getApi().taskUpdate(RequestUtils.createJsonBody(getTaskJson(itemEntity, state))).enqueue(new SimpleCallBack<JsonElement>() {
+            @Override
+            public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
+                dismissLoadingDialog();
+                EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION));
+                checkbox.setChecked(state);
+            }
+
+            @Override
+            public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
+                super.onFailure(call, t);
+                dismissLoadingDialog();
+                checkbox.setChecked(!state);
+            }
+        });
+    }
+
+    /**
+     * 获取任务json
+     *
+     * @param itemEntity
+     * @param state
+     * @return
+     */
+    private String getTaskJson(TaskEntity.TaskItemEntity itemEntity, boolean state) {
+        try {
+            itemEntity.state = state;
+            JsonObject jsonObject = new JsonObject();
+            jsonObject.addProperty("id", itemEntity.id);
+            jsonObject.addProperty("state", itemEntity.state);
+            jsonObject.addProperty("valid", true);
+            jsonObject.addProperty("updateTime", DateUtils.millis());
+            return jsonObject.toString();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent ev) {
+        if (ev.getAction() == MotionEvent.ACTION_DOWN) {
+            View v = getCurrentFocus();
+            if (isShouldHideInput(v, ev)) {
+
+                InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                if (imm != null) {
+                    imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
+                }
+            }
+            return super.dispatchTouchEvent(ev);
+        }
+        // 必不可少，否则所有的组件都不会有TouchEvent了
+        if (getWindow().superDispatchTouchEvent(ev)) {
+            return true;
+        }
+        return onTouchEvent(ev);
+    }
+
+    public  boolean isShouldHideInput(View v, MotionEvent event) {
+        if (v != null && (v instanceof EditText)) {
+            int[] leftTop = { 0, 0 };
+            //获取输入框当前的location位置
+            v.getLocationInWindow(leftTop);
+            int left = leftTop[0];
+            int top = leftTop[1];
+            int bottom = top + v.getHeight();
+            int right = left + v.getWidth();
+            if (event.getX() > left && event.getX() < right
+                    && event.getY() > top && event.getY() < bottom) {
+                // 点击的是输入框区域，保留点击EditText的事件
+                return false;
+            } else {
+                return true;
+            }
+        }
+        return false;
     }
 
 }

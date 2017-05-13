@@ -1,5 +1,7 @@
 package com.icourt.alpha.entity.bean;
 
+import com.google.gson.annotations.SerializedName;
+
 import java.io.Serializable;
 import java.util.List;
 
@@ -32,7 +34,7 @@ public class ProjectEntity implements Serializable {
      * isJoin : 1
      * myStar : 0
      */
-
+    @SerializedName(value = "pkId", alternate = {"id"})
     public String pkId;
     public String name;
     public String status;

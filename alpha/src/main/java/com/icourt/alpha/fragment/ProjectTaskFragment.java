@@ -143,9 +143,9 @@ public class ProjectTaskFragment extends BaseFragment {
                     if (taskItemEntity.dueTime > 0) {
                         if (TextUtils.equals(DateUtils.getTimeDateFormatYear(taskItemEntity.dueTime), DateUtils.getTimeDateFormatYear(DateUtils.millis()))) {
                             todayTaskEntities.add(taskItemEntity);
-                        } else if (DateUtils.getDayDiff(new Date(taskItemEntity.dueTime), new Date(DateUtils.millis())) <= 3 && DateUtils.getDayDiff(new Date(taskItemEntity.dueTime), new Date(DateUtils.millis())) > 0) {
+                        } else if (DateUtils.getDayDiff(new Date(DateUtils.millis()), new Date(taskItemEntity.dueTime)) <= 3 && DateUtils.getDayDiff(new Date(DateUtils.millis()), new Date(taskItemEntity.dueTime)) > 0) {
                             beAboutToTaskEntities.add(taskItemEntity);
-                        } else if (DateUtils.getDayDiff(new Date(taskItemEntity.dueTime), new Date(DateUtils.millis())) > 3) {
+                        } else if (DateUtils.getDayDiff(new Date(DateUtils.millis()), new Date(taskItemEntity.dueTime)) > 3) {
                             futureTaskEntities.add(taskItemEntity);
                         }
                     } else {
@@ -213,7 +213,7 @@ public class ProjectTaskFragment extends BaseFragment {
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onDeleteTaskEvent(TaskActionEvent event) {
         if (event == null) return;
-        if (event.action == TaskActionEvent.TASK_DELETE_ACTION) {
+        if (event.action == TaskActionEvent.TASK_REFRESG_ACTION) {
             refreshLayout.startRefresh();
         }
     }

@@ -11,9 +11,12 @@ import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.MultiSelectRecyclerAdapter;
 import com.icourt.alpha.entity.bean.TaskCheckItemEntity;
+import com.icourt.alpha.entity.event.TaskActionEvent;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.api.RequestUtils;
+
+import org.greenrobot.eventbus.EventBus;
 
 import retrofit2.Call;
 import retrofit2.Response;
@@ -84,6 +87,7 @@ public class TaskCheckItemAdapter extends MultiSelectRecyclerAdapter<TaskCheckIt
             @Override
             public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
                 dismissLoadingDialog();
+                EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION));
                 updateItem(itemEntity);
             }
         });
@@ -99,6 +103,7 @@ public class TaskCheckItemAdapter extends MultiSelectRecyclerAdapter<TaskCheckIt
             @Override
             public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
                 dismissLoadingDialog();
+                EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION));
                 removeItem(itemEntity);
             }
         });

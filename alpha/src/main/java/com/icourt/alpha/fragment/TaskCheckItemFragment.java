@@ -9,6 +9,7 @@ import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -23,6 +24,7 @@ import com.icourt.alpha.entity.bean.TaskCheckItemEntity;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.ItemDecorationUtils;
+import com.icourt.alpha.utils.LogUtils;
 import com.icourt.api.RequestUtils;
 
 import butterknife.BindView;
@@ -61,6 +63,12 @@ public class TaskCheckItemFragment extends BaseFragment {
         return taskCheckItemFragment;
     }
 
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        getActivity().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
+    }
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -79,7 +87,8 @@ public class TaskCheckItemFragment extends BaseFragment {
         checkItemEdit.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                if (actionId == EditorInfo.IME_ACTION_DONE || (event != null && event.getKeyCode() == KeyEvent.KEYCODE_ENTER)) {
+                if (actionId == EditorInfo.IME_ACTION_DONE) {
+                    LogUtils.e(" --------------- >");
                     addCheckItem();
                 }
                 return true;
@@ -123,6 +132,7 @@ public class TaskCheckItemFragment extends BaseFragment {
             public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
                 dismissLoadingDialog();
                 if (response.body().result != null) {
+//                    EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION));
                     String id = response.body().result.getAsString();
                     itemEntity.id = id;
                     taskCheckItemAdapter.addItem(itemEntity);

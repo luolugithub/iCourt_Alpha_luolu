@@ -17,9 +17,10 @@ public class TaskActionEvent {
 
     public static final int TASK_DELETE_ACTION = 1;
     public static final int TASK_UPDATE_ACTION = 2;
+    public static final int TASK_REFRESG_ACTION = 3;
 
     @IntDef({TASK_DELETE_ACTION,
-            TASK_UPDATE_ACTION})
+            TASK_UPDATE_ACTION,TASK_REFRESG_ACTION})
     @Retention(RetentionPolicy.SOURCE)
     public @interface TASK_ACTION {
 

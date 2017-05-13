@@ -226,7 +226,7 @@
                     <ImageView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:src="@mipmap/setting_user" />
+                        android:src="@mipmap/project_user_icon" />
 
                     <TextView
                         android:id="@+id/project_member_count"

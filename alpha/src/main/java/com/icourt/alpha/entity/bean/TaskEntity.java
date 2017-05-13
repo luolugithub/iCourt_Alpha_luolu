@@ -27,12 +27,14 @@ public class TaskEntity implements Serializable {
         public boolean state;//是否完成
         public long dueTime;//到期时间
         public long timingSum;//总计时
+        public long assignTime;//任务分配时间
         public int itemCount;//子任务总数
         public int doneItemCount;//完成子任务数
         public int attachmentCount;//附件总数
         public int commentCount;//评论总数
         public int attentioned;//关注   0:未关注  1:关注
 
+        public ParentFlowEntity parentFlow;//详情任务组信息
         public MatterEntity matter;//项目信息
 
         public List<AttendeeUserEntity> attendeeUsers;//任务相关人
@@ -50,6 +52,11 @@ public class TaskEntity implements Serializable {
             public String userId;
             public String userName;
             public String pic;
+        }
+
+        public static class ParentFlowEntity implements Serializable {
+            public String id;
+            public String name;
         }
     }
 
