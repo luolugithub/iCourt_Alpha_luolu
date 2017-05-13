@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.support.annotation.CallSuper;
 import android.text.TextUtils;
 
+import com.bugtags.library.Bugtags;
 import com.google.gson.JsonParseException;
 import com.icourt.alpha.base.BaseApplication;
 import com.icourt.alpha.http.exception.ResponseException;
@@ -237,8 +238,8 @@ public abstract class BaseCallBack<T> implements Callback<T> {
      * @param httpLog
      */
     protected void sendHttpLog(String httpLog) {
-        /*if (!TextUtils.isEmpty(httpLog)) {
+        if (!TextUtils.isEmpty(httpLog)) {
             Bugtags.sendFeedback(httpLog);
-        }*/
+        }
     }
 }

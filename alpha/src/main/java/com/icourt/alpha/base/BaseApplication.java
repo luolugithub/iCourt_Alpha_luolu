@@ -295,7 +295,7 @@ public class BaseApplication extends MultiDexApplication {
 
     private void initBugtags() {
         BugtagsOptions options = new BugtagsOptions.Builder()
-                .trackingCrashLog(!BuildConfig.IS_DEBUG)//是否收集crash !BuildConfig.IS_DEBUG
+                .trackingCrashLog(true)//是否收集crash !BuildConfig.IS_DEBUG
                 //  trackingLocation(true).//是否获取位置
                 .startAsync(true)
                 .trackingConsoleLog(true)//是否收集console log

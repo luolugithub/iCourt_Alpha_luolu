@@ -483,6 +483,7 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMMessageCustomBody> i
      */
     private void setTypeLeftTxt(ViewHolder holder, IMMessageCustomBody imMessageCustomBody, int position) {
         TextView textView = holder.obtainView(R.id.chat_txt_tv);
+        holder.bindChildLongClick(textView);
         if (imMessageCustomBody != null) {
             textView.setText(imMessageCustomBody.content);
             textView.setAutoLinkMask(Linkify.ALL);

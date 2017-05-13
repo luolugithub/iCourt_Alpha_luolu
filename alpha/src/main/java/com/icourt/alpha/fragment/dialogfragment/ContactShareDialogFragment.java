@@ -43,6 +43,7 @@ import butterknife.Unbinder;
 import retrofit2.Call;
 import retrofit2.Response;
 
+import static com.icourt.alpha.constants.Const.CHAT_TYPE_P2P;
 import static com.icourt.alpha.constants.Const.CHAT_TYPE_TEAM;
 
 /**
@@ -176,7 +177,7 @@ public class ContactShareDialogFragment extends BaseDialogFragment
             for (GroupContactBean groupContactBean : sendGroupContactBeans) {
                 if (groupContactBean != null) {
                     JsonObject groupJsonObject = new JsonObject();
-                    groupJsonObject.addProperty("ope", CHAT_TYPE_TEAM);
+                    groupJsonObject.addProperty("ope", CHAT_TYPE_P2P);
                     groupJsonObject.addProperty("to", groupContactBean.accid);
                     groupJsonObject.addProperty("msg_id", msgId);
                     param.add(groupJsonObject);

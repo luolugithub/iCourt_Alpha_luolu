@@ -83,9 +83,11 @@ public class TabNewsFragment extends BaseFragment
     protected void initView() {
         viewPager.setAdapter(baseFragmentAdapter = new BaseFragmentAdapter(getChildFragmentManager()));
         tabLayout.setupWithViewPager(viewPager);
-        baseFragmentAdapter.bindTitle(true, Arrays.asList("消息", "通讯录"));
-        baseFragmentAdapter.bindData(true, Arrays.asList(MessageListFragment.newInstance(),
-                ContactListFragment.newInstance()));
+        baseFragmentAdapter.bindTitle(true, Arrays.asList("消息", "@我的", "通讯录"));
+        baseFragmentAdapter.bindData(true,
+                Arrays.asList(MessageListFragment.newInstance(),
+                        AtMeFragment.newInstance(),
+                        ContactListFragment.newInstance()));
     }
 
     @OnClick({R.id.ivActionAdd})
@@ -99,6 +101,7 @@ public class TabNewsFragment extends BaseFragment
                 break;
         }
     }
+
 
     @Override
     public void onDestroyView() {
@@ -116,7 +119,7 @@ public class TabNewsFragment extends BaseFragment
     }
 
     @Override
-    public void onFragmentCallBack(Fragment fragment,int type,Bundle params) {
+    public void onFragmentCallBack(Fragment fragment, int type, Bundle params) {
         if (fragment == baseFragmentAdapter.getItem(0))//更新消息数量
         {
             if (params != null) {
@@ -133,11 +136,11 @@ public class TabNewsFragment extends BaseFragment
                     newsTabBuilder.append("(" + unReadNum + ")");
                 }
                 baseFragmentAdapter.bindTitle(true,
-                        Arrays.asList(newsTabBuilder.toString(), "通讯录"));
+                        Arrays.asList(newsTabBuilder.toString(), "@我的", "通讯录"));
                 if (getParentFragment() instanceof OnFragmentCallBackListener) {
-                    ((OnFragmentCallBackListener) getParentFragment()).onFragmentCallBack(TabNewsFragment.this,0, params);
+                    ((OnFragmentCallBackListener) getParentFragment()).onFragmentCallBack(TabNewsFragment.this, 0, params);
                 } else if (parentFragmentCallBackListener != null) {
-                    parentFragmentCallBackListener.onFragmentCallBack(TabNewsFragment.this,0, params);
+                    parentFragmentCallBackListener.onFragmentCallBack(TabNewsFragment.this, 0, params);
                 }
             }
         }
