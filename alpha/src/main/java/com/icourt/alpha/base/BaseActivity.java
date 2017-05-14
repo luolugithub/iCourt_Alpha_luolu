@@ -43,6 +43,7 @@ import com.trello.rxlifecycle2.LifecycleTransformer;
 import com.trello.rxlifecycle2.RxLifecycle;
 import com.trello.rxlifecycle2.android.ActivityEvent;
 import com.trello.rxlifecycle2.android.RxLifecycleAndroid;
+import com.umeng.analytics.MobclickAgent;
 
 import io.reactivex.Observable;
 import io.reactivex.subjects.BehaviorSubject;
@@ -232,6 +233,7 @@ public class BaseActivity
     protected final ApiChatService getChatApi() {
         return RetrofitServiceFactory.getChatApiService();
     }
+
     /**
      * 接口 http通信
      *
@@ -591,6 +593,10 @@ public class BaseActivity
     protected void onResume() {
         super.onResume();
         lifecycleSubject.onNext(ActivityEvent.RESUME);
+        if (!TextUtils.isEmpty(getStatisticalPageName())) {
+            MobclickAgent.onPageStart(getStatisticalPageName()); // 统计页面
+        }
+        MobclickAgent.onResume(this);             // 统计时长
     }
 
     @Override
@@ -598,6 +604,19 @@ public class BaseActivity
     protected void onPause() {
         lifecycleSubject.onNext(ActivityEvent.PAUSE);
         super.onPause();
+        if (!TextUtils.isEmpty(getStatisticalPageName())) {
+            MobclickAgent.onPageEnd(getStatisticalPageName()); // 保证 onPageEnd 在onPause 之前调用,因为
+        }
+        MobclickAgent.onPause(this);            // onPause 中会保存信息
+    }
+
+    /**
+     * 获取统计的页面名称 默认class name
+     *
+     * @return
+     */
+    protected String getStatisticalPageName() {
+        return getClass().getSimpleName();
     }
 
     @Override

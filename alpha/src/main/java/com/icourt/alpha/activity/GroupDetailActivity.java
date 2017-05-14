@@ -33,7 +33,6 @@ import com.icourt.alpha.db.dbmodel.ContactDbModel;
 import com.icourt.alpha.db.dbservice.ContactDbService;
 import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.icourt.alpha.entity.bean.GroupDetailEntity;
-import com.icourt.alpha.entity.bean.GroupEntity;
 import com.icourt.alpha.entity.event.GroupActionEvent;
 import com.icourt.alpha.entity.event.NoDisturbingEvent;
 import com.icourt.alpha.entity.event.SetTopEvent;
@@ -103,7 +102,6 @@ public class GroupDetailActivity extends BaseActivity implements BaseRecyclerAda
     TextView titleContent;
     @BindView(R.id.titleAction)
     ImageView titleAction;
-    GroupEntity groupEntity;
     IMContactAdapter contactAdapter;
     @BindView(R.id.group_join_or_quit_btn)
     Button groupJoinOrQuitBtn;
@@ -181,27 +179,29 @@ public class GroupDetailActivity extends BaseActivity implements BaseRecyclerAda
                             ImageView titleActionImage = getTitleActionImage();
 
                             isAdmin = StringUtils.equalsIgnoreCase(getLoginUserId(), response.body().result.admin_id, false);
-
-                            //管理员设置按钮展示
-                            setViewVisible(titleActionImage, isAdmin);
-
-                            setViewVisible(groupJoinOrQuitBtn, true);
-                            joined = StringUtils.containsIgnoreCase(response.body().result.members, getLoginUserId());
-                            groupJoinOrQuitBtn.setText(joined ? "退出讨论组" : "加入讨论组");
-                            setViewVisible(groupSessionActionLl, joined);
-                            //邀请按钮展示
-                            if (response.body().result.is_private || !response.body().result.member_invite) {
-                                setViewVisible(groupMemberInviteTv, false);
-                            } else {
-                                setViewVisible(groupMemberInviteTv, true);
-                            }
-                            setViewVisible(groupDataLl, joined);
                             if (isAdmin) {
+                                //管理员设置按钮展示
+                                setViewVisible(titleActionImage, true);
                                 setViewVisible(groupJoinOrQuitBtn, false);
+                                setViewVisible(groupMemberInviteTv, true);
+                                setViewVisible(groupSessionActionLl, true);
+                                setViewVisible(groupDataLl, true);
+                            } else {
+                                //管理员设置按钮隐藏
+                                setViewVisible(titleActionImage, false);
+                                joined = StringUtils.containsIgnoreCase(response.body().result.members, getLoginUserId());
+                                setViewVisible(groupJoinOrQuitBtn, true);
+                                groupJoinOrQuitBtn.setText(joined ? "退出讨论组" : "加入讨论组");
+                                setViewVisible(groupSessionActionLl, joined);
+                                setViewVisible(groupDataLl, joined);
+                                if (response.body().result.is_private || !response.body().result.member_invite) {
+                                    setViewVisible(groupMemberInviteTv, false);
+                                } else {
+                                    setViewVisible(groupMemberInviteTv, true);
+                                }
                             }
                             //查询本地uid对应的头像
                             queryMembersByUids(response.body().result.members);
-
                             groupMemberNumTv.setText(String.format("成员(%s)", groupDetailEntity.members != null ? groupDetailEntity.members.size() : 0));
                         }
                     }
