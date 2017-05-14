@@ -17,6 +17,7 @@ import com.icourt.alpha.adapter.baseadapter.BaseFragmentAdapter;
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.interfaces.OnTabDoubleClickListener;
+import com.icourt.alpha.service.SyncDataService;
 import com.icourt.alpha.utils.GlobalMessageObserver;
 import com.netease.nimlib.sdk.NIMClient;
 import com.netease.nimlib.sdk.msg.MsgServiceObserve;
@@ -68,6 +69,12 @@ public class TabNewsFragment extends BaseFragment
             parentFragmentCallBackListener = (OnFragmentCallBackListener) context;
         } catch (ClassCastException e) {
         }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        SyncDataService.startSysnContact(getActivity());
     }
 
     @Nullable

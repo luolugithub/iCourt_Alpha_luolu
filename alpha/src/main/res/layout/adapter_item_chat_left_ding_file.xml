@@ -98,8 +98,8 @@
 
                 <ImageView
                     android:id="@+id/chat_ding_source_user_icon_iv"
-                    android:layout_width="18dp"
-                    android:layout_height="18dp"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
                     android:src="@mipmap/avatar_default_24" />
 
                 <TextView

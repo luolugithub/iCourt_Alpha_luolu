@@ -22,6 +22,10 @@ import com.icourt.alpha.db.dbmodel.ContactDbModel;
 import com.icourt.alpha.db.dbservice.ContactDbService;
 import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.icourt.alpha.entity.bean.IMMessageCustomBody;
+import com.netease.nimlib.sdk.NIMClient;
+import com.netease.nimlib.sdk.RequestCallbackWrapper;
+import com.netease.nimlib.sdk.team.TeamService;
+import com.netease.nimlib.sdk.team.model.Team;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -37,6 +41,9 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
 import io.realm.RealmResults;
+
+import static com.icourt.alpha.constants.Const.CHAT_TYPE_P2P;
+import static com.icourt.alpha.constants.Const.CHAT_TYPE_TEAM;
 
 /**
  * Description
@@ -63,6 +70,7 @@ public class FileDetailsActivity extends BaseActivity {
 
     //本地同步的联系人
     protected final List<GroupContactBean> localContactList = new ArrayList<>();
+    private final List<Team> localTeams = new ArrayList<>();
 
     /**
      * 获取本地联系人
@@ -143,7 +151,7 @@ public class FileDetailsActivity extends BaseActivity {
             item = (IMMessageCustomBody) serializableExtra;
             recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
             recyclerView.setHasFixedSize(true);
-            recyclerView.setAdapter(imUserMessageDetailAdapter = new ImUserMessageDetailAdapter(localContactList));
+            recyclerView.setAdapter(imUserMessageDetailAdapter = new ImUserMessageDetailAdapter(localContactList,localTeams));
             imUserMessageDetailAdapter.bindData(true, Arrays.asList(item));
         }
     }
@@ -152,18 +160,48 @@ public class FileDetailsActivity extends BaseActivity {
     protected void getData(boolean isRefresh) {
         super.getData(isRefresh);
         getLocalContacts();
+        getTeams();
     }
 
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.titleAction:
-                //TODO 跳转到聊天
-                showTopSnackBar("未完成");
+                if (item != null) {
+                    switch (item.ope) {
+                        case CHAT_TYPE_P2P:
+                            ChatActivity.launchP2P(getContext(),
+                                    item.to,
+                                    item.name);
+                            break;
+                        case CHAT_TYPE_TEAM:
+                            Team team = NIMClient.getService(TeamService.class)
+                                    .queryTeamBlock(item.to);
+                            ChatActivity.launchP2P(getContext(),
+                                    item.to,
+                                    team != null ? team.getName() : "");
+                            break;
+                    }
+                }
                 break;
             default:
                 super.onClick(v);
                 break;
         }
+    }
+
+    public void getTeams() {
+        NIMClient.getService(TeamService.class)
+                .queryTeamList()
+                .setCallback(new RequestCallbackWrapper<List<Team>>() {
+                    @Override
+                    public void onResult(int code, List<Team> result, Throwable exception) {
+                        if (result != null) {
+                            localTeams.clear();
+                            localTeams.addAll(result);
+                            imUserMessageDetailAdapter.notifyDataSetChanged();
+                        }
+                    }
+                });
     }
 }

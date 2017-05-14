@@ -291,9 +291,7 @@ public class IMSessionAdapter extends BaseArrayRecyclerAdapter<IMSessionEntity> 
                         case CHAT_TYPE_P2P:
                             break;
                         case CHAT_TYPE_TEAM:
-                            if (!TextUtils.isEmpty(customIMBody.ext.name)) {
-                                dingStringBuilder.append(customIMBody.ext.name + " : ");
-                            }
+                            dingStringBuilder.append(customIMBody.name + " : ");
                             break;
                     }
                     dingStringBuilder.append(customIMBody.content);
@@ -308,11 +306,12 @@ public class IMSessionAdapter extends BaseArrayRecyclerAdapter<IMSessionEntity> 
                     if (customIMBody.ext.is_all) {
                         tvSessionContent.setText("有人@了你");
                         SpannableUtils.setTextForegroundColorSpan(tvSessionContent, "有人@了你", "有人@了你", color);
-                    } else if (customIMBody.ext.users != null && customIMBody.ext.users.contains(getLoginUserId())) {
+                    } else if (customIMBody.ext.users != null
+                            && StringUtils.containsIgnoreCase(customIMBody.ext.users, getLoginUserId())) {
                         tvSessionContent.setText("有人@了你");
                         SpannableUtils.setTextForegroundColorSpan(tvSessionContent, "有人@了你", "有人@了你", color);
                     } else {
-                        tvSessionContent.setText(String.format("%s : %s", customIMBody.from, customIMBody.content));
+                        tvSessionContent.setText(String.format("%s : %s", customIMBody.name, customIMBody.content));
                     }
                 } else {
                     tvSessionContent.setText("@消息ext null");

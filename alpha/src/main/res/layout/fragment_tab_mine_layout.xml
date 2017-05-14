@@ -215,12 +215,14 @@
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/alpha_height_divider"
                 android:layout_marginLeft="39dp"
+                android:visibility="gone"
                 android:background="@color/alpha_divider_color" />
 
             <LinearLayout
                 android:id="@+id/my_center_at_layout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:visibility="gone"
                 android:background="?attr/selectableItemBackground"
                 android:gravity="center_vertical"
                 android:padding="10dp">

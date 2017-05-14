@@ -21,11 +21,15 @@ import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.FileUtils;
 import com.icourt.alpha.utils.GlideUtils;
 import com.icourt.alpha.utils.SpannableUtils;
+import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.utils.SystemUtils;
+import com.netease.nimlib.sdk.team.model.Team;
 
 import java.util.List;
 
 import static com.icourt.alpha.R.id.file_img;
+import static com.icourt.alpha.constants.Const.CHAT_TYPE_P2P;
+import static com.icourt.alpha.constants.Const.CHAT_TYPE_TEAM;
 import static com.icourt.alpha.constants.Const.MSG_TYPE_ALPHA;
 import static com.icourt.alpha.constants.Const.MSG_TYPE_AT;
 import static com.icourt.alpha.constants.Const.MSG_TYPE_DING;
@@ -51,14 +55,26 @@ public class ImUserMessageDetailAdapter extends BaseArrayRecyclerAdapter<IMMessa
     private static final int VIEW_TYPE_AT = 4;
     private static final int VIEW_TYPE_SYS = 5;
     private static final int VIEW_TYPE_LINK = 6;
-
-
+    private final List<Team> teams;
     private List<GroupContactBean> groupContactBeans;
 
-    public ImUserMessageDetailAdapter(@NonNull List<GroupContactBean> contactBeanList) {
+    public ImUserMessageDetailAdapter(@NonNull List<GroupContactBean> contactBeanList, List<Team> teams) {
         this.setOnItemChildClickListener(this);
         this.setOnItemClickListener(this);
+        this.teams = teams;
         this.groupContactBeans = contactBeanList;
+    }
+
+    @Nullable
+    @CheckResult
+    public Team getTeam(String id) {
+        if (teams == null) return null;
+        for (Team team : teams) {
+            if (StringUtils.equalsIgnoreCase(id, team.getId(), false)) {
+                return team;
+            }
+        }
+        return null;
     }
 
     @Nullable
@@ -296,6 +312,23 @@ public class ImUserMessageDetailAdapter extends BaseArrayRecyclerAdapter<IMMessa
             String originalText = String.format("来自: %s", user.name);
             SpannableUtils.setTextForegroundColorSpan(file_from_tv, originalText, targetText, SystemUtils.getColor(file_from_tv.getContext(), R.color.alpha_font_color_black));
 
+        }
+        switch (imMessageCustomBody.ope) {
+            case CHAT_TYPE_P2P:
+                if (user != null) {
+                    String targetText = user.name;
+                    String originalText = String.format("来自: %s", user.name);
+                    SpannableUtils.setTextForegroundColorSpan(file_from_tv, originalText, targetText, SystemUtils.getColor(file_from_tv.getContext(), R.color.alpha_font_color_black));
+                }
+                break;
+            case CHAT_TYPE_TEAM:
+                Team team = getTeam(imMessageCustomBody.to);
+                if (team != null) {
+                    String targetText = team.getName();
+                    String originalText = String.format("来自: %s", team.getName());
+                    SpannableUtils.setTextForegroundColorSpan(file_from_tv, originalText, targetText, SystemUtils.getColor(file_from_tv.getContext(), R.color.alpha_font_color_black));
+                }
+                break;
         }
         file_upload_time.setText(DateUtils.getTimeShowString(imMessageCustomBody.send_time, true));
     }

@@ -144,14 +144,12 @@ public class ContactListFragment extends BaseFragment implements BaseRecyclerAda
                 getData(true);
             }
         });
-        getContactsFromDb();
-        refreshLayout.startRefresh();
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        getData(true);
+        getContactsFromDb();
     }
 
     @Override

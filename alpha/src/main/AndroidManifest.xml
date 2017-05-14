@@ -226,6 +226,7 @@
             android:name="com.netease.nim.appKey"
             android:value="${NIM_APPKEY}" />
 
+        <service android:name=".service.SyncDataService"/>
         <!-- cosine -->
         <service
             android:name="com.netease.cosine.core.CosineService"
