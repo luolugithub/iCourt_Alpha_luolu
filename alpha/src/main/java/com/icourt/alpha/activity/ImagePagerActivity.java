@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.view.ViewPager;
 import android.text.TextUtils;
 import android.view.View;
@@ -18,6 +19,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.target.Target;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.baseadapter.BasePagerAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
@@ -38,10 +40,17 @@ import com.liulishuo.filedownloader.FileDownloader;
 import java.io.File;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import io.reactivex.Observable;
+import io.reactivex.ObservableEmitter;
+import io.reactivex.ObservableOnSubscribe;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.functions.Consumer;
+import io.reactivex.schedulers.Schedulers;
 
 
 /**
@@ -57,6 +66,7 @@ public class ImagePagerActivity extends BaseUmengActivity implements BasePagerAd
     private static final int CODE_PERMISSION_FILE = 1009;
 
     private static final String KEY_URLS = "key_urls";
+    private static final String KEY_URLS_BIG = "key_urls_big";
     private static final String KEY_POS = "key_pos";
     @BindView(R.id.imagePager)
     HackyViewPager imagePager;
@@ -64,6 +74,7 @@ public class ImagePagerActivity extends BaseUmengActivity implements BasePagerAd
     TextView tvPagerTitle;
     ImagePagerAdapter pagerAdapter;
     String[] urls;
+    String[] bigUrls;
     Handler handler = new Handler();
     int realPos;
     private FileDownloadListener picDownloadListener = new FileDownloadListener() {
@@ -150,6 +161,27 @@ public class ImagePagerActivity extends BaseUmengActivity implements BasePagerAd
         launch(context, urlsArr, pos);
     }
 
+    /**
+     * 先展示小图 查看原图
+     *
+     * @param context
+     * @param smallUrls
+     * @param bigUrls
+     */
+    public static void launch(Context context, @NonNull List<String> smallUrls, @Nullable List<String> bigUrls) {
+        if (context == null) return;
+        if (smallUrls == null) return;
+        if (smallUrls.size() == 0) return;
+        Intent intent = new Intent(context, ImagePagerActivity.class);
+        String[] urlsArr = (String[]) smallUrls.toArray(new String[smallUrls.size()]);
+        intent.putExtra(KEY_URLS, urlsArr);
+        if (bigUrls != null && !bigUrls.isEmpty()) {
+            String[] bigUrlsArr = (String[]) bigUrls.toArray(new String[bigUrls.size()]);
+            intent.putExtra(KEY_URLS_BIG, bigUrlsArr);
+        }
+        context.startActivity(intent);
+    }
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -164,6 +196,7 @@ public class ImagePagerActivity extends BaseUmengActivity implements BasePagerAd
     protected void initView() {
         super.initView();
         urls = getIntent().getStringArrayExtra(KEY_URLS);
+        bigUrls = getIntent().getStringArrayExtra(KEY_URLS_BIG);
         realPos = getIntent().getIntExtra(KEY_POS, 0);
         pagerAdapter = new ImagePagerAdapter();
         pagerAdapter.bindData(true, Arrays.asList(urls));
@@ -351,29 +384,81 @@ public class ImagePagerActivity extends BaseUmengActivity implements BasePagerAd
         public void bindDataToItem(final String s, ViewGroup container, View itemView, final int pos) {
             final TouchImageView touchImageView = (TouchImageView) itemView.findViewById(R.id.imageView);
             final TextView img_look_original_tv = (TextView) itemView.findViewById(R.id.img_look_original_tv);
-            img_look_original_tv.setVisibility(isLoadOriginalPicUrl(s) ? View.GONE : View.VISIBLE);
+            img_look_original_tv.setVisibility(View.GONE);
+            final String bigUrl = getBigUrl(pos);
             img_look_original_tv.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    String originalPicUrl = getOriginalPicUrl(s);
-                    putItem(pos, originalPicUrl);
+                    putItem(pos, bigUrl);
                     if (GlideUtils.canLoadImage(getContext())) {
                         img_look_original_tv.setVisibility(View.GONE);
                         log("---------->load Original url:pos:" + pos + "  url:" + s);
                         Glide.with(getContext())
-                                .load(originalPicUrl)
-                                .thumbnail(0.5f)//先拿一半
+                                .load(bigUrl)
+                                .thumbnail(0.3f)
                                 .into(touchImageView);
                     }
                 }
             });
+            //获取原图
+            if (!TextUtils.isEmpty(bigUrl)) {
+                Observable.create(new ObservableOnSubscribe<Boolean>() {
+                    @Override
+                    public void subscribe(ObservableEmitter<Boolean> e) throws Exception {
+                        if (e.isDisposed()) return;
+                        File file = null;
+                        try {
+                            file = Glide.with(getContext())
+                                    .load(bigUrl)
+                                    .downloadOnly(Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL)
+                                    .get(50, TimeUnit.MILLISECONDS);
+                        } catch (Exception ex) {
+                            ex.printStackTrace();
+                        }
+                        e.onNext(file != null && file.exists());
+                        e.onComplete();
+                    }
+                }).compose(ImagePagerActivity.this.<Boolean>bindToLifecycle())
+                        .subscribeOn(Schedulers.newThread())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(new Consumer<Boolean>() {
+                            @Override
+                            public void accept(Boolean aBoolean) throws Exception {
+                                if (aBoolean != null && aBoolean.booleanValue()) {
+                                    log("--------->yes");
+                                    if (!GlideUtils.canLoadImage(getContext())) return;
+                                    //加载原图
+                                    Glide.with(getContext())
+                                            .load(bigUrl)
+                                            .into(touchImageView);
+                                } else {
+                                    log("--------->no");
+                                    img_look_original_tv.setVisibility(View.VISIBLE);
+                                }
+                            }
+                        });
+            }
+
             if (GlideUtils.canLoadImage(getContext())) {
                 log("---------->load url:pos:" + pos + "  url:" + s);
                 Glide.with(getContext())
                         .load(s)
-                        .thumbnail(0.5f)//先拿一半
+                        .thumbnail(0.3f)
                         .into(touchImageView);
             }
+        }
+
+        /**
+         * 获取大图地址
+         *
+         * @param pos
+         * @return
+         */
+        private String getBigUrl(int pos) {
+            if (bigUrls != null && bigUrls.length > pos) {
+                return bigUrls[pos];
+            }
+            return null;
         }
 
         /**

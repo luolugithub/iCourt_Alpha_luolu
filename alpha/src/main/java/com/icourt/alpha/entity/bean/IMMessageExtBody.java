@@ -20,6 +20,8 @@ public final class IMMessageExtBody implements Serializable {
     public String path;
     public String name;
     public long size;
+    public int width;
+    public int height;
 
 
     //钉消息 pin

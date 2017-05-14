@@ -64,6 +64,7 @@ import org.greenrobot.eventbus.ThreadMode;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -1012,8 +1013,14 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
                 break;
             case R.id.chat_image_iv:
                 if (item.ext != null) {
-                    ImagePagerActivity.launch(view.getContext(),
-                            new String[]{item.ext.thumb});
+                    String chatBigImageUrl = getChatBigImageUrl(item.ext.thumb, item.ext.width);
+                    if (!TextUtils.isEmpty(chatBigImageUrl)) {
+                        ImagePagerActivity.launch(view.getContext(),
+                                Arrays.asList(item.ext.thumb), Arrays.asList(chatBigImageUrl));
+                    } else {
+                        ImagePagerActivity.launch(view.getContext(),
+                                new String[]{item.ext.thumb});
+                    }
                 }
                 break;
             case R.id.chat_send_fail_iv:
@@ -1033,6 +1040,23 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
                 }
                 break;
         }
+    }
+
+    /**
+     * 获取聊天原图
+     *
+     * @param url
+     * @param width
+     * @return
+     */
+    private String getChatBigImageUrl(String url, int width) {
+        if (width > 200
+                && !TextUtils.isEmpty(url)
+                && url.contains("/imgs/1x/"))//有大图
+        {
+            return url.replace("/imgs/1x/", "/imgs/2x/");
+        }
+        return null;
     }
 
     @Override

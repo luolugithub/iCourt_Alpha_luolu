@@ -27,5 +27,5 @@
         android:layout_height="wrap_content"
         android:layout_gravity="right|bottom"
         android:padding="15dp"
-        android:src="@mipmap/saveimage" />
+        android:src="@mipmap/ic_download" />
 </FrameLayout>
