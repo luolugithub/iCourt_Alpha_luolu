@@ -36,6 +36,7 @@ import com.netease.nimlib.sdk.msg.model.IMMessage;
 import com.netease.nimlib.sdk.team.constant.TeamFieldEnum;
 import com.netease.nimlib.sdk.team.model.IMMessageFilter;
 import com.netease.nimlib.sdk.team.model.UpdateTeamAttachment;
+import com.umeng.analytics.MobclickAgent;
 import com.umeng.socialize.Config;
 import com.umeng.socialize.PlatformConfig;
 import com.umeng.socialize.UMShareAPI;
@@ -68,6 +69,7 @@ public class BaseApplication extends MultiDexApplication {
         //PlatformConfig.setQQZone("1104872033", "lLB4ODaOnpLNzIxD");
         Config.isJumptoAppStore = false; //其中qq 微信会跳转到下载界面进行下载，其他应用会跳到应用商店进行下载
         Log.LOG = BuildConfig.IS_DEBUG;//umeng sdk日志跟踪
+        MobclickAgent.setDebugMode(BuildConfig.IS_DEBUG);
     }
 
     private static BaseApplication baseApplication;

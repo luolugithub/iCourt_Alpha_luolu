@@ -171,6 +171,22 @@ public class DateUtils {
     }
 
     /**
+     * @param milliseconds
+     * @return
+     */
+    public static String getMMMdd(long milliseconds) {
+        SimpleDateFormat formatter = new SimpleDateFormat("MMM月dd日");
+        try {
+            return formatter.format(milliseconds);
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
+        } catch (NullPointerException e) {
+            e.printStackTrace();
+        }
+        return String.valueOf(milliseconds);
+    }
+
+    /**
      * 获得天数差
      *
      * @param begin

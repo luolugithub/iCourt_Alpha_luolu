@@ -77,7 +77,7 @@ public class LoginWithPwdActivity extends LoginBaseActivity {
                 } else if (TextUtils.isEmpty(etPwd.getText())) {
                     showTopSnackBar(getString(R.string.input_password_text));
                 } else {
-                    SpUtils.getInstance().putData(KEY_ACCOUNT, etPwd.getText().toString());
+                    SpUtils.getInstance().putData(KEY_ACCOUNT, etMail.getText().toString());
                     loginWithPwd(etMail.getText().toString(), etPwd.getText().toString());
                 }
                 break;
