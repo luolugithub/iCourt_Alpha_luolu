@@ -411,7 +411,7 @@ public class ImagePagerActivity extends BaseUmengActivity implements BasePagerAd
                             file = Glide.with(getContext())
                                     .load(bigUrl)
                                     .downloadOnly(Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL)
-                                    .get(50, TimeUnit.MILLISECONDS);
+                                    .get(200, TimeUnit.MILLISECONDS);
                         } catch (Exception ex) {
                             ex.printStackTrace();
                         }
