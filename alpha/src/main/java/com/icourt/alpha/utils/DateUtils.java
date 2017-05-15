@@ -3,6 +3,7 @@ package com.icourt.alpha.utils;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.Locale;
 import java.util.TimeZone;
 
@@ -203,6 +204,61 @@ public class DateUtils {
             day += (end.getTime() - begin.getTime()) / (24 * 60 * 60 * 1000);
         }
         return day;
+    }
+
+    /**
+     * 获取今天开始时间 毫秒
+     *
+     * @return
+     */
+    public static long getTodayStartTime() {
+        Calendar currentDate = new GregorianCalendar();
+        currentDate.set(Calendar.HOUR_OF_DAY, 0);
+        currentDate.set(Calendar.MINUTE, 0);
+        currentDate.set(Calendar.SECOND, 0);
+        return currentDate.getTime().getTime();
+    }
+
+    /**
+     * 获取今天开始时间 毫秒
+     *
+     * @return
+     */
+    public static long getTodayEndTime() {
+        Calendar currentDate = new GregorianCalendar();
+        currentDate.set(Calendar.HOUR_OF_DAY, 23);
+        currentDate.set(Calendar.MINUTE, 59);
+        currentDate.set(Calendar.SECOND, 59);
+        return currentDate.getTime().getTime();
+    }
+
+    /**
+     * 获取本周的开始时间 毫秒
+     *
+     * @return
+     */
+    public static long getCurrWeekStartTime() {
+        Calendar currentDate = new GregorianCalendar();
+        currentDate.setFirstDayOfWeek(Calendar.MONDAY);
+        currentDate.set(Calendar.HOUR_OF_DAY, 0);
+        currentDate.set(Calendar.MINUTE, 0);
+        currentDate.set(Calendar.SECOND, 0);
+        currentDate.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY);
+        return currentDate.getTime().getTime();
+    }
+
+
+    /* 获取本周的开始时间 毫秒
+     * @return
+     */
+    public static long getCurrWeekEndTime() {
+        Calendar currentDate = new GregorianCalendar();
+        currentDate.setFirstDayOfWeek(Calendar.MONDAY);
+        currentDate.set(Calendar.HOUR_OF_DAY, 23);
+        currentDate.set(Calendar.MINUTE, 59);
+        currentDate.set(Calendar.SECOND, 59);
+        currentDate.set(Calendar.DAY_OF_WEEK, Calendar.SUNDAY);
+        return currentDate.getTime().getTime();
     }
 
 }

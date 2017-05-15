@@ -24,10 +24,24 @@ public class TimeAdapter extends BaseArrayRecyclerAdapter<TimeEntity.ItemEntity>
 
     private static final int TIME_TOP_TYPE = 0;
     private static final int TIME_OTHER_TYPE = 1;
+    private static final int TIME_SIMPLE_TITLE = 2;
     private HashMap<Integer, Long> timeShowArray = new HashMap<>();//时间分割线
+
+
+    private boolean useSimpleTitle;
+
+    public TimeAdapter(boolean useSimpleTitle) {
+        this.useSimpleTitle = useSimpleTitle;
+    }
+
+    public TimeAdapter() {
+    }
 
     @Override
     public int getItemViewType(int position) {
+        if (useSimpleTitle) {
+            return TIME_SIMPLE_TITLE;
+        }
         if (position == 0) {
             return TIME_TOP_TYPE;
         }
@@ -41,6 +55,8 @@ public class TimeAdapter extends BaseArrayRecyclerAdapter<TimeEntity.ItemEntity>
                 return R.layout.adapter_item_time_top;
             case TIME_OTHER_TYPE:
                 return R.layout.adapter_item_time;
+            case TIME_SIMPLE_TITLE:
+                return R.layout.adapter_item_timing_simple;
         }
         return R.layout.adapter_item_time;
     }
@@ -54,7 +70,27 @@ public class TimeAdapter extends BaseArrayRecyclerAdapter<TimeEntity.ItemEntity>
             case TIME_OTHER_TYPE:
                 setTypeOtherData(holder, timeEntity, position);
                 break;
+            case TIME_SIMPLE_TITLE:
+                setTypeSimpleTitle(holder, timeEntity, position);
+                break;
         }
+    }
+
+    /**
+     * 处理简单标题布局
+     * R.layout.adapter_item_timing_simple
+     *
+     * @param holder
+     * @param timeEntity
+     * @param position
+     */
+    private void setTypeSimpleTitle(ViewHolder holder, TimeEntity.ItemEntity timeEntity, int position) {
+        if (holder == null) return;
+        if (timeEntity == null) return;
+        ImageView timer_icon = holder.obtainView(R.id.timer_icon);
+        TextView timer_count_tv = holder.obtainView(R.id.timer_count_tv);
+        TextView timer_title_tv = holder.obtainView(R.id.timer_title_tv);
+        timer_title_tv.setText(timeEntity.name);
     }
 
     /**

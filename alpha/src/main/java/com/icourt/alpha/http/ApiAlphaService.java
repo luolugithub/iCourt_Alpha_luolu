@@ -538,4 +538,21 @@ public interface ApiAlphaService {
                                               @Query("pageIndex") int pageIndex,
                                               @Query("pageSize") int pageSize,
                                               @Query("type") int type);
+
+    /**
+     * 获取指定时间段的计时
+     *
+     * @param createUserId
+     * @param startTime    017-05-09
+     * @param endTime      017-05-15
+     * @param pageIndex
+     * @param pageSize
+     * @return
+     */
+    @GET("api/v2/timing/timing/search")
+    Call<ResEntity<TimeEntity>> timingListQueryByTime(@Query("createUserId") String createUserId,
+                                                                       @Query("startTime") String startTime,
+                                                                       @Query("endTime") String endTime,
+                                                                       @Query("pageIndex") int pageIndex,
+                                                                       @Query("pageSize") int pageSize);
 }

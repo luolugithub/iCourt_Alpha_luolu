@@ -48,7 +48,7 @@ import io.reactivex.subjects.BehaviorSubject;
  */
 
 public abstract class BaseFragment
-        extends Fragment
+        extends BasePermissionFragment
         implements ProgressHUDImp,
         View.OnClickListener,
         INotifyFragment,
