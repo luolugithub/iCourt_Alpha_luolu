@@ -4,7 +4,7 @@
     android:layout_height="wrap_content"
     android:gravity="center_vertical"
     android:orientation="horizontal"
-    android:padding="17dp">
+    android:padding="15dp">
 
     <ImageView
         android:id="@+id/file_image"
@@ -28,7 +28,8 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="123"
+                android:ellipsize="end"
+                android:maxLines="1"
                 android:textColor="@color/alpha_font_color_black"
                 android:textSize="16sp" />
 
@@ -37,13 +38,12 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="@dimen/dp10"
-                android:text="前提"
-                android:visibility="gone"
                 android:textColor="@color/alpha_font_color_gray"
-                android:textSize="12sp" />
+                android:textSize="12sp"
+                android:visibility="gone" />
         </LinearLayout>
 
-        <LinearLayout
+        <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/dp2"
@@ -51,10 +51,8 @@
 
             <TextView
                 android:id="@+id/file_upload_name_tv"
-                android:layout_width="0dp"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="前提"
                 android:textColor="@color/alpha_font_color_gray"
                 android:textSize="12sp" />
 
@@ -62,11 +60,10 @@
                 android:id="@+id/file_upload_time_hour_tv"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
                 android:layout_marginLeft="@dimen/dp10"
-                android:text="前提"
-                android:visibility="gone"
                 android:textColor="@color/alpha_font_color_gray"
                 android:textSize="12sp" />
-        </LinearLayout>
+        </RelativeLayout>
     </LinearLayout>
 </LinearLayout>

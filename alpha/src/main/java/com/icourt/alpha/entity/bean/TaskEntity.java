@@ -22,6 +22,7 @@ public class TaskEntity implements Serializable {
     public static class TaskItemEntity implements Serializable {
         public String id;
         public String name;//任务名称
+        public String parentId;//任务组id
         public String parentName;//任务组名称
         public String description;//任务描述
         public boolean state;//是否完成

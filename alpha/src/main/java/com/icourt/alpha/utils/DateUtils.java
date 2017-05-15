@@ -163,6 +163,17 @@ public class DateUtils {
     }
 
     /**
+     * 获取日期 MM月dd日 HH:mm
+     *
+     * @param milliseconds
+     * @return
+     */
+    public static String getTimeDateFormatMm(long milliseconds) {
+        SimpleDateFormat formatter = new SimpleDateFormat("MM月dd日 HH:mm");
+        return formatter.format(milliseconds);
+    }
+
+    /**
      * @param milliseconds
      * @return
      */

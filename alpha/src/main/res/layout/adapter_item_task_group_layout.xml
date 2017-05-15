@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="@color/white"
@@ -7,27 +7,36 @@
     android:orientation="horizontal"
     android:padding="16dp">
 
-    <TextView
-        android:id="@+id/task_group_name"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="1212"
-        android:textColor="@color/alpha_font_color_black"
-        android:textSize="16sp" />
+        android:layout_marginRight="@dimen/dp30">
 
-    <TextView
-        android:id="@+id/task_group_count"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="@dimen/dp5"
-        android:layout_weight="1"
-        android:textColor="@color/alpha_font_color_orange"
-        android:textSize="10sp" />
+        <TextView
+            android:id="@+id/task_group_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:text="1212"
+            android:textColor="@color/alpha_font_color_black"
+            android:textSize="16sp" />
+
+        <TextView
+            android:id="@+id/task_group_count"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="@dimen/dp5"
+            android:layout_weight="1"
+            android:textColor="@color/alpha_font_color_orange"
+            android:textSize="10sp" />
+    </LinearLayout>
 
     <ImageView
         android:id="@+id/task_group_arrow"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
         android:src="@mipmap/arrow_right" />
 
-</LinearLayout>
+</RelativeLayout>

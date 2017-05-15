@@ -20,7 +20,7 @@ public class TaskActionEvent {
     public static final int TASK_REFRESG_ACTION = 3;
 
     @IntDef({TASK_DELETE_ACTION,
-            TASK_UPDATE_ACTION,TASK_REFRESG_ACTION})
+            TASK_UPDATE_ACTION, TASK_REFRESG_ACTION})
     @Retention(RetentionPolicy.SOURCE)
     public @interface TASK_ACTION {
 
@@ -29,10 +29,12 @@ public class TaskActionEvent {
     @TASK_ACTION
     public int action;
     public String id;
+    public String desc;
 
-    public TaskActionEvent(@TASK_ACTION int action, String id) {
+    public TaskActionEvent(@TASK_ACTION int action, String id, String desc) {
         this.action = action;
         this.id = id;
+        this.desc = desc;
     }
 
     public TaskActionEvent(@TASK_ACTION int action) {

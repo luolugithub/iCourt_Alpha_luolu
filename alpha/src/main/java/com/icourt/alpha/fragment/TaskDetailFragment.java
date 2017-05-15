@@ -16,18 +16,24 @@ import android.widget.TextView;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.icourt.alpha.R;
+import com.icourt.alpha.activity.TaskDescUpdateActivity;
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.entity.bean.ProjectEntity;
 import com.icourt.alpha.entity.bean.TaskEntity;
 import com.icourt.alpha.entity.bean.TaskGroupEntity;
 import com.icourt.alpha.entity.event.TaskActionEvent;
+import com.icourt.alpha.fragment.dialogfragment.DateSelectDialogFragment;
 import com.icourt.alpha.fragment.dialogfragment.ProjectSelectDialogFragment;
+import com.icourt.alpha.fragment.dialogfragment.TaskGroupSelectFragment;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
+import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.api.RequestUtils;
 
 import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -44,8 +50,9 @@ import retrofit2.Response;
  * version 2.0.0
  */
 
-public class TaskDetailFragment extends BaseFragment implements ProjectSelectDialogFragment.OnProjectTaskGroupSelectListener {
+public class TaskDetailFragment extends BaseFragment implements ProjectSelectDialogFragment.OnProjectTaskGroupSelectListener, OnFragmentCallBackListener {
     private static final String KEY_TASK_DETAIL = "key_task_detail";
+    private static final int UPDATE_DEST_REQUEST_CODE = 1;//修改任务详情requestcode
     Unbinder unbinder;
     @BindView(R.id.task_project_tv)
     TextView taskProjectTv;
@@ -73,11 +80,13 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
         taskDetailFragment.setArguments(bundle);
         return taskDetailFragment;
     }
+
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         getActivity().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
     }
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -88,6 +97,7 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
 
     @Override
     protected void initView() {
+        EventBus.getDefault().register(this);
         taskItemEntity = (TaskEntity.TaskItemEntity) getArguments().getSerializable(KEY_TASK_DETAIL);
         if (taskItemEntity != null) {
             if (taskItemEntity.matter != null) {
@@ -98,25 +108,43 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
                     taskGroupTv.setText(taskItemEntity.parentFlow.name);
                 }
             } else {
-                taskProjectLayout.setVisibility(View.GONE);
+                taskProjectLayout.setVisibility(View.VISIBLE);
                 taskGroupLayout.setVisibility(View.GONE);
+                taskProjectTv.setText("添加所属项目");
             }
-            if (!TextUtils.isEmpty(taskItemEntity.description)) {
-                taskDescLayout.setVisibility(View.VISIBLE);
-                taskDescTv.setText(taskItemEntity.description);
+
+            if (taskItemEntity.dueTime > 0) {
+                taskTimeTv.setText(DateUtils.getTimeDateFormatMm(taskItemEntity.dueTime));
             } else {
-                taskDescLayout.setVisibility(View.GONE);
+                taskTimeTv.setText("添加到期时间");
+            }
+
+            if (!TextUtils.isEmpty(taskItemEntity.description)) {
+                taskDescTv.setText(taskItemEntity.description);
             }
         }
     }
 
-    @OnClick({R.id.task_project_layout})
+    @OnClick({R.id.task_project_layout, R.id.task_group_layout, R.id.task_time_layout, R.id.task_desc_tv})
     @Override
     public void onClick(View v) {
         super.onClick(v);
         switch (v.getId()) {
             case R.id.task_project_layout://选择项目
                 showProjectSelectDialogFragment();
+                break;
+            case R.id.task_group_layout://选择任务组
+                if (taskItemEntity.matter != null) {
+                    if (!TextUtils.isEmpty(taskItemEntity.matter.id)) {
+                        showTaskGroupSelectFragment(taskItemEntity.matter.id);
+                    }
+                }
+                break;
+            case R.id.task_time_layout://选择到期时间
+                showDateSelectDialogFragment();
+                break;
+            case R.id.task_desc_tv://添加任务详情
+                TaskDescUpdateActivity.launch(getContext(),taskDescTv.getText().toString());
                 break;
         }
     }
@@ -133,6 +161,34 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
         }
 
         ProjectSelectDialogFragment.newInstance()
+                .show(mFragTransaction, tag);
+    }
+
+    /**
+     * 展示选择到期时间对话框
+     */
+    private void showDateSelectDialogFragment() {
+        String tag = DateSelectDialogFragment.class.getSimpleName();
+        FragmentTransaction mFragTransaction = getChildFragmentManager().beginTransaction();
+        Fragment fragment = getChildFragmentManager().findFragmentByTag(tag);
+        if (fragment != null) {
+            mFragTransaction.remove(fragment);
+        }
+        DateSelectDialogFragment.newInstance()
+                .show(mFragTransaction, tag);
+    }
+
+    /**
+     * 展示选择任务组对话框
+     */
+    private void showTaskGroupSelectFragment(String projectId) {
+        String tag = TaskGroupSelectFragment.class.getSimpleName();
+        FragmentTransaction mFragTransaction = getChildFragmentManager().beginTransaction();
+        Fragment fragment = getChildFragmentManager().findFragmentByTag(tag);
+        if (fragment != null) {
+            mFragTransaction.remove(fragment);
+        }
+        TaskGroupSelectFragment.newInstance(projectId)
                 .show(mFragTransaction, tag);
     }
 
@@ -189,6 +245,9 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
             JsonObject jsonObject = new JsonObject();
             jsonObject.addProperty("id", itemEntity.id);
             jsonObject.addProperty("state", itemEntity.state);
+            jsonObject.addProperty("parentId", itemEntity.parentId);
+            jsonObject.addProperty("dueTime", itemEntity.dueTime);
+            jsonObject.addProperty("description", itemEntity.description);
             jsonObject.addProperty("valid", true);
             jsonObject.addProperty("updateTime", DateUtils.millis());
             if (projectEntity != null) {
@@ -203,5 +262,37 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
             e.printStackTrace();
         }
         return null;
+    }
+
+    @Override
+    public void onFragmentCallBack(Fragment fragment, int type, Bundle params) {
+        if (params != null) {
+            if (fragment instanceof DateSelectDialogFragment) {
+                long millis = params.getLong(KEY_FRAGMENT_RESULT);
+                taskTimeTv.setText(DateUtils.getTimeDateFormatMm(millis));
+                taskItemEntity.dueTime = millis;
+                updateTask(taskItemEntity, null, null);
+            } else if (fragment instanceof TaskGroupSelectFragment) {
+                TaskGroupEntity taskGroupEntity = (TaskGroupEntity) params.getSerializable(KEY_FRAGMENT_RESULT);
+                if (taskGroupEntity != null) {
+                    taskGroupTv.setText(taskGroupEntity.name);
+                    taskItemEntity.parentId = taskGroupEntity.id;
+                    updateTask(taskItemEntity, null, null);
+                }
+            }
+        }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onUpdateTaskDescEvent(TaskActionEvent event) {
+        if (event == null) return;
+        if (event.action == TaskActionEvent.TASK_UPDATE_ACTION) {
+            String desc = event.desc;
+            if (!TextUtils.isEmpty(desc)) {
+                taskDescTv.setText(desc);
+                taskItemEntity.description = desc;
+                updateTask(taskItemEntity, null, null);
+            }
+        }
     }
 }

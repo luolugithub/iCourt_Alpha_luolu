@@ -64,6 +64,8 @@ public class ProjectDetailActivity extends BaseActivity implements OnFragmentCal
     String projectId, projectName;
     int myStar;
     BaseFragmentAdapter baseFragmentAdapter;
+    ProjectFileBoxFragment projectFileBoxFragment;
+    private boolean nameIsUp = false, timeIsUp = false, sizeIsUp = false;
 
     public static void launch(@NonNull Context context, @NonNull String projectId, @NonNull String proectName) {
         if (context == null) return;
@@ -108,7 +110,7 @@ public class ProjectDetailActivity extends BaseActivity implements OnFragmentCal
                         ProjectDetailFragment.newInstance(projectId),
                         ProjectTaskFragment.newInstance(projectId),
                         ProjectTimeFragment.newInstance(projectId),
-                        ProjectFileBoxFragment.newInstance(projectId)
+                        projectFileBoxFragment = ProjectFileBoxFragment.newInstance(projectId)
                 ));
         detailTablayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
@@ -145,6 +147,7 @@ public class ProjectDetailActivity extends BaseActivity implements OnFragmentCal
                 titleAction2.setVisibility(View.GONE);
                 break;
             case 3:
+                titleAction.setImageResource(R.mipmap.header_icon_add);
                 titleAction2.setVisibility(View.VISIBLE);
                 break;
         }
@@ -156,14 +159,29 @@ public class ProjectDetailActivity extends BaseActivity implements OnFragmentCal
         super.onClick(view);
         switch (view.getId()) {
             case R.id.titleAction:
+                titleActionClick();
+                break;
+            case R.id.titleAction2:
+                showBottomMeau();
+                break;
+        }
+    }
+
+    private void titleActionClick() {
+        switch (detailTablayout.getSelectedTabPosition()) {
+            case 0:     //概览
+            case 1:     //任务
+            case 2:     //计时
                 if (myStar != 1) {
                     addStar();
                 } else {
                     deleteStar();
                 }
                 break;
-            case R.id.titleAction2:
-                showBottomMeau();
+            case 3:     //文档
+                if(projectFileBoxFragment!=null){
+                    projectFileBoxFragment.showBottomMeau();
+                }
                 break;
         }
     }
@@ -224,10 +242,22 @@ public class ProjectDetailActivity extends BaseActivity implements OnFragmentCal
                         dialog.dismiss();
                         switch (position) {
                             case 0:
-                                showTopSnackBar("按文件名升序排序");
+                                if (projectFileBoxFragment != null) {
+                                    showTopSnackBar("按文件名升序排序");
+                                    projectFileBoxFragment.sortFileByNameList(nameIsUp);
+                                    nameIsUp = !nameIsUp;
+                                    timeIsUp = false;
+                                    sizeIsUp = false;
+                                }
                                 break;
                             case 1:
-                                showTopSnackBar("按文件大小升序排序");
+                                if (projectFileBoxFragment != null) {
+                                    showTopSnackBar("按文件大小升序排序");
+                                    projectFileBoxFragment.sortFileBySizeList(sizeIsUp);
+                                    sizeIsUp = !sizeIsUp;
+                                    nameIsUp = false;
+                                    timeIsUp = false;
+                                }
                                 break;
                         }
                     }
@@ -277,7 +307,7 @@ public class ProjectDetailActivity extends BaseActivity implements OnFragmentCal
     }
 
     @Override
-    public void onFragmentCallBack(Fragment fragment,int type, Bundle params) {
+    public void onFragmentCallBack(Fragment fragment, int type, Bundle params) {
         if (fragment instanceof ProjectDetailFragment) {
             myStar = params.getInt("myStar");
             if (myStar != 1) {

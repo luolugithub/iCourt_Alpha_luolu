@@ -16,6 +16,7 @@ import com.icourt.alpha.entity.bean.PageEntity;
 import com.icourt.alpha.entity.bean.ProjectDetailEntity;
 import com.icourt.alpha.entity.bean.ProjectEntity;
 import com.icourt.alpha.entity.bean.SearchEngineEntity;
+import com.icourt.alpha.entity.bean.TaskAttachmentEntity;
 import com.icourt.alpha.entity.bean.TaskCheckItemEntity;
 import com.icourt.alpha.entity.bean.TaskEntity;
 import com.icourt.alpha.entity.bean.TaskGroupEntity;
@@ -353,7 +354,7 @@ public interface ApiAlphaService {
      * @return
      */
     @GET("https://box.alphalawyer.cn/api2/repos/{seaFileRepoId}/dir/")
-    Call<ResEntity<List<FileBoxBean>>> projectQueryFileBoxList(@Header("Authorization") String authToken, @Path("seaFileRepoId") String seaFileRepoId);
+    Call<List<FileBoxBean>> projectQueryFileBoxList(@Header("Authorization") String authToken, @Path("seaFileRepoId") String seaFileRepoId);
 
     /**
      * 项目下任务列表
@@ -540,6 +541,26 @@ public interface ApiAlphaService {
                                               @Query("type") int type);
 
     /**
+     * 获取任务下的附件列表
+     *
+     * @param taskId
+     * @return
+     */
+    @GET("api/v2/task/{taskId}/attachments")
+    Call<ResEntity<List<TaskAttachmentEntity>>> taskAttachMentListQuery(@Path("taskId") String taskId);
+
+    /**
+     * 任务上传附件
+     *
+     * @param taskId
+     * @param params
+     * @return
+     */
+    @Multipart
+    @POST("api/v2/task/{taskId}/attachment/addFromFile")
+    Call<ResEntity<JsonElement>> taskAttachmentUpload(@Path("taskId") String taskId, @PartMap Map<String, RequestBody> params);
+
+    /**
      * 获取指定时间段的计时
      *
      * @param createUserId
@@ -551,8 +572,40 @@ public interface ApiAlphaService {
      */
     @GET("api/v2/timing/timing/search")
     Call<ResEntity<TimeEntity>> timingListQueryByTime(@Query("createUserId") String createUserId,
-                                                                       @Query("startTime") String startTime,
-                                                                       @Query("endTime") String endTime,
-                                                                       @Query("pageIndex") int pageIndex,
-                                                                       @Query("pageSize") int pageSize);
+                                                      @Query("startTime") String startTime,
+                                                      @Query("endTime") String endTime,
+                                                      @Query("pageIndex") int pageIndex,
+                                                      @Query("pageSize") int pageSize);
+
+    /**
+     * 获取上传文件url
+     *
+     * @param seaFileRepoId
+     * @return
+     */
+    @GET("https://box.alphalawyer.cn/api2/repos/{seaFileRepoId}/upload-link/")
+    Call<JsonElement> projectUploadUrlQuery(@Header("Authorization") String authToken, @Path("seaFileRepoId") String seaFileRepoId);
+
+    /**
+     * 项目下上传文件
+     *
+     * @param url
+     * @param parent_dir
+     * @param body
+     * @return
+     */
+    @Multipart
+    @POST()
+    Call<ResEntity<JsonElement>> projectUploadFile(@Header("Authorization") String authToken,@Url String url, @Query("parent_dir") String parent_dir, @Body RequestBody body);
+
+    /**
+     * 获取项目下文档列表
+     *
+     * @param authToken
+     * @param seaFileRepoId
+     * @param rootName
+     * @return
+     */
+    @GET("https://box.alphalawyer.cn/api2/repos/{seaFileRepoId}/dir/")
+    Call<List<FileBoxBean>> projectQueryFileBoxByDir(@Header("Authorization") String authToken, @Path("seaFileRepoId") String seaFileRepoId, @Query("p") String rootName);
 }

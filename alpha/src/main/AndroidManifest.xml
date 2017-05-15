@@ -185,6 +185,12 @@
             android:name=".activity.CommentListActivity"
             android:screenOrientation="portrait" />
         <activity
+            android:name=".activity.TaskDescUpdateActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".activity.FileBoxListActivity"
+            android:screenOrientation="portrait" />
+        <activity
             android:name=".activity.SettingActivity"
             android:screenOrientation="portrait"
             android:windowSoftInputMode="adjustUnspecified|stateHidden" />

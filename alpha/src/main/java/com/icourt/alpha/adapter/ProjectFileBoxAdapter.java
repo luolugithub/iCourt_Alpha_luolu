@@ -1,14 +1,13 @@
 package com.icourt.alpha.adapter;
 
 import android.text.TextUtils;
-import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.baseadapter.BaseArrayRecyclerAdapter;
-import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.entity.bean.FileBoxBean;
+import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.FileUtils;
 
 /**
@@ -19,18 +18,20 @@ import com.icourt.alpha.utils.FileUtils;
  * version 2.0.0
  */
 
-public class ProjectFileBoxAdapter extends BaseArrayRecyclerAdapter<FileBoxBean> implements BaseRecyclerAdapter.OnItemClickListener {
+public class ProjectFileBoxAdapter extends BaseArrayRecyclerAdapter<FileBoxBean>{
 
     private static final int FILE_TYPE = 0;//文件
     private static final int DIR_TYPE = 1;//文件夹
 
+
     @Override
     public int getItemViewType(int position) {
-        FileBoxBean fileBoxBean = getData(position);
-        if (!TextUtils.isEmpty(fileBoxBean.getType())) {
-            if (TextUtils.equals("file", fileBoxBean.getType())) {
+        FileBoxBean fileBoxBean = getItem(position);
+        if (!TextUtils.isEmpty(fileBoxBean.type)) {
+            if (TextUtils.equals("file", fileBoxBean.type)) {
                 return FILE_TYPE;
-            } else if (TextUtils.equals("dir", fileBoxBean.getType())) {
+            }
+            if (TextUtils.equals("dir", fileBoxBean.type)) {
                 return DIR_TYPE;
             }
         }
@@ -45,18 +46,15 @@ public class ProjectFileBoxAdapter extends BaseArrayRecyclerAdapter<FileBoxBean>
             case DIR_TYPE:
                 return R.layout.adapter_item_project_dir_layout;
         }
-        return 0;
+        return R.layout.adapter_item_project_file_layout;
     }
 
     @Override
     public void onBindHoder(ViewHolder holder, FileBoxBean fileBoxBean, int position) {
-        switch (holder.getItemViewType()) {
-            case FILE_TYPE:
-                setFileTypeData(holder,fileBoxBean);
-                break;
-            case DIR_TYPE:
-                setDirTypeData(holder,fileBoxBean);
-                break;
+        if (getItemViewType(position) == FILE_TYPE) {
+            setFileTypeData(holder, fileBoxBean);
+        } else if (getItemViewType(position) == DIR_TYPE) {
+            setDirTypeData(holder, fileBoxBean);
         }
     }
 
@@ -73,9 +71,12 @@ public class ProjectFileBoxAdapter extends BaseArrayRecyclerAdapter<FileBoxBean>
         TextView uploadName = holder.obtainView(R.id.file_upload_name_tv);
         TextView uploadHour = holder.obtainView(R.id.file_upload_time_hour_tv);
 
-        imageView.setImageResource(FileUtils.getFileIcon20(fileBoxBean.getName()));
-        fileName.setText(fileBoxBean.getName());
-        uploadName.setText(FileUtils.kbFromat(fileBoxBean.getSize()));
+        imageView.setImageResource(FileUtils.getFileIcon20(fileBoxBean.name));
+        fileName.setText(fileBoxBean.name);
+        uploadName.setText(FileUtils.kbFromat(fileBoxBean.size));
+        if (fileBoxBean.mtime > 0) {
+            uploadHour.setText(DateUtils.getTimeDateFormatMm(fileBoxBean.mtime));
+        }
     }
 
     /**
@@ -87,11 +88,6 @@ public class ProjectFileBoxAdapter extends BaseArrayRecyclerAdapter<FileBoxBean>
     private void setDirTypeData(ViewHolder holder, FileBoxBean fileBoxBean) {
         ImageView imageView = holder.obtainView(R.id.dir_image);
         TextView dirName = holder.obtainView(R.id.dir_name);
-        dirName.setText(fileBoxBean.getName());
-    }
-
-    @Override
-    public void onItemClick(BaseRecyclerAdapter adapter, ViewHolder holder, View view, int position) {
-
+        dirName.setText(fileBoxBean.name);
     }
 }

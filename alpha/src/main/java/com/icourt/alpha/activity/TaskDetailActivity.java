@@ -34,6 +34,7 @@ import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.entity.bean.TaskEntity;
 import com.icourt.alpha.entity.event.TaskActionEvent;
+import com.icourt.alpha.fragment.TaskAttachmentFragment;
 import com.icourt.alpha.fragment.TaskCheckItemFragment;
 import com.icourt.alpha.fragment.TaskDetailFragment;
 import com.icourt.alpha.http.callback.SimpleCallBack;
@@ -135,6 +136,7 @@ public class TaskDetailActivity extends BaseActivity {
     @Override
     protected void initView() {
         super.initView();
+        setTitle("");
         taskId = getIntent().getStringExtra(KEY_TASK_ID);
         baseFragmentAdapter = new BaseFragmentAdapter(getSupportFragmentManager());
         viewpager.setAdapter(baseFragmentAdapter);
@@ -235,7 +237,7 @@ public class TaskDetailActivity extends BaseActivity {
                         } else if (type == SHOW_FINISH_DIALOG) {
                             if (taskItemEntity.state) {
                                 updateTask(taskItemEntity, false, taskCheckbox);
-                            }else{
+                            } else {
                                 updateTask(taskItemEntity, true, taskCheckbox);
                             }
                         }
@@ -291,7 +293,7 @@ public class TaskDetailActivity extends BaseActivity {
             baseFragmentAdapter.bindData(false, Arrays.asList(
                     TaskDetailFragment.newInstance(taskItemEntity),
                     TaskCheckItemFragment.newInstance(taskItemEntity.id),
-                    TaskDetailFragment.newInstance(taskItemEntity)
+                    TaskAttachmentFragment.newInstance(taskItemEntity.id)
             ));
             if (taskItemEntity.attendeeUsers != null) {
                 if (taskItemEntity.attendeeUsers.size() > 0) {
@@ -436,9 +438,9 @@ public class TaskDetailActivity extends BaseActivity {
         return onTouchEvent(ev);
     }
 
-    public  boolean isShouldHideInput(View v, MotionEvent event) {
+    public boolean isShouldHideInput(View v, MotionEvent event) {
         if (v != null && (v instanceof EditText)) {
-            int[] leftTop = { 0, 0 };
+            int[] leftTop = {0, 0};
             //获取输入框当前的location位置
             v.getLocationInWindow(leftTop);
             int left = leftTop[0];
