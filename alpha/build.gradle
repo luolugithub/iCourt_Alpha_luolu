@@ -228,6 +228,7 @@ dependencies {
     compile 'com.contrarywind:Android-PickerView:3.2.4'
     compile 'com.github.sundeepk:compact-calendar-view:2.0.2'
     compile 'com.umeng.analytics:analytics:latest.integration'
+    compile 'com.github.lecho:hellocharts-library:1.5.8@aar'
     //compile 'com.getui:sdk:2.10.2.0'
 }
 

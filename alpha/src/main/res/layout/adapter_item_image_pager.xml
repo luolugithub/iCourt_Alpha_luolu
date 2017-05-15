@@ -14,9 +14,14 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|center"
-        android:padding="15dp"
+        android:layout_margin="10dp"
+        android:background="@drawable/line_round_rect_white"
+        android:paddingBottom="5dp"
+        android:paddingLeft="15dp"
+        android:paddingRight="15dp"
+        android:paddingTop="5dp"
         android:text="查看原图"
-        android:visibility="gone"
         android:textColor="@android:color/white"
-        android:textSize="@dimen/alpha_font_size_mini" />
+        android:textSize="@dimen/alpha_font_size_mini"
+        android:visibility="gone" />
 </FrameLayout>
