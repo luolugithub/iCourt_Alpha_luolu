@@ -10,6 +10,8 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.TabLayout;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
@@ -37,8 +39,10 @@ import com.icourt.alpha.entity.event.TaskActionEvent;
 import com.icourt.alpha.fragment.TaskAttachmentFragment;
 import com.icourt.alpha.fragment.TaskCheckItemFragment;
 import com.icourt.alpha.fragment.TaskDetailFragment;
+import com.icourt.alpha.fragment.dialogfragment.TaskAllotSelectDialogFragment;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
+import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.GlideUtils;
 import com.icourt.alpha.widget.dialog.BottomActionDialog;
@@ -47,6 +51,7 @@ import com.icourt.api.RequestUtils;
 import org.greenrobot.eventbus.EventBus;
 
 import java.util.Arrays;
+import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -62,7 +67,7 @@ import retrofit2.Response;
  * version 2.0.0
  */
 
-public class TaskDetailActivity extends BaseActivity {
+public class TaskDetailActivity extends BaseActivity implements OnFragmentCallBackListener {
 
     private static final String KEY_TASK_ID = "key_task_id";
     private static final int SHOW_DELETE_DIALOG = 0;//删除提示对话框
@@ -159,6 +164,14 @@ public class TaskDetailActivity extends BaseActivity {
                 break;
             case R.id.titleAction2://更多
                 showBottomMeau();
+                break;
+            case R.id.task_user_layout:
+            case R.id.task_users_layout://选择负责人
+                if (taskItemEntity.matter != null) {
+                    showTaskAllotSelectDialogFragment(taskItemEntity.matter.id);
+                } else {
+                    showTopSnackBar("请优先选择项目");
+                }
                 break;
             case R.id.task_checkbox://  完成／取消完成
                 if (taskItemEntity.state) {
@@ -264,6 +277,21 @@ public class TaskDetailActivity extends BaseActivity {
                 setDataToView(response.body().result);
             }
         });
+    }
+
+    /**
+     * 展示选择负责人对话框
+     */
+    public void showTaskAllotSelectDialogFragment(String projectId) {
+        String tag = "TaskAllotSelectDialogFragment";
+        FragmentTransaction mFragTransaction = getSupportFragmentManager().beginTransaction();
+        Fragment fragment = getSupportFragmentManager().findFragmentByTag(tag);
+        if (fragment != null) {
+            mFragTransaction.remove(fragment);
+        }
+
+        TaskAllotSelectDialogFragment.newInstance(projectId, taskItemEntity.attendeeUsers)
+                .show(mFragTransaction, tag);
     }
 
     /**
@@ -411,9 +439,29 @@ public class TaskDetailActivity extends BaseActivity {
             jsonObject.addProperty("state", itemEntity.state);
             jsonObject.addProperty("valid", true);
             jsonObject.addProperty("updateTime", DateUtils.millis());
+            jsonObject.addProperty("assignTo", getAssignToStr(itemEntity.attendeeUsers));
             return jsonObject.toString();
         } catch (Exception e) {
             e.printStackTrace();
+        }
+        return null;
+    }
+
+    /**
+     * 获取负责人ids
+     *
+     * @param attusers
+     * @return
+     */
+    private String getAssignToStr(List<TaskEntity.TaskItemEntity.AttendeeUserEntity> attusers) {
+        if (attusers != null) {
+            if (attusers.size() > 0) {
+                StringBuffer buffer = new StringBuffer();
+                for (TaskEntity.TaskItemEntity.AttendeeUserEntity attendeeUser : attusers) {
+                    buffer.append(attendeeUser.userId).append(",");
+                }
+                return buffer.toString().substring(0, buffer.toString().length() - 1);
+            }
         }
         return null;
     }
@@ -458,4 +506,18 @@ public class TaskDetailActivity extends BaseActivity {
         return false;
     }
 
+    @Override
+    public void onFragmentCallBack(Fragment fragment, int type, Bundle params) {
+        if (fragment instanceof TaskAllotSelectDialogFragment) {
+            if (params != null) {
+                List<TaskEntity.TaskItemEntity.AttendeeUserEntity> attusers = (List<TaskEntity.TaskItemEntity.AttendeeUserEntity>) params.getSerializable("list");
+                usersAdapter.bindData(true, attusers);
+                if (taskItemEntity.attendeeUsers != null) {
+                    taskItemEntity.attendeeUsers.clear();
+                    taskItemEntity.attendeeUsers.addAll(attusers);
+                    updateTask(taskItemEntity, taskItemEntity.state, taskCheckbox);
+                }
+            }
+        }
+    }
 }

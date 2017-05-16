@@ -23,7 +23,6 @@ import com.icourt.alpha.entity.bean.TaskEntity;
 import com.icourt.alpha.entity.bean.TaskGroupEntity;
 import com.icourt.alpha.entity.bean.TimeEntity;
 import com.icourt.alpha.entity.bean.TimingCountEntity;
-import com.icourt.alpha.entity.bean.WorkType;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 
 import java.util.List;
@@ -644,14 +643,4 @@ public interface ApiAlphaService {
      */
     @GET()
     Call<JsonElement> fileboxDownload(@Header("Authorization") String authToken, @Url String url);
-
-    /**
-     * 获取项目下的工作类型
-     *
-     * @param matterId
-     * @return
-     */
-    @GET("api/v2/timing/workTypes")
-    Call<ResEntity<List<WorkType>>> queryWorkTypes(@Query("matterId") String matterId);
-
 }
