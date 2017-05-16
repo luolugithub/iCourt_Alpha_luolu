@@ -179,7 +179,7 @@ public class ProjectDetailActivity extends BaseActivity implements OnFragmentCal
                 }
                 break;
             case 3:     //文档
-                if(projectFileBoxFragment!=null){
+                if (projectFileBoxFragment != null) {
                     projectFileBoxFragment.showBottomMeau();
                 }
                 break;
@@ -243,7 +243,6 @@ public class ProjectDetailActivity extends BaseActivity implements OnFragmentCal
                         switch (position) {
                             case 0:
                                 if (projectFileBoxFragment != null) {
-                                    showTopSnackBar("按文件名升序排序");
                                     projectFileBoxFragment.sortFileByNameList(nameIsUp);
                                     nameIsUp = !nameIsUp;
                                     timeIsUp = false;
@@ -252,7 +251,6 @@ public class ProjectDetailActivity extends BaseActivity implements OnFragmentCal
                                 break;
                             case 1:
                                 if (projectFileBoxFragment != null) {
-                                    showTopSnackBar("按文件大小升序排序");
                                     projectFileBoxFragment.sortFileBySizeList(sizeIsUp);
                                     sizeIsUp = !sizeIsUp;
                                     nameIsUp = false;

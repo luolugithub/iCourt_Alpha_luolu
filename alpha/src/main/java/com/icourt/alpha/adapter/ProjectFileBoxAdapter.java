@@ -73,7 +73,7 @@ public class ProjectFileBoxAdapter extends BaseArrayRecyclerAdapter<FileBoxBean>
 
         imageView.setImageResource(FileUtils.getFileIcon20(fileBoxBean.name));
         fileName.setText(fileBoxBean.name);
-        uploadName.setText(FileUtils.kbFromat(fileBoxBean.size));
+        uploadName.setText(FileUtils.bFormat(fileBoxBean.size));
         if (fileBoxBean.mtime > 0) {
             uploadHour.setText(DateUtils.getTimeDateFormatMm(fileBoxBean.mtime));
         }

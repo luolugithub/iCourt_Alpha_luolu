@@ -191,6 +191,15 @@
             android:name=".activity.FileBoxListActivity"
             android:screenOrientation="portrait" />
         <activity
+            android:name=".activity.ProjectSelectActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".activity.FolderboxSelectActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".activity.FileBoxDownloadActivity"
+            android:screenOrientation="portrait" />
+        <activity
             android:name=".activity.SettingActivity"
             android:screenOrientation="portrait"
             android:windowSoftInputMode="adjustUnspecified|stateHidden" />

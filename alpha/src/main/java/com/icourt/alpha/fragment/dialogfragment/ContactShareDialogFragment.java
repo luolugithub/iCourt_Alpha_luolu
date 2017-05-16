@@ -76,6 +76,20 @@ public class ContactShareDialogFragment extends BaseDialogFragment
         return contactDialogFragment;
     }
 
+    /**
+     * 文档转发到享聊  //TODO youxuan补充逻辑
+     *
+     * @param filePath
+     * @return
+     */
+    public static ContactShareDialogFragment newInstanceFile(@NonNull String filePath) {
+        ContactShareDialogFragment contactDialogFragment = new ContactShareDialogFragment();
+        Bundle args = new Bundle();
+        args.putString("filePath", filePath);
+        contactDialogFragment.setArguments(args);
+        return contactDialogFragment;
+    }
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {

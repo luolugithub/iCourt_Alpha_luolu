@@ -18,14 +18,13 @@ import com.andview.refreshview.XRefreshView;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.icourt.alpha.R;
+import com.icourt.alpha.activity.FileBoxDownloadActivity;
 import com.icourt.alpha.activity.FileBoxListActivity;
 import com.icourt.alpha.adapter.ProjectFileBoxAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.adapterObserver.RefreshViewEmptyObserver;
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.entity.bean.FileBoxBean;
-import com.icourt.alpha.http.callback.SimpleCallBack;
-import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.ItemDecorationUtils;
 import com.icourt.alpha.utils.PingYinUtil;
@@ -315,7 +314,7 @@ public class ProjectFileBoxFragment extends BaseFragment implements BaseRecycler
         FileBoxBean fileBoxBean = (FileBoxBean) adapter.getItem(position);
         if (!TextUtils.isEmpty(fileBoxBean.type)) {
             if (TextUtils.equals("file", fileBoxBean.type)) {
-
+                FileBoxDownloadActivity.launch(getContext(), authToken, seaFileRepoId, fileBoxBean.name, FileBoxDownloadActivity.PROJECT_DOWNLOAD_FILE_ACTION);
             }
             if (TextUtils.equals("dir", fileBoxBean.type)) {
                 FileBoxListActivity.launch(getContext(), fileBoxBean, authToken, seaFileRepoId, fileBoxBean.name);
@@ -447,18 +446,19 @@ public class ProjectFileBoxFragment extends BaseFragment implements BaseRecycler
     private void uploadFile(String uploadUrl, String filePath) {
         String key = "file\";filename=\"" + DateUtils.millis() + ".png";
         Map<String, RequestBody> params = new HashMap<>();
+        params.put("parent_dir", RequestUtils.createTextBody("/"));
         params.put(key, RequestUtils.createImgBody(new File(filePath)));
-        getApi().projectUploadFile("Token " + authToken, uploadUrl, "/", RequestUtils.createImgBody(new File(filePath))).enqueue(new SimpleCallBack<JsonElement>() {
+        getApi().projectUploadFile("Token " + authToken, uploadUrl, params).enqueue(new Callback<JsonElement>() {
+
             @Override
-            public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
+            public void onResponse(Call<JsonElement> call, Response<JsonElement> response) {
                 dismissLoadingDialog();
                 showTopSnackBar("上传成功");
                 getData(true);
             }
 
             @Override
-            public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
-                super.onFailure(call, t);
+            public void onFailure(Call<JsonElement> call, Throwable t) {
                 dismissLoadingDialog();
                 showTopSnackBar("上传失败");
             }

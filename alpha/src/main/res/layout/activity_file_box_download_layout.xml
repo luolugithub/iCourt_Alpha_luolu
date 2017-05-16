@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <include layout="@layout/layout_title_type_0" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/dp30"
+        android:background="@color/white"
+        android:orientation="vertical">
+
+        <ImageView
+            android:id="@+id/file_icon_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="@dimen/dp40"
+            android:src="@mipmap/filetype_pdf_40" />
+
+        <TextView
+            android:id="@+id/file_name_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="@dimen/dp10"
+            android:text="会议纪要"
+            android:textColor="@color/alpha_font_color_black"
+            android:textSize="16sp" />
+
+    </LinearLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/white"
+        android:paddingBottom="@dimen/dp40"
+        android:paddingTop="@dimen/dp50">
+
+        <LinearLayout
+            android:id="@+id/loading_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/download_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="下载中..."
+                android:textColor="@color/alpha_font_color_gray"
+                android:textSize="12sp" />
+
+            <com.icourt.alpha.view.ProgressLayout
+                android:id="@+id/progressbar"
+                android:layout_width="190dp"
+                android:layout_height="2dp"
+                app:autoProgress="false"
+                app:emptyColor="#e9e9e9"
+                app:maxProgress="100"
+                app:loadedColor="#e66cff"
+                android:layout_marginTop="@dimen/dp20" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/activity_download_file_meau_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="30dp"
+            android:visibility="gone"
+            android:layout_marginRight="30dp">
+
+            <TextView
+                android:id="@+id/save_matter_view"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:drawablePadding="5dp"
+                android:drawableTop="@mipmap/file_opt_project"
+                android:gravity="center_horizontal"
+                android:text="保存到项目"
+                android:textSize="12dp" />
+
+            <TextView
+                android:id="@+id/send_im_view"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:drawablePadding="5dp"
+                android:drawableTop="@mipmap/file_opt_im"
+                android:gravity="center_horizontal"
+                android:text="发送到享聊"
+                android:textSize="12dp" />
+
+            <TextView
+                android:id="@+id/open_view"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:drawablePadding="5dp"
+                android:drawableTop="@mipmap/file_opt_open"
+                android:gravity="center_horizontal"
+                android:text="打开"
+                android:textSize="12dp" />
+
+            <TextView
+                android:id="@+id/share_view"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:drawablePadding="5dp"
+                android:drawableTop="@mipmap/file_opt_share"
+                android:gravity="center_horizontal"
+                android:text="分享"
+                android:textSize="12dp" />
+        </LinearLayout>
+    </RelativeLayout>
+</LinearLayout>

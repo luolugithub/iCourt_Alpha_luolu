@@ -1,7 +1,10 @@
 package com.icourt.alpha.activity;
 
+import android.Manifest;
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -14,19 +17,36 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.andview.refreshview.XRefreshView;
+import com.google.gson.JsonElement;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.ProjectFileBoxAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.adapterObserver.RefreshViewEmptyObserver;
 import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.entity.bean.FileBoxBean;
+import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.ItemDecorationUtils;
+import com.icourt.alpha.utils.PingYinUtil;
+import com.icourt.alpha.utils.SystemUtils;
+import com.icourt.alpha.utils.TextFormater;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
+import com.icourt.alpha.widget.dialog.BottomActionDialog;
+import com.icourt.api.RequestUtils;
 
+import java.io.File;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import cn.finalteam.galleryfinal.FunctionConfig;
+import cn.finalteam.galleryfinal.GalleryFinal;
+import cn.finalteam.galleryfinal.model.PhotoInfo;
+import okhttp3.RequestBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -40,7 +60,12 @@ import retrofit2.Response;
  */
 
 public class FileBoxListActivity extends BaseActivity implements BaseRecyclerAdapter.OnItemClickListener {
+    private static final int REQUEST_CODE_CAMERA = 1000;
+    private static final int REQUEST_CODE_GALLERY = 1001;
+    private static final int REQUEST_CODE_AT_MEMBER = 1002;
 
+    private static final int REQ_CODE_PERMISSION_CAMERA = 1100;
+    private static final int REQ_CODE_PERMISSION_ACCESS_FILE = 1101;
     @BindView(R.id.titleBack)
     ImageView titleBack;
     @BindView(R.id.titleContent)
@@ -57,8 +82,11 @@ public class FileBoxListActivity extends BaseActivity implements BaseRecyclerAda
     RefreshLayout refreshLayout;
 
     FileBoxBean fileBoxBean;
-    String authToken, seaFileRepoId, rootName;
+    String authToken, seaFileRepoId, rootName, path;
     ProjectFileBoxAdapter projectFileBoxAdapter;
+    List<FileBoxBean> fileBoxBeanList;
+    private List<String> firstlist;
+    private boolean nameIsUp = false, timeIsUp = false, sizeIsUp = false;
 
     public static void launch(@NonNull Context context, @NonNull FileBoxBean fileBoxBean, @NonNull String authToken, @NonNull String seaFileRepoId, @NonNull String rootName) {
         if (context == null) return;
@@ -89,6 +117,8 @@ public class FileBoxListActivity extends BaseActivity implements BaseRecyclerAda
         if (fileBoxBean != null) {
             setTitle(fileBoxBean.name);
         }
+        firstlist = TextFormater.firstList();
+        firstlist.add(0, "#");
         titleAction.setImageResource(R.mipmap.header_icon_add);
         titleAction2.setImageResource(R.mipmap.header_icon_more);
         refreshLayout.setNoticeEmpty(R.mipmap.icon_placeholder_project, R.string.null_project);
@@ -119,6 +149,19 @@ public class FileBoxListActivity extends BaseActivity implements BaseRecyclerAda
     }
 
     @Override
+    public void onClick(View v) {
+        super.onClick(v);
+        switch (v.getId()) {
+            case R.id.titleAction:
+                showBottomMeau();
+                break;
+            case R.id.titleAction2:
+                showDocumentMeau();
+                break;
+        }
+    }
+
+    @Override
     protected void getData(final boolean isRefresh) {
         super.getData(isRefresh);
         getApi().projectQueryFileBoxByDir("Token " + authToken, seaFileRepoId, rootName).enqueue(new Callback<List<FileBoxBean>>() {
@@ -126,7 +169,8 @@ public class FileBoxListActivity extends BaseActivity implements BaseRecyclerAda
             public void onResponse(Call<List<FileBoxBean>> call, Response<List<FileBoxBean>> response) {
                 stopRefresh();
                 if (response.body() != null) {
-                    projectFileBoxAdapter.bindData(isRefresh, response.body());
+                    fileBoxBeanList = response.body();
+                    projectFileBoxAdapter.bindData(isRefresh, fileBoxBeanList);
                 }
             }
 
@@ -150,11 +194,260 @@ public class FileBoxListActivity extends BaseActivity implements BaseRecyclerAda
         FileBoxBean fileBoxBean = (FileBoxBean) adapter.getItem(position);
         if (!TextUtils.isEmpty(fileBoxBean.type)) {
             if (TextUtils.equals("file", fileBoxBean.type)) {
-
+                FileBoxDownloadActivity.launch(getContext(), authToken, seaFileRepoId, rootName + "/" + fileBoxBean.name, FileBoxDownloadActivity.PROJECT_DOWNLOAD_FILE_ACTION);
             }
             if (TextUtils.equals("dir", fileBoxBean.type)) {
                 FileBoxListActivity.launch(this, fileBoxBean, authToken, seaFileRepoId, rootName + "/" + fileBoxBean.name);
             }
         }
+    }
+
+    /**
+     * 按名称排序
+     *
+     * @param isUp
+     */
+    public void sortFileByNameList(final boolean isUp) {
+        Collections.sort(fileBoxBeanList, new Comparator<FileBoxBean>() {
+            @Override
+            public int compare(FileBoxBean o1, FileBoxBean o2) {
+                if (o1 == null || o2 == null) {
+                    return 1;
+                }
+                int o1Name = firstlist.indexOf(String.valueOf(PingYinUtil.getFirstUpperLetter(getContext(), PingYinUtil.getPingYin(getContext(), o1.name))).toLowerCase());
+                int o2Name = firstlist.indexOf(String.valueOf(PingYinUtil.getFirstUpperLetter(getContext(), PingYinUtil.getPingYin(getContext(), o2.name))).toLowerCase());
+
+                if (isUp) {
+                    //按照名称进行降序排列
+                    if (o1Name < o2Name) {
+                        return 1;
+                    }
+                    if (o1Name == o2Name) {
+                        return 0;
+                    }
+                    return -1;
+                } else {
+                    //按照名称进行升序排列
+                    if (o1Name > o2Name) {
+                        return 1;
+                    }
+                    if (o1Name == o2Name) {
+                        return 0;
+                    }
+                    return -1;
+                }
+            }
+        });
+
+        projectFileBoxAdapter.bindData(true, fileBoxBeanList);
+    }
+
+    /**
+     * 按文件大小排序
+     *
+     * @param isUp
+     */
+    public void sortFileBySizeList(final boolean isUp) {
+        Collections.sort(fileBoxBeanList, new Comparator<FileBoxBean>() {
+            @Override
+            public int compare(FileBoxBean o1, FileBoxBean o2) {
+                long o1Size = o1.size;
+                long o2Size = o2.size;
+
+                if (isUp) {
+                    //按照文件大小进行降序排列
+                    if (o1Size < o2Size) {
+                        return 1;
+                    }
+                    if (o1Size == o2Size) {
+                        return 0;
+                    }
+                    return -1;
+                } else {
+                    //按照文件大小进行升序排列
+                    if (o1Size > o2Size) {
+                        return 1;
+                    }
+                    if (o1Size == o2Size) {
+                        return 0;
+                    }
+                    return -1;
+                }
+            }
+        });
+
+        projectFileBoxAdapter.bindData(true, fileBoxBeanList);
+    }
+
+    /**
+     * 打开相机
+     */
+    private void checkAndOpenCamera() {
+        if (checkPermission(Manifest.permission.CAMERA)) {
+            path = SystemUtils.getFileDiskCache(getContext()) + File.separator
+                    + System.currentTimeMillis() + ".png";
+            Uri picUri = Uri.fromFile(new File(path));
+            SystemUtils.doTakePhotoAction(this, picUri, REQUEST_CODE_CAMERA);
+        } else {
+            reqPermission(Manifest.permission.CAMERA, "我们需要拍照权限!", REQ_CODE_PERMISSION_CAMERA);
+        }
+    }
+
+    /**
+     * 打开相册
+     */
+    private void checkAndOpenPhotos() {
+        if (checkPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+            FunctionConfig config = new FunctionConfig.Builder()
+                    .setMutiSelectMaxSize(9)
+                    .build();
+            GalleryFinal.openGalleryMuti(REQUEST_CODE_GALLERY, config, mOnHanlderResultCallback);
+        } else {
+
+            reqPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, "我们需要文件读写权限!", REQ_CODE_PERMISSION_ACCESS_FILE);
+        }
+    }
+
+    private GalleryFinal.OnHanlderResultCallback mOnHanlderResultCallback = new GalleryFinal.OnHanlderResultCallback() {
+        @Override
+        public void onHanlderSuccess(int reqeustCode, List<PhotoInfo> resultList) {
+            if (resultList != null) {
+                for (PhotoInfo photoInfo : resultList) {
+                    if (photoInfo != null && !TextUtils.isEmpty(photoInfo.getPhotoPath())) {
+                        getUploadUrl(photoInfo.getPhotoPath());
+                    }
+                }
+            }
+        }
+
+        @Override
+        public void onHanlderFailure(int requestCode, String errorMsg) {
+
+        }
+    };
+
+    /**
+     * 显示底部菜单
+     */
+    public void showBottomMeau() {
+        new BottomActionDialog(getContext(),
+                null,
+                Arrays.asList("拍照", "从手机相册选择"),
+                new BottomActionDialog.OnActionItemClickListener() {
+                    @Override
+                    public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
+                        dialog.dismiss();
+                        switch (position) {
+                            case 0:
+                                checkAndOpenCamera();
+                                break;
+                            case 1:
+                                checkAndOpenPhotos();
+                                break;
+                        }
+                    }
+                }).show();
+    }
+
+    /**
+     * 显示文档更多菜单
+     */
+    private void showDocumentMeau() {
+        new BottomActionDialog(getContext(),
+                null,
+                Arrays.asList("按文件名升序排序", "按文件大小升序排序"),
+                new BottomActionDialog.OnActionItemClickListener() {
+                    @Override
+                    public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
+                        dialog.dismiss();
+                        switch (position) {
+                            case 0:
+                                sortFileByNameList(nameIsUp);
+                                nameIsUp = !nameIsUp;
+                                timeIsUp = false;
+                                sizeIsUp = false;
+                                break;
+                            case 1:
+                                sortFileBySizeList(sizeIsUp);
+                                sizeIsUp = !sizeIsUp;
+                                nameIsUp = false;
+                                timeIsUp = false;
+
+                                break;
+                        }
+                    }
+                }).show();
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        switch (requestCode) {
+            case REQUEST_CODE_CAMERA:
+                if (resultCode == Activity.RESULT_OK) {
+                    getUploadUrl(path);
+                }
+                break;
+            default:
+                super.onActivityResult(requestCode, resultCode, data);
+                break;
+        }
+    }
+
+    /**
+     * 获取上传文件url
+     *
+     * @param filePath
+     */
+    private void getUploadUrl(final String filePath) {
+        if (TextUtils.isEmpty(filePath)) return;
+        File file = new File(filePath);
+        if (!file.exists()) {
+            showTopSnackBar("文件不存在啦");
+            return;
+        }
+        showLoadingDialog("正在上传...");
+        getApi().projectUploadUrlQuery("Token " + authToken, seaFileRepoId).enqueue(new Callback<JsonElement>() {
+            @Override
+            public void onResponse(Call<JsonElement> call, Response<JsonElement> response) {
+                if (response.body() != null) {
+                    String uploadUrl = response.body().getAsString();
+                    uploadFile(uploadUrl, filePath);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<JsonElement> call, Throwable throwable) {
+                dismissLoadingDialog();
+                showTopSnackBar("上传失败");
+            }
+
+        });
+    }
+
+    /**
+     * 上传文件
+     *
+     * @param uploadUrl
+     * @param filePath
+     */
+    private void uploadFile(String uploadUrl, String filePath) {
+        String key = "file\";filename=\"" + DateUtils.millis() + ".png";
+        Map<String, RequestBody> params = new HashMap<>();
+        params.put("parent_dir", RequestUtils.createTextBody("/"));
+        params.put(key, RequestUtils.createImgBody(new File(filePath)));
+        getApi().projectUploadFile("Token " + authToken, uploadUrl, params).enqueue(new Callback<JsonElement>() {
+            @Override
+            public void onResponse(Call<JsonElement> call, Response<JsonElement> response) {
+                dismissLoadingDialog();
+                showTopSnackBar("上传成功");
+                getData(true);
+            }
+
+            @Override
+            public void onFailure(Call<JsonElement> call, Throwable t) {
+                dismissLoadingDialog();
+                showTopSnackBar("上传失败");
+            }
+        });
     }
 }

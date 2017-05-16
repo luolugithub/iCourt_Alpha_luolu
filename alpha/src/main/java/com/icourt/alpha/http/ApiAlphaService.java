@@ -348,6 +348,15 @@ public interface ApiAlphaService {
     @GET("api/v2/documents/getRepo/{projectId}")
     Call<JsonObject> projectQueryDocumentId(@Path("projectId") String projectId);
 
+    /**
+     * 获取项目详情文档列表
+     *
+     * @param authToken
+     * @param seaFileRepoId
+     * @return
+     */
+    @GET("https://box.alphalawyer.cn/api2/repos/{seaFileRepoId}/dir/")
+    Call<List<FileBoxBean>> projectQueryFileBoxList(@Header("Authorization") String authToken, @Path("seaFileRepoId") String seaFileRepoId);
 
     /**
      * 项目下任务列表
@@ -534,22 +543,6 @@ public interface ApiAlphaService {
                                               @Query("type") int type);
 
     /**
-     * 获取指定时间段的计时
-     *
-     * @param createUserId
-     * @param startTime    017-05-09
-     * @param endTime      017-05-15
-     * @param pageIndex
-     * @param pageSize
-     * @return
-     */
-    @GET("api/v2/timing/timing/search")
-    Call<ResEntity<TimeEntity>> timingListQueryByTime(@Query("createUserId") String createUserId,
-                                                      @Query("startTime") String startTime,
-                                                      @Query("endTime") String endTime,
-                                                      @Query("pageIndex") int pageIndex,
-                                                      @Query("pageSize") int pageSize);
-    /**
      * 获取任务下的附件列表
      *
      * @param taskId
@@ -568,6 +561,23 @@ public interface ApiAlphaService {
     @Multipart
     @POST("api/v2/task/{taskId}/attachment/addFromFile")
     Call<ResEntity<JsonElement>> taskAttachmentUpload(@Path("taskId") String taskId, @PartMap Map<String, RequestBody> params);
+
+    /**
+     * 获取指定时间段的计时
+     *
+     * @param createUserId
+     * @param startTime    017-05-09
+     * @param endTime      017-05-15
+     * @param pageIndex
+     * @param pageSize
+     * @return
+     */
+    @GET("api/v2/timing/timing/search")
+    Call<ResEntity<TimeEntity>> timingListQueryByTime(@Query("createUserId") String createUserId,
+                                                      @Query("startTime") String startTime,
+                                                      @Query("endTime") String endTime,
+                                                      @Query("pageIndex") int pageIndex,
+                                                      @Query("pageSize") int pageSize);
 
     /**
      * 获取上传文件url
@@ -591,6 +601,19 @@ public interface ApiAlphaService {
                                                                               @Query("workEndDate") String workEndDate);
 
     /**
+     * 项目下上传文件
+     * @param authToken
+     * @param url
+     * @param params
+     * @return
+     */
+    @Multipart
+    @POST()
+    Call<JsonElement> projectUploadFile(@Header("Authorization") String authToken,
+                                                   @Url String url,
+                                                   @PartMap Map<String, RequestBody> params);
+
+    /**
      * 获取项目下文档列表
      *
      * @param authToken
@@ -602,26 +625,22 @@ public interface ApiAlphaService {
     Call<List<FileBoxBean>> projectQueryFileBoxByDir(@Header("Authorization") String authToken, @Path("seaFileRepoId") String seaFileRepoId, @Query("p") String rootName);
 
     /**
-     * 获取项目详情文档列表
+     * 获取文件下载地址
      *
-     * @param authToken
      * @param seaFileRepoId
+     * @param rootName
      * @return
      */
-    @GET("https://box.alphalawyer.cn/api2/repos/{seaFileRepoId}/dir/")
-    Call<List<FileBoxBean>> projectQueryFileBoxList(@Header("Authorization") String authToken,
-                                                    @Path("seaFileRepoId") String seaFileRepoId);
+    @GET("https://box.alphalawyer.cn/api2/repos/{seaFileRepoId}/file/")
+    Call<JsonElement> fileboxDownloadUrlQuery(@Header("Authorization") String authToken, @Path("seaFileRepoId") String seaFileRepoId, @Query("p") String rootName);
 
     /**
-     * 项目下上传文件
+     * 下载文件
      *
+     * @param authToken
      * @param url
-     * @param parent_dir
-     * @param body
      * @return
      */
-    @Multipart
-    @POST()
-    Call<ResEntity<JsonElement>> projectUploadFile(@Header("Authorization") String authToken,@Url String url, @Query("parent_dir") String parent_dir, @Body RequestBody body);
-
+    @GET()
+    Call<JsonElement> fileboxDownload(@Header("Authorization") String authToken, @Url String url);
 }
