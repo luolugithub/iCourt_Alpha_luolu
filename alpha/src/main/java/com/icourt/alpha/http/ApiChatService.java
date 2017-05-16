@@ -446,4 +446,5 @@ public interface ApiChatService {
      */
     @GET("im/v1/users/me")
     Call<ResEntity<AlphaUserInfo>> userInfoQuery();
+
 }

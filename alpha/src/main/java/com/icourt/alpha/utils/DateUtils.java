@@ -7,6 +7,8 @@ import java.util.GregorianCalendar;
 import java.util.Locale;
 import java.util.TimeZone;
 
+import static cn.finalteam.toolsfinal.DateUtils.date;
+
 public class DateUtils {
 
     public static String getTimeShowString(long milliseconds, boolean abbreviate) {
@@ -284,4 +286,46 @@ public class DateUtils {
         return currentDate.getTime().getTime();
     }
 
+
+    public static boolean isToday(long millis) {
+        Calendar current = Calendar.getInstance();
+        Calendar todayStart = Calendar.getInstance();    //今天
+        todayStart.set(Calendar.YEAR, current.get(Calendar.YEAR));
+        todayStart.set(Calendar.MONTH, current.get(Calendar.MONTH));
+        todayStart.set(Calendar.DAY_OF_MONTH, current.get(Calendar.DAY_OF_MONTH));
+        todayStart.set(Calendar.HOUR_OF_DAY, 0);
+        todayStart.set(Calendar.MINUTE, 0);
+        todayStart.set(Calendar.SECOND, 0);
+
+        Calendar todayEnd = Calendar.getInstance();    //今天
+        todayEnd.set(Calendar.YEAR, current.get(Calendar.YEAR));
+        todayEnd.set(Calendar.MONTH, current.get(Calendar.MONTH));
+        todayEnd.set(Calendar.DAY_OF_MONTH, current.get(Calendar.DAY_OF_MONTH));
+        todayEnd.set(Calendar.HOUR_OF_DAY, 23);
+        todayEnd.set(Calendar.MINUTE, 59);
+        todayEnd.set(Calendar.SECOND, 59);
+
+        return millis / 1000 >= todayStart.getTimeInMillis() / 1000
+                && millis / 1000 <= todayEnd.getTimeInMillis() / 1000;
+    }
+
+
+    /**
+     * @param millis 毫秒
+     * @return
+     */
+    public static boolean isYesterday(long millis) {
+        Calendar today = Calendar.getInstance();    //今天
+        today.set(Calendar.HOUR_OF_DAY, 0);
+        today.set(Calendar.MINUTE, 0);
+        today.set(Calendar.SECOND, 0);
+
+        Calendar yesterday = Calendar.getInstance();    //昨天
+        yesterday.set(Calendar.DAY_OF_MONTH, today.get(Calendar.DAY_OF_MONTH) - 1);
+        yesterday.set(Calendar.HOUR_OF_DAY, 0);
+        yesterday.set(Calendar.MINUTE, 0);
+        yesterday.set(Calendar.SECOND, 0);
+        return millis / 1000 < today.getTimeInMillis() / 1000
+                && millis / 1000 >= yesterday.getTimeInMillis() / 1000;
+    }
 }

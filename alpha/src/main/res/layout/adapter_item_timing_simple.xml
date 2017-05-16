@@ -7,6 +7,35 @@
     android:orientation="vertical">
 
     <LinearLayout
+        android:id="@+id/divider_ll"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/alpha_background_window"
+        android:orientation="horizontal"
+        android:paddingLeft="10dp"
+        android:paddingRight="10dp"
+        android:paddingTop="10dp">
+
+        <TextView
+            android:id="@+id/divider_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="65dp"
+            android:layout_weight="1"
+            android:maxLines="1"
+            android:padding="10dp"
+            android:text="今天" />
+
+        <TextView
+            android:id="@+id/divider_time_count"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:maxLines="1"
+            android:padding="10dp"
+            android:text="8:15" />
+    </LinearLayout>
+
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center_vertical"
@@ -19,7 +48,7 @@
             android:padding="10dp"
             android:src="@mipmap/icon_start_20" />
 
-        <Chronometer
+        <TextView
             android:id="@+id/timer_count_tv"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -29,7 +58,7 @@
 
         <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:layout_marginLeft="10dp"
             android:layout_marginRight="10dp"
             android:gravity="center_vertical">
@@ -42,6 +71,8 @@
                 android:drawableRight="@mipmap/arrow_right"
                 android:ellipsize="end"
                 android:maxLines="1"
+                android:paddingBottom="12dp"
+                android:paddingTop="12dp"
                 android:text="标题"
                 android:textColor="@color/alpha_font_color_black" />
 

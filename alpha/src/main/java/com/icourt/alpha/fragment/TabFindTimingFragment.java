@@ -12,8 +12,9 @@ import android.widget.TextView;
 
 import com.andview.refreshview.XRefreshView;
 import com.icourt.alpha.R;
-import com.icourt.alpha.activity.TimingAddActivity;
+import com.icourt.alpha.activity.TimerDetailActivity;
 import com.icourt.alpha.adapter.TimeAdapter;
+import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.entity.bean.ItemPageEntity;
 import com.icourt.alpha.entity.bean.TimeEntity;
@@ -23,7 +24,6 @@ import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.SystemUtils;
-import com.icourt.alpha.view.recyclerviewDivider.TimerItemDecoration;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 import com.icourt.alpha.widget.manager.TimerManager;
 
@@ -59,7 +59,7 @@ import retrofit2.Response;
  * date createTime：2017/4/17
  * version 1.0.0
  */
-public class TabFindTimingFragment extends BaseFragment {
+public class TabFindTimingFragment extends BaseFragment implements BaseRecyclerAdapter.OnItemClickListener {
 
     @BindView(R.id.tabLayout)
     TabLayout tabLayout;
@@ -112,7 +112,7 @@ public class TabFindTimingFragment extends BaseFragment {
         tabLayout.addTab(tabLayout.newTab().setText("我的计时"), 0, true);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setAdapter(timeAdapter = new TimeAdapter(true));
-        recyclerView.addItemDecoration(new TimerItemDecoration(getActivity(), timeAdapter));
+        timeAdapter.setOnItemClickListener(this);
 
         String weekStart = new SimpleDateFormat("MMM月dd日").format(DateUtils.getCurrWeekStartTime());
         String weekEnd = new SimpleDateFormat("MMM月dd日").format(DateUtils.getCurrWeekEndTime());
@@ -283,7 +283,7 @@ public class TabFindTimingFragment extends BaseFragment {
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.titleAction:
-                TimingAddActivity.launch(getContext());
+                TimerDetailActivity.launchAdd(getContext());
                 break;
             default:
                 super.onClick(v);
@@ -350,5 +350,11 @@ public class TabFindTimingFragment extends BaseFragment {
     public void onDestroy() {
         EventBus.getDefault().unregister(this);
         super.onDestroy();
+    }
+
+    @Override
+    public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
+        TimeEntity.ItemEntity item = timeAdapter.getItem(timeAdapter.getRealPos(position));
+        TimerDetailActivity.launch(getContext(), item);
     }
 }

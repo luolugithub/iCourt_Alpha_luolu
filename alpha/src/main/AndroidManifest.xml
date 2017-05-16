@@ -203,9 +203,6 @@
             android:name=".activity.SettingActivity"
             android:screenOrientation="portrait"
             android:windowSoftInputMode="adjustUnspecified|stateHidden" />
-        <activity
-            android:name=".activity.TimingAddActivity"
-            android:screenOrientation="portrait" />
 
         <activity
             android:name=".activity.TaskCreateActivity"

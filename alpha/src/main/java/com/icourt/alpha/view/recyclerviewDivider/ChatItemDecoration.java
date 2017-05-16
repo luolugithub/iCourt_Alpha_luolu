@@ -103,7 +103,8 @@ public class ChatItemDecoration extends RecyclerView.ItemDecoration {
         final RecyclerView.LayoutParams params = (RecyclerView.LayoutParams) view.getLayoutParams();
         int adapterPosition = params.getViewAdapterPosition();
         if (iTimeDividerInterface != null && iTimeDividerInterface.isShowTimeDivider(adapterPosition)) {
-            outRect.set(0, 0, 0, (int) dividerHeight);
+            //outRect.set(0, 0, 0, (int) dividerHeight);
+            outRect.set(0, 0, (int) dividerHeight, 0);
         }
     }
 }

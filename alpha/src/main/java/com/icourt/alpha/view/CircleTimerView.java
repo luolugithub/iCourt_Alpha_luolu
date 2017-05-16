@@ -2,6 +2,7 @@ package com.icourt.alpha.view;
 
 import android.content.Context;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.RectF;
@@ -14,6 +15,8 @@ import android.util.Log;
 import android.util.TypedValue;
 import android.view.MotionEvent;
 import android.view.View;
+
+import com.icourt.alpha.utils.LogUtils;
 
 import java.util.Timer;
 import java.util.TimerTask;
@@ -30,8 +33,8 @@ public class CircleTimerView extends View {
     private static final float DEFAULT_GAP_BETWEEN_NUMBER_AND_LINE = 5;
     private static final float DEFAULT_NUMBER_SIZE = 10;
     private static final float DEFAULT_LINE_LENGTH = 14;
-    private static final float DEFAULT_LONGER_LINE_LENGTH = 23;
-    private static final float DEFAULT_LINE_WIDTH = 0.5f;
+    private static final float DEFAULT_LONGER_LINE_LENGTH = 10;
+    private static final float DEFAULT_LINE_WIDTH = 2.0f;
     private static final float DEFAULT_CIRCLE_BUTTON_RADIUS = 15;
     private static final float DEFAULT_CIRCLE_STROKE_WIDTH = 1;
     private static final float DEFAULT_TIMER_NUMBER_SIZE = 50;
@@ -39,14 +42,14 @@ public class CircleTimerView extends View {
     private static final float DEFAULT_GAP_BETWEEN_TIMER_NUMBER_AND_TEXT = 30;
 
     // Default color
-    private static final int DEFAULT_CIRCLE_COLOR = 0xFFE9E2D9;
+    private static final int DEFAULT_CIRCLE_COLOR = 0xFFD5D5D5;
     private static final int DEFAULT_CIRCLE_BUTTON_COLOR = 0xFFFFFFFF;
-    private static final int DEFAULT_LINE_COLOR = 0xFFE9E2D9;
-    private static final int DEFAULT_HIGHLIGHT_LINE_COLOR = 0xFF68C5D7;
-    private static final int DEFAULT_NUMBER_COLOR = 0x99866A60;
-    private static final int DEFAULT_TIMER_NUMBER_COLOR = 0xFFFA7777;
-    private static final int DEFAULT_TIMER_COLON_COLOR = 0x80FA7777;
-    private static final int DEFAULT_TIMER_TEXT_COLOR = 0x99000000;
+    private static final int DEFAULT_LINE_COLOR = Color.BLACK;
+    private static final int DEFAULT_HIGHLIGHT_LINE_COLOR = 0xFFD5D5D5;
+    private static final int DEFAULT_NUMBER_COLOR = Color.BLUE;
+    private static final int DEFAULT_TIMER_NUMBER_COLOR = Color.BLACK;
+    private static final int DEFAULT_TIMER_COLON_COLOR = Color.BLACK;
+    private static final int DEFAULT_TIMER_TEXT_COLOR = Color.BLACK;
 
     // Paint
     private Paint mCirclePaint;
@@ -54,7 +57,7 @@ public class CircleTimerView extends View {
     private Paint mHighlightLinePaint;
     private Paint mLinePaint;
     private Paint mCircleButtonPaint;
-    private Paint mNumberPaint;
+    private Paint mNumberPaint;//数字
     private Paint mTimerNumberPaint;
     private Paint mTimerTextPaint;
     private Paint mTimerColonPaint;
@@ -75,7 +78,7 @@ public class CircleTimerView extends View {
     // Color
     private int mCircleColor;
     private int mCircleButtonColor;
-    private int mCircleButtonOutLineColor = 0xFFFF0000;
+    private int mCircleButtonOutLineColor = 0xFFed6c00;//外边框进度颜色
     private int mLineColor;
     private int mHighlightLineColor;
     private int mNumberColor;
@@ -318,9 +321,11 @@ public class CircleTimerView extends View {
         canvas.restore();
         // TimerNumber
         canvas.save();
-        canvas.drawText((mCurrentTime / 60 < 10 ? "0" + mCurrentTime / 60 : mCurrentTime / 60) + " " + (mCurrentTime % 60 < 10 ?
-                "0" + mCurrentTime % 60 : mCurrentTime % 60), mCx, mCy + getFontHeight(mTimerNumberPaint) / 2, mTimerNumberPaint);
-        canvas.drawText(":", mCx, mCy + getFontHeight(mTimerNumberPaint) / 2, mTimerColonPaint);
+        int minute = mCurrentTime / 60 % 60;
+        int hour = mCurrentTime / (60 * 60);//小时
+        String text = String.format("%02d:%02d", hour, minute);
+        canvas.drawText(text, mCx, mCy + getFontHeight(mTimerNumberPaint) / 2, mTimerNumberPaint);
+        //canvas.drawText(":", mCx, mCy + getFontHeight(mTimerNumberPaint) / 2, mTimerColonPaint);
         canvas.restore();
         // Timer Text
         canvas.save();
@@ -368,7 +373,8 @@ public class CircleTimerView extends View {
                     }
                     if (mCircleTimerListener != null)
                         mCircleTimerListener.onTimerSetValueChange(getCurrentTime());
-                    mCurrentTime = (int) (60 / (2 * Math.PI) * mCurrentRadian * 60);
+                    mCurrentTime = (int) (24 / (2 * Math.PI) * mCurrentRadian * 60 * 60);
+                    LogUtils.d("--------->mCurrentRadian:" + mCurrentRadian + "   time：" + mCurrentTime);
                     invalidate();
                 }
                 break;
@@ -496,15 +502,19 @@ public class CircleTimerView extends View {
     /**
      * set current time in seconds
      *
-     * @param time
+     * @param time 秒
      */
     public void setCurrentTime(int time) {
-        if (time >= 0 && time <= 3600) {
+        // if (time >= 0 && time <= 3600) {
+        if (time > 0) {
+
             mCurrentTime = time;
             if (mCircleTimerListener != null) {
                 mCircleTimerListener.onTimerSetValueChanged(time);
             }
-            this.mCurrentRadian = (float) (time / 60.0f * 2 * Math.PI / 60);
+            this.mCurrentRadian = (float) (time * 2 * Math.PI) / (60.0f * 60f * 24);
+            //mCurrentTime = (int) (24 / (2 * Math.PI) * mCurrentRadian * 60*60);
+            LogUtils.d("--------->mCurrentRadian2:" + mCurrentRadian + "   time：" + mCurrentTime);
             invalidate();
         }
     }

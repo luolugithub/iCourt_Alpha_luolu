@@ -1,6 +1,7 @@
 package com.icourt.alpha.adapter;
 
 import android.support.annotation.NonNull;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -14,6 +15,7 @@ import com.icourt.alpha.view.recyclerviewDivider.ITimeDividerInterface;
 import com.icourt.alpha.widget.manager.TimerManager;
 
 import java.util.HashMap;
+import java.util.List;
 
 /**
  * Description 计时
@@ -32,6 +34,14 @@ public class TimeAdapter extends BaseArrayRecyclerAdapter<TimeEntity.ItemEntity>
 
 
     private boolean useSimpleTitle;
+
+    @Override
+    public boolean bindData(boolean isRefresh, List<TimeEntity.ItemEntity> datas) {
+        if (isRefresh) {
+            timeShowArray.clear();
+        }
+        return super.bindData(isRefresh, datas);
+    }
 
     public TimeAdapter(boolean useSimpleTitle) {
         this.useSimpleTitle = useSimpleTitle;
@@ -95,7 +105,10 @@ public class TimeAdapter extends BaseArrayRecyclerAdapter<TimeEntity.ItemEntity>
         ImageView timer_icon = holder.obtainView(R.id.timer_icon);
         TextView timer_count_tv = holder.obtainView(R.id.timer_count_tv);
         TextView timer_title_tv = holder.obtainView(R.id.timer_title_tv);
-        timer_title_tv.setText(timeEntity.name);
+        View divider_ll = holder.obtainView(R.id.divider_ll);
+        TextView divider_time = holder.obtainView(R.id.divider_time);
+        TextView divider_time_count = holder.obtainView(R.id.divider_time_count);
+        timer_title_tv.setText(TextUtils.isEmpty(timeEntity.name) ? "还未录入工作描述" : timeEntity.name);
         if (timeEntity.state == TimeEntity.ItemEntity.TIMER_STATE_START) {
             timer_count_tv.setText(toTime(timeEntity.useTime));
             timer_icon.setImageResource(R.drawable.orange_side_dot_bg);
@@ -108,6 +121,27 @@ public class TimeAdapter extends BaseArrayRecyclerAdapter<TimeEntity.ItemEntity>
             }
         }
         holder.bindChildClick(timer_icon);
+        addTimeDividerArray(timeEntity, position);
+        if (timeShowArray.containsKey(position)) {
+            divider_ll.setVisibility(View.VISIBLE);
+            if (DateUtils.isToday(timeEntity.workDate)) {
+                divider_time.setText("今天");
+            } else if (DateUtils.isYesterday(timeEntity.workDate)) {
+                divider_time.setText("昨天");
+            } else {
+                divider_time.setText(DateUtils.getMMMdd(timeEntity.workDate));
+            }
+            int dayTimingLength = 0;//某天的计时时长
+            for (int i = position; i < getData().size(); i++) {
+                TimeEntity.ItemEntity item = getItem(i);
+                if (item != null && item.workDate == timeEntity.workDate) {
+                    dayTimingLength += item.useTime;
+                }
+            }
+            divider_time_count.setText(DateUtils.getTimeDurationDate(dayTimingLength));
+        } else {
+            divider_ll.setVisibility(View.GONE);
+        }
     }
 
     public String toTime(long times) {
