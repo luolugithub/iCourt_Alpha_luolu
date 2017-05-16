@@ -21,8 +21,10 @@ import com.icourt.alpha.entity.bean.TaskAttachmentEntity;
 import com.icourt.alpha.entity.bean.TaskCheckItemEntity;
 import com.icourt.alpha.entity.bean.TaskEntity;
 import com.icourt.alpha.entity.bean.TaskGroupEntity;
+import com.icourt.alpha.entity.bean.TaskOwerEntity;
 import com.icourt.alpha.entity.bean.TimeEntity;
 import com.icourt.alpha.entity.bean.TimingCountEntity;
+import com.icourt.alpha.entity.bean.WorkType;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 
 import java.util.List;
@@ -602,6 +604,7 @@ public interface ApiAlphaService {
 
     /**
      * 项目下上传文件
+     *
      * @param authToken
      * @param url
      * @param params
@@ -610,8 +613,8 @@ public interface ApiAlphaService {
     @Multipart
     @POST()
     Call<JsonElement> projectUploadFile(@Header("Authorization") String authToken,
-                                                   @Url String url,
-                                                   @PartMap Map<String, RequestBody> params);
+                                        @Url String url,
+                                        @PartMap Map<String, RequestBody> params);
 
     /**
      * 获取项目下文档列表
@@ -643,4 +646,22 @@ public interface ApiAlphaService {
      */
     @GET()
     Call<JsonElement> fileboxDownload(@Header("Authorization") String authToken, @Url String url);
+
+    /**
+     * 获取项目下的工作类型
+     *
+     * @param matterId
+     * @return
+     */
+    @GET("api/v2/timing/workTypes")
+    Call<ResEntity<List<WorkType>>> queryWorkTypes(@Query("matterId") String matterId);
+
+    /**
+     * 获取项目参与人
+     *
+     * @param project
+     * @return
+     */
+    @GET("api/v1/matters/attorney")
+    Call<ResEntity<List<TaskOwerEntity>>> taskOwerListQuery(@Query("id") String project);
 }
