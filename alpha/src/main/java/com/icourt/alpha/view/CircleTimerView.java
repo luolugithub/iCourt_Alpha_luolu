@@ -16,8 +16,6 @@ import android.util.TypedValue;
 import android.view.MotionEvent;
 import android.view.View;
 
-import com.icourt.alpha.utils.LogUtils;
-
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -335,6 +333,14 @@ public class CircleTimerView extends View {
         super.onDraw(canvas);
     }
 
+
+    private boolean isOneCircle;
+
+    public void setOneCircle(boolean isOneCircle) {
+        this.isOneCircle = isOneCircle;
+        this.invalidate();
+    }
+
     private float getFontHeight(Paint paint) {
         // FontMetrics sF = paint.getFontMetrics();
         // return sF.descent - sF.ascent;
@@ -366,15 +372,15 @@ public class CircleTimerView extends View {
                     }
                     mCurrentRadian += (temp - mPreRadian);
                     mPreRadian = temp;
-                    if (mCurrentRadian > 2 * Math.PI) {
-                        // mCurrentRadian = (float) (2 * Math.PI);
+                    if (isOneCircle && mCurrentRadian > 2 * Math.PI) {
+                        mCurrentRadian = (float) (2 * Math.PI);
                     } else if (mCurrentRadian < 0) {
                         mCurrentRadian = 0;
                     }
                     if (mCircleTimerListener != null)
                         mCircleTimerListener.onTimerSetValueChange(getCurrentTime());
                     mCurrentTime = (int) (24 / (2 * Math.PI) * mCurrentRadian * 60 * 60);
-                    LogUtils.d("--------->mCurrentRadian:" + mCurrentRadian + "   time：" + mCurrentTime);
+                   // LogUtils.d("--------->mCurrentRadian:" + mCurrentRadian + "   time：" + mCurrentTime);
                     invalidate();
                 }
                 break;
@@ -514,7 +520,7 @@ public class CircleTimerView extends View {
             }
             this.mCurrentRadian = (float) (time * 2 * Math.PI) / (60.0f * 60f * 24);
             //mCurrentTime = (int) (24 / (2 * Math.PI) * mCurrentRadian * 60*60);
-            LogUtils.d("--------->mCurrentRadian2:" + mCurrentRadian + "   time：" + mCurrentTime);
+           // LogUtils.d("--------->mCurrentRadian2:" + mCurrentRadian + "   time：" + mCurrentTime);
             invalidate();
         }
     }

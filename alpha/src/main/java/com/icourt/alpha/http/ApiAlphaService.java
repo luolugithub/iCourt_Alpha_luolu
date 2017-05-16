@@ -657,7 +657,6 @@ public interface ApiAlphaService {
     Call<ResEntity<List<WorkType>>> queryWorkTypes(@Query("matterId") String matterId);
 
 
-
     /**
      * 获取项目参与人
      *
@@ -666,4 +665,16 @@ public interface ApiAlphaService {
      */
     @GET("api/v1/matters/attorney")
     Call<ResEntity<List<TaskOwerEntity>>> taskOwerListQuery(@Query("id") String project);
+
+
+    /**
+     * 删除计时
+     *
+     * @param timerId
+     * @return
+     */
+    @DELETE("api/v2/timing/timing/delete/{timerId}")
+    Call<ResEntity<JsonElement>> timingDelete(@Path("timerId") String timerId);
 }
+
+

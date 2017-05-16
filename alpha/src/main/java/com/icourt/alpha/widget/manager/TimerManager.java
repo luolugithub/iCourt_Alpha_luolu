@@ -3,7 +3,6 @@ package com.icourt.alpha.widget.manager;
 import android.support.annotation.CheckResult;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.text.TextUtils;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -81,9 +80,6 @@ public class TimerManager {
         itemEntityCopy.startTime = System.currentTimeMillis();
         itemEntityCopy.useTime = 0;
         itemEntityCopy.state = 0;
-        if (TextUtils.isEmpty(itemEntity.name)) {
-            itemEntity.name = "还未录入工作描述";
-        }
         JsonObject jsonObject = null;
         try {
             jsonObject = JsonUtils.object2JsonObject(itemEntityCopy);

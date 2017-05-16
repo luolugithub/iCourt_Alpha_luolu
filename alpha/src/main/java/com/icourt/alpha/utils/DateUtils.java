@@ -155,6 +155,18 @@ public class DateUtils {
     }
 
     /**
+     * 获取时长 00:11
+     *
+     * @param milliseconds
+     * @return
+     */
+    public static String getHHmm(long milliseconds) {
+        SimpleDateFormat formatter = new SimpleDateFormat("HH:mm");
+        formatter.setTimeZone(TimeZone.getTimeZone("GMT+00:00"));
+        return formatter.format(milliseconds);
+    }
+
+    /**
      * 获取日期 yyyy年MM月dd日
      *
      * @param milliseconds
@@ -307,6 +319,20 @@ public class DateUtils {
 
         return millis / 1000 >= todayStart.getTimeInMillis() / 1000
                 && millis / 1000 <= todayEnd.getTimeInMillis() / 1000;
+    }
+
+    /**
+     * 是明天
+     *
+     * @param millis
+     * @return
+     */
+    public static boolean isOverToday(long millis) {
+        Calendar todayEnd = Calendar.getInstance();    //今天
+        todayEnd.set(Calendar.HOUR_OF_DAY, 23);
+        todayEnd.set(Calendar.MINUTE, 59);
+        todayEnd.set(Calendar.SECOND, 59);
+        return millis / 1000 >= todayEnd.getTimeInMillis() / 1000;
     }
 
 
