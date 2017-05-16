@@ -1,5 +1,7 @@
 package com.icourt.alpha.entity.bean;
 
+import android.text.TextUtils;
+
 import com.icourt.alpha.widget.comparators.ILongFieldEntity;
 
 import java.io.Serializable;
@@ -21,7 +23,14 @@ public class TimeEntity implements Serializable {
     public List<ItemEntity> items;
 
 
-    public static class ItemEntity implements Serializable, ILongFieldEntity {
+    public static class ItemEntity implements Serializable,
+            ILongFieldEntity,
+            Cloneable {
+
+        public static final ItemEntity singleInstace = new ItemEntity();
+
+        public static final int TIMER_STATE_START = 0;
+        public static final int TIMER_STATE_STOP = 1;
 
         public String suspensionTag;
 
@@ -35,7 +44,7 @@ public class TimeEntity implements Serializable {
         public String createUserId;
         public long createTime;
         public long workDate;
-        public int state;//计时的状态
+        public int state;//计时的状态 0 正在计时  1 暂停就是结束状态
         public String workTypeId;
         public String officeId;
         public String matterName;
@@ -45,15 +54,51 @@ public class TimeEntity implements Serializable {
         public String highLightName;
         public boolean timingValid;
 
+        @Override
+        public boolean equals(Object o) {
+            if (this == o)
+                return true;
+            if (o == null) return false;
+            if (getClass() != o.getClass())
+                return false;
+            final ItemEntity other = (ItemEntity) o;
+            return TextUtils.equals(this.pkId, other.pkId);
+        }
 
         @Override
-        public boolean equals(Object obj) {
-            return super.equals(obj);
+        public Object clone() throws CloneNotSupportedException {
+            return (ItemEntity) super.clone();
         }
 
         @Override
         public Long getCompareLongField() {
             return startTime;
+        }
+
+        @Override
+        public String toString() {
+            return "ItemEntity{" +
+                    "suspensionTag='" + suspensionTag + '\'' +
+                    ", pkId='" + pkId + '\'' +
+                    ", name='" + name + '\'' +
+                    ", matterPkId='" + matterPkId + '\'' +
+                    ", taskPkId='" + taskPkId + '\'' +
+                    ", startTime=" + startTime +
+                    ", endTime=" + endTime +
+                    ", useTime=" + useTime +
+                    ", createUserId='" + createUserId + '\'' +
+                    ", createTime=" + createTime +
+                    ", workDate=" + workDate +
+                    ", state=" + state +
+                    ", workTypeId='" + workTypeId + '\'' +
+                    ", officeId='" + officeId + '\'' +
+                    ", matterName='" + matterName + '\'' +
+                    ", timingCount=" + timingCount +
+                    ", workTypeName='" + workTypeName + '\'' +
+                    ", username='" + username + '\'' +
+                    ", highLightName='" + highLightName + '\'' +
+                    ", timingValid=" + timingValid +
+                    '}';
         }
     }
 

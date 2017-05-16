@@ -10,6 +10,7 @@ import android.os.PersistableBundle;
 import android.os.SystemClock;
 import android.support.annotation.IdRes;
 import android.support.v4.app.Fragment;
+import android.text.TextUtils;
 import android.util.SparseArray;
 import android.view.Gravity;
 import android.view.MotionEvent;
@@ -29,6 +30,7 @@ import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.icourt.alpha.entity.bean.ItemsEntityImp;
 import com.icourt.alpha.entity.bean.TimeEntity;
+import com.icourt.alpha.entity.event.TimingEvent;
 import com.icourt.alpha.fragment.TabFindFragment;
 import com.icourt.alpha.fragment.TabMineFragment;
 import com.icourt.alpha.fragment.TabNewsFragment;
@@ -47,6 +49,10 @@ import com.icourt.alpha.widget.popupwindow.ListActionItemPop;
 import com.netease.nimlib.sdk.NIMClient;
 import com.netease.nimlib.sdk.StatusCode;
 import com.netease.nimlib.sdk.msg.MsgService;
+
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -137,6 +143,7 @@ public class MainActivity extends BaseActivity
     MyHandler mHandler = new MyHandler();
     ContactDbService contactDbService;
     AlphaUserInfo loginUserInfo;
+    String globalTimingId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -150,15 +157,70 @@ public class MainActivity extends BaseActivity
     @Override
     protected void initView() {
         super.initView();
+        EventBus.getDefault().register(this);
         loginUserInfo = getLoginUserInfo();
         contactDbService = new ContactDbService(loginUserInfo == null ? "" : loginUserInfo.getUserId());
         rgMainTab.setOnCheckedChangeListener(this);
         new SimpleViewGestureListener(tabNews, onSimpleViewGestureListener);
         initTabFind();
         currentFragment = addOrShowFragment(getTabFragment(rgMainTab.getCheckedRadioButtonId()), currentFragment, R.id.main_fl_content);
-        resumeTimer();
+        tabVoice.setOnChronometerTickListener(new Chronometer.OnChronometerTickListener() {
+            @Override
+            public void onChronometerTick(Chronometer chronometer) {
+                if (!TextUtils.isEmpty(chronometer.getText())) {
+                    String timeString = (String) chronometer.getText();
+                    String[] split = timeString.split(":");
+                    if (split.length > 2)//包含小时  22:00:
+                    {
+                        int hour = 0;
+                        try {
+                            hour = Integer.parseInt(split[0]);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                        int minute = 0;
+                        try {
+                            minute = Integer.parseInt(split[1]);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                        int second = 0;
+                        try {
+                            second = Integer.parseInt(split[2]);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                        broadTiming(hour, minute, second);
 
+                    } else {
+                        int minute = 0;
+                        try {
+                            minute = Integer.parseInt(split[1]);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                        int second = 0;
+                        try {
+                            second = Integer.parseInt(split[2]);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                        broadTiming(0, minute, second);
+                    }
+                }
+            }
+
+            private void broadTiming(int hour, int minute, int second) {
+                TimingEvent timingSingle = TimingEvent.timingSingle;
+                timingSingle.action = TimingEvent.TIMING_UPDATE_PROGRESS;
+                timingSingle.timingId = globalTimingId;
+                timingSingle.timingTimeMillisecond = (hour * 60 * 60 + minute * 60 + second) * 1_000;
+                EventBus.getDefault().post(timingSingle);
+            }
+        });
+        resumeTimer();
     }
+
 
     /**
      * 初始化发现tab
@@ -249,6 +311,7 @@ public class MainActivity extends BaseActivity
             if (timedLength < 0) {
                 timedLength = 0;
             }
+            globalTimingId = timer.pkId;
             tabVoice.setBase(SystemClock.elapsedRealtime() - timedLength);
             tabVoice.start();
         }
@@ -411,9 +474,26 @@ public class MainActivity extends BaseActivity
         //super.onSaveInstanceState(outState, outPersistentState); //解决bug 崩溃后出现重影
     }
 
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onTimerEvent(TimingEvent event) {
+        if (event == null) return;
+        switch (event.action) {
+            case TimingEvent.TIMING_ADD:
+                globalTimingId = TimerManager.getInstance().getTimerId();
+                tabVoice.setBase(SystemClock.elapsedRealtime());
+                tabVoice.start();
+                break;
+            case TimingEvent.TIMING_STOP:
+                globalTimingId = null;
+                tabVoice.stop();
+                break;
+        }
+    }
+
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        EventBus.getDefault().unregister(this);
         if (mHandler != null) {
             mHandler.removeCallbacksAndMessages(null);
         }

@@ -141,6 +141,18 @@ public class DateUtils {
     }
 
     /**
+     * 获取时长 00:11
+     *
+     * @param milliseconds
+     * @return
+     */
+    public static String getHHmmss(long milliseconds) {
+        SimpleDateFormat formatter = new SimpleDateFormat("HH:mm:ss");
+        formatter.setTimeZone(TimeZone.getTimeZone("GMT+00:00"));
+        return formatter.format(milliseconds);
+    }
+
+    /**
      * 获取日期 yyyy年MM月dd日
      *
      * @param milliseconds

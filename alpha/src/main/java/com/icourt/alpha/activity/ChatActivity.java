@@ -578,7 +578,9 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
                     getActivity(),
                     getIMChatId(),
                     Const.CHOICE_TYPE_SINGLE,
-                    REQUEST_CODE_AT_MEMBER);
+                    REQUEST_CODE_AT_MEMBER,
+                    true,
+                    null);
         }
     }
 

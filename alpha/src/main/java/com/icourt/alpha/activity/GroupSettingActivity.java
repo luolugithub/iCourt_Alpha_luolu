@@ -139,7 +139,9 @@ public class GroupSettingActivity extends BaseActivity {
                 GroupMemberListActivity.launchSelect(getActivity(),
                         groupDetailEntity.tid,
                         Const.CHOICE_TYPE_SINGLE,
-                        CODE_REQUEST_TRANSFER_ADMIN);
+                        CODE_REQUEST_TRANSFER_ADMIN,
+                        false,
+                        null);
                 break;
             default:
                 super.onClick(v);

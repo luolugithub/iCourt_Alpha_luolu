@@ -11,6 +11,8 @@ import com.icourt.alpha.constants.Const;
 import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.icourt.alpha.utils.GlideUtils;
 
+import java.util.List;
+
 /**
  * Descriptionn  联系人适配器
  * Company Beijing icourt
@@ -27,6 +29,12 @@ public class IMContactAdapter extends MultiSelectRecyclerAdapter<GroupContactBea
         this.type = Const.VIEW_TYPE_ITEM;
     }
 
+    public List<String> selectedList;
+
+    public IMContactAdapter(List<String> selectedList) {
+        this.type = Const.VIEW_TYPE_ITEM;
+        this.selectedList = selectedList;
+    }
 
     public IMContactAdapter(@Const.AdapterViewType int type) {
         this.type = type;

@@ -71,6 +71,8 @@ import static com.icourt.alpha.constants.Const.CHOICE_TYPE_SINGLE;
 public class GroupMemberListActivity extends BaseActivity implements BaseRecyclerAdapter.OnItemClickListener {
     private static final String STRING_TOP = "↑︎";
     private static final String KEY_SELCTED_TYPE = "key_selcted_type";
+    private static final String KEY_ADD_AT_ALL = "key_add_at_all";
+    private static final String KEY_SELECTED_DATA = "key_selected_data";
     private static final String KEY_TID = "key_tid";
     @BindView(R.id.titleBack)
     ImageView titleBack;
@@ -105,12 +107,15 @@ public class GroupMemberListActivity extends BaseActivity implements BaseRecycle
             @NonNull Activity context,
             @NonNull String tid,
             @Const.ChoiceType int type,
-            int reqCode) {
+            int reqCode, boolean addAtAll,
+            @Nullable ArrayList<String> selectedData) {
         if (context == null) return;
         if (TextUtils.isEmpty(tid)) return;
         Intent intent = new Intent(context, GroupMemberListActivity.class);
         intent.putExtra(KEY_TID, tid);
         intent.putExtra(KEY_SELCTED_TYPE, type);
+        intent.putExtra(KEY_ADD_AT_ALL, addAtAll);
+        intent.putExtra(KEY_SELECTED_DATA, selectedData);
         context.startActivityForResult(intent, reqCode);
     }
 
@@ -309,6 +314,13 @@ public class GroupMemberListActivity extends BaseActivity implements BaseRecycle
                             filterRobot(contactBeanList);
                             IndexUtils.setSuspensions(getContext(), contactBeanList);
                             Collections.sort(contactBeanList, new PinyinComparator<GroupContactBean>());
+                            //添加@所有人
+                            if (getIntent().getBooleanExtra(KEY_ADD_AT_ALL, false)) {
+                                GroupContactBean atall = new GroupContactBean();
+                                atall.type = GroupContactBean.TYPE_ALL;
+                                atall.name = "所有人";
+                                contactBeanList.add(0, atall);
+                            }
                             imContactAdapter.bindData(true, contactBeanList);
                             updateIndexBar(contactBeanList);
                         } catch (Exception e) {

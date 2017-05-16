@@ -15,16 +15,26 @@ import com.icourt.alpha.R;
 import com.icourt.alpha.activity.TimingAddActivity;
 import com.icourt.alpha.adapter.TimeAdapter;
 import com.icourt.alpha.base.BaseFragment;
+import com.icourt.alpha.entity.bean.ItemPageEntity;
 import com.icourt.alpha.entity.bean.TimeEntity;
+import com.icourt.alpha.entity.bean.TimingCountEntity;
+import com.icourt.alpha.entity.event.TimingEvent;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.view.recyclerviewDivider.TimerItemDecoration;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
+import com.icourt.alpha.widget.manager.TimerManager;
+
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
 import java.util.List;
 
 import butterknife.BindView;
@@ -32,12 +42,12 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 import butterknife.Unbinder;
 import lecho.lib.hellocharts.model.Axis;
+import lecho.lib.hellocharts.model.AxisValue;
 import lecho.lib.hellocharts.model.Line;
 import lecho.lib.hellocharts.model.LineChartData;
 import lecho.lib.hellocharts.model.PointValue;
 import lecho.lib.hellocharts.model.ValueShape;
 import lecho.lib.hellocharts.model.Viewport;
-import lecho.lib.hellocharts.util.ChartUtils;
 import lecho.lib.hellocharts.view.LineChartView;
 import retrofit2.Call;
 import retrofit2.Response;
@@ -72,13 +82,7 @@ public class TabFindTimingFragment extends BaseFragment {
     }
 
     private LineChartData data;
-    private int numberOfLines = 1;
-    private int maxNumberOfLines = 4;
-    private int numberOfPoints = 12;
-
-    float[][] randomNumbersTab = new float[maxNumberOfLines][numberOfPoints];
-
-    private boolean hasAxes = true;
+    private int numberOfPoints = 7;
     private boolean hasLines = true;
 
     private boolean hasPoints = false;//不要圆点
@@ -87,10 +91,10 @@ public class TabFindTimingFragment extends BaseFragment {
     private boolean hasLabels = false;
     private boolean isCubic = true;
     private boolean hasLabelForSelected = false;
-    private boolean hasGradientToTransparent = false;
 
     private final int weekMillSecond = 7 * 24 * 60 * 60 * 1000;
     private TimeAdapter timeAdapter;
+    private final List<TimingCountEntity> timingCountEntities = new ArrayList<>();
 
     @Nullable
     @Override
@@ -104,13 +108,15 @@ public class TabFindTimingFragment extends BaseFragment {
 
     @Override
     protected void initView() {
+        EventBus.getDefault().register(this);
         tabLayout.addTab(tabLayout.newTab().setText("我的计时"), 0, true);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setAdapter(timeAdapter = new TimeAdapter(true));
         recyclerView.addItemDecoration(new TimerItemDecoration(getActivity(), timeAdapter));
-        // Generate some random values.
-        generateValues();
 
+        String weekStart = new SimpleDateFormat("MMM月dd日").format(DateUtils.getCurrWeekStartTime());
+        String weekEnd = new SimpleDateFormat("MMM月dd日").format(DateUtils.getCurrWeekEndTime());
+        timingDateTitle.setText(String.format("%s-%s", weekStart, weekEnd));
         generateData();
 
         resetViewport();
@@ -145,10 +151,11 @@ public class TabFindTimingFragment extends BaseFragment {
         super.getData(isRefresh);
         if (isRefresh) {
             pageIndex = 0;
+            getCurrentWeekTimingCount();
         }
-        String weekStartTime = new SimpleDateFormat("yyyy-MM-dd").format(DateUtils.getCurrWeekStartTime() + (pageIndex * weekMillSecond));
-        String weekEndTime = getFromatTime(DateUtils.getCurrWeekEndTime() + (pageIndex * weekMillSecond));
-        getApi().timingListQueryByTime(getLoginUserId(), weekStartTime, weekEndTime, pageIndex, 1000)
+        String weekStartTime = new SimpleDateFormat("yyyy-MM-dd").format(DateUtils.getCurrWeekStartTime() - (pageIndex * weekMillSecond));
+        String weekEndTime = getFromatTime(DateUtils.getCurrWeekEndTime() - (pageIndex * weekMillSecond));
+        getApi().timingListQueryByTime(getLoginUserId(), weekStartTime, weekEndTime, 0, 1000)
                 .enqueue(new SimpleCallBack<TimeEntity>() {
                     @Override
                     public void onSuccess(Call<ResEntity<TimeEntity>> call, Response<ResEntity<TimeEntity>> response) {
@@ -167,17 +174,25 @@ public class TabFindTimingFragment extends BaseFragment {
                 });
     }
 
-    private String getFromatTime(long time) {
-        return new SimpleDateFormat("yyyy-MM-dd").format(time);
+    private void getCurrentWeekTimingCount() {
+        String weekStartTime = getFromatTime(DateUtils.getCurrWeekStartTime());
+        String weekEndTime = getFromatTime(DateUtils.getCurrWeekEndTime());
+        getApi().queryTimingCountByTime(weekStartTime, weekEndTime)
+                .enqueue(new SimpleCallBack<ItemPageEntity<TimingCountEntity>>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<ItemPageEntity<TimingCountEntity>>> call, Response<ResEntity<ItemPageEntity<TimingCountEntity>>> response) {
+                        if (response.body().result != null) {
+                            timingCountEntities.clear();
+                            timingCountEntities.addAll(response.body().result.items);
+                            generateData();
+                        }
+                    }
+                });
+
     }
 
-
-    private void generateValues() {
-        for (int i = 0; i < maxNumberOfLines; ++i) {
-            for (int j = 0; j < numberOfPoints; ++j) {
-                randomNumbersTab[i][j] = (float) ((int) (Math.random() * 24));
-            }
-        }
+    private String getFromatTime(long time) {
+        return new SimpleDateFormat("yyyy-MM-dd").format(time);
     }
 
 
@@ -187,43 +202,78 @@ public class TabFindTimingFragment extends BaseFragment {
         v.bottom = 0;
         v.top = 24;
         v.left = 0;
-        v.right = numberOfPoints + 2;
-        timingChartView.setMaximumViewport(v);
+        v.right = numberOfPoints;
+        // timingChartView.setMaximumViewport(v);
         timingChartView.setCurrentViewport(v);
     }
 
     private void generateData() {
-
+        resetViewport();
         List<Line> lines = new ArrayList<Line>();
-        for (int i = 0; i < numberOfLines; ++i) {
 
-            List<PointValue> values = new ArrayList<PointValue>();
-            for (int j = 0; j < numberOfPoints; ++j) {
-                values.add(new PointValue(j, randomNumbersTab[i][j]));
-            }
-
-            Line line = new Line(values);
-            line.setColor(ChartUtils.COLORS[i]);
-            line.setShape(shape);
-            line.setCubic(isCubic);
-            line.setFilled(isFilled);
-            line.setHasLabels(hasLabels);
-            line.setHasLabelsOnlyForSelected(hasLabelForSelected);
-            line.setHasLines(hasLines);
-            line.setHasPoints(hasPoints);
-            line.setColor(SystemUtils.getColor(getContext(), R.color.alpha_font_color_orange));
-            //line.setHasGradientToTransparent(hasGradientToTransparent);
-            lines.add(line);
+        List<PointValue> values = new ArrayList<PointValue>();
+        List<AxisValue> axisXValues = Arrays.asList(
+                new AxisValue(0).setLabel("星期一"),
+                new AxisValue(1).setLabel("星期二"),
+                new AxisValue(2).setLabel("星期三"),
+                new AxisValue(3).setLabel("星期四"),
+                new AxisValue(4).setLabel("星期五"),
+                new AxisValue(5).setLabel("星期六"),
+                new AxisValue(6).setLabel("星期七"));
+        List<AxisValue> axisYValues = new ArrayList<>();
+        for (int i = 0; i <= 24; i += 4) {
+            axisYValues.add(new AxisValue(i).setLabel(String.format("%sh", i)));
         }
+        long totalHours = 0;
+        int day_of_week = Calendar.getInstance().get(Calendar.DAY_OF_WEEK);
+        for (int j = 0; j < numberOfPoints; j++) {
+            float countTime = 0;
+            if (j < timingCountEntities.size()) {
+                TimingCountEntity itemEntity = timingCountEntities.get(j);
+                if (itemEntity != null) {
+                    long ss = 1000;
+                    long mi = ss * 60;
+                    long hh = mi * 60;
+                    long dd = hh * 24;
 
+                    long day = itemEntity.timingCount / dd;
+                    long hour = (itemEntity.timingCount - day * dd) / hh;
+                    countTime = hour;
+                }
+            }
+            if (day_of_week == j) {
+                timingTodayTotal.setText(String.valueOf(countTime));
+            }
+            totalHours += countTime;
+            if (countTime >= 24) {
+                countTime = 23.9f;
+            }
+            log("--------j:" + j + "  time:" + countTime);
+            values.add(new PointValue(j, countTime));
+        }
+        timingCountTotal.setText(String.valueOf(totalHours));
+
+        Line line = new Line(values);
+        line.setShape(shape);
+        line.setCubic(isCubic);
+        line.setFilled(isFilled);
+        line.setHasLabels(hasLabels);
+        line.setHasLabelsOnlyForSelected(hasLabelForSelected);
+        line.setHasLines(hasLines);
+        line.setHasPoints(hasPoints);
+        line.setColor(SystemUtils.getColor(getContext(), R.color.alpha_font_color_orange));
+        //line.setHasGradientToTransparent(hasGradientToTransparent);
+        lines.add(line);
         data = new LineChartData(lines);
 
-        Axis axisX = new Axis();
+
+        Axis axisX = new Axis().setHasLines(true).setValues(axisXValues);
         Axis axisY = new Axis().setHasLines(true);
+        //.setValues(axisYValues);
         data.setAxisXBottom(axisX);
         data.setAxisYLeft(axisY);
 
-        data.setBaseValue(Float.NEGATIVE_INFINITY);
+        //data.setBaseValue(Float.NEGATIVE_INFINITY);
         timingChartView.setLineChartData(data);
 
     }
@@ -241,9 +291,64 @@ public class TabFindTimingFragment extends BaseFragment {
         }
     }
 
+    /**
+     * 计时事件
+     *
+     * @param event
+     */
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onTimerEvent(TimingEvent event) {
+        if (event == null) return;
+        switch (event.action) {
+            case TimingEvent.TIMING_ADD:
+                List<TimeEntity.ItemEntity> data = timeAdapter.getData();
+                for (int i = 0; i < data.size(); i++) {
+                    TimeEntity.ItemEntity itemEntity = data.get(i);
+                    if (itemEntity != null && itemEntity.state == TimeEntity.ItemEntity.TIMER_STATE_START) {
+                        itemEntity.state = TimeEntity.ItemEntity.TIMER_STATE_STOP;
+                    }
+                }
+                timeAdapter.notifyDataSetChanged();
+                TimeEntity.ItemEntity timer = TimerManager.getInstance().getTimer();
+                if (timer == null) return;
+                if (!timeAdapter.getData().contains(timer)) {
+                    timeAdapter.addItem(0, timer);
+                }
+                break;
+            case TimingEvent.TIMING_UPDATE_PROGRESS:
+                TimeEntity.ItemEntity itemEntity = TimeEntity.ItemEntity.singleInstace;
+                itemEntity.pkId = event.timingId;
+                int indexOf = timeAdapter.getData().indexOf(itemEntity);
+                if (indexOf >= 0) {
+                    TimeEntity.ItemEntity item = timeAdapter.getItem(indexOf);
+                    item.state = TimeEntity.ItemEntity.TIMER_STATE_START;
+                    item.useTime = event.timingTimeMillisecond;
+
+                    timeAdapter.updateItem(item);
+                }
+                break;
+            case TimingEvent.TIMING_STOP:
+                TimeEntity.ItemEntity itemEntity2 = TimeEntity.ItemEntity.singleInstace;
+                itemEntity2.pkId = event.timingId;
+                int indexOf2 = timeAdapter.getData().indexOf(itemEntity2);
+                if (indexOf2 >= 0) {
+                    TimeEntity.ItemEntity item = timeAdapter.getData().get(indexOf2);
+                    item.state = TimeEntity.ItemEntity.TIMER_STATE_STOP;
+                    timeAdapter.updateItem(item);
+                }
+                break;
+        }
+    }
+
     @Override
     public void onDestroyView() {
         super.onDestroyView();
         unbinder.unbind();
+    }
+
+    @Override
+    public void onDestroy() {
+        EventBus.getDefault().unregister(this);
+        super.onDestroy();
     }
 }

@@ -8,6 +8,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.icourt.alpha.entity.bean.TimeEntity;
+import com.icourt.alpha.entity.event.TimingEvent;
 import com.icourt.alpha.http.RetrofitServiceFactory;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
@@ -15,6 +16,11 @@ import com.icourt.alpha.utils.JsonUtils;
 import com.icourt.alpha.utils.LoginInfoUtils;
 import com.icourt.alpha.utils.SpUtils;
 import com.icourt.api.RequestUtils;
+
+import org.greenrobot.eventbus.EventBus;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import retrofit2.Call;
 import retrofit2.Response;
@@ -62,32 +68,48 @@ public class TimerManager {
      */
     public void addTimer(@NonNull final TimeEntity.ItemEntity itemEntity) {
         if (itemEntity == null) return;
-        itemEntity.pkId = "";
-        itemEntity.createUserId = getUid();
-        itemEntity.endTime = 0;
-        itemEntity.startTime = System.currentTimeMillis();
-        itemEntity.useTime = 0;
-        itemEntity.state = 0;
-        //itemEntity.workDate=DateUtils.formatDayDatetime();
+
+        TimeEntity.ItemEntity itemEntityCopy = new TimeEntity.ItemEntity();
+        try {
+            itemEntityCopy = (TimeEntity.ItemEntity) itemEntity.clone();
+        } catch (CloneNotSupportedException e) {
+            e.printStackTrace();
+        }
+        itemEntityCopy.pkId = "";
+        itemEntityCopy.createUserId = getUid();
+        itemEntityCopy.startTime = System.currentTimeMillis();
+        itemEntityCopy.useTime = 0;
+        itemEntityCopy.state = 0;
         JsonObject jsonObject = null;
         try {
-            jsonObject = JsonUtils.object2JsonObject(itemEntity);
+            jsonObject = JsonUtils.object2JsonObject(itemEntityCopy);
         } catch (JsonParseException e) {
             e.printStackTrace();
         }
         if (jsonObject != null) {
+            jsonObject.addProperty("workDate", new SimpleDateFormat("yyyy-MM-dd").format(new Date()));
             if (jsonObject.has("matterName")) {
                 jsonObject.remove("matterName");
+            }
+            if (jsonObject.has("endTime")) {
+                jsonObject.remove("endTime");
+            }
+            if (jsonObject.has("createTime")) {
+                jsonObject.remove("createTime");
             }
             if (jsonObject.has("timingCount")) {
                 jsonObject.remove("timingCount");
             }
-            SpUtils.getInstance().putData(String.format(KEY_TIMER, getUid()), itemEntity);
+
+            final TimeEntity.ItemEntity finalItemEntityCopy = itemEntityCopy;
             RetrofitServiceFactory.getAlphaApiService()
                     .timingAdd(RequestUtils.createJsonBody(jsonObject.toString()))
-                    .enqueue(new SimpleCallBack<JsonElement>() {
+                    .enqueue(new SimpleCallBack<String>() {
                         @Override
-                        public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
+                        public void onSuccess(Call<ResEntity<String>> call, Response<ResEntity<String>> response) {
+                            finalItemEntityCopy.pkId = response.body().result;
+                            SpUtils.getInstance().putData(String.format(KEY_TIMER, getUid()), finalItemEntityCopy);
+                            broadTimingEvent(finalItemEntityCopy.pkId, TimingEvent.TIMING_ADD);
                         }
                     });
         }
@@ -114,6 +136,16 @@ public class TimerManager {
     @Nullable
     public boolean hasTimer() {
         return getTimer() != null;
+    }
+
+    /**
+     * 是否正在计时
+     *
+     * @param itemEntity
+     * @return
+     */
+    public boolean isTimer(TimeEntity.ItemEntity itemEntity) {
+        return getTimer() == itemEntity;
     }
 
     /**
@@ -157,7 +189,7 @@ public class TimerManager {
      */
     public void stopTimer() {
         //TDDO 接口
-        TimeEntity.ItemEntity timer = getTimer();
+        final TimeEntity.ItemEntity timer = getTimer();
         if (timer != null) {
 
             JsonObject jsonObject = null;
@@ -183,10 +215,18 @@ public class TimerManager {
                             @Override
                             public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
                                 SpUtils.getInstance().putData(String.format(KEY_TIMER, getUid()), "");
+                                broadTimingEvent(timer.pkId, TimingEvent.TIMING_STOP);
                             }
                         });
             }
+
+
         }
     }
+
+    private void broadTimingEvent(String id, @TimingEvent.TIMING_ACTION int action) {
+        EventBus.getDefault().post(new TimingEvent(id, action));
+    }
+
 
 }

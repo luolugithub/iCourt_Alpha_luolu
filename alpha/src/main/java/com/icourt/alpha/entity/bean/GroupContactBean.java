@@ -27,6 +27,7 @@ public class GroupContactBean
         IFilterEntity {
 
     public static final int TYPE_ROBOT = 100;
+    public static final int TYPE_ALL = -100;
 
     public String suspensionTag;
 

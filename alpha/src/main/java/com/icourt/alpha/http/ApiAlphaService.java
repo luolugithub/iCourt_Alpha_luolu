@@ -10,6 +10,7 @@ import com.icourt.alpha.entity.bean.FileBoxBean;
 import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.icourt.alpha.entity.bean.GroupEntity;
 import com.icourt.alpha.entity.bean.IMMessageCustomBody;
+import com.icourt.alpha.entity.bean.ItemPageEntity;
 import com.icourt.alpha.entity.bean.LoginIMToken;
 import com.icourt.alpha.entity.bean.MsgConvert2Task;
 import com.icourt.alpha.entity.bean.PageEntity;
@@ -21,6 +22,7 @@ import com.icourt.alpha.entity.bean.TaskCheckItemEntity;
 import com.icourt.alpha.entity.bean.TaskEntity;
 import com.icourt.alpha.entity.bean.TaskGroupEntity;
 import com.icourt.alpha.entity.bean.TimeEntity;
+import com.icourt.alpha.entity.bean.TimingCountEntity;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 
 import java.util.List;
@@ -346,15 +348,6 @@ public interface ApiAlphaService {
     @GET("api/v2/documents/getRepo/{projectId}")
     Call<JsonObject> projectQueryDocumentId(@Path("projectId") String projectId);
 
-    /**
-     * 获取项目详情文档列表
-     *
-     * @param authToken
-     * @param seaFileRepoId
-     * @return
-     */
-    @GET("https://box.alphalawyer.cn/api2/repos/{seaFileRepoId}/dir/")
-    Call<List<FileBoxBean>> projectQueryFileBoxList(@Header("Authorization") String authToken, @Path("seaFileRepoId") String seaFileRepoId);
 
     /**
      * 项目下任务列表
@@ -423,8 +416,8 @@ public interface ApiAlphaService {
      * @param body
      * @return
      */
-    @PUT("api/v2/timing/timing/add")
-    Call<ResEntity<JsonElement>> timingAdd(@Body RequestBody body);
+    @POST("api/v2/timing/timing/add")
+    Call<ResEntity<String>> timingAdd(@Body RequestBody body);
 
     /**
      * 获取任务下检查项列表
@@ -541,6 +534,22 @@ public interface ApiAlphaService {
                                               @Query("type") int type);
 
     /**
+     * 获取指定时间段的计时
+     *
+     * @param createUserId
+     * @param startTime    017-05-09
+     * @param endTime      017-05-15
+     * @param pageIndex
+     * @param pageSize
+     * @return
+     */
+    @GET("api/v2/timing/timing/search")
+    Call<ResEntity<TimeEntity>> timingListQueryByTime(@Query("createUserId") String createUserId,
+                                                      @Query("startTime") String startTime,
+                                                      @Query("endTime") String endTime,
+                                                      @Query("pageIndex") int pageIndex,
+                                                      @Query("pageSize") int pageSize);
+    /**
      * 获取任务下的附件列表
      *
      * @param taskId
@@ -561,23 +570,6 @@ public interface ApiAlphaService {
     Call<ResEntity<JsonElement>> taskAttachmentUpload(@Path("taskId") String taskId, @PartMap Map<String, RequestBody> params);
 
     /**
-     * 获取指定时间段的计时
-     *
-     * @param createUserId
-     * @param startTime    017-05-09
-     * @param endTime      017-05-15
-     * @param pageIndex
-     * @param pageSize
-     * @return
-     */
-    @GET("api/v2/timing/timing/search")
-    Call<ResEntity<TimeEntity>> timingListQueryByTime(@Query("createUserId") String createUserId,
-                                                      @Query("startTime") String startTime,
-                                                      @Query("endTime") String endTime,
-                                                      @Query("pageIndex") int pageIndex,
-                                                      @Query("pageSize") int pageSize);
-
-    /**
      * 获取上传文件url
      *
      * @param seaFileRepoId
@@ -585,6 +577,40 @@ public interface ApiAlphaService {
      */
     @GET("https://box.alphalawyer.cn/api2/repos/{seaFileRepoId}/upload-link/")
     Call<JsonElement> projectUploadUrlQuery(@Header("Authorization") String authToken, @Path("seaFileRepoId") String seaFileRepoId);
+
+
+    /**
+     * 获取指定时间段的计时统计
+     *
+     * @param workStartDate 2015-05-03
+     * @param workEndDate   2015-05-10
+     * @return
+     */
+    @GET("api/v2/timing/timing/timingCountByTime")
+    Call<ResEntity<ItemPageEntity<TimingCountEntity>>> queryTimingCountByTime(@Query("workStartDate") String workStartDate,
+                                                                              @Query("workEndDate") String workEndDate);
+
+    /**
+     * 获取项目下文档列表
+     *
+     * @param authToken
+     * @param seaFileRepoId
+     * @param rootName
+     * @return
+     */
+    @GET("https://box.alphalawyer.cn/api2/repos/{seaFileRepoId}/dir/")
+    Call<List<FileBoxBean>> projectQueryFileBoxByDir(@Header("Authorization") String authToken, @Path("seaFileRepoId") String seaFileRepoId, @Query("p") String rootName);
+
+    /**
+     * 获取项目详情文档列表
+     *
+     * @param authToken
+     * @param seaFileRepoId
+     * @return
+     */
+    @GET("https://box.alphalawyer.cn/api2/repos/{seaFileRepoId}/dir/")
+    Call<List<FileBoxBean>> projectQueryFileBoxList(@Header("Authorization") String authToken,
+                                                    @Path("seaFileRepoId") String seaFileRepoId);
 
     /**
      * 项目下上传文件
@@ -598,14 +624,4 @@ public interface ApiAlphaService {
     @POST()
     Call<ResEntity<JsonElement>> projectUploadFile(@Header("Authorization") String authToken,@Url String url, @Query("parent_dir") String parent_dir, @Body RequestBody body);
 
-    /**
-     * 获取项目下文档列表
-     *
-     * @param authToken
-     * @param seaFileRepoId
-     * @param rootName
-     * @return
-     */
-    @GET("https://box.alphalawyer.cn/api2/repos/{seaFileRepoId}/dir/")
-    Call<List<FileBoxBean>> projectQueryFileBoxByDir(@Header("Authorization") String authToken, @Path("seaFileRepoId") String seaFileRepoId, @Query("p") String rootName);
 }

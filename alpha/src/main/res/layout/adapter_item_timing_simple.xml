@@ -19,7 +19,7 @@
             android:padding="10dp"
             android:src="@mipmap/icon_start_20" />
 
-        <TextView
+        <Chronometer
             android:id="@+id/timer_count_tv"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

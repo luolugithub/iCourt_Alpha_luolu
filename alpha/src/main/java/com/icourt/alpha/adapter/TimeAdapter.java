@@ -1,14 +1,17 @@
 package com.icourt.alpha.adapter;
 
 import android.support.annotation.NonNull;
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.baseadapter.BaseArrayRecyclerAdapter;
+import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.entity.bean.TimeEntity;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.view.recyclerviewDivider.ITimeDividerInterface;
+import com.icourt.alpha.widget.manager.TimerManager;
 
 import java.util.HashMap;
 
@@ -20,7 +23,7 @@ import java.util.HashMap;
  * version 2.0.0
  */
 
-public class TimeAdapter extends BaseArrayRecyclerAdapter<TimeEntity.ItemEntity> implements ITimeDividerInterface {
+public class TimeAdapter extends BaseArrayRecyclerAdapter<TimeEntity.ItemEntity> implements ITimeDividerInterface, BaseRecyclerAdapter.OnItemChildClickListener {
 
     private static final int TIME_TOP_TYPE = 0;
     private static final int TIME_OTHER_TYPE = 1;
@@ -32,9 +35,11 @@ public class TimeAdapter extends BaseArrayRecyclerAdapter<TimeEntity.ItemEntity>
 
     public TimeAdapter(boolean useSimpleTitle) {
         this.useSimpleTitle = useSimpleTitle;
+        this.setOnItemChildClickListener(this);
     }
 
     public TimeAdapter() {
+        this.setOnItemChildClickListener(this);
     }
 
     @Override
@@ -91,6 +96,26 @@ public class TimeAdapter extends BaseArrayRecyclerAdapter<TimeEntity.ItemEntity>
         TextView timer_count_tv = holder.obtainView(R.id.timer_count_tv);
         TextView timer_title_tv = holder.obtainView(R.id.timer_title_tv);
         timer_title_tv.setText(timeEntity.name);
+        if (timeEntity.state == TimeEntity.ItemEntity.TIMER_STATE_START) {
+            timer_count_tv.setText(toTime(timeEntity.useTime));
+            timer_icon.setImageResource(R.drawable.orange_side_dot_bg);
+        } else {
+            timer_icon.setImageResource(R.mipmap.icon_start_20);
+            try {
+                timer_count_tv.setText(DateUtils.getTimeDurationDate(timeEntity.useTime));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        holder.bindChildClick(timer_icon);
+    }
+
+    public String toTime(long times) {
+        times /= 1000;
+        long hour = times / 3600;
+        long minute = times % 3600 / 60;
+        long second = times % 60;
+        return String.format("%02d:%02d:%02d", hour, minute, second);
     }
 
     /**
@@ -163,5 +188,17 @@ public class TimeAdapter extends BaseArrayRecyclerAdapter<TimeEntity.ItemEntity>
                     DateUtils.getTimeDate(item.workDate) : "null";
         }
         return "";
+    }
+
+    @Override
+    public void onItemChildClick(BaseRecyclerAdapter adapter, ViewHolder holder, View view, int position) {
+        TimeEntity.ItemEntity item = getItem(getRealPos(position));
+        if (item == null) return;
+        switch (view.getId()) {
+            case R.id.timer_icon:
+                TimerManager.getInstance().addTimer(item);
+                notifyDataSetChanged();
+                break;
+        }
     }
 }
