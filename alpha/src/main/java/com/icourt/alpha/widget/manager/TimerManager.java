@@ -12,6 +12,7 @@ import com.icourt.alpha.entity.event.TimingEvent;
 import com.icourt.alpha.http.RetrofitServiceFactory;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
+import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.JsonUtils;
 import com.icourt.alpha.utils.LoginInfoUtils;
 import com.icourt.alpha.utils.SpUtils;
@@ -28,8 +29,6 @@ import java.util.concurrent.TimeUnit;
 
 import retrofit2.Call;
 import retrofit2.Response;
-
-import static com.bugtags.library.Bugtags.log;
 
 /**
  * Description  计时管理器
@@ -58,16 +57,32 @@ public class TimerManager {
     private ScheduledFuture<?> scheduledFuture;
     private long base;
 
+    /**
+     * 设置器起始时间
+     *
+     * @param seconds
+     */
     public void setBase(long seconds) {
         this.base = seconds;
     }
 
+    /**
+     * 返回已经计时的秒
+     *
+     * @return
+     */
+    public long getTimingSeconds() {
+        return this.base;
+    }
+
+    /**
+     * 通知其它页面
+     */
     private void broadTiming() {
         TimingEvent timingSingle = TimingEvent.timingSingle;
         timingSingle.action = TimingEvent.TIMING_UPDATE_PROGRESS;
         timingSingle.timingId = globalTimingId;
         timingSingle.timingSecond = base;
-        log("------------>timing:" + timingSingle.timingSecond);
         EventBus.getDefault().post(timingSingle);
     }
 
@@ -94,10 +109,13 @@ public class TimerManager {
                         TimeUnit.SECONDS);
     }
 
+    /**
+     * 停止计时任务
+     */
     private synchronized void stopTimingTask() {
         if (scheduledFuture != null) {
             try {
-                if (scheduledFuture.isCancelled()) {
+                if (!scheduledFuture.isCancelled()) {
                     scheduledFuture.cancel(true);
                 }
             } catch (Exception e) {
@@ -166,9 +184,25 @@ public class TimerManager {
                             globalTimingId = finalItemEntityCopy.pkId;
                             SpUtils.getInstance().putData(String.format(KEY_TIMER, getUid()), finalItemEntityCopy);
                             broadTimingEvent(finalItemEntityCopy.pkId, TimingEvent.TIMING_ADD);
+                            setBase(0);
                             startTimingTask();
                         }
                     });
+        }
+    }
+
+    /**
+     * 恢复计时
+     */
+    public void resumeTimer() {
+        TimeEntity.ItemEntity timer = TimerManager.getInstance().getTimer();
+        if (timer != null) {
+            long timedLength = (System.currentTimeMillis() - timer.startTime) / 1000;
+            if (timedLength < 0) {
+                timedLength = 0;
+            }
+            setBase(timedLength);
+            startTimingTask();
         }
     }
 
@@ -180,6 +214,7 @@ public class TimerManager {
      */
     @CheckResult
     @Nullable
+
     public TimeEntity.ItemEntity getTimer() {
         return (TimeEntity.ItemEntity) SpUtils.getInstance().getSerializableData(String.format(KEY_TIMER, getUid()));
     }
@@ -245,10 +280,11 @@ public class TimerManager {
      * 停止计时
      */
     public void stopTimer() {
-        //TDDO 接口
         final TimeEntity.ItemEntity timer = getTimer();
         if (timer != null) {
-
+            timer.endTime = DateUtils.millis();
+            timer.useTime = timer.endTime - timer.startTime;
+            timer.state = TimeEntity.TIMER_STATE_END_TYPE;
             JsonObject jsonObject = null;
             try {
                 jsonObject = JsonUtils.object2JsonObject(timer);
@@ -285,6 +321,4 @@ public class TimerManager {
     private void broadTimingEvent(String id, @TimingEvent.TIMING_ACTION int action) {
         EventBus.getDefault().post(new TimingEvent(id, action));
     }
-
-
 }

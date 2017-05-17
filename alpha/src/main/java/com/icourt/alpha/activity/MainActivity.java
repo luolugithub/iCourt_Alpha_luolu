@@ -248,13 +248,7 @@ public class MainActivity extends BaseActivity
 
 
     private void resumeTimer() {
-        TimeEntity.ItemEntity timer = TimerManager.getInstance().getTimer();
-        if (timer != null) {
-            long timedLength = System.currentTimeMillis() - timer.startTime;
-            if (timedLength < 0) {
-                timedLength = 0;
-            }
-        }
+        TimerManager.getInstance().resumeTimer();
     }
 
     @OnClick({R.id.tab_voice})
@@ -262,7 +256,11 @@ public class MainActivity extends BaseActivity
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.tab_voice:
-                TimerManager.getInstance().addTimer(new TimeEntity.ItemEntity());
+                if (TimerManager.getInstance().hasTimer()) {
+                    TimerDetailActivity.launch(getContext(), TimerManager.getInstance().getTimer());
+                } else {
+                    TimerManager.getInstance().addTimer(new TimeEntity.ItemEntity());
+                }
                 break;
             default:
                 super.onClick(v);
@@ -422,6 +420,7 @@ public class MainActivity extends BaseActivity
                 tabVoice.setText(toTime(event.timingSecond));
                 break;
             case TimingEvent.TIMING_STOP:
+                tabVoice.setText("开始计时");
                 break;
         }
     }
