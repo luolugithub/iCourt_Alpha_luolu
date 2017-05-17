@@ -195,13 +195,13 @@ public class MainActivity extends BaseActivity
                     } else {
                         int minute = 0;
                         try {
-                            minute = Integer.parseInt(split[1]);
+                            minute = Integer.parseInt(split[0]);
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
                         int second = 0;
                         try {
-                            second = Integer.parseInt(split[2]);
+                            second = Integer.parseInt(split[1]);
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
