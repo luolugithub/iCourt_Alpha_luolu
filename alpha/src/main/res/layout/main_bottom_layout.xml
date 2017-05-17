@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RadioGroup xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/rg_main_tab"
     android:layout_width="match_parent"
     android:layout_height="50dp"
@@ -8,43 +8,115 @@
     android:gravity="center_vertical"
     android:orientation="horizontal">
 
-    <RadioButton
+    <com.icourt.alpha.view.CheckableLayout
         android:id="@+id/tab_news"
-        style="@style/mainPageRadioButtonStyple"
-        android:layout_weight="1"
-        android:checked="true"
-        android:drawableTop="@drawable/tab_news"
-        android:text="消息" />
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1">
 
-    <RadioButton
+        <CheckedTextView
+            style="@style/mainPageRadioButtonStyple"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:checked="true"
+            android:clickable="false"
+            android:drawableTop="@drawable/tab_news"
+            android:enabled="false"
+            android:focusableInTouchMode="false"
+            android:gravity="center"
+            android:text="消息" />
+    </com.icourt.alpha.view.CheckableLayout>
+
+    <com.icourt.alpha.view.CheckableLayout
         android:id="@+id/tab_task"
-        style="@style/mainPageRadioButtonStyple"
-        android:layout_weight="1"
-        android:drawableTop="@drawable/tab_task"
-        android:text="任务" />
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1">
 
+        <CheckedTextView
+            style="@style/mainPageRadioButtonStyple"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:clickable="false"
+            android:drawableTop="@drawable/tab_task"
+            android:enabled="false"
+            android:focusableInTouchMode="false"
+            android:gravity="center"
+            android:text="任务" />
+    </com.icourt.alpha.view.CheckableLayout>
 
     <TextView
         android:id="@+id/tab_voice"
         style="@style/mainPageRadioButtonStyple"
         android:layout_weight="1"
         android:background="?attr/selectableItemBackground"
-        android:drawableTop="@drawable/tab_find"
+        android:drawableTop="@mipmap/ic_time_start"
+        android:ellipsize="end"
         android:gravity="center"
+        android:maxLines="1"
         android:text="开始计时" />
 
-    <RadioButton
+    <com.icourt.alpha.view.CheckableLayout
         android:id="@+id/tab_find"
-        style="@style/mainPageRadioButtonStyple"
-        android:layout_weight="1"
-        android:drawableTop="@drawable/tab_find"
-        android:text="探索" />
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1">
 
-    <RadioButton
+        <CheckedTextView
+            android:id="@+id/tab_find_ctv"
+            style="@style/mainPageRadioButtonStyple"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:clickable="false"
+            android:drawableTop="@drawable/tab_find"
+            android:enabled="false"
+            android:focusableInTouchMode="false"
+            android:text="探索" />
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="2.9dp"
+            android:layout_marginTop="7dp"
+            android:layout_toRightOf="@+id/tab_find_ctv"
+            android:clickable="false"
+            android:enabled="false"
+            android:focusableInTouchMode="false"
+            android:src="@mipmap/ic_tab_menu_arrow" />
+    </com.icourt.alpha.view.CheckableLayout>
+
+    <com.icourt.alpha.view.CheckableLayout
         android:id="@+id/tab_mine"
-        style="@style/mainPageRadioButtonStyple"
-        android:layout_weight="1"
-        android:drawableTop="@drawable/tab_mine"
-        android:text="我的" />
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1">
 
-</RadioGroup>
+        <CheckedTextView
+            android:id="@+id/tab_mine_ctv"
+            style="@style/mainPageRadioButtonStyple"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:clickable="false"
+            android:drawableTop="@drawable/tab_mine"
+            android:enabled="false"
+            android:focusableInTouchMode="false"
+            android:text="我的" />
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="2.9dp"
+            android:layout_marginTop="7dp"
+            android:layout_toRightOf="@+id/tab_mine_ctv"
+            android:clickable="false"
+            android:enabled="false"
+            android:focusableInTouchMode="false"
+            android:src="@mipmap/ic_tab_menu_arrow" />
+
+    </com.icourt.alpha.view.CheckableLayout>
+
+</LinearLayout>

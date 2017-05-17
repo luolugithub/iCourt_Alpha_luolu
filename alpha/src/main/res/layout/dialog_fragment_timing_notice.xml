@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="260dp"
+    android:layout_height="198dp"
+    android:orientation="vertical">
+
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="260dp"
+        android:layout_height="148dp"
+        android:background="@drawable/bg_timing_notice"
+        android:orientation="vertical">
+
+        <RelativeLayout
+            android:layout_width="260dp"
+            android:layout_height="81dp">
+
+            <TextView
+                android:id="@+id/notice_timing_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:text="00:00"
+                android:textColor="@color/alpha_font_color_orange"
+                android:textSize="40dp" />
+
+            <ImageView
+                android:id="@+id/notice_timing_stop_iv"
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true"
+                android:layout_margin="24dp"
+                android:src="@drawable/orange_side_dot_bg" />
+        </RelativeLayout>
+
+        <TextView
+            android:id="@+id/notice_timing_title_tv"
+            android:layout_width="260dp"
+            android:layout_height="wrap_content"
+            android:drawableRight="@mipmap/arrow_right"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:paddingBottom="20dp"
+            android:paddingLeft="24dp"
+            android:paddingRight="15dp"
+            android:paddingTop="20dp"
+            android:text="计时标题" />
+
+    </LinearLayout>
+
+    <View
+        android:id="@+id/timing_empty_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:background="@android:color/transparent" />
+</LinearLayout>

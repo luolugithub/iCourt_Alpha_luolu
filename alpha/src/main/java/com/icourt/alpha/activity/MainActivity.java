@@ -9,13 +9,14 @@ import android.os.Message;
 import android.os.PersistableBundle;
 import android.support.annotation.IdRes;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.util.SparseArray;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.CheckedTextView;
 import android.widget.FrameLayout;
-import android.widget.RadioButton;
-import android.widget.RadioGroup;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.icourt.alpha.R;
@@ -33,6 +34,7 @@ import com.icourt.alpha.fragment.TabFindFragment;
 import com.icourt.alpha.fragment.TabMineFragment;
 import com.icourt.alpha.fragment.TabNewsFragment;
 import com.icourt.alpha.fragment.TabTaskFragment;
+import com.icourt.alpha.fragment.dialogfragment.TimingNoticeDialogFragment;
 import com.icourt.alpha.http.AlphaClient;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
@@ -41,6 +43,7 @@ import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.interfaces.OnTabDoubleClickListener;
 import com.icourt.alpha.utils.DensityUtil;
 import com.icourt.alpha.utils.SimpleViewGestureListener;
+import com.icourt.alpha.view.CheckableLayout;
 import com.icourt.alpha.widget.manager.TimerManager;
 import com.icourt.alpha.widget.popupwindow.BaseListActionItemPop;
 import com.icourt.alpha.widget.popupwindow.ListActionItemPop;
@@ -64,6 +67,7 @@ import q.rorbin.badgeview.QBadgeView;
 import retrofit2.Call;
 import retrofit2.Response;
 
+
 /**
  * Description
  * Company Beijing icourt
@@ -72,23 +76,27 @@ import retrofit2.Response;
  * version 1.0.0
  */
 public class MainActivity extends BaseActivity
-        implements RadioGroup.OnCheckedChangeListener
-        , OnFragmentCallBackListener {
+        implements OnFragmentCallBackListener {
+
 
     @BindView(R.id.main_fl_content)
     FrameLayout mainFlContent;
     @BindView(R.id.tab_news)
-    RadioButton tabNews;
+    CheckableLayout tabNews;
     @BindView(R.id.tab_task)
-    RadioButton tabTask;
+    CheckableLayout tabTask;
     @BindView(R.id.tab_voice)
     TextView tabVoice;
+    @BindView(R.id.tab_find_ctv)
+    CheckedTextView tabFindCtv;
     @BindView(R.id.tab_find)
-    RadioButton tabFind;
+    CheckableLayout tabFind;
+    @BindView(R.id.tab_mine_ctv)
+    CheckedTextView tabMineCtv;
     @BindView(R.id.tab_mine)
-    RadioButton tabMine;
+    CheckableLayout tabMine;
     @BindView(R.id.rg_main_tab)
-    RadioGroup rgMainTab;
+    LinearLayout rgMainTab;
 
     public static void launch(Context context) {
         if (context == null) return;
@@ -157,10 +165,10 @@ public class MainActivity extends BaseActivity
         EventBus.getDefault().register(this);
         loginUserInfo = getLoginUserInfo();
         contactDbService = new ContactDbService(loginUserInfo == null ? "" : loginUserInfo.getUserId());
-        rgMainTab.setOnCheckedChangeListener(this);
         new SimpleViewGestureListener(tabNews, onSimpleViewGestureListener);
         initTabFind();
-        currentFragment = addOrShowFragment(getTabFragment(rgMainTab.getCheckedRadioButtonId()), currentFragment, R.id.main_fl_content);
+        tabNews.setChecked(true);
+        currentFragment = addOrShowFragment(getTabFragment(R.id.tab_news), currentFragment, R.id.main_fl_content);
         resumeTimer();
     }
 
@@ -171,16 +179,16 @@ public class MainActivity extends BaseActivity
     private void initTabFind() {
         switch (TabFindFragment.getLastChildFragmentType()) {
             case TabFindFragment.TYPE_FRAGMENT_PROJECT:
-                tabFind.setText("项目");
+                tabFindCtv.setText("项目");
                 break;
             case TabFindFragment.TYPE_FRAGMENT_TIMING:
-                tabFind.setText("计时");
+                tabFindCtv.setText("计时");
                 break;
             case TabFindFragment.TYPE_FRAGMENT_CUSTOMER:
-                tabFind.setText("客户");
+                tabFindCtv.setText("客户");
                 break;
             case TabFindFragment.TYPE_FRAGMENT_SEARCH:
-                tabFind.setText("搜索");
+                tabFindCtv.setText("搜索");
                 break;
         }
     }
@@ -228,7 +236,7 @@ public class MainActivity extends BaseActivity
                                 break;
                         }
                         ((INotifyFragment) currentFragment).notifyFragmentUpdate(currentFragment, 0, bundle);
-                        tabFind.setText(itemsEntityImp.getItemTitle());
+                        tabFindCtv.setText(itemsEntityImp.getItemTitle());
                     }
                 }
             }).showUpCenter(v, DensityUtil.dip2px(getContext(), 5));
@@ -241,8 +249,8 @@ public class MainActivity extends BaseActivity
         mHandler.addTokenRefreshTask();
     }
 
-    @Override
-    public void onCheckedChanged(RadioGroup group, @IdRes int checkedId) {
+
+    public void checkedFragment(@IdRes int checkedId) {
         currentFragment = addOrShowFragment(getTabFragment(checkedId), currentFragment, R.id.main_fl_content);
     }
 
@@ -251,13 +259,45 @@ public class MainActivity extends BaseActivity
         TimerManager.getInstance().resumeTimer();
     }
 
-    @OnClick({R.id.tab_voice})
+    @OnClick({R.id.tab_voice,
+            R.id.tab_news,
+            R.id.tab_task,
+            R.id.tab_find,
+            R.id.tab_mine})
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
+            case R.id.tab_news:
+                tabNews.setChecked(true);
+                tabTask.setChecked(false);
+                tabFind.setChecked(false);
+                tabMine.setChecked(false);
+                checkedFragment(v.getId());
+                break;
+            case R.id.tab_task:
+                tabNews.setChecked(false);
+                tabTask.setChecked(true);
+                tabFind.setChecked(false);
+                tabMine.setChecked(false);
+                checkedFragment(v.getId());
+                break;
+            case R.id.tab_find:
+                tabNews.setChecked(false);
+                tabTask.setChecked(false);
+                tabFind.setChecked(true);
+                tabMine.setChecked(false);
+                checkedFragment(v.getId());
+                break;
+            case R.id.tab_mine:
+                tabNews.setChecked(false);
+                tabTask.setChecked(false);
+                tabFind.setChecked(false);
+                tabMine.setChecked(true);
+                checkedFragment(v.getId());
+                break;
             case R.id.tab_voice:
                 if (TimerManager.getInstance().hasTimer()) {
-                    TimerDetailActivity.launch(getContext(), TimerManager.getInstance().getTimer());
+                    showTimingDialogFragment();
                 } else {
                     TimerManager.getInstance().addTimer(new TimeEntity.ItemEntity());
                 }
@@ -415,12 +455,19 @@ public class MainActivity extends BaseActivity
         if (event == null) return;
         switch (event.action) {
             case TimingEvent.TIMING_ADD:
+               /* RotateAnimation operatingAnim = (RotateAnimation) AnimationUtils.loadAnimation(this, R.anim.rotate_nim);
+                LinearInterpolator lin = new LinearInterpolator();
+                operatingAnim.setInterpolator(lin);*/
+                tabVoice.setCompoundDrawablesWithIntrinsicBounds(0, R.drawable.rotate_timing, 0, 0);
+                // tabVoice.startAnimation(operatingAnim);
                 break;
             case TimingEvent.TIMING_UPDATE_PROGRESS:
                 tabVoice.setText(toTime(event.timingSecond));
                 break;
             case TimingEvent.TIMING_STOP:
                 tabVoice.setText("开始计时");
+                //tabVoice.clearAnimation();
+                tabVoice.setCompoundDrawablesWithIntrinsicBounds(0, R.mipmap.ic_time_start, 0, 0);
                 break;
         }
     }
@@ -442,5 +489,18 @@ public class MainActivity extends BaseActivity
         if (contactDbService != null) {
             contactDbService.releaseService();
         }
+    }
+
+    private void showTimingDialogFragment() {
+        TimeEntity.ItemEntity timer = TimerManager.getInstance().getTimer();
+        if (timer == null) return;
+        String tag = TimingNoticeDialogFragment.class.getSimpleName();
+        FragmentTransaction mFragTransaction = getSupportFragmentManager().beginTransaction();
+        Fragment fragment = getSupportFragmentManager().findFragmentByTag(tag);
+        if (fragment != null) {
+            mFragTransaction.remove(fragment);
+        }
+        TimingNoticeDialogFragment.newInstance(timer)
+                .show(mFragTransaction, tag);
     }
 }
