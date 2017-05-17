@@ -114,7 +114,6 @@ public class TimerDetailActivity extends BaseActivity
     /**
      * 新建计时
      *
-     * @param context
      */
     public static void launchAdd(@NonNull Context context) {
         if (context == null) return;
@@ -196,7 +195,7 @@ public class TimerDetailActivity extends BaseActivity
             projectNameTv.setText(TextUtils.isEmpty(itemEntity.matterName) ? "未设置" : itemEntity.matterName);
             worktypeNameTv.setText(TextUtils.isEmpty(itemEntity.workTypeName) ? "未设置" : itemEntity.workTypeName);
             taskNameTv.setText(TextUtils.isEmpty(itemEntity.taskPkId) ? "未关联" : itemEntity.taskPkId);
-            circleTimerView.setCurrentTime(itemEntity.useTime / 1000);
+            circleTimerView.setCurrentTime((int) itemEntity.useTime);
         }
     }
 

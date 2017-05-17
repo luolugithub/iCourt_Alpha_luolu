@@ -159,6 +159,12 @@ public class TaskDetailActivity extends BaseActivity implements OnFragmentCallBa
         getData(false);
     }
 
+    @Override
+    protected void onDestroy() {
+        EventBus.getDefault().unregister(this);
+        super.onDestroy();
+    }
+
     @OnClick({R.id.titleAction, R.id.titleAction2, R.id.comment_layout, R.id.task_checkbox, R.id.task_user_layout, R.id.task_users_layout, R.id.task_start_iamge})
     @Override
     public void onClick(View v) {
@@ -255,17 +261,14 @@ public class TaskDetailActivity extends BaseActivity implements OnFragmentCallBa
                 taskStartIamge.setImageResource(R.drawable.orange_side_dot_bg);
                 break;
             case TimingEvent.TIMING_UPDATE_PROGRESS:
-                LogUtils.e("TimingEvent.TIMING_UPDATE_PROGRESS -----------" + event.timingTimeMillisecond);
-                TimeEntity.ItemEntity itemEntity = TimeEntity.ItemEntity.singleInstace;
-                itemEntity.state = TimeEntity.ItemEntity.TIMER_STATE_START;
-                itemEntity.useTime = event.timingTimeMillisecond;
-                taskTime.setText(toTime(itemEntity.useTime / 1000));
+                LogUtils.e(" -----------timingEvent.TIMING_UPDATE_PROGRESS" + event.timingSecond);
+                taskTime.setText(toTime(event.timingSecond / 1000));
                 break;
             case TimingEvent.TIMING_STOP:
                 taskStartIamge.setImageResource(R.mipmap.icon_start_20);
                 TimeEntity.ItemEntity itemEntity2 = TimeEntity.ItemEntity.singleInstace;
                 itemEntity2.state = TimeEntity.ItemEntity.TIMER_STATE_STOP;
-                itemEntity2.useTime = event.timingTimeMillisecond;
+                itemEntity2.useTime = event.timingSecond;
                 taskTime.setText(DateUtils.getTimeDurationDate(taskItemEntity.timingSum + itemEntity2.useTime));
                 break;
         }

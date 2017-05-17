@@ -322,7 +322,7 @@ public class TabFindTimingFragment extends BaseFragment implements BaseRecyclerA
                 if (indexOf >= 0) {
                     TimeEntity.ItemEntity item = timeAdapter.getItem(indexOf);
                     item.state = TimeEntity.ItemEntity.TIMER_STATE_START;
-                    item.useTime = event.timingTimeMillisecond;
+                    item.useTime = event.timingSecond;
 
                     timeAdapter.updateItem(item);
                 }

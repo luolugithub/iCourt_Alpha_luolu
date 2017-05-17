@@ -24,7 +24,7 @@
         android:text="任务" />
 
 
-    <Chronometer
+    <TextView
         android:id="@+id/tab_voice"
         style="@style/mainPageRadioButtonStyple"
         android:layout_weight="1"

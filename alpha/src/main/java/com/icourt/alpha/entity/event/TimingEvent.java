@@ -33,7 +33,7 @@ public class TimingEvent {
     public String timingId;
     @TIMING_ACTION
     public int action;
-    public int timingTimeMillisecond;
+    public long timingSecond;
 
     public TimingEvent(String timingId, int action) {
         this.timingId = timingId;

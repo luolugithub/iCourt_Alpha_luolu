@@ -21,9 +21,15 @@ import org.greenrobot.eventbus.EventBus;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 import retrofit2.Call;
 import retrofit2.Response;
+
+import static com.bugtags.library.Bugtags.log;
 
 /**
  * Description  计时管理器
@@ -41,6 +47,29 @@ public class TimerManager {
     }
 
     private static TimerManager timerManager;
+    private Runnable timingRunnable = new Runnable() {
+        public void run() {
+            base++;
+            broadTiming();
+        }
+    };
+    private String globalTimingId;
+    private ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
+    private ScheduledFuture<?> scheduledFuture;
+    private long base;
+
+    public void setBase(long seconds) {
+        this.base = seconds;
+    }
+
+    private void broadTiming() {
+        TimingEvent timingSingle = TimingEvent.timingSingle;
+        timingSingle.action = TimingEvent.TIMING_UPDATE_PROGRESS;
+        timingSingle.timingId = globalTimingId;
+        timingSingle.timingSecond = base;
+        log("------------>timing:" + timingSingle.timingSecond);
+        EventBus.getDefault().post(timingSingle);
+    }
 
     public static TimerManager getInstance() {
         if (timerManager == null) {
@@ -49,6 +78,32 @@ public class TimerManager {
             }
         }
         return timerManager;
+    }
+
+
+    /**
+     * 1秒一次
+     */
+    private synchronized void startTimingTask() {
+        stopTimingTask();
+        scheduledFuture =
+                scheduledExecutorService.scheduleAtFixedRate(
+                        timingRunnable,
+                        0,
+                        1,
+                        TimeUnit.SECONDS);
+    }
+
+    private synchronized void stopTimingTask() {
+        if (scheduledFuture != null) {
+            try {
+                if (scheduledFuture.isCancelled()) {
+                    scheduledFuture.cancel(true);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
     }
 
 
@@ -108,8 +163,10 @@ public class TimerManager {
                         @Override
                         public void onSuccess(Call<ResEntity<String>> call, Response<ResEntity<String>> response) {
                             finalItemEntityCopy.pkId = response.body().result;
+                            globalTimingId = finalItemEntityCopy.pkId;
                             SpUtils.getInstance().putData(String.format(KEY_TIMER, getUid()), finalItemEntityCopy);
                             broadTimingEvent(finalItemEntityCopy.pkId, TimingEvent.TIMING_ADD);
+                            startTimingTask();
                         }
                     });
         }
@@ -216,6 +273,7 @@ public class TimerManager {
                             public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
                                 SpUtils.getInstance().putData(String.format(KEY_TIMER, getUid()), "");
                                 broadTimingEvent(timer.pkId, TimingEvent.TIMING_STOP);
+                                stopTimingTask();
                             }
                         });
             }

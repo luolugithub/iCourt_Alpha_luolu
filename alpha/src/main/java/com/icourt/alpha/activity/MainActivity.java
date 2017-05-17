@@ -7,18 +7,16 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.os.PersistableBundle;
-import android.os.SystemClock;
 import android.support.annotation.IdRes;
 import android.support.v4.app.Fragment;
-import android.text.TextUtils;
 import android.util.SparseArray;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
-import android.widget.Chronometer;
 import android.widget.FrameLayout;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
+import android.widget.TextView;
 
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
@@ -84,7 +82,7 @@ public class MainActivity extends BaseActivity
     @BindView(R.id.tab_task)
     RadioButton tabTask;
     @BindView(R.id.tab_voice)
-    Chronometer tabVoice;
+    TextView tabVoice;
     @BindView(R.id.tab_find)
     RadioButton tabFind;
     @BindView(R.id.tab_mine)
@@ -143,7 +141,6 @@ public class MainActivity extends BaseActivity
     MyHandler mHandler = new MyHandler();
     ContactDbService contactDbService;
     AlphaUserInfo loginUserInfo;
-    String globalTimingId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -164,60 +161,6 @@ public class MainActivity extends BaseActivity
         new SimpleViewGestureListener(tabNews, onSimpleViewGestureListener);
         initTabFind();
         currentFragment = addOrShowFragment(getTabFragment(rgMainTab.getCheckedRadioButtonId()), currentFragment, R.id.main_fl_content);
-        tabVoice.setOnChronometerTickListener(new Chronometer.OnChronometerTickListener() {
-            @Override
-            public void onChronometerTick(Chronometer chronometer) {
-                if (!TextUtils.isEmpty(chronometer.getText())) {
-                    String timeString = (String) chronometer.getText();
-                    String[] split = timeString.split(":");
-                    if (split.length > 2)//包含小时  22:00:
-                    {
-                        int hour = 0;
-                        try {
-                            hour = Integer.parseInt(split[0]);
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                        int minute = 0;
-                        try {
-                            minute = Integer.parseInt(split[1]);
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                        int second = 0;
-                        try {
-                            second = Integer.parseInt(split[2]);
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                        broadTiming(hour, minute, second);
-
-                    } else {
-                        int minute = 0;
-                        try {
-                            minute = Integer.parseInt(split[0]);
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                        int second = 0;
-                        try {
-                            second = Integer.parseInt(split[1]);
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                        broadTiming(0, minute, second);
-                    }
-                }
-            }
-
-            private void broadTiming(int hour, int minute, int second) {
-                TimingEvent timingSingle = TimingEvent.timingSingle;
-                timingSingle.action = TimingEvent.TIMING_UPDATE_PROGRESS;
-                timingSingle.timingId = globalTimingId;
-                timingSingle.timingTimeMillisecond = (hour * 60 * 60 + minute * 60 + second) * 1_000;
-                EventBus.getDefault().post(timingSingle);
-            }
-        });
         resumeTimer();
     }
 
@@ -311,9 +254,6 @@ public class MainActivity extends BaseActivity
             if (timedLength < 0) {
                 timedLength = 0;
             }
-            globalTimingId = timer.pkId;
-            tabVoice.setBase(SystemClock.elapsedRealtime() - timedLength);
-            tabVoice.start();
         }
     }
 
@@ -322,8 +262,6 @@ public class MainActivity extends BaseActivity
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.tab_voice:
-                tabVoice.setBase(SystemClock.elapsedRealtime());
-                tabVoice.start();
                 TimerManager.getInstance().addTimer(new TimeEntity.ItemEntity());
                 break;
             default:
@@ -479,15 +417,20 @@ public class MainActivity extends BaseActivity
         if (event == null) return;
         switch (event.action) {
             case TimingEvent.TIMING_ADD:
-                globalTimingId = TimerManager.getInstance().getTimerId();
-                tabVoice.setBase(SystemClock.elapsedRealtime());
-                tabVoice.start();
+                break;
+            case TimingEvent.TIMING_UPDATE_PROGRESS:
+                tabVoice.setText(toTime(event.timingSecond));
                 break;
             case TimingEvent.TIMING_STOP:
-                globalTimingId = null;
-                tabVoice.stop();
                 break;
         }
+    }
+
+    public String toTime(long times) {
+        long hour = times / 3600;
+        long minute = times % 3600 / 60;
+        long second = times % 60;
+        return String.format("%02d:%02d:%02d", hour, minute, second);
     }
 
     @Override
