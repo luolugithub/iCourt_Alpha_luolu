@@ -12,7 +12,9 @@ import android.widget.TextView;
 
 import com.andview.refreshview.XRefreshView;
 import com.icourt.alpha.R;
+import com.icourt.alpha.activity.TimerAddActivity;
 import com.icourt.alpha.activity.TimerDetailActivity;
+import com.icourt.alpha.activity.TimerTimingActivity;
 import com.icourt.alpha.adapter.TimeAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.base.BaseFragment;
@@ -23,6 +25,7 @@ import com.icourt.alpha.entity.event.TimingEvent;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.DateUtils;
+import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 import com.icourt.alpha.widget.manager.TimerManager;
@@ -135,9 +138,13 @@ public class TabFindTimingFragment extends BaseFragment implements BaseRecyclerA
             }
         });
         refreshLayout.setPullLoadEnable(true);
-        refreshLayout.startRefresh();
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        refreshLayout.startRefresh();
+    }
 
     private void stopRefresh() {
         if (refreshLayout != null) {
@@ -283,7 +290,7 @@ public class TabFindTimingFragment extends BaseFragment implements BaseRecyclerA
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.titleAction:
-                TimerDetailActivity.launchAdd(getContext());
+                TimerAddActivity.launch(getContext());
                 break;
             default:
                 super.onClick(v);
@@ -354,7 +361,11 @@ public class TabFindTimingFragment extends BaseFragment implements BaseRecyclerA
 
     @Override
     public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
-        TimeEntity.ItemEntity item = timeAdapter.getItem(timeAdapter.getRealPos(position));
-        TimerDetailActivity.launch(getContext(), item);
+        TimeEntity.ItemEntity itemEntity = timeAdapter.getItem(timeAdapter.getRealPos(position));
+        if (itemEntity != null && StringUtils.equalsIgnoreCase(itemEntity.pkId, TimerManager.getInstance().getTimerId(), false)) {
+            TimerTimingActivity.launch(view.getContext(), itemEntity);
+        } else {
+            TimerDetailActivity.launch(view.getContext(), itemEntity);
+        }
     }
 }

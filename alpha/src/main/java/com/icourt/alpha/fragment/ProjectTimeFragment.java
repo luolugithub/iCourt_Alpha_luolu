@@ -13,6 +13,7 @@ import android.view.ViewGroup;
 import com.andview.refreshview.XRefreshView;
 import com.icourt.alpha.R;
 import com.icourt.alpha.activity.TimerDetailActivity;
+import com.icourt.alpha.activity.TimerTimingActivity;
 import com.icourt.alpha.adapter.TimeAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.adapterObserver.RefreshViewEmptyObserver;
@@ -21,8 +22,10 @@ import com.icourt.alpha.entity.bean.TimeEntity;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.ActionConstants;
+import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.view.recyclerviewDivider.TimerItemDecoration;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
+import com.icourt.alpha.widget.manager.TimerManager;
 
 import java.util.List;
 
@@ -153,7 +156,11 @@ public class ProjectTimeFragment extends BaseFragment implements BaseRecyclerAda
     public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
         if (holder.getItemViewType() == 1) {
             TimeEntity.ItemEntity itemEntity = (TimeEntity.ItemEntity) adapter.getItem(position);
-            TimerDetailActivity.launch(view.getContext(), itemEntity);
+            if (itemEntity != null && StringUtils.equalsIgnoreCase(itemEntity.pkId, TimerManager.getInstance().getTimerId(), false)) {
+                TimerTimingActivity.launch(view.getContext(), itemEntity);
+            } else {
+                TimerDetailActivity.launch(view.getContext(), itemEntity);
+            }
         }
     }
 }

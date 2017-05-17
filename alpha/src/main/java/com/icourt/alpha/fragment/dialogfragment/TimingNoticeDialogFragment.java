@@ -16,7 +16,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.icourt.alpha.R;
-import com.icourt.alpha.activity.TimerDetailActivity;
+import com.icourt.alpha.activity.TimerTimingActivity;
 import com.icourt.alpha.entity.bean.TimeEntity;
 import com.icourt.alpha.entity.event.TimingEvent;
 import com.icourt.alpha.utils.DensityUtil;
@@ -136,7 +136,7 @@ public class TimingNoticeDialogFragment extends BaseDialogFragment {
                 dismiss();
                 break;
             case R.id.notice_timing_title_tv:
-                TimerDetailActivity.launch(getContext(), TimerManager.getInstance().getTimer());
+                TimerTimingActivity.launch(getContext(), TimerManager.getInstance().getTimer());
                 dismiss();
                 break;
             case R.id.timing_empty_view:

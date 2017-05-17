@@ -179,6 +179,12 @@
             android:name=".activity.TimerDetailActivity"
             android:screenOrientation="portrait" />
         <activity
+            android:name=".activity.TimerAddActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".activity.TimerTimingActivity"
+            android:screenOrientation="portrait" />
+        <activity
             android:name=".activity.TaskDetailActivity"
             android:screenOrientation="portrait" />
         <activity

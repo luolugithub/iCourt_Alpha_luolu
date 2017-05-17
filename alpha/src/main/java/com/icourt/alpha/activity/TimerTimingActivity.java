@@ -9,6 +9,7 @@ import android.support.design.widget.AppBarLayout;
 import android.support.v4.app.Fragment;
 import android.text.TextUtils;
 import android.view.View;
+import android.widget.CheckedTextView;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -19,14 +20,12 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.icourt.alpha.R;
-import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.entity.bean.ProjectEntity;
 import com.icourt.alpha.entity.bean.TaskEntity;
 import com.icourt.alpha.entity.bean.TaskGroupEntity;
 import com.icourt.alpha.entity.bean.TimeEntity;
 import com.icourt.alpha.entity.bean.WorkType;
 import com.icourt.alpha.fragment.dialogfragment.BaseDialogFragment;
-import com.icourt.alpha.fragment.dialogfragment.CalendaerSelectDialogFragment;
 import com.icourt.alpha.fragment.dialogfragment.ProjectSelectDialogFragment;
 import com.icourt.alpha.fragment.dialogfragment.TaskSelectDialogFragment;
 import com.icourt.alpha.fragment.dialogfragment.WorkTypeSelectDialogFragment;
@@ -35,16 +34,12 @@ import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.JsonUtils;
-import com.icourt.alpha.view.CircleTimerView;
-import com.icourt.alpha.widget.dialog.BottomActionDialog;
+import com.icourt.alpha.widget.manager.TimerManager;
 import com.icourt.api.RequestUtils;
 
 import java.io.Serializable;
-import java.text.SimpleDateFormat;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.Locale;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -60,7 +55,7 @@ import retrofit2.Response;
  * version 2.0.0
  */
 
-public class TimerDetailActivity extends BaseTimerActivity
+public class TimerTimingActivity extends BaseTimerActivity
         implements ProjectSelectDialogFragment.OnProjectTaskGroupSelectListener,
         OnFragmentCallBackListener {
 
@@ -73,21 +68,15 @@ public class TimerDetailActivity extends BaseTimerActivity
     @BindView(R.id.titleContent)
     TextView titleContent;
     @BindView(R.id.titleAction)
-    ImageView titleAction;
+    CheckedTextView titleAction;
     @BindView(R.id.titleView)
     AppBarLayout titleView;
-    @BindView(R.id.minus_time_image)
-    ImageView minusTimeImage;
-    @BindView(R.id.circleTimerView)
-    CircleTimerView circleTimerView;
-    @BindView(R.id.add_time_image)
-    ImageView addTimeImage;
-    @BindView(R.id.use_time_date)
-    TextView useTimeDate;
-    @BindView(R.id.start_time_min_tv)
-    TextView startTimeMinTv;
-    @BindView(R.id.stop_time_min_tv)
-    TextView stopTimeMinTv;
+    @BindView(R.id.timing_tv)
+    TextView timingTv;
+    @BindView(R.id.start_time_tv)
+    TextView startTimeTv;
+    @BindView(R.id.stop_time_tv)
+    TextView stopTimeTv;
     @BindView(R.id.time_name_tv)
     EditText timeNameTv;
     @BindView(R.id.project_name_tv)
@@ -102,6 +91,7 @@ public class TimerDetailActivity extends BaseTimerActivity
     TextView taskNameTv;
     @BindView(R.id.task_layout)
     LinearLayout taskLayout;
+
     private ProjectEntity selectedProjectEntity;
     private WorkType selectedWorkType;
     private TaskEntity.TaskItemEntity selectedTaskItem;
@@ -110,72 +100,36 @@ public class TimerDetailActivity extends BaseTimerActivity
                               @NonNull TimeEntity.ItemEntity timeEntity) {
         if (context == null) return;
         if (timeEntity == null) return;
-        Intent intent = new Intent(context, TimerDetailActivity.class);
+        Intent intent = new Intent(context, TimerTimingActivity.class);
         intent.putExtra(KEY_TIME, timeEntity);
         context.startActivity(intent);
     }
 
-
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_timer_detail);
+        setContentView(R.layout.activity_timer_timing);
         ButterKnife.bind(this);
         initView();
     }
+
 
     @Override
     protected void initView() {
         super.initView();
         itemEntity = (TimeEntity.ItemEntity) getIntent().getSerializableExtra(KEY_TIME);
         setTitle("计时详情");
-        ImageView titleActionImage = getTitleActionImage();
-        if (titleActionImage != null) {
-            titleActionImage.setImageResource(R.mipmap.header_icon_more);
+        TextView titleActionTextView = getTitleActionTextView();
+        if (titleActionTextView != null) {
+            titleActionTextView.setText("完成");
         }
-        circleTimerView.setOneCircle(true);
-        circleTimerView.setHintText("");
-        circleTimerView.setCircleTimerListener(new CircleTimerView.CircleTimerListener() {
-            @Override
-            public void onTimerStop() {
-
-            }
-
-            @Override
-            public void onTimerStart(int time) {
-
-            }
-
-            @Override
-            public void onTimerPause(int time) {
-
-            }
-
-            @Override
-            public void onTimerTimingValueChanged(int time) {
-            }
-
-            @Override
-            public void onTimerSetValueChanged(int time) {
-                log("---------->onTimerSetValueChanged:" + time);
-                itemEntity.useTime = time * 1000;
-            }
-
-            @Override
-            public void onTimerSetValueChange(int time) {
-            }
-        });
-
         if (itemEntity != null) {
-            useTimeDate.setText(DateUtils.getTimeDateFormatYear(itemEntity.startTime));
-            startTimeMinTv.setText(DateUtils.getTimeDurationDate(itemEntity.startTime));
-            stopTimeMinTv.setText(DateUtils.getTimeDurationDate(itemEntity.endTime));
-
+            timingTv.setText(DateUtils.getTimeDateFormatYear(itemEntity.startTime));
+            startTimeTv.setText(DateUtils.getTimeDurationDate(itemEntity.startTime));
             timeNameTv.setText(itemEntity.name);
             projectNameTv.setText(TextUtils.isEmpty(itemEntity.matterName) ? "未设置" : itemEntity.matterName);
             worktypeNameTv.setText(TextUtils.isEmpty(itemEntity.workTypeName) ? "未设置" : itemEntity.workTypeName);
             taskNameTv.setText(TextUtils.isEmpty(itemEntity.taskPkId) ? "未关联" : itemEntity.taskPkId);
-            circleTimerView.setCurrentTime((int) itemEntity.useTime / 1000);
         }
     }
 
@@ -188,43 +142,17 @@ public class TimerDetailActivity extends BaseTimerActivity
             R.id.use_time_date,
             R.id.start_time_min_tv,
             R.id.stop_time_min_tv,
-            R.id.titleAction})
+            R.id.titleAction,
+            R.id.stop_time_tv})
     @Override
     public void onClick(View view) {
         super.onClick(view);
         switch (view.getId()) {
             case R.id.titleAction:
-                new BottomActionDialog(getContext(),
-                        null,
-                        Arrays.asList("删除"),
-                        new BottomActionDialog.OnActionItemClickListener() {
-                            @Override
-                            public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
-                                dialog.dismiss();
-                                deleteTiming(itemEntity.pkId);
-                            }
-                        }).show();
-                break;
-            case R.id.minus_time_image://－时间 //5分钟
-                if (circleTimerView.getCurrentTime() >= 5 * 60) {
-                    circleTimerView.setCurrentTime(circleTimerView.getCurrentTime() - 5 * 60);
-                }
-                break;
-            case R.id.add_time_image://＋时间
-                if (circleTimerView.getCurrentTime() < (24 * 60 * 60 - 5 * 60)) {
-                    circleTimerView.setCurrentTime(circleTimerView.getCurrentTime() + 5 * 60);
-                } else {
-                    circleTimerView.setCurrentTime(24 * 60 * 60);
-                }
+                saveTiming();
                 break;
             case R.id.use_time_date:
                 showCalendaerSelectDialogFragment();
-                break;
-            case R.id.start_time_min_tv:
-                showDateSelect(startTimeMinTv);
-                break;
-            case R.id.stop_time_min_tv:
-                showDateSelect(stopTimeMinTv);
                 break;
             case R.id.project_layout://所属项目
                 showProjectSelectDialogFragment();
@@ -242,6 +170,10 @@ public class TimerDetailActivity extends BaseTimerActivity
                     return;
                 }
                 showTaskSelectDialogFragment(selectedProjectEntity.pkId);
+                break;
+            case R.id.stop_time_tv:
+                TimerManager.getInstance().stopTimer();
+                finish();
                 break;
         }
     }
@@ -266,8 +198,6 @@ public class TimerDetailActivity extends BaseTimerActivity
     }
 
 
-
-
     @Override
     public void onProjectTaskGroupSelect(ProjectEntity projectEntity, TaskGroupEntity taskGroupEntity) {
         if (projectEntity == null) return;
@@ -285,12 +215,6 @@ public class TimerDetailActivity extends BaseTimerActivity
         }
     }
 
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        saveTiming();
-    }
 
     private void saveTiming() {
         //实时保存
@@ -311,11 +235,19 @@ public class TimerDetailActivity extends BaseTimerActivity
             if (jsonBody.has("workTypeName")) {
                 jsonBody.remove("workTypeName");
             }
+            showLoadingDialog(null);
             getApi().timingUpdate(RequestUtils.createJsonBody(jsonBody.toString()))
                     .enqueue(new SimpleCallBack<JsonElement>() {
                         @Override
                         public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
+                            dismissLoadingDialog();
+                            finish();
+                        }
 
+                        @Override
+                        public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
+                            super.onFailure(call, t);
+                            dismissLoadingDialog();
                         }
                     });
         }
@@ -334,17 +266,6 @@ public class TimerDetailActivity extends BaseTimerActivity
             if (serializable instanceof TaskEntity.TaskItemEntity) {
                 selectedTaskItem = (TaskEntity.TaskItemEntity) serializable;
                 taskNameTv.setText(selectedTaskItem.name);
-            }
-        } else if (fragment instanceof CalendaerSelectDialogFragment && params != null) {
-            long aLong = params.getLong(BaseDialogFragment.KEY_FRAGMENT_RESULT);
-            if (aLong > 0) {
-                if (DateUtils.isOverToday(aLong)) {
-                    showTopSnackBar("不能选择超过当前时间,请重写选择");
-                } else {
-                    Calendar calendar = Calendar.getInstance();
-                    calendar.setTimeInMillis(aLong);
-                    useTimeDate.setText(new SimpleDateFormat("yyyy年MM月dd日", Locale.getDefault()).format(calendar.getTime()));
-                }
             }
         }
     }

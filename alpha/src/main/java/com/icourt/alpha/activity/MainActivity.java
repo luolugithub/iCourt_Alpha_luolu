@@ -47,9 +47,6 @@ import com.icourt.alpha.view.CheckableLayout;
 import com.icourt.alpha.widget.manager.TimerManager;
 import com.icourt.alpha.widget.popupwindow.BaseListActionItemPop;
 import com.icourt.alpha.widget.popupwindow.ListActionItemPop;
-import com.netease.nimlib.sdk.NIMClient;
-import com.netease.nimlib.sdk.StatusCode;
-import com.netease.nimlib.sdk.msg.MsgService;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -424,17 +421,6 @@ public class MainActivity extends BaseActivity
         }
     }
 
-    /**
-     * 获取 本地未读消息
-     *
-     * @return
-     */
-    private int getLocalUnReadNum() {
-        if (NIMClient.getStatus() == StatusCode.LOGINED) {
-            return NIMClient.getService(MsgService.class).getTotalUnreadCount();
-        }
-        return 0;
-    }
 
     @Override
     public void onFragmentCallBack(Fragment fragment, int type, Bundle params) {
