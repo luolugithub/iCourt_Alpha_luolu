@@ -17,6 +17,7 @@ import android.widget.TextView;
 
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.TaskOwerListAdapter;
+import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.entity.bean.TaskEntity;
 import com.icourt.alpha.entity.bean.TaskOwerEntity;
 import com.icourt.alpha.http.callback.SimpleCallBack;
@@ -31,6 +32,7 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 import butterknife.Unbinder;
 import retrofit2.Call;
 import retrofit2.Response;
@@ -43,7 +45,7 @@ import retrofit2.Response;
  * version 2.0.0
  */
 
-public class TaskAllotSelectDialogFragment extends BaseDialogFragment {
+public class TaskAllotSelectDialogFragment extends BaseDialogFragment implements BaseRecyclerAdapter.OnItemClickListener {
 
     Unbinder unbinder;
     @BindView(R.id.bt_cancel)
@@ -103,9 +105,11 @@ public class TaskAllotSelectDialogFragment extends BaseDialogFragment {
         recyclerview.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerview.addItemDecoration(ItemDecorationUtils.getCommFull05Divider(getContext(), true));
         recyclerview.setAdapter(taskOwerListAdapter = new TaskOwerListAdapter());
+        taskOwerListAdapter.setOnItemClickListener(this);
         getData(true);
     }
 
+    @OnClick({R.id.bt_ok, R.id.bt_cancel})
     @Override
     public void onClick(View v) {
         super.onClick(v);
@@ -119,6 +123,7 @@ public class TaskAllotSelectDialogFragment extends BaseDialogFragment {
                         onFragmentCallBackListener.onFragmentCallBack(TaskAllotSelectDialogFragment.this, 0, bunble);
                     }
                 }
+                dismiss();
                 break;
             case R.id.bt_cancel:
                 dismiss();
@@ -169,5 +174,10 @@ public class TaskAllotSelectDialogFragment extends BaseDialogFragment {
     public void onDestroyView() {
         super.onDestroyView();
         unbinder.unbind();
+    }
+
+    @Override
+    public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
+        taskOwerListAdapter.toggleSelected(position);
     }
 }

@@ -27,6 +27,7 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.icourt.alpha.R;
@@ -35,7 +36,9 @@ import com.icourt.alpha.adapter.baseadapter.BaseFragmentAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.entity.bean.TaskEntity;
+import com.icourt.alpha.entity.bean.TimeEntity;
 import com.icourt.alpha.entity.event.TaskActionEvent;
+import com.icourt.alpha.entity.event.TimingEvent;
 import com.icourt.alpha.fragment.TaskAttachmentFragment;
 import com.icourt.alpha.fragment.TaskCheckItemFragment;
 import com.icourt.alpha.fragment.TaskDetailFragment;
@@ -45,13 +48,18 @@ import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.GlideUtils;
+import com.icourt.alpha.utils.LogUtils;
 import com.icourt.alpha.widget.dialog.BottomActionDialog;
+import com.icourt.alpha.widget.manager.TimerManager;
 import com.icourt.api.RequestUtils;
 
 import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -142,6 +150,7 @@ public class TaskDetailActivity extends BaseActivity implements OnFragmentCallBa
     protected void initView() {
         super.initView();
         setTitle("");
+        EventBus.getDefault().register(this);
         taskId = getIntent().getStringExtra(KEY_TASK_ID);
         baseFragmentAdapter = new BaseFragmentAdapter(getSupportFragmentManager());
         viewpager.setAdapter(baseFragmentAdapter);
@@ -150,7 +159,7 @@ public class TaskDetailActivity extends BaseActivity implements OnFragmentCallBa
         getData(false);
     }
 
-    @OnClick({R.id.titleAction, R.id.titleAction2, R.id.comment_layout, R.id.task_checkbox})
+    @OnClick({R.id.titleAction, R.id.titleAction2, R.id.comment_layout, R.id.task_checkbox, R.id.task_user_layout, R.id.task_users_layout, R.id.task_start_iamge})
     @Override
     public void onClick(View v) {
         super.onClick(v);
@@ -172,6 +181,9 @@ public class TaskDetailActivity extends BaseActivity implements OnFragmentCallBa
                 } else {
                     showTopSnackBar("请优先选择项目");
                 }
+                break;
+            case R.id.task_start_iamge://开始计时
+                TimerManager.getInstance().addTimer(getTimer());
                 break;
             case R.id.task_checkbox://  完成／取消完成
                 if (taskItemEntity.state) {
@@ -198,6 +210,63 @@ public class TaskDetailActivity extends BaseActivity implements OnFragmentCallBa
                 break;
             case R.id.comment_layout://更多评论动态
                 CommentListActivity.launch(this, taskId);
+                break;
+        }
+    }
+
+    /**
+     * 获取添加计时实体
+     *
+     * @return
+     */
+    private TimeEntity.ItemEntity getTimer() {
+        TimeEntity.ItemEntity itemEntity = new TimeEntity.ItemEntity();
+        if (taskItemEntity != null) {
+            itemEntity.taskPkId = taskItemEntity.id;
+            itemEntity.name = taskItemEntity.name;
+            itemEntity.workDate = DateUtils.millis();
+            itemEntity.createUserId = getLoginUserId();
+            itemEntity.username = getLoginUserInfo().getName();
+            itemEntity.startTime = DateUtils.millis();
+            if (taskItemEntity.matter != null) {
+                itemEntity.matterPkId = taskItemEntity.matter.id;
+            }
+        }
+        return itemEntity;
+    }
+
+    public String toTime(long times) {
+        long hour = times / 3600;
+        long minute = times % 3600 / 60;
+        long second = times % 60;
+        return String.format(Locale.CHINA, "%02d:%02d:%02d", hour, minute, second);
+    }
+
+    /**
+     * 计时事件
+     *
+     * @param event
+     */
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onTimerEvent(TimingEvent event) {
+        if (event == null) return;
+        switch (event.action) {
+            case TimingEvent.TIMING_ADD:
+                taskStartIamge.setImageResource(R.drawable.orange_side_dot_bg);
+                break;
+            case TimingEvent.TIMING_UPDATE_PROGRESS:
+                LogUtils.e("TimingEvent.TIMING_UPDATE_PROGRESS -----------" + event.timingTimeMillisecond);
+                TimeEntity.ItemEntity itemEntity = TimeEntity.ItemEntity.singleInstace;
+                itemEntity.state = TimeEntity.ItemEntity.TIMER_STATE_START;
+                itemEntity.useTime = event.timingTimeMillisecond;
+                taskTime.setText(toTime(itemEntity.useTime / 1000));
+                break;
+            case TimingEvent.TIMING_STOP:
+                taskStartIamge.setImageResource(R.mipmap.icon_start_20);
+                TimeEntity.ItemEntity itemEntity2 = TimeEntity.ItemEntity.singleInstace;
+                itemEntity2.state = TimeEntity.ItemEntity.TIMER_STATE_STOP;
+                itemEntity2.useTime = event.timingTimeMillisecond;
+                taskTime.setText(DateUtils.getTimeDurationDate(taskItemEntity.timingSum + itemEntity2.useTime));
                 break;
         }
     }
@@ -439,7 +508,13 @@ public class TaskDetailActivity extends BaseActivity implements OnFragmentCallBa
             jsonObject.addProperty("state", itemEntity.state);
             jsonObject.addProperty("valid", true);
             jsonObject.addProperty("updateTime", DateUtils.millis());
-            jsonObject.addProperty("assignTo", getAssignToStr(itemEntity.attendeeUsers));
+            JsonArray jsonarr = new JsonArray();
+            if (itemEntity.attendeeUsers != null) {
+                for (TaskEntity.TaskItemEntity.AttendeeUserEntity attendeeUser : itemEntity.attendeeUsers) {
+                    jsonarr.add(attendeeUser.userId);
+                }
+            }
+            jsonObject.add("attendees", jsonarr);
             return jsonObject.toString();
         } catch (Exception e) {
             e.printStackTrace();
@@ -447,24 +522,6 @@ public class TaskDetailActivity extends BaseActivity implements OnFragmentCallBa
         return null;
     }
 
-    /**
-     * 获取负责人ids
-     *
-     * @param attusers
-     * @return
-     */
-    private String getAssignToStr(List<TaskEntity.TaskItemEntity.AttendeeUserEntity> attusers) {
-        if (attusers != null) {
-            if (attusers.size() > 0) {
-                StringBuffer buffer = new StringBuffer();
-                for (TaskEntity.TaskItemEntity.AttendeeUserEntity attendeeUser : attusers) {
-                    buffer.append(attendeeUser.userId).append(",");
-                }
-                return buffer.toString().substring(0, buffer.toString().length() - 1);
-            }
-        }
-        return null;
-    }
 
     @Override
     public boolean dispatchTouchEvent(MotionEvent ev) {
