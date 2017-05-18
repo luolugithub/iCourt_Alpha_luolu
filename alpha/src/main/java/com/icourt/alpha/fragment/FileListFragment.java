@@ -90,6 +90,18 @@ public class FileListFragment extends BaseFragment {
         return view;
     }
 
+    @QueryFileType
+    private int getQueryFileType() {
+        switch (getArguments().getInt(KEY_FILE_TYPE)) {
+            case TYPE_ALL_FILE:
+                return TYPE_ALL_FILE;
+            case TYPE_MY_FILE:
+                return TYPE_MY_FILE;
+            default:
+                return TYPE_MY_FILE;
+        }
+    }
+
 
     @Override
     protected void initView() {
@@ -129,21 +141,32 @@ public class FileListFragment extends BaseFragment {
                 }
             }
         }
-        getChatApi().getMyFiles(msgid)
-                .enqueue(new SimpleCallBack<List<IMMessageCustomBody>>() {
-                    @Override
-                    public void onSuccess(Call<ResEntity<List<IMMessageCustomBody>>> call, Response<ResEntity<List<IMMessageCustomBody>>> response) {
-                        fileAdapter.bindData(isRefresh, response.body().result);
-                        stopRefresh();
-                        enableLoadMore(response.body().result);
-                    }
+        Call<ResEntity<List<IMMessageCustomBody>>> call;
+        switch (getQueryFileType()) {
+            case TYPE_ALL_FILE:
+                call = getChatApi().getMyAllFiles(msgid);
+                break;
+            case TYPE_MY_FILE:
+                call = getChatApi().getMyFiles(msgid);
+                break;
+            default:
+                call = getChatApi().getMyFiles(msgid);
+                break;
+        }
+        call.enqueue(new SimpleCallBack<List<IMMessageCustomBody>>() {
+            @Override
+            public void onSuccess(Call<ResEntity<List<IMMessageCustomBody>>> call, Response<ResEntity<List<IMMessageCustomBody>>> response) {
+                fileAdapter.bindData(isRefresh, response.body().result);
+                stopRefresh();
+                enableLoadMore(response.body().result);
+            }
 
-                    @Override
-                    public void onFailure(Call<ResEntity<List<IMMessageCustomBody>>> call, Throwable t) {
-                        super.onFailure(call, t);
-                        stopRefresh();
-                    }
-                });
+            @Override
+            public void onFailure(Call<ResEntity<List<IMMessageCustomBody>>> call, Throwable t) {
+                super.onFailure(call, t);
+                stopRefresh();
+            }
+        });
     }
 
     private void enableLoadMore(List result) {

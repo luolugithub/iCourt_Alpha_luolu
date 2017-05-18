@@ -263,7 +263,7 @@ public interface ApiChatService {
      */
     @GET("im/v1/msgs/stars/ids")
     Call<ResEntity<List<Long>>> msgQueryAllCollectedIds(@Query("ope") @Const.CHAT_TYPE int ope,
-                                                          @Query("to") String to);
+                                                        @Query("to") String to);
 
     /**
      * 获取所有钉的消息id
@@ -274,7 +274,7 @@ public interface ApiChatService {
      */
     @GET("im/v1/msgs/pins/ids")
     Call<ResEntity<List<Long>>> msgQueryAllDingIds(@Query("ope") @Const.CHAT_TYPE int ope,
-                                                     @Query("to") String to);
+                                                   @Query("to") String to);
 
     /**
      * 撤回 消息
@@ -296,6 +296,16 @@ public interface ApiChatService {
      */
     @GET("im/v1/msgs/files/me")
     Call<ResEntity<List<IMMessageCustomBody>>> getMyFiles(@Query("msg_id") long msg_id);
+
+    /**
+     * 获取我的所有文件
+     * 文档地址：https://www.showdoc.cc/1620156?page_id=14909461
+     *
+     * @param msg_id
+     * @return
+     */
+    @GET("im/v1/msgs/files/all")
+    Call<ResEntity<List<IMMessageCustomBody>>> getMyAllFiles(@Query("msg_id") long msg_id);
 
     /**
      * 获取  @我  的消息

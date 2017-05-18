@@ -960,7 +960,7 @@ public abstract class ChatBaseActivity
             ChatAdapter chatAdapter = (ChatAdapter) adapter;
             final IMMessageCustomBody iMMessageCustomBody = chatAdapter.getItem(position);
             if (iMMessageCustomBody == null) return false;
-            if (iMMessageCustomBody.id<=0) return false;
+            if (iMMessageCustomBody.id <= 0) return false;
             final List<String> menuItems = new ArrayList<>();
             switch (iMMessageCustomBody.show_type) {
                 case MSG_TYPE_AT:
@@ -968,40 +968,40 @@ public abstract class ChatBaseActivity
                     menuItems.clear();
                     menuItems.addAll(Arrays.asList("复制",
                             isDinged(iMMessageCustomBody.id) ? "取消钉" : "钉",
-                            isCollected(iMMessageCustomBody.id) ? "取消收藏" : "收藏",
-                            "转任务"));
+                            isCollected(iMMessageCustomBody.id) ? "取消收藏" : "收藏", "转任务"));
                     if (isSendMsg(iMMessageCustomBody.from)
                             && canRevokeMsg(iMMessageCustomBody.send_time)) {
                         menuItems.add("撤回");
                     }
+                    menuItems.add("转发");
                     break;
                 case MSG_TYPE_FILE:
                     menuItems.clear();
                     menuItems.addAll(Arrays.asList(
                             isDinged(iMMessageCustomBody.id) ? "取消钉" : "钉",
-                            isCollected(iMMessageCustomBody.id) ? "取消收藏" : "收藏",
-                            "转任务"));
+                            isCollected(iMMessageCustomBody.id) ? "取消收藏" : "收藏"));
                     if (isSendMsg(iMMessageCustomBody.from)
                             && canRevokeMsg(iMMessageCustomBody.send_time)) {
                         menuItems.add("撤回");
                     }
+                    menuItems.add("转发");
                     break;
                 case MSG_TYPE_IMAGE:
                     menuItems.clear();
                     menuItems.addAll(Arrays.asList(
                             isDinged(iMMessageCustomBody.id) ? "取消钉" : "钉",
-                            isCollected(iMMessageCustomBody.id) ? "取消收藏" : "收藏",
-                            "转任务"));
+                            isCollected(iMMessageCustomBody.id) ? "取消收藏" : "收藏"));
                     if (isSendMsg(iMMessageCustomBody.from)
                             && canRevokeMsg(iMMessageCustomBody.send_time)) {
                         menuItems.add("撤回");
                     }
+                    menuItems.add("转发");
                     break;
-                case MSG_TYPE_DING://不能撤回 收藏的是钉的消息体,钉的消息[文本]可以转任务
+                case MSG_TYPE_DING://不能撤回 不能转发 收藏的是钉的消息体,钉的消息[文本]可以转任务
                     menuItems.clear();
                     menuItems.addAll(Arrays.asList(
-                            isCollected(iMMessageCustomBody.id) ? "取消收藏" : "收藏"
-                            , "转任务"));
+                            isCollected(iMMessageCustomBody.ext != null ? iMMessageCustomBody.ext.id : 0) ? "取消收藏" : "收藏"
+                    ));
                     break;
                 case MSG_TYPE_SYS:
                     break;
@@ -1009,16 +1009,13 @@ public abstract class ChatBaseActivity
                     menuItems.clear();
                     menuItems.addAll(Arrays.asList(
                             isDinged(iMMessageCustomBody.id) ? "取消钉" : "钉",
-                            isCollected(iMMessageCustomBody.id) ? "取消收藏" : "收藏"
-                            , "转任务"));
+                            isCollected(iMMessageCustomBody.id) ? "取消收藏" : "收藏"));
+                    menuItems.add("转发");
                     break;
                 case MSG_TYPE_ALPHA://暂时不用处理
                     break;
                 case MSG_TYPE_VOICE://暂时不用处理
                     break;
-            }
-            if (!menuItems.contains("转发")) {
-                menuItems.add("转发");
             }
             showMsgActionDialog(iMMessageCustomBody, menuItems);
         }
@@ -1081,9 +1078,27 @@ public abstract class ChatBaseActivity
                         } else if (TextUtils.equals(actionName, "取消钉")) {
                             msgActionDing(false, customIMBody.id);
                         } else if (TextUtils.equals(actionName, "收藏")) {
-                            msgActionCollect(customIMBody.id);
+                            switch (customIMBody.show_type) {
+                                case MSG_TYPE_DING:
+                                    if (customIMBody.ext != null) {
+                                        msgActionCollect(customIMBody.ext.id);
+                                    }
+                                    break;
+                                default:
+                                    msgActionCollect(customIMBody.id);
+                                    break;
+                            }
                         } else if (TextUtils.equals(actionName, "取消收藏")) {
-                            msgActionCollectCancel(customIMBody.id);
+                            switch (customIMBody.show_type) {
+                                case MSG_TYPE_DING:
+                                    if (customIMBody.ext != null) {
+                                        msgActionCollectCancel(customIMBody.ext.id);
+                                    }
+                                    break;
+                                default:
+                                    msgActionCollectCancel(customIMBody.id);
+                                    break;
+                            }
                         } else if (TextUtils.equals(actionName, "转任务")) {
                             msgActionConvert2Task(customIMBody);
                         } else if (TextUtils.equals(actionName, "撤回")) {
@@ -1096,7 +1111,7 @@ public abstract class ChatBaseActivity
     }
 
     /**
-     * 消息转任务
+     * 消息转任务  目前只是文本消息转任务
      * 文件 变成附件
      *
      * @param customIMBody
@@ -1244,7 +1259,7 @@ public abstract class ChatBaseActivity
      * @param msgId
      */
     protected final void msgActionRevoke(@NonNull long msgId, @Nullable final IMMessage imMessage) {
-        if(msgId<=0) return;
+        if (msgId <= 0) return;
         //网络
         getChatApi().msgRevoke(msgId)
                 .enqueue(new SimpleCallBack<JsonElement>() {
