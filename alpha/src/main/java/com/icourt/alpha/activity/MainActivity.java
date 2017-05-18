@@ -28,6 +28,7 @@ import com.icourt.alpha.db.dbservice.ContactDbService;
 import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.icourt.alpha.entity.bean.ItemsEntityImp;
+import com.icourt.alpha.entity.bean.PageEntity;
 import com.icourt.alpha.entity.bean.TimeEntity;
 import com.icourt.alpha.entity.event.TimingEvent;
 import com.icourt.alpha.fragment.TabFindFragment;
@@ -166,7 +167,7 @@ public class MainActivity extends BaseActivity
         initTabFind();
         tabNews.setChecked(true);
         currentFragment = addOrShowFragment(getTabFragment(R.id.tab_news), currentFragment, R.id.main_fl_content);
-        resumeTimer();
+        getTimering();
     }
 
 
@@ -252,10 +253,6 @@ public class MainActivity extends BaseActivity
     }
 
 
-    private void resumeTimer() {
-        TimerManager.getInstance().resumeTimer();
-    }
-
     @OnClick({R.id.tab_voice,
             R.id.tab_news,
             R.id.tab_task,
@@ -293,6 +290,7 @@ public class MainActivity extends BaseActivity
                 checkedFragment(v.getId());
                 break;
             case R.id.tab_voice:
+                getTimering();
                 if (TimerManager.getInstance().hasTimer()) {
                     showTimingDialogFragment();
                 } else {
@@ -419,6 +417,46 @@ public class MainActivity extends BaseActivity
                 badge.setBadgeNumber(num);
             }
         }
+    }
+
+    private void getTimering() {
+        getApi().timerQuery(0, 20, 0)
+                .enqueue(new SimpleCallBack<PageEntity<TimeEntity.ItemEntity>>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<PageEntity<TimeEntity.ItemEntity>>> call, Response<ResEntity<PageEntity<TimeEntity.ItemEntity>>> response) {
+                        if (response.body().result != null
+                                && response.body().result.items != null
+                                && !response.body().result.items.isEmpty()) {
+
+                            List<TimeEntity.ItemEntity> itemEntities = response.body().result.items;
+
+                            TimeEntity.ItemEntity timer = TimerManager.getInstance().getTimer();
+                            int indexOf = itemEntities.indexOf(timer);
+                            //包含本地计时 更新数据
+                            if (indexOf >= 0) {
+                                TimerManager.getInstance().updateTimer(itemEntities.get(indexOf));
+                            } else {
+                                //找第一个正在计时的项目
+                                for (TimeEntity.ItemEntity itemEntity : response.body().result.items) {
+                                    if (itemEntity == null) continue;
+                                    if (itemEntity.state == TimeEntity.TIMER_STATE_ING_TYPE) {
+                                        TimerManager.getInstance().resumeTimer(itemEntity);
+                                        break;
+                                    }
+                                }
+                            }
+                        } else {
+                            //关闭本地
+                            TimerManager.getInstance().stopTimer();
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<ResEntity<PageEntity<TimeEntity.ItemEntity>>> call, Throwable t) {
+                        super.onFailure(call, t);
+                        TimerManager.getInstance().resumeTimer();
+                    }
+                });
     }
 
 

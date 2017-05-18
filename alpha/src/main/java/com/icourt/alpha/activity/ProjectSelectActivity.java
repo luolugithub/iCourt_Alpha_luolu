@@ -79,7 +79,7 @@ public class ProjectSelectActivity extends BaseActivity implements BaseRecyclerA
         seaFileRepoId = getIntent().getStringExtra("seaFileRepoId");
         filePath = getIntent().getStringExtra("filePath");
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        recyclerView.setAdapter(projectAdapter = new ProjectAdapter());
+        recyclerView.setAdapter(projectAdapter = new ProjectAdapter(false));
         projectAdapter.setOnItemClickListener(this);
         getData(true);
     }

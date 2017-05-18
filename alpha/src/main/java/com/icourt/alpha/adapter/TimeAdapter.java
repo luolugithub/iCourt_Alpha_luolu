@@ -115,7 +115,7 @@ public class TimeAdapter extends BaseArrayRecyclerAdapter<TimeEntity.ItemEntity>
         } else {
             timer_icon.setImageResource(R.mipmap.icon_start_20);
             try {
-                timer_count_tv.setText(DateUtils.getTimeDurationDate(timeEntity.useTime));
+                timer_count_tv.setText(getHm(timeEntity.useTime));
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -138,7 +138,7 @@ public class TimeAdapter extends BaseArrayRecyclerAdapter<TimeEntity.ItemEntity>
                     dayTimingLength += item.useTime;
                 }
             }
-            divider_time_count.setText(DateUtils.getTimeDurationDate(dayTimingLength));
+            divider_time_count.setText(getHm(dayTimingLength));
         } else {
             divider_ll.setVisibility(View.GONE);
         }
@@ -150,6 +150,13 @@ public class TimeAdapter extends BaseArrayRecyclerAdapter<TimeEntity.ItemEntity>
         long minute = times % 3600 / 60;
         long second = times % 60;
         return String.format("%02d:%02d:%02d", hour, minute, second);
+    }
+
+    public String getHm(long times) {
+        times /= 1000;
+        long hour = times / 3600;
+        long minute = times % 3600 / 60;
+        return String.format("%02d:%02d", hour, minute);
     }
 
     /**

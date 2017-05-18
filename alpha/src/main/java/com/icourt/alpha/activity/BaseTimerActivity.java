@@ -10,7 +10,7 @@ import android.support.v7.app.AlertDialog;
 import com.google.gson.JsonElement;
 import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.fragment.dialogfragment.CalendaerSelectDialogFragment;
-import com.icourt.alpha.fragment.dialogfragment.ProjectSelectDialogFragment;
+import com.icourt.alpha.fragment.dialogfragment.ProjectSimpleSelectDialogFragment;
 import com.icourt.alpha.fragment.dialogfragment.TaskSelectDialogFragment;
 import com.icourt.alpha.fragment.dialogfragment.WorkTypeSelectDialogFragment;
 import com.icourt.alpha.http.callback.SimpleCallBack;
@@ -61,13 +61,13 @@ public class BaseTimerActivity extends BaseActivity {
      * 展示选择项目对话框
      */
     protected final void showProjectSelectDialogFragment() {
-        String tag = ProjectSelectDialogFragment.class.getSimpleName();
+        String tag = ProjectSimpleSelectDialogFragment.class.getSimpleName();
         FragmentTransaction mFragTransaction = getSupportFragmentManager().beginTransaction();
         Fragment fragment = getSupportFragmentManager().findFragmentByTag(tag);
         if (fragment != null) {
             mFragTransaction.remove(fragment);
         }
-        ProjectSelectDialogFragment.newInstance()
+        ProjectSimpleSelectDialogFragment.newInstance()
                 .show(mFragTransaction, tag);
     }
 

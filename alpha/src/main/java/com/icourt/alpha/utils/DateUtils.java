@@ -132,10 +132,11 @@ public class DateUtils {
 
     /**
      * 获取时长 00:11
-     *
+     *  bug
      * @param milliseconds
      * @return
      */
+    @Deprecated
     public static String getTimeDurationDate(long milliseconds) {
         SimpleDateFormat formatter = new SimpleDateFormat("HH:mm");
         return formatter.format(milliseconds);
@@ -294,6 +295,7 @@ public class DateUtils {
         currentDate.set(Calendar.DAY_OF_WEEK, Calendar.SUNDAY);
         return currentDate.getTime().getTime();
     }
+
 
 
     public static boolean isToday(long millis) {

@@ -24,12 +24,11 @@ import com.google.gson.JsonParseException;
 import com.icourt.alpha.R;
 import com.icourt.alpha.entity.bean.ProjectEntity;
 import com.icourt.alpha.entity.bean.TaskEntity;
-import com.icourt.alpha.entity.bean.TaskGroupEntity;
 import com.icourt.alpha.entity.bean.TimeEntity;
 import com.icourt.alpha.entity.bean.WorkType;
 import com.icourt.alpha.entity.event.TimingEvent;
 import com.icourt.alpha.fragment.dialogfragment.BaseDialogFragment;
-import com.icourt.alpha.fragment.dialogfragment.ProjectSelectDialogFragment;
+import com.icourt.alpha.fragment.dialogfragment.ProjectSimpleSelectDialogFragment;
 import com.icourt.alpha.fragment.dialogfragment.TaskSelectDialogFragment;
 import com.icourt.alpha.fragment.dialogfragment.WorkTypeSelectDialogFragment;
 import com.icourt.alpha.http.callback.SimpleCallBack;
@@ -65,7 +64,7 @@ import static com.icourt.alpha.R.id.timing_tv;
  */
 
 public class TimerTimingActivity extends BaseTimerActivity
-        implements ProjectSelectDialogFragment.OnProjectTaskGroupSelectListener,
+        implements
         OnFragmentCallBackListener {
 
     private static final String KEY_TIME = "key_time";
@@ -218,20 +217,6 @@ public class TimerTimingActivity extends BaseTimerActivity
         pvTime.show();
     }
 
-
-    @Override
-    public void onProjectTaskGroupSelect(ProjectEntity projectEntity, TaskGroupEntity taskGroupEntity) {
-        if (projectEntity == null) return;
-        if (!TextUtils.equals(itemEntity.matterPkId, projectEntity.pkId)) {
-            itemEntity.taskPkId = null;
-            itemEntity.workTypeId = null;
-            worktypeNameTv.setText("未选择");
-            taskNameTv.setText("未关联");
-        }
-        projectNameTv.setText(projectEntity.name);
-    }
-
-
     private void saveTiming() {
         //实时保存
         if (itemEntity != null) {
@@ -250,6 +235,9 @@ public class TimerTimingActivity extends BaseTimerActivity
             }
             if (jsonBody.has("workTypeName")) {
                 jsonBody.remove("workTypeName");
+            }
+            if (jsonBody.has("endTime")) {
+                jsonBody.remove("endTime");
             }
             showLoadingDialog(null);
             getApi().timingUpdate(RequestUtils.createJsonBody(jsonBody.toString()))
@@ -283,6 +271,22 @@ public class TimerTimingActivity extends BaseTimerActivity
                 itemEntity.taskPkId = ((TaskEntity.TaskItemEntity) serializable).id;
                 taskNameTv.setText(((TaskEntity.TaskItemEntity) serializable).name);
             }
+        } else if (fragment instanceof ProjectSimpleSelectDialogFragment && params != null) {
+            Serializable serializable = params.getSerializable(BaseDialogFragment.KEY_FRAGMENT_RESULT);
+            if (serializable instanceof ProjectEntity) {
+                ProjectEntity projectEntity = (ProjectEntity) serializable;
+                if (projectEntity == null) return;
+                if (!TextUtils.equals(itemEntity.matterPkId, projectEntity.pkId)) {
+                    itemEntity.taskPkId = null;
+                    itemEntity.workTypeId = null;
+                    itemEntity.matterPkId = projectEntity.pkId;
+                    worktypeNameTv.setText("未选择");
+                    taskNameTv.setText("未关联");
+                }
+                itemEntity.matterPkId=projectEntity.pkId;
+                projectNameTv.setText(projectEntity.name);
+            }
+
         }
     }
 

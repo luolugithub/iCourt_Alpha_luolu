@@ -152,6 +152,7 @@ public class TimerManager {
         itemEntityCopy.createUserId = getUid();
         itemEntityCopy.startTime = System.currentTimeMillis();
         itemEntityCopy.useTime = 0;
+        itemEntityCopy.workDate = DateUtils.getTodayStartTime();
         itemEntityCopy.state = 0;
         JsonObject jsonObject = null;
         try {
@@ -192,11 +193,12 @@ public class TimerManager {
     }
 
     /**
-     * 恢复计时
+     * 恢复原计时
      */
     public void resumeTimer() {
         TimeEntity.ItemEntity timer = TimerManager.getInstance().getTimer();
         if (timer != null) {
+            globalTimingId = timer.pkId;
             long timedLength = (System.currentTimeMillis() - timer.startTime) / 1000;
             if (timedLength < 0) {
                 timedLength = 0;
@@ -204,6 +206,19 @@ public class TimerManager {
             setBase(timedLength);
             startTimingTask();
         }
+    }
+
+    /**
+     * 恢复一个新的计时
+     *
+     * @param timer
+     */
+    public void resumeTimer(TimeEntity.ItemEntity timer) {
+        if (timer == null) return;
+        SpUtils.getInstance().putData(String.format(KEY_TIMER, getUid()), timer);
+        globalTimingId = timer.pkId;
+        broadTimingEvent(globalTimingId, TimingEvent.TIMING_ADD);
+        resumeTimer();
     }
 
 
@@ -237,16 +252,22 @@ public class TimerManager {
      * @return
      */
     public boolean isTimer(TimeEntity.ItemEntity itemEntity) {
-        return getTimer() == itemEntity;
+        if (itemEntity == null) return false;
+        return itemEntity.equals(getTimer());
     }
 
     /**
-     * 更新计时对象
+     * 更新原计时对象
      *
      * @return
      */
     public void updateTimer(TimeEntity.ItemEntity itemEntity) {
-        SpUtils.getInstance().putData(String.format(KEY_TIMER, getUid()), itemEntity);
+        if (itemEntity == null) return;
+        TimeEntity.ItemEntity timer = getTimer();
+        if (timer != null && timer.equals(itemEntity)) {
+            SpUtils.getInstance().putData(String.format(KEY_TIMER, getUid()), itemEntity);
+            resumeTimer();
+        }
     }
 
     /**

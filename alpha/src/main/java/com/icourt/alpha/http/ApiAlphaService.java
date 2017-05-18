@@ -678,11 +678,26 @@ public interface ApiAlphaService {
 
     /**
      * 新建任务
+     *
      * @param body
      * @return
      */
     @POST("api/v2/taskflow")
     Call<ResEntity<JsonElement>> taskCreate(@Body RequestBody body);
+
+
+    /**
+     * 计时查询
+     *
+     * @param pageIndex
+     * @param pageSize
+     * @param state
+     * @return
+     */
+    @GET("api/v2/timing/timing/search")
+    Call<ResEntity<PageEntity<TimeEntity.ItemEntity>>> timerQuery(@Query("pageIndex") int pageIndex,
+                                                                      @Query("pageSize") int pageSize,
+                                                                      @Query("state") int state);
 }
 
 
