@@ -24,6 +24,7 @@ public class TaskEntity implements Serializable {
         public String name;//任务名称
         public String parentId;//任务组id
         public String parentName;//任务组名称
+        public String matterId;//项目id
         public String description;//任务描述
         public boolean state;//是否完成
         public long dueTime;//到期时间
@@ -34,6 +35,7 @@ public class TaskEntity implements Serializable {
         public int attachmentCount;//附件总数
         public int commentCount;//评论总数
         public int attentioned;//关注   0:未关注  1:关注
+        public boolean isTiming;
 
         public ParentFlowEntity parentFlow;//详情任务组信息
         public MatterEntity matter;//项目信息

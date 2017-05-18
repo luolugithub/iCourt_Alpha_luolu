@@ -69,7 +69,7 @@ public class ProjectDetailEntity implements Serializable {
     public String updCde;//修改人 id
     public String updCdeName;//修改人姓名
     public long updTime;//修改时间
-    public String matterType;//项目模板(类型)
+    public int matterType;//项目模板(类型)(0争议解决，1非诉专项,2常年顾问，3所内事务)
     public String matterCase;//案由 id
     public String caseProcess;//程序 id
     public String matterNumber;//案号
@@ -82,25 +82,26 @@ public class ProjectDetailEntity implements Serializable {
     public String caseProcessName;//程序名称
     public String lawFieldName;//法律领域名称
     public String statusName;//项目状态名称
-    public Object responsibleAttorneys;//主办律师
-    public Object assistAttorneys;//协办律师
-    public Object otherAttorneys;//其它参与人
-    public Object originatingAttorneys;//案源律师
+    public List<ResponsibleAttorneyBean> responsibleAttorneys;//主办律师
+    public List<AssistAttorneBean> assistAttorneys;//协办律师
+    public List<OtherAttorneyBean> otherAttorneys;//其它参与人
+    public List<OriginatingAttorneyBean> originatingAttorneys;//案源律师
     public List<JudgeBean> judges;//法官
     public List<ClerkBean> clerks;//书记员
-    public Object arbitrators;// 仲裁员
-    public Object secretaries;//仲裁秘书
+    public List<ArbitratorBean> arbitrators;//仲裁员
+    public List<SecretarieBean> secretaries;//仲裁秘书
     public String myStar;//星标
     public String allSee;//全所可见:[0:否1：是]
     public List<AttorneysBean> attorneys;//律师
     public List<ClientsBean> clients;//客户
     public List<LitigantsBean> litigants;//其它当事人
     public List<GroupsBean> groups;//所属团队
-    public List<MembersBean> members;//项目成员
+    public List<MembersBean> participants;//项目成员
+    public String logDescription;//日志描述
 
 
     //律师
-    public static class AttorneysBean implements Serializable{
+    public static class AttorneysBean implements Serializable {
         /**
          * pkId : 3F08509CC44B11E69FB200163E162ADD
          * attorneyPkid : DE9B81AAA02511E69A3800163E0020D1
@@ -118,7 +119,7 @@ public class ProjectDetailEntity implements Serializable {
     }
 
     //客户
-    public static class ClientsBean implements Serializable{
+    public static class ClientsBean implements Serializable {
         /**
          * contactPkid : 5BE0F059C2DA11E69FB200163E162ADD
          * contactName : 深圳市大疆创新科技有限公司
@@ -136,7 +137,7 @@ public class ProjectDetailEntity implements Serializable {
     }
 
     //其他当事人
-    public static class LitigantsBean implements Serializable{
+    public static class LitigantsBean implements Serializable {
         /**
          * contactPkid : 9BD98931C29011E69FB200163E162ADD
          * contactName : 从AC按时擦擦趣分期我s
@@ -154,34 +155,19 @@ public class ProjectDetailEntity implements Serializable {
     }
 
     //所属团队
-    public static class GroupsBean implements Serializable{
+    public static class GroupsBean implements Serializable {
         /**
          * groupPkid : 62F7E17BA02011E69A3800163E0020D1
          * name : Alpha
          */
 
-        private String groupPkid;
-        private String name;
+        public String groupPkid;
+        public String name;
 
-        public String getGroupPkid() {
-            return groupPkid;
-        }
-
-        public void setGroupPkid(String groupPkid) {
-            this.groupPkid = groupPkid;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public void setName(String name) {
-            this.name = name;
-        }
     }
 
     //项目成员
-    public static class MembersBean implements Serializable{
+    public static class MembersBean implements Serializable {
         /**
          * userId : 01CEB4E16D2411E6A5C200163E0020D1
          * userName : 王储
@@ -199,14 +185,66 @@ public class ProjectDetailEntity implements Serializable {
     }
 
     //法官
-    public static class JudgeBean implements Serializable{
+    public static class JudgeBean implements Serializable {
         public String name;
         public String phone;
     }
 
     //书记员
-    public static class ClerkBean implements Serializable{
+    public static class ClerkBean implements Serializable {
         public String name;
         public String phone;
+    }
+
+    //仲裁员
+    public static class ArbitratorBean implements Serializable {
+        public String name;
+        public String phone;
+    }
+
+    //仲裁秘书
+    public static class SecretarieBean implements Serializable {
+        public String name;
+        public String phone;
+    }
+
+    //主办律师
+    public static class ResponsibleAttorneyBean implements Serializable {
+
+        public String pkId;
+        public String attorneyPkid;
+        public String attorneyName;
+        public String attorneyPic;
+        public String attorneyType;
+    }
+
+    //协办律师
+    public static class AssistAttorneBean implements Serializable {
+
+        public String pkId;
+        public String attorneyPkid;
+        public String attorneyName;
+        public String attorneyPic;
+        public String attorneyType;
+    }
+
+    //其他参与人
+    public static class OtherAttorneyBean implements Serializable {
+
+        public String pkId;
+        public String attorneyPkid;
+        public String attorneyName;
+        public String attorneyPic;
+        public String attorneyType;
+    }
+
+    //案源律师
+    public static class OriginatingAttorneyBean implements Serializable {
+
+        public String pkId;
+        public String attorneyPkid;
+        public String attorneyName;
+        public String attorneyPic;
+        public String attorneyType;
     }
 }

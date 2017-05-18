@@ -22,6 +22,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.icourt.alpha.BuildConfig;
 import com.icourt.alpha.R;
 import com.icourt.alpha.base.BaseActivity;
@@ -102,7 +103,6 @@ public class FileBoxDownloadActivity extends BaseActivity {
 
     public static void launch(@NonNull Context context, @NonNull String authToken, @NonNull String seaFileRepoId, @NonNull String rootName, @DOWNLOAD_ACTION int action) {
         if (context == null) return;
-        if (TextUtils.isEmpty(authToken)) return;
         if (TextUtils.isEmpty(seaFileRepoId)) return;
         Intent intent = new Intent(context, FileBoxDownloadActivity.class);
         intent.putExtra("action", action);
@@ -111,6 +111,7 @@ public class FileBoxDownloadActivity extends BaseActivity {
         intent.putExtra("rootName", rootName);
         context.startActivity(intent);
     }
+
 
     public static void launchClearTop(Context context, Intent intent) {
         if (context == null) return;
@@ -233,10 +234,45 @@ public class FileBoxDownloadActivity extends BaseActivity {
      */
     private void checkPermissionOrDownload() {
         if (checkPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-            getData(true);
+            if (TextUtils.isEmpty(authToken)) {
+                getFileBoxToken();
+            } else if (!TextUtils.isEmpty(authToken) && !TextUtils.isEmpty(seaFileRepoId))
+                getData(true);
+
         } else {
             reqPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, "下载文件需要文件写入权限!", CODE_PERMISSION_FILE);
         }
+    }
+
+    /**
+     * 获取文档token
+     */
+    private void getFileBoxToken() {
+        getApi().projectQueryFileBoxToken().enqueue(new Callback<JsonObject>() {
+            @Override
+            public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
+                if (response.code() == 200) {
+                    if (response.body() != null) {
+                        if (response.body().has("authToken")) {
+                            JsonElement element = response.body().get("authToken");
+                            if (!TextUtils.isEmpty(element.toString()) && !TextUtils.equals("null", element.toString())) {
+                                authToken = element.getAsString();
+                                getData(true);
+                            } else {
+                                onFailure(call, new retrofit2.HttpException(response));
+                            }
+                        }
+                    }
+                } else {
+                    onFailure(call, new retrofit2.HttpException(response));
+                }
+            }
+
+            @Override
+            public void onFailure(Call<JsonObject> call, Throwable throwable) {
+                showTopSnackBar("获取文档token失败");
+            }
+        });
     }
 
     @Override
@@ -258,7 +294,11 @@ public class FileBoxDownloadActivity extends BaseActivity {
         super.getData(isRefresh);
 
         if (!TextUtils.isEmpty(authToken) && !TextUtils.isEmpty(seaFileRepoId)) {
-            getApi().fileboxDownloadUrlQuery("Token " + authToken, seaFileRepoId, "/" + rootName).enqueue(new Callback<JsonElement>() {
+            String p = "/" + rootName;
+            if (p.contains("//")) {
+                p = p.replace("//", "/");
+            }
+            getApi().fileboxDownloadUrlQuery("Token " + authToken, seaFileRepoId, p).enqueue(new Callback<JsonElement>() {
                 @Override
                 public void onResponse(Call<JsonElement> call, Response<JsonElement> response) {
                     if (response.body() != null) {

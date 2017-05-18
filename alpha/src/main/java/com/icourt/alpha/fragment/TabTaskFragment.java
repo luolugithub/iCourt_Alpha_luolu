@@ -11,6 +11,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 
 import com.icourt.alpha.R;
+import com.icourt.alpha.activity.TaskCreateActivity;
 import com.icourt.alpha.adapter.baseadapter.BaseFragmentAdapter;
 import com.icourt.alpha.base.BaseFragment;
 
@@ -18,6 +19,7 @@ import java.util.Arrays;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 import butterknife.Unbinder;
 
 /**
@@ -63,6 +65,17 @@ public class TabTaskFragment extends BaseFragment {
                         TaskListFragment.newInstance(1),
                         TaskListFragment.newInstance(2),
                         TaskListFragment.newInstance(3)));
+    }
+
+    @OnClick({R.id.titleAction})
+    @Override
+    public void onClick(View v) {
+        super.onClick(v);
+        switch (v.getId()) {
+            case R.id.titleAction:
+                TaskCreateActivity.launch(getContext(), null, null);
+                break;
+        }
     }
 
     @Override

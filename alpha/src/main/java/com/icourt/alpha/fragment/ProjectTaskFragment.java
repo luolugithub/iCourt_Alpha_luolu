@@ -13,15 +13,20 @@ import android.view.ViewGroup;
 import com.andview.refreshview.XRefreshView;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.TaskAdapter;
+import com.icourt.alpha.adapter.TaskItemAdapter;
+import com.icourt.alpha.adapter.baseadapter.BaseArrayRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.adapterObserver.RefreshViewEmptyObserver;
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.entity.bean.TaskEntity;
+import com.icourt.alpha.entity.bean.TimeEntity;
 import com.icourt.alpha.entity.event.TaskActionEvent;
+import com.icourt.alpha.entity.event.TimingEvent;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.ItemDecorationUtils;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
+import com.icourt.alpha.widget.manager.TimerManager;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -61,7 +66,8 @@ public class ProjectTaskFragment extends BaseFragment {
     List<TaskEntity.TaskItemEntity> todayTaskEntities;//今天到期
     List<TaskEntity.TaskItemEntity> beAboutToTaskEntities;//即将到期
     List<TaskEntity.TaskItemEntity> futureTaskEntities;//未来
-    List<TaskEntity.TaskItemEntity> noDueTaskEntities;//为指定到期
+    List<TaskEntity.TaskItemEntity> noDueTaskEntities;//未指定到期
+    List<TaskEntity.TaskItemEntity> datedTaskEntities;//已过期
 
     public static ProjectTaskFragment newInstance(@NonNull String projectId) {
         ProjectTaskFragment projectTaskFragment = new ProjectTaskFragment();
@@ -112,6 +118,7 @@ public class ProjectTaskFragment extends BaseFragment {
         beAboutToTaskEntities = new ArrayList<>();
         futureTaskEntities = new ArrayList<>();
         noDueTaskEntities = new ArrayList<>();
+        datedTaskEntities = new ArrayList<>();
     }
 
     @Override
@@ -148,16 +155,26 @@ public class ProjectTaskFragment extends BaseFragment {
                             beAboutToTaskEntities.add(taskItemEntity);
                         } else if (DateUtils.getDayDiff(new Date(DateUtils.millis()), new Date(taskItemEntity.dueTime)) > 3) {
                             futureTaskEntities.add(taskItemEntity);
+                        } else {
+                            datedTaskEntities.add(taskItemEntity);
                         }
                     } else {
                         noDueTaskEntities.add(taskItemEntity);
                     }
                 }
 
+
+                if (datedTaskEntities.size() > 0) {
+                    TaskEntity todayTask = new TaskEntity();
+                    todayTask.items = datedTaskEntities;
+                    todayTask.groupName = "已过期";
+                    todayTask.groupTaskCount = datedTaskEntities.size();
+                    allTaskEntities.add(todayTask);
+                }
                 if (todayTaskEntities.size() > 0) {
                     TaskEntity todayTask = new TaskEntity();
                     todayTask.items = todayTaskEntities;
-                    todayTask.groupName = "今天";
+                    todayTask.groupName = "今天到期";
                     todayTask.groupTaskCount = todayTaskEntities.size();
                     allTaskEntities.add(todayTask);
                 }
@@ -194,6 +211,8 @@ public class ProjectTaskFragment extends BaseFragment {
     private void clearLists() {
         if (allTaskEntities != null)
             allTaskEntities.clear();
+        if (datedTaskEntities != null)
+            datedTaskEntities.clear();
         if (todayTaskEntities != null)
             todayTaskEntities.clear();
         if (beAboutToTaskEntities != null)
@@ -219,9 +238,129 @@ public class ProjectTaskFragment extends BaseFragment {
         }
     }
 
+    /**
+     * 计时事件
+     *
+     * @param event
+     */
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onTimerEvent(TimingEvent event) {
+        if (event == null) return;
+        switch (event.action) {
+            case TimingEvent.TIMING_ADD:
+
+                break;
+            case TimingEvent.TIMING_UPDATE_PROGRESS:
+                TimeEntity.ItemEntity updateItem = TimerManager.getInstance().getTimer();
+                if (updateItem != null) {
+                    getParentPositon(updateItem.taskPkId);
+                    getChildPositon(updateItem.taskPkId);
+                    updateChildTimeing(updateItem.taskPkId, true);
+                }
+                break;
+            case TimingEvent.TIMING_STOP:
+                TimeEntity.ItemEntity stopItem = TimerManager.getInstance().getTimer();
+                if (stopItem != null) {
+                    getParentPositon(stopItem.taskPkId);
+                    getChildPositon(stopItem.taskPkId);
+                    updateChildTimeing(stopItem.taskPkId, false);
+                }
+                break;
+        }
+    }
+
+    /**
+     * 获取item所在父容器position
+     *
+     * @param taskId
+     * @return
+     */
+    private int getParentPositon(String taskId) {
+        if (taskAdapter.getData() != null) {
+            for (int i = 0; i < taskAdapter.getData().size(); i++) {
+                TaskEntity task = taskAdapter.getData().get(i);
+                if (task != null && task.items != null) {
+                    for (int j = 0; j < task.items.size(); j++) {
+                        TaskEntity.TaskItemEntity item = task.items.get(j);
+                        if (item != null) {
+                            if (TextUtils.equals(item.id, taskId)) {
+                                return i;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return -1;
+    }
+
+    /**
+     * 获取item所在子容器position
+     *
+     * @param taskId
+     * @return
+     */
+    private int getChildPositon(String taskId) {
+        if (taskAdapter.getData() != null) {
+            for (int i = 0; i < taskAdapter.getData().size(); i++) {
+                TaskEntity task = taskAdapter.getData().get(i);
+                if (task != null && task.items != null) {
+                    for (int j = 0; j < task.items.size(); j++) {
+                        TaskEntity.TaskItemEntity item = task.items.get(j);
+                        if (item != null) {
+                            if (TextUtils.equals(item.id, taskId)) {
+                                return j;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return -1;
+    }
+
+    TaskEntity.TaskItemEntity lastEntity;
+
+    /**
+     * 更新item
+     *
+     * @param taskId
+     */
+    private void updateChildTimeing(String taskId, boolean isTiming) {
+        int parentPos = getParentPositon(taskId);
+        if (parentPos >= 0) {
+            int childPos = getChildPositon(taskId);
+            if (childPos >= 0) {
+                BaseArrayRecyclerAdapter.ViewHolder viewHolderForAdapterPosition = (BaseArrayRecyclerAdapter.ViewHolder) recyclerView.findViewHolderForAdapterPosition(parentPos);
+                if (viewHolderForAdapterPosition != null) {
+                    RecyclerView recyclerview = viewHolderForAdapterPosition.obtainView(R.id.parent_item_task_recyclerview);
+                    if (recyclerview != null) {
+                        TaskItemAdapter itemAdapter = (TaskItemAdapter) recyclerview.getAdapter();
+                        if (itemAdapter != null) {
+                            TaskEntity.TaskItemEntity entity = itemAdapter.getItem(childPos);
+                            if (entity != null) {
+                                if (lastEntity != null)
+                                    if (!TextUtils.equals(entity.id, lastEntity.id)) {
+                                        lastEntity.isTiming = false;
+                                        taskAdapter.notifyDataSetChanged();
+                                    }
+                                if (entity.isTiming != isTiming) {
+                                    entity.isTiming = isTiming;
+                                    itemAdapter.updateItem(entity);
+                                    lastEntity = entity;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     @Override
     public void onDestroyView() {
         super.onDestroyView();
         unbinder.unbind();
+        EventBus.getDefault().unregister(this);
     }
 }

@@ -6,12 +6,182 @@
 
     <include layout="@layout/layout_title_type_3" />
 
-
-    <TextView
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:padding="10dp"
-        android:text="2.0任务部分 未完成"
-        android:textSize="30sp" />
+        android:layout_height="match_parent"
+        android:background="@android:color/white"
+        android:orientation="vertical"
+        android:padding="15dp">
 
+        <EditText
+            android:id="@+id/task_name_et"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@null"
+            android:hint="任务标题"
+            android:singleLine="true"
+            android:textColor="@color/alpha_font_color_black"
+            android:textSize="22dp" />
+
+        <EditText
+            android:id="@+id/task_desc_et"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="15dp"
+            android:background="@null"
+            android:gravity="top"
+            android:hint="详情"
+            android:maxLength="400"
+            android:maxLines="5"
+            android:minLines="3"
+            android:textColor="@color/alpha_font_color_black"
+            android:textSize="@dimen/alpha_font_size_comm" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/alpha_height_divider"
+            android:background="@color/alpha_divider_color" />
+
+        <LinearLayout
+            android:id="@+id/project_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingBottom="12dp"
+            android:paddingTop="12dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:drawableLeft="@mipmap/project_name_icon"
+                android:drawablePadding="@dimen/dp8"
+                android:text="项目"
+                android:textColor="@color/alpha_font_color_black"
+                android:textSize="16sp" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/dp15"
+                android:layout_marginRight="@dimen/dp15"
+                android:layout_weight="1"
+                android:gravity="center_vertical|right"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/project_name_tv"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/alpha_font_color_black"
+                    android:textSize="13sp" />
+
+                <TextView
+                    android:id="@+id/task_group_name_tv"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/alpha_font_color_gray"
+                    android:textSize="11sp" />
+            </LinearLayout>
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@mipmap/arrow_right" />
+        </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/alpha_height_divider"
+            android:layout_marginLeft="30dp"
+            android:background="@color/alpha_divider_color" />
+
+        <LinearLayout
+            android:id="@+id/duetime_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingBottom="12dp"
+            android:paddingTop="12dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:drawableLeft="@mipmap/project_time_icon"
+                android:drawablePadding="@dimen/dp8"
+                android:text="到期时间"
+                android:textColor="@color/alpha_font_color_black"
+                android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/task_duetime_tv"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/dp15"
+                android:layout_marginRight="@dimen/dp15"
+                android:layout_weight="1"
+                android:gravity="center_vertical|right"
+                android:textColor="@color/alpha_font_color_black"
+                android:textSize="13sp" />
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@mipmap/arrow_right" />
+        </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/alpha_height_divider"
+            android:layout_marginLeft="30dp"
+            android:background="@color/alpha_divider_color" />
+
+        <LinearLayout
+            android:id="@+id/ower_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingBottom="12dp"
+            android:paddingTop="12dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:drawableLeft="@mipmap/project_user_icon"
+                android:drawablePadding="@dimen/dp8"
+                android:text="负责人"
+                android:textColor="@color/alpha_font_color_black"
+                android:textSize="16sp" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/dp15"
+                android:layout_marginRight="@dimen/dp15"
+                android:layout_weight="1"
+                android:gravity="right">
+
+                <android.support.v7.widget.RecyclerView
+                    android:id="@+id/task_ower_recyclerview"
+                    android:layout_width="130dp"
+                    android:layout_height="wrap_content">
+
+                </android.support.v7.widget.RecyclerView>
+            </LinearLayout>
+
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@mipmap/arrow_right" />
+        </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/alpha_height_divider"
+            android:layout_marginLeft="30dp"
+            android:background="@color/alpha_divider_color" />
+    </LinearLayout>
 </LinearLayout>

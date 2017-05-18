@@ -12,6 +12,7 @@ import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.baseadapter.BaseArrayRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.entity.bean.TaskEntity;
+import com.icourt.alpha.entity.bean.TimeEntity;
 import com.icourt.alpha.utils.DateUtils;
 
 /**
@@ -23,6 +24,12 @@ import com.icourt.alpha.utils.DateUtils;
  */
 
 public class TaskItemAdapter extends BaseArrayRecyclerAdapter<TaskEntity.TaskItemEntity> implements BaseRecyclerAdapter.OnItemChildClickListener, BaseRecyclerAdapter.OnItemChildLongClickListener {
+    TimeEntity.ItemEntity itemEntity;
+
+    public void setItemEntity(TimeEntity.ItemEntity itemEntity) {
+        this.itemEntity = itemEntity;
+    }
+
     @Override
     public int bindView(int viewtype) {
         return R.layout.adapter_item_task;
@@ -47,7 +54,7 @@ public class TaskItemAdapter extends BaseArrayRecyclerAdapter<TaskEntity.TaskIte
                 projectNameView.setText(taskItemEntity.matter.name + " - " + taskItemEntity.parentFlow.name);
             } else {
                 if (!TextUtils.isEmpty(taskItemEntity.parentName))
-                    projectNameView.setText(taskItemEntity.matter.name + " - " +taskItemEntity.parentName);
+                    projectNameView.setText(taskItemEntity.matter.name + " - " + taskItemEntity.parentName);
                 else
                     projectNameView.setText(taskItemEntity.matter.name);
             }
@@ -57,25 +64,25 @@ public class TaskItemAdapter extends BaseArrayRecyclerAdapter<TaskEntity.TaskIte
             timeView.setVisibility(View.VISIBLE);
             timeView.setText(DateUtils.getTimeDurationDate(taskItemEntity.timingSum));
         } else {
-            timeView.setVisibility(View.GONE);
+            timeView.setVisibility(View.INVISIBLE);
         }
         if (taskItemEntity.itemCount > 0) {
             checkListView.setVisibility(View.VISIBLE);
             checkListView.setText(taskItemEntity.doneItemCount + "/" + taskItemEntity.itemCount);
         } else {
-            checkListView.setVisibility(View.GONE);
+            checkListView.setVisibility(View.INVISIBLE);
         }
         if (taskItemEntity.attachmentCount > 0) {
             documentNumView.setVisibility(View.VISIBLE);
             documentNumView.setText(String.valueOf(taskItemEntity.attachmentCount));
         } else {
-            documentNumView.setVisibility(View.GONE);
+            documentNumView.setVisibility(View.INVISIBLE);
         }
         if (taskItemEntity.commentCount > 0) {
             commentNumView.setVisibility(View.VISIBLE);
             commentNumView.setText(String.valueOf(taskItemEntity.commentCount));
         } else {
-            commentNumView.setVisibility(View.GONE);
+            commentNumView.setVisibility(View.INVISIBLE);
         }
         if (taskItemEntity.attendeeUsers != null) {
             TaskUsersAdapter usersAdapter;
@@ -90,7 +97,16 @@ public class TaskItemAdapter extends BaseArrayRecyclerAdapter<TaskEntity.TaskIte
             usersAdapter = (TaskUsersAdapter) recyclerView.getAdapter();
             usersAdapter.bindData(true, taskItemEntity.attendeeUsers);
         }
+
+        if (taskItemEntity.isTiming) {
+            startTimmingView.setImageResource(R.drawable.orange_side_dot_bg);
+            startTimmingView.setTag(R.drawable.orange_side_dot_bg);
+        } else {
+            startTimmingView.setImageResource(R.mipmap.icon_start_20);
+            startTimmingView.setTag(R.mipmap.icon_start_20);
+        }
         holder.bindChildClick(checkBox);
+        holder.bindChildClick(startTimmingView);
     }
 
     @Override

@@ -18,6 +18,7 @@ import android.widget.TextView;
 
 import com.google.gson.JsonElement;
 import com.icourt.alpha.R;
+import com.icourt.alpha.activity.FileBoxDownloadActivity;
 import com.icourt.alpha.adapter.TaskAttachmentAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.base.BaseFragment;
@@ -56,7 +57,7 @@ import retrofit2.Response;
  * version 2.0.0
  */
 
-public class TaskAttachmentFragment extends BaseFragment {
+public class TaskAttachmentFragment extends BaseFragment implements BaseRecyclerAdapter.OnItemClickListener {
     private static final String KEY_TASK_ID = "key_task_id";
 
     private static final int REQUEST_CODE_CAMERA = 1000;
@@ -104,6 +105,7 @@ public class TaskAttachmentFragment extends BaseFragment {
         recyclerview.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerview.addItemDecoration(ItemDecorationUtils.getCommFull05Divider(getContext(), true));
         recyclerview.setAdapter(taskAttachmentAdapter = new TaskAttachmentAdapter());
+        taskAttachmentAdapter.setOnItemClickListener(this);
         getData(true);
     }
 
@@ -250,5 +252,12 @@ public class TaskAttachmentFragment extends BaseFragment {
     public void onDestroyView() {
         super.onDestroyView();
         unbinder.unbind();
+    }
+
+    @Override
+    public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
+        TaskAttachmentEntity entity = (TaskAttachmentEntity) adapter.getItem(position);
+        if (entity.pathInfoVo != null)
+            FileBoxDownloadActivity.launch(getContext(), null, entity.pathInfoVo.repoId, entity.pathInfoVo.filePath, FileBoxDownloadActivity.TASK_DOWNLOAD_FILE_ACTION);
     }
 }

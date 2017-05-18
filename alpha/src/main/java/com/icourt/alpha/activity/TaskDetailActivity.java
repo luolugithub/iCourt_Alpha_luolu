@@ -48,7 +48,6 @@ import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.GlideUtils;
-import com.icourt.alpha.utils.LogUtils;
 import com.icourt.alpha.widget.dialog.BottomActionDialog;
 import com.icourt.alpha.widget.manager.TimerManager;
 import com.icourt.api.RequestUtils;
@@ -125,6 +124,7 @@ public class TaskDetailActivity extends BaseActivity implements OnFragmentCallBa
     TextView commentTv;
 
     int myStar = -1;
+    boolean isStrat = false;
     TaskEntity.TaskItemEntity taskItemEntity;
     TaskUsersAdapter usersAdapter;
     @BindView(R.id.comment_layout)
@@ -189,7 +189,10 @@ public class TaskDetailActivity extends BaseActivity implements OnFragmentCallBa
                 }
                 break;
             case R.id.task_start_iamge://开始计时
-                TimerManager.getInstance().addTimer(getTimer());
+                if (isStrat)
+                    TimerManager.getInstance().stopTimer();
+                else
+                    TimerManager.getInstance().addTimer(getTimer());
                 break;
             case R.id.task_checkbox://  完成／取消完成
                 if (taskItemEntity.state) {
@@ -258,18 +261,28 @@ public class TaskDetailActivity extends BaseActivity implements OnFragmentCallBa
         if (event == null) return;
         switch (event.action) {
             case TimingEvent.TIMING_ADD:
-                taskStartIamge.setImageResource(R.drawable.orange_side_dot_bg);
+                TimeEntity.ItemEntity addItem = TimerManager.getInstance().getTimer();
+                if (addItem != null) {
+                    isStrat = true;
+                    if (TextUtils.equals(addItem.taskPkId, taskItemEntity.id)) {
+                        taskStartIamge.setImageResource(R.drawable.orange_side_dot_bg);
+                    }
+                }
                 break;
             case TimingEvent.TIMING_UPDATE_PROGRESS:
-                LogUtils.e(" -----------timingEvent.TIMING_UPDATE_PROGRESS" + event.timingSecond);
-                taskTime.setText(toTime(event.timingSecond / 1000));
+                TimeEntity.ItemEntity updateItem = TimerManager.getInstance().getTimer();
+                if (updateItem != null) {
+                    isStrat = true;
+                    if (TextUtils.equals(updateItem.taskPkId, taskItemEntity.id)) {
+                        taskStartIamge.setImageResource(R.drawable.orange_side_dot_bg);
+                        taskTime.setText(toTime(event.timingSecond));
+                    }
+                }
                 break;
             case TimingEvent.TIMING_STOP:
+                isStrat = false;
                 taskStartIamge.setImageResource(R.mipmap.icon_start_20);
-                TimeEntity.ItemEntity itemEntity2 = TimeEntity.ItemEntity.singleInstace;
-                itemEntity2.state = TimeEntity.ItemEntity.TIMER_STATE_STOP;
-                itemEntity2.useTime = event.timingSecond;
-                taskTime.setText(DateUtils.getTimeDurationDate(taskItemEntity.timingSum + itemEntity2.useTime));
+                taskTime.setText(DateUtils.getTimeDurationDate(taskItemEntity.timingSum + event.timingSecond));
                 break;
         }
     }

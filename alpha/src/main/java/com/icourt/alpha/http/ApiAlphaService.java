@@ -675,6 +675,14 @@ public interface ApiAlphaService {
      */
     @DELETE("api/v2/timing/timing/delete/{timerId}")
     Call<ResEntity<JsonElement>> timingDelete(@Path("timerId") String timerId);
+
+    /**
+     * 新建任务
+     * @param body
+     * @return
+     */
+    @POST("api/v2/taskflow")
+    Call<ResEntity<JsonElement>> taskCreate(@Body RequestBody body);
 }
 
 

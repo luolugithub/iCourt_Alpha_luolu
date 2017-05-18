@@ -138,13 +138,13 @@ public class ProjectDetailActivity extends BaseActivity implements OnFragmentCal
     private void isShowTitleAction(int position) {
         switch (position) {
             case 0:
-                titleAction2.setVisibility(View.GONE);
+                titleAction2.setVisibility(View.INVISIBLE);
                 break;
             case 1:
                 titleAction2.setVisibility(View.VISIBLE);
                 break;
             case 2:
-                titleAction2.setVisibility(View.GONE);
+                titleAction2.setVisibility(View.INVISIBLE);
                 break;
             case 3:
                 titleAction.setImageResource(R.mipmap.header_icon_add);

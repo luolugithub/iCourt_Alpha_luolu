@@ -156,15 +156,19 @@ public class TaskAllotSelectDialogFragment extends BaseDialogFragment implements
             @Override
             public void onSuccess(Call<ResEntity<List<TaskOwerEntity>>> call, Response<ResEntity<List<TaskOwerEntity>>> response) {
                 if (response.body().result != null) {
-                    for (int i = 0; i < response.body().result.size(); i++) {
-                        for (TaskEntity.TaskItemEntity.AttendeeUserEntity attendeeUserEntity : attendeeUserEntities) {
-                            if (TextUtils.equals(attendeeUserEntity.userId, response.body().result.get(i).id)) {
-                                taskOwerListAdapter.getSelectedArray().put(i, true);
+                    if (attendeeUserEntities != null) {
+                        if (attendeeUserEntities.size() > 0) {
+                            for (int i = 0; i < response.body().result.size(); i++) {
+                                for (TaskEntity.TaskItemEntity.AttendeeUserEntity attendeeUserEntity : attendeeUserEntities) {
+                                    if (TextUtils.equals(attendeeUserEntity.userId, response.body().result.get(i).id)) {
+                                        taskOwerListAdapter.getSelectedArray().put(i, true);
+                                    }
+                                }
                             }
                         }
                     }
+                    taskOwerListAdapter.bindData(true, response.body().result);
                 }
-                taskOwerListAdapter.bindData(true, response.body().result);
 
             }
         });

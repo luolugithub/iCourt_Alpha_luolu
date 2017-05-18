@@ -8,6 +8,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.CheckBox;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.google.gson.JsonElement;
@@ -18,16 +19,21 @@ import com.icourt.alpha.adapter.baseadapter.BaseArrayRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.entity.bean.ItemsEntity;
 import com.icourt.alpha.entity.bean.TaskEntity;
+import com.icourt.alpha.entity.bean.TimeEntity;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.widget.dialog.CenterMenuDialog;
+import com.icourt.alpha.widget.manager.TimerManager;
 import com.icourt.api.RequestUtils;
 
 import java.util.Arrays;
 
 import retrofit2.Call;
 import retrofit2.Response;
+
+import static com.icourt.alpha.utils.LoginInfoUtils.getLoginUserId;
+import static com.icourt.alpha.utils.LoginInfoUtils.getLoginUserInfo;
 
 /**
  * Description
@@ -40,11 +46,16 @@ public class TaskAdapter extends BaseArrayRecyclerAdapter<TaskEntity>
         implements BaseRecyclerAdapter.OnItemClickListener,
         BaseRecyclerAdapter.OnItemLongClickListener,
         BaseRecyclerAdapter.OnItemChildClickListener {
+    TimeEntity.ItemEntity itemEntity;
 
     public TaskAdapter() {
         this.setOnItemClickListener(this);
         this.setOnItemLongClickListener(this);
         this.setOnItemChildClickListener(this);
+    }
+
+    public void setItemEntity(TimeEntity.ItemEntity itemEntity) {
+        this.itemEntity = itemEntity;
     }
 
     @Override
@@ -66,6 +77,7 @@ public class TaskAdapter extends BaseArrayRecyclerAdapter<TaskEntity>
             recyclerView.setLayoutManager(layoutManager);
             taskItemAdapter = new TaskItemAdapter();
             recyclerView.setAdapter(taskItemAdapter);
+            taskItemAdapter.setItemEntity(itemEntity);
             taskItemAdapter.setOnItemClickListener(super.onItemClickListener);
             taskItemAdapter.setOnItemChildClickListener(super.onItemChildClickListener);
         }
@@ -108,24 +120,56 @@ public class TaskAdapter extends BaseArrayRecyclerAdapter<TaskEntity>
     public void onItemChildClick(BaseRecyclerAdapter adapter, ViewHolder holder, View view, int position) {
         if (adapter instanceof TaskItemAdapter) {
             TaskEntity.TaskItemEntity itemEntity = (TaskEntity.TaskItemEntity) adapter.getItem(position);
-            if (view instanceof CheckBox) {
-                CheckBox checkbox = (CheckBox) view;
-
-                if (checkbox.isChecked()) {//完成任务
-                    if (itemEntity.attendeeUsers != null) {
-                        if (itemEntity.attendeeUsers.size() > 1) {
-                            showFinishDialog(view.getContext(), "该任务由多人负责,确定完成?", itemEntity, checkbox);
+            switch (view.getId()) {
+                case R.id.task_item_start_timming:
+                    if (itemEntity.isTiming) {
+                        TimerManager.getInstance().stopTimer();
+                        ((ImageView)view).setImageResource(R.mipmap.icon_start_20);
+                    } else {
+                        TimerManager.getInstance().addTimer(getTimer(itemEntity));
+                        ((ImageView)view).setImageResource(R.drawable.orange_side_dot_bg);
+                    }
+                    break;
+                case R.id.task_item_checkbox:
+                    CheckBox checkbox = (CheckBox) view;
+                    if (checkbox.isChecked()) {//完成任务
+                        if (itemEntity.attendeeUsers != null) {
+                            if (itemEntity.attendeeUsers.size() > 1) {
+                                showFinishDialog(view.getContext(), "该任务由多人负责,确定完成?", itemEntity, checkbox);
+                            } else {
+                                updateTask(itemEntity, true, checkbox);
+                            }
                         } else {
                             updateTask(itemEntity, true, checkbox);
                         }
                     } else {
-                        updateTask(itemEntity, true, checkbox);
+                        updateTask(itemEntity, false, checkbox);
                     }
-                } else {
-                    updateTask(itemEntity, false, checkbox);
-                }
+                    break;
+
             }
         }
+    }
+
+    /**
+     * 获取添加计时实体
+     *
+     * @return
+     */
+    private TimeEntity.ItemEntity getTimer(TaskEntity.TaskItemEntity taskItemEntity) {
+        TimeEntity.ItemEntity itemEntity = new TimeEntity.ItemEntity();
+        if (taskItemEntity != null) {
+            itemEntity.taskPkId = taskItemEntity.id;
+            itemEntity.name = taskItemEntity.name;
+            itemEntity.workDate = DateUtils.millis();
+            itemEntity.createUserId = getLoginUserId();
+            itemEntity.username = getLoginUserInfo().getName();
+            itemEntity.startTime = DateUtils.millis();
+            if (taskItemEntity.matter != null) {
+                itemEntity.matterPkId = taskItemEntity.matter.id;
+            }
+        }
+        return itemEntity;
     }
 
     /**
