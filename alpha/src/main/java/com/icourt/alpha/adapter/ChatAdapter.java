@@ -539,6 +539,7 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMMessageCustomBody> i
         } else {
             chat_file_name_tv.setText("服务器 file ext null");
         }
+        holder.bindChildClick(R.id.chat_ll_file);
     }
 
     /**
@@ -645,6 +646,7 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMMessageCustomBody> i
             chat_file_name_tv.setText("服务器 file ext ext null");
         }
         setTypeDingFromUser(holder, imMessageCustomBody, position);
+        holder.bindChildClick(R.id.chat_ll_file);
     }
 
 

@@ -1041,6 +1041,40 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
                     }
                 }
                 break;
+            case R.id.chat_ll_file:
+                switch (item.show_type) {
+                    case Const.MSG_TYPE_FILE:
+                        //文件
+                        if (item.ext != null) {
+                            /**
+                             *  "name":"不可描述.avi",
+                             "size":123123,
+                             "repo_id":"xasxas",
+                             "path":"xasxax"
+                             */
+                            //item.ext.name;
+                        }
+                        break;
+                    case Const.MSG_TYPE_DING:
+                        if (item.ext != null) {
+                            //钉的文件
+                            switch (item.ext.show_type) {
+                                case Const.MSG_TYPE_FILE:
+                                    if (item.ext.ext != null) {
+                                        /**
+                                         *  "name":"不可描述.avi",
+                                         "size":123123,
+                                         "repo_id":"xasxas",
+                                         "path":"xasxax"
+                                         */
+                                        //item.ext.ext.name;
+                                    }
+                                    break;
+                            }
+                        }
+                        break;
+                }
+                break;
         }
     }
 

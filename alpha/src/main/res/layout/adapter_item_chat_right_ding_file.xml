@@ -41,6 +41,7 @@
                 android:textSize="@dimen/alpha_font_size_comm" />
 
             <LinearLayout
+                android:id="@+id/chat_ll_file"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginRight="7dp"

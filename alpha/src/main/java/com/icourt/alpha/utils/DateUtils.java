@@ -138,7 +138,6 @@ public class DateUtils {
      */
     public static String getTimeDurationDate(long milliseconds) {
         SimpleDateFormat formatter = new SimpleDateFormat("HH:mm");
-        formatter.setTimeZone(TimeZone.getTimeZone("GMT+00:00"));
         return formatter.format(milliseconds);
     }
 
@@ -150,7 +149,6 @@ public class DateUtils {
      */
     public static String getHHmmss(long milliseconds) {
         SimpleDateFormat formatter = new SimpleDateFormat("HH:mm:ss");
-        formatter.setTimeZone(TimeZone.getTimeZone("GMT+00:00"));
         return formatter.format(milliseconds);
     }
 
@@ -162,7 +160,6 @@ public class DateUtils {
      */
     public static String getHHmm(long milliseconds) {
         SimpleDateFormat formatter = new SimpleDateFormat("HH:mm");
-        formatter.setTimeZone(TimeZone.getTimeZone("GMT+00:00"));
         return formatter.format(milliseconds);
     }
 

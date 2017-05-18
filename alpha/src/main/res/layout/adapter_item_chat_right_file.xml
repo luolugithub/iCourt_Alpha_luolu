@@ -8,6 +8,7 @@
     android:padding="10dp">
 
     <LinearLayout
+        android:id="@+id/chat_ll_file"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginLeft="42dp"
