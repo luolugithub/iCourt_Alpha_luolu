@@ -25,7 +25,7 @@ public final class IMMessageExtBody implements Serializable {
 
 
     //钉消息 pin
-    public String id;
+    public long id;
     public boolean pin;
 
 
@@ -61,7 +61,7 @@ public final class IMMessageExtBody implements Serializable {
         this.is_all = is_all;
     }
 
-    public IMMessageExtBody(String id, boolean pin) {
+    public IMMessageExtBody(long id, boolean pin) {
         this.id = id;
         this.pin = pin;
     }
@@ -103,7 +103,7 @@ public final class IMMessageExtBody implements Serializable {
      * @param pingMsgId
      * @return
      */
-    public static IMMessageExtBody createDingExtBody(boolean isPing, String pingMsgId) {
+    public static IMMessageExtBody createDingExtBody(boolean isPing, long pingMsgId) {
         return new IMMessageExtBody(pingMsgId, isPing);
     }
 

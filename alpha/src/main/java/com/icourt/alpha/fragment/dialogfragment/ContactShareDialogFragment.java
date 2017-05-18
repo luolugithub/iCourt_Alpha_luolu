@@ -68,10 +68,10 @@ public class ContactShareDialogFragment extends BaseDialogFragment
     TextView titleContent;
 
 
-    public static ContactShareDialogFragment newInstance(@NonNull String msgId) {
+    public static ContactShareDialogFragment newInstance(@NonNull long msgId) {
         ContactShareDialogFragment contactDialogFragment = new ContactShareDialogFragment();
         Bundle args = new Bundle();
-        args.putString("msgId", msgId);
+        args.putLong("msgId", msgId);
         contactDialogFragment.setArguments(args);
         return contactDialogFragment;
     }
@@ -177,7 +177,7 @@ public class ContactShareDialogFragment extends BaseDialogFragment
         if (!sendGroupContactBeans.isEmpty() || !sendGroupEntities.isEmpty()) {
             showLoadingDialog(null);
             JsonArray param = new JsonArray();
-            String msgId = getArguments().getString("msgId");
+            long msgId = getArguments().getLong("msgId");
             for (GroupEntity groupEntity : sendGroupEntities) {
                 if (groupEntity != null) {
                     JsonObject groupJsonObject = new JsonObject();

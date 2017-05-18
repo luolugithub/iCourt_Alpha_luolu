@@ -237,7 +237,7 @@ public interface ApiChatService {
      * @return
      */
     @POST("im/v1/msgs/stars/{msgId}")
-    Call<ResEntity<Boolean>> msgCollect(@Path("msgId") String msgId,
+    Call<ResEntity<Boolean>> msgCollect(@Path("msgId") long msgId,
                                         @Query("ope") @Const.CHAT_TYPE int ope,
                                         @Query("to") String to);
 
@@ -249,7 +249,7 @@ public interface ApiChatService {
      * @return
      */
     @DELETE("im/v1/msgs/stars/{msgId}")
-    Call<ResEntity<Boolean>> msgCollectCancel(@Path("msgId") String msgId,
+    Call<ResEntity<Boolean>> msgCollectCancel(@Path("msgId") long msgId,
                                               @Query("ope") @Const.CHAT_TYPE int ope,
                                               @Query("to") String to);
 
@@ -262,7 +262,7 @@ public interface ApiChatService {
      * @return
      */
     @GET("im/v1/msgs/stars/ids")
-    Call<ResEntity<List<String>>> msgQueryAllCollectedIds(@Query("ope") @Const.CHAT_TYPE int ope,
+    Call<ResEntity<List<Long>>> msgQueryAllCollectedIds(@Query("ope") @Const.CHAT_TYPE int ope,
                                                           @Query("to") String to);
 
     /**
@@ -273,7 +273,7 @@ public interface ApiChatService {
      * @return
      */
     @GET("im/v1/msgs/pins/ids")
-    Call<ResEntity<List<String>>> msgQueryAllDingIds(@Query("ope") @Const.CHAT_TYPE int ope,
+    Call<ResEntity<List<Long>>> msgQueryAllDingIds(@Query("ope") @Const.CHAT_TYPE int ope,
                                                      @Query("to") String to);
 
     /**
@@ -284,7 +284,7 @@ public interface ApiChatService {
      * @return
      */
     @DELETE("im/v1/msgs/{msgId}")
-    Call<ResEntity<JsonElement>> msgRevoke(@Path("msgId") String msgId);
+    Call<ResEntity<JsonElement>> msgRevoke(@Path("msgId") long msgId);
 
 
     /**
@@ -295,7 +295,7 @@ public interface ApiChatService {
      * @return
      */
     @GET("im/v1/msgs/files/me")
-    Call<ResEntity<List<IMMessageCustomBody>>> getMyFiles(@Query("msg_id") String msg_id);
+    Call<ResEntity<List<IMMessageCustomBody>>> getMyFiles(@Query("msg_id") long msg_id);
 
     /**
      * 获取  @我  的消息
@@ -348,7 +348,7 @@ public interface ApiChatService {
     @GET("im/v1/msgs")
     Call<ResEntity<List<IMMessageCustomBody>>> msgQueryAll(@Query("type") String type,
                                                            @Query("size") int size,
-                                                           @Query("mgs_id") String mgs_id,
+                                                           @Query("mgs_id") long mgs_id,
                                                            @Query("ope") @Const.CHAT_TYPE int ope,
                                                            @Query("to") String to
     );

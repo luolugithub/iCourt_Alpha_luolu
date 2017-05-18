@@ -108,9 +108,9 @@ public abstract class ChatBaseActivity
         extends BaseActivity implements INIMessageListener, BaseRecyclerAdapter.OnItemLongClickListener {
 
     //收藏的消息列表
-    protected final Set<String> msgCollectedIdsList = new HashSet<>();
+    protected final Set<Long> msgCollectedIdsList = new HashSet<>();
     //钉的消息列表
-    protected final Set<String> msgDingedIdsList = new HashSet<>();
+    protected final Set<Long> msgDingedIdsList = new HashSet<>();
     protected Handler mHandler = new Handler();
     /**
      * 收到已读回执
@@ -270,9 +270,9 @@ public abstract class ChatBaseActivity
      */
     private void getMsgDingedIds() {
         getChatApi().msgQueryAllDingIds(getIMChatType(), getIMChatId())
-                .enqueue(new SimpleCallBack<List<String>>() {
+                .enqueue(new SimpleCallBack<List<Long>>() {
                     @Override
-                    public void onSuccess(Call<ResEntity<List<String>>> call, Response<ResEntity<List<String>>> response) {
+                    public void onSuccess(Call<ResEntity<List<Long>>> call, Response<ResEntity<List<Long>>> response) {
                         if (response.body().result != null) {
                             msgDingedIdsList.clear();
                             msgDingedIdsList.addAll(response.body().result);
@@ -286,9 +286,9 @@ public abstract class ChatBaseActivity
      */
     private void getMsgCollectedIds() {
         getChatApi().msgQueryAllCollectedIds(getIMChatType(), getIMChatId())
-                .enqueue(new SimpleCallBack<List<String>>() {
+                .enqueue(new SimpleCallBack<List<Long>>() {
                     @Override
-                    public void onSuccess(Call<ResEntity<List<String>>> call, Response<ResEntity<List<String>>> response) {
+                    public void onSuccess(Call<ResEntity<List<Long>>> call, Response<ResEntity<List<Long>>> response) {
                         if (response.body().result != null) {
                             msgCollectedIdsList.clear();
                             msgCollectedIdsList.addAll(response.body().result);
@@ -960,7 +960,7 @@ public abstract class ChatBaseActivity
             ChatAdapter chatAdapter = (ChatAdapter) adapter;
             final IMMessageCustomBody iMMessageCustomBody = chatAdapter.getItem(position);
             if (iMMessageCustomBody == null) return false;
-            if (TextUtils.isEmpty(iMMessageCustomBody.id)) return false;
+            if (iMMessageCustomBody.id<=0) return false;
             final List<String> menuItems = new ArrayList<>();
             switch (iMMessageCustomBody.show_type) {
                 case MSG_TYPE_AT:
@@ -1032,7 +1032,7 @@ public abstract class ChatBaseActivity
      * @param msgId
      * @return
      */
-    private boolean isDinged(String msgId) {
+    private boolean isDinged(long msgId) {
         return msgDingedIdsList.contains(msgId);
     }
 
@@ -1042,7 +1042,7 @@ public abstract class ChatBaseActivity
      * @param msgId
      * @return
      */
-    private boolean isCollected(String msgId) {
+    private boolean isCollected(long msgId) {
         return msgCollectedIdsList.contains(msgId);
     }
 
@@ -1157,7 +1157,7 @@ public abstract class ChatBaseActivity
      * @param isDing    钉 true 取消钉 false
      * @param dingMsgId
      */
-    protected final void msgActionDing(final boolean isDing, final String dingMsgId) {
+    protected final void msgActionDing(final boolean isDing, final long dingMsgId) {
         final IMMessageCustomBody msgPostEntity = IMMessageCustomBody.createDingMsg(getIMChatType(),
                 getLoadedLoginName(),
                 getLoadedLoginUserId(),
@@ -1203,7 +1203,7 @@ public abstract class ChatBaseActivity
      * @param msgId
      */
 
-    protected final void msgActionCollect(final String msgId) {
+    protected final void msgActionCollect(final long msgId) {
         getChatApi().msgCollect(msgId, getIMChatType(), getIMChatId())
                 .enqueue(new SimpleCallBack<Boolean>() {
                     @Override
@@ -1223,7 +1223,7 @@ public abstract class ChatBaseActivity
      *
      * @param msgId
      */
-    protected final void msgActionCollectCancel(final String msgId) {
+    protected final void msgActionCollectCancel(final long msgId) {
         getChatApi().msgCollectCancel(msgId, getIMChatType(), getIMChatId())
                 .enqueue(new SimpleCallBack<Boolean>() {
                     @Override
@@ -1243,8 +1243,8 @@ public abstract class ChatBaseActivity
      *
      * @param msgId
      */
-    protected final void msgActionRevoke(@NonNull String msgId, @Nullable final IMMessage imMessage) {
-        if (TextUtils.isEmpty(msgId)) return;
+    protected final void msgActionRevoke(@NonNull long msgId, @Nullable final IMMessage imMessage) {
+        if(msgId<=0) return;
         //网络
         getChatApi().msgRevoke(msgId)
                 .enqueue(new SimpleCallBack<JsonElement>() {
@@ -1281,7 +1281,7 @@ public abstract class ChatBaseActivity
      *
      * @param id
      */
-    public void showContactShareDialogFragment(String id) {
+    public void showContactShareDialogFragment(long id) {
         String tag = ContactShareDialogFragment.class.getSimpleName();
         FragmentTransaction mFragTransaction = getSupportFragmentManager().beginTransaction();
         Fragment fragment = getSupportFragmentManager().findFragmentByTag(tag);

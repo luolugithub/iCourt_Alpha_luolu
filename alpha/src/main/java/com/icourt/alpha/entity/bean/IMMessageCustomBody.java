@@ -22,7 +22,7 @@ public class IMMessageCustomBody implements ILongFieldEntity, Serializable {
     @Const.MSG_STATU
     public int msg_statu;//消息状态 本地用
 
-    public String id;//消息id
+    public long id;//消息id
     public String name;// 发送人名字,
     public String from;//发送人id,
     public String to;//接收人id，这个需要根据ope判断
@@ -191,7 +191,7 @@ public class IMMessageCustomBody implements ILongFieldEntity, Serializable {
                                                     String from,
                                                     String to,
                                                     boolean isDing,
-                                                    String dingMsgId) {
+                                                    long dingMsgId) {
         IMMessageCustomBody imMessageCustomBody = new IMMessageCustomBody(chatType,
                 Const.MSG_TYPE_DING,
                 name,
@@ -236,11 +236,6 @@ public class IMMessageCustomBody implements ILongFieldEntity, Serializable {
         if (getClass() != o.getClass())
             return false;
         final IMMessageCustomBody other = (IMMessageCustomBody) o;
-        //消息id相等 magic_id车相等
-        if (StringUtils.equalsIgnoreCase(other.id, this.id, false) ||
-                StringUtils.equalsIgnoreCase(other.magic_id, this.magic_id, false)) {
-            return true;
-        }
-        return false;
+        return other.id == this.id || StringUtils.equalsIgnoreCase(other.magic_id, this.magic_id, false);
     }
 }

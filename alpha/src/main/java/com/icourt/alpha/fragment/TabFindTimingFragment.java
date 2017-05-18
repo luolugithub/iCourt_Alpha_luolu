@@ -308,8 +308,18 @@ public class TabFindTimingFragment extends BaseFragment implements BaseRecyclerA
         if (event == null) return;
         switch (event.action) {
             case TimingEvent.TIMING_ADD:
-                if (refreshLayout != null) {
-                    refreshLayout.startRefresh();
+                List<TimeEntity.ItemEntity> data = timeAdapter.getData();
+                for (int i = 0; i < data.size(); i++) {
+                    TimeEntity.ItemEntity itemEntity = data.get(i);
+                    if (itemEntity != null && itemEntity.state == TimeEntity.ItemEntity.TIMER_STATE_START) {
+                        itemEntity.state = TimeEntity.ItemEntity.TIMER_STATE_STOP;
+                    }
+                }
+                timeAdapter.notifyDataSetChanged();
+                TimeEntity.ItemEntity timer = TimerManager.getInstance().getTimer();
+                if (timer == null) return;
+                if (!timeAdapter.getData().contains(timer)) {
+                    timeAdapter.addItem(0, timer);
                 }
                 break;
             case TimingEvent.TIMING_UPDATE_PROGRESS:

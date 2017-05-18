@@ -119,7 +119,7 @@ public class FileListFragment extends BaseFragment {
 
     @Override
     protected void getData(final boolean isRefresh) {
-        String msgid = null;
+        long msgid = 0;
         if (isRefresh) {
         } else {
             if (fileAdapter.getData().isEmpty()) {

@@ -763,7 +763,7 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
      */
     private void getMsgFromServer(final boolean isRefresh) {
         String type = "latest";
-        String msg_id = null;
+        long msg_id = 0;
         if (chatAdapter.getItemCount() <= 0) {
             type = "latest";
         } else {
@@ -889,11 +889,11 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
      *
      * @param msgId
      */
-    private synchronized void removeFromAdapter(String msgId) {
+    private synchronized void removeFromAdapter(long msgId) {
         for (int i = chatAdapter.getData().size() - 1; i >= 0; i++) {
             IMMessageCustomBody item = chatAdapter.getItem(i);
             if (item != null) {
-                if (StringUtils.equalsIgnoreCase(msgId, item.id, false)) {
+                if (msgId == item.id){
                     chatAdapter.removeItem(item);
                     break;
                 }
