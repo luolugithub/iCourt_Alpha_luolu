@@ -898,17 +898,16 @@ public abstract class ChatBaseActivity
     /**
      * <meta name="keywords" content="正则表达式,html"/>
      * <meta name="description" content="正则表达式,html"/>
-     * 优先keywords
      *
      * @param htmlString
      * @return
      */
     private String getHtmlDescription(String htmlString) {
-        String htmlKeywordslabel = UrlUtils.getHtmlKeywordslabel(htmlString);
-        if (TextUtils.isEmpty(htmlKeywordslabel)) {
-            return UrlUtils.getHtmlDescriptionlabel(htmlString);
+        String htmlDescription = UrlUtils.getHtmlDescriptionlabel(htmlString);
+        if (TextUtils.isEmpty(htmlDescription)) {
+            return UrlUtils.getHtmlKeywordslabel(htmlString);
         }
-        return htmlKeywordslabel;
+        return htmlDescription;
     }
 
     /**

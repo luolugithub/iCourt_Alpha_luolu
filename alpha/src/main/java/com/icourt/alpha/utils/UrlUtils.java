@@ -96,33 +96,15 @@ public class UrlUtils {
      * @return
      */
     public static final String getHtmlKeywordslabel(String htmlString) {
-        try {
-            if (!TextUtils.isEmpty(htmlString)) {
-                Pattern pa = Pattern.compile("<.*?[\"']?keywords[\"']?.*?\\/?>");
-                Matcher ma = pa.matcher(htmlString);
-                String keywords = null;
-                while (ma.find()) {
-                    String group = ma.group();
-                    if (!TextUtils.isEmpty(group)) {
-                        int keywordsStart = group.indexOf("name=\"keywords\"");
-                        if (keywordsStart >= 0) {
-                            String contentStartString = "content=";
-                            int contentStart = group.indexOf(contentStartString, keywordsStart);
-                            if (contentStart >= 0) {
-                                int contentEnd = group.indexOf("\"", contentStart + contentStartString.length() + 1);
-                                if (contentEnd >= 0) {
-                                    keywords = group.substring(contentStart + contentStartString.length() + 1, contentEnd);
-                                    if (!TextUtils.isEmpty(keywords)) {
-                                        return keywords;
-                                    }
-                                }
-                            }
-                        }
-                    }
+        if (!TextUtils.isEmpty(htmlString)) {
+            String keywordsLabel = "name=\"keywords\" content=\"";
+            int keywordsStart = htmlString.indexOf(keywordsLabel);
+            if (keywordsStart >= 0) {
+                int contentEnd = htmlString.indexOf("\"", keywordsStart + 1 + keywordsLabel.length());
+                if (contentEnd >= 0) {
+                    return htmlString.substring(keywordsStart + 1 + keywordsLabel.length(), contentEnd);
                 }
             }
-        } catch (Exception e) {
-            e.printStackTrace();
         }
         return null;
     }
@@ -135,33 +117,15 @@ public class UrlUtils {
      * @return
      */
     public static final String getHtmlDescriptionlabel(String htmlString) {
-        try {
-            if (!TextUtils.isEmpty(htmlString)) {
-                Pattern pa = Pattern.compile("<.*?[\"']?keywords[\"']?.*?\\/?>");
-                Matcher ma = pa.matcher(htmlString);
-                String keywords = null;
-                while (ma.find()) {
-                    String group = ma.group();
-                    if (!TextUtils.isEmpty(group)) {
-                        int descriptionStart = group.indexOf("name=\"description\"");
-                        if (descriptionStart >= 0) {
-                            String contentStartString = "content=";
-                            int contentStart = group.indexOf(contentStartString, descriptionStart);
-                            if (contentStart >= 0) {
-                                int contentEnd = group.indexOf("\"", contentStart + contentStartString.length() + 1);
-                                if (contentEnd >= 0) {
-                                    keywords = group.substring(contentStart + contentStartString.length() + 1, contentEnd);
-                                    if (!TextUtils.isEmpty(keywords)) {
-                                        return keywords;
-                                    }
-                                }
-                            }
-                        }
-                    }
+        if (!TextUtils.isEmpty(htmlString)) {
+            String descriptionLabel = "name=\"description\" content=\"";
+            int descriptionStart = htmlString.indexOf(descriptionLabel);
+            if (descriptionStart >= 0) {
+                int contentEnd = htmlString.indexOf("\"", descriptionStart + 1 + descriptionLabel.length());
+                if (contentEnd >= 0) {
+                    return htmlString.substring(descriptionStart + 1 + descriptionLabel.length(), contentEnd);
                 }
             }
-        } catch (Exception e) {
-            e.printStackTrace();
         }
         return null;
     }
@@ -172,6 +136,7 @@ public class UrlUtils {
      *
      * @return
      */
+
     public static String getHtmlFirstImage(String htmlString) {
         try {
             if (!TextUtils.isEmpty(htmlString)) {
