@@ -323,13 +323,11 @@ public interface ApiChatService {
      * 获取我收藏的消息
      * 文档地址:https://www.showdoc.cc/1620156?page_id=14892528
      *
-     * @param pageNum  第n页
-     * @param pageSize 每页获取条目数量
+     * @param msg_id
      * @return
      */
     @GET("im/v1/msgs/stars")
-    Call<ResEntity<List<IMMessageCustomBody>>> getMyCollectedMessages(@Query("pageNum") int pageNum,
-                                                                      @Query("pageSize") int pageSize);
+    Call<ResEntity<List<IMMessageCustomBody>>> getMyCollectedMessages(@Query("msg_id") long msg_id);
 
     /**
      * 获取钉的消息
@@ -337,11 +335,13 @@ public interface ApiChatService {
      *
      * @param ope
      * @param to
+     * @param msg_id
      * @return
      */
     @GET("im/v1/msgs/pins")
     Call<ResEntity<List<IMMessageCustomBody>>> getDingMessages(@Query("ope") @Const.CHAT_TYPE int ope,
-                                                               @Query("to") String to);
+                                                               @Query("to") String to,
+                                                               @Query("msg_id") long msg_id);
 
 
     /**
@@ -372,7 +372,8 @@ public interface ApiChatService {
      */
     @GET("im/v1/msgs/files")
     Call<ResEntity<List<IMMessageCustomBody>>> msgQueryFiles(@Query("ope") @Const.CHAT_TYPE int ope,
-                                                             @Query("to") String to);
+                                                             @Query("to") String to,
+                                                             @Query("msg_id") long msg_id);
 
     /**
      * 查询所有联系人【客户端理解为联系人】
@@ -460,6 +461,7 @@ public interface ApiChatService {
 
     /**
      * 获取文件下载地址
+     *
      * @param repo_id
      * @param path
      * @param name
@@ -467,6 +469,6 @@ public interface ApiChatService {
      */
     @GET("im/v1/msgs/files/download")
     Call<ResEntity<JsonElement>> fileUrlQuery(@Query("repo_id") String repo_id,
-                                   @Query("path") String path,
-                                   @Query("name") String name);
+                                              @Query("path") String path,
+                                              @Query("name") String name);
 }

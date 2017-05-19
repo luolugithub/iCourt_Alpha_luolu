@@ -133,6 +133,7 @@ public class FileListFragment extends BaseFragment {
     protected void getData(final boolean isRefresh) {
         long msgid = 0;
         if (isRefresh) {
+            msgid = Integer.MAX_VALUE;
         } else {
             if (fileAdapter.getData().isEmpty()) {
                 IMMessageCustomBody item = fileAdapter.getItem(fileAdapter.getData().size() - 1);

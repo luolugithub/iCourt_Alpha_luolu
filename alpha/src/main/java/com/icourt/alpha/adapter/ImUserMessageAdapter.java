@@ -103,6 +103,12 @@ public class ImUserMessageAdapter extends BaseArrayRecyclerAdapter<IMMessageCust
     }
 
     @Override
+    public long getItemId(int position) {
+        IMMessageCustomBody item = getItem(position);
+        return item != null ? item.id : super.getItemId(position);
+    }
+
+    @Override
     public int getItemViewType(int position) {
         IMMessageCustomBody item = getItem(position);
         if (item != null) {

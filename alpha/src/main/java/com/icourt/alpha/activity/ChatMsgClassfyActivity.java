@@ -123,7 +123,6 @@ public class ChatMsgClassfyActivity extends BaseActivity {
     RecyclerView recyclerView;
     @BindView(R.id.refreshLayout)
     RefreshLayout refreshLayout;
-    private int pageIndex = 1;
 
 
     @MsgClassfyType
@@ -209,26 +208,31 @@ public class ChatMsgClassfyActivity extends BaseActivity {
     @Override
     protected void getData(final boolean isRefresh) {
         super.getData(isRefresh);
+        long msg_id = imUserMessageAdapter.getData().size() > 0 ? imUserMessageAdapter.getItemId(imUserMessageAdapter.getData().size() - 1) : Integer.MAX_VALUE;
         if (isRefresh) {
-            pageIndex = 0;
+            msg_id = Integer.MAX_VALUE;
         }
         Call<ResEntity<List<IMMessageCustomBody>>> call = null;
         switch (getMsgClassfyType()) {
             case MSG_CLASSFY_CHAT_DING:
-                call =  getChatApi()
-                        .getDingMessages(getMsgChatType(), getIntent().getStringExtra(KEY_ID));
+                call = getChatApi()
+                        .getDingMessages(getMsgChatType(),
+                                getIntent().getStringExtra(KEY_ID),
+                                msg_id);
                 break;
             case MSG_CLASSFY_CHAT_FILE:
                 call = getChatApi()
-                        .msgQueryFiles(getMsgChatType(), getIntent().getStringExtra(KEY_ID));
+                        .msgQueryFiles(getMsgChatType(),
+                                getIntent().getStringExtra(KEY_ID),
+                                msg_id);
                 break;
             case MSG_CLASSFY_MY_COLLECTEED:
                 call = getChatApi()
-                        .getMyCollectedMessages(pageIndex, ActionConstants.DEFAULT_PAGE_SIZE);
+                        .getMyCollectedMessages(msg_id);
                 break;
             default:
-                call =  getChatApi()
-                        .getMyCollectedMessages(pageIndex, ActionConstants.DEFAULT_PAGE_SIZE);
+                call = getChatApi()
+                        .getMyCollectedMessages(msg_id);
                 break;
         }
         call.enqueue(new SimpleCallBack<List<IMMessageCustomBody>>() {
@@ -236,7 +240,6 @@ public class ChatMsgClassfyActivity extends BaseActivity {
             public void onSuccess(Call<ResEntity<List<IMMessageCustomBody>>> call, Response<ResEntity<List<IMMessageCustomBody>>> response) {
                 imUserMessageAdapter.bindData(isRefresh, response.body().result);
                 stopRefresh();
-                pageIndex += 1;
                 enableLoadMore(response.body().result);
             }
 
