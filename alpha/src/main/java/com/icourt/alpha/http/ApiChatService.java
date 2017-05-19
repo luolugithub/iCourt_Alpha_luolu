@@ -457,4 +457,16 @@ public interface ApiChatService {
     @GET("im/v1/users/me")
     Call<ResEntity<AlphaUserInfo>> userInfoQuery();
 
+
+    /**
+     * 获取文件下载地址
+     * @param repo_id
+     * @param path
+     * @param name
+     * @return
+     */
+    @GET("im/v1/msgs/files/download")
+    Call<ResEntity<JsonElement>> fileUrlQuery(@Query("repo_id") String repo_id,
+                                   @Query("path") String path,
+                                   @Query("name") String name);
 }

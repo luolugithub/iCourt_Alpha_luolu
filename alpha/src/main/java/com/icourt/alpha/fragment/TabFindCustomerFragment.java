@@ -13,6 +13,10 @@ import android.widget.ImageView;
 import com.andview.refreshview.XRefreshView;
 import com.gjiazhe.wavesidebar.WaveSideBar;
 import com.icourt.alpha.R;
+import com.icourt.alpha.activity.CustomerCompanyCreateActivity;
+import com.icourt.alpha.activity.CustomerCompanyDetailActivity;
+import com.icourt.alpha.activity.CustomerPersonCreateActivity;
+import com.icourt.alpha.activity.CustomerPersonDetailActivity;
 import com.icourt.alpha.activity.CustomerSearchActivity;
 import com.icourt.alpha.activity.MyCollectedCustomersActivity;
 import com.icourt.alpha.adapter.CustomerAdapter;
@@ -24,6 +28,7 @@ import com.icourt.alpha.db.convertor.ListConvertor;
 import com.icourt.alpha.db.dbmodel.CustomerDbModel;
 import com.icourt.alpha.db.dbservice.CustomerDbService;
 import com.icourt.alpha.entity.bean.CustomerEntity;
+import com.icourt.alpha.entity.event.UpdateCustomerEvent;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.DensityUtil;
@@ -32,6 +37,10 @@ import com.icourt.alpha.utils.PinyinComparator;
 import com.icourt.alpha.view.recyclerviewDivider.SuspensionDecoration;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 import com.icourt.alpha.widget.dialog.BottomActionDialog;
+
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -53,7 +62,7 @@ import retrofit2.Response;
  * date createTime：2017/4/17
  * version 1.0.0
  */
-public class TabFindCustomerFragment extends BaseFragment {
+public class TabFindCustomerFragment extends BaseFragment implements BaseRecyclerAdapter.OnItemClickListener {
     private static final String STRING_TOP = "↑︎";
 
     @BindView(R.id.titleAction)
@@ -85,6 +94,7 @@ public class TabFindCustomerFragment extends BaseFragment {
 
     @Override
     protected void initView() {
+        EventBus.getDefault().register(this);
         customerDbService = new CustomerDbService(getLoginUserId());
         linearLayoutManager = new LinearLayoutManager(getContext());
         recyclerView.setLayoutManager(linearLayoutManager);
@@ -96,6 +106,7 @@ public class TabFindCustomerFragment extends BaseFragment {
         View rl_comm_search = headerView.findViewById(R.id.rl_comm_search);
         registerClick(rl_comm_search);
         headerFooterAdapter.addHeader(headerView);
+        customerAdapter.setOnItemClickListener(this);
 
         mDecoration = new SuspensionDecoration(getActivity(), null);
         mDecoration.setColorTitleBg(0xFFf4f4f4);
@@ -148,6 +159,9 @@ public class TabFindCustomerFragment extends BaseFragment {
             if (customerDbModels != null) {
                 ArrayList<IConvertModel<CustomerEntity>> iConvertModels = new ArrayList<IConvertModel<CustomerEntity>>(customerDbModels);
                 List<CustomerEntity> customerEntities = ListConvertor.convertList(iConvertModels);
+                IndexUtils.setSuspensions(getContext(), customerEntities);
+                if (customerEntities != null)
+                    Collections.sort(customerEntities, new PinyinComparator<CustomerEntity>());
                 customerAdapter.bindData(true, customerEntities);
                 updateIndexBar(customerEntities);
             }
@@ -157,16 +171,17 @@ public class TabFindCustomerFragment extends BaseFragment {
     @Override
     protected void getData(final boolean isRefresh) {
         super.getData(isRefresh);
-        getApi().getCustomers(0, 100000)
+        getApi().getCustomers(100000)
                 .enqueue(new SimpleCallBack<List<CustomerEntity>>() {
                     @Override
                     public void onSuccess(Call<ResEntity<List<CustomerEntity>>> call, Response<ResEntity<List<CustomerEntity>>> response) {
                         stopRefresh();
                         if (response.body().result != null) {
-                            customerAdapter.bindData(true, response.body().result);
                             IndexUtils.setSuspensions(getContext(), response.body().result);
                             Collections.sort(response.body().result, new PinyinComparator<CustomerEntity>());
+//                            Arrays.sort(response.body().result.toArray(new CustomerEntity[response.body().result.size()]),new PinyinComparator<CustomerEntity>());
                             updateIndexBar(response.body().result);
+                            customerAdapter.bindData(true, response.body().result);
                             insert2Db(response.body().result);
                         }
                     }
@@ -194,6 +209,14 @@ public class TabFindCustomerFragment extends BaseFragment {
                     @Override
                     public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
                         dialog.dismiss();
+                        switch (position) {
+                            case 0:
+                                CustomerPersonCreateActivity.launch(getContext(), null, CustomerPersonCreateActivity.CREATE_CUSTOMER_ACTION);
+                                break;
+                            case 1:
+                                CustomerCompanyCreateActivity.launch(getContext(), null, CustomerCompanyCreateActivity.CREATE_CUSTOMER_ACTION);
+                                break;
+                        }
                     }
                 }).show();
                 break;
@@ -244,8 +267,29 @@ public class TabFindCustomerFragment extends BaseFragment {
     public void onDestroyView() {
         super.onDestroyView();
         unbinder.unbind();
+        EventBus.getDefault().unregister(this);
         if (customerDbService != null) {
             customerDbService.releaseService();
+        }
+    }
+
+    @Override
+    public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
+        CustomerEntity customerEntity = (CustomerEntity) adapter.getItem(adapter.getRealPos(position));
+        if (!TextUtils.isEmpty(customerEntity.contactType)) {
+            //公司
+            if (TextUtils.equals(customerEntity.contactType.toUpperCase(), "C")) {
+                CustomerCompanyDetailActivity.launch(getContext(), customerEntity.pkid, customerEntity.name, true);
+            } else if (TextUtils.equals(customerEntity.contactType.toUpperCase(), "P")) {
+                CustomerPersonDetailActivity.launch(getContext(), customerEntity.pkid, customerEntity.name, true);
+            }
+        }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void updateCustEvent(UpdateCustomerEvent event) {
+        if (event != null) {
+            getLocalCustomers();
         }
     }
 }

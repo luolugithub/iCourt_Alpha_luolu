@@ -100,4 +100,17 @@ public class CustomerDbService extends BaseRealmService<CustomerDbModel, Custome
         }
         return null;
     }
+
+    /**
+     * 添加或者更新一条对应实体
+     *
+     * @param customerDbModel
+     * @return
+     */
+    public CustomerDbModel insertOrUpdate(CustomerDbModel customerDbModel) {
+        if (isServiceAvailable()) {
+            return dao.insertOrUpdate(customerDbModel);
+        }
+        return null;
+    }
 }

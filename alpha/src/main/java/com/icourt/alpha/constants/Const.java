@@ -125,4 +125,21 @@ public class Const {
     public @interface PROJECT_ORDERBY {
 
     }
+
+    //个人联系人
+    public static final String SELECT_PHONE_TAG_ACTION = "select_phone_tag_action";//选择电话标签action
+    public static final String SELECT_EMAIL_TAG_ACTION = "select_email_tag_action";//选择邮箱标签action
+    public static final String SELECT_ADDRESS_TAG_ACTION = "select_address_tag_action";//选择地址标签action
+    public static final String SELECT_PAPERS_TAG_ACTION = "select_papers_tag_action";//选择证件标签action
+    public static final String SELECT_IM_TAG_ACTION = "select_im_tag_action";//选择IM标签action
+    public static final String SELECT_DATE_TAG_ACTION = "select_date_tag_action";//选择日期标签action
+    public static final String SELECT_ENTERPRISE_TAG_ACTION = "select_enterprise_tag_action";//选择工作单位标签action
+    public static final String SELECT_RELATION_TAG_ACTION = "select_relation_tag_action";//选择联络人关系标签action
+
+    //机构联系人
+    public static final String SELECT_ENTERPRISE_ADDRESS_TAG_ACTION = "select_enterprise_address_tag_action";//选择机构地址action
+    public static final String SELECT_ENTERPRISE_EMAIL_TAG_ACTION = "select_enterprise_email_tag_action";//选择机构邮箱action
+    public static final String SELECT_ENTERPRISE_DATE_TAG_ACTION = "select_enterprise_date_tag_action";//选择机构重要日期action
+    public static final String SELECT_ENTERPRISE_PARPER_TAG_ACTION = "select_enterprise_parper_tag_action";//选择机构证件action
+    public static final String SELECT_ENTERPRISE_LIAISONS_TAG_ACTION = "select_enterprise_liaisons_tag_action";//选择机构联络人action
 }

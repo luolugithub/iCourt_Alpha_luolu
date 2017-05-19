@@ -1053,6 +1053,7 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
                              "path":"xasxax"
                              */
                             //item.ext.name;
+                            FileBoxDownloadActivity.launchIMFile(this, item.ext.path, item.ext.repo_id, item.ext.name, FileBoxDownloadActivity.IM_DOWNLOAD_FILE_ACTION);
                         }
                         break;
                     case Const.MSG_TYPE_DING:
@@ -1068,6 +1069,7 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
                                          "path":"xasxax"
                                          */
                                         //item.ext.ext.name;
+                                        FileBoxDownloadActivity.launchIMFile(this, item.ext.ext.path, item.ext.ext.repo_id, item.ext.ext.name, FileBoxDownloadActivity.IM_DOWNLOAD_FILE_ACTION);
                                     }
                                     break;
                             }

@@ -27,6 +27,8 @@ import com.icourt.alpha.BuildConfig;
 import com.icourt.alpha.R;
 import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.fragment.dialogfragment.ContactShareDialogFragment;
+import com.icourt.alpha.http.callback.SimpleCallBack;
+import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.ActionConstants;
 import com.icourt.alpha.utils.FileUtils;
 import com.icourt.alpha.utils.IMUtils;
@@ -65,7 +67,7 @@ public class FileBoxDownloadActivity extends BaseActivity {
     public static final int IM_DOWNLOAD_FILE_ACTION = 2;//享聊下载附件
     public static final int PROJECT_DOWNLOAD_FILE_ACTION = 3;//项目下载附件
 
-    String authToken, seaFileRepoId, rootName, fileName, filePath;
+    String authToken, seaFileRepoId, rootName, fileName, filePath, imPath;
     int action;
     @BindView(R.id.titleBack)
     ImageView titleBack;
@@ -112,6 +114,16 @@ public class FileBoxDownloadActivity extends BaseActivity {
         context.startActivity(intent);
     }
 
+    public static void launchIMFile(@NonNull Context context, @NonNull String path, @NonNull String seaFileRepoId, @NonNull String rootName, @DOWNLOAD_ACTION int action) {
+        if (context == null) return;
+        if (TextUtils.isEmpty(seaFileRepoId)) return;
+        Intent intent = new Intent(context, FileBoxDownloadActivity.class);
+        intent.putExtra("action", action);
+        intent.putExtra("path", path);
+        intent.putExtra("seaFileRepoId", seaFileRepoId);
+        intent.putExtra("rootName", rootName);
+        context.startActivity(intent);
+    }
 
     public static void launchClearTop(Context context, Intent intent) {
         if (context == null) return;
@@ -134,6 +146,7 @@ public class FileBoxDownloadActivity extends BaseActivity {
         super.initView();
         action = getIntent().getIntExtra("action", -1);
         authToken = getIntent().getStringExtra("authToken");
+        imPath = getIntent().getStringExtra("path");
         seaFileRepoId = getIntent().getStringExtra("seaFileRepoId");
         rootName = getIntent().getStringExtra("rootName");
         progressbar.setMaxProgress(100);
@@ -235,7 +248,12 @@ public class FileBoxDownloadActivity extends BaseActivity {
     private void checkPermissionOrDownload() {
         if (checkPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
             if (TextUtils.isEmpty(authToken)) {
-                getFileBoxToken();
+                if (action == PROJECT_DOWNLOAD_FILE_ACTION || action == TASK_DOWNLOAD_FILE_ACTION) {
+                    getFileBoxToken();
+                } else if (action == IM_DOWNLOAD_FILE_ACTION) {
+                    getData(true);
+                }
+
             } else if (!TextUtils.isEmpty(authToken) && !TextUtils.isEmpty(seaFileRepoId))
                 getData(true);
 
@@ -293,26 +311,52 @@ public class FileBoxDownloadActivity extends BaseActivity {
     protected void getData(boolean isRefresh) {
         super.getData(isRefresh);
 
-        if (!TextUtils.isEmpty(authToken) && !TextUtils.isEmpty(seaFileRepoId)) {
-            String p = "/" + rootName;
-            if (p.contains("//")) {
-                p = p.replace("//", "/");
+        if (!TextUtils.isEmpty(seaFileRepoId)) {
+            if (action == PROJECT_DOWNLOAD_FILE_ACTION || action == TASK_DOWNLOAD_FILE_ACTION) {
+                getProjectOrTaskUrl();
+            } else if (action == IM_DOWNLOAD_FILE_ACTION) {
+                getIMFileUrl();
             }
-            getApi().fileboxDownloadUrlQuery("Token " + authToken, seaFileRepoId, p).enqueue(new Callback<JsonElement>() {
-                @Override
-                public void onResponse(Call<JsonElement> call, Response<JsonElement> response) {
-                    if (response.body() != null) {
-                        String downloadUrl = response.body().getAsString();
-                        downloadFile(downloadUrl);
-                    }
-                }
-
-                @Override
-                public void onFailure(Call<JsonElement> call, Throwable throwable) {
-                    showTopSnackBar("下载失败");
-                }
-            });
         }
+    }
+
+    /**
+     * 获取任务附件或者项目文件 下载url
+     */
+    private void getProjectOrTaskUrl() {
+        String p = "/" + rootName;
+        if (p.contains("//")) {
+            p = p.replace("//", "/");
+        }
+        getApi().fileboxDownloadUrlQuery("Token " + authToken, seaFileRepoId, p).enqueue(new Callback<JsonElement>() {
+            @Override
+            public void onResponse(Call<JsonElement> call, Response<JsonElement> response) {
+                if (response.body() != null) {
+                    String downloadUrl = response.body().getAsString();
+                    downloadFile(downloadUrl);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<JsonElement> call, Throwable throwable) {
+                showTopSnackBar("下载失败");
+            }
+        });
+    }
+
+    /**
+     * 获取im文件下载地址
+     */
+    private void getIMFileUrl() {
+        getChatApi().fileUrlQuery(seaFileRepoId, imPath, rootName).enqueue(new SimpleCallBack<JsonElement>() {
+            @Override
+            public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
+                if (response.body() != null) {
+                    String downloadUrl = response.body().message;
+                    downloadFile(downloadUrl);
+                }
+            }
+        });
     }
 
     /**

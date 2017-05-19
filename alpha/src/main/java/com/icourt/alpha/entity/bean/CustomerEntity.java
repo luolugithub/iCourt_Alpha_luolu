@@ -28,6 +28,10 @@ public class CustomerEntity implements IConvertModel<CustomerDbModel>,
     public String contactType;
     public String name;
     public String sex;
+    public String title;
+    public String itemSubType;
+    public String contactPkid;
+    public String impression;
 
     public CustomerEntity() {
     }

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:focusableInTouchMode="true"
+    android:focusable="true"
+    android:orientation="vertical">
+
+    <include layout="@layout/layout_title_type_0" />
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/activity_select_contact_tag_fixation_recyclerview"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:overScrollMode="never">
+
+    </android.support.v7.widget.RecyclerView>
+
+    <EditText
+        android:id="@+id/activity_select_custom_contact_tag_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:background="@drawable/top_bottom_line_layout_bg"
+        android:padding="12dp"
+        android:imeOptions="actionDone"
+        android:maxLines="1"
+        android:singleLine="true"
+        android:hint="@string/add_custom_tag_text"
+        android:textColor="@color/search_history_keyword_color"
+        android:textSize="16dp" />
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/activity_select_contact_tag_custom_recyclerview"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:overScrollMode="never">
+
+    </android.support.v7.widget.RecyclerView>
+</LinearLayout>

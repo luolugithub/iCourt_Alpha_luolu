@@ -5,8 +5,10 @@ import com.google.gson.JsonObject;
 import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.icourt.alpha.entity.bean.AppVersionEntity;
 import com.icourt.alpha.entity.bean.CommentEntity;
+import com.icourt.alpha.entity.bean.ContactDeatilBean;
 import com.icourt.alpha.entity.bean.CustomerEntity;
 import com.icourt.alpha.entity.bean.FileBoxBean;
+import com.icourt.alpha.entity.bean.GroupBean;
 import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.icourt.alpha.entity.bean.GroupEntity;
 import com.icourt.alpha.entity.bean.IMMessageCustomBody;
@@ -174,25 +176,23 @@ public interface ApiAlphaService {
     /**
      * 获取客户列表
      *
-     * @param pageNum
-     * @param pageSize
+     * @param pagesize
      * @return
      */
     @GET("api/v2/contact")
-    Call<ResEntity<List<CustomerEntity>>> getCustomers(@Query("pageNum") int pageNum,
-                                                       @Query("pageSize") int pageSize);
+    Call<ResEntity<List<CustomerEntity>>> getCustomers(@Query("pagesize") int pagesize);
 
     /**
      * 获取客户列表
      *
-     * @param pageNum
-     * @param pageSize
-     * @param isView   是否关注的 关注==1
+     * @param pageindex
+     * @param pagesize
+     * @param isView    是否关注的 关注==1
      * @return
      */
     @GET("api/v2/contact")
-    Call<ResEntity<List<CustomerEntity>>> getCustomers(@Query("pageNum") int pageNum,
-                                                       @Query("pageSize") int pageSize,
+    Call<ResEntity<List<CustomerEntity>>> getCustomers(@Query("pageindex") int pageindex,
+                                                       @Query("pagesize") int pagesize,
                                                        @Query("isView") int isView);
 
     /**
@@ -696,8 +696,116 @@ public interface ApiAlphaService {
      */
     @GET("api/v2/timing/timing/search")
     Call<ResEntity<PageEntity<TimeEntity.ItemEntity>>> timerQuery(@Query("pageIndex") int pageIndex,
-                                                                      @Query("pageSize") int pageSize,
-                                                                      @Query("state") int state);
+                                                                  @Query("pageSize") int pageSize,
+                                                                  @Query("state") int state);
+
+    /**
+     * 获得token里律师所属的团队信息
+     *
+     * @return
+     */
+    @GET("api/v1/auth/groups/q/groupByToken")
+    Call<ResEntity<List<GroupBean>>> lawyerGroupListQuery();
+
+    /**
+     * 获取联系人详情
+     *
+     * @param id
+     * @return
+     */
+    @GET("api/v2/contact/detail/{id}")
+    Call<ResEntity<List<ContactDeatilBean>>> customerDetailQuery(@Path("id") String id);
+
+    /**
+     * 获取企业联络人
+     *
+     * @param id
+     * @return
+     */
+    @GET("api/v2/contact/relatedperson/{id}")
+    Call<ResEntity<List<ContactDeatilBean>>> customerLiaisonsQuery(@Path("id") String id);
+
+    /**
+     * 联系人添加关注
+     *
+     * @param id
+     * @return
+     */
+    @PUT("api/v2/contact/addStar/{id}")
+    Call<ResEntity<JsonElement>> customerAddStar(@Path("id") String id);
+
+    /**
+     * 联系人删除关注
+     *
+     * @param id
+     * @return
+     */
+    @DELETE("api/v2/contact/deleteStar/{id}")
+    Call<ResEntity<JsonElement>> customerDeleteStar(@Path("id") String id);
+
+    /**
+     * 获取所在律所中的团队列表
+     *
+     * @param id
+     * @return
+     */
+    @GET("api/v1/auth/groups/up/q/office/{id}")
+    Call<ResEntity<List<GroupBean>>> officeGroupsQuery(@Path("id") String id);
+
+    /**
+     * 修改联系人所属团队
+     *
+     * @param body
+     * @return
+     */
+    @PUT("api/v2/contact/grou")
+    Call<ResEntity<JsonElement>> customerGroupInfoUpdate(@Body RequestBody body);
+
+    /**
+     * 获取联系人的联络人
+     *
+     * @param id
+     * @return
+     */
+    @GET("api/v2/contact/relatedperson/{id}")
+    Call<ResEntity<List<ContactDeatilBean>>> liaisonsQuery(@Path("id") String id);
+
+    /**
+     * 修改联系人
+     *
+     * @param body
+     * @return
+     */
+    @PUT("api/v2/contact/mobile")
+    Call<ResEntity<List<ContactDeatilBean>>> customerUpdate(@Body RequestBody body);
+
+    /**
+     * 添加联系人
+     *
+     * @param body
+     * @return
+     */
+    @POST("api/v2/contact")
+    Call<ResEntity<List<ContactDeatilBean>>> customerCreate(@Body RequestBody body);
+
+    /**
+     * 检测企业联系人是否重复
+     *
+     * @param accuratename
+     * @return
+     */
+    @GET("api/v2/contact")
+    Call<ResEntity<JsonObject>> companyCheckReName(@Query("accuratename") String accuratename);
+
+
+    /**
+     * 添加企业联系人
+     *
+     * @param body
+     * @return
+     */
+    @POST("api/v2/contact/company")
+    Call<ResEntity<List<ContactDeatilBean>>> customerCompanyCreate(@Body RequestBody body);
 }
 
 

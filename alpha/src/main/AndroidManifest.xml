@@ -216,6 +216,27 @@
         <activity
             android:name=".activity.WebViewActivity"
             android:screenOrientation="portrait" />
+        <activity
+            android:name=".activity.CustomerPersonDetailActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".activity.CustomerCompanyDetailActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".activity.SelectCustomerTagActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".activity.CustomerPersonCreateActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".activity.GroupSelectActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".activity.SelectLiaisonActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".activity.CustomerCompanyCreateActivity"
+            android:screenOrientation="portrait" />
         <!-- umeng appkey配置 -->
         <meta-data
             android:name="UMENG_APPKEY"

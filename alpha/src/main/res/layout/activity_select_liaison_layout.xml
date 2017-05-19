@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <include layout="@layout/layout_title_type_0" />
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <com.icourt.alpha.view.xrefreshlayout.RefreshLayout
+            android:id="@id/refreshLayout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <android.support.v7.widget.RecyclerView
+                android:id="@id/recyclerView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@android:color/white" />
+
+        </com.icourt.alpha.view.xrefreshlayout.RefreshLayout>
+
+        <com.gjiazhe.wavesidebar.WaveSideBar
+            android:id="@+id/recyclerIndexBar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingRight="8dp"
+            app:sidebar_lazy_respond="false"
+            app:sidebar_max_offset="80dp"
+            app:sidebar_position="right"
+            app:sidebar_text_alignment="center"
+            app:sidebar_text_color="@color/alpha_font_color_black"
+            app:sidebar_text_size="@dimen/alpha_font_size_mini" />
+    </FrameLayout>
+
+</LinearLayout>

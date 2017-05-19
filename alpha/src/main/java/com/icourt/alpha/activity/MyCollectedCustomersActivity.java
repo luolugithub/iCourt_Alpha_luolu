@@ -67,7 +67,7 @@ public class MyCollectedCustomersActivity extends BaseActivity {
     protected void initView() {
         super.initView();
         setTitle("我关注的");
-        refreshLayout.setNoticeEmpty(R.mipmap.icon_placeholder_task, R.string.my_center_null_atme_text);
+        refreshLayout.setNoticeEmpty(R.mipmap.icon_placeholder_task, "暂无关注联系人");
         refreshLayout.setMoveForHorizontal(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setHasFixedSize(true);

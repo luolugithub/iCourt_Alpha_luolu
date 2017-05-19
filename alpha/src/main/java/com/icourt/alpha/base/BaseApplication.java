@@ -70,6 +70,7 @@ public class BaseApplication extends MultiDexApplication {
         Config.isJumptoAppStore = false; //其中qq 微信会跳转到下载界面进行下载，其他应用会跳到应用商店进行下载
         Log.LOG = BuildConfig.IS_DEBUG;//umeng sdk日志跟踪
         MobclickAgent.setDebugMode(BuildConfig.IS_DEBUG);
+        System.setProperty("java.util.Arrays.useLegacyMergeSort", "true");
     }
 
     private static BaseApplication baseApplication;
