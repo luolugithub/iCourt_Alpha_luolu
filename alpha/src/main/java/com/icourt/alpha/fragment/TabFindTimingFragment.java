@@ -117,8 +117,8 @@ public class TabFindTimingFragment extends BaseFragment implements BaseRecyclerA
         recyclerView.setAdapter(timeAdapter = new TimeAdapter(true));
         timeAdapter.setOnItemClickListener(this);
 
-        String weekStart = new SimpleDateFormat("MMM月dd日").format(DateUtils.getCurrWeekStartTime());
-        String weekEnd = new SimpleDateFormat("MMM月dd日").format(DateUtils.getCurrWeekEndTime());
+        String weekStart = new SimpleDateFormat("MM月dd日").format(DateUtils.getCurrWeekStartTime());
+        String weekEnd = new SimpleDateFormat("MM月dd日").format(DateUtils.getCurrWeekEndTime());
         timingDateTitle.setText(String.format("%s-%s", weekStart, weekEnd));
         generateData();
 
@@ -128,22 +128,27 @@ public class TabFindTimingFragment extends BaseFragment implements BaseRecyclerA
             @Override
             public void onRefresh(boolean isPullDown) {
                 super.onRefresh(isPullDown);
+                if (pageIndex > 0) {
+                    pageIndex--;
+                }
                 getData(true);
             }
 
             @Override
             public void onLoadMore(boolean isSilence) {
                 super.onLoadMore(isSilence);
+                pageIndex++;
                 getData(false);
             }
         });
         refreshLayout.setPullLoadEnable(true);
+        refreshLayout.startRefresh();
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        refreshLayout.startRefresh();
+        getData(true);
     }
 
     private void stopRefresh() {
@@ -156,19 +161,34 @@ public class TabFindTimingFragment extends BaseFragment implements BaseRecyclerA
     @Override
     protected void getData(final boolean isRefresh) {
         super.getData(isRefresh);
-        if (isRefresh) {
-            pageIndex = 0;
-            getCurrentWeekTimingCount();
-        }
-        String weekStartTime = new SimpleDateFormat("yyyy-MM-dd").format(DateUtils.getCurrWeekStartTime() - (pageIndex * weekMillSecond));
-        String weekEndTime = getFromatTime(DateUtils.getCurrWeekEndTime() - (pageIndex * weekMillSecond));
+        long weekStartTimeMillSecond = DateUtils.getCurrWeekStartTime() - (pageIndex * weekMillSecond);
+        long weekEndTimeMillSecond = DateUtils.getCurrWeekEndTime() - (pageIndex * weekMillSecond);
+        String weekStartTime = getFromatTime(weekStartTimeMillSecond);
+        String weekEndTime = getFromatTime(weekEndTimeMillSecond);
+
+        String weekStart = new SimpleDateFormat("MM月dd日").format(weekStartTimeMillSecond);
+        String weekEnd = new SimpleDateFormat("MM月dd日").format(weekEndTimeMillSecond);
+        timingDateTitle.setText(String.format("%s-%s", weekStart, weekEnd));
+
+        getWeekTimingCount(weekStartTime, weekEndTime);
+
+        timingListQueryByTime(weekStartTime, weekEndTime);
+    }
+
+
+    /**
+     * 获取某周的计时项
+     *
+     * @param weekStartTime
+     * @param weekEndTime
+     */
+    private void timingListQueryByTime(String weekStartTime, String weekEndTime) {
         getApi().timingListQueryByTime(getLoginUserId(), weekStartTime, weekEndTime, 0, 1000)
                 .enqueue(new SimpleCallBack<TimeEntity>() {
                     @Override
                     public void onSuccess(Call<ResEntity<TimeEntity>> call, Response<ResEntity<TimeEntity>> response) {
                         if (response.body().result != null) {
-                            pageIndex += 1;
-                            timeAdapter.bindData(isRefresh, response.body().result.items);
+                            timeAdapter.bindData(true, response.body().result.items);
                             stopRefresh();
                         }
                     }
@@ -181,9 +201,13 @@ public class TabFindTimingFragment extends BaseFragment implements BaseRecyclerA
                 });
     }
 
-    private void getCurrentWeekTimingCount() {
-        String weekStartTime = getFromatTime(DateUtils.getCurrWeekStartTime());
-        String weekEndTime = getFromatTime(DateUtils.getCurrWeekEndTime());
+    /**
+     * 获取某周的计时统计
+     *
+     * @param weekStartTime
+     * @param weekEndTime
+     */
+    private void getWeekTimingCount(String weekStartTime, String weekEndTime) {
         getApi().queryTimingCountByTime(weekStartTime, weekEndTime)
                 .enqueue(new SimpleCallBack<ItemPageEntity<TimingCountEntity>>() {
                     @Override
@@ -308,19 +332,7 @@ public class TabFindTimingFragment extends BaseFragment implements BaseRecyclerA
         if (event == null) return;
         switch (event.action) {
             case TimingEvent.TIMING_ADD:
-                List<TimeEntity.ItemEntity> data = timeAdapter.getData();
-                for (int i = 0; i < data.size(); i++) {
-                    TimeEntity.ItemEntity itemEntity = data.get(i);
-                    if (itemEntity != null && itemEntity.state == TimeEntity.ItemEntity.TIMER_STATE_START) {
-                        itemEntity.state = TimeEntity.ItemEntity.TIMER_STATE_STOP;
-                    }
-                }
-                timeAdapter.notifyDataSetChanged();
-                TimeEntity.ItemEntity timer = TimerManager.getInstance().getTimer();
-                if (timer == null) return;
-                if (!timeAdapter.getData().contains(timer)) {
-                    timeAdapter.addItem(0, timer);
-                }
+                getData(true);
                 break;
             case TimingEvent.TIMING_UPDATE_PROGRESS:
                 TimeEntity.ItemEntity itemEntity = TimeEntity.ItemEntity.singleInstace;
@@ -335,14 +347,7 @@ public class TabFindTimingFragment extends BaseFragment implements BaseRecyclerA
                 }
                 break;
             case TimingEvent.TIMING_STOP:
-                TimeEntity.ItemEntity itemEntity2 = TimeEntity.ItemEntity.singleInstace;
-                itemEntity2.pkId = event.timingId;
-                int indexOf2 = timeAdapter.getData().indexOf(itemEntity2);
-                if (indexOf2 >= 0) {
-                    TimeEntity.ItemEntity item = timeAdapter.getData().get(indexOf2);
-                    item.state = TimeEntity.ItemEntity.TIMER_STATE_STOP;
-                    timeAdapter.updateItem(item);
-                }
+                getData(true);
                 break;
         }
     }
