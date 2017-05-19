@@ -19,7 +19,9 @@ public class PinyinComparator<T extends ISuspensionInterface> implements Compara
     @Override
     public int compare(T t1, T t2) {
         if (t1 != null && t2 != null) {
-            if (TextUtils.equals(t1.getSuspensionTag(), "#")) {
+            if (TextUtils.equals(t1.getSuspensionTag(), t2.getSuspensionTag())) {
+                return 0;
+            } else if (TextUtils.equals(t1.getSuspensionTag(), "#")) {
                 return 1;
             } else if (TextUtils.equals(t2.getSuspensionTag(), "#")) {
                 return -1;

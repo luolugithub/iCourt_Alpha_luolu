@@ -138,7 +138,7 @@ public class GroupCreateActivity extends BaseActivity {
                 break;
             case R.id.group_member_invite_tv:
                 ContactListActivity.launchSelect(getContext(),
-                        Const.CHOICE_TYPE_MULTIPLE,
+                        Const.CHOICE_TYPE_MULTIPLE,null,
                         REQ_CODE_SELECT_USER);
                 break;
             case R.id.group_member_arrow_iv:

@@ -59,6 +59,7 @@ public class ContactListActivity extends BaseActivity implements BaseRecyclerAda
 
     private static final String STRING_TOP = "↑︎";
     private static final String KEY_SELCTED_TYPE = "key_selcted_type";
+    private static final String KEY_SELCTED_DATA = "key_selcted_data";
     @BindView(R.id.titleBack)
     ImageView titleBack;
     @BindView(R.id.titleContent)
@@ -78,6 +79,7 @@ public class ContactListActivity extends BaseActivity implements BaseRecyclerAda
     LinearLayoutManager linearLayoutManager;
     HeaderFooterAdapter<IMContactAdapter> headerFooterAdapter;
     EditText header_input_et;
+    ArrayList<GroupContactBean> selctedList;
 
     /**
      * 浏览
@@ -100,10 +102,12 @@ public class ContactListActivity extends BaseActivity implements BaseRecyclerAda
     public static void launchSelect(
             @NonNull Activity context,
             @Const.ChoiceType int type,
+            ArrayList<GroupContactBean> selctedList,
             int reqCode) {
         if (context == null) return;
         Intent intent = new Intent(context, ContactListActivity.class);
         intent.putExtra(KEY_SELCTED_TYPE, type);
+        intent.putExtra(KEY_SELCTED_DATA, selctedList);
         context.startActivityForResult(intent, reqCode);
     }
 

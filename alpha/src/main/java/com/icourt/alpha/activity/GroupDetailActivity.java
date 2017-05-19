@@ -267,14 +267,25 @@ public class GroupDetailActivity extends BaseActivity implements BaseRecyclerAda
             case R.id.group_member_invite_tv:
                 ContactListActivity.launchSelect(getActivity(),
                         Const.CHOICE_TYPE_MULTIPLE,
+                        null,
                         REQ_CODE_INVITATION_MEMBER);
                 break;
             case R.id.group_member_arrow_iv:
                 if (groupDetailEntity == null) return;
                 if (isAdmin) {
+                    ArrayList<GroupContactBean> contactBeanArrayList = new ArrayList<>(contactAdapter.getData());
+
+                    //移除本人
+                    String loginUserId = getLoginUserId();
+                    if (!TextUtils.isEmpty(loginUserId)) {
+                        loginUserId = loginUserId.toLowerCase();
+                    }
+                    GroupContactBean contactBean = new GroupContactBean();
+                    contactBean.accid = loginUserId;
+                    contactBeanArrayList.remove(contactBean);
                     GroupMemberDelActivity.launchForResult(getActivity(),
                             getIntent().getStringExtra(KEY_TID),
-                            (ArrayList<GroupContactBean>) contactAdapter.getData(),
+                            contactBeanArrayList,
                             true, 2001);
                 } else {
                     GroupMemberListActivity.launch(getContext(),
