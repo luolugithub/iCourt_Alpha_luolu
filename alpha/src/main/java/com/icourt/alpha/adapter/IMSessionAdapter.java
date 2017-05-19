@@ -270,6 +270,7 @@ public class IMSessionAdapter extends BaseArrayRecyclerAdapter<IMSessionEntity> 
      */
     private void setItemData(IMSessionEntity imSessionEntity, TextView tvSessionContent) {
         if (imSessionEntity == null) return;
+        if (imSessionEntity.recentContact == null) return;
         if (imSessionEntity.customIMBody == null) return;
         if (tvSessionContent == null) return;
         IMMessageCustomBody customIMBody = imSessionEntity.customIMBody;
@@ -302,16 +303,21 @@ public class IMSessionAdapter extends BaseArrayRecyclerAdapter<IMSessionEntity> 
                 break;
             case Const.MSG_TYPE_AT://@消息
                 if (customIMBody.ext != null) {
-                    int color = 0xFFed6c00;
-                    if (customIMBody.ext.is_all) {
-                        tvSessionContent.setText("有人@了你");
-                        SpannableUtils.setTextForegroundColorSpan(tvSessionContent, "有人@了你", "有人@了你", color);
-                    } else if (customIMBody.ext.users != null
-                            && StringUtils.containsIgnoreCase(customIMBody.ext.users, getLoginUserId())) {
-                        tvSessionContent.setText("有人@了你");
-                        SpannableUtils.setTextForegroundColorSpan(tvSessionContent, "有人@了你", "有人@了你", color);
-                    } else {
+                    //已经阅读了 就不标红
+                    if (imSessionEntity.recentContact.getUnreadCount() <= 0) {
                         tvSessionContent.setText(String.format("%s : %s", customIMBody.name, customIMBody.content));
+                    } else {
+                        int color = 0xFFed6c00;
+                        if (customIMBody.ext.is_all) {
+                            tvSessionContent.setText("有人@了你");
+                            SpannableUtils.setTextForegroundColorSpan(tvSessionContent, "有人@了你", "有人@了你", color);
+                        } else if (customIMBody.ext.users != null
+                                && StringUtils.containsIgnoreCase(customIMBody.ext.users, getLoginUserId())) {
+                            tvSessionContent.setText("有人@了你");
+                            SpannableUtils.setTextForegroundColorSpan(tvSessionContent, "有人@了你", "有人@了你", color);
+                        } else {
+                            tvSessionContent.setText(String.format("%s : %s", customIMBody.name, customIMBody.content));
+                        }
                     }
                 } else {
                     tvSessionContent.setText("@消息ext null");
