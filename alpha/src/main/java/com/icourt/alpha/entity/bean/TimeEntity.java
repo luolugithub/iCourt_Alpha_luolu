@@ -21,6 +21,7 @@ public class TimeEntity implements Serializable {
 
     public String totalDate;
     public List<ItemEntity> items;
+    public long timingSum;
 
 
     public static class ItemEntity implements Serializable,

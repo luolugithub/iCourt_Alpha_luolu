@@ -37,7 +37,6 @@ import org.greenrobot.eventbus.ThreadMode;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.List;
 
 import butterknife.BindView;
@@ -190,6 +189,7 @@ public class TabFindTimingFragment extends BaseFragment implements BaseRecyclerA
                         if (response.body().result != null) {
                             timeAdapter.bindData(true, response.body().result.items);
                             stopRefresh();
+                            timingCountTotal.setText(getHm(response.body().result.timingSum));
                         }
                     }
 
@@ -216,6 +216,17 @@ public class TabFindTimingFragment extends BaseFragment implements BaseRecyclerA
                             timingCountEntities.clear();
                             timingCountEntities.addAll(response.body().result.items);
                             generateData();
+                            if (response.body().result.items != null && pageIndex <= 0) {
+                                for (TimingCountEntity timingCountEntity : response.body().result.items) {
+                                    if (timingCountEntity != null) {
+                                        boolean isToday = DateUtils.isToday(timingCountEntity.workDate);
+                                        if (isToday) {
+                                            timingTodayTotal.setText(getHm(timingCountEntity.timingCount));
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 });
@@ -255,10 +266,8 @@ public class TabFindTimingFragment extends BaseFragment implements BaseRecyclerA
         for (int i = 0; i <= 24; i += 4) {
             axisYValues.add(new AxisValue(i).setLabel(String.format("%sh", i)));
         }
-        long totalHours = 0;
-        int day_of_week = Calendar.getInstance().get(Calendar.DAY_OF_WEEK);
         for (int j = 0; j < numberOfPoints; j++) {
-            float countTime = 0;
+            float hour = 0;
             if (j < timingCountEntities.size()) {
                 TimingCountEntity itemEntity = timingCountEntities.get(j);
                 if (itemEntity != null) {
@@ -268,21 +277,15 @@ public class TabFindTimingFragment extends BaseFragment implements BaseRecyclerA
                     long dd = hh * 24;
 
                     long day = itemEntity.timingCount / dd;
-                    long hour = (itemEntity.timingCount - day * dd) / hh;
-                    countTime = hour;
+                    hour = (itemEntity.timingCount - day * dd) * 1.0f / hh;
                 }
             }
-            if (day_of_week == j) {
-                timingTodayTotal.setText(String.valueOf(countTime));
+            if (hour >= 24) {
+                hour = 23.9f;
             }
-            totalHours += countTime;
-            if (countTime >= 24) {
-                countTime = 23.9f;
-            }
-            log("--------j:" + j + "  time:" + countTime);
-            values.add(new PointValue(j, countTime));
+            log("--------j:" + j + "  time:" + hour);
+            values.add(new PointValue(j, hour));
         }
-        timingCountTotal.setText(String.valueOf(totalHours));
 
         Line line = new Line(values);
         line.setShape(shape);
@@ -350,6 +353,13 @@ public class TabFindTimingFragment extends BaseFragment implements BaseRecyclerA
                 getData(true);
                 break;
         }
+    }
+
+    public String getHm(long milliSecond) {
+        milliSecond /= 1000;
+        long hour = milliSecond / 3600;
+        long minute = milliSecond % 3600 / 60;
+        return String.format("%02d:%02d", hour, minute);
     }
 
     @Override
