@@ -1255,39 +1255,43 @@ public abstract class ChatBaseActivity
 
     /**
      * 消息撤回
+     * 先撤回云信 再撤回我们服务器的
      *
      * @param msgId
      */
-    protected final void msgActionRevoke(@NonNull long msgId, @Nullable final IMMessage imMessage) {
+    protected final void msgActionRevoke(@NonNull final long msgId, @Nullable final IMMessage imMessage) {
         if (msgId <= 0) return;
-        //网络
-        getChatApi().msgRevoke(msgId)
-                .enqueue(new SimpleCallBack<JsonElement>() {
+        if (imMessage == null) return;
+        NIMClient.getService(MsgService.class)
+                .revokeMessage(imMessage)
+                .setCallback(new RequestCallback<Void>() {
                     @Override
-                    public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
-                        if (imMessage != null) {
-                            NIMClient.getService(MsgService.class)
-                                    .revokeMessage(imMessage)
-                                    .setCallback(new RequestCallback<Void>() {
-                                        @Override
-                                        public void onSuccess(Void param) {
-                                            //deleteItem(imMessage, true);
-                                        }
+                    public void onSuccess(Void param) {
+                        //deleteItem(imMessage, true);
+                        //网络
+                        getChatApi().msgRevoke(msgId)
+                                .enqueue(new SimpleCallBack<JsonElement>() {
+                                    @Override
+                                    public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
+                                    }
+                                });
+                    }
 
-                                        @Override
-                                        public void onFailed(int code) {
-
-                                        }
-
-                                        @Override
-                                        public void onException(Throwable exception) {
-
-                                        }
-                                    });
+                    @Override
+                    public void onFailed(int code) {
+                        if (code == 508) {
+                            showTopSnackBar("消息撤回时间超限");
+                        } else {
+                            showTopSnackBar("消息撤回:" + code);
                         }
+                    }
 
+                    @Override
+                    public void onException(Throwable exception) {
+                        showTopSnackBar("消息撤回异常:" + exception);
                     }
                 });
+
     }
 
 
