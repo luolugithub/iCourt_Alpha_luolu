@@ -198,7 +198,7 @@ public class GroupMemberListActivity extends BaseActivity implements BaseRecycle
         switch (getIntent().getIntExtra(KEY_SELCTED_TYPE, 0)) {
             case CHOICE_TYPE_SINGLE:
                 setTitle("选择成员");
-                setViewVisible(titleActionTextView, false);
+                setViewInVisible(titleActionTextView, false);
                 break;
             case CHOICE_TYPE_MULTIPLE:
                 imContactAdapter.setSelectable(true);
@@ -209,7 +209,7 @@ public class GroupMemberListActivity extends BaseActivity implements BaseRecycle
                 break;
             default:
                 setTitle("成员");
-                setViewVisible(titleActionTextView, false);
+                setViewInVisible(titleActionTextView, false);
                 break;
         }
 
@@ -316,7 +316,12 @@ public class GroupMemberListActivity extends BaseActivity implements BaseRecycle
                             Collections.sort(contactBeanList, new PinyinComparator<GroupContactBean>());
                             //添加@所有人
                             if (getIntent().getBooleanExtra(KEY_ADD_AT_ALL, false)) {
-                                GroupContactBean atall = new GroupContactBean();
+                                GroupContactBean atall = new GroupContactBean() {
+                                    @Override
+                                    public boolean isShowSuspension() {
+                                        return false;
+                                    }
+                                };
                                 atall.type = GroupContactBean.TYPE_ALL;
                                 atall.name = "所有人";
                                 contactBeanList.add(0, atall);
