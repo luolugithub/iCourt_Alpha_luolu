@@ -27,7 +27,7 @@
                 android:ellipsize="end"
                 android:gravity="center"
                 android:maxLines="1"
-                android:text="选择项目"
+                android:text="选择成员"
                 android:textColor="@color/alpha_font_color_title"
                 android:textSize="@dimen/alpha_font_size_title" />
 

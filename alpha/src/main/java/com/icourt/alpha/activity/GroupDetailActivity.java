@@ -1,6 +1,5 @@
 package com.icourt.alpha.activity;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -36,9 +35,12 @@ import com.icourt.alpha.entity.bean.GroupDetailEntity;
 import com.icourt.alpha.entity.event.GroupActionEvent;
 import com.icourt.alpha.entity.event.NoDisturbingEvent;
 import com.icourt.alpha.entity.event.SetTopEvent;
+import com.icourt.alpha.fragment.dialogfragment.BaseDialogFragment;
 import com.icourt.alpha.fragment.dialogfragment.ContactDialogFragment;
+import com.icourt.alpha.fragment.dialogfragment.ContactSelectDialogFragment;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
+import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.utils.JsonUtils;
 import com.icourt.alpha.utils.StringUtils;
 import com.icourt.api.RequestUtils;
@@ -65,10 +67,10 @@ import static com.icourt.alpha.constants.Const.CHAT_TYPE_TEAM;
  * date createTime：2017/4/23
  * version 1.0.0
  */
-public class GroupDetailActivity extends BaseActivity implements BaseRecyclerAdapter.OnItemClickListener {
+public class GroupDetailActivity extends BaseActivity
+        implements BaseRecyclerAdapter.OnItemClickListener,OnFragmentCallBackListener {
     private static final String KEY_TID = "key_tid";//云信id
 
-    private static final int REQ_CODE_INVITATION_MEMBER = 1002;
 
     @BindView(R.id.group_name_tv)
     TextView groupNameTv;
@@ -265,10 +267,7 @@ public class GroupDetailActivity extends BaseActivity implements BaseRecyclerAda
                         getIntent().getStringExtra(KEY_TID));
                 break;
             case R.id.group_member_invite_tv:
-                ContactListActivity.launchSelect(getActivity(),
-                        Const.CHOICE_TYPE_MULTIPLE,
-                        null,
-                        REQ_CODE_INVITATION_MEMBER);
+               showMemberSelectDialogFragment();
                 break;
             case R.id.group_member_arrow_iv:
                 if (groupDetailEntity == null) return;
@@ -330,6 +329,19 @@ public class GroupDetailActivity extends BaseActivity implements BaseRecyclerAda
                 super.onClick(v);
                 break;
         }
+    }
+    /**
+     * 展示选择成员对话框
+     */
+    public void showMemberSelectDialogFragment() {
+        String tag = ContactSelectDialogFragment.class.getSimpleName();
+        FragmentTransaction mFragTransaction = getSupportFragmentManager().beginTransaction();
+        Fragment fragment = getSupportFragmentManager().findFragmentByTag(tag);
+        if (fragment != null) {
+            mFragTransaction.remove(fragment);
+        }
+        ContactSelectDialogFragment.newInstance((ArrayList<GroupContactBean>) contactAdapter.getData())
+                .show(mFragTransaction, tag);
     }
 
 
@@ -551,23 +563,16 @@ public class GroupDetailActivity extends BaseActivity implements BaseRecyclerAda
                 });
     }
 
+
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        switch (requestCode) {
-            case REQ_CODE_INVITATION_MEMBER:
-                if (resultCode == Activity.RESULT_OK && data != null) {
-                    List<GroupContactBean> result = (List<GroupContactBean>) data.getSerializableExtra(KEY_ACTIVITY_RESULT);
-                    if (result != null) {
-                        invitationMembers(result);
-                    }
-                }
-                break;
-            default:
-                super.onActivityResult(requestCode, resultCode, data);
-                break;
+    public void onFragmentCallBack(Fragment fragment, int type, Bundle params) {
+        if (fragment instanceof ContactSelectDialogFragment && params != null) {
+            List<GroupContactBean> result = (List<GroupContactBean>) params.getSerializable(BaseDialogFragment.KEY_FRAGMENT_RESULT);
+            if (result != null) {
+                invitationMembers(result);
+            }
         }
     }
-
     /**
      * 邀请成员
      *

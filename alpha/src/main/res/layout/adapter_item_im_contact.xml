@@ -15,12 +15,6 @@
         android:paddingBottom="10dp"
         android:paddingTop="10dp">
 
-        <CheckedTextView
-            android:id="@+id/ctv_contact"
-            android:layout_width="20dp"
-            android:layout_height="20dp"
-            android:layout_margin="10dp"
-            android:background="@drawable/sl_checkbox" />
 
         <ImageView
             android:id="@+id/iv_contact_icon"
@@ -39,6 +33,13 @@
             android:text="name"
             android:textColor="@color/alpha_font_color_black"
             android:textSize="@dimen/alpha_font_size_mini_medium" />
+
+        <CheckedTextView
+            android:id="@+id/ctv_contact"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_margin="10dp"
+            android:background="@mipmap/checkmark" />
 
     </LinearLayout>
 

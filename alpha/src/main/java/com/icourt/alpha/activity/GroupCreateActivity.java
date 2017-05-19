@@ -7,6 +7,8 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.AppBarLayout;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
@@ -27,8 +29,11 @@ import com.icourt.alpha.adapter.baseadapter.adapterObserver.DataChangeAdapterObs
 import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.constants.Const;
 import com.icourt.alpha.entity.bean.GroupContactBean;
+import com.icourt.alpha.fragment.dialogfragment.BaseDialogFragment;
+import com.icourt.alpha.fragment.dialogfragment.ContactSelectDialogFragment;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
+import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.api.RequestUtils;
 
 import java.util.ArrayList;
@@ -49,9 +54,7 @@ import static com.icourt.alpha.R.id.group_member_num_tv;
  * date createTime：2017/4/26
  * version 1.0.0
  */
-public class GroupCreateActivity extends BaseActivity {
-
-    private static final int REQ_CODE_SELECT_USER = 1001;
+public class GroupCreateActivity extends BaseActivity implements OnFragmentCallBackListener {
     private static final int REQ_CODE_DEL_USER = 1002;
 
     @BindView(R.id.titleBack)
@@ -137,9 +140,7 @@ public class GroupCreateActivity extends BaseActivity {
                         groupPrivateSwitch.isChecked());
                 break;
             case R.id.group_member_invite_tv:
-                ContactListActivity.launchSelect(getContext(),
-                        Const.CHOICE_TYPE_MULTIPLE,null,
-                        REQ_CODE_SELECT_USER);
+                showMemberSelectDialogFragment();
                 break;
             case R.id.group_member_arrow_iv:
                 GroupMemberDelActivity.launchForResult(getActivity(),
@@ -152,6 +153,20 @@ public class GroupCreateActivity extends BaseActivity {
                 super.onClick(v);
                 break;
         }
+    }
+
+    /**
+     * 展示选择成员对话框
+     */
+    public void showMemberSelectDialogFragment() {
+        String tag = ContactSelectDialogFragment.class.getSimpleName();
+        FragmentTransaction mFragTransaction = getSupportFragmentManager().beginTransaction();
+        Fragment fragment = getSupportFragmentManager().findFragmentByTag(tag);
+        if (fragment != null) {
+            mFragTransaction.remove(fragment);
+        }
+        ContactSelectDialogFragment.newInstance((ArrayList<GroupContactBean>) imContactAdapter.getData())
+                .show(mFragTransaction, tag);
     }
 
     /**
@@ -201,21 +216,6 @@ public class GroupCreateActivity extends BaseActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         switch (requestCode) {
-            case REQ_CODE_SELECT_USER:
-                if (resultCode == Activity.RESULT_OK && data != null) {
-                    List<GroupContactBean> result = (List<GroupContactBean>) data.getSerializableExtra(KEY_ACTIVITY_RESULT);
-                    if (result != null) {
-                        imContactAdapter.getData();
-                        for (int i = result.size() - 1; i >= 0; i--) {
-                            GroupContactBean contactBean = result.get(i);
-                            if (imContactAdapter.getData().contains(contactBean)) {
-                                result.remove(i);
-                            }
-                        }
-                        imContactAdapter.addItems(result);
-                    }
-                }
-                break;
             case REQ_CODE_DEL_USER:
                 if (resultCode == Activity.RESULT_OK && data != null) {
                     List<GroupContactBean> result = (List<GroupContactBean>) data.getSerializableExtra(KEY_ACTIVITY_RESULT);
@@ -229,5 +229,22 @@ public class GroupCreateActivity extends BaseActivity {
                 break;
         }
 
+    }
+
+    @Override
+    public void onFragmentCallBack(Fragment fragment, int type, Bundle params) {
+        if (fragment instanceof ContactSelectDialogFragment && params != null) {
+            List<GroupContactBean> result = (List<GroupContactBean>) params.getSerializable(BaseDialogFragment.KEY_FRAGMENT_RESULT);
+            if (result != null) {
+                imContactAdapter.getData();
+                for (int i = result.size() - 1; i >= 0; i--) {
+                    GroupContactBean contactBean = result.get(i);
+                    if (imContactAdapter.getData().contains(contactBean)) {
+                        result.remove(i);
+                    }
+                }
+                imContactAdapter.addItems(result);
+            }
+        }
     }
 }
