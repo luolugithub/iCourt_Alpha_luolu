@@ -141,7 +141,8 @@ public class ContactDialogFragment extends BaseDialogFragment {
                 if (contactBean == null) return;
                 ChatActivity.launchP2P(getActivity(),
                         getArguments().getString("accId", ""),
-                        contactBean.name);
+                        contactBean.name,
+                        0);
                 dismiss();
                 break;
             case R.id.contact_phone_ll:

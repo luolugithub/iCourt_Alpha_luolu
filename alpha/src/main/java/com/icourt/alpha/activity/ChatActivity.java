@@ -93,6 +93,7 @@ import sj.keyboard.widget.FuncLayout;
 
 import static com.icourt.alpha.constants.Const.CHAT_TYPE_P2P;
 import static com.icourt.alpha.constants.Const.CHAT_TYPE_TEAM;
+import static com.netease.nimlib.sdk.msg.model.QueryDirectionEnum.QUERY_NEW;
 import static com.netease.nimlib.sdk.msg.model.QueryDirectionEnum.QUERY_OLD;
 
 /**
@@ -113,6 +114,7 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
     private static final String KEY_UID = "key_uid";
     private static final String KEY_TID = "key_tid";
     private static final String KEY_TITLE = "key_title";
+    private static final String KEY_LOCATION_MSG_TIME = "key_location_msg_time";
     private static final String KEY_CHAT_TYPE = "key_chat_type";
 
     //本地同步的联系人
@@ -183,18 +185,21 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
      * 启动 单聊
      *
      * @param context
-     * @param uid     对方id 不可变
+     * @param uid             对方id 不可变
      * @param title
+     * @param locationMsgTime 定位消息的时间 小于=0 不定位消息
      */
     public static final void launchP2P(@NonNull Context context,
                                        @NonNull String uid,
-                                       String title) {
+                                       String title,
+                                       long locationMsgTime) {
         if (context == null) return;
         if (TextUtils.isEmpty(uid)) return;
         Intent intent = new Intent(context, ChatActivity.class);
         intent.putExtra(KEY_UID, uid);
         intent.putExtra(KEY_TITLE, title);
         intent.putExtra(KEY_CHAT_TYPE, CHAT_TYPE_P2P);
+        intent.putExtra(KEY_LOCATION_MSG_TIME, locationMsgTime);
         context.startActivity(intent);
     }
 
@@ -203,17 +208,20 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
      * 启动 群聊
      *
      * @param context
-     * @param tid     云信tid
+     * @param tid             云信tid
+     * @param locationMsgTime 定位消息的时间 小于0=不定位消息
      */
     public static void launchTEAM(@NonNull Context context,
                                   String tid,
-                                  String title) {
+                                  String title,
+                                  long locationMsgTime) {
         if (context == null) return;
         if (TextUtils.isEmpty(tid)) return;
         Intent intent = new Intent(context, ChatActivity.class);
         intent.putExtra(KEY_TID, tid);
         intent.putExtra(KEY_CHAT_TYPE, CHAT_TYPE_TEAM);
         intent.putExtra(KEY_TITLE, title);
+        intent.putExtra(KEY_LOCATION_MSG_TIME, locationMsgTime);
         context.startActivity(intent);
     }
 
@@ -242,6 +250,15 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
         }
     }
 
+    /**
+     * 获取消息定位的时间
+     *
+     * @return
+     */
+    private long getLocationTime() {
+        return getIntent().getLongExtra(KEY_LOCATION_MSG_TIME, 0);
+    }
+
     @Override
     protected void teamUpdates(@NonNull List<Team> teams) {
         if (teams != null & getIMChatType() == CHAT_TYPE_TEAM) {
@@ -264,7 +281,11 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
         initEmoticonsKeyBoardBar();
         getLocalContacts();
         getTeamINFO(teamCallBack);
-        getData(true);
+        if (getLocationTime() > 0) {
+            getAfterLocationMsgs();
+        } else {
+            getData(true);
+        }
     }
 
     /**
@@ -758,12 +779,59 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
                 });
     }
 
+    private IMMessage getLocationMessage() {
+        switch (getIMChatType()) {
+            case CHAT_TYPE_P2P:
+                return MessageBuilder.createEmptyMessage(getIMChatId(), SessionTypeEnum.P2P, getLocationTime());
+            case CHAT_TYPE_TEAM:
+                return MessageBuilder.createEmptyMessage(getIMChatId(), SessionTypeEnum.Team, getLocationTime());
+            default: {
+                return null;
+            }
+        }
+    }
+
+    /**
+     * 获取定位之后的所有消息
+     */
+    private void getAfterLocationMsgs() {
+        NIMClient.getService(MsgService.class)
+                .queryMessageListEx(getLocationMessage(), QUERY_NEW, 500, true)
+                .setCallback(new RequestCallback<List<IMMessage>>() {
+                    @Override
+                    public void onSuccess(List<IMMessage> param) {
+                        LogUtils.d("----------->query result2:" + param);
+                        if (param == null || param.isEmpty()) {
+                            //本地为空从网络获取
+                            getMsgFromServer(true);
+                        } else {
+                            chatAdapter.bindData(true, convert2CustomerMessages(param));
+                            stopRefresh();
+                            setUnreadNum(0);
+                            clearUnReadNum();
+                        }
+                    }
+
+                    @Override
+                    public void onFailed(int code) {
+                        log("--------->load fail2:" + code);
+                        stopRefresh();
+                    }
+
+                    @Override
+                    public void onException(Throwable exception) {
+                        log("--------->load  exe2:" + exception);
+                        stopRefresh();
+                    }
+                });
+    }
+
     /**
      * 获取服务器消息
      */
     private void getMsgFromServer(final boolean isRefresh) {
         String type = "latest";
-        long msg_id = 0;
+        long msg_id = Integer.MAX_VALUE;
         if (chatAdapter.getItemCount() <= 0) {
             type = "latest";
         } else {
@@ -893,7 +961,7 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
         for (int i = chatAdapter.getData().size() - 1; i >= 0; i++) {
             IMMessageCustomBody item = chatAdapter.getItem(i);
             if (item != null) {
-                if (msgId == item.id){
+                if (msgId == item.id) {
                     chatAdapter.removeItem(item);
                     break;
                 }

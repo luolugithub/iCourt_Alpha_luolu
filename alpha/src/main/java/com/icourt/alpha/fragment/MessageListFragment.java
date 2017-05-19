@@ -599,7 +599,7 @@ public class MessageListFragment extends BaseRecentContactFragment
                     } else {
                         ChatActivity.launchP2P(getActivity(),
                                 data.recentContact.getContactId(),
-                                data.customIMBody.name);
+                                data.customIMBody.name, 0);
                     }
                     break;
                 case CHAT_TYPE_TEAM:
@@ -607,7 +607,7 @@ public class MessageListFragment extends BaseRecentContactFragment
                     if (data.recentContact != null)
                         ChatActivity.launchTEAM(getActivity(),
                                 data.recentContact.getContactId(),
-                                String.valueOf(tvSessionTitle.getText()));
+                                String.valueOf(tvSessionTitle.getText()), 0);
                     break;
             }
         }

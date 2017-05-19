@@ -22,6 +22,7 @@ import com.icourt.alpha.db.dbmodel.ContactDbModel;
 import com.icourt.alpha.db.dbservice.ContactDbService;
 import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.icourt.alpha.entity.bean.IMMessageCustomBody;
+import com.icourt.alpha.utils.StringUtils;
 import com.netease.nimlib.sdk.NIMClient;
 import com.netease.nimlib.sdk.RequestCallbackWrapper;
 import com.netease.nimlib.sdk.team.TeamService;
@@ -151,7 +152,7 @@ public class FileDetailsActivity extends BaseActivity {
             item = (IMMessageCustomBody) serializableExtra;
             recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
             recyclerView.setHasFixedSize(true);
-            recyclerView.setAdapter(imUserMessageDetailAdapter = new ImUserMessageDetailAdapter(localContactList,localTeams));
+            recyclerView.setAdapter(imUserMessageDetailAdapter = new ImUserMessageDetailAdapter(localContactList, localTeams));
             imUserMessageDetailAdapter.bindData(true, Arrays.asList(item));
         }
     }
@@ -172,14 +173,15 @@ public class FileDetailsActivity extends BaseActivity {
                         case CHAT_TYPE_P2P:
                             ChatActivity.launchP2P(getContext(),
                                     item.to,
-                                    item.name);
+                                    item.name,
+                                    item.send_time);
                             break;
                         case CHAT_TYPE_TEAM:
-                            Team team = NIMClient.getService(TeamService.class)
-                                    .queryTeamBlock(item.to);
-                            ChatActivity.launchP2P(getContext(),
+                            Team team = getTeam(item.to);
+                            ChatActivity.launchTEAM(getContext(),
                                     item.to,
-                                    team != null ? team.getName() : "");
+                                    team != null ? team.getName() : "",
+                                    item.send_time);
                             break;
                     }
                 }
@@ -188,6 +190,15 @@ public class FileDetailsActivity extends BaseActivity {
                 super.onClick(v);
                 break;
         }
+    }
+
+    private Team getTeam(String id) {
+        for (Team team : localTeams) {
+            if (team != null && StringUtils.equalsIgnoreCase(team.getId(), id, false)) {
+                return team;
+            }
+        }
+        return null;
     }
 
     public void getTeams() {
