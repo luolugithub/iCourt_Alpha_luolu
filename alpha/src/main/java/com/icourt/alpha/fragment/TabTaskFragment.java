@@ -11,9 +11,13 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 
 import com.icourt.alpha.R;
+import com.icourt.alpha.activity.MyAllotTaskActivity;
+import com.icourt.alpha.activity.MyFinishTaskActivity;
 import com.icourt.alpha.activity.TaskCreateActivity;
 import com.icourt.alpha.adapter.baseadapter.BaseFragmentAdapter;
+import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.base.BaseFragment;
+import com.icourt.alpha.widget.dialog.BottomActionDialog;
 
 import java.util.Arrays;
 
@@ -40,6 +44,8 @@ public class TabTaskFragment extends BaseFragment {
     ViewPager viewPager;
     Unbinder unbinder;
     BaseFragmentAdapter baseFragmentAdapter;
+    @BindView(R.id.titleAction2)
+    ImageView titleAction2;
 
     public static TabTaskFragment newInstance() {
         return new TabTaskFragment();
@@ -58,22 +64,40 @@ public class TabTaskFragment extends BaseFragment {
         baseFragmentAdapter = new BaseFragmentAdapter(getChildFragmentManager());
         viewPager.setAdapter(baseFragmentAdapter);
         tabLayout.setupWithViewPager(viewPager);
-        baseFragmentAdapter.bindTitle(true, Arrays.asList("全部", "新任务", "我关注的", "我部门的"));
+        baseFragmentAdapter.bindTitle(true, Arrays.asList("全部", "新任务", "我关注的"));
         baseFragmentAdapter.bindData(true,
                 Arrays.asList(
                         TaskListFragment.newInstance(0),
                         TaskListFragment.newInstance(1),
-                        TaskListFragment.newInstance(2),
-                        TaskListFragment.newInstance(3)));
+                        TaskListFragment.newInstance(2)));
     }
 
-    @OnClick({R.id.titleAction})
+    @OnClick({R.id.titleAction, R.id.titleAction2})
     @Override
     public void onClick(View v) {
         super.onClick(v);
         switch (v.getId()) {
             case R.id.titleAction:
                 TaskCreateActivity.launch(getContext(), null, null);
+                break;
+            case R.id.titleAction2:
+                new BottomActionDialog(getContext(), null, Arrays.asList("我分配的任务", "已完成的任务", "选择查看对象"), new BottomActionDialog.OnActionItemClickListener() {
+                    @Override
+                    public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
+                        dialog.dismiss();
+                        switch (position) {
+                            case 0:
+                                MyAllotTaskActivity.launch(getContext());
+                                break;
+                            case 1:
+                                MyFinishTaskActivity.launch(getContext());
+                                break;
+                            case 2:
+
+                                break;
+                        }
+                    }
+                }).show();
                 break;
         }
     }

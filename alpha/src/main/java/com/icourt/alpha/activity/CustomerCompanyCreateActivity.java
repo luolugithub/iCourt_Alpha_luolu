@@ -11,6 +11,7 @@ import android.support.design.widget.AppBarLayout;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.CheckedTextView;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -68,16 +69,6 @@ public class CustomerCompanyCreateActivity extends BaseActivity {
     private static final int SELECT_OTHER_REQUEST = 2;//选择其他信息
     int action;
     boolean isAddOrEdit = false;//false:编辑 ; true:新建
-    @BindView(R.id.titleBack)
-    ImageView titleBack;
-    @BindView(R.id.titleContent)
-    TextView titleContent;
-    @BindView(R.id.titleAction)
-    ImageView titleAction;
-    @BindView(R.id.titleAction2)
-    ImageView titleAction2;
-    @BindView(R.id.titleView)
-    AppBarLayout titleView;
     @BindView(R.id.activity_add_group_contact_enterprise_name_edittext)
     EditText activityAddGroupContactEnterpriseNameEdittext;
     @BindView(R.id.activity_add_group_contact_group_textview)
@@ -106,6 +97,14 @@ public class CustomerCompanyCreateActivity extends BaseActivity {
     LinearLayout activityAddGroupContactAddLiaisonsLayout;
     @BindView(R.id.activity_add_group_contact_impression_edittext)
     EditText activityAddGroupContactImpressionEdittext;
+    @BindView(R.id.titleBack)
+    ImageView titleBack;
+    @BindView(R.id.titleContent)
+    TextView titleContent;
+    @BindView(R.id.titleAction)
+    CheckedTextView titleAction;
+    @BindView(R.id.titleView)
+    AppBarLayout titleView;
     private LayoutInflater layoutInflater;
     private LinkedHashMap<Integer, View> addressMap, emailMap, paperMap, dateMap, liaisonsMap;
     private int addressKey = 0, emailKey = 0, paperKey = 0, dateKey = 0, liaisonsKey = 0;
@@ -161,7 +160,7 @@ public class CustomerCompanyCreateActivity extends BaseActivity {
                 updateCustomerSetData();
                 break;
         }
-        activityAddGroupContactEnterpriseNameEdittext.setOnFocusChangeListener(new android.view.View.OnFocusChangeListener() {
+        activityAddGroupContactEnterpriseNameEdittext.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
                 if (!hasFocus) { //此处为失去焦点时的处理内容
@@ -463,56 +462,58 @@ public class CustomerCompanyCreateActivity extends BaseActivity {
      * 添加联络人itemview
      */
     private void addLiaisonsItemView(final CustomerEntity customerEntity) {
-        final View view = layoutInflater.inflate(R.layout.add_contact_liaisons_item_layout, null);
-        ImageView deleteView = (ImageView) view.findViewById(R.id.activity_add_contact_liaisons_item_delete_view);
-        final TextView keynameText = (TextView) view.findViewById(R.id.activity_add_contact_liaisons_item_name_text);
-        final TextView setRelationText = (TextView) view.findViewById(R.id.activity_add_contact_liaisons_item_relation_text);
-        ImageView photoView = (ImageView) view.findViewById(R.id.activity_add_contact_liaisons_item_photoview);
+        if (customerEntity != null) {
+            final View view = layoutInflater.inflate(R.layout.add_contact_liaisons_item_layout, null);
+            ImageView deleteView = (ImageView) view.findViewById(R.id.activity_add_contact_liaisons_item_delete_view);
+            final TextView keynameText = (TextView) view.findViewById(R.id.activity_add_contact_liaisons_item_name_text);
+            final TextView setRelationText = (TextView) view.findViewById(R.id.activity_add_contact_liaisons_item_relation_text);
+            ImageView photoView = (ImageView) view.findViewById(R.id.activity_add_contact_liaisons_item_photoview);
 
-        liaisonsKey += 1;
-        liaisonsMap.put(liaisonsKey, view);
-        final int liaisonTag = liaisonsKey;
+            liaisonsKey += 1;
+            liaisonsMap.put(liaisonsKey, view);
+            final int liaisonTag = liaisonsKey;
 
-        liaisonsList.add(customerEntity);
-        deleteView.setVisibility(View.VISIBLE);
-        setRelationText.setVisibility(View.VISIBLE);
-        keynameText.setText(customerEntity.name);
-        if (!TextUtils.isEmpty(customerEntity.itemSubType)) {
-            setRelationText.setText(customerEntity.itemSubType);
-        } else {
-            setRelationText.setHint("设置关系");
-        }
-
-        if ("P".equals(customerEntity.contactType)) {
-            if ("女".equals(customerEntity.sex)) {
-                photoView.setImageResource(R.mipmap.female);
+            liaisonsList.add(customerEntity);
+            deleteView.setVisibility(View.VISIBLE);
+            setRelationText.setVisibility(View.VISIBLE);
+            keynameText.setText(customerEntity.name);
+            if (!TextUtils.isEmpty(customerEntity.itemSubType)) {
+                setRelationText.setText(customerEntity.itemSubType);
             } else {
-                photoView.setImageResource(R.mipmap.male);
+                setRelationText.setHint("设置关系");
             }
-        } else {
-            photoView.setImageResource(R.mipmap.company);
-        }
-        activityAddGroupContactLiaisonsLayout.addView(view);
-        deleteView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                activityAddGroupContactLiaisonsLayout.removeView(view);
-                if (liaisonsList.contains(customerEntity))
-                    liaisonsList.remove(customerEntity);
-                if (oldLiaisonsList != null) {
-                    if (oldLiaisonsList.contains(customerEntity))
-                        oldLiaisonsList.remove(customerEntity);
-                }
-                liaisonsKey -= 1;
-            }
-        });
 
-        setRelationText.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                SelectCustomerTagActivity.launchForResult(CustomerCompanyCreateActivity.this, Const.SELECT_RELATION_TAG_ACTION, liaisonsList.indexOf(customerEntity) + 1, null, SELECT_OTHER_REQUEST);
+            if ("P".equals(customerEntity.contactType)) {
+                if ("女".equals(customerEntity.sex)) {
+                    photoView.setImageResource(R.mipmap.female);
+                } else {
+                    photoView.setImageResource(R.mipmap.male);
+                }
+            } else {
+                photoView.setImageResource(R.mipmap.company);
             }
-        });
+            activityAddGroupContactLiaisonsLayout.addView(view);
+            deleteView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    activityAddGroupContactLiaisonsLayout.removeView(view);
+                    if (liaisonsList.contains(customerEntity))
+                        liaisonsList.remove(customerEntity);
+                    if (oldLiaisonsList != null) {
+                        if (oldLiaisonsList.contains(customerEntity))
+                            oldLiaisonsList.remove(customerEntity);
+                    }
+                    liaisonsKey -= 1;
+                }
+            });
+
+            setRelationText.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    SelectCustomerTagActivity.launchForResult(CustomerCompanyCreateActivity.this, Const.SELECT_RELATION_TAG_ACTION, liaisonsList.indexOf(customerEntity) + 1, null, SELECT_OTHER_REQUEST);
+                }
+            });
+        }
     }
 
     /**
@@ -609,7 +610,7 @@ public class CustomerCompanyCreateActivity extends BaseActivity {
                 } else if (action.equals(Const.SELECT_ENTERPRISE_DATE_TAG_ACTION)) {//日期标签
                     ((TextView) dateMap.get(position).findViewById(R.id.activity_add_contact_item_keyname_text)).setText(tagName);
                 } else if (action.equals(Const.SELECT_ENTERPRISE_LIAISONS_TAG_ACTION)) {//选择联络人
-                    addLiaisonsItemView((CustomerEntity) data.getSerializableExtra("CustomerEntity"));
+                    addLiaisonsItemView((CustomerEntity) data.getSerializableExtra("customerEntity"));
                 } else if (action.equals(Const.SELECT_RELATION_TAG_ACTION)) {
                     ((TextView) liaisonsMap.get(position).findViewById(R.id.activity_add_contact_liaisons_item_relation_text)).setText(tagName);
                     liaisonsList.get(position - 1).itemSubType = tagName;

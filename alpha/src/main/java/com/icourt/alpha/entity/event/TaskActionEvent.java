@@ -2,6 +2,8 @@ package com.icourt.alpha.entity.event;
 
 import android.support.annotation.IntDef;
 
+import com.icourt.alpha.entity.bean.TaskEntity;
+
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
@@ -30,7 +32,7 @@ public class TaskActionEvent {
     public int action;
     public String id;
     public String desc;
-
+    public TaskEntity.TaskItemEntity entity;
     public TaskActionEvent(@TASK_ACTION int action, String id, String desc) {
         this.action = action;
         this.id = id;
@@ -39,5 +41,10 @@ public class TaskActionEvent {
 
     public TaskActionEvent(@TASK_ACTION int action) {
         this.action = action;
+    }
+
+    public TaskActionEvent(int action, TaskEntity.TaskItemEntity entity) {
+        this.action = action;
+        this.entity = entity;
     }
 }

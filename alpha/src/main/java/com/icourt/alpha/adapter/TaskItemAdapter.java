@@ -10,7 +10,6 @@ import android.widget.TextView;
 
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.baseadapter.BaseArrayRecyclerAdapter;
-import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.entity.bean.TaskEntity;
 import com.icourt.alpha.entity.bean.TimeEntity;
 import com.icourt.alpha.utils.DateUtils;
@@ -23,7 +22,7 @@ import com.icourt.alpha.utils.DateUtils;
  * version 2.0.0
  */
 
-public class TaskItemAdapter extends BaseArrayRecyclerAdapter<TaskEntity.TaskItemEntity> implements BaseRecyclerAdapter.OnItemChildClickListener, BaseRecyclerAdapter.OnItemChildLongClickListener {
+public class TaskItemAdapter extends BaseArrayRecyclerAdapter<TaskEntity.TaskItemEntity> {
     TimeEntity.ItemEntity itemEntity;
 
     public void setItemEntity(TimeEntity.ItemEntity itemEntity) {
@@ -105,18 +104,8 @@ public class TaskItemAdapter extends BaseArrayRecyclerAdapter<TaskEntity.TaskIte
             startTimmingView.setImageResource(R.mipmap.icon_start_20);
             startTimmingView.setTag(R.mipmap.icon_start_20);
         }
+        checkBox.setChecked(taskItemEntity.state);
         holder.bindChildClick(checkBox);
         holder.bindChildClick(startTimmingView);
-    }
-
-    @Override
-    public void onItemChildClick(BaseRecyclerAdapter adapter, ViewHolder holder, View view, int position) {
-
-    }
-
-    @Override
-    public boolean onItemChildLongClick(BaseRecyclerAdapter adapter, ViewHolder holder, View view, int position) {
-
-        return false;
     }
 }

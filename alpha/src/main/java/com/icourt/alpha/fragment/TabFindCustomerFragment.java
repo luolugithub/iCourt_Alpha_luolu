@@ -179,7 +179,6 @@ public class TabFindCustomerFragment extends BaseFragment implements BaseRecycle
                         if (response.body().result != null) {
                             IndexUtils.setSuspensions(getContext(), response.body().result);
                             Collections.sort(response.body().result, new PinyinComparator<CustomerEntity>());
-//                            Arrays.sort(response.body().result.toArray(new CustomerEntity[response.body().result.size()]),new PinyinComparator<CustomerEntity>());
                             updateIndexBar(response.body().result);
                             customerAdapter.bindData(true, response.body().result);
                             insert2Db(response.body().result);

@@ -34,7 +34,7 @@ import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -155,11 +155,9 @@ public class SelectLiaisonActivity extends BaseActivity implements BaseRecyclerA
                         if (response.body().result != null) {
                             removeSelected(response.body().result);
                             IndexUtils.setSuspensions(getContext(), response.body().result);
-//                            Collections.sort(response.body().result, new PinyinComparator<CustomerEntity>());
-                          Arrays.sort(response.body().result.toArray(new CustomerEntity[response.body().result.size()]),new PinyinComparator<CustomerEntity>());
+                            Collections.sort(response.body().result, new PinyinComparator<CustomerEntity>());
                             updateIndexBar(response.body().result);
                             customerAdapter.bindData(true, response.body().result);
-
                         }
                     }
 

@@ -237,6 +237,12 @@
         <activity
             android:name=".activity.CustomerCompanyCreateActivity"
             android:screenOrientation="portrait" />
+        <activity
+            android:name=".activity.MyAllotTaskActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".activity.MyFinishTaskActivity"
+            android:screenOrientation="portrait" />
         <!-- umeng appkey配置 -->
         <meta-data
             android:name="UMENG_APPKEY"
