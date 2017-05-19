@@ -7,9 +7,11 @@ import android.text.TextUtils;
 import com.bugtags.library.Bugtags;
 import com.google.gson.JsonParseException;
 import com.icourt.alpha.base.BaseApplication;
+import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.icourt.alpha.http.exception.ResponseException;
 import com.icourt.alpha.utils.AppManager;
 import com.icourt.alpha.utils.LogUtils;
+import com.icourt.alpha.utils.LoginInfoUtils;
 import com.icourt.alpha.utils.NetUtils;
 import com.icourt.alpha.utils.SnackbarUtils;
 import com.icourt.alpha.utils.StringUtils;
@@ -89,6 +91,7 @@ public abstract class BaseCallBack<T> implements Callback<T> {
             sendLimitHttpLog(call, t, "服务器响应超时");
         } else {
             defNotify("未知异常");
+            sendLimitHttpLog(call, t, "服务器响应超时");
         }
         LogUtils.d("http", "------->throwable:" + t);
     }
@@ -148,7 +151,10 @@ public abstract class BaseCallBack<T> implements Callback<T> {
                 httpLogBuilder.append("\nbody:" + body2String(request.body()));
             }
             // httpLogBuilder.append("\nuid:" + getLoginUid());
-            httpLogBuilder.append("\n错误信息:" + t.toString());
+            httpLogBuilder.append("\n错误信息:" + StringUtils.throwable2string(t));
+            //发生的用户信息
+            AlphaUserInfo loginUserInfo = LoginInfoUtils.getLoginUserInfo();
+            httpLogBuilder.append("\nuserInfo:" + loginUserInfo);
 
             sendHttpLog(httpLogBuilder.toString());
 

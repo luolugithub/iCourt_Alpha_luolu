@@ -60,6 +60,7 @@ public class TabNewsFragment extends BaseFragment
         super.onCreate(savedInstanceState);
         NIMClient.getService(MsgServiceObserve.class)
                 .observeReceiveMessage(globalMessageObserver, true);
+        SyncDataService.startSysnContact(getActivity());
     }
 
     @Override
