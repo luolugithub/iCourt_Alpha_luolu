@@ -611,12 +611,14 @@ public class BaseActivity
     }
 
     /**
-     * 获取统计的页面名称 默认class name
+     * 获取统计的页面名称 默认class name 替换Activity为Page
      *
      * @return
      */
     protected String getStatisticalPageName() {
-        return getClass().getSimpleName();
+        String pageName = getClass().getSimpleName();
+        pageName = pageName.replaceAll("Activity", "Page");
+        return pageName;
     }
 
     @Override
