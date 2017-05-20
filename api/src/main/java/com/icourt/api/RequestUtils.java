@@ -54,6 +54,18 @@ public class RequestUtils {
         return null;
     }
 
+    /**
+     * 构建媒体流请求key
+     *
+     * @param file
+     * @return
+     */
+    public static String createStreamKey(File file) {
+        if (file != null && file.exists()) {
+            return "file\"; filename=\"" + file.getName() + "\"";
+        }
+        return "file\"; filename=\"";
+    }
 
     /**
      * 构建表单请求体

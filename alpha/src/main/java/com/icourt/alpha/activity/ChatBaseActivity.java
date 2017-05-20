@@ -690,7 +690,7 @@ public abstract class ChatBaseActivity
                 params.put("name", RequestUtils.createTextBody(msgPostEntity.name));
                 params.put("magic_id", RequestUtils.createTextBody(msgPostEntity.magic_id));
 
-                params.put("file\"; filename=\"image.jpg\"", RequestUtils.createImgBody(file));
+                params.put(RequestUtils.createStreamKey(file), RequestUtils.createStreamBody(file));
 
                 msgPostEntity.msg_statu = Const.MSG_STATU_SENDING;
                 updateCustomBody(msgPostEntity);
