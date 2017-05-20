@@ -71,7 +71,6 @@ public class AtMeFragment extends BaseFragment {
 
 
     MyAtedAdapter myAtedAdapter;
-    private int pageIndex = 1;
 
     public static void launch(@NonNull Context context) {
         if (context == null) return;
@@ -93,7 +92,7 @@ public class AtMeFragment extends BaseFragment {
         refreshLayout.setMoveForHorizontal(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setHasFixedSize(true);
-        recyclerView.setAdapter(myAtedAdapter = new MyAtedAdapter(localTeams,localGroupContactBeans));
+        recyclerView.setAdapter(myAtedAdapter = new MyAtedAdapter(localTeams, localGroupContactBeans));
         myAtedAdapter.registerAdapterDataObserver(new RefreshViewEmptyObserver(refreshLayout, myAtedAdapter));
         refreshLayout.setXRefreshViewListener(new XRefreshView.SimpleXRefreshListener() {
             @Override
@@ -120,18 +119,25 @@ public class AtMeFragment extends BaseFragment {
     @Override
     protected void getData(final boolean isRefresh) {
         super.getData(isRefresh);
+        long msg_id=0;
         if (isRefresh) {
-            pageIndex = 0;
+            msg_id = Integer.MAX_VALUE;
             getTeams();
             getUsers();
+        } else {
+            if (myAtedAdapter.getData().size() > 0) {
+                IMMessageCustomBody item = myAtedAdapter.getItem(myAtedAdapter.getData().size() - 1);
+                if (item != null) {
+                    msg_id = item.id;
+                }
+            }
         }
-        getChatApi().getAtMeMsg(pageIndex, ActionConstants.DEFAULT_PAGE_SIZE)
+        getChatApi().getAtMeMsg(msg_id)
                 .enqueue(new SimpleCallBack<List<IMMessageCustomBody>>() {
                     @Override
                     public void onSuccess(Call<ResEntity<List<IMMessageCustomBody>>> call, Response<ResEntity<List<IMMessageCustomBody>>> response) {
                         myAtedAdapter.bindData(isRefresh, response.body().result);
                         stopRefresh();
-                        pageIndex += 1;
                         enableLoadMore(response.body().result);
                     }
 

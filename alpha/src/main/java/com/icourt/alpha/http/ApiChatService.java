@@ -311,13 +311,11 @@ public interface ApiChatService {
      * 获取  @我  的消息
      * 【注意 这个接口只能post】
      *
-     * @param pageNum  第n页
-     * @param pageSize 每页获取条目数量
+     * @param msg_id
      * @return
      */
     @GET("im/v1/msgs/ats")
-    Call<ResEntity<List<IMMessageCustomBody>>> getAtMeMsg(@Query("pageNum") int pageNum,
-                                                          @Query("pageSize") int pageSize);
+    Call<ResEntity<List<IMMessageCustomBody>>> getAtMeMsg(@Query("msg_id") long msg_id);
 
     /**
      * 获取我收藏的消息

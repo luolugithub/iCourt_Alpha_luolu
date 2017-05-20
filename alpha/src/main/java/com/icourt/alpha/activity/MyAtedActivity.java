@@ -65,9 +65,9 @@ public class MyAtedActivity extends BaseActivity {
     RecyclerView recyclerView;
     @BindView(R.id.refreshLayout)
     RefreshLayout refreshLayout;
-    private int pageIndex = 1;
     private final List<Team> localTeams = new ArrayList<>();
     private final List<GroupContactBean> localGroupContactBeans = new ArrayList<>();
+
     public static void launch(@NonNull Context context) {
         if (context == null) return;
         Intent intent = new Intent(context, MyAtedActivity.class);
@@ -90,7 +90,7 @@ public class MyAtedActivity extends BaseActivity {
         refreshLayout.setMoveForHorizontal(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setHasFixedSize(true);
-        recyclerView.setAdapter(myAtedAdapter = new MyAtedAdapter(localTeams,localGroupContactBeans));
+        recyclerView.setAdapter(myAtedAdapter = new MyAtedAdapter(localTeams, localGroupContactBeans));
         myAtedAdapter.registerAdapterDataObserver(new RefreshViewEmptyObserver(refreshLayout, myAtedAdapter));
         refreshLayout.setXRefreshViewListener(new XRefreshView.SimpleXRefreshListener() {
             @Override
@@ -112,18 +112,25 @@ public class MyAtedActivity extends BaseActivity {
     @Override
     protected void getData(final boolean isRefresh) {
         super.getData(isRefresh);
+        long msg_id = 0;
         if (isRefresh) {
-            pageIndex = 0;
+            msg_id = Integer.MAX_VALUE;
             getTeams();
             getUsers();
+        } else {
+            if (myAtedAdapter.getData().size() > 0) {
+                IMMessageCustomBody item = myAtedAdapter.getItem(myAtedAdapter.getData().size() - 1);
+                if (item != null) {
+                    msg_id = item.id;
+                }
+            }
         }
-        getChatApi().getAtMeMsg(pageIndex, ActionConstants.DEFAULT_PAGE_SIZE)
+        getChatApi().getAtMeMsg(msg_id)
                 .enqueue(new SimpleCallBack<List<IMMessageCustomBody>>() {
                     @Override
                     public void onSuccess(Call<ResEntity<List<IMMessageCustomBody>>> call, Response<ResEntity<List<IMMessageCustomBody>>> response) {
                         myAtedAdapter.bindData(isRefresh, response.body().result);
                         stopRefresh();
-                        pageIndex += 1;
                         enableLoadMore(response.body().result);
                     }
 
@@ -149,6 +156,7 @@ public class MyAtedActivity extends BaseActivity {
                     }
                 });
     }
+
     private void getUsers() {
         queryAllContactFromDbAsync(new Consumer<List<GroupContactBean>>() {
             @Override
@@ -194,6 +202,7 @@ public class MyAtedActivity extends BaseActivity {
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(consumer);
     }
+
     private void enableLoadMore(List result) {
         if (refreshLayout != null) {
             refreshLayout.setPullLoadEnable(result != null
