@@ -408,7 +408,7 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMMessageCustomBody> i
         }
         holder.bindChildClick(R.id.chat_link_ll);
         holder.bindChildLongClick(R.id.chat_link_ll);
-        setTypeDingFromUser(holder,imMessageCustomBody,position);
+        setTypeDingFromUser(holder, imMessageCustomBody, position);
     }
 
 
@@ -676,6 +676,7 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMMessageCustomBody> i
             chat_lin_thumb_iv.setVisibility(View.VISIBLE);
             Glide.with(chat_lin_thumb_iv.getContext())
                     .load(thumb)
+                    .error(R.mipmap.avatar_default_24)
                     .into(chat_lin_thumb_iv);
         } else {
             chat_lin_thumb_iv.setVisibility(View.GONE);

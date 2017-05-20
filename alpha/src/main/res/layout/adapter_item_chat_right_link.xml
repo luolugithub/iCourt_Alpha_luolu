@@ -18,7 +18,7 @@
 
         <LinearLayout
             android:id="@+id/chat_link_ll"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginRight="9dp"
             android:layout_weight="1"
@@ -32,18 +32,19 @@
                 android:ellipsize="end"
                 android:gravity="center_vertical"
                 android:maxLines="2"
-                android:minEms="10"
+                android:minEms="14"
                 android:paddingBottom="10dp"
                 android:paddingLeft="10dp"
                 android:paddingRight="15dp"
                 android:paddingTop="10dp"
                 android:text="百度一下"
                 android:textColor="@color/alpha_font_color_title"
-                android:textSize="@dimen/alpha_font_size_comm" />
+                android:textSize="@dimen/alpha_font_size_comm"
+                android:textStyle="bold" />
 
 
             <LinearLayout
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginRight="7dp"
                 android:background="@drawable/chat_bubble_right_bg_bottom"
@@ -59,7 +60,7 @@
                     android:src="@mipmap/ic_launcher" />
 
                 <LinearLayout
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical">
 

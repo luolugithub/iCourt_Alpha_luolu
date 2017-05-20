@@ -16,6 +16,7 @@ import com.icourt.alpha.adapter.baseadapter.BaseFragmentAdapter;
 import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.fragment.TaskOtherListFragment;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 
 import butterknife.BindView;
@@ -44,9 +45,13 @@ public class MyAllotTaskActivity extends BaseActivity {
 
     BaseFragmentAdapter baseFragmentAdapter;
 
-    public static void launch(@NonNull Context context) {
+    public static void launch(@NonNull Context context,
+                              @TaskOtherListFragment.START_TYPE int startType,
+                              @Nullable ArrayList<String> uids) {
         if (context == null) return;
         Intent intent = new Intent(context, MyAllotTaskActivity.class);
+        intent.putExtra("startType", startType);
+        intent.putExtra("uids", uids);
         context.startActivity(intent);
     }
 
@@ -58,6 +63,18 @@ public class MyAllotTaskActivity extends BaseActivity {
         initView();
     }
 
+    @TaskOtherListFragment.START_TYPE
+    private int getQueryType() {
+        switch (getIntent().getIntExtra("startType", 0)) {
+            case TaskOtherListFragment.MY_ALLOT_TYPE:
+                return TaskOtherListFragment.MY_ALLOT_TYPE;
+            case TaskOtherListFragment.SELECT_OTHER_TYPE:
+                return TaskOtherListFragment.SELECT_OTHER_TYPE;
+            default:
+                return TaskOtherListFragment.MY_ALLOT_TYPE;
+        }
+    }
+
     @Override
     protected void initView() {
         super.initView();
@@ -65,10 +82,11 @@ public class MyAllotTaskActivity extends BaseActivity {
         baseFragmentAdapter = new BaseFragmentAdapter(getSupportFragmentManager());
         viewpager.setAdapter(baseFragmentAdapter);
         tablayout.setupWithViewPager(viewpager);
+        ArrayList<String> uids = (ArrayList<String>) getIntent().getSerializableExtra("uids");
         baseFragmentAdapter.bindTitle(true, Arrays.asList("未完成", "已完成"));
         baseFragmentAdapter.bindData(true,
                 Arrays.asList(
-                        TaskOtherListFragment.newInstance(TaskOtherListFragment.MY_ALLOT_TYPE, TaskOtherListFragment.UNFINISH_TYPE, null),
-                        TaskOtherListFragment.newInstance(TaskOtherListFragment.MY_ALLOT_TYPE, TaskOtherListFragment.FINISH_TYPE, null)));
+                        TaskOtherListFragment.newInstance(getQueryType(), TaskOtherListFragment.UNFINISH_TYPE, uids),
+                        TaskOtherListFragment.newInstance(getQueryType(), TaskOtherListFragment.FINISH_TYPE, uids)));
     }
 }

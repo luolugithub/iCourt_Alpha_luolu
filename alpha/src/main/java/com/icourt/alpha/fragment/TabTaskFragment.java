@@ -4,6 +4,8 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.TabLayout;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.ViewPager;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,8 +19,13 @@ import com.icourt.alpha.activity.TaskCreateActivity;
 import com.icourt.alpha.adapter.baseadapter.BaseFragmentAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.base.BaseFragment;
+import com.icourt.alpha.entity.bean.TaskMemberEntity;
+import com.icourt.alpha.fragment.dialogfragment.TaskMemberSelectDialogFragment;
+import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.widget.dialog.BottomActionDialog;
 
+import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Arrays;
 
 import butterknife.BindView;
@@ -33,7 +40,7 @@ import butterknife.Unbinder;
  * date createTime：2017/4/8
  * version 1.0.0
  */
-public class TabTaskFragment extends BaseFragment {
+public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackListener {
     @BindView(R.id.tabLayout)
     TabLayout tabLayout;
     @BindView(R.id.titleAction)
@@ -87,13 +94,13 @@ public class TabTaskFragment extends BaseFragment {
                         dialog.dismiss();
                         switch (position) {
                             case 0:
-                                MyAllotTaskActivity.launch(getContext());
+                                MyAllotTaskActivity.launch(getContext(),TaskOtherListFragment.MY_ALLOT_TYPE, null);
                                 break;
                             case 1:
                                 MyFinishTaskActivity.launch(getContext());
                                 break;
                             case 2:
-
+                                showMemberSelectDialogFragment();
                                 break;
                         }
                     }
@@ -102,10 +109,36 @@ public class TabTaskFragment extends BaseFragment {
         }
     }
 
+    /**
+     * 展示选择成员对话框
+     */
+    public void showMemberSelectDialogFragment() {
+        String tag = TaskMemberSelectDialogFragment.class.getSimpleName();
+        FragmentTransaction mFragTransaction = getChildFragmentManager().beginTransaction();
+        Fragment fragment = getChildFragmentManager().findFragmentByTag(tag);
+        if (fragment != null) {
+            mFragTransaction.remove(fragment);
+        }
+        TaskMemberSelectDialogFragment.newInstance()
+                .show(mFragTransaction, tag);
+    }
+
     @Override
     public void onDestroyView() {
         super.onDestroyView();
         unbinder.unbind();
     }
 
+    @Override
+    public void onFragmentCallBack(Fragment fragment, int type, Bundle params) {
+        if (fragment instanceof TaskMemberSelectDialogFragment && params != null) {
+            Serializable serializable = params.getSerializable(KEY_FRAGMENT_RESULT);
+            if (serializable instanceof TaskMemberEntity) {
+                TaskMemberEntity taskMemberEntity = (TaskMemberEntity) serializable;
+                ArrayList<String> ids = new ArrayList<>();
+                ids.add(taskMemberEntity.userId);
+                MyAllotTaskActivity.launch(getContext(),TaskOtherListFragment.SELECT_OTHER_TYPE,ids);
+            }
+        }
+    }
 }

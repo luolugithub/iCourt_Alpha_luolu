@@ -23,6 +23,7 @@ import com.icourt.alpha.entity.bean.TaskAttachmentEntity;
 import com.icourt.alpha.entity.bean.TaskCheckItemEntity;
 import com.icourt.alpha.entity.bean.TaskEntity;
 import com.icourt.alpha.entity.bean.TaskGroupEntity;
+import com.icourt.alpha.entity.bean.TaskMemberWrapEntity;
 import com.icourt.alpha.entity.bean.TaskOwerEntity;
 import com.icourt.alpha.entity.bean.TimeEntity;
 import com.icourt.alpha.entity.bean.TimingCountEntity;
@@ -559,13 +560,13 @@ public interface ApiAlphaService {
      */
     @GET("api/v2/taskflow")
     Call<ResEntity<TaskEntity>> taskListItemQuery(@Query("assignedByMe") int assignedByMe,
-                                                                       @Query("assignTos") String assignTos,
-                                                                       @Query("stateType") int stateType,
-                                                                       @Query("attentionType") int attentionType,
-                                                                       @Query("orderBy") String orderBy,
-                                                                       @Query("pageIndex") int pageIndex,
-                                                                       @Query("pageSize") int pageSize,
-                                                                       @Query("type") int type);
+                                                  @Query("assignTos") String assignTos,
+                                                  @Query("stateType") int stateType,
+                                                  @Query("attentionType") int attentionType,
+                                                  @Query("orderBy") String orderBy,
+                                                  @Query("pageIndex") int pageIndex,
+                                                  @Query("pageSize") int pageSize,
+                                                  @Query("type") int type);
 
     /**
      * 获取任务下的附件列表
@@ -829,6 +830,16 @@ public interface ApiAlphaService {
      */
     @POST("api/v2/contact/company")
     Call<ResEntity<List<ContactDeatilBean>>> customerCompanyCreate(@Body RequestBody body);
+
+
+    /**
+     * 查看任务的成员 对应的成员
+     *
+     * @return
+     */
+    @GET("api/v1/auth/get/members")
+    Call<ResEntity<List<TaskMemberWrapEntity>>> getTaskMembers();
+
 
 }
 
