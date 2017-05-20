@@ -171,6 +171,9 @@ public class FileImportContactFragment extends BaseFragment implements BaseRecyc
                     @Override
                     public void onSuccess(Call<ResEntity<IMMessageCustomBody>> call, Response<ResEntity<IMMessageCustomBody>> response) {
                         dismissLoadingDialog();
+                        if (getActivity() != null) {
+                            getActivity().finish();
+                        }
                     }
 
                     @Override

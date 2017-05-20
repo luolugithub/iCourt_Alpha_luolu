@@ -597,9 +597,17 @@ public class MessageListFragment extends BaseRecentContactFragment
                         AlphaSpecialHelperActivity.launch(getActivity(),
                                 data.recentContact.getContactId());
                     } else {
-                        ChatActivity.launchP2P(getActivity(),
-                                data.recentContact.getContactId(),
-                                data.customIMBody.name, 0);
+                        if (!TextUtils.isEmpty(data.recentContact.getContactId())) {
+                            GroupContactBean groupContactBean = new GroupContactBean();
+                            groupContactBean.accid = data.recentContact.getContactId().toLowerCase();
+                            int indexOf = localGroupContactBeans.indexOf(groupContactBean);
+                            if (indexOf >= 0) {
+                                groupContactBean = localGroupContactBeans.get(indexOf);
+                                ChatActivity.launchP2P(getActivity(),
+                                        data.recentContact.getContactId(),
+                                        groupContactBean.name, 0);
+                            }
+                        }
                     }
                     break;
                 case CHAT_TYPE_TEAM:
