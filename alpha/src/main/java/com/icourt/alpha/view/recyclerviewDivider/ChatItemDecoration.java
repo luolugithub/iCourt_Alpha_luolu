@@ -70,7 +70,7 @@ public class ChatItemDecoration extends RecyclerView.ItemDecoration {
                 } else {
                     float txtStartX = (child.getWidth() - mBounds.width()) / 2;
                     float txtEndX = txtStartX + mBounds.width();
-                    float dividerCenterY = dividerHeight / 2 + child.getBottom();
+                    float dividerCenterY = child.getTop() - dividerHeight / 2;
 
                     //画中间文本
                     c.drawText(tag, txtStartX, dividerCenterY + mTextSize * 0.25f, mPaint);
@@ -103,8 +103,7 @@ public class ChatItemDecoration extends RecyclerView.ItemDecoration {
         final RecyclerView.LayoutParams params = (RecyclerView.LayoutParams) view.getLayoutParams();
         int adapterPosition = params.getViewAdapterPosition();
         if (iTimeDividerInterface != null && iTimeDividerInterface.isShowTimeDivider(adapterPosition)) {
-            outRect.set(0, 0, 0, (int) dividerHeight);
-            //outRect.set(0, 0, (int) dividerHeight, 0);
+            outRect.set(0, (int) dividerHeight, 0, 0);
         }
     }
 }
