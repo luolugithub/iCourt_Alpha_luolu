@@ -11,10 +11,13 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
 import com.icourt.alpha.R;
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.interfaces.OnPageFragmentCallBack;
 import com.icourt.alpha.utils.FileUtils;
+import com.icourt.alpha.utils.GlideUtils;
+import com.icourt.alpha.utils.IMUtils;
 
 import java.io.File;
 
@@ -82,12 +85,24 @@ public class FileImportNavFragment extends BaseFragment {
     protected void initView() {
         String filePath = getArguments().getString(KEY_PATH);
         if (!TextUtils.isEmpty(filePath)) {
-            String fileName = filePath.substring(filePath.lastIndexOf("/") + 1, filePath.length());
-            tvFileName.setText(fileName);
-            ivFileIcon.setImageResource(FileUtils.getFileIcon40(fileName));
-            File file = new File(filePath);
-            if (file.exists()) {
-                tvFileSize.setText(String.format("(%s)", FileUtils.kbFromat(file.length())));
+            if (IMUtils.isPIC(filePath)) {
+                fileTypeImg.setVisibility(View.VISIBLE);
+                fileCommType.setVisibility(View.GONE);
+                if (GlideUtils.canLoadImage(getContext())) {
+                    Glide.with(getContext())
+                            .load(filePath)
+                            .into(fileTypeImg);
+                }
+            } else {
+                fileTypeImg.setVisibility(View.GONE);
+                fileCommType.setVisibility(View.VISIBLE);
+                String fileName = filePath.substring(filePath.lastIndexOf("/") + 1, filePath.length());
+                tvFileName.setText(fileName);
+                ivFileIcon.setImageResource(FileUtils.getFileIcon40(fileName));
+                File file = new File(filePath);
+                if (file.exists()) {
+                    tvFileSize.setText(String.format("(%s)", FileUtils.kbFromat(file.length())));
+                }
             }
         }
     }

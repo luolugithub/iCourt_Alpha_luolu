@@ -1,5 +1,6 @@
 package com.icourt.alpha.activity;
 
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -16,6 +17,7 @@ import com.icourt.alpha.fragment.FileImportNavFragment;
 import com.icourt.alpha.fragment.FileImportProjectFragment;
 import com.icourt.alpha.fragment.FileImportTeamFragment;
 import com.icourt.alpha.interfaces.OnPageFragmentCallBack;
+import com.icourt.alpha.utils.UriUtils;
 import com.icourt.alpha.view.NoScrollViewPager;
 
 import java.util.Arrays;
@@ -55,14 +57,14 @@ public class ImportFile2AlphaActivity extends BaseActivity
     }
 
     private String getFilePath() {
-        String path = getIntent().getData().getPath();
-        log("-------->share file path:" + path);
-        return path;
+        return UriUtils.getPath(getContext(),getIntent().getData());
     }
 
     @Override
     protected void initView() {
         super.initView();
+        Uri fileUir = getIntent().getData();
+        log("-------->share file uri:" + fileUir);
         if (!isUserLogin()) {
             LoginSelectActivity.launch(getContext());
             finish();
