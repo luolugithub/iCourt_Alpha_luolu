@@ -17,7 +17,6 @@ import com.icourt.alpha.utils.ActivityLifecycleTaskCallbacks;
 import com.icourt.alpha.utils.GlideImageLoader;
 import com.icourt.alpha.utils.LogUtils;
 import com.icourt.alpha.utils.LoginInfoUtils;
-import com.icourt.alpha.utils.SpUtils;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.utils.UserPreferences;
 import com.icourt.alpha.utils.logger.AndroidLogAdapter;
@@ -109,6 +108,7 @@ public class BaseApplication extends MultiDexApplication {
     }
 
     private void initYunXin() {
+
         LoginInfo loginInfo = null;
         AlphaUserInfo loginUserInfo = LoginInfoUtils.getLoginUserInfo();
         if (loginUserInfo != null) {
@@ -166,12 +166,6 @@ public class BaseApplication extends MultiDexApplication {
             NIMClient.toggleNotification(UserPreferences.getNotificationToggle());
             NIMClient.updateStatusBarNotificationConfig(UserPreferences.getStatusConfig());
             NIMClient.getService(MsgService.class).registerCustomAttachmentParser(new CustomAttachParser());
-        }
-
-        //云信数据库删除v2.2.0
-        if (!SpUtils.getInstance().getBooleanData("nimDatabaseupdate_v2.0.0", false)) {
-            NIMClient.getService(MsgService.class).clearMsgDatabase(true);
-            SpUtils.getInstance().putData("nimDatabaseupdate_v2.0.0", true);
         }
     }
 

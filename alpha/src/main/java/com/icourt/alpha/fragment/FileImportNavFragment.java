@@ -13,7 +13,7 @@ import android.widget.TextView;
 
 import com.icourt.alpha.R;
 import com.icourt.alpha.base.BaseFragment;
-import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
+import com.icourt.alpha.interfaces.OnPageFragmentCallBack;
 import com.icourt.alpha.utils.FileUtils;
 
 import java.io.File;
@@ -58,13 +58,14 @@ public class FileImportNavFragment extends BaseFragment {
         return importFilePathFragment;
     }
 
-    OnFragmentCallBackListener onFragmentCallBackListener;
+
+    OnPageFragmentCallBack onPageFragmentCallBack;
 
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
         try {
-            onFragmentCallBackListener = (OnFragmentCallBackListener) context;
+            onPageFragmentCallBack = (OnPageFragmentCallBack) context;
         } catch (ClassCastException e) {
         }
     }
@@ -97,10 +98,8 @@ public class FileImportNavFragment extends BaseFragment {
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.bt_path_friends:
-                if (onFragmentCallBackListener != null) {
-                    Bundle bundle = new Bundle();
-                    bundle.putInt("page", 1);
-                    onFragmentCallBackListener.onFragmentCallBack(this, 1, bundle);
+                if (onPageFragmentCallBack != null) {
+                    onPageFragmentCallBack.onRequest2NextPage(this, 0, null);
                 }
                 break;
             case R.id.bt_send_program:

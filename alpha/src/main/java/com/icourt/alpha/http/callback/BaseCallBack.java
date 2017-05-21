@@ -17,6 +17,7 @@ import com.icourt.alpha.utils.SnackbarUtils;
 import com.icourt.alpha.utils.StringUtils;
 
 import java.io.EOFException;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.ConnectException;
 import java.net.NoRouteToHostException;
@@ -89,9 +90,12 @@ public abstract class BaseCallBack<T> implements Callback<T> {
             defNotify("服务器响应超时");
 
             sendLimitHttpLog(call, t, "服务器响应超时");
+        } else if (t instanceof FileNotFoundException) {
+            defNotify("文件权限被拒绝或文件找不到");
+            sendLimitHttpLog(call, t, "文件权限被拒绝或文件找不到");
         } else {
             defNotify("未知异常");
-            sendLimitHttpLog(call, t, "服务器响应超时");
+            sendLimitHttpLog(call, t, "未知异常");
         }
         LogUtils.d("http", "------->throwable:" + t);
     }

@@ -62,7 +62,8 @@
         <!--微信分享到alpha-->
         <activity
             android:name=".activity.ImportFile2AlphaActivity"
-            android:theme="@style/AppThemeTransnotAnimation">
+            android:theme="@style/AppThemeTransnotAnimation"
+            android:windowSoftInputMode="adjustNothing">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW"></action>
                 <category android:name="android.intent.category.DEFAULT"></category>

@@ -16,22 +16,17 @@ import android.view.ViewGroup;
 import android.widget.EditText;
 
 import com.icourt.alpha.R;
-import com.icourt.alpha.adapter.IMContactAdapter;
+import com.icourt.alpha.adapter.GroupAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.HeaderFooterAdapter;
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.constants.Const;
-import com.icourt.alpha.db.convertor.IConvertModel;
-import com.icourt.alpha.db.convertor.ListConvertor;
-import com.icourt.alpha.db.dbmodel.ContactDbModel;
-import com.icourt.alpha.db.dbservice.ContactDbService;
 import com.icourt.alpha.entity.bean.AlphaUserInfo;
-import com.icourt.alpha.entity.bean.GroupContactBean;
+import com.icourt.alpha.entity.bean.GroupEntity;
 import com.icourt.alpha.entity.bean.IMMessageCustomBody;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.OnPageFragmentCallBack;
-import com.icourt.alpha.widget.filter.ListFilter;
 import com.icourt.api.RequestUtils;
 
 import java.io.File;
@@ -43,13 +38,6 @@ import java.util.Map;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
-import io.reactivex.Observable;
-import io.reactivex.ObservableEmitter;
-import io.reactivex.ObservableOnSubscribe;
-import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.functions.Consumer;
-import io.reactivex.schedulers.Schedulers;
-import io.realm.RealmResults;
 import okhttp3.RequestBody;
 import retrofit2.Call;
 import retrofit2.Response;
@@ -62,22 +50,25 @@ import retrofit2.Response;
  * date createTime：2017/5/20
  * version 1.0.0
  */
-public class FileImportContactFragment extends BaseFragment implements BaseRecyclerAdapter.OnItemClickListener {
+public class FileImportTeamFragment extends BaseFragment implements BaseRecyclerAdapter.OnItemClickListener {
     private static final String KEY_PATH = "path";
     public static final int TYPE_UPLOAD = 1001;
-    private static final String KEY_IS_FILTER_MYSELF = "isFilterMyself";
     @BindView(R.id.recyclerView)
     RecyclerView recyclerView;
     Unbinder unbinder;
-    IMContactAdapter imContactAdapter;
-    HeaderFooterAdapter<IMContactAdapter> headerFooterAdapter;
+    GroupAdapter groupAdapter;
+    HeaderFooterAdapter<GroupAdapter> headerFooterAdapter;
     EditText header_input_et;
+    private final List<GroupEntity> groupEntities = new ArrayList<>();
 
-    public static FileImportContactFragment newInstance(String path, boolean isFilterMyself) {
+    /**
+     * @param path
+     * @return
+     */
+    public static FileImportTeamFragment newInstance(String path) {
         Bundle bundle = new Bundle();
         bundle.putString(KEY_PATH, path);
-        bundle.putBoolean(KEY_IS_FILTER_MYSELF, isFilterMyself);
-        FileImportContactFragment importFilePathFragment = new FileImportContactFragment();
+        FileImportTeamFragment importFilePathFragment = new FileImportTeamFragment();
         importFilePathFragment.setArguments(bundle);
         return importFilePathFragment;
     }
@@ -96,7 +87,7 @@ public class FileImportContactFragment extends BaseFragment implements BaseRecyc
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = super.onCreateView(R.layout.fragment_file_import_contact, inflater, container, savedInstanceState);
+        View view = super.onCreateView(R.layout.fragment_file_import_team, inflater, container, savedInstanceState);
         unbinder = ButterKnife.bind(this, view);
         return view;
     }
@@ -104,12 +95,10 @@ public class FileImportContactFragment extends BaseFragment implements BaseRecyc
     @Override
     protected void initView() {
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        headerFooterAdapter = new HeaderFooterAdapter<>(imContactAdapter = new IMContactAdapter());
-        imContactAdapter.setSelectable(true);
-        View headerView = HeaderFooterAdapter.inflaterView(getContext(), R.layout.header_file_import_contact, recyclerView);
+        headerFooterAdapter = new HeaderFooterAdapter<>(groupAdapter = new GroupAdapter());
+        groupAdapter.setSelectable(true);
+        View headerView = HeaderFooterAdapter.inflaterView(getContext(), R.layout.header_search_input_text, recyclerView);
         headerFooterAdapter.addHeader(headerView);
-        View viewById = headerView.findViewById(R.id.header_group_item_ll);
-        registerClick(viewById);
         header_input_et = (EditText) headerView.findViewById(R.id.header_input_et);
         header_input_et.clearFocus();
         header_input_et.addTextChangedListener(new TextWatcher() {
@@ -126,55 +115,30 @@ public class FileImportContactFragment extends BaseFragment implements BaseRecyc
             @Override
             public void afterTextChanged(Editable s) {
                 if (TextUtils.isEmpty(s)) {
-                    getData(true);
+                    groupAdapter.clearSelected();
+                    groupAdapter.bindData(true, groupEntities);
                 } else {
-                    serachGroupMember(s.toString());
+                    queryByName(s.toString());
                 }
             }
         });
         recyclerView.setAdapter(headerFooterAdapter);
-        imContactAdapter.setOnItemClickListener(this);
+        groupAdapter.setOnItemClickListener(this);
         getData(true);
     }
 
     @Override
     protected void getData(boolean isRefresh) {
         super.getData(isRefresh);
-        Observable.create(new ObservableOnSubscribe<List<GroupContactBean>>() {
-            @Override
-            public void subscribe(ObservableEmitter<List<GroupContactBean>> e) throws Exception {
-                if (e.isDisposed()) return;
-                ContactDbService contactDbService = new ContactDbService(getLoginUserId());
-                RealmResults<ContactDbModel> contactDbModels = contactDbService.queryAll();
-                if (contactDbModels != null) {
-                    List<GroupContactBean> contactBeen = ListConvertor.convertList(new ArrayList<IConvertModel<GroupContactBean>>(contactDbModels));
-                    filterRobot(contactBeen);
-                    e.onNext(contactBeen);
-                }
-                e.onComplete();
-            }
-        }).compose(this.<List<GroupContactBean>>bindToLifecycle())
-                .subscribeOn(Schedulers.newThread())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Consumer<List<GroupContactBean>>() {
+        getChatApi().groupsQuery(0, true)
+                .enqueue(new SimpleCallBack<List<GroupEntity>>() {
                     @Override
-                    public void accept(List<GroupContactBean> groupContactBeen) throws Exception {
-                        if (groupContactBeen != null && isFilterMyself()) {
-                            GroupContactBean groupContactBean = new GroupContactBean();
-                            String loginUserId = getLoginUserId();
-                            if (!TextUtils.isEmpty(loginUserId)) {
-                                loginUserId = loginUserId.toLowerCase();
-                            }
-                            groupContactBean.accid = loginUserId;
-                        }
-                        imContactAdapter.bindData(true, groupContactBeen);
+                    public void onSuccess(Call<ResEntity<List<GroupEntity>>> call, Response<ResEntity<List<GroupEntity>>> response) {
+                        groupEntities.clear();
+                        groupEntities.addAll(response.body().result);
+                        groupAdapter.bindData(true, groupEntities);
                     }
                 });
-    }
-
-    private boolean isFilterMyself() {
-        return getArguments() != null
-                && getArguments().getBoolean(KEY_IS_FILTER_MYSELF);
     }
 
     @Override
@@ -187,6 +151,18 @@ public class FileImportContactFragment extends BaseFragment implements BaseRecyc
         }
     }
 
+    protected void queryByName(String name) {
+        List<GroupEntity> filterGroupEntities = new ArrayList<>();
+        for (GroupEntity groupEntity : groupEntities) {
+            if (groupEntity != null && !TextUtils.isEmpty(groupEntity.name)) {
+                if (groupEntity.name.contains(name)) {
+                    filterGroupEntities.add(groupEntity);
+                }
+            }
+        }
+        groupAdapter.clearSelected();
+        groupAdapter.bindData(true, filterGroupEntities);
+    }
 
     private String getPath() {
         return getArguments().getString(KEY_PATH);
@@ -200,6 +176,7 @@ public class FileImportContactFragment extends BaseFragment implements BaseRecyc
             reqPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, "我们需要文件读写权限!", 1001);
             return;
         }
+
         String path = getPath();
         if (TextUtils.isEmpty(path)) return;
         File file = new File(path);
@@ -207,7 +184,7 @@ public class FileImportContactFragment extends BaseFragment implements BaseRecyc
             showTopSnackBar("文件不存在啦");
             return;
         }
-        ArrayList<GroupContactBean> selectedData = imContactAdapter.getSelectedData();
+        ArrayList<GroupEntity> selectedData = groupAdapter.getSelectedData();
         if (selectedData.isEmpty()) return;
         AlphaUserInfo loginUserInfo = getLoginUserInfo();
         String uid = null;
@@ -218,10 +195,10 @@ public class FileImportContactFragment extends BaseFragment implements BaseRecyc
             }
         }
         final IMMessageCustomBody msgPostEntity = IMMessageCustomBody.createPicMsg(
-                Const.CHAT_TYPE_P2P,
+                Const.CHAT_TYPE_TEAM,
                 loginUserInfo == null ? "" : loginUserInfo.getName(),
                 uid,
-                selectedData.get(0).accid,
+                selectedData.get(0).tid,
                 file.getAbsolutePath());
         Map<String, RequestBody> params = new HashMap<>();
         params.put("platform", RequestUtils.createTextBody(msgPostEntity.platform));
@@ -250,50 +227,6 @@ public class FileImportContactFragment extends BaseFragment implements BaseRecyc
                 });
     }
 
-    /**
-     * 过滤掉 机器人（robot == 100）
-     *
-     * @param data
-     * @return
-     */
-    private List<GroupContactBean> filterRobot(List<GroupContactBean> data) {
-        return new ListFilter<GroupContactBean>().filter(data, GroupContactBean.TYPE_ROBOT);
-    }
-
-    /**
-     * 搜索用户
-     *
-     * @param name
-     */
-    private void serachGroupMember(String name) {
-        try {
-            ContactDbService contactDbService = new ContactDbService(getLoginUserId());
-            RealmResults<ContactDbModel> result = contactDbService.contains("name", name);
-            if (result == null) {
-                imContactAdapter.clearData();
-                return;
-            }
-            List<GroupContactBean> contactBeen = ListConvertor.convertList(new ArrayList<IConvertModel<GroupContactBean>>(result));
-            filterRobot(contactBeen);
-            imContactAdapter.bindData(true, contactBeen);
-        } catch (Throwable e) {
-            e.printStackTrace();
-        }
-    }
-
-    @Override
-    public void onClick(View v) {
-        switch (v.getId()) {
-            case R.id.header_group_item_ll:
-                if (onPageFragmentCallBack != null) {
-                    onPageFragmentCallBack.onRequest2NextPage(this, 0, null);
-                }
-                break;
-            default:
-                super.onClick(v);
-                break;
-        }
-    }
 
     @Override
     public void onDestroyView() {
@@ -303,7 +236,7 @@ public class FileImportContactFragment extends BaseFragment implements BaseRecyc
 
     @Override
     public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
-        imContactAdapter.clearSelected();
-        imContactAdapter.toggleSelected(position);
+        groupAdapter.clearSelected();
+        groupAdapter.toggleSelected(position);
     }
 }
