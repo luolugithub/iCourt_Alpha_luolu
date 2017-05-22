@@ -14,8 +14,12 @@ import android.util.SparseArray;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.LinearInterpolator;
+import android.view.animation.RotateAnimation;
 import android.widget.CheckedTextView;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -83,8 +87,6 @@ public class MainActivity extends BaseActivity
     CheckableLayout tabNews;
     @BindView(R.id.tab_task)
     CheckableLayout tabTask;
-    @BindView(R.id.tab_voice)
-    TextView tabVoice;
     @BindView(R.id.tab_find_ctv)
     CheckedTextView tabFindCtv;
     @BindView(R.id.tab_find)
@@ -95,6 +97,13 @@ public class MainActivity extends BaseActivity
     CheckableLayout tabMine;
     @BindView(R.id.rg_main_tab)
     LinearLayout rgMainTab;
+    @BindView(R.id.tab_timing_icon)
+    ImageView tabTimingIcon;
+    @BindView(R.id.tab_timing_tv)
+    TextView tabTimingTv;
+    @BindView(R.id.tab_timing)
+    LinearLayout tabTiming;
+    RotateAnimation timingAnim;
 
     public static void launch(Context context) {
         if (context == null) return;
@@ -253,7 +262,7 @@ public class MainActivity extends BaseActivity
     }
 
 
-    @OnClick({R.id.tab_voice,
+    @OnClick({R.id.tab_timing,
             R.id.tab_news,
             R.id.tab_task,
             R.id.tab_find,
@@ -289,8 +298,7 @@ public class MainActivity extends BaseActivity
                 tabMine.setChecked(true);
                 checkedFragment(v.getId());
                 break;
-            case R.id.tab_voice:
-                getTimering();
+            case R.id.tab_timing:
                 if (TimerManager.getInstance().hasTimer()) {
                     showTimingDialogFragment();
                 } else {
@@ -479,21 +487,48 @@ public class MainActivity extends BaseActivity
         if (event == null) return;
         switch (event.action) {
             case TimingEvent.TIMING_ADD:
-               /* RotateAnimation operatingAnim = (RotateAnimation) AnimationUtils.loadAnimation(this, R.anim.rotate_nim);
-                LinearInterpolator lin = new LinearInterpolator();
-                operatingAnim.setInterpolator(lin);*/
-                tabVoice.setCompoundDrawablesWithIntrinsicBounds(0, R.drawable.rotate_timing, 0, 0);
-                // tabVoice.startAnimation(operatingAnim);
+                tabTimingIcon.setImageResource(R.mipmap.ic_tab_timing);
+                tabTimingIcon.clearAnimation();
+                timingAnim = getTimingAnimation(0f, 359f);
+                tabTimingIcon.startAnimation(timingAnim);
                 break;
             case TimingEvent.TIMING_UPDATE_PROGRESS:
-                tabVoice.setText(toTime(event.timingSecond));
+                if (timingAnim == null) {
+                    tabTimingIcon.setImageResource(R.mipmap.ic_tab_timing);
+                    tabTimingIcon.clearAnimation();
+                    float fromDegrees = event.timingSecond % 60 * 6;
+                    float toDegrees = 359f + fromDegrees;
+                    timingAnim = getTimingAnimation(fromDegrees, toDegrees);
+                    tabTimingIcon.startAnimation(timingAnim);
+                }
+                tabTimingTv.setText(toTime(event.timingSecond));
                 break;
             case TimingEvent.TIMING_STOP:
-                tabVoice.setText("开始计时");
-                //tabVoice.clearAnimation();
-                tabVoice.setCompoundDrawablesWithIntrinsicBounds(0, R.mipmap.ic_time_start, 0, 0);
+                tabTimingTv.setText("开始计时");
+                tabTimingIcon.setImageResource(R.mipmap.ic_time_start);
+                tabTimingIcon.clearAnimation();
+                timingAnim = null;
                 break;
         }
+    }
+
+    /**
+     * 获取旋转动画
+     *
+     * @param fromDegrees
+     * @param toDegrees
+     * @return
+     */
+    private RotateAnimation getTimingAnimation(float fromDegrees, float toDegrees) {
+        RotateAnimation anim = new RotateAnimation(fromDegrees,
+                toDegrees,
+                Animation.RELATIVE_TO_SELF,
+                0.5f,
+                Animation.RELATIVE_TO_SELF, 0.5f);
+        anim.setDuration(60 * 1000);
+        anim.setInterpolator(new LinearInterpolator());
+        anim.setRepeatCount(-1);
+        return anim;
     }
 
     public String toTime(long times) {
