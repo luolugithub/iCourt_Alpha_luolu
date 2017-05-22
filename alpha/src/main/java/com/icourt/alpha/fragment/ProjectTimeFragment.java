@@ -47,6 +47,7 @@ public class ProjectTimeFragment extends BaseFragment implements BaseRecyclerAda
 
     private static final String KEY_PROJECT_ID = "key_project_id";
     Unbinder unbinder;
+    @Nullable
     @BindView(R.id.recyclerView)
     RecyclerView recyclerView;
     @BindView(R.id.refreshLayout)

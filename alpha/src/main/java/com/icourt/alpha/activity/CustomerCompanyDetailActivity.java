@@ -550,4 +550,10 @@ public class CustomerCompanyDetailActivity extends BaseActivity {
             getContact();
         }
     }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        EventBus.getDefault().unregister(this);
+    }
 }

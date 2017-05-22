@@ -8,12 +8,15 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.AppBarLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.andview.refreshview.XRefreshView;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.CustomerAdapter;
+import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.adapterObserver.RefreshViewEmptyObserver;
 import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.entity.bean.CustomerEntity;
@@ -35,7 +38,7 @@ import retrofit2.Response;
  * date createTime：2017/4/21
  * version 1.0.0
  */
-public class MyCollectedCustomersActivity extends BaseActivity {
+public class MyCollectedCustomersActivity extends BaseActivity implements BaseRecyclerAdapter.OnItemClickListener {
 
     public static void launch(@NonNull Context context) {
         if (context == null) return;
@@ -72,6 +75,7 @@ public class MyCollectedCustomersActivity extends BaseActivity {
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setHasFixedSize(true);
         recyclerView.setAdapter(customerAdapter = new CustomerAdapter());
+        customerAdapter.setOnItemClickListener(this);
         customerAdapter.registerAdapterDataObserver(new RefreshViewEmptyObserver(refreshLayout, customerAdapter));
         refreshLayout.setXRefreshViewListener(new XRefreshView.SimpleXRefreshListener() {
             @Override
@@ -117,6 +121,19 @@ public class MyCollectedCustomersActivity extends BaseActivity {
         if (refreshLayout != null) {
             refreshLayout.stopRefresh();
             refreshLayout.stopLoadMore();
+        }
+    }
+
+    @Override
+    public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
+        CustomerEntity customerEntity = (CustomerEntity) adapter.getItem(adapter.getRealPos(position));
+        if (!TextUtils.isEmpty(customerEntity.contactType)) {
+            //公司
+            if (TextUtils.equals(customerEntity.contactType.toUpperCase(), "C")) {
+                CustomerCompanyDetailActivity.launch(getContext(), customerEntity.pkid, customerEntity.name, true);
+            } else if (TextUtils.equals(customerEntity.contactType.toUpperCase(), "P")) {
+                CustomerPersonDetailActivity.launch(getContext(), customerEntity.pkid, customerEntity.name, true);
+            }
         }
     }
 }

@@ -3,6 +3,7 @@ package com.icourt.alpha.activity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -184,6 +185,7 @@ public class MainActivity extends BaseActivity
      * 初始化发现tab
      */
     private void initTabFind() {
+        setTabDrawable(TabFindFragment.getLastChildFragmentType());
         switch (TabFindFragment.getLastChildFragmentType()) {
             case TabFindFragment.TYPE_FRAGMENT_PROJECT:
                 tabFindCtv.setText("项目");
@@ -196,6 +198,32 @@ public class MainActivity extends BaseActivity
                 break;
             case TabFindFragment.TYPE_FRAGMENT_SEARCH:
                 tabFindCtv.setText("搜索");
+                break;
+        }
+    }
+
+    /**
+     * 设置tab对应的图标
+     *
+     * @param type
+     */
+    private void setTabDrawable(int type) {
+        switch (type) {
+            case TabFindFragment.TYPE_FRAGMENT_PROJECT:
+                Drawable projectDrawable = getResources().getDrawable(R.drawable.tab_project);
+                tabFindCtv.setCompoundDrawablesWithIntrinsicBounds(null, projectDrawable, null, null);
+                break;
+            case TabFindFragment.TYPE_FRAGMENT_CUSTOMER:
+                Drawable customerDrawable = getResources().getDrawable(R.drawable.tab_customer);
+                tabFindCtv.setCompoundDrawablesWithIntrinsicBounds(null, customerDrawable, null, null);
+                break;
+            case TabFindFragment.TYPE_FRAGMENT_SEARCH:
+                Drawable searchDrawable = getResources().getDrawable(R.drawable.tab_search);
+                tabFindCtv.setCompoundDrawablesWithIntrinsicBounds(null, searchDrawable, null, null);
+                break;
+            case TabFindFragment.TYPE_FRAGMENT_TIMING:
+                Drawable timerDrawable = getResources().getDrawable(R.drawable.tab_timer);
+                tabFindCtv.setCompoundDrawablesWithIntrinsicBounds(null, timerDrawable, null, null);
                 break;
         }
     }
@@ -244,6 +272,7 @@ public class MainActivity extends BaseActivity
                         }
                         ((INotifyFragment) currentFragment).notifyFragmentUpdate(currentFragment, 0, bundle);
                         tabFindCtv.setText(itemsEntityImp.getItemTitle());
+                        setTabDrawable(itemsEntityImp.getItemType());
                     }
                 }
             }).showUpCenter(v, DensityUtil.dip2px(getContext(), 5));

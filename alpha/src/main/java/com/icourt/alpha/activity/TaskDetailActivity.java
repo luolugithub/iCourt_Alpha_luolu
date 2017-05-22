@@ -282,7 +282,7 @@ public class TaskDetailActivity extends BaseActivity implements OnFragmentCallBa
             case TimingEvent.TIMING_STOP:
                 isStrat = false;
                 taskStartIamge.setImageResource(R.mipmap.icon_start_20);
-                taskTime.setText(DateUtils.getTimeDurationDate(taskItemEntity.timingSum + event.timingSecond));
+                taskTime.setText(getHm(taskItemEntity.timingSum + event.timingSecond));
                 break;
         }
     }
@@ -385,6 +385,13 @@ public class TaskDetailActivity extends BaseActivity implements OnFragmentCallBa
                 .show(mFragTransaction, tag);
     }
 
+    public String getHm(long times) {
+        times /= 1000;
+        long hour = times / 3600;
+        long minute = times % 3600 / 60;
+        return String.format("%02d:%02d", hour, minute);
+    }
+
     /**
      * 设置数据到view
      *
@@ -405,7 +412,7 @@ public class TaskDetailActivity extends BaseActivity implements OnFragmentCallBa
             } else {
                 titleAction.setImageResource(R.mipmap.header_icon_star_line);
             }
-            taskTime.setText(DateUtils.getTimeDurationDate(taskItemEntity.timingSum));
+            taskTime.setText(getHm(taskItemEntity.timingSum));
             baseFragmentAdapter.bindTitle(true, Arrays.asList(
                     "任务详情", "检查项 " + taskItemEntity.doneItemCount + "/" + taskItemEntity.itemCount, "附件 " + taskItemEntity.attachmentCount
             ));

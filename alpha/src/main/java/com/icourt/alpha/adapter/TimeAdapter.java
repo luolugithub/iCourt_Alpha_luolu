@@ -178,7 +178,7 @@ public class TimeAdapter extends BaseArrayRecyclerAdapter<TimeEntity.ItemEntity>
         TextView descView = holder.obtainView(R.id.time_item_desc_tv);
         TextView userNameView = holder.obtainView(R.id.time_item_user_name_tv);
         TextView typeView = holder.obtainView(R.id.time_item_type_tv);
-        durationView.setText(DateUtils.getTimeDurationDate(timeEntity.useTime));
+        durationView.setText(getHm(timeEntity.useTime));
         quantumView.setText(DateUtils.getTimeDurationDate(timeEntity.startTime) + "-" + DateUtils.getTimeDurationDate(timeEntity.endTime));
 //        GlideUtils.loadUser(holder.itemView.getContext(), itemEntity.timeUserPic, photoView);
         descView.setText(timeEntity.name);

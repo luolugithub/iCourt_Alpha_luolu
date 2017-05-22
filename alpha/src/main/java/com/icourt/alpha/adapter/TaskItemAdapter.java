@@ -12,7 +12,6 @@ import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.baseadapter.BaseArrayRecyclerAdapter;
 import com.icourt.alpha.entity.bean.TaskEntity;
 import com.icourt.alpha.entity.bean.TimeEntity;
-import com.icourt.alpha.utils.DateUtils;
 
 /**
  * Description
@@ -61,7 +60,7 @@ public class TaskItemAdapter extends BaseArrayRecyclerAdapter<TaskEntity.TaskIte
 
         if (taskItemEntity.timingSum > 0) {
             timeView.setVisibility(View.VISIBLE);
-            timeView.setText(DateUtils.getTimeDurationDate(taskItemEntity.timingSum));
+            timeView.setText(getHm(taskItemEntity.timingSum));
         } else {
             timeView.setVisibility(View.INVISIBLE);
         }
@@ -107,5 +106,12 @@ public class TaskItemAdapter extends BaseArrayRecyclerAdapter<TaskEntity.TaskIte
         checkBox.setChecked(taskItemEntity.state);
         holder.bindChildClick(checkBox);
         holder.bindChildClick(startTimmingView);
+    }
+
+    public String getHm(long times) {
+        times /= 1000;
+        long hour = times / 3600;
+        long minute = times % 3600 / 60;
+        return String.format("%02d:%02d", hour, minute);
     }
 }

@@ -143,42 +143,6 @@ public class DateUtils {
         return formatter.format(milliseconds);
     }
 
-    /*
-    * 毫秒转化时分
-    */
-    public static String formatTime(Long mss) {
-        long hours = (mss % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60);
-        long minutes = (mss % (1000 * 60 * 60)) / (1000 * 60);
-        long seconds = (mss % (1000 * 60)) / 1000;
-
-        if (hours == 0 && minutes == 0 && seconds > 0) {
-            minutes = 1;
-        }
-
-        String hourStr = "";
-        String minStr = "";
-
-        if (hours > 0) {
-            if (hours < 10) {
-                hourStr = "0" + hours;
-            } else {
-                hourStr = String.valueOf(hours);
-            }
-        } else {
-            hourStr = "00";
-        }
-        if (minutes > 0) {
-            if (minutes < 10) {
-                minStr = "0" + minutes;
-            } else {
-                minStr = String.valueOf(minutes);
-            }
-        } else {
-            minStr = "00";
-        }
-
-        return hourStr + ":" + minStr;
-    }
 
     /**
      * 获取时长 00:11

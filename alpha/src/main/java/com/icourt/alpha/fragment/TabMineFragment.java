@@ -27,7 +27,6 @@ import com.icourt.alpha.entity.bean.UserDataEntity;
 import com.icourt.alpha.fragment.dialogfragment.DateSelectDialogFragment;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
-import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.GlideUtils;
 import com.icourt.alpha.utils.transformations.BlurTransformation;
 import com.umeng.socialize.UMAuthListener;
@@ -264,14 +263,19 @@ public class TabMineFragment extends BaseFragment {
             @Override
             public void onSuccess(Call<ResEntity<UserDataEntity>> call, Response<ResEntity<UserDataEntity>> response) {
                 if (response.body().result != null) {
-                    todayDuractionTv.setText(DateUtils.formatTime(response.body().result.timingCountToday));
-                    monthDuractionTv.setText(DateUtils.formatTime(response.body().result.timingCountMonth));
+                    todayDuractionTv.setText(getHm(response.body().result.timingCountToday));
+                    monthDuractionTv.setText(getHm(response.body().result.timingCountMonth));
                     doneTaskTv.setText(String.valueOf(response.body().result.taskMonthConutDone));
                 }
             }
         });
     }
-
+    public String getHm(long times) {
+        times /= 1000;
+        long hour = times / 3600;
+        long minute = times % 3600 / 60;
+        return String.format("%02d:%02d", hour, minute);
+    }
     @Override
     public void onDestroyView() {
         super.onDestroyView();

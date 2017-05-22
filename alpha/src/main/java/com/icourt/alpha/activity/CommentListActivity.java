@@ -102,7 +102,6 @@ public class CommentListActivity extends BaseActivity implements BaseRecyclerAda
         super.initView();
         setTitle("查看评论");
         titleAction.setVisibility(View.INVISIBLE);
-
         taskId = getIntent().getStringExtra(KEY_TASK_ID);
         refreshLayout.setNoticeEmpty(R.mipmap.icon_placeholder_project, R.string.task_list_null_text);
         refreshLayout.setMoveForHorizontal(true);
@@ -283,9 +282,9 @@ public class CommentListActivity extends BaseActivity implements BaseRecyclerAda
         return onTouchEvent(ev);
     }
 
-    public  boolean isShouldHideInput(View v, MotionEvent event) {
+    public boolean isShouldHideInput(View v, MotionEvent event) {
         if (v != null && (v instanceof EditText)) {
-            int[] leftTop = { 0, 0 };
+            int[] leftTop = {0, 0};
             //获取输入框当前的location位置
             v.getLocationInWindow(leftTop);
             int left = leftTop[0];

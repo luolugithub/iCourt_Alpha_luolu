@@ -1043,4 +1043,12 @@ public class CustomerCompanyCreateActivity extends BaseActivity {
         }
         return addreeArr;
     }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (customerDbService != null) {
+            customerDbService.releaseService();
+        }
+    }
 }

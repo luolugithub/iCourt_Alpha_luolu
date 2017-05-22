@@ -29,12 +29,11 @@
 
                 <ImageView
                     android:id="@+id/set_image"
-                    android:layout_width="22dp"
-                    android:layout_height="22dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
                     android:layout_gravity="right"
-                    android:layout_marginRight="@dimen/dp10"
-                    android:layout_marginTop="@dimen/dp10"
-                    android:src="@mipmap/ic_settings" />
+                    android:padding="@dimen/dp10"
+                    android:src="@mipmap/settings_white" />
 
                 <LinearLayout
                     android:layout_width="wrap_content"

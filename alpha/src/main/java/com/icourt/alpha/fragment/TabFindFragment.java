@@ -45,21 +45,21 @@ public class TabFindFragment extends BaseFragment {
         if (tabFindFragment != null) {
             switch (tabFindFragment.getShowChildFragmentType()) {
                 case TYPE_FRAGMENT_PROJECT:
-                    return Arrays.asList(new ItemsEntity("计时", TYPE_FRAGMENT_TIMING, R.mipmap.tab_task),
-                            new ItemsEntity("客户", TYPE_FRAGMENT_CUSTOMER, R.mipmap.tab_my),
-                            new ItemsEntity("搜索", TYPE_FRAGMENT_SEARCH, R.mipmap.tab_explorer));
+                    return Arrays.asList(new ItemsEntity("计时", TYPE_FRAGMENT_TIMING, R.mipmap.tab_timer),
+                            new ItemsEntity("客户", TYPE_FRAGMENT_CUSTOMER, R.mipmap.tab_customer),
+                            new ItemsEntity("搜索", TYPE_FRAGMENT_SEARCH, R.mipmap.tab_search));
                 case TYPE_FRAGMENT_TIMING:
-                    return Arrays.asList(new ItemsEntity("项目", TYPE_FRAGMENT_PROJECT, R.mipmap.tab_message),
-                            new ItemsEntity("客户", TYPE_FRAGMENT_CUSTOMER, R.mipmap.tab_my),
-                            new ItemsEntity("搜索", TYPE_FRAGMENT_SEARCH, R.mipmap.tab_explorer));
+                    return Arrays.asList(new ItemsEntity("项目", TYPE_FRAGMENT_PROJECT, R.mipmap.tab_project),
+                            new ItemsEntity("客户", TYPE_FRAGMENT_CUSTOMER, R.mipmap.tab_customer),
+                            new ItemsEntity("搜索", TYPE_FRAGMENT_SEARCH, R.mipmap.tab_search));
                 case TYPE_FRAGMENT_CUSTOMER:
-                    return Arrays.asList(new ItemsEntity("项目", TYPE_FRAGMENT_PROJECT, R.mipmap.tab_message),
-                            new ItemsEntity("计时", TYPE_FRAGMENT_TIMING, R.mipmap.tab_task),
-                            new ItemsEntity("搜索", TYPE_FRAGMENT_SEARCH, R.mipmap.tab_explorer));
+                    return Arrays.asList(new ItemsEntity("项目", TYPE_FRAGMENT_PROJECT, R.mipmap.tab_project),
+                            new ItemsEntity("计时", TYPE_FRAGMENT_TIMING, R.mipmap.tab_timer),
+                            new ItemsEntity("搜索", TYPE_FRAGMENT_SEARCH, R.mipmap.tab_search));
                 case TYPE_FRAGMENT_SEARCH:
-                    return Arrays.asList(new ItemsEntity("项目", TYPE_FRAGMENT_PROJECT, R.mipmap.tab_message),
-                            new ItemsEntity("计时", TYPE_FRAGMENT_TIMING, R.mipmap.tab_task),
-                            new ItemsEntity("客户", TYPE_FRAGMENT_CUSTOMER, R.mipmap.tab_my));
+                    return Arrays.asList(new ItemsEntity("项目", TYPE_FRAGMENT_PROJECT, R.mipmap.tab_project),
+                            new ItemsEntity("计时", TYPE_FRAGMENT_TIMING, R.mipmap.tab_timer),
+                            new ItemsEntity("客户", TYPE_FRAGMENT_CUSTOMER, R.mipmap.tab_customer));
             }
         }
         return null;

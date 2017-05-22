@@ -137,7 +137,7 @@
                 android:layout_marginLeft="@dimen/dp5"
                 android:background="@drawable/gray_circle_bg"
                 android:padding="@dimen/dp5"
-                android:src="@mipmap/icon_start_20" />
+                android:src="@mipmap/time_start_orange" />
         </LinearLayout>
 
     </RelativeLayout>
