@@ -68,7 +68,7 @@ import static com.icourt.alpha.constants.Const.CHAT_TYPE_TEAM;
  * version 1.0.0
  */
 public class GroupDetailActivity extends BaseActivity
-        implements BaseRecyclerAdapter.OnItemClickListener,OnFragmentCallBackListener {
+        implements BaseRecyclerAdapter.OnItemClickListener, OnFragmentCallBackListener {
     private static final String KEY_TID = "key_tid";//云信id
 
 
@@ -196,10 +196,12 @@ public class GroupDetailActivity extends BaseActivity
                                 groupJoinOrQuitBtn.setText(joined ? "退出讨论组" : "加入讨论组");
                                 setViewVisible(groupSessionActionLl, joined);
                                 setViewVisible(groupDataLl, joined);
-                                if (response.body().result.is_private || !response.body().result.member_invite) {
+                                if (response.body().result.is_private) {
                                     setViewVisible(groupMemberInviteTv, false);
-                                } else {
+                                } else if (response.body().result.member_invite) {
                                     setViewVisible(groupMemberInviteTv, true);
+                                } else {
+                                    setViewVisible(groupMemberInviteTv, false);
                                 }
                             }
                             //查询本地uid对应的头像
@@ -267,7 +269,7 @@ public class GroupDetailActivity extends BaseActivity
                         getIntent().getStringExtra(KEY_TID));
                 break;
             case R.id.group_member_invite_tv:
-               showMemberSelectDialogFragment();
+                showMemberSelectDialogFragment();
                 break;
             case R.id.group_member_arrow_iv:
                 if (groupDetailEntity == null) return;
@@ -330,6 +332,7 @@ public class GroupDetailActivity extends BaseActivity
                 break;
         }
     }
+
     /**
      * 展示选择成员对话框
      */
@@ -573,6 +576,7 @@ public class GroupDetailActivity extends BaseActivity
             }
         }
     }
+
     /**
      * 邀请成员
      *

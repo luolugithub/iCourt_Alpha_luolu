@@ -78,6 +78,10 @@ public class GroupSettingActivity extends BaseActivity {
     @BindView(R.id.group_transfer_admin_ll)
     LinearLayout groupTransferAdminLl;
     GroupDetailEntity groupDetailEntity;
+    @BindView(R.id.textView2)
+    TextView textView2;
+    @BindView(R.id.group_set_private_child_per_ll)
+    LinearLayout groupSetPrivateChildPerLl;
 
     public static void launch(@NonNull Context context, GroupDetailEntity groupDetailEntity) {
         if (context == null) return;
@@ -104,9 +108,18 @@ public class GroupSettingActivity extends BaseActivity {
             groupDetailEntity = (GroupDetailEntity) serializableExtra;
             groupNameTv.setText(groupDetailEntity.name);
             groupDescTv.setText(groupDetailEntity.intro);
-            groupSetPrivateSwitch.setChecked(groupDetailEntity.is_private);
-            groupSetInviteSwitch.setChecked(groupDetailEntity.member_invite);
-            groupSetLookSwitch.setChecked(groupDetailEntity.chat_history);
+            if (groupDetailEntity.is_private)//私密
+            {
+                groupSetPrivateSwitch.setChecked(true);
+                groupSetInviteSwitch.setChecked(false);
+                groupSetLookSwitch.setChecked(false);
+                groupSetPrivateChildPerLl.setVisibility(View.GONE);
+            } else {
+                groupSetPrivateSwitch.setChecked(false);
+                groupSetPrivateChildPerLl.setVisibility(View.VISIBLE);
+                groupSetInviteSwitch.setChecked(groupDetailEntity.member_invite);
+                groupSetLookSwitch.setChecked(groupDetailEntity.chat_history);
+            }
         }
 
         TextView titleActionTextView = getTitleActionTextView();
@@ -115,7 +128,10 @@ public class GroupSettingActivity extends BaseActivity {
         }
     }
 
-    @OnClick({R.id.group_name_ll, R.id.group_desc_ll, R.id.group_transfer_admin_ll})
+    @OnClick({R.id.group_name_ll,
+            R.id.group_desc_ll,
+            R.id.group_transfer_admin_ll,
+            R.id.group_set_private_switch})
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
@@ -142,6 +158,9 @@ public class GroupSettingActivity extends BaseActivity {
                         CODE_REQUEST_TRANSFER_ADMIN,
                         false,
                         null);
+                break;
+            case R.id.group_set_private_switch:
+                groupSetPrivateChildPerLl.setVisibility(groupSetPrivateSwitch.isChecked() ? View.GONE : View.VISIBLE);
                 break;
             default:
                 super.onClick(v);
@@ -233,9 +252,15 @@ public class GroupSettingActivity extends BaseActivity {
         JsonObject param = new JsonObject();
         param.addProperty("name", getTextString(groupNameTv, ""));
         param.addProperty("intro", getTextString(groupDescTv, ""));
-        param.addProperty("is_private", groupSetPrivateSwitch.isChecked());
-        param.addProperty("member_invite", groupSetInviteSwitch.isChecked());
-        param.addProperty("chat_history", groupSetLookSwitch.isChecked());
+        if (groupSetPrivateSwitch.isChecked()) {
+            param.addProperty("is_private", true);
+            param.addProperty("member_invite", false);
+            param.addProperty("chat_history", false);
+        } else {
+            param.addProperty("is_private", false);
+            param.addProperty("member_invite", groupSetInviteSwitch.isChecked());
+            param.addProperty("chat_history", groupSetLookSwitch.isChecked());
+        }
         showLoadingDialog(null);
         getChatApi().groupUpdate(groupDetailEntity.tid, RequestUtils.createJsonBody(param.toString()))
                 .enqueue(new SimpleCallBack<JsonElement>() {

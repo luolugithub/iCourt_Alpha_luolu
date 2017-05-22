@@ -22,6 +22,8 @@ public class PhotosListAdapter
         extends MultiSelectRecyclerAdapter<LocalImageEntity>
         implements BaseRecyclerAdapter.OnItemClickListener {
 
+    private int maxSelectedCount = 9;
+
     public PhotosListAdapter() {
         this.setOnItemClickListener(this);
     }
@@ -48,6 +50,10 @@ public class PhotosListAdapter
 
     @Override
     public void onItemClick(BaseRecyclerAdapter adapter, ViewHolder holder, View view, int position) {
+        if (getSelectedData().size() >= maxSelectedCount) {
+            showTopSnackBar(view, String.format("最大选择%s张", maxSelectedCount));
+            return;
+        }
         PhotosListAdapter.this.toggleSelectedWithoutUpdateUI(position);
         CheckedTextView photo_item_cb = holder.obtainView(R.id.photo_item_cb);
         if (photo_item_cb != null) {
