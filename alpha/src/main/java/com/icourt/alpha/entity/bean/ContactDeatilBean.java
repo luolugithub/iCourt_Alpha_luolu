@@ -194,6 +194,8 @@ public class ContactDeatilBean implements Serializable{
 
     private List<GroupsBean> groups;
 
+    public CompanyBean company;
+
     public ContactBean getContact() {
         return contact;
     }
@@ -1608,4 +1610,9 @@ public class ContactDeatilBean implements Serializable{
             this.officeId = officeId;
         }
     }
+
+    public static class CompanyBean implements Serializable{
+        public ContactBean contact;
+    }
+
 }

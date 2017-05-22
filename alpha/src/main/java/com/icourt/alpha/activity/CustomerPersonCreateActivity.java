@@ -27,10 +27,12 @@ import com.google.gson.JsonObject;
 import com.icourt.alpha.R;
 import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.constants.Const;
+import com.icourt.alpha.db.dbmodel.CustomerDbModel;
 import com.icourt.alpha.db.dbservice.CustomerDbService;
 import com.icourt.alpha.entity.bean.ContactDeatilBean;
 import com.icourt.alpha.entity.bean.CustomerEntity;
 import com.icourt.alpha.entity.bean.GroupBean;
+import com.icourt.alpha.entity.bean.SelectGroupBean;
 import com.icourt.alpha.entity.event.UpdateCustomerEvent;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
@@ -161,7 +163,7 @@ public class CustomerPersonCreateActivity extends BaseActivity {
     private LinkedHashMap<Integer, View> oldNameMap, phoneMap, addressMap, emailMap, paperMap, imAccountMap, dateMap, enterpriseMap, liaisonsMap;
     private int oldNameKey = 0, phoneKey = 0, addressKey = 0, emailKey = 0, paperKey = 0, imAccountKey = 0, dateKey = 0, enterpriseKey = 0, liaisonsKey = 0;
     private final String[] sexStrArr = {"男", "女"};
-    private ArrayList<GroupBean> groupBeanList;
+    private ArrayList<SelectGroupBean> groupBeanList;
     private ArrayList<CustomerEntity> liaisonsList;
     private List<ContactDeatilBean> oldLiaisonsList;
     CustomerDbService customerDbService;
@@ -188,7 +190,7 @@ public class CustomerPersonCreateActivity extends BaseActivity {
      * @param activity
      * @param groupBeenList
      */
-    public static void launchSetResultFromGroup(@NonNull Activity activity, @NonNull List<GroupBean> groupBeenList) {
+    public static void launchSetResultFromGroup(@NonNull Activity activity, @NonNull List<SelectGroupBean> groupBeenList) {
         if (activity == null) return;
         Intent intent = new Intent(activity, CustomerPersonCreateActivity.class);
         intent.putExtra("groupBeenList", (Serializable) groupBeenList);
@@ -295,9 +297,9 @@ public class CustomerPersonCreateActivity extends BaseActivity {
                     StringBuffer stringBuffer = new StringBuffer();
                     for (ContactDeatilBean.GroupsBean groupBean : contactDeatilBean.getGroups()) {
                         stringBuffer.append(groupBean.getGroupName() + ",");
-                        GroupBean g = new GroupBean();
-                        g.setPkId(groupBean.getGroupId());
-                        g.setName(groupBean.getGroupName());
+                        SelectGroupBean g = new SelectGroupBean();
+                        g.groupId = (groupBean.getGroupId());
+                        g.groupName = (groupBean.getGroupName());
                         groupBeanList.add(g);
                     }
                     activityAddPersonContactGroupTextview.setText(stringBuffer.toString().substring(0, stringBuffer.toString().length() - 1));
@@ -887,8 +889,8 @@ public class CustomerPersonCreateActivity extends BaseActivity {
         if (groupBeanList != null) {
             if (groupBeanList.size() > 0) {
                 StringBuffer stringBuffer = new StringBuffer();
-                for (GroupBean groupBean : groupBeanList) {
-                    stringBuffer.append(groupBean.getName() + ",");
+                for (SelectGroupBean groupBean : groupBeanList) {
+                    stringBuffer.append(groupBean.groupName + ",");
                 }
                 activityAddPersonContactGroupTextview.setText(stringBuffer.toString().substring(0, stringBuffer.toString().length() - 1));
                 if (!isAddOrEdit) {
@@ -904,7 +906,7 @@ public class CustomerPersonCreateActivity extends BaseActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == SELECT_GROUP_REQUEST && resultCode == RESULT_OK) {
             if (data != null) {
-                groupBeanList = data.getParcelableArrayListExtra("groups");
+                groupBeanList = (ArrayList<SelectGroupBean>) data.getSerializableExtra("groups");
                 setSelectGroupText();
             }
         } else if (requestCode == SELECT_OTHER_REQUEST && resultCode == RESULT_OK) {
@@ -951,7 +953,10 @@ public class CustomerPersonCreateActivity extends BaseActivity {
                     if (myGroups.size() > 0) {
                         for (GroupBean groupBean : myGroups) {
                             stringBuffer.append(groupBean.getName() + ",");
-                            groupBeanList.add(groupBean);
+                            SelectGroupBean selectGroupBean = new SelectGroupBean();
+                            selectGroupBean.groupName = groupBean.getName();
+                            selectGroupBean.groupId = groupBean.getPkId();
+                            groupBeanList.add(selectGroupBean);
                         }
                         activityAddPersonContactGroupTextview.setText(stringBuffer.toString().substring(0, stringBuffer.toString().length() - 1));
                     }
@@ -1017,7 +1022,11 @@ public class CustomerPersonCreateActivity extends BaseActivity {
             contactBean = contactDeatilBean.getContact();
         }
         if (contactBean != null) {
-            CustomerEntity customerEntity = customerDbService.queryFirst("pkid", contactBean.getPkid()).convert2Model();
+            CustomerEntity customerEntity = null;
+            CustomerDbModel customerDbModel = customerDbService.queryFirst("pkid", contactBean.getPkid());
+            if (customerDbModel != null) {
+                customerEntity = customerDbModel.convert2Model();
+            }
             if (customerEntity == null) {
                 customerEntity = new CustomerEntity();
             }
@@ -1082,7 +1091,7 @@ public class CustomerPersonCreateActivity extends BaseActivity {
     private void addContact() {
         showLoadingDialog(null);
         Map<String, RequestBody> requestBodyMap = new HashMap<>();
-        requestBodyMap.put("contactvo",RequestUtils.createJsonBody(getAddContactJson()));
+        requestBodyMap.put("contactvo", RequestUtils.createJsonBody(getAddContactJson()));
         getApi().customerCreate(RequestUtils.createJsonBody(getAddContactJson())).enqueue(new SimpleCallBack<List<ContactDeatilBean>>() {
             @Override
             public void onSuccess(Call<ResEntity<List<ContactDeatilBean>>> call, Response<ResEntity<List<ContactDeatilBean>>> response) {
@@ -1116,8 +1125,8 @@ public class CustomerPersonCreateActivity extends BaseActivity {
                     }
                 }
                 JsonArray jsonArray = new JsonArray();
-                for (GroupBean groupBean : groupBeanList) {
-                    jsonArray.add(groupBean.getPkId());
+                for (SelectGroupBean groupBean : groupBeanList) {
+                    jsonArray.add(groupBean.groupId);
                 }
                 jsonObject.add("groupIds", jsonArray);
                 return jsonObject.toString();
@@ -1193,10 +1202,10 @@ public class CustomerPersonCreateActivity extends BaseActivity {
             if (groupBeanList != null) {
                 if (groupBeanList.size() > 0) {
                     JSONArray groupArr = new JSONArray();
-                    for (GroupBean groupBean : groupBeanList) {
+                    for (SelectGroupBean groupBean : groupBeanList) {
                         JSONObject itemObject = new JSONObject();
-                        itemObject.put("groupId", groupBean.getPkId());
-                        itemObject.put("groupName", groupBean.getName());
+                        itemObject.put("groupId", groupBean.groupId);
+                        itemObject.put("groupName", groupBean.groupName);
                         groupArr.put(itemObject);
                     }
                     jsonObject.put("groups", groupArr);
@@ -1339,10 +1348,10 @@ public class CustomerPersonCreateActivity extends BaseActivity {
             if (groupBeanList != null) {
                 if (groupBeanList.size() > 0) {
                     JSONArray groupArr = new JSONArray();
-                    for (GroupBean groupBean : groupBeanList) {
+                    for (SelectGroupBean groupBean : groupBeanList) {
                         JSONObject itemObject = new JSONObject();
-                        itemObject.put("groupId", groupBean.getPkId());
-                        itemObject.put("groupName", groupBean.getName());
+                        itemObject.put("groupId", groupBean.groupId);
+                        itemObject.put("groupName", groupBean.groupName);
                         groupArr.put(itemObject);
                     }
                     jsonObject.put("groups", groupArr);

@@ -178,20 +178,28 @@ public class CustomerCompanyDetailActivity extends BaseActivity {
                     addGroupItemView(contactDeatilBean.getGroups());
             }
             if (contactDeatilBean.getMails() != null) {
-                if (contactDeatilBean.getMails().size() > 0)
+                if (contactDeatilBean.getMails().size() > 0) {
+                    activityPersonContactDetailOtherParentLayout.setVisibility(View.VISIBLE);
                     addMailsView(contactDeatilBean.getMails());
+                }
             }
             if (contactDeatilBean.getAddresses() != null) {
-                if (contactDeatilBean.getAddresses().size() > 0)
+                if (contactDeatilBean.getAddresses().size() > 0) {
+                    activityPersonContactDetailOtherParentLayout.setVisibility(View.VISIBLE);
                     addAddressView(contactDeatilBean.getAddresses());
+                }
             }
             if (contactDeatilBean.getCertificates() != null) {
-                if (contactDeatilBean.getCertificates().size() > 0)
+                if (contactDeatilBean.getCertificates().size() > 0) {
+                    activityPersonContactDetailOtherParentLayout.setVisibility(View.VISIBLE);
                     addCertificateView(contactDeatilBean.getCertificates());
+                }
             }
             if (contactDeatilBean.getDates() != null) {
-                if (contactDeatilBean.getDates().size() > 0)
+                if (contactDeatilBean.getDates().size() > 0) {
+                    activityPersonContactDetailOtherParentLayout.setVisibility(View.VISIBLE);
                     addDateView(contactDeatilBean.getDates());
+                }
             }
         }
     }

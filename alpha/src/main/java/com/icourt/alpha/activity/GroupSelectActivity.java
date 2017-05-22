@@ -20,6 +20,7 @@ import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.adapterObserver.RefreshViewEmptyObserver;
 import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.entity.bean.GroupBean;
+import com.icourt.alpha.entity.bean.SelectGroupBean;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
@@ -59,7 +60,7 @@ public class GroupSelectActivity extends BaseActivity implements BaseRecyclerAda
 
     SelectGroupAdapter selectGroupAdapter;
 
-    public static void launchForResult(@NonNull Activity context, @NonNull List<GroupBean> groupBeenList, int requestCode) {
+    public static void launchForResult(@NonNull Activity context, @NonNull List<SelectGroupBean> groupBeenList, int requestCode) {
         if (context == null) return;
         Intent intent = new Intent(context, GroupSelectActivity.class);
         intent.putExtra("groupBeenList", (Serializable) groupBeenList);
@@ -118,15 +119,15 @@ public class GroupSelectActivity extends BaseActivity implements BaseRecyclerAda
     @Override
     protected void getData(boolean isRefresh) {
         super.getData(isRefresh);
-        getApi().officeGroupsQuery(getLoginUserInfo().getOfficeId()).enqueue(new SimpleCallBack<List<GroupBean>>() {
+        getApi().officeGroupsQuery(getLoginUserInfo().getOfficeId()).enqueue(new SimpleCallBack<List<SelectGroupBean>>() {
             @Override
-            public void onSuccess(Call<ResEntity<List<GroupBean>>> call, Response<ResEntity<List<GroupBean>>> response) {
+            public void onSuccess(Call<ResEntity<List<SelectGroupBean>>> call, Response<ResEntity<List<SelectGroupBean>>> response) {
                 stopRefresh();
                 selectGroupAdapter.bindData(true, response.body().result);
             }
 
             @Override
-            public void onFailure(Call<ResEntity<List<GroupBean>>> call, Throwable t) {
+            public void onFailure(Call<ResEntity<List<SelectGroupBean>>> call, Throwable t) {
                 super.onFailure(call, t);
                 stopRefresh();
             }

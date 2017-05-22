@@ -120,7 +120,7 @@ public class CustomerPersonDetailActivity extends BaseActivity {
         getContact();
     }
 
-    @OnClick({R.id.titleAction,R.id.titleAction2})
+    @OnClick({R.id.titleAction, R.id.titleAction2})
     @Override
     public void onClick(View v) {
         super.onClick(v);
@@ -137,7 +137,7 @@ public class CustomerPersonDetailActivity extends BaseActivity {
                 }
                 break;
             case R.id.titleAction2:
-                CustomerPersonCreateActivity.launch(this,contactDeatilBean,CustomerPersonCreateActivity.UPDATE_CUSTOMER_ACTION);
+                CustomerPersonCreateActivity.launch(this, contactDeatilBean, CustomerPersonCreateActivity.UPDATE_CUSTOMER_ACTION);
                 break;
         }
     }
@@ -180,50 +180,58 @@ public class CustomerPersonDetailActivity extends BaseActivity {
             activityPersonContactDetailOtherParentLayout.removeAllViews();
             activityPersonContactDetailGroupLayout.removeAllViews();
             if (contactDeatilBean.getGroups() != null) {
-                if (contactDeatilBean.getGroups().size() > 0)
+                if (contactDeatilBean.getGroups().size() > 0) {
+                    activityPersonContactDetailOtherParentLayout.setVisibility(View.VISIBLE);
                     addGroupItemView(contactDeatilBean.getGroups());
+                }
             }
             if (contactDeatilBean.getUsedNames() != null) {
-                if (contactDeatilBean.getUsedNames().size() > 0)
+                if (contactDeatilBean.getUsedNames().size() > 0) {
+                    activityPersonContactDetailOtherParentLayout.setVisibility(View.VISIBLE);
                     addUsedNameView(contactDeatilBean.getUsedNames());
+                }
             }
             if (contactDeatilBean.getTels() != null) {
-                if (contactDeatilBean.getTels().size() > 0)
+                if (contactDeatilBean.getTels().size() > 0) {
+                    activityPersonContactDetailOtherParentLayout.setVisibility(View.VISIBLE);
                     addTelsView(contactDeatilBean.getTels());
+                }
             }
             if (contactDeatilBean.getMails() != null) {
-                if (contactDeatilBean.getMails().size() > 0)
+                if (contactDeatilBean.getMails().size() > 0) {
+                    activityPersonContactDetailOtherParentLayout.setVisibility(View.VISIBLE);
                     addMailsView(contactDeatilBean.getMails());
+                }
             }
             if (contactDeatilBean.getAddresses() != null) {
-                if (contactDeatilBean.getAddresses().size() > 0)
+                if (contactDeatilBean.getAddresses().size() > 0) {
+                    activityPersonContactDetailOtherParentLayout.setVisibility(View.VISIBLE);
                     addAddressView(contactDeatilBean.getAddresses());
+                }
             }
             if (contactDeatilBean.getCompanies() != null) {
-                if (contactDeatilBean.getCompanies().size() > 0)
+                if (contactDeatilBean.getCompanies().size() > 0) {
+                    activityPersonContactDetailOtherParentLayout.setVisibility(View.VISIBLE);
                     addCompaniesView(contactDeatilBean.getCompanies());
+                }
             }
             if (contactDeatilBean.getCertificates() != null) {
-                if (contactDeatilBean.getCertificates().size() > 0)
+                if (contactDeatilBean.getCertificates().size() > 0) {
+                    activityPersonContactDetailOtherParentLayout.setVisibility(View.VISIBLE);
                     addCertificateView(contactDeatilBean.getCertificates());
+                }
             }
             if (contactDeatilBean.getIms() != null) {
-                if (contactDeatilBean.getIms().size() > 0)
+                if (contactDeatilBean.getIms().size() > 0) {
+                    activityPersonContactDetailOtherParentLayout.setVisibility(View.VISIBLE);
                     addImsView(contactDeatilBean.getIms());
+                }
             }
             if (contactDeatilBean.getDates() != null) {
-                if (contactDeatilBean.getDates().size() > 0)
+                if (contactDeatilBean.getDates().size() > 0) {
+                    activityPersonContactDetailOtherParentLayout.setVisibility(View.VISIBLE);
                     addDateView(contactDeatilBean.getDates());
-            }
-            if (contactDeatilBean.getUsedNames() == null &&
-                    contactDeatilBean.getTels() == null &&
-                    contactDeatilBean.getMails() == null &&
-                    contactDeatilBean.getAddresses() == null &&
-                    contactDeatilBean.getCompanies() == null &&
-                    contactDeatilBean.getCertificates() == null &&
-                    contactDeatilBean.getIms() == null &&
-                    contactDeatilBean.getDates() == null) {
-                // detailOtherParentLayout.setVisibility(View.GONE);
+                }
             }
         }
     }
@@ -583,9 +591,9 @@ public class CustomerPersonDetailActivity extends BaseActivity {
                     sonView.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
-                            if (TextUtils.equals("P",type)) {
+                            if (TextUtils.equals("P", type)) {
                                 CustomerPersonDetailActivity.launch(getContext(), c.getContact().getPkid(), c.getContact().getName(), false);
-                            } else if (TextUtils.equals("C",type)) {
+                            } else if (TextUtils.equals("C", type)) {
                                 CustomerCompanyDetailActivity.launch(getContext(), c.getContact().getPkid(), c.getContact().getName(), false);
                             }
 

@@ -19,6 +19,7 @@ import com.icourt.alpha.entity.bean.PageEntity;
 import com.icourt.alpha.entity.bean.ProjectDetailEntity;
 import com.icourt.alpha.entity.bean.ProjectEntity;
 import com.icourt.alpha.entity.bean.SearchEngineEntity;
+import com.icourt.alpha.entity.bean.SelectGroupBean;
 import com.icourt.alpha.entity.bean.TaskAttachmentEntity;
 import com.icourt.alpha.entity.bean.TaskCheckItemEntity;
 import com.icourt.alpha.entity.bean.TaskEntity;
@@ -775,7 +776,7 @@ public interface ApiAlphaService {
      * @return
      */
     @GET("api/v1/auth/groups/up/q/office/{id}")
-    Call<ResEntity<List<GroupBean>>> officeGroupsQuery(@Path("id") String id);
+    Call<ResEntity<List<SelectGroupBean>>> officeGroupsQuery(@Path("id") String id);
 
     /**
      * 修改联系人所属团队

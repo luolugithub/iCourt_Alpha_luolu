@@ -42,6 +42,7 @@
         <RelativeLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+
             android:layout_centerVertical="true">
 
             <LinearLayout
@@ -77,21 +78,21 @@
                 android:id="@+id/task_users_layout"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="@dimen/dp10"
                 android:gravity="center_vertical">
 
                 <android.support.v7.widget.RecyclerView
                     android:id="@+id/task_user_recyclerview"
-                    android:layout_width="wrap_content"
+                    android:layout_width="85dp"
                     android:layout_height="wrap_content"
-                    android:minWidth="55dp">
+                    android:layout_gravity="center_vertical|start"
+                    android:overScrollMode="never"
+                    android:minWidth="85dp">
 
                 </android.support.v7.widget.RecyclerView>
 
                 <ImageView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginLeft="@dimen/dp5"
                     android:src="@mipmap/arrow_right" />
             </LinearLayout>
         </RelativeLayout>

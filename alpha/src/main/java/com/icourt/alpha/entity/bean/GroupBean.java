@@ -24,7 +24,6 @@ public class GroupBean implements Parcelable, Serializable {
      * runType : 0
      * pic : null
      */
-
     private String pkId;
     private String name;
     private String chargeName;
