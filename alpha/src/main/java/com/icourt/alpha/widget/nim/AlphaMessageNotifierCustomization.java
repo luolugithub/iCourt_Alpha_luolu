@@ -1,18 +1,25 @@
 package com.icourt.alpha.widget.nim;
 
-import android.app.Application;
 import android.text.TextUtils;
 
 import com.google.gson.JsonParseException;
-import com.icourt.alpha.R;
-import com.icourt.alpha.entity.bean.HelperNotification;
-import com.icourt.alpha.entity.bean.IMBodyEntity;
-import com.icourt.alpha.utils.ActionConstants;
+import com.icourt.alpha.entity.bean.IMMessageCustomBody;
 import com.icourt.alpha.utils.JsonUtils;
-import com.icourt.alpha.widget.parser.HelperNotificationParser;
+import com.icourt.alpha.utils.LoginInfoUtils;
+import com.icourt.alpha.utils.StringUtils;
 import com.netease.nimlib.sdk.msg.MessageNotifierCustomization;
-import com.netease.nimlib.sdk.msg.constant.SessionTypeEnum;
+import com.netease.nimlib.sdk.msg.constant.MsgTypeEnum;
 import com.netease.nimlib.sdk.msg.model.IMMessage;
+
+import static com.icourt.alpha.constants.Const.MSG_TYPE_ALPHA;
+import static com.icourt.alpha.constants.Const.MSG_TYPE_AT;
+import static com.icourt.alpha.constants.Const.MSG_TYPE_DING;
+import static com.icourt.alpha.constants.Const.MSG_TYPE_FILE;
+import static com.icourt.alpha.constants.Const.MSG_TYPE_IMAGE;
+import static com.icourt.alpha.constants.Const.MSG_TYPE_LINK;
+import static com.icourt.alpha.constants.Const.MSG_TYPE_SYS;
+import static com.icourt.alpha.constants.Const.MSG_TYPE_TXT;
+import static com.icourt.alpha.constants.Const.MSG_TYPE_VOICE;
 
 /**
  * Description  需要强化 直接拷贝与老项目
@@ -21,67 +28,85 @@ import com.netease.nimlib.sdk.msg.model.IMMessage;
  * date createTime：2017/4/10
  * version 1.0.0
  */
-public class AlphaMessageNotifierCustomization implements MessageNotifierCustomization {
-    private Application application;
+public class AlphaMessageNotifierCustomization
+        implements MessageNotifierCustomization {
 
-    public AlphaMessageNotifierCustomization(Application application) {
-        this.application = application;
+    /**
+     * 组合文字 张三:图片
+     *
+     * @param nick
+     * @param content
+     * @return
+     */
+    private String getCombString(String nick, String content) {
+        StringBuilder stringBuilder = new StringBuilder();
+        if (!TextUtils.isEmpty(nick)) {
+            stringBuilder.append(nick + ": ");
+        }
+        if (!TextUtils.isEmpty(content)) {
+            stringBuilder.append(content);
+        } else {
+            stringBuilder.append("您收到一条消息");
+        }
+        return stringBuilder.toString();
     }
 
-    public String getMsgContent(String nick, IMMessage message) {
-        String content = application.getString(R.string.receive_one_message);
-        if (message.getAttachment() != null) {
-            HelperNotification helperNotification = HelperNotificationParser.getHelperNotification(message.getAttachment().toJson(false));
-            if (helperNotification != null) {
-                content = helperNotification.getContent();
+    public String getMsgContent(String nick, IMMessage imMessage) {
+        if (imMessage.getMsgType() == MsgTypeEnum.text
+                && imMessage.getAttachment() != null) {//机器人 alpha小助手
+            IMMessageCustomBody imBody = getIMBody(imMessage.getAttachment().toJson(false));
+            if (imBody != null) {
+                return getCombString("Alpha小助手", imBody.content);
             }
-        } else {
-            if (!TextUtils.isEmpty(message.getContent())) {
-                IMBodyEntity imBodyEntity = null;
-                try {
-                    imBodyEntity = JsonUtils.Gson2Bean(message.getContent(), IMBodyEntity.class);
-                } catch (JsonParseException e) {
+        } else if (imMessage.getMsgType() == MsgTypeEnum.text) {
+            IMMessageCustomBody imBody = getIMBody(imMessage.getAttachment().toJson(false));
+            if (imBody != null) {
+                switch (imBody.show_type) {
+                    case MSG_TYPE_TXT:    //文本消息
+                        return getCombString(imBody.name, imBody.content);
+                    case MSG_TYPE_IMAGE:
+                        return getCombString(imBody.name, "[ 图片 ]");
+                    case MSG_TYPE_FILE:
+                        return getCombString(imBody.name, "[ 文件 ]");
+                    case MSG_TYPE_DING:   //钉消息
+                        return getCombString(imBody.name, imBody.content);
+                    case MSG_TYPE_AT://@消息
+                        if (imBody.ext.is_all) {
+                            return getCombString(imBody.name, "有人@了你");
+                        } else if (imBody.ext.users != null
+                                && StringUtils.containsIgnoreCase(imBody.ext.users, LoginInfoUtils.getLoginUserId())) {
+                            return getCombString(imBody.name, "有人@了你");
+                        } else {
+                            return getCombString(imBody.name, imBody.content);
+                        }
+                    case MSG_TYPE_SYS:     //系统辅助消息
+                        if (imBody.ext != null) {
+                            return getCombString(imBody.name, imBody.ext.content);
+                        } else {
+                            return getCombString(imBody.name, imBody.content);
+                        }
+                    case MSG_TYPE_LINK://链接消息
+                        if (imBody.ext != null) {
+                            return getCombString(imBody.name, imBody.ext.url);
+                        } else {
+                            return getCombString(imBody.name, null);
+                        }
+                    case MSG_TYPE_ALPHA:   //alpha系统内业务消息 2.0.0暂时不处理
+                    case MSG_TYPE_VOICE:
                 }
-                if (imBodyEntity != null) {
-                    switch (imBodyEntity.show_type) {
-                        case ActionConstants.IM_MESSAGE_TEXT_SHOWTYPE:
-                            if (message.getSessionType() == SessionTypeEnum.P2P)
-                                content = imBodyEntity.content;
-                            else
-                                content = nick + ":" + imBodyEntity.content;
-                            break;
-                        case ActionConstants.IM_MESSAGE_FILE_SHOWTYPE:
-                            if (message.getSessionType() == SessionTypeEnum.P2P)
-                                content = application.getString(R.string.receive_one_file_message);
-                            else
-                                content = nick + ":" + application.getString(R.string.receive_one_file_message);
-                            break;
-                        case ActionConstants.IM_MESSAGE_PIN_SHOWTYPE:
-                            if (imBodyEntity.pinMsg != null) {
-                                if ("0".equals(imBodyEntity.pinMsg.isPining)) {
-                                    if (message.getSessionType() == SessionTypeEnum.P2P)
-                                        content = application.getString(R.string.message_cancle_ding_one_msg_text);
-                                    else
-                                        content = nick + ":" + application.getString(R.string.message_cancle_ding_one_msg_text);
-                                } else if ("1".equals(imBodyEntity.pinMsg.isPining)) {
-                                    if (message.getSessionType() == SessionTypeEnum.P2P)
-                                        content = application.getString(R.string.message_ding_one_msg_text);
-                                    else
-                                        content = nick + ":" + application.getString(R.string.message_ding_one_msg_text);
-                                }
-                            }
-                            break;
-                        case ActionConstants.IM_MESSAGE_AT_SHOWTYPE:
-                            if (message.getSessionType() == SessionTypeEnum.Team)
-                                content = nick + ":" + application.getString(R.string.message_have_at_me_text);
-                            break;
-                    }
-                }
-
             }
-
         }
-        return content;
+        return getCombString(nick, null);
+    }
+
+    private final IMMessageCustomBody getIMBody(String content) {
+        IMMessageCustomBody imBodyEntity = null;
+        try {
+            imBodyEntity = JsonUtils.Gson2Bean(content, IMMessageCustomBody.class);
+        } catch (JsonParseException e) {
+            e.printStackTrace();
+        }
+        return imBodyEntity;
     }
 
     @Override

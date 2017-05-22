@@ -332,6 +332,7 @@ public class JsonUtils {
      * @param jsonObject ：需要解析的json对象、name：json中的键名
      * @return String：通过键名得到的值
      */
+    @Deprecated
     public static String getString(JSONObject jsonObject, String name) {
 
         String value = "";
