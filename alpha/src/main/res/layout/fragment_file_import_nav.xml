@@ -36,6 +36,7 @@
                 android:id="@+id/tv_file_name"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
                 android:ellipsize="end"
                 android:gravity="center_vertical"
                 android:maxLines="3"
@@ -48,8 +49,12 @@
                 android:id="@+id/tv_file_size"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:ellipsize="end"
                 android:gravity="center_vertical"
-                android:padding="10dp"
+                android:maxLines="1"
+                android:paddingBottom="10dp"
+                android:paddingLeft="10dp"
+                android:paddingRight="10dp"
                 android:text="(200k)"
                 android:textColor="@color/alpha_font_color_gray"
                 android:textSize="16dp" />
@@ -67,24 +72,34 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@android:color/white"
-        android:drawableLeft="@mipmap/tab_my_on"
+        android:drawableLeft="@mipmap/tab_message_on"
         android:drawablePadding="10dp"
+        android:gravity="center_vertical"
         android:padding="10dp"
         android:text="发送给好友" />
 
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="0.5dp"
-        android:layout_marginLeft="40dp"
-        android:background="#ededed" />
-
-    <TextView
-        android:id="@+id/bt_send_program"
+    <LinearLayout
+        android:id="@+id/send_program_ll"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@android:color/white"
-        android:drawableLeft="@mipmap/tab_task_on"
-        android:drawablePadding="10dp"
-        android:padding="10dp"
-        android:text="发送到项目" />
+        android:orientation="vertical">
+
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="0.5dp"
+            android:layout_marginLeft="40dp"
+            android:background="#ededed" />
+
+        <TextView
+            android:id="@+id/bt_send_program"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@android:color/white"
+            android:drawableLeft="@mipmap/tab_project_on"
+            android:drawablePadding="10dp"
+            android:gravity="center_vertical"
+            android:padding="10dp"
+            android:text="发送到项目" />
+    </LinearLayout>
 </LinearLayout>

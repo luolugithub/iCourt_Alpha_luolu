@@ -95,11 +95,11 @@ public class IMMessageCustomBody implements ILongFieldEntity, Serializable {
      * @param filePath 文件本地路径
      * @return
      */
-    public static IMMessageCustomBody createPicMsg(@Const.CHAT_TYPE int chatType,
-                                                   String name,
-                                                   String from,
-                                                   String to,
-                                                   String filePath) {
+    public static IMMessageCustomBody createFileMsg(@Const.CHAT_TYPE int chatType,
+                                                    String name,
+                                                    String from,
+                                                    String to,
+                                                    String filePath) {
         IMMessageCustomBody imMessageCustomBody = new IMMessageCustomBody(chatType,
                 Const.MSG_TYPE_IMAGE,
                 name,

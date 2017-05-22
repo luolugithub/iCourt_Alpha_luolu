@@ -53,11 +53,15 @@ public class FileImportNavFragment extends BaseFragment {
     TextView btSendProgram;
     Unbinder unbinder;
     private static final String KEY_PATH = "path";
+    private static final String KEY_DESC = "desc";
     String filePath;
+    @BindView(R.id.send_program_ll)
+    LinearLayout sendProgramLl;
 
-    public static FileImportNavFragment newInstance(String path) {
+    public static FileImportNavFragment newInstance(String path, String desc) {
         Bundle bundle = new Bundle();
         bundle.putString(KEY_PATH, path);
+        bundle.putString(KEY_DESC, desc);
         FileImportNavFragment importFilePathFragment = new FileImportNavFragment();
         importFilePathFragment.setArguments(bundle);
         return importFilePathFragment;
@@ -87,9 +91,17 @@ public class FileImportNavFragment extends BaseFragment {
     protected void initView() {
         filePath = getArguments().getString(KEY_PATH);
         if (!TextUtils.isEmpty(filePath)) {
-            if (IMUtils.isPIC(filePath)) {
+            if (filePath.startsWith("http")) {
+                fileTypeImg.setVisibility(View.GONE);
+                fileCommType.setVisibility(View.VISIBLE);
+                sendProgramLl.setVisibility(View.GONE);
+                tvFileName.setText(getArguments().getString(KEY_DESC, ""));
+                tvFileSize.setText(filePath);
+                ivFileIcon.setImageResource(R.mipmap.ic_share_url);
+            } else if (IMUtils.isPIC(filePath)) {
                 fileTypeImg.setVisibility(View.VISIBLE);
                 fileCommType.setVisibility(View.GONE);
+                sendProgramLl.setVisibility(View.VISIBLE);
                 if (GlideUtils.canLoadImage(getContext())) {
                     Glide.with(getContext())
                             .load(filePath)
@@ -98,6 +110,7 @@ public class FileImportNavFragment extends BaseFragment {
             } else {
                 fileTypeImg.setVisibility(View.GONE);
                 fileCommType.setVisibility(View.VISIBLE);
+                sendProgramLl.setVisibility(View.VISIBLE);
                 String fileName = filePath.substring(filePath.lastIndexOf("/") + 1, filePath.length());
                 tvFileName.setText(fileName);
                 ivFileIcon.setImageResource(FileUtils.getFileIcon40(fileName));

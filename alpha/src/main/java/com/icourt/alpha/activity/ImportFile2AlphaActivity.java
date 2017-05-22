@@ -1,10 +1,12 @@
 package com.icourt.alpha.activity;
 
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -14,7 +16,6 @@ import com.icourt.alpha.adapter.baseadapter.BaseFragmentAdapter;
 import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.fragment.FileImportContactFragment;
 import com.icourt.alpha.fragment.FileImportNavFragment;
-import com.icourt.alpha.fragment.FileImportProjectFragment;
 import com.icourt.alpha.fragment.FileImportTeamFragment;
 import com.icourt.alpha.interfaces.OnPageFragmentCallBack;
 import com.icourt.alpha.utils.UriUtils;
@@ -56,19 +57,25 @@ public class ImportFile2AlphaActivity extends BaseActivity
         initView();
     }
 
-    private String getFilePath() {
-        return UriUtils.getPath(getContext(),getIntent().getData());
-    }
-
     @Override
     protected void initView() {
         super.initView();
+        String action = getIntent().getAction();
+        String type = getIntent().getType();
         Uri fileUir = getIntent().getData();
-        log("-------->share file uri:" + fileUir);
+        String extraSubject = getIntent().getStringExtra(Intent.EXTRA_SUBJECT);
+        String extraText = getIntent().getStringExtra(Intent.EXTRA_TEXT);
+
+        log("-------->share action:" + action);
+        log("-------->share type:" + type);
+        log("-------->share uri:" + fileUir);
+        log("-------->share extraSubject:" + extraSubject);
+        log("-------->share extraText:" + extraText);
         if (!isUserLogin()) {
             LoginSelectActivity.launch(getContext());
             finish();
         }
+        titleAction.setVisibility(View.GONE);
         viewPager.addOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
             @Override
             public void onPageSelected(int position) {
@@ -77,22 +84,35 @@ public class ImportFile2AlphaActivity extends BaseActivity
                     titleContent.setText("分享到Alpha");
                     titleBack.setVisibility(View.GONE);
                     titleCancel.setVisibility(View.VISIBLE);
+                    titleAction.setVisibility(View.GONE);
                 } else if (position == 1) {
                     titleContent.setText("享聊");
                     titleBack.setVisibility(View.VISIBLE);
                     titleCancel.setVisibility(View.GONE);
+                    titleAction.setVisibility(View.VISIBLE);
                 } else {
                     titleContent.setText("项目");
                     titleBack.setVisibility(View.VISIBLE);
                     titleCancel.setVisibility(View.GONE);
+                    titleAction.setVisibility(View.VISIBLE);
                 }
             }
         });
+
+        String path = null;
+        String desc = null;
+        if (TextUtils.equals(type, "text/plain"))//网页
+        {
+            path = extraText;
+            desc = extraSubject;
+        } else {//文件
+            path = UriUtils.getPath(getContext(), fileUir);
+        }
         viewPager.setAdapter(baseFragmentAdapter = new BaseFragmentAdapter(getSupportFragmentManager()));
-        baseFragmentAdapter.bindData(true, Arrays.asList(FileImportNavFragment.newInstance(getFilePath()),
-                FileImportContactFragment.newInstance(getFilePath(), true),
-                FileImportTeamFragment.newInstance(getFilePath()),
-                FileImportProjectFragment.newInstance(getFilePath())));
+        baseFragmentAdapter.bindData(true,
+                Arrays.asList(FileImportNavFragment.newInstance(path, desc),
+                        FileImportContactFragment.newInstance(path, desc, true),
+                        FileImportTeamFragment.newInstance(path, desc)));
     }
 
     @OnClick({R.id.title_cancel})

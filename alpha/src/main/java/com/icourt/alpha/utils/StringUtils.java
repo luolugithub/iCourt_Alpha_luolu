@@ -16,6 +16,32 @@ import java.util.List;
 public class StringUtils {
 
     /**
+     * 获取小写
+     *
+     * @param text
+     * @return
+     */
+    public static String toLowerCase(String text) {
+        if (!TextUtils.isEmpty(text)) {
+            return text.toLowerCase();
+        }
+        return text;
+    }
+
+    /**
+     * 获取大写
+     *
+     * @param text
+     * @return
+     */
+    public static String toUpperCase(String text) {
+        if (!TextUtils.isEmpty(text)) {
+            return text.toUpperCase();
+        }
+        return text;
+    }
+
+    /**
      * 将异常转换成字符串
      *
      * @param throwable

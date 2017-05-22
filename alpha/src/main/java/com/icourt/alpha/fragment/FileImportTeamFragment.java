@@ -15,6 +15,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 
+import com.google.gson.JsonParseException;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.GroupAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
@@ -27,6 +28,8 @@ import com.icourt.alpha.entity.bean.IMMessageCustomBody;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.OnPageFragmentCallBack;
+import com.icourt.alpha.utils.JsonUtils;
+import com.icourt.alpha.utils.StringUtils;
 import com.icourt.api.RequestUtils;
 
 import java.io.File;
@@ -53,6 +56,7 @@ import retrofit2.Response;
 public class FileImportTeamFragment extends BaseFragment implements BaseRecyclerAdapter.OnItemClickListener {
     private static final String KEY_PATH = "path";
     public static final int TYPE_UPLOAD = 1001;
+    private static final String KEY_DESC = "desc";
     @BindView(R.id.recyclerView)
     RecyclerView recyclerView;
     Unbinder unbinder;
@@ -65,9 +69,10 @@ public class FileImportTeamFragment extends BaseFragment implements BaseRecycler
      * @param path
      * @return
      */
-    public static FileImportTeamFragment newInstance(String path) {
+    public static FileImportTeamFragment newInstance(String path, String desc) {
         Bundle bundle = new Bundle();
         bundle.putString(KEY_PATH, path);
+        bundle.putString(KEY_DESC, desc);
         FileImportTeamFragment importFilePathFragment = new FileImportTeamFragment();
         importFilePathFragment.setArguments(bundle);
         return importFilePathFragment;
@@ -146,7 +151,14 @@ public class FileImportTeamFragment extends BaseFragment implements BaseRecycler
         super.notifyFragmentUpdate(targetFrgament, type, bundle);
         if (targetFrgament == this) {
             if (type == TYPE_UPLOAD) {
-                shareFile2Contact();
+                if (type == TYPE_UPLOAD) {
+                    String path = getPath();
+                    if (!TextUtils.isEmpty(path) && path.startsWith("http")) {
+                        shareUrl2Contact(path, getArguments().getString(KEY_DESC, ""));
+                    } else {
+                        shareFile2Contact(path);
+                    }
+                }
             }
         }
     }
@@ -168,16 +180,53 @@ public class FileImportTeamFragment extends BaseFragment implements BaseRecycler
         return getArguments().getString(KEY_PATH);
     }
 
+    private void shareUrl2Contact(String path, String desc) {
+        if (TextUtils.isEmpty(path)) return;
+        ArrayList<GroupEntity> selectedData = groupAdapter.getSelectedData();
+        if (selectedData.isEmpty()) return;
+        AlphaUserInfo loginUserInfo = getLoginUserInfo();
+        String uid = StringUtils.toLowerCase(loginUserInfo != null ? loginUserInfo.getUserId() : "");
+        final IMMessageCustomBody msgPostEntity = IMMessageCustomBody.createLinkMsg(Const.CHAT_TYPE_TEAM,
+                loginUserInfo == null ? "" : loginUserInfo.getName(),
+                uid,
+                selectedData.get(0).tid,
+                path,
+                desc,
+                null,
+                null);
+        String jsonBody = null;
+        try {
+            jsonBody = JsonUtils.Gson2String(msgPostEntity);
+        } catch (JsonParseException e) {
+            e.printStackTrace();
+        }
+        showLoadingDialog(null);
+        getChatApi().msgAdd(RequestUtils.createJsonBody(jsonBody))
+                .enqueue(new SimpleCallBack<IMMessageCustomBody>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<IMMessageCustomBody>> call, Response<ResEntity<IMMessageCustomBody>> response) {
+                       dismissLoadingDialog();
+                        if (getActivity() != null) {
+                            getActivity().finish();
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<ResEntity<IMMessageCustomBody>> call, Throwable t) {
+                        super.onFailure(call, t);
+                        dismissLoadingDialog();
+                    }
+                });
+    }
+
     /**
      * 分享文件到享聊
      */
-    private void shareFile2Contact() {
+    private void shareFile2Contact(String path) {
         if (!checkPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
             reqPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, "我们需要文件读写权限!", 1001);
             return;
         }
-
-        String path = getPath();
         if (TextUtils.isEmpty(path)) return;
         File file = new File(path);
         if (!file.exists()) {
@@ -194,7 +243,7 @@ public class FileImportTeamFragment extends BaseFragment implements BaseRecycler
                 uid = uid.toLowerCase();
             }
         }
-        final IMMessageCustomBody msgPostEntity = IMMessageCustomBody.createPicMsg(
+        final IMMessageCustomBody msgPostEntity = IMMessageCustomBody.createFileMsg(
                 Const.CHAT_TYPE_TEAM,
                 loginUserInfo == null ? "" : loginUserInfo.getName(),
                 uid,

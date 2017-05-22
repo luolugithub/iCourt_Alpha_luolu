@@ -15,6 +15,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 
+import com.google.gson.JsonParseException;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.IMContactAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
@@ -31,6 +32,8 @@ import com.icourt.alpha.entity.bean.IMMessageCustomBody;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.OnPageFragmentCallBack;
+import com.icourt.alpha.utils.JsonUtils;
+import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.widget.filter.ListFilter;
 import com.icourt.api.RequestUtils;
 
@@ -66,6 +69,7 @@ public class FileImportContactFragment extends BaseFragment implements BaseRecyc
     private static final String KEY_PATH = "path";
     public static final int TYPE_UPLOAD = 1001;
     private static final String KEY_IS_FILTER_MYSELF = "isFilterMyself";
+    private static final String KEY_DESC = "desc";
     @BindView(R.id.recyclerView)
     RecyclerView recyclerView;
     Unbinder unbinder;
@@ -73,9 +77,10 @@ public class FileImportContactFragment extends BaseFragment implements BaseRecyc
     HeaderFooterAdapter<IMContactAdapter> headerFooterAdapter;
     EditText header_input_et;
 
-    public static FileImportContactFragment newInstance(String path, boolean isFilterMyself) {
+    public static FileImportContactFragment newInstance(String path, String desc, boolean isFilterMyself) {
         Bundle bundle = new Bundle();
         bundle.putString(KEY_PATH, path);
+        bundle.putString(KEY_DESC, desc);
         bundle.putBoolean(KEY_IS_FILTER_MYSELF, isFilterMyself);
         FileImportContactFragment importFilePathFragment = new FileImportContactFragment();
         importFilePathFragment.setArguments(bundle);
@@ -182,7 +187,12 @@ public class FileImportContactFragment extends BaseFragment implements BaseRecyc
         super.notifyFragmentUpdate(targetFrgament, type, bundle);
         if (targetFrgament == this) {
             if (type == TYPE_UPLOAD) {
-                shareFile2Contact();
+                String path = getPath();
+                if (!TextUtils.isEmpty(path) && path.startsWith("http")) {
+                    shareUrl2Contact(path, getArguments().getString(KEY_DESC, ""));
+                } else {
+                    shareFile2Contact(path);
+                }
             }
         }
     }
@@ -192,15 +202,53 @@ public class FileImportContactFragment extends BaseFragment implements BaseRecyc
         return getArguments().getString(KEY_PATH);
     }
 
+    private void shareUrl2Contact(String path, String desc) {
+        if (TextUtils.isEmpty(path)) return;
+        ArrayList<GroupContactBean> selectedData = imContactAdapter.getSelectedData();
+        if (selectedData.isEmpty()) return;
+        AlphaUserInfo loginUserInfo = getLoginUserInfo();
+        String uid = StringUtils.toLowerCase(loginUserInfo != null ? loginUserInfo.getUserId() : "");
+        final IMMessageCustomBody msgPostEntity = IMMessageCustomBody.createLinkMsg(Const.CHAT_TYPE_P2P,
+                loginUserInfo == null ? "" : loginUserInfo.getName(),
+                uid,
+                selectedData.get(0).accid,
+                path,
+                desc,
+                null,
+                null);
+        String jsonBody = null;
+        try {
+            jsonBody = JsonUtils.Gson2String(msgPostEntity);
+        } catch (JsonParseException e) {
+            e.printStackTrace();
+        }
+        showLoadingDialog(null);
+        getChatApi().msgAdd(RequestUtils.createJsonBody(jsonBody))
+                .enqueue(new SimpleCallBack<IMMessageCustomBody>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<IMMessageCustomBody>> call, Response<ResEntity<IMMessageCustomBody>> response) {
+                        dismissLoadingDialog();
+                        if (getActivity() != null) {
+                            getActivity().finish();
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<ResEntity<IMMessageCustomBody>> call, Throwable t) {
+                        super.onFailure(call, t);
+                        dismissLoadingDialog();
+                    }
+                });
+    }
+
     /**
      * 分享文件到享聊
      */
-    private void shareFile2Contact() {
+    private void shareFile2Contact(String path) {
         if (!checkPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
             reqPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, "我们需要文件读写权限!", 1001);
             return;
         }
-        String path = getPath();
         if (TextUtils.isEmpty(path)) return;
         File file = new File(path);
         if (!file.exists()) {
@@ -210,14 +258,8 @@ public class FileImportContactFragment extends BaseFragment implements BaseRecyc
         ArrayList<GroupContactBean> selectedData = imContactAdapter.getSelectedData();
         if (selectedData.isEmpty()) return;
         AlphaUserInfo loginUserInfo = getLoginUserInfo();
-        String uid = null;
-        if (loginUserInfo != null) {
-            uid = loginUserInfo.getUserId();
-            if (!TextUtils.isEmpty(uid)) {
-                uid = uid.toLowerCase();
-            }
-        }
-        final IMMessageCustomBody msgPostEntity = IMMessageCustomBody.createPicMsg(
+        String uid = StringUtils.toLowerCase(loginUserInfo.getUserId());
+        final IMMessageCustomBody msgPostEntity = IMMessageCustomBody.createFileMsg(
                 Const.CHAT_TYPE_P2P,
                 loginUserInfo == null ? "" : loginUserInfo.getName(),
                 uid,
@@ -275,6 +317,7 @@ public class FileImportContactFragment extends BaseFragment implements BaseRecyc
             }
             List<GroupContactBean> contactBeen = ListConvertor.convertList(new ArrayList<IConvertModel<GroupContactBean>>(result));
             filterRobot(contactBeen);
+            imContactAdapter.clearSelected();
             imContactAdapter.bindData(true, contactBeen);
         } catch (Throwable e) {
             e.printStackTrace();

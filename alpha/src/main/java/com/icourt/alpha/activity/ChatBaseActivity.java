@@ -616,7 +616,7 @@ public abstract class ChatBaseActivity
             return;
         }
 
-        final IMMessageCustomBody msgPostEntity = IMMessageCustomBody.createPicMsg(getIMChatType(),
+        final IMMessageCustomBody msgPostEntity = IMMessageCustomBody.createFileMsg(getIMChatType(),
                 getLoadedLoginName(),
                 getLoadedLoginUserId(),
                 getIMChatId(),
