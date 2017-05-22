@@ -54,7 +54,7 @@ android {
         variant.outputs.each { output ->
             def outputFile = output.outputFile
             if (outputFile != null && outputFile.name.endsWith('.apk')) {
-                def fileName = outputFile.name.replace(".apk", "-${defaultConfig.versionName}.apk")
+                def fileName = outputFile.name.replace(".apk", "-${defaultConfig.versionName}_${releaseFormatTime()}.apk")
                 output.outputFile = new File(outputFile.parent, fileName)
             }
         }
@@ -75,6 +75,7 @@ android {
 //                abiFilters = ["armeabi"]
 //            }
             buildConfigField "boolean", "IS_DEBUG", "true"
+            buildConfigField "String", "APK_RELEASE_TIME", "\"${releaseTime()}\""
             buildConfigField "String", "API_URL", rootProject.ext.alphaAPIUrl.api_url_debug
             buildConfigField "String", "API_CHAT_URL", rootProject.ext.alphaChatAPIUrl.api_chat_url_debug
             buildConfigField "String", "HOST_URL", rootProject.ext.alphaHostUrl.host_url_debug
@@ -88,18 +89,18 @@ android {
             manifestPlaceholders = [NIM_APPKEY: rootProject.ext.nimAppKey.debugAppKey]
 
             //用正式
-//            buildConfigField "String", "API_URL", rootProject.ext.alphaAPIUrl.api_url_release
-//            buildConfigField "String", "API_CHAT_URL", rootProject.ext.alphaChatAPIUrl.api_chat_url_release
-//             buildConfigField "String", "HOST_URL", rootProject.ext.alphaHostUrl.host_url_release
-//             buildConfigField "String", "APK_UPDATE_URL", rootProject.ext.alphaApkUpdateUrl.apk_update_url_release
-//             manifestPlaceholders = [NIM_APPKEY: rootProject.ext.nimAppKey.releaseAppKey]
-
+            /* buildConfigField "String", "API_URL", rootProject.ext.alphaAPIUrl.api_url_release
+             buildConfigField "String", "API_CHAT_URL", rootProject.ext.alphaChatAPIUrl.api_chat_url_release
+              buildConfigField "String", "HOST_URL", rootProject.ext.alphaHostUrl.host_url_release
+              buildConfigField "String", "APK_UPDATE_URL", rootProject.ext.alphaApkUpdateUrl.apk_update_url_release
+              manifestPlaceholders = [NIM_APPKEY: rootProject.ext.nimAppKey.releaseAppKey]
+ */
             //测试用
-            buildConfigField "String", "API_URL", rootProject.ext.alphaAPIUrl.api_url_test
+/*            buildConfigField "String", "API_URL", rootProject.ext.alphaAPIUrl.api_url_test
             buildConfigField "String", "API_CHAT_URL", rootProject.ext.alphaChatAPIUrl.api_chat_url_test
             buildConfigField "String", "HOST_URL", rootProject.ext.alphaHostUrl.host_url_test
             buildConfigField "String", "APK_UPDATE_URL", rootProject.ext.alphaApkUpdateUrl.apk_update_url_test
-            manifestPlaceholders = [NIM_APPKEY: rootProject.ext.nimAppKey.testAppKey]
+            manifestPlaceholders = [NIM_APPKEY: rootProject.ext.nimAppKey.testAppKey]*/
 //
 //            buildConfigField "String", "API_URL", rootProject.ext.alphaAPIUrl.api_url_preview
 //            buildConfigField "String", "API_CHAT_URL", rootProject.ext.alphaChatAPIUrl.api_chat_url_preview
@@ -109,6 +110,7 @@ android {
         }
         innertest {
             buildConfigField "boolean", "IS_DEBUG", "true"
+            buildConfigField "String", "APK_RELEASE_TIME", "\"${releaseTime()}\""
             buildConfigField "String", "API_URL", rootProject.ext.alphaAPIUrl.api_url_test
             buildConfigField "String", "API_CHAT_URL", rootProject.ext.alphaChatAPIUrl.api_chat_url_test
             buildConfigField "String", "HOST_URL", rootProject.ext.alphaHostUrl.host_url_test
@@ -123,6 +125,7 @@ android {
         }
         preview {
             buildConfigField "boolean", "IS_DEBUG", "true"
+            buildConfigField "String", "APK_RELEASE_TIME", "\"${releaseTime()}\""
             buildConfigField "String", "API_URL", rootProject.ext.alphaAPIUrl.api_url_preview
             buildConfigField "String", "API_CHAT_URL", rootProject.ext.alphaChatAPIUrl.api_chat_url_preview
             buildConfigField "String", "HOST_URL", rootProject.ext.alphaHostUrl.host_url_preview
@@ -138,6 +141,7 @@ android {
 
         release {
             buildConfigField "boolean", "IS_DEBUG", "false"
+            buildConfigField "String", "APK_RELEASE_TIME", "\"${releaseTime()}\""
             buildConfigField "String", "API_URL", rootProject.ext.alphaAPIUrl.api_url_release
             buildConfigField "String", "API_CHAT_URL", rootProject.ext.alphaChatAPIUrl.api_chat_url_release
             buildConfigField "String", "HOST_URL", rootProject.ext.alphaHostUrl.host_url_release
@@ -178,6 +182,15 @@ android {
         preDexLibraries = false //预编译
         threadCount = "8" //线程数目
     }
+
+}
+//定义打包时间格式化
+def releaseFormatTime() {
+    return new Date().format("yyyy-MM-dd HH:mm", TimeZone.getDefault())
+}
+// 定义打包时间戳
+def releaseTime() {
+    return new Date().getTime();
 }
 
 bugtags {
