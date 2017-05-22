@@ -37,6 +37,7 @@ import com.icourt.alpha.fragment.dialogfragment.ContactDialogFragment;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.callback.SimpleTextWatcher;
+import com.icourt.alpha.utils.GlobalMessageObserver;
 import com.icourt.alpha.utils.IMUtils;
 import com.icourt.alpha.utils.LogUtils;
 import com.icourt.alpha.utils.StringUtils;
@@ -748,6 +749,7 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
                     @Override
                     public void onSuccess(List<IMMessage> param) {
                         LogUtils.d("----------->query result:" + param);
+                        param = filterMsgs(param);
                         if (param == null || param.isEmpty()) {
                             //本地为空从网络获取
                             getMsgFromServer(isRefresh);
@@ -801,6 +803,7 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
                     @Override
                     public void onSuccess(List<IMMessage> param) {
                         LogUtils.d("----------->query result2:" + param);
+                        param = filterMsgs(param);
                         if (param == null || param.isEmpty()) {
                             //本地为空从网络获取
                             getMsgFromServer(true);
@@ -824,6 +827,24 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
                         stopRefresh();
                     }
                 });
+    }
+
+    /**
+     * 过滤消息
+     *
+     * @param imMessages
+     */
+    private List<IMMessage> filterMsgs(List<IMMessage> imMessages) {
+        List<IMMessage> msgs = new ArrayList<>();
+        if (imMessages != null) {
+            for (IMMessage imMessage : imMessages) {
+                if (imMessage == null) continue;
+                if (!GlobalMessageObserver.isFilterMsg(imMessage.getTime())) {
+                    msgs.add(imMessage);
+                }
+            }
+        }
+        return msgs;
     }
 
     /**

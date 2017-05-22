@@ -35,6 +35,7 @@ import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.interfaces.OnTabDoubleClickListener;
+import com.icourt.alpha.utils.GlobalMessageObserver;
 import com.icourt.alpha.utils.IMUtils;
 import com.icourt.alpha.utils.JsonUtils;
 import com.icourt.alpha.utils.LogUtils;
@@ -166,6 +167,11 @@ public class MessageListFragment extends BaseRecentContactFragment
                 for (RecentContact recentContact : recentContacts) {
                     IMUtils.logRecentContact("------------>recentContactReceive:", recentContact);
                     if (recentContact == null) continue;
+
+                    if (GlobalMessageObserver.isFilterMsg(recentContact.getTime())) {
+                        continue;
+                    }
+
                     boolean isExist = false;
                     for (IMSessionEntity imSessionEntity : data) {
                         if (imSessionEntity != null
@@ -476,6 +482,11 @@ public class MessageListFragment extends BaseRecentContactFragment
                 for (int i = 0; i < recentContacts.size(); i++) {
                     RecentContact recentContact = recentContacts.get(i);
                     if (recentContact == null) continue;
+
+                    if (GlobalMessageObserver.isFilterMsg(recentContact.getTime())) {
+                        continue;
+                    }
+
                     //解析自定义的消息体
                     IMMessageCustomBody customIMBody = null;
                     String jsonBody = recentContact.getContent();

@@ -1,6 +1,7 @@
 package com.icourt.alpha.utils;
 
 import com.google.gson.JsonParseException;
+import com.icourt.alpha.BuildConfig;
 import com.icourt.alpha.constants.Const;
 import com.icourt.alpha.entity.bean.IMMessageCustomBody;
 import com.netease.nimlib.sdk.NIMClient;
@@ -32,6 +33,9 @@ public class GlobalMessageObserver implements Observer<List<IMMessage>> {
         for (IMMessage imMessage : messages) {
             if (imMessage != null) {
                 IMUtils.logIMMessage("----------->globalMessageObserver message:", imMessage);
+                if (isFilterMsg(imMessage.getTime())) {
+                    continue;
+                }
                 if (imMessage.getMsgType() == notification) {//推送删除
                     NIMClient.getService(MsgService.class)
                             .deleteChattingHistory(imMessage);
@@ -55,6 +59,16 @@ public class GlobalMessageObserver implements Observer<List<IMMessage>> {
                 }
             }
         }
+    }
+
+    /**
+     * 是否过滤消息 过滤2.0之前的消息
+     *
+     * @param time
+     * @return
+     */
+    public static boolean isFilterMsg(long time) {
+        return time >= Long.parseLong(BuildConfig.APK_RELEASE_TIME);
     }
 
     /**
