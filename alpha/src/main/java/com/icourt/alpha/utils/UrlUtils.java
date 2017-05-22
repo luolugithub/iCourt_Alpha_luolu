@@ -55,6 +55,25 @@ public class UrlUtils {
     }
 
     /**
+     * 追加参数
+     *
+     * @param key
+     * @param value
+     */
+    public static final String appendParam(String url, String key, String value) {
+        if (!TextUtils.isEmpty(url)) {
+            if (url.contains("?")) {
+                if (!url.contains(String.format("%s=", key))) {
+                    return url.concat(String.format("&%s=%s", key, value));
+                }
+            } else {
+                return url.concat(String.format("?%s=%s", key, value));
+            }
+        }
+        return url;
+    }
+
+    /**
      * 获取html中的指定标签的值
      *
      * @param htmlString

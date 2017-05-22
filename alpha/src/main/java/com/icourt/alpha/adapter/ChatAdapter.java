@@ -86,7 +86,6 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMMessageCustomBody> i
     private static final int TYPE_CENTER_SYS = 200;
 
 
-    private String loginToken;
     AlphaUserInfo alphaUserInfo;
     private List<GroupContactBean> contactBeanList;//本地联系人
 
@@ -112,11 +111,7 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMMessageCustomBody> i
     public ChatAdapter(List<GroupContactBean> contactBeanList) {
         this.contactBeanList = contactBeanList;
         alphaUserInfo = LoginInfoUtils.getLoginUserInfo();
-        if (alphaUserInfo != null) {
-            this.loginToken = alphaUserInfo.getToken();
-        }
     }
-
     private String getLoginUid() {
         return alphaUserInfo == null ? null : alphaUserInfo.getUserId();
     }

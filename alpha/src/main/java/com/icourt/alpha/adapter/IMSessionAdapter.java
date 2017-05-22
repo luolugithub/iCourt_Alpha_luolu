@@ -203,18 +203,16 @@ public class IMSessionAdapter extends BaseArrayRecyclerAdapter<IMSessionEntity> 
             case CHAT_TYPE_P2P:
                 GroupContactBean user = getUser(imSessionEntity.recentContact.getContactId());
                 if (user != null) {
-                    if (GlideUtils.canLoadImage(ivSessionIcon.getContext())) {
-                        GlideUtils.loadUser(ivSessionIcon.getContext(),
-                                user.pic,
-                                ivSessionIcon);
-                    }
+                    GlideUtils.loadUser(ivSessionIcon.getContext(),
+                            user.pic,
+                            ivSessionIcon);
                 }
                 break;
             case CHAT_TYPE_TEAM:
                 Team team = getTeam(imSessionEntity.customIMBody.to);
                 if (team != null) {
                     if (!TextUtils.isEmpty(team.getIcon())) {
-                        GlideUtils.loadUser(ivSessionIcon.getContext(),
+                        GlideUtils.loadGroup(ivSessionIcon.getContext(),
                                 team.getIcon(),
                                 ivSessionIcon);
                     } else {
