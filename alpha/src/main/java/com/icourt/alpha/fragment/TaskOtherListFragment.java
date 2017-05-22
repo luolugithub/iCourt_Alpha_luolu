@@ -151,7 +151,8 @@ public class TaskOtherListFragment extends BaseFragment implements BaseRecyclerA
                 getMyAllotTask(isRefresh);
                 break;
             case SELECT_OTHER_TYPE:
-                getSelectOtherTask(isRefresh);
+//                getSelectOtherTask(isRefresh);
+                getMyAllotTask(isRefresh);
                 break;
         }
     }

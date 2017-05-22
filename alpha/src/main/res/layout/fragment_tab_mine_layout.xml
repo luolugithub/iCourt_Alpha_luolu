@@ -63,7 +63,6 @@
                             android:id="@+id/user_name_tv"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="李思廉"
                             android:textColor="@color/white"
                             android:textSize="20sp" />
 
@@ -71,7 +70,6 @@
                             android:id="@+id/office_name_tv"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="北京市金城同达律师事务所"
                             android:textColor="@color/white"
                             android:textSize="13sp" />
                     </LinearLayout>
@@ -96,7 +94,6 @@
                         android:id="@+id/today_duraction_tv"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="06:31"
                         android:textColor="@color/alpha_font_color_orange"
                         android:textSize="24sp" />
 
@@ -124,7 +121,6 @@
                         android:id="@+id/month_duraction_tv"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="106:31"
                         android:textColor="@color/alpha_font_color_orange"
                         android:textSize="24sp" />
 
@@ -152,7 +148,6 @@
                         android:id="@+id/done_task_tv"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="33"
                         android:textColor="@color/alpha_font_color_orange"
                         android:textSize="24sp" />
 
@@ -215,17 +210,17 @@
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/alpha_height_divider"
                 android:layout_marginLeft="39dp"
-                android:visibility="gone"
-                android:background="@color/alpha_divider_color" />
+                android:background="@color/alpha_divider_color"
+                android:visibility="gone" />
 
             <LinearLayout
                 android:id="@+id/my_center_at_layout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:visibility="gone"
                 android:background="?attr/selectableItemBackground"
                 android:gravity="center_vertical"
-                android:padding="10dp">
+                android:padding="10dp"
+                android:visibility="gone">
 
                 <ImageView
                     android:layout_width="wrap_content"

@@ -27,6 +27,7 @@ import com.icourt.alpha.entity.bean.TaskMemberWrapEntity;
 import com.icourt.alpha.entity.bean.TaskOwerEntity;
 import com.icourt.alpha.entity.bean.TimeEntity;
 import com.icourt.alpha.entity.bean.TimingCountEntity;
+import com.icourt.alpha.entity.bean.UserDataEntity;
 import com.icourt.alpha.entity.bean.WorkType;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 
@@ -840,6 +841,14 @@ public interface ApiAlphaService {
     @GET("api/v1/auth/get/members")
     Call<ResEntity<List<TaskMemberWrapEntity>>> getTaskMembers();
 
+
+    /**
+     * 获取某人今日计时、本月计时、本月完成任务、本月总任务
+     * @param userId
+     * @return
+     */
+    @GET("api/v2/taskflow/getTimingAndTask")
+    Call<ResEntity<UserDataEntity>> getUserData(@Query("userId") String userId);
 
 }
 

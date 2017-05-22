@@ -78,7 +78,11 @@ public class MyAllotTaskActivity extends BaseActivity {
     @Override
     protected void initView() {
         super.initView();
-        setTitle("我分配的任务");
+        if (getQueryType() == TaskOtherListFragment.MY_ALLOT_TYPE) {
+            setTitle("我分配的任务");
+        } else if (getQueryType() == TaskOtherListFragment.SELECT_OTHER_TYPE) {
+            setTitle("查看他人任务");
+        }
         baseFragmentAdapter = new BaseFragmentAdapter(getSupportFragmentManager());
         viewpager.setAdapter(baseFragmentAdapter);
         tablayout.setupWithViewPager(viewpager);

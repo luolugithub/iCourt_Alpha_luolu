@@ -13,6 +13,8 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.ProjectAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
@@ -27,6 +29,7 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import retrofit2.Call;
+import retrofit2.Callback;
 import retrofit2.Response;
 
 /**
@@ -54,8 +57,6 @@ public class ProjectSelectActivity extends BaseActivity implements BaseRecyclerA
 
     public static void launch(@NonNull Context context, @NonNull String authToken, @NonNull String seaFileRepoId, @NonNull String filePath) {
         if (context == null) return;
-        if (TextUtils.isEmpty(authToken)) return;
-        if (TextUtils.isEmpty(seaFileRepoId)) return;
         Intent intent = new Intent(context, ProjectSelectActivity.class);
         intent.putExtra("authToken", authToken);
         intent.putExtra("seaFileRepoId", seaFileRepoId);
@@ -81,7 +82,11 @@ public class ProjectSelectActivity extends BaseActivity implements BaseRecyclerA
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setAdapter(projectAdapter = new ProjectAdapter(false));
         projectAdapter.setOnItemClickListener(this);
-        getData(true);
+        if (TextUtils.isEmpty(authToken)) {
+            getFileBoxToken();
+        } else {
+            getData(true);
+        }
     }
 
     @Override
@@ -103,11 +108,43 @@ public class ProjectSelectActivity extends BaseActivity implements BaseRecyclerA
                 });
     }
 
+    /**
+     * 获取文档token
+     */
+    private void getFileBoxToken() {
+        getApi().projectQueryFileBoxToken().enqueue(new Callback<JsonObject>() {
+            @Override
+            public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
+                if (response.code() == 200) {
+                    if (response.body() != null) {
+                        if (response.body().has("authToken")) {
+                            JsonElement element = response.body().get("authToken");
+                            if (!TextUtils.isEmpty(element.toString()) && !TextUtils.equals("null", element.toString())) {
+                                authToken = element.getAsString();
+                                getData(true);
+                            } else {
+                                onFailure(call, new retrofit2.HttpException(response));
+                            }
+                        }
+                    }
+                } else {
+                    onFailure(call, new retrofit2.HttpException(response));
+                }
+            }
+
+            @Override
+            public void onFailure(Call<JsonObject> call, Throwable throwable) {
+                showTopSnackBar("获取文档token失败");
+            }
+        });
+    }
+
+
     @Override
     public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
         ProjectEntity projectEntity = (ProjectEntity) adapter.getItem(position);
-        if(projectEntity!=null){
-            FolderboxSelectActivity.launch(this,authToken,seaFileRepoId,filePath,null);
+        if (projectEntity != null) {
+            FolderboxSelectActivity.launch(this, projectEntity.pkId, authToken, seaFileRepoId, filePath, null);
         }
     }
 }

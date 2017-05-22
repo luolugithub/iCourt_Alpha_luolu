@@ -24,7 +24,6 @@ import com.icourt.alpha.entity.bean.TaskCheckItemEntity;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.ItemDecorationUtils;
-import com.icourt.alpha.utils.LogUtils;
 import com.icourt.api.RequestUtils;
 
 import butterknife.BindView;
@@ -82,13 +81,12 @@ public class TaskCheckItemFragment extends BaseFragment {
         taskId = getArguments().getString(KEY_TASK_ID);
         recyclerview.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerview.setAdapter(taskCheckItemAdapter = new TaskCheckItemAdapter());
-        recyclerview.addItemDecoration(ItemDecorationUtils.getCommFull05Divider(getContext(), true,R.color.alpha_divider_color));
+        recyclerview.addItemDecoration(ItemDecorationUtils.getCommFull05Divider(getContext(), true, R.color.alpha_divider_color));
         getData(false);
         checkItemEdit.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 if (actionId == EditorInfo.IME_ACTION_DONE) {
-                    LogUtils.e(" --------------- >");
                     addCheckItem();
                 }
                 return true;
@@ -118,6 +116,12 @@ public class TaskCheckItemFragment extends BaseFragment {
                     taskCheckItemAdapter.bindData(false, response.body().result.items);
                 }
             }
+
+            @Override
+            public void onFailure(Call<ResEntity<TaskCheckItemEntity>> call, Throwable t) {
+                super.onFailure(call, t);
+                dismissLoadingDialog();
+            }
         });
     }
 
@@ -139,6 +143,13 @@ public class TaskCheckItemFragment extends BaseFragment {
                     checkItemEdit.setText("");
                     checkItemEdit.clearFocus();
                 }
+            }
+
+            @Override
+            public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
+                super.onFailure(call, t);
+                dismissLoadingDialog();
+                showTopSnackBar("添加检查项失败");
             }
         });
     }

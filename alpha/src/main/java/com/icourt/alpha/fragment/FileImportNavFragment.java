@@ -13,6 +13,7 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.icourt.alpha.R;
+import com.icourt.alpha.activity.ProjectSelectActivity;
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.interfaces.OnPageFragmentCallBack;
 import com.icourt.alpha.utils.FileUtils;
@@ -52,6 +53,7 @@ public class FileImportNavFragment extends BaseFragment {
     TextView btSendProgram;
     Unbinder unbinder;
     private static final String KEY_PATH = "path";
+    String filePath;
 
     public static FileImportNavFragment newInstance(String path) {
         Bundle bundle = new Bundle();
@@ -83,7 +85,7 @@ public class FileImportNavFragment extends BaseFragment {
 
     @Override
     protected void initView() {
-        String filePath = getArguments().getString(KEY_PATH);
+        filePath = getArguments().getString(KEY_PATH);
         if (!TextUtils.isEmpty(filePath)) {
             if (IMUtils.isPIC(filePath)) {
                 fileTypeImg.setVisibility(View.VISIBLE);
@@ -117,7 +119,8 @@ public class FileImportNavFragment extends BaseFragment {
                     onPageFragmentCallBack.onRequest2NextPage(this, 0, null);
                 }
                 break;
-            case R.id.bt_send_program:
+            case R.id.bt_send_program://分享到项目
+                ProjectSelectActivity.launch(getContext(), null, null, filePath);
                 break;
             default:
                 super.onClick(v);

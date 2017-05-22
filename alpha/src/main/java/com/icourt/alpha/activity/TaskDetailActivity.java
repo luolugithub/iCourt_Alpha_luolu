@@ -361,6 +361,12 @@ public class TaskDetailActivity extends BaseActivity implements OnFragmentCallBa
                 taskItemEntity = response.body().result;
                 setDataToView(response.body().result);
             }
+
+            @Override
+            public void onFailure(Call<ResEntity<TaskEntity.TaskItemEntity>> call, Throwable t) {
+                super.onFailure(call, t);
+                dismissLoadingDialog();
+            }
         });
     }
 

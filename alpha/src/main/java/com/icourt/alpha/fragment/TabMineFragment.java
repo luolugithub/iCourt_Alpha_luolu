@@ -23,9 +23,11 @@ import com.icourt.alpha.activity.MyFileTabActivity;
 import com.icourt.alpha.activity.SettingActivity;
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.entity.bean.AlphaUserInfo;
+import com.icourt.alpha.entity.bean.UserDataEntity;
 import com.icourt.alpha.fragment.dialogfragment.DateSelectDialogFragment;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
+import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.GlideUtils;
 import com.icourt.alpha.utils.transformations.BlurTransformation;
 import com.umeng.socialize.UMAuthListener;
@@ -109,7 +111,7 @@ public class TabMineFragment extends BaseFragment {
 
     @Override
     protected void initView() {
-        setDataToView(getLoginUserInfo());
+        getData(false);
         mShareAPI = UMShareAPI.get(getContext());
     }
 
@@ -249,6 +251,23 @@ public class TabMineFragment extends BaseFragment {
             @Override
             public void onSuccess(Call<ResEntity<AlphaUserInfo>> call, Response<ResEntity<AlphaUserInfo>> response) {
                 setDataToView(response.body().result);
+            }
+
+            @Override
+            public void onFailure(Call<ResEntity<AlphaUserInfo>> call, Throwable t) {
+                super.onFailure(call, t);
+                setDataToView(getLoginUserInfo());
+            }
+        });
+
+        getApi().getUserData(getLoginUserId()).enqueue(new SimpleCallBack<UserDataEntity>() {
+            @Override
+            public void onSuccess(Call<ResEntity<UserDataEntity>> call, Response<ResEntity<UserDataEntity>> response) {
+                if (response.body().result != null) {
+                    todayDuractionTv.setText(DateUtils.formatTime(response.body().result.timingCountToday));
+                    monthDuractionTv.setText(DateUtils.formatTime(response.body().result.timingCountMonth));
+                    doneTaskTv.setText(String.valueOf(response.body().result.taskMonthConutDone));
+                }
             }
         });
     }

@@ -285,12 +285,6 @@ public class TaskListFragment extends BaseFragment {
                     lastEntity.isTiming = false;
                     taskAdapter.notifyDataSetChanged();
                 }
-//                TimeEntity.ItemEntity stopItem = TimerManager.getInstance().getTimer();
-//                if (stopItem != null) {
-//                    getParentPositon(stopItem.taskPkId);
-//                    getChildPositon(stopItem.taskPkId);
-//                    updateChildTimeing(stopItem.taskPkId, false);
-//                }
                 break;
         }
     }

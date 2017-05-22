@@ -16,6 +16,7 @@ import android.widget.TextView;
 
 import com.andview.refreshview.XRefreshView;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.ProjectFileBoxAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
@@ -65,14 +66,13 @@ public class FolderboxSelectActivity extends BaseActivity implements BaseRecycle
     @BindView(R.id.refreshLayout)
     RefreshLayout refreshLayout;
     ProjectFileBoxAdapter projectFileBoxAdapter;
-    String authToken, seaFileRepoId, filePath, rootName;
+    String projectId, authToken, seaFileRepoId, filePath, rootName;
 
-    public static void launch(@NonNull Context context, @NonNull String authToken, @NonNull String seaFileRepoId, @NonNull String filePath, @NonNull String rootName) {
+    public static void launch(@NonNull Context context, @NonNull String projectId, @NonNull String authToken, @NonNull String seaFileRepoId, @NonNull String filePath, @NonNull String rootName) {
         if (context == null) return;
-        if (TextUtils.isEmpty(authToken)) return;
-        if (TextUtils.isEmpty(seaFileRepoId)) return;
         Intent intent = new Intent(context, FolderboxSelectActivity.class);
         intent.putExtra("authToken", authToken);
+        intent.putExtra("projectId", projectId);
         intent.putExtra("seaFileRepoId", seaFileRepoId);
         intent.putExtra("filePath", filePath);
         intent.putExtra("rootName", rootName);
@@ -91,6 +91,7 @@ public class FolderboxSelectActivity extends BaseActivity implements BaseRecycle
     protected void initView() {
         super.initView();
         setTitle("选择文件夹");
+        projectId = getIntent().getStringExtra("projectId");
         seaFileRepoId = getIntent().getStringExtra("seaFileRepoId");
         filePath = getIntent().getStringExtra("filePath");
         authToken = getIntent().getStringExtra("authToken");
@@ -109,17 +110,26 @@ public class FolderboxSelectActivity extends BaseActivity implements BaseRecycle
             @Override
             public void onRefresh(boolean isPullDown) {
                 super.onRefresh(isPullDown);
-                getData(true);
+                if (TextUtils.isEmpty(seaFileRepoId)) {
+                    getDocumentId();
+                } else {
+                    getData(true);
+                }
             }
 
             @Override
             public void onLoadMore(boolean isSilence) {
                 super.onLoadMore(isSilence);
-                getData(false);
+                if (TextUtils.isEmpty(seaFileRepoId)) {
+                    getDocumentId();
+                } else {
+                    getData(true);
+                }
             }
         });
         refreshLayout.setAutoRefresh(true);
         refreshLayout.startRefresh();
+
     }
 
     @OnClick({R.id.titleAction})
@@ -153,6 +163,37 @@ public class FolderboxSelectActivity extends BaseActivity implements BaseRecycle
         });
     }
 
+    /**
+     * 获取根目录id
+     */
+    private void getDocumentId() {
+        getApi().projectQueryDocumentId(projectId).enqueue(new Callback<JsonObject>() {
+            @Override
+            public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
+                if (response.code() == 200) {
+                    if (response.body() != null) {
+                        if (response.body().has("seaFileRepoId")) {
+                            JsonElement element = response.body().get("seaFileRepoId");
+                            if (!TextUtils.isEmpty(element.toString()) && !TextUtils.equals("null", element.toString())) {
+                                seaFileRepoId = element.getAsString();
+                                getData(false);
+                            } else {
+                                onFailure(call, new retrofit2.HttpException(response));
+                            }
+                        }
+                    }
+                } else {
+                    onFailure(call, new retrofit2.HttpException(response));
+                }
+            }
+
+            @Override
+            public void onFailure(Call<JsonObject> call, Throwable throwable) {
+                showTopSnackBar("获取文档根目录id失败");
+            }
+        });
+    }
+
     private List<FileBoxBean> getFolders(List<FileBoxBean> fileBoxBeens) {
         Iterator<FileBoxBean> it = fileBoxBeens.iterator();
         while (it.hasNext()) {
@@ -175,7 +216,7 @@ public class FolderboxSelectActivity extends BaseActivity implements BaseRecycle
         FileBoxBean fileBoxBean = (FileBoxBean) adapter.getItem(position);
         if (!TextUtils.isEmpty(fileBoxBean.type)) {
             if (TextUtils.equals("dir", fileBoxBean.type)) {
-                FolderboxSelectActivity.launch(this, authToken, seaFileRepoId, filePath, rootName + "/" + fileBoxBean.name);
+                FolderboxSelectActivity.launch(this, projectId, authToken, seaFileRepoId, filePath, rootName + "/" + fileBoxBean.name);
             }
         }
     }
