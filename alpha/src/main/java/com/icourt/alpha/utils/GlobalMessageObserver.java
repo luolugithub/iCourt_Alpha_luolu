@@ -25,6 +25,14 @@ import static com.netease.nimlib.sdk.msg.constant.MsgTypeEnum.text;
  * version 1.0.0
  */
 public class GlobalMessageObserver implements Observer<List<IMMessage>> {
+
+    private static long v2time;
+
+    static {
+        v2time = Long.parseLong(BuildConfig.APK_RELEASE_TIME);
+    }
+
+
     @Override
     public void onEvent(List<IMMessage> messages) {
         if (messages == null || messages.isEmpty()) {
@@ -68,7 +76,7 @@ public class GlobalMessageObserver implements Observer<List<IMMessage>> {
      * @return
      */
     public static boolean isFilterMsg(long time) {
-        return time >= Long.parseLong(BuildConfig.APK_RELEASE_TIME);
+        return time < v2time;
     }
 
     /**

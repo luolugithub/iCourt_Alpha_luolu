@@ -474,14 +474,31 @@ public abstract class ChatBaseActivity
     /**
      * 是否是当前聊天组对话
      *
-     * @param to
+     * @param customBody
      * @return
      */
-    protected final boolean isCurrentRoomSession(String to) {
-        return StringUtils.equalsIgnoreCase(to, getIMChatId(), false)
-                || StringUtils.equalsIgnoreCase(to, getLoadedLoginUserId(), false);
+    protected final boolean isCurrentRoomSession(IMMessageCustomBody customBody) {
+        if (customBody == null) return false;
+        switch (getIMChatType()) {
+            case CHAT_TYPE_P2P:
+                if (customBody.imMessage == null) return false;
+                return StringUtils.equalsIgnoreCase(customBody.imMessage.getSessionId(), getIMChatId(), false);
+            case CHAT_TYPE_TEAM:
+                return StringUtils.equalsIgnoreCase(customBody.to, getIMChatId(), false);
+        }
+        return false;
     }
 
+
+    /**
+     * 是否是当前聊天组对话
+     *
+     * @param sessionId
+     * @return
+     */
+    protected final boolean isCurrentRoomSession(String sessionId) {
+        return StringUtils.equalsIgnoreCase(sessionId, getIMChatId(), false);
+    }
 
     /**
      * 发送文本吧消息

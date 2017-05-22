@@ -15,12 +15,17 @@ import com.icourt.alpha.R;
 import com.icourt.alpha.activity.GroupCreateActivity;
 import com.icourt.alpha.adapter.baseadapter.BaseFragmentAdapter;
 import com.icourt.alpha.base.BaseFragment;
+import com.icourt.alpha.entity.event.UnReadEvent;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.interfaces.OnTabDoubleClickListener;
 import com.icourt.alpha.service.SyncDataService;
 import com.icourt.alpha.utils.GlobalMessageObserver;
 import com.netease.nimlib.sdk.NIMClient;
 import com.netease.nimlib.sdk.msg.MsgServiceObserve;
+
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.Arrays;
 
@@ -89,6 +94,7 @@ public class TabNewsFragment extends BaseFragment
 
     @Override
     protected void initView() {
+        EventBus.getDefault().register(this);
         viewPager.setAdapter(baseFragmentAdapter = new BaseFragmentAdapter(getChildFragmentManager()));
         tabLayout.setupWithViewPager(viewPager);
         baseFragmentAdapter.bindTitle(true, Arrays.asList("消息", "@我的", "通讯录"));
@@ -110,11 +116,30 @@ public class TabNewsFragment extends BaseFragment
         }
     }
 
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onUnReadEvent(UnReadEvent event) {
+        if (event == null) return;
+        //动态修改tabLayout 指示器
+        //方式1：
+        // tabLayout.getTabAt(0).setText("未使用(%s)");
+
+        //方式2:
+        StringBuilder newsTabBuilder = new StringBuilder("消息");
+        int unReadNum = event.unReadCount;
+        if (unReadNum > 99) {
+            newsTabBuilder.append("...");
+        } else if (unReadNum > 0) {
+            newsTabBuilder.append("(" + unReadNum + ")");
+        }
+        baseFragmentAdapter.bindTitle(true,
+                Arrays.asList(newsTabBuilder.toString(), "@我的", "通讯录"));
+    }
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
         unbinder.unbind();
+        EventBus.getDefault().unregister(this);
     }
 
     @Override
@@ -128,30 +153,6 @@ public class TabNewsFragment extends BaseFragment
 
     @Override
     public void onFragmentCallBack(Fragment fragment, int type, Bundle params) {
-        if (fragment == baseFragmentAdapter.getItem(0))//更新消息数量
-        {
-            if (params != null) {
-                //动态修改tabLayout 指示器
-                //方式1：
-                // tabLayout.getTabAt(0).setText("未使用(%s)");
-
-                //方式2:
-                StringBuilder newsTabBuilder = new StringBuilder("消息");
-                int unReadNum = params.getInt("unReadNum");
-                if (unReadNum > 99) {
-                    newsTabBuilder.append("...");
-                } else if (unReadNum > 0) {
-                    newsTabBuilder.append("(" + unReadNum + ")");
-                }
-                baseFragmentAdapter.bindTitle(true,
-                        Arrays.asList(newsTabBuilder.toString(), "@我的", "通讯录"));
-                if (getParentFragment() instanceof OnFragmentCallBackListener) {
-                    ((OnFragmentCallBackListener) getParentFragment()).onFragmentCallBack(TabNewsFragment.this, 0, params);
-                } else if (parentFragmentCallBackListener != null) {
-                    parentFragmentCallBackListener.onFragmentCallBack(TabNewsFragment.this, 0, params);
-                }
-            }
-        }
     }
 
     @Override

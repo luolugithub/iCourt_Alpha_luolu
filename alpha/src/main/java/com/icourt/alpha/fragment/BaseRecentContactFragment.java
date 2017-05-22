@@ -14,7 +14,9 @@ import com.netease.nimlib.sdk.RequestCallback;
 import com.netease.nimlib.sdk.StatusCode;
 import com.netease.nimlib.sdk.auth.AuthServiceObserver;
 import com.netease.nimlib.sdk.auth.OnlineClient;
+import com.netease.nimlib.sdk.msg.MsgService;
 import com.netease.nimlib.sdk.msg.MsgServiceObserve;
+import com.netease.nimlib.sdk.msg.constant.SessionTypeEnum;
 import com.netease.nimlib.sdk.msg.model.RecentContact;
 import com.netease.nimlib.sdk.team.TeamService;
 import com.netease.nimlib.sdk.team.TeamServiceObserver;
@@ -182,6 +184,22 @@ public abstract class BaseRecentContactFragment extends BaseFragment {
      * @param teams
      */
     protected abstract void teamUpdates(@NonNull List<Team> teams);
+
+    @Override
+    public void onResume() {
+        // 进入最近联系人列表界面，建议放在onResume中
+        NIMClient.getService(MsgService.class)
+                .setChattingAccount(MsgService.MSG_CHATTING_ACCOUNT_ALL, SessionTypeEnum.None);
+        super.onResume();
+    }
+
+    @Override
+    public void onPause() {
+        // 退出聊天界面或离开最近联系人列表界面，建议放在onPause中
+        NIMClient.getService(MsgService.class)
+                .setChattingAccount(MsgService.MSG_CHATTING_ACCOUNT_NONE, SessionTypeEnum.None);
+        super.onPause();
+    }
 
     @Override
     public void onDestroy() {

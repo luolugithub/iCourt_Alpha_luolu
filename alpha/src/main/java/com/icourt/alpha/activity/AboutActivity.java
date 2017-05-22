@@ -15,6 +15,7 @@ import com.icourt.alpha.R;
 import com.icourt.alpha.base.BaseAppUpdateActivity;
 import com.icourt.alpha.entity.bean.AppVersionEntity;
 import com.icourt.alpha.interfaces.callback.AppUpdateCallBack;
+import com.icourt.alpha.utils.DateUtils;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -29,6 +30,9 @@ import retrofit2.Response;
  * version 1.0.0
  */
 public class AboutActivity extends BaseAppUpdateActivity {
+
+    @BindView(R.id.about_verson_release_time)
+    TextView aboutVersonReleaseTime;
 
     public static void launch(@NonNull Context context) {
         if (context == null) return;
@@ -63,6 +67,7 @@ public class AboutActivity extends BaseAppUpdateActivity {
         setTitle("关于");
         registerClick(aboutCheckIsUpdateView);
         aboutVersonTextview.setText(BuildConfig.VERSION_NAME);
+        aboutVersonReleaseTime.setText("build in " + DateUtils.getyyyyMMddHHmm(Long.valueOf(BuildConfig.APK_RELEASE_TIME)));
     }
 
     @Override

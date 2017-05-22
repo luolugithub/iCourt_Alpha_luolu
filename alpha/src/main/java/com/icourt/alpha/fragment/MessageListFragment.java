@@ -31,6 +31,7 @@ import com.icourt.alpha.entity.bean.IMSessionEntity;
 import com.icourt.alpha.entity.event.GroupActionEvent;
 import com.icourt.alpha.entity.event.NoDisturbingEvent;
 import com.icourt.alpha.entity.event.SetTopEvent;
+import com.icourt.alpha.entity.event.UnReadEvent;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
@@ -106,7 +107,7 @@ public class MessageListFragment extends BaseRecentContactFragment
                         }
                     }
                 }
-                callParentUpdateUnReadNum(unReadCount);
+                EventBus.getDefault().post(new UnReadEvent(unReadCount));
             }
         }
     };
@@ -167,11 +168,6 @@ public class MessageListFragment extends BaseRecentContactFragment
                 for (RecentContact recentContact : recentContacts) {
                     IMUtils.logRecentContact("------------>recentContactReceive:", recentContact);
                     if (recentContact == null) continue;
-
-                    if (GlobalMessageObserver.isFilterMsg(recentContact.getTime())) {
-                        continue;
-                    }
-
                     boolean isExist = false;
                     for (IMSessionEntity imSessionEntity : data) {
                         if (imSessionEntity != null
@@ -482,11 +478,6 @@ public class MessageListFragment extends BaseRecentContactFragment
                 for (int i = 0; i < recentContacts.size(); i++) {
                     RecentContact recentContact = recentContacts.get(i);
                     if (recentContact == null) continue;
-
-                    if (GlobalMessageObserver.isFilterMsg(recentContact.getTime())) {
-                        continue;
-                    }
-
                     //解析自定义的消息体
                     IMMessageCustomBody customIMBody = null;
                     String jsonBody = recentContact.getContent();
@@ -522,19 +513,6 @@ public class MessageListFragment extends BaseRecentContactFragment
                 });
     }
 
-    /**
-     * unReadNum
-     * 请求父容器更新未读消息数量
-     */
-    private void callParentUpdateUnReadNum(int unReadNum) {
-        Bundle bundle = new Bundle();
-        bundle.putInt("unReadNum", unReadNum);
-        if (getParentFragment() instanceof OnFragmentCallBackListener) {
-            ((OnFragmentCallBackListener) getParentFragment()).onFragmentCallBack(MessageListFragment.this, 0, bundle);
-        } else if (parentFragmentCallBackListener != null) {
-            parentFragmentCallBackListener.onFragmentCallBack(MessageListFragment.this, 0, bundle);
-        }
-    }
 
     /**
      * 过滤掉其它消息体
@@ -553,6 +531,8 @@ public class MessageListFragment extends BaseRecentContactFragment
                     recentContacts.remove(i);
                 } else if (item.getMsgType() == MsgTypeEnum.text) {
                     if (TextUtils.isEmpty(item.getContent())) {//去除空的消息
+                        recentContacts.remove(i);
+                    } else if (GlobalMessageObserver.isFilterMsg(item.getTime())) {
                         recentContacts.remove(i);
                     }
                 }

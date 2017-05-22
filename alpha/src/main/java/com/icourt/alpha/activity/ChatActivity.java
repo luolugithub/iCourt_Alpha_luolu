@@ -33,6 +33,7 @@ import com.icourt.alpha.constants.Const;
 import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.icourt.alpha.entity.bean.IMMessageCustomBody;
 import com.icourt.alpha.entity.event.NoDisturbingEvent;
+import com.icourt.alpha.entity.event.UnReadEvent;
 import com.icourt.alpha.fragment.dialogfragment.ContactDialogFragment;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
@@ -42,6 +43,7 @@ import com.icourt.alpha.utils.IMUtils;
 import com.icourt.alpha.utils.LogUtils;
 import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.utils.SystemUtils;
+import com.icourt.alpha.view.bgabadgeview.BGABadgeTextView;
 import com.icourt.alpha.view.emoji.MySelectPhotoLayout;
 import com.icourt.alpha.view.emoji.MyXhsEmoticonsKeyBoard;
 import com.icourt.alpha.view.recyclerviewDivider.ChatItemDecoration;
@@ -144,6 +146,8 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
     LinearLayoutManager linearLayoutManager;
     int pageSize = 20;
     final List<GroupContactBean> atContactList = new ArrayList<>();
+    @BindView(R.id.titleNoticeView)
+    BGABadgeTextView titleNoticeView;
 
     private GalleryFinal.OnHanlderResultCallback mOnHanlderResultCallback = new GalleryFinal.OnHanlderResultCallback() {
         @Override
@@ -702,6 +706,19 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
         });
     }
 
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onUnReadEvent(UnReadEvent event) {
+        if (event == null) return;
+        int unReadNum = event.unReadCount;
+        if (unReadNum > 99) {
+            titleNoticeView.showTextBadge("...");
+        } else if (unReadNum > 0) {
+            titleNoticeView.showTextBadge(String.valueOf(unReadNum));
+        } else {
+            titleNoticeView.hiddenBadge();
+        }
+    }
+
     /**
      * 0自动隐藏
      *
@@ -932,7 +949,7 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
     public void onMessageReceived(IMMessageCustomBody customBody) {
         if (customBody == null) return;
         log("----------------->chat onMessageReceived:" + customBody);
-        if (!isCurrentRoomSession(customBody.to)) return;
+        if (!isCurrentRoomSession(customBody)) return;
         //自己发送的消息推送回来了
         if (chatAdapter.getData().contains(customBody)) {
             customBody.msg_statu = Const.MSG_STATU_SUCCESS;
@@ -956,7 +973,7 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
     public void onMessageChanged(IMMessageCustomBody customBody) {
         log("----------------->chat  onMessageChanged:" + customBody);
         if (customBody == null) return;
-        if (!isCurrentRoomSession(customBody.to)) return;
+        if (!isCurrentRoomSession(customBody)) return;
         chatAdapter.updateItem(customBody);
     }
 

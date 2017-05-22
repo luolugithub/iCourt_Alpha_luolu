@@ -36,6 +36,7 @@ import com.icourt.alpha.entity.bean.ItemsEntityImp;
 import com.icourt.alpha.entity.bean.PageEntity;
 import com.icourt.alpha.entity.bean.TimeEntity;
 import com.icourt.alpha.entity.event.TimingEvent;
+import com.icourt.alpha.entity.event.UnReadEvent;
 import com.icourt.alpha.fragment.TabFindFragment;
 import com.icourt.alpha.fragment.TabMineFragment;
 import com.icourt.alpha.fragment.TabNewsFragment;
@@ -425,6 +426,14 @@ public class MainActivity extends BaseActivity
                 });
     }
 
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onUnReadEvent(UnReadEvent event) {
+        if (event == null) return;
+        int unReadNum = event.unReadCount;
+        updateBadge(getTabNewsBadge(), unReadNum);
+    }
+
+
     public Badge tabNewsBadge;
 
     private Badge getTabNewsBadge() {
@@ -499,11 +508,6 @@ public class MainActivity extends BaseActivity
 
     @Override
     public void onFragmentCallBack(Fragment fragment, int type, Bundle params) {
-        if (fragment == getTabFragment(R.id.tab_news)) {
-            if (params != null) {
-                updateBadge(getTabNewsBadge(), params.getInt("unReadNum"));
-            }
-        }
     }
 
     @Override

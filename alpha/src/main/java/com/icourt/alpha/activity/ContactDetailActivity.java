@@ -38,8 +38,6 @@ import butterknife.OnClick;
 import retrofit2.Call;
 import retrofit2.Response;
 
-import static com.icourt.alpha.R.id.contact_file_tv;
-
 /**
  * Description  联系人详情界面
  * Company Beijing icourt
@@ -50,6 +48,19 @@ import static com.icourt.alpha.R.id.contact_file_tv;
 public class ContactDetailActivity extends BaseActivity {
 
 
+    GroupContactBean groupContactBean;
+
+    private static final String KEY_ACCID = "key_accid";
+    private static final String KEY_HIDEN_FILE_ITEM = "hidenFileItem";
+    private static final String KEY_HIDEN_SEND_MSG_BTN = "hidenSendMsgBtn";
+    private static final int CODE_REQUEST_PERMISSION_CALL_PHONE = 101;
+    ContactDbService contactDbService;
+    @BindView(R.id.user_comm_ll)
+    LinearLayout userCommLl;
+    @BindView(R.id.contact_ding_tv)
+    TextView contactDingTv;
+    @BindView(R.id.contact_file_tv)
+    TextView contactFileTv;
     @BindView(R.id.titleBack)
     ImageView titleBack;
     @BindView(R.id.titleContent)
@@ -68,23 +79,12 @@ public class ContactDetailActivity extends BaseActivity {
     TextView contactEmailTv;
     @BindView(R.id.contact_email_ll)
     LinearLayout contactEmailLl;
-    @BindView(contact_file_tv)
-    TextView contactFileTv;
     @BindView(R.id.contact_setTop_switch)
     Switch contactSetTopSwitch;
-    @BindView(R.id.contact_send_msg_tv)
-    TextView contactSendMsgTv;
     @BindView(R.id.contact_file_android_top_ll)
     LinearLayout contactFileAndroidTopLl;
-    GroupContactBean groupContactBean;
-
-    private static final String KEY_ACCID = "key_accid";
-    private static final String KEY_HIDEN_FILE_ITEM = "hidenFileItem";
-    private static final String KEY_HIDEN_SEND_MSG_BTN = "hidenSendMsgBtn";
-    private static final int CODE_REQUEST_PERMISSION_CALL_PHONE = 101;
-    ContactDbService contactDbService;
-    @BindView(R.id.user_comm_ll)
-    LinearLayout userCommLl;
+    @BindView(R.id.contact_send_msg_tv)
+    TextView contactSendMsgTv;
 
     public static void launch(@NonNull Context context,
                               @Nullable String accId,
@@ -138,7 +138,8 @@ public class ContactDetailActivity extends BaseActivity {
             , R.id.contact_phone_ll
             , R.id.contact_email_ll
             , R.id.contact_file_tv
-            , R.id.contact_setTop_switch})
+            , R.id.contact_setTop_switch
+            , R.id.contact_ding_tv})
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
@@ -146,7 +147,7 @@ public class ContactDetailActivity extends BaseActivity {
                 if (groupContactBean == null) return;
                 ChatActivity.launchP2P(getContext()
                         , groupContactBean.accid
-                        , groupContactBean.name,0);
+                        , groupContactBean.name, 0);
                 break;
             case R.id.contact_phone_ll:
                 if (!TextUtils.isEmpty(contactPhoneTv.getText())) {
@@ -180,6 +181,13 @@ public class ContactDetailActivity extends BaseActivity {
                 } else {
                     setTop();
                 }
+                break;
+            case R.id.contact_ding_tv:
+                if (groupContactBean == null) return;
+                ChatMsgClassfyActivity.launch(getContext(),
+                        ChatMsgClassfyActivity.MSG_CLASSFY_CHAT_DING,
+                        Const.CHAT_TYPE_P2P,
+                        groupContactBean.accid);
                 break;
             default:
                 super.onClick(v);

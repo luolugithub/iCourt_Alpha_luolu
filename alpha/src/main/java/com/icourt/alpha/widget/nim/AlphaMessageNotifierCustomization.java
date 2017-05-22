@@ -4,6 +4,7 @@ import android.text.TextUtils;
 
 import com.google.gson.JsonParseException;
 import com.icourt.alpha.entity.bean.IMMessageCustomBody;
+import com.icourt.alpha.utils.IMUtils;
 import com.icourt.alpha.utils.JsonUtils;
 import com.icourt.alpha.utils.LoginInfoUtils;
 import com.icourt.alpha.utils.StringUtils;
@@ -52,6 +53,7 @@ public class AlphaMessageNotifierCustomization
     }
 
     public String getMsgContent(String nick, IMMessage imMessage) {
+        IMUtils.logIMMessage("----------->notify:" + nick, imMessage);
         if (imMessage.getMsgType() == MsgTypeEnum.text
                 && imMessage.getAttachment() != null) {//机器人 alpha小助手
             IMMessageCustomBody imBody = getIMBody(imMessage.getAttachment().toJson(false));
