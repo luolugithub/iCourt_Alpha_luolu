@@ -15,8 +15,6 @@ public class IMSessionEntity {
     public RecentContact recentContact;
     public IMMessageCustomBody customIMBody;//自定义消息体 请提前解析
 
-    public boolean isNotDisturb;//是否消息免打扰
-
     /**
      * 是否是机器人
      *

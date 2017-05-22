@@ -247,6 +247,7 @@ public class IMUtils {
                 sb.append("\nAttachment:" + recentContact.getAttachment());
                 sb.append("\nremoteExtension:" + recentContact.getTag());
                 sb.append("\nExtension:" + recentContact.getExtension());
+                sb.append("\ntag:"+recentContact.getTag());
                 if (recentContact.getAttachment() != null) {
                     sb.append("\ngetAttachment:" + recentContact.getAttachment().toJson(false));
                 }

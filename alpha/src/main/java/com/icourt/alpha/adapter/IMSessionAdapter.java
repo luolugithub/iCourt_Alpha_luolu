@@ -14,7 +14,6 @@ import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.icourt.alpha.entity.bean.IMMessageCustomBody;
 import com.icourt.alpha.entity.bean.IMSessionEntity;
-import com.icourt.alpha.utils.ActionConstants;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.GlideUtils;
 import com.icourt.alpha.utils.IMUtils;
@@ -61,6 +60,8 @@ public class IMSessionAdapter extends BaseArrayRecyclerAdapter<IMSessionEntity> 
 
     private List<Team> teams;
     private List<GroupContactBean> groupContactBeans;
+    private List<String> localSetTops;
+    private List<String> localNoDisturbs;
 
     @Nullable
     @CheckResult
@@ -88,9 +89,11 @@ public class IMSessionAdapter extends BaseArrayRecyclerAdapter<IMSessionEntity> 
         return null;
     }
 
-    public IMSessionAdapter(List<Team> teams, List<GroupContactBean> groupContactBeans) {
+    public IMSessionAdapter(List<Team> teams, List<GroupContactBean> groupContactBeans, List<String> localSetTops, List<String> localNoDisturbs) {
         this.teams = teams;
         this.groupContactBeans = groupContactBeans;
+        this.localNoDisturbs = localNoDisturbs;
+        this.localSetTops = localSetTops;
         alphaUserInfo = LoginInfoUtils.getLoginUserInfo();
     }
 
@@ -135,7 +138,8 @@ public class IMSessionAdapter extends BaseArrayRecyclerAdapter<IMSessionEntity> 
     private void setItemSetTop(ViewHolder holder, IMSessionEntity imSessionEntity, int position) {
         if (holder == null) return;
         if (imSessionEntity == null) return;
-        boolean isSetToped = (imSessionEntity.recentContact.getTag() == ActionConstants.MESSAGE_GROUP_TOP);
+        if (imSessionEntity.customIMBody == null) return;
+        boolean isSetToped = localSetTops.contains(imSessionEntity.customIMBody.to);
         holder.itemView.setBackgroundResource(isSetToped ? R.drawable.list_view_item_other_touch_bg : R.drawable.list_view_item_touch_bg);
     }
 
@@ -153,7 +157,7 @@ public class IMSessionAdapter extends BaseArrayRecyclerAdapter<IMSessionEntity> 
         BGABadgeImageView iv_session_icon = holder.obtainView(R.id.iv_session_icon);
         int unreadCount = imSessionEntity.recentContact.getUnreadCount();
         //消息免打扰为小红点
-        if (imSessionEntity.isNotDisturb && unreadCount > 0) {
+        if (localNoDisturbs.contains(imSessionEntity.recentContact.getContactId()) && unreadCount > 0) {
             iv_session_icon.showCirclePointBadge();
         } else {
             if (unreadCount > 0 && unreadCount <= 99) {
@@ -179,7 +183,8 @@ public class IMSessionAdapter extends BaseArrayRecyclerAdapter<IMSessionEntity> 
     private void setItemDontDisturbs(IMSessionEntity imSessionEntity, ImageView ivSessionNotDisturb) {
         if (imSessionEntity == null) return;
         if (ivSessionNotDisturb == null) return;
-        ivSessionNotDisturb.setVisibility(imSessionEntity.isNotDisturb
+        if (imSessionEntity.customIMBody == null) return;
+        ivSessionNotDisturb.setVisibility(localNoDisturbs.contains(imSessionEntity.customIMBody.to)
                 ? View.VISIBLE : View.GONE);
     }
 

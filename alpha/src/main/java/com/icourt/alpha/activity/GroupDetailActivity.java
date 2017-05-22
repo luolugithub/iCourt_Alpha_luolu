@@ -401,11 +401,9 @@ public class GroupDetailActivity extends BaseActivity
                         dismissLoadingDialog();
                         if (response.body().result != null && response.body().result.booleanValue()) {
                             groupSetTopSwitch.setChecked(true);
-                            NIMClient.getService(TeamService.class).muteTeam(getIntent().getStringExtra(KEY_TID), true);
                             broadSetTopEvent();
                         } else {
                             groupSetTopSwitch.setChecked(false);
-                            NIMClient.getService(TeamService.class).muteTeam(getIntent().getStringExtra(KEY_TID), false);
                             broadSetTopEvent();
                         }
                     }
