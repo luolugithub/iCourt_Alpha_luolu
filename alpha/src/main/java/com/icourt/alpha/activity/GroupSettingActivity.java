@@ -160,6 +160,8 @@ public class GroupSettingActivity extends BaseActivity {
                         null);
                 break;
             case R.id.group_set_private_switch:
+                groupSetInviteSwitch.setChecked(!groupSetPrivateSwitch.isChecked());
+                groupSetLookSwitch.setChecked(!groupSetPrivateSwitch.isChecked());
                 groupSetPrivateChildPerLl.setVisibility(groupSetPrivateSwitch.isChecked() ? View.GONE : View.VISIBLE);
                 break;
             default:
@@ -257,7 +259,7 @@ public class GroupSettingActivity extends BaseActivity {
             param.addProperty("member_invite", false);
             param.addProperty("chat_history", false);
         } else {
-            param.addProperty("is_private", false);
+            param.addProperty("is_private", groupSetPrivateSwitch.isChecked());
             param.addProperty("member_invite", groupSetInviteSwitch.isChecked());
             param.addProperty("chat_history", groupSetLookSwitch.isChecked());
         }
