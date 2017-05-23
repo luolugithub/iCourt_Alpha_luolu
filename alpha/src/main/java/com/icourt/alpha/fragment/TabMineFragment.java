@@ -23,6 +23,7 @@ import com.icourt.alpha.activity.MyFileTabActivity;
 import com.icourt.alpha.activity.SettingActivity;
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.entity.bean.AlphaUserInfo;
+import com.icourt.alpha.entity.bean.SelectGroupBean;
 import com.icourt.alpha.entity.bean.UserDataEntity;
 import com.icourt.alpha.fragment.dialogfragment.DateSelectDialogFragment;
 import com.icourt.alpha.http.callback.SimpleCallBack;
@@ -34,6 +35,7 @@ import com.umeng.socialize.UMAuthListener;
 import com.umeng.socialize.UMShareAPI;
 import com.umeng.socialize.bean.SHARE_MEDIA;
 
+import java.util.List;
 import java.util.Calendar;
 import java.util.Locale;
 import java.util.Map;
@@ -136,18 +138,33 @@ public class TabMineFragment extends BaseFragment {
             if (GlideUtils.canLoadImage(getContext())) {
                 Glide.with(getContext())
                         .load(alphaUserInfo.getPic())
-                        .bitmapTransform(new BlurTransformation(getContext(), 50))
+                        .bitmapTransform(new BlurTransformation(getContext(),50))
                         .crossFade()
                         .into(photoBigImage);
             }
             userNameTv.setText(alphaUserInfo.getName());
-            officeNameTv.setText(alphaUserInfo.getOfficename());
+            officeNameTv.setText(getUserGroup(alphaUserInfo.getGroups()));
             try {
                 myCenterClearCacheTextview.setText(DataCleanManager.getTotalCacheSize(getContext()));
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
+    }
+
+    /**
+     * 获取用户部门str
+     *
+     * @param groups
+     * @return
+     */
+    private String getUserGroup(List<SelectGroupBean> groups) {
+        if (groups == null) return "";
+        StringBuffer buffer = new StringBuffer();
+        for (SelectGroupBean group : groups) {
+            buffer.append(group.groupName).append(" ");
+        }
+        return buffer.toString();
     }
 
     @OnClick({R.id.set_image,
@@ -199,10 +216,7 @@ public class TabMineFragment extends BaseFragment {
         if (fragment != null) {
             mFragTransaction.remove(fragment);
         }
-        Calendar calendar = Calendar.getInstance();
-        calendar.set(Calendar.HOUR_OF_DAY, 23);
-        calendar.set(Calendar.MINUTE, 59);
-        DateSelectDialogFragment.newInstance(calendar)
+        DateSelectDialogFragment.newInstance()
                 .show(mFragTransaction, tag);
     }
 
@@ -268,7 +282,7 @@ public class TabMineFragment extends BaseFragment {
                 AlphaUserInfo info = response.body().result;
                 AlphaUserInfo alphaUserInfo = getLoginUserInfo();
                 if (alphaUserInfo != null) {
-                    info.setOfficename(alphaUserInfo.getOfficename());
+                    info.setGroups(alphaUserInfo.getGroups());
                 }
                 setDataToView(info);
             }

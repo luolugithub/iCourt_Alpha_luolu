@@ -181,7 +181,7 @@ public class TaskDetailActivity extends BaseActivity implements OnFragmentCallBa
                 showBottomMeau();
                 break;
             case R.id.task_name:
-                TaskDescUpdateActivity.launch(getContext(), null, taskName.getText().toString());
+                TaskDescUpdateActivity.launch(getContext(), taskName.getText().toString(), TaskDescUpdateActivity.UPDATE_TASK_NAME);
                 break;
             case R.id.task_user_layout:
             case R.id.task_users_layout://选择负责人
@@ -351,6 +351,7 @@ public class TaskDetailActivity extends BaseActivity implements OnFragmentCallBa
         builder.setTitle("提示"); //设置标题
         builder.setMessage(message); //设置内容
         builder.setPositiveButton("确认", dialogOnclicListener);
+        builder.setNegativeButton("取消", dialogOnclicListener);
         builder.create().show();
     }
 
@@ -461,6 +462,7 @@ public class TaskDetailActivity extends BaseActivity implements OnFragmentCallBa
                 dismissLoadingDialog();
                 myStar = TaskEntity.ATTENTIONED;
                 titleAction.setImageResource(R.mipmap.header_icon_star_solid);
+                EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION));
             }
         });
     }
@@ -476,6 +478,7 @@ public class TaskDetailActivity extends BaseActivity implements OnFragmentCallBa
                 dismissLoadingDialog();
                 myStar = TaskEntity.UNATTENTIONED;
                 titleAction.setImageResource(R.mipmap.header_icon_star_line);
+                EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION));
             }
         });
     }

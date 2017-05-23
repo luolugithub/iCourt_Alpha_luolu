@@ -146,7 +146,7 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
                 showDateSelectDialogFragment();
                 break;
             case R.id.task_desc_tv://添加任务详情
-                TaskDescUpdateActivity.launch(getContext(),taskDescTv.getText().toString(),null);
+                TaskDescUpdateActivity.launch(getContext(), taskDescTv.getText().toString(), TaskDescUpdateActivity.UPDATE_TASK_DESC);
                 break;
         }
     }
@@ -292,12 +292,9 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
     public void onUpdateTaskDescEvent(TaskActionEvent event) {
         if (event == null) return;
         if (event.action == TaskActionEvent.TASK_UPDATE_DESC_ACTION) {
-            String desc = event.desc;
-            if (!TextUtils.isEmpty(desc)) {
-                taskDescTv.setText(desc);
-                taskItemEntity.description = desc;
-                updateTask(taskItemEntity, null, null);
-            }
+            taskDescTv.setText(event.desc);
+            taskItemEntity.description = event.desc;
+            updateTask(taskItemEntity, null, null);
         }
     }
 }

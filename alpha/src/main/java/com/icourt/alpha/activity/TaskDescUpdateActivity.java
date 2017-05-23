@@ -3,10 +3,10 @@ package com.icourt.alpha.activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.AppBarLayout;
-import android.text.TextUtils;
 import android.view.View;
 import android.widget.CheckedTextView;
 import android.widget.EditText;
@@ -18,9 +18,15 @@ import com.icourt.alpha.entity.event.TaskActionEvent;
 
 import org.greenrobot.eventbus.EventBus;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+
+import static com.icourt.alpha.entity.event.TaskActionEvent.TASK_UPDATE_DESC_ACTION;
+import static com.icourt.alpha.entity.event.TaskActionEvent.TASK_UPDATE_NAME_ACTION;
 
 /**
  * Description  修改任务描述
@@ -31,8 +37,11 @@ import butterknife.OnClick;
  */
 
 public class TaskDescUpdateActivity extends BaseActivity {
-    private static final String KEY_TASK_DESC = "key_task_desc";
-    private static final String KEY_TASK_NAME = "key_task_name";
+    private static final String KEY_TASK_UPDATE = "key_task_update";
+    private static final String KEY_TASK_TYPE = "key_task_type";
+
+    public static final int UPDATE_TASK_DESC = 1;
+    public static final int UPDATE_TASK_NAME = 2;
     @BindView(R.id.titleBack)
     CheckedTextView titleBack;
     @BindView(R.id.titleContent)
@@ -44,14 +53,22 @@ public class TaskDescUpdateActivity extends BaseActivity {
     @BindView(R.id.desc_editText)
     EditText descEditText;
 
-    String taskDesc, taskName;
+    String descOrName;
+    int type;
+
+    @IntDef({UPDATE_TASK_DESC,
+            UPDATE_TASK_NAME})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface UPDATE_TASK_TYPE {
+
+    }
 
 
-    public static void launch(@NonNull Context context, @NonNull String taskDesc, @NonNull String taskName) {
+    public static void launch(@NonNull Context context, @NonNull String descOrName, @UPDATE_TASK_TYPE int type) {
         if (context == null) return;
         Intent intent = new Intent(context, TaskDescUpdateActivity.class);
-        intent.putExtra(KEY_TASK_DESC, taskDesc);
-        intent.putExtra(KEY_TASK_NAME, taskName);
+        intent.putExtra(KEY_TASK_UPDATE, descOrName);
+        intent.putExtra(KEY_TASK_TYPE, type);
         context.startActivity(intent);
     }
 
@@ -68,16 +85,15 @@ public class TaskDescUpdateActivity extends BaseActivity {
     protected void initView() {
         super.initView();
 
-        taskDesc = getIntent().getStringExtra(KEY_TASK_DESC);
-        taskName = getIntent().getStringExtra(KEY_TASK_NAME);
-        if (!TextUtils.isEmpty(taskDesc)) {
-            descEditText.setText(taskDesc);
+        descOrName = getIntent().getStringExtra(KEY_TASK_UPDATE);
+        type = getIntent().getIntExtra(KEY_TASK_TYPE, -1);
+        if (type == UPDATE_TASK_DESC) {
+
             setTitle("修改任务详情");
-        }
-        if (!TextUtils.isEmpty(taskName)) {
-            descEditText.setText(taskName);
+        } else if (type == UPDATE_TASK_NAME) {
             setTitle("修改任务名称");
         }
+        descEditText.setText(descOrName);
         descEditText.setSelection(descEditText.getText().toString().length());
     }
 
@@ -87,11 +103,10 @@ public class TaskDescUpdateActivity extends BaseActivity {
         super.onClick(v);
         switch (v.getId()) {
             case R.id.titleAction:
-                if (!TextUtils.isEmpty(taskDesc)) {
-                    EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_UPDATE_DESC_ACTION, null, descEditText.getText().toString()));
-                }
-                if (!TextUtils.isEmpty(taskName)) {
-                    EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_UPDATE_NAME_ACTION, null, descEditText.getText().toString()));
+                if (type == UPDATE_TASK_DESC) {
+                    EventBus.getDefault().post(new TaskActionEvent(TASK_UPDATE_DESC_ACTION, null, descEditText.getText().toString()));
+                } else if (type == UPDATE_TASK_NAME) {
+                    EventBus.getDefault().post(new TaskActionEvent(TASK_UPDATE_NAME_ACTION, null, descEditText.getText().toString()));
                 }
 
                 this.finish();

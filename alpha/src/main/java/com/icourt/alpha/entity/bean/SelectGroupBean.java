@@ -1,5 +1,7 @@
 package com.icourt.alpha.entity.bean;
 
+import com.google.gson.annotations.SerializedName;
+
 import java.io.Serializable;
 
 /**
@@ -13,6 +15,7 @@ import java.io.Serializable;
 public class SelectGroupBean implements Serializable{
 
     public String groupId;
+    @SerializedName(value = "groupName", alternate = {"groupname"})
     public String groupName;
 
 }

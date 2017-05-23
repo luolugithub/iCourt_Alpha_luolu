@@ -103,7 +103,7 @@ public class CommentListActivity extends BaseActivity implements BaseRecyclerAda
         setTitle("查看评论");
         titleAction.setVisibility(View.INVISIBLE);
         taskId = getIntent().getStringExtra(KEY_TASK_ID);
-        refreshLayout.setNoticeEmpty(R.mipmap.icon_placeholder_project, R.string.task_list_null_text);
+        refreshLayout.setNoticeEmpty(R.mipmap.icon_placeholder_task, R.string.task_no_comment_text);
         refreshLayout.setMoveForHorizontal(true);
         recyclerview.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerview.addItemDecoration(ItemDecorationUtils.getCommFull05Divider(getContext(), true));

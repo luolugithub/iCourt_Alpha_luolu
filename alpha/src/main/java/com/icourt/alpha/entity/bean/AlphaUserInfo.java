@@ -43,7 +43,7 @@ public class AlphaUserInfo extends ResEntity<String> implements Serializable {
     private String token;
     private String refreshToken;
     private String name;
-    private List<GroupBean> groups;
+    private List<SelectGroupBean> groups;
 
     public String getThirdpartId() {
         return thirdpartId;
@@ -157,11 +157,11 @@ public class AlphaUserInfo extends ResEntity<String> implements Serializable {
         this.name = name;
     }
 
-    public List<GroupBean> getGroups() {
+    public List<SelectGroupBean> getGroups() {
         return groups;
     }
 
-    public void setGroups(List<GroupBean> groups) {
+    public void setGroups(List<SelectGroupBean> groups) {
         this.groups = groups;
     }
 
