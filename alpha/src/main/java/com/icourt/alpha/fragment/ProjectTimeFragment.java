@@ -77,7 +77,7 @@ public class ProjectTimeFragment extends BaseFragment implements BaseRecyclerAda
     @Override
     protected void initView() {
         projectId = getArguments().getString(KEY_PROJECT_ID);
-        refreshLayout.setNoticeEmpty(R.mipmap.icon_placeholder_project, R.string.null_project);
+        refreshLayout.setNoticeEmpty(R.mipmap.icon_placeholder_timing, "暂无计时");
         refreshLayout.setMoveForHorizontal(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 

@@ -115,6 +115,9 @@ public class TaskAllotSelectDialogFragment extends BaseDialogFragment implements
         super.onClick(v);
         switch (v.getId()) {
             case R.id.bt_ok:
+                if (getParentFragment() instanceof OnFragmentCallBackListener) {
+                    onFragmentCallBackListener = (OnFragmentCallBackListener) getParentFragment();
+                }
                 if (onFragmentCallBackListener != null) {
                     List<TaskEntity.TaskItemEntity.AttendeeUserEntity> attusers = getSelectUsers();
                     if (attusers != null) {

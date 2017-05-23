@@ -105,7 +105,7 @@ public class ProjectFileBoxFragment extends BaseFragment implements BaseRecycler
         projectId = getArguments().getString(KEY_PROJECT_ID);
         firstlist = TextFormater.firstList();
         firstlist.add(0, "#");
-        refreshLayout.setNoticeEmpty(R.mipmap.icon_placeholder_project, R.string.null_project);
+        refreshLayout.setNoticeEmpty(R.mipmap.icon_placeholder_project, "暂无文件");
         refreshLayout.setMoveForHorizontal(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.addItemDecoration(ItemDecorationUtils.getCommFull05Divider(getContext(), true));

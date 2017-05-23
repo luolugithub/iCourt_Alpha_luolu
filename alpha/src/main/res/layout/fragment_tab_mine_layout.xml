@@ -99,6 +99,8 @@
                         android:id="@+id/today_duraction_tv"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:singleLine="true"
+                        android:maxLines="1"
                         android:textColor="@color/alpha_font_color_orange"
                         android:textSize="24sp" />
 
@@ -126,6 +128,8 @@
                         android:id="@+id/month_duraction_tv"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:singleLine="true"
+                        android:maxLines="1"
                         android:textColor="@color/alpha_font_color_orange"
                         android:textSize="24sp" />
 
@@ -153,6 +157,8 @@
                         android:id="@+id/done_task_tv"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:singleLine="true"
+                        android:maxLines="1"
                         android:textColor="@color/alpha_font_color_orange"
                         android:textSize="24sp" />
 

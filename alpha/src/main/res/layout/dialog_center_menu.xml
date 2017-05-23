@@ -57,7 +57,7 @@
         android:layout_gravity="bottom|center_horizontal"
         android:background="@null"
         android:drawablePadding="10dp"
-        android:drawableTop="@mipmap/icon_close_14"
+        android:drawableTop="@mipmap/close_white"
         android:gravity="center"
         android:padding="10dp"
         android:text="关闭"

@@ -22,6 +22,7 @@ import android.widget.TextView;
 
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.baseadapter.BaseArrayRecyclerAdapter;
+import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.entity.bean.ItemsEntityImp;
 import com.icourt.alpha.view.recyclerviewDivider.DividerItemDecoration;
 
@@ -41,6 +42,7 @@ public class CenterMenuDialog extends Dialog implements View.OnClickListener {
     List<? extends ItemsEntityImp> data;
     CharSequence title;
     View dialog_title_divider;
+    BaseRecyclerAdapter.OnItemClickListener onItemClickListener;
 
     public CenterMenuDialog(@NonNull Context context, CharSequence title, List<? extends ItemsEntityImp> data) {
         super(context);
@@ -58,6 +60,16 @@ public class CenterMenuDialog extends Dialog implements View.OnClickListener {
 
     private CenterMenuDialog(@NonNull Context context, boolean cancelable, @Nullable OnCancelListener cancelListener) {
         super(context, cancelable, cancelListener);
+    }
+
+    public BaseRecyclerAdapter.OnItemClickListener getOnItemClickListener() {
+        return onItemClickListener;
+    }
+
+    public void setOnItemClickListener(BaseRecyclerAdapter.OnItemClickListener onItemClickListener) {
+        this.onItemClickListener = onItemClickListener;
+        if(menuAdapter!=null)
+            menuAdapter.setOnItemClickListener(onItemClickListener);
     }
 
     private MenuAdapter menuAdapter;
@@ -108,6 +120,7 @@ public class CenterMenuDialog extends Dialog implements View.OnClickListener {
         });
         dialogRecyclerView.addItemDecoration(itemDecoration);
         dialogRecyclerView.setAdapter(menuAdapter = new MenuAdapter());
+        menuAdapter.setOnItemClickListener(onItemClickListener);
         menuAdapter.bindData(true, data);
     }
 
@@ -119,7 +132,7 @@ public class CenterMenuDialog extends Dialog implements View.OnClickListener {
         }
     }
 
-    static class MenuAdapter<T extends ItemsEntityImp> extends BaseArrayRecyclerAdapter<T> {
+    public static class MenuAdapter<T extends ItemsEntityImp> extends BaseArrayRecyclerAdapter<T> {
 
         @Override
         public int bindView(int viewtype) {

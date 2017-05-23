@@ -3,6 +3,8 @@ package com.icourt.alpha.fragment;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
@@ -11,22 +13,32 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.andview.refreshview.XRefreshView;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.TaskAdapter;
 import com.icourt.alpha.adapter.TaskItemAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseArrayRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.adapterObserver.RefreshViewEmptyObserver;
 import com.icourt.alpha.base.BaseFragment;
+import com.icourt.alpha.entity.bean.ProjectEntity;
 import com.icourt.alpha.entity.bean.TaskEntity;
+import com.icourt.alpha.entity.bean.TaskGroupEntity;
 import com.icourt.alpha.entity.bean.TimeEntity;
 import com.icourt.alpha.entity.event.TaskActionEvent;
 import com.icourt.alpha.entity.event.TimingEvent;
+import com.icourt.alpha.fragment.dialogfragment.DateSelectDialogFragment;
+import com.icourt.alpha.fragment.dialogfragment.ProjectSelectDialogFragment;
+import com.icourt.alpha.fragment.dialogfragment.TaskAllotSelectDialogFragment;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
+import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.ItemDecorationUtils;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 import com.icourt.alpha.widget.manager.TimerManager;
+import com.icourt.api.RequestUtils;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -50,7 +62,7 @@ import retrofit2.Response;
  * version 2.0.0
  */
 
-public class ProjectTaskFragment extends BaseFragment {
+public class ProjectTaskFragment extends BaseFragment implements TaskAdapter.OnShowFragmenDialogListener, OnFragmentCallBackListener,ProjectSelectDialogFragment.OnProjectTaskGroupSelectListener{
 
     private static final String KEY_PROJECT_ID = "key_project_id";
     Unbinder unbinder;
@@ -61,6 +73,7 @@ public class ProjectTaskFragment extends BaseFragment {
     RefreshLayout refreshLayout;
 
     TaskAdapter taskAdapter;
+    TaskEntity.TaskItemEntity updateTaskItemEntity;
     String projectId;
     List<TaskEntity> allTaskEntities;
     List<TaskEntity.TaskItemEntity> todayTaskEntities;//今天到期
@@ -89,13 +102,14 @@ public class ProjectTaskFragment extends BaseFragment {
     protected void initView() {
         EventBus.getDefault().register(this);
         projectId = getArguments().getString(KEY_PROJECT_ID);
-        refreshLayout.setNoticeEmpty(R.mipmap.icon_placeholder_project, R.string.task_list_null_text);
+        refreshLayout.setNoticeEmpty(R.mipmap.icon_placeholder_task, R.string.task_list_null_text);
         refreshLayout.setMoveForHorizontal(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.addItemDecoration(ItemDecorationUtils.getCommTrans5Divider(getContext(), true));
         recyclerView.setHasFixedSize(true);
 
         recyclerView.setAdapter(taskAdapter = new TaskAdapter());
+        taskAdapter.setOnShowFragmenDialogListener(this);
         taskAdapter.registerAdapterDataObserver(new RefreshViewEmptyObserver(refreshLayout, taskAdapter));
 
         refreshLayout.setXRefreshViewListener(new XRefreshView.SimpleXRefreshListener() {
@@ -259,11 +273,9 @@ public class ProjectTaskFragment extends BaseFragment {
                 }
                 break;
             case TimingEvent.TIMING_STOP:
-                TimeEntity.ItemEntity stopItem = TimerManager.getInstance().getTimer();
-                if (stopItem != null) {
-                    getParentPositon(stopItem.taskPkId);
-                    getChildPositon(stopItem.taskPkId);
-                    updateChildTimeing(stopItem.taskPkId, false);
+                if (lastEntity != null) {
+                    lastEntity.isTiming = false;
+                    taskAdapter.notifyDataSetChanged();
                 }
                 break;
         }
@@ -356,11 +368,151 @@ public class ProjectTaskFragment extends BaseFragment {
             }
         }
     }
+    /**
+     * 展示选择负责人对话框
+     */
+    public void showTaskAllotSelectDialogFragment(String projectId, List<TaskEntity.TaskItemEntity.AttendeeUserEntity> attendeeUsers) {
+        String tag = "TaskAllotSelectDialogFragment";
+        FragmentTransaction mFragTransaction = getChildFragmentManager().beginTransaction();
+        Fragment fragment = getChildFragmentManager().findFragmentByTag(tag);
+        if (fragment != null) {
+            mFragTransaction.remove(fragment);
+        }
 
+        TaskAllotSelectDialogFragment.newInstance(projectId, attendeeUsers)
+                .show(mFragTransaction, tag);
+    }
+
+    /**
+     * 展示选择项目对话框
+     */
+    public void showProjectSelectDialogFragment() {
+        String tag = "ProjectSelectDialogFragment";
+        FragmentTransaction mFragTransaction = getChildFragmentManager().beginTransaction();
+        Fragment fragment = getChildFragmentManager().findFragmentByTag(tag);
+        if (fragment != null) {
+            mFragTransaction.remove(fragment);
+        }
+
+        ProjectSelectDialogFragment.newInstance()
+                .show(mFragTransaction, tag);
+    }
+
+    /**
+     * 展示选择到期时间对话框
+     */
+    private void showDateSelectDialogFragment() {
+        String tag = DateSelectDialogFragment.class.getSimpleName();
+        FragmentTransaction mFragTransaction = getChildFragmentManager().beginTransaction();
+        Fragment fragment = getChildFragmentManager().findFragmentByTag(tag);
+        if (fragment != null) {
+            mFragTransaction.remove(fragment);
+        }
+        DateSelectDialogFragment.newInstance()
+                .show(mFragTransaction, tag);
+    }
     @Override
     public void onDestroyView() {
         super.onDestroyView();
         unbinder.unbind();
         EventBus.getDefault().unregister(this);
+    }
+
+    @Override
+    public void showUserSelectDialog(String projectId, TaskEntity.TaskItemEntity taskItemEntity) {
+        updateTaskItemEntity = taskItemEntity;
+        showTaskAllotSelectDialogFragment(projectId, taskItemEntity.attendeeUsers);
+    }
+
+    @Override
+    public void showDateSelectDialog(TaskEntity.TaskItemEntity taskItemEntity) {
+        updateTaskItemEntity = taskItemEntity;
+        showDateSelectDialogFragment();
+    }
+
+    @Override
+    public void showProjectSelectDialog(TaskEntity.TaskItemEntity taskItemEntity) {
+        updateTaskItemEntity = taskItemEntity;
+        showProjectSelectDialogFragment();
+    }
+
+    @Override
+    public void onFragmentCallBack(Fragment fragment, int type, Bundle params) {
+        if (params != null) {
+            if (fragment instanceof TaskAllotSelectDialogFragment) {
+                List<TaskEntity.TaskItemEntity.AttendeeUserEntity> attusers = (List<TaskEntity.TaskItemEntity.AttendeeUserEntity>) params.getSerializable("list");
+                if (updateTaskItemEntity.attendeeUsers != null) {
+                    updateTaskItemEntity.attendeeUsers.clear();
+                    updateTaskItemEntity.attendeeUsers.addAll(attusers);
+                    updateTask(updateTaskItemEntity,null,null);
+                }
+            } else if (fragment instanceof DateSelectDialogFragment) {
+                long millis = params.getLong(KEY_FRAGMENT_RESULT);
+                updateTaskItemEntity.dueTime = millis;
+                updateTask(updateTaskItemEntity,null,null);
+            }
+        }
+    }
+    @Override
+    public void onProjectTaskGroupSelect(ProjectEntity projectEntity, TaskGroupEntity taskGroupEntity) {
+
+        updateTask(updateTaskItemEntity, projectEntity, taskGroupEntity);
+    }
+    /**
+     * 修改任务
+     *
+     * @param itemEntity
+     */
+    private void updateTask(TaskEntity.TaskItemEntity itemEntity,ProjectEntity projectEntity, TaskGroupEntity taskGroupEntity) {
+        showLoadingDialog(null);
+        getApi().taskUpdate(RequestUtils.createJsonBody(getTaskJson(itemEntity,projectEntity,taskGroupEntity))).enqueue(new SimpleCallBack<JsonElement>() {
+            @Override
+            public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
+                dismissLoadingDialog();
+                refreshLayout.startRefresh();
+            }
+
+            @Override
+            public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
+                super.onFailure(call, t);
+                dismissLoadingDialog();
+            }
+        });
+    }
+
+    /**
+     * 获取任务json
+     *
+     * @param itemEntity
+     * @return
+     */
+    private String getTaskJson(TaskEntity.TaskItemEntity itemEntity, ProjectEntity projectEntity, TaskGroupEntity taskGroupEntity) {
+        if(itemEntity ==null)return null;
+        try {
+            JsonObject jsonObject = new JsonObject();
+            jsonObject.addProperty("id", itemEntity.id);
+            jsonObject.addProperty("state", itemEntity.state);
+            jsonObject.addProperty("valid", true);
+            jsonObject.addProperty("parentId", itemEntity.parentId);
+            jsonObject.addProperty("dueTime", itemEntity.dueTime);
+            jsonObject.addProperty("updateTime", DateUtils.millis());
+            if (projectEntity != null) {
+                jsonObject.addProperty("matterId", projectEntity.pkId);
+            }
+            if (taskGroupEntity != null) {
+                jsonObject.addProperty("parentId", taskGroupEntity.id);
+            }
+            JsonArray jsonarr = new JsonArray();
+            if (itemEntity.attendeeUsers != null) {
+                for (TaskEntity.TaskItemEntity.AttendeeUserEntity attendeeUser : itemEntity.attendeeUsers) {
+                    jsonarr.add(attendeeUser.userId);
+                }
+            }
+            jsonObject.add("attendees", jsonarr);
+            return jsonObject.toString();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }

@@ -20,12 +20,15 @@ import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.entity.bean.ItemsEntity;
 import com.icourt.alpha.entity.bean.TaskEntity;
 import com.icourt.alpha.entity.bean.TimeEntity;
+import com.icourt.alpha.entity.event.TaskActionEvent;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.widget.dialog.CenterMenuDialog;
 import com.icourt.alpha.widget.manager.TimerManager;
 import com.icourt.api.RequestUtils;
+
+import org.greenrobot.eventbus.EventBus;
 
 import java.util.Arrays;
 
@@ -47,11 +50,22 @@ public class TaskAdapter extends BaseArrayRecyclerAdapter<TaskEntity>
         BaseRecyclerAdapter.OnItemLongClickListener,
         BaseRecyclerAdapter.OnItemChildClickListener {
     TimeEntity.ItemEntity itemEntity;
+    OnShowFragmenDialogListener onShowFragmenDialogListener;
+    private static final int SHOW_DELETE_DIALOG = 0;//删除提示对话框
+    private static final int SHOW_FINISH_DIALOG = 1;//完成任务提示对话框
 
     public TaskAdapter() {
         this.setOnItemClickListener(this);
         this.setOnItemLongClickListener(this);
         this.setOnItemChildClickListener(this);
+    }
+
+    public OnShowFragmenDialogListener getOnShowFragmenDialogListener() {
+        return onShowFragmenDialogListener;
+    }
+
+    public void setOnShowFragmenDialogListener(OnShowFragmenDialogListener onShowFragmenDialogListener) {
+        this.onShowFragmenDialogListener = onShowFragmenDialogListener;
     }
 
     public void setItemEntity(TimeEntity.ItemEntity itemEntity) {
@@ -80,6 +94,7 @@ public class TaskAdapter extends BaseArrayRecyclerAdapter<TaskEntity>
             taskItemAdapter.setItemEntity(itemEntity);
             taskItemAdapter.setOnItemClickListener(super.onItemClickListener);
             taskItemAdapter.setOnItemChildClickListener(super.onItemChildClickListener);
+            taskItemAdapter.setOnItemLongClickListener(super.onItemLongClickListener);
         }
         taskItemAdapter = (TaskItemAdapter) recyclerView.getAdapter();
 
@@ -89,14 +104,6 @@ public class TaskAdapter extends BaseArrayRecyclerAdapter<TaskEntity>
 
     @Override
     public void onItemClick(BaseRecyclerAdapter adapter, ViewHolder holder, View view, int position) {
-//        new CenterMenuDialog(view.getContext(), null, Arrays.asList(
-//                new ItemsEntity("分配给", R.mipmap.tab_message),
-//                new ItemsEntity("到期日", R.mipmap.tab_message),
-//                new ItemsEntity("提醒", R.mipmap.tab_message),
-//                new ItemsEntity("项目/任务组", R.mipmap.tab_message),
-//                new ItemsEntity("开始计时", R.mipmap.tab_message),
-//                new ItemsEntity("查看详情", R.mipmap.tab_message)))
-//                .show();
         if (adapter instanceof TaskItemAdapter) {
             TaskEntity.TaskItemEntity taskItemEntity = (TaskEntity.TaskItemEntity) adapter.getItem(position);
             TaskDetailActivity.launch(view.getContext(), taskItemEntity.id);
@@ -105,15 +112,91 @@ public class TaskAdapter extends BaseArrayRecyclerAdapter<TaskEntity>
 
     @Override
     public boolean onItemLongClick(BaseRecyclerAdapter adapter, ViewHolder holder, View view, int position) {
-        new CenterMenuDialog(view.getContext(), null, Arrays.asList(
-                new ItemsEntity("分配给", R.mipmap.tab_message),
-                new ItemsEntity("到期日", R.mipmap.tab_message),
-                new ItemsEntity("提醒", R.mipmap.tab_message),
-                new ItemsEntity("项目/任务组", R.mipmap.tab_message),
-                new ItemsEntity("开始计时", R.mipmap.tab_message),
-                new ItemsEntity("查看详情", R.mipmap.tab_message)))
-                .show();
+        TaskEntity.TaskItemEntity taskItemEntity = (TaskEntity.TaskItemEntity) adapter.getItem(position);
+        ItemsEntity timeEntity = new ItemsEntity("开始计时", R.mipmap.time_start_orange_task);
+        if(taskItemEntity.isTiming){
+            timeEntity.itemIconRes = R.mipmap.time_stop_orange_task;
+            timeEntity.itemTitle = "停止计时";
+        }else{
+            timeEntity.itemIconRes = R.mipmap.time_start_orange_task;
+            timeEntity.itemTitle = "开始计时";
+        }
+        CenterMenuDialog centerMenuDialog = new CenterMenuDialog(view.getContext(), null, Arrays.asList(
+                new ItemsEntity("分配给", R.mipmap.assign_orange),
+                new ItemsEntity("到期日", R.mipmap.date_orange),
+                new ItemsEntity("查看详情", R.mipmap.info_orange),
+                new ItemsEntity("项目/任务组", R.mipmap.project_orange),
+                timeEntity,
+                new ItemsEntity("删除", R.mipmap.trash_orange)));
+        centerMenuDialog.show();
+        centerMenuDialog.setOnItemClickListener(new CustOnItemClickListener(centerMenuDialog, taskItemEntity));
         return true;
+    }
+
+    private class CustOnItemClickListener implements OnItemClickListener {
+        CenterMenuDialog centerMenuDialog;
+        TaskEntity.TaskItemEntity taskItemEntity;
+
+        public CustOnItemClickListener(CenterMenuDialog centerMenuDialog, TaskEntity.TaskItemEntity taskItemEntity) {
+            this.centerMenuDialog = centerMenuDialog;
+            this.taskItemEntity = taskItemEntity;
+        }
+
+        @Override
+        public void onItemClick(BaseRecyclerAdapter adapter, ViewHolder holder, View view, int position) {
+            if (centerMenuDialog != null)
+                centerMenuDialog.dismiss();
+            if (adapter instanceof CenterMenuDialog.MenuAdapter) {
+                ItemsEntity entity = (ItemsEntity) adapter.getItem(position);
+                if (taskItemEntity != null) {
+                    switch (entity.getItemIconRes()) {
+                        case R.mipmap.assign_orange://分配给
+                            if (onShowFragmenDialogListener != null)
+                                if (taskItemEntity.matter != null)
+                                    onShowFragmenDialogListener.showUserSelectDialog(taskItemEntity.matter.id, taskItemEntity);
+                            break;
+                        case R.mipmap.date_orange://到期日
+                            if (onShowFragmenDialogListener != null)
+                                onShowFragmenDialogListener.showDateSelectDialog(taskItemEntity);
+                            break;
+                        case R.mipmap.info_orange://查看详情
+                            TaskDetailActivity.launch(view.getContext(), taskItemEntity.id);
+                            break;
+                        case R.mipmap.project_orange://项目/任务组
+                            if (onShowFragmenDialogListener != null)
+                                onShowFragmenDialogListener.showProjectSelectDialog(taskItemEntity);
+                            break;
+                        case R.mipmap.time_start_orange_task://开始计时
+                            if (!taskItemEntity.isTiming) {
+                                TimerManager.getInstance().addTimer(getTimer(taskItemEntity));
+                                entity.itemIconRes = R.mipmap.time_stop_orange_task;
+                                entity.itemTitle = "停止计时";
+                                ((CenterMenuDialog.MenuAdapter) adapter).updateItem(entity);
+                            }
+                            break;
+                        case R.mipmap.time_stop_orange_task://停止计时
+                            if (taskItemEntity.isTiming) {
+                                TimerManager.getInstance().stopTimer();
+                                entity.itemIconRes = R.mipmap.time_start_orange_task;
+                                entity.itemTitle = "开始计时";
+                                ((CenterMenuDialog.MenuAdapter) adapter).updateItem(entity);
+                            }
+                            break;
+                        case R.mipmap.trash_orange://删除
+                            if (taskItemEntity.attendeeUsers != null) {
+                                if (taskItemEntity.attendeeUsers.size() > 1) {
+                                    showFinishDialog(view.getContext(), "该任务由多人负责,确定删除?", taskItemEntity, SHOW_DELETE_DIALOG, null);
+                                } else {
+                                    showFinishDialog(view.getContext(), "是非成败转头空，确定要删除吗?", taskItemEntity, SHOW_DELETE_DIALOG, null);
+                                }
+                            } else {
+                                showFinishDialog(view.getContext(), "是非成败转头空，确定要删除吗?", taskItemEntity, SHOW_DELETE_DIALOG, null);
+                            }
+                            break;
+                    }
+                }
+            }
+        }
     }
 
     @Override
@@ -124,10 +207,10 @@ public class TaskAdapter extends BaseArrayRecyclerAdapter<TaskEntity>
                 case R.id.task_item_start_timming:
                     if (itemEntity.isTiming) {
                         TimerManager.getInstance().stopTimer();
-                        ((ImageView)view).setImageResource(R.mipmap.icon_start_20);
+                        ((ImageView) view).setImageResource(R.mipmap.icon_start_20);
                     } else {
                         TimerManager.getInstance().addTimer(getTimer(itemEntity));
-                        ((ImageView)view).setImageResource(R.drawable.orange_side_dot_bg);
+                        ((ImageView) view).setImageResource(R.drawable.orange_side_dot_bg);
                     }
                     break;
                 case R.id.task_item_checkbox:
@@ -135,7 +218,7 @@ public class TaskAdapter extends BaseArrayRecyclerAdapter<TaskEntity>
                     if (checkbox.isChecked()) {//完成任务
                         if (itemEntity.attendeeUsers != null) {
                             if (itemEntity.attendeeUsers.size() > 1) {
-                                showFinishDialog(view.getContext(), "该任务由多人负责,确定完成?", itemEntity, checkbox);
+                                showFinishDialog(view.getContext(), "该任务由多人负责,确定完成?", itemEntity, SHOW_FINISH_DIALOG, checkbox);
                             } else {
                                 updateTask(itemEntity, true, checkbox);
                             }
@@ -146,10 +229,10 @@ public class TaskAdapter extends BaseArrayRecyclerAdapter<TaskEntity>
                         updateTask(itemEntity, false, checkbox);
                     }
                     break;
-
             }
         }
     }
+
 
     /**
      * 获取添加计时实体
@@ -180,7 +263,7 @@ public class TaskAdapter extends BaseArrayRecyclerAdapter<TaskEntity>
      * @param itemEntity
      * @param checkbox
      */
-    private void showFinishDialog(final Context context, String message, final TaskEntity.TaskItemEntity itemEntity, final CheckBox checkbox) {
+    private void showFinishDialog(final Context context, String message, final TaskEntity.TaskItemEntity itemEntity, final int type, final CheckBox checkbox) {
         //先new出一个监听器，设置好监听
         DialogInterface.OnClickListener dialogOnclicListener = new DialogInterface.OnClickListener() {
 
@@ -188,7 +271,15 @@ public class TaskAdapter extends BaseArrayRecyclerAdapter<TaskEntity>
             public void onClick(DialogInterface dialog, int which) {
                 switch (which) {
                     case Dialog.BUTTON_POSITIVE://确定
-                        updateTask(itemEntity, true, checkbox);
+                        if (type == SHOW_DELETE_DIALOG) {
+                            deleteTask(context, itemEntity);
+                        } else if (type == SHOW_FINISH_DIALOG) {
+                            if (itemEntity.state) {
+                                updateTask(itemEntity, false, checkbox);
+                            } else {
+                                updateTask(itemEntity, true, checkbox);
+                            }
+                        }
                         break;
                     case Dialog.BUTTON_NEGATIVE://取消
                         break;
@@ -203,6 +294,7 @@ public class TaskAdapter extends BaseArrayRecyclerAdapter<TaskEntity>
         builder.setNegativeButton("取消", dialogOnclicListener);
         builder.create().show();
     }
+
 
     /**
      * 修改任务
@@ -234,6 +326,21 @@ public class TaskAdapter extends BaseArrayRecyclerAdapter<TaskEntity>
     }
 
     /**
+     * 删除任务
+     */
+    private void deleteTask(Context context, TaskEntity.TaskItemEntity itemEntity) {
+        showLoadingDialog(context, null);
+        getApi().taskDelete(itemEntity.id).enqueue(new SimpleCallBack<JsonElement>() {
+            @Override
+            public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
+                dismissLoadingDialog();
+                EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION));
+
+            }
+        });
+    }
+
+    /**
      * 获取任务json
      *
      * @param itemEntity
@@ -253,5 +360,13 @@ public class TaskAdapter extends BaseArrayRecyclerAdapter<TaskEntity>
             e.printStackTrace();
         }
         return null;
+    }
+
+    public interface OnShowFragmenDialogListener {
+        void showUserSelectDialog(String projectId, TaskEntity.TaskItemEntity taskItemEntity);
+
+        void showDateSelectDialog(TaskEntity.TaskItemEntity taskItemEntity);
+
+        void showProjectSelectDialog(TaskEntity.TaskItemEntity taskItemEntity);
     }
 }

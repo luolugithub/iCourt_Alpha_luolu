@@ -29,6 +29,7 @@ import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.GlideUtils;
 import com.icourt.alpha.utils.transformations.BlurTransformation;
+import com.icourt.alpha.widget.manager.DataCleanManager;
 import com.umeng.socialize.UMAuthListener;
 import com.umeng.socialize.UMShareAPI;
 import com.umeng.socialize.bean.SHARE_MEDIA;
@@ -140,6 +141,11 @@ public class TabMineFragment extends BaseFragment {
             }
             userNameTv.setText(alphaUserInfo.getName());
             officeNameTv.setText(alphaUserInfo.getOfficename());
+            try {
+                myCenterClearCacheTextview.setText(DataCleanManager.getTotalCacheSize(getContext()));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -168,6 +174,10 @@ public class TabMineFragment extends BaseFragment {
                 MyFileTabActivity.launch(getContext());
                 break;
             case R.id.my_center_clear_cache_layout://清除缓存
+                if (DataCleanManager.clearAllCache(getActivity())) {
+                    myCenterClearCacheTextview.setText("0KB");
+                    showTopSnackBar(R.string.my_center_clear_cache_succee_text);
+                }
                 break;
             case R.id.my_center_clear_about_layout://关于
                 AboutActivity.launch(getContext());
@@ -272,7 +282,7 @@ public class TabMineFragment extends BaseFragment {
                 if (response.body().result != null) {
                     todayDuractionTv.setText(getHm(response.body().result.timingCountToday));
                     monthDuractionTv.setText(getHm(response.body().result.timingCountMonth));
-                    doneTaskTv.setText(String.valueOf(response.body().result.taskMonthConutDone));
+                    doneTaskTv.setText(response.body().result.taskMonthConutDone + "/" + response.body().result.taskMonthConut);
                 }
             }
         });
