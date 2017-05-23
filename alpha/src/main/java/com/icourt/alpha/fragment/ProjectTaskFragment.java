@@ -45,6 +45,7 @@ import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -62,7 +63,7 @@ import retrofit2.Response;
  * version 2.0.0
  */
 
-public class ProjectTaskFragment extends BaseFragment implements TaskAdapter.OnShowFragmenDialogListener, OnFragmentCallBackListener,ProjectSelectDialogFragment.OnProjectTaskGroupSelectListener{
+public class ProjectTaskFragment extends BaseFragment implements TaskAdapter.OnShowFragmenDialogListener, OnFragmentCallBackListener, ProjectSelectDialogFragment.OnProjectTaskGroupSelectListener {
 
     private static final String KEY_PROJECT_ID = "key_project_id";
     Unbinder unbinder;
@@ -368,6 +369,7 @@ public class ProjectTaskFragment extends BaseFragment implements TaskAdapter.OnS
             }
         }
     }
+
     /**
      * 展示选择负责人对话框
      */
@@ -408,9 +410,13 @@ public class ProjectTaskFragment extends BaseFragment implements TaskAdapter.OnS
         if (fragment != null) {
             mFragTransaction.remove(fragment);
         }
-        DateSelectDialogFragment.newInstance()
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(Calendar.HOUR_OF_DAY, 23);
+        calendar.set(Calendar.MINUTE, 59);
+        DateSelectDialogFragment.newInstance(calendar)
                 .show(mFragTransaction, tag);
     }
+
     @Override
     public void onDestroyView() {
         super.onDestroyView();
@@ -444,28 +450,30 @@ public class ProjectTaskFragment extends BaseFragment implements TaskAdapter.OnS
                 if (updateTaskItemEntity.attendeeUsers != null) {
                     updateTaskItemEntity.attendeeUsers.clear();
                     updateTaskItemEntity.attendeeUsers.addAll(attusers);
-                    updateTask(updateTaskItemEntity,null,null);
+                    updateTask(updateTaskItemEntity, null, null);
                 }
             } else if (fragment instanceof DateSelectDialogFragment) {
                 long millis = params.getLong(KEY_FRAGMENT_RESULT);
                 updateTaskItemEntity.dueTime = millis;
-                updateTask(updateTaskItemEntity,null,null);
+                updateTask(updateTaskItemEntity, null, null);
             }
         }
     }
+
     @Override
     public void onProjectTaskGroupSelect(ProjectEntity projectEntity, TaskGroupEntity taskGroupEntity) {
 
         updateTask(updateTaskItemEntity, projectEntity, taskGroupEntity);
     }
+
     /**
      * 修改任务
      *
      * @param itemEntity
      */
-    private void updateTask(TaskEntity.TaskItemEntity itemEntity,ProjectEntity projectEntity, TaskGroupEntity taskGroupEntity) {
+    private void updateTask(TaskEntity.TaskItemEntity itemEntity, ProjectEntity projectEntity, TaskGroupEntity taskGroupEntity) {
         showLoadingDialog(null);
-        getApi().taskUpdate(RequestUtils.createJsonBody(getTaskJson(itemEntity,projectEntity,taskGroupEntity))).enqueue(new SimpleCallBack<JsonElement>() {
+        getApi().taskUpdate(RequestUtils.createJsonBody(getTaskJson(itemEntity, projectEntity, taskGroupEntity))).enqueue(new SimpleCallBack<JsonElement>() {
             @Override
             public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
                 dismissLoadingDialog();
@@ -487,7 +495,7 @@ public class ProjectTaskFragment extends BaseFragment implements TaskAdapter.OnS
      * @return
      */
     private String getTaskJson(TaskEntity.TaskItemEntity itemEntity, ProjectEntity projectEntity, TaskGroupEntity taskGroupEntity) {
-        if(itemEntity ==null)return null;
+        if (itemEntity == null) return null;
         try {
             JsonObject jsonObject = new JsonObject();
             jsonObject.addProperty("id", itemEntity.id);

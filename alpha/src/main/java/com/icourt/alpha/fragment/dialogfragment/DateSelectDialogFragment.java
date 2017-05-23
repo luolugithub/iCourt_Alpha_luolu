@@ -15,6 +15,7 @@ import android.widget.TextView;
 
 import com.bigkoo.pickerview.adapter.WheelAdapter;
 import com.bigkoo.pickerview.lib.WheelView;
+import com.bigkoo.pickerview.listener.OnItemSelectedListener;
 import com.github.sundeepk.compactcalendarview.CompactCalendarView;
 import com.github.sundeepk.compactcalendarview.domain.Event;
 import com.icourt.alpha.R;
@@ -77,8 +78,12 @@ public class DateSelectDialogFragment extends BaseDialogFragment {
     private SimpleDateFormat dateFormatForMonth = new SimpleDateFormat("yyyy年MMM", Locale.getDefault());
     Date selectedDate;
 
-    public static DateSelectDialogFragment newInstance() {
-        return new DateSelectDialogFragment();
+    public static DateSelectDialogFragment newInstance(@Nullable Calendar calendar) {
+        DateSelectDialogFragment dateSelectDialogFragment = new DateSelectDialogFragment();
+        Bundle args = new Bundle();
+        args.putSerializable("calendar", calendar);
+        dateSelectDialogFragment.setArguments(args);
+        return dateSelectDialogFragment;
     }
 
 
@@ -141,9 +146,28 @@ public class DateSelectDialogFragment extends BaseDialogFragment {
                 }
             }
         }
+
         hourWheelView.setAdapter(new TimeWheelAdapter(24));
         minuteWheelView.setAdapter(new TimeWheelAdapter(60));
+        hourWheelView.setOnItemSelectedListener(new OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(int i) {
+                log("------------i:" + i);
+            }
+        });
+        Calendar calendar = (Calendar) getArguments().getSerializable("calendar");
+        if (calendar != null) {
+            hourWheelView.setCurrentItem(calendar.get(Calendar.HOUR_OF_DAY));
+            minuteWheelView.setCurrentItem(calendar.get(Calendar.MINUTE));
+        }
         initCompactCalendar();
+        //延迟显示 必须 否则默认值无效
+        deadlineSelectLl.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                deadlineSelectLl.setVisibility(View.GONE);
+            }
+        }, 200);
     }
 
     private void initCompactCalendar() {
@@ -165,9 +189,9 @@ public class DateSelectDialogFragment extends BaseDialogFragment {
         titleContent.setText(dateFormatForMonth.format(System.currentTimeMillis()));
 
         compactcalendarView.removeAllEvents();
-        loadEvents();
+        /*loadEvents();
         compactcalendarView.invalidate();
-        logEventsByMonth(compactcalendarView);
+        logEventsByMonth(compactcalendarView);*/
     }
 
 
@@ -213,15 +237,12 @@ public class DateSelectDialogFragment extends BaseDialogFragment {
                 break;
             case R.id.bt_ok:
                 if (getParentFragment() instanceof OnFragmentCallBackListener) {
+                    onFragmentCallBackListener = (OnFragmentCallBackListener) getParentFragment();
+                }
+                if (onFragmentCallBackListener != null) {
                     Bundle bundle = new Bundle();
                     bundle.putLong(KEY_FRAGMENT_RESULT, getSelectedMillis());
-                    ((OnFragmentCallBackListener) getParentFragment()).onFragmentCallBack(DateSelectDialogFragment.this, 0, bundle);
-                } else {
-                    if (onFragmentCallBackListener != null) {
-                        Bundle bundle = new Bundle();
-                        bundle.putLong(KEY_FRAGMENT_RESULT, getSelectedMillis());
-                        onFragmentCallBackListener.onFragmentCallBack(DateSelectDialogFragment.this, 0, bundle);
-                    }
+                    onFragmentCallBackListener.onFragmentCallBack(DateSelectDialogFragment.this, 0, bundle);
                 }
                 dismiss();
                 break;
@@ -237,6 +258,7 @@ public class DateSelectDialogFragment extends BaseDialogFragment {
         }
         Calendar instance = Calendar.getInstance();
         instance.setTime(selectedDate);
+        log("---------->in:" + hourWheelView.getCurrentItem());
         instance.set(Calendar.HOUR_OF_DAY, hourWheelView.getCurrentItem());
         instance.set(Calendar.MINUTE, minuteWheelView.getCurrentItem());
         return instance.getTimeInMillis();

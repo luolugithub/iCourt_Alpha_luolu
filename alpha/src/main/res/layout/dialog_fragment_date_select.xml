@@ -137,7 +137,7 @@
             android:layout_height="wrap_content"
             android:gravity="center_horizontal"
             android:orientation="horizontal"
-            android:visibility="gone">
+            android:visibility="visible">
 
             <com.bigkoo.pickerview.lib.WheelView
                 android:id="@+id/hour_wheelView"

@@ -38,6 +38,7 @@ import com.icourt.api.RequestUtils;
 
 import org.greenrobot.eventbus.EventBus;
 
+import java.util.Calendar;
 import java.util.List;
 
 import butterknife.BindView;
@@ -101,11 +102,12 @@ public class TaskCreateActivity extends BaseActivity implements ProjectSelectDia
 
     /**
      * 项目详情创建任务
+     *
      * @param context
      * @param projectId
      * @param projectName
      */
-    public static void launchFomProject(@NonNull Context context, @NonNull String projectId,@NonNull String projectName) {
+    public static void launchFomProject(@NonNull Context context, @NonNull String projectId, @NonNull String projectName) {
         if (context == null) return;
         Intent intent = new Intent(context, TaskCreateActivity.class);
         intent.putExtra("projectId", projectId);
@@ -188,7 +190,11 @@ public class TaskCreateActivity extends BaseActivity implements ProjectSelectDia
         if (fragment != null) {
             mFragTransaction.remove(fragment);
         }
-        DateSelectDialogFragment.newInstance()
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(Calendar.HOUR_OF_DAY, 23);
+        calendar.set(Calendar.MINUTE, 59);
+        //默认当天23：59
+        DateSelectDialogFragment.newInstance(calendar)
                 .show(mFragTransaction, tag);
     }
 

@@ -34,6 +34,7 @@ import com.umeng.socialize.UMAuthListener;
 import com.umeng.socialize.UMShareAPI;
 import com.umeng.socialize.bean.SHARE_MEDIA;
 
+import java.util.Calendar;
 import java.util.Locale;
 import java.util.Map;
 
@@ -135,7 +136,7 @@ public class TabMineFragment extends BaseFragment {
             if (GlideUtils.canLoadImage(getContext())) {
                 Glide.with(getContext())
                         .load(alphaUserInfo.getPic())
-                        .bitmapTransform(new BlurTransformation(getContext(),50))
+                        .bitmapTransform(new BlurTransformation(getContext(), 50))
                         .crossFade()
                         .into(photoBigImage);
             }
@@ -198,7 +199,10 @@ public class TabMineFragment extends BaseFragment {
         if (fragment != null) {
             mFragTransaction.remove(fragment);
         }
-        DateSelectDialogFragment.newInstance()
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(Calendar.HOUR_OF_DAY, 23);
+        calendar.set(Calendar.MINUTE, 59);
+        DateSelectDialogFragment.newInstance(calendar)
                 .show(mFragTransaction, tag);
     }
 

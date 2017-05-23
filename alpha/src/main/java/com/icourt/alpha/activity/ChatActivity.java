@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
@@ -18,6 +19,7 @@ import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
 import android.text.Spannable;
 import android.text.TextUtils;
+import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -43,7 +45,6 @@ import com.icourt.alpha.utils.IMUtils;
 import com.icourt.alpha.utils.LogUtils;
 import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.utils.SystemUtils;
-import com.icourt.alpha.view.bgabadgeview.BGABadgeTextView;
 import com.icourt.alpha.view.emoji.MySelectPhotoLayout;
 import com.icourt.alpha.view.emoji.MyXhsEmoticonsKeyBoard;
 import com.icourt.alpha.view.recyclerviewDivider.ChatItemDecoration;
@@ -79,6 +80,8 @@ import cn.finalteam.galleryfinal.FunctionConfig;
 import cn.finalteam.galleryfinal.GalleryFinal;
 import cn.finalteam.galleryfinal.model.PhotoInfo;
 import io.reactivex.functions.Consumer;
+import q.rorbin.badgeview.Badge;
+import q.rorbin.badgeview.QBadgeView;
 import retrofit2.Call;
 import retrofit2.Response;
 import sj.keyboard.adpater.EmoticonsAdapter;
@@ -146,8 +149,6 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
     LinearLayoutManager linearLayoutManager;
     int pageSize = 20;
     final List<GroupContactBean> atContactList = new ArrayList<>();
-    @BindView(R.id.titleNoticeView)
-    BGABadgeTextView titleNoticeView;
 
     private GalleryFinal.OnHanlderResultCallback mOnHanlderResultCallback = new GalleryFinal.OnHanlderResultCallback() {
         @Override
@@ -704,18 +705,42 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
                 }
             }
         });
+
+        updateTotalUnRead(getTotalUnreadCount());
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onUnReadEvent(UnReadEvent event) {
         if (event == null) return;
-        int unReadNum = event.unReadCount;
+        updateTotalUnRead(event.unReadCount);
+    }
+
+    public Badge totalNewsBadge;
+
+    private Badge getTotalNewsBadge() {
+        if (totalNewsBadge == null) {
+            totalNewsBadge = new QBadgeView(getContext())
+                    .bindTarget(titleView);
+            totalNewsBadge.setBadgeGravity(Gravity.CENTER | Gravity.TOP);
+            totalNewsBadge.setGravityOffset(38, 0, true);
+            totalNewsBadge.setBadgeTextSize(10, true);
+            totalNewsBadge.stroke(Color.WHITE, 1, true);
+            totalNewsBadge.setBadgePadding(3, true);
+        }
+        return totalNewsBadge;
+    }
+
+    /**
+     * 更新总数
+     *
+     * @param num
+     */
+    private void updateTotalUnRead(int num) {
+        int unReadNum = num;
         if (unReadNum > 99) {
-            titleNoticeView.showTextBadge("...");
-        } else if (unReadNum > 0) {
-            titleNoticeView.showTextBadge(String.valueOf(unReadNum));
+            getTotalNewsBadge().setBadgeText("...");
         } else {
-            titleNoticeView.hiddenBadge();
+            getTotalNewsBadge().setBadgeNumber(unReadNum);
         }
     }
 

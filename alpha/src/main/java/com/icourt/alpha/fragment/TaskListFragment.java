@@ -44,6 +44,7 @@ import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -431,7 +432,10 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
         if (fragment != null) {
             mFragTransaction.remove(fragment);
         }
-        DateSelectDialogFragment.newInstance()
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(Calendar.HOUR_OF_DAY, 23);
+        calendar.set(Calendar.MINUTE, 59);
+        DateSelectDialogFragment.newInstance(calendar)
                 .show(mFragTransaction, tag);
     }
 
