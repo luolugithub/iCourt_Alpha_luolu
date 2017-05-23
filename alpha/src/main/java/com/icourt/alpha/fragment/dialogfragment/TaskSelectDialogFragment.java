@@ -3,10 +3,10 @@ package com.icourt.alpha.fragment.dialogfragment;
 import android.app.Dialog;
 import android.content.Context;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -38,7 +38,9 @@ import retrofit2.Response;
  * date createTime：2017/5/16
  * version 1.0.0
  */
-public class TaskSelectDialogFragment extends BaseDialogFragment implements BaseRecyclerAdapter.OnItemClickListener {
+public class TaskSelectDialogFragment
+        extends BaseDialogFragment
+        implements BaseRecyclerAdapter.OnItemClickListener {
 
     @BindView(R.id.recyclerView)
     RecyclerView recyclerView;
@@ -49,7 +51,11 @@ public class TaskSelectDialogFragment extends BaseDialogFragment implements Base
     @BindView(R.id.bt_ok)
     TextView btOk;
 
-    public static TaskSelectDialogFragment newInstance(@NonNull String projectId) {
+    /**
+     * @param projectId 为空 为我的任务
+     * @return
+     */
+    public static TaskSelectDialogFragment newInstance(@Nullable String projectId) {
         TaskSelectDialogFragment workTypeSelectDialogFragment = new TaskSelectDialogFragment();
         Bundle args = new Bundle();
         args.putString("projectId", projectId);
@@ -58,6 +64,7 @@ public class TaskSelectDialogFragment extends BaseDialogFragment implements Base
     }
 
     OnFragmentCallBackListener onFragmentCallBackListener;
+    String projectId;
 
     @Override
     public void onAttach(Context context) {
@@ -79,6 +86,7 @@ public class TaskSelectDialogFragment extends BaseDialogFragment implements Base
 
     @Override
     protected void initView() {
+        projectId = getArguments().getString("projectId");
         Dialog dialog = getDialog();
         if (dialog != null) {
             Window window = dialog.getWindow();
@@ -101,22 +109,34 @@ public class TaskSelectDialogFragment extends BaseDialogFragment implements Base
     @Override
     protected void getData(final boolean isRefresh) {
         super.getData(isRefresh);
-        getApi().taskListQuery(0,
-                getLoginUserId(),
-                0,
-                0,
-                "dueTime",
-                1,
-                -1,
-                0).enqueue(new SimpleCallBack<TaskEntity>() {
-            @Override
-            public void onSuccess(Call<ResEntity<TaskEntity>> call, Response<ResEntity<TaskEntity>> response) {
-                if (response.body().result != null) {
-                    taskSelectAdapter.bindData(isRefresh, response.body().result.items);
-                }
-            }
-        });
+        if (!TextUtils.isEmpty(projectId)) {
+            getApi().projectQueryTaskList(projectId, 0, 0, 1, -1)
+                    .enqueue(new SimpleCallBack<TaskEntity>() {
+                        @Override
+                        public void onSuccess(Call<ResEntity<TaskEntity>> call, Response<ResEntity<TaskEntity>> response) {
+                            if (response.body().result != null) {
+                                taskSelectAdapter.bindData(isRefresh, response.body().result.items);
+                            }
+                        }
+                    });
 
+        } else {
+            getApi().taskListQuery(0,
+                    getLoginUserId(),
+                    0,
+                    0,
+                    "dueTime",
+                    1,
+                    -1,
+                    0).enqueue(new SimpleCallBack<TaskEntity>() {
+                @Override
+                public void onSuccess(Call<ResEntity<TaskEntity>> call, Response<ResEntity<TaskEntity>> response) {
+                    if (response.body().result != null) {
+                        taskSelectAdapter.bindData(isRefresh, response.body().result.items);
+                    }
+                }
+            });
+        }
     }
 
     @OnClick({R.id.bt_cancel,

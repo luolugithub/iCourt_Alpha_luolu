@@ -8,6 +8,7 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.AppBarLayout;
 import android.support.v4.app.Fragment;
 import android.text.TextUtils;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.CheckedTextView;
 import android.widget.EditText;
@@ -33,6 +34,7 @@ import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.JsonUtils;
+import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.view.CircleTimerView;
 import com.icourt.api.RequestUtils;
 
@@ -164,6 +166,12 @@ public class TimerAddActivity extends BaseTimerActivity
         circleTimerView.setMiniTime(70);
         //默认5分钟
         circleTimerView.setCurrentTime(5 * 60);
+        timeNameTv.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                return (event.getKeyCode() == KeyEvent.KEYCODE_ENTER);
+            }
+        });
     }
 
 
@@ -215,11 +223,7 @@ public class TimerAddActivity extends BaseTimerActivity
                 showWorkTypeSelectDialogFragment(selectedProjectEntity.pkId);
                 break;
             case R.id.task_layout://关联任务
-                if (selectedProjectEntity == null) {
-                    showTopSnackBar("请选择项目");
-                    return;
-                }
-                showTaskSelectDialogFragment(selectedProjectEntity.pkId);
+                showTaskSelectDialogFragment(selectedProjectEntity != null ? selectedProjectEntity.pkId : null);
                 break;
         }
     }
@@ -345,6 +349,16 @@ public class TimerAddActivity extends BaseTimerActivity
             Serializable serializable = params.getSerializable(BaseDialogFragment.KEY_FRAGMENT_RESULT);
             if (serializable instanceof TaskEntity.TaskItemEntity) {
                 selectedTaskItem = (TaskEntity.TaskItemEntity) serializable;
+                if (selectedTaskItem.matter != null) {
+                    ProjectEntity projectEntity = selectedTaskItem.matter.convert2Model();
+                    if (selectedProjectEntity != null
+                            && !StringUtils.equalsIgnoreCase(projectEntity.pkId, selectedProjectEntity.pkId, false)) {
+                        selectedWorkType = null;
+                        worktypeNameTv.setText("未选择");
+                    }
+                    selectedProjectEntity = projectEntity;
+                    projectNameTv.setText(selectedProjectEntity.name);
+                }
                 taskNameTv.setText(selectedTaskItem.name);
             }
         } else if (fragment instanceof CalendaerSelectDialogFragment && params != null) {

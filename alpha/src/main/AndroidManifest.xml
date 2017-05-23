@@ -208,7 +208,8 @@
             android:screenOrientation="portrait" />
         <activity
             android:name=".activity.TimerDetailActivity"
-            android:screenOrientation="portrait" />
+            android:screenOrientation="portrait"
+            android:theme="@style/AppThemenotAnimation" />
         <activity
             android:name=".activity.TimerAddActivity"
             android:screenOrientation="portrait" />

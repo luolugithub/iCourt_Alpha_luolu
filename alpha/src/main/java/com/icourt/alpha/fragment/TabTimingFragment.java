@@ -239,6 +239,7 @@ public class TabTimingFragment extends BaseFragment implements BaseRecyclerAdapt
 
 
     private void resetViewport() {
+        if (timingChartView == null) return;
         // Reset viewport height range to (0,100)
         final Viewport v = new Viewport(timingChartView.getMaximumViewport());
         v.bottom = 0;

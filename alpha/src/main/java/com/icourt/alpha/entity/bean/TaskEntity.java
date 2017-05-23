@@ -1,5 +1,7 @@
 package com.icourt.alpha.entity.bean;
 
+import com.icourt.alpha.db.convertor.IConvertModel;
+
 import java.io.Serializable;
 import java.util.List;
 
@@ -42,10 +44,20 @@ public class TaskEntity implements Serializable {
 
         public List<AttendeeUserEntity> attendeeUsers;//任务相关人
 
-        public static class MatterEntity implements Serializable {
+        public static class MatterEntity
+                implements Serializable, IConvertModel<ProjectEntity> {
             public String id;
             public String name;
             public String matterType;
+
+            @Override
+            public ProjectEntity convert2Model() {
+                ProjectEntity projectEntity = new ProjectEntity();
+                projectEntity.pkId = id;
+                projectEntity.name = name;
+                projectEntity.matterType = matterType;
+                return projectEntity;
+            }
         }
 
         /**

@@ -37,6 +37,10 @@
         <item name="android:windowAnimationStyle">@style/notAnimation</item>
     </style>
 
+    <style name="AppThemenotAnimation" parent="notAnimation">
+        <item name="android:windowAnimationStyle">@style/notAnimation</item>
+    </style>
+
     <style name="notAnimation" parent="AppTheme">
         <item name="android:activityOpenEnterAnimation">@null</item>
         <item name="android:activityOpenExitAnimation">@null</item>
@@ -51,6 +55,7 @@
         <item name="android:taskToBackEnterAnimation">@null</item>
         <item name="android:taskToBackExitAnimation">@null</item>
     </style>
+
 
     <style name="SplashTheme" parent="AppTheme">
         <!-- 将splash图片设置在这，这样这张图片取代白屏 -->

@@ -54,6 +54,7 @@ public class TimeEntity implements Serializable {
         public String username;
         public String highLightName;
         public boolean timingValid;
+        public String taskName;
 
         @Override
         public boolean equals(Object o) {
