@@ -62,7 +62,7 @@ import retrofit2.Response;
  * date createTime：2017/4/17
  * version 1.0.0
  */
-public class TabFindCustomerFragment extends BaseFragment implements BaseRecyclerAdapter.OnItemClickListener {
+public class TabCustomerFragment extends BaseFragment implements BaseRecyclerAdapter.OnItemClickListener {
     private static final String STRING_TOP = "↑︎";
 
     @BindView(R.id.titleAction)
@@ -80,8 +80,8 @@ public class TabFindCustomerFragment extends BaseFragment implements BaseRecycle
     CustomerDbService customerDbService;
     LinearLayoutManager linearLayoutManager;
 
-    public static TabFindCustomerFragment newInstance() {
-        return new TabFindCustomerFragment();
+    public static TabCustomerFragment newInstance() {
+        return new TabCustomerFragment();
     }
 
     @Nullable

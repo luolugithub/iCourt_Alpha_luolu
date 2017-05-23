@@ -33,6 +33,7 @@ import butterknife.Unbinder;
  * date createTime：2017/4/8
  * version 1.0.0
  */
+@Deprecated
 public class TabFindFragment extends BaseFragment {
 
     /**
@@ -143,16 +144,16 @@ public class TabFindFragment extends BaseFragment {
         if (fragment == null) {
             switch (type) {
                 case TYPE_FRAGMENT_PROJECT:
-                    putTabFragment(type, TabFindProjectFragment.newInstance());
+                    putTabFragment(type, TabProjectFragment.newInstance());
                     break;
                 case TYPE_FRAGMENT_TIMING:
-                    putTabFragment(type, TabFindTimingFragment.newInstance());
+                    putTabFragment(type, TabTimingFragment.newInstance());
                     break;
                 case TYPE_FRAGMENT_CUSTOMER:
-                    putTabFragment(type, TabFindCustomerFragment.newInstance());
+                    putTabFragment(type, TabCustomerFragment.newInstance());
                     break;
                 case TYPE_FRAGMENT_SEARCH:
-                    putTabFragment(type, TabFindSearchFragment.newInstance());
+                    putTabFragment(type, TabSearchFragment.newInstance());
                     break;
             }
             return fragmentSparseArray.get(type);

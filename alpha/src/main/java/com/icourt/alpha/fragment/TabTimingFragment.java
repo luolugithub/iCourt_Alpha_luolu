@@ -61,7 +61,7 @@ import retrofit2.Response;
  * date createTime：2017/4/17
  * version 1.0.0
  */
-public class TabFindTimingFragment extends BaseFragment implements BaseRecyclerAdapter.OnItemClickListener {
+public class TabTimingFragment extends BaseFragment implements BaseRecyclerAdapter.OnItemClickListener {
 
     @BindView(R.id.tabLayout)
     TabLayout tabLayout;
@@ -79,8 +79,8 @@ public class TabFindTimingFragment extends BaseFragment implements BaseRecyclerA
     RefreshLayout refreshLayout;
     Unbinder unbinder;
 
-    public static TabFindTimingFragment newInstance() {
-        return new TabFindTimingFragment();
+    public static TabTimingFragment newInstance() {
+        return new TabTimingFragment();
     }
 
     private LineChartData data;

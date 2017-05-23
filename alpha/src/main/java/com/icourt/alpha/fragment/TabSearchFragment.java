@@ -58,7 +58,7 @@ import retrofit2.Response;
  * date createTime：2017/4/17
  * version 1.0.0
  */
-public class TabFindSearchFragment extends BaseFragment {
+public class TabSearchFragment extends BaseFragment {
 
     Unbinder unbinder;
     SearchEngineAdapter searchEngineAdapter;
@@ -83,8 +83,8 @@ public class TabFindSearchFragment extends BaseFragment {
     @BindView(R.id.history_rl)
     RelativeLayout historyRl;
 
-    public static TabFindSearchFragment newInstance() {
-        return new TabFindSearchFragment();
+    public static TabSearchFragment newInstance() {
+        return new TabSearchFragment();
     }
 
     @Nullable

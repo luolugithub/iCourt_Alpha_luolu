@@ -28,7 +28,7 @@ import butterknife.Unbinder;
  * date createTime：2017/4/17
  * version 1.0.0
  */
-public class TabFindProjectFragment extends BaseFragment {
+public class TabProjectFragment extends BaseFragment {
 
     @BindView(R.id.tabLayout)
     TabLayout tabLayout;
@@ -43,8 +43,8 @@ public class TabFindProjectFragment extends BaseFragment {
     @BindView(R.id.titleAction2)
     ImageView titleAction2;
 
-    public static TabFindProjectFragment newInstance() {
-        return new TabFindProjectFragment();
+    public static TabProjectFragment newInstance() {
+        return new TabProjectFragment();
     }
 
     @Nullable

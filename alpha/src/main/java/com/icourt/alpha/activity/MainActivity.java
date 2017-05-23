@@ -3,12 +3,12 @@ package com.icourt.alpha.activity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.os.PersistableBundle;
 import android.support.annotation.IdRes;
+import android.support.annotation.IntDef;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.util.SparseArray;
@@ -32,24 +32,28 @@ import com.icourt.alpha.db.dbmodel.ContactDbModel;
 import com.icourt.alpha.db.dbservice.ContactDbService;
 import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.icourt.alpha.entity.bean.GroupContactBean;
+import com.icourt.alpha.entity.bean.ItemsEntity;
 import com.icourt.alpha.entity.bean.ItemsEntityImp;
 import com.icourt.alpha.entity.bean.PageEntity;
 import com.icourt.alpha.entity.bean.TimeEntity;
 import com.icourt.alpha.entity.event.TimingEvent;
 import com.icourt.alpha.entity.event.UnReadEvent;
-import com.icourt.alpha.fragment.TabFindFragment;
+import com.icourt.alpha.fragment.TabCustomerFragment;
 import com.icourt.alpha.fragment.TabMineFragment;
 import com.icourt.alpha.fragment.TabNewsFragment;
+import com.icourt.alpha.fragment.TabProjectFragment;
+import com.icourt.alpha.fragment.TabSearchFragment;
 import com.icourt.alpha.fragment.TabTaskFragment;
+import com.icourt.alpha.fragment.TabTimingFragment;
 import com.icourt.alpha.fragment.dialogfragment.TimingNoticeDialogFragment;
 import com.icourt.alpha.http.AlphaClient;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
-import com.icourt.alpha.interfaces.INotifyFragment;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.interfaces.OnTabDoubleClickListener;
 import com.icourt.alpha.utils.DensityUtil;
 import com.icourt.alpha.utils.SimpleViewGestureListener;
+import com.icourt.alpha.utils.SpUtils;
 import com.icourt.alpha.view.CheckableLayout;
 import com.icourt.alpha.widget.manager.TimerManager;
 import com.icourt.alpha.widget.popupwindow.BaseListActionItemPop;
@@ -59,7 +63,10 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import butterknife.BindView;
@@ -81,7 +88,37 @@ import retrofit2.Response;
  */
 public class MainActivity extends BaseActivity
         implements OnFragmentCallBackListener {
+    public static String KEY_FIND_FRAGMENT = "type_TabFindFragment_fragment";
+    public static String KEY_MINE_FRAGMENT = "type_TabMimeFragment_fragment";
 
+    public static final int TYPE_FRAGMENT_NEWS = 0;
+    public static final int TYPE_FRAGMENT_TASK = 1;
+    public static final int TYPE_FRAGMENT_PROJECT = 2;
+    public static final int TYPE_FRAGMENT_MINE = 3;
+    public static final int TYPE_FRAGMENT_TIMING = 4;
+    public static final int TYPE_FRAGMENT_CUSTOMER = 5;
+    public static final int TYPE_FRAGMENT_SEARCH = 6;
+
+    @IntDef({
+            TYPE_FRAGMENT_NEWS,
+            TYPE_FRAGMENT_TASK,
+            TYPE_FRAGMENT_PROJECT,
+            TYPE_FRAGMENT_MINE,
+            TYPE_FRAGMENT_TIMING,
+            TYPE_FRAGMENT_CUSTOMER,
+            TYPE_FRAGMENT_SEARCH})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface ChildFragmentType {
+
+    }
+
+    //可改变的tab
+    private final List<ItemsEntity> tabChangeableData = Arrays.asList(
+            new ItemsEntity("项目", TYPE_FRAGMENT_PROJECT, R.drawable.tab_project),
+            new ItemsEntity("我的", TYPE_FRAGMENT_MINE, R.drawable.tab_mine),
+            new ItemsEntity("计时", TYPE_FRAGMENT_TIMING, R.drawable.tab_timer),
+            new ItemsEntity("客户", TYPE_FRAGMENT_CUSTOMER, R.drawable.tab_customer),
+            new ItemsEntity("搜索", TYPE_FRAGMENT_SEARCH, R.drawable.tab_search));
 
     @BindView(R.id.main_fl_content)
     FrameLayout mainFlContent;
@@ -175,32 +212,78 @@ public class MainActivity extends BaseActivity
         loginUserInfo = getLoginUserInfo();
         contactDbService = new ContactDbService(loginUserInfo == null ? "" : loginUserInfo.getUserId());
         new SimpleViewGestureListener(tabNews, onSimpleViewGestureListener);
-        initTabFind();
-        tabNews.setChecked(true);
-        currentFragment = addOrShowFragment(getTabFragment(R.id.tab_news), currentFragment, R.id.main_fl_content);
+        initChangedTab();
+        checkedTab(R.id.tab_news, TYPE_FRAGMENT_NEWS);
         getTimering();
     }
 
 
     /**
-     * 初始化发现tab
+     * 保存切换的tab
+     *
+     * @param id
+     * @param type
      */
-    private void initTabFind() {
-        setTabDrawable(TabFindFragment.getLastChildFragmentType());
-        switch (TabFindFragment.getLastChildFragmentType()) {
-            case TabFindFragment.TYPE_FRAGMENT_PROJECT:
-                tabFindCtv.setText("项目");
+    private void saveChangedTab(@IdRes int id, @ChildFragmentType int type) {
+        switch (id) {
+            case R.id.tab_find:
+                SpUtils.getInstance().putData(KEY_FIND_FRAGMENT, type);
                 break;
-            case TabFindFragment.TYPE_FRAGMENT_TIMING:
-                tabFindCtv.setText("计时");
-                break;
-            case TabFindFragment.TYPE_FRAGMENT_CUSTOMER:
-                tabFindCtv.setText("客户");
-                break;
-            case TabFindFragment.TYPE_FRAGMENT_SEARCH:
-                tabFindCtv.setText("搜索");
+            case R.id.tab_mine:
+                SpUtils.getInstance().putData(KEY_MINE_FRAGMENT, type);
                 break;
         }
+    }
+
+    /**
+     * 类型转化
+     *
+     * @param type
+     * @return
+     */
+    @ChildFragmentType
+    public static final int convert2ChildFragmentType(int type) {
+        switch (type) {
+            case TYPE_FRAGMENT_NEWS:
+                return TYPE_FRAGMENT_NEWS;
+            case TYPE_FRAGMENT_TASK:
+                return TYPE_FRAGMENT_TASK;
+            case TYPE_FRAGMENT_PROJECT:
+                return TYPE_FRAGMENT_PROJECT;
+            case TYPE_FRAGMENT_CUSTOMER:
+                return TYPE_FRAGMENT_CUSTOMER;
+            case TYPE_FRAGMENT_SEARCH:
+                return TYPE_FRAGMENT_SEARCH;
+            case TYPE_FRAGMENT_TIMING:
+                return TYPE_FRAGMENT_TIMING;
+            case TYPE_FRAGMENT_MINE:
+                return TYPE_FRAGMENT_MINE;
+        }
+        return TYPE_FRAGMENT_PROJECT;
+    }
+
+
+    /**
+     * 获取发现页面
+     *
+     * @return
+     */
+    private int getFragmentType(@IdRes int id) {
+        switch (id) {
+            case R.id.tab_find:
+                return convert2ChildFragmentType(SpUtils.getInstance().getIntData(KEY_FIND_FRAGMENT, TYPE_FRAGMENT_PROJECT));
+            case R.id.tab_mine:
+                return convert2ChildFragmentType(SpUtils.getInstance().getIntData(KEY_MINE_FRAGMENT, TYPE_FRAGMENT_MINE));
+        }
+        return TYPE_FRAGMENT_PROJECT;
+    }
+
+    /**
+     * 初始化可改变的tab
+     */
+    private void initChangedTab() {
+        setTabInfo(R.id.tab_find, getFragmentType(R.id.tab_find));
+        setTabInfo(R.id.tab_mine, getFragmentType(R.id.tab_mine));
     }
 
     /**
@@ -208,76 +291,120 @@ public class MainActivity extends BaseActivity
      *
      * @param type
      */
-    private void setTabDrawable(int type) {
-        switch (type) {
-            case TabFindFragment.TYPE_FRAGMENT_PROJECT:
-                Drawable projectDrawable = getResources().getDrawable(R.drawable.tab_project);
-                tabFindCtv.setCompoundDrawablesWithIntrinsicBounds(null, projectDrawable, null, null);
+    private void setTabInfo(@IdRes int tabId, @ChildFragmentType int type) {
+        ItemsEntity itemsEntity = null;
+        for (ItemsEntity item : tabChangeableData) {
+            if (item != null & item.itemType == type) {
+                itemsEntity = item;
                 break;
-            case TabFindFragment.TYPE_FRAGMENT_CUSTOMER:
-                Drawable customerDrawable = getResources().getDrawable(R.drawable.tab_customer);
-                tabFindCtv.setCompoundDrawablesWithIntrinsicBounds(null, customerDrawable, null, null);
+            }
+        }
+        if (itemsEntity == null) return;
+        switch (tabId) {
+            case R.id.tab_find:
+                tabFindCtv.setText(itemsEntity.getItemTitle());
+                tabFindCtv.setCompoundDrawablesWithIntrinsicBounds(0, itemsEntity.getItemIconRes(), 0, 0);
                 break;
-            case TabFindFragment.TYPE_FRAGMENT_SEARCH:
-                Drawable searchDrawable = getResources().getDrawable(R.drawable.tab_search);
-                tabFindCtv.setCompoundDrawablesWithIntrinsicBounds(null, searchDrawable, null, null);
-                break;
-            case TabFindFragment.TYPE_FRAGMENT_TIMING:
-                Drawable timerDrawable = getResources().getDrawable(R.drawable.tab_timer);
-                tabFindCtv.setCompoundDrawablesWithIntrinsicBounds(null, timerDrawable, null, null);
+            case R.id.tab_mine:
+                tabMineCtv.setText(itemsEntity.getItemTitle());
+                tabMineCtv.setCompoundDrawablesWithIntrinsicBounds(0, itemsEntity.getItemIconRes(), 0, 0);
                 break;
         }
     }
 
-    @OnLongClick({R.id.tab_find})
+    @OnLongClick({
+            R.id.tab_find,
+            R.id.tab_mine})
     public boolean onLongClick(View v) {
         switch (v.getId()) {
-            case R.id.tab_find: {
-                if (!tabFind.isChecked()) return false;
-                showTabFindMenu(v);
-            }
-            break;
+            case R.id.tab_find:
+            case R.id.tab_mine:
+                showTabMenu(v);
+                break;
         }
         return true;
     }
 
     /**
+     * 获取展示的动态菜单数据
+     *
+     * @return
+     */
+    private List<ItemsEntity> getShowTabMenuData() {
+        int mineFragmentType = getFragmentType(R.id.tab_mine);
+        int findFragmentType = getFragmentType(R.id.tab_find);
+        List<ItemsEntity> menus = new ArrayList<>();
+        for (ItemsEntity itemsEntity : tabChangeableData) {
+            if (itemsEntity == null) continue;
+            if (itemsEntity.itemType != mineFragmentType
+                    && itemsEntity.itemType != findFragmentType) {
+                menus.add(itemsEntity);
+            }
+        }
+        return menus;
+    }
+
+    /**
      * 展示发现页面切换菜单
      *
-     * @param v
+     * @param target
      */
-    private void showTabFindMenu(View v) {
-        if (currentFragment instanceof INotifyFragment && currentFragment instanceof TabFindFragment) {
-            TabFindFragment tabFindFragment = (TabFindFragment) currentFragment;
-            new ListActionItemPop(getContext(), TabFindFragment.generateMenuData(tabFindFragment)).withOnItemClick(new BaseListActionItemPop.OnItemClickListener() {
-                @Override
-                public void onItemClick(BaseListActionItemPop listActionItemPop, BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
-                    listActionItemPop.dismiss();
-                    Object item = adapter.getItem(position);
-                    if (item instanceof ItemsEntityImp) {
-                        ItemsEntityImp itemsEntityImp = (ItemsEntityImp) item;
-                        Bundle bundle = new Bundle();
-                        switch (itemsEntityImp.getItemType()) {
-                            case TabFindFragment.TYPE_FRAGMENT_PROJECT:
-                                bundle.putInt(TabFindFragment.KEY_TYPE_FRAGMENT, TabFindFragment.TYPE_FRAGMENT_PROJECT);
-                                break;
-                            case TabFindFragment.TYPE_FRAGMENT_CUSTOMER:
-                                bundle.putInt(TabFindFragment.KEY_TYPE_FRAGMENT, TabFindFragment.TYPE_FRAGMENT_CUSTOMER);
-                                break;
-                            case TabFindFragment.TYPE_FRAGMENT_SEARCH:
-                                bundle.putInt(TabFindFragment.KEY_TYPE_FRAGMENT, TabFindFragment.TYPE_FRAGMENT_SEARCH);
-                                break;
-                            case TabFindFragment.TYPE_FRAGMENT_TIMING:
-                                bundle.putInt(TabFindFragment.KEY_TYPE_FRAGMENT, TabFindFragment.TYPE_FRAGMENT_TIMING);
-                                break;
+    private void showTabMenu(final View target) {
+        if (target == null) return;
+        new ListActionItemPop(getContext(), getShowTabMenuData())
+                .withOnItemClick(new BaseListActionItemPop.OnItemClickListener() {
+                    @Override
+                    public void onItemClick(BaseListActionItemPop listActionItemPop, BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
+                        listActionItemPop.dismiss();
+                        Object item = adapter.getItem(position);
+                        if (item instanceof ItemsEntityImp) {
+                            ItemsEntityImp itemsEntityImp = (ItemsEntityImp) item;
+                            int type = convert2ChildFragmentType(itemsEntityImp.getItemType());
+                            //保存
+                            saveChangedTab(target.getId(), type);
+                            //设置tab信息
+                            setTabInfo(target.getId(), type);
+                            //选中该tab
+                            checkedTab(target.getId(), type);
                         }
-                        ((INotifyFragment) currentFragment).notifyFragmentUpdate(currentFragment, 0, bundle);
-                        tabFindCtv.setText(itemsEntityImp.getItemTitle());
-                        setTabDrawable(itemsEntityImp.getItemType());
                     }
-                }
-            }).showUpCenter(v, DensityUtil.dip2px(getContext(), 5));
+                }).showUpCenter(target, DensityUtil.dip2px(getContext(), 5));
+    }
+
+    /**
+     * 选择tab
+     *
+     * @param id
+     * @param type
+     */
+    private void checkedTab(@IdRes int id, @ChildFragmentType int type) {
+        switch (id) {
+            case R.id.tab_news:
+                tabNews.setChecked(true);
+                tabTask.setChecked(false);
+                tabFind.setChecked(false);
+                tabMine.setChecked(false);
+                break;
+            case R.id.tab_task:
+                tabNews.setChecked(false);
+                tabTask.setChecked(true);
+                tabFind.setChecked(false);
+                tabMine.setChecked(false);
+                break;
+            case R.id.tab_find:
+                tabNews.setChecked(false);
+                tabTask.setChecked(false);
+                tabFind.setChecked(true);
+                tabMine.setChecked(false);
+                break;
+            case R.id.tab_mine:
+                tabNews.setChecked(false);
+                tabTask.setChecked(false);
+                tabFind.setChecked(false);
+                tabMine.setChecked(true);
+                break;
         }
+        checkedFragment(type);
     }
 
     @Override
@@ -287,8 +414,8 @@ public class MainActivity extends BaseActivity
     }
 
 
-    public void checkedFragment(@IdRes int checkedId) {
-        currentFragment = addOrShowFragment(getTabFragment(checkedId), currentFragment, R.id.main_fl_content);
+    public void checkedFragment(@ChildFragmentType int type) {
+        currentFragment = addOrShowFragment(getTabFragment(type), currentFragment, R.id.main_fl_content);
     }
 
 
@@ -301,32 +428,16 @@ public class MainActivity extends BaseActivity
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.tab_news:
-                tabNews.setChecked(true);
-                tabTask.setChecked(false);
-                tabFind.setChecked(false);
-                tabMine.setChecked(false);
-                checkedFragment(v.getId());
+                checkedTab(R.id.tab_news, TYPE_FRAGMENT_NEWS);
                 break;
             case R.id.tab_task:
-                tabNews.setChecked(false);
-                tabTask.setChecked(true);
-                tabFind.setChecked(false);
-                tabMine.setChecked(false);
-                checkedFragment(v.getId());
+                checkedTab(R.id.tab_task, TYPE_FRAGMENT_TASK);
                 break;
             case R.id.tab_find:
-                tabNews.setChecked(false);
-                tabTask.setChecked(false);
-                tabFind.setChecked(true);
-                tabMine.setChecked(false);
-                checkedFragment(v.getId());
+                checkedTab(R.id.tab_find, getFragmentType(R.id.tab_find));
                 break;
             case R.id.tab_mine:
-                tabNews.setChecked(false);
-                tabTask.setChecked(false);
-                tabFind.setChecked(false);
-                tabMine.setChecked(true);
-                checkedFragment(v.getId());
+                checkedTab(R.id.tab_mine, getFragmentType(R.id.tab_mine));
                 break;
             case R.id.tab_timing:
                 if (TimerManager.getInstance().hasTimer()) {
@@ -345,30 +456,38 @@ public class MainActivity extends BaseActivity
     /**
      * 获取对应fragment
      *
-     * @param checkedId
+     * @param type
      * @return
      */
-    private Fragment getTabFragment(@IdRes int checkedId) {
-        Fragment fragment = fragmentSparseArray.get(checkedId);
+    private Fragment getTabFragment(@ChildFragmentType int type) {
+        Fragment fragment = fragmentSparseArray.get(type);
         if (fragment == null) {
-            switch (checkedId) {
-                case R.id.tab_news:
-                    putTabFragment(checkedId, TabNewsFragment.newInstance());
+            switch (type) {
+                case TYPE_FRAGMENT_NEWS:
+                    fragment = TabNewsFragment.newInstance();
                     break;
-                case R.id.tab_task:
-                    putTabFragment(checkedId, TabTaskFragment.newInstance());
+                case TYPE_FRAGMENT_TASK:
+                    fragment = TabTaskFragment.newInstance();
                     break;
-                case R.id.tab_find:
-                    putTabFragment(checkedId, TabFindFragment.newInstance());
+                case TYPE_FRAGMENT_PROJECT:
+                    fragment = TabProjectFragment.newInstance();
                     break;
-                case R.id.tab_mine:
-                    putTabFragment(checkedId, TabMineFragment.newInstance());
+                case TYPE_FRAGMENT_TIMING:
+                    fragment = TabTimingFragment.newInstance();
+                    break;
+                case TYPE_FRAGMENT_CUSTOMER:
+                    fragment = TabCustomerFragment.newInstance();
+                    break;
+                case TYPE_FRAGMENT_SEARCH:
+                    fragment = TabSearchFragment.newInstance();
+                    break;
+                case TYPE_FRAGMENT_MINE:
+                    fragment = TabMineFragment.newInstance();
                     break;
             }
-            return fragmentSparseArray.get(checkedId);
-        } else {
-            return fragment;
         }
+        putTabFragment(type, fragment);
+        return fragment;
     }
 
     /**
