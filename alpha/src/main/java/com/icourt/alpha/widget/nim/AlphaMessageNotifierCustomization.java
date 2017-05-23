@@ -6,6 +6,7 @@ import com.google.gson.JsonParseException;
 import com.icourt.alpha.entity.bean.IMMessageCustomBody;
 import com.icourt.alpha.utils.IMUtils;
 import com.icourt.alpha.utils.JsonUtils;
+import com.icourt.alpha.utils.LogUtils;
 import com.icourt.alpha.utils.LoginInfoUtils;
 import com.icourt.alpha.utils.StringUtils;
 import com.netease.nimlib.sdk.msg.MessageNotifierCustomization;
@@ -23,7 +24,10 @@ import static com.icourt.alpha.constants.Const.MSG_TYPE_TXT;
 import static com.icourt.alpha.constants.Const.MSG_TYPE_VOICE;
 
 /**
- * Description  需要强化 直接拷贝与老项目
+ * Description  享聊推送提示文案
+ *
+ *  （ SDK 1.8.0 及以上版本支持）本地定制的通知栏提醒文案，目前支持配置Ticker文案（通知栏弹框条显示内容）和通知内容文案（下拉通知栏显示的通知内容）
+ *   http://dev.netease.im/docs/product/IM%E5%8D%B3%E6%97%B6%E9%80%9A%E8%AE%AF/SDK%E5%BC%80%E5%8F%91%E9%9B%86%E6%88%90/Android%E5%BC%80%E5%8F%91%E9%9B%86%E6%88%90?#推送
  * Company Beijing icourt
  * author  youxuan  E-mail:xuanyouwu@163.com
  * date createTime：2017/4/10
@@ -42,18 +46,19 @@ public class AlphaMessageNotifierCustomization
     private String getCombString(String nick, String content) {
         StringBuilder stringBuilder = new StringBuilder();
         if (!TextUtils.isEmpty(nick)) {
-            stringBuilder.append(nick + ": ");
+            stringBuilder.append(nick + "     :");
         }
         if (!TextUtils.isEmpty(content)) {
             stringBuilder.append(content);
         } else {
             stringBuilder.append("您收到一条消息");
         }
+        LogUtils.d("----------->notify content:" + stringBuilder.toString());
         return stringBuilder.toString();
     }
 
     public String getMsgContent(String nick, IMMessage imMessage) {
-        IMUtils.logIMMessage("----------->notify:" + nick, imMessage);
+        IMUtils.logIMMessage("----------->notify:\n" + nick, imMessage);
         if (imMessage.getMsgType() == MsgTypeEnum.text
                 && imMessage.getAttachment() != null) {//机器人 alpha小助手
             IMMessageCustomBody imBody = getIMBody(imMessage.getAttachment().toJson(false));
@@ -61,7 +66,7 @@ public class AlphaMessageNotifierCustomization
                 return getCombString("Alpha小助手", imBody.content);
             }
         } else if (imMessage.getMsgType() == MsgTypeEnum.text) {
-            IMMessageCustomBody imBody = getIMBody(imMessage.getAttachment().toJson(false));
+            IMMessageCustomBody imBody = getIMBody(imMessage.getContent());
             if (imBody != null) {
                 switch (imBody.show_type) {
                     case MSG_TYPE_TXT:    //文本消息
