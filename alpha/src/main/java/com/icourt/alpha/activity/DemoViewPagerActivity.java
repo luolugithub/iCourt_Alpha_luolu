@@ -10,7 +10,6 @@ import android.support.v4.view.ViewPager;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.baseadapter.BaseFragmentAdapter;
 import com.icourt.alpha.base.BaseActivity;
-import com.icourt.alpha.fragment.TabFindFragment;
 import com.icourt.alpha.fragment.TabMineFragment;
 import com.icourt.alpha.fragment.TabNewsFragment;
 import com.icourt.alpha.fragment.TabTaskFragment;
@@ -53,7 +52,6 @@ public class DemoViewPagerActivity extends BaseActivity {
         baseFragmentAdapter = new BaseFragmentAdapter(getSupportFragmentManager());
         viewPager.setAdapter(baseFragmentAdapter);
         baseFragmentAdapter.bindData(true, Arrays.asList(TabTaskFragment.newInstance()
-                , TabFindFragment.newInstance()
                 , TabMineFragment.newInstance()
                 , TabNewsFragment.newInstance()));
     }

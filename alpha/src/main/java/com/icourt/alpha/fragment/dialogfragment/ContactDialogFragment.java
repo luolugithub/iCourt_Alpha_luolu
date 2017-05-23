@@ -116,7 +116,7 @@ public class ContactDialogFragment extends BaseDialogFragment {
                     Glide.with(getContext())
                             .load(contactBean.pic)
                             .crossFade()
-                            .bitmapTransform(new BlurTransformation(getContext()))
+                            .bitmapTransform(new BlurTransformation(getContext(), 50))
                             .into(contactBgIv);
                 }
             }

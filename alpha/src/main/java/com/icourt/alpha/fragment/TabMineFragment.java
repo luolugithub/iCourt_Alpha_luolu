@@ -134,7 +134,7 @@ public class TabMineFragment extends BaseFragment {
             if (GlideUtils.canLoadImage(getContext())) {
                 Glide.with(getContext())
                         .load(alphaUserInfo.getPic())
-                        .bitmapTransform(new BlurTransformation(getContext()))
+                        .bitmapTransform(new BlurTransformation(getContext(),50))
                         .crossFade()
                         .into(photoBigImage);
             }
