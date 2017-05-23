@@ -18,11 +18,12 @@ import java.lang.annotation.RetentionPolicy;
 public class TaskActionEvent {
 
     public static final int TASK_DELETE_ACTION = 1;
-    public static final int TASK_UPDATE_ACTION = 2;
+    public static final int TASK_UPDATE_DESC_ACTION = 2;
     public static final int TASK_REFRESG_ACTION = 3;
+    public static final int TASK_UPDATE_NAME_ACTION = 4;
 
     @IntDef({TASK_DELETE_ACTION,
-            TASK_UPDATE_ACTION, TASK_REFRESG_ACTION})
+            TASK_UPDATE_DESC_ACTION, TASK_REFRESG_ACTION,TASK_UPDATE_NAME_ACTION})
     @Retention(RetentionPolicy.SOURCE)
     public @interface TASK_ACTION {
 

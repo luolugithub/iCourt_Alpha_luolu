@@ -361,7 +361,7 @@ public class TaskOtherListFragment extends BaseFragment implements BaseRecyclerA
                 dismissLoadingDialog();
                 checkbox.setChecked(state);
                 itemEntity.state = state;
-                EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_UPDATE_ACTION, itemEntity));
+                EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_UPDATE_DESC_ACTION, itemEntity));
             }
 
             @Override
@@ -406,7 +406,7 @@ public class TaskOtherListFragment extends BaseFragment implements BaseRecyclerA
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onUpdateTaskEvent(TaskActionEvent event) {
         if (event == null) return;
-        if (event.action == TaskActionEvent.TASK_UPDATE_ACTION) {
+        if (event.action == TaskActionEvent.TASK_UPDATE_DESC_ACTION) {
             TaskEntity.TaskItemEntity item = event.entity;
             LogUtils.e("finishType ---  " + finishType);
             LogUtils.e("item.state ---  " + item.state);

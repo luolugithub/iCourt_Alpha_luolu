@@ -165,7 +165,7 @@ public class TaskDetailActivity extends BaseActivity implements OnFragmentCallBa
         super.onDestroy();
     }
 
-    @OnClick({R.id.titleAction, R.id.titleAction2, R.id.comment_layout, R.id.task_checkbox, R.id.task_user_layout, R.id.task_users_layout, R.id.task_start_iamge})
+    @OnClick({R.id.titleAction, R.id.titleAction2, R.id.task_name, R.id.comment_layout, R.id.task_checkbox, R.id.task_user_layout, R.id.task_users_layout, R.id.task_start_iamge})
     @Override
     public void onClick(View v) {
         super.onClick(v);
@@ -179,6 +179,9 @@ public class TaskDetailActivity extends BaseActivity implements OnFragmentCallBa
                 break;
             case R.id.titleAction2://更多
                 showBottomMeau();
+                break;
+            case R.id.task_name:
+                TaskDescUpdateActivity.launch(getContext(), null, taskName.getText().toString());
                 break;
             case R.id.task_user_layout:
             case R.id.task_users_layout://选择负责人
@@ -510,14 +513,16 @@ public class TaskDetailActivity extends BaseActivity implements OnFragmentCallBa
             public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
                 dismissLoadingDialog();
                 EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION));
-                checkbox.setChecked(state);
+                if (checkbox != null)
+                    checkbox.setChecked(state);
             }
 
             @Override
             public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
                 super.onFailure(call, t);
                 dismissLoadingDialog();
-                checkbox.setChecked(!state);
+                if (checkbox != null)
+                    checkbox.setChecked(!state);
             }
         });
     }
@@ -535,6 +540,7 @@ public class TaskDetailActivity extends BaseActivity implements OnFragmentCallBa
             JsonObject jsonObject = new JsonObject();
             jsonObject.addProperty("id", itemEntity.id);
             jsonObject.addProperty("state", itemEntity.state);
+            jsonObject.addProperty("name", itemEntity.name);
             jsonObject.addProperty("valid", true);
             jsonObject.addProperty("updateTime", DateUtils.millis());
             JsonArray jsonarr = new JsonArray();
@@ -603,6 +609,19 @@ public class TaskDetailActivity extends BaseActivity implements OnFragmentCallBa
                     taskItemEntity.attendeeUsers.addAll(attusers);
                     updateTask(taskItemEntity, taskItemEntity.state, taskCheckbox);
                 }
+            }
+        }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onUpdateTaskNameEvent(TaskActionEvent event) {
+        if (event == null) return;
+        if (event.action == TaskActionEvent.TASK_UPDATE_NAME_ACTION) {
+            String desc = event.desc;
+            if (!TextUtils.isEmpty(desc)) {
+                taskName.setText(desc);
+                taskItemEntity.name = desc;
+                updateTask(taskItemEntity, taskItemEntity.state, null);
             }
         }
     }
