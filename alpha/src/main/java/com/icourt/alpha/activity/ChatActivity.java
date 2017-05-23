@@ -5,7 +5,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
@@ -19,11 +18,11 @@ import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
 import android.text.Spannable;
 import android.text.TextUtils;
-import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -45,6 +44,7 @@ import com.icourt.alpha.utils.IMUtils;
 import com.icourt.alpha.utils.LogUtils;
 import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.utils.SystemUtils;
+import com.icourt.alpha.view.bgabadgeview.BGABadgeTextView;
 import com.icourt.alpha.view.emoji.MySelectPhotoLayout;
 import com.icourt.alpha.view.emoji.MyXhsEmoticonsKeyBoard;
 import com.icourt.alpha.view.recyclerviewDivider.ChatItemDecoration;
@@ -80,8 +80,6 @@ import cn.finalteam.galleryfinal.FunctionConfig;
 import cn.finalteam.galleryfinal.GalleryFinal;
 import cn.finalteam.galleryfinal.model.PhotoInfo;
 import io.reactivex.functions.Consumer;
-import q.rorbin.badgeview.Badge;
-import q.rorbin.badgeview.QBadgeView;
 import retrofit2.Call;
 import retrofit2.Response;
 import sj.keyboard.adpater.EmoticonsAdapter;
@@ -120,12 +118,22 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
     private static final String KEY_UID = "key_uid";
     private static final String KEY_TID = "key_tid";
     private static final String KEY_TITLE = "key_title";
+    private static final String KEY_TOTAL_UNREAD_NUM = "key_total_unread_num";
     private static final String KEY_LOCATION_MSG_TIME = "key_location_msg_time";
     private static final String KEY_CHAT_TYPE = "key_chat_type";
 
     //本地同步的联系人
     protected final List<GroupContactBean> localContactList = new ArrayList<>();
 
+    MySelectPhotoLayout mySelectPhotoLayout;
+    ChatAdapter chatAdapter;
+    LinearLayoutManager linearLayoutManager;
+    int pageSize = 20;
+    final List<GroupContactBean> atContactList = new ArrayList<>();
+    @BindView(R.id.title_Badge_tv)
+    BGABadgeTextView titleBadgeTv;
+    @BindView(R.id.badgeTitleLayout)
+    FrameLayout badgeTitleLayout;
     @BindView(R.id.titleBack)
     ImageView titleBack;
     @BindView(R.id.titleContent)
@@ -140,15 +148,10 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
     RecyclerView recyclerView;
     @BindView(R.id.refreshLayout)
     RefreshLayout refreshLayout;
-    @BindView(R.id.ek_bar)
-    MyXhsEmoticonsKeyBoard ekBar;
     @BindView(R.id.chat_unread_num_tv)
     TextView chatUnreadNumTv;
-    MySelectPhotoLayout mySelectPhotoLayout;
-    ChatAdapter chatAdapter;
-    LinearLayoutManager linearLayoutManager;
-    int pageSize = 20;
-    final List<GroupContactBean> atContactList = new ArrayList<>();
+    @BindView(R.id.ek_bar)
+    MyXhsEmoticonsKeyBoard ekBar;
 
     private GalleryFinal.OnHanlderResultCallback mOnHanlderResultCallback = new GalleryFinal.OnHanlderResultCallback() {
         @Override
@@ -198,7 +201,8 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
     public static final void launchP2P(@NonNull Context context,
                                        @NonNull String uid,
                                        String title,
-                                       long locationMsgTime) {
+                                       long locationMsgTime,
+                                       int totalUnreadCount) {
         if (context == null) return;
         if (TextUtils.isEmpty(uid)) return;
         Intent intent = new Intent(context, ChatActivity.class);
@@ -206,6 +210,7 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
         intent.putExtra(KEY_TITLE, title);
         intent.putExtra(KEY_CHAT_TYPE, CHAT_TYPE_P2P);
         intent.putExtra(KEY_LOCATION_MSG_TIME, locationMsgTime);
+        intent.putExtra(KEY_TOTAL_UNREAD_NUM, totalUnreadCount);
         context.startActivity(intent);
     }
 
@@ -220,7 +225,8 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
     public static void launchTEAM(@NonNull Context context,
                                   String tid,
                                   String title,
-                                  long locationMsgTime) {
+                                  long locationMsgTime,
+                                  int totalUnreadCount) {
         if (context == null) return;
         if (TextUtils.isEmpty(tid)) return;
         Intent intent = new Intent(context, ChatActivity.class);
@@ -228,6 +234,7 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
         intent.putExtra(KEY_CHAT_TYPE, CHAT_TYPE_TEAM);
         intent.putExtra(KEY_TITLE, title);
         intent.putExtra(KEY_LOCATION_MSG_TIME, locationMsgTime);
+        intent.putExtra(KEY_TOTAL_UNREAD_NUM, totalUnreadCount);
         context.startActivity(intent);
     }
 
@@ -706,7 +713,7 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
             }
         });
 
-        updateTotalUnRead(getTotalUnreadCount());
+        updateTotalUnRead(getIntent().getIntExtra(KEY_TOTAL_UNREAD_NUM, 0));
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -715,20 +722,6 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
         updateTotalUnRead(event.unReadCount);
     }
 
-    public Badge totalNewsBadge;
-
-    private Badge getTotalNewsBadge() {
-        if (totalNewsBadge == null) {
-            totalNewsBadge = new QBadgeView(getContext())
-                    .bindTarget(titleView);
-            totalNewsBadge.setBadgeGravity(Gravity.CENTER | Gravity.TOP);
-            totalNewsBadge.setGravityOffset(38, 0, true);
-            totalNewsBadge.setBadgeTextSize(10, true);
-            totalNewsBadge.stroke(Color.WHITE, 1, true);
-            totalNewsBadge.setBadgePadding(3, true);
-        }
-        return totalNewsBadge;
-    }
 
     /**
      * 更新总数
@@ -738,9 +731,11 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
     private void updateTotalUnRead(int num) {
         int unReadNum = num;
         if (unReadNum > 99) {
-            getTotalNewsBadge().setBadgeText("...");
+            titleBadgeTv.showTextBadge("...");
+        } else if (unReadNum > 0) {
+            titleBadgeTv.showTextBadge(String.valueOf(unReadNum));
         } else {
-            getTotalNewsBadge().setBadgeNumber(unReadNum);
+            titleBadgeTv.hiddenBadge();
         }
     }
 

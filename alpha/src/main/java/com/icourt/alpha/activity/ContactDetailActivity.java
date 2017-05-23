@@ -147,7 +147,7 @@ public class ContactDetailActivity extends BaseActivity {
                 if (groupContactBean == null) return;
                 ChatActivity.launchP2P(getContext()
                         , groupContactBean.accid
-                        , groupContactBean.name, 0);
+                        , groupContactBean.name, 0,0);
                 break;
             case R.id.contact_phone_ll:
                 if (!TextUtils.isEmpty(contactPhoneTv.getText())) {

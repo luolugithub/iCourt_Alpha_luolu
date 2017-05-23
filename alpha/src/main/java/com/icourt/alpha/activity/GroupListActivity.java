@@ -279,14 +279,14 @@ public class GroupListActivity extends BaseActivity implements BaseRecyclerAdapt
                         ChatActivity.launchTEAM(getContext(),
                                 item.tid,
                                 item.name,
-                                0);
+                                0,0);
                         break;
                     case GROUP_TYPE_TYPE_ALL:
                         if (isMyJionedGroup(item)) {
                             ChatActivity.launchTEAM(getContext(),
                                     item.tid,
                                     item.name,
-                                    0);
+                                    0,0);
                         } else {
                             GroupDetailActivity.launchTEAM(getContext(), item.tid);
                         }

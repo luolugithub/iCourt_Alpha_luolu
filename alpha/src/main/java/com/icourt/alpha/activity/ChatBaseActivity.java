@@ -298,15 +298,6 @@ public abstract class ChatBaseActivity
     }
 
 
-    /**
-     * 获取总共未读数量
-     *
-     * @return
-     */
-    protected int getTotalUnreadCount() {
-        return NIMClient.getService(MsgService.class)
-                .getTotalUnreadCount();
-    }
 
     /**
      * 查询本地联系人

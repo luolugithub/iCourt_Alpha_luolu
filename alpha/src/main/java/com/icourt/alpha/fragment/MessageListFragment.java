@@ -94,6 +94,7 @@ public class MessageListFragment extends BaseRecentContactFragment
     private final List<String> localNoDisturbs = new ArrayList<>();
     @BindView(R.id.login_status_tv)
     TextView loginStatusTv;
+    private int totalUnReadCount;
     private DataChangeAdapterObserver dataChangeAdapterObserver = new DataChangeAdapterObserver() {
         @Override
         protected void updateUI() {
@@ -107,7 +108,10 @@ public class MessageListFragment extends BaseRecentContactFragment
                         }
                     }
                 }
-                EventBus.getDefault().post(new UnReadEvent(unReadCount));
+                if (totalUnReadCount != unReadCount) {
+                    totalUnReadCount = unReadCount;
+                    EventBus.getDefault().post(new UnReadEvent(unReadCount));
+                }
             }
         }
     };
@@ -567,7 +571,9 @@ public class MessageListFragment extends BaseRecentContactFragment
                                 groupContactBean = localGroupContactBeans.get(indexOf);
                                 ChatActivity.launchP2P(getActivity(),
                                         data.recentContact.getContactId(),
-                                        groupContactBean.name, 0);
+                                        groupContactBean.name,
+                                        0,
+                                        totalUnReadCount);
                             }
                         }
                     }
@@ -577,7 +583,9 @@ public class MessageListFragment extends BaseRecentContactFragment
                     if (data.recentContact != null)
                         ChatActivity.launchTEAM(getActivity(),
                                 data.recentContact.getContactId(),
-                                String.valueOf(tvSessionTitle.getText()), 0);
+                                String.valueOf(tvSessionTitle.getText()),
+                                0,
+                                totalUnReadCount);
                     break;
             }
         }
