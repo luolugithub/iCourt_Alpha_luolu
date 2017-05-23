@@ -25,7 +25,8 @@
             android:enabled="false"
             android:focusableInTouchMode="false"
             android:gravity="center"
-            android:text="消息" />
+            android:text="消息"
+            android:textAlignment="center" />
     </com.icourt.alpha.view.CheckableLayout>
 
     <com.icourt.alpha.view.CheckableLayout
@@ -44,7 +45,8 @@
             android:enabled="false"
             android:focusableInTouchMode="false"
             android:gravity="center"
-            android:text="任务" />
+            android:text="任务"
+            android:textAlignment="center" />
     </com.icourt.alpha.view.CheckableLayout>
 
     <LinearLayout
@@ -69,7 +71,8 @@
             android:gravity="center"
             android:maxLines="1"
             android:orientation="vertical"
-            android:text="开始计时" />
+            android:text="开始计时"
+            android:textAlignment="center" />
     </LinearLayout>
 
     <com.icourt.alpha.view.CheckableLayout
@@ -88,7 +91,8 @@
             android:drawableTop="@drawable/tab_find"
             android:enabled="false"
             android:focusableInTouchMode="false"
-            android:text="探索" />
+            android:text="探索"
+            android:textAlignment="center" />
 
         <ImageView
             android:layout_width="wrap_content"
@@ -118,7 +122,8 @@
             android:drawableTop="@drawable/tab_mine"
             android:enabled="false"
             android:focusableInTouchMode="false"
-            android:text="我的" />
+            android:text="我的"
+            android:textAlignment="center" />
 
         <ImageView
             android:layout_width="wrap_content"
