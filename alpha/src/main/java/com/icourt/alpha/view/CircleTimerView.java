@@ -341,6 +341,17 @@ public class CircleTimerView extends View {
         this.invalidate();
     }
 
+    private long miniTime;
+
+    /**
+     * 秒
+     *
+     * @param time
+     */
+    public void setMiniTime(long time) {
+        this.miniTime = time;
+    }
+
     private float getFontHeight(Paint paint) {
         // FontMetrics sF = paint.getFontMetrics();
         // return sF.descent - sF.ascent;
@@ -372,15 +383,16 @@ public class CircleTimerView extends View {
                     }
                     mCurrentRadian += (temp - mPreRadian);
                     mPreRadian = temp;
+                    float mini = (float) (miniTime * 2 * Math.PI) / (60.0f * 60f * 24);
                     if (isOneCircle && mCurrentRadian > 2 * Math.PI) {
                         mCurrentRadian = (float) (2 * Math.PI);
-                    } else if (mCurrentRadian < 0) {
-                        mCurrentRadian = 0;
+                    } else if (mCurrentRadian < mini) {
+                        mCurrentRadian = mini;
                     }
                     if (mCircleTimerListener != null)
                         mCircleTimerListener.onTimerSetValueChange(getCurrentTime());
                     mCurrentTime = (int) (24 / (2 * Math.PI) * mCurrentRadian * 60 * 60);
-                   // LogUtils.d("--------->mCurrentRadian:" + mCurrentRadian + "   time：" + mCurrentTime);
+                    // LogUtils.d("--------->mCurrentRadian:" + mCurrentRadian + "   time：" + mCurrentTime);
                     invalidate();
                 }
                 break;
@@ -520,7 +532,7 @@ public class CircleTimerView extends View {
             }
             this.mCurrentRadian = (float) (time * 2 * Math.PI) / (60.0f * 60f * 24);
             //mCurrentTime = (int) (24 / (2 * Math.PI) * mCurrentRadian * 60*60);
-           // LogUtils.d("--------->mCurrentRadian2:" + mCurrentRadian + "   time：" + mCurrentTime);
+            // LogUtils.d("--------->mCurrentRadian2:" + mCurrentRadian + "   time：" + mCurrentTime);
             invalidate();
         }
     }

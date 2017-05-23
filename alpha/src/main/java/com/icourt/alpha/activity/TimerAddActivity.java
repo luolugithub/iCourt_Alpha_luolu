@@ -161,6 +161,7 @@ public class TimerAddActivity extends BaseTimerActivity
             public void onTimerSetValueChange(int time) {
             }
         });
+        circleTimerView.setMiniTime(70);
         //默认5分钟
         circleTimerView.setCurrentTime(5 * 60);
     }
@@ -183,13 +184,13 @@ public class TimerAddActivity extends BaseTimerActivity
                 addTimer();
                 break;
             case R.id.minus_time_image://－时间 //5分钟
-                if (circleTimerView.getCurrentTime() >= 5 * 60) {
-                    circleTimerView.setCurrentTime(circleTimerView.getCurrentTime() - 5 * 60);
+                if (circleTimerView.getCurrentTime() >= 15 * 60) {
+                    circleTimerView.setCurrentTime(circleTimerView.getCurrentTime() - 15 * 60);
                 }
                 break;
             case R.id.add_time_image://＋时间
-                if (circleTimerView.getCurrentTime() < (24 * 60 * 60 - 5 * 60)) {
-                    circleTimerView.setCurrentTime(circleTimerView.getCurrentTime() + 5 * 60);
+                if (circleTimerView.getCurrentTime() < (24 * 60 * 60 - 15 * 60)) {
+                    circleTimerView.setCurrentTime(circleTimerView.getCurrentTime() + 15 * 60);
                 } else {
                     circleTimerView.setCurrentTime(24 * 60 * 60);
                 }

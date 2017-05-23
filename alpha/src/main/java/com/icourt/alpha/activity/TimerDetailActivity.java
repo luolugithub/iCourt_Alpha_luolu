@@ -185,6 +185,7 @@ public class TimerDetailActivity extends BaseTimerActivity
             projectNameTv.setText(TextUtils.isEmpty(itemEntity.matterName) ? "未设置" : itemEntity.matterName);
             worktypeNameTv.setText(TextUtils.isEmpty(itemEntity.workTypeName) ? "未设置" : itemEntity.workTypeName);
             taskNameTv.setText(TextUtils.isEmpty(itemEntity.taskPkId) ? "未关联" : itemEntity.taskPkId);
+            circleTimerView.setMiniTime(70);
             circleTimerView.setCurrentTime((int) ((selectedEndDate.getTimeInMillis() - selectedStartDate.getTimeInMillis()) / 1000));
 
             timeNameTv.addTextChangedListener(new TextWatcher() {
@@ -238,13 +239,13 @@ public class TimerDetailActivity extends BaseTimerActivity
                         }).show();
                 break;
             case R.id.minus_time_image://－时间 //5分钟
-                if (circleTimerView.getCurrentTime() >= 5 * 60) {
-                    circleTimerView.setCurrentTime(circleTimerView.getCurrentTime() - 5 * 60);
+                if (circleTimerView.getCurrentTime() >= 15 * 60) {
+                    circleTimerView.setCurrentTime(circleTimerView.getCurrentTime() - 15 * 60);
                 }
                 break;
             case R.id.add_time_image://＋时间
-                if (circleTimerView.getCurrentTime() < (24 * 60 * 60 - 5 * 60)) {
-                    circleTimerView.setCurrentTime(circleTimerView.getCurrentTime() + 5 * 60);
+                if (circleTimerView.getCurrentTime() < (24 * 60 * 60 - 15 * 60)) {
+                    circleTimerView.setCurrentTime(circleTimerView.getCurrentTime() + 15 * 60);
                 } else {
                     circleTimerView.setCurrentTime(24 * 60 * 60);
                 }
@@ -417,7 +418,7 @@ public class TimerDetailActivity extends BaseTimerActivity
                     worktypeNameTv.setText("未选择");
                     taskNameTv.setText("未关联");
                 }
-                itemEntity.matterPkId=projectEntity.pkId;
+                itemEntity.matterPkId = projectEntity.pkId;
                 projectNameTv.setText(projectEntity.name);
             }
 
