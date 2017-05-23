@@ -93,11 +93,14 @@ public class ProjectDetailActivity extends BaseActivity implements OnFragmentCal
         if (!TextUtils.isEmpty(projectName)) {
             setTitle(projectName);
         }
-        titleAction.setImageResource(R.mipmap.header_icon_star_line);
-        titleAction2.setImageResource(R.mipmap.header_icon_more);
+        if (myStar != 1) {
+            titleAction2.setImageResource(R.mipmap.header_icon_star_line);
+        } else {
+            titleAction2.setImageResource(R.mipmap.header_icon_star_solid);
+        }
 
         //第一次打开默认概览：隐藏更多菜单入口
-        titleAction2.setVisibility(View.GONE);
+        titleAction.setVisibility(View.GONE);
 
         baseFragmentAdapter = new BaseFragmentAdapter(getSupportFragmentManager());
         detailViewpager.setAdapter(baseFragmentAdapter);
@@ -138,16 +141,28 @@ public class ProjectDetailActivity extends BaseActivity implements OnFragmentCal
     private void isShowTitleAction(int position) {
         switch (position) {
             case 0:
-                titleAction2.setVisibility(View.INVISIBLE);
+                if (myStar != 1) {
+                    titleAction2.setImageResource(R.mipmap.header_icon_star_line);
+                } else {
+                    titleAction2.setImageResource(R.mipmap.header_icon_star_solid);
+                }
+                titleAction.setVisibility(View.INVISIBLE);
+                titleAction2.setVisibility(View.VISIBLE);
                 break;
             case 1:
+                titleAction.setImageResource(R.mipmap.header_icon_add);
+                titleAction2.setImageResource(R.mipmap.header_icon_more);
+                titleAction.setVisibility(View.VISIBLE);
                 titleAction2.setVisibility(View.VISIBLE);
                 break;
             case 2:
+                titleAction.setVisibility(View.INVISIBLE);
                 titleAction2.setVisibility(View.INVISIBLE);
                 break;
             case 3:
                 titleAction.setImageResource(R.mipmap.header_icon_add);
+                titleAction2.setImageResource(R.mipmap.header_icon_more);
+                titleAction.setVisibility(View.VISIBLE);
                 titleAction2.setVisibility(View.VISIBLE);
                 break;
         }
@@ -170,13 +185,10 @@ public class ProjectDetailActivity extends BaseActivity implements OnFragmentCal
     private void titleActionClick() {
         switch (detailTablayout.getSelectedTabPosition()) {
             case 0:     //概览
-            case 1:     //任务
             case 2:     //计时
-                if (myStar != 1) {
-                    addStar();
-                } else {
-                    deleteStar();
-                }
+                break;
+            case 1:     //任务
+                TaskCreateActivity.launchFomProject(this, projectId, projectName);
                 break;
             case 3:     //文档
                 if (projectFileBoxFragment != null) {
@@ -192,13 +204,16 @@ public class ProjectDetailActivity extends BaseActivity implements OnFragmentCal
     private void showBottomMeau() {
         switch (detailTablayout.getSelectedTabPosition()) {
             case 0:     //概览
-                showTopSnackBar("概览");
+                if (myStar != 1) {
+                    addStar();
+                } else {
+                    deleteStar();
+                }
                 break;
             case 1:     //任务
                 showTaskMeau();
                 break;
             case 2:     //计时
-                showTopSnackBar("计时");
                 break;
             case 3:     //文档
                 showDocumentMeau();
@@ -272,7 +287,7 @@ public class ProjectDetailActivity extends BaseActivity implements OnFragmentCal
             public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
                 dismissLoadingDialog();
                 myStar = 1;
-                titleAction.setImageResource(R.mipmap.header_icon_star_solid);
+                titleAction2.setImageResource(R.mipmap.header_icon_star_solid);
             }
 
             @Override
@@ -293,7 +308,7 @@ public class ProjectDetailActivity extends BaseActivity implements OnFragmentCal
             public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
                 dismissLoadingDialog();
                 myStar = 0;
-                titleAction.setImageResource(R.mipmap.header_icon_star_line);
+                titleAction2.setImageResource(R.mipmap.header_icon_star_line);
             }
 
             @Override
@@ -309,9 +324,9 @@ public class ProjectDetailActivity extends BaseActivity implements OnFragmentCal
         if (fragment instanceof ProjectDetailFragment) {
             myStar = params.getInt("myStar");
             if (myStar != 1) {
-                titleAction.setImageResource(R.mipmap.header_icon_star_line);
+                titleAction2.setImageResource(R.mipmap.header_icon_star_line);
             } else {
-                titleAction.setImageResource(R.mipmap.header_icon_star_solid);
+                titleAction2.setImageResource(R.mipmap.header_icon_star_solid);
             }
         }
     }

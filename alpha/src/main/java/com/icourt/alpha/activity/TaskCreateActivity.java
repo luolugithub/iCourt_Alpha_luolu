@@ -89,12 +89,27 @@ public class TaskCreateActivity extends BaseActivity implements ProjectSelectDia
     String projectId, taskGroupId;
     long dueTime;
     TaskUsersAdapter usersAdapter;
+    String projectName;
 
     public static void launch(@NonNull Context context, @NonNull String content, String startTime) {
         if (context == null) return;
         Intent intent = new Intent(context, TaskCreateActivity.class);
         intent.putExtra("content", content);
         intent.putExtra("startTime", startTime);
+        context.startActivity(intent);
+    }
+
+    /**
+     * 项目详情创建任务
+     * @param context
+     * @param projectId
+     * @param projectName
+     */
+    public static void launchFomProject(@NonNull Context context, @NonNull String projectId,@NonNull String projectName) {
+        if (context == null) return;
+        Intent intent = new Intent(context, TaskCreateActivity.class);
+        intent.putExtra("projectId", projectId);
+        intent.putExtra("projectName", projectName);
         context.startActivity(intent);
     }
 
@@ -112,11 +127,16 @@ public class TaskCreateActivity extends BaseActivity implements ProjectSelectDia
         setTitle("新建任务");
         content = getIntent().getStringExtra("content");
         startTime = getIntent().getStringExtra("startTime");
+        projectId = getIntent().getStringExtra("projectId");
+        projectName = getIntent().getStringExtra("projectName");
         if (!TextUtils.isEmpty(content)) {
             taskDescEt.setText(content);
         }
         if (!TextUtils.isEmpty(startTime)) {
             taskDuetimeTv.setText(startTime);
+        }
+        if (!TextUtils.isEmpty(projectName)) {
+            projectNameTv.setText(projectName);
         }
     }
 

@@ -308,14 +308,6 @@ public interface ApiAlphaService {
     Call<ResEntity<JsonElement>> projectDeleteStar(@Query("matterPkid") String matterPkid);
 
     /**
-     * 获取我的最新信息
-     *
-     * @return
-     */
-    @GET("im/v1/users/me")
-    Call<ResEntity<AlphaUserInfo>> userInfoQuery();
-
-    /**
      * 更新用户信息
      *
      * @param id

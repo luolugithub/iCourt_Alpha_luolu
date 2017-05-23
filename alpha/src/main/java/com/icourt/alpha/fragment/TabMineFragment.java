@@ -33,6 +33,7 @@ import com.umeng.socialize.UMAuthListener;
 import com.umeng.socialize.UMShareAPI;
 import com.umeng.socialize.bean.SHARE_MEDIA;
 
+import java.util.Locale;
 import java.util.Map;
 
 import butterknife.BindView;
@@ -111,6 +112,7 @@ public class TabMineFragment extends BaseFragment {
     @Override
     protected void initView() {
         getData(false);
+//        setDataToView(getLoginUserInfo());
         mShareAPI = UMShareAPI.get(getContext());
     }
 
@@ -246,10 +248,15 @@ public class TabMineFragment extends BaseFragment {
 
     @Override
     protected void getData(boolean isRefresh) {
-        getApi().userInfoQuery().enqueue(new SimpleCallBack<AlphaUserInfo>() {
+        getChatApi().userInfoQuery().enqueue(new SimpleCallBack<AlphaUserInfo>() {
             @Override
             public void onSuccess(Call<ResEntity<AlphaUserInfo>> call, Response<ResEntity<AlphaUserInfo>> response) {
-                setDataToView(response.body().result);
+                AlphaUserInfo info = response.body().result;
+                AlphaUserInfo alphaUserInfo = getLoginUserInfo();
+                if (alphaUserInfo != null) {
+                    info.setOfficename(alphaUserInfo.getOfficename());
+                }
+                setDataToView(info);
             }
 
             @Override
@@ -270,12 +277,14 @@ public class TabMineFragment extends BaseFragment {
             }
         });
     }
+
     public String getHm(long times) {
         times /= 1000;
         long hour = times / 3600;
         long minute = times % 3600 / 60;
-        return String.format("%02d:%02d", hour, minute);
+        return String.format(Locale.CHINA, "%02d:%02d", hour, minute);
     }
+
     @Override
     public void onDestroyView() {
         super.onDestroyView();

@@ -469,4 +469,5 @@ public interface ApiChatService {
     Call<ResEntity<JsonElement>> fileUrlQuery(@Query("repo_id") String repo_id,
                                               @Query("path") String path,
                                               @Query("name") String name);
+
 }
