@@ -86,7 +86,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_toLeftOf="@+id/group_member_invite_tv"
-                android:layout_toRightOf="@+id/group_member_iv"
                 android:layout_weight="1"
                 android:drawableLeft="@mipmap/ic_members"
                 android:drawablePadding="10dp"
