@@ -277,24 +277,33 @@ public class IMSessionAdapter extends BaseArrayRecyclerAdapter<IMSessionEntity> 
         if (imSessionEntity.customIMBody == null) return;
         if (tvSessionContent == null) return;
         IMMessageCustomBody customIMBody = imSessionEntity.customIMBody;
+        StringBuilder stringBuilder = new StringBuilder();
+        if (localNoDisturbs.contains(imSessionEntity.recentContact.getContactId())
+                && imSessionEntity.recentContact.getUnreadCount() > 0) {
+            stringBuilder.append(String.format("[%s条] ", imSessionEntity.recentContact.getUnreadCount()));
+        }
         //内容
         switch (customIMBody.show_type) {
             case Const.MSG_TYPE_TXT:    //文本消息
-                tvSessionContent.setText(customIMBody.content);
+                stringBuilder.append(customIMBody.content);
+                tvSessionContent.setText(stringBuilder.toString());
                 break;
             case Const.MSG_TYPE_IMAGE:
-                tvSessionContent.setText("[ 图片 ]");
+                stringBuilder.append("[ 图片 ]");
+                tvSessionContent.setText(stringBuilder.toString());
                 break;
             case Const.MSG_TYPE_FILE:     //文件消息
-                tvSessionContent.setText("[ 文件 ]");
+                stringBuilder.append("[ 文件 ]");
+                tvSessionContent.setText(stringBuilder.toString());
                 break;
             case Const.MSG_TYPE_DING:   //钉消息
                 if (customIMBody.ext != null) {
-                    StringBuilder dingStringBuilder = new StringBuilder();
+                    StringBuilder dingStringBuilder = new StringBuilder(stringBuilder.toString());
                     switch (customIMBody.ope) {
                         case CHAT_TYPE_P2P:
                             break;
                         case CHAT_TYPE_TEAM:
+
                             dingStringBuilder.append(customIMBody.name + " : ");
                             break;
                     }
@@ -312,14 +321,19 @@ public class IMSessionAdapter extends BaseArrayRecyclerAdapter<IMSessionEntity> 
                     } else {
                         int color = 0xFFed6c00;
                         if (customIMBody.ext.is_all) {
-                            tvSessionContent.setText("有人@了你");
-                            SpannableUtils.setTextForegroundColorSpan(tvSessionContent, "有人@了你", "有人@了你", color);
+                            stringBuilder.append("有人@了你");
+                            String originalText = stringBuilder.toString();
+                            tvSessionContent.setText(originalText);
+                            SpannableUtils.setTextForegroundColorSpan(tvSessionContent, originalText, "有人@了你", color);
                         } else if (customIMBody.ext.users != null
                                 && StringUtils.containsIgnoreCase(customIMBody.ext.users, getLoginUserId())) {
-                            tvSessionContent.setText("有人@了你");
-                            SpannableUtils.setTextForegroundColorSpan(tvSessionContent, "有人@了你", "有人@了你", color);
+                            stringBuilder.append("有人@了你");
+                            String originalText = stringBuilder.toString();
+                            tvSessionContent.setText(originalText);
+                            SpannableUtils.setTextForegroundColorSpan(tvSessionContent, originalText, "有人@了你", color);
                         } else {
-                            tvSessionContent.setText(String.format("%s : %s", customIMBody.name, customIMBody.content));
+                            stringBuilder.append(String.format("%s : %s", customIMBody.name, customIMBody.content));
+                            tvSessionContent.setText(stringBuilder.toString());
                         }
                     }
                 } else {
@@ -328,14 +342,16 @@ public class IMSessionAdapter extends BaseArrayRecyclerAdapter<IMSessionEntity> 
                 break;
             case Const.MSG_TYPE_SYS:     //系统辅助消息
                 if (customIMBody.ext != null) {
-                    tvSessionContent.setText(customIMBody.ext.content);
+                    stringBuilder.append(customIMBody.ext.content);
+                    tvSessionContent.setText(stringBuilder.toString());
                 } else {
                     tvSessionContent.setText("sys消息ext null");
                 }
                 break;
             case Const.MSG_TYPE_LINK://链接消息
                 if (customIMBody.ext != null) {
-                    tvSessionContent.setText(customIMBody.ext.url);
+                    stringBuilder.append(customIMBody.ext.url);
+                    tvSessionContent.setText(stringBuilder.toString());
                 } else {
                     tvSessionContent.setText("link消息ext null");
                 }
