@@ -3,8 +3,6 @@ package com.icourt.alpha.fragment;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -25,7 +23,6 @@ import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.icourt.alpha.entity.bean.SelectGroupBean;
 import com.icourt.alpha.entity.bean.UserDataEntity;
-import com.icourt.alpha.fragment.dialogfragment.DateSelectDialogFragment;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.GlideUtils;
@@ -36,7 +33,6 @@ import com.umeng.socialize.UMShareAPI;
 import com.umeng.socialize.bean.SHARE_MEDIA;
 
 import java.util.List;
-import java.util.Calendar;
 import java.util.Locale;
 import java.util.Map;
 
@@ -204,21 +200,11 @@ public class TabMineFragment extends BaseFragment {
                 showLoginOutConfirmDialog();
                 break;
             case R.id.menu_test:
-                test1();
+//                test1();
                 break;
         }
     }
 
-    private void test1() {
-        String tag = DateSelectDialogFragment.class.getSimpleName();
-        FragmentTransaction mFragTransaction = getChildFragmentManager().beginTransaction();
-        Fragment fragment = getChildFragmentManager().findFragmentByTag(tag);
-        if (fragment != null) {
-            mFragTransaction.remove(fragment);
-        }
-        DateSelectDialogFragment.newInstance()
-                .show(mFragTransaction, tag);
-    }
 
     private void showLoginOutConfirmDialog() {
         new AlertDialog.Builder(getActivity())
