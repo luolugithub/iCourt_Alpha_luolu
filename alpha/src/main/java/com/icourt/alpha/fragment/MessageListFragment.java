@@ -19,6 +19,7 @@ import com.icourt.alpha.R;
 import com.icourt.alpha.activity.AlphaSpecialHelperActivity;
 import com.icourt.alpha.activity.ChatActivity;
 import com.icourt.alpha.activity.LoginSelectActivity;
+import com.icourt.alpha.activity.SearchPolymerizationActivity;
 import com.icourt.alpha.adapter.IMSessionAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.HeaderFooterAdapter;
@@ -368,7 +369,10 @@ public class MessageListFragment extends BaseRecentContactFragment
                 localGroupContactBeans, localSetTops, localNoDisturbs));
         imSessionAdapter.registerAdapterDataObserver(dataChangeAdapterObserver);
         imSessionAdapter.setOnItemClickListener(this);
-        headerFooterAdapter.addHeader(HeaderFooterAdapter.inflaterView(getContext(), R.layout.header_search_comm, recyclerView));
+        View view = HeaderFooterAdapter.inflaterView(getContext(), R.layout.header_search_comm, recyclerView);
+        headerFooterAdapter.addHeader(view);
+        View rl_comm_search = view.findViewById(R.id.rl_comm_search);
+        registerClick(rl_comm_search);
         recyclerView.setAdapter(headerFooterAdapter);
         imSessionAdapter.setOnItemClickListener(this);
         imSessionAdapter.setOnItemLongClickListener(this);
@@ -687,5 +691,15 @@ public class MessageListFragment extends BaseRecentContactFragment
                     }).show();
         }
         return true;
+    }
+
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.rl_comm_search:
+                SearchPolymerizationActivity.launch(getContext());
+                break;
+        }
+        super.onClick(v);
     }
 }

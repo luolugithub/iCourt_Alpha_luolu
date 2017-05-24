@@ -80,6 +80,22 @@ public class GlobalMessageObserver implements Observer<List<IMMessage>> {
     }
 
     /**
+     * 解析自定义消息
+     *
+     * @param content
+     * @return
+     */
+    public static final IMMessageCustomBody getIMBody(String content) {
+        IMMessageCustomBody imBodyEntity = null;
+        try {
+            imBodyEntity = JsonUtils.Gson2Bean(content, IMMessageCustomBody.class);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return imBodyEntity;
+    }
+
+    /**
      * 解析自定义的消息体
      *
      * @param message
