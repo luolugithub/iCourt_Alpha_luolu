@@ -16,6 +16,7 @@ import com.icourt.alpha.widget.manager.TimerManager;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Description 计时
@@ -31,6 +32,7 @@ public class TimeAdapter extends BaseArrayRecyclerAdapter<TimeEntity.ItemEntity>
     private static final int TIME_OTHER_TYPE = 1;
     private static final int TIME_SIMPLE_TITLE = 2;
     private HashMap<Integer, Long> timeShowArray = new HashMap<>();//时间分割线
+    private long sumTime;
 
 
     private boolean useSimpleTitle;
@@ -50,6 +52,10 @@ public class TimeAdapter extends BaseArrayRecyclerAdapter<TimeEntity.ItemEntity>
 
     public TimeAdapter() {
         this.setOnItemChildClickListener(this);
+    }
+
+    public void setSumTime(long sumTime) {
+        this.sumTime = sumTime;
     }
 
     @Override
@@ -149,14 +155,14 @@ public class TimeAdapter extends BaseArrayRecyclerAdapter<TimeEntity.ItemEntity>
         long hour = times / 3600;
         long minute = times % 3600 / 60;
         long second = times % 60;
-        return String.format("%02d:%02d:%02d", hour, minute, second);
+        return String.format(Locale.CHINA,"%02d:%02d:%02d", hour, minute, second);
     }
 
     public String getHm(long times) {
         times /= 1000;
         long hour = times / 3600;
         long minute = times % 3600 / 60;
-        return String.format("%02d:%02d", hour, minute);
+        return String.format(Locale.CHINA,"%02d:%02d", hour, minute);
     }
 
     /**
@@ -165,6 +171,9 @@ public class TimeAdapter extends BaseArrayRecyclerAdapter<TimeEntity.ItemEntity>
     private void setTypeTopData(ViewHolder holder, TimeEntity.ItemEntity timeEntity) {
         TextView totalView = holder.obtainView(R.id.time_top_total_tv);
         ImageView addView = holder.obtainView(R.id.time_top_add_img);
+        if (sumTime > 0) {
+            totalView.setText(getHm(sumTime));
+        }
     }
 
     /**

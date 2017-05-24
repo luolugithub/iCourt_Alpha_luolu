@@ -19,6 +19,7 @@ import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.adapterObserver.RefreshViewEmptyObserver;
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.entity.bean.TimeEntity;
+import com.icourt.alpha.entity.event.ProjectActionEvent;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.ActionConstants;
@@ -26,6 +27,10 @@ import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.view.recyclerviewDivider.TimerItemDecoration;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 import com.icourt.alpha.widget.manager.TimerManager;
+
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.List;
 
@@ -56,6 +61,7 @@ public class ProjectTimeFragment extends BaseFragment implements BaseRecyclerAda
     String projectId;
     TimeAdapter timeAdapter;
     private int pageIndex = 1;
+    private long sumTime;
 
     public static ProjectTimeFragment newInstance(@NonNull String projectId) {
         ProjectTimeFragment projectTimeFragment = new ProjectTimeFragment();
@@ -63,6 +69,12 @@ public class ProjectTimeFragment extends BaseFragment implements BaseRecyclerAda
         bundle.putString(KEY_PROJECT_ID, projectId);
         projectTimeFragment.setArguments(bundle);
         return projectTimeFragment;
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        EventBus.getDefault().register(this);
     }
 
     @Nullable
@@ -82,6 +94,7 @@ public class ProjectTimeFragment extends BaseFragment implements BaseRecyclerAda
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
         recyclerView.setAdapter(timeAdapter = new TimeAdapter());
+        timeAdapter.setSumTime(sumTime);
         recyclerView.addItemDecoration(new TimerItemDecoration(getActivity(), timeAdapter));
         recyclerView.setHasFixedSize(true);
         timeAdapter.setOnItemClickListener(this);
@@ -118,6 +131,7 @@ public class ProjectTimeFragment extends BaseFragment implements BaseRecyclerAda
                         if (response.body().result.items.size() > 0) {
                             response.body().result.items.add(0, new TimeEntity.ItemEntity());
                         }
+                        timeAdapter.setSumTime(sumTime);
                         timeAdapter.bindData(isRefresh, response.body().result.items);
                         pageIndex += 1;
                         enableLoadMore(response.body().result.items);
@@ -151,6 +165,22 @@ public class ProjectTimeFragment extends BaseFragment implements BaseRecyclerAda
     public void onDestroyView() {
         super.onDestroyView();
         unbinder.unbind();
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        EventBus.getDefault().unregister(this);
+    }
+
+    /**
+     *
+     */
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void setSumTime(ProjectActionEvent event) {
+        if (event == null) return;
+        if (event.action == ProjectActionEvent.PROJECT_TIMER_ACTION)
+            sumTime = event.sumTime;
     }
 
     @Override

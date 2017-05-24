@@ -17,7 +17,7 @@
             android:layout_height="wrap_content"
             android:maxLines="1"
             android:singleLine="true"
-            android:text="12:23'"
+            android:text="00:00'"
             android:textColor="@color/alpha_font_color_black"
             android:textSize="36sp" />
 
@@ -36,6 +36,6 @@
         android:layout_alignParentRight="true"
         android:layout_centerVertical="true"
         android:padding="@dimen/dp15"
-        android:visibility="gone"
-        android:src="@mipmap/button_time_plus_24" />
+        android:src="@mipmap/button_time_plus_24"
+        android:visibility="gone" />
 </RelativeLayout>

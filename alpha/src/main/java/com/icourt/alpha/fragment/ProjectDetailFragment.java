@@ -24,12 +24,15 @@ import com.icourt.alpha.adapter.baseadapter.adapterObserver.RefreshViewEmptyObse
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.entity.bean.ProjectBasicItemEntity;
 import com.icourt.alpha.entity.bean.ProjectDetailEntity;
+import com.icourt.alpha.entity.event.ProjectActionEvent;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.ItemDecorationUtils;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
+
+import org.greenrobot.eventbus.EventBus;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -145,7 +148,7 @@ public class ProjectDetailFragment extends BaseFragment {
     private void setDataToView(ProjectDetailEntity projectDetailBean) {
 
         if (projectDetailBean != null) {
-
+            EventBus.getDefault().post(new ProjectActionEvent(ProjectActionEvent.PROJECT_TIMER_ACTION, projectDetailBean.sumTime));
             if (onFragmentCallBackListener != null) {
                 Bundle bundle = new Bundle();
                 if (TextUtils.isEmpty(projectDetailBean.myStar)) {
@@ -281,6 +284,7 @@ public class ProjectDetailFragment extends BaseFragment {
                 if (response.body().result != null) {
                     if (response.body().result.size() > 0) {
                         setDataToView(response.body().result.get(0));
+
                     }
                 }
             }

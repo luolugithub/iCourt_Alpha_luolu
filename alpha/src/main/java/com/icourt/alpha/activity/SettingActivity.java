@@ -6,7 +6,6 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.AppBarLayout;
-import android.text.TextUtils;
 import android.view.View;
 import android.widget.CheckedTextView;
 import android.widget.EditText;
@@ -102,18 +101,18 @@ public class SettingActivity extends BaseActivity {
     }
 
     private void updateInfo() {
-        showLoadingDialog("正在修改...");
         final String phone = phoneEdittext.getText().toString().trim();
         final String email = emailEdittext.getText().toString().trim();
 
-        if (!TextFormater.isMailNO(email) && !TextUtils.isEmpty(email)) {
-            showToast("请输入正确的邮箱格式");
+        if (!TextFormater.isMailNO(email)) {
+            showTopSnackBar("请输入正确的邮箱格式");
             return;
         }
-        if (!TextFormater.isMobileNO(phone) && !TextUtils.isEmpty(phone)) {
-            showToast("请输入正确的手机格式");
+        if (!TextFormater.isMobileNO(phone)) {
+            showTopSnackBar("请输入正确的手机格式");
             return;
         }
+        showLoadingDialog("正在修改...");
         getApi().updateUserInfo(alphaUserInfo.getUserId(), phone, email).enqueue(new SimpleCallBack<JsonElement>() {
             @Override
             public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {

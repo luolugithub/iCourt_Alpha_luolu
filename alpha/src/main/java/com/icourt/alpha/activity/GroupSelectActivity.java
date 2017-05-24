@@ -8,6 +8,7 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.AppBarLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.CheckedTextView;
 import android.widget.ImageView;
@@ -19,10 +20,10 @@ import com.icourt.alpha.adapter.SelectGroupAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.adapterObserver.RefreshViewEmptyObserver;
 import com.icourt.alpha.base.BaseActivity;
-import com.icourt.alpha.entity.bean.GroupBean;
 import com.icourt.alpha.entity.bean.SelectGroupBean;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
+import com.icourt.alpha.utils.ItemDecorationUtils;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 
 import java.io.Serializable;
@@ -44,7 +45,6 @@ import retrofit2.Response;
 
 public class GroupSelectActivity extends BaseActivity implements BaseRecyclerAdapter.OnItemClickListener {
 
-    List<GroupBean> groupBeenList;
     @BindView(R.id.titleBack)
     ImageView titleBack;
     @BindView(R.id.titleContent)
@@ -59,11 +59,12 @@ public class GroupSelectActivity extends BaseActivity implements BaseRecyclerAda
     RefreshLayout refreshLayout;
 
     SelectGroupAdapter selectGroupAdapter;
+    List<SelectGroupBean> groupBeanList;
 
-    public static void launchForResult(@NonNull Activity context, @NonNull List<SelectGroupBean> groupBeenList, int requestCode) {
+    public static void launchForResult(@NonNull Activity context, @NonNull List<SelectGroupBean> groupBeanList, int requestCode) {
         if (context == null) return;
         Intent intent = new Intent(context, GroupSelectActivity.class);
-        intent.putExtra("groupBeenList", (Serializable) groupBeenList);
+        intent.putExtra("groupBeanList", (Serializable) groupBeanList);
         context.startActivityForResult(intent, requestCode);
     }
 
@@ -79,10 +80,12 @@ public class GroupSelectActivity extends BaseActivity implements BaseRecyclerAda
     protected void initView() {
         super.initView();
         setTitle("负责团队");
+        groupBeanList = (List<SelectGroupBean>) getIntent().getSerializableExtra("groupBeanList");
         refreshLayout.setNoticeEmpty(R.mipmap.icon_placeholder_user, "暂无负责团队");
         refreshLayout.setMoveForHorizontal(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setHasFixedSize(true);
+        recyclerView.addItemDecoration(ItemDecorationUtils.getCommFull05Divider(this, true));
         recyclerView.setAdapter(selectGroupAdapter = new SelectGroupAdapter());
         selectGroupAdapter.registerAdapterDataObserver(new RefreshViewEmptyObserver(refreshLayout, selectGroupAdapter));
         selectGroupAdapter.setOnItemClickListener(this);
@@ -119,11 +122,23 @@ public class GroupSelectActivity extends BaseActivity implements BaseRecyclerAda
     @Override
     protected void getData(boolean isRefresh) {
         super.getData(isRefresh);
+        if (getLoginUserInfo() == null) return;
         getApi().officeGroupsQuery(getLoginUserInfo().getOfficeId()).enqueue(new SimpleCallBack<List<SelectGroupBean>>() {
             @Override
             public void onSuccess(Call<ResEntity<List<SelectGroupBean>>> call, Response<ResEntity<List<SelectGroupBean>>> response) {
                 stopRefresh();
+
                 selectGroupAdapter.bindData(true, response.body().result);
+                if (response.body().result != null && groupBeanList != null) {
+                    for (int i = 0; i < response.body().result.size(); i++) {
+                        for (int j = 0; j < groupBeanList.size(); j++) {
+                            if (TextUtils.equals(response.body().result.get(i).groupId, groupBeanList.get(j).groupId)) {
+                                selectGroupAdapter.setSelected(i, true);
+                                break;
+                            }
+                        }
+                    }
+                }
             }
 
             @Override

@@ -76,6 +76,7 @@ public class ProjectDetailEntity implements Serializable {
     public String competentCourt;//管辖法院
     public long beginDate;//开始时间
     public long endDate;//结束时间
+    public long sumTime;//累计计时
     public String lawField;//法律领域 id
     public String matterTypeName;//项目类型名称
     public String matterCaseName;//案由名称

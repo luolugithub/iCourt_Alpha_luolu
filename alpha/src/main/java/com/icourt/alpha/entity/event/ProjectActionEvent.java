@@ -17,6 +17,7 @@ public class ProjectActionEvent {
 
     public static final int PROJECT_DELETE_ACTION = 1;
     public static final int PROJECT_REFRESG_ACTION = 2;
+    public static final int PROJECT_TIMER_ACTION = 3;//设置项目累计计时
 
     @IntDef({PROJECT_DELETE_ACTION,
             PROJECT_REFRESG_ACTION})
@@ -28,9 +29,14 @@ public class ProjectActionEvent {
     public int action;
     public String id;
     public String desc;
+    public long sumTime;
 
     public ProjectActionEvent(@PROJEDCT_ACTION int action) {
         this.action = action;
     }
 
+    public ProjectActionEvent(int action, long sumTime) {
+        this.action = action;
+        this.sumTime = sumTime;
+    }
 }

@@ -439,7 +439,6 @@ public class TaskDetailActivity extends BaseActivity implements OnFragmentCallBa
                         taskUserRecyclerview.setLayoutManager(layoutManager);
                         taskUserRecyclerview.setAdapter(usersAdapter = new TaskUsersAdapter());
                         usersAdapter.setOnItemClickListener(this);
-                        // taskItemEntity.attendeeUsers
                         Collections.reverse(taskItemEntity.attendeeUsers);
                         usersAdapter.bindData(true, taskItemEntity.attendeeUsers);
                     } else if (taskItemEntity.attendeeUsers.size() == 1) {
@@ -628,6 +627,7 @@ public class TaskDetailActivity extends BaseActivity implements OnFragmentCallBa
                         taskItemEntity.attendeeUsers.addAll(attusers);
                         updateTask(taskItemEntity, taskItemEntity.state, taskCheckbox);
                     }
+                    Collections.reverse(taskItemEntity.attendeeUsers);
                     usersAdapter.bindData(true, taskItemEntity.attendeeUsers);
                 }
             }
