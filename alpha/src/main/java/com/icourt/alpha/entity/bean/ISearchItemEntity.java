@@ -15,6 +15,8 @@ public interface ISearchItemEntity {
 
     int classfyType();
 
+    long getRecordTime();
+
     CharSequence getTitle();
 
     CharSequence getContent();

@@ -35,6 +35,7 @@ import com.icourt.alpha.fragment.dialogfragment.ContactDialogFragment;
 import com.icourt.alpha.utils.GlobalMessageObserver;
 import com.icourt.alpha.utils.IMUtils;
 import com.icourt.alpha.utils.SpannableUtils;
+import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.view.SoftKeyboardSizeWatchLayout;
 import com.icourt.alpha.widget.filter.ListFilter;
 import com.netease.nimlib.sdk.NIMClient;
@@ -58,6 +59,7 @@ import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
 import io.realm.RealmResults;
 
+import static com.icourt.alpha.R.id.search_customer_tv;
 import static com.icourt.alpha.constants.Const.CHAT_TYPE_P2P;
 import static com.icourt.alpha.constants.Const.CHAT_TYPE_TEAM;
 import static com.icourt.alpha.constants.Const.SEARCH_TYPE_CONTACT;
@@ -74,26 +76,26 @@ import static com.icourt.alpha.constants.Const.SEARCH_TYPE_TEAM;
 public class SearchPolymerizationActivity extends BaseActivity implements BaseRecyclerAdapter.OnItemChildClickListener, BaseRecyclerAdapter.OnItemClickListener {
     private final List<Team> localTeams = new ArrayList<>();
 
+    int foregroundColor = 0xFFed6c00;
     @BindView(R.id.et_search_name)
     EditText etSearchName;
     @BindView(R.id.tv_search_cancel)
     TextView tvSearchCancel;
-    @BindView(R.id.search_project_tv)
-    TextView searchProjectTv;
-    @BindView(R.id.search_task_tv)
-    TextView searchTaskTv;
+    @BindView(R.id.search_msg_tv)
+    TextView searchMsgTv;
     @BindView(R.id.search_group_tv)
     TextView searchGroupTv;
-    @BindView(R.id.search_customer_tv)
+    @BindView(search_customer_tv)
     TextView searchCustomerTv;
+    @BindView(R.id.search_classfy_ll)
+    LinearLayout searchClassfyLl;
     @BindView(R.id.recyclerView)
     RecyclerView recyclerView;
     @BindView(R.id.softKeyboardSizeWatchLayout)
     SoftKeyboardSizeWatchLayout softKeyboardSizeWatchLayout;
     SearchPolymerizationAdapter searchPolymerizationAdapter;
-    @BindView(R.id.search_classfy_ll)
-    LinearLayout searchClassfyLl;
-    int foregroundColor = 0xFFed6c00;
+    @BindView(R.id.searchLayout)
+    LinearLayout searchLayout;
 
     public static void launch(@NonNull Context context) {
         if (context == null) return;
@@ -258,6 +260,8 @@ public class SearchPolymerizationActivity extends BaseActivity implements BaseRe
                                         title = groupContactBean.name;
                                         icon = groupContactBean.pic;
                                     }
+                                } else {
+                                    continue;
                                 }
                                 break;
                             case CHAT_TYPE_TEAM:
@@ -278,8 +282,10 @@ public class SearchPolymerizationActivity extends BaseActivity implements BaseRe
                         }
                         SearchItemEntity searchItemEntity = new SearchItemEntity(title, content, icon, keyWord);
                         searchItemEntity.id = imBody.to;
+                        searchItemEntity.type = imBody.ope;
                         searchItemEntity.classfyType = SEARCH_TYPE_MSG;
-                        data.add(new SearchItemEntity(title, content, icon, keyWord));
+                        searchItemEntity.recordTime = item.getTime();
+                        data.add(searchItemEntity);
                     }
                 }
             }
@@ -338,13 +344,44 @@ public class SearchPolymerizationActivity extends BaseActivity implements BaseRe
         return new ListFilter<GroupContactBean>().filter(contactBeen, GroupContactBean.TYPE_ROBOT);
     }
 
+    /**
+     * ContactSearchActivity.launch(getContext(),
+     * searchLayout,
+     * TextUtils.isEmpty(etSearchName.getText()) ? "" : etSearchName.getText().toString());
+     * break;
+     * case SEARCH_TYPE_MSG:
+     * break;
+     * case SEARCH_TYPE_TEAM:
+     * GroupSearchActivity.launch(getContext(),
+     * etSearchName,
+     * GroupListActivity.GROUP_TYPE_MY_JOIN,
+     * TextUtils.isEmpty(etSearchName.getText()) ? "" : etSearchName.getText().toString());
+     *
+     * @param v
+     */
 
-    @OnClick({R.id.tv_search_cancel})
+    @OnClick({R.id.tv_search_cancel,
+            R.id.search_msg_tv,
+            R.id.search_group_tv,
+            R.id.search_customer_tv})
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.tv_search_cancel:
                 finish();
+                break;
+            case R.id.search_msg_tv:
+                break;
+            case R.id.search_group_tv:
+                GroupSearchActivity.launch(getContext(),
+                        etSearchName,
+                        GroupListActivity.GROUP_TYPE_MY_JOIN,
+                        null);
+                break;
+            case R.id.search_customer_tv:
+                ContactSearchActivity.launch(getContext(),
+                        searchLayout,
+                        null);
                 break;
             default:
                 super.onClick(v);
@@ -354,9 +391,26 @@ public class SearchPolymerizationActivity extends BaseActivity implements BaseRe
 
     @Override
     public void onItemChildClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
-
-        log("----------->1:" + adapter);
-
+        SearchPolymerizationEntity item = searchPolymerizationAdapter.getItem(position);
+        if (item == null) return;
+        switch (view.getId()) {
+            case R.id.search_more_tv:
+                switch (item.classfyType) {
+                    case SEARCH_TYPE_CONTACT:
+                        ContactSearchActivity.launch(getContext(),
+                                searchLayout,
+                                TextUtils.isEmpty(etSearchName.getText()) ? "" : etSearchName.getText().toString());
+                        break;
+                    case SEARCH_TYPE_MSG:
+                        break;
+                    case SEARCH_TYPE_TEAM:
+                        GroupSearchActivity.launch(getContext(),
+                                etSearchName,
+                                GroupListActivity.GROUP_TYPE_MY_JOIN,
+                                TextUtils.isEmpty(etSearchName.getText()) ? "" : etSearchName.getText().toString());
+                        break;
+                }
+        }
     }
 
     @Override
@@ -367,28 +421,32 @@ public class SearchPolymerizationActivity extends BaseActivity implements BaseRe
                 ISearchItemEntity item = (ISearchItemEntity) obj;
                 switch (item.classfyType()) {
                     case SEARCH_TYPE_CONTACT:
-                        showContactDialogFragment(item.getId(), true);
+                        showContactDialogFragment(item.getId(), StringUtils.equalsIgnoreCase(item.getId(), getLoginUserId(), false));
                         break;
                     case SEARCH_TYPE_MSG:
                         switch (item.type()) {
                             case CHAT_TYPE_P2P:
                                 ChatActivity.launchP2P(getContext(),
-                                        item.getId(),
+                                        StringUtils.toLowerCase(item.getId()),
                                         TextUtils.isEmpty(item.getTitle()) ? "" : item.getTitle().toString(),
-                                        0,
+                                        item.getRecordTime(),
                                         0);
                                 break;
                             case CHAT_TYPE_TEAM:
                                 ChatActivity.launchTEAM(getContext(),
                                         item.getId(),
                                         TextUtils.isEmpty(item.getTitle()) ? "" : item.getTitle().toString(),
-                                        0,
+                                        item.getRecordTime(),
                                         0);
                                 break;
                         }
                         break;
                     case SEARCH_TYPE_TEAM:
-                        GroupDetailActivity.launchTEAM(getContext(), item.getId());
+                        ChatActivity.launchTEAM(getContext(),
+                                item.getId(),
+                                TextUtils.isEmpty(item.getTitle()) ? "" : item.getTitle().toString(),
+                                0,
+                                0);
                         break;
                 }
             }
@@ -403,7 +461,7 @@ public class SearchPolymerizationActivity extends BaseActivity implements BaseRe
      * @param hiddenChatBtn
      */
     public void showContactDialogFragment(String accid, boolean hiddenChatBtn) {
-        String tag = "ContactDialogFragment";
+        String tag = ContactDialogFragment.class.getSimpleName();
         FragmentTransaction mFragTransaction = getSupportFragmentManager().beginTransaction();
         Fragment fragment = getSupportFragmentManager().findFragmentByTag(tag);
         if (fragment != null) {

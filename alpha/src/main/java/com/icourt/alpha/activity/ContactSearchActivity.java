@@ -50,6 +50,7 @@ import io.realm.RealmResults;
  * version 1.0.0
  */
 public class ContactSearchActivity extends BaseActivity implements BaseRecyclerAdapter.OnItemClickListener {
+    public static final String KEY_KEYWORD = "keyWord";
     IMContactAdapter imContactAdapter;
     @BindView(R.id.et_contact_name)
     EditText etContactName;
@@ -61,9 +62,12 @@ public class ContactSearchActivity extends BaseActivity implements BaseRecyclerA
     SoftKeyboardSizeWatchLayout softKeyboardSizeWatchLayout;
     ContactDbService contactDbService;
 
-    public static void launch(@NonNull Context context, View searchLayout) {
+    public static void launch(@NonNull Context context,
+                              @Nullable View searchLayout,
+                              @Nullable String keyWord) {
         if (context == null) return;
         Intent intent = new Intent(context, ContactSearchActivity.class);
+        intent.putExtra(KEY_KEYWORD, keyWord);
         if (context instanceof Activity
                 && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP
                 && searchLayout != null) {
@@ -147,6 +151,8 @@ public class ContactSearchActivity extends BaseActivity implements BaseRecyclerA
                 }
             }
         });
+        etContactName.setText(getIntent().getStringExtra(KEY_KEYWORD));
+        etContactName.setSelection(etContactName.getText().length());
     }
 
     @Override

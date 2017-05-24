@@ -49,6 +49,7 @@ import static com.icourt.alpha.activity.GroupListActivity.GROUP_TYPE_TYPE_ALL;
  */
 public class GroupSearchActivity extends BaseActivity {
     private static final String KEY_GROUP_QUERY_TYPE = "GroupQueryType";
+    public static final String KEY_KEYWORD = "keyWord";
     GroupAdapter groupAdapter;
 
     @BindView(R.id.et_input_name)
@@ -60,10 +61,14 @@ public class GroupSearchActivity extends BaseActivity {
     @BindView(R.id.softKeyboardSizeWatchLayout)
     SoftKeyboardSizeWatchLayout softKeyboardSizeWatchLayout;
 
-    public static void launch(@NonNull Context context, View searchLayout, @GroupListActivity.GroupQueryType int type) {
+    public static void launch(@NonNull Context context,
+                              View searchLayout,
+                              @GroupListActivity.GroupQueryType int type,
+                              @Nullable String keyWord) {
         if (context == null) return;
         Intent intent = new Intent(context, GroupSearchActivity.class);
         intent.putExtra(KEY_GROUP_QUERY_TYPE, type);
+        intent.putExtra(KEY_KEYWORD, keyWord);
         if (context instanceof Activity
                 && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP
                 && searchLayout != null) {
@@ -155,6 +160,8 @@ public class GroupSearchActivity extends BaseActivity {
                 }
             }
         });
+        etInputName.setText(getIntent().getStringExtra(KEY_KEYWORD));
+        etInputName.setSelection(etInputName.getText().length());
     }
 
     @Override

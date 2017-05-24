@@ -10,13 +10,13 @@ import java.util.List;
  * version 1.0.0
  */
 public class SearchPolymerizationEntity {
-    public int type;
+    public int classfyType;
     public String headerTitle;
     public String footerTitle;
     public List<? extends ISearchItemEntity> data;
 
-    public SearchPolymerizationEntity(int type, String headerTitle, String footerTitle, List<? extends ISearchItemEntity> data) {
-        this.type = type;
+    public SearchPolymerizationEntity(int classfyType, String headerTitle, String footerTitle, List<? extends ISearchItemEntity> data) {
+        this.classfyType = classfyType;
         this.headerTitle = headerTitle;
         this.footerTitle = footerTitle;
         this.data = data;

@@ -40,7 +40,7 @@ public class SearchPolymerizationAdapter extends BaseArrayRecyclerAdapter<Search
         }
         searchItemAdapter.bindData(true, searchPolymerizationEntity.data);
         searchItemAdapter.setOnItemClickListener(super.onItemClickListener);
-        searchItemAdapter.setOnItemChildClickListener(super.onItemChildClickListener);
+        holder.bindChildClick(search_more_tv);
         search_more_tv.setVisibility(searchPolymerizationEntity.data.size() > 3 ? View.VISIBLE : View.GONE);
     }
 }

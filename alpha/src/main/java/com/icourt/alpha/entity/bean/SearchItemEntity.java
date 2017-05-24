@@ -19,6 +19,7 @@ public class SearchItemEntity implements ISearchItemEntity {
     public CharSequence content;
     public String icon;
     public CharSequence keyWord;
+    public long recordTime;
 
     public SearchItemEntity(CharSequence title, CharSequence content, String icon, CharSequence keyWord) {
         this.title = title;
@@ -40,6 +41,11 @@ public class SearchItemEntity implements ISearchItemEntity {
     @Override
     public int classfyType() {
         return classfyType;
+    }
+
+    @Override
+    public long getRecordTime() {
+        return recordTime;
     }
 
     @Override

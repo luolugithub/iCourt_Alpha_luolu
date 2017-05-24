@@ -261,7 +261,8 @@ public class GroupListActivity extends BaseActivity implements BaseRecyclerAdapt
             case R.id.rl_comm_search:
                 GroupSearchActivity.launch(getContext(),
                         v,
-                        getGroupQueryType());
+                        getGroupQueryType(),
+                        null);
                 break;
             default:
                 super.onClick(v);

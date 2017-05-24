@@ -157,7 +157,7 @@ public class ContactListFragment extends BaseFragment implements BaseRecyclerAda
         super.onClick(v);
         switch (v.getId()) {
             case R.id.rl_comm_search:
-                ContactSearchActivity.launch(getActivity(), v);
+                ContactSearchActivity.launch(getActivity(), v,null);
                 break;
         }
     }
