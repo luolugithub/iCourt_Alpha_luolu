@@ -15,10 +15,15 @@ import com.icourt.alpha.adapter.ProjectListAdapter;
 import com.icourt.alpha.adapter.baseadapter.adapterObserver.RefreshViewEmptyObserver;
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.entity.bean.ProjectEntity;
+import com.icourt.alpha.entity.event.ProjectActionEvent;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.ActionConstants;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
+
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -81,17 +86,20 @@ public class MyProjectFragment extends BaseFragment {
     @Override
     protected void initView() {
         projectType = getArguments().getInt(KEY_PROJECT_TYPE);
+        EventBus.getDefault().register(this);
         if (projectType == TYPE_ALL_PROJECT) {
             attorneyType = "";
             myStar = "";
+            refreshLayout.setNoticeEmpty(R.mipmap.icon_placeholder_project, "暂无项目");
         } else if (projectType == TYPE_MY_ATTENTION_PROJECT) {
             attorneyType = "";
             myStar = "1";
+            refreshLayout.setNoticeEmpty(R.mipmap.icon_placeholder_project, "暂无关注项目");
         } else if (projectType == TYPE_MY_PARTIC_PROJECT) {
             attorneyType = "O";
             myStar = "";
+            refreshLayout.setNoticeEmpty(R.mipmap.icon_placeholder_project, "暂无参与项目");
         }
-        refreshLayout.setNoticeEmpty(R.mipmap.icon_placeholder_project, R.string.null_project);
         refreshLayout.setMoveForHorizontal(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setHasFixedSize(true);
@@ -164,15 +172,20 @@ public class MyProjectFragment extends BaseFragment {
         }
     }
 
-//    @Override
-//    protected void onDestroyView() {
-//        super.onDestroyView();
-//        unbinder.unbind();
-//    }
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onRefrshEvent(ProjectActionEvent event) {
+        if (event == null) return;
+        if (event.action == ProjectActionEvent.PROJECT_REFRESG_ACTION) {
+            if (projectType == TYPE_MY_ATTENTION_PROJECT) {
+                refreshLayout.startRefresh();
+            }
+        }
+    }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
+        EventBus.getDefault().unregister(this);
         unbinder.unbind();
     }
 }

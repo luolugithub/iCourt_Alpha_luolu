@@ -60,10 +60,12 @@ public class TabProjectFragment extends BaseFragment {
         baseFragmentAdapter = new BaseFragmentAdapter(getChildFragmentManager());
         viewPager.setAdapter(baseFragmentAdapter);
         tabLayout.setupWithViewPager(viewPager);
-        baseFragmentAdapter.bindTitle(true, Arrays.asList("全部", "我关注的", "我参与的"));
+        baseFragmentAdapter.bindTitle(true, Arrays.asList("全部", "我关注的"));
         baseFragmentAdapter.bindData(true,
                 Arrays.asList(MyProjectFragment.newInstance(MyProjectFragment.TYPE_ALL_PROJECT),
-                        MyProjectFragment.newInstance(MyProjectFragment.TYPE_MY_ATTENTION_PROJECT), MyProjectFragment.newInstance(MyProjectFragment.TYPE_MY_PARTIC_PROJECT)));
+                        MyProjectFragment.newInstance(MyProjectFragment.TYPE_MY_ATTENTION_PROJECT)
+//                        MyProjectFragment.newInstance(MyProjectFragment.TYPE_MY_PARTIC_PROJECT)
+                ));
     }
 
     @OnClick({R.id.titleAction, R.id.titleAction2})

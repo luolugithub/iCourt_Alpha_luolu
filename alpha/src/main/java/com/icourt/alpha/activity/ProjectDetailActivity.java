@@ -19,6 +19,7 @@ import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.baseadapter.BaseFragmentAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.base.BaseActivity;
+import com.icourt.alpha.entity.event.ProjectActionEvent;
 import com.icourt.alpha.fragment.ProjectDetailFragment;
 import com.icourt.alpha.fragment.ProjectFileBoxFragment;
 import com.icourt.alpha.fragment.ProjectTaskFragment;
@@ -27,6 +28,8 @@ import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.widget.dialog.BottomActionDialog;
+
+import org.greenrobot.eventbus.EventBus;
 
 import java.util.Arrays;
 
@@ -288,6 +291,7 @@ public class ProjectDetailActivity extends BaseActivity implements OnFragmentCal
                 dismissLoadingDialog();
                 myStar = 1;
                 titleAction2.setImageResource(R.mipmap.header_icon_star_solid);
+                EventBus.getDefault().post(new ProjectActionEvent(ProjectActionEvent.PROJECT_REFRESG_ACTION));
             }
 
             @Override
@@ -309,6 +313,7 @@ public class ProjectDetailActivity extends BaseActivity implements OnFragmentCal
                 dismissLoadingDialog();
                 myStar = 0;
                 titleAction2.setImageResource(R.mipmap.header_icon_star_line);
+                EventBus.getDefault().post(new ProjectActionEvent(ProjectActionEvent.PROJECT_REFRESG_ACTION));
             }
 
             @Override

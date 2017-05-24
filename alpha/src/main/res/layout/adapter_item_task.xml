@@ -73,6 +73,7 @@
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:clipChildren="false"
                 android:layout_marginTop="8dp">
 
                 <LinearLayout
@@ -89,6 +90,7 @@
                         android:gravity="center_vertical"
                         android:maxLines="1"
                         android:text="00:00"
+                        android:textAlignment="center"
                         android:textColor="@color/alpha_font_color_gray"
                         android:textSize="@dimen/alpha_font_size_mini" />
 
@@ -96,13 +98,14 @@
                         android:id="@+id/task_check_list_tv"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginLeft="12dp"
+                        android:layout_marginLeft="5dp"
                         android:drawableLeft="@mipmap/task_son_list_icon"
                         android:drawablePadding="5dp"
                         android:ellipsize="end"
                         android:gravity="center_vertical"
                         android:maxLines="1"
                         android:text="0/0"
+                        android:textAlignment="center"
                         android:textColor="@color/alpha_font_color_gray"
                         android:textSize="@dimen/alpha_font_size_mini" />
 
@@ -110,13 +113,14 @@
                         android:id="@+id/task_file_num_tv"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginLeft="12dp"
+                        android:layout_marginLeft="5dp"
                         android:drawableLeft="@mipmap/task_attachment_icon"
                         android:drawablePadding="5dp"
                         android:ellipsize="end"
                         android:gravity="center_vertical"
                         android:maxLines="1"
                         android:text="0"
+                        android:textAlignment="center"
                         android:textColor="@color/alpha_font_color_gray"
                         android:textSize="@dimen/alpha_font_size_mini" />
 
@@ -124,13 +128,14 @@
                         android:id="@+id/task_comment_num_tv"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginLeft="12dp"
+                        android:layout_marginLeft="5dp"
                         android:drawableLeft="@mipmap/task_comment_icon"
                         android:drawablePadding="5dp"
                         android:ellipsize="end"
                         android:gravity="center_vertical"
                         android:maxLines="1"
                         android:text="0"
+                        android:textAlignment="center"
                         android:textColor="@color/alpha_font_color_gray"
                         android:textSize="@dimen/alpha_font_size_mini" />
 
@@ -138,9 +143,10 @@
 
                 <android.support.v7.widget.RecyclerView
                     android:id="@+id/tasl_member_recyclerview"
-                    android:layout_width="130dp"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_alignParentRight="true"
+                    android:minWidth="85dp"
                     android:overScrollMode="never">
 
                 </android.support.v7.widget.RecyclerView>

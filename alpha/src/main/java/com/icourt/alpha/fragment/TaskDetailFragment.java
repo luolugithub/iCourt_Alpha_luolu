@@ -13,6 +13,7 @@ import android.view.WindowManager;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.icourt.alpha.R;
@@ -203,10 +204,20 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
         unbinder.unbind();
     }
 
+    /**
+     * 选择项目回调
+     *
+     * @param projectEntity
+     * @param taskGroupEntity
+     */
     @Override
     public void onProjectTaskGroupSelect(ProjectEntity projectEntity, TaskGroupEntity taskGroupEntity) {
-
-        updateTask(taskItemEntity, projectEntity, taskGroupEntity);
+        if (projectEntity != null) {
+            if (taskItemEntity.attendeeUsers != null) {
+                taskItemEntity.attendeeUsers.clear();
+            }
+            updateTask(taskItemEntity, projectEntity, taskGroupEntity);
+        }
     }
 
     /**
@@ -222,13 +233,17 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
             @Override
             public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
                 dismissLoadingDialog();
-                EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION));
+
                 if (projectEntity != null) {
                     taskProjectTv.setText(projectEntity.name);
+                    EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_UPDATE_PROJECT_ACTION, projectEntity.pkId));
                 }
                 if (taskGroupEntity != null) {
                     taskGroupTv.setText(taskGroupEntity.name);
+                } else {
+                    taskGroupTv.setText("");
                 }
+                EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION));
             }
 
             @Override
@@ -247,10 +262,10 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
      */
     private String getTaskJson(TaskEntity.TaskItemEntity itemEntity, ProjectEntity projectEntity, TaskGroupEntity taskGroupEntity) {
         try {
+            if (itemEntity == null) return null;
             JsonObject jsonObject = new JsonObject();
             jsonObject.addProperty("id", itemEntity.id);
             jsonObject.addProperty("state", itemEntity.state);
-            jsonObject.addProperty("parentId", itemEntity.parentId);
             jsonObject.addProperty("dueTime", itemEntity.dueTime);
             jsonObject.addProperty("description", itemEntity.description);
             jsonObject.addProperty("valid", true);
@@ -260,8 +275,20 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
             }
             if (taskGroupEntity != null) {
                 jsonObject.addProperty("parentId", taskGroupEntity.id);
+            } else {
+                jsonObject.addProperty("parentId", itemEntity.parentId);
             }
-
+            JsonArray jsonarr = new JsonArray();
+            if (itemEntity.attendeeUsers != null) {
+                if (itemEntity.attendeeUsers.size() > 0) {
+                    for (TaskEntity.TaskItemEntity.AttendeeUserEntity attendeeUser : itemEntity.attendeeUsers) {
+                        jsonarr.add(attendeeUser.userId);
+                    }
+                } else {
+                    jsonarr.add(getLoginUserId());
+                }
+            }
+            jsonObject.add("attendees", jsonarr);
             return jsonObject.toString();
         } catch (Exception e) {
             e.printStackTrace();
@@ -272,17 +299,17 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
     @Override
     public void onFragmentCallBack(Fragment fragment, int type, Bundle params) {
         if (params != null) {
-            if (fragment instanceof DateSelectDialogFragment) {
+            if (fragment instanceof DateSelectDialogFragment) {//选择到期时间回调
                 long millis = params.getLong(KEY_FRAGMENT_RESULT);
                 taskTimeTv.setText(DateUtils.getTimeDateFormatMm(millis));
                 taskItemEntity.dueTime = millis;
                 updateTask(taskItemEntity, null, null);
-            } else if (fragment instanceof TaskGroupSelectFragment) {
+            } else if (fragment instanceof TaskGroupSelectFragment) {//选择任务组回调
                 TaskGroupEntity taskGroupEntity = (TaskGroupEntity) params.getSerializable(KEY_FRAGMENT_RESULT);
                 if (taskGroupEntity != null) {
                     taskGroupTv.setText(taskGroupEntity.name);
                     taskItemEntity.parentId = taskGroupEntity.id;
-                    updateTask(taskItemEntity, null, null);
+                    updateTask(taskItemEntity, null, taskGroupEntity);
                 }
             }
         }
@@ -291,7 +318,7 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onUpdateTaskDescEvent(TaskActionEvent event) {
         if (event == null) return;
-        if (event.action == TaskActionEvent.TASK_UPDATE_DESC_ACTION) {
+        if (event.action == TaskActionEvent.TASK_UPDATE_DESC_ACTION) {//修改任务描述
             taskDescTv.setText(event.desc);
             taskItemEntity.description = event.desc;
             updateTask(taskItemEntity, null, null);

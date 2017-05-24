@@ -24,6 +24,7 @@ import com.icourt.alpha.entity.event.TaskActionEvent;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.DateUtils;
+import com.icourt.alpha.utils.LoginInfoUtils;
 import com.icourt.alpha.widget.dialog.CenterMenuDialog;
 import com.icourt.alpha.widget.manager.TimerManager;
 import com.icourt.api.RequestUtils;
@@ -36,7 +37,6 @@ import retrofit2.Call;
 import retrofit2.Response;
 
 import static com.icourt.alpha.utils.LoginInfoUtils.getLoginUserId;
-import static com.icourt.alpha.utils.LoginInfoUtils.getLoginUserInfo;
 
 /**
  * Description
@@ -49,8 +49,8 @@ public class TaskAdapter extends BaseArrayRecyclerAdapter<TaskEntity>
         implements BaseRecyclerAdapter.OnItemClickListener,
         BaseRecyclerAdapter.OnItemLongClickListener,
         BaseRecyclerAdapter.OnItemChildClickListener {
-    TimeEntity.ItemEntity itemEntity;
-    OnShowFragmenDialogListener onShowFragmenDialogListener;
+
+    private OnShowFragmenDialogListener onShowFragmenDialogListener;
     private static final int SHOW_DELETE_DIALOG = 0;//删除提示对话框
     private static final int SHOW_FINISH_DIALOG = 1;//完成任务提示对话框
 
@@ -60,16 +60,8 @@ public class TaskAdapter extends BaseArrayRecyclerAdapter<TaskEntity>
         this.setOnItemChildClickListener(this);
     }
 
-    public OnShowFragmenDialogListener getOnShowFragmenDialogListener() {
-        return onShowFragmenDialogListener;
-    }
-
     public void setOnShowFragmenDialogListener(OnShowFragmenDialogListener onShowFragmenDialogListener) {
         this.onShowFragmenDialogListener = onShowFragmenDialogListener;
-    }
-
-    public void setItemEntity(TimeEntity.ItemEntity itemEntity) {
-        this.itemEntity = itemEntity;
     }
 
     @Override
@@ -91,7 +83,6 @@ public class TaskAdapter extends BaseArrayRecyclerAdapter<TaskEntity>
             recyclerView.setLayoutManager(layoutManager);
             taskItemAdapter = new TaskItemAdapter();
             recyclerView.setAdapter(taskItemAdapter);
-            taskItemAdapter.setItemEntity(itemEntity);
             taskItemAdapter.setOnItemClickListener(super.onItemClickListener);
             taskItemAdapter.setOnItemChildClickListener(super.onItemChildClickListener);
             taskItemAdapter.setOnItemLongClickListener(super.onItemLongClickListener);
@@ -114,10 +105,10 @@ public class TaskAdapter extends BaseArrayRecyclerAdapter<TaskEntity>
     public boolean onItemLongClick(BaseRecyclerAdapter adapter, ViewHolder holder, View view, int position) {
         TaskEntity.TaskItemEntity taskItemEntity = (TaskEntity.TaskItemEntity) adapter.getItem(position);
         ItemsEntity timeEntity = new ItemsEntity("开始计时", R.mipmap.time_start_orange_task);
-        if(taskItemEntity.isTiming){
+        if (taskItemEntity.isTiming) {
             timeEntity.itemIconRes = R.mipmap.time_stop_orange_task;
             timeEntity.itemTitle = "停止计时";
-        }else{
+        } else {
             timeEntity.itemIconRes = R.mipmap.time_start_orange_task;
             timeEntity.itemTitle = "开始计时";
         }
@@ -137,7 +128,7 @@ public class TaskAdapter extends BaseArrayRecyclerAdapter<TaskEntity>
         CenterMenuDialog centerMenuDialog;
         TaskEntity.TaskItemEntity taskItemEntity;
 
-        public CustOnItemClickListener(CenterMenuDialog centerMenuDialog, TaskEntity.TaskItemEntity taskItemEntity) {
+        CustOnItemClickListener(CenterMenuDialog centerMenuDialog, TaskEntity.TaskItemEntity taskItemEntity) {
             this.centerMenuDialog = centerMenuDialog;
             this.taskItemEntity = taskItemEntity;
         }
@@ -246,7 +237,8 @@ public class TaskAdapter extends BaseArrayRecyclerAdapter<TaskEntity>
             itemEntity.name = taskItemEntity.name;
             itemEntity.workDate = DateUtils.millis();
             itemEntity.createUserId = getLoginUserId();
-            itemEntity.username = getLoginUserInfo().getName();
+            if (LoginInfoUtils.getLoginUserInfo() != null)
+                itemEntity.username = LoginInfoUtils.getLoginUserInfo().getName();
             itemEntity.startTime = DateUtils.millis();
             if (taskItemEntity.matter != null) {
                 itemEntity.matterPkId = taskItemEntity.matter.id;

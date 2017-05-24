@@ -16,8 +16,8 @@ import android.text.TextWatcher;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.CheckedTextView;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.andview.refreshview.XRefreshView;
@@ -58,12 +58,6 @@ import retrofit2.Response;
 public class CommentListActivity extends BaseActivity implements BaseRecyclerAdapter.OnItemChildClickListener {
 
     private static final String KEY_TASK_ID = "key_task_id";
-    @BindView(R.id.titleBack)
-    CheckedTextView titleBack;
-    @BindView(R.id.titleContent)
-    TextView titleContent;
-    @BindView(R.id.titleAction)
-    CheckedTextView titleAction;
     @BindView(R.id.titleView)
     AppBarLayout titleView;
     @BindView(R.id.recyclerview)
@@ -80,6 +74,10 @@ public class CommentListActivity extends BaseActivity implements BaseRecyclerAda
     String taskId;
     int pageIndex, commentCount;
     CommentListAdapter commentListAdapter;
+    @BindView(R.id.titleBack)
+    ImageView titleBack;
+    @BindView(R.id.titleContent)
+    TextView titleContent;
 
 
     public static void launch(@NonNull Context context, @NonNull String taskId) {
@@ -101,7 +99,6 @@ public class CommentListActivity extends BaseActivity implements BaseRecyclerAda
     protected void initView() {
         super.initView();
         setTitle("查看评论");
-        titleAction.setVisibility(View.INVISIBLE);
         taskId = getIntent().getStringExtra(KEY_TASK_ID);
         refreshLayout.setNoticeEmpty(R.mipmap.icon_placeholder_task, R.string.task_no_comment_text);
         refreshLayout.setMoveForHorizontal(true);

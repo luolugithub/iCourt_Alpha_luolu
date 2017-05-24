@@ -78,15 +78,15 @@
                 android:id="@+id/task_users_layout"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:clipChildren="false"
                 android:gravity="center_vertical">
 
                 <android.support.v7.widget.RecyclerView
                     android:id="@+id/task_user_recyclerview"
-                    android:layout_width="85dp"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="center_vertical|start"
                     android:overScrollMode="never"
-                    android:minWidth="85dp">
+                    >
 
                 </android.support.v7.widget.RecyclerView>
 

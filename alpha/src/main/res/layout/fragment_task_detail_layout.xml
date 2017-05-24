@@ -76,6 +76,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="@dimen/dp10"
                     android:layout_weight="1"
+                    android:hint="添加任务组"
                     android:ellipsize="end"
                     android:maxLines="1"
                     android:textColor="@color/alpha_font_color_gray"

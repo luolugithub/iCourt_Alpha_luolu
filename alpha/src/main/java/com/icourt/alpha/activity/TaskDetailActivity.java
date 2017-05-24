@@ -66,6 +66,8 @@ import butterknife.OnClick;
 import retrofit2.Call;
 import retrofit2.Response;
 
+import static com.icourt.alpha.R.id.task_user_recyclerview;
+
 /**
  * Description
  * Company Beijing icourt
@@ -74,7 +76,7 @@ import retrofit2.Response;
  * version 2.0.0
  */
 
-public class TaskDetailActivity extends BaseActivity implements OnFragmentCallBackListener {
+public class TaskDetailActivity extends BaseActivity implements OnFragmentCallBackListener, BaseRecyclerAdapter.OnItemClickListener {
 
     private static final String KEY_TASK_ID = "key_task_id";
     private static final int SHOW_DELETE_DIALOG = 0;//删除提示对话框
@@ -98,7 +100,7 @@ public class TaskDetailActivity extends BaseActivity implements OnFragmentCallBa
     ImageView taskUserPic;
     @BindView(R.id.task_user_name)
     TextView taskUserName;
-    @BindView(R.id.task_user_recyclerview)
+    @BindView(task_user_recyclerview)
     RecyclerView taskUserRecyclerview;
     @BindView(R.id.task_time)
     TextView taskTime;
@@ -165,7 +167,7 @@ public class TaskDetailActivity extends BaseActivity implements OnFragmentCallBa
         super.onDestroy();
     }
 
-    @OnClick({R.id.titleAction, R.id.titleAction2, R.id.task_name, R.id.comment_layout, R.id.task_checkbox, R.id.task_user_layout, R.id.task_users_layout, R.id.task_start_iamge})
+    @OnClick({R.id.titleAction, R.id.titleAction2, R.id.task_name, task_user_recyclerview, R.id.comment_layout, R.id.task_checkbox, R.id.task_user_layout, R.id.task_users_layout, R.id.task_start_iamge})
     @Override
     public void onClick(View v) {
         super.onClick(v);
@@ -184,7 +186,7 @@ public class TaskDetailActivity extends BaseActivity implements OnFragmentCallBa
                 TaskDescUpdateActivity.launch(getContext(), taskName.getText().toString(), TaskDescUpdateActivity.UPDATE_TASK_NAME);
                 break;
             case R.id.task_user_layout:
-            case R.id.task_users_layout://选择负责人
+            case R.id.task_users_layout:
                 if (taskItemEntity.matter != null) {
                     showTaskAllotSelectDialogFragment(taskItemEntity.matter.id);
                 } else {
@@ -433,9 +435,12 @@ public class TaskDetailActivity extends BaseActivity implements OnFragmentCallBa
                         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
                         layoutManager.setOrientation(LinearLayoutManager.HORIZONTAL);
                         layoutManager.setReverseLayout(true);
+                        layoutManager.setStackFromEnd(true);
                         taskUserRecyclerview.setLayoutManager(layoutManager);
                         taskUserRecyclerview.setAdapter(usersAdapter = new TaskUsersAdapter());
-                        usersAdapter.bindData(false, taskItemEntity.attendeeUsers);
+                        usersAdapter.setOnItemClickListener(this);
+                       // taskItemEntity.attendeeUsers
+                        usersAdapter.bindData(true, taskItemEntity.attendeeUsers);
                     } else if (taskItemEntity.attendeeUsers.size() == 1) {
                         taskUsersLayout.setVisibility(View.GONE);
                         taskUserLayout.setVisibility(View.VISIBLE);
@@ -506,11 +511,7 @@ public class TaskDetailActivity extends BaseActivity implements OnFragmentCallBa
      * @param checkbox
      */
     private void updateTask(TaskEntity.TaskItemEntity itemEntity, final boolean state, final CheckBox checkbox) {
-        if (state) {
-            showLoadingDialog("完成任务...");
-        } else {
-            showLoadingDialog("取消完成任务...");
-        }
+        showLoadingDialog(null);
         getApi().taskUpdate(RequestUtils.createJsonBody(getTaskJson(itemEntity, state))).enqueue(new SimpleCallBack<JsonElement>() {
             @Override
             public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
@@ -548,8 +549,12 @@ public class TaskDetailActivity extends BaseActivity implements OnFragmentCallBa
             jsonObject.addProperty("updateTime", DateUtils.millis());
             JsonArray jsonarr = new JsonArray();
             if (itemEntity.attendeeUsers != null) {
-                for (TaskEntity.TaskItemEntity.AttendeeUserEntity attendeeUser : itemEntity.attendeeUsers) {
-                    jsonarr.add(attendeeUser.userId);
+                if (itemEntity.attendeeUsers.size() > 0) {
+                    for (TaskEntity.TaskItemEntity.AttendeeUserEntity attendeeUser : itemEntity.attendeeUsers) {
+                        jsonarr.add(attendeeUser.userId);
+                    }
+                } else {
+                    jsonarr.add(getLoginUserId());
                 }
             }
             jsonObject.add("attendees", jsonarr);
@@ -603,14 +608,26 @@ public class TaskDetailActivity extends BaseActivity implements OnFragmentCallBa
 
     @Override
     public void onFragmentCallBack(Fragment fragment, int type, Bundle params) {
-        if (fragment instanceof TaskAllotSelectDialogFragment) {
+        if (fragment instanceof TaskAllotSelectDialogFragment) {//选择负责人回调
             if (params != null) {
                 List<TaskEntity.TaskItemEntity.AttendeeUserEntity> attusers = (List<TaskEntity.TaskItemEntity.AttendeeUserEntity>) params.getSerializable("list");
-                usersAdapter.bindData(true, attusers);
-                if (taskItemEntity.attendeeUsers != null) {
-                    taskItemEntity.attendeeUsers.clear();
-                    taskItemEntity.attendeeUsers.addAll(attusers);
-                    updateTask(taskItemEntity, taskItemEntity.state, taskCheckbox);
+                if (attusers != null) {
+                    taskUsersLayout.setVisibility(View.VISIBLE);
+                    taskUserLayout.setVisibility(View.GONE);
+                    if (taskUserRecyclerview.getLayoutManager() == null) {
+                        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
+                        layoutManager.setOrientation(LinearLayoutManager.HORIZONTAL);
+                        layoutManager.setReverseLayout(true);
+                        taskUserRecyclerview.setLayoutManager(layoutManager);
+                        taskUserRecyclerview.setAdapter(usersAdapter = new TaskUsersAdapter());
+                        usersAdapter.setOnItemClickListener(this);
+                    }
+                    if (taskItemEntity.attendeeUsers != null) {
+                        taskItemEntity.attendeeUsers.clear();
+                        taskItemEntity.attendeeUsers.addAll(attusers);
+                        updateTask(taskItemEntity, taskItemEntity.state, taskCheckbox);
+                    }
+                    usersAdapter.bindData(true, taskItemEntity.attendeeUsers);
                 }
             }
         }
@@ -619,12 +636,41 @@ public class TaskDetailActivity extends BaseActivity implements OnFragmentCallBa
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onUpdateTaskNameEvent(TaskActionEvent event) {
         if (event == null) return;
-        if (event.action == TaskActionEvent.TASK_UPDATE_NAME_ACTION) {
+        if (event.action == TaskActionEvent.TASK_UPDATE_NAME_ACTION) {//修改任务名称
             String desc = event.desc;
             if (!TextUtils.isEmpty(desc)) {
                 taskName.setText(desc);
                 taskItemEntity.name = desc;
                 updateTask(taskItemEntity, taskItemEntity.state, null);
+            }
+        } else if (event.action == TaskActionEvent.TASK_UPDATE_PROJECT_ACTION) {//修改任务所属项目
+            taskUsersLayout.setVisibility(View.GONE);
+            taskUserLayout.setVisibility(View.VISIBLE);
+            if (getLoginUserInfo() != null) {
+                GlideUtils.loadUser(this, getLoginUserInfo().getPic(), taskUserPic);
+                taskUserName.setText(getLoginUserInfo().getName());
+                if (taskItemEntity.attendeeUsers != null) {
+                    taskItemEntity.attendeeUsers.clear();
+                    TaskEntity.TaskItemEntity.AttendeeUserEntity attendeeUserEntity = new TaskEntity.TaskItemEntity.AttendeeUserEntity();
+                    attendeeUserEntity.pic = getLoginUserInfo().getPic();
+                    attendeeUserEntity.userName = getLoginUserInfo().getName();
+                    attendeeUserEntity.userId = getLoginUserInfo().getUserId();
+                    taskItemEntity.attendeeUsers.add(attendeeUserEntity);
+                }
+            }
+            if (taskItemEntity.matter != null) {
+                taskItemEntity.matter.id = event.projectId;
+            }
+        }
+    }
+
+    @Override
+    public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
+        if (adapter instanceof TaskUsersAdapter) {
+            if (taskItemEntity.matter != null) {
+                showTaskAllotSelectDialogFragment(taskItemEntity.matter.id);
+            } else {
+                showTopSnackBar("请优先选择项目");
             }
         }
     }

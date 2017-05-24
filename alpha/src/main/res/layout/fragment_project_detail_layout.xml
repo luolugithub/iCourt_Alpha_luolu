@@ -8,13 +8,10 @@
     android:layout_height="match_parent"
     app:isHeightMatchParent="false">
 
-    <!--<com.andview.refreshview.XScrollView-->
-    <!--android:layout_width="match_parent"-->
-    <!--android:layout_height="match_parent"-->
-    <!--android:overScrollMode="never">-->
     <android.support.v4.widget.NestedScrollView
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:fillViewport="true">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -26,7 +23,7 @@
             <LinearLayout
                 android:id="@+id/procedure_layout"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:visibility="gone">
 
@@ -56,13 +53,12 @@
                 <android.support.v4.view.ViewPager
                     android:id="@+id/project_viewpager"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:minHeight="100dp">
+                    android:layout_height="500dp"
+                    >
 
                 </android.support.v4.view.ViewPager>
             </LinearLayout>
         </LinearLayout>
 
-        <!--</com.andview.refreshview.XScrollView>-->
     </android.support.v4.widget.NestedScrollView>
 </com.icourt.alpha.view.xrefreshlayout.RefreshLayout>
