@@ -27,12 +27,14 @@ import com.icourt.alpha.entity.bean.IMMessageCustomBody;
 import com.icourt.alpha.entity.bean.SearchItemEntity;
 import com.icourt.alpha.entity.bean.SearchPolymerizationEntity;
 import com.icourt.alpha.utils.GlobalMessageObserver;
+import com.icourt.alpha.utils.IMUtils;
 import com.icourt.alpha.utils.SpannableUtils;
 import com.icourt.alpha.view.SoftKeyboardSizeWatchLayout;
 import com.icourt.alpha.widget.filter.ListFilter;
 import com.netease.nimlib.sdk.NIMClient;
 import com.netease.nimlib.sdk.msg.MsgService;
 import com.netease.nimlib.sdk.search.model.MsgIndexRecord;
+import com.netease.nimlib.sdk.team.model.Team;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -56,7 +58,7 @@ import io.realm.RealmResults;
  * version 1.0.0
  */
 public class SearchPolymerizationActivity extends BaseActivity {
-
+    private final List<Team> localTeams = new ArrayList<>();
 
     @BindView(R.id.et_search_name)
     EditText etSearchName;
@@ -141,41 +143,21 @@ public class SearchPolymerizationActivity extends BaseActivity {
                 fiterRobots(contactBeen);
                 contactDbService.releaseService();
 
+
                 List<SearchItemEntity> searchItemEntities = convert2SearchItem(contactBeen, keyWord);
+                //添加联系人
                 if (searchItemEntities != null && !searchItemEntities.isEmpty()) {
-                    //添加联系人
                     result.add(new SearchPolymerizationEntity(SearchPolymerizationEntity.TYPE_CONTACT,
                             "联系人", "查看更多联系人", convert2SearchItem(contactBeen, keyWord)));
                 }
 
 
                 List<MsgIndexRecord> msgindexs = NIMClient.getService(MsgService.class).searchAllSessionBlock(keyWord, 4);
-                if (msgindexs != null && !msgindexs.isEmpty()) {
-                    List<SearchItemEntity> data = new ArrayList<>();
-                    for (MsgIndexRecord item : msgindexs) {
-                        if (item != null) {
-                            IMMessageCustomBody imBody = GlobalMessageObserver.getIMBody(item.getRecord().content);
-                            if (imBody != null
-                                    && !TextUtils.isEmpty(imBody.content)
-                                    && imBody.content.contains(keyWord)) {
-
-                                CharSequence content;
-                                if (item.getRecord().count > 1) {
-                                    content = String.format("%s条相关聊天记录", item.getRecord().count);
-                                } else {
-                                    //瞄色
-                                    CharSequence originalText = imBody.content;
-                                    content = SpannableUtils.getTextForegroundColorSpan(originalText, keyWord, foregroundColor);
-                                }
-                                data.add(new SearchItemEntity("群组", content, "", keyWord));
-                            }
-                            log("------------>" + item);
-                        }
-                    }
-                    if (!data.isEmpty()) {
-                        //添加聊天记录
-                        result.add(new SearchPolymerizationEntity(SearchPolymerizationEntity.TYPE_CHAT_HISTORTY, "聊天记录", "查看更多聊天记录", data));
-                    }
+                List<SearchItemEntity> searchItemEntities1 = convertMsg2SearchItem(msgindexs, keyWord);
+                //添加聊天记录
+                if (searchItemEntities1 != null && !searchItemEntities1.isEmpty()) {
+                    result.add(new SearchPolymerizationEntity(SearchPolymerizationEntity.TYPE_CHAT_HISTORTY,
+                            "聊天记录", "查看更多聊天记录", searchItemEntities1));
                 }
 
                 e.onNext(result);
@@ -190,6 +172,34 @@ public class SearchPolymerizationActivity extends BaseActivity {
                         searchPolymerizationAdapter.bindData(true, searchPolymerizationEntities);
                     }
                 });
+    }
+
+    private List<SearchItemEntity> convertMsg2SearchItem(List<MsgIndexRecord> msgindexs, String keyWord) {
+        List<SearchItemEntity> data = new ArrayList<>();
+        if (msgindexs != null && !msgindexs.isEmpty()) {
+            for (MsgIndexRecord item : msgindexs) {
+                IMUtils.logIMMessage("------------>MsgIndexRecord Message", item.getMessage());
+                log("------------>MsgIndexRecord:" + item);
+                if (item != null) {
+                    IMMessageCustomBody imBody = GlobalMessageObserver.getIMBody(item.getRecord().content);
+                    if (imBody != null
+                            && !TextUtils.isEmpty(imBody.content)
+                            && imBody.content.contains(keyWord)) {
+
+                        CharSequence content;
+                        if (item.getRecord().count > 1) {
+                            content = String.format("%s条相关聊天记录", item.getRecord().count);
+                        } else {
+                            //瞄色
+                            CharSequence originalText = imBody.content;
+                            content = SpannableUtils.getTextForegroundColorSpan(originalText, keyWord, foregroundColor);
+                        }
+                        data.add(new SearchItemEntity("群组", content, "", keyWord));
+                    }
+                }
+            }
+        }
+        return data;
     }
 
     private List<SearchItemEntity> convert2SearchItem(List<GroupContactBean> contactBeen, String keyWord) {

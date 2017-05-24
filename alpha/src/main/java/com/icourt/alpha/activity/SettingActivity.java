@@ -83,7 +83,8 @@ public class SettingActivity extends BaseActivity {
             GlideUtils.loadUser(this, alphaUserInfo.getPic(), photoImage);
             phoneEdittext.setText(alphaUserInfo.getPhone());
             emailEdittext.setText(alphaUserInfo.getMail());
-            phoneEdittext.setSelection(alphaUserInfo.getPhone().length());
+            phoneEdittext.setSelection(phoneEdittext.getText().length());
+           // phoneEdittext.setSelection(alphaUserInfo.getPhone().length());
         }
     }
 
