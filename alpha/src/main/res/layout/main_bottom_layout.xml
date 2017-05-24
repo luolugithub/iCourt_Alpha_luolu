@@ -52,8 +52,10 @@
     <LinearLayout
         android:id="@+id/tab_timing"
         style="@style/mainPageRadioButtonStyple"
+        android:layout_height="match_parent"
         android:layout_weight="1"
         android:background="?attr/selectableItemBackground"
+        android:gravity="center"
         android:orientation="vertical">
 
         <ImageView
@@ -64,15 +66,18 @@
 
         <TextView
             android:id="@+id/tab_timing_tv"
-            style="@style/mainPageRadioButtonStyple"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
             android:ellipsize="end"
             android:gravity="center"
             android:maxLines="1"
             android:orientation="vertical"
+            android:padding="0dp"
             android:text="开始计时"
-            android:textAlignment="center" />
+            android:textAlignment="center"
+            android:textColor="@color/sl_tab_main"
+            android:textSize="11sp" />
     </LinearLayout>
 
     <com.icourt.alpha.view.CheckableLayout
@@ -90,8 +95,8 @@
             android:clickable="false"
             android:drawableTop="@drawable/tab_find"
             android:enabled="false"
-            android:gravity="center"
             android:focusableInTouchMode="false"
+            android:gravity="center"
             android:text="探索"
             android:textAlignment="center" />
 
@@ -120,10 +125,10 @@
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
             android:clickable="false"
-            android:gravity="center"
             android:drawableTop="@drawable/tab_mine"
             android:enabled="false"
             android:focusableInTouchMode="false"
+            android:gravity="center"
             android:text="我的"
             android:textAlignment="center" />
 

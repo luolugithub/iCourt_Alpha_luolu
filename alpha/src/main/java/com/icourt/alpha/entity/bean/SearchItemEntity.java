@@ -1,5 +1,7 @@
 package com.icourt.alpha.entity.bean;
 
+import com.icourt.alpha.constants.Const;
+
 /**
  * Description
  * Company Beijing icourt
@@ -9,6 +11,10 @@ package com.icourt.alpha.entity.bean;
  */
 public class SearchItemEntity implements ISearchItemEntity {
 
+    public String id;
+    public int type;
+    @Const.SEARCH_TYPE
+    public int classfyType;
     public CharSequence title;
     public CharSequence content;
     public String icon;
@@ -19,6 +25,21 @@ public class SearchItemEntity implements ISearchItemEntity {
         this.content = content;
         this.icon = icon;
         this.keyWord = keyWord;
+    }
+
+    @Override
+    public String getId() {
+        return id;
+    }
+
+    @Override
+    public int type() {
+        return type;
+    }
+
+    @Override
+    public int classfyType() {
+        return classfyType;
     }
 
     @Override

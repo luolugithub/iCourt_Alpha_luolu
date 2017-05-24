@@ -10,9 +10,6 @@ import java.util.List;
  * version 1.0.0
  */
 public class SearchPolymerizationEntity {
-
-    public static final int TYPE_CONTACT=0;
-    public static final int TYPE_CHAT_HISTORTY=0;
     public int type;
     public String headerTitle;
     public String footerTitle;

@@ -126,6 +126,21 @@ public class Const {
 
     }
 
+
+    public static final int SEARCH_TYPE_CONTACT = 1;
+    public static final int SEARCH_TYPE_MSG = 2;
+    public static final int SEARCH_TYPE_TEAM = 3;
+
+
+    @IntDef({SEARCH_TYPE_CONTACT,
+            SEARCH_TYPE_MSG,
+            SEARCH_TYPE_TEAM})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface SEARCH_TYPE {
+
+    }
+
+
     //个人联系人
     public static final String SELECT_PHONE_TAG_ACTION = "select_phone_tag_action";//选择电话标签action
     public static final String SELECT_EMAIL_TAG_ACTION = "select_email_tag_action";//选择邮箱标签action

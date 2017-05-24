@@ -9,6 +9,12 @@ package com.icourt.alpha.entity.bean;
  */
 public interface ISearchItemEntity {
 
+    String getId();
+
+    int type();
+
+    int classfyType();
+
     CharSequence getTitle();
 
     CharSequence getContent();

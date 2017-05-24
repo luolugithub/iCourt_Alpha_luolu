@@ -5,6 +5,8 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
@@ -16,7 +18,9 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.icourt.alpha.R;
+import com.icourt.alpha.adapter.SearchItemAdapter;
 import com.icourt.alpha.adapter.SearchPolymerizationAdapter;
+import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.db.convertor.IConvertModel;
 import com.icourt.alpha.db.convertor.ListConvertor;
@@ -24,16 +28,20 @@ import com.icourt.alpha.db.dbmodel.ContactDbModel;
 import com.icourt.alpha.db.dbservice.ContactDbService;
 import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.icourt.alpha.entity.bean.IMMessageCustomBody;
+import com.icourt.alpha.entity.bean.ISearchItemEntity;
 import com.icourt.alpha.entity.bean.SearchItemEntity;
 import com.icourt.alpha.entity.bean.SearchPolymerizationEntity;
+import com.icourt.alpha.fragment.dialogfragment.ContactDialogFragment;
 import com.icourt.alpha.utils.GlobalMessageObserver;
 import com.icourt.alpha.utils.IMUtils;
 import com.icourt.alpha.utils.SpannableUtils;
 import com.icourt.alpha.view.SoftKeyboardSizeWatchLayout;
 import com.icourt.alpha.widget.filter.ListFilter;
 import com.netease.nimlib.sdk.NIMClient;
+import com.netease.nimlib.sdk.RequestCallbackWrapper;
 import com.netease.nimlib.sdk.msg.MsgService;
 import com.netease.nimlib.sdk.search.model.MsgIndexRecord;
+import com.netease.nimlib.sdk.team.TeamService;
 import com.netease.nimlib.sdk.team.model.Team;
 
 import java.util.ArrayList;
@@ -50,6 +58,12 @@ import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
 import io.realm.RealmResults;
 
+import static com.icourt.alpha.constants.Const.CHAT_TYPE_P2P;
+import static com.icourt.alpha.constants.Const.CHAT_TYPE_TEAM;
+import static com.icourt.alpha.constants.Const.SEARCH_TYPE_CONTACT;
+import static com.icourt.alpha.constants.Const.SEARCH_TYPE_MSG;
+import static com.icourt.alpha.constants.Const.SEARCH_TYPE_TEAM;
+
 /**
  * Description  聚合搜索
  * Company Beijing icourt
@@ -57,7 +71,7 @@ import io.realm.RealmResults;
  * date createTime：2017/5/24
  * version 1.0.0
  */
-public class SearchPolymerizationActivity extends BaseActivity {
+public class SearchPolymerizationActivity extends BaseActivity implements BaseRecyclerAdapter.OnItemChildClickListener, BaseRecyclerAdapter.OnItemClickListener {
     private final List<Team> localTeams = new ArrayList<>();
 
     @BindView(R.id.et_search_name)
@@ -100,6 +114,8 @@ public class SearchPolymerizationActivity extends BaseActivity {
         super.initView();
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setAdapter(searchPolymerizationAdapter = new SearchPolymerizationAdapter());
+        searchPolymerizationAdapter.setOnItemClickListener(this);
+        searchPolymerizationAdapter.setOnItemChildClickListener(this);
         etSearchName.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -142,27 +158,36 @@ public class SearchPolymerizationActivity extends BaseActivity {
                 List<GroupContactBean> contactBeen = ListConvertor.convertList(new ArrayList<IConvertModel<GroupContactBean>>(name));
                 fiterRobots(contactBeen);
                 contactDbService.releaseService();
-
-
-                List<SearchItemEntity> searchItemEntities = convert2SearchItem(contactBeen, keyWord);
+                List<SearchItemEntity> searchContactItems = convert2SearchItem(contactBeen, keyWord);
                 //添加联系人
-                if (searchItemEntities != null && !searchItemEntities.isEmpty()) {
-                    result.add(new SearchPolymerizationEntity(SearchPolymerizationEntity.TYPE_CONTACT,
-                            "联系人", "查看更多联系人", convert2SearchItem(contactBeen, keyWord)));
+                if (searchContactItems != null && !searchContactItems.isEmpty()) {
+                    result.add(new SearchPolymerizationEntity(SEARCH_TYPE_CONTACT,
+                            "联系人", "查看更多联系人", searchContactItems));
                 }
 
+                //查询讨论组
+                List<Team> teamByKeyWord = getTeamByKeyWord(keyWord);
+                List<SearchItemEntity> searchTeamItems = convertTeam2SearchItem(teamByKeyWord, keyWord);
+                //添加讨论组
+                if (searchTeamItems != null && !searchTeamItems.isEmpty()) {
+                    result.add(new SearchPolymerizationEntity(SEARCH_TYPE_TEAM,
+                            "讨论组", "查看更多讨论组", searchTeamItems));
+                }
 
+                //查询聊天记录
                 List<MsgIndexRecord> msgindexs = NIMClient.getService(MsgService.class).searchAllSessionBlock(keyWord, 4);
-                List<SearchItemEntity> searchItemEntities1 = convertMsg2SearchItem(msgindexs, keyWord);
+                List<SearchItemEntity> searchMsgItems = convertMsg2SearchItem(msgindexs, keyWord);
                 //添加聊天记录
-                if (searchItemEntities1 != null && !searchItemEntities1.isEmpty()) {
-                    result.add(new SearchPolymerizationEntity(SearchPolymerizationEntity.TYPE_CHAT_HISTORTY,
-                            "聊天记录", "查看更多聊天记录", searchItemEntities1));
+                if (searchMsgItems != null && !searchMsgItems.isEmpty()) {
+                    result.add(new SearchPolymerizationEntity(SEARCH_TYPE_MSG,
+                            "聊天记录", "查看更多聊天记录", searchMsgItems));
                 }
 
                 e.onNext(result);
                 e.onComplete();
             }
+
+
         }).compose(this.<List<SearchPolymerizationEntity>>bindToLifecycle())
                 .subscribeOn(Schedulers.newThread())
                 .observeOn(AndroidSchedulers.mainThread())
@@ -172,11 +197,48 @@ public class SearchPolymerizationActivity extends BaseActivity {
                         searchPolymerizationAdapter.bindData(true, searchPolymerizationEntities);
                     }
                 });
+        NIMClient.getService(TeamService.class)
+                .queryTeamList()
+                .setCallback(new RequestCallbackWrapper<List<Team>>() {
+                    @Override
+                    public void onResult(int code, List<Team> result, Throwable exception) {
+                        log("----------->code:" + code + " ex:" + exception);
+                        if (result != null) {
+                            for (Team t : result) {
+                                IMUtils.logIMTeam("---------->team:", t);
+                            }
+                        }
+                    }
+                });
+    }
+
+
+    /**
+     * 根据名称 搜team
+     *
+     * @param keyWord
+     * @return
+     */
+    private List<Team> getTeamByKeyWord(String keyWord) {
+        if (localTeams.isEmpty()) {
+            localTeams.addAll(NIMClient.getService(TeamService.class)
+                    .queryTeamListBlock());
+        }
+        List<Team> teams = new ArrayList<>();
+        for (Team team : localTeams) {
+            if (team != null
+                    && !TextUtils.isEmpty(team.getName())
+                    && team.getName().contains(keyWord)) {
+                teams.add(team);
+            }
+        }
+        return teams;
     }
 
     private List<SearchItemEntity> convertMsg2SearchItem(List<MsgIndexRecord> msgindexs, String keyWord) {
         List<SearchItemEntity> data = new ArrayList<>();
         if (msgindexs != null && !msgindexs.isEmpty()) {
+            ContactDbService contactDbService = new ContactDbService(getLoginUserId());
             for (MsgIndexRecord item : msgindexs) {
                 IMUtils.logIMMessage("------------>MsgIndexRecord Message", item.getMessage());
                 log("------------>MsgIndexRecord:" + item);
@@ -185,7 +247,27 @@ public class SearchPolymerizationActivity extends BaseActivity {
                     if (imBody != null
                             && !TextUtils.isEmpty(imBody.content)
                             && imBody.content.contains(keyWord)) {
-
+                        String title = null;
+                        String icon = null;
+                        switch (imBody.ope) {
+                            case CHAT_TYPE_P2P:
+                                ContactDbModel contactDbModel = contactDbService.queryFirst("accid", imBody.to);
+                                if (contactDbModel != null) {
+                                    GroupContactBean groupContactBean = contactDbModel.convert2Model();
+                                    if (groupContactBean != null) {
+                                        title = groupContactBean.name;
+                                        icon = groupContactBean.pic;
+                                    }
+                                }
+                                break;
+                            case CHAT_TYPE_TEAM:
+                                Team team = NIMClient.getService(TeamService.class).queryTeamBlock(imBody.to);
+                                if (team != null) {
+                                    title = team.getName();
+                                    icon = team.getIcon();
+                                }
+                                break;
+                        }
                         CharSequence content;
                         if (item.getRecord().count > 1) {
                             content = String.format("%s条相关聊天记录", item.getRecord().count);
@@ -194,10 +276,14 @@ public class SearchPolymerizationActivity extends BaseActivity {
                             CharSequence originalText = imBody.content;
                             content = SpannableUtils.getTextForegroundColorSpan(originalText, keyWord, foregroundColor);
                         }
-                        data.add(new SearchItemEntity("群组", content, "", keyWord));
+                        SearchItemEntity searchItemEntity = new SearchItemEntity(title, content, icon, keyWord);
+                        searchItemEntity.id = imBody.to;
+                        searchItemEntity.classfyType = SEARCH_TYPE_MSG;
+                        data.add(new SearchItemEntity(title, content, icon, keyWord));
                     }
                 }
             }
+            contactDbService.releaseService();
         }
         return data;
     }
@@ -208,12 +294,40 @@ public class SearchPolymerizationActivity extends BaseActivity {
             for (GroupContactBean item : contactBeen) {
                 if (item != null) {
                     CharSequence originalText = item.name;
-                    data.add(new SearchItemEntity(SpannableUtils.getTextForegroundColorSpan(originalText, keyWord, foregroundColor), null, item.pic, keyWord));
+                    SearchItemEntity searchItemEntity = new SearchItemEntity(SpannableUtils.getTextForegroundColorSpan(originalText, keyWord, foregroundColor), null, item.pic, keyWord);
+                    searchItemEntity.classfyType = SEARCH_TYPE_CONTACT;
+                    searchItemEntity.type = item.type;
+                    searchItemEntity.id = item.accid;
+                    data.add(searchItemEntity);
                 }
             }
         }
         return data;
     }
+
+    /**
+     * 将team 转化成搜索的item
+     *
+     * @param teams
+     * @param keyWord
+     * @return
+     */
+    private List<SearchItemEntity> convertTeam2SearchItem(List<Team> teams, String keyWord) {
+        List<SearchItemEntity> data = new ArrayList<>();
+        if (teams != null) {
+            for (Team item : teams) {
+                if (item != null) {
+                    CharSequence originalText = item.getName();
+                    SearchItemEntity searchItemEntity = new SearchItemEntity(SpannableUtils.getTextForegroundColorSpan(originalText, keyWord, foregroundColor), null, item.getIcon(), keyWord);
+                    searchItemEntity.id = item.getId();
+                    searchItemEntity.classfyType = SEARCH_TYPE_TEAM;
+                    data.add(searchItemEntity);
+                }
+            }
+        }
+        return data;
+    }
+
 
     /**
      * 过滤掉机器人
@@ -236,5 +350,66 @@ public class SearchPolymerizationActivity extends BaseActivity {
                 super.onClick(v);
                 break;
         }
+    }
+
+    @Override
+    public void onItemChildClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
+
+        log("----------->1:" + adapter);
+
+    }
+
+    @Override
+    public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
+        if (adapter instanceof SearchItemAdapter) {
+            Object obj = adapter.getItem(position);
+            if (obj instanceof ISearchItemEntity) {
+                ISearchItemEntity item = (ISearchItemEntity) obj;
+                switch (item.classfyType()) {
+                    case SEARCH_TYPE_CONTACT:
+                        showContactDialogFragment(item.getId(), true);
+                        break;
+                    case SEARCH_TYPE_MSG:
+                        switch (item.type()) {
+                            case CHAT_TYPE_P2P:
+                                ChatActivity.launchP2P(getContext(),
+                                        item.getId(),
+                                        TextUtils.isEmpty(item.getTitle()) ? "" : item.getTitle().toString(),
+                                        0,
+                                        0);
+                                break;
+                            case CHAT_TYPE_TEAM:
+                                ChatActivity.launchTEAM(getContext(),
+                                        item.getId(),
+                                        TextUtils.isEmpty(item.getTitle()) ? "" : item.getTitle().toString(),
+                                        0,
+                                        0);
+                                break;
+                        }
+                        break;
+                    case SEARCH_TYPE_TEAM:
+                        GroupDetailActivity.launchTEAM(getContext(), item.getId());
+                        break;
+                }
+            }
+
+        }
+    }
+
+    /**
+     * 展示联系人对话框
+     *
+     * @param accid
+     * @param hiddenChatBtn
+     */
+    public void showContactDialogFragment(String accid, boolean hiddenChatBtn) {
+        String tag = "ContactDialogFragment";
+        FragmentTransaction mFragTransaction = getSupportFragmentManager().beginTransaction();
+        Fragment fragment = getSupportFragmentManager().findFragmentByTag(tag);
+        if (fragment != null) {
+            mFragTransaction.remove(fragment);
+        }
+        ContactDialogFragment.newInstance(accid, "成员资料", hiddenChatBtn)
+                .show(mFragTransaction, tag);
     }
 }

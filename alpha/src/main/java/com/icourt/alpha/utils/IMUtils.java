@@ -171,6 +171,12 @@ public class IMUtils {
                 sb.append("\nid:" + team.getId());
                 sb.append("\nname:" + team.getName());
                 sb.append("\nicon:" + team.getIcon());
+                sb.append("\nannouncement:" + team.getAnnouncement());
+                sb.append("\nintroduce:" + team.getIntroduce());
+                sb.append("\ncreateTime:" + team.getCreateTime());
+                sb.append("\nmemberCount:" + team.getMemberCount());
+                sb.append("\nteamBeInviteMode:" + team.getTeamBeInviteMode());
+                sb.append("\nmemberLimit:" + team.getMemberLimit());
             }
             LogUtils.d(sb.toString());
         } catch (Exception e) {

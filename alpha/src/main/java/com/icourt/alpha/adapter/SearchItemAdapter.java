@@ -18,7 +18,6 @@ import com.icourt.alpha.utils.GlideUtils;
  * version 1.0.0
  */
 public class SearchItemAdapter<T extends ISearchItemEntity> extends BaseArrayRecyclerAdapter<T> {
-
     public int maxItemCount = 3;
 
     public SearchItemAdapter(int maxItemCount) {
@@ -47,4 +46,5 @@ public class SearchItemAdapter<T extends ISearchItemEntity> extends BaseArrayRec
         int itemCount = super.getItemCount();
         return Math.min(itemCount, maxItemCount);
     }
+
 }
