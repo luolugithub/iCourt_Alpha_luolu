@@ -28,7 +28,7 @@ public class TaskUsersAdapter extends BaseArrayRecyclerAdapter<TaskEntity.TaskIt
         ImageView imageView = holder.obtainView(R.id.user_image);
 
         if (getItemCount() > 2) {
-            if (position == getItemCount() - 1) {
+            if (position == 0) {
                 TextDrawable textDrawable = TextDrawable.builder().buildRound(String.valueOf(getData().size()), 0xFF8c8f92);
                 imageView.setImageDrawable(textDrawable);
             } else {
@@ -36,9 +36,13 @@ public class TaskUsersAdapter extends BaseArrayRecyclerAdapter<TaskEntity.TaskIt
             }
         } else if (getItemCount() == 1) {
             GlideUtils.loadUser(imageView.getContext(), attendeeUserEntity.pic, imageView);
-            setFirstParams(holder, 0);
+            //setFirstParams(holder, 0);
         } else {
             GlideUtils.loadUser(imageView.getContext(), attendeeUserEntity.pic, imageView);
+        }
+
+        if (position == getItemCount() - 1) {
+            setFirstParams(holder, 0);
         }
     }
 

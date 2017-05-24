@@ -57,6 +57,7 @@ import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
@@ -435,11 +436,11 @@ public class TaskDetailActivity extends BaseActivity implements OnFragmentCallBa
                         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
                         layoutManager.setOrientation(LinearLayoutManager.HORIZONTAL);
                         layoutManager.setReverseLayout(true);
-                        layoutManager.setStackFromEnd(true);
                         taskUserRecyclerview.setLayoutManager(layoutManager);
                         taskUserRecyclerview.setAdapter(usersAdapter = new TaskUsersAdapter());
                         usersAdapter.setOnItemClickListener(this);
-                       // taskItemEntity.attendeeUsers
+                        // taskItemEntity.attendeeUsers
+                        Collections.reverse(taskItemEntity.attendeeUsers);
                         usersAdapter.bindData(true, taskItemEntity.attendeeUsers);
                     } else if (taskItemEntity.attendeeUsers.size() == 1) {
                         taskUsersLayout.setVisibility(View.GONE);
