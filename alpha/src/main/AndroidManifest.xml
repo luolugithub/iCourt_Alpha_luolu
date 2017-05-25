@@ -121,7 +121,9 @@
         <activity
             android:name=".activity.AboutActivity"
             android:screenOrientation="portrait" />
-
+        <activity
+            android:name=".activity.ChatHistortySearchActivity"
+            android:screenOrientation="portrait" />
         <activity
             android:name=".activity.UpdatePhoneOrMailActivity"
             android:screenOrientation="portrait" />

@@ -355,16 +355,20 @@ public class SearchPolymerizationActivity extends BaseActivity implements BaseRe
                 finish();
                 break;
             case R.id.search_msg_tv:
+                ChatHistortySearchActivity
+                        .launch(getContext(),
+                                null,
+                                null);
                 break;
             case R.id.search_group_tv:
                 GroupSearchActivity.launch(getContext(),
-                        etSearchName,
+                        null,
                         GroupListActivity.GROUP_TYPE_MY_JOIN,
                         null);
                 break;
             case R.id.search_customer_tv:
                 ContactSearchActivity.launch(getContext(),
-                        searchLayout,
+                        null,
                         null);
                 break;
             default:
@@ -386,6 +390,10 @@ public class SearchPolymerizationActivity extends BaseActivity implements BaseRe
                                 TextUtils.isEmpty(etSearchName.getText()) ? "" : etSearchName.getText().toString());
                         break;
                     case SEARCH_TYPE_MSG:
+                        ChatHistortySearchActivity
+                                .launch(getContext(),
+                                        etSearchName,
+                                        TextUtils.isEmpty(etSearchName.getText()) ? "" : etSearchName.getText().toString());
                         break;
                     case SEARCH_TYPE_TEAM:
                         GroupSearchActivity.launch(getContext(),
