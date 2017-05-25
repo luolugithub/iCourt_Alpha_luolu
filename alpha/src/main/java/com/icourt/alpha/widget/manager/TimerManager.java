@@ -328,9 +328,9 @@ public class TimerManager {
                         .enqueue(new SimpleCallBack<JsonElement>() {
                             @Override
                             public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
-                                SpUtils.getInstance().putData(String.format(KEY_TIMER, getUid()), "");
                                 broadTimingEvent(timer.pkId, TimingEvent.TIMING_STOP);
                                 stopTimingTask();
+                                SpUtils.getInstance().putData(String.format(KEY_TIMER, getUid()), "");
                             }
                         });
             }
