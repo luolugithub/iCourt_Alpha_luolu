@@ -1,5 +1,7 @@
 package com.icourt.alpha.adapter;
 
+import android.text.SpannableString;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.CheckedTextView;
 import android.widget.ImageView;
@@ -10,6 +12,7 @@ import com.icourt.alpha.adapter.baseadapter.MultiSelectRecyclerAdapter;
 import com.icourt.alpha.constants.Const;
 import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.icourt.alpha.utils.GlideUtils;
+import com.icourt.alpha.utils.SpannableUtils;
 
 /**
  * Descriptionn  联系人适配器
@@ -19,7 +22,7 @@ import com.icourt.alpha.utils.GlideUtils;
  * version 1.0.0
  */
 public class IMContactAdapter extends MultiSelectRecyclerAdapter<GroupContactBean> {
-
+    int foregroundColor = 0xFFed6c00;
     @Const.AdapterViewType
     private int type;
 
@@ -27,6 +30,16 @@ public class IMContactAdapter extends MultiSelectRecyclerAdapter<GroupContactBea
         this.type = Const.VIEW_TYPE_ITEM;
     }
 
+    private String keyWord;
+
+    public IMContactAdapter(String keyWord) {
+        this.type = Const.VIEW_TYPE_ITEM;
+        this.keyWord = keyWord;
+    }
+
+    public void setKeyWord(String keyWord) {
+        this.keyWord = keyWord;
+    }
 
     public IMContactAdapter(@Const.AdapterViewType int type) {
         this.type = type;
@@ -50,7 +63,14 @@ public class IMContactAdapter extends MultiSelectRecyclerAdapter<GroupContactBea
         ImageView iv_contact_icon = holder.obtainView(R.id.iv_contact_icon);
         TextView tv_contact_name = holder.obtainView(R.id.tv_contact_name);
         GlideUtils.loadUser(iv_contact_icon.getContext(), groupContactBean.pic, iv_contact_icon);
-        tv_contact_name.setText(groupContactBean.name);
+        if (!TextUtils.isEmpty(keyWord)) {
+            String originalText = groupContactBean.name;
+            SpannableString textForegroundColorSpan = SpannableUtils.getTextForegroundColorSpan(originalText, keyWord, foregroundColor);
+            tv_contact_name.setText(textForegroundColorSpan);
+        } else {
+            tv_contact_name.setText(groupContactBean.name);
+        }
+
         CheckedTextView ctv_contact = holder.obtainView(R.id.ctv_contact);
         if (ctv_contact != null) {
             if (isSelectable() && ctv_contact.getVisibility() != View.VISIBLE) {

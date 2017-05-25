@@ -9,15 +9,15 @@ public interface apiConfig {
     /**
      * 接口请求超时时间
      */
-    int SOCKET_TIME_OUT = 10 * 60_000;
+    int SOCKET_TIME_OUT = 5 * 60_000;
 
     /**
      * 写入时间
      */
-    int SOCKET_WRITE_TIME_OUT = 10 * 60_000;
+    int SOCKET_WRITE_TIME_OUT = 5 * 60_000;
 
     /**
      * 接口响应超时时间
      */
-    int SOCKET_RESPONSE_TIME_OUT = 10 * 60_000;
+    int SOCKET_RESPONSE_TIME_OUT = 5 * 60_000;
 }

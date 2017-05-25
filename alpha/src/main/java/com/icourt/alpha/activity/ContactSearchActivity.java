@@ -28,7 +28,6 @@ import com.icourt.alpha.db.convertor.IConvertModel;
 import com.icourt.alpha.db.convertor.ListConvertor;
 import com.icourt.alpha.db.dbmodel.ContactDbModel;
 import com.icourt.alpha.db.dbservice.ContactDbService;
-import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.view.SoftKeyboardSizeWatchLayout;
@@ -90,8 +89,7 @@ public class ContactSearchActivity extends BaseActivity implements BaseRecyclerA
     @Override
     protected void initView() {
         super.initView();
-        AlphaUserInfo loginUserInfo = getLoginUserInfo();
-        contactDbService = new ContactDbService(loginUserInfo == null ? "" : loginUserInfo.getUserId());
+        contactDbService = new ContactDbService(getLoginUserId());
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setAdapter(imContactAdapter = new IMContactAdapter());
         imContactAdapter.setOnItemClickListener(this);
@@ -129,8 +127,10 @@ public class ContactSearchActivity extends BaseActivity implements BaseRecyclerA
             @Override
             public void afterTextChanged(Editable s) {
                 if (TextUtils.isEmpty(s)) {
+                    imContactAdapter.setKeyWord(null);
                     imContactAdapter.clearData();
                 } else {
+                    imContactAdapter.setKeyWord(s.toString());
                     getData(true);
                 }
             }
