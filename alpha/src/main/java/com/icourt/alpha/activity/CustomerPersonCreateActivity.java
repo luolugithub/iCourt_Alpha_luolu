@@ -387,8 +387,7 @@ public class CustomerPersonCreateActivity extends BaseActivity {
                 change_sex();
                 break;
             case R.id.activity_add_person_contact_group_textview://选择团队
-                if (groupBeanList != null)
-                    GroupSelectActivity.launchForResult(CustomerPersonCreateActivity.this, groupBeanList, SELECT_GROUP_REQUEST);
+                GroupSelectActivity.launchForResult(CustomerPersonCreateActivity.this, groupBeanList, SELECT_GROUP_REQUEST);
                 break;
             case R.id.activity_add_person_contact_add_oldname_layout://增加曾用名
                 addOldNameItemView(null);
@@ -906,7 +905,7 @@ public class CustomerPersonCreateActivity extends BaseActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == SELECT_GROUP_REQUEST && resultCode == RESULT_OK) {
             if (data != null) {
-                groupBeanList = (ArrayList<SelectGroupBean>) data.getSerializableExtra("groups");
+                groupBeanList = (ArrayList<SelectGroupBean>) data.getSerializableExtra("groupBeenList");
                 setSelectGroupText();
             }
         } else if (requestCode == SELECT_OTHER_REQUEST && resultCode == RESULT_OK) {

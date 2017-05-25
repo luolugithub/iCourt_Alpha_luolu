@@ -60,8 +60,9 @@ public class GroupSelectActivity extends BaseActivity implements BaseRecyclerAda
 
     SelectGroupAdapter selectGroupAdapter;
     List<SelectGroupBean> groupBeanList;
+    List<SelectGroupBean> userGroups;
 
-    public static void launchForResult(@NonNull Activity context, @NonNull List<SelectGroupBean> groupBeanList, int requestCode) {
+    public static void launchForResult(@NonNull Activity context, List<SelectGroupBean> groupBeanList, int requestCode) {
         if (context == null) return;
         Intent intent = new Intent(context, GroupSelectActivity.class);
         intent.putExtra("groupBeanList", (Serializable) groupBeanList);
@@ -80,6 +81,8 @@ public class GroupSelectActivity extends BaseActivity implements BaseRecyclerAda
     protected void initView() {
         super.initView();
         setTitle("负责团队");
+        if (getLoginUserInfo() != null)
+            userGroups = getLoginUserInfo().getGroups();
         groupBeanList = (List<SelectGroupBean>) getIntent().getSerializableExtra("groupBeanList");
         refreshLayout.setNoticeEmpty(R.mipmap.icon_placeholder_user, "暂无负责团队");
         refreshLayout.setMoveForHorizontal(true);
@@ -156,8 +159,28 @@ public class GroupSelectActivity extends BaseActivity implements BaseRecyclerAda
         }
     }
 
+
     @Override
     public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
-        selectGroupAdapter.toggleSelected(position);
+        SelectGroupBean groupBean = (SelectGroupBean) adapter.getItem(position);
+        int last = 0;
+        if (userGroups != null) {
+            if (userGroups.contains(groupBean) && selectGroupAdapter.getSelectedData().contains(groupBean)) {
+                if (selectGroupAdapter.getSelectedData() != null) {
+                    for (SelectGroupBean selectGroupBean : userGroups) {
+                        if (selectGroupAdapter.getSelectedData().contains(selectGroupBean)) {
+                            last += 1;
+                        }
+                    }
+                    if (last > 1) {
+                        selectGroupAdapter.toggleSelected(position);
+                    } else {
+                        showTopSnackBar("至少保留一个自己的所属团队");
+                    }
+                }
+            } else {
+                selectGroupAdapter.toggleSelected(position);
+            }
+        }
     }
 }

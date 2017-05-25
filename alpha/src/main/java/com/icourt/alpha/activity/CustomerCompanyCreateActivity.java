@@ -263,8 +263,7 @@ public class CustomerCompanyCreateActivity extends BaseActivity {
                 }
                 break;
             case R.id.activity_add_group_contact_group_textview://选择团队
-                if (groupBeanList != null)
-                    GroupSelectActivity.launchForResult(CustomerCompanyCreateActivity.this, groupBeanList, SELECT_GROUP_REQUEST);
+                GroupSelectActivity.launchForResult(CustomerCompanyCreateActivity.this, groupBeanList, SELECT_GROUP_REQUEST);
                 break;
             case R.id.activity_add_group_contact_add_address_layout://增加地址
                 addAddressItemView(null);
@@ -602,7 +601,7 @@ public class CustomerCompanyCreateActivity extends BaseActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == SELECT_GROUP_REQUEST && resultCode == RESULT_OK) {
             if (data != null) {
-                groupBeanList = (ArrayList<SelectGroupBean>) data.getSerializableExtra("groups");
+                groupBeanList = (ArrayList<SelectGroupBean>) data.getSerializableExtra("groupBeenList");
                 setSelectGroupText();
             }
         } else if (requestCode == SELECT_OTHER_REQUEST && resultCode == RESULT_OK) {

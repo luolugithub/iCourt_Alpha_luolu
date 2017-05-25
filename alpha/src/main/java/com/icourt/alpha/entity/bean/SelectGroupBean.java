@@ -1,5 +1,7 @@
 package com.icourt.alpha.entity.bean;
 
+import android.text.TextUtils;
+
 import com.google.gson.annotations.SerializedName;
 
 import java.io.Serializable;
@@ -12,10 +14,19 @@ import java.io.Serializable;
  * version 2.0.0
  */
 
-public class SelectGroupBean implements Serializable{
+public class SelectGroupBean implements Serializable {
 
     public String groupId;
     @SerializedName(value = "groupName", alternate = {"groupname"})
     public String groupName;
 
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) return false;
+        SelectGroupBean groupBean = (SelectGroupBean) obj;
+        if (TextUtils.equals(this.groupId, groupBean.groupId)) {
+            return true;
+        }
+        return false;
+    }
 }

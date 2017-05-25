@@ -301,15 +301,17 @@ public class TaskCreateActivity extends BaseActivity implements ProjectSelectDia
         jsonObject.addProperty("type", 0);
         jsonObject.addProperty("valid", 1);
 
+        JsonArray jsonArray = new JsonArray();
         if (attendeeUserEntities != null) {
-            JsonArray jsonArray = new JsonArray();
             if (attendeeUserEntities.size() > 0) {
                 for (TaskEntity.TaskItemEntity.AttendeeUserEntity attendeeUserEntity : attendeeUserEntities) {
                     jsonArray.add(attendeeUserEntity.userId);
                 }
-                jsonObject.add("attendees", jsonArray);
             }
+        } else {
+            jsonArray.add(getLoginUserId());
         }
+        jsonObject.add("attendees", jsonArray);
         return jsonObject.toString();
     }
 }
