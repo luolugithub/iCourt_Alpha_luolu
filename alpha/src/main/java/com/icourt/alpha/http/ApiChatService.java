@@ -58,6 +58,15 @@ public interface ApiChatService {
 
 
     /**
+     * 搜索讨论组 公开和已经加入的讨论组
+     *
+     * @return
+     */
+    @GET("im/v1/groups/search/name")
+    Call<ResEntity<List<GroupEntity>>> groupQueryByName(@Query("key") String groupName);
+
+
+    /**
      * 加入讨论组
      * 文档地址:https://www.showdoc.cc/1620156?page_id=14892528
      *

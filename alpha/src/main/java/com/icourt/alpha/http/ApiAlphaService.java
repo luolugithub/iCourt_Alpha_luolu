@@ -10,7 +10,6 @@ import com.icourt.alpha.entity.bean.CustomerEntity;
 import com.icourt.alpha.entity.bean.FileBoxBean;
 import com.icourt.alpha.entity.bean.GroupBean;
 import com.icourt.alpha.entity.bean.GroupContactBean;
-import com.icourt.alpha.entity.bean.GroupEntity;
 import com.icourt.alpha.entity.bean.IMMessageCustomBody;
 import com.icourt.alpha.entity.bean.ItemPageEntity;
 import com.icourt.alpha.entity.bean.LoginIMToken;
@@ -197,23 +196,6 @@ public interface ApiAlphaService {
      */
     @GET("api/v2/taskflow/queryTaskByDue")
     Call<ResEntity<PageEntity<TaskEntity>>> getAllTask();
-
-
-    /**
-     * 搜索我加入的讨论组
-     *
-     * @return
-     */
-    @GET("api/v2/chat/group/inGroup")
-    Call<ResEntity<List<GroupEntity>>> searchInMyJoinedGroup(@Query("name") String groupName);
-
-    /**
-     * 搜索 全部的讨论组
-     *
-     * @return
-     */
-    @GET("api/v2/chat/group/LawyerGroup")
-    Call<ResEntity<List<GroupEntity>>> searchInAllGroup(@Query("name") String groupName);
 
 
     /**

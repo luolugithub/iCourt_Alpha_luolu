@@ -92,7 +92,7 @@ public class SpannableUtils {
         if (TextUtils.isEmpty(targetText)) {
             return new SpannableString(originalText);
         }
-        Pattern pattern = Pattern.compile(targetText);
+        Pattern pattern = Pattern.compile(targetText, Pattern.CASE_INSENSITIVE);
         Matcher matcher = pattern.matcher(originalText);
         return getTextForegroundColorSpan(originalText, matcher, foregroundColor);
     }

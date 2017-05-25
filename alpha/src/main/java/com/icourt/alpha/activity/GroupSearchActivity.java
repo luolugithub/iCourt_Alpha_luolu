@@ -22,12 +22,16 @@ import android.widget.TextView;
 
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.GroupAdapter;
+import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.entity.bean.GroupEntity;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.view.SoftKeyboardSizeWatchLayout;
+import com.netease.nimlib.sdk.NIMClient;
+import com.netease.nimlib.sdk.team.TeamService;
+import com.netease.nimlib.sdk.team.model.Team;
 
 import java.util.List;
 
@@ -47,7 +51,7 @@ import static com.icourt.alpha.activity.GroupListActivity.GROUP_TYPE_TYPE_ALL;
  * date createTime：2017/4/22
  * version 1.0.0
  */
-public class GroupSearchActivity extends BaseActivity {
+public class GroupSearchActivity extends BaseActivity implements BaseRecyclerAdapter.OnItemClickListener {
     private static final String KEY_GROUP_QUERY_TYPE = "GroupQueryType";
     public static final String KEY_KEYWORD = "keyWord";
     GroupAdapter groupAdapter;
@@ -104,6 +108,7 @@ public class GroupSearchActivity extends BaseActivity {
         super.initView();
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setAdapter(groupAdapter = new GroupAdapter());
+        groupAdapter.setOnItemClickListener(this);
         recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
@@ -138,8 +143,10 @@ public class GroupSearchActivity extends BaseActivity {
             @Override
             public void afterTextChanged(Editable s) {
                 if (TextUtils.isEmpty(s)) {
+                    groupAdapter.setKeyWord(null);
                     groupAdapter.clearData();
                 } else {
+                    groupAdapter.setKeyWord(s.toString());
                     getData(true);
                 }
             }
@@ -167,27 +174,16 @@ public class GroupSearchActivity extends BaseActivity {
     @Override
     protected void getData(final boolean isRefresh) {
         super.getData(isRefresh);
-        Call<ResEntity<List<GroupEntity>>> groupsCall;
-        switch (getGroupQueryType()) {
-            case GROUP_TYPE_MY_JOIN:
-                groupsCall = getApi().searchInMyJoinedGroup(etInputName.getText().toString());
-                break;
-            default:
-                groupsCall = getApi().searchInAllGroup(etInputName.getText().toString());
-                break;
-        }
-        groupsCall.enqueue(new SimpleCallBack<List<GroupEntity>>() {
-            @Override
-            public void onSuccess(Call<ResEntity<List<GroupEntity>>> call, Response<ResEntity<List<GroupEntity>>> response) {
-                groupAdapter.bindData(isRefresh, response.body().result);
-            }
-
-            @Override
-            public void onFailure(Call<ResEntity<List<GroupEntity>>> call, Throwable t) {
-                super.onFailure(call, t);
-            }
-        });
+        String keyWord = etInputName.getText().toString();
+        getChatApi().groupQueryByName(keyWord)
+                .enqueue(new SimpleCallBack<List<GroupEntity>>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<List<GroupEntity>>> call, Response<ResEntity<List<GroupEntity>>> response) {
+                        groupAdapter.bindData(true, response.body().result);
+                    }
+                });
     }
+
 
     @OnClick({R.id.tv_search_cancel})
     @Override
@@ -200,5 +196,34 @@ public class GroupSearchActivity extends BaseActivity {
                 break;
         }
     }
+    /**
+     * 是否是我加入的群组
+     *
+     * @param tid
+     * @return
+     */
+    private boolean isMyJionedGroup(String tid) {
+        try {
+            Team team = NIMClient.getService(TeamService.class)
+                    .queryTeamBlock(tid);
+            return team != null && team.isMyTeam();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
 
+    @Override
+    public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
+        GroupEntity item = groupAdapter.getItem(position);
+        if(item==null) return;
+        if (isMyJionedGroup(item.tid)) {
+            ChatActivity.launchTEAM(getContext(),
+                    item.tid,
+                    item.name,
+                    0, 0);
+        } else {
+            GroupDetailActivity.launchTEAM(getContext(), item.tid);
+        }
+    }
 }

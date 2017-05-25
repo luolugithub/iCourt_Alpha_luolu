@@ -1,5 +1,6 @@
 package com.icourt.alpha.adapter;
 
+import android.text.SpannableString;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.CheckedTextView;
@@ -13,6 +14,7 @@ import com.icourt.alpha.adapter.baseadapter.MultiSelectRecyclerAdapter;
 import com.icourt.alpha.entity.bean.GroupEntity;
 import com.icourt.alpha.utils.GlideUtils;
 import com.icourt.alpha.utils.IMUtils;
+import com.icourt.alpha.utils.SpannableUtils;
 
 /**
  * Description
@@ -23,9 +25,20 @@ import com.icourt.alpha.utils.IMUtils;
  */
 public class GroupAdapter extends MultiSelectRecyclerAdapter<GroupEntity> implements BaseRecyclerAdapter.OnItemClickListener {
 
-
+    int foregroundColor = 0xFFed6c00;
     public GroupAdapter() {
         this.setOnItemClickListener(this);
+    }
+
+    private String keyWord;
+
+    public GroupAdapter(String keyWord) {
+        this.keyWord = keyWord;
+        this.setOnItemClickListener(this);
+    }
+
+    public void setKeyWord(String keyWord) {
+        this.keyWord = keyWord;
     }
 
     @Override
@@ -39,7 +52,13 @@ public class GroupAdapter extends MultiSelectRecyclerAdapter<GroupEntity> implem
         ImageView group_icon_iv = holder.obtainView(R.id.group_icon_iv);
         TextView group_name_tv = holder.obtainView(R.id.group_name_tv);
         CheckedTextView ctv_group = holder.obtainView(R.id.ctv_group);
-        group_name_tv.setText(groupEntity.name);
+        if (!TextUtils.isEmpty(keyWord)) {
+            String originalText = groupEntity.name;
+            SpannableString textForegroundColorSpan = SpannableUtils.getTextForegroundColorSpan(originalText, keyWord, foregroundColor);
+            group_name_tv.setText(textForegroundColorSpan);
+        } else {
+            group_name_tv.setText(groupEntity.name);
+        }
         if (TextUtils.isEmpty(groupEntity.pic)) {
             IMUtils.setTeamIcon(groupEntity.name, group_icon_iv);
         } else {
