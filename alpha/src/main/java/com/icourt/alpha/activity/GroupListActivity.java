@@ -29,9 +29,11 @@ import com.icourt.alpha.utils.ActionConstants;
 import com.icourt.alpha.utils.DensityUtil;
 import com.icourt.alpha.utils.IndexUtils;
 import com.icourt.alpha.utils.PinyinComparator;
-import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.view.recyclerviewDivider.SuspensionDecoration;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
+import com.netease.nimlib.sdk.NIMClient;
+import com.netease.nimlib.sdk.team.TeamService;
+import com.netease.nimlib.sdk.team.model.Team;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -281,7 +283,7 @@ public class GroupListActivity extends BaseActivity implements BaseRecyclerAdapt
                                 0, 0);
                         break;
                     case GROUP_TYPE_TYPE_ALL:
-                        if (isMyJionedGroup(item)) {
+                        if (isMyJionedGroup(item.tid)) {
                             ChatActivity.launchTEAM(getContext(),
                                     item.tid,
                                     item.name,
@@ -299,20 +301,16 @@ public class GroupListActivity extends BaseActivity implements BaseRecyclerAdapt
     /**
      * 是否是我加入的群组
      *
-     * @param item
+     * @param tid
      * @return
      */
-    private boolean isMyJionedGroup(GroupEntity item) {
-        if (item != null) {
-            String loginUserId = getLoginUserId();
-            if (StringUtils.equalsIgnoreCase(loginUserId, item.admin_id, false)) {
-                return true;
-            }
-            //创建者可能离开群组
-           /* if (StringUtils.equalsIgnoreCase(loginUserId, item.create_id, false)) {
-                return true;
-            }*/
-            return StringUtils.containsIgnoreCase(item.members, loginUserId);
+    private boolean isMyJionedGroup(String tid) {
+        try {
+            Team team = NIMClient.getService(TeamService.class)
+                    .queryTeamBlock(tid);
+            return team != null && team.isMyTeam();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
         return false;
     }
