@@ -315,7 +315,7 @@ public interface ApiAlphaService {
      * @param email
      * @return
      */
-    @PUT("api/v1/auth/up/update")
+    @POST("api/v1/auth/update")
     Call<ResEntity<JsonElement>> updateUserInfo(@Query("id") String id, @Query("phone") String phone, @Query("email") String email);
 
     /**
