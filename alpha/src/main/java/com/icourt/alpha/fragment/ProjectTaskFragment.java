@@ -77,6 +77,7 @@ public class ProjectTaskFragment extends BaseFragment implements TaskAdapter.OnS
     TaskEntity.TaskItemEntity updateTaskItemEntity;
     String projectId;
     List<TaskEntity> allTaskEntities;
+    List<TaskEntity.TaskItemEntity> taskEntities;//今天到期
     List<TaskEntity.TaskItemEntity> todayTaskEntities;//今天到期
     List<TaskEntity.TaskItemEntity> beAboutToTaskEntities;//即将到期
     List<TaskEntity.TaskItemEntity> futureTaskEntities;//未来
@@ -129,6 +130,7 @@ public class ProjectTaskFragment extends BaseFragment implements TaskAdapter.OnS
         refreshLayout.startRefresh();
 
         allTaskEntities = new ArrayList<>();
+        taskEntities = new ArrayList<>();
         todayTaskEntities = new ArrayList<>();
         beAboutToTaskEntities = new ArrayList<>();
         futureTaskEntities = new ArrayList<>();
@@ -139,11 +141,12 @@ public class ProjectTaskFragment extends BaseFragment implements TaskAdapter.OnS
     @Override
     protected void getData(boolean isRefresh) {
         clearLists();
-        getApi().projectQueryTaskList(projectId, 0, 0, 1, -1).enqueue(new SimpleCallBack<TaskEntity>() {
+        getApi().projectQueryTaskList(projectId, 0, -1, 1, -1).enqueue(new SimpleCallBack<TaskEntity>() {
             @Override
             public void onSuccess(Call<ResEntity<TaskEntity>> call, Response<ResEntity<TaskEntity>> response) {
                 stopRefresh();
-                getTaskGroupData(response.body().result);
+//                getTaskGroupData(response.body().result);
+                getTaskGroupDatas(response.body().result);
             }
 
             @Override
@@ -152,6 +155,51 @@ public class ProjectTaskFragment extends BaseFragment implements TaskAdapter.OnS
                 stopRefresh();
             }
         });
+    }
+
+    private void getTaskGroupDatas(TaskEntity taskEntity) {
+        if (taskEntity != null) {
+            if (taskEntity.items != null) {
+                List<TaskEntity.TaskItemEntity> noitems = new ArrayList<>();//未分组
+                for (TaskEntity.TaskItemEntity taskItemEntity : taskEntity.items) {
+                    if (taskItemEntity.type == 1) {
+                        TaskEntity itemEntity = new TaskEntity();
+                        itemEntity.groupName = taskItemEntity.name;
+                        itemEntity.groupId = taskItemEntity.id;
+                        allTaskEntities.add(itemEntity);
+                    } else if (taskItemEntity.type == 0) {
+                        if (TextUtils.isEmpty(taskItemEntity.parentId)) {
+                            noitems.add(taskItemEntity);
+                        } else {
+                            taskEntities.add(taskItemEntity);
+                        }
+                    }
+                }
+
+                if (allTaskEntities != null) {
+                    for (TaskEntity allTaskEntity : allTaskEntities) {
+                        if (taskEntities != null) {
+                            List<TaskEntity.TaskItemEntity> items = new ArrayList<>();//有分组
+                            for (TaskEntity.TaskItemEntity entity : taskEntities) {
+                                if (TextUtils.equals(allTaskEntity.groupId, entity.parentId)) {
+                                    items.add(entity);
+                                }
+                            }
+                            allTaskEntity.items = items;
+                            allTaskEntity.groupTaskCount = items.size();
+                        }
+                    }
+                    if (noitems.size() > 0) {
+                        TaskEntity itemEntity = new TaskEntity();
+                        itemEntity.groupName = "未分组";
+                        itemEntity.items = noitems;
+                        itemEntity.groupTaskCount = noitems.size();
+                        allTaskEntities.add(itemEntity);
+                    }
+                    taskAdapter.bindData(true, allTaskEntities);
+                }
+            }
+        }
     }
 
     /**

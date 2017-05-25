@@ -18,6 +18,7 @@ public class TaskEntity implements Serializable {
     public static final int ATTENTIONED = 1;
 
     public String groupName;//分组名称(今天、即将到期)
+    public String groupId;//分组id
     public int groupTaskCount;//分组内任务个数
     public List<TaskItemEntity> items;
 
@@ -37,6 +38,7 @@ public class TaskEntity implements Serializable {
         public int attachmentCount;//附件总数
         public int commentCount;//评论总数
         public int attentioned;//关注   0:未关注  1:关注
+        public int type;//类型   0:任务  1:任务组
         public boolean isTiming;
 
         public ParentFlowEntity parentFlow;//详情任务组信息

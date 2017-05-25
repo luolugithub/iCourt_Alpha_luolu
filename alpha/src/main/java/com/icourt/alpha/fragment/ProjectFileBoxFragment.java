@@ -424,7 +424,12 @@ public class ProjectFileBoxFragment extends BaseFragment implements BaseRecycler
             public void onResponse(Call<JsonElement> call, Response<JsonElement> response) {
                 if (response.body() != null) {
                     String uploadUrl = response.body().getAsString();
-                    uploadFile(uploadUrl, filePath);
+                    if (!TextUtils.isEmpty(uploadUrl) && uploadUrl.startsWith("http")) {
+                        uploadFile(uploadUrl, filePath);
+                    } else {
+                        dismissLoadingDialog();
+                        showTopSnackBar("上传失败");
+                    }
                 }
             }
 
