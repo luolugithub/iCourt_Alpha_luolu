@@ -23,7 +23,7 @@ import com.icourt.alpha.utils.logger.AndroidLogAdapter;
 import com.icourt.alpha.utils.logger.LogLevel;
 import com.icourt.alpha.utils.logger.Logger;
 import com.icourt.alpha.widget.nim.AlphaMessageNotifierCustomization;
-import com.icourt.alpha.widget.parser.CustomAttachParser;
+import com.icourt.alpha.widget.nim.NimAttachParser;
 import com.liulishuo.filedownloader.FileDownloader;
 import com.liulishuo.filedownloader.util.FileDownloadHelper;
 import com.liulishuo.filedownloader.util.FileDownloadLog;
@@ -165,7 +165,8 @@ public class BaseApplication extends MultiDexApplication {
             NIMClient.toggleNotification(false);
             NIMClient.toggleNotification(UserPreferences.getNotificationToggle());
             NIMClient.updateStatusBarNotificationConfig(UserPreferences.getStatusConfig());
-            NIMClient.getService(MsgService.class).registerCustomAttachmentParser(new CustomAttachParser());
+            NIMClient.getService(MsgService.class)
+                    .registerCustomAttachmentParser(new NimAttachParser());//new CustomAttachParser()
         }
     }
 
