@@ -3,6 +3,7 @@ package com.icourt.alpha.activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -45,6 +46,8 @@ import com.netease.nimlib.sdk.search.model.MsgIndexRecord;
 import com.netease.nimlib.sdk.team.TeamService;
 import com.netease.nimlib.sdk.team.model.Team;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -76,6 +79,7 @@ import static com.icourt.alpha.constants.Const.SEARCH_TYPE_TEAM;
 public class SearchPolymerizationActivity extends BaseActivity implements BaseRecyclerAdapter.OnItemChildClickListener, BaseRecyclerAdapter.OnItemClickListener {
     private final List<Team> localTeams = new ArrayList<>();
 
+    private static final String KEY_SEARCH_PRIORITY = "search_priority";
     int foregroundColor = 0xFFed6c00;
     @BindView(R.id.et_search_name)
     EditText etSearchName;
@@ -97,9 +101,24 @@ public class SearchPolymerizationActivity extends BaseActivity implements BaseRe
     @BindView(R.id.searchLayout)
     LinearLayout searchLayout;
 
-    public static void launch(@NonNull Context context) {
+
+    public static final int SEARCH_PRIORITY_CONTACT = 1;
+    public static final int SEARCH_PRIORITY_CHAT_HISTORTY = 2;
+    public static final int SEARCH_PRIORITY_TEAM = 3;
+
+    @IntDef({SEARCH_PRIORITY_CONTACT,
+            SEARCH_PRIORITY_CHAT_HISTORTY,
+            SEARCH_PRIORITY_TEAM,
+    })
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface SEARCH_PRIORITY {
+
+    }
+
+    public static void launch(@NonNull Context context, @SEARCH_PRIORITY int search_priority) {
         if (context == null) return;
         Intent intent = new Intent(context, SearchPolymerizationActivity.class);
+        intent.putExtra(KEY_SEARCH_PRIORITY, search_priority);
         context.startActivity(intent);
     }
 
@@ -161,28 +180,73 @@ public class SearchPolymerizationActivity extends BaseActivity implements BaseRe
                 fiterRobots(contactBeen);
                 contactDbService.releaseService();
                 List<SearchItemEntity> searchContactItems = convert2SearchItem(contactBeen, keyWord);
-                //添加联系人
-                if (searchContactItems != null && !searchContactItems.isEmpty()) {
-                    result.add(new SearchPolymerizationEntity(SEARCH_TYPE_CONTACT,
-                            "联系人", "查看更多联系人", searchContactItems));
-                }
+
 
                 //查询讨论组
                 List<Team> teamByKeyWord = getTeamByKeyWord(keyWord);
                 List<SearchItemEntity> searchTeamItems = convertTeam2SearchItem(teamByKeyWord, keyWord);
-                //添加讨论组
-                if (searchTeamItems != null && !searchTeamItems.isEmpty()) {
-                    result.add(new SearchPolymerizationEntity(SEARCH_TYPE_TEAM,
-                            "讨论组", "查看更多讨论组", searchTeamItems));
-                }
+
 
                 //查询聊天记录
                 List<MsgIndexRecord> msgindexs = NIMClient.getService(MsgService.class).searchAllSessionBlock(keyWord, 4);
                 List<SearchItemEntity> searchMsgItems = convertMsg2SearchItem(msgindexs, keyWord);
-                //添加聊天记录
-                if (searchMsgItems != null && !searchMsgItems.isEmpty()) {
-                    result.add(new SearchPolymerizationEntity(SEARCH_TYPE_MSG,
-                            "聊天记录", "查看更多聊天记录", searchMsgItems));
+
+                switch (getIntent().getIntExtra(KEY_SEARCH_PRIORITY, 0)) {
+                    case SEARCH_PRIORITY_CHAT_HISTORTY: {
+                        //添加聊天记录
+                        if (searchMsgItems != null && !searchMsgItems.isEmpty()) {
+                            result.add(new SearchPolymerizationEntity(SEARCH_TYPE_MSG,
+                                    "聊天记录", "查看更多聊天记录", searchMsgItems));
+                        }
+                        //添加讨论组
+                        if (searchTeamItems != null && !searchTeamItems.isEmpty()) {
+                            result.add(new SearchPolymerizationEntity(SEARCH_TYPE_TEAM,
+                                    "讨论组", "查看更多讨论组", searchTeamItems));
+                        }
+                        //添加联系人
+                        if (searchContactItems != null && !searchContactItems.isEmpty()) {
+                            result.add(new SearchPolymerizationEntity(SEARCH_TYPE_CONTACT,
+                                    "联系人", "查看更多联系人", searchContactItems));
+                        }
+                    }
+                    break;
+                    case SEARCH_PRIORITY_CONTACT: {
+                        //添加联系人
+                        if (searchContactItems != null && !searchContactItems.isEmpty()) {
+                            result.add(new SearchPolymerizationEntity(SEARCH_TYPE_CONTACT,
+                                    "联系人", "查看更多联系人", searchContactItems));
+                        }
+                        //添加聊天记录
+                        if (searchMsgItems != null && !searchMsgItems.isEmpty()) {
+                            result.add(new SearchPolymerizationEntity(SEARCH_TYPE_MSG,
+                                    "聊天记录", "查看更多聊天记录", searchMsgItems));
+                        }
+
+                        //添加讨论组
+                        if (searchTeamItems != null && !searchTeamItems.isEmpty()) {
+                            result.add(new SearchPolymerizationEntity(SEARCH_TYPE_TEAM,
+                                    "讨论组", "查看更多讨论组", searchTeamItems));
+                        }
+                    }
+                    break;
+                    case SEARCH_PRIORITY_TEAM: {
+                        //添加讨论组
+                        if (searchTeamItems != null && !searchTeamItems.isEmpty()) {
+                            result.add(new SearchPolymerizationEntity(SEARCH_TYPE_TEAM,
+                                    "讨论组", "查看更多讨论组", searchTeamItems));
+                        }
+                        //添加联系人
+                        if (searchContactItems != null && !searchContactItems.isEmpty()) {
+                            result.add(new SearchPolymerizationEntity(SEARCH_TYPE_CONTACT,
+                                    "联系人", "查看更多联系人", searchContactItems));
+                        }
+                        //添加聊天记录
+                        if (searchMsgItems != null && !searchMsgItems.isEmpty()) {
+                            result.add(new SearchPolymerizationEntity(SEARCH_TYPE_MSG,
+                                    "聊天记录", "查看更多聊天记录", searchMsgItems));
+                        }
+                    }
+                    break;
                 }
 
                 e.onNext(result);

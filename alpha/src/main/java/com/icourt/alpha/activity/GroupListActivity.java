@@ -259,10 +259,8 @@ public class GroupListActivity extends BaseActivity implements BaseRecyclerAdapt
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.rl_comm_search:
-                GroupSearchActivity.launch(getContext(),
-                        v,
-                        getGroupQueryType(),
-                        null);
+                SearchPolymerizationActivity.launch(getContext(),
+                        SearchPolymerizationActivity.SEARCH_PRIORITY_TEAM);
                 break;
             default:
                 super.onClick(v);
@@ -280,14 +278,14 @@ public class GroupListActivity extends BaseActivity implements BaseRecyclerAdapt
                         ChatActivity.launchTEAM(getContext(),
                                 item.tid,
                                 item.name,
-                                0,0);
+                                0, 0);
                         break;
                     case GROUP_TYPE_TYPE_ALL:
                         if (isMyJionedGroup(item)) {
                             ChatActivity.launchTEAM(getContext(),
                                     item.tid,
                                     item.name,
-                                    0,0);
+                                    0, 0);
                         } else {
                             GroupDetailActivity.launchTEAM(getContext(), item.tid);
                         }

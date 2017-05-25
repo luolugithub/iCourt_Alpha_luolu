@@ -697,7 +697,8 @@ public class MessageListFragment extends BaseRecentContactFragment
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.rl_comm_search:
-                SearchPolymerizationActivity.launch(getContext());
+                SearchPolymerizationActivity.launch(getContext(),
+                        SearchPolymerizationActivity.SEARCH_PRIORITY_CHAT_HISTORTY);
                 break;
         }
         super.onClick(v);

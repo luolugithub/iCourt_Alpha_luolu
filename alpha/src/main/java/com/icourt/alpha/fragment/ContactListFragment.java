@@ -14,8 +14,8 @@ import android.view.ViewGroup;
 import com.andview.refreshview.XRefreshView;
 import com.gjiazhe.wavesidebar.WaveSideBar;
 import com.icourt.alpha.R;
-import com.icourt.alpha.activity.ContactSearchActivity;
 import com.icourt.alpha.activity.GroupListActivity;
+import com.icourt.alpha.activity.SearchPolymerizationActivity;
 import com.icourt.alpha.adapter.IMContactAdapter;
 import com.icourt.alpha.adapter.ItemActionAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
@@ -157,7 +157,8 @@ public class ContactListFragment extends BaseFragment implements BaseRecyclerAda
         super.onClick(v);
         switch (v.getId()) {
             case R.id.rl_comm_search:
-                ContactSearchActivity.launch(getActivity(), v,null);
+                SearchPolymerizationActivity.launch(getContext(),
+                        SearchPolymerizationActivity.SEARCH_PRIORITY_CONTACT);
                 break;
         }
     }
