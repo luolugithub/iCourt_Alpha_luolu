@@ -198,7 +198,6 @@ public class ContactListFragment extends BaseFragment implements BaseRecyclerAda
                             List<GroupContactBean> data = response.body().result;
                             //插入数据库
                             insertAsynContact(data);
-                            getRobos();
                             filterRobot(data);
                             IndexUtils.setSuspensions(getContext(), data);
                             Collections.sort(data, new PinyinComparator<GroupContactBean>());
@@ -263,27 +262,6 @@ public class ContactListFragment extends BaseFragment implements BaseRecyclerAda
         } catch (Throwable e) {
             e.printStackTrace();
         }
-    }
-
-    /**
-     * 获取机器人
-     */
-    private void getRobos() {
-        getApi().getRobos()
-                .enqueue(new SimpleCallBack<List<GroupContactBean>>() {
-                    @Override
-                    public void onSuccess(Call<ResEntity<List<GroupContactBean>>> call, Response<ResEntity<List<GroupContactBean>>> response) {
-                        if (response.body().result != null
-                                && contactDbService != null) {
-                            contactDbService.insertOrUpdateAsyn(new ArrayList<IConvertModel<ContactDbModel>>(response.body().result));
-                        }
-                    }
-
-                    @Override
-                    public void defNotify(String noticeStr) {
-                        //super.defNotify(noticeStr);
-                    }
-                });
     }
 
 

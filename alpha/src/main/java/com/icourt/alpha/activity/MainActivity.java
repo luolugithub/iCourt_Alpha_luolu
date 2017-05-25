@@ -202,7 +202,6 @@ public class MainActivity extends BaseActivity
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
         initView();
-        getRobos();
     }
 
     @Override
@@ -524,26 +523,6 @@ public class MainActivity extends BaseActivity
                 });
     }
 
-    /**
-     * 获取机器人
-     */
-    private void getRobos() {
-        getApi().getRobos()
-                .enqueue(new SimpleCallBack<List<GroupContactBean>>() {
-                    @Override
-                    public void onSuccess(Call<ResEntity<List<GroupContactBean>>> call, Response<ResEntity<List<GroupContactBean>>> response) {
-                        if (response.body().result != null
-                                && contactDbService != null) {
-                            contactDbService.insertOrUpdateAsyn(new ArrayList<IConvertModel<ContactDbModel>>(response.body().result));
-                        }
-                    }
-
-                    @Override
-                    public void defNotify(String noticeStr) {
-                        //super.defNotify(noticeStr);
-                    }
-                });
-    }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onUnReadEvent(UnReadEvent event) {

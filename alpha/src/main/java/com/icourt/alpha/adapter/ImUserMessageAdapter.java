@@ -249,7 +249,7 @@ public class ImUserMessageAdapter extends BaseArrayRecyclerAdapter<IMMessageCust
         if (imFileEntity.ext != null) {
             file_type_iv.setImageResource(getFileIcon40(imFileEntity.ext.name));
             file_title_tv.setText(imFileEntity.ext.name);
-            file_size_tv.setText(FileUtils.kbFromat(imFileEntity.ext.size));
+            file_size_tv.setText(FileUtils.bFormat(imFileEntity.ext.size));
         } else {
             file_title_tv.setText("服务器 file ext null");
         }
