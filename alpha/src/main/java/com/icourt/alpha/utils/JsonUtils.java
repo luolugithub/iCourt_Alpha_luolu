@@ -115,6 +115,7 @@ public class JsonUtils {
 
     /**
      * eg new TypeToken<ArrayList<SearchHistoryEntity>>(){}.getType()
+     *
      * @param json
      * @param typeOfT
      * @param <T>
@@ -158,60 +159,6 @@ public class JsonUtils {
 
 
     /**
-     * JSONArray报文解析容错处理，获取数组中的JSONObject对象
-     *
-     * @param jsonArray ：需要解析的jsonArray对象、i：JSONObject在JSONArray中的索引
-     * @return JSONObject：通过键名得到的JSONObject对象
-     */
-    public static JSONObject getJSONObject(JSONArray jsonArray, int i) {
-
-        JSONObject value = new JSONObject();
-        try {
-            if (jsonArray != null) {
-                value = jsonArray.getJSONObject(i);
-            }
-        } catch (JSONException e) {
-        }
-        return value;
-    }
-
-    /**
-     * JSONArray报文解析容错处理，获取数组中的JSONObject对象
-     *
-     * @param jsonObject ：需要解析的jsonObject对象、name:健名
-     * @return JSONObject：通过键名得到的JSONObject对象
-     */
-    public static JSONObject getJSONObject(JSONObject jsonObject, String name) {
-
-        JSONObject value = new JSONObject();
-        try {
-            if (jsonObject != null) {
-                value = jsonObject.getJSONObject(name);
-            }
-        } catch (JSONException e) {
-        }
-        return value;
-    }
-
-    /**
-     * JSONObject报文解析容错处理，获取JSONObject中的JSONArray数组
-     *
-     * @param jsonObject ：需要解析的json对象、name：json中的键名
-     * @return JSONArray：通过键名得到的JSONArray对象
-     */
-    public static JSONArray getJSONArray(JSONObject jsonObject, String name) {
-
-        JSONArray value = new JSONArray();
-        try {
-            if (jsonObject != null) {
-                value = jsonObject.getJSONArray(name);
-            }
-        } catch (JSONException e) {
-        }
-        return value;
-    }
-
-    /**
      * JSONObject报文解析容错处理，判断报文格式是否正确
      *
      * @param string ：需要转换为JSONObject的字符串
@@ -229,24 +176,8 @@ public class JsonUtils {
         return value;
     }
 
-    /**
-     * JSONArray报文解析容错处理，判断报文格式是否正确
-     *
-     * @param string ：需要转换为JSONArray的字符串
-     * @return JSONArray：通过键名得到的JSONArray对象
-     */
-    public static JSONArray getJSONArray(String string) {
 
-        JSONArray value = new JSONArray();
-        if (string != null && string != "") {
-            try {
-                value = new JSONArray(string);
-            } catch (JSONException e) {
-            }
-        }
-        return value;
-    }
-
+    @Deprecated
     public static String getString(JSONArray jsonArray, int i) {
 
         String value = "";
@@ -260,6 +191,7 @@ public class JsonUtils {
         return isNull(value);
     }
 
+    @Deprecated
     public static String isNull(String value) {
         if (value == null || value.length() <= 0 || "null".equals(value)) {
             return "";
@@ -273,6 +205,7 @@ public class JsonUtils {
      * @param jsonObject ：需要解析的json对象、name：json中的键名
      * @return isBoolean：通过键名得到的boolean值
      */
+    @Deprecated
     public static Boolean getBoolean(JSONObject jsonObject, String name) {
 
         Boolean value = null;
@@ -317,22 +250,6 @@ public class JsonUtils {
         return value;
     }
 
-
-    /**
-     * JSONArray报文获取键值对中值时进行容错处理， 获取String
-     *
-     * @param jsonArray ：需要解析的json对象、i:数组中某个对象、name：json中的键名
-     * @return String：通过键名得到的值
-     */
-    public static String getString(JSONArray jsonArray, int i, String name) {
-
-        String value = "";
-        JSONObject jsonObject = getJSONObject(jsonArray, i);
-        if (jsonObject != null) {
-            value = jsonObject.optString(name, "");
-        }
-        return isNull(value);
-    }
 
     /**
      * JSONObjec报文获取键值对中值时进行容错处理， 获取String

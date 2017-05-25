@@ -279,7 +279,7 @@ public class TabSearchFragment extends BaseFragment {
     private void clearSearchHistory() {
         recordSearchHistories.clear();
         SpUtils.getInstance().putData(KEY_SEARCH_HISTORY, "");
-        searchEngineAdapter.clearData();
+        searchHistoryAdapter.clearData();
     }
 
 
