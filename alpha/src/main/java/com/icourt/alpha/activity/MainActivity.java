@@ -26,12 +26,9 @@ import android.widget.TextView;
 
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
-import com.icourt.alpha.base.BaseActivity;
-import com.icourt.alpha.db.convertor.IConvertModel;
-import com.icourt.alpha.db.dbmodel.ContactDbModel;
+import com.icourt.alpha.base.BaseAppUpdateActivity;
 import com.icourt.alpha.db.dbservice.ContactDbService;
 import com.icourt.alpha.entity.bean.AlphaUserInfo;
-import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.icourt.alpha.entity.bean.ItemsEntity;
 import com.icourt.alpha.entity.bean.ItemsEntityImp;
 import com.icourt.alpha.entity.bean.PageEntity;
@@ -86,7 +83,7 @@ import retrofit2.Response;
  * date createTime：2017/3/31
  * version 1.0.0
  */
-public class MainActivity extends BaseActivity
+public class MainActivity extends BaseAppUpdateActivity
         implements OnFragmentCallBackListener {
     public static String KEY_FIND_FRAGMENT = "type_TabFindFragment_fragment";
     public static String KEY_MINE_FRAGMENT = "type_TabMimeFragment_fragment";
@@ -172,6 +169,7 @@ public class MainActivity extends BaseActivity
 
     class MyHandler extends Handler {
         public static final int TYPE_TOKEN_REFRESH = 101;//token刷新
+        public static final int TYPE_CHECK_APP_UPDATE = 102;//检查更新
 
         /**
          * 刷新登陆token
@@ -181,15 +179,29 @@ public class MainActivity extends BaseActivity
             this.sendEmptyMessageDelayed(TYPE_TOKEN_REFRESH, 2_000);
         }
 
+        /**
+         * 检查更新
+         */
+        public void addCheckAppUpdateTask() {
+            this.removeMessages(TYPE_CHECK_APP_UPDATE);
+            this.sendEmptyMessageDelayed(TYPE_CHECK_APP_UPDATE, 3_000);
+        }
+
         @Override
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
             switch (msg.what) {
                 case TYPE_TOKEN_REFRESH:
                     refreshToken();
+                    MainActivity.this.checkAppUpdate(getContext());
+                    break;
+                case TYPE_CHECK_APP_UPDATE:
+                    checkAppUpdate(getContext());
                     break;
             }
         }
+
+
     }
 
     MyHandler mHandler = new MyHandler();
@@ -214,6 +226,8 @@ public class MainActivity extends BaseActivity
         initChangedTab();
         checkedTab(R.id.tab_news, TYPE_FRAGMENT_NEWS);
         getTimering();
+        mHandler.addCheckAppUpdateTask();
+        mHandler.addTokenRefreshTask();
     }
 
 
@@ -404,12 +418,6 @@ public class MainActivity extends BaseActivity
                 break;
         }
         checkedFragment(type);
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        mHandler.addTokenRefreshTask();
     }
 
 

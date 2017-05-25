@@ -16,7 +16,6 @@ android {
         manifestPlaceholders = [UMENG_CHANNEL_VALUE: "Other"]//default_channel
         ndk {
             //请勿轻易修改
-            //abiFilters "armeabi", "armeabi-v7a", "arm64-v8a", "x86"
             abiFilters "armeabi", "arm64-v8a", "x86"
         }
     }
@@ -27,22 +26,6 @@ android {
 //        XiaoMi {}
 //        Tencent {}
 //        HuaWei {}
-//        c360 {}
-//        Oppo {}
-//        MeiZu {}
-//        WanDouJia {}
-
-//        WebSite {}
-//        LianXiang {}
-//        Upgrade {}
-//        WeChat {}
-//        GuanDianTong {}
-//        Share {}
-//        AnZhi {}
-//        Other {}
-//        Samsung {}
-//        _91 {}
-//        Android {}
     }
 
     //批量配置
@@ -74,6 +57,7 @@ android {
 //            ndk {
 //                abiFilters = ["armeabi"]
 //            }
+            buildConfigField "int", "BUILD_TYPE_INT", "0"
             buildConfigField "boolean", "IS_DEBUG", "true"
             buildConfigField "String", "APK_RELEASE_TIME", "\"${releaseTime()}\""
             buildConfigField "String", "API_URL", rootProject.ext.alphaAPIUrl.api_url_debug
@@ -96,20 +80,21 @@ android {
               manifestPlaceholders = [NIM_APPKEY: rootProject.ext.nimAppKey.releaseAppKey]
  */
             //测试用
-               buildConfigField "String", "API_URL", rootProject.ext.alphaAPIUrl.api_url_test
-               buildConfigField "String", "API_CHAT_URL", rootProject.ext.alphaChatAPIUrl.api_chat_url_test
-               buildConfigField "String", "HOST_URL", rootProject.ext.alphaHostUrl.host_url_test
-               buildConfigField "String", "APK_UPDATE_URL", rootProject.ext.alphaApkUpdateUrl.apk_update_url_test
-               manifestPlaceholders = [NIM_APPKEY: rootProject.ext.nimAppKey.testAppKey]
-
-
+        /*    buildConfigField "String", "API_URL", rootProject.ext.alphaAPIUrl.api_url_test
+            buildConfigField "String", "API_CHAT_URL", rootProject.ext.alphaChatAPIUrl.api_chat_url_test
+            buildConfigField "String", "HOST_URL", rootProject.ext.alphaHostUrl.host_url_test
+            buildConfigField "String", "APK_UPDATE_URL", rootProject.ext.alphaApkUpdateUrl.apk_update_url_test
+            manifestPlaceholders = [NIM_APPKEY: rootProject.ext.nimAppKey.testAppKey]
+*/
 //            buildConfigField "String", "API_URL", rootProject.ext.alphaAPIUrl.api_url_preview
 //            buildConfigField "String", "API_CHAT_URL", rootProject.ext.alphaChatAPIUrl.api_chat_url_preview
 //            buildConfigField "String", "HOST_URL", rootProject.ext.alphaHostUrl.host_url_preview
 //            buildConfigField "String", "APK_UPDATE_URL", rootProject.ext.alphaApkUpdateUrl.apk_update_url_preview
 //            manifestPlaceholders = [NIM_APPKEY: rootProject.ext.nimAppKey.previewAppKey]
         }
+        //内测版
         innertest {
+            buildConfigField "int", "BUILD_TYPE_INT", "1"
             buildConfigField "boolean", "IS_DEBUG", "true"
             buildConfigField "String", "APK_RELEASE_TIME", "\"${releaseTime()}\""
             buildConfigField "String", "API_URL", rootProject.ext.alphaAPIUrl.api_url_test
@@ -124,7 +109,9 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
             manifestPlaceholders = [NIM_APPKEY: rootProject.ext.nimAppKey.testAppKey]
         }
+        //预览版
         preview {
+            buildConfigField "int", "BUILD_TYPE_INT", "2"
             buildConfigField "boolean", "IS_DEBUG", "true"
             buildConfigField "String", "APK_RELEASE_TIME", "\"${releaseTime()}\""
             buildConfigField "String", "API_URL", rootProject.ext.alphaAPIUrl.api_url_preview
@@ -139,8 +126,28 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
             manifestPlaceholders = [NIM_APPKEY: rootProject.ext.nimAppKey.previewAppKey]
         }
+        //内部版
+        innerrelease {
+            buildConfigField "int", "BUILD_TYPE_INT", "3"
+            buildConfigField "boolean", "IS_DEBUG", "false"
+            buildConfigField "String", "APK_RELEASE_TIME", "\"${releaseTime()}\""
+            buildConfigField "String", "API_URL", rootProject.ext.alphaAPIUrl.api_url_release
+            buildConfigField "String", "API_CHAT_URL", rootProject.ext.alphaChatAPIUrl.api_chat_url_release
+            buildConfigField "String", "HOST_URL", rootProject.ext.alphaHostUrl.host_url_release
+            buildConfigField "String", "APK_UPDATE_URL", rootProject.ext.alphaApkUpdateUrl.apk_update_url_inner_release
+            versionNameSuffix "_inner_release"
+            shrinkResources false   // 移除无用的resource文件
+            zipAlignEnabled false        //Zipalign优化
+            minifyEnabled false     //混淆
+            signingConfig signingConfigs.release
+            pseudoLocalesEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
+            manifestPlaceholders = [NIM_APPKEY: rootProject.ext.nimAppKey.releaseAppKey]
+        }
 
+        //正式上线版
         release {
+            buildConfigField "int", "BUILD_TYPE_INT", "4"
             buildConfigField "boolean", "IS_DEBUG", "false"
             buildConfigField "String", "APK_RELEASE_TIME", "\"${releaseTime()}\""
             buildConfigField "String", "API_URL", rootProject.ext.alphaAPIUrl.api_url_release
@@ -155,8 +162,6 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
             manifestPlaceholders = [NIM_APPKEY: rootProject.ext.nimAppKey.releaseAppKey]
         }
-
-
     }
     packagingOptions {
         exclude 'META-INF/ASL2.0'
