@@ -15,4 +15,5 @@ public class DbConfig {
 
     public static final String DB_REALM_CUSTOMER = "db_realm_customer_%s.realm";//客户数据库
 
+    public static final String DB_REALM_SEARCH_ENGINE = "db_realm_searchengine_%s.realm";//搜索引擎
 }

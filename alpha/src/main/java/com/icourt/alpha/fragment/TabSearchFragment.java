@@ -21,6 +21,8 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.google.gson.JsonParseException;
+import com.google.gson.reflect.TypeToken;
 import com.icourt.alpha.R;
 import com.icourt.alpha.activity.SearchTabActivity;
 import com.icourt.alpha.adapter.SearchEngineAdapter;
@@ -30,15 +32,18 @@ import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.db.convertor.IConvertModel;
 import com.icourt.alpha.db.convertor.ListConvertor;
 import com.icourt.alpha.db.dbmodel.SearchEngineModel;
-import com.icourt.alpha.db.dbmodel.SearhHistoryModel;
-import com.icourt.alpha.db.dbservice.SearchHistroyDbService;
+import com.icourt.alpha.db.dbservice.SearchEngineDbService;
 import com.icourt.alpha.entity.bean.SearchEngineEntity;
+import com.icourt.alpha.entity.bean.SearchHistoryEntity;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.ItemDecorationUtils;
+import com.icourt.alpha.utils.JsonUtils;
+import com.icourt.alpha.utils.SpUtils;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.view.recyclerviewDivider.DividerItemDecoration;
 
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -46,7 +51,6 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import butterknife.Unbinder;
-import io.realm.RealmList;
 import io.realm.RealmResults;
 import retrofit2.Call;
 import retrofit2.Response;
@@ -59,10 +63,9 @@ import retrofit2.Response;
  * version 1.0.0
  */
 public class TabSearchFragment extends BaseFragment {
-
+    private static final String KEY_SEARCH_HISTORY = "search_history_%s";
     Unbinder unbinder;
     SearchEngineAdapter searchEngineAdapter;
-    SearchHistroyDbService searchHistroyDbService;
     SearchHistoryAdapter searchHistoryAdapter;
     @BindView(R.id.search_edit)
     EditText searchEdit;
@@ -82,6 +85,8 @@ public class TabSearchFragment extends BaseFragment {
     RecyclerView historyRecyclerView;
     @BindView(R.id.history_rl)
     RelativeLayout historyRl;
+    SearchEngineDbService searchEngineDbService;
+    final List<SearchHistoryEntity> recordSearchHistories = new ArrayList<>();
 
     public static TabSearchFragment newInstance() {
         return new TabSearchFragment();
@@ -97,8 +102,7 @@ public class TabSearchFragment extends BaseFragment {
 
     @Override
     protected void initView() {
-        String loginUserId = getLoginUserId();
-        searchHistroyDbService = new SearchHistroyDbService(TextUtils.isEmpty(loginUserId) ? "" : loginUserId);
+        searchEngineDbService = new SearchEngineDbService(getLoginUserId());
         engineRecyclerView.setNestedScrollingEnabled(false);
         RecyclerView.LayoutManager engineLayoutManager = new GridLayoutManager(getContext(), 4);
         engineLayoutManager.setAutoMeasureEnabled(true);
@@ -134,13 +138,10 @@ public class TabSearchFragment extends BaseFragment {
         searchHistoryAdapter.setOnItemClickListener(new BaseRecyclerAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
-                SearhHistoryModel item = searchHistoryAdapter.getItem(position);
+                SearchHistoryEntity item = searchHistoryAdapter.getItem(position);
                 if (item != null) {
-                    RealmList<SearchEngineModel> searchEngines = item.searchEngines;
-                    ArrayList<SearchEngineEntity> searchEngineEntities = new ArrayList<SearchEngineEntity>();
-                    if (searchEngines != null) {
-                        searchEngineEntities.addAll(ListConvertor.convertList(new ArrayList<IConvertModel<SearchEngineEntity>>(searchEngines)));
-                    }
+                    List<SearchEngineEntity> searchEngines = item.searchEngines;
+                    ArrayList<SearchEngineEntity> searchEngineEntities = new ArrayList<SearchEngineEntity>(searchEngines);
                     launchH5Search(item.keyWord, searchEngineEntities);
                 }
             }
@@ -169,27 +170,32 @@ public class TabSearchFragment extends BaseFragment {
                 switch (actionId) {
                     case EditorInfo.IME_ACTION_SEARCH: {
                         SystemUtils.hideSoftKeyBoard(getActivity(), v);
-                        if (!TextUtils.isEmpty(v.getText()) && searchHistroyDbService != null) {
+                        if (!TextUtils.isEmpty(v.getText())) {
 
                             ArrayList<SearchEngineEntity> selectedData = searchEngineAdapter.getSelectedData();
                             launchH5Search(v.getText().toString(), selectedData);
 
-                            SearhHistoryModel searhHistoryModel = new SearhHistoryModel();
-                            searhHistoryModel.keyWord = v.getText().toString();
-                            RealmList<SearchEngineModel> searchEngines = new RealmList<SearchEngineModel>();
+                            SearchHistoryEntity searchHistoryEntity = new SearchHistoryEntity();
+                            searchHistoryEntity.keyWord = v.getText().toString();
+                            List<SearchEngineEntity> searchEngines = new ArrayList<SearchEngineEntity>();
                             for (int i = 0; i < selectedData.size(); i++) {
-                                SearchEngineEntity item = searchEngineAdapter.getItem(i);
+                                SearchEngineEntity item = selectedData.get(i);
                                 if (item != null) {
-                                    searchEngines.add(item.convert2Model());
+                                    searchEngines.add(item);
                                 }
                             }
-                            searhHistoryModel.searchEngines = searchEngines;
-                            //清理本地
-                            if (searchHistoryAdapter.getItemCount() >= 100) {
-                                searchHistroyDbService.deleteAll();
+                            searchHistoryEntity.searchEngines = searchEngines;
+                            recordSearchHistories.add(0, searchHistoryEntity);
+
+                            //最大10条
+                            if (recordSearchHistories.size() > 10) {
+                                List<SearchHistoryEntity> searchHistoryEntities = recordSearchHistories.subList(0, 10);
+                                searchHistoryAdapter.bindData(true, searchHistoryEntities);
+                            } else {
+                                searchHistoryAdapter.bindData(true, recordSearchHistories);
                             }
-                            searchHistroyDbService.insert(searhHistoryModel);
-                            getSearhHistory();
+
+                            saveSearchHistory();
                         }
                     }
                     return true;
@@ -200,7 +206,7 @@ public class TabSearchFragment extends BaseFragment {
         });
 
         getData(true);
-        getSearhHistory();
+        getSearchHistory();
     }
 
     /**
@@ -209,7 +215,8 @@ public class TabSearchFragment extends BaseFragment {
      * @param keyWord
      * @param searchEngineEntities
      */
-    private void launchH5Search(@NonNull String keyWord, @Nullable ArrayList<SearchEngineEntity> searchEngineEntities) {
+    private void launchH5Search(@NonNull String keyWord,
+                                @Nullable ArrayList<SearchEngineEntity> searchEngineEntities) {
         if (TextUtils.isEmpty(keyWord)) return;
         if (searchEngineEntities == null) {
             searchEngineEntities = new ArrayList<SearchEngineEntity>();
@@ -226,29 +233,80 @@ public class TabSearchFragment extends BaseFragment {
     @Override
     protected void getData(boolean isRefresh) {
         super.getData(isRefresh);
+        getFromLocal();
         getApi().getSearchEngines()
                 .enqueue(new SimpleCallBack<List<SearchEngineEntity>>() {
                     @Override
                     public void onSuccess(Call<ResEntity<List<SearchEngineEntity>>> call, Response<ResEntity<List<SearchEngineEntity>>> response) {
+                        if (response.body().result != null) {
+                            searchEngineDbService.deleteAll();
+                            searchEngineDbService.insertOrUpdate(new ArrayList<IConvertModel<SearchEngineModel>>(response.body().result));
+                        }
                         searchEngineAdapter.bindData(true, response.body().result);
                     }
                 });
+    }
 
+    /**
+     * 从本地获取
+     */
+    private void getFromLocal() {
+        RealmResults<SearchEngineModel> searchEngineModels = searchEngineDbService.queryAll();
+        if (searchEngineModels != null) {
+            List<SearchEngineEntity> searchEnginges = ListConvertor.convertList(new ArrayList<IConvertModel<SearchEngineEntity>>(searchEngineModels));
+            searchEngineAdapter.bindData(true, searchEnginges);
+        }
     }
 
 
     /**
      * 获取 搜索历史记录
      */
-    private void getSearhHistory() {
-        if (searchHistroyDbService != null) {
-            RealmResults<SearhHistoryModel> searhHistoryModels = searchHistroyDbService.queryAll();
-            searchHistoryAdapter.bindData(true, searhHistoryModels);
+    private void getSearchHistory() {
+        try {
+            String stringData = SpUtils.getInstance().getStringData(KEY_SEARCH_HISTORY, "");
+            Type type = new TypeToken<ArrayList<SearchHistoryEntity>>() {
+            }.getType();
+            ArrayList<SearchHistoryEntity> searchHistoryEntities = JsonUtils.Gson2Type(stringData, type);
+            recordSearchHistories.clear();
+            recordSearchHistories.addAll(searchHistoryEntities);
+            searchHistoryAdapter.bindData(true, recordSearchHistories);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void clearSearchHistory() {
+        recordSearchHistories.clear();
+        SpUtils.getInstance().putData(KEY_SEARCH_HISTORY, "");
+        searchEngineAdapter.clearData();
+    }
+
+
+    /**
+     * 保存搜索历史消息
+     */
+    private void saveSearchHistory() {
+        if (recordSearchHistories.size() > 10) {
+            List<SearchHistoryEntity> searchHistoryEntities = recordSearchHistories.subList(0, 10);
+            try {
+                SpUtils.getInstance().putData(KEY_SEARCH_HISTORY, JsonUtils.Gson2String(searchHistoryEntities));
+            } catch (JsonParseException e) {
+                e.printStackTrace();
+            }
+        } else {
+            try {
+                SpUtils.getInstance().putData(KEY_SEARCH_HISTORY, JsonUtils.Gson2String(recordSearchHistories));
+            } catch (JsonParseException e) {
+                e.printStackTrace();
+            }
         }
     }
 
 
-    @OnClick({R.id.search_input_clear_btn, R.id.search_history_clear_btn, R.id.search_audio_btn})
+    @OnClick({R.id.search_input_clear_btn,
+            R.id.search_history_clear_btn,
+            R.id.search_audio_btn})
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
@@ -256,10 +314,7 @@ public class TabSearchFragment extends BaseFragment {
                 searchEdit.setText("");
                 break;
             case R.id.search_history_clear_btn:
-                searchHistoryAdapter.clearData();
-                if (searchHistroyDbService != null) {
-                    searchHistroyDbService.deleteAll();
-                }
+                clearSearchHistory();
                 break;
             case R.id.search_audio_btn:
                 break;
@@ -270,6 +325,7 @@ public class TabSearchFragment extends BaseFragment {
 
     }
 
+
     @Override
     public void onDestroyView() {
         super.onDestroyView();
@@ -279,8 +335,8 @@ public class TabSearchFragment extends BaseFragment {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        if (searchHistroyDbService != null) {
-            searchHistroyDbService.releaseService();
+        if (searchEngineDbService != null) {
+            searchEngineDbService.releaseService();
         }
     }
 }

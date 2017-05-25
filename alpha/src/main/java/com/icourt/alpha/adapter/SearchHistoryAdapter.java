@@ -4,8 +4,8 @@ import android.widget.TextView;
 
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.baseadapter.BaseArrayRecyclerAdapter;
-import com.icourt.alpha.db.dbmodel.SearchEngineModel;
-import com.icourt.alpha.db.dbmodel.SearhHistoryModel;
+import com.icourt.alpha.entity.bean.SearchEngineEntity;
+import com.icourt.alpha.entity.bean.SearchHistoryEntity;
 
 /**
  * Description
@@ -14,7 +14,7 @@ import com.icourt.alpha.db.dbmodel.SearhHistoryModel;
  * date createTime：2017/4/20
  * version 1.0.0
  */
-public class SearchHistoryAdapter extends BaseArrayRecyclerAdapter<SearhHistoryModel> {
+public class SearchHistoryAdapter extends BaseArrayRecyclerAdapter<SearchHistoryEntity> {
 
     private static final int TAG_MAX_NUM = 3;
 
@@ -23,9 +23,8 @@ public class SearchHistoryAdapter extends BaseArrayRecyclerAdapter<SearhHistoryM
         return R.layout.adapter_item_search_history;
     }
 
-
     @Override
-    public void onBindHoder(ViewHolder holder, SearhHistoryModel searhHistoryModel, int position) {
+    public void onBindHoder(ViewHolder holder, SearchHistoryEntity searhHistoryModel, int position) {
         if (searhHistoryModel == null) return;
         TextView search_keyWord_tv = holder.obtainView(R.id.search_keyWord_tv);
         TextView search_engines_tv = holder.obtainView(R.id.search_engines_tv);
@@ -33,7 +32,7 @@ public class SearchHistoryAdapter extends BaseArrayRecyclerAdapter<SearhHistoryM
         StringBuilder stringBuilder = new StringBuilder();
         if (searhHistoryModel.searchEngines != null) {
             for (int i = 0; i < Math.min(TAG_MAX_NUM, searhHistoryModel.searchEngines.size()); i++) {
-                SearchEngineModel searchEngineModel = searhHistoryModel.searchEngines.get(i);
+                SearchEngineEntity searchEngineModel = searhHistoryModel.searchEngines.get(i);
                 if (searchEngineModel != null) {
                     stringBuilder.append(searchEngineModel.name);
                     stringBuilder.append(" ");

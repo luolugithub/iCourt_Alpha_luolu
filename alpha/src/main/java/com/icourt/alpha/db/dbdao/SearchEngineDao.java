@@ -2,7 +2,7 @@ package com.icourt.alpha.db.dbdao;
 
 import com.icourt.alpha.constants.DbConfig;
 import com.icourt.alpha.db.BaseRealmObjectDao;
-import com.icourt.alpha.db.dbmodel.SearhHistoryModel;
+import com.icourt.alpha.db.dbmodel.SearchEngineModel;
 
 import io.realm.DynamicRealm;
 import io.realm.RealmMigration;
@@ -11,12 +11,13 @@ import io.realm.RealmMigration;
  * Description
  * Company Beijing icourt
  * author  youxuan  E-mail:xuanyouwu@163.com
- * date createTime：2017/4/11
+ * date createTime：2017/5/25
  * version 1.0.0
  */
-public class SearchHistoryDao extends BaseRealmObjectDao<SearhHistoryModel> {
-    public SearchHistoryDao(String uid) {
-        super(String.format(DbConfig.DB_REALM_SEARCH_HISTORY, uid), 1, new RealmMigration() {
+public class SearchEngineDao extends BaseRealmObjectDao<SearchEngineModel> {
+
+    public SearchEngineDao(String uid) {
+        super(String.format(DbConfig.DB_REALM_SEARCH_ENGINE, uid), 1, new RealmMigration() {
 
             @Override
             public void migrate(DynamicRealm realm, long oldVersion, long newVersion) {
@@ -25,7 +26,7 @@ public class SearchHistoryDao extends BaseRealmObjectDao<SearhHistoryModel> {
 
             @Override
             public int hashCode() {
-                return DbConfig.DB_REALM_SEARCH_HISTORY.hashCode();
+                return DbConfig.DB_REALM_SEARCH_ENGINE.hashCode();
             }
 
             @Override
@@ -34,5 +35,4 @@ public class SearchHistoryDao extends BaseRealmObjectDao<SearhHistoryModel> {
             }
         });
     }
-
 }

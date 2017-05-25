@@ -4,6 +4,7 @@ import com.icourt.alpha.db.convertor.IConvertModel;
 import com.icourt.alpha.entity.bean.SearchEngineEntity;
 
 import io.realm.RealmObject;
+import io.realm.annotations.PrimaryKey;
 import io.realm.annotations.RealmClass;
 
 /**
@@ -15,6 +16,8 @@ import io.realm.annotations.RealmClass;
  */
 @RealmClass
 public class SearchEngineModel extends RealmObject implements IConvertModel<SearchEngineEntity> {
+
+    @PrimaryKey
     public int id;
     public String name;
     public String site;

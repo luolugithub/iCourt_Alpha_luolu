@@ -113,6 +113,14 @@ public class JsonUtils {
         return lst;
     }
 
+    /**
+     * eg new TypeToken<ArrayList<SearchHistoryEntity>>(){}.getType()
+     * @param json
+     * @param typeOfT
+     * @param <T>
+     * @return
+     * @throws JsonParseException
+     */
     public static <T> T Gson2Type(String json, Type typeOfT) throws JsonParseException {
         return gson.fromJson(json, typeOfT);
     }
