@@ -269,7 +269,13 @@ public class TimerDetailActivity extends BaseTimerActivity
                 showDateSelectEnd(stopTimeMinTv);
                 break;
             case R.id.project_layout://所属项目
-                showProjectSelectDialogFragment();
+                if (itemEntity != null) {
+                    if (TextUtils.isEmpty(itemEntity.matterPkId)) {
+                        showProjectSelectDialogFragment();
+                    } else {
+                        showBottomMeau();
+                    }
+                }
                 break;
             case R.id.worktype_layout://工作类型
                 if (TextUtils.isEmpty(itemEntity.matterPkId)) {
@@ -282,6 +288,31 @@ public class TimerDetailActivity extends BaseTimerActivity
                 showTaskSelectDialogFragment(itemEntity.matterPkId);
                 break;
         }
+    }
+
+    /**
+     * 显示底部菜单
+     */
+    private void showBottomMeau() {
+        new BottomActionDialog(getContext(),
+                null,
+                Arrays.asList("选择项目", "查看项目"),
+                new BottomActionDialog.OnActionItemClickListener() {
+                    @Override
+                    public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
+                        dialog.dismiss();
+                        switch (position) {
+                            case 0:
+                                showProjectSelectDialogFragment();
+                                break;
+                            case 1:
+                                if (itemEntity != null)
+                                    ProjectDetailActivity.launch(getContext(), itemEntity.matterPkId, itemEntity.matterName);
+                                break;
+
+                        }
+                    }
+                }).show();
     }
 
     /**
@@ -438,6 +469,7 @@ public class TimerDetailActivity extends BaseTimerActivity
                     taskNameTv.setText("未关联");
                 }
                 itemEntity.matterPkId = projectEntity.pkId;
+                itemEntity.matterName = projectEntity.name;
                 projectNameTv.setText(projectEntity.name);
             }
 

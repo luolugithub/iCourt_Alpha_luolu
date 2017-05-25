@@ -103,7 +103,7 @@ public class ProjectDetailActivity extends BaseActivity implements OnFragmentCal
         }
 
         //第一次打开默认概览：隐藏更多菜单入口
-        titleAction.setVisibility(View.GONE);
+        titleAction.setVisibility(View.INVISIBLE);
 
         baseFragmentAdapter = new BaseFragmentAdapter(getSupportFragmentManager());
         detailViewpager.setAdapter(baseFragmentAdapter);

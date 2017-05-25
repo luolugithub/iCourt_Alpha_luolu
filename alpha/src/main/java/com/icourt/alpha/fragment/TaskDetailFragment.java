@@ -17,7 +17,9 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.icourt.alpha.R;
+import com.icourt.alpha.activity.ProjectDetailActivity;
 import com.icourt.alpha.activity.TaskDescUpdateActivity;
+import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.entity.bean.ProjectEntity;
 import com.icourt.alpha.entity.bean.TaskEntity;
@@ -30,12 +32,14 @@ import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.utils.DateUtils;
+import com.icourt.alpha.widget.dialog.BottomActionDialog;
 import com.icourt.api.RequestUtils;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
+import java.util.Arrays;
 import java.util.Calendar;
 
 import butterknife.BindView;
@@ -134,7 +138,13 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
         super.onClick(v);
         switch (v.getId()) {
             case R.id.task_project_layout://选择项目
-                showProjectSelectDialogFragment();
+                if (taskItemEntity != null) {
+                    if (taskItemEntity.matter == null) {
+                        showProjectSelectDialogFragment();
+                    } else {
+                        showBottomMeau();
+                    }
+                }
                 break;
             case R.id.task_group_layout://选择任务组
                 if (taskItemEntity.matter != null) {
@@ -150,6 +160,32 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
                 TaskDescUpdateActivity.launch(getContext(), taskDescTv.getText().toString(), TaskDescUpdateActivity.UPDATE_TASK_DESC);
                 break;
         }
+    }
+
+    /**
+     * 显示底部菜单
+     */
+    private void showBottomMeau() {
+        new BottomActionDialog(getContext(),
+                null,
+                Arrays.asList("选择项目", "查看项目"),
+                new BottomActionDialog.OnActionItemClickListener() {
+                    @Override
+                    public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
+                        dialog.dismiss();
+                        switch (position) {
+                            case 0:
+                                showProjectSelectDialogFragment();
+                                break;
+                            case 1:
+                                if (taskItemEntity != null)
+                                    if (taskItemEntity.matter != null)
+                                        ProjectDetailActivity.launch(getContext(), taskItemEntity.matter.id, taskItemEntity.matter.name);
+                                break;
+
+                        }
+                    }
+                }).show();
     }
 
     /**
@@ -213,10 +249,12 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
     @Override
     public void onProjectTaskGroupSelect(ProjectEntity projectEntity, TaskGroupEntity taskGroupEntity) {
         if (projectEntity != null) {
-            if (taskItemEntity.attendeeUsers != null) {
-                taskItemEntity.attendeeUsers.clear();
+            if (taskItemEntity != null) {
+                if (taskItemEntity.attendeeUsers != null) {
+                    taskItemEntity.attendeeUsers.clear();
+                }
+                updateTask(taskItemEntity, projectEntity, taskGroupEntity);
             }
-            updateTask(taskItemEntity, projectEntity, taskGroupEntity);
         }
     }
 
@@ -237,6 +275,17 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
                 if (projectEntity != null) {
                     taskProjectTv.setText(projectEntity.name);
                     EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_UPDATE_PROJECT_ACTION, projectEntity.pkId));
+                    if (taskItemEntity != null) {
+                        if (taskItemEntity.matter != null) {
+                            taskItemEntity.matter.id = projectEntity.pkId;
+                            taskItemEntity.matter.name = projectEntity.name;
+                        } else {
+                            TaskEntity.TaskItemEntity.MatterEntity matterEntity = new TaskEntity.TaskItemEntity.MatterEntity();
+                            matterEntity.id = projectEntity.pkId;
+                            matterEntity.name = projectEntity.name;
+                            taskItemEntity.matter = matterEntity;
+                        }
+                    }
                 }
                 if (taskGroupEntity != null) {
                     taskGroupTv.setText(taskGroupEntity.name);
