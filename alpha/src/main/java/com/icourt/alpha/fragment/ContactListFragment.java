@@ -34,6 +34,7 @@ import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.DensityUtil;
 import com.icourt.alpha.utils.IndexUtils;
 import com.icourt.alpha.utils.PinyinComparator;
+import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.view.recyclerviewDivider.SuspensionDecoration;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 import com.icourt.alpha.widget.filter.ListFilter;
@@ -324,13 +325,13 @@ public class ContactListFragment extends BaseFragment implements BaseRecyclerAda
      */
     public void showContactDialogFragment(GroupContactBean data) {
         if (data == null) return;
-        String tag = "ContactDialogFragment";
+        String tag = ContactDialogFragment.class.getSimpleName();
         FragmentTransaction mFragTransaction = getChildFragmentManager().beginTransaction();
         Fragment fragment = getFragmentManager().findFragmentByTag(tag);
         if (fragment != null) {
             mFragTransaction.remove(fragment);
         }
-        ContactDialogFragment.newInstance(data.accid, "联系人资料", false)
+        ContactDialogFragment.newInstance(data.accid, "联系人资料", StringUtils.equalsIgnoreCase(data.accid, getLoginUserId(), false))
                 .show(mFragTransaction, tag);
     }
 

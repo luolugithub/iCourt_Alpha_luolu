@@ -40,7 +40,6 @@ import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.view.SoftKeyboardSizeWatchLayout;
 import com.icourt.alpha.widget.filter.ListFilter;
 import com.netease.nimlib.sdk.NIMClient;
-import com.netease.nimlib.sdk.RequestCallbackWrapper;
 import com.netease.nimlib.sdk.msg.MsgService;
 import com.netease.nimlib.sdk.search.model.MsgIndexRecord;
 import com.netease.nimlib.sdk.team.TeamService;
@@ -261,19 +260,6 @@ public class SearchPolymerizationActivity extends BaseActivity implements BaseRe
                     @Override
                     public void accept(List<SearchPolymerizationEntity> searchPolymerizationEntities) throws Exception {
                         searchPolymerizationAdapter.bindData(true, searchPolymerizationEntities);
-                    }
-                });
-        NIMClient.getService(TeamService.class)
-                .queryTeamList()
-                .setCallback(new RequestCallbackWrapper<List<Team>>() {
-                    @Override
-                    public void onResult(int code, List<Team> result, Throwable exception) {
-                        log("----------->code:" + code + " ex:" + exception);
-                        if (result != null) {
-                            for (Team t : result) {
-                                IMUtils.logIMTeam("---------->team:", t);
-                            }
-                        }
                     }
                 });
     }

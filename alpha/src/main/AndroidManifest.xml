@@ -242,7 +242,8 @@
             android:screenOrientation="portrait" />
         <activity
             android:name=".activity.SearchPolymerizationActivity"
-            android:screenOrientation="portrait" />
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="stateVisible"/>
         <activity
             android:name=".activity.SettingActivity"
             android:screenOrientation="portrait"
