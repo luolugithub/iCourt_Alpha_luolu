@@ -127,10 +127,25 @@ public class TimerAddActivity extends BaseTimerActivity
         }
 
         selectedStartDate = Calendar.getInstance();
+        //默认开始时间 早上9点整开始
+        selectedStartDate.set(Calendar.HOUR_OF_DAY, 9);
+        selectedStartDate.set(Calendar.MINUTE, 0);
+        selectedStartDate.set(Calendar.SECOND, 0);
+
+
+        //默认结束时间 9:15
         selectedEndDate = Calendar.getInstance();
+        selectedEndDate.set(Calendar.HOUR_OF_DAY, 9);
+        selectedEndDate.set(Calendar.MINUTE, 15);
+        selectedEndDate.set(Calendar.SECOND, 0);
+
         useTimeDate.setText(DateUtils.getyyyyMMdd(selectedStartDate.getTimeInMillis()));
+        startTimeMinTv.setText(DateUtils.getHHmm(selectedStartDate.getTimeInMillis()));
+        stopTimeMinTv.setText(DateUtils.getHHmm(selectedStartDate.getTimeInMillis()));
 
         circleTimerView.setOneCircle(true);
+        circleTimerView.setMiniTime(70);
+        circleTimerView.setCurrentTime((int) ((selectedEndDate.getTimeInMillis() - selectedStartDate.getTimeInMillis()) / 1000));
         circleTimerView.setHintText("");
         circleTimerView.setCircleTimerListener(new CircleTimerView.CircleTimerListener() {
             @Override
@@ -163,9 +178,6 @@ public class TimerAddActivity extends BaseTimerActivity
             public void onTimerSetValueChange(int time) {
             }
         });
-        circleTimerView.setMiniTime(70);
-        //默认5分钟
-        circleTimerView.setCurrentTime(5 * 60);
         timeNameTv.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
@@ -294,7 +306,7 @@ public class TimerAddActivity extends BaseTimerActivity
         TimeEntity.ItemEntity itemEntityCopy = new TimeEntity.ItemEntity();
         itemEntityCopy.createUserId = getLoginUserId();
         itemEntityCopy.startTime = selectedStartDate.getTimeInMillis();
-        itemEntityCopy.useTime = selectedEndDate.getTimeInMillis() - selectedEndDate.getTimeInMillis();
+        itemEntityCopy.useTime = selectedEndDate.getTimeInMillis() - selectedStartDate.getTimeInMillis();
         itemEntityCopy.endTime = selectedEndDate.getTimeInMillis();
         itemEntityCopy.state = 1;
         itemEntityCopy.matterPkId = selectedProjectEntity != null ? selectedProjectEntity.pkId : null;

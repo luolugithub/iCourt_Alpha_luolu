@@ -116,7 +116,7 @@ public class FileImportNavFragment extends BaseFragment {
                 ivFileIcon.setImageResource(FileUtils.getFileIcon40(fileName));
                 File file = new File(filePath);
                 if (file.exists()) {
-                    tvFileSize.setText(String.format("(%s)", FileUtils.kbFromat(file.length())));
+                    tvFileSize.setText(String.format("(%s)", FileUtils.bFormat(file.length())));
                 }
             }
         }

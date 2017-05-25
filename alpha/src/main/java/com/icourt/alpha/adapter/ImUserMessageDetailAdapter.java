@@ -170,7 +170,7 @@ public class ImUserMessageDetailAdapter extends BaseArrayRecyclerAdapter<IMMessa
         TextView file_size_tv = holder.obtainView(R.id.file_size_tv);
         file_type_iv.setImageResource(getFileIcon40(imMessageCustomBody.ext.name));
         file_title_tv.setText(imMessageCustomBody.ext.name);
-        file_size_tv.setText(FileUtils.kbFromat(imMessageCustomBody.ext.size));
+        file_size_tv.setText(FileUtils.kbFormat(imMessageCustomBody.ext.size));
     }
 
 

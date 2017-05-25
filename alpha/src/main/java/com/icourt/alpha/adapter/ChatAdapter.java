@@ -112,6 +112,7 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMMessageCustomBody> i
         this.contactBeanList = contactBeanList;
         alphaUserInfo = LoginInfoUtils.getLoginUserInfo();
     }
+
     private String getLoginUid() {
         return alphaUserInfo == null ? null : alphaUserInfo.getUserId();
     }
@@ -530,11 +531,12 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMMessageCustomBody> i
         if (imMessageCustomBody.ext != null) {
             chat_file_icon_iv.setImageResource(getFileIcon40(imMessageCustomBody.ext.name));
             chat_file_name_tv.setText(imMessageCustomBody.ext.name);
-            chat_file_size_tv.setText(FileUtils.kbFromat(imMessageCustomBody.ext.size));
+            chat_file_size_tv.setText(FileUtils.bFormat(imMessageCustomBody.ext.size));
         } else {
             chat_file_name_tv.setText("服务器 file ext null");
         }
         holder.bindChildClick(R.id.chat_ll_file);
+        holder.bindChildLongClick(R.id.chat_ll_file);
     }
 
     /**
@@ -636,7 +638,7 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMMessageCustomBody> i
         if (imMessageCustomBody.ext.ext != null) {
             chat_file_icon_iv.setImageResource(getFileIcon40(imMessageCustomBody.ext.ext.name));
             chat_file_name_tv.setText(imMessageCustomBody.ext.ext.name);
-            chat_file_size_tv.setText(FileUtils.kbFromat(imMessageCustomBody.ext.ext.size));
+            chat_file_size_tv.setText(FileUtils.bFormat(imMessageCustomBody.ext.ext.size));
         } else {
             chat_file_name_tv.setText("服务器 file ext ext null");
         }

@@ -113,13 +113,13 @@ public class FileUtils {
         long mb = kb * 1024;
         long gb = mb * 1024;
         if (b >= gb) {
-            return String.format("%.1f GB", (float) b / gb);
+            return String.format("%.1f G", (float) b / gb);
         } else if (b >= mb) {
             float f = (float) b / mb;
-            return String.format(f > 100 ? "%.0f MB" : "%.1f MB", f);
+            return String.format(f > 100 ? "%.0f M" : "%.1f M", f);
         } else if (b >= kb) {
             float f = (float) b / kb;
-            return String.format(f > 100 ? "%.0f KB" : "%.1f KB", f);
+            return String.format(f > 100 ? "%.0f K" : "%.1f K", f);
         } else
             return String.format("%d B", b);
     }
@@ -130,7 +130,7 @@ public class FileUtils {
      * @param kb kb
      * @return
      */
-    public static final String kbFromat(long kb) {
+    public static final String kbFormat(long kb) {
         return bFormat(1024 * kb);
     }
 

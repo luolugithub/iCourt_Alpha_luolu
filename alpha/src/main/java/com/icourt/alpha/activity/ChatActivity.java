@@ -1232,6 +1232,8 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
                 return super.onItemLongClick(adapter, holder, view, position);
             case R.id.chat_txt_tv:
                 return super.onItemLongClick(adapter, holder, view, position);
+            case R.id.chat_ll_file:
+                return super.onItemLongClick(adapter, holder, view, position);
         }
         return false;
     }
