@@ -344,22 +344,6 @@ public class SearchPolymerizationActivity extends BaseActivity implements BaseRe
         return new ListFilter<GroupContactBean>().filter(contactBeen, GroupContactBean.TYPE_ROBOT);
     }
 
-    /**
-     * ContactSearchActivity.launch(getContext(),
-     * searchLayout,
-     * TextUtils.isEmpty(etSearchName.getText()) ? "" : etSearchName.getText().toString());
-     * break;
-     * case SEARCH_TYPE_MSG:
-     * break;
-     * case SEARCH_TYPE_TEAM:
-     * GroupSearchActivity.launch(getContext(),
-     * etSearchName,
-     * GroupListActivity.GROUP_TYPE_MY_JOIN,
-     * TextUtils.isEmpty(etSearchName.getText()) ? "" : etSearchName.getText().toString());
-     *
-     * @param v
-     */
-
     @OnClick({R.id.tv_search_cancel,
             R.id.search_msg_tv,
             R.id.search_group_tv,

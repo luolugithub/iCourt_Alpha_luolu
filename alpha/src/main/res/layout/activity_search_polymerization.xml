@@ -46,9 +46,9 @@
                         android:layout_weight="1"
                         android:drawablePadding="5dp"
                         android:drawableTop="@drawable/tab_task"
+                        android:ems="7"
                         android:gravity="center"
                         android:paddingLeft="25dp"
-                        android:ems="7"
                         android:paddingRight="25dp"
                         android:text="聊天记录" />
 
@@ -59,8 +59,8 @@
                         android:layout_weight="1"
                         android:drawablePadding="5dp"
                         android:drawableTop="@drawable/tab_task"
-                        android:gravity="center"
                         android:ems="7"
+                        android:gravity="center"
                         android:paddingLeft="25dp"
                         android:paddingRight="25dp"
                         android:text="讨论组" />
@@ -72,8 +72,8 @@
                         android:layout_weight="1"
                         android:drawablePadding="5dp"
                         android:drawableTop="@drawable/tab_customer"
-                        android:gravity="center"
                         android:ems="7"
+                        android:gravity="center"
                         android:paddingLeft="25dp"
                         android:paddingRight="25dp"
                         android:text="联系人" />
@@ -86,9 +86,8 @@
             <android.support.v7.widget.RecyclerView
                 android:id="@+id/recyclerView"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent">
-
-            </android.support.v7.widget.RecyclerView>
+                android:layout_height="match_parent"
+                android:visibility="gone" />
         </FrameLayout>
 
     </LinearLayout>
