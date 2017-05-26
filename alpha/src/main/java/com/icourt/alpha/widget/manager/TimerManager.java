@@ -328,9 +328,15 @@ public class TimerManager {
                         .enqueue(new SimpleCallBack<JsonElement>() {
                             @Override
                             public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
-                                broadTimingEvent(timer.pkId, TimingEvent.TIMING_STOP);
+                                // broadTimingEvent(timer.pkId, TimingEvent.TIMING_STOP);
                                 stopTimingTask();
                                 SpUtils.getInstance().putData(String.format(KEY_TIMER, getUid()), "");
+
+                                TimingEvent timingSingle = TimingEvent.timingSingle;
+                                timingSingle.action = TimingEvent.TIMING_STOP;
+                                timingSingle.timingId = timer.pkId;
+                                timingSingle.timingSecond = base;
+                                EventBus.getDefault().post(timingSingle);
                             }
                         });
             }

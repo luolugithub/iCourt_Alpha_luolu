@@ -38,6 +38,18 @@
                     android:layout_marginTop="30dp"
                     android:orientation="horizontal">
 
+                    <TextView
+                        android:id="@+id/search_customer_tv"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:drawablePadding="5dp"
+                        android:drawableTop="@mipmap/ic_search_cuatomer_gray"
+                        android:ems="7"
+                        android:gravity="center"
+                        android:paddingLeft="25dp"
+                        android:paddingRight="25dp"
+                        android:text="联系人" />
 
                     <TextView
                         android:id="@+id/search_msg_tv"
@@ -45,7 +57,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:drawablePadding="5dp"
-                        android:drawableTop="@drawable/tab_task"
+                        android:drawableTop="@mipmap/ic_search_message_gray"
                         android:ems="7"
                         android:gravity="center"
                         android:paddingLeft="25dp"
@@ -58,25 +70,13 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:drawablePadding="5dp"
-                        android:drawableTop="@drawable/tab_task"
+                        android:drawableTop="@mipmap/ic_search_group_gray"
                         android:ems="7"
                         android:gravity="center"
                         android:paddingLeft="25dp"
                         android:paddingRight="25dp"
                         android:text="讨论组" />
 
-                    <TextView
-                        android:id="@+id/search_customer_tv"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:drawablePadding="5dp"
-                        android:drawableTop="@drawable/tab_customer"
-                        android:ems="7"
-                        android:gravity="center"
-                        android:paddingLeft="25dp"
-                        android:paddingRight="25dp"
-                        android:text="联系人" />
 
                 </LinearLayout>
 
