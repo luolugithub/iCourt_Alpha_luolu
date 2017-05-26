@@ -801,12 +801,20 @@ public interface ApiAlphaService {
 
 
     /**
-     * 查看任务的成员 对应的成员
+     * 查看任务的成员 对应的成员(有权限)
      *
      * @return
      */
     @GET("api/v1/auth/get/members")
-    Call<ResEntity<List<TaskMemberWrapEntity>>> getTaskMembers();
+    Call<ResEntity<List<TaskMemberWrapEntity>>> getPremissionTaskMembers();
+
+    /**
+     * 查看任务的成员 对应的成员(无权限)
+     *
+     * @return
+     */
+    @GET("api/v1/auth/groups/q/groupByToken")
+    Call<ResEntity<List<TaskMemberWrapEntity>>> getUnPremissionTaskMembers();
 
 
     /**

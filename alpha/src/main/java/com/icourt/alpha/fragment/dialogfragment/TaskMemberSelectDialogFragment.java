@@ -16,12 +16,14 @@ import android.widget.TextView;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.TaskMemberAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
+import com.icourt.alpha.entity.bean.TaskMemberEntity;
 import com.icourt.alpha.entity.bean.TaskMemberWrapEntity;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.utils.DensityUtil;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.BindView;
@@ -108,18 +110,32 @@ public class TaskMemberSelectDialogFragment extends BaseDialogFragment {
     @Override
     protected void getData(final boolean isRefresh) {
         super.getData(isRefresh);
-        getApi().getTaskMembers()
-                .enqueue(new SimpleCallBack<List<TaskMemberWrapEntity>>() {
-                    @Override
-                    public void onSuccess(Call<ResEntity<List<TaskMemberWrapEntity>>> call, Response<ResEntity<List<TaskMemberWrapEntity>>> response) {
-                        if (response.body().result != null && !response.body().result.isEmpty()) {
-                            TaskMemberWrapEntity taskMemberWrapEntity = response.body().result.get(0);
-                            if (taskMemberWrapEntity != null) {
-                                taskMemberAdapter.bindData(isRefresh, taskMemberWrapEntity.members);
-                            }
-                        }
+        //有权限
+//        getApi().getPremissionTaskMembers()
+//                .enqueue(new SimpleCallBack<List<TaskMemberWrapEntity>>() {
+//                    @Override
+//                    public void onSuccess(Call<ResEntity<List<TaskMemberWrapEntity>>> call, Response<ResEntity<List<TaskMemberWrapEntity>>> response) {
+//                        if (response.body().result != null && !response.body().result.isEmpty()) {
+//                            TaskMemberWrapEntity taskMemberWrapEntity = response.body().result.get(0);
+//                            if (taskMemberWrapEntity != null) {
+//                                taskMemberAdapter.bindData(isRefresh, taskMemberWrapEntity.members);
+//                            }
+//                        }
+//                    }
+//                });
+        //无权限
+        getApi().getUnPremissionTaskMembers().enqueue(new SimpleCallBack<List<TaskMemberWrapEntity>>() {
+            @Override
+            public void onSuccess(Call<ResEntity<List<TaskMemberWrapEntity>>> call, Response<ResEntity<List<TaskMemberWrapEntity>>> response) {
+                if (response.body().result != null && !response.body().result.isEmpty()) {
+                    List<TaskMemberEntity> memberEntities = new ArrayList<TaskMemberEntity>();
+                    for (TaskMemberWrapEntity taskMemberWrapEntity : response.body().result) {
+                        memberEntities.addAll(taskMemberWrapEntity.members);
                     }
-                });
+                    taskMemberAdapter.bindData(isRefresh, memberEntities);
+                }
+            }
+        });
     }
 
 

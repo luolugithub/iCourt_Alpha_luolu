@@ -1,5 +1,7 @@
 package com.icourt.alpha.entity.bean;
 
+import com.google.gson.annotations.SerializedName;
+
 import java.io.Serializable;
 
 /**
@@ -10,7 +12,10 @@ import java.io.Serializable;
  * version 1.0.0
  */
 public class TaskMemberEntity implements Serializable {
+    @SerializedName(value = "userId", alternate = {"memberPkId"})
     public String userId;
+    @SerializedName(value = "userName", alternate = {"name"})
     public String userName;
+    @SerializedName(value = "userPic", alternate = {"pic"})
     public String userPic;
 }
