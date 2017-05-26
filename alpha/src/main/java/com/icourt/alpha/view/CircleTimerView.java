@@ -252,7 +252,7 @@ public class CircleTimerView extends View {
         float ovalLineWidth = 4 * mCircleStrokeWidth;
         RectF oval = new RectF(x + ovalLineWidth, y + ovalLineWidth,
                 getWidth() - ovalLineWidth, getHeight() - ovalLineWidth);
-        canvas.drawArc(oval, -90, (float) Math.toDegrees(mCurrentRadian), false, mCircleOutlinePaint);
+        canvas.drawArc(oval, 15, (float) Math.toDegrees(mCurrentRadian), false, mCircleOutlinePaint);
         canvas.save();
 
 

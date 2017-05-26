@@ -189,7 +189,8 @@ public class TabTimingFragment extends BaseFragment implements BaseRecyclerAdapt
                         if (response.body().result != null) {
                             timeAdapter.bindData(true, response.body().result.items);
                             stopRefresh();
-                            timingCountTotal.setText(getHm(response.body().result.timingSum));
+                            if (timingCountTotal != null)
+                                timingCountTotal.setText(getHm(response.body().result.timingSum));
                         }
                     }
 
@@ -363,16 +364,12 @@ public class TabTimingFragment extends BaseFragment implements BaseRecyclerAdapt
         return String.format("%02d:%02d", hour, minute);
     }
 
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        unbinder.unbind();
-    }
 
     @Override
     public void onDestroy() {
         EventBus.getDefault().unregister(this);
         super.onDestroy();
+        unbinder.unbind();
     }
 
     @Override

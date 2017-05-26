@@ -67,7 +67,13 @@ public class MyClass {
                 }
             }
         });*/
+
+
+        long time = 60 + 1; //秒
+        long minite = (time + 59) / 60;
+
     }
+
 
     private static void log(String log) {
         System.out.println(log);
