@@ -18,7 +18,7 @@ public class Const {
     public static final String SHARE_PREFERENCES_FILE_NAME = "icourt_cache_data";//SharedPreferences 文件名称
     //下载文件
     public static final String HTTP_DOWNLOAD_FILE = "ilaw/api/v2/file/download";
-
+    public static final String MSC_XUN_APPID = "581bee35";//讯飞语音识别appid
 
     public static final int VIEW_TYPE_ITEM = 101;
     public static final int VIEW_TYPE_GRID = 102;

@@ -400,6 +400,8 @@ public class TaskDetailActivity extends BaseActivity implements OnFragmentCallBa
         times /= 1000;
         long hour = times / 3600;
         long minute = times % 3600 / 60;
+        long second = times % 60;
+        if (second > 0) minute += 1;
         return String.format(Locale.CHINA, "%02d:%02d", hour, minute);
     }
 

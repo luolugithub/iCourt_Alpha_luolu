@@ -11,6 +11,7 @@ import com.bugtags.library.BugtagsOptions;
 import com.icourt.alpha.BuildConfig;
 import com.icourt.alpha.R;
 import com.icourt.alpha.activity.ChatActivity;
+import com.icourt.alpha.constants.Const;
 import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.icourt.alpha.http.HConst;
 import com.icourt.alpha.utils.ActivityLifecycleTaskCallbacks;
@@ -24,6 +25,8 @@ import com.icourt.alpha.utils.logger.LogLevel;
 import com.icourt.alpha.utils.logger.Logger;
 import com.icourt.alpha.widget.nim.AlphaMessageNotifierCustomization;
 import com.icourt.alpha.widget.nim.NimAttachParser;
+import com.iflytek.cloud.SpeechConstant;
+import com.iflytek.cloud.SpeechUtility;
 import com.liulishuo.filedownloader.FileDownloader;
 import com.liulishuo.filedownloader.util.FileDownloadHelper;
 import com.liulishuo.filedownloader.util.FileDownloadLog;
@@ -78,6 +81,7 @@ public class BaseApplication extends MultiDexApplication {
     public void onCreate() {
         super.onCreate();
         baseApplication = this;
+        SpeechUtility.createUtility(getApplicationContext(), SpeechConstant.APPID + "=" + Const.MSC_XUN_APPID);
         initStrictMode();
         initActivityLifecycleCallbacks();
         initRealm();
