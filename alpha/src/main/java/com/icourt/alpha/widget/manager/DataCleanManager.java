@@ -60,6 +60,7 @@ public class DataCleanManager {
         long size = 0;
         try {
             File[] fileList = file.listFiles();
+            if (fileList == null || fileList.length <= 0) return 0;
             for (int i = 0; i < fileList.length; i++) {
                 // 如果下面还有文件
                 if (fileList[i].isDirectory()) {

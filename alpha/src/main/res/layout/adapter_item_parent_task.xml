@@ -40,10 +40,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentRight="true"
-            android:drawablePadding="@dimen/dp10"
-            android:drawableRight="@mipmap/open_menu"
             android:gravity="center_vertical"
-            android:text="4"
+            android:text="0"
             android:textColor="@color/alpha_font_color_gray"
             android:textSize="@dimen/alpha_font_size_mini" />
 

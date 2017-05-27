@@ -10,6 +10,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.icourt.alpha.R;
@@ -45,6 +46,8 @@ public class AudioWaveDialogFragment extends BaseDialogFragment {
     CustomVisualizer visualizer;
     @BindView(R.id.cancle_tv)
     TextView cancleTv;
+    @BindView(R.id.progressbar)
+    ProgressBar progressbar;
     private StringBuffer voiceResultBuffer;
 
     public static AudioWaveDialogFragment newInstance() {
@@ -141,7 +144,9 @@ public class AudioWaveDialogFragment extends BaseDialogFragment {
 
         //结束录音
         public void onEndOfSpeech() {
-
+            titleTv.setText("正在识别...");
+            visualizer.setVisibility(View.GONE);
+            progressbar.setVisibility(View.VISIBLE);
         }
 
         //扩展用接口

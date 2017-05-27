@@ -90,7 +90,7 @@ public class MyFinishTaskActivity extends BaseActivity implements BaseRecyclerAd
         super.initView();
         setTitle("已完成的任务");
         EventBus.getDefault().register(this);
-        refreshLayout.setNoticeEmpty(R.mipmap.icon_placeholder_task, R.string.my_center_null_atme_text);
+        refreshLayout.setNoticeEmpty(R.mipmap.icon_placeholder_task, "暂无已完成任务");
         refreshLayout.setMoveForHorizontal(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setHasFixedSize(true);
@@ -117,7 +117,6 @@ public class MyFinishTaskActivity extends BaseActivity implements BaseRecyclerAd
 
     @Override
     protected void getData(final boolean isRefresh) {
-        super.getData(isRefresh);
         if (isRefresh) {
             pageIndex = 1;
         }
@@ -126,7 +125,8 @@ public class MyFinishTaskActivity extends BaseActivity implements BaseRecyclerAd
             public void onSuccess(Call<ResEntity<TaskEntity>> call, Response<ResEntity<TaskEntity>> response) {
                 if (response.body().result != null) {
                     taskItemAdapter.bindData(isRefresh, response.body().result.items);
-                    enableEmptyView(response.body().result.items);
+                    if (isRefresh)
+                        enableEmptyView(response.body().result.items);
                     stopRefresh();
                     pageIndex += 1;
                     enableLoadMore(response.body().result.items);

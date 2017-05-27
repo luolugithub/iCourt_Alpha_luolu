@@ -25,28 +25,40 @@
                 android:textColor="@color/alpha_font_color_black"
                 android:textSize="16sp" />
 
-            <com.icourt.alpha.view.audiowave.CustomVisualizer
-                android:id="@+id/visualizer"
-                android:layout_width="180dp"
-                android:layout_height="150dp"
-                aw:aw_ball_diameter="30"
-                aw:aw_color_gradient_end="@color/search_cutline_color"
-                aw:aw_color_gradient_start="@color/search_cutline_color"
-                aw:aw_color_is_gradient="false"
-                aw:aw_color_uniform="@color/search_cutline_color"
-                aw:aw_format="vertical_lines"
-                aw:aw_gravity="center"
-                aw:aw_height="200"
-                aw:aw_line_border_radius="10"
-                aw:aw_line_height="30"
-                aw:aw_line_min_height="5"
-                aw:aw_line_min_with="5"
-                aw:aw_line_spacing="10"
-                aw:aw_line_with="2"
-                aw:aw_num_waves="15"
-                aw:aw_width="200">
+            <RelativeLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
 
-            </com.icourt.alpha.view.audiowave.CustomVisualizer>
+                <com.icourt.alpha.view.audiowave.CustomVisualizer
+                    android:id="@+id/visualizer"
+                    android:layout_width="180dp"
+                    android:layout_height="150dp"
+                    aw:aw_ball_diameter="30"
+                    aw:aw_color_gradient_end="@color/search_cutline_color"
+                    aw:aw_color_gradient_start="@color/search_cutline_color"
+                    aw:aw_color_is_gradient="false"
+                    aw:aw_color_uniform="@color/search_cutline_color"
+                    aw:aw_format="vertical_lines"
+                    aw:aw_gravity="center"
+                    aw:aw_height="200"
+                    aw:aw_line_border_radius="10"
+                    aw:aw_line_height="30"
+                    aw:aw_line_min_height="5"
+                    aw:aw_line_min_with="5"
+                    aw:aw_line_spacing="10"
+                    aw:aw_line_with="2"
+                    aw:aw_num_waves="15"
+                    aw:aw_width="200">
+
+                </com.icourt.alpha.view.audiowave.CustomVisualizer>
+
+                <ProgressBar
+                    android:visibility="gone"
+                    android:id="@+id/progressbar"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerInParent="true" />
+            </RelativeLayout>
 
             <TextView
                 android:id="@+id/cancle_tv"

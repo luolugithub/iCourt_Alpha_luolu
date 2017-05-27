@@ -229,6 +229,7 @@ public class TaskAttachmentFragment extends BaseFragment implements BaseRecycler
             @Override
             public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
                 super.onFailure(call, t);
+                dismissLoadingDialog();
                 showTopSnackBar("上传失败");
             }
         });

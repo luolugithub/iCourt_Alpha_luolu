@@ -819,12 +819,38 @@ public interface ApiAlphaService {
 
     /**
      * 获取某人今日计时、本月计时、本月完成任务、本月总任务
+     *
      * @param userId
      * @return
      */
     @GET("api/v2/taskflow/getTimingAndTask")
     Call<ResEntity<UserDataEntity>> getUserData(@Query("userId") String userId);
 
+
+    /**
+     * 搜索项目列表
+     *
+     * @param queryString
+     * @return
+     */
+    @GET("api/v1/matters")
+    Call<ResEntity<List<ProjectEntity>>> projectQueryByName(@Query("queryString") String queryString);
+
+
+    /**
+     * 搜索任务列表
+     *
+     * @param assignTos
+     * @param name
+     * @param stateType  0:未完成；1：已完成；2：已删除
+     * @param queryType  0:全部；1：新任务；2：我关注的；3我部门的
+     * @return
+     */
+    @GET("api/v2/taskflow/queryMobileTask")
+    Call<ResEntity<TaskEntity>> taskQueryByName(@Query("assignTos") String assignTos,
+                                                      @Query("name") String name,
+                                                      @Query("stateType") int stateType,
+                                                      @Query("queryType") int queryType);
 }
 
 

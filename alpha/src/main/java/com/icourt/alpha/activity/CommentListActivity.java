@@ -137,6 +137,9 @@ public class CommentListActivity extends BaseActivity implements BaseRecyclerAda
                 if (s.toString().length() > 0) {
                     commentTv.setVisibility(View.GONE);
                     sendTv.setVisibility(View.VISIBLE);
+                }else{
+                    commentTv.setVisibility(View.VISIBLE);
+                    sendTv.setVisibility(View.GONE);
                 }
             }
         });
@@ -192,6 +195,10 @@ public class CommentListActivity extends BaseActivity implements BaseRecyclerAda
      * 添加评论
      */
     private void sendComment() {
+        if (TextUtils.isEmpty(commentEdit.getText().toString())) {
+            showTopSnackBar("请输入评论内容");
+            return;
+        }
         showLoadingDialog("正在发送...");
         getApi().commentCreate(100, taskId, commentEdit.getText().toString()).enqueue(new SimpleCallBack<JsonElement>() {
             @Override

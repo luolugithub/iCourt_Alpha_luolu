@@ -11,7 +11,9 @@ import android.view.ViewGroup;
 
 import com.andview.refreshview.XRefreshView;
 import com.icourt.alpha.R;
+import com.icourt.alpha.activity.SearchProjectActivity;
 import com.icourt.alpha.adapter.ProjectListAdapter;
+import com.icourt.alpha.adapter.baseadapter.HeaderFooterAdapter;
 import com.icourt.alpha.adapter.baseadapter.adapterObserver.RefreshViewEmptyObserver;
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.entity.bean.ProjectEntity;
@@ -53,18 +55,18 @@ public class MyProjectFragment extends BaseFragment {
     RecyclerView recyclerView;
     @BindView(R.id.refreshLayout)
     RefreshLayout refreshLayout;
-
     @IntDef({TYPE_ALL_PROJECT,
             TYPE_MY_ATTENTION_PROJECT, TYPE_MY_PARTIC_PROJECT})
     @Retention(RetentionPolicy.SOURCE)
     public @interface QueryProjectType {
-
     }
 
     Unbinder unbinder;
+
     private int pageIndex = 1;
     private int projectType;
     private String attorneyType, myStar;
+    HeaderFooterAdapter<ProjectListAdapter> headerFooterAdapter;
     ProjectListAdapter projectListAdapter;
 
     public static MyProjectFragment newInstance(@QueryProjectType int projectType) {
@@ -103,7 +105,15 @@ public class MyProjectFragment extends BaseFragment {
         refreshLayout.setMoveForHorizontal(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setHasFixedSize(true);
-        recyclerView.setAdapter(projectListAdapter = new ProjectListAdapter());
+
+        headerFooterAdapter = new HeaderFooterAdapter<>(projectListAdapter = new ProjectListAdapter());
+        View headerView = HeaderFooterAdapter.inflaterView(getContext(), R.layout.header_search_comm, recyclerView);
+        View rl_comm_search = headerView.findViewById(R.id.rl_comm_search);
+        registerClick(rl_comm_search);
+        headerFooterAdapter.addHeader(headerView);
+
+
+        recyclerView.setAdapter(headerFooterAdapter);
         projectListAdapter.registerAdapterDataObserver(new RefreshViewEmptyObserver(refreshLayout, projectListAdapter));
         refreshLayout.setXRefreshViewListener(new XRefreshView.SimpleXRefreshListener() {
             @Override
@@ -123,6 +133,18 @@ public class MyProjectFragment extends BaseFragment {
     }
 
     @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.rl_comm_search:
+                SearchProjectActivity.launch(getContext(),SearchProjectActivity.SEARCH_PROJECT);
+                break;
+            default:
+                super.onClick(v);
+                break;
+        }
+    }
+
+    @Override
     protected void getData(final boolean isRefresh) {
         if (isRefresh) {
             pageIndex = 1;
@@ -132,7 +154,8 @@ public class MyProjectFragment extends BaseFragment {
                     @Override
                     public void onSuccess(Call<ResEntity<List<ProjectEntity>>> call, Response<ResEntity<List<ProjectEntity>>> response) {
                         projectListAdapter.bindData(isRefresh, response.body().result);
-                        enableEmptyView(response.body().result);
+                        if (isRefresh)
+                            enableEmptyView(response.body().result);
                         stopRefresh();
                         pageIndex += 1;
                         enableLoadMore(response.body().result);

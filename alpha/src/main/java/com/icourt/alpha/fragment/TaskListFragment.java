@@ -16,9 +16,11 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.icourt.alpha.R;
+import com.icourt.alpha.activity.SearchProjectActivity;
 import com.icourt.alpha.adapter.TaskAdapter;
 import com.icourt.alpha.adapter.TaskItemAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseArrayRecyclerAdapter;
+import com.icourt.alpha.adapter.baseadapter.HeaderFooterAdapter;
 import com.icourt.alpha.adapter.baseadapter.adapterObserver.RefreshViewEmptyObserver;
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.entity.bean.ProjectEntity;
@@ -62,7 +64,7 @@ import retrofit2.Response;
  * version 2.0.0
  */
 
-public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShowFragmenDialogListener, OnFragmentCallBackListener,ProjectSelectDialogFragment.OnProjectTaskGroupSelectListener {
+public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShowFragmenDialogListener, OnFragmentCallBackListener, ProjectSelectDialogFragment.OnProjectTaskGroupSelectListener {
 
     private static final int TYPE_ALL = 0;//全部
     private static final int TYPE_NEW = 1;//新任务
@@ -86,6 +88,7 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
     List<TaskEntity.TaskItemEntity> datedTaskEntities;//已过期
 
     int type;
+    HeaderFooterAdapter<TaskAdapter> headerFooterAdapter;
 
     public static TaskListFragment newInstance(int type) {
         TaskListFragment projectTaskFragment = new TaskListFragment();
@@ -113,7 +116,13 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
         recyclerView.addItemDecoration(ItemDecorationUtils.getCommTrans5Divider(getContext(), true));
         recyclerView.setHasFixedSize(true);
 
-        recyclerView.setAdapter(taskAdapter = new TaskAdapter());
+        headerFooterAdapter = new HeaderFooterAdapter<>(taskAdapter = new TaskAdapter());
+        View headerView = HeaderFooterAdapter.inflaterView(getContext(), R.layout.header_search_comm, recyclerView);
+        View rl_comm_search = headerView.findViewById(R.id.rl_comm_search);
+        registerClick(rl_comm_search);
+        headerFooterAdapter.addHeader(headerView);
+
+        recyclerView.setAdapter(headerFooterAdapter);
         taskAdapter.setOnShowFragmenDialogListener(this);
         taskAdapter.registerAdapterDataObserver(new RefreshViewEmptyObserver(refreshLayout, taskAdapter));
 
@@ -139,6 +148,19 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
         noDueTaskEntities = new ArrayList<>();
         newTaskEntities = new ArrayList<>();
         datedTaskEntities = new ArrayList<>();
+    }
+
+    @Override
+    public void onClick(View v) {
+        super.onClick(v);
+        switch (v.getId()) {
+            case R.id.rl_comm_search:
+                SearchProjectActivity.launch(getContext(), SearchProjectActivity.SEARCH_TASK);
+                break;
+            default:
+                super.onClick(v);
+                break;
+        }
     }
 
     @Override
@@ -472,28 +494,30 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
                 if (updateTaskItemEntity.attendeeUsers != null) {
                     updateTaskItemEntity.attendeeUsers.clear();
                     updateTaskItemEntity.attendeeUsers.addAll(attusers);
-                    updateTask(updateTaskItemEntity,null,null);
+                    updateTask(updateTaskItemEntity, null, null);
                 }
             } else if (fragment instanceof DateSelectDialogFragment) {
                 long millis = params.getLong(KEY_FRAGMENT_RESULT);
                 updateTaskItemEntity.dueTime = millis;
-                updateTask(updateTaskItemEntity,null,null);
+                updateTask(updateTaskItemEntity, null, null);
             }
         }
     }
+
     @Override
     public void onProjectTaskGroupSelect(ProjectEntity projectEntity, TaskGroupEntity taskGroupEntity) {
 
         updateTask(updateTaskItemEntity, projectEntity, taskGroupEntity);
     }
+
     /**
      * 修改任务
      *
      * @param itemEntity
      */
-    private void updateTask(TaskEntity.TaskItemEntity itemEntity,ProjectEntity projectEntity, TaskGroupEntity taskGroupEntity) {
+    private void updateTask(TaskEntity.TaskItemEntity itemEntity, ProjectEntity projectEntity, TaskGroupEntity taskGroupEntity) {
         showLoadingDialog(null);
-        getApi().taskUpdate(RequestUtils.createJsonBody(getTaskJson(itemEntity,projectEntity,taskGroupEntity))).enqueue(new SimpleCallBack<JsonElement>() {
+        getApi().taskUpdate(RequestUtils.createJsonBody(getTaskJson(itemEntity, projectEntity, taskGroupEntity))).enqueue(new SimpleCallBack<JsonElement>() {
             @Override
             public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
                 dismissLoadingDialog();
@@ -514,8 +538,8 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
      * @param itemEntity
      * @return
      */
-    private String getTaskJson(TaskEntity.TaskItemEntity itemEntity,ProjectEntity projectEntity, TaskGroupEntity taskGroupEntity) {
-        if(itemEntity ==null)return null;
+    private String getTaskJson(TaskEntity.TaskItemEntity itemEntity, ProjectEntity projectEntity, TaskGroupEntity taskGroupEntity) {
+        if (itemEntity == null) return null;
         try {
             JsonObject jsonObject = new JsonObject();
             jsonObject.addProperty("id", itemEntity.id);
