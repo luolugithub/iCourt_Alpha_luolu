@@ -19,7 +19,6 @@ import com.icourt.alpha.R;
 import com.icourt.alpha.activity.SearchProjectActivity;
 import com.icourt.alpha.adapter.TaskAdapter;
 import com.icourt.alpha.adapter.TaskItemAdapter;
-import com.icourt.alpha.adapter.baseadapter.BaseArrayRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.HeaderFooterAdapter;
 import com.icourt.alpha.adapter.baseadapter.adapterObserver.RefreshViewEmptyObserver;
 import com.icourt.alpha.base.BaseFragment;
@@ -312,8 +311,6 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
             case TimingEvent.TIMING_UPDATE_PROGRESS:
                 TimeEntity.ItemEntity updateItem = TimerManager.getInstance().getTimer();
                 if (updateItem != null) {
-                    getParentPositon(updateItem.taskPkId);
-                    getChildPositon(updateItem.taskPkId);
                     updateChildTimeing(updateItem.taskPkId, true);
                 }
                 break;
@@ -388,9 +385,9 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
         if (parentPos >= 0) {
             int childPos = getChildPositon(taskId);
             if (childPos >= 0) {
-                BaseArrayRecyclerAdapter.ViewHolder viewHolderForAdapterPosition = (BaseArrayRecyclerAdapter.ViewHolder) recyclerView.findViewHolderForAdapterPosition(parentPos);
-                if (viewHolderForAdapterPosition != null) {
-                    RecyclerView recyclerview = viewHolderForAdapterPosition.obtainView(R.id.parent_item_task_recyclerview);
+                View view = recyclerView.getChildAt(parentPos);
+                if (view != null) {
+                    RecyclerView recyclerview = (RecyclerView) recyclerView.getChildAt(parentPos).findViewById(R.id.parent_item_task_recyclerview);
                     if (recyclerview != null) {
                         TaskItemAdapter itemAdapter = (TaskItemAdapter) recyclerview.getAdapter();
                         if (itemAdapter != null) {

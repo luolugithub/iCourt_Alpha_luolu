@@ -222,7 +222,7 @@ public class DateUtils {
      * @return
      */
     public static String getMMMdd(long milliseconds) {
-        SimpleDateFormat formatter = new SimpleDateFormat("MMM月dd日");
+        SimpleDateFormat formatter = new SimpleDateFormat("MM月dd日");
         try {
             return formatter.format(milliseconds);
         } catch (IllegalArgumentException e) {
