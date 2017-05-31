@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.AppBarLayout;
@@ -185,7 +186,7 @@ public class GroupSettingActivity extends BaseActivity {
                 break;
             case CODE_REQUEST_TRANSFER_ADMIN:
                 if (resultCode == Activity.RESULT_OK && data != null) {
-                    Serializable serializableExtra = data.getSerializableExtra(KEY_ACTIVITY_RESULT);
+                    Parcelable serializableExtra = data.getParcelableExtra(KEY_ACTIVITY_RESULT);
                     if (serializableExtra instanceof GroupContactBean) {
                         showTransferAdminDialog((GroupContactBean) serializableExtra);
                     }

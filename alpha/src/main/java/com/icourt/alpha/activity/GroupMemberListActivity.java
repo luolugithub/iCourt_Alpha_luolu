@@ -3,6 +3,7 @@ package com.icourt.alpha.activity;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.AppBarLayout;
@@ -68,7 +69,8 @@ import static com.icourt.alpha.constants.Const.CHOICE_TYPE_SINGLE;
  * date createTime：2017/5/6
  * version 1.0.0
  */
-public class GroupMemberListActivity extends BaseActivity implements BaseRecyclerAdapter.OnItemClickListener {
+public class GroupMemberListActivity
+        extends BaseActivity implements BaseRecyclerAdapter.OnItemClickListener {
     private static final String STRING_TOP = "↑︎";
     private static final String KEY_SELCTED_TYPE = "key_selcted_type";
     private static final String KEY_ADD_AT_ALL = "key_add_at_all";
@@ -378,8 +380,10 @@ public class GroupMemberListActivity extends BaseActivity implements BaseRecycle
     public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
         switch (getIntent().getIntExtra(KEY_SELCTED_TYPE, 0)) {
             case CHOICE_TYPE_SINGLE:
+                Parcelable item1 = imContactAdapter.getItem(imContactAdapter.getRealPos(position));
+                if (item1 == null) return;
                 Intent intent = getIntent();
-                intent.putExtra(KEY_ACTIVITY_RESULT, imContactAdapter.getItem(imContactAdapter.getRealPos(position)));
+                intent.putExtra(KEY_ACTIVITY_RESULT, item1);
                 setResult(RESULT_OK, intent);
                 finish();
                 break;

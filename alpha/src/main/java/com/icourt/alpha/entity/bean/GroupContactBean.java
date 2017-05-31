@@ -1,5 +1,7 @@
 package com.icourt.alpha.entity.bean;
 
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
@@ -24,7 +26,7 @@ public class GroupContactBean
         Serializable,
         ISuspensionInterface,
         ISuspensionAction,
-        IFilterEntity {
+        IFilterEntity, Parcelable {
 
     public static final int TYPE_ROBOT = 100;
     public static final int TYPE_ALL = -100;
@@ -120,4 +122,46 @@ public class GroupContactBean
     public boolean isFilter(int type) {
         return this.type == type;
     }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(this.suspensionTag);
+        dest.writeString(this.accid);
+        dest.writeString(this.userId);
+        dest.writeString(this.name);
+        dest.writeString(this.title);
+        dest.writeString(this.phone);
+        dest.writeString(this.email);
+        dest.writeString(this.pic);
+        dest.writeInt(this.type);
+    }
+
+    protected GroupContactBean(Parcel in) {
+        this.suspensionTag = in.readString();
+        this.accid = in.readString();
+        this.userId = in.readString();
+        this.name = in.readString();
+        this.title = in.readString();
+        this.phone = in.readString();
+        this.email = in.readString();
+        this.pic = in.readString();
+        this.type = in.readInt();
+    }
+
+    public static final Parcelable.Creator<GroupContactBean> CREATOR = new Parcelable.Creator<GroupContactBean>() {
+        @Override
+        public GroupContactBean createFromParcel(Parcel source) {
+            return new GroupContactBean(source);
+        }
+
+        @Override
+        public GroupContactBean[] newArray(int size) {
+            return new GroupContactBean[size];
+        }
+    };
 }

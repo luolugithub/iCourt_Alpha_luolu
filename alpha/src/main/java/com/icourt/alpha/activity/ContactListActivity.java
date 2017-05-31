@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.AppBarLayout;
@@ -291,7 +292,8 @@ public class ContactListActivity extends BaseActivity implements BaseRecyclerAda
         switch (getIntent().getIntExtra(KEY_SELCTED_TYPE, 0)) {
             case CHOICE_TYPE_SINGLE:
                 Intent intent = getIntent();
-                intent.putExtra(KEY_ACTIVITY_RESULT, imContactAdapter.getItem(imContactAdapter.getRealPos(position)));
+                Parcelable parcelable = imContactAdapter.getItem(imContactAdapter.getRealPos(position));
+                intent.putExtra(KEY_ACTIVITY_RESULT, parcelable);
                 setResult(RESULT_OK, intent);
                 finish();
                 break;

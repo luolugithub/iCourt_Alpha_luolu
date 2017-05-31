@@ -1065,7 +1065,7 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
                 break;
             case REQUEST_CODE_AT_MEMBER:
                 if (resultCode == Activity.RESULT_OK && data != null) {
-                    GroupContactBean result = (GroupContactBean) data.getSerializableExtra(KEY_ACTIVITY_RESULT);
+                    GroupContactBean result = (GroupContactBean) data.getParcelableExtra(KEY_ACTIVITY_RESULT);
                     if (result != null) {
                         appendAtMember(result);
                     }
