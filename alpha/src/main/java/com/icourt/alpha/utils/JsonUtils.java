@@ -57,6 +57,13 @@ public class JsonUtils {
         return null;
     }
 
+    public static final JsonElement object2JsonElement(Object object) throws JsonParseException {
+        if (gson != null) {
+            return gson.toJsonTree(object);
+        }
+        return null;
+    }
+
     /**
      * 转成json
      *

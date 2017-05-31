@@ -284,6 +284,10 @@ public class IMSessionAdapter extends BaseArrayRecyclerAdapter<IMSessionEntity> 
         }
         //内容
         switch (customIMBody.show_type) {
+            case Const.MSG_TYPE_ALPHA_HELPER:
+                stringBuilder.append(customIMBody.content);
+                tvSessionContent.setText(stringBuilder.toString());
+                break;
             case Const.MSG_TYPE_TXT:    //文本消息
                 stringBuilder.append(customIMBody.content);
                 tvSessionContent.setText(stringBuilder.toString());

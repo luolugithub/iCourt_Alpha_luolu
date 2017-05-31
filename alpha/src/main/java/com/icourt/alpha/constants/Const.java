@@ -66,7 +66,7 @@ public class Const {
     public static final int MSG_TYPE_CONTACT_UPDATE = 100;//联系人更新通知
     public static final int MSG_TYPE_SET_TOP = 101;       //设置置顶通知
     public static final int MSG_TYPE_LEAVE_GROUP = 102;   //离开讨论组通知
-
+    public static final int MSG_TYPE_ALPHA_HELPER = 200;   //alpha小助手
 
     @IntDef({MSG_TYPE_TXT,
             MSG_TYPE_FILE,
@@ -79,7 +79,8 @@ public class Const {
             MSG_TYPE_IMAGE,
             MSG_TYPE_CONTACT_UPDATE,
             MSG_TYPE_SET_TOP,
-            MSG_TYPE_LEAVE_GROUP})
+            MSG_TYPE_LEAVE_GROUP,
+            MSG_TYPE_ALPHA_HELPER})
     @Retention(RetentionPolicy.SOURCE)
     public @interface MSG_TYPE {
 

@@ -57,6 +57,7 @@ import com.netease.nimlib.sdk.team.model.Team;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -78,6 +79,7 @@ import retrofit2.Response;
 
 import static com.icourt.alpha.constants.Const.CHAT_TYPE_P2P;
 import static com.icourt.alpha.constants.Const.CHAT_TYPE_TEAM;
+import static com.icourt.alpha.constants.Const.MSG_TYPE_ALPHA_HELPER;
 
 /**
  * Description  会话列表
@@ -181,14 +183,14 @@ public class MessageListFragment extends BaseRecentContactFragment
                                 isExist = true;
                                 //解析自定义的消息体
                                 IMMessageCustomBody customIMBody = null;
-                                String jsonBody = recentContact.getContent();
-                                if (recentContact.getMsgType() == MsgTypeEnum.custom && recentContact.getAttachment() != null) {
-                                    jsonBody = recentContact.getAttachment().toJson(false);
-                                }
-                                try {
-                                    customIMBody = JsonUtils.Gson2Bean(jsonBody, IMMessageCustomBody.class);
-                                } catch (JsonParseException ex) {
-                                    ex.printStackTrace();
+                                if (recentContact.getMsgType() == MsgTypeEnum.custom) {
+                                    customIMBody = getAlphaHelper(recentContact);
+                                } else {
+                                    try {
+                                        customIMBody = JsonUtils.Gson2Bean(recentContact.getContent(), IMMessageCustomBody.class);
+                                    } catch (JsonParseException ex) {
+                                        ex.printStackTrace();
+                                    }
                                 }
                                 if (customIMBody != null) {
                                     imSessionEntity.customIMBody = customIMBody;
@@ -228,6 +230,27 @@ public class MessageListFragment extends BaseRecentContactFragment
                         imSessionAdapter.bindData(true, imSessionEntities);
                     }
                 });
+    }
+
+    /**
+     * 获取alpha小 助手
+     *
+     * @param recentContact
+     * @return
+     */
+    private IMMessageCustomBody getAlphaHelper(RecentContact recentContact) {
+        try {
+            JSONObject alphaJSONObject = JsonUtils.getJSONObject(recentContact.getAttachment().toJson(false));
+            String contentStr = alphaJSONObject.getString("content");
+            IMMessageCustomBody imMessageCustomBody = new IMMessageCustomBody();
+            imMessageCustomBody.content = contentStr;
+            imMessageCustomBody.show_type = MSG_TYPE_ALPHA_HELPER;
+            return imMessageCustomBody;
+        } catch (Exception e) {
+            e.printStackTrace();
+            LogUtils.d("---------->AlphaHelper 解析异常:" + e);
+        }
+        return null;
     }
 
     /**
@@ -488,15 +511,15 @@ public class MessageListFragment extends BaseRecentContactFragment
                     if (recentContact == null) continue;
                     //解析自定义的消息体
                     IMMessageCustomBody customIMBody = null;
-                    String jsonBody = recentContact.getContent();
-                    if (recentContact.getMsgType() == MsgTypeEnum.custom && recentContact.getAttachment() != null) {
-                        jsonBody = recentContact.getAttachment().toJson(false);
-                    }
-                    try {
-                        customIMBody = JsonUtils.Gson2Bean(jsonBody, IMMessageCustomBody.class);
-                    } catch (JsonParseException ex) {
-                        ex.printStackTrace();
-                        log("------------->解析异常:" + ex + "\n" + recentContact.getContactId() + " \n" + recentContact.getContent());
+                    if (recentContact.getMsgType() == MsgTypeEnum.custom) {
+                        customIMBody = getAlphaHelper(recentContact);
+                    } else {
+                        try {
+                            customIMBody = JsonUtils.Gson2Bean(recentContact.getContent(), IMMessageCustomBody.class);
+                        } catch (JsonParseException ex) {
+                            ex.printStackTrace();
+                            log("------------->解析异常:" + ex + "\n" + recentContact.getContactId() + " \n" + recentContact.getContent());
+                        }
                     }
                     if (customIMBody == null) continue;
                     IMSessionEntity imSessionEntity = new IMSessionEntity(recentContact, customIMBody);
