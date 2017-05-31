@@ -94,7 +94,7 @@ public class TabTimingFragment extends BaseFragment implements BaseRecyclerAdapt
     private boolean isCubic = true;
     private boolean hasLabelForSelected = false;
 
-    private final int weekMillSecond = 7 * 24 * 60 * 60 * 1000;
+    private final long weekMillSecond = 7 * 24 * 60 * 60 * 1000;
     private TimeAdapter timeAdapter;
     private final List<TimingCountEntity> timingCountEntities = new ArrayList<>();
 
@@ -160,8 +160,10 @@ public class TabTimingFragment extends BaseFragment implements BaseRecyclerAdapt
     @Override
     protected void getData(final boolean isRefresh) {
         super.getData(isRefresh);
-        long weekStartTimeMillSecond = DateUtils.getCurrWeekStartTime() - (pageIndex * weekMillSecond);
-        long weekEndTimeMillSecond = DateUtils.getCurrWeekEndTime() - (pageIndex * weekMillSecond);
+        long dividerTime = (pageIndex * weekMillSecond);
+        long weekStartTimeMillSecond = DateUtils.getCurrWeekStartTime() - dividerTime;
+        long weekEndTimeMillSecond = DateUtils.getCurrWeekEndTime() - dividerTime;
+
         String weekStartTime = getFromatTime(weekStartTimeMillSecond);
         String weekEndTime = getFromatTime(weekEndTimeMillSecond);
 

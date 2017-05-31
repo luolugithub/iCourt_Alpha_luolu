@@ -39,7 +39,6 @@ import com.icourt.alpha.view.CircleTimerView;
 import com.icourt.api.RequestUtils;
 
 import java.io.Serializable;
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -309,6 +308,7 @@ public class TimerAddActivity extends BaseTimerActivity
         itemEntityCopy.useTime = selectedEndDate.getTimeInMillis() - selectedStartDate.getTimeInMillis();
         itemEntityCopy.endTime = selectedEndDate.getTimeInMillis();
         itemEntityCopy.state = 1;
+        itemEntityCopy.workDate = selectedStartDate.getTimeInMillis();
         itemEntityCopy.matterPkId = selectedProjectEntity != null ? selectedProjectEntity.pkId : null;
         itemEntityCopy.workTypeId = selectedWorkType != null ? selectedWorkType.pkId : null;
         itemEntityCopy.taskPkId = selectedTaskItem != null ? selectedTaskItem.id : null;
@@ -320,7 +320,6 @@ public class TimerAddActivity extends BaseTimerActivity
             e.printStackTrace();
         }
         if (jsonObject != null) {
-            jsonObject.addProperty("workDate", new SimpleDateFormat("yyyy-MM-dd").format(new Date()));
             if (jsonObject.has("matterName")) {
                 jsonObject.remove("matterName");
             }

@@ -303,7 +303,8 @@ public class TimerManager {
     public void stopTimer() {
         final TimeEntity.ItemEntity timer = getTimer();
         if (timer != null) {
-            timer.endTime = DateUtils.millis();
+            //避免小于1分钟
+            timer.endTime = DateUtils.millis() + 60_000;
             timer.useTime = timer.endTime - timer.startTime;
             timer.state = TimeEntity.TIMER_STATE_END_TYPE;
             JsonObject jsonObject = null;
