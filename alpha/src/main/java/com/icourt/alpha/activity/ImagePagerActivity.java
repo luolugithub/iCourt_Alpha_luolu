@@ -19,7 +19,10 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.resource.drawable.GlideDrawable;
+import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
+import com.icourt.alpha.BuildConfig;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.baseadapter.BasePagerAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
@@ -401,16 +404,31 @@ public class ImagePagerActivity extends BaseUmengActivity implements BasePagerAd
                     putItem(pos, bigUrl);
                     if (GlideUtils.canLoadImage(getContext())) {
                         img_look_original_tv.setVisibility(View.GONE);
-                        log("---------->load Original url:pos:" + pos + "  url:" + s);
+                        log("---------->load Original url:pos:" + pos + "  url:" + bigUrl);
+                        showLoadingDialog(null);
                         Glide.with(getContext())
                                 .load(bigUrl)
-                                .thumbnail(0.3f)
+                                .placeholder(touchImageView.getDrawable())
+                                .listener(new RequestListener<String, GlideDrawable>() {
+                                    @Override
+                                    public boolean onException(Exception e, String model, Target<GlideDrawable> target, boolean isFirstResource) {
+                                        dismissLoadingDialog();
+                                        return false;
+                                    }
+
+                                    @Override
+                                    public boolean onResourceReady(GlideDrawable resource, String model, Target<GlideDrawable> target, boolean isFromMemoryCache, boolean isFirstResource) {
+                                        dismissLoadingDialog();
+                                        return false;
+                                    }
+                                })
                                 .into(touchImageView);
                     }
                 }
             });
             //获取原图
             if (!TextUtils.isEmpty(bigUrl)) {
+                log("---------->bigUrl:" + bigUrl);
                 Observable.create(new ObservableOnSubscribe<Boolean>() {
                     @Override
                     public void subscribe(ObservableEmitter<Boolean> e) throws Exception {
@@ -434,14 +452,12 @@ public class ImagePagerActivity extends BaseUmengActivity implements BasePagerAd
                             @Override
                             public void accept(Boolean aBoolean) throws Exception {
                                 if (aBoolean != null && aBoolean.booleanValue()) {
-                                    log("--------->yes");
                                     if (!GlideUtils.canLoadImage(getContext())) return;
                                     //加载原图
                                     Glide.with(getContext())
                                             .load(bigUrl)
                                             .into(touchImageView);
                                 } else {
-                                    log("--------->no");
                                     img_look_original_tv.setVisibility(View.VISIBLE);
                                 }
                             }
@@ -462,6 +478,7 @@ public class ImagePagerActivity extends BaseUmengActivity implements BasePagerAd
             }
         }
 
+
         /**
          * 获取大图地址
          *
@@ -469,9 +486,24 @@ public class ImagePagerActivity extends BaseUmengActivity implements BasePagerAd
          * @return
          */
         private String getBigUrl(int pos) {
-        /*    if (bigUrls != null && bigUrls.length > pos) {
-                return bigUrls[pos];
-            }*/
+            if (sFileImageInfoEntities != null
+                    && sFileImageInfoEntities.size() > pos) {
+                SFileImageInfoEntity sFileImageInfoEntity = sFileImageInfoEntities.get(pos);
+                if (sFileImageInfoEntity != null && sFileImageInfoEntity.size > 500_000) {
+                    StringBuilder bigUrlBuilder = new StringBuilder(BuildConfig.API_CHAT_URL);
+                    bigUrlBuilder.append("im/v1/msgs/files/download/refer");
+                    bigUrlBuilder.append("?");
+                    bigUrlBuilder.append("repo_id=");
+                    bigUrlBuilder.append(sFileImageInfoEntity.repo_id);
+                    bigUrlBuilder.append("&path=");
+                    bigUrlBuilder.append(sFileImageInfoEntity.path);
+                    bigUrlBuilder.append("&name=");
+                    bigUrlBuilder.append(sFileImageInfoEntity.name);
+                    bigUrlBuilder.append("&token=");
+                    bigUrlBuilder.append(getUserToken());
+                    return bigUrlBuilder.toString();
+                }
+            }
             return null;
         }
 
