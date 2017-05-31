@@ -179,7 +179,7 @@ public class FileBoxDownloadActivity extends BaseActivity {
             case R.id.open_view://打开
                 if (IMUtils.isPIC(filePath)) {
                     ImagePagerActivity.launch(this,
-                            Arrays.asList(filePath), Arrays.asList(filePath));
+                            Arrays.asList(filePath));
                 } else {
                     openOrShareFile(new File(filePath), Intent.ACTION_VIEW);
                 }

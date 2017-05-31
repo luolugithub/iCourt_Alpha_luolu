@@ -24,12 +24,12 @@ import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.baseadapter.BasePagerAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.base.BaseUmengActivity;
+import com.icourt.alpha.entity.bean.SFileImageInfoEntity;
 import com.icourt.alpha.utils.ActionConstants;
 import com.icourt.alpha.utils.FileUtils;
 import com.icourt.alpha.utils.GlideUtils;
 import com.icourt.alpha.utils.Md5Utils;
 import com.icourt.alpha.utils.StringUtils;
-import com.icourt.alpha.utils.UrlUtils;
 import com.icourt.alpha.view.HackyViewPager;
 import com.icourt.alpha.view.TouchImageView;
 import com.icourt.alpha.widget.dialog.BottomActionDialog;
@@ -38,8 +38,10 @@ import com.liulishuo.filedownloader.FileDownloadListener;
 import com.liulishuo.filedownloader.FileDownloader;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 import butterknife.BindView;
@@ -66,7 +68,7 @@ public class ImagePagerActivity extends BaseUmengActivity implements BasePagerAd
     private static final int CODE_PERMISSION_FILE = 1009;
 
     private static final String KEY_URLS = "key_urls";
-    private static final String KEY_URLS_BIG = "key_urls_big";
+    private static final String KEY_S_FILE_INFO = "key_s_file_info";
     private static final String KEY_POS = "key_pos";
     @BindView(R.id.imagePager)
     HackyViewPager imagePager;
@@ -74,7 +76,7 @@ public class ImagePagerActivity extends BaseUmengActivity implements BasePagerAd
     TextView tvPagerTitle;
     ImagePagerAdapter pagerAdapter;
     String[] urls;
-    String[] bigUrls;
+    ArrayList<SFileImageInfoEntity> sFileImageInfoEntities;
     Handler handler = new Handler();
     int realPos;
     private FileDownloadListener picDownloadListener = new FileDownloadListener() {
@@ -166,18 +168,25 @@ public class ImagePagerActivity extends BaseUmengActivity implements BasePagerAd
      *
      * @param context
      * @param smallUrls
-     * @param bigUrls
+     * @param sFileImageInfoEntities sfile对应详细信息
      */
-    public static void launch(Context context, @NonNull List<String> smallUrls, @Nullable List<String> bigUrls) {
+    public static void launch(Context context, @NonNull List<String> smallUrls,
+                              @Nullable ArrayList<SFileImageInfoEntity> sFileImageInfoEntities,
+                              int pos) {
         if (context == null) return;
         if (smallUrls == null) return;
         if (smallUrls.size() == 0) return;
         Intent intent = new Intent(context, ImagePagerActivity.class);
         String[] urlsArr = (String[]) smallUrls.toArray(new String[smallUrls.size()]);
         intent.putExtra(KEY_URLS, urlsArr);
-        if (bigUrls != null && !bigUrls.isEmpty()) {
-            String[] bigUrlsArr = (String[]) bigUrls.toArray(new String[bigUrls.size()]);
-            intent.putExtra(KEY_URLS_BIG, bigUrlsArr);
+        if (pos < 0) {
+            pos = 0;
+        } else if (pos >= smallUrls.size()) {
+            pos = smallUrls.size() - 1;
+        }
+        intent.putExtra(KEY_POS, pos);
+        if (sFileImageInfoEntities != null) {
+            intent.putExtra(KEY_S_FILE_INFO, sFileImageInfoEntities);
         }
         context.startActivity(intent);
     }
@@ -196,7 +205,7 @@ public class ImagePagerActivity extends BaseUmengActivity implements BasePagerAd
     protected void initView() {
         super.initView();
         urls = getIntent().getStringArrayExtra(KEY_URLS);
-        bigUrls = getIntent().getStringArrayExtra(KEY_URLS_BIG);
+        sFileImageInfoEntities = (ArrayList<SFileImageInfoEntity>) getIntent().getSerializableExtra(KEY_S_FILE_INFO);
         realPos = getIntent().getIntExtra(KEY_POS, 0);
         pagerAdapter = new ImagePagerAdapter();
         pagerAdapter.bindData(true, Arrays.asList(urls));
@@ -441,10 +450,15 @@ public class ImagePagerActivity extends BaseUmengActivity implements BasePagerAd
 
             if (GlideUtils.canLoadImage(getContext())) {
                 log("---------->load url:pos:" + pos + "  url:" + s);
-                Glide.with(getContext())
-                        .load(s)
-                        .thumbnail(0.3f)
-                        .into(touchImageView);
+                handler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        Glide.with(getContext())
+                                .load(s)
+                                .thumbnail(0.1f)
+                                .into(touchImageView);
+                    }
+                }, new Random().nextInt(50));
             }
         }
 
@@ -455,47 +469,22 @@ public class ImagePagerActivity extends BaseUmengActivity implements BasePagerAd
          * @return
          */
         private String getBigUrl(int pos) {
-            if (bigUrls != null && bigUrls.length > pos) {
+        /*    if (bigUrls != null && bigUrls.length > pos) {
                 return bigUrls[pos];
-            }
+            }*/
             return null;
         }
 
-        /**
-         * 是否加载的高清原图 包含sfile 并且不含width
-         * https://alphalawyer.cn/ilaw/api/v2/file/download?sFileId=64880&token=xxx&width=480;
-         *
-         * @return
-         */
-        private boolean isLoadOriginalPicUrl(String url) {
-            if (!TextUtils.isEmpty(url)) {
-                if (!TextUtils.isEmpty(UrlUtils.getParam("sFileId", url))
-                        && !TextUtils.isEmpty(UrlUtils.getParam("width", url))) {
-                    return false;
-                }
-            }
-            return true;
-        }
-
-        /**
-         * 获取原图地址
-         *
-         * @param url
-         * @return
-         */
-        private String getOriginalPicUrl(String url) {
-            return UrlUtils.removeParam("width", url);
-        }
 
         @Override
         public void destroyItem(ViewGroup container, int position, Object object) {
-            if (GlideUtils.canLoadImage(getContext())) {
+           /* if (GlideUtils.canLoadImage(getContext())) {
                 try {
                     Glide.clear((View) object);
                 } catch (IllegalArgumentException e) {
                     e.printStackTrace();
                 }
-            }
+            }*/
             super.destroyItem(container, position, object);
         }
 

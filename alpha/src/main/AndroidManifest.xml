@@ -84,11 +84,11 @@
                 <data android:mimeType="application/vnd.ms-powerpoint" />
                 <data android:mimeType="application/vnd.openxmlformats-officedocument.presentationml.presentation" />
             </intent-filter>
-           <!-- <intent-filter>
+            <intent-filter>
                 <action android:name="android.intent.action.SEND" />
                 <category android:name="android.intent.category.DEFAULT" />
-                <data android:mimeType="text/plain" /> &lt;!&ndash; 网页分享 &ndash;&gt;
-            </intent-filter>-->
+                <data android:mimeType="text/plain" /> <!-- 网页分享 -->
+            </intent-filter>
         </activity>
 
         <activity

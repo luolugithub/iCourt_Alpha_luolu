@@ -298,7 +298,6 @@ public abstract class ChatBaseActivity
     }
 
 
-
     /**
      * 查询本地联系人
      *
@@ -655,7 +654,7 @@ public abstract class ChatBaseActivity
         params.put("name", RequestUtils.createTextBody(msgPostEntity.name));
         params.put("magic_id", RequestUtils.createTextBody(msgPostEntity.magic_id));
 
-        params.put("file\"; filename=\"image.jpg\"", RequestUtils.createImgBody(file));
+        params.put(RequestUtils.createStreamKey(file), RequestUtils.createStreamBody(file));
         getChatApi().msgImageAdd(params)
                 .enqueue(new SimpleCallBack<IMMessageCustomBody>() {
                     @Override

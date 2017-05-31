@@ -35,6 +35,7 @@ import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.constants.Const;
 import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.icourt.alpha.entity.bean.IMMessageCustomBody;
+import com.icourt.alpha.entity.bean.SFileImageInfoEntity;
 import com.icourt.alpha.entity.event.MemberEvent;
 import com.icourt.alpha.entity.event.NoDisturbingEvent;
 import com.icourt.alpha.entity.event.UnReadEvent;
@@ -71,7 +72,6 @@ import org.greenrobot.eventbus.ThreadMode;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -332,7 +332,7 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
         switch (memberEvent.notificationType) {
             case KickMember:
                 if (StringUtils.equalsIgnoreCase(memberEvent.sessionId, getIMChatId(), false)
-                        && StringUtils.containsIgnoreCase(memberEvent.targets,getLoginUserId())) {
+                        && StringUtils.containsIgnoreCase(memberEvent.targets, getLoginUserId())) {
                     new AlertDialog.Builder(getContext())
                             .setTitle("提示")
                             .setMessage("您已经被踢出讨论组啦")
@@ -1167,14 +1167,24 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
                 break;
             case R.id.chat_image_iv:
                 if (item.ext != null) {
-                    String chatBigImageUrl = getChatBigImageUrl(item.ext.thumb, item.ext.width);
-                    if (!TextUtils.isEmpty(chatBigImageUrl)) {
-                        ImagePagerActivity.launch(view.getContext(),
-                                Arrays.asList(item.ext.thumb), Arrays.asList(chatBigImageUrl));
-                    } else {
-                        ImagePagerActivity.launch(view.getContext(),
-                                new String[]{item.ext.thumb});
+                    ArrayList<String> mediumImageUrls = new ArrayList<>();
+                    ArrayList<SFileImageInfoEntity> sFileImageInfoEntities = new ArrayList<>();
+                    for (int i = 0; i < chatAdapter.getData().size(); i++) {
+                        IMMessageCustomBody imMessageCustomBody = chatAdapter.getData().get(i);
+                        if (imMessageCustomBody != null && imMessageCustomBody.ext != null) {
+                            if (imMessageCustomBody.show_type == Const.MSG_TYPE_IMAGE) {
+                                SFileImageInfoEntity sFileImageInfoEntity = imMessageCustomBody.ext.convert2Model();
+                                if (sFileImageInfoEntity != null) {
+                                    mediumImageUrls.add(getChatMediumImageUrl(sFileImageInfoEntity.thumb));
+                                    sFileImageInfoEntities.add(sFileImageInfoEntity);
+                                }
+                            }
+                        }
                     }
+                    int pos = mediumImageUrls.indexOf(getChatMediumImageUrl(item.ext.thumb));
+                    if (mediumImageUrls.isEmpty()) return;
+                    ImagePagerActivity.launch(view.getContext(),
+                            mediumImageUrls, sFileImageInfoEntities, pos);
                 }
                 break;
             case R.id.chat_send_fail_iv:
@@ -1233,20 +1243,18 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
     }
 
     /**
-     * 获取聊天原图
+     * 获取聊天中等图片
      *
      * @param url
-     * @param width
      * @return
      */
-    private String getChatBigImageUrl(String url, int width) {
-        if (width > 200
-                && !TextUtils.isEmpty(url)
-                && url.contains("/imgs/1x/"))//有大图
+    private String getChatMediumImageUrl(String url) {
+        if (!TextUtils.isEmpty(url)
+                && url.contains("/imgs/1x/"))//有中等图片
         {
             return url.replace("/imgs/1x/", "/imgs/2x/");
         }
-        return null;
+        return url;
     }
 
     @Override

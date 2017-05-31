@@ -68,10 +68,10 @@ ext {
             recyclerview_divider      : "com.yqritc:recyclerview-flexibledivider:1.4.0",
 
             // ------------- 网络请求 -------------
-            retrofit                  : 'com.squareup.retrofit2:retrofit:2.2.0',
-            retrofit_rxjava           : 'com.squareup.retrofit2:adapter-rxjava2:2.2.0',
-            retrofit_converter_gson   : 'com.squareup.retrofit2:converter-gson:2.2.0',
-            okhttp_logging_interceptor: 'com.squareup.okhttp3:logging-interceptor:3.6.0',
+            retrofit                  : 'com.squareup.retrofit2:retrofit:2.3.0',
+            retrofit_rxjava           : 'com.squareup.retrofit2:adapter-rxjava2:2.3.0',
+            retrofit_converter_gson   : 'com.squareup.retrofit2:converter-gson:2.3.0',
+            okhttp_logging_interceptor: 'com.squareup.okhttp3:logging-interceptor:3.8.0',
 
             // ------------- 图片加载 -------------
             glide                     : 'com.github.bumptech.glide:glide:3.7.0',

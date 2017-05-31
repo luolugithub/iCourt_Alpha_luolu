@@ -1,6 +1,7 @@
 package com.icourt.alpha.entity.bean;
 
 import com.icourt.alpha.constants.Const;
+import com.icourt.alpha.db.convertor.IConvertModel;
 
 import java.io.Serializable;
 import java.util.List;
@@ -12,17 +13,19 @@ import java.util.List;
  * date createTime：2017/4/28
  * version 1.0.0
  */
-public final class IMMessageExtBody implements Serializable {
-    //【模型 请勿轻易修改】
+public final class IMMessageExtBody implements Serializable, IConvertModel<SFileImageInfoEntity> {
+    public IMMessageExtBody() {
 
-    //文件消息 file
+    }
+
+    //【模型 请勿轻易修改】
+    //文件
     public String repo_id;
     public String path;
     public String name;
     public long size;
     public int width;
     public int height;
-
 
     //钉消息 pin
     public long id;
@@ -121,8 +124,6 @@ public final class IMMessageExtBody implements Serializable {
         return new IMMessageExtBody(title, thumb, desc, url);
     }
 
-    public IMMessageExtBody() {
-    }
 
     @Override
     public String toString() {
@@ -150,5 +151,10 @@ public final class IMMessageExtBody implements Serializable {
                 ", platform='" + platform + '\'' +
                 ", ext=" + ext +
                 '}';
+    }
+
+    @Override
+    public SFileImageInfoEntity convert2Model() {
+        return new SFileImageInfoEntity(size, path, name, repo_id, thumb, width, height);
     }
 }
