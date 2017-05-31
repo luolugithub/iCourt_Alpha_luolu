@@ -1,5 +1,6 @@
 package com.icourt.alpha.utils;
 
+import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -138,4 +139,14 @@ public class LogUtils {
         return data;
     }
 
+
+    public static final void logBundle(Bundle bundle) {
+        if (bundle == null) {
+            d("--------->bundle=null");
+        } else {
+            for (String key : bundle.keySet()) {
+                d("--------->key=" + key + ", content=" + bundle.getString(key));
+            }
+        }
+    }
 }

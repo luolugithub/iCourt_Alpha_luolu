@@ -18,6 +18,7 @@ import com.icourt.alpha.fragment.FileImportContactFragment;
 import com.icourt.alpha.fragment.FileImportNavFragment;
 import com.icourt.alpha.fragment.FileImportTeamFragment;
 import com.icourt.alpha.interfaces.OnPageFragmentCallBack;
+import com.icourt.alpha.utils.LogUtils;
 import com.icourt.alpha.utils.UriUtils;
 import com.icourt.alpha.view.NoScrollViewPager;
 
@@ -65,12 +66,15 @@ public class ImportFile2AlphaActivity extends BaseActivity
         Uri fileUir = getIntent().getData();
         String extraSubject = getIntent().getStringExtra(Intent.EXTRA_SUBJECT);
         String extraText = getIntent().getStringExtra(Intent.EXTRA_TEXT);
+        String extraStream = getIntent().getStringExtra(Intent.EXTRA_STREAM);
 
+        LogUtils.logBundle(getIntent().getExtras());
         log("-------->share action:" + action);
         log("-------->share type:" + type);
         log("-------->share uri:" + fileUir);
         log("-------->share extraSubject:" + extraSubject);
         log("-------->share extraText:" + extraText);
+        log("-------->share extraStream:" + extraStream);
         if (!isUserLogin()) {
             LoginSelectActivity.launch(getContext());
             finish();

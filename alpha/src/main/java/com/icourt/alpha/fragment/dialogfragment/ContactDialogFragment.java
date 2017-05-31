@@ -17,6 +17,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.Priority;
 import com.icourt.alpha.R;
 import com.icourt.alpha.activity.ChatActivity;
 import com.icourt.alpha.db.dbmodel.ContactDbModel;
@@ -115,7 +116,9 @@ public class ContactDialogFragment extends BaseDialogFragment {
                 if (GlideUtils.canLoadImage(getContext())) {
                     Glide.with(getContext())
                             .load(contactBean.pic)
-                            .crossFade()
+                            .thumbnail(0.1f)
+                            .priority(Priority.IMMEDIATE)
+                            .dontAnimate()
                             .bitmapTransform(new BlurTransformation(getContext(), 50))
                             .into(contactBgIv);
                 }
@@ -142,7 +145,7 @@ public class ContactDialogFragment extends BaseDialogFragment {
                 ChatActivity.launchP2P(getActivity(),
                         getArguments().getString("accId", ""),
                         contactBean.name,
-                        0,0);
+                        0, 0);
                 dismiss();
                 break;
             case R.id.contact_phone_ll:
