@@ -7,11 +7,13 @@ import com.icourt.alpha.entity.bean.IMMessageCustomBody;
 import com.icourt.alpha.view.TextDrawable;
 import com.netease.nimlib.sdk.msg.model.IMMessage;
 import com.netease.nimlib.sdk.msg.model.RecentContact;
+import com.netease.nimlib.sdk.team.model.MemberChangeAttachment;
 import com.netease.nimlib.sdk.team.model.Team;
 
 import java.util.Arrays;
 import java.util.List;
 
+import static android.R.attr.tag;
 import static com.icourt.alpha.constants.Const.MSG_TYPE_AT;
 import static com.icourt.alpha.constants.Const.MSG_TYPE_DING;
 import static com.icourt.alpha.constants.Const.MSG_TYPE_FILE;
@@ -209,6 +211,14 @@ public class IMUtils {
                 sb.append("\ntime:" + message.getTime());
                 sb.append("\nfromAccount:" + message.getFromAccount());
                 sb.append("\nattachment:" + message.getAttachment());
+                if (message.getAttachment() instanceof MemberChangeAttachment) {
+                    MemberChangeAttachment memberChangeAttachment = (MemberChangeAttachment) message.getAttachment();
+                    sb.append("\nAttachment:MemberChangeAttachment:type:" + memberChangeAttachment.getType());
+                    sb.append("\nAttachment:MemberChangeAttachment:Extension:" + memberChangeAttachment.getExtension());
+                    sb.append("\nAttachment:MemberChangeAttachment:Targets:" + memberChangeAttachment.getTargets());
+                } else {
+                    sb.append("\nAttachment:" + message.getAttachment());
+                }
                 sb.append("\nattachStatus:" + message.getAttachStatus());
                 sb.append("\nremoteExtension:" + message.getRemoteExtension());
                 sb.append("\nlocalExtension:" + message.getLocalExtension());
@@ -227,6 +237,20 @@ public class IMUtils {
         }
     }
 
+    public static void logMemberChangeAttachment(MemberChangeAttachment memberChangeAttachment) {
+        try {
+            StringBuilder sb = new StringBuilder(tag);
+            if (memberChangeAttachment == null) {
+                sb.append("null");
+            } else {
+                sb.append("Extension:" + memberChangeAttachment.getExtension());
+                sb.append("Targets:" + memberChangeAttachment.getTargets());
+            }
+            LogUtils.d("----------->MemberChangeAttachment", sb.toString());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
     /**
      * 输出 RecentContact
@@ -250,10 +274,17 @@ public class IMUtils {
                 sb.append("\nUnreadCount:" + recentContact.getUnreadCount());
                 sb.append("\nContent:" + recentContact.getContent());
                 sb.append("\ngetTime:" + recentContact.getTime());
-                sb.append("\nAttachment:" + recentContact.getAttachment());
+                if (recentContact.getAttachment() instanceof MemberChangeAttachment) {
+                    MemberChangeAttachment memberChangeAttachment = (MemberChangeAttachment) recentContact.getAttachment();
+                    sb.append("\nAttachment:MemberChangeAttachment:type:" + memberChangeAttachment.getType());
+                    sb.append("\nAttachment:MemberChangeAttachment:Extension:" + memberChangeAttachment.getExtension());
+                    sb.append("\nAttachment:MemberChangeAttachment:Targets:" + memberChangeAttachment.getTargets());
+                } else {
+                    sb.append("\nAttachment:" + recentContact.getAttachment());
+                }
                 sb.append("\nremoteExtension:" + recentContact.getTag());
                 sb.append("\nExtension:" + recentContact.getExtension());
-                sb.append("\ntag:"+recentContact.getTag());
+                sb.append("\ntag:" + recentContact.getTag());
                 if (recentContact.getAttachment() != null) {
                     sb.append("\ngetAttachment:" + recentContact.getAttachment().toJson(false));
                 }

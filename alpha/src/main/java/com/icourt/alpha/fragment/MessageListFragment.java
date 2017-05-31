@@ -30,6 +30,7 @@ import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.icourt.alpha.entity.bean.IMMessageCustomBody;
 import com.icourt.alpha.entity.bean.IMSessionEntity;
 import com.icourt.alpha.entity.event.GroupActionEvent;
+import com.icourt.alpha.entity.event.MemberEvent;
 import com.icourt.alpha.entity.event.NoDisturbingEvent;
 import com.icourt.alpha.entity.event.SetTopEvent;
 import com.icourt.alpha.entity.event.UnReadEvent;
@@ -37,12 +38,12 @@ import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.interfaces.OnTabDoubleClickListener;
-import com.icourt.alpha.utils.GlobalMessageObserver;
 import com.icourt.alpha.utils.IMUtils;
 import com.icourt.alpha.utils.JsonUtils;
 import com.icourt.alpha.utils.LogUtils;
 import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.widget.dialog.BottomActionDialog;
+import com.icourt.alpha.widget.nim.GlobalMessageObserver;
 import com.netease.nimlib.sdk.NIMClient;
 import com.netease.nimlib.sdk.RequestCallbackWrapper;
 import com.netease.nimlib.sdk.ResponseCode;
@@ -414,6 +415,39 @@ public class MessageListFragment extends BaseRecentContactFragment
             localSetTops.remove(setTopEvent.id);
         }
         Collections.sort(imSessionAdapter.getData(), imSessionEntityComparator);
+        imSessionAdapter.notifyDataSetChanged();
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onMemberEvent(MemberEvent memberEvent) {
+        if (memberEvent == null) return;
+        switch (memberEvent.notificationType) {
+            case KickMember:
+                if (StringUtils.containsIgnoreCase(memberEvent.targets, getLoginUserId())) {
+                    removeSession(memberEvent.sessionId);
+                }
+                break;
+        }
+    }
+
+    /**
+     * 移除某个会话
+     *
+     * @param id
+     */
+    private void removeSession(String id) {
+        List<IMSessionEntity> data = imSessionAdapter.getData();
+        if (data.isEmpty()) return;
+        for (int i = data.size() - 1; i >= 0; i--) {
+            IMSessionEntity imSessionEntity = data.get(i);
+            if (imSessionEntity != null && imSessionEntity.recentContact != null
+                    && StringUtils.equalsIgnoreCase(id, imSessionEntity.recentContact.getContactId(), false)) {
+                data.remove(i);
+                //删除聊天会话
+                NIMClient.getService(MsgService.class)
+                        .clearChattingHistory(imSessionEntity.recentContact.getContactId(), imSessionEntity.recentContact.getSessionType());
+            }
+        }
         imSessionAdapter.notifyDataSetChanged();
     }
 

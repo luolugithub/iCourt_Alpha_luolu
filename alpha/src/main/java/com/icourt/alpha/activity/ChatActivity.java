@@ -3,6 +3,7 @@ package com.icourt.alpha.activity;
 import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
@@ -13,6 +14,7 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.AppBarLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
@@ -33,13 +35,13 @@ import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.constants.Const;
 import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.icourt.alpha.entity.bean.IMMessageCustomBody;
+import com.icourt.alpha.entity.event.MemberEvent;
 import com.icourt.alpha.entity.event.NoDisturbingEvent;
 import com.icourt.alpha.entity.event.UnReadEvent;
 import com.icourt.alpha.fragment.dialogfragment.ContactDialogFragment;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.callback.SimpleTextWatcher;
-import com.icourt.alpha.utils.GlobalMessageObserver;
 import com.icourt.alpha.utils.IMUtils;
 import com.icourt.alpha.utils.LogUtils;
 import com.icourt.alpha.utils.StringUtils;
@@ -50,6 +52,7 @@ import com.icourt.alpha.view.emoji.MyXhsEmoticonsKeyBoard;
 import com.icourt.alpha.view.recyclerviewDivider.ChatItemDecoration;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 import com.icourt.alpha.widget.comparators.LongFieldEntityComparator;
+import com.icourt.alpha.widget.nim.GlobalMessageObserver;
 import com.netease.nimlib.sdk.NIMClient;
 import com.netease.nimlib.sdk.RequestCallback;
 import com.netease.nimlib.sdk.msg.MessageBuilder;
@@ -321,6 +324,29 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
     public void onMessageEvent(NoDisturbingEvent noDisturbingEvent) {
         if (noDisturbingEvent == null) return;
         setViewVisible(getTitleActionImage(), noDisturbingEvent.isNoDisturbing);
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onMemberEvent(MemberEvent memberEvent) {
+        if (memberEvent == null) return;
+        switch (memberEvent.notificationType) {
+            case KickMember:
+                if (StringUtils.equalsIgnoreCase(memberEvent.sessionId, getIMChatId(), false)
+                        && StringUtils.containsIgnoreCase(memberEvent.targets,getLoginUserId())) {
+                    new AlertDialog.Builder(getContext())
+                            .setTitle("提示")
+                            .setMessage("您已经被踢出讨论组啦")
+                            .setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    //    removeSession(memberEvent.sessionId);
+                                    finish();
+                                }
+                            }).show();
+
+                }
+                break;
+        }
     }
 
     /**

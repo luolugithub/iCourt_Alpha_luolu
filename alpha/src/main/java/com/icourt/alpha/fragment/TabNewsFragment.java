@@ -19,7 +19,7 @@ import com.icourt.alpha.entity.event.UnReadEvent;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.interfaces.OnTabDoubleClickListener;
 import com.icourt.alpha.service.SyncDataService;
-import com.icourt.alpha.utils.GlobalMessageObserver;
+import com.icourt.alpha.widget.nim.GlobalMessageObserver;
 import com.netease.nimlib.sdk.NIMClient;
 import com.netease.nimlib.sdk.msg.MsgServiceObserve;
 

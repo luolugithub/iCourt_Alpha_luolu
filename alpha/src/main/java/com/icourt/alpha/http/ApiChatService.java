@@ -357,7 +357,7 @@ public interface ApiChatService {
      *
      * @param type
      * @param size
-     * @param mgs_id
+     * @param msg_id
      * @param ope
      * @param to
      * @return
@@ -365,7 +365,7 @@ public interface ApiChatService {
     @GET("im/v1/msgs")
     Call<ResEntity<List<IMMessageCustomBody>>> msgQueryAll(@Query("type") String type,
                                                            @Query("size") int size,
-                                                           @Query("mgs_id") long mgs_id,
+                                                           @Query("msg_id") long msg_id,
                                                            @Query("ope") @Const.CHAT_TYPE int ope,
                                                            @Query("to") String to
     );

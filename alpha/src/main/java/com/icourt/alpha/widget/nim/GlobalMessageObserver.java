@@ -1,13 +1,18 @@
-package com.icourt.alpha.utils;
+package com.icourt.alpha.widget.nim;
 
 import com.google.gson.JsonParseException;
 import com.icourt.alpha.BuildConfig;
 import com.icourt.alpha.constants.Const;
 import com.icourt.alpha.entity.bean.IMMessageCustomBody;
+import com.icourt.alpha.entity.event.MemberEvent;
+import com.icourt.alpha.utils.IMUtils;
+import com.icourt.alpha.utils.JsonUtils;
+import com.icourt.alpha.utils.LogUtils;
 import com.netease.nimlib.sdk.NIMClient;
 import com.netease.nimlib.sdk.Observer;
 import com.netease.nimlib.sdk.msg.MsgService;
 import com.netease.nimlib.sdk.msg.model.IMMessage;
+import com.netease.nimlib.sdk.team.model.MemberChangeAttachment;
 
 import org.greenrobot.eventbus.EventBus;
 
@@ -45,6 +50,11 @@ public class GlobalMessageObserver implements Observer<List<IMMessage>> {
                     continue;
                 }
                 if (imMessage.getMsgType() == notification) {//推送删除
+                    //剔除成员
+                    if (imMessage.getAttachment() instanceof MemberChangeAttachment) {
+                        MemberChangeAttachment memberChangeAttachment = (MemberChangeAttachment) imMessage.getAttachment();
+                        EventBus.getDefault().post(new MemberEvent(imMessage.getSessionId(), memberChangeAttachment.getType(), memberChangeAttachment.getTargets()));
+                    }
                     NIMClient.getService(MsgService.class)
                             .deleteChattingHistory(imMessage);
                 } else if (imMessage.getMsgType() == text

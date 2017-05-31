@@ -33,7 +33,7 @@ import com.icourt.alpha.entity.bean.ISearchItemEntity;
 import com.icourt.alpha.entity.bean.SearchItemEntity;
 import com.icourt.alpha.entity.bean.SearchPolymerizationEntity;
 import com.icourt.alpha.fragment.dialogfragment.ContactDialogFragment;
-import com.icourt.alpha.utils.GlobalMessageObserver;
+import com.icourt.alpha.widget.nim.GlobalMessageObserver;
 import com.icourt.alpha.utils.IMUtils;
 import com.icourt.alpha.utils.SpannableUtils;
 import com.icourt.alpha.utils.StringUtils;
