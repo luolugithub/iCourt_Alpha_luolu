@@ -191,7 +191,7 @@ public class TimerTimingActivity extends BaseTimerActivity
                 break;
             case R.id.stop_time_tv:
                 itemEntity.state = TimeEntity.ItemEntity.TIMER_STATE_STOP;
-                itemEntity.endTime = DateUtils.millis();
+                itemEntity.endTime = DateUtils.millis() + 60_000;
                 TimerManager.getInstance().stopTimer();
                 TimerDetailActivity.launch(getContext(), itemEntity);
                 finish();
