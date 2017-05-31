@@ -45,6 +45,8 @@ import com.icourt.alpha.utils.JsonUtils;
 import com.icourt.alpha.utils.StringUtils;
 import com.icourt.api.RequestUtils;
 import com.netease.nimlib.sdk.NIMClient;
+import com.netease.nimlib.sdk.msg.MsgService;
+import com.netease.nimlib.sdk.msg.constant.SessionTypeEnum;
 import com.netease.nimlib.sdk.team.TeamService;
 
 import org.greenrobot.eventbus.EventBus;
@@ -550,6 +552,8 @@ public class GroupDetailActivity extends BaseActivity
                     public void onSuccess(Call<ResEntity<Boolean>> call, Response<ResEntity<Boolean>> response) {
                         dismissLoadingDialog();
                         if (response.body().result != null && response.body().result.booleanValue()) {
+                            NIMClient.getService(MsgService.class)
+                                    .clearChattingHistory(getIMChatId(), SessionTypeEnum.Team);
                             EventBus.getDefault().post(
                                     new GroupActionEvent(GroupActionEvent.GROUP_ACTION_QUIT, getIntent().getStringExtra(KEY_TID)));
                             finish();
