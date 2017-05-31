@@ -301,6 +301,13 @@ public class TimerManager {
      * 停止计时
      */
     public void stopTimer() {
+        stopTimer(null);
+    }
+
+    /**
+     * 停止计时
+     */
+    public void stopTimer(@Nullable final SimpleCallBack<JsonElement> callBack) {
         final TimeEntity.ItemEntity timer = getTimer();
         if (timer != null) {
             //避免小于1分钟
@@ -338,13 +345,24 @@ public class TimerManager {
                                 timingSingle.timingId = timer.pkId;
                                 timingSingle.timingSecond = base;
                                 EventBus.getDefault().post(timingSingle);
+
+                                if (callBack != null) {
+                                    callBack.onSuccess(call, response);
+                                }
+                            }
+
+                            @Override
+                            public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
+                                super.onFailure(call, t);
+                                if (callBack != null) {
+                                    callBack.onFailure(call, t);
+                                }
                             }
                         });
             }
-
-
         }
     }
+
 
     private void broadTimingEvent(String id, @TimingEvent.TIMING_ACTION int action) {
         EventBus.getDefault().post(new TimingEvent(id, action));
