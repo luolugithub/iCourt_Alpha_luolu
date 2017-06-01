@@ -246,6 +246,8 @@ public class MessageListFragment extends BaseRecentContactFragment
             IMMessageCustomBody imMessageCustomBody = new IMMessageCustomBody();
             imMessageCustomBody.content = contentStr;
             imMessageCustomBody.show_type = MSG_TYPE_ALPHA_HELPER;
+            imMessageCustomBody.ope = CHAT_TYPE_P2P;
+            imMessageCustomBody.to = recentContact.getContactId();
             return imMessageCustomBody;
         } catch (Exception e) {
             e.printStackTrace();
