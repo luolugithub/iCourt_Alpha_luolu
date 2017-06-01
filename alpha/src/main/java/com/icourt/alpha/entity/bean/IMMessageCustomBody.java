@@ -114,6 +114,7 @@ public class IMMessageCustomBody implements ILongFieldEntity, Serializable {
         return imMessageCustomBody;
     }
 
+
     /**
      * 构建文件消息体
      *

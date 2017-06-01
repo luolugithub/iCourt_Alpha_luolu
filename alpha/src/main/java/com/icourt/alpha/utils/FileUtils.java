@@ -5,11 +5,17 @@ import android.graphics.Canvas;
 import android.graphics.PixelFormat;
 import android.graphics.drawable.Drawable;
 import android.os.Environment;
+import android.os.ParcelFileDescriptor;
 import android.text.TextUtils;
 
 import com.icourt.alpha.R;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * Description
@@ -275,6 +281,48 @@ public class FileUtils {
                 type = MIME_MapTable[i][1];
         }
         return type;
+    }
+
+    /**
+     * 文件描述转byte
+     *
+     * @param pfd
+     * @return
+     */
+    public static final byte[] fileDescriptor2Byte(ParcelFileDescriptor pfd) {
+        byte[] bytes = null;
+        try {
+            bytes = inputStream2Byte(new FileInputStream(pfd.getFileDescriptor()));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return bytes;
+    }
+
+    /**
+     * 流转byte
+     *
+     * @param is
+     * @return
+     */
+    public static final byte[] inputStream2Byte(InputStream is) {
+        byte[] buffer = null;
+        try {
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            byte[] b = new byte[1024];
+            int n;
+            while ((n = is.read(b)) != -1) {
+                bos.write(b, 0, n);
+            }
+            is.close();
+            bos.close();
+            buffer = bos.toByteArray();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return buffer;
     }
 
 }

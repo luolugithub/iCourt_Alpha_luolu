@@ -6,8 +6,11 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
+import android.os.ParcelFileDescriptor;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
+
+import java.io.FileNotFoundException;
 
 /**
  * Description
@@ -96,7 +99,7 @@ public class UriUtils {
                                        String[] selectionArgs) {
 
         Cursor cursor = null;
-        final String column = "_data";
+        final String column = MediaStore.MediaColumns.DATA;
         final String[] projection = {column};
 
         try {
@@ -112,6 +115,20 @@ public class UriUtils {
         }
         return null;
     }
+
+
+    /**
+     * 获取android 7.0文件共享目录下文件描述
+     * 用完之后 请close
+     *
+     * @param context
+     * @param uri
+     */
+    public static ParcelFileDescriptor get_N_FileDescriptor(Context context, Uri uri)
+            throws FileNotFoundException {
+        return context.getContentResolver().openFileDescriptor(uri, "r");
+    }
+
 
     /**
      * @param uri The Uri to check.

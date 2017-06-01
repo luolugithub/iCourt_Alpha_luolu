@@ -55,6 +55,16 @@ public class RequestUtils {
     }
 
     /**
+     * 构建媒体流请求体
+     *
+     * @param bytes
+     * @return
+     */
+    public static RequestBody createStreamBody(byte[] bytes) {
+        return RequestBody.create(MediaType.parse("application/octet-stream"), bytes);
+    }
+
+    /**
      * 构建媒体流请求key
      *
      * @param file
@@ -65,6 +75,16 @@ public class RequestUtils {
             return "file\"; filename=\"" + file.getName() + "\"";
         }
         return "file\"; filename=\"";
+    }
+
+    /**
+     * 构建媒体流请求key
+     *
+     * @param fileName
+     * @return
+     */
+    public static String createStreamKey(String fileName) {
+        return "file\"; filename=\"" + fileName + "\"";
     }
 
     /**

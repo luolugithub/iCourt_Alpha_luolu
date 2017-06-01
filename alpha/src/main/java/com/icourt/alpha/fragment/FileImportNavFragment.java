@@ -1,7 +1,10 @@
 package com.icourt.alpha.fragment;
 
 import android.content.Context;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.OpenableColumns;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -106,6 +109,32 @@ public class FileImportNavFragment extends BaseFragment {
                     Glide.with(getContext())
                             .load(filePath)
                             .into(fileTypeImg);
+                }
+            } else if (filePath.startsWith("content://")) {//fileProvider
+                fileTypeImg.setVisibility(View.GONE);
+                fileCommType.setVisibility(View.VISIBLE);
+                sendProgramLl.setVisibility(View.VISIBLE);
+                Cursor cursor = null;
+                Uri fileUri;
+                try {
+                    fileUri = Uri.parse(filePath);
+                    cursor = getContext().getContentResolver().query(fileUri, null, null, null, null);
+                    cursor.moveToNext();
+                    String fileName = cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME));
+                    long fileSize = cursor.getLong(cursor.getColumnIndex(OpenableColumns.SIZE));
+                    tvFileName.setText(fileName);
+                    ivFileIcon.setImageResource(FileUtils.getFileIcon40(fileName));
+                    tvFileSize.setText(String.format("(%s)", FileUtils.bFormat(fileSize)));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                } finally {
+                    if (cursor != null) {
+                        try {
+                            cursor.close();
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
                 }
             } else {
                 fileTypeImg.setVisibility(View.GONE);

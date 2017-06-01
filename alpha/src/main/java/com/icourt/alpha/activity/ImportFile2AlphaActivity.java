@@ -112,6 +112,11 @@ public class ImportFile2AlphaActivity extends BaseActivity
         } else {//文件
             path = UriUtils.getPath(getContext(), fileUir);
         }
+        //fileProvider
+        if (TextUtils.isEmpty(path) && fileUir != null) {
+            path = fileUir.toString();
+        }
+        log("----------->parsed path:" + path);
         viewPager.setAdapter(baseFragmentAdapter = new BaseFragmentAdapter(getSupportFragmentManager()));
         baseFragmentAdapter.bindData(true,
                 Arrays.asList(FileImportNavFragment.newInstance(path, desc),

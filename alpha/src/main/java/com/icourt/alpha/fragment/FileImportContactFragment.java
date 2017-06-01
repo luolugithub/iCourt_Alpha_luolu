@@ -2,7 +2,9 @@ package com.icourt.alpha.fragment;
 
 import android.Manifest;
 import android.content.Context;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.ParcelFileDescriptor;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
@@ -32,16 +34,20 @@ import com.icourt.alpha.entity.bean.IMMessageCustomBody;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.OnPageFragmentCallBack;
+import com.icourt.alpha.utils.FileUtils;
 import com.icourt.alpha.utils.JsonUtils;
 import com.icourt.alpha.utils.StringUtils;
+import com.icourt.alpha.utils.UriUtils;
 import com.icourt.alpha.widget.filter.ListFilter;
 import com.icourt.api.RequestUtils;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -250,10 +256,27 @@ public class FileImportContactFragment extends BaseFragment implements BaseRecyc
             return;
         }
         if (TextUtils.isEmpty(path)) return;
-        File file = new File(path);
-        if (!file.exists()) {
-            showTopSnackBar("文件不存在啦");
-            return;
+        //content://com.icourt.alpha.provider/external_storage_root/alpha_download/dshgghsdhg.pdf
+        ParcelFileDescriptor n_fileDescriptor = null;
+        File file = null;
+        Uri fileUri = null;
+        if (path.startsWith("content://")) {
+            try {
+                fileUri = Uri.parse(path);
+                n_fileDescriptor = UriUtils.get_N_FileDescriptor(getContext(), fileUri);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            if (n_fileDescriptor == null) {
+                showTopSnackBar("共享文件不存在啦");
+                return;
+            }
+        } else {
+            file = new File(path);
+            if (!file.exists()) {
+                showTopSnackBar("文件不存在啦");
+                return;
+            }
         }
         ArrayList<GroupContactBean> selectedData = imContactAdapter.getSelectedData();
         if (selectedData.isEmpty()) return;
@@ -264,7 +287,7 @@ public class FileImportContactFragment extends BaseFragment implements BaseRecyc
                 loginUserInfo == null ? "" : loginUserInfo.getName(),
                 uid,
                 selectedData.get(0).accid,
-                file.getAbsolutePath());
+                path);
         Map<String, RequestBody> params = new HashMap<>();
         params.put("platform", RequestUtils.createTextBody(msgPostEntity.platform));
         params.put("to", RequestUtils.createTextBody(msgPostEntity.to));
@@ -272,7 +295,24 @@ public class FileImportContactFragment extends BaseFragment implements BaseRecyc
         params.put("ope", RequestUtils.createTextBody(String.valueOf(msgPostEntity.ope)));
         params.put("name", RequestUtils.createTextBody(msgPostEntity.name));
         params.put("magic_id", RequestUtils.createTextBody(msgPostEntity.magic_id));
-        params.put(RequestUtils.createStreamKey(file), RequestUtils.createStreamBody(file));
+        if (file != null) {
+            params.put(RequestUtils.createStreamKey(file), RequestUtils.createStreamBody(file));
+        } else {
+            String lastPathSegment = fileUri.getLastPathSegment();
+            if (TextUtils.isEmpty(lastPathSegment)) {
+                lastPathSegment = UUID.randomUUID().toString();
+            }
+            byte[] bytes = FileUtils.fileDescriptor2Byte(n_fileDescriptor);
+            if (n_fileDescriptor != null) {
+                try {
+                    n_fileDescriptor.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            params.put(RequestUtils.createStreamKey(lastPathSegment), RequestUtils.createStreamBody(bytes));
+        }
+
         showLoadingDialog(null);
         getChatApi().msgImageAdd(params)
                 .enqueue(new SimpleCallBack<IMMessageCustomBody>() {
