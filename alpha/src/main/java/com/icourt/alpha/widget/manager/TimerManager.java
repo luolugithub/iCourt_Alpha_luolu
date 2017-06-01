@@ -141,7 +141,18 @@ public class TimerManager {
      */
     public void addTimer(@NonNull final TimeEntity.ItemEntity itemEntity) {
         if (itemEntity == null) return;
+        addTimer(itemEntity, null);
+    }
 
+    /**
+     * 添加计时
+     *
+     * @param itemEntity
+     * @param callBack
+     */
+    public void addTimer(@NonNull final TimeEntity.ItemEntity itemEntity,
+                         @Nullable final retrofit2.Callback<TimeEntity.ItemEntity> callBack) {
+        if (itemEntity == null) return;
         TimeEntity.ItemEntity itemEntityCopy = new TimeEntity.ItemEntity();
         try {
             itemEntityCopy = (TimeEntity.ItemEntity) itemEntity.clone();
@@ -187,6 +198,17 @@ public class TimerManager {
                             broadTimingEvent(finalItemEntityCopy.pkId, TimingEvent.TIMING_ADD);
                             setBase(0);
                             startTimingTask();
+                            if (callBack != null) {
+                                callBack.onResponse(null, Response.success(finalItemEntityCopy));
+                            }
+                        }
+
+                        @Override
+                        public void onFailure(Call<ResEntity<String>> call, Throwable t) {
+                            super.onFailure(call, t);
+                            if (callBack != null) {
+                                callBack.onFailure(null, t);
+                            }
                         }
                     });
         }
