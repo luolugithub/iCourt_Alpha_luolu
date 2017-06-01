@@ -362,10 +362,8 @@ public class GroupDetailActivity extends BaseActivity
                             boolean isTop = response.body()
                                     .result.contains(getIMChatId());
                             groupSetTopSwitch.setChecked(isTop);
-                            EventBus.getDefault().post(new SetTopEvent(isTop, getIMChatId()));
                         } else {
                             groupSetTopSwitch.setChecked(false);
-                            EventBus.getDefault().post(new SetTopEvent(false, getIMChatId()));
                         }
                     }
                 });

@@ -44,7 +44,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 import butterknife.BindView;
@@ -471,10 +470,23 @@ public class ImagePagerActivity extends BaseUmengActivity implements BasePagerAd
                     public void run() {
                         Glide.with(getContext())
                                 .load(s)
+                                .error(R.mipmap.default_img_failed)
                                 .thumbnail(0.1f)
-                                .into(touchImageView);
+                                .listener(new RequestListener<String, GlideDrawable>() {
+                                    @Override
+                                    public boolean onException(Exception e, String model, Target<GlideDrawable> target, boolean isFirstResource) {
+                                        log("------------->p:" + pos + "onException:" + e + " m:" + model);
+                                        return false;
+                                    }
+
+                                    @Override
+                                    public boolean onResourceReady(GlideDrawable resource, String model, Target<GlideDrawable> target, boolean isFromMemoryCache, boolean isFirstResource) {
+                                        log("------------->p:" + pos + "onResourceReady:" + resource + " m:" + model);
+                                        return false;
+                                    }
+                                }).into(touchImageView);
                     }
-                }, new Random().nextInt(50));
+                }, 5 * pos);
             }
         }
 
@@ -510,13 +522,13 @@ public class ImagePagerActivity extends BaseUmengActivity implements BasePagerAd
 
         @Override
         public void destroyItem(ViewGroup container, int position, Object object) {
-           /* if (GlideUtils.canLoadImage(getContext())) {
+            if (GlideUtils.canLoadImage(getContext())) {
                 try {
                     Glide.clear((View) object);
                 } catch (IllegalArgumentException e) {
                     e.printStackTrace();
                 }
-            }*/
+            }
             super.destroyItem(container, position, object);
         }
 

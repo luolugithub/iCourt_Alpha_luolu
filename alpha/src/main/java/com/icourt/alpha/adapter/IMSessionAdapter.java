@@ -138,8 +138,8 @@ public class IMSessionAdapter extends BaseArrayRecyclerAdapter<IMSessionEntity> 
     private void setItemSetTop(ViewHolder holder, IMSessionEntity imSessionEntity, int position) {
         if (holder == null) return;
         if (imSessionEntity == null) return;
-        if (imSessionEntity.customIMBody == null) return;
-        boolean isSetToped = localSetTops.contains(imSessionEntity.customIMBody.to);
+        if (imSessionEntity.recentContact == null) return;
+        boolean isSetToped = localSetTops.contains(imSessionEntity.recentContact.getContactId());
         holder.itemView.setBackgroundResource(isSetToped ? R.drawable.list_view_item_other_touch_bg : R.drawable.list_view_item_touch_bg);
     }
 

@@ -106,10 +106,8 @@ public class AlphaSpeciaSetActivity extends BaseActivity {
                             boolean isTop = response.body()
                                     .result.contains(getIMChatId());
                             setTopSwitch.setChecked(isTop);
-                            EventBus.getDefault().post(new SetTopEvent(isTop, getIMChatId()));
                         } else {
                             setTopSwitch.setChecked(false);
-                            EventBus.getDefault().post(new SetTopEvent(false, getIMChatId()));
                         }
                     }
                 });
