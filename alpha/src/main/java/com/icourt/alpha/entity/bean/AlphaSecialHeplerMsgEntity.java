@@ -29,6 +29,7 @@ public class AlphaSecialHeplerMsgEntity {
     public static final String TASK_STATUS_RESTART = "TASK_STATUS_RESTART";//重启了任务
     public static final String TASK_STATUS_DELETE = "TASK_STATUS_DELETE";//删除了任务
     public static final String TASK_STATUS_RECOVERY = "TASK_STATUS_RECOVERY";//恢复了任务
+    public static final String TASK_PRINCIPAL_REMOVEU = "TASK_PRINCIPAL_REMOVEU";//将你移出任务
 
 //    TASK_DETAILS_EDIT("TASK","TASK_DETAILS","TASK_DETAILS_EDIT","{0}编辑了任务"),
 //

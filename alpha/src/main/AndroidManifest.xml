@@ -286,6 +286,9 @@
         <activity
             android:name=".activity.SearchProjectActivity"
             android:screenOrientation="portrait" />
+        <activity
+            android:name=".activity.AlphaSpeciaSetActivity"
+            android:screenOrientation="portrait" />
         <!-- umeng appkey配置 -->
         <meta-data
             android:name="UMENG_APPKEY"

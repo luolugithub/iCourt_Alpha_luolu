@@ -36,6 +36,7 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 
 import static com.icourt.alpha.constants.Const.CHAT_TYPE_P2P;
 import static com.netease.nimlib.sdk.msg.model.QueryDirectionEnum.QUERY_OLD;
@@ -62,6 +63,8 @@ public class AlphaSpecialHelperActivity extends ChatBaseActivity {
     @BindView(R.id.refreshLayout)
     RefreshLayout refreshLayout;
     ChatAlphaSpecialHelperAdapter chatAlphaSpecialHelperAdapter;
+
+    LinearLayoutManager linearLayoutManager;
 
     public static void launch(@NonNull Context context, String accid) {
         if (context == null) return;
@@ -101,7 +104,8 @@ public class AlphaSpecialHelperActivity extends ChatBaseActivity {
         if (titleActionImage != null) {
             titleActionImage.setImageResource(R.mipmap.header_icon_more);
         }
-        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        linearLayoutManager = new LinearLayoutManager(getContext());
+        recyclerView.setLayoutManager(linearLayoutManager);
         recyclerView.setAdapter(chatAlphaSpecialHelperAdapter = new ChatAlphaSpecialHelperAdapter());
         recyclerView.addItemDecoration(new ChatItemDecoration(getContext(), chatAlphaSpecialHelperAdapter));
         refreshLayout.setXRefreshViewListener(new XRefreshView.SimpleXRefreshListener() {
@@ -125,7 +129,9 @@ public class AlphaSpecialHelperActivity extends ChatBaseActivity {
                         LogUtils.d("----------->query result:" + param);
                         chatAlphaSpecialHelperAdapter.addItems(0, convert2CustomerAlphaMessages(param));
                         stopRefresh();
-
+                        if (isRefresh) {
+                            scrollToBottom();
+                        }
                         if (chatAlphaSpecialHelperAdapter.getItemCount() < 20) {
                             clearUnReadNum();
                         }
@@ -220,18 +226,25 @@ public class AlphaSpecialHelperActivity extends ChatBaseActivity {
 
     }
 
+    @OnClick({R.id.titleAction})
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.titleAction:
-                ContactDetailActivity.launch(getContext(),
-                        getIMChatId(),
-                        true,
-                        true);
+                AlphaSpeciaSetActivity.launch(this, getIMChatId());
                 break;
             default:
                 super.onClick(v);
                 break;
+        }
+    }
+
+    /**
+     * 滚动到底部
+     */
+    private void scrollToBottom() {
+        if (linearLayoutManager != null) {
+            linearLayoutManager.scrollToPositionWithOffset(linearLayoutManager.getItemCount() - 1, 0);
         }
     }
 }

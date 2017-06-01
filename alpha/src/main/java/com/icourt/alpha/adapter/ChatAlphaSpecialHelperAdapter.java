@@ -1,12 +1,17 @@
 package com.icourt.alpha.adapter;
 
+import android.content.Context;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.icourt.alpha.R;
+import com.icourt.alpha.activity.ProjectDetailActivity;
+import com.icourt.alpha.activity.TaskDetailActivity;
 import com.icourt.alpha.adapter.baseadapter.BaseArrayRecyclerAdapter;
+import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.entity.bean.AlphaSecialHeplerMsgEntity;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.GlideUtils;
@@ -26,7 +31,11 @@ import java.util.Set;
  */
 public class ChatAlphaSpecialHelperAdapter
         extends BaseArrayRecyclerAdapter<AlphaSecialHeplerMsgEntity>
-        implements ITimeDividerInterface {
+        implements ITimeDividerInterface, BaseRecyclerAdapter.OnItemClickListener {
+
+    public ChatAlphaSpecialHelperAdapter() {
+        setOnItemClickListener(this);
+    }
 
     private Set<Long> timeShowArray = new HashSet<>();//时间分割线消息
     private final int TIME_DIVIDER = 5 * 60 * 1_000;
@@ -81,7 +90,7 @@ public class ChatAlphaSpecialHelperAdapter
             }
             msg_from_tv.setText(alphaSecialHeplerMsgEntity.matterName);
             msg_time_tv.setText(alphaSecialHeplerMsgEntity.reply);
-            msg_time_tv.setCompoundDrawablesWithIntrinsicBounds(TextUtils.isEmpty(alphaSecialHeplerMsgEntity.reply) ? 0 : R.mipmap.ic_message_due_14,0, 0,  0);
+            msg_time_tv.setCompoundDrawablesWithIntrinsicBounds(TextUtils.isEmpty(alphaSecialHeplerMsgEntity.reply) ? 0 : R.mipmap.ic_message_due_14, 0, 0, 0);
 
         } else if (TextUtils.equals(alphaSecialHeplerMsgEntity.object, "MATTER")) {
             msg_content_tv.setText(alphaSecialHeplerMsgEntity.matterName);
@@ -154,5 +163,29 @@ public class ChatAlphaSpecialHelperAdapter
         AlphaSecialHeplerMsgEntity item = getItem(pos);
         return item != null && item.imMessage != null ?
                 DateUtils.getTimeShowString(item.imMessage.getTime(), true) : "null";
+    }
+
+    @Override
+    public void onItemClick(BaseRecyclerAdapter adapter, ViewHolder holder, View view, int position) {
+        AlphaSecialHeplerMsgEntity msgEntity = getItem(position);
+        if (msgEntity == null) return;
+        if (!TextUtils.isEmpty(msgEntity.route) && msgEntity.route.startsWith("alpha://")) {
+            notifacionMsgJump(view.getContext(), msgEntity);
+        }
+    }
+
+    /**
+     * 通知消息跳转
+     */
+    private void notifacionMsgJump(Context context, AlphaSecialHeplerMsgEntity msgEntity) {
+        if (TextUtils.equals(msgEntity.object, "TASK")) {
+            if (!TextUtils.equals(msgEntity.scene, AlphaSecialHeplerMsgEntity.TASK_STATUS_DELETE) && !TextUtils.equals(msgEntity.scene, AlphaSecialHeplerMsgEntity.TASK_PRINCIPAL_REMOVEU)) {
+                TaskDetailActivity.launch(context, msgEntity.id);
+            }
+        } else if (TextUtils.equals(msgEntity.object, "MATTER")) {
+            if (!TextUtils.equals(msgEntity.scene, AlphaSecialHeplerMsgEntity.MATTER_MEMBER_REMOVEU)) {
+                ProjectDetailActivity.launch(context, msgEntity.id, msgEntity.matterName);
+            }
+        }
     }
 }
