@@ -88,10 +88,11 @@ public class TaskDescUpdateActivity extends BaseActivity {
         descOrName = getIntent().getStringExtra(KEY_TASK_UPDATE);
         type = getIntent().getIntExtra(KEY_TASK_TYPE, -1);
         if (type == UPDATE_TASK_DESC) {
-
             setTitle("修改任务详情");
+            descEditText.setHint("添加任务详情");
         } else if (type == UPDATE_TASK_NAME) {
             setTitle("修改任务名称");
+            descEditText.setHint("添加任务名称");
         }
         descEditText.setText(descOrName);
         descEditText.setSelection(descEditText.getText().toString().length());

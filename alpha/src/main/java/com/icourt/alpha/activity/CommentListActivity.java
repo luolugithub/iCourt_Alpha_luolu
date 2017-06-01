@@ -28,6 +28,7 @@ import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.adapterObserver.RefreshViewEmptyObserver;
 import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.entity.bean.CommentEntity;
+import com.icourt.alpha.entity.bean.TaskEntity;
 import com.icourt.alpha.entity.event.TaskActionEvent;
 import com.icourt.alpha.fragment.dialogfragment.ContactDialogFragment;
 import com.icourt.alpha.http.callback.SimpleCallBack;
@@ -71,7 +72,7 @@ public class CommentListActivity extends BaseActivity implements BaseRecyclerAda
     @BindView(R.id.send_tv)
     TextView sendTv;
 
-    String taskId;
+    TaskEntity.TaskItemEntity taskItemEntity;
     int pageIndex, commentCount;
     CommentListAdapter commentListAdapter;
     @BindView(R.id.titleBack)
@@ -80,10 +81,10 @@ public class CommentListActivity extends BaseActivity implements BaseRecyclerAda
     TextView titleContent;
 
 
-    public static void launch(@NonNull Context context, @NonNull String taskId) {
+    public static void launch(@NonNull Context context, @NonNull TaskEntity.TaskItemEntity taskItemEntity) {
         if (context == null) return;
         Intent intent = new Intent(context, CommentListActivity.class);
-        intent.putExtra(KEY_TASK_ID, taskId);
+        intent.putExtra(KEY_TASK_ID, taskItemEntity);
         context.startActivity(intent);
     }
 
@@ -99,7 +100,7 @@ public class CommentListActivity extends BaseActivity implements BaseRecyclerAda
     protected void initView() {
         super.initView();
         setTitle("查看评论");
-        taskId = getIntent().getStringExtra(KEY_TASK_ID);
+        taskItemEntity = (TaskEntity.TaskItemEntity) getIntent().getSerializableExtra(KEY_TASK_ID);
         refreshLayout.setNoticeEmpty(R.mipmap.icon_placeholder_task, R.string.task_no_comment_text);
         refreshLayout.setMoveForHorizontal(true);
         recyclerview.setLayoutManager(new LinearLayoutManager(getContext()));
@@ -137,7 +138,7 @@ public class CommentListActivity extends BaseActivity implements BaseRecyclerAda
                 if (s.toString().length() > 0) {
                     commentTv.setVisibility(View.GONE);
                     sendTv.setVisibility(View.VISIBLE);
-                }else{
+                } else {
                     commentTv.setVisibility(View.VISIBLE);
                     sendTv.setVisibility(View.GONE);
                 }
@@ -153,7 +154,8 @@ public class CommentListActivity extends BaseActivity implements BaseRecyclerAda
         if (isRefresh) {
             pageIndex = 1;
         }
-        getApi().commentListQuery(100, taskId, pageIndex, ActionConstants.DEFAULT_PAGE_SIZE).enqueue(new SimpleCallBack<CommentEntity>() {
+        if (taskItemEntity == null) return;
+        getApi().commentListQuery(100, taskItemEntity.id, pageIndex, ActionConstants.DEFAULT_PAGE_SIZE).enqueue(new SimpleCallBack<CommentEntity>() {
             @Override
             public void onSuccess(Call<ResEntity<CommentEntity>> call, Response<ResEntity<CommentEntity>> response) {
                 stopRefresh();
@@ -195,12 +197,13 @@ public class CommentListActivity extends BaseActivity implements BaseRecyclerAda
      * 添加评论
      */
     private void sendComment() {
+        if (taskItemEntity == null) return;
         if (TextUtils.isEmpty(commentEdit.getText().toString())) {
             showTopSnackBar("请输入评论内容");
             return;
         }
         showLoadingDialog("正在发送...");
-        getApi().commentCreate(100, taskId, commentEdit.getText().toString()).enqueue(new SimpleCallBack<JsonElement>() {
+        getApi().commentCreate(100, taskItemEntity.id, commentEdit.getText().toString()).enqueue(new SimpleCallBack<JsonElement>() {
             @Override
             public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
                 dismissLoadingDialog();

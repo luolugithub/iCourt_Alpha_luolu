@@ -224,7 +224,7 @@ public class TaskDetailActivity extends BaseActivity implements OnFragmentCallBa
                 }
                 break;
             case R.id.comment_layout://更多评论动态
-                CommentListActivity.launch(this, taskId);
+                CommentListActivity.launch(this, taskItemEntity);
                 break;
         }
     }

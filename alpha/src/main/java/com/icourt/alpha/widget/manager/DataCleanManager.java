@@ -33,8 +33,13 @@ public class DataCleanManager {
         if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
             isSuccee = deleteDir(context.getExternalCacheDir());
         }
-        isSuccee = deleteDir(new File(FileUtils.getSDPath() + context.getPackageName()));
-        isSuccee = deleteDir(new File(FileUtils.getSDPath() + "alpha_cache"));
+        File file = new File(FileUtils.getSDPath() + "/" + FileUtils.ALPHA_PAGENAME_FILE);
+        if (file.exists()) {
+            isSuccee = deleteDir(file);
+        } else {
+            isSuccee = true;
+        }
+
         return isSuccee;
     }
 

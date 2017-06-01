@@ -6,6 +6,7 @@ import android.widget.ImageView;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.baseadapter.BaseArrayRecyclerAdapter;
 import com.icourt.alpha.entity.bean.TaskEntity;
+import com.icourt.alpha.utils.DensityUtil;
 import com.icourt.alpha.utils.GlideUtils;
 import com.icourt.alpha.view.TextDrawable;
 
@@ -31,12 +32,10 @@ public class TaskUsersAdapter extends BaseArrayRecyclerAdapter<TaskEntity.TaskIt
             if (position == 0) {
                 TextDrawable textDrawable = TextDrawable.builder().buildRound(String.valueOf(getData().size()), 0xFF8c8f92);
                 imageView.setImageDrawable(textDrawable);
+                setFirstParams(holder, DensityUtil.dip2px(imageView.getContext(), -8));
             } else {
                 GlideUtils.loadUser(imageView.getContext(), attendeeUserEntity.pic, imageView);
             }
-        } else if (getItemCount() == 1) {
-            GlideUtils.loadUser(imageView.getContext(), attendeeUserEntity.pic, imageView);
-            //setFirstParams(holder, 0);
         } else {
             GlideUtils.loadUser(imageView.getContext(), attendeeUserEntity.pic, imageView);
         }

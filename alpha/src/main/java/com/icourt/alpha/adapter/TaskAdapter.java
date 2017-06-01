@@ -15,6 +15,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.icourt.alpha.R;
 import com.icourt.alpha.activity.TaskDetailActivity;
+import com.icourt.alpha.activity.TimerTimingActivity;
 import com.icourt.alpha.adapter.baseadapter.BaseArrayRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.entity.bean.ItemsEntity;
@@ -34,6 +35,7 @@ import org.greenrobot.eventbus.EventBus;
 import java.util.Arrays;
 
 import retrofit2.Call;
+import retrofit2.Callback;
 import retrofit2.Response;
 
 import static com.icourt.alpha.utils.LoginInfoUtils.getLoginUserId;
@@ -191,7 +193,7 @@ public class TaskAdapter extends BaseArrayRecyclerAdapter<TaskEntity>
     }
 
     @Override
-    public void onItemChildClick(BaseRecyclerAdapter adapter, ViewHolder holder, View view, int position) {
+    public void onItemChildClick(BaseRecyclerAdapter adapter, ViewHolder holder, final View view, int position) {
         if (adapter instanceof TaskItemAdapter) {
             TaskEntity.TaskItemEntity itemEntity = (TaskEntity.TaskItemEntity) adapter.getItem(position);
             switch (view.getId()) {
@@ -200,8 +202,20 @@ public class TaskAdapter extends BaseArrayRecyclerAdapter<TaskEntity>
                         TimerManager.getInstance().stopTimer();
                         ((ImageView) view).setImageResource(R.mipmap.icon_start_20);
                     } else {
-                        TimerManager.getInstance().addTimer(getTimer(itemEntity));
                         ((ImageView) view).setImageResource(R.drawable.orange_side_dot_bg);
+                        TimerManager.getInstance().addTimer(getTimer(itemEntity), new Callback<TimeEntity.ItemEntity>() {
+                            @Override
+                            public void onResponse(Call<TimeEntity.ItemEntity> call, Response<TimeEntity.ItemEntity> response) {
+                                if (response.body() != null) {
+                                    TimerTimingActivity.launch(view.getContext(), response.body());
+                                }
+                            }
+
+                            @Override
+                            public void onFailure(Call<TimeEntity.ItemEntity> call, Throwable throwable) {
+
+                            }
+                        });
                     }
                     break;
                 case R.id.task_item_checkbox:
@@ -234,14 +248,21 @@ public class TaskAdapter extends BaseArrayRecyclerAdapter<TaskEntity>
         TimeEntity.ItemEntity itemEntity = new TimeEntity.ItemEntity();
         if (taskItemEntity != null) {
             itemEntity.taskPkId = taskItemEntity.id;
+            itemEntity.taskName = taskItemEntity.name;
             itemEntity.name = taskItemEntity.name;
             itemEntity.workDate = DateUtils.millis();
             itemEntity.createUserId = getLoginUserId();
-            if (LoginInfoUtils.getLoginUserInfo() != null)
+            if (LoginInfoUtils.getLoginUserInfo() != null) {
                 itemEntity.username = LoginInfoUtils.getLoginUserInfo().getName();
+            }
             itemEntity.startTime = DateUtils.millis();
             if (taskItemEntity.matter != null) {
                 itemEntity.matterPkId = taskItemEntity.matter.id;
+                itemEntity.matterName = taskItemEntity.matter.name;
+            }
+            if (taskItemEntity.parentFlow != null) {
+                itemEntity.workTypeName = taskItemEntity.parentFlow.name;
+                itemEntity.workTypeId = taskItemEntity.parentFlow.id;
             }
         }
         return itemEntity;

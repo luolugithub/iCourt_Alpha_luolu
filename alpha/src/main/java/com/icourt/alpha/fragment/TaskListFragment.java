@@ -19,6 +19,7 @@ import com.icourt.alpha.R;
 import com.icourt.alpha.activity.SearchProjectActivity;
 import com.icourt.alpha.adapter.TaskAdapter;
 import com.icourt.alpha.adapter.TaskItemAdapter;
+import com.icourt.alpha.adapter.baseadapter.BaseArrayRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.HeaderFooterAdapter;
 import com.icourt.alpha.adapter.baseadapter.adapterObserver.RefreshViewEmptyObserver;
 import com.icourt.alpha.base.BaseFragment;
@@ -381,13 +382,13 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
      * @param taskId
      */
     private void updateChildTimeing(String taskId, boolean isTiming) {
-        int parentPos = getParentPositon(taskId);
-        if (parentPos >= 0) {
-            int childPos = getChildPositon(taskId);
+        int parentPos = getParentPositon(taskId)+ headerFooterAdapter.getHeaderCount();
+        if (parentPos > 0) {
+            int childPos = getChildPositon(taskId) ;
             if (childPos >= 0) {
-                View view = recyclerView.getChildAt(parentPos);
-                if (view != null) {
-                    RecyclerView recyclerview = (RecyclerView) recyclerView.getChildAt(parentPos).findViewById(R.id.parent_item_task_recyclerview);
+                BaseArrayRecyclerAdapter.ViewHolder viewHolderForAdapterPosition = (BaseArrayRecyclerAdapter.ViewHolder) recyclerView.findViewHolderForAdapterPosition(parentPos);
+                if (viewHolderForAdapterPosition != null) {
+                    RecyclerView recyclerview = viewHolderForAdapterPosition.obtainView(R.id.parent_item_task_recyclerview);
                     if (recyclerview != null) {
                         TaskItemAdapter itemAdapter = (TaskItemAdapter) recyclerview.getAdapter();
                         if (itemAdapter != null) {

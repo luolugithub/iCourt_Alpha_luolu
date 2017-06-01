@@ -33,6 +33,7 @@ public class TaskEntity implements Serializable {
         public long dueTime;//到期时间
         public long timingSum;//总计时
         public long assignTime;//任务分配时间
+        public long createTime;//任务创建时间
         public int itemCount;//子任务总数
         public int doneItemCount;//完成子任务数
         public int attachmentCount;//附件总数

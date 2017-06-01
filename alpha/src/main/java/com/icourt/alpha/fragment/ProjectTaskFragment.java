@@ -274,6 +274,8 @@ public class ProjectTaskFragment extends BaseFragment implements TaskAdapter.OnS
     private void clearLists() {
         if (allTaskEntities != null)
             allTaskEntities.clear();
+        if (taskEntities != null)
+            taskEntities.clear();
         if (datedTaskEntities != null)
             datedTaskEntities.clear();
         if (todayTaskEntities != null)

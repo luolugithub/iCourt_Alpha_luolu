@@ -76,7 +76,7 @@ public class ProjectListAdapter extends BaseArrayRecyclerAdapter<ProjectEntity> 
 
     @Override
     public void onItemClick(BaseRecyclerAdapter adapter, ViewHolder holder, View view, int position) {
-        ProjectEntity projectEntity = (ProjectEntity) adapter.getItem(position);
+        ProjectEntity projectEntity = (ProjectEntity) adapter.getItem(getRealPos(position));
         if (projectEntity != null) {
             ProjectDetailActivity.launch(view.getContext(), projectEntity.pkId, projectEntity.name);
         }
