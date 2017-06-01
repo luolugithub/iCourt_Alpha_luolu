@@ -23,10 +23,10 @@
 
     <ImageView
         android:id="@+id/download_img"
-        android:layout_width="30dp"
-        android:layout_height="30dp"
-        android:layout_margin="10dp"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
         android:layout_gravity="right|bottom"
+        android:layout_margin="10dp"
         android:padding="5dp"
         android:src="@mipmap/ic_download" />
 </FrameLayout>
