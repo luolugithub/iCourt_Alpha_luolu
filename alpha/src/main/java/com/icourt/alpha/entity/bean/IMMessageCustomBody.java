@@ -3,11 +3,16 @@ package com.icourt.alpha.entity.bean;
 import com.icourt.alpha.constants.Const;
 import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.widget.comparators.ILongFieldEntity;
+import com.netease.nimlib.sdk.msg.MessageBuilder;
+import com.netease.nimlib.sdk.msg.constant.SessionTypeEnum;
 import com.netease.nimlib.sdk.msg.model.IMMessage;
 
 import java.io.Serializable;
 import java.util.List;
 import java.util.UUID;
+
+import static com.icourt.alpha.constants.Const.CHAT_TYPE_P2P;
+import static com.icourt.alpha.constants.Const.CHAT_TYPE_TEAM;
 
 /**
  * Description 接口文档 https://www.showdoc.cc/1620156?page_id=14893614
@@ -84,6 +89,14 @@ public class IMMessageCustomBody implements ILongFieldEntity, Serializable {
                 PLATFORM_ANDROID);
         imMessageCustomBody.msg_statu = Const.MSG_STATU_SENDING;
         imMessageCustomBody.send_time = System.currentTimeMillis();
+        switch (chatType) {
+            case CHAT_TYPE_P2P:
+                imMessageCustomBody.imMessage = MessageBuilder.createTextMessage(to, SessionTypeEnum.P2P, "");
+                break;
+            case CHAT_TYPE_TEAM:
+                imMessageCustomBody.imMessage = MessageBuilder.createTextMessage(to, SessionTypeEnum.Team, "");
+                break;
+        }
         return imMessageCustomBody;
     }
 
@@ -111,6 +124,14 @@ public class IMMessageCustomBody implements ILongFieldEntity, Serializable {
         imMessageCustomBody.send_time = System.currentTimeMillis();
         imMessageCustomBody.msg_statu = Const.MSG_STATU_SENDING;
         imMessageCustomBody.ext = IMMessageExtBody.createPicExtBody(filePath);
+        switch (chatType) {
+            case CHAT_TYPE_P2P:
+                imMessageCustomBody.imMessage = MessageBuilder.createTextMessage(to, SessionTypeEnum.P2P, "");
+                break;
+            case CHAT_TYPE_TEAM:
+                imMessageCustomBody.imMessage = MessageBuilder.createTextMessage(to, SessionTypeEnum.Team, "");
+                break;
+        }
         return imMessageCustomBody;
     }
 
@@ -142,6 +163,14 @@ public class IMMessageCustomBody implements ILongFieldEntity, Serializable {
         imMessageCustomBody.send_time = System.currentTimeMillis();
         imMessageCustomBody.msg_statu = Const.MSG_STATU_SENDING;
         imMessageCustomBody.ext = IMMessageExtBody.createLinkExtBody(htmlTitle, htmlImage, htmlDescription, url);
+        switch (chatType) {
+            case CHAT_TYPE_P2P:
+                imMessageCustomBody.imMessage = MessageBuilder.createTextMessage(to, SessionTypeEnum.P2P, "");
+                break;
+            case CHAT_TYPE_TEAM:
+                imMessageCustomBody.imMessage = MessageBuilder.createTextMessage(to, SessionTypeEnum.Team, "");
+                break;
+        }
         return imMessageCustomBody;
     }
 
@@ -174,6 +203,14 @@ public class IMMessageCustomBody implements ILongFieldEntity, Serializable {
         imMessageCustomBody.send_time = System.currentTimeMillis();
         imMessageCustomBody.msg_statu = Const.MSG_STATU_SENDING;
         imMessageCustomBody.ext = IMMessageExtBody.createAtExtBody(usersAccids, isAtall);
+        switch (chatType) {
+            case CHAT_TYPE_P2P:
+                imMessageCustomBody.imMessage = MessageBuilder.createTextMessage(to, SessionTypeEnum.P2P, "");
+                break;
+            case CHAT_TYPE_TEAM:
+                imMessageCustomBody.imMessage = MessageBuilder.createTextMessage(to, SessionTypeEnum.Team, "");
+                break;
+        }
         return imMessageCustomBody;
     }
 
@@ -204,6 +241,14 @@ public class IMMessageCustomBody implements ILongFieldEntity, Serializable {
         imMessageCustomBody.send_time = System.currentTimeMillis();
         imMessageCustomBody.msg_statu = Const.MSG_STATU_SENDING;
         imMessageCustomBody.ext = IMMessageExtBody.createDingExtBody(isDing, dingMsgId);
+        switch (chatType) {
+            case CHAT_TYPE_P2P:
+                imMessageCustomBody.imMessage = MessageBuilder.createTextMessage(to, SessionTypeEnum.P2P, "");
+                break;
+            case CHAT_TYPE_TEAM:
+                imMessageCustomBody.imMessage = MessageBuilder.createTextMessage(to, SessionTypeEnum.Team, "");
+                break;
+        }
         return imMessageCustomBody;
     }
 

@@ -1183,8 +1183,11 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
                     }
                     int pos = mediumImageUrls.indexOf(getChatMediumImageUrl(item.ext.thumb));
                     if (mediumImageUrls.isEmpty()) return;
+                    View chat_image_iv = holder.obtainView(R.id.chat_image_iv);
                     ImagePagerActivity.launch(view.getContext(),
-                            mediumImageUrls, sFileImageInfoEntities, pos);
+                            mediumImageUrls, sFileImageInfoEntities,
+                            pos,
+                            chat_image_iv);
                 }
                 break;
             case R.id.chat_send_fail_iv:

@@ -1,16 +1,20 @@
 package com.icourt.alpha.activity;
 
 import android.Manifest;
+import android.app.Activity;
+import android.app.ActivityOptions;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.view.ViewCompat;
 import android.support.v4.view.ViewPager;
 import android.text.TextUtils;
 import android.view.View;
@@ -19,6 +23,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.load.resource.drawable.GlideDrawable;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
@@ -174,7 +179,8 @@ public class ImagePagerActivity extends BaseUmengActivity implements BasePagerAd
      */
     public static void launch(Context context, @NonNull List<String> smallUrls,
                               @Nullable ArrayList<SFileImageInfoEntity> sFileImageInfoEntities,
-                              int pos) {
+                              int pos,
+                              @Nullable View transitionView) {
         if (context == null) return;
         if (smallUrls == null) return;
         if (smallUrls.size() == 0) return;
@@ -190,7 +196,29 @@ public class ImagePagerActivity extends BaseUmengActivity implements BasePagerAd
         if (sFileImageInfoEntities != null) {
             intent.putExtra(KEY_S_FILE_INFO, sFileImageInfoEntities);
         }
-        context.startActivity(intent);
+        if (context instanceof Activity
+                && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP
+                && transitionView != null) {
+            String transitionName = smallUrls.get(pos);
+            if (TextUtils.isEmpty(transitionName)) {
+                transitionName = "transitionView";
+            }
+            ViewCompat.setTransitionName(transitionView, transitionName);
+            context.startActivity(intent,
+                    ActivityOptions.makeSceneTransitionAnimation((Activity) context, transitionView, transitionName).toBundle());
+        } else {
+            context.startActivity(intent);
+        }
+    }
+
+    private static void setTransitionView(View transitionView, String transitionName) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP
+                && transitionView != null) {
+            if (TextUtils.isEmpty(transitionName)) {
+                transitionName = "transitionView";
+            }
+            ViewCompat.setTransitionName(transitionView, transitionName);
+        }
     }
 
 
@@ -213,6 +241,7 @@ public class ImagePagerActivity extends BaseUmengActivity implements BasePagerAd
         pagerAdapter.bindData(true, Arrays.asList(urls));
         pagerAdapter.setOnPagerItemClickListener(this);
         pagerAdapter.setOnPagerItemLongClickListener(this);
+        tvPagerTitle.setVisibility(View.GONE);
         imagePager.addOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
 
             @Override
@@ -383,6 +412,13 @@ public class ImagePagerActivity extends BaseUmengActivity implements BasePagerAd
 
     }
 
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            finishAfterTransition();
+        }
+    }
 
     class ImagePagerAdapter extends BasePagerAdapter<String> {
 
@@ -394,6 +430,14 @@ public class ImagePagerActivity extends BaseUmengActivity implements BasePagerAd
         @Override
         public void bindDataToItem(final String s, ViewGroup container, View itemView, final int pos) {
             final TouchImageView touchImageView = (TouchImageView) itemView.findViewById(R.id.imageView);
+            setTransitionView(touchImageView, s);
+            touchImageView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    onBackPressed();
+                }
+            });
+
             final TextView img_look_original_tv = (TextView) itemView.findViewById(R.id.img_look_original_tv);
             img_look_original_tv.setVisibility(View.GONE);
             final String bigUrl = getBigUrl(pos);
@@ -404,7 +448,7 @@ public class ImagePagerActivity extends BaseUmengActivity implements BasePagerAd
                     loadOriginalPic(img_look_original_tv, bigUrl, touchImageView);
                 }
             });
-            img_look_original_tv.setVisibility(TextUtils.isEmpty(bigUrl) ? View.GONE : View.VISIBLE);
+            img_look_original_tv.setVisibility(View.GONE);
             if (GlideUtils.canLoadImage(getContext())) {
                 log("---------->load url:pos:" + pos + "  url:" + s);
                 handler.postDelayed(new Runnable() {
@@ -489,6 +533,7 @@ public class ImagePagerActivity extends BaseUmengActivity implements BasePagerAd
             showLoadingDialog(null);
             Glide.with(getContext())
                     .load(originalUrl)
+                    .diskCacheStrategy(DiskCacheStrategy.SOURCE)
                     .placeholder(imageView.getDrawable())
                     .listener(new RequestListener<String, GlideDrawable>() {
                         @Override

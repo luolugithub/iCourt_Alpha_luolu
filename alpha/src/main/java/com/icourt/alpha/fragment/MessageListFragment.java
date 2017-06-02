@@ -611,7 +611,8 @@ public class MessageListFragment extends BaseRecentContactFragment
 
     @Override
     public void onDestroy() {
-        unbinder.unbind();
+        if (unbinder != null)
+            unbinder.unbind();
         super.onDestroy();
         EventBus.getDefault().unregister(this);
     }

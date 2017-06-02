@@ -120,7 +120,7 @@ public class GlideUtils {
         if (canLoadImage(context)) {
             Glide.with(context)
                     .load(path)
-                    .transform(new GlideCircleTransform(context))
+                    // .transform(new GlideCircleTransform(context))
                     .placeholder(R.mipmap.ic_group_icon_default)
                     .error(R.mipmap.ic_group_icon_default)
                     .crossFade()

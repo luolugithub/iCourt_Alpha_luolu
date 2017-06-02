@@ -177,8 +177,11 @@ public abstract class ChatBaseActivity
      * @return
      */
     protected String getLoadedLoginUserId() {
-        AlphaUserInfo loadedLoginUserInfo = getLoadedLoginUserInfo();
-        return loadedLoginUserInfo != null ? loadedLoginUserInfo.getUserId() : "";
+        String loginUserId = getLoginUserId();
+        if (!TextUtils.isEmpty(loginUserId)) {
+            return loginUserId.toLowerCase();
+        }
+        return loginUserId;
     }
 
     /**
@@ -481,7 +484,9 @@ public abstract class ChatBaseActivity
         if (customBody == null) return false;
         switch (getIMChatType()) {
             case CHAT_TYPE_P2P:
-                if (customBody.imMessage == null) return false;
+                if (customBody.imMessage == null){
+                    return false;
+                }
                 return StringUtils.equalsIgnoreCase(customBody.imMessage.getSessionId(), getIMChatId(), false);
             case CHAT_TYPE_TEAM:
                 return StringUtils.equalsIgnoreCase(customBody.to, getIMChatId(), false);
@@ -633,7 +638,8 @@ public abstract class ChatBaseActivity
             return;
         }
 
-        final IMMessageCustomBody msgPostEntity = IMMessageCustomBody.createFileMsg(getIMChatType(),
+        final IMMessageCustomBody msgPostEntity = IMMessageCustomBody.createFileMsg(
+                getIMChatType(),
                 getLoadedLoginName(),
                 getLoadedLoginUserId(),
                 getIMChatId(),
