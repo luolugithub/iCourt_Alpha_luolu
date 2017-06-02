@@ -154,7 +154,7 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
                 }
                 break;
             case R.id.task_time_layout://选择到期时间
-                showDateSelectDialogFragment();
+                showDateSelectDialogFragment(taskItemEntity.dueTime);
                 break;
             case R.id.task_desc_tv://添加任务详情
                 TaskDescUpdateActivity.launch(getContext(), taskDescTv.getText().toString(), TaskDescUpdateActivity.UPDATE_TASK_DESC);
@@ -206,7 +206,7 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
     /**
      * 展示选择到期时间对话框
      */
-    private void showDateSelectDialogFragment() {
+    private void showDateSelectDialogFragment(long dueTime) {
         String tag = DateSelectDialogFragment.class.getSimpleName();
         FragmentTransaction mFragTransaction = getChildFragmentManager().beginTransaction();
         Fragment fragment = getChildFragmentManager().findFragmentByTag(tag);
@@ -214,8 +214,12 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
             mFragTransaction.remove(fragment);
         }
         Calendar calendar = Calendar.getInstance();
-        calendar.set(Calendar.HOUR_OF_DAY, 23);
-        calendar.set(Calendar.MINUTE, 59);
+        if (dueTime <= 0) {
+            calendar.set(Calendar.HOUR_OF_DAY, 23);
+            calendar.set(Calendar.MINUTE, 59);
+        } else {
+            calendar.setTimeInMillis(dueTime);
+        }
         DateSelectDialogFragment.newInstance(calendar)
                 .show(mFragTransaction, tag);
     }
@@ -274,6 +278,7 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
 
                 if (projectEntity != null) {
                     taskProjectTv.setText(projectEntity.name);
+                    taskGroupLayout.setVisibility(View.VISIBLE);
                     EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_UPDATE_PROJECT_ACTION, projectEntity.pkId));
                     if (taskItemEntity != null) {
                         if (taskItemEntity.matter != null) {
@@ -290,7 +295,7 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
                 if (taskGroupEntity != null) {
                     taskGroupTv.setText(taskGroupEntity.name);
                 } else {
-                    taskGroupTv.setText("");
+                    taskGroupTv.setText(taskItemEntity != null ? taskItemEntity.parentFlow != null ? taskItemEntity.parentFlow.name : "" : "");
                 }
                 EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION));
             }
@@ -316,6 +321,7 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
             jsonObject.addProperty("id", itemEntity.id);
             jsonObject.addProperty("state", itemEntity.state);
             jsonObject.addProperty("dueTime", itemEntity.dueTime);
+            jsonObject.addProperty("parentId", itemEntity.parentId);
             jsonObject.addProperty("description", itemEntity.description);
             jsonObject.addProperty("valid", true);
             jsonObject.addProperty("updateTime", DateUtils.millis());
@@ -324,8 +330,6 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
             }
             if (taskGroupEntity != null) {
                 jsonObject.addProperty("parentId", taskGroupEntity.id);
-            } else {
-                jsonObject.addProperty("parentId", itemEntity.parentId);
             }
             JsonArray jsonarr = new JsonArray();
             if (itemEntity.attendeeUsers != null) {

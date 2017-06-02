@@ -140,7 +140,6 @@ public class TaskOtherListFragment extends BaseFragment implements BaseRecyclerA
                 getData(false);
             }
         });
-        refreshLayout.setAutoRefresh(true);
         refreshLayout.startRefresh();
     }
 
@@ -198,6 +197,7 @@ public class TaskOtherListFragment extends BaseFragment implements BaseRecyclerA
             public void onSuccess(Call<ResEntity<TaskEntity>> call, Response<ResEntity<TaskEntity>> response) {
                 if (response.body().result != null) {
                     taskItemAdapter.bindData(isRefresh, response.body().result.items);
+                    TimerManager.getInstance().timerQuerySync();
                     if (isRefresh)
                         enableEmptyView(response.body().result.items);
                     stopRefresh();

@@ -73,6 +73,10 @@ public class DateSelectDialogFragment extends BaseDialogFragment {
     TextView btCancel;
     @BindView(R.id.bt_ok)
     TextView btOk;
+    @BindView(R.id.duetime_tv)
+    TextView duetimeTv;
+    @BindView(R.id.clear_dutime_iv)
+    ImageView clearDutimeIv;
     private Calendar currentCalender = Calendar.getInstance(Locale.getDefault());
     private SimpleDateFormat dateFormatForDisplaying = new SimpleDateFormat("dd-M-yyyy hh:mm:ss a", Locale.getDefault());
     private SimpleDateFormat dateFormatForMonth = new SimpleDateFormat("yyyy年MMM", Locale.getDefault());
@@ -142,7 +146,7 @@ public class DateSelectDialogFragment extends BaseDialogFragment {
                 View decorView = window.getDecorView();
                 if (decorView != null) {
                     int dp20 = DensityUtil.dip2px(getContext(), 20);
-                    decorView.setPadding(dp20 / 2, dp20, dp20 / 2, dp20);
+                    decorView.setPadding(dp20 / 2, 0, dp20 / 2, dp20);
                 }
             }
         }
@@ -155,12 +159,18 @@ public class DateSelectDialogFragment extends BaseDialogFragment {
                 log("------------i:" + i);
             }
         });
+        initCompactCalendar();
         Calendar calendar = (Calendar) getArguments().getSerializable("calendar");
         if (calendar != null) {
+            duetimeTv.setText(calendar.get(Calendar.HOUR_OF_DAY) + ":" + calendar.get(Calendar.MINUTE));
             hourWheelView.setCurrentItem(calendar.get(Calendar.HOUR_OF_DAY));
             minuteWheelView.setCurrentItem(calendar.get(Calendar.MINUTE));
+
+            titleContent.setText(dateFormatForMonth.format(calendar.getTimeInMillis()));
+            compactcalendarView.setCurrentDate(calendar.getTime());
+            compactcalendarView.invalidate();
         }
-        initCompactCalendar();
+
         //延迟显示 必须 否则默认值无效
         deadlineSelectLl.postDelayed(new Runnable() {
             @Override
@@ -189,6 +199,7 @@ public class DateSelectDialogFragment extends BaseDialogFragment {
         titleContent.setText(dateFormatForMonth.format(System.currentTimeMillis()));
 
         compactcalendarView.removeAllEvents();
+
         /*loadEvents();
         compactcalendarView.invalidate();
         logEventsByMonth(compactcalendarView);*/
@@ -205,6 +216,7 @@ public class DateSelectDialogFragment extends BaseDialogFragment {
             R.id.titleForward,
             R.id.titleAction,
             R.id.deadline_ll,
+            R.id.clear_dutime_iv,
             R.id.notice_ll,
             R.id.repeat_notice_ll,
             R.id.bt_cancel,
@@ -227,6 +239,11 @@ public class DateSelectDialogFragment extends BaseDialogFragment {
                 } else {
                     deadlineSelectLl.setVisibility(View.VISIBLE);
                 }
+                break;
+            case R.id.clear_dutime_iv:
+                duetimeTv.setText("23:59");
+                hourWheelView.setCurrentItem(23);
+                minuteWheelView.setCurrentItem(59);
                 break;
             case R.id.notice_ll:
                 break;

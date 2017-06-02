@@ -138,7 +138,6 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
                 super.onLoadMore(isSilence);
             }
         });
-        refreshLayout.setAutoRefresh(true);
         refreshLayout.startRefresh();
 
         allTaskEntities = new ArrayList<>();
@@ -261,6 +260,7 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
                     }
                 }
                 taskAdapter.bindData(true, allTaskEntities);
+                TimerManager.getInstance().timerQuerySync();
             }
         }
     }
@@ -382,9 +382,9 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
      * @param taskId
      */
     private void updateChildTimeing(String taskId, boolean isTiming) {
-        int parentPos = getParentPositon(taskId)+ headerFooterAdapter.getHeaderCount();
+        int parentPos = getParentPositon(taskId) + headerFooterAdapter.getHeaderCount();
         if (parentPos > 0) {
-            int childPos = getChildPositon(taskId) ;
+            int childPos = getChildPositon(taskId);
             if (childPos >= 0) {
                 BaseArrayRecyclerAdapter.ViewHolder viewHolderForAdapterPosition = (BaseArrayRecyclerAdapter.ViewHolder) recyclerView.findViewHolderForAdapterPosition(parentPos);
                 if (viewHolderForAdapterPosition != null) {
@@ -445,7 +445,7 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
     /**
      * 展示选择到期时间对话框
      */
-    private void showDateSelectDialogFragment() {
+    private void showDateSelectDialogFragment(long dueTime) {
         String tag = DateSelectDialogFragment.class.getSimpleName();
         FragmentTransaction mFragTransaction = getChildFragmentManager().beginTransaction();
         Fragment fragment = getChildFragmentManager().findFragmentByTag(tag);
@@ -453,8 +453,12 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
             mFragTransaction.remove(fragment);
         }
         Calendar calendar = Calendar.getInstance();
-        calendar.set(Calendar.HOUR_OF_DAY, 23);
-        calendar.set(Calendar.MINUTE, 59);
+        if (dueTime <= 0) {
+            calendar.set(Calendar.HOUR_OF_DAY, 23);
+            calendar.set(Calendar.MINUTE, 59);
+        } else {
+            calendar.setTimeInMillis(dueTime);
+        }
         DateSelectDialogFragment.newInstance(calendar)
                 .show(mFragTransaction, tag);
     }
@@ -475,7 +479,8 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
     @Override
     public void showDateSelectDialog(TaskEntity.TaskItemEntity taskItemEntity) {
         updateTaskItemEntity = taskItemEntity;
-        showDateSelectDialogFragment();
+        if (taskItemEntity != null)
+            showDateSelectDialogFragment(taskItemEntity.dueTime);
     }
 
     @Override

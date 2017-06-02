@@ -1054,7 +1054,7 @@ public class CustomerPersonCreateActivity extends BaseActivity {
             @Override
             public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
                 super.onFailure(call, t);
-                showTopSnackBar("修改团队失败,请稍后重试。");
+                showTopSnackBar("修改团队失败");
             }
         });
     }

@@ -126,7 +126,6 @@ public class ProjectTaskFragment extends BaseFragment implements TaskAdapter.OnS
                 super.onLoadMore(isSilence);
             }
         });
-        refreshLayout.setAutoRefresh(true);
         refreshLayout.startRefresh();
 
         allTaskEntities = new ArrayList<>();
@@ -197,6 +196,7 @@ public class ProjectTaskFragment extends BaseFragment implements TaskAdapter.OnS
                         allTaskEntities.add(itemEntity);
                     }
                     taskAdapter.bindData(true, allTaskEntities);
+                    TimerManager.getInstance().timerQuerySync();
                 }
             }
         }
@@ -453,7 +453,7 @@ public class ProjectTaskFragment extends BaseFragment implements TaskAdapter.OnS
     /**
      * 展示选择到期时间对话框
      */
-    private void showDateSelectDialogFragment() {
+    private void showDateSelectDialogFragment(long dueTime) {
         String tag = DateSelectDialogFragment.class.getSimpleName();
         FragmentTransaction mFragTransaction = getChildFragmentManager().beginTransaction();
         Fragment fragment = getChildFragmentManager().findFragmentByTag(tag);
@@ -461,8 +461,12 @@ public class ProjectTaskFragment extends BaseFragment implements TaskAdapter.OnS
             mFragTransaction.remove(fragment);
         }
         Calendar calendar = Calendar.getInstance();
-        calendar.set(Calendar.HOUR_OF_DAY, 23);
-        calendar.set(Calendar.MINUTE, 59);
+        if (dueTime <= 0) {
+            calendar.set(Calendar.HOUR_OF_DAY, 23);
+            calendar.set(Calendar.MINUTE, 59);
+        } else {
+            calendar.setTimeInMillis(dueTime);
+        }
         DateSelectDialogFragment.newInstance(calendar)
                 .show(mFragTransaction, tag);
     }
@@ -483,7 +487,8 @@ public class ProjectTaskFragment extends BaseFragment implements TaskAdapter.OnS
     @Override
     public void showDateSelectDialog(TaskEntity.TaskItemEntity taskItemEntity) {
         updateTaskItemEntity = taskItemEntity;
-        showDateSelectDialogFragment();
+        if (taskItemEntity != null)
+            showDateSelectDialogFragment(taskItemEntity.dueTime);
     }
 
     @Override

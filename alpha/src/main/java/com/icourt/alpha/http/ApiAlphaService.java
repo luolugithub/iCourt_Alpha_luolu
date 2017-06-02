@@ -750,7 +750,7 @@ public interface ApiAlphaService {
      * @param body
      * @return
      */
-    @PUT("api/v2/contact/grou")
+    @PUT("api/v2/contact/group")
     Call<ResEntity<JsonElement>> customerGroupInfoUpdate(@Body RequestBody body);
 
     /**
