@@ -33,13 +33,13 @@ import com.icourt.alpha.http.RetrofitServiceFactory;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.INIMessageListener;
-import com.icourt.alpha.widget.nim.GlobalMessageObserver;
 import com.icourt.alpha.utils.IMUtils;
 import com.icourt.alpha.utils.JsonUtils;
 import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.utils.UrlUtils;
 import com.icourt.alpha.widget.dialog.AlertListDialog;
+import com.icourt.alpha.widget.nim.GlobalMessageObserver;
 import com.icourt.api.RequestUtils;
 import com.netease.nimlib.sdk.NIMClient;
 import com.netease.nimlib.sdk.Observer;
@@ -55,7 +55,6 @@ import com.netease.nimlib.sdk.msg.model.RecentContact;
 import com.netease.nimlib.sdk.team.TeamService;
 import com.netease.nimlib.sdk.team.TeamServiceObserver;
 import com.netease.nimlib.sdk.team.model.Team;
-import com.trello.rxlifecycle2.android.ActivityEvent;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -331,7 +330,7 @@ public abstract class ChatBaseActivity
                 ContactDbService threadContactDbService = null;
                 try {
                     if (!e.isDisposed()) {
-                        threadContactDbService = new ContactDbService(getLoadedLoginUserId());
+                        threadContactDbService = new ContactDbService(getLoginUserId());
                         RealmResults<ContactDbModel> contactDbModels = threadContactDbService.queryAll();
                         if (contactDbModels != null) {
                             List<GroupContactBean> contactBeen = ListConvertor.convertList(new ArrayList<IConvertModel<GroupContactBean>>(contactDbModels));
@@ -347,7 +346,7 @@ public abstract class ChatBaseActivity
                     }
                 }
             }
-        }).compose(this.<List<GroupContactBean>>bindUntilEvent(ActivityEvent.DESTROY))
+        }).compose(this.<List<GroupContactBean>>bindToLifecycle())
                 .subscribeOn(Schedulers.newThread())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(consumer);

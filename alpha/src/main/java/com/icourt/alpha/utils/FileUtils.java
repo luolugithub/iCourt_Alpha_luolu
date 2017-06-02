@@ -1,5 +1,6 @@
 package com.icourt.alpha.utils;
 
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.PixelFormat;
@@ -14,8 +15,11 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+
+import static com.icourt.alpha.utils.ImageUtils.addPictureToGallery;
 
 /**
  * Description
@@ -25,6 +29,8 @@ import java.io.InputStream;
  * version 1.0.0
  */
 public class FileUtils {
+    public static final String dirFilePath = FileUtils.getSDPath() + ActionConstants.FILE_DOWNLOAD_PATH;
+
     public static final String ALPHA_PAGENAME_FILE = "com.icourt.alpha";
     public static final String THUMB_IMAGE_ROOT_PATH = getSDPath() + "/" + ALPHA_PAGENAME_FILE + "/image";
     public static final String THUMB_FILE_ROOT_PATH = getSDPath() + "/" + ALPHA_PAGENAME_FILE + "/file";
@@ -323,6 +329,31 @@ public class FileUtils {
             e.printStackTrace();
         }
         return buffer;
+    }
+
+    /**
+     * 保存方法
+     */
+    public static boolean saveBitmap(Context context, String picName, Bitmap bitmap) {
+        File f = new File(dirFilePath, picName + ".png");
+        if (f.exists()) {
+            f.delete();
+        }
+        try {
+            FileOutputStream out = new FileOutputStream(f);
+            bitmap.compress(Bitmap.CompressFormat.PNG, 90, out);
+            out.flush();
+            out.close();
+            addPictureToGallery(context, f.getAbsolutePath());
+            return true;
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+            return false;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
+
     }
 
 }

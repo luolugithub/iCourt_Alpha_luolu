@@ -27,4 +27,6 @@ public class SFileImageInfoEntity implements Serializable {
     public String thumb;
     public int width;
     public int height;
+
+    public long chatMsgId;//聊天msg id
 }

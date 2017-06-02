@@ -69,9 +69,9 @@ public abstract class BasePagerAdapter<T> extends PagerAdapter implements View.O
 
     private boolean isCanupdateItem;
 
-    private OnPagerItemClickListener onPagerItemClickListener;
+    protected OnPagerItemClickListener onPagerItemClickListener;
 
-    private OnPagerItemLongClickListener onPagerItemLongClickListener;
+    protected OnPagerItemLongClickListener onPagerItemLongClickListener;
 
     public void setOnPagerItemLongClickListener(OnPagerItemLongClickListener onPagerItemLongClickListener) {
         this.onPagerItemLongClickListener = onPagerItemLongClickListener;

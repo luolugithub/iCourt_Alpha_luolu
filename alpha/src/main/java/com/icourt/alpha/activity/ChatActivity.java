@@ -266,6 +266,7 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
         }
     }
 
+
     /**
      * 获取消息定位的时间
      *
@@ -794,7 +795,7 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
      */
     private void scrollToBottom() {
         if (linearLayoutManager != null) {
-            linearLayoutManager.scrollToPositionWithOffset(linearLayoutManager.getItemCount() - 1, 0);
+            linearLayoutManager.scrollToPositionWithOffset(linearLayoutManager.getItemCount(), 0);
         }
     }
 
@@ -1172,10 +1173,11 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
                     for (int i = 0; i < chatAdapter.getData().size(); i++) {
                         IMMessageCustomBody imMessageCustomBody = chatAdapter.getData().get(i);
                         if (imMessageCustomBody != null && imMessageCustomBody.ext != null) {
-                            if (imMessageCustomBody.show_type == Const.MSG_TYPE_IMAGE) {
+                            if (imMessageCustomBody.show_type == Const.MSG_TYPE_IMAGE && imMessageCustomBody.id > 0) {
                                 SFileImageInfoEntity sFileImageInfoEntity = imMessageCustomBody.ext.convert2Model();
                                 if (sFileImageInfoEntity != null) {
                                     mediumImageUrls.add(getChatMediumImageUrl(sFileImageInfoEntity.thumb));
+                                    sFileImageInfoEntity.chatMsgId = imMessageCustomBody.id;
                                     sFileImageInfoEntities.add(sFileImageInfoEntity);
                                 }
                             }
@@ -1187,7 +1189,9 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
                     ImagePagerActivity.launch(view.getContext(),
                             mediumImageUrls, sFileImageInfoEntities,
                             pos,
-                            chat_image_iv);
+                            chat_image_iv,
+                            getIMChatType(),
+                            getIMChatId());
                 }
                 break;
             case R.id.chat_send_fail_iv:

@@ -136,8 +136,7 @@
             android:screenOrientation="portrait" />
         <activity
             android:name=".activity.ImagePagerActivity"
-            android:screenOrientation="portrait"
-            android:theme="@style/AppThemenotAnimation" />
+            android:screenOrientation="portrait" />
         <activity
             android:name=".activity.MyFileTabActivity"
             android:screenOrientation="portrait" />
