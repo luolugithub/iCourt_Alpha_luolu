@@ -93,7 +93,7 @@ public class AboutActivity extends BaseAppUpdateActivity {
                 if (shouldUpdate(appVersionEntity)) {
                     showAppUpdateDialog(getActivity(), appVersionEntity);
                 } else {
-                    checkAppUpdate(getContext());
+                    showTopSnackBar("已是最新版,无需更新");
                 }
                 break;
             default:

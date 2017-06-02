@@ -15,6 +15,7 @@ import android.text.TextUtils;
 import android.view.View;
 import android.widget.CheckedTextView;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Switch;
@@ -46,8 +47,6 @@ import butterknife.OnClick;
 import retrofit2.Call;
 import retrofit2.Response;
 
-import static com.icourt.alpha.R.id.group_member_num_tv;
-
 /**
  * Description
  * Company Beijing icourt
@@ -74,8 +73,6 @@ public class GroupCreateActivity extends BaseActivity implements OnFragmentCallB
     Switch groupPrivateSwitch;
     @BindView(R.id.group_disturb_ll)
     LinearLayout groupDisturbLl;
-    @BindView(group_member_num_tv)
-    TextView groupMemberNumTv;
     @BindView(R.id.group_member_invite_tv)
     TextView groupMemberInviteTv;
     @BindView(R.id.group_title_divider)
@@ -88,9 +85,14 @@ public class GroupCreateActivity extends BaseActivity implements OnFragmentCallB
     DataChangeAdapterObserver dataChangeAdapterObserver = new DataChangeAdapterObserver() {
         @Override
         protected void updateUI() {
+            memberLayout.setVisibility(imContactAdapter.getItemCount() > 0 ? View.VISIBLE : View.GONE);
             groupMemberNumTv.setText(String.format("成员(%s)", imContactAdapter.getItemCount()));
         }
     };
+    @BindView(R.id.group_member_num_tv)
+    TextView groupMemberNumTv;
+    @BindView(R.id.member_layout)
+    FrameLayout memberLayout;
 
     public static void launch(Context context) {
         if (context == null) return;
@@ -119,6 +121,7 @@ public class GroupCreateActivity extends BaseActivity implements OnFragmentCallB
         groupMemberRecyclerView.setLayoutManager(linearLayoutManager);
         groupMemberRecyclerView.setNestedScrollingEnabled(false);
         groupMemberRecyclerView.setAdapter(imContactAdapter = new IMContactAdapter(Const.VIEW_TYPE_GRID));
+        memberLayout.setVisibility(View.GONE);
         imContactAdapter.registerAdapterDataObserver(dataChangeAdapterObserver);
         imContactAdapter.setOnItemClickListener(new BaseRecyclerAdapter.OnItemClickListener() {
             @Override
@@ -133,7 +136,8 @@ public class GroupCreateActivity extends BaseActivity implements OnFragmentCallB
     }
 
     @OnClick({R.id.group_member_invite_tv,
-            R.id.group_member_arrow_iv})
+            R.id.group_member_arrow_iv,
+            R.id.member_layout})
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
@@ -153,6 +157,7 @@ public class GroupCreateActivity extends BaseActivity implements OnFragmentCallB
             case R.id.group_member_invite_tv:
                 showMemberSelectDialogFragment();
                 break;
+            case R.id.member_layout:
             case R.id.group_member_arrow_iv:
                 GroupMemberDelActivity.launchForResult(getActivity(),
                         null,

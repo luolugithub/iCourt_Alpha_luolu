@@ -120,7 +120,8 @@
                 android:layout_marginTop="5dp"
                 android:background="@color/alpha_divider_color" />
 
-            <LinearLayout
+            <FrameLayout
+                android:id="@+id/member_layout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_alignLeft="@+id/group_title_divider"
@@ -131,17 +132,18 @@
 
                 <android.support.v7.widget.RecyclerView
                     android:id="@+id/group_member_recyclerView"
-                    android:layout_width="match_parent"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
                     android:overScrollMode="never" />
+
 
                 <ImageView
                     android:id="@+id/group_member_arrow_iv"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_gravity="right|center_vertical"
                     android:src="@mipmap/arrow_right" />
-            </LinearLayout>
+            </FrameLayout>
         </RelativeLayout>
     </LinearLayout>
 
