@@ -36,6 +36,7 @@ import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.ActionConstants;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.ItemDecorationUtils;
+import com.icourt.alpha.utils.LogUtils;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 
 import org.greenrobot.eventbus.EventBus;
@@ -201,7 +202,11 @@ public class CommentListActivity extends BaseActivity implements BaseRecyclerAda
         if (TextUtils.isEmpty(commentEdit.getText().toString())) {
             showTopSnackBar("请输入评论内容");
             return;
+        } else if (commentEdit.getText().length() > 1500) {
+            showTopSnackBar("评论内容不能超过1500字");
+            return;
         }
+        LogUtils.e("内容长度 －－－－－－－ " + commentEdit.getText().length());
         showLoadingDialog("正在发送...");
         getApi().commentCreate(100, taskItemEntity.id, commentEdit.getText().toString()).enqueue(new SimpleCallBack<JsonElement>() {
             @Override
@@ -218,6 +223,13 @@ public class CommentListActivity extends BaseActivity implements BaseRecyclerAda
                 commentTv.setVisibility(View.VISIBLE);
                 sendTv.setVisibility(View.GONE);
                 commentTv.setText(commentListAdapter.getItemCount() + "条动态");
+            }
+
+            @Override
+            public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
+                super.onFailure(call, t);
+                dismissLoadingDialog();
+                showTopSnackBar("添加评论失败");
             }
         });
     }

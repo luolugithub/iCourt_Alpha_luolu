@@ -82,7 +82,7 @@ public class ChatAlphaSpecialHelperAdapter
                 msg_title_tv.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.mipmap.message_arrow_14, 0);
                 msg_time_tv.setText(alphaSecialHeplerMsgEntity.reply);
             } else {
-                if (TextUtils.equals(alphaSecialHeplerMsgEntity.scene, AlphaSecialHeplerMsgEntity.TASK_STATUS_DELETE)) {
+                if (TextUtils.equals(alphaSecialHeplerMsgEntity.scene, AlphaSecialHeplerMsgEntity.TASK_STATUS_DELETE)||TextUtils.equals(alphaSecialHeplerMsgEntity.scene, AlphaSecialHeplerMsgEntity.TASK_PRINCIPAL_REMOVEU)) {
                     msg_title_tv.setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0);
                 } else {
                     msg_title_tv.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.mipmap.message_arrow_14, 0);
@@ -119,7 +119,7 @@ public class ChatAlphaSpecialHelperAdapter
             msg_from_tv.setText(alphaSecialHeplerMsgEntity.clientName);
             msg_title_tv.setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0);
             boolean showArrow = TextUtils.equals(AlphaSecialHeplerMsgEntity.MATTER_MEMBER_REMOVEU, alphaSecialHeplerMsgEntity.scene);
-            msg_title_tv.setCompoundDrawablesWithIntrinsicBounds(0, 0, showArrow ? R.mipmap.message_arrow_14 : 0, 0);
+            msg_title_tv.setCompoundDrawablesWithIntrinsicBounds(0, 0, showArrow ? 0 : R.mipmap.message_arrow_14, 0);
         }
 
         addTimeDividerArray(alphaSecialHeplerMsgEntity, position);

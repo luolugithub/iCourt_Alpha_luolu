@@ -226,7 +226,7 @@ public class MainActivity extends BaseAppUpdateActivity
         initChangedTab();
         checkedTab(R.id.tab_news, TYPE_FRAGMENT_NEWS);
         getTimering();
-        mHandler.addCheckAppUpdateTask();
+//        mHandler.addCheckAppUpdateTask();
         mHandler.addTokenRefreshTask();
     }
 
