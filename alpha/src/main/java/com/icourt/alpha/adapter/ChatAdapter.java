@@ -618,6 +618,7 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMMessageCustomBody> i
             GlideUtils.loadPic(chat_ding_content_iamge_iv.getContext(), imMessageCustomBody.ext.ext.thumb, chat_ding_content_iamge_iv);
         }
 
+        holder.bindChildClick(chat_ding_content_iamge_iv);
         setTypeDingFromUser(holder, imMessageCustomBody, position);
     }
 

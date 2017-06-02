@@ -1,6 +1,5 @@
 package com.icourt.alpha.widget.nim;
 
-import com.google.gson.JsonParseException;
 import com.icourt.alpha.BuildConfig;
 import com.icourt.alpha.constants.Const;
 import com.icourt.alpha.entity.bean.IMMessageCustomBody;
@@ -139,7 +138,7 @@ public class GlobalMessageObserver implements Observer<List<IMMessage>> {
                         break;
                 }
             }
-        } catch (JsonParseException e) {
+        } catch (Exception e) {
             e.printStackTrace();
             LogUtils.d("--------->getIMBody JsonParseException:" + e);
         }

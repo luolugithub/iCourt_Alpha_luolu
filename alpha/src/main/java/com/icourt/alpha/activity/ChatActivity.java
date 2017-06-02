@@ -72,6 +72,7 @@ import org.greenrobot.eventbus.ThreadMode;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -1209,6 +1210,22 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
                         WebViewActivity.launch(getContext(), item.ext.url);
                     }
                 }
+                break;
+            case R.id.chat_ding_content_iamge_iv:
+                if (item.ext == null) return;
+                if (item.ext.ext == null) return;
+                SFileImageInfoEntity sFileImageInfoEntity = item.ext.ext.convert2Model();
+                sFileImageInfoEntity.chatMsgId = item.ext.id;
+                String chatMediumImageUrl = getChatMediumImageUrl(item.ext.ext.thumb);
+                ArrayList<SFileImageInfoEntity> sFileImageInfoEntities = new ArrayList<>();
+                sFileImageInfoEntities.add(sFileImageInfoEntity);
+                ImagePagerActivity.launch(getContext(),
+                        Arrays.asList(chatMediumImageUrl),
+                        sFileImageInfoEntities,
+                        0,
+                        view,
+                        getIMChatType(),
+                        getIMChatId());
                 break;
             case R.id.chat_ll_file:
                 switch (item.show_type) {

@@ -1,5 +1,6 @@
 package com.icourt.alpha.entity.bean;
 
+import com.google.gson.annotations.Expose;
 import com.icourt.alpha.constants.Const;
 import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.widget.comparators.ILongFieldEntity;
@@ -23,7 +24,10 @@ import static com.icourt.alpha.constants.Const.CHAT_TYPE_TEAM;
  */
 public class IMMessageCustomBody implements ILongFieldEntity, Serializable {
     public static final String PLATFORM_ANDROID = "ANDROID";
+
+    @Expose(serialize = false, deserialize = false)
     public IMMessage imMessage;
+
     @Const.MSG_STATU
     public int msg_statu;//消息状态 本地用
 

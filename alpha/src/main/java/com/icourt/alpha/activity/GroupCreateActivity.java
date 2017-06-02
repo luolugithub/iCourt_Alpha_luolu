@@ -25,6 +25,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.IMContactAdapter;
+import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.adapterObserver.DataChangeAdapterObserver;
 import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.constants.Const;
@@ -119,6 +120,16 @@ public class GroupCreateActivity extends BaseActivity implements OnFragmentCallB
         groupMemberRecyclerView.setNestedScrollingEnabled(false);
         groupMemberRecyclerView.setAdapter(imContactAdapter = new IMContactAdapter(Const.VIEW_TYPE_GRID));
         imContactAdapter.registerAdapterDataObserver(dataChangeAdapterObserver);
+        imContactAdapter.setOnItemClickListener(new BaseRecyclerAdapter.OnItemClickListener() {
+            @Override
+            public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
+                GroupMemberDelActivity.launchForResult(getActivity(),
+                        null,
+                        (ArrayList<GroupContactBean>) imContactAdapter.getData(),
+                        false,
+                        REQ_CODE_DEL_USER);
+            }
+        });
     }
 
     @OnClick({R.id.group_member_invite_tv,

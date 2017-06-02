@@ -330,6 +330,11 @@ public class ImagePagerActivity extends BaseUmengActivity implements BasePagerAd
                             msgDingedIdsList.addAll(response.body().result);
                         }
                     }
+
+                    @Override
+                    public void defNotify(String noticeStr) {
+                        // super.defNotify(noticeStr);
+                    }
                 });
     }
 
@@ -365,6 +370,12 @@ public class ImagePagerActivity extends BaseUmengActivity implements BasePagerAd
                             msgCollectedIdsList.clear();
                             msgCollectedIdsList.addAll(response.body().result);
                         }
+
+                    }
+
+                    @Override
+                    public void defNotify(String noticeStr) {
+                        // super.defNotify(noticeStr);
                     }
                 });
     }
