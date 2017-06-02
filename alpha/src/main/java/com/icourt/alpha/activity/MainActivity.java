@@ -193,7 +193,6 @@ public class MainActivity extends BaseAppUpdateActivity
             switch (msg.what) {
                 case TYPE_TOKEN_REFRESH:
                     refreshToken();
-                    MainActivity.this.checkAppUpdate(getContext());
                     break;
                 case TYPE_CHECK_APP_UPDATE:
                     checkAppUpdate(getContext());
