@@ -24,6 +24,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.icourt.alpha.BuildConfig;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.base.BaseAppUpdateActivity;
@@ -31,7 +32,6 @@ import com.icourt.alpha.db.dbservice.ContactDbService;
 import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.icourt.alpha.entity.bean.ItemsEntity;
 import com.icourt.alpha.entity.bean.ItemsEntityImp;
-import com.icourt.alpha.entity.bean.PageEntity;
 import com.icourt.alpha.entity.bean.TimeEntity;
 import com.icourt.alpha.entity.event.TimingEvent;
 import com.icourt.alpha.entity.event.UnReadEvent;
@@ -225,11 +225,17 @@ public class MainActivity extends BaseAppUpdateActivity
         new SimpleViewGestureListener(tabNews, onSimpleViewGestureListener);
         initChangedTab();
         checkedTab(R.id.tab_news, TYPE_FRAGMENT_NEWS);
-        getTimering();
-//        mHandler.addCheckAppUpdateTask();
+        if (BuildConfig.BUILD_TYPE_INT > 0) {
+            mHandler.addCheckAppUpdateTask();
+        }
         mHandler.addTokenRefreshTask();
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        getTimering();
+    }
 
     /**
      * 保存切换的tab
@@ -572,43 +578,7 @@ public class MainActivity extends BaseAppUpdateActivity
     }
 
     private void getTimering() {
-        getApi().timerQuery(0, 20, 0)
-                .enqueue(new SimpleCallBack<PageEntity<TimeEntity.ItemEntity>>() {
-                    @Override
-                    public void onSuccess(Call<ResEntity<PageEntity<TimeEntity.ItemEntity>>> call, Response<ResEntity<PageEntity<TimeEntity.ItemEntity>>> response) {
-                        if (response.body().result != null
-                                && response.body().result.items != null
-                                && !response.body().result.items.isEmpty()) {
-
-                            List<TimeEntity.ItemEntity> itemEntities = response.body().result.items;
-
-                            TimeEntity.ItemEntity timer = TimerManager.getInstance().getTimer();
-                            int indexOf = itemEntities.indexOf(timer);
-                            //包含本地计时 更新数据
-                            if (indexOf >= 0) {
-                                TimerManager.getInstance().updateTimer(itemEntities.get(indexOf));
-                            } else {
-                                //找第一个正在计时的项目
-                                for (TimeEntity.ItemEntity itemEntity : response.body().result.items) {
-                                    if (itemEntity == null) continue;
-                                    if (itemEntity.state == TimeEntity.TIMER_STATE_ING_TYPE) {
-                                        TimerManager.getInstance().resumeTimer(itemEntity);
-                                        break;
-                                    }
-                                }
-                            }
-                        } else {
-                            //关闭本地
-                            TimerManager.getInstance().stopTimer();
-                        }
-                    }
-
-                    @Override
-                    public void onFailure(Call<ResEntity<PageEntity<TimeEntity.ItemEntity>>> call, Throwable t) {
-                        super.onFailure(call, t);
-                        TimerManager.getInstance().resumeTimer();
-                    }
-                });
+        TimerManager.getInstance().timerQuerySync();
     }
 
 

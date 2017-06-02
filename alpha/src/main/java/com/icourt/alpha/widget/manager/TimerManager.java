@@ -7,6 +7,7 @@ import android.support.annotation.Nullable;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
+import com.icourt.alpha.entity.bean.PageEntity;
 import com.icourt.alpha.entity.bean.TimeEntity;
 import com.icourt.alpha.entity.event.TimingEvent;
 import com.icourt.alpha.http.RetrofitServiceFactory;
@@ -22,6 +23,7 @@ import org.greenrobot.eventbus.EventBus;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -276,6 +278,51 @@ public class TimerManager {
     public boolean isTimer(TimeEntity.ItemEntity itemEntity) {
         if (itemEntity == null) return false;
         return itemEntity.equals(getTimer());
+    }
+
+    /**
+     * 同步网络计时
+     */
+    public void timerQuerySync() {
+        RetrofitServiceFactory
+                .getAlphaApiService()
+                .timerQuery(0, 20, 0)
+                .enqueue(new SimpleCallBack<PageEntity<TimeEntity.ItemEntity>>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<PageEntity<TimeEntity.ItemEntity>>> call, Response<ResEntity<PageEntity<TimeEntity.ItemEntity>>> response) {
+                        if (response.body().result != null
+                                && response.body().result.items != null
+                                && !response.body().result.items.isEmpty()) {
+
+                            List<TimeEntity.ItemEntity> itemEntities = response.body().result.items;
+
+                            TimeEntity.ItemEntity timer = TimerManager.getInstance().getTimer();
+                            int indexOf = itemEntities.indexOf(timer);
+                            //包含本地计时 更新数据
+                            if (indexOf >= 0) {
+                                TimerManager.getInstance().updateTimer(itemEntities.get(indexOf));
+                            } else {
+                                //找第一个正在计时的项目
+                                for (TimeEntity.ItemEntity itemEntity : response.body().result.items) {
+                                    if (itemEntity == null) continue;
+                                    if (itemEntity.state == TimeEntity.TIMER_STATE_ING_TYPE) {
+                                        TimerManager.getInstance().resumeTimer(itemEntity);
+                                        break;
+                                    }
+                                }
+                            }
+                        } else {
+                            //关闭本地
+                            TimerManager.getInstance().stopTimer();
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<ResEntity<PageEntity<TimeEntity.ItemEntity>>> call, Throwable t) {
+                        super.onFailure(call, t);
+                        TimerManager.getInstance().resumeTimer();
+                    }
+                });
     }
 
     /**
