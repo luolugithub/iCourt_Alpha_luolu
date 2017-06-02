@@ -141,6 +141,7 @@ public class TabTimingFragment extends BaseFragment implements BaseRecyclerAdapt
             }
         });
         refreshLayout.setPullLoadEnable(true);
+        refreshLayout.setDampingRatio(2.5f);
         refreshLayout.startRefresh();
     }
 
