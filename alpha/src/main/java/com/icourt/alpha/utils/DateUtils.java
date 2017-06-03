@@ -26,31 +26,21 @@ public class DateUtils {
         Date yesterdaybegin = new Date(todaybegin.getTime() - 3600 * 24 * 1000);
         Date preyesterday = new Date(yesterdaybegin.getTime() - 3600 * 24 * 1000);
 
-        if (!currentTime.before(todaybegin)) {
-            dataString = "今天";
-        } else if (!currentTime.before(yesterdaybegin)) {
-            dataString = "昨天";
-        } else if (!currentTime.before(preyesterday)) {
-            dataString = "前天";
-        } else if (isSameWeekDates(currentTime, today)) {
-            dataString = getWeekOfDate(currentTime);
-        } else {
-            SimpleDateFormat dateformatter = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
-            dataString = dateformatter.format(currentTime);
-        }
-
         SimpleDateFormat timeformatter24 = new SimpleDateFormat("HH:mm", Locale.getDefault());
         timeStringBy24 = timeformatter24.format(currentTime);
-
-        if (abbreviate) {
-            if (!currentTime.before(todaybegin)) {
-                return getTodayTimeBucket(currentTime);
-            } else {
-                return dataString;
-            }
+        if (!currentTime.before(todaybegin)) {
+            dataString = getTodayTimeBucket(currentTime);
+        } else if (!currentTime.before(yesterdaybegin)) {
+            dataString = "昨天 " + timeStringBy24;
+        } else if (!currentTime.before(preyesterday)) {
+            dataString = "前天 " + timeStringBy24;
+        } else if (isSameWeekDates(currentTime, today)) {
+            dataString = getWeekOfDate(currentTime) + " " + timeStringBy24;
         } else {
-            return dataString + " " + timeStringBy24;
+            SimpleDateFormat dateformatter = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault());
+            dataString = dateformatter.format(currentTime);
         }
+        return dataString;
     }
 
     /**

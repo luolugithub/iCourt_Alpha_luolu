@@ -734,7 +734,6 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
             @Override
             public void onLoadMore(boolean isSilence) {
                 super.onLoadMore(isSilence);
-                log("------------->11:" + isSilence);
             }
 
             @Override
@@ -836,11 +835,15 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
                             getMsgFromServer(isRefresh);
                         } else {
                             chatAdapter.addItems(0, convert2CustomerMessages(param));
-                            stopRefresh();
+
                             if (isRefresh) {
                                 scrollToBottom();
                             }
-
+                            if (param.size() < 20) {
+                                getMsgFromServer(isRefresh);
+                            } else {
+                                stopRefresh();
+                            }
                             if (chatAdapter.getItemCount() < 20) {
                                 setUnreadNum(0);
                                 clearUnReadNum();
@@ -1018,6 +1021,9 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
         if (chatAdapter.getData().contains(customBody)) {
             customBody.msg_statu = Const.MSG_STATU_SUCCESS;
             chatAdapter.updateItem(customBody);
+            if (shouldScrollToBottom()) {
+                scrollToBottom();
+            }
         } else {//别人发送的消息收到
             if (shouldScrollToBottom()) {
                 chatAdapter.addItem(customBody);
