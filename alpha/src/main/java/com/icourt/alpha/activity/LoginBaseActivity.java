@@ -144,6 +144,11 @@ public class LoginBaseActivity extends BaseUmengActivity {
 
                             //保存登陆信息
                             saveLoginUserInfo(result);
+
+                            //神策统计
+                           /* SensorsDataAPI.sharedInstance(getContext())
+                                    .login(result.getUserId());*/
+
                             //登陆云信im
                             loginChatEase(response.body().result);
                         }

@@ -1,6 +1,7 @@
 apply plugin: 'com.android.application'
 apply plugin: 'com.bugtags.library.plugin'
 apply plugin: 'realm-android'
+//apply plugin: 'com.sensorsdata.analytics.android'
 android {
     compileSdkVersion rootProject.ext.android.compileSdkVersion
     buildToolsVersion rootProject.ext.android.buildToolsVersion
@@ -258,6 +259,7 @@ dependencies {
     compile 'com.github.sundeepk:compact-calendar-view:2.0.2'
     compile 'com.umeng.analytics:analytics:latest.integration'
     compile 'com.github.lecho:hellocharts-library:1.5.8@aar'
+    compile 'com.sensorsdata.analytics.android:SensorsAnalyticsSDK:1.7.4'
     //compile 'com.getui:sdk:2.10.2.0'
 }
 

@@ -225,6 +225,10 @@ public class TabMineFragment extends BaseFragment {
      * 退出登录
      */
     private void loginOut() {
+        //神策退出
+    /*    SensorsDataAPI.sharedInstance(getContext())
+                .logout();*/
+
         //撤销微信授权
         if (!mShareAPI.isAuthorize(getActivity(), SHARE_MEDIA.WEIXIN)) {
             dismissLoadingDialog();

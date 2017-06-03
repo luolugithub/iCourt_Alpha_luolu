@@ -297,6 +297,12 @@
         <meta-data
             android:name="UMENG_CHANNEL"
             android:value="Android_002_yingyongbao" />
+     <!--   <meta-data
+            android:name="com.sensorsdata.analytics.android.AndroidId"
+            android:value="true"/>-->
+      <!--  <meta-data
+            android:name="com.sensorsdata.analytics.android.EnableLogging"
+            android:value="true" />-->
 
         <!-- 微信回调activity -->
         <activity
