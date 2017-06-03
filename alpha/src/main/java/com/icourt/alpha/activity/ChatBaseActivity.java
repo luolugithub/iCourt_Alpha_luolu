@@ -27,7 +27,6 @@ import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.icourt.alpha.entity.bean.IMMessageCustomBody;
 import com.icourt.alpha.entity.bean.MsgConvert2Task;
-import com.icourt.alpha.entity.event.GroupActionEvent;
 import com.icourt.alpha.fragment.dialogfragment.ContactShareDialogFragment;
 import com.icourt.alpha.http.RetrofitServiceFactory;
 import com.icourt.alpha.http.callback.SimpleCallBack;
@@ -219,14 +218,6 @@ public abstract class ChatBaseActivity
         handleGlobalDingMsgStatu(customBody);
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onGroupEvent(GroupActionEvent event) {
-        if (event == null) return;
-        //已经退出群组 关闭当前聊天窗口
-        if (StringUtils.equalsIgnoreCase(event.tid, getIMChatId(), false)) {
-            finish();
-        }
-    }
 
     /**
      * 处理全局钉的状态
@@ -361,6 +352,9 @@ public abstract class ChatBaseActivity
             contactDbService.releaseService();
         }
         EventBus.getDefault().unregister(this);
+        if (mHandler != null) {
+            mHandler.removeCallbacksAndMessages(null);
+        }
         super.onDestroy();
     }
 
@@ -483,7 +477,7 @@ public abstract class ChatBaseActivity
         if (customBody == null) return false;
         switch (getIMChatType()) {
             case CHAT_TYPE_P2P:
-                if (customBody.imMessage == null){
+                if (customBody.imMessage == null) {
                     return false;
                 }
                 return StringUtils.equalsIgnoreCase(customBody.imMessage.getSessionId(), getIMChatId(), false);

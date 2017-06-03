@@ -470,13 +470,17 @@ public class MessageListFragment extends BaseRecentContactFragment
     public void onMessageEvent(GroupActionEvent groupActionEvent) {
         if (groupActionEvent == null) return;
         //删除已经退出的讨论组的会话
-        for (IMSessionEntity sessionEntity : imSessionAdapter.getData()) {
-            if (sessionEntity != null && sessionEntity.recentContact != null) {
-                if (StringUtils.equalsIgnoreCase(sessionEntity.recentContact.getContactId(), groupActionEvent.tid, false)) {
-                    imSessionAdapter.removeItem(sessionEntity);
-                    break;
+        try {
+            for (IMSessionEntity sessionEntity : imSessionAdapter.getData()) {
+                if (sessionEntity != null && sessionEntity.recentContact != null) {
+                    if (StringUtils.equalsIgnoreCase(sessionEntity.recentContact.getContactId(), groupActionEvent.tid, false)) {
+                        imSessionAdapter.removeItem(sessionEntity);
+                        break;
+                    }
                 }
             }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 

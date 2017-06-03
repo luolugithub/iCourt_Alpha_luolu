@@ -36,6 +36,7 @@ import com.icourt.alpha.constants.Const;
 import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.icourt.alpha.entity.bean.IMMessageCustomBody;
 import com.icourt.alpha.entity.bean.SFileImageInfoEntity;
+import com.icourt.alpha.entity.event.GroupActionEvent;
 import com.icourt.alpha.entity.event.MemberEvent;
 import com.icourt.alpha.entity.event.NoDisturbingEvent;
 import com.icourt.alpha.entity.event.UnReadEvent;
@@ -326,6 +327,21 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
     public void onMessageEvent(NoDisturbingEvent noDisturbingEvent) {
         if (noDisturbingEvent == null) return;
         setViewVisible(getTitleActionImage(), noDisturbingEvent.isNoDisturbing);
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onGroupEvent(final GroupActionEvent event) {
+        if (event == null) return;
+        //已经退出群组 关闭当前聊天窗口
+        //华为荣耀7崩溃
+        mHandler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if (StringUtils.equalsIgnoreCase(event.tid, getIMChatId(), false)) {
+                    finish();
+                }
+            }
+        }, 50);
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -795,7 +811,7 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
      * 滚动到底部
      */
     private void scrollToBottom() {
-        if (linearLayoutManager != null) {
+        if (linearLayoutManager != null && linearLayoutManager.getItemCount() > 0) {
             linearLayoutManager.scrollToPositionWithOffset(linearLayoutManager.getItemCount(), 0);
         }
     }

@@ -1,5 +1,6 @@
 package com.icourt.alpha.entity.bean;
 
+import com.google.gson.annotations.Expose;
 import com.netease.nimlib.sdk.msg.constant.MsgTypeEnum;
 import com.netease.nimlib.sdk.msg.model.RecentContact;
 
@@ -12,6 +13,7 @@ import com.netease.nimlib.sdk.msg.model.RecentContact;
  */
 public class IMSessionEntity {
 
+    @Expose(serialize = false, deserialize = false)
     public RecentContact recentContact;
     public IMMessageCustomBody customIMBody;//自定义消息体 请提前解析
 
