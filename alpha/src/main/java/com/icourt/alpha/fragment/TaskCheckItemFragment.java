@@ -1,5 +1,6 @@
 package com.icourt.alpha.fragment;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -10,8 +11,8 @@ import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
+import android.widget.CheckedTextView;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -20,12 +21,18 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.TaskCheckItemAdapter;
+import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.entity.bean.TaskCheckItemEntity;
+import com.icourt.alpha.entity.event.TaskActionEvent;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
+import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
+import com.icourt.alpha.interfaces.OnUpdateTaskListener;
 import com.icourt.alpha.utils.ItemDecorationUtils;
 import com.icourt.api.RequestUtils;
+
+import org.greenrobot.eventbus.EventBus;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -42,7 +49,7 @@ import retrofit2.Response;
  * version 2.0.0
  */
 
-public class TaskCheckItemFragment extends BaseFragment {
+public class TaskCheckItemFragment extends BaseFragment implements BaseRecyclerAdapter.OnItemChildClickListener {
     private static final String KEY_TASK_ID = "key_task_id";
     Unbinder unbinder;
     @BindView(R.id.recyclerview)
@@ -54,6 +61,7 @@ public class TaskCheckItemFragment extends BaseFragment {
     EditText checkItemEdit;
     @BindView(R.id.check_item_add)
     ImageView checkItemAdd;
+    OnUpdateTaskListener updateTaskListener;
 
     public static TaskCheckItemFragment newInstance(@NonNull String taskId) {
         TaskCheckItemFragment taskCheckItemFragment = new TaskCheckItemFragment();
@@ -61,12 +69,6 @@ public class TaskCheckItemFragment extends BaseFragment {
         bundle.putString(KEY_TASK_ID, taskId);
         taskCheckItemFragment.setArguments(bundle);
         return taskCheckItemFragment;
-    }
-
-    @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        getActivity().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
     }
 
     @Nullable
@@ -78,10 +80,21 @@ public class TaskCheckItemFragment extends BaseFragment {
     }
 
     @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        try {
+            updateTaskListener = (OnUpdateTaskListener) context;
+        } catch (ClassCastException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
     protected void initView() {
         taskId = getArguments().getString(KEY_TASK_ID);
         recyclerview.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerview.setAdapter(taskCheckItemAdapter = new TaskCheckItemAdapter());
+        taskCheckItemAdapter.setOnItemChildClickListener(this);
         recyclerview.addItemDecoration(ItemDecorationUtils.getCommFull05Divider(getContext(), true, R.color.alpha_divider_color));
         getData(false);
         checkItemEdit.setOnEditorActionListener(new TextView.OnEditorActionListener() {
@@ -132,6 +145,19 @@ public class TaskCheckItemFragment extends BaseFragment {
         });
     }
 
+    private void updateCheckItem() {
+        if (getParentFragment() instanceof OnFragmentCallBackListener) {
+            updateTaskListener = (OnUpdateTaskListener) getParentFragment();
+        }
+        if (updateTaskListener != null) {
+            if (taskCheckItemAdapter.getSelectedData() != null) {
+                updateTaskListener.onUpdateCheckItem(taskCheckItemAdapter.getSelectedData().size() + "/" + taskCheckItemAdapter.getItemCount());
+            } else {
+                updateTaskListener.onUpdateCheckItem(0 + "/" + taskCheckItemAdapter.getItemCount());
+            }
+        }
+    }
+
     /**
      * 添加检查项
      */
@@ -142,13 +168,16 @@ public class TaskCheckItemFragment extends BaseFragment {
             @Override
             public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
                 dismissLoadingDialog();
-                if (response.body().result != null) {
-//                    EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION));
-                    String id = response.body().result.getAsString();
-                    itemEntity.id = id;
-                    taskCheckItemAdapter.addItem(itemEntity);
-                    checkItemEdit.setText("");
-                    checkItemEdit.clearFocus();
+                if (response.body() != null) {
+                    if (response.body().result != null) {
+                        String id = response.body().result.getAsString();
+                        itemEntity.id = id;
+                        taskCheckItemAdapter.addItem(itemEntity);
+                        checkItemEdit.setText("");
+                        checkItemEdit.clearFocus();
+                        EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION));
+                        updateCheckItem();
+                    }
                 }
             }
 
@@ -179,5 +208,64 @@ public class TaskCheckItemFragment extends BaseFragment {
     public void onDestroyView() {
         super.onDestroyView();
         unbinder.unbind();
+    }
+
+    @Override
+    public void onItemChildClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
+        TaskCheckItemEntity.ItemEntity itemEntity = (TaskCheckItemEntity.ItemEntity) adapter.getItem(position);
+        showLoadingDialog(null);
+        switch (view.getId()) {
+            case R.id.check_item_checktext_tv:
+                CheckedTextView checkedTextView = (CheckedTextView) view;
+                if (checkedTextView.isChecked()) {
+                    itemEntity.state = false;
+                } else {
+                    itemEntity.state = true;
+                }
+                finisCheckItem(itemEntity, position);
+                break;
+            case R.id.check_item_delete_image:
+                deleteCheckItem(itemEntity);
+                break;
+        }
+    }
+
+    /**
+     * 修改检查项
+     *
+     * @param itemEntity
+     */
+    private void finisCheckItem(final TaskCheckItemEntity.ItemEntity itemEntity, final int position) {
+        getApi().taskCheckItemUpdate(RequestUtils.createJsonBody(new Gson().toJson(itemEntity).toString())).enqueue(new SimpleCallBack<JsonElement>() {
+            @Override
+            public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
+                dismissLoadingDialog();
+                EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION));
+                taskCheckItemAdapter.updateItem(itemEntity);
+                if (itemEntity.state) {
+                    taskCheckItemAdapter.getSelectedArray().put(position,true);
+                } else {
+                    taskCheckItemAdapter.getSelectedArray().delete(position);
+                }
+                updateCheckItem();
+            }
+        });
+    }
+
+    /**
+     * 删除检查项
+     *
+     * @param itemEntity
+     */
+    private void deleteCheckItem(final TaskCheckItemEntity.ItemEntity itemEntity) {
+        getApi().taskCheckItemDelete(itemEntity.id).enqueue(new SimpleCallBack<JsonElement>() {
+            @Override
+            public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
+                dismissLoadingDialog();
+                EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION));
+                taskCheckItemAdapter.removeItem(itemEntity);
+                updateCheckItem();
+            }
+        });
     }
 }

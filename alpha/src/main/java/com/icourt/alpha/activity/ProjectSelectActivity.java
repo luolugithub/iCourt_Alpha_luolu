@@ -92,7 +92,7 @@ public class ProjectSelectActivity extends BaseActivity implements BaseRecyclerA
     @Override
     protected void getData(boolean isRefresh) {
         super.getData(isRefresh);
-        getApi().projectSelectListQuery()
+        getApi().projectSelectListQuery("0,2,7")
                 .enqueue(new SimpleCallBack<List<ProjectEntity>>() {
                     @Override
                     public void onSuccess(Call<ResEntity<List<ProjectEntity>>> call, Response<ResEntity<List<ProjectEntity>>> response) {

@@ -44,6 +44,7 @@ public class TaskEntity implements Serializable {
 
         public ParentFlowEntity parentFlow;//详情任务组信息
         public MatterEntity matter;//项目信息
+        public CreateUserEntity createUser;//任务创建人
 
         public List<AttendeeUserEntity> attendeeUsers;//任务相关人
 
@@ -64,6 +65,15 @@ public class TaskEntity implements Serializable {
         }
 
         /**
+         * 任务创建人
+         */
+        public static class CreateUserEntity implements Serializable {
+            public String userId;
+            public String userName;
+            public String pic;
+        }
+
+        /**
          * 任务相关人
          */
         public static class AttendeeUserEntity implements Serializable {
@@ -76,6 +86,8 @@ public class TaskEntity implements Serializable {
             public String id;
             public String name;
         }
+
+
     }
 
 

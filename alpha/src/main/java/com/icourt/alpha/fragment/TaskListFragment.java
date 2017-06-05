@@ -198,17 +198,19 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
                     if (taskItemEntity.dueTime > 0) {
                         if (TextUtils.equals(DateUtils.getTimeDateFormatYear(taskItemEntity.dueTime), DateUtils.getTimeDateFormatYear(DateUtils.millis())) || DateUtils.getDayDiff(new Date(DateUtils.millis()), new Date(taskItemEntity.dueTime)) < 0) {
                             todayTaskEntities.add(taskItemEntity);
+
                         } else if (DateUtils.getDayDiff(new Date(DateUtils.millis()), new Date(taskItemEntity.dueTime)) <= 3 && DateUtils.getDayDiff(new Date(DateUtils.millis()), new Date(taskItemEntity.dueTime)) > 0) {
                             beAboutToTaskEntities.add(taskItemEntity);
                         } else if (DateUtils.getDayDiff(new Date(DateUtils.millis()), new Date(taskItemEntity.dueTime)) > 3) {
                             futureTaskEntities.add(taskItemEntity);
-                        } else if (DateUtils.millis() - taskItemEntity.assignTime <= (24 * 60 * 60 * 1000)) {
-                            newTaskEntities.add(taskItemEntity);
                         } else {
                             datedTaskEntities.add(taskItemEntity);
                         }
                     } else {
                         noDueTaskEntities.add(taskItemEntity);
+                    }
+                    if (DateUtils.millis() - taskItemEntity.assignTime <= (24 * 60 * 60 * 1000)) {
+                        newTaskEntities.add(taskItemEntity);
                     }
                 }
                 if (type != 1) {

@@ -53,6 +53,6 @@ public class TaskUsersAdapter extends BaseArrayRecyclerAdapter<TaskEntity.TaskIt
 
     @Override
     public int getItemCount() {
-        return getData().size() >= 5 ? 4 : getData().size();
+        return getData().size() >= 4 ? 3 : getData().size();
     }
 }

@@ -20,6 +20,7 @@ import com.github.sundeepk.compactcalendarview.CompactCalendarView;
 import com.github.sundeepk.compactcalendarview.domain.Event;
 import com.icourt.alpha.R;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
+import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.DensityUtil;
 
 import java.text.SimpleDateFormat;
@@ -162,7 +163,7 @@ public class DateSelectDialogFragment extends BaseDialogFragment {
         initCompactCalendar();
         Calendar calendar = (Calendar) getArguments().getSerializable("calendar");
         if (calendar != null) {
-            duetimeTv.setText(calendar.get(Calendar.HOUR_OF_DAY) + ":" + calendar.get(Calendar.MINUTE));
+            duetimeTv.setText(DateUtils.getHHmm(calendar.getTimeInMillis()));
             hourWheelView.setCurrentItem(calendar.get(Calendar.HOUR_OF_DAY));
             minuteWheelView.setCurrentItem(calendar.get(Calendar.MINUTE));
 

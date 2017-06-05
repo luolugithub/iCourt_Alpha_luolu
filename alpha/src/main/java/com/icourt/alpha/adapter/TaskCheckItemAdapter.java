@@ -1,25 +1,12 @@
 package com.icourt.alpha.adapter;
 
-import android.view.View;
 import android.widget.CheckedTextView;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonElement;
 import com.icourt.alpha.R;
-import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.MultiSelectRecyclerAdapter;
 import com.icourt.alpha.entity.bean.TaskCheckItemEntity;
-import com.icourt.alpha.entity.event.TaskActionEvent;
-import com.icourt.alpha.http.callback.SimpleCallBack;
-import com.icourt.alpha.http.httpmodel.ResEntity;
-import com.icourt.api.RequestUtils;
-
-import org.greenrobot.eventbus.EventBus;
-
-import retrofit2.Call;
-import retrofit2.Response;
 
 /**
  * Description
@@ -29,11 +16,7 @@ import retrofit2.Response;
  * version 2.0.0
  */
 
-public class TaskCheckItemAdapter extends MultiSelectRecyclerAdapter<TaskCheckItemEntity.ItemEntity> implements BaseRecyclerAdapter.OnItemChildClickListener {
-
-    public TaskCheckItemAdapter() {
-        setOnItemChildClickListener(this);
-    }
+public class TaskCheckItemAdapter extends MultiSelectRecyclerAdapter<TaskCheckItemEntity.ItemEntity> {
 
     @Override
     public int bindView(int viewtype) {
@@ -47,65 +30,16 @@ public class TaskCheckItemAdapter extends MultiSelectRecyclerAdapter<TaskCheckIt
         ImageView deleteView = holder.obtainView(R.id.check_item_delete_image);
         if (itemEntity.state) {
             checkedTextView.setChecked(true);
+            getSelectedArray().put(position, true);
             nameView.setTextColor(0xFF8c8f92);
         } else {
             checkedTextView.setChecked(false);
             nameView.setTextColor(0xFF4A4A4A);
+            getSelectedArray().delete(position);
         }
+
         nameView.setText(itemEntity.name);
         holder.bindChildClick(checkedTextView);
         holder.bindChildClick(deleteView);
-    }
-
-    @Override
-    public void onItemChildClick(BaseRecyclerAdapter adapter, ViewHolder holder, View view, int position) {
-        TaskCheckItemEntity.ItemEntity itemEntity = getItem(position);
-        showLoadingDialog(view.getContext(), null);
-        switch (view.getId()) {
-            case R.id.check_item_checktext_tv:
-                CheckedTextView checkedTextView = (CheckedTextView) view;
-                if (checkedTextView.isChecked()) {
-                    itemEntity.state = false;
-                } else {
-                    itemEntity.state = true;
-                }
-                finisCheckItem(itemEntity);
-                break;
-            case R.id.check_item_delete_image:
-                deleteCheckItem(itemEntity);
-                break;
-        }
-    }
-
-    /**
-     * 修改检查项
-     *
-     * @param itemEntity
-     */
-    private void finisCheckItem(final TaskCheckItemEntity.ItemEntity itemEntity) {
-        getApi().taskCheckItemUpdate(RequestUtils.createJsonBody(new Gson().toJson(itemEntity).toString())).enqueue(new SimpleCallBack<JsonElement>() {
-            @Override
-            public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
-                dismissLoadingDialog();
-                EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION));
-                updateItem(itemEntity);
-            }
-        });
-    }
-
-    /**
-     * 删除检查项
-     *
-     * @param itemEntity
-     */
-    private void deleteCheckItem(final TaskCheckItemEntity.ItemEntity itemEntity) {
-        getApi().taskCheckItemDelete(itemEntity.id).enqueue(new SimpleCallBack<JsonElement>() {
-            @Override
-            public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
-                dismissLoadingDialog();
-                EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION));
-                removeItem(itemEntity);
-            }
-        });
     }
 }

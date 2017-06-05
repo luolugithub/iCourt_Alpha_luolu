@@ -248,11 +248,11 @@ public interface ApiAlphaService {
 
     /**
      * 获取选择项目列表
-     *
+     * @param status  项目状态：[0:预立案 2:进行中 4:已完结 7:已搁置]，多个以英文逗号分隔
      * @return
      */
     @GET("api/v1/matters/keyValue")
-    Call<ResEntity<List<ProjectEntity>>> projectSelectListQuery();
+    Call<ResEntity<List<ProjectEntity>>> projectSelectListQuery(@Query("status") String status);
 
     /**
      * 获取项目概览

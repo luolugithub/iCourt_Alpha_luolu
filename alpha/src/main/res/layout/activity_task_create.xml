@@ -19,7 +19,9 @@
             android:layout_height="wrap_content"
             android:background="@null"
             android:hint="任务标题"
-            android:singleLine="true"
+            android:gravity="top"
+            android:maxLines="5"
+            android:scrollHorizontally="false"
             android:textColor="@color/alpha_font_color_black"
             android:textSize="22dp" />
 
@@ -34,6 +36,7 @@
             android:maxLength="400"
             android:maxLines="5"
             android:minLines="3"
+            android:scrollHorizontally="false"
             android:textColor="@color/alpha_font_color_black"
             android:textSize="@dimen/alpha_font_size_comm" />
 

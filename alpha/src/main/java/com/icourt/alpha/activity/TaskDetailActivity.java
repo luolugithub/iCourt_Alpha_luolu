@@ -1,5 +1,6 @@
 package com.icourt.alpha.activity;
 
+import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -46,6 +47,7 @@ import com.icourt.alpha.fragment.dialogfragment.TaskAllotSelectDialogFragment;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
+import com.icourt.alpha.interfaces.OnUpdateTaskListener;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.GlideUtils;
 import com.icourt.alpha.widget.dialog.BottomActionDialog;
@@ -78,11 +80,12 @@ import static com.icourt.alpha.R.id.task_user_recyclerview;
  * version 2.0.0
  */
 
-public class TaskDetailActivity extends BaseActivity implements OnFragmentCallBackListener, BaseRecyclerAdapter.OnItemClickListener {
+public class TaskDetailActivity extends BaseActivity implements OnFragmentCallBackListener, BaseRecyclerAdapter.OnItemClickListener, OnUpdateTaskListener {
 
     private static final String KEY_TASK_ID = "key_task_id";
     private static final int SHOW_DELETE_DIALOG = 0;//删除提示对话框
     private static final int SHOW_FINISH_DIALOG = 1;//完成任务提示对话框
+    private static final int START_COMMENT_FORRESULT_CODE = 0;//跳转评论code
 
     String taskId;
     BaseFragmentAdapter baseFragmentAdapter;
@@ -140,6 +143,14 @@ public class TaskDetailActivity extends BaseActivity implements OnFragmentCallBa
         Intent intent = new Intent(context, TaskDetailActivity.class);
         intent.putExtra(KEY_TASK_ID, taskId);
         context.startActivity(intent);
+    }
+
+    public static void setResultLaunch(@NonNull Activity context, int commentCount) {
+        if (context == null) return;
+        Intent intent = new Intent(context, TaskDetailActivity.class);
+        intent.putExtra(KEY_ACTIVITY_RESULT, commentCount);
+        context.setResult(RESULT_OK, intent);
+        context.finish();
     }
 
     @Override
@@ -237,7 +248,7 @@ public class TaskDetailActivity extends BaseActivity implements OnFragmentCallBa
                 }
                 break;
             case R.id.comment_layout://更多评论动态
-                CommentListActivity.launch(this, taskItemEntity);
+                CommentListActivity.forResultLaunch(this, taskItemEntity, START_COMMENT_FORRESULT_CODE);
                 break;
         }
     }
@@ -698,5 +709,30 @@ public class TaskDetailActivity extends BaseActivity implements OnFragmentCallBa
                 showTopSnackBar("请优先选择项目");
             }
         }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (data != null) {
+            if (requestCode == START_COMMENT_FORRESULT_CODE) {
+                int commentCount = data.getIntExtra(KEY_ACTIVITY_RESULT, -1);
+                commentTv.setText(commentCount + "条动态");
+            }
+        }
+        super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    @Override
+    public void onUpdateCheckItem(String checkItemCount) {
+        baseFragmentAdapter.bindTitle(true, Arrays.asList(
+                "任务详情", "检查项 " + checkItemCount, "附件 " + taskItemEntity.attachmentCount
+        ));
+    }
+
+    @Override
+    public void onUpdateDocument(String documentCount) {
+        baseFragmentAdapter.bindTitle(true, Arrays.asList(
+                "任务详情", "检查项 " + taskItemEntity.doneItemCount + "/" + taskItemEntity.itemCount, "附件 " + documentCount
+        ));
     }
 }

@@ -221,6 +221,7 @@
             android:screenOrientation="portrait" />
         <activity
             android:name=".activity.TaskDetailActivity"
+            android:windowSoftInputMode="adjustPan"
             android:screenOrientation="portrait" />
         <activity
             android:name=".activity.CommentListActivity"

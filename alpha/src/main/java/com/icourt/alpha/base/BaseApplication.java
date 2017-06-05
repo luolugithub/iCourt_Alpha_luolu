@@ -38,6 +38,7 @@ import com.netease.nimlib.sdk.msg.model.IMMessage;
 import com.netease.nimlib.sdk.team.constant.TeamFieldEnum;
 import com.netease.nimlib.sdk.team.model.IMMessageFilter;
 import com.netease.nimlib.sdk.team.model.UpdateTeamAttachment;
+import com.sensorsdata.analytics.android.sdk.SensorsDataAPI;
 import com.umeng.analytics.MobclickAgent;
 import com.umeng.socialize.Config;
 import com.umeng.socialize.PlatformConfig;
@@ -45,6 +46,8 @@ import com.umeng.socialize.UMShareAPI;
 import com.umeng.socialize.utils.Log;
 
 import java.net.Proxy;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -92,11 +95,11 @@ public class BaseApplication extends MultiDexApplication {
         initDownloader();
         initBugtags();
         initGalleryFinal();
-        initShengCe();
+//        initShengCe();
     }
 
     private void initShengCe() {
-     /*   // 数据接收的 URL
+        // 数据接收的 URL
         final String SA_SERVER_URL = "http://10.173.35.151:8006/sa";
         // 配置分发的 URL
         final String SA_CONFIGURE_URL = "http://10.173.35.151:8006/config/";
@@ -122,8 +125,8 @@ public class BaseApplication extends MultiDexApplication {
         // $AppViewScreen
         eventTypeList.add(SensorsDataAPI.AutoTrackEventType.APP_VIEW_SCREEN);
         // $AppClick
-       eventTypeList.add(SensorsDataAPI.AutoTrackEventType.APP_CLICK);
-        SensorsDataAPI.sharedInstance(this).enableAutoTrack(eventTypeList);*/
+        eventTypeList.add(SensorsDataAPI.AutoTrackEventType.APP_CLICK);
+        SensorsDataAPI.sharedInstance(this).enableAutoTrack(eventTypeList);
     }
 
 

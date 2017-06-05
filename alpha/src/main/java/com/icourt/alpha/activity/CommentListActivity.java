@@ -1,5 +1,6 @@
 package com.icourt.alpha.activity;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -13,6 +14,7 @@ import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
+import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
@@ -25,6 +27,7 @@ import com.google.gson.JsonElement;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.CommentListAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
+import com.icourt.alpha.adapter.baseadapter.HeaderFooterAdapter;
 import com.icourt.alpha.adapter.baseadapter.adapterObserver.RefreshViewEmptyObserver;
 import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.entity.bean.CommentEntity;
@@ -36,7 +39,6 @@ import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.ActionConstants;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.ItemDecorationUtils;
-import com.icourt.alpha.utils.LogUtils;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 
 import org.greenrobot.eventbus.EventBus;
@@ -80,13 +82,20 @@ public class CommentListActivity extends BaseActivity implements BaseRecyclerAda
     ImageView titleBack;
     @BindView(R.id.titleContent)
     TextView titleContent;
-
+    HeaderFooterAdapter<CommentListAdapter> headerFooterAdapter;
 
     public static void launch(@NonNull Context context, @NonNull TaskEntity.TaskItemEntity taskItemEntity) {
         if (context == null) return;
         Intent intent = new Intent(context, CommentListActivity.class);
         intent.putExtra(KEY_TASK_ID, taskItemEntity);
         context.startActivity(intent);
+    }
+
+    public static void forResultLaunch(@NonNull Activity context, @NonNull TaskEntity.TaskItemEntity taskItemEntity, int requestCode) {
+        if (context == null) return;
+        Intent intent = new Intent(context, CommentListActivity.class);
+        intent.putExtra(KEY_TASK_ID, taskItemEntity);
+        context.startActivityForResult(intent, requestCode);
     }
 
     @Override
@@ -102,15 +111,24 @@ public class CommentListActivity extends BaseActivity implements BaseRecyclerAda
         super.initView();
         setTitle("查看评论");
         taskItemEntity = (TaskEntity.TaskItemEntity) getIntent().getSerializableExtra(KEY_TASK_ID);
+        recyclerview.setLayoutManager(new LinearLayoutManager(this));
+        headerFooterAdapter = new HeaderFooterAdapter<>(commentListAdapter = new CommentListAdapter());
+        View footerview = HeaderFooterAdapter.inflaterView(this, R.layout.footer_comment_list_layout, recyclerview);
+        TextView contentTv = (TextView) footerview.findViewById(R.id.content_tv);
+        if (taskItemEntity != null) {
+            if (taskItemEntity.createUser != null)
+                contentTv.setText(taskItemEntity.createUser.userName + " 创建了任务 " + DateUtils.getTimeDateFormatMm(taskItemEntity.createTime));
+        }
+        headerFooterAdapter.addFooter(footerview);
+
         refreshLayout.setNoticeEmpty(R.mipmap.icon_placeholder_task, R.string.task_no_comment_text);
         refreshLayout.setMoveForHorizontal(true);
-        recyclerview.setLayoutManager(new LinearLayoutManager(getContext()));
-        recyclerview.addItemDecoration(ItemDecorationUtils.getCommFull05Divider(getContext(), true));
-        recyclerview.setHasFixedSize(true);
 
-        recyclerview.setAdapter(commentListAdapter = new CommentListAdapter());
+        recyclerview.addItemDecoration(ItemDecorationUtils.getCommFull05Divider(this, true));
+        recyclerview.setHasFixedSize(true);
         commentListAdapter.registerAdapterDataObserver(new RefreshViewEmptyObserver(refreshLayout, commentListAdapter));
         commentListAdapter.setOnItemChildClickListener(this);
+        recyclerview.setAdapter(headerFooterAdapter);
         refreshLayout.setXRefreshViewListener(new XRefreshView.SimpleXRefreshListener() {
             @Override
             public void onRefresh(boolean isPullDown) {
@@ -145,7 +163,6 @@ public class CommentListActivity extends BaseActivity implements BaseRecyclerAda
                 }
             }
         });
-        refreshLayout.setAutoRefresh(true);
         refreshLayout.startRefresh();
     }
 
@@ -169,11 +186,14 @@ public class CommentListActivity extends BaseActivity implements BaseRecyclerAda
         });
     }
 
-    @OnClick({R.id.send_tv})
+    @OnClick({R.id.send_tv, R.id.titleBack})
     @Override
     public void onClick(View v) {
         super.onClick(v);
         switch (v.getId()) {
+            case R.id.titleBack:
+                TaskDetailActivity.setResultLaunch(this, commentListAdapter.getItemCount());
+                break;
             case R.id.send_tv:
                 sendComment();
                 break;
@@ -199,20 +219,24 @@ public class CommentListActivity extends BaseActivity implements BaseRecyclerAda
      */
     private void sendComment() {
         if (taskItemEntity == null) return;
-        if (TextUtils.isEmpty(commentEdit.getText().toString())) {
+        String content = commentEdit.getText().toString();
+        if (!TextUtils.isEmpty(content)) {
+            content = content.replace(" ", "");
+            content = content.replace("\n", "");
+        }
+        if (TextUtils.isEmpty(content)) {
             showTopSnackBar("请输入评论内容");
+            commentEdit.setText("");
             return;
         } else if (commentEdit.getText().length() > 1500) {
             showTopSnackBar("评论内容不能超过1500字");
             return;
         }
-        LogUtils.e("内容长度 －－－－－－－ " + commentEdit.getText().length());
         showLoadingDialog("正在发送...");
-        getApi().commentCreate(100, taskItemEntity.id, commentEdit.getText().toString()).enqueue(new SimpleCallBack<JsonElement>() {
+        getApi().commentCreate(100, taskItemEntity.id, content).enqueue(new SimpleCallBack<JsonElement>() {
             @Override
             public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
                 dismissLoadingDialog();
-                EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION));
                 showTopSnackBar("添加评论成功");
                 CommentEntity.CommentItemEntity commentItemEntity = getNewComment();
                 commentItemEntity.id = response.body().result.getAsString();
@@ -223,6 +247,7 @@ public class CommentListActivity extends BaseActivity implements BaseRecyclerAda
                 commentTv.setVisibility(View.VISIBLE);
                 sendTv.setVisibility(View.GONE);
                 commentTv.setText(commentListAdapter.getItemCount() + "条动态");
+                EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION));
             }
 
             @Override
@@ -319,5 +344,13 @@ public class CommentListActivity extends BaseActivity implements BaseRecyclerAda
             }
         }
         return false;
+    }
+
+    @Override
+    public boolean onKeyUp(int keyCode, KeyEvent event) {
+        if (event.getKeyCode() == KeyEvent.KEYCODE_BACK) {
+            TaskDetailActivity.setResultLaunch(this, commentListAdapter.getItemCount());
+        }
+        return super.onKeyUp(keyCode, event);
     }
 }

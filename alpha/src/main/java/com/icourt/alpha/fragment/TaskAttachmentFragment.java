@@ -2,6 +2,7 @@ package com.icourt.alpha.fragment;
 
 import android.Manifest;
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -13,7 +14,6 @@ import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowManager;
 import android.widget.TextView;
 
 import com.google.gson.JsonElement;
@@ -25,6 +25,8 @@ import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.entity.bean.TaskAttachmentEntity;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
+import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
+import com.icourt.alpha.interfaces.OnUpdateTaskListener;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.ItemDecorationUtils;
 import com.icourt.alpha.utils.LogUtils;
@@ -76,6 +78,7 @@ public class TaskAttachmentFragment extends BaseFragment implements BaseRecycler
     String taskId;
     String path;
     TaskAttachmentAdapter taskAttachmentAdapter;
+    OnUpdateTaskListener updateTaskListener;
 
     public static TaskAttachmentFragment newInstance(@NonNull String taskId) {
         TaskAttachmentFragment taskAttachmentFragment = new TaskAttachmentFragment();
@@ -85,18 +88,22 @@ public class TaskAttachmentFragment extends BaseFragment implements BaseRecycler
         return taskAttachmentFragment;
     }
 
-    @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        getActivity().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
-    }
-
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = super.onCreateView(R.layout.fragment_task_attachment_layout, inflater, container, savedInstanceState);
         unbinder = ButterKnife.bind(this, view);
         return view;
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        try {
+            updateTaskListener = (OnUpdateTaskListener) context;
+        } catch (ClassCastException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -190,6 +197,15 @@ public class TaskAttachmentFragment extends BaseFragment implements BaseRecycler
                 }).show();
     }
 
+    private void updateDocument() {
+        if (getParentFragment() instanceof OnFragmentCallBackListener) {
+            updateTaskListener = (OnUpdateTaskListener) getParentFragment();
+        }
+        if (updateTaskListener != null) {
+            updateTaskListener.onUpdateDocument(String.valueOf(taskAttachmentAdapter.getItemCount()));
+        }
+    }
+
     @Override
     protected void getData(boolean isRefresh) {
         super.getData(isRefresh);
@@ -197,6 +213,7 @@ public class TaskAttachmentFragment extends BaseFragment implements BaseRecycler
             @Override
             public void onSuccess(Call<ResEntity<List<TaskAttachmentEntity>>> call, Response<ResEntity<List<TaskAttachmentEntity>>> response) {
                 taskAttachmentAdapter.bindData(true, response.body().result);
+                updateDocument();
             }
         });
     }
