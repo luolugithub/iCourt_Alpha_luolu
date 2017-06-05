@@ -13,7 +13,10 @@ android {
         multiDexEnabled true
         versionCode 6
         versionName "v2.0.0" //3位版本号
-
+        compileOptions {
+            sourceCompatibility JavaVersion.VERSION_1_7
+            targetCompatibility JavaVersion.VERSION_1_7
+        }
         manifestPlaceholders = [UMENG_CHANNEL_VALUE: "Other"]//default_channel
         ndk {
             //请勿轻易修改
@@ -86,7 +89,6 @@ android {
             buildConfigField "String", "HOST_URL", rootProject.ext.alphaHostUrl.host_url_test
             buildConfigField "String", "APK_UPDATE_URL", rootProject.ext.alphaApkUpdateUrl.apk_update_url_test
             manifestPlaceholders = [NIM_APPKEY: rootProject.ext.nimAppKey.testAppKey]
-
 
 //            buildConfigField "String", "API_URL", rootProject.ext.alphaAPIUrl.api_url_preview
 //            buildConfigField "String", "API_CHAT_URL", rootProject.ext.alphaChatAPIUrl.api_chat_url_preview
@@ -238,6 +240,8 @@ dependencies {
     compile 'com.trello.rxlifecycle2:rxlifecycle:2.0.1'
     compile 'com.trello.rxlifecycle2:rxlifecycle-android:2.0.1'
 
+
+
     compile 'com.jakewharton:butterknife:8.5.1'
     annotationProcessor 'com.jakewharton:butterknife-compiler:8.5.1'
     compile 'com.kaopiz:kprogresshud:1.0.5'
@@ -259,7 +263,7 @@ dependencies {
     compile 'com.github.sundeepk:compact-calendar-view:2.0.2'
     compile 'com.umeng.analytics:analytics:latest.integration'
     compile 'com.github.lecho:hellocharts-library:1.5.8@aar'
-    compile 'com.sensorsdata.analytics.android:SensorsAnalyticsSDK:1.7.4'
+    //compile 'com.sensorsdata.analytics.android:SensorsAnalyticsSDK:1.7.4'
     //compile 'com.getui:sdk:2.10.2.0'
 }
 
