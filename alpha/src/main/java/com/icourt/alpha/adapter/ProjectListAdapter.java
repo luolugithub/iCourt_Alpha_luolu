@@ -68,7 +68,7 @@ public class ProjectListAdapter extends BaseArrayRecyclerAdapter<ProjectEntity> 
                 if (!TextUtils.isEmpty(projectEntity.matterTypeName))
                     typeView.setText(projectEntity.matterTypeName);
                 else
-                    typeView.setText("所内事务");
+                    typeView.setText("内部事务");
                 headerIcon.setImageResource(R.mipmap.project_type_aff);
                 break;
         }

@@ -15,6 +15,7 @@ import android.view.inputmethod.EditorInfo;
 import android.widget.CheckedTextView;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.google.gson.Gson;
@@ -64,6 +65,8 @@ public class TaskCheckItemFragment extends BaseFragment implements BaseRecyclerA
     ImageView checkItemAdd;
     OnUpdateTaskListener updateTaskListener;
     boolean hasPermission;
+    @BindView(R.id.add_item_layout)
+    LinearLayout addItemLayout;
 
     public static TaskCheckItemFragment newInstance(@NonNull String taskId, boolean hasPermission) {
         TaskCheckItemFragment taskCheckItemFragment = new TaskCheckItemFragment();
@@ -101,6 +104,7 @@ public class TaskCheckItemFragment extends BaseFragment implements BaseRecyclerA
         recyclerview.addItemDecoration(ItemDecorationUtils.getCommFull05Divider(getContext(), true, R.color.alpha_divider_color));
         getData(false);
         if (hasPermission) {
+            addItemLayout.setVisibility(View.VISIBLE);
             taskCheckItemAdapter.setOnItemChildClickListener(this);
             checkItemEdit.setOnEditorActionListener(new TextView.OnEditorActionListener() {
                 @Override
@@ -114,6 +118,8 @@ public class TaskCheckItemFragment extends BaseFragment implements BaseRecyclerA
                     return true;
                 }
             });
+        } else {
+            addItemLayout.setVisibility(View.GONE);
         }
     }
 

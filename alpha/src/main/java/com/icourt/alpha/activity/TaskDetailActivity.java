@@ -255,7 +255,8 @@ public class TaskDetailActivity extends BaseActivity implements OnFragmentCallBa
                             updateTask(taskItemEntity, true, taskCheckbox);
                         }
                     }
-                }else {
+                } else {
+                    taskCheckbox.setChecked(!taskCheckbox.isChecked());
                     showTopSnackBar("您没有编辑任务的权限");
                 }
                 break;
@@ -306,8 +307,10 @@ public class TaskDetailActivity extends BaseActivity implements OnFragmentCallBa
                 TimeEntity.ItemEntity addItem = TimerManager.getInstance().getTimer();
                 if (addItem != null) {
                     isStrat = true;
-                    if (TextUtils.equals(addItem.taskPkId, taskItemEntity.id)) {
-                        taskStartIamge.setImageResource(R.drawable.orange_side_dot_bg);
+                    if (taskItemEntity != null) {
+                        if (TextUtils.equals(addItem.taskPkId, taskItemEntity.id)) {
+                            taskStartIamge.setImageResource(R.drawable.orange_side_dot_bg);
+                        }
                     }
                 }
                 break;
@@ -315,9 +318,11 @@ public class TaskDetailActivity extends BaseActivity implements OnFragmentCallBa
                 TimeEntity.ItemEntity updateItem = TimerManager.getInstance().getTimer();
                 if (updateItem != null) {
                     isStrat = true;
-                    if (TextUtils.equals(updateItem.taskPkId, taskItemEntity.id)) {
-                        taskStartIamge.setImageResource(R.drawable.orange_side_dot_bg);
-                        taskTime.setText(toTime(event.timingSecond));
+                    if (taskItemEntity != null) {
+                        if (TextUtils.equals(updateItem.taskPkId, taskItemEntity.id)) {
+                            taskStartIamge.setImageResource(R.drawable.orange_side_dot_bg);
+                            taskTime.setText(toTime(event.timingSecond));
+                        }
                     }
                 }
                 break;
@@ -494,8 +499,8 @@ public class TaskDetailActivity extends BaseActivity implements OnFragmentCallBa
             ));
             baseFragmentAdapter.bindData(false, Arrays.asList(
                     TaskDetailFragment.newInstance(taskItemEntity),
-                    TaskCheckItemFragment.newInstance(taskItemEntity.id,hasTaskEditPermission()),
-                    TaskAttachmentFragment.newInstance(taskItemEntity.id,hasTaskEditPermission())
+                    TaskCheckItemFragment.newInstance(taskItemEntity.id, hasTaskEditPermission()),
+                    TaskAttachmentFragment.newInstance(taskItemEntity.id, hasTaskEditPermission())
             ));
             if (taskItemEntity.attendeeUsers != null) {
                 if (taskItemEntity.attendeeUsers.size() > 0) {

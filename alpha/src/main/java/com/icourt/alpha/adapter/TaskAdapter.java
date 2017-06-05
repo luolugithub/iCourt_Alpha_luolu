@@ -33,6 +33,7 @@ import com.icourt.api.RequestUtils;
 import org.greenrobot.eventbus.EventBus;
 
 import java.util.Arrays;
+import java.util.List;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -115,17 +116,33 @@ public class TaskAdapter extends BaseArrayRecyclerAdapter<TaskEntity>
             timeEntity.itemTitle = "开始计时";
         }
         if (hasTaskEditPermission(taskItemEntity) && hasTaskDeletePermission(taskItemEntity)) {
-            CenterMenuDialog centerMenuDialog = new CenterMenuDialog(view.getContext(), null, Arrays.asList(
+            showLongMeau(view.getContext(), Arrays.asList(
                     new ItemsEntity("分配给", R.mipmap.assign_orange),
                     new ItemsEntity("到期日", R.mipmap.date_orange),
                     new ItemsEntity("查看详情", R.mipmap.info_orange),
                     new ItemsEntity("项目/任务组", R.mipmap.project_orange),
                     timeEntity,
-                    new ItemsEntity("删除", R.mipmap.trash_orange)));
-            centerMenuDialog.show();
-            centerMenuDialog.setOnItemClickListener(new CustOnItemClickListener(centerMenuDialog, taskItemEntity));
+                    new ItemsEntity("删除", R.mipmap.trash_orange)), taskItemEntity);
+        } else if (hasTaskDeletePermission(taskItemEntity) && !hasTaskEditPermission(taskItemEntity)) {
+            showLongMeau(view.getContext(), Arrays.asList(
+                    new ItemsEntity("查看详情", R.mipmap.info_orange),
+                    timeEntity,
+                    new ItemsEntity("删除", R.mipmap.trash_orange)), taskItemEntity);
+        } else if (!hasTaskDeletePermission(taskItemEntity) && hasTaskEditPermission(taskItemEntity)) {
+            showLongMeau(view.getContext(), Arrays.asList(
+                    new ItemsEntity("分配给", R.mipmap.assign_orange),
+                    new ItemsEntity("到期日", R.mipmap.date_orange),
+                    new ItemsEntity("查看详情", R.mipmap.info_orange),
+                    new ItemsEntity("项目/任务组", R.mipmap.project_orange),
+                    timeEntity), taskItemEntity);
         }
         return true;
+    }
+
+    private void showLongMeau(Context context, List<ItemsEntity> itemsEntities, TaskEntity.TaskItemEntity taskItemEntity) {
+        CenterMenuDialog centerMenuDialog = new CenterMenuDialog(context, null, itemsEntities);
+        centerMenuDialog.show();
+        centerMenuDialog.setOnItemClickListener(new CustOnItemClickListener(centerMenuDialog, taskItemEntity));
     }
 
     private class CustOnItemClickListener implements OnItemClickListener {
@@ -222,18 +239,23 @@ public class TaskAdapter extends BaseArrayRecyclerAdapter<TaskEntity>
                     break;
                 case R.id.task_item_checkbox:
                     CheckBox checkbox = (CheckBox) view;
-                    if (checkbox.isChecked()) {//完成任务
-                        if (itemEntity.attendeeUsers != null) {
-                            if (itemEntity.attendeeUsers.size() > 1) {
-                                showFinishDialog(view.getContext(), "该任务由多人负责,确定完成?", itemEntity, SHOW_FINISH_DIALOG, checkbox);
+                    if (hasTaskEditPermission(itemEntity)) {
+                        if (checkbox.isChecked()) {    //完成任务
+                            if (itemEntity.attendeeUsers != null) {
+                                if (itemEntity.attendeeUsers.size() > 1) {
+                                    showFinishDialog(view.getContext(), "该任务由多人负责,确定完成?", itemEntity, SHOW_FINISH_DIALOG, checkbox);
+                                } else {
+                                    updateTask(itemEntity, true, checkbox);
+                                }
                             } else {
                                 updateTask(itemEntity, true, checkbox);
                             }
                         } else {
-                            updateTask(itemEntity, true, checkbox);
+                            updateTask(itemEntity, false, checkbox);
                         }
                     } else {
-                        updateTask(itemEntity, false, checkbox);
+                        checkbox.setChecked(!checkbox.isChecked());
+                        showTopSnackBar(view, "您没有编辑任务的权限");
                     }
                     break;
             }
