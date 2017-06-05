@@ -13,7 +13,7 @@ ext {
 
     alphaAPIUrl = [
             api_url_debug  : "\"https://dev.alphalawyer.cn/ilaw/\"",//开发
-            api_url_test   : "\"https://test.alphalawyer.cn/ilaw/\"",//内测
+            api_url_test   : "\"https://testpms.alphalawyer.cn/ilaw/\"",//内测 //带权限的域名https://testpms.alphalawyer.cn/ilaw/
             api_url_preview: "\"https://pre.alphalawyer.cn/ilaw/\"",//预览
             api_url_release: "\"https://alphalawyer.cn/ilaw/\""//正式
     ]

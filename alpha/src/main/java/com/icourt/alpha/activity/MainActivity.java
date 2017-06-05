@@ -24,6 +24,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.google.gson.JsonElement;
 import com.icourt.alpha.BuildConfig;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
@@ -440,6 +441,7 @@ public class MainActivity extends BaseAppUpdateActivity
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.tab_news:
+                getPermission();
                 checkedTab(R.id.tab_news, TYPE_FRAGMENT_NEWS);
                 break;
             case R.id.tab_task:
@@ -645,6 +647,17 @@ public class MainActivity extends BaseAppUpdateActivity
         long second = times % 60;
         return String.format("%02d:%02d:%02d", hour, minute, second);
     }
+
+    private void getPermission() {
+        getApi().permissionQuery(getLoginUserId(), "CON")
+                .enqueue(new SimpleCallBack<JsonElement>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
+
+                    }
+                });
+    }
+
 
     @Override
     protected void onDestroy() {
