@@ -132,7 +132,7 @@ public class TimerDetailActivity extends BaseTimerActivity
         if (titleActionImage != null) {
             titleActionImage.setImageResource(R.mipmap.header_icon_more);
         }
-        circleTimerView.setOneCircle(true);
+        //circleTimerView.setOneCircle(true);
         circleTimerView.setHintText("");
         circleTimerView.setCircleTimerListener(new CircleTimerView.CircleTimerListener() {
             @Override

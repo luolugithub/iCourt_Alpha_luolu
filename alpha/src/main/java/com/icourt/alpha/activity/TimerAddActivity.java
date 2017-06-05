@@ -142,7 +142,7 @@ public class TimerAddActivity extends BaseTimerActivity
         startTimeMinTv.setText(DateUtils.getHHmm(selectedStartDate.getTimeInMillis()));
         stopTimeMinTv.setText(DateUtils.getHHmm(selectedStartDate.getTimeInMillis()));
 
-        circleTimerView.setOneCircle(true);
+        //circleTimerView.setOneCircle(true);
         circleTimerView.setMiniTime(70);
         circleTimerView.setCurrentTime((int) ((selectedEndDate.getTimeInMillis() - selectedStartDate.getTimeInMillis()) / 1000));
         circleTimerView.setHintText("");
