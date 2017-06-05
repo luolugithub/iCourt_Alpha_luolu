@@ -867,7 +867,8 @@ public interface ApiAlphaService {
                                              @Query("moduleType") String moduleType);
 
     /**
-     * 获取是否有新建任务的权限
+     * 获取是否有新建任务/联系人查看编辑等权限
+     * 聚合权限
      *
      * @param uid
      * @param type      //MAT,CON,KM,HR,DEP
@@ -875,9 +876,9 @@ public interface ApiAlphaService {
      * @return
      */
     @GET("api/v2/permission/engine/{uid}/getPmsStrings")
-    Call<ResEntity<List<String>>> checkAddTaskPermission(@Path("uid") String uid,
-                                                         @Query("type") String type,
-                                                         @Query("subjectid") String subjectid);
+    Call<ResEntity<List<String>>> permissionQuery(@Path("uid") String uid,
+                                                  @Query("type") String type,
+                                                  @Query("subjectid") String subjectid);
 }
 
 

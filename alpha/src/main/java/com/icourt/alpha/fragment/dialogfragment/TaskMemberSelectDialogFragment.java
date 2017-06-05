@@ -130,7 +130,9 @@ public class TaskMemberSelectDialogFragment extends BaseDialogFragment {
                 if (response.body().result != null && !response.body().result.isEmpty()) {
                     List<TaskMemberEntity> memberEntities = new ArrayList<TaskMemberEntity>();
                     for (TaskMemberWrapEntity taskMemberWrapEntity : response.body().result) {
-                        memberEntities.addAll(taskMemberWrapEntity.members);
+                        if (taskMemberWrapEntity.members != null) {
+                            memberEntities.addAll(taskMemberWrapEntity.members);
+                        }
                     }
                     taskMemberAdapter.bindData(isRefresh, memberEntities);
                 }

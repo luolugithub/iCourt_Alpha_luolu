@@ -107,6 +107,7 @@ public class CustomerCompanyDetailActivity extends BaseActivity {
         layoutInflater = LayoutInflater.from(this);
         titleAction.setImageResource(R.mipmap.header_icon_star_line);
         titleAction2.setImageResource(R.mipmap.header_icon_edit);
+        titleAction2.setVisibility(View.INVISIBLE);
         contact_id = getIntent().getStringExtra("contact_id");
         contact_name = getIntent().getStringExtra("contact_name");
         isShowRightView = getIntent().getBooleanExtra("isShowRightView", false);
@@ -115,7 +116,37 @@ public class CustomerCompanyDetailActivity extends BaseActivity {
         if (!TextUtils.isEmpty(contact_name)) {
             setTitle(contact_name);
         }
-        getContact();
+        checkHasCustomerPemissions();
+    }
+
+    /**
+     * 检查ha
+     */
+    private void checkHasCustomerPemissions() {
+        getApi().permissionQuery(
+                getLoginUserId(),
+                "CON",
+                getIntent().getStringExtra("contact_id"))
+                .enqueue(new SimpleCallBack<List<String>>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<List<String>>> call, Response<ResEntity<List<String>>> response) {
+                        if (response.body().result == null) return;
+                        boolean hasLookPermission = false;
+                        for (String permission : response.body().result) {
+                            if (TextUtils.equals("CON:contact.detail:edit", permission)) {
+                                titleAction2.setVisibility(View.VISIBLE);
+                            }
+
+                            if (TextUtils.equals("CON:contact.detail:view", permission)) {
+                                hasLookPermission = true;
+                                getContact();
+                            }
+                        }
+                        if (!hasLookPermission) {
+                            showTopSnackBar("暂无权限查看联系人信息");
+                        }
+                    }
+                });
     }
 
     @OnClick({R.id.titleAction, R.id.titleAction2})
