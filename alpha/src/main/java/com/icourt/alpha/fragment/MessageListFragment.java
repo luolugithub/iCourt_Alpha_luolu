@@ -45,9 +45,11 @@ import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.widget.dialog.BottomActionDialog;
 import com.icourt.alpha.widget.nim.GlobalMessageObserver;
 import com.netease.nimlib.sdk.NIMClient;
+import com.netease.nimlib.sdk.RequestCallback;
 import com.netease.nimlib.sdk.RequestCallbackWrapper;
 import com.netease.nimlib.sdk.ResponseCode;
 import com.netease.nimlib.sdk.StatusCode;
+import com.netease.nimlib.sdk.auth.AuthService;
 import com.netease.nimlib.sdk.auth.ClientType;
 import com.netease.nimlib.sdk.auth.OnlineClient;
 import com.netease.nimlib.sdk.msg.MsgService;
@@ -292,6 +294,25 @@ public class MessageListFragment extends BaseRecentContactFragment
                     break;
                 case ClientType.iOS:
                 case ClientType.Android:
+                    NIMClient.getService(AuthService.class)
+                            .kickOtherClient(client)
+                            .setCallback(new RequestCallback<Void>() {
+
+                                @Override
+                                public void onSuccess(Void param) {
+
+                                }
+
+                                @Override
+                                public void onFailed(int code) {
+
+                                }
+
+                                @Override
+                                public void onException(Throwable exception) {
+
+                                }
+                            });
                     updateLoginStateView(true, getString(R.string.message_statu_hint_multiport_logging) + getString(R.string.message_statu_hint_mobile_version));
                     loginout();
                     break;

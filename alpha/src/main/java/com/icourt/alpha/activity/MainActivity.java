@@ -24,7 +24,6 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.google.gson.JsonElement;
 import com.icourt.alpha.BuildConfig;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
@@ -88,6 +87,9 @@ public class MainActivity extends BaseAppUpdateActivity
         implements OnFragmentCallBackListener {
     public static String KEY_FIND_FRAGMENT = "type_TabFindFragment_fragment";
     public static String KEY_MINE_FRAGMENT = "type_TabMimeFragment_fragment";
+    public static String KEY_PROJECT_PERMISSION = "cache_project_permission";
+    public static String KEY_CUSTOMER_PERMISSION = "cache_customer_permission";
+
 
     public static final int TYPE_FRAGMENT_NEWS = 0;
     public static final int TYPE_FRAGMENT_TASK = 1;
@@ -110,13 +112,16 @@ public class MainActivity extends BaseAppUpdateActivity
 
     }
 
-    //可改变的tab
-    private final List<ItemsEntity> tabChangeableData = Arrays.asList(
+
+    private final List<ItemsEntity> tabData = Arrays.asList(
             new ItemsEntity("项目", TYPE_FRAGMENT_PROJECT, R.drawable.tab_project),
             new ItemsEntity("我的", TYPE_FRAGMENT_MINE, R.drawable.tab_mine),
             new ItemsEntity("计时", TYPE_FRAGMENT_TIMING, R.drawable.tab_timer),
             new ItemsEntity("客户", TYPE_FRAGMENT_CUSTOMER, R.drawable.tab_customer),
             new ItemsEntity("搜索", TYPE_FRAGMENT_SEARCH, R.drawable.tab_search));
+
+    //可改变的tab
+    private final List<ItemsEntity> tabChangeableData = new ArrayList<>();
 
     @BindView(R.id.main_fl_content)
     FrameLayout mainFlContent;
@@ -219,6 +224,7 @@ public class MainActivity extends BaseAppUpdateActivity
     @Override
     protected void initView() {
         super.initView();
+        initChangedTab();
         EventBus.getDefault().register(this);
         loginUserInfo = getLoginUserInfo();
         contactDbService = new ContactDbService(loginUserInfo == null ? "" : loginUserInfo.getUserId());
@@ -231,9 +237,51 @@ public class MainActivity extends BaseAppUpdateActivity
         mHandler.addTokenRefreshTask();
     }
 
+    private void initTabChangeableData() {
+        tabChangeableData.clear();
+        if (hasProjectPermission() && hasCustomerPermission()) {
+            tabChangeableData.addAll(tabData);
+        } else if (hasProjectPermission()) {
+            tabChangeableData.addAll(Arrays.asList(
+                    new ItemsEntity("项目", TYPE_FRAGMENT_PROJECT, R.drawable.tab_project),
+                    new ItemsEntity("我的", TYPE_FRAGMENT_MINE, R.drawable.tab_mine),
+                    new ItemsEntity("计时", TYPE_FRAGMENT_TIMING, R.drawable.tab_timer),
+                    new ItemsEntity("搜索", TYPE_FRAGMENT_SEARCH, R.drawable.tab_search)));
+        } else if (hasCustomerPermission()) {
+            tabChangeableData.addAll(Arrays.asList(
+                    new ItemsEntity("客户", TYPE_FRAGMENT_CUSTOMER, R.drawable.tab_customer),
+                    new ItemsEntity("我的", TYPE_FRAGMENT_MINE, R.drawable.tab_mine),
+                    new ItemsEntity("计时", TYPE_FRAGMENT_TIMING, R.drawable.tab_timer),
+                    new ItemsEntity("搜索", TYPE_FRAGMENT_SEARCH, R.drawable.tab_search)));
+        } else {
+            tabChangeableData.addAll(Arrays.asList(
+                    new ItemsEntity("计时", TYPE_FRAGMENT_TIMING, R.drawable.tab_timer),
+                    new ItemsEntity("搜索", TYPE_FRAGMENT_SEARCH, R.drawable.tab_search),
+                    new ItemsEntity("我的", TYPE_FRAGMENT_MINE, R.drawable.tab_mine)));
+        }
+    }
+
+
+    private boolean hasProjectPermission() {
+        return SpUtils.getInstance().getBooleanData(KEY_PROJECT_PERMISSION, false);
+    }
+
+    private void setProjectPermission(boolean hasPermission) {
+        SpUtils.getInstance().putData(KEY_PROJECT_PERMISSION, hasPermission);
+    }
+
+    private boolean hasCustomerPermission() {
+        return SpUtils.getInstance().getBooleanData(KEY_CUSTOMER_PERMISSION, false);
+    }
+
+    private void setCustomerPermission(boolean hasPermission) {
+        SpUtils.getInstance().putData(KEY_CUSTOMER_PERMISSION, hasPermission);
+    }
+
     @Override
     protected void onResume() {
         super.onResume();
+        getPermission();
         getTimering();
     }
 
@@ -283,14 +331,14 @@ public class MainActivity extends BaseAppUpdateActivity
 
 
     /**
-     * 获取发现页面
+     * 获取页面对应的tab
      *
      * @return
      */
     private int getFragmentType(@IdRes int id) {
         switch (id) {
             case R.id.tab_find:
-                return convert2ChildFragmentType(SpUtils.getInstance().getIntData(KEY_FIND_FRAGMENT, TYPE_FRAGMENT_PROJECT));
+                return convert2ChildFragmentType(SpUtils.getInstance().getIntData(KEY_FIND_FRAGMENT, TYPE_FRAGMENT_TIMING));
             case R.id.tab_mine:
                 return convert2ChildFragmentType(SpUtils.getInstance().getIntData(KEY_MINE_FRAGMENT, TYPE_FRAGMENT_MINE));
         }
@@ -312,7 +360,7 @@ public class MainActivity extends BaseAppUpdateActivity
      */
     private void setTabInfo(@IdRes int tabId, @ChildFragmentType int type) {
         ItemsEntity itemsEntity = null;
-        for (ItemsEntity item : tabChangeableData) {
+        for (ItemsEntity item : tabData) {
             if (item != null & item.itemType == type) {
                 itemsEntity = item;
                 break;
@@ -441,7 +489,6 @@ public class MainActivity extends BaseAppUpdateActivity
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.tab_news:
-                getPermission();
                 checkedTab(R.id.tab_news, TYPE_FRAGMENT_NEWS);
                 break;
             case R.id.tab_task:
@@ -649,11 +696,101 @@ public class MainActivity extends BaseAppUpdateActivity
     }
 
     private void getPermission() {
+        //联系人查看的权限
         getApi().permissionQuery(getLoginUserId(), "CON")
-                .enqueue(new SimpleCallBack<JsonElement>() {
+                .enqueue(new SimpleCallBack<Boolean>() {
                     @Override
-                    public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
+                    public void onSuccess(Call<ResEntity<Boolean>> call, Response<ResEntity<Boolean>> response) {
+                        if (response.body().result != null) {
+                            showToast("客户权限：" + response.body().result.booleanValue());
+                            setCustomerPermission(response.body().result.booleanValue());
+                            int findFragmentType = getFragmentType(R.id.tab_find);
+                            int mineFragmentType = getFragmentType(R.id.tab_mine);
+                            if (findFragmentType == TYPE_FRAGMENT_CUSTOMER
+                                    && !response.body().result.booleanValue()) {
+                                //没有权限
+                                //设置tab信息
+                                if (mineFragmentType != TYPE_FRAGMENT_TIMING) {
+                                    saveChangedTab(R.id.tab_find, TYPE_FRAGMENT_TIMING);
+                                    setTabInfo(R.id.tab_find, TYPE_FRAGMENT_TIMING);
+                                } else if (mineFragmentType != TYPE_FRAGMENT_SEARCH) {
+                                    saveChangedTab(R.id.tab_find, TYPE_FRAGMENT_SEARCH);
+                                    setTabInfo(R.id.tab_find, TYPE_FRAGMENT_SEARCH);
+                                } else {
+                                    saveChangedTab(R.id.tab_find, TYPE_FRAGMENT_MINE);
+                                    setTabInfo(R.id.tab_find, TYPE_FRAGMENT_MINE);
+                                }
+                                onClick(tabFind);
+                            }
 
+                            if (mineFragmentType == TYPE_FRAGMENT_CUSTOMER
+                                    && !response.body().result.booleanValue()) {
+                                //没有权限
+                                //设置tab信息
+                                if (findFragmentType != TYPE_FRAGMENT_MINE) {
+                                    saveChangedTab(R.id.tab_mine, TYPE_FRAGMENT_MINE);
+                                    setTabInfo(R.id.tab_mine, TYPE_FRAGMENT_MINE);
+                                } else if (findFragmentType != TYPE_FRAGMENT_TIMING) {
+                                    saveChangedTab(R.id.tab_mine, TYPE_FRAGMENT_TIMING);
+                                    setTabInfo(R.id.tab_mine, TYPE_FRAGMENT_TIMING);
+                                } else {
+                                    saveChangedTab(R.id.tab_mine, TYPE_FRAGMENT_SEARCH);
+                                    setTabInfo(R.id.tab_mine, TYPE_FRAGMENT_SEARCH);
+                                }
+                                onClick(tabMine);
+                            }
+                            initTabChangeableData();
+                        }
+                    }
+                });
+
+        //项目查看的权限
+        getApi().permissionQuery(getLoginUserId(), "MAT")
+                .enqueue(new SimpleCallBack<Boolean>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<Boolean>> call, Response<ResEntity<Boolean>> response) {
+                        if (response.body().result != null) {
+                            showToast("项目权限：" + response.body().result.booleanValue());
+                            setProjectPermission(response.body().result.booleanValue());
+                            int findFragmentType = getFragmentType(R.id.tab_find);
+                            int mineFragmentType = getFragmentType(R.id.tab_mine);
+                            if (findFragmentType == TYPE_FRAGMENT_PROJECT
+                                    && !response.body().result.booleanValue()) {
+                                //没有权限
+                                //设置tab信息
+                                if (mineFragmentType != TYPE_FRAGMENT_TIMING) {
+                                    saveChangedTab(R.id.tab_find, TYPE_FRAGMENT_TIMING);
+                                    setTabInfo(R.id.tab_find, TYPE_FRAGMENT_TIMING);
+                                } else if (mineFragmentType != TYPE_FRAGMENT_SEARCH) {
+                                    saveChangedTab(R.id.tab_find, TYPE_FRAGMENT_SEARCH);
+                                    setTabInfo(R.id.tab_find, TYPE_FRAGMENT_SEARCH);
+                                } else {
+                                    saveChangedTab(R.id.tab_find, TYPE_FRAGMENT_MINE);
+                                    setTabInfo(R.id.tab_find, TYPE_FRAGMENT_MINE);
+                                }
+
+                                onClick(tabFind);
+                            }
+
+                            if (mineFragmentType == TYPE_FRAGMENT_PROJECT
+                                    && !response.body().result.booleanValue()) {
+                                //没有权限
+                                //设置tab信息
+                                if (findFragmentType != TYPE_FRAGMENT_MINE) {
+                                    saveChangedTab(R.id.tab_mine, TYPE_FRAGMENT_MINE);
+                                    setTabInfo(R.id.tab_mine, TYPE_FRAGMENT_MINE);
+                                } else if (findFragmentType != TYPE_FRAGMENT_TIMING) {
+                                    saveChangedTab(R.id.tab_mine, TYPE_FRAGMENT_TIMING);
+                                    setTabInfo(R.id.tab_mine, TYPE_FRAGMENT_TIMING);
+                                } else {
+                                    saveChangedTab(R.id.tab_mine, TYPE_FRAGMENT_SEARCH);
+                                    setTabInfo(R.id.tab_mine, TYPE_FRAGMENT_SEARCH);
+                                }
+
+                                onClick(tabMine);
+                            }
+                            initTabChangeableData();
+                        }
                     }
                 });
     }

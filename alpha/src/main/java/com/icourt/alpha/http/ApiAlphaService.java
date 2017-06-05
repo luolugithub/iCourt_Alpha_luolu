@@ -859,7 +859,7 @@ public interface ApiAlphaService {
      * 获取各个模块是否有权限 接口真烂
      *
      * @param userId
-     * @param moduleType   //MAT,CON,KM,HR,DEP
+     * @param moduleType //MAT,CON,KM,HR,DEP
      * @return
      */
     @GET("api/v2/permission/department/getUserViewModule")
