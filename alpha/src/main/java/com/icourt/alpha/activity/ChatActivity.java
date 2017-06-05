@@ -562,12 +562,13 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
         ekBar.addOnFuncKeyBoardListener(new FuncLayout.OnFuncKeyBoardListener() {
             @Override
             public void OnFuncPop(int i) {
+                log("----------> OnFuncPop i:" + i);
                 scrollToBottom();
             }
 
             @Override
             public void OnFuncClose() {
-
+                log("---------->OnFuncClose ");
             }
         });
 
@@ -748,8 +749,11 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
                 super.onScrollStateChanged(recyclerView, newState);
                 switch (newState) {
                     case RecyclerView.SCROLL_STATE_DRAGGING: {
-                        ekBar.reset();
-                        /*    SystemUtils.hideSoftKeyBoard(getActivity(), etContactName, true);*/
+                        if (ekBar.isSoftKeyboardPop()) {
+                            ekBar.reset();
+                        }
+                        // ekBar.reset();
+                           // SystemUtils.hideSoftKeyBoard(getActivity(), etContactName, true);
                     }
                     break;
                 }
@@ -811,7 +815,7 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
      */
     private void scrollToBottom() {
         if (linearLayoutManager != null && linearLayoutManager.getItemCount() > 0) {
-            linearLayoutManager.scrollToPositionWithOffset(linearLayoutManager.getItemCount(), 0);
+            linearLayoutManager.scrollToPositionWithOffset(linearLayoutManager.getItemCount() - 1, 0);
         }
     }
 
@@ -1021,9 +1025,7 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
         if (chatAdapter.getData().contains(customBody)) {
             customBody.msg_statu = Const.MSG_STATU_SUCCESS;
             chatAdapter.updateItem(customBody);
-            if (shouldScrollToBottom()) {
-                scrollToBottom();
-            }
+            scrollToBottom();
         } else {//别人发送的消息收到
             if (shouldScrollToBottom()) {
                 chatAdapter.addItem(customBody);

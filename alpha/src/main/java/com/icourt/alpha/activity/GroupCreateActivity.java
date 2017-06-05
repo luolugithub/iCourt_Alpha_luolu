@@ -36,6 +36,7 @@ import com.icourt.alpha.fragment.dialogfragment.ContactSelectDialogFragment;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
+import com.icourt.alpha.utils.StringUtils;
 import com.icourt.api.RequestUtils;
 
 import java.util.ArrayList;
@@ -142,7 +143,7 @@ public class GroupCreateActivity extends BaseActivity implements OnFragmentCallB
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.titleAction:
-                if (TextUtils.isEmpty(groupNameEt.getText())) {
+                if (StringUtils.isEmpty(getTextString(groupNameEt, ""))) {
                     showTopSnackBar("请输入讨论组名称!");
                     return;
                 }

@@ -1,5 +1,6 @@
 package com.icourt.alpha.fragment;
 
+import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -19,12 +20,15 @@ import com.icourt.alpha.activity.LoginSelectActivity;
 import com.icourt.alpha.activity.MyAtedActivity;
 import com.icourt.alpha.activity.MyFileTabActivity;
 import com.icourt.alpha.activity.SettingActivity;
+import com.icourt.alpha.base.BaseAppUpdateActivity;
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.entity.bean.AlphaUserInfo;
+import com.icourt.alpha.entity.bean.AppVersionEntity;
 import com.icourt.alpha.entity.bean.SelectGroupBean;
 import com.icourt.alpha.entity.bean.UserDataEntity;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
+import com.icourt.alpha.interfaces.callback.AppUpdateCallBack;
 import com.icourt.alpha.utils.GlideUtils;
 import com.icourt.alpha.utils.transformations.BlurTransformation;
 import com.icourt.alpha.widget.manager.DataCleanManager;
@@ -95,6 +99,18 @@ public class TabMineFragment extends BaseFragment {
     TextView menuTest;
 
     private UMShareAPI mShareAPI;
+
+    private BaseAppUpdateActivity baseAppUpdateActivity;
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        try {
+            baseAppUpdateActivity = (BaseAppUpdateActivity) context;
+        } catch (ClassCastException e) {
+            e.printStackTrace();
+        }
+    }
 
     public static TabMineFragment newInstance() {
         return new TabMineFragment();
@@ -295,6 +311,16 @@ public class TabMineFragment extends BaseFragment {
                 }
             }
         });
+
+        if (baseAppUpdateActivity != null) {
+            baseAppUpdateActivity.checkAppUpdate(new AppUpdateCallBack() {
+                @Override
+                public void onSuccess(Call<AppVersionEntity> call, Response<AppVersionEntity> response) {
+                    myCenterAboutCountView.setVisibility(baseAppUpdateActivity.shouldUpdate(response.body()) ? View.VISIBLE : View.INVISIBLE);
+                }
+            });
+        }
+
     }
 
     public String getHm(long times) {

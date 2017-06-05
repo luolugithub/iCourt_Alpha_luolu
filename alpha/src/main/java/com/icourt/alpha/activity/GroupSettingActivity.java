@@ -25,6 +25,7 @@ import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.icourt.alpha.entity.bean.GroupDetailEntity;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
+import com.icourt.alpha.utils.StringUtils;
 import com.icourt.api.RequestUtils;
 
 import java.io.Serializable;
@@ -149,6 +150,10 @@ public class GroupSettingActivity extends BaseActivity {
                         CODE_REQUEST_DESC);
                 break;
             case R.id.titleAction:
+                if (StringUtils.isEmpty(getTextString(groupNameTv, ""))) {
+                    showTopSnackBar("群组名称为空");
+                    return;
+                }
                 updateGroupInfo();
                 break;
             case R.id.group_transfer_admin_ll:

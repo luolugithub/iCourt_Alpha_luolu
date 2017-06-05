@@ -15,6 +15,11 @@ import java.util.List;
  */
 public class StringUtils {
 
+
+    public static final boolean isEmpty(CharSequence text) {
+        return (!TextUtils.isEmpty(text)) && text.toString().trim().length() <= 0;
+    }
+
     /**
      * 获取小写
      *
