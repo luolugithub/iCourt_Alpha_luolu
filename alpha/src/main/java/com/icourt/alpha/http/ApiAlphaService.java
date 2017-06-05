@@ -865,6 +865,18 @@ public interface ApiAlphaService {
     @GET("api/v2/permission/department/getUserViewModule")
     Call<ResEntity<JsonElement>> permissionQuery(@Query("userId") String userId,
                                                  @Query("moduleType") String moduleType);
+
+    /**
+     * 获取是否有新建任务的权限
+     * @param uid
+     * @param type  //MAT,CON,KM,HR,DEP
+     * @param subjectid
+     * @return
+     */
+    @GET("api/v2/permission/engine/{uid}/getPmsStrings")
+    Call<ResEntity<List<String>>> checkAddTaskPermission(@Path("uid") String uid,
+                                             @Query("type") String type,
+                                             @Query("subjectid") String subjectid);
 }
 
 

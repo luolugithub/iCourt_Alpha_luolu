@@ -129,30 +129,44 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
     @Override
     public void onClick(View v) {
         super.onClick(v);
-        switch (v.getId()) {
-            case R.id.task_project_layout://选择项目
-                if (taskItemEntity != null) {
-                    if (taskItemEntity.matter == null) {
-                        showProjectSelectDialogFragment();
-                    } else {
-                        showBottomMeau();
+        if (hasTaskEditPermission()) {
+            switch (v.getId()) {
+                case R.id.task_project_layout://选择项目
+                    if (taskItemEntity != null) {
+                        if (taskItemEntity.matter == null) {
+                            showProjectSelectDialogFragment();
+                        } else {
+                            showBottomMeau();
+                        }
                     }
-                }
-                break;
-            case R.id.task_group_layout://选择任务组
-                if (taskItemEntity.matter != null) {
-                    if (!TextUtils.isEmpty(taskItemEntity.matter.id)) {
-                        showTaskGroupSelectFragment(taskItemEntity.matter.id);
+                    break;
+                case R.id.task_group_layout://选择任务组
+                    if (taskItemEntity.matter != null) {
+                        if (!TextUtils.isEmpty(taskItemEntity.matter.id)) {
+                            showTaskGroupSelectFragment(taskItemEntity.matter.id);
+                        }
                     }
-                }
-                break;
-            case R.id.task_time_layout://选择到期时间
-                showDateSelectDialogFragment(taskItemEntity.dueTime);
-                break;
-            case R.id.task_desc_tv://添加任务详情
-                TaskDescUpdateActivity.launch(getContext(), taskDescTv.getText().toString(), TaskDescUpdateActivity.UPDATE_TASK_DESC);
-                break;
+                    break;
+                case R.id.task_time_layout://选择到期时间
+                    showDateSelectDialogFragment(taskItemEntity.dueTime);
+                    break;
+                case R.id.task_desc_tv://添加任务详情
+                    TaskDescUpdateActivity.launch(getContext(), taskDescTv.getText().toString(), TaskDescUpdateActivity.UPDATE_TASK_DESC);
+                    break;
+            }
+        } else {
+            showTopSnackBar("您没有编辑任务的权限");
         }
+    }
+
+    /**
+     * 是否有任务编辑权限
+     */
+    private boolean hasTaskEditPermission() {
+        if (taskItemEntity != null && taskItemEntity.right != null) {
+            return taskItemEntity.right.contains("MAT:matter.task:edit");
+        }
+        return false;
     }
 
     /**

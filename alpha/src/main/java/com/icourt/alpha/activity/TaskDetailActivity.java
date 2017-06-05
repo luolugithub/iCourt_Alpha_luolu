@@ -196,14 +196,22 @@ public class TaskDetailActivity extends BaseActivity implements OnFragmentCallBa
                 showBottomMeau();
                 break;
             case R.id.task_name:
-                TaskDescUpdateActivity.launch(getContext(), taskName.getText().toString(), TaskDescUpdateActivity.UPDATE_TASK_NAME);
+                if (hasTaskEditPermission()) {
+                    TaskDescUpdateActivity.launch(getContext(), taskName.getText().toString(), TaskDescUpdateActivity.UPDATE_TASK_NAME);
+                } else {
+                    showTopSnackBar("您没有编辑任务的权限");
+                }
                 break;
             case R.id.task_user_layout:
             case R.id.task_users_layout:
-                if (taskItemEntity.matter != null) {
-                    showTaskAllotSelectDialogFragment(taskItemEntity.matter.id);
+                if (hasTaskEditPermission()) {
+                    if (taskItemEntity.matter != null) {
+                        showTaskAllotSelectDialogFragment(taskItemEntity.matter.id);
+                    } else {
+                        showTopSnackBar("请优先选择项目");
+                    }
                 } else {
-                    showTopSnackBar("请优先选择项目");
+                    showTopSnackBar("您没有编辑任务的权限");
                 }
                 break;
             case R.id.task_start_iamge://开始计时
@@ -225,26 +233,30 @@ public class TaskDetailActivity extends BaseActivity implements OnFragmentCallBa
                     });
                 break;
             case R.id.task_checkbox://  完成／取消完成
-                if (taskItemEntity.state) {
-                    if (taskItemEntity.attendeeUsers != null) {
-                        if (taskItemEntity.attendeeUsers.size() > 1) {
-                            showDeleteDialog("该任务为多人任务，确定要取消完成吗?", SHOW_FINISH_DIALOG);
+                if (hasTaskEditPermission()) {
+                    if (taskItemEntity.state) {
+                        if (taskItemEntity.attendeeUsers != null) {
+                            if (taskItemEntity.attendeeUsers.size() > 1) {
+                                showDeleteDialog("该任务为多人任务，确定要取消完成吗?", SHOW_FINISH_DIALOG);
+                            } else {
+                                updateTask(taskItemEntity, false, taskCheckbox);
+                            }
                         } else {
                             updateTask(taskItemEntity, false, taskCheckbox);
                         }
                     } else {
-                        updateTask(taskItemEntity, false, taskCheckbox);
-                    }
-                } else {
-                    if (taskItemEntity.attendeeUsers != null) {
-                        if (taskItemEntity.attendeeUsers.size() > 1) {
-                            showDeleteDialog("该任务为多人任务，确定要完成吗?", SHOW_FINISH_DIALOG);
+                        if (taskItemEntity.attendeeUsers != null) {
+                            if (taskItemEntity.attendeeUsers.size() > 1) {
+                                showDeleteDialog("该任务为多人任务，确定要完成吗?", SHOW_FINISH_DIALOG);
+                            } else {
+                                updateTask(taskItemEntity, true, taskCheckbox);
+                            }
                         } else {
                             updateTask(taskItemEntity, true, taskCheckbox);
                         }
-                    } else {
-                        updateTask(taskItemEntity, true, taskCheckbox);
                     }
+                }else {
+                    showTopSnackBar("您没有编辑任务的权限");
                 }
                 break;
             case R.id.comment_layout://更多评论动态
@@ -406,6 +418,26 @@ public class TaskDetailActivity extends BaseActivity implements OnFragmentCallBa
     }
 
     /**
+     * 是否有任务删除权限
+     */
+    private boolean hasTaskDeletePermission() {
+        if (taskItemEntity != null && taskItemEntity.right != null) {
+            return taskItemEntity.right.contains("MAT:matter.task:delete");
+        }
+        return false;
+    }
+
+    /**
+     * 是否有任务编辑权限
+     */
+    private boolean hasTaskEditPermission() {
+        if (taskItemEntity != null && taskItemEntity.right != null) {
+            return taskItemEntity.right.contains("MAT:matter.task:edit");
+        }
+        return false;
+    }
+
+    /**
      * 展示选择负责人对话框
      */
     public void showTaskAllotSelectDialogFragment(String projectId) {
@@ -436,6 +468,9 @@ public class TaskDetailActivity extends BaseActivity implements OnFragmentCallBa
      */
     private void setDataToView(TaskEntity.TaskItemEntity taskItemEntity) {
         if (taskItemEntity != null) {
+            if (titleAction2 != null) {
+                titleAction2.setVisibility(hasTaskDeletePermission() ? View.VISIBLE : View.GONE);
+            }
             taskName.setText(taskItemEntity.name);
             myStar = taskItemEntity.attentioned;
             commentTv.setText(taskItemEntity.commentCount + "条动态");
@@ -459,8 +494,8 @@ public class TaskDetailActivity extends BaseActivity implements OnFragmentCallBa
             ));
             baseFragmentAdapter.bindData(false, Arrays.asList(
                     TaskDetailFragment.newInstance(taskItemEntity),
-                    TaskCheckItemFragment.newInstance(taskItemEntity.id),
-                    TaskAttachmentFragment.newInstance(taskItemEntity.id)
+                    TaskCheckItemFragment.newInstance(taskItemEntity.id,hasTaskEditPermission()),
+                    TaskAttachmentFragment.newInstance(taskItemEntity.id,hasTaskEditPermission())
             ));
             if (taskItemEntity.attendeeUsers != null) {
                 if (taskItemEntity.attendeeUsers.size() > 0) {
