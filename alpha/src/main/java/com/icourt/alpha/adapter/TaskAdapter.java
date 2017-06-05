@@ -107,6 +107,7 @@ public class TaskAdapter extends BaseArrayRecyclerAdapter<TaskEntity>
     @Override
     public boolean onItemLongClick(BaseRecyclerAdapter adapter, ViewHolder holder, View view, int position) {
         TaskEntity.TaskItemEntity taskItemEntity = (TaskEntity.TaskItemEntity) adapter.getItem(position);
+        if (taskItemEntity.right == null) return false;
         ItemsEntity timeEntity = new ItemsEntity("开始计时", R.mipmap.time_start_orange_task);
         if (taskItemEntity.isTiming) {
             timeEntity.itemIconRes = R.mipmap.time_stop_orange_task;
