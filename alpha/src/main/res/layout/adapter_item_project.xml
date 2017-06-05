@@ -59,7 +59,8 @@
 
             <LinearLayout
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical">
 
                 <TextView
                     android:id="@+id/project_type"
@@ -74,6 +75,17 @@
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="@dimen/dp10"
                     android:drawableLeft="@mipmap/project_task_entry_icon"
+                    android:drawablePadding="3dp"
+                    android:gravity="center_vertical"
+                    android:textColor="@color/alpha_font_color_gray"
+                    android:textSize="@dimen/alpha_font_size_mini" />
+
+                <TextView
+                    android:id="@+id/project_time_tv"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="@dimen/dp10"
+                    android:drawableLeft="@mipmap/task_time_icon"
                     android:drawablePadding="3dp"
                     android:gravity="center_vertical"
                     android:textColor="@color/alpha_font_color_gray"

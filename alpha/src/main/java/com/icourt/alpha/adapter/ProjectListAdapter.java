@@ -11,6 +11,8 @@ import com.icourt.alpha.adapter.baseadapter.BaseArrayRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.entity.bean.ProjectEntity;
 
+import java.util.Locale;
+
 /**
  * Description
  * Company Beijing icourt
@@ -39,9 +41,15 @@ public class ProjectListAdapter extends BaseArrayRecyclerAdapter<ProjectEntity> 
         TextView nameView = holder.obtainView(R.id.project_name);
         TextView typeView = holder.obtainView(R.id.project_type);
         TextView taskView = holder.obtainView(R.id.project_task);
+        TextView timeView = holder.obtainView(R.id.project_time_tv);
 
         nameView.setText(projectEntity.name);
         taskView.setText(projectEntity.unfinishTask + "/" + projectEntity.allTask);
+        if (projectEntity.sumTime > 0) {
+            timeView.setText(toTime(projectEntity.sumTime / 1000));
+        } else {
+            timeView.setText("00:00");
+        }
         switch (Integer.valueOf(projectEntity.matterType)) {
             case 0:
                 if (!TextUtils.isEmpty(projectEntity.caseProcessName))
@@ -68,10 +76,16 @@ public class ProjectListAdapter extends BaseArrayRecyclerAdapter<ProjectEntity> 
                 if (!TextUtils.isEmpty(projectEntity.matterTypeName))
                     typeView.setText(projectEntity.matterTypeName);
                 else
-                    typeView.setText("所内事务");
+                    typeView.setText("内部事务");
                 headerIcon.setImageResource(R.mipmap.project_type_aff);
                 break;
         }
+    }
+
+    public String toTime(long times) {
+        long hour = times / 3600;
+        long minute = times % 3600 / 60;
+        return String.format(Locale.CHINA, "%02d:%02d", hour, minute);
     }
 
     @Override
