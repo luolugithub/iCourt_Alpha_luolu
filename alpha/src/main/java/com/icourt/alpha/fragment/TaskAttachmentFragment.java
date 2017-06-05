@@ -61,7 +61,7 @@ import retrofit2.Response;
 
 public class TaskAttachmentFragment extends BaseFragment implements BaseRecyclerAdapter.OnItemClickListener {
     private static final String KEY_TASK_ID = "key_task_id";
-
+    private static final String KEY_HAS_PERMISSION = "key_has_permission";
     private static final int REQUEST_CODE_CAMERA = 1000;
     private static final int REQUEST_CODE_GALLERY = 1001;
     private static final int REQUEST_CODE_AT_MEMBER = 1002;
@@ -79,11 +79,13 @@ public class TaskAttachmentFragment extends BaseFragment implements BaseRecycler
     String path;
     TaskAttachmentAdapter taskAttachmentAdapter;
     OnUpdateTaskListener updateTaskListener;
+    boolean hasPermission;
 
-    public static TaskAttachmentFragment newInstance(@NonNull String taskId) {
+    public static TaskAttachmentFragment newInstance(@NonNull String taskId, boolean hasPermission) {
         TaskAttachmentFragment taskAttachmentFragment = new TaskAttachmentFragment();
         Bundle bundle = new Bundle();
         bundle.putString(KEY_TASK_ID, taskId);
+        bundle.putBoolean(KEY_HAS_PERMISSION, hasPermission);
         taskAttachmentFragment.setArguments(bundle);
         return taskAttachmentFragment;
     }
@@ -109,11 +111,13 @@ public class TaskAttachmentFragment extends BaseFragment implements BaseRecycler
     @Override
     protected void initView() {
         taskId = getArguments().getString(KEY_TASK_ID);
+        hasPermission = getArguments().getBoolean(KEY_HAS_PERMISSION);
         recyclerview.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerview.addItemDecoration(ItemDecorationUtils.getCommFull05Divider(getContext(), true));
         recyclerview.setAdapter(taskAttachmentAdapter = new TaskAttachmentAdapter());
         taskAttachmentAdapter.setOnItemClickListener(this);
         getData(true);
+        addAttachmentView.setVisibility(hasPermission ? View.VISIBLE : View.GONE);
     }
 
     @OnClick({R.id.add_attachment_view})
@@ -122,7 +126,11 @@ public class TaskAttachmentFragment extends BaseFragment implements BaseRecycler
         super.onClick(v);
         switch (v.getId()) {
             case R.id.add_attachment_view://添加附件
-                showBottomMeau();
+                if (hasPermission) {
+                    showBottomMeau();
+                } else {
+                    showTopSnackBar("您没有编辑任务的权限");
+                }
                 break;
         }
     }

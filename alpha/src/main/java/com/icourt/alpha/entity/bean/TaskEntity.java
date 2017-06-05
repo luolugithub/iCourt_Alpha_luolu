@@ -47,6 +47,7 @@ public class TaskEntity implements Serializable {
         public CreateUserEntity createUser;//任务创建人
 
         public List<AttendeeUserEntity> attendeeUsers;//任务相关人
+        public List<String> right;//权限
 
         public static class MatterEntity
                 implements Serializable, IConvertModel<ProjectEntity> {

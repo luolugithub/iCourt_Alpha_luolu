@@ -53,6 +53,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
 import retrofit2.Call;
+import retrofit2.Callback;
 import retrofit2.Response;
 
 /**
@@ -128,6 +129,7 @@ public class ProjectTaskFragment extends BaseFragment implements TaskAdapter.OnS
         });
         refreshLayout.startRefresh();
 
+        checkAddTaskPermission();
         allTaskEntities = new ArrayList<>();
         taskEntities = new ArrayList<>();
         todayTaskEntities = new ArrayList<>();
@@ -286,6 +288,23 @@ public class ProjectTaskFragment extends BaseFragment implements TaskAdapter.OnS
             futureTaskEntities.clear();
         if (noDueTaskEntities != null)
             noDueTaskEntities.clear();
+    }
+
+    /**
+     * 是否有新建任务的权限
+     */
+    private void checkAddTaskPermission() {
+        getApi().checkAddTaskPermission(getLoginUserId(), "MAT", projectId).enqueue(new Callback<JsonElement>() {
+            @Override
+            public void onResponse(Call<JsonElement> call, Response<JsonElement> response) {
+
+            }
+
+            @Override
+            public void onFailure(Call<JsonElement> call, Throwable throwable) {
+
+            }
+        });
     }
 
     private void stopRefresh() {

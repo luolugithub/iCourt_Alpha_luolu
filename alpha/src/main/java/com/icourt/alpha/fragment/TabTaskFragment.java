@@ -94,7 +94,7 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
                         dialog.dismiss();
                         switch (position) {
                             case 0:
-                                MyAllotTaskActivity.launch(getContext(),TaskOtherListFragment.MY_ALLOT_TYPE, null);
+                                MyAllotTaskActivity.launch(getContext(), TaskOtherListFragment.MY_ALLOT_TYPE, null);
                                 break;
                             case 1:
                                 MyFinishTaskActivity.launch(getContext());
@@ -137,7 +137,7 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
                 TaskMemberEntity taskMemberEntity = (TaskMemberEntity) serializable;
                 ArrayList<String> ids = new ArrayList<>();
                 ids.add(taskMemberEntity.userId);
-                MyAllotTaskActivity.launch(getContext(),TaskOtherListFragment.SELECT_OTHER_TYPE,ids);
+                MyAllotTaskActivity.launch(getContext(), TaskOtherListFragment.SELECT_OTHER_TYPE, ids);
             }
         }
     }

@@ -248,7 +248,8 @@ public interface ApiAlphaService {
 
     /**
      * 获取选择项目列表
-     * @param status  项目状态：[0:预立案 2:进行中 4:已完结 7:已搁置]，多个以英文逗号分隔
+     *
+     * @param status 项目状态：[0:预立案 2:进行中 4:已完结 7:已搁置]，多个以英文逗号分隔
      * @return
      */
     @GET("api/v1/matters/keyValue")
@@ -848,9 +849,34 @@ public interface ApiAlphaService {
      */
     @GET("api/v2/taskflow/queryMobileTask")
     Call<ResEntity<TaskEntity>> taskQueryByName(@Query("assignTos") String assignTos,
-                                                      @Query("name") String name,
-                                                      @Query("stateType") int stateType,
-                                                      @Query("queryType") int queryType);
+                                                @Query("name") String name,
+                                                @Query("stateType") int stateType,
+                                                @Query("queryType") int queryType);
+
+
+    /**************************权限模块**************************/
+    /**
+     * 获取各个模块是否有权限 接口真烂
+     *
+     * @param userId
+     * @param moduleType   //MAT,CON,KM,HR,DEP
+     * @return
+     */
+    @GET("api/v2/permission/department/getUserViewModule")
+    Call<ResEntity<JsonElement>> permissionQuery(@Query("userId") String userId,
+                                                 @Query("moduleType") String moduleType);
+
+    /**
+     * 获取是否有新建任务的权限
+     * @param uid
+     * @param type  //MAT,CON,KM,HR,DEP
+     * @param subjectid
+     * @return
+     */
+    @GET("api/v2/permission/engine/{uid}/getPmsStrings")
+    Call<ResEntity<List<String>>> checkAddTaskPermission(@Path("uid") String uid,
+                                             @Query("type") String type,
+                                             @Query("subjectid") String subjectid);
 }
 
 

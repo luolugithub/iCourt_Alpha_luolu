@@ -51,6 +51,7 @@ import retrofit2.Response;
 
 public class TaskCheckItemFragment extends BaseFragment implements BaseRecyclerAdapter.OnItemChildClickListener {
     private static final String KEY_TASK_ID = "key_task_id";
+    private static final String KEY_HAS_PERMISSION = "key_has_permission";
     Unbinder unbinder;
     @BindView(R.id.recyclerview)
     RecyclerView recyclerview;
@@ -62,11 +63,13 @@ public class TaskCheckItemFragment extends BaseFragment implements BaseRecyclerA
     @BindView(R.id.check_item_add)
     ImageView checkItemAdd;
     OnUpdateTaskListener updateTaskListener;
+    boolean hasPermission;
 
-    public static TaskCheckItemFragment newInstance(@NonNull String taskId) {
+    public static TaskCheckItemFragment newInstance(@NonNull String taskId, boolean hasPermission) {
         TaskCheckItemFragment taskCheckItemFragment = new TaskCheckItemFragment();
         Bundle bundle = new Bundle();
         bundle.putString(KEY_TASK_ID, taskId);
+        bundle.putBoolean(KEY_HAS_PERMISSION, hasPermission);
         taskCheckItemFragment.setArguments(bundle);
         return taskCheckItemFragment;
     }
@@ -92,23 +95,26 @@ public class TaskCheckItemFragment extends BaseFragment implements BaseRecyclerA
     @Override
     protected void initView() {
         taskId = getArguments().getString(KEY_TASK_ID);
+        hasPermission = getArguments().getBoolean(KEY_HAS_PERMISSION);
         recyclerview.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerview.setAdapter(taskCheckItemAdapter = new TaskCheckItemAdapter());
-        taskCheckItemAdapter.setOnItemChildClickListener(this);
         recyclerview.addItemDecoration(ItemDecorationUtils.getCommFull05Divider(getContext(), true, R.color.alpha_divider_color));
         getData(false);
-        checkItemEdit.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                if (actionId == EditorInfo.IME_ACTION_DONE) {
-                    if (!TextUtils.isEmpty(checkItemEdit.getText().toString()))
-                        addCheckItem();
-                    else
-                        showTopSnackBar("请输入检查项名称");
+        if (hasPermission) {
+            taskCheckItemAdapter.setOnItemChildClickListener(this);
+            checkItemEdit.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+                @Override
+                public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                    if (actionId == EditorInfo.IME_ACTION_DONE) {
+                        if (!TextUtils.isEmpty(checkItemEdit.getText().toString()))
+                            addCheckItem();
+                        else
+                            showTopSnackBar("请输入检查项名称");
+                    }
+                    return true;
                 }
-                return true;
-            }
-        });
+            });
+        }
     }
 
     @OnClick({R.id.check_item_add})
@@ -117,10 +123,12 @@ public class TaskCheckItemFragment extends BaseFragment implements BaseRecyclerA
         super.onClick(v);
         switch (v.getId()) {
             case R.id.check_item_add:
-                if (!TextUtils.isEmpty(checkItemEdit.getText().toString()))
-                    addCheckItem();
-                else
-                    showTopSnackBar("请输入检查项名称");
+                if (hasPermission) {
+                    if (!TextUtils.isEmpty(checkItemEdit.getText().toString()))
+                        addCheckItem();
+                    else
+                        showTopSnackBar("请输入检查项名称");
+                }
                 break;
         }
     }
@@ -243,7 +251,7 @@ public class TaskCheckItemFragment extends BaseFragment implements BaseRecyclerA
                 EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION));
                 taskCheckItemAdapter.updateItem(itemEntity);
                 if (itemEntity.state) {
-                    taskCheckItemAdapter.getSelectedArray().put(position,true);
+                    taskCheckItemAdapter.getSelectedArray().put(position, true);
                 } else {
                     taskCheckItemAdapter.getSelectedArray().delete(position);
                 }

@@ -114,15 +114,17 @@ public class TaskAdapter extends BaseArrayRecyclerAdapter<TaskEntity>
             timeEntity.itemIconRes = R.mipmap.time_start_orange_task;
             timeEntity.itemTitle = "开始计时";
         }
-        CenterMenuDialog centerMenuDialog = new CenterMenuDialog(view.getContext(), null, Arrays.asList(
-                new ItemsEntity("分配给", R.mipmap.assign_orange),
-                new ItemsEntity("到期日", R.mipmap.date_orange),
-                new ItemsEntity("查看详情", R.mipmap.info_orange),
-                new ItemsEntity("项目/任务组", R.mipmap.project_orange),
-                timeEntity,
-                new ItemsEntity("删除", R.mipmap.trash_orange)));
-        centerMenuDialog.show();
-        centerMenuDialog.setOnItemClickListener(new CustOnItemClickListener(centerMenuDialog, taskItemEntity));
+        if (hasTaskEditPermission(taskItemEntity) && hasTaskDeletePermission(taskItemEntity)) {
+            CenterMenuDialog centerMenuDialog = new CenterMenuDialog(view.getContext(), null, Arrays.asList(
+                    new ItemsEntity("分配给", R.mipmap.assign_orange),
+                    new ItemsEntity("到期日", R.mipmap.date_orange),
+                    new ItemsEntity("查看详情", R.mipmap.info_orange),
+                    new ItemsEntity("项目/任务组", R.mipmap.project_orange),
+                    timeEntity,
+                    new ItemsEntity("删除", R.mipmap.trash_orange)));
+            centerMenuDialog.show();
+            centerMenuDialog.setOnItemClickListener(new CustOnItemClickListener(centerMenuDialog, taskItemEntity));
+        }
         return true;
     }
 
@@ -381,5 +383,25 @@ public class TaskAdapter extends BaseArrayRecyclerAdapter<TaskEntity>
         void showDateSelectDialog(TaskEntity.TaskItemEntity taskItemEntity);
 
         void showProjectSelectDialog(TaskEntity.TaskItemEntity taskItemEntity);
+    }
+
+    /**
+     * 是否有任务删除权限
+     */
+    private boolean hasTaskDeletePermission(TaskEntity.TaskItemEntity taskItemEntity) {
+        if (taskItemEntity != null && taskItemEntity.right != null) {
+            return taskItemEntity.right.contains("MAT:matter.task:delete");
+        }
+        return false;
+    }
+
+    /**
+     * 是否有任务编辑权限
+     */
+    private boolean hasTaskEditPermission(TaskEntity.TaskItemEntity taskItemEntity) {
+        if (taskItemEntity != null && taskItemEntity.right != null) {
+            return taskItemEntity.right.contains("MAT:matter.task:edit");
+        }
+        return false;
     }
 }

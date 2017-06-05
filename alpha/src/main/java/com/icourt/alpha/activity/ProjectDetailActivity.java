@@ -32,6 +32,7 @@ import com.icourt.alpha.widget.dialog.BottomActionDialog;
 import org.greenrobot.eventbus.EventBus;
 
 import java.util.Arrays;
+import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -68,6 +69,7 @@ public class ProjectDetailActivity extends BaseActivity implements OnFragmentCal
     int myStar;
     BaseFragmentAdapter baseFragmentAdapter;
     ProjectFileBoxFragment projectFileBoxFragment;
+    boolean isCanlookAddTask = false, isCanlookAddDocument = false;
     private boolean nameIsUp = false, timeIsUp = false, sizeIsUp = false;
 
     public static void launch(@NonNull Context context, @NonNull String projectId, @NonNull String proectName) {
@@ -96,6 +98,7 @@ public class ProjectDetailActivity extends BaseActivity implements OnFragmentCal
         if (!TextUtils.isEmpty(projectName)) {
             setTitle(projectName);
         }
+        checkAddTaskAndDocumentPms();
         if (myStar != 1) {
             titleAction2.setImageResource(R.mipmap.header_icon_star_line);
         } else {
@@ -137,6 +140,26 @@ public class ProjectDetailActivity extends BaseActivity implements OnFragmentCal
     }
 
     /**
+     * 是否有新建任务的权限
+     */
+    private void checkAddTaskAndDocumentPms() {
+        getApi().checkAddTaskPermission(getLoginUserId(), "MAT", projectId).enqueue(new SimpleCallBack<List<String>>() {
+            @Override
+            public void onSuccess(Call<ResEntity<List<String>>> call, Response<ResEntity<List<String>>> response) {
+
+                if (response.body().result != null) {
+                    if (response.body().result.contains("MAT:matter.task:add")) {
+                        isCanlookAddTask = true;
+                    }
+                    if (response.body().result.contains("MAT:matter.document:readwrite")) {
+                        isCanlookAddDocument = true;
+                    }
+                }
+            }
+        });
+    }
+
+    /**
      * 是否显示更多菜单入口
      *
      * @param position
@@ -153,19 +176,28 @@ public class ProjectDetailActivity extends BaseActivity implements OnFragmentCal
                 titleAction2.setVisibility(View.VISIBLE);
                 break;
             case 1:
-                titleAction.setImageResource(R.mipmap.header_icon_add);
+
                 titleAction2.setImageResource(R.mipmap.header_icon_more);
-                titleAction.setVisibility(View.VISIBLE);
                 titleAction2.setVisibility(View.VISIBLE);
+                if (isCanlookAddTask) {
+                    titleAction.setImageResource(R.mipmap.header_icon_add);
+                    titleAction.setVisibility(View.VISIBLE);
+                } else {
+                    titleAction.setVisibility(View.GONE);
+                }
                 break;
             case 2:
                 titleAction.setVisibility(View.INVISIBLE);
                 titleAction2.setVisibility(View.INVISIBLE);
                 break;
             case 3:
-                titleAction.setImageResource(R.mipmap.header_icon_add);
+                if (isCanlookAddDocument) {
+                    titleAction.setImageResource(R.mipmap.header_icon_add);
+                    titleAction.setVisibility(View.VISIBLE);
+                } else {
+                    titleAction.setVisibility(View.GONE);
+                }
                 titleAction2.setImageResource(R.mipmap.header_icon_more);
-                titleAction.setVisibility(View.VISIBLE);
                 titleAction2.setVisibility(View.VISIBLE);
                 break;
         }
