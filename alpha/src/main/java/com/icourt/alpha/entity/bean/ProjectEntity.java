@@ -1,5 +1,7 @@
 package com.icourt.alpha.entity.bean;
 
+import android.text.TextUtils;
+
 import com.google.gson.annotations.SerializedName;
 
 import java.io.Serializable;
@@ -55,4 +57,14 @@ public class ProjectEntity implements Serializable {
     public int myStar;
     public List<?> clients;
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (o == null) return false;
+        if (getClass() != o.getClass())
+            return false;
+        final ProjectEntity other = (ProjectEntity) o;
+        return TextUtils.equals(this.pkId, other.pkId);
+    }
 }

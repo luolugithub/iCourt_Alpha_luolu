@@ -5,6 +5,7 @@
     android:layout_height="wrap_content"
     app:cardCornerRadius="6dp">
 
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -38,11 +39,13 @@
             android:layout_height="@dimen/alpha_height_divider"
             android:background="@color/alpha_divider_color" />
 
+        <include layout="@layout/header_search_input_text" />
+
         <android.support.v7.widget.RecyclerView
             android:id="@+id/recyclerView"
             android:layout_width="match_parent"
-            android:overScrollMode="never"
-            android:layout_height="350dp" />
+            android:layout_height="350dp"
+            android:overScrollMode="never" />
 
         <RelativeLayout
             android:layout_width="match_parent"

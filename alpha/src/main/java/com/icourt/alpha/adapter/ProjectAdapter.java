@@ -30,7 +30,7 @@ public class ProjectAdapter extends SelectedRecyclerAdapter<ProjectEntity> {
         project_title_tv.setText(projectEntity.name);
         if (isSelectable()) {
             project_title_tv.setCompoundDrawablesWithIntrinsicBounds(0, 0, selected ? R.mipmap.checkmark :
-                    R.mipmap.arrow_right, 0);
+                    0, 0);
         } else {
             project_title_tv.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.mipmap.arrow_right, 0);
         }

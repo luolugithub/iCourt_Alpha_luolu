@@ -36,6 +36,8 @@
             android:layout_height="@dimen/alpha_height_divider"
             android:background="@color/alpha_divider_color" />
 
+        <include layout="@layout/header_search_input_text" />
+
         <android.support.v7.widget.RecyclerView
             android:id="@id/recyclerView"
             android:layout_width="match_parent"

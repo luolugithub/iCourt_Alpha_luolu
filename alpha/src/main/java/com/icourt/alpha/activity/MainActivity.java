@@ -702,7 +702,7 @@ public class MainActivity extends BaseAppUpdateActivity
                     @Override
                     public void onSuccess(Call<ResEntity<Boolean>> call, Response<ResEntity<Boolean>> response) {
                         if (response.body().result != null) {
-                            showToast("客户权限：" + response.body().result.booleanValue());
+                            //showToast("客户权限：" + response.body().result.booleanValue());
                             setCustomerPermission(response.body().result.booleanValue());
                             int findFragmentType = getFragmentType(R.id.tab_find);
                             int mineFragmentType = getFragmentType(R.id.tab_mine);
@@ -750,7 +750,7 @@ public class MainActivity extends BaseAppUpdateActivity
                     @Override
                     public void onSuccess(Call<ResEntity<Boolean>> call, Response<ResEntity<Boolean>> response) {
                         if (response.body().result != null) {
-                            showToast("项目权限：" + response.body().result.booleanValue());
+                            //showToast("项目权限：" + response.body().result.booleanValue());
                             setProjectPermission(response.body().result.booleanValue());
                             int findFragmentType = getFragmentType(R.id.tab_find);
                             int mineFragmentType = getFragmentType(R.id.tab_mine);
