@@ -185,11 +185,13 @@ public class LoginBaseActivity extends BaseUmengActivity {
 
                             // 进入主界面
                             MainActivity.launch(getContext());
+
                         }
 
                         @Override
                         public void onFailed(int code) {
                             log("------------>云信登陆失败：" + code);
+                            showToast("云信登陆失败:" + code);
                             if (code == 302 || code == 404) {
 
                             } else {
@@ -202,6 +204,7 @@ public class LoginBaseActivity extends BaseUmengActivity {
 
                         @Override
                         public void onException(Throwable exception) {
+                            showToast("云信登陆异常:" + exception);
                             feedBackYunXinLog(result + " ex:" + StringUtils.throwable2string(exception));
                             // 进入主界面
                             MainActivity.launch(getContext());
