@@ -158,9 +158,12 @@ public class CustomerCompanyCreateActivity extends BaseActivity {
         if (activity == null) return;
         Intent intent = new Intent(activity, CustomerCompanyCreateActivity.class);
         intent.setAction(action);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         intent.putExtra("customerEntity", customerEntity);
         activity.setResult(RESULT_OK, intent);
     }
+
+
 
     /**
      * 选择属性tag标签

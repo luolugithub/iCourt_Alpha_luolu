@@ -151,6 +151,7 @@ public class Const {
     public static final String SELECT_DATE_TAG_ACTION = "select_date_tag_action";//选择日期标签action
     public static final String SELECT_ENTERPRISE_TAG_ACTION = "select_enterprise_tag_action";//选择工作单位标签action
     public static final String SELECT_RELATION_TAG_ACTION = "select_relation_tag_action";//选择联络人关系标签action
+    public static final String SELECT_LIAISONS_TAG_ACTION = "select_liaisons_tag_action";//选择个人联络人action
 
     //机构联系人
     public static final String SELECT_ENTERPRISE_ADDRESS_TAG_ACTION = "select_enterprise_address_tag_action";//选择机构地址action

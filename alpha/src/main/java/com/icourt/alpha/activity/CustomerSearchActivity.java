@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.view.ViewCompat;
@@ -24,6 +25,7 @@ import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.CustomerAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.base.BaseActivity;
+import com.icourt.alpha.constants.Const;
 import com.icourt.alpha.db.convertor.IConvertModel;
 import com.icourt.alpha.db.convertor.ListConvertor;
 import com.icourt.alpha.db.dbmodel.CustomerDbModel;
@@ -32,6 +34,8 @@ import com.icourt.alpha.entity.bean.CustomerEntity;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.view.SoftKeyboardSizeWatchLayout;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -49,6 +53,12 @@ import io.realm.RealmResults;
  */
 public class CustomerSearchActivity extends BaseActivity implements BaseRecyclerAdapter.OnItemClickListener {
 
+    public static final int SEARCH_LIAISON_TYPE = 0;//搜索联络人
+    public static final int SEARCH_CUSTOMER_TYPE = 1;//搜索联系人
+
+    public static final int CUSTOMER_PERSON_TYPE = 1;//个人
+    public static final int CUSTOMER_COMPANY_TYPE = 2;//企业
+
     CustomerAdapter customerAdapter;
     @BindView(R.id.et_contact_name)
     EditText etContactName;
@@ -60,9 +70,20 @@ public class CustomerSearchActivity extends BaseActivity implements BaseRecycler
     SoftKeyboardSizeWatchLayout softKeyboardSizeWatchLayout;
     CustomerDbService customerDbService;
 
-    public static void launch(@NonNull Context context, View searchLayout) {
+    @IntDef({SEARCH_LIAISON_TYPE,
+            SEARCH_CUSTOMER_TYPE})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface SEARCH_ACTION {
+
+    }
+
+    int type, customer_type;
+
+    public static void launch(@NonNull Context context, View searchLayout, @SEARCH_ACTION int type, int customer_type) {
         if (context == null) return;
         Intent intent = new Intent(context, CustomerSearchActivity.class);
+        intent.putExtra("type", type);
+        intent.putExtra("customer_type", customer_type);
         if (context instanceof Activity
                 && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP
                 && searchLayout != null) {
@@ -71,6 +92,22 @@ public class CustomerSearchActivity extends BaseActivity implements BaseRecycler
                     ActivityOptions.makeSceneTransitionAnimation((Activity) context, searchLayout, "searchLayout").toBundle());
         } else {
             context.startActivity(intent);
+        }
+    }
+
+    public static void launchResult(@NonNull Activity context, View searchLayout, @SEARCH_ACTION int type, int customer_type, int requestCode) {
+        if (context == null) return;
+        Intent intent = new Intent(context, CustomerSearchActivity.class);
+        intent.putExtra("type", type);
+        intent.putExtra("customer_type", customer_type);
+        if (context instanceof Activity
+                && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP
+                && searchLayout != null) {
+            ViewCompat.setTransitionName(searchLayout, "searchLayout");
+            context.startActivityForResult(intent, requestCode,
+                    ActivityOptions.makeSceneTransitionAnimation(context, searchLayout, "searchLayout").toBundle());
+        } else {
+            context.startActivityForResult(intent, requestCode);
         }
     }
 
@@ -85,6 +122,8 @@ public class CustomerSearchActivity extends BaseActivity implements BaseRecycler
     @Override
     protected void initView() {
         super.initView();
+        type = getIntent().getIntExtra("type", -1);
+        customer_type = getIntent().getIntExtra("customer_type", -1);
         customerDbService = new CustomerDbService(getLoginUserId());
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setAdapter(customerAdapter = new CustomerAdapter());
@@ -187,13 +226,21 @@ public class CustomerSearchActivity extends BaseActivity implements BaseRecycler
     @Override
     public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
         CustomerEntity customerEntity = customerAdapter.getData(customerAdapter.getRealPos(position));
-        if (!TextUtils.isEmpty(customerEntity.contactType)) {
-            //公司
-            if (TextUtils.equals(customerEntity.contactType.toUpperCase(), "C")) {
-                CustomerCompanyDetailActivity.launch(getContext(), customerEntity.pkid, customerEntity.name, true);
-            } else if (TextUtils.equals(customerEntity.contactType.toUpperCase(), "P")) {
-                CustomerPersonDetailActivity.launch(getContext(), customerEntity.pkid, customerEntity.name, true);
+        if (type == SEARCH_CUSTOMER_TYPE) {
+            if (!TextUtils.isEmpty(customerEntity.contactType)) {
+                //公司
+                if (TextUtils.equals(customerEntity.contactType.toUpperCase(), "C")) {
+                    CustomerCompanyDetailActivity.launch(getContext(), customerEntity.pkid, customerEntity.name, true);
+                } else if (TextUtils.equals(customerEntity.contactType.toUpperCase(), "P")) {
+                    CustomerPersonDetailActivity.launch(getContext(), customerEntity.pkid, customerEntity.name, true);
+                }
             }
+        } else if (type == SEARCH_LIAISON_TYPE) {
+            if (customer_type == CUSTOMER_COMPANY_TYPE)
+                SelectLiaisonActivity.launchSetResultFromLiaison(this, Const.SELECT_ENTERPRISE_LIAISONS_TAG_ACTION, customerEntity);
+            else if (customer_type == CUSTOMER_PERSON_TYPE)
+                SelectLiaisonActivity.launchSetResultFromLiaison(this, Const.SELECT_LIAISONS_TAG_ACTION, customerEntity);
+            finish();
         }
     }
 }

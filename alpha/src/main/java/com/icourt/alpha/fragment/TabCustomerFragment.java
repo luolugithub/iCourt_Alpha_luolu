@@ -198,7 +198,7 @@ public class TabCustomerFragment extends BaseFragment implements BaseRecyclerAda
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.rl_comm_search:
-                CustomerSearchActivity.launch(getContext(), v);
+                CustomerSearchActivity.launch(getContext(), v, CustomerSearchActivity.SEARCH_CUSTOMER_TYPE, -1);
                 break;
             case R.id.header_customer_collected:
                 MyCollectedCustomersActivity.launch(getContext());
@@ -288,7 +288,7 @@ public class TabCustomerFragment extends BaseFragment implements BaseRecyclerAda
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void updateCustEvent(UpdateCustomerEvent event) {
         if (event != null) {
-            getLocalCustomers();
+            getData(true);
         }
     }
 }
