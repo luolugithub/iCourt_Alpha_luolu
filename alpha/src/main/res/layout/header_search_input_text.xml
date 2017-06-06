@@ -20,8 +20,6 @@
             android:layout_centerInParent="true"
             android:background="@null"
             android:drawableLeft="@mipmap/icon_search_14"
-            android:drawablePadding="8dp"
-            android:hint="搜索"
             android:maxLines="1"
             android:paddingLeft="8dp"
             android:paddingRight="8dp"

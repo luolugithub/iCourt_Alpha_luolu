@@ -18,7 +18,6 @@
         android:background="@drawable/bg_round_rect_gray"
         android:drawableLeft="@mipmap/icon_search_14"
         android:drawablePadding="8dp"
-        android:hint="搜索"
         android:imeActionLabel="搜索"
         android:imeOptions="actionSearch"
         android:maxLines="1"
