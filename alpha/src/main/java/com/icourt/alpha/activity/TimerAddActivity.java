@@ -224,7 +224,7 @@ public class TimerAddActivity extends BaseTimerActivity
                 showDateSelectEnd(stopTimeMinTv);
                 break;
             case R.id.project_layout://所属项目
-                showProjectSelectDialogFragment();
+                showProjectSelectDialogFragment(selectedProjectEntity != null ? selectedProjectEntity.pkId : null);
                 break;
             case R.id.worktype_layout://工作类型
                 if (selectedProjectEntity == null) {
@@ -234,7 +234,8 @@ public class TimerAddActivity extends BaseTimerActivity
                 showWorkTypeSelectDialogFragment(selectedProjectEntity.pkId);
                 break;
             case R.id.task_layout://关联任务
-                showTaskSelectDialogFragment(selectedProjectEntity != null ? selectedProjectEntity.pkId : null);
+                showTaskSelectDialogFragment(selectedProjectEntity != null ? selectedProjectEntity.pkId : null,
+                        selectedTaskItem != null ? selectedTaskItem.id : null);
                 break;
         }
     }

@@ -44,6 +44,7 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import cn.finalteam.toolsfinal.StringUtils;
 import retrofit2.Call;
 import retrofit2.Response;
 
@@ -142,7 +143,7 @@ public class GroupCreateActivity extends BaseActivity implements OnFragmentCallB
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.titleAction:
-                if (TextUtils.isEmpty(groupNameEt.getText())) {
+                if (StringUtils.isEmpty(getTextString(groupNameEt, ""))) {
                     showTopSnackBar("请输入讨论组名称!");
                     return;
                 }

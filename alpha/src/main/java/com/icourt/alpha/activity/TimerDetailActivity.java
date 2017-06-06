@@ -271,7 +271,7 @@ public class TimerDetailActivity extends BaseTimerActivity
             case R.id.project_layout://所属项目
                 if (itemEntity != null) {
                     if (TextUtils.isEmpty(itemEntity.matterPkId)) {
-                        showProjectSelectDialogFragment();
+                        showProjectSelectDialogFragment(null);
                     } else {
                         showBottomMeau();
                     }
@@ -285,7 +285,7 @@ public class TimerDetailActivity extends BaseTimerActivity
                 showWorkTypeSelectDialogFragment(itemEntity.matterPkId);
                 break;
             case R.id.task_layout://关联任务
-                showTaskSelectDialogFragment(itemEntity.matterPkId);
+                showTaskSelectDialogFragment(itemEntity.matterPkId, itemEntity.taskPkId);
                 break;
         }
     }
@@ -303,7 +303,7 @@ public class TimerDetailActivity extends BaseTimerActivity
                         dialog.dismiss();
                         switch (position) {
                             case 0:
-                                showProjectSelectDialogFragment();
+                                showProjectSelectDialogFragment(itemEntity.matterPkId);
                                 break;
                             case 1:
                                 if (itemEntity != null)

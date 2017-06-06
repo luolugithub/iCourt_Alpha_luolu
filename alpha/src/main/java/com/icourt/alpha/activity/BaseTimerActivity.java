@@ -60,14 +60,14 @@ public class BaseTimerActivity extends BaseActivity {
     /**
      * 展示选择项目对话框
      */
-    protected final void showProjectSelectDialogFragment() {
+    protected final void showProjectSelectDialogFragment(@Nullable String selectedProjectId) {
         String tag = ProjectSimpleSelectDialogFragment.class.getSimpleName();
         FragmentTransaction mFragTransaction = getSupportFragmentManager().beginTransaction();
         Fragment fragment = getSupportFragmentManager().findFragmentByTag(tag);
         if (fragment != null) {
             mFragTransaction.remove(fragment);
         }
-        ProjectSimpleSelectDialogFragment.newInstance()
+        ProjectSimpleSelectDialogFragment.newInstance(selectedProjectId)
                 .show(mFragTransaction, tag);
     }
 
@@ -88,14 +88,14 @@ public class BaseTimerActivity extends BaseActivity {
     /**
      * 展示选择关联任务对话框
      */
-    protected final void showTaskSelectDialogFragment(String projectId) {
+    protected final void showTaskSelectDialogFragment(String projectId,String selectedTaskId) {
         String tag = TaskSelectDialogFragment.class.getSimpleName();
         FragmentTransaction mFragTransaction = getSupportFragmentManager().beginTransaction();
         Fragment fragment = getSupportFragmentManager().findFragmentByTag(tag);
         if (fragment != null) {
             mFragTransaction.remove(fragment);
         }
-        TaskSelectDialogFragment.newInstance(projectId)
+        TaskSelectDialogFragment.newInstance(projectId,selectedTaskId)
                 .show(mFragTransaction, tag);
     }
 

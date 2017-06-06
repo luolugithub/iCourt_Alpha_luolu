@@ -748,8 +748,11 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
                 super.onScrollStateChanged(recyclerView, newState);
                 switch (newState) {
                     case RecyclerView.SCROLL_STATE_DRAGGING: {
-                        ekBar.reset();
-                        /*    SystemUtils.hideSoftKeyBoard(getActivity(), etContactName, true);*/
+                        if (ekBar.isSoftKeyboardPop()) {
+                            ekBar.reset();
+                        }
+                        // ekBar.reset();
+                           // SystemUtils.hideSoftKeyBoard(getActivity(), etContactName, true);
                     }
                     break;
                 }
@@ -811,7 +814,7 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
      */
     private void scrollToBottom() {
         if (linearLayoutManager != null && linearLayoutManager.getItemCount() > 0) {
-            linearLayoutManager.scrollToPositionWithOffset(linearLayoutManager.getItemCount(), 0);
+            linearLayoutManager.scrollToPositionWithOffset(linearLayoutManager.getItemCount() - 1, 0);
         }
     }
 

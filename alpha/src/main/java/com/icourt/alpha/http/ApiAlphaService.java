@@ -254,6 +254,34 @@ public interface ApiAlphaService {
     @GET("api/v1/matters/keyValue")
     Call<ResEntity<List<ProjectEntity>>> projectSelectListQuery(@Query("status") String status);
 
+
+    /**
+     * 计时项目列表搜索
+     *
+     * @param myStar
+     * @param status
+     * @return
+     */
+    @GET("api/v2/timing/timing/getMatterList")
+    Call<ResEntity<List<ProjectEntity>>> timingProjectQuery(
+            @Query("myStar") int myStar,
+            @Query("status") String status
+    );
+
+    /**
+     * 计时项目列表搜索
+     *
+     * @param myStar
+     * @param status
+     * @return
+     */
+    @GET("api/v2/timing/timing/getMatterList")
+    Call<ResEntity<List<ProjectEntity>>> timingProjectQuery(
+            @Query("myStar") int myStar,
+            @Query("status") String status,
+            @Query("word") String word
+    );
+
     /**
      * 获取项目概览
      *

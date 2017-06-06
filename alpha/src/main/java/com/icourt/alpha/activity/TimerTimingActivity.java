@@ -177,7 +177,7 @@ public class TimerTimingActivity extends BaseTimerActivity
                 saveTiming();
                 break;
             case R.id.project_layout://所属项目
-                showProjectSelectDialogFragment();
+                showProjectSelectDialogFragment(itemEntity.matterPkId);
                 break;
             case R.id.worktype_layout://工作类型
                 if (TextUtils.isEmpty(itemEntity.matterPkId)) {
@@ -187,7 +187,7 @@ public class TimerTimingActivity extends BaseTimerActivity
                 showWorkTypeSelectDialogFragment(itemEntity.matterPkId);
                 break;
             case R.id.task_layout://关联任务
-                showTaskSelectDialogFragment(itemEntity.matterPkId);
+                showTaskSelectDialogFragment(itemEntity.matterPkId, itemEntity.taskPkId);
                 break;
             case R.id.stop_time_tv:
                 itemEntity.state = TimeEntity.ItemEntity.TIMER_STATE_STOP;
