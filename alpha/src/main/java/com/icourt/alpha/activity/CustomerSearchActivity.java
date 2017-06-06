@@ -186,6 +186,14 @@ public class CustomerSearchActivity extends BaseActivity implements BaseRecycler
 
     @Override
     public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
-        customerAdapter.getData(customerAdapter.getRealPos(position));
+        CustomerEntity customerEntity = customerAdapter.getData(customerAdapter.getRealPos(position));
+        if (!TextUtils.isEmpty(customerEntity.contactType)) {
+            //公司
+            if (TextUtils.equals(customerEntity.contactType.toUpperCase(), "C")) {
+                CustomerCompanyDetailActivity.launch(getContext(), customerEntity.pkid, customerEntity.name, true);
+            } else if (TextUtils.equals(customerEntity.contactType.toUpperCase(), "P")) {
+                CustomerPersonDetailActivity.launch(getContext(), customerEntity.pkid, customerEntity.name, true);
+            }
+        }
     }
 }

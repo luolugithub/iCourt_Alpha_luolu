@@ -239,6 +239,9 @@ public class CustomerCompanyCreateActivity extends BaseActivity {
                 getLiaisons(contactDeatilBean.getContact().getPkid());
                 activityAddGroupContactEnterpriseNameEdittext.setText(contactDeatilBean.getContact().getName());
             }
+            if (!TextUtils.isEmpty(contactDeatilBean.getContact().getImpression())) {
+                activityAddGroupContactImpressionEdittext.setText(contactDeatilBean.getContact().getImpression());
+            }
             if (contactDeatilBean.getGroups() != null) {
                 if (contactDeatilBean.getGroups().size() > 0) {
                     if (groupBeanList == null) {
