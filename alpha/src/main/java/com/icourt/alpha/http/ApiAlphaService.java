@@ -842,12 +842,13 @@ public interface ApiAlphaService {
 
     /**
      * 搜索项目列表
-     *
      * @param queryString
+     * @param myStar
      * @return
      */
     @GET("api/v1/matters")
-    Call<ResEntity<List<ProjectEntity>>> projectQueryByName(@Query("queryString") String queryString);
+    Call<ResEntity<List<ProjectEntity>>> projectQueryByName(@Query("queryString") String queryString,
+                                                            @Query("myStar") int myStar);
 
 
     /**

@@ -64,6 +64,8 @@ import retrofit2.Response;
 
 public class SearchProjectActivity extends BaseActivity implements BaseRecyclerAdapter.OnItemClickListener, BaseRecyclerAdapter.OnItemChildClickListener {
     private static final String KEY_SEARCH_PRIORITY = "search_priority";
+    private static final String KEY_SEARCH_PROJECT_TYPE = "search_search_project_type";
+    private static final String KEY_SEARCH_TASK_TYPE = "search_search_task_type";
     @BindView(R.id.et_search_name)
     EditText etSearchName;
     @BindView(R.id.tv_search_cancel)
@@ -90,12 +92,23 @@ public class SearchProjectActivity extends BaseActivity implements BaseRecyclerA
     }
 
     int search_priority;
+    int searchProjectType;
+    int searchTaskType;
 
 
-    public static void launch(@NonNull Context context, @SEARCH_PRIORITY int search_priority) {
+    public static void launchTask(@NonNull Context context, int searchTaskType,@SEARCH_PRIORITY int search_priority) {
         if (context == null) return;
         Intent intent = new Intent(context, SearchProjectActivity.class);
         intent.putExtra(KEY_SEARCH_PRIORITY, search_priority);
+        intent.putExtra(KEY_SEARCH_TASK_TYPE, searchTaskType);
+        context.startActivity(intent);
+    }
+
+    public static void launchProject(@NonNull Context context, int searchProjectType, @SEARCH_PRIORITY int search_priority) {
+        if (context == null) return;
+        Intent intent = new Intent(context, SearchProjectActivity.class);
+        intent.putExtra(KEY_SEARCH_PRIORITY, search_priority);
+        intent.putExtra(KEY_SEARCH_PROJECT_TYPE, searchProjectType);
         context.startActivity(intent);
     }
 
@@ -112,6 +125,8 @@ public class SearchProjectActivity extends BaseActivity implements BaseRecyclerA
         super.initView();
         EventBus.getDefault().register(this);
         search_priority = getIntent().getIntExtra(KEY_SEARCH_PRIORITY, -1);
+        searchProjectType = getIntent().getIntExtra(KEY_SEARCH_PROJECT_TYPE, -1);
+        searchTaskType = getIntent().getIntExtra(KEY_SEARCH_TASK_TYPE, -1);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         if (search_priority == SEARCH_PROJECT) {
             recyclerView.setAdapter(projectListAdapter = new ProjectListAdapter());
@@ -175,7 +190,7 @@ public class SearchProjectActivity extends BaseActivity implements BaseRecyclerA
      * 搜索项目
      */
     private void searchProject(String keyword) {
-        getApi().projectQueryByName(keyword).enqueue(new SimpleCallBack<List<ProjectEntity>>() {
+        getApi().projectQueryByName(keyword, searchProjectType).enqueue(new SimpleCallBack<List<ProjectEntity>>() {
             @Override
             public void onSuccess(Call<ResEntity<List<ProjectEntity>>> call, Response<ResEntity<List<ProjectEntity>>> response) {
                 projectListAdapter.bindData(true, response.body().result);
@@ -187,7 +202,7 @@ public class SearchProjectActivity extends BaseActivity implements BaseRecyclerA
      * 搜索任务
      */
     private void searchTask(String keyword) {
-        getApi().taskQueryByName(getLoginUserId(), keyword, 0, 0).enqueue(new SimpleCallBack<TaskEntity>() {
+        getApi().taskQueryByName(getLoginUserId(), keyword, 0, searchTaskType).enqueue(new SimpleCallBack<TaskEntity>() {
             @Override
             public void onSuccess(Call<ResEntity<TaskEntity>> call, Response<ResEntity<TaskEntity>> response) {
                 if (response.body().result != null) {
