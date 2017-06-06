@@ -25,7 +25,6 @@ import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.icourt.alpha.entity.bean.GroupDetailEntity;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
-import com.icourt.alpha.utils.StringUtils;
 import com.icourt.api.RequestUtils;
 
 import java.io.Serializable;
@@ -153,6 +152,12 @@ public class GroupSettingActivity extends BaseActivity {
                 if (StringUtils.isEmpty(getTextString(groupNameTv, ""))) {
                     showTopSnackBar("群组名称为空");
                     return;
+                }
+                if (getTextString(groupNameTv, "").length() < 2) {
+                    showTopSnackBar("群组名称太短");
+                }
+                if (getTextString(groupNameTv, "").length() > 20) {
+                    showTopSnackBar("群组名称太长");
                 }
                 updateGroupInfo();
                 break;
