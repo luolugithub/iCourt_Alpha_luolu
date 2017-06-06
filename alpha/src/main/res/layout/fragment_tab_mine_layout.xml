@@ -25,11 +25,13 @@
                     android:layout_height="190dp"
                     android:background="@color/alpha_font_color_gray"
                     android:scaleType="centerCrop" />
+
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="10dp"
                     android:layout_gravity="bottom"
                     android:background="@android:color/white" />
+
                 <ImageView
                     android:id="@+id/set_image"
                     android:layout_width="wrap_content"
@@ -44,7 +46,6 @@
                     android:layout_gravity="bottom"
                     android:layout_marginLeft="@dimen/dp20"
                     android:layout_marginRight="@dimen/dp20"
-                    android:gravity="center_vertical"
                     android:orientation="horizontal">
 
                     <ImageView
@@ -59,6 +60,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginLeft="@dimen/dp15"
+                        android:layout_marginTop="@dimen/dp15"
                         android:gravity="center_vertical"
                         android:orientation="vertical">
 
@@ -66,10 +68,10 @@
                             android:id="@+id/user_name_tv"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:text="name"
-                            android:singleLine="true"
-                            android:maxLines="1"
                             android:ellipsize="end"
+                            android:maxLines="1"
+                            android:singleLine="true"
+                            android:text="name"
                             android:textColor="@color/white"
                             android:textSize="20sp" />
 
@@ -77,10 +79,10 @@
                             android:id="@+id/office_name_tv"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:textColor="@color/white"
-                            android:singleLine="true"
-                            android:maxLines="1"
                             android:ellipsize="end"
+                            android:maxLines="1"
+                            android:singleLine="true"
+                            android:textColor="@color/white"
                             android:textSize="13sp" />
                     </LinearLayout>
                 </LinearLayout>
@@ -106,8 +108,8 @@
                         android:id="@+id/today_duraction_tv"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:singleLine="true"
                         android:maxLines="1"
+                        android:singleLine="true"
                         android:textColor="@color/alpha_font_color_orange"
                         android:textSize="24sp" />
 
@@ -135,8 +137,8 @@
                         android:id="@+id/month_duraction_tv"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:singleLine="true"
                         android:maxLines="1"
+                        android:singleLine="true"
                         android:textColor="@color/alpha_font_color_orange"
                         android:textSize="24sp" />
 
@@ -164,8 +166,8 @@
                         android:id="@+id/done_task_tv"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:singleLine="true"
                         android:maxLines="1"
+                        android:singleLine="true"
                         android:textColor="@color/alpha_font_color_orange"
                         android:textSize="24sp" />
 

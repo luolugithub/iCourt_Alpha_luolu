@@ -46,7 +46,6 @@ import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 
 import butterknife.BindView;
@@ -77,12 +76,8 @@ public class ProjectTaskFragment extends BaseFragment implements TaskAdapter.OnS
     TaskEntity.TaskItemEntity updateTaskItemEntity;
     String projectId;
     List<TaskEntity> allTaskEntities;
-    List<TaskEntity.TaskItemEntity> taskEntities;//今天到期
-    List<TaskEntity.TaskItemEntity> todayTaskEntities;//今天到期
-    List<TaskEntity.TaskItemEntity> beAboutToTaskEntities;//即将到期
-    List<TaskEntity.TaskItemEntity> futureTaskEntities;//未来
-    List<TaskEntity.TaskItemEntity> noDueTaskEntities;//未指定到期
-    List<TaskEntity.TaskItemEntity> datedTaskEntities;//已过期
+    List<TaskEntity.TaskItemEntity> taskEntities;
+    List<TaskEntity.TaskItemEntity> myStarTaskEntities;//我关注的
 
     public static ProjectTaskFragment newInstance(@NonNull String projectId) {
         ProjectTaskFragment projectTaskFragment = new ProjectTaskFragment();
@@ -130,17 +125,13 @@ public class ProjectTaskFragment extends BaseFragment implements TaskAdapter.OnS
 
         allTaskEntities = new ArrayList<>();
         taskEntities = new ArrayList<>();
-        todayTaskEntities = new ArrayList<>();
-        beAboutToTaskEntities = new ArrayList<>();
-        futureTaskEntities = new ArrayList<>();
-        noDueTaskEntities = new ArrayList<>();
-        datedTaskEntities = new ArrayList<>();
+        myStarTaskEntities = new ArrayList<>();
     }
 
     @Override
     protected void getData(boolean isRefresh) {
         clearLists();
-        getApi().taskListQueryByMatterId(0,projectId, -1).enqueue(new SimpleCallBack<TaskEntity>() {
+        getApi().taskListQueryByMatterId(0, projectId, -1).enqueue(new SimpleCallBack<TaskEntity>() {
             @Override
             public void onSuccess(Call<ResEntity<TaskEntity>> call, Response<ResEntity<TaskEntity>> response) {
                 stopRefresh();
@@ -172,6 +163,9 @@ public class ProjectTaskFragment extends BaseFragment implements TaskAdapter.OnS
                         } else {
                             taskEntities.add(taskItemEntity);
                         }
+                        if (taskItemEntity.attentioned == 1) {
+                            myStarTaskEntities.add(taskItemEntity);
+                        }
                     }
                 }
 
@@ -195,6 +189,13 @@ public class ProjectTaskFragment extends BaseFragment implements TaskAdapter.OnS
                         itemEntity.groupTaskCount = noitems.size();
                         allTaskEntities.add(itemEntity);
                     }
+                    if (myStarTaskEntities.size() > 0) {
+                        TaskEntity itemEntity = new TaskEntity();
+                        itemEntity.groupName = "我关注的";
+                        itemEntity.items = myStarTaskEntities;
+                        itemEntity.groupTaskCount = myStarTaskEntities.size();
+                        allTaskEntities.add(0, itemEntity);
+                    }
                     taskAdapter.bindData(true, allTaskEntities);
                     TimerManager.getInstance().timerQuerySync();
                 }
@@ -202,90 +203,14 @@ public class ProjectTaskFragment extends BaseFragment implements TaskAdapter.OnS
         }
     }
 
-    /**
-     * 对接口返回数据进行分组(今天、即将到期、未来、未指定日期)
-     *
-     * @param taskEntity
-     */
-    private void getTaskGroupData(TaskEntity taskEntity) {
-        if (taskEntity != null) {
-            if (taskEntity.items != null) {
-                for (TaskEntity.TaskItemEntity taskItemEntity : taskEntity.items) {
-                    if (taskItemEntity.dueTime > 0) {
-                        if (TextUtils.equals(DateUtils.getTimeDateFormatYear(taskItemEntity.dueTime), DateUtils.getTimeDateFormatYear(DateUtils.millis()))) {
-                            todayTaskEntities.add(taskItemEntity);
-                        } else if (DateUtils.getDayDiff(new Date(DateUtils.millis()), new Date(taskItemEntity.dueTime)) <= 3 && DateUtils.getDayDiff(new Date(DateUtils.millis()), new Date(taskItemEntity.dueTime)) > 0) {
-                            beAboutToTaskEntities.add(taskItemEntity);
-                        } else if (DateUtils.getDayDiff(new Date(DateUtils.millis()), new Date(taskItemEntity.dueTime)) > 3) {
-                            futureTaskEntities.add(taskItemEntity);
-                        } else {
-                            datedTaskEntities.add(taskItemEntity);
-                        }
-                    } else {
-                        noDueTaskEntities.add(taskItemEntity);
-                    }
-                }
-
-
-                if (datedTaskEntities.size() > 0) {
-                    TaskEntity todayTask = new TaskEntity();
-                    todayTask.items = datedTaskEntities;
-                    todayTask.groupName = "已过期";
-                    todayTask.groupTaskCount = datedTaskEntities.size();
-                    allTaskEntities.add(todayTask);
-                }
-                if (todayTaskEntities.size() > 0) {
-                    TaskEntity todayTask = new TaskEntity();
-                    todayTask.items = todayTaskEntities;
-                    todayTask.groupName = "今天到期";
-                    todayTask.groupTaskCount = todayTaskEntities.size();
-                    allTaskEntities.add(todayTask);
-                }
-
-                if (beAboutToTaskEntities.size() > 0) {
-                    TaskEntity task = new TaskEntity();
-                    task.items = beAboutToTaskEntities;
-                    task.groupName = "即将到期";
-                    task.groupTaskCount = beAboutToTaskEntities.size();
-                    allTaskEntities.add(task);
-                }
-
-                if (futureTaskEntities.size() > 0) {
-                    TaskEntity task = new TaskEntity();
-                    task.items = futureTaskEntities;
-                    task.groupName = "未来";
-                    task.groupTaskCount = futureTaskEntities.size();
-                    allTaskEntities.add(task);
-                }
-
-                if (noDueTaskEntities.size() > 0) {
-                    TaskEntity task = new TaskEntity();
-                    task.items = noDueTaskEntities;
-                    task.groupName = "未指定到期日";
-                    task.groupTaskCount = noDueTaskEntities.size();
-                    allTaskEntities.add(task);
-                }
-
-                taskAdapter.bindData(true, allTaskEntities);
-            }
-        }
-    }
 
     private void clearLists() {
         if (allTaskEntities != null)
             allTaskEntities.clear();
         if (taskEntities != null)
             taskEntities.clear();
-        if (datedTaskEntities != null)
-            datedTaskEntities.clear();
-        if (todayTaskEntities != null)
-            todayTaskEntities.clear();
-        if (beAboutToTaskEntities != null)
-            beAboutToTaskEntities.clear();
-        if (futureTaskEntities != null)
-            futureTaskEntities.clear();
-        if (noDueTaskEntities != null)
-            noDueTaskEntities.clear();
+        if (myStarTaskEntities != null)
+            myStarTaskEntities.clear();
     }
 
     private void stopRefresh() {

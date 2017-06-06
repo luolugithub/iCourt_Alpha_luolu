@@ -208,6 +208,7 @@ public class CustomerPersonCreateActivity extends BaseActivity {
         if (activity == null) return;
         Intent intent = new Intent(activity, CustomerPersonCreateActivity.class);
         intent.setAction(action);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         intent.putExtra("customerEntity", customerEntity);
         activity.setResult(RESULT_OK, intent);
     }
@@ -418,7 +419,7 @@ public class CustomerPersonCreateActivity extends BaseActivity {
                 if (!isAddOrEdit) {
                     pkid = contactDeatilBean.getContact().getPkid();
                 }
-                SelectLiaisonActivity.launchForResult(this, Const.SELECT_ENTERPRISE_LIAISONS_TAG_ACTION, pkid, liaisonsList, SELECT_OTHER_REQUEST);
+                SelectLiaisonActivity.launchForResult(this, Const.SELECT_LIAISONS_TAG_ACTION, pkid, liaisonsList, SELECT_OTHER_REQUEST);
                 break;
         }
     }
@@ -509,11 +510,6 @@ public class CustomerPersonCreateActivity extends BaseActivity {
             @Override
             public void onClick(View view) {
 
-//                Intent intent = new Intent(AddPersonContactActivity.this, SelectContactTagActivity.class);
-//                intent.putExtra("position", addressTag);
-//                intent.putExtra("tagname", keynameText.getText().toString().trim());
-//                intent.setAction(ActionConstants.SELECT_ADDRESS_TAG_ACTION);
-//                startActivityForResult(intent, SELECT_OTHER_REQUEST);
                 SelectCustomerTagActivity.launchForResult(CustomerPersonCreateActivity.this, Const.SELECT_ADDRESS_TAG_ACTION, addressTag, keynameText.getText().toString().trim(), SELECT_OTHER_REQUEST, SelectCustomerTagActivity.PERSON_SELECT_TYPE);
             }
         });
@@ -555,11 +551,6 @@ public class CustomerPersonCreateActivity extends BaseActivity {
         keynameText.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-//                Intent intent = new Intent(AddPersonContactActivity.this, SelectContactTagActivity.class);
-//                intent.putExtra("position", phoneTag);
-//                intent.putExtra("tagname", keynameText.getText().toString().trim());
-//                intent.setAction(ActionConstants.SELECT_PHONE_TAG_ACTION);
-//                startActivityForResult(intent, SELECT_OTHER_REQUEST);
                 SelectCustomerTagActivity.launchForResult(CustomerPersonCreateActivity.this, Const.SELECT_PHONE_TAG_ACTION, phoneTag, keynameText.getText().toString().trim(), SELECT_OTHER_REQUEST, SelectCustomerTagActivity.PERSON_SELECT_TYPE);
             }
         });
@@ -601,11 +592,6 @@ public class CustomerPersonCreateActivity extends BaseActivity {
         keynameText.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-//                Intent intent = new Intent(AddPersonContactActivity.this, SelectContactTagActivity.class);
-//                intent.putExtra("position", emailTag);
-//                intent.putExtra("tagname", keynameText.getText().toString().trim());
-//                intent.setAction(ActionConstants.SELECT_EMAIL_TAG_ACTION);
-//                startActivityForResult(intent, SELECT_OTHER_REQUEST);
                 SelectCustomerTagActivity.launchForResult(CustomerPersonCreateActivity.this, Const.SELECT_EMAIL_TAG_ACTION, emailTag, keynameText.getText().toString().trim(), SELECT_OTHER_REQUEST, SelectCustomerTagActivity.PERSON_SELECT_TYPE);
             }
         });
@@ -647,12 +633,6 @@ public class CustomerPersonCreateActivity extends BaseActivity {
         keynameText.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-//                UIUtils.showToast("选择工作单位");
-//                Intent intent = new Intent(AddPersonContactActivity.this, SelectContactTagActivity.class);
-//                intent.putExtra("position", enterpriseTag);
-//                intent.putExtra("tagname", keynameText.getText().toString().trim());
-//                intent.setAction(ActionConstants.SELECT_ENTERPRISE_TAG_ACTION);
-//                startActivityForResult(intent, SELECT_OTHER_REQUEST);
                 SelectCustomerTagActivity.launchForResult(CustomerPersonCreateActivity.this, Const.SELECT_ENTERPRISE_TAG_ACTION, enterpriseTag, keynameText.getText().toString().trim(), SELECT_OTHER_REQUEST, SelectCustomerTagActivity.PERSON_SELECT_TYPE);
             }
         });
@@ -693,12 +673,6 @@ public class CustomerPersonCreateActivity extends BaseActivity {
         keynameText.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-//                UIUtils.showToast("选择个人证件");
-//                Intent intent = new Intent(AddPersonContactActivity.this, SelectContactTagActivity.class);
-//                intent.putExtra("position", paperTag);
-//                intent.putExtra("tagname", keynameText.getText().toString().trim());
-//                intent.setAction(ActionConstants.SELECT_PAPERS_TAG_ACTION);
-//                startActivityForResult(intent, SELECT_OTHER_REQUEST);
                 SelectCustomerTagActivity.launchForResult(CustomerPersonCreateActivity.this, Const.SELECT_PAPERS_TAG_ACTION, paperTag, keynameText.getText().toString().trim(), SELECT_OTHER_REQUEST, SelectCustomerTagActivity.PERSON_SELECT_TYPE);
             }
         });
@@ -739,11 +713,6 @@ public class CustomerPersonCreateActivity extends BaseActivity {
         keynameText.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-//                Intent intent = new Intent(AddPersonContactActivity.this, SelectContactTagActivity.class);
-//                intent.putExtra("position", imAccountTag);
-//                intent.putExtra("tagname", keynameText.getText().toString().trim());
-//                intent.setAction(ActionConstants.SELECT_IM_TAG_ACTION);
-//                startActivityForResult(intent, SELECT_OTHER_REQUEST);
                 SelectCustomerTagActivity.launchForResult(CustomerPersonCreateActivity.this, Const.SELECT_IM_TAG_ACTION, imAccountTag, keynameText.getText().toString().trim(), SELECT_OTHER_REQUEST, SelectCustomerTagActivity.PERSON_SELECT_TYPE);
             }
         });
@@ -783,11 +752,6 @@ public class CustomerPersonCreateActivity extends BaseActivity {
         keynameText.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-//                Intent intent = new Intent(AddPersonContactActivity.this, SelectContactTagActivity.class);
-//                intent.putExtra("position", dateTag);
-//                intent.putExtra("tagname", keynameText.getText().toString().trim());
-//                intent.setAction(ActionConstants.SELECT_DATE_TAG_ACTION);
-//                startActivityForResult(intent, SELECT_OTHER_REQUEST);
                 SelectCustomerTagActivity.launchForResult(CustomerPersonCreateActivity.this, Const.SELECT_DATE_TAG_ACTION, dateTag, keynameText.getText().toString().trim(), SELECT_OTHER_REQUEST, SelectCustomerTagActivity.PERSON_SELECT_TYPE);
             }
         });
@@ -927,7 +891,7 @@ public class CustomerPersonCreateActivity extends BaseActivity {
                     ((TextView) dateMap.get(position).findViewById(R.id.activity_add_contact_item_keyname_text)).setText(tagName);
                 } else if (action.equals(Const.SELECT_ENTERPRISE_TAG_ACTION)) {//工作单位标签
                     ((TextView) enterpriseMap.get(position).findViewById(R.id.activity_add_contact_item_keyname_text)).setText(tagName);
-                } else if (action.equals(Const.SELECT_ENTERPRISE_LIAISONS_TAG_ACTION)) {//选择联络人
+                } else if (action.equals(Const.SELECT_LIAISONS_TAG_ACTION)) {//选择联络人
                     addLiaisonsItemView((CustomerEntity) data.getSerializableExtra("customerEntity"));
                 } else if (action.equals(Const.SELECT_RELATION_TAG_ACTION)) {
                     ((TextView) liaisonsMap.get(position).findViewById(R.id.activity_add_contact_liaisons_item_relation_text)).setText(tagName);
