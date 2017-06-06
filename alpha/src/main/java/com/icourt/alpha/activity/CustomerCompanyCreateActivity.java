@@ -1,5 +1,6 @@
 package com.icourt.alpha.activity;
 
+import android.app.Activity;
 import android.app.DatePickerDialog;
 import android.content.Context;
 import android.content.Intent;
@@ -41,6 +42,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.Serializable;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
@@ -130,6 +132,51 @@ public class CustomerCompanyCreateActivity extends BaseActivity {
         intent.putExtra("action", action);
         intent.putExtra("contactDeatilBean", contactDeatilBean);
         context.startActivity(intent);
+    }
+
+    /**
+     * 选择负责团队
+     *
+     * @param activity
+     * @param groupBeenList
+     */
+    public static void launchSetResultFromGroup(@NonNull Activity activity, @NonNull List<SelectGroupBean> groupBeenList) {
+        if (activity == null) return;
+        Intent intent = new Intent(activity, CustomerCompanyCreateActivity.class);
+        intent.putExtra("groupBeenList", (Serializable) groupBeenList);
+        activity.setResult(RESULT_OK, intent);
+    }
+
+    /**
+     * 选择联络人
+     *
+     * @param activity
+     * @param action
+     * @param customerEntity
+     */
+    public static void launchSetResultFromLiaison(@NonNull Activity activity, @NonNull String action, @NonNull CustomerEntity customerEntity) {
+        if (activity == null) return;
+        Intent intent = new Intent(activity, CustomerCompanyCreateActivity.class);
+        intent.setAction(action);
+        intent.putExtra("customerEntity", customerEntity);
+        activity.setResult(RESULT_OK, intent);
+    }
+
+    /**
+     * 选择属性tag标签
+     *
+     * @param activity
+     * @param action
+     * @param position
+     * @param tagName
+     */
+    public static void launchSetResultFromTag(@NonNull Activity activity, @NonNull String action, @NonNull int position, @NonNull String tagName) {
+        if (activity == null) return;
+        Intent intent = new Intent(activity, CustomerCompanyCreateActivity.class);
+        intent.setAction(action);
+        intent.putExtra("position", position);
+        intent.putExtra("tag", tagName);
+        activity.setResult(RESULT_OK, intent);
     }
 
     @Override
@@ -323,7 +370,7 @@ public class CustomerCompanyCreateActivity extends BaseActivity {
             @Override
             public void onClick(View view) {
 
-                SelectCustomerTagActivity.launchForResult(CustomerCompanyCreateActivity.this, Const.SELECT_ADDRESS_TAG_ACTION, addressTag, keynameText.getText().toString().trim(), SELECT_OTHER_REQUEST);
+                SelectCustomerTagActivity.launchForResult(CustomerCompanyCreateActivity.this, Const.SELECT_ENTERPRISE_ADDRESS_TAG_ACTION, addressTag, keynameText.getText().toString().trim(), SELECT_OTHER_REQUEST,SelectCustomerTagActivity.COMPANY_SELECT_TYPE);
             }
         });
     }
@@ -364,7 +411,7 @@ public class CustomerCompanyCreateActivity extends BaseActivity {
             @Override
             public void onClick(View view) {
 
-                SelectCustomerTagActivity.launchForResult(CustomerCompanyCreateActivity.this, Const.SELECT_EMAIL_TAG_ACTION, emailTag, keynameText.getText().toString().trim(), SELECT_OTHER_REQUEST);
+                SelectCustomerTagActivity.launchForResult(CustomerCompanyCreateActivity.this, Const.SELECT_ENTERPRISE_EMAIL_TAG_ACTION, emailTag, keynameText.getText().toString().trim(), SELECT_OTHER_REQUEST,SelectCustomerTagActivity.COMPANY_SELECT_TYPE);
             }
         });
     }
@@ -405,7 +452,7 @@ public class CustomerCompanyCreateActivity extends BaseActivity {
             public void onClick(View view) {
 
 
-                SelectCustomerTagActivity.launchForResult(CustomerCompanyCreateActivity.this, Const.SELECT_DATE_TAG_ACTION, dateTag, keynameText.getText().toString().trim(), SELECT_OTHER_REQUEST);
+                SelectCustomerTagActivity.launchForResult(CustomerCompanyCreateActivity.this, Const.SELECT_ENTERPRISE_DATE_TAG_ACTION, dateTag, keynameText.getText().toString().trim(), SELECT_OTHER_REQUEST,SelectCustomerTagActivity.COMPANY_SELECT_TYPE);
             }
         });
         valuenameText.setOnClickListener(new View.OnClickListener() {
@@ -454,7 +501,7 @@ public class CustomerCompanyCreateActivity extends BaseActivity {
             @Override
             public void onClick(View view) {
 
-                SelectCustomerTagActivity.launchForResult(CustomerCompanyCreateActivity.this, Const.SELECT_PAPERS_TAG_ACTION, paperTag, keynameText.getText().toString().trim(), SELECT_OTHER_REQUEST);
+                SelectCustomerTagActivity.launchForResult(CustomerCompanyCreateActivity.this, Const.SELECT_ENTERPRISE_PARPER_TAG_ACTION, paperTag, keynameText.getText().toString().trim(), SELECT_OTHER_REQUEST,SelectCustomerTagActivity.COMPANY_SELECT_TYPE);
             }
         });
     }
@@ -511,7 +558,7 @@ public class CustomerCompanyCreateActivity extends BaseActivity {
             setRelationText.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    SelectCustomerTagActivity.launchForResult(CustomerCompanyCreateActivity.this, Const.SELECT_RELATION_TAG_ACTION, liaisonsList.indexOf(customerEntity) + 1, null, SELECT_OTHER_REQUEST);
+                    SelectCustomerTagActivity.launchForResult(CustomerCompanyCreateActivity.this, Const.SELECT_RELATION_TAG_ACTION, liaisonsList.indexOf(customerEntity) + 1, null, SELECT_OTHER_REQUEST,SelectCustomerTagActivity.COMPANY_SELECT_TYPE);
                 }
             });
         }
