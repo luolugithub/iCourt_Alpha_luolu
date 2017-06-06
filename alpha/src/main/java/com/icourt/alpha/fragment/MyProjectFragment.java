@@ -136,7 +136,7 @@ public class MyProjectFragment extends BaseFragment {
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.rl_comm_search:
-                SearchProjectActivity.launch(getContext(),SearchProjectActivity.SEARCH_PROJECT);
+                SearchProjectActivity.launchProject(getContext(),projectType,SearchProjectActivity.SEARCH_PROJECT);
                 break;
             default:
                 super.onClick(v);

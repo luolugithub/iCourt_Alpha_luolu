@@ -66,10 +66,10 @@ import retrofit2.Response;
 
 public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShowFragmenDialogListener, OnFragmentCallBackListener, ProjectSelectDialogFragment.OnProjectTaskGroupSelectListener {
 
-    private static final int TYPE_ALL = 0;//全部
-    private static final int TYPE_NEW = 1;//新任务
-    private static final int TYPE_MY_ATTENTION = 2;//我关注的
-    private static final int TYPE_MY_BRANCH = 3;//我部门的
+    public static final int TYPE_ALL = 0;//全部
+    public static final int TYPE_NEW = 1;//新任务
+    public static final int TYPE_MY_ATTENTION = 2;//我关注的
+    public static final int TYPE_MY_BRANCH = 3;//我部门的
     Unbinder unbinder;
     @Nullable
     @BindView(R.id.recyclerView)
@@ -154,7 +154,7 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
         super.onClick(v);
         switch (v.getId()) {
             case R.id.rl_comm_search:
-                SearchProjectActivity.launch(getContext(), SearchProjectActivity.SEARCH_TASK);
+                SearchProjectActivity.launchTask(getContext(), type, SearchProjectActivity.SEARCH_TASK);
                 break;
             default:
                 super.onClick(v);
