@@ -19,9 +19,7 @@
             android:layout_centerInParent="true"
             android:background="@null"
             android:drawableLeft="@mipmap/icon_search_14"
-            android:drawablePadding="8dp"
             android:gravity="center"
-            android:text="搜索"
             android:textColor="@color/alpha_font_color_gray"
             android:textSize="@dimen/alpha_font_size_mini_medium" />
     </RelativeLayout>
