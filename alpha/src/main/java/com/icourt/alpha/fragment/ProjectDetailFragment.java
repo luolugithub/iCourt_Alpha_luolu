@@ -186,6 +186,9 @@ public class ProjectDetailFragment extends BaseFragment {
                     buffer.append(group.name).append(",");
                 }
                 itemEntity.value = buffer.toString();
+                if (itemEntity.value.length() > 0) {
+                    itemEntity.value = itemEntity.value.substring(0, itemEntity.value.length() - 1);
+                }
                 itemEntity.type = ProjectBasicItemEntity.PROJECT_DEPARTMENT_TYPE;
                 basicItemEntities.add(itemEntity);
             }
@@ -201,6 +204,9 @@ public class ProjectDetailFragment extends BaseFragment {
                     buffer.append(client.contactName).append(",");
                 }
                 itemEntity.value = buffer.toString();
+                if (itemEntity.value.length() > 0) {
+                    itemEntity.value = itemEntity.value.substring(0, itemEntity.value.length() - 1);
+                }
                 itemEntity.type = ProjectBasicItemEntity.PROJECT_CLIENT_TYPE;
                 basicItemEntities.add(itemEntity);
             }
@@ -217,6 +223,9 @@ public class ProjectDetailFragment extends BaseFragment {
                     buffer.append(litigant.contactName).append(",");
                 }
                 itemEntity.value = buffer.toString();
+                if (itemEntity.value.length() > 0) {
+                    itemEntity.value = itemEntity.value.substring(0, itemEntity.value.length() - 1);
+                }
                 itemEntity.type = ProjectBasicItemEntity.PROJECT_OTHER_PERSON_TYPE;
                 basicItemEntities.add(itemEntity);
             }
@@ -241,6 +250,9 @@ public class ProjectDetailFragment extends BaseFragment {
                     buffer.append(originat.attorneyName).append(",");
                 }
                 itemEntity.value = buffer.toString();
+                if (itemEntity.value.length() > 0) {
+                    itemEntity.value = itemEntity.value.substring(0, itemEntity.value.length() - 1);
+                }
                 itemEntity.type = ProjectBasicItemEntity.PROJECT_ANYUAN_LAWYER_TYPE;
                 basicItemEntities.add(itemEntity);
             }

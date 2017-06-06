@@ -3,6 +3,7 @@ package com.icourt.alpha.activity;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.AppBarLayout;
@@ -23,6 +24,8 @@ import com.icourt.alpha.constants.Const;
 import com.icourt.alpha.utils.SpUtils;
 import com.icourt.alpha.utils.SystemUtils;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -60,13 +63,25 @@ public class SelectCustomerTagActivity extends BaseActivity implements BaseRecyc
     private CustomerTagListAdapter contactTagListAdapter, customTagListAdapter;
     private String custTagStr;
     private StringBuffer buffer = new StringBuffer();
+    private int type;
 
-    public static void launchForResult(@NonNull Activity context, @NonNull String action, int position, @NonNull String tagname, int requestCode) {
+    public static final int PERSON_SELECT_TYPE = 1;//个人联系人
+    public static final int COMPANY_SELECT_TYPE = 2;//企业联系人
+
+    @IntDef({PERSON_SELECT_TYPE,
+            COMPANY_SELECT_TYPE})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface CUSTOMER_ACTION {
+
+    }
+
+    public static void launchForResult(@NonNull Activity context, @NonNull String action, int position, @NonNull String tagname, int requestCode, @CUSTOMER_ACTION int type) {
         if (context == null) return;
         Intent intent = new Intent(context, SelectCustomerTagActivity.class);
         intent.setAction(action);
         intent.putExtra("position", position);
         intent.putExtra("tagname", tagname);
+        intent.putExtra("type", type);
         context.startActivityForResult(intent, requestCode);
     }
 
@@ -83,6 +98,7 @@ public class SelectCustomerTagActivity extends BaseActivity implements BaseRecyc
         super.initView();
         action = getIntent().getAction();
         position = getIntent().getIntExtra("position", -1);
+        type = getIntent().getIntExtra("type", -1);
         tagname = getIntent().getStringExtra("tagname");
         custTagStr = SpUtils.getInstance().getStringData(SP_CUSTOMER_TAG, "");
 
@@ -174,7 +190,11 @@ public class SelectCustomerTagActivity extends BaseActivity implements BaseRecyc
     @Override
     public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int p) {
         String tagname = (String) adapter.getItem(p);
-        CustomerPersonCreateActivity.launchSetResultFromTag(this, action, position, tagname);
+        if (type == PERSON_SELECT_TYPE) {
+            CustomerPersonCreateActivity.launchSetResultFromTag(this, action, position, tagname);
+        } else if (type == COMPANY_SELECT_TYPE) {
+            CustomerCompanyCreateActivity.launchSetResultFromTag(this, action, position, tagname);
+        }
         this.finish();
     }
 }

@@ -514,7 +514,7 @@ public class CustomerPersonCreateActivity extends BaseActivity {
 //                intent.putExtra("tagname", keynameText.getText().toString().trim());
 //                intent.setAction(ActionConstants.SELECT_ADDRESS_TAG_ACTION);
 //                startActivityForResult(intent, SELECT_OTHER_REQUEST);
-                SelectCustomerTagActivity.launchForResult(CustomerPersonCreateActivity.this, Const.SELECT_ADDRESS_TAG_ACTION, addressTag, keynameText.getText().toString().trim(), SELECT_OTHER_REQUEST);
+                SelectCustomerTagActivity.launchForResult(CustomerPersonCreateActivity.this, Const.SELECT_ADDRESS_TAG_ACTION, addressTag, keynameText.getText().toString().trim(), SELECT_OTHER_REQUEST, SelectCustomerTagActivity.PERSON_SELECT_TYPE);
             }
         });
     }
@@ -560,7 +560,7 @@ public class CustomerPersonCreateActivity extends BaseActivity {
 //                intent.putExtra("tagname", keynameText.getText().toString().trim());
 //                intent.setAction(ActionConstants.SELECT_PHONE_TAG_ACTION);
 //                startActivityForResult(intent, SELECT_OTHER_REQUEST);
-                SelectCustomerTagActivity.launchForResult(CustomerPersonCreateActivity.this, Const.SELECT_PHONE_TAG_ACTION, phoneTag, keynameText.getText().toString().trim(), SELECT_OTHER_REQUEST);
+                SelectCustomerTagActivity.launchForResult(CustomerPersonCreateActivity.this, Const.SELECT_PHONE_TAG_ACTION, phoneTag, keynameText.getText().toString().trim(), SELECT_OTHER_REQUEST, SelectCustomerTagActivity.PERSON_SELECT_TYPE);
             }
         });
     }
@@ -606,7 +606,7 @@ public class CustomerPersonCreateActivity extends BaseActivity {
 //                intent.putExtra("tagname", keynameText.getText().toString().trim());
 //                intent.setAction(ActionConstants.SELECT_EMAIL_TAG_ACTION);
 //                startActivityForResult(intent, SELECT_OTHER_REQUEST);
-                SelectCustomerTagActivity.launchForResult(CustomerPersonCreateActivity.this, Const.SELECT_EMAIL_TAG_ACTION, emailTag, keynameText.getText().toString().trim(), SELECT_OTHER_REQUEST);
+                SelectCustomerTagActivity.launchForResult(CustomerPersonCreateActivity.this, Const.SELECT_EMAIL_TAG_ACTION, emailTag, keynameText.getText().toString().trim(), SELECT_OTHER_REQUEST, SelectCustomerTagActivity.PERSON_SELECT_TYPE);
             }
         });
     }
@@ -653,7 +653,7 @@ public class CustomerPersonCreateActivity extends BaseActivity {
 //                intent.putExtra("tagname", keynameText.getText().toString().trim());
 //                intent.setAction(ActionConstants.SELECT_ENTERPRISE_TAG_ACTION);
 //                startActivityForResult(intent, SELECT_OTHER_REQUEST);
-                SelectCustomerTagActivity.launchForResult(CustomerPersonCreateActivity.this, Const.SELECT_ENTERPRISE_TAG_ACTION, enterpriseTag, keynameText.getText().toString().trim(), SELECT_OTHER_REQUEST);
+                SelectCustomerTagActivity.launchForResult(CustomerPersonCreateActivity.this, Const.SELECT_ENTERPRISE_TAG_ACTION, enterpriseTag, keynameText.getText().toString().trim(), SELECT_OTHER_REQUEST, SelectCustomerTagActivity.PERSON_SELECT_TYPE);
             }
         });
     }
@@ -699,7 +699,7 @@ public class CustomerPersonCreateActivity extends BaseActivity {
 //                intent.putExtra("tagname", keynameText.getText().toString().trim());
 //                intent.setAction(ActionConstants.SELECT_PAPERS_TAG_ACTION);
 //                startActivityForResult(intent, SELECT_OTHER_REQUEST);
-                SelectCustomerTagActivity.launchForResult(CustomerPersonCreateActivity.this, Const.SELECT_PAPERS_TAG_ACTION, paperTag, keynameText.getText().toString().trim(), SELECT_OTHER_REQUEST);
+                SelectCustomerTagActivity.launchForResult(CustomerPersonCreateActivity.this, Const.SELECT_PAPERS_TAG_ACTION, paperTag, keynameText.getText().toString().trim(), SELECT_OTHER_REQUEST, SelectCustomerTagActivity.PERSON_SELECT_TYPE);
             }
         });
     }
@@ -744,7 +744,7 @@ public class CustomerPersonCreateActivity extends BaseActivity {
 //                intent.putExtra("tagname", keynameText.getText().toString().trim());
 //                intent.setAction(ActionConstants.SELECT_IM_TAG_ACTION);
 //                startActivityForResult(intent, SELECT_OTHER_REQUEST);
-                SelectCustomerTagActivity.launchForResult(CustomerPersonCreateActivity.this, Const.SELECT_IM_TAG_ACTION, imAccountTag, keynameText.getText().toString().trim(), SELECT_OTHER_REQUEST);
+                SelectCustomerTagActivity.launchForResult(CustomerPersonCreateActivity.this, Const.SELECT_IM_TAG_ACTION, imAccountTag, keynameText.getText().toString().trim(), SELECT_OTHER_REQUEST, SelectCustomerTagActivity.PERSON_SELECT_TYPE);
             }
         });
     }
@@ -788,7 +788,7 @@ public class CustomerPersonCreateActivity extends BaseActivity {
 //                intent.putExtra("tagname", keynameText.getText().toString().trim());
 //                intent.setAction(ActionConstants.SELECT_DATE_TAG_ACTION);
 //                startActivityForResult(intent, SELECT_OTHER_REQUEST);
-                SelectCustomerTagActivity.launchForResult(CustomerPersonCreateActivity.this, Const.SELECT_DATE_TAG_ACTION, dateTag, keynameText.getText().toString().trim(), SELECT_OTHER_REQUEST);
+                SelectCustomerTagActivity.launchForResult(CustomerPersonCreateActivity.this, Const.SELECT_DATE_TAG_ACTION, dateTag, keynameText.getText().toString().trim(), SELECT_OTHER_REQUEST, SelectCustomerTagActivity.PERSON_SELECT_TYPE);
             }
         });
         valuenameText.setOnClickListener(new View.OnClickListener() {
@@ -851,7 +851,7 @@ public class CustomerPersonCreateActivity extends BaseActivity {
         setRelationText.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                SelectCustomerTagActivity.launchForResult(CustomerPersonCreateActivity.this, Const.SELECT_RELATION_TAG_ACTION, liaisonsList.indexOf(customerEntity) + 1, null, SELECT_OTHER_REQUEST);
+                SelectCustomerTagActivity.launchForResult(CustomerPersonCreateActivity.this, Const.SELECT_RELATION_TAG_ACTION, liaisonsList.indexOf(customerEntity) + 1, null, SELECT_OTHER_REQUEST, SelectCustomerTagActivity.PERSON_SELECT_TYPE);
             }
         });
     }
@@ -1063,8 +1063,10 @@ public class CustomerPersonCreateActivity extends BaseActivity {
      * 修改联系人
      */
     private void updateContact() {
+        String json = getUpdateContactJson();
+        if (TextUtils.isEmpty(json)) return;
         showLoadingDialog(null);
-        getApi().customerUpdate(RequestUtils.createJsonBody(getUpdateContactJson())).enqueue(new SimpleCallBack<List<ContactDeatilBean>>() {
+        getApi().customerUpdate(RequestUtils.createJsonBody(json)).enqueue(new SimpleCallBack<List<ContactDeatilBean>>() {
             @Override
             public void onSuccess(Call<ResEntity<List<ContactDeatilBean>>> call, Response<ResEntity<List<ContactDeatilBean>>> response) {
                 List<ContactDeatilBean> list = response.body().result;
@@ -1294,16 +1296,14 @@ public class CustomerPersonCreateActivity extends BaseActivity {
                 JSONArray phoneArr = getItemMapJsonArr(phoneMap, "tels");
                 if (phoneArr != null) {
                     jsonObject.put("tels", phoneArr);
-                } else
-                    return "";
+                } else return "";
 
             }
             if (emailMap.size() > 0) {
                 JSONArray emailArr = getItemMapJsonArr(emailMap, "mails");
                 if (emailArr != null)
                     jsonObject.put("mails", emailArr);
-                else
-                    return "";
+                else return "";
             }
             if (imAccountMap.size() > 0) {
                 JSONArray imArr = getItemMapJsonArr(imAccountMap, "ims");
