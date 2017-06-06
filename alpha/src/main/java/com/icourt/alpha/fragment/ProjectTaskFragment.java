@@ -78,6 +78,9 @@ public class ProjectTaskFragment extends BaseFragment implements TaskAdapter.OnS
     List<TaskEntity> allTaskEntities;
     List<TaskEntity.TaskItemEntity> taskEntities;
     List<TaskEntity.TaskItemEntity> myStarTaskEntities;//我关注的
+    boolean isEditTask = false;//编辑任务权限
+    boolean isDeleteTask = false;//删除任务权限
+    boolean isAddTime = false;//添加计时权限
 
     public static ProjectTaskFragment newInstance(@NonNull String projectId) {
         ProjectTaskFragment projectTaskFragment = new ProjectTaskFragment();
@@ -113,6 +116,7 @@ public class ProjectTaskFragment extends BaseFragment implements TaskAdapter.OnS
             @Override
             public void onRefresh(boolean isPullDown) {
                 super.onRefresh(isPullDown);
+                checkAddTaskAndDocumentPms(projectId);
                 getData(true);
             }
 
@@ -126,6 +130,29 @@ public class ProjectTaskFragment extends BaseFragment implements TaskAdapter.OnS
         allTaskEntities = new ArrayList<>();
         taskEntities = new ArrayList<>();
         myStarTaskEntities = new ArrayList<>();
+    }
+
+    /**
+     * 获取权限列表
+     */
+    private void checkAddTaskAndDocumentPms(String projectId) {
+        getApi().permissionQuery(getLoginUserId(), "MAT", projectId).enqueue(new SimpleCallBack<List<String>>() {
+            @Override
+            public void onSuccess(Call<ResEntity<List<String>>> call, Response<ResEntity<List<String>>> response) {
+
+                if (response.body().result != null) {
+                    if (response.body().result.contains("MAT:matter.task:edit")) {
+                        isEditTask = true;
+                    }
+                    if (response.body().result.contains("MAT:matter.task:delete")) {
+                        isDeleteTask = true;
+                    }
+                    if (response.body().result.contains("MAT:matter.timeLog:add")) {
+                        isAddTime = true;
+                    }
+                }
+            }
+        });
     }
 
     @Override
@@ -146,6 +173,7 @@ public class ProjectTaskFragment extends BaseFragment implements TaskAdapter.OnS
             }
         });
     }
+
 
     private void getTaskGroupDatas(TaskEntity taskEntity) {
         if (taskEntity != null) {
@@ -196,6 +224,9 @@ public class ProjectTaskFragment extends BaseFragment implements TaskAdapter.OnS
                         itemEntity.groupTaskCount = myStarTaskEntities.size();
                         allTaskEntities.add(0, itemEntity);
                     }
+                    taskAdapter.setDeleteTask(isDeleteTask);
+                    taskAdapter.setEditTask(isEditTask);
+                    taskAdapter.setAddTime(isAddTime);
                     taskAdapter.bindData(true, allTaskEntities);
                     TimerManager.getInstance().timerQuerySync();
                 }

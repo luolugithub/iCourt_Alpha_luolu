@@ -123,6 +123,9 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
         headerFooterAdapter.addHeader(headerView);
 
         recyclerView.setAdapter(headerFooterAdapter);
+        taskAdapter.setDeleteTask(true);
+        taskAdapter.setEditTask(true);
+        taskAdapter.setAddTime(true);
         taskAdapter.setOnShowFragmenDialogListener(this);
         taskAdapter.registerAdapterDataObserver(new RefreshViewEmptyObserver(refreshLayout, taskAdapter));
 

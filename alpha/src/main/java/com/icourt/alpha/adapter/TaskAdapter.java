@@ -57,10 +57,26 @@ public class TaskAdapter extends BaseArrayRecyclerAdapter<TaskEntity>
     private static final int SHOW_DELETE_DIALOG = 0;//删除提示对话框
     private static final int SHOW_FINISH_DIALOG = 1;//完成任务提示对话框
 
+    private boolean isEditTask = false;//编辑任务权限
+    private boolean isDeleteTask = false;//删除任务权限
+    private boolean isAddTime = false;//添加计时权限
+
     public TaskAdapter() {
         this.setOnItemClickListener(this);
         this.setOnItemLongClickListener(this);
         this.setOnItemChildClickListener(this);
+    }
+
+    public void setEditTask(boolean editTask) {
+        isEditTask = editTask;
+    }
+
+    public void setDeleteTask(boolean deleteTask) {
+        isDeleteTask = deleteTask;
+    }
+
+    public void setAddTime(boolean addTime) {
+        isAddTime = addTime;
     }
 
     public void setOnShowFragmenDialogListener(OnShowFragmenDialogListener onShowFragmenDialogListener) {
@@ -85,13 +101,13 @@ public class TaskAdapter extends BaseArrayRecyclerAdapter<TaskEntity>
             LinearLayoutManager layoutManager = new LinearLayoutManager(recyclerView.getContext());
             recyclerView.setLayoutManager(layoutManager);
             taskItemAdapter = new TaskItemAdapter();
+            taskItemAdapter.setAddTime(isAddTime);
             recyclerView.setAdapter(taskItemAdapter);
             taskItemAdapter.setOnItemClickListener(super.onItemClickListener);
             taskItemAdapter.setOnItemChildClickListener(super.onItemChildClickListener);
             taskItemAdapter.setOnItemLongClickListener(super.onItemLongClickListener);
         }
         taskItemAdapter = (TaskItemAdapter) recyclerView.getAdapter();
-
 
         taskItemAdapter.bindData(true, taskEntity.items);
     }
@@ -107,7 +123,6 @@ public class TaskAdapter extends BaseArrayRecyclerAdapter<TaskEntity>
     @Override
     public boolean onItemLongClick(BaseRecyclerAdapter adapter, ViewHolder holder, View view, int position) {
         TaskEntity.TaskItemEntity taskItemEntity = (TaskEntity.TaskItemEntity) adapter.getItem(position);
-        if (taskItemEntity.right == null) return false;
         ItemsEntity timeEntity = new ItemsEntity("开始计时", R.mipmap.time_start_orange_task);
         if (taskItemEntity.isTiming) {
             timeEntity.itemIconRes = R.mipmap.time_stop_orange_task;
@@ -116,7 +131,7 @@ public class TaskAdapter extends BaseArrayRecyclerAdapter<TaskEntity>
             timeEntity.itemIconRes = R.mipmap.time_start_orange_task;
             timeEntity.itemTitle = "开始计时";
         }
-        if (hasTaskEditPermission(taskItemEntity) && hasTaskDeletePermission(taskItemEntity)) {
+        if (isEditTask && isDeleteTask) {
             showLongMeau(view.getContext(), Arrays.asList(
                     new ItemsEntity("分配给", R.mipmap.assign_orange),
                     new ItemsEntity("到期日", R.mipmap.date_orange),
@@ -124,12 +139,12 @@ public class TaskAdapter extends BaseArrayRecyclerAdapter<TaskEntity>
                     new ItemsEntity("项目/任务组", R.mipmap.project_orange),
                     timeEntity,
                     new ItemsEntity("删除", R.mipmap.trash_orange)), taskItemEntity);
-        } else if (hasTaskDeletePermission(taskItemEntity) && !hasTaskEditPermission(taskItemEntity)) {
+        } else if (isDeleteTask && !isEditTask) {
             showLongMeau(view.getContext(), Arrays.asList(
                     new ItemsEntity("查看详情", R.mipmap.info_orange),
                     timeEntity,
                     new ItemsEntity("删除", R.mipmap.trash_orange)), taskItemEntity);
-        } else if (!hasTaskDeletePermission(taskItemEntity) && hasTaskEditPermission(taskItemEntity)) {
+        } else if (!isDeleteTask && isEditTask) {
             showLongMeau(view.getContext(), Arrays.asList(
                     new ItemsEntity("分配给", R.mipmap.assign_orange),
                     new ItemsEntity("到期日", R.mipmap.date_orange),
@@ -240,7 +255,7 @@ public class TaskAdapter extends BaseArrayRecyclerAdapter<TaskEntity>
                     break;
                 case R.id.task_item_checkbox:
                     CheckBox checkbox = (CheckBox) view;
-                    if (hasTaskEditPermission(itemEntity)) {
+                    if (isEditTask) {
                         if (checkbox.isChecked()) {    //完成任务
                             if (itemEntity.attendeeUsers != null) {
                                 if (itemEntity.attendeeUsers.size() > 1) {
@@ -406,25 +421,5 @@ public class TaskAdapter extends BaseArrayRecyclerAdapter<TaskEntity>
         void showDateSelectDialog(TaskEntity.TaskItemEntity taskItemEntity);
 
         void showProjectSelectDialog(TaskEntity.TaskItemEntity taskItemEntity);
-    }
-
-    /**
-     * 是否有任务删除权限
-     */
-    private boolean hasTaskDeletePermission(TaskEntity.TaskItemEntity taskItemEntity) {
-        if (taskItemEntity != null && taskItemEntity.right != null) {
-            return taskItemEntity.right.contains("MAT:matter.task:delete");
-        }
-        return false;
-    }
-
-    /**
-     * 是否有任务编辑权限
-     */
-    private boolean hasTaskEditPermission(TaskEntity.TaskItemEntity taskItemEntity) {
-        if (taskItemEntity != null && taskItemEntity.right != null) {
-            return taskItemEntity.right.contains("MAT:matter.task:edit");
-        }
-        return false;
     }
 }

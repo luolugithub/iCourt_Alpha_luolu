@@ -23,6 +23,11 @@ import com.icourt.alpha.utils.DateUtils;
  */
 
 public class TaskItemAdapter extends BaseArrayRecyclerAdapter<TaskEntity.TaskItemEntity> {
+    private boolean isAddTime = false;//添加计时权限
+
+    public void setAddTime(boolean addTime) {
+        isAddTime = addTime;
+    }
 
     @Override
     public int bindView(int viewtype) {
@@ -44,6 +49,7 @@ public class TaskItemAdapter extends BaseArrayRecyclerAdapter<TaskEntity.TaskIte
         if (taskNameView != null) {
             taskNameView.setText(taskItemEntity.name);
         }
+        startTimmingView.setVisibility(isAddTime ? View.VISIBLE : View.GONE);
         if (projectNameView != null) {
             if (taskItemEntity.matter != null) {
                 if (taskItemEntity.parentFlow != null) {
@@ -54,7 +60,7 @@ public class TaskItemAdapter extends BaseArrayRecyclerAdapter<TaskEntity.TaskIte
                     else
                         projectNameView.setText(taskItemEntity.matter.name);
                 }
-            }else{
+            } else {
                 projectNameView.setText("");
             }
         }
