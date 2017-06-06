@@ -169,6 +169,9 @@ public class TaskSelectDialogFragment
             }
 
         });
+
+        rlCommSearch.setVisibility(View.GONE);//先隐藏
+
         showLoadingDialog(null);
         getData(true);
     }

@@ -17,7 +17,10 @@ public class StringUtils {
 
 
     public static final boolean isEmpty(CharSequence text) {
-        return (!TextUtils.isEmpty(text)) && text.toString().trim().length() <= 0;
+        if (TextUtils.isEmpty(text)) {
+            return true;
+        }
+        return text.toString().trim().length() <= 0;
     }
 
     /**

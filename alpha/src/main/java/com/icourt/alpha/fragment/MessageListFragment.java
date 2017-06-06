@@ -187,7 +187,7 @@ public class MessageListFragment extends BaseRecentContactFragment
                         } else {
                             try {
                                 customIMBody = JsonUtils.Gson2Bean(recentContact.getContent(), IMMessageCustomBody.class);
-                            } catch (JsonParseException ex) {
+                            } catch (Exception ex) {
                                 ex.printStackTrace();
                             }
                         }
@@ -208,7 +208,7 @@ public class MessageListFragment extends BaseRecentContactFragment
                 }
                 try {
                     customIMBody = JsonUtils.Gson2Bean(jsonBody, IMMessageCustomBody.class);
-                } catch (JsonParseException ex) {
+                } catch (Exception ex) {
                     ex.printStackTrace();
                 }
                 if (customIMBody != null) {
@@ -564,7 +564,7 @@ public class MessageListFragment extends BaseRecentContactFragment
                     } else {
                         try {
                             customIMBody = JsonUtils.Gson2Bean(recentContact.getContent(), IMMessageCustomBody.class);
-                        } catch (JsonParseException ex) {
+                        } catch (Exception ex) {
                             ex.printStackTrace();
                             log("------------->解析异常:" + ex + "\n" + recentContact.getContactId() + " \n" + recentContact.getContent());
                         }

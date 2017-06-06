@@ -108,12 +108,13 @@
                     android:textSize="18sp" />
             </LinearLayout>
 
+            <include layout="@layout/layout_timer_action_link" />
+
             <View
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/dp20"
                 android:background="@color/alpha_background_window" />
 
-            <include layout="@layout/layout_timer_action_link" />
         </LinearLayout>
     </com.andview.refreshview.XScrollView>
 

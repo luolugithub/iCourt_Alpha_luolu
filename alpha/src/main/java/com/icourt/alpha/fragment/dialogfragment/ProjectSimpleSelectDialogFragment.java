@@ -172,7 +172,7 @@ public class ProjectSimpleSelectDialogFragment extends BaseDialogFragment implem
      */
     private void searchProjectByName(final String projectName) {
         if (TextUtils.isEmpty(projectName)) return;
-        getApi().projectQueryByName(projectName)
+        getApi().timingProjectQuery(1, "0,2,7", projectName)
                 .enqueue(new SimpleCallBack<List<ProjectEntity>>() {
                     @Override
                     public void onSuccess(Call<ResEntity<List<ProjectEntity>>> call, Response<ResEntity<List<ProjectEntity>>> response) {
@@ -186,7 +186,10 @@ public class ProjectSimpleSelectDialogFragment extends BaseDialogFragment implem
     @Override
     protected void getData(boolean isRefresh) {
         super.getData(isRefresh);
-        getApi().projectSelectListQuery("0,2,7")
+        /**
+         * 默认获取的关注的非完结的项目
+         */
+        getApi().timingProjectQuery(1, "0,2,7")
                 .enqueue(new SimpleCallBack<List<ProjectEntity>>() {
                     @Override
                     public void onSuccess(Call<ResEntity<List<ProjectEntity>>> call, Response<ResEntity<List<ProjectEntity>>> response) {
