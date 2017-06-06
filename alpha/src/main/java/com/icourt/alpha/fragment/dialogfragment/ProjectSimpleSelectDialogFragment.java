@@ -172,7 +172,18 @@ public class ProjectSimpleSelectDialogFragment extends BaseDialogFragment implem
      */
     private void searchProjectByName(final String projectName) {
         if (TextUtils.isEmpty(projectName)) return;
-        getApi().timingProjectQuery(1, "0,2,7", projectName)
+        //pms独有 带权限
+    /*    getApi().timingProjectQuery(1, "0,2,7", projectName)
+                .enqueue(new SimpleCallBack<List<ProjectEntity>>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<List<ProjectEntity>>> call, Response<ResEntity<List<ProjectEntity>>> response) {
+                        projectAdapter.clearData();
+                        projectAdapter.bindData(true, response.body().result);
+                        setSelectedProject();
+                    }
+                });*/
+        //不带权限的
+        getApi().projectQueryByName(projectName, 1)
                 .enqueue(new SimpleCallBack<List<ProjectEntity>>() {
                     @Override
                     public void onSuccess(Call<ResEntity<List<ProjectEntity>>> call, Response<ResEntity<List<ProjectEntity>>> response) {
@@ -187,9 +198,29 @@ public class ProjectSimpleSelectDialogFragment extends BaseDialogFragment implem
     protected void getData(boolean isRefresh) {
         super.getData(isRefresh);
         /**
-         * 默认获取的关注的非完结的项目
+         * 默认获取的关注的非完结的项目 带权限的
          */
-        getApi().timingProjectQuery(1, "0,2,7")
+       /* getApi().timingProjectQuery(1, "0,2,7")
+                .enqueue(new SimpleCallBack<List<ProjectEntity>>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<List<ProjectEntity>>> call, Response<ResEntity<List<ProjectEntity>>> response) {
+                        dismissLoadingDialog();
+                        projectAdapter.bindData(true, response.body().result);
+                        setSelectedProject();
+                    }
+
+                    @Override
+                    public void onFailure(Call<ResEntity<List<ProjectEntity>>> call, Throwable t) {
+                        super.onFailure(call, t);
+                        dismissLoadingDialog();
+                    }
+                });*/
+
+
+        /**
+         * 不带权限的
+         */
+        getApi().projectSelectListQuery("0,2,7")
                 .enqueue(new SimpleCallBack<List<ProjectEntity>>() {
                     @Override
                     public void onSuccess(Call<ResEntity<List<ProjectEntity>>> call, Response<ResEntity<List<ProjectEntity>>> response) {

@@ -14,8 +14,6 @@ import java.util.List;
  * @time 2016-05-05 10:38
  */
 public class StringUtils {
-
-
     public static final boolean isEmpty(CharSequence text) {
         if (TextUtils.isEmpty(text)) {
             return true;
