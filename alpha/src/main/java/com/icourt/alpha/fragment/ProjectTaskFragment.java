@@ -140,7 +140,7 @@ public class ProjectTaskFragment extends BaseFragment implements TaskAdapter.OnS
     @Override
     protected void getData(boolean isRefresh) {
         clearLists();
-        getApi().projectQueryTaskList(projectId, 0, -1, 1, -1).enqueue(new SimpleCallBack<TaskEntity>() {
+        getApi().taskListQueryByMatterId(0,projectId, -1).enqueue(new SimpleCallBack<TaskEntity>() {
             @Override
             public void onSuccess(Call<ResEntity<TaskEntity>> call, Response<ResEntity<TaskEntity>> response) {
                 stopRefresh();

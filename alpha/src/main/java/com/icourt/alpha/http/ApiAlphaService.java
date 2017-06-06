@@ -538,6 +538,19 @@ public interface ApiAlphaService {
                                                   @Query("type") int type);
 
     /**
+     * 项目下任务列表
+     * @param stateType
+     * @param matterId
+     * @param type
+     * @return
+     */
+    @GET("api/v2/taskflow")
+    Call<ResEntity<TaskEntity>> taskListQueryByMatterId(
+                                              @Query("stateType") int stateType,
+                                              @Query("matterId") String matterId,
+                                              @Query("type") int type);
+
+    /**
      * 获取任务下的附件列表
      *
      * @param taskId
