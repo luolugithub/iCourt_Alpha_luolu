@@ -248,7 +248,8 @@ public interface ApiAlphaService {
 
     /**
      * 获取选择项目列表
-     * @param status  项目状态：[0:预立案 2:进行中 4:已完结 7:已搁置]，多个以英文逗号分隔
+     *
+     * @param status 项目状态：[0:预立案 2:进行中 4:已完结 7:已搁置]，多个以英文逗号分隔
      * @return
      */
     @GET("api/v1/matters/keyValue")
@@ -270,6 +271,7 @@ public interface ApiAlphaService {
 
     /**
      * 计时项目列表搜索
+     * pms接口独有
      *
      * @param myStar
      * @param status
@@ -566,6 +568,7 @@ public interface ApiAlphaService {
 
     /**
      * 项目下任务列表
+     *
      * @param stateType
      * @param matterId
      * @param type
@@ -573,9 +576,9 @@ public interface ApiAlphaService {
      */
     @GET("api/v2/taskflow")
     Call<ResEntity<TaskEntity>> taskListQueryByMatterId(
-                                              @Query("stateType") int stateType,
-                                              @Query("matterId") String matterId,
-                                              @Query("type") int type);
+            @Query("stateType") int stateType,
+            @Query("matterId") String matterId,
+            @Query("type") int type);
 
     /**
      * 获取任务下的附件列表
@@ -870,6 +873,7 @@ public interface ApiAlphaService {
 
     /**
      * 搜索项目列表
+     *
      * @param queryString
      * @param myStar
      * @return
@@ -884,15 +888,31 @@ public interface ApiAlphaService {
      *
      * @param assignTos
      * @param name
-     * @param stateType  0:未完成；1：已完成；2：已删除
-     * @param queryType  0:全部；1：新任务；2：我关注的；3我部门的
+     * @param stateType 0:未完成；1：已完成；2：已删除
+     * @param queryType 0:全部；1：新任务；2：我关注的；3我部门的
      * @return
      */
     @GET("api/v2/taskflow/queryMobileTask")
     Call<ResEntity<TaskEntity>> taskQueryByName(@Query("assignTos") String assignTos,
-                                                      @Query("name") String name,
-                                                      @Query("stateType") int stateType,
-                                                      @Query("queryType") int queryType);
+                                                @Query("name") String name,
+                                                @Query("stateType") int stateType,
+                                                @Query("queryType") int queryType);
+
+    /**
+     * 搜索任务列表
+     *
+     * @param assignTos
+     * @param name
+     * @param stateType 0:未完成；1：已完成；2：已删除
+     * @param queryType 0:全部；1：新任务；2：我关注的；3我部门的
+     * @return
+     */
+    @GET("api/v2/taskflow/queryMobileTask")
+    Call<ResEntity<TaskEntity>> taskQueryByName(@Query("assignTos") String assignTos,
+                                                @Query("name") String name,
+                                                @Query("stateType") int stateType,
+                                                @Query("queryType") int queryType,
+                                                @Query("matterId") String matterId);
 }
 
 
