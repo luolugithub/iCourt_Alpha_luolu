@@ -78,7 +78,7 @@ public class TaskSelectDialogFragment
     }
 
     OnFragmentCallBackListener onFragmentCallBackListener;
-    String projectId;
+    String projectId = null;
     String selectedTaskId;
 
     @Override
@@ -170,8 +170,6 @@ public class TaskSelectDialogFragment
 
         });
 
-        rlCommSearch.setVisibility(View.GONE);//先隐藏
-
         showLoadingDialog(null);
         getData(true);
     }
@@ -197,7 +195,6 @@ public class TaskSelectDialogFragment
                             dismissLoadingDialog();
                         }
                     });
-
         } else {
             getApi().taskListQuery(0,
                     getLoginUserId(),
@@ -245,7 +242,8 @@ public class TaskSelectDialogFragment
      */
     private void searchTaskByName(final String taskName) {
         if (TextUtils.isEmpty(taskName)) return;
-        getApi().taskQueryByName(getLoginUserId(), taskName, 0, 0)
+        //pms 环境有
+        getApi().taskQueryByName(getLoginUserId(), taskName, 0, 0, projectId)
                 .enqueue(new SimpleCallBack<TaskEntity>() {
                     @Override
                     public void onSuccess(Call<ResEntity<TaskEntity>> call, Response<ResEntity<TaskEntity>> response) {

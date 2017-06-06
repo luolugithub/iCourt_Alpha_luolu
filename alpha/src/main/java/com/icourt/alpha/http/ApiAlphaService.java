@@ -271,6 +271,7 @@ public interface ApiAlphaService {
 
     /**
      * 计时项目列表搜索
+     * pms接口独有
      *
      * @param myStar
      * @param status
@@ -567,6 +568,7 @@ public interface ApiAlphaService {
 
     /**
      * 项目下任务列表
+     *
      * @param stateType
      * @param matterId
      * @param type
@@ -574,9 +576,9 @@ public interface ApiAlphaService {
      */
     @GET("api/v2/taskflow")
     Call<ResEntity<TaskEntity>> taskListQueryByMatterId(
-                                              @Query("stateType") int stateType,
-                                              @Query("matterId") String matterId,
-                                              @Query("type") int type);
+            @Query("stateType") int stateType,
+            @Query("matterId") String matterId,
+            @Query("type") int type);
 
     /**
      * 获取任务下的附件列表
@@ -871,6 +873,7 @@ public interface ApiAlphaService {
 
     /**
      * 搜索项目列表
+     *
      * @param queryString
      * @param myStar
      * @return
@@ -896,6 +899,21 @@ public interface ApiAlphaService {
                                                 @Query("queryType") int queryType);
 
 
+    /**
+     * 搜索任务列表
+     *
+     * @param assignTos
+     * @param name
+     * @param stateType 0:未完成；1：已完成；2：已删除
+     * @param queryType 0:全部；1：新任务；2：我关注的；3我部门的
+     * @return
+     */
+    @GET("api/v2/taskflow/queryMobileTask")
+    Call<ResEntity<TaskEntity>> taskQueryByName(@Query("assignTos") String assignTos,
+                                                @Query("name") String name,
+                                                @Query("stateType") int stateType,
+                                                @Query("queryType") int queryType,
+                                                @Query("matterId") String matterId);
     /**************************权限模块**************************/
     /**
      * 获取各个模块是否有权限 接口真烂
