@@ -298,12 +298,19 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
                             taskItemEntity.matter = matterEntity;
                         }
                     }
-                }
-                if (taskGroupEntity != null) {
-                    taskGroupTv.setText(taskGroupEntity.name);
+                    if (taskGroupEntity != null) {
+                        taskGroupTv.setText(taskGroupEntity.name);
+                    } else {
+                        taskGroupTv.setText("");
+                    }
                 } else {
-                    taskGroupTv.setText(taskItemEntity != null ? taskItemEntity.parentFlow != null ? taskItemEntity.parentFlow.name : "" : "");
+                    if (taskGroupEntity != null) {
+                        taskGroupTv.setText(taskGroupEntity.name);
+                    } else {
+                        taskGroupTv.setText(taskItemEntity != null ? taskItemEntity.parentFlow != null ? taskItemEntity.parentFlow.name : "" : "");
+                    }
                 }
+
                 EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION));
             }
 
@@ -328,7 +335,6 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
             jsonObject.addProperty("id", itemEntity.id);
             jsonObject.addProperty("state", itemEntity.state);
             jsonObject.addProperty("dueTime", itemEntity.dueTime);
-            jsonObject.addProperty("parentId", itemEntity.parentId);
             jsonObject.addProperty("description", itemEntity.description);
             jsonObject.addProperty("valid", true);
             jsonObject.addProperty("updateTime", DateUtils.millis());
@@ -337,6 +343,8 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
             }
             if (taskGroupEntity != null) {
                 jsonObject.addProperty("parentId", taskGroupEntity.id);
+            } else {
+                jsonObject.addProperty("parentId", "");
             }
             JsonArray jsonarr = new JsonArray();
             if (itemEntity.attendeeUsers != null) {

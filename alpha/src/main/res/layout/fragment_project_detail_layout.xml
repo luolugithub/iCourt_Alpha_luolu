@@ -50,13 +50,13 @@
                         android:visibility="gone" />
                 </LinearLayout>
 
-                <android.support.v4.view.ViewPager
+                <com.icourt.alpha.view.WrapContentHeightViewPager
                     android:id="@+id/project_viewpager"
                     android:layout_width="match_parent"
-                    android:layout_height="500dp"
+                    android:layout_height="wrap_content"
                     >
 
-                </android.support.v4.view.ViewPager>
+                </com.icourt.alpha.view.WrapContentHeightViewPager>
             </LinearLayout>
         </LinearLayout>
 

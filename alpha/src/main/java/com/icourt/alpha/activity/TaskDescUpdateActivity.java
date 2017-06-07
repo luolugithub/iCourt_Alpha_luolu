@@ -7,6 +7,9 @@ import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.AppBarLayout;
+import android.text.Editable;
+import android.text.InputFilter;
+import android.text.TextWatcher;
 import android.view.View;
 import android.widget.CheckedTextView;
 import android.widget.EditText;
@@ -55,6 +58,8 @@ public class TaskDescUpdateActivity extends BaseActivity {
 
     String descOrName;
     int type;
+    @BindView(R.id.content_length_tv)
+    TextView contentLengthTv;
 
     @IntDef({UPDATE_TASK_DESC,
             UPDATE_TASK_NAME})
@@ -93,9 +98,28 @@ public class TaskDescUpdateActivity extends BaseActivity {
         } else if (type == UPDATE_TASK_NAME) {
             setTitle("修改任务名称");
             descEditText.setHint("添加任务名称");
+            descEditText.setMaxEms(200);
+            descEditText.setFilters(new InputFilter[]{new InputFilter.LengthFilter(200)});
+            contentLengthTv.setVisibility(View.VISIBLE);
+            descEditText.addTextChangedListener(new TextWatcher() {
+                @Override
+                public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                    contentLengthTv.setText("0/" + descEditText.getMaxEms());
+                }
+
+                @Override
+                public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+                }
+
+                @Override
+                public void afterTextChanged(Editable s) {
+                    contentLengthTv.setText(s.toString().length() + "/" + descEditText.getMaxEms());
+                }
+            });
         }
         descEditText.setText(descOrName);
-        descEditText.setSelection(descEditText.getText().toString().length());
+        descEditText.setSelection(descEditText.getText().length());
     }
 
     @OnClick({R.id.titleAction})

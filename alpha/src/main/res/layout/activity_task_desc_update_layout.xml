@@ -6,18 +6,32 @@
 
     <include layout="@layout/layout_title_type_3" />
 
-    <EditText
-        android:id="@+id/desc_editText"
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/dp20"
         android:background="@color/white"
-        android:gravity="start"
-        android:focusable="true"
-        android:focusableInTouchMode="true"
-        android:hint="添加任务详情"
-        android:minHeight="180dp"
-        android:padding="@dimen/dp10"
-        android:textColor="@color/alpha_font_color_black"
-        android:textSize="16sp" />
+        android:padding="@dimen/dp10">
+
+        <EditText
+            android:id="@+id/desc_editText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@null"
+            android:gravity="start"
+            android:hint="添加任务详情"
+            android:minHeight="180dp"
+            android:textColor="@color/alpha_font_color_black"
+            android:textSize="16sp" />
+
+        <TextView
+            android:id="@+id/content_length_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|right"
+            android:text="0/200"
+            android:visibility="gone"
+            android:textColor="@color/alpha_font_color_gray"
+            android:textSize="10sp" />
+    </FrameLayout>
 </LinearLayout>

@@ -304,8 +304,8 @@ public class ProjectFileBoxFragment extends BaseFragment implements BaseRecycler
     }
 
     @Override
-    public void onDestroyView() {
-        super.onDestroyView();
+    public void onDestroy() {
+        super.onDestroy();
         unbinder.unbind();
     }
 

@@ -36,6 +36,7 @@ public class ProjectTaskGroupAdapter extends SelectedRecyclerAdapter<TaskGroupEn
             task_group_arrow.setImageResource(selected ? R.mipmap.checkmark : 0);
         } else {
             task_group_arrow.setImageResource(R.mipmap.arrow_right);
+            countView.setText(String.valueOf(taskGroupEntity.taskCount));
         }
     }
 

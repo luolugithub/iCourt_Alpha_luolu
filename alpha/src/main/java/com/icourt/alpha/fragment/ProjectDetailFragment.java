@@ -4,7 +4,6 @@ import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v4.view.ViewPager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
@@ -30,6 +29,7 @@ import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.ItemDecorationUtils;
+import com.icourt.alpha.view.WrapContentHeightViewPager;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 
 import org.greenrobot.eventbus.EventBus;
@@ -66,7 +66,7 @@ public class ProjectDetailFragment extends BaseFragment {
     @BindView(R.id.project_add_routine)
     ImageView projectAddRoutine;
     @BindView(R.id.project_viewpager)
-    ViewPager projectViewpager;
+    WrapContentHeightViewPager projectViewpager;
     @BindView(R.id.basic_top_recyclerview)
     RecyclerView basicTopRecyclerview;
     @BindView(R.id.project_member_layout)
@@ -311,8 +311,8 @@ public class ProjectDetailFragment extends BaseFragment {
     }
 
     @Override
-    public void onDestroyView() {
-        super.onDestroyView();
+    public void onDestroy() {
+        super.onDestroy();
         unbinder.unbind();
     }
 

@@ -1,9 +1,9 @@
 package com.icourt.alpha.activity;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.AppBarLayout;
@@ -14,6 +14,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.google.gson.JsonElement;
 import com.google.gson.JsonIOException;
 import com.google.gson.JsonObject;
 import com.icourt.alpha.R;
@@ -21,7 +22,11 @@ import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.entity.bean.TaskGroupEntity;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
+import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.api.RequestUtils;
+
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -38,6 +43,8 @@ import retrofit2.Response;
 
 public class TaskGroupCreateActivity extends BaseActivity {
     private static final String KEY_PROJECT_ID = "key_project_id";
+    public static final int CREAT_TASK_GROUP_TYPE = 1;//新建任务组
+    public static final int UPDATE_TASK_GROUP_TYPE = 2;//编辑任务组
     @BindView(R.id.titleBack)
     ImageView titleBack;
     @BindView(R.id.titleContent)
@@ -49,21 +56,30 @@ public class TaskGroupCreateActivity extends BaseActivity {
     @BindView(R.id.group_name_edittext)
     EditText groupNameEdittext;
 
-    String projectId;
-
-    public static void launch(@NonNull Context context, @NonNull String projectId) {
-        if (context == null) return;
-        if (TextUtils.isEmpty(projectId)) return;
-        Intent intent = new Intent(context, TaskGroupCreateActivity.class);
-        intent.putExtra(KEY_PROJECT_ID, projectId);
-        context.startActivity(intent);
+    @IntDef({CREAT_TASK_GROUP_TYPE,
+            UPDATE_TASK_GROUP_TYPE})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface TASK_GROUP_TYPE {
     }
 
-    public static void launchForResult(@NonNull Activity activity, @NonNull String projectId, int requestCode) {
+    String projectId;
+    int type;
+    TaskGroupEntity entity;
+
+    public static void launchForResult(@NonNull Activity activity, @NonNull String projectId, @TASK_GROUP_TYPE int type, int requestCode) {
         if (activity == null) return;
         if (TextUtils.isEmpty(projectId)) return;
         Intent intent = new Intent(activity, TaskGroupCreateActivity.class);
         intent.putExtra(KEY_PROJECT_ID, projectId);
+        intent.putExtra("type", type);
+        activity.startActivityForResult(intent, requestCode);
+    }
+
+    public static void launchForResult(@NonNull Activity activity, @NonNull TaskGroupEntity entity, @TASK_GROUP_TYPE int type, int requestCode) {
+        if (activity == null) return;
+        Intent intent = new Intent(activity, TaskGroupCreateActivity.class);
+        intent.putExtra("entity", entity);
+        intent.putExtra("type", type);
         activity.startActivityForResult(intent, requestCode);
     }
 
@@ -79,7 +95,19 @@ public class TaskGroupCreateActivity extends BaseActivity {
     protected void initView() {
         super.initView();
         projectId = getIntent().getStringExtra(KEY_PROJECT_ID);
-        setTitle("新建任务组");
+        type = getIntent().getIntExtra("type", -1);
+        entity = (TaskGroupEntity) getIntent().getSerializableExtra("entity");
+        if (type == UPDATE_TASK_GROUP_TYPE) {
+            setTitle("编辑任务组");
+            if (entity != null) {
+                groupNameEdittext.setText(entity.name);
+                groupNameEdittext.setSelection(groupNameEdittext.getText().length());
+            }
+        } else {
+            setTitle("新建任务组");
+        }
+        groupNameEdittext.requestFocus();
+        SystemUtils.showSoftKeyBoard(this);
     }
 
     @Override
@@ -87,7 +115,11 @@ public class TaskGroupCreateActivity extends BaseActivity {
         super.onClick(v);
         switch (v.getId()) {
             case R.id.titleAction:
-                createGroup();
+                if (type == UPDATE_TASK_GROUP_TYPE) {
+                    updateGroup();
+                } else {
+                    createGroup();
+                }
                 break;
         }
     }
@@ -96,7 +128,7 @@ public class TaskGroupCreateActivity extends BaseActivity {
      * 新建任务组
      */
     private void createGroup() {
-        showLoadingDialog("正在新建任务组...");
+        showLoadingDialog(null);
         getApi().taskGroupCreate(RequestUtils.createJsonBody(getAddGroupJson())).enqueue(new SimpleCallBack<TaskGroupEntity>() {
             @Override
             public void onSuccess(Call<ResEntity<TaskGroupEntity>> call, Response<ResEntity<TaskGroupEntity>> response) {
@@ -109,6 +141,30 @@ public class TaskGroupCreateActivity extends BaseActivity {
 
             @Override
             public void onFailure(Call<ResEntity<TaskGroupEntity>> call, Throwable t) {
+                super.onFailure(call, t);
+                dismissLoadingDialog();
+            }
+        });
+    }
+
+    /**
+     * 修改任务组
+     */
+    private void updateGroup() {
+        showLoadingDialog(null);
+        getApi().taskUpdate(RequestUtils.createJsonBody(updateGroupJson())).enqueue(new SimpleCallBack<JsonElement>() {
+            @Override
+            public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
+                if (response.body().result != null) {
+                    dismissLoadingDialog();
+                    entity.name = groupNameEdittext.getText().toString();
+                    ProjectTaskGroupActivity.launchSetResult(TaskGroupCreateActivity.this, entity);
+                    TaskGroupCreateActivity.this.finish();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
                 super.onFailure(call, t);
                 dismissLoadingDialog();
             }
@@ -131,6 +187,27 @@ public class TaskGroupCreateActivity extends BaseActivity {
             jsonObject.addProperty("valid", 1);
             jsonObject.addProperty("state", 0);
             jsonObject.addProperty("matterId", projectId);
+            json = jsonObject.toString();
+            return json;
+        } catch (JsonIOException e) {
+            e.printStackTrace();
+        }
+        return json;
+    }
+
+    /**
+     * 修改任务组json
+     * {id: "1F82393CB0D511E6992300163E162ADD", name: "勿忘我1", valid: true}
+     *
+     * @return
+     */
+    private String updateGroupJson() {
+        String json = null;
+        try {
+            JsonObject jsonObject = new JsonObject();
+            jsonObject.addProperty("id", entity.id);
+            jsonObject.addProperty("name", groupNameEdittext.getText().toString().trim());
+            jsonObject.addProperty("valid", true);
             json = jsonObject.toString();
             return json;
         } catch (JsonIOException e) {

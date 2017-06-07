@@ -282,7 +282,12 @@ public class TaskCreateActivity extends BaseActivity implements ProjectSelectDia
     private String getNewTaskJson() {
         JsonObject jsonObject = new JsonObject();
         if (!TextUtils.isEmpty(taskNameEt.getText().toString())) {
-            jsonObject.addProperty("name", taskNameEt.getText().toString());
+            if (taskNameEt.getText().length() <= 200) {
+                jsonObject.addProperty("name", taskNameEt.getText().toString());
+            } else {
+                showTopSnackBar("任务名称不能超过200个字符");
+                return null;
+            }
         } else {
             showTopSnackBar("请输入任务名称");
             return null;

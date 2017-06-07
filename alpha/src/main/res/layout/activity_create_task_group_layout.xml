@@ -20,6 +20,8 @@
         android:layout_height="wrap_content"
         android:background="@color/white"
         android:padding="@dimen/dp15"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
         android:textColor="@color/alpha_font_color_black"
         android:textSize="16sp" />
 </LinearLayout>

@@ -208,6 +208,7 @@
             android:screenOrientation="portrait" />
         <activity
             android:name=".activity.TaskGroupCreateActivity"
+            android:windowSoftInputMode="stateVisible|adjustResize"
             android:screenOrientation="portrait" />
         <activity
             android:name=".activity.TimerDetailActivity"
@@ -229,6 +230,7 @@
             android:windowSoftInputMode="adjustResize|stateVisible" />
         <activity
             android:name=".activity.TaskDescUpdateActivity"
+            android:windowSoftInputMode="stateVisible|adjustResize"
             android:screenOrientation="portrait" />
         <activity
             android:name=".activity.FileBoxListActivity"
