@@ -17,6 +17,7 @@ import com.icourt.alpha.adapter.baseadapter.BaseFragmentAdapter;
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.entity.event.UnReadEvent;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
+import com.icourt.alpha.interfaces.OnPageFragmentCallBack;
 import com.icourt.alpha.interfaces.OnTabDoubleClickListener;
 import com.icourt.alpha.service.SyncDataService;
 import com.icourt.alpha.widget.nim.GlobalMessageObserver;
@@ -42,7 +43,7 @@ import butterknife.Unbinder;
  * version 1.0.0
  */
 public class TabNewsFragment extends BaseFragment
-        implements OnTabDoubleClickListener, OnFragmentCallBackListener {
+        implements OnTabDoubleClickListener, OnFragmentCallBackListener, OnPageFragmentCallBack {
 
     Unbinder unbinder;
     @BindView(R.id.tabLayout)
@@ -160,5 +161,33 @@ public class TabNewsFragment extends BaseFragment
         super.onDestroy();
         NIMClient.getService(MsgServiceObserve.class)
                 .observeReceiveMessage(globalMessageObserver, false);
+    }
+
+    @Override
+    public void onRequest2NextPage(Fragment fragment, int type, Bundle bundle) {
+        if (fragment instanceof MessageListFragment) {
+            //进入联系人tab
+            viewPager.setCurrentItem(2);
+        }
+    }
+
+    @Override
+    public void onRequest2LastPage(Fragment fragment, int type, Bundle bundle) {
+
+    }
+
+    @Override
+    public void onRequest2Page(Fragment fragment, int type, int pagePos, Bundle bundle) {
+
+    }
+
+    @Override
+    public boolean canGoNextFragment(Fragment fragment) {
+        return false;
+    }
+
+    @Override
+    public boolean canGoLastFragment(Fragment fragment) {
+        return false;
     }
 }

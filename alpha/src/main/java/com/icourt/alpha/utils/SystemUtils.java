@@ -304,6 +304,7 @@ public class SystemUtils {
      */
     public static void showSoftKeyBoard(Context act, View v) {
         try {
+            if (v != null) v.requestFocus();
             InputMethodManager imm = (InputMethodManager) act.getSystemService(Context.INPUT_METHOD_SERVICE);
             imm.showSoftInput(v, InputMethodManager.SHOW_FORCED);
         } catch (Exception e) {

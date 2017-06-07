@@ -1,6 +1,8 @@
 package com.icourt.alpha.base;
 
 import android.graphics.Color;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
 import android.os.StrictMode;
@@ -168,6 +170,11 @@ public class BaseApplication extends MultiDexApplication {
         config.ledARGB = Color.GREEN;//呼吸灯的颜色 The color of the led.
         config.ledOnMs = 1000;//呼吸灯亮时的持续时间（毫秒）
         config.ledOffMs = 1500;//呼吸灯熄灭时的持续时间（毫秒）
+        Uri actualDefaultRingtoneUri = RingtoneManager.getActualDefaultRingtoneUri(this,
+                RingtoneManager.TYPE_NOTIFICATION);
+        if (actualDefaultRingtoneUri != null) {
+            config.notificationSound = actualDefaultRingtoneUri.toString();
+        }
 
         options.statusBarNotificationConfig = config;
         UserPreferences.setStatusConfig(config);

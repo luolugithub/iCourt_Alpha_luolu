@@ -15,14 +15,16 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
+import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
-import android.widget.RelativeLayout;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.TaskSelectAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
+import com.icourt.alpha.adapter.baseadapter.HeaderFooterAdapter;
 import com.icourt.alpha.entity.bean.TaskEntity;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
@@ -51,18 +53,24 @@ public class TaskSelectDialogFragment
         extends BaseDialogFragment
         implements BaseRecyclerAdapter.OnItemClickListener {
 
-    @BindView(R.id.recyclerView)
-    RecyclerView recyclerView;
+
     Unbinder unbinder;
     TaskSelectAdapter taskSelectAdapter;
+    HeaderFooterAdapter<TaskSelectAdapter> headerFooterAdapter;
+    @BindView(R.id.recyclerView)
+    RecyclerView recyclerView;
+    @BindView(R.id.header_comm_search_input_et)
+    EditText headerCommSearchInputEt;
+    @BindView(R.id.header_comm_search_cancel_tv)
+    TextView headerCommSearchCancelTv;
+    @BindView(R.id.header_comm_search_input_ll)
+    LinearLayout headerCommSearchInputLl;
+    @BindView(R.id.contentEmptyText)
+    TextView contentEmptyText;
     @BindView(R.id.bt_cancel)
     TextView btCancel;
     @BindView(R.id.bt_ok)
     TextView btOk;
-    @BindView(R.id.header_input_et)
-    EditText headerInputEt;
-    @BindView(R.id.rl_comm_search)
-    RelativeLayout rlCommSearch;
 
     /**
      * @param projectId 为空 为我的任务
@@ -91,6 +99,13 @@ public class TaskSelectDialogFragment
         }
     }
 
+    @Override
+    public void onStart() {
+        super.onStart();
+        Window window = getDialog().getWindow();
+        window.setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.WRAP_CONTENT);
+    }
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -117,10 +132,14 @@ public class TaskSelectDialogFragment
         }
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.addItemDecoration(ItemDecorationUtils.getCommFullDivider(getContext(), true));
-        recyclerView.setAdapter(taskSelectAdapter = new TaskSelectAdapter(true));
+        headerFooterAdapter = new HeaderFooterAdapter<>(taskSelectAdapter = new TaskSelectAdapter(true));
+        View headerView = HeaderFooterAdapter.inflaterView(getContext(), R.layout.header_search_comm, recyclerView);
+        headerFooterAdapter.addHeader(headerView);
+        registerClick(headerView.findViewById(R.id.header_comm_search_ll));
+        recyclerView.setAdapter(headerFooterAdapter);
         taskSelectAdapter.setOnItemClickListener(this);
 
-        headerInputEt.addTextChangedListener(new TextWatcher() {
+        headerCommSearchInputEt.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
 
@@ -140,14 +159,14 @@ public class TaskSelectDialogFragment
                 }
             }
         });
-        headerInputEt.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+        headerCommSearchInputEt.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 switch (actionId) {
                     case EditorInfo.IME_ACTION_SEARCH: {
-                        SystemUtils.hideSoftKeyBoard(getActivity(), headerInputEt);
-                        if (!TextUtils.isEmpty(headerInputEt.getText())) {
-                            searchTaskByName(headerInputEt.getText().toString());
+                        SystemUtils.hideSoftKeyBoard(getActivity(), headerCommSearchInputEt);
+                        if (!TextUtils.isEmpty(headerCommSearchInputEt.getText())) {
+                            searchTaskByName(headerCommSearchInputEt.getText().toString());
                         }
                     }
                     return true;
@@ -156,20 +175,7 @@ public class TaskSelectDialogFragment
                 }
             }
         });
-        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-            @Override
-            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
-                super.onScrollStateChanged(recyclerView, newState);
-                switch (newState) {
-                    case RecyclerView.SCROLL_STATE_DRAGGING: {
-                        SystemUtils.hideSoftKeyBoard(getActivity(), headerInputEt, true);
-                    }
-                    break;
-                }
-            }
-
-        });
-
+        headerCommSearchInputLl.setVisibility(View.GONE);
         showLoadingDialog(null);
         getData(true);
     }
@@ -243,7 +249,7 @@ public class TaskSelectDialogFragment
     private void searchTaskByName(final String taskName) {
         if (TextUtils.isEmpty(taskName)) return;
         //pms 环境有
-        getApi().taskQueryByName(getLoginUserId(), taskName, 0, 0, projectId)
+        getApi().taskQueryByName(getLoginUserId(), taskName, 0, 0)
                 .enqueue(new SimpleCallBack<TaskEntity>() {
                     @Override
                     public void onSuccess(Call<ResEntity<TaskEntity>> call, Response<ResEntity<TaskEntity>> response) {
@@ -256,7 +262,8 @@ public class TaskSelectDialogFragment
     }
 
     @OnClick({R.id.bt_cancel,
-            R.id.bt_ok})
+            R.id.bt_ok,
+            R.id.header_comm_search_cancel_tv})
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
@@ -274,6 +281,15 @@ public class TaskSelectDialogFragment
                 }
                 dismiss();
                 break;
+            case R.id.header_comm_search_ll:
+                headerCommSearchInputLl.setVisibility(View.VISIBLE);
+                SystemUtils.showSoftKeyBoard(getActivity(), headerCommSearchInputEt);
+                break;
+            case R.id.header_comm_search_cancel_tv:
+                headerCommSearchInputEt.setText("");
+                SystemUtils.hideSoftKeyBoard(getActivity(), headerCommSearchInputEt, true);
+                headerCommSearchInputLl.setVisibility(View.GONE);
+                break;
         }
     }
 
@@ -285,8 +301,8 @@ public class TaskSelectDialogFragment
 
     @Override
     public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
-        taskSelectAdapter.setSelectedPos(position);
-        TaskEntity.TaskItemEntity item = taskSelectAdapter.getItem(position);
+        taskSelectAdapter.setSelectedPos(adapter.getRealPos(position));
+        TaskEntity.TaskItemEntity item = taskSelectAdapter.getItem(adapter.getRealPos(position));
         if (item != null) {
             selectedTaskId = item.id;
         }

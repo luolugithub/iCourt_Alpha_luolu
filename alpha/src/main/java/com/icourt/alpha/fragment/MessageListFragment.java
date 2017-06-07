@@ -12,6 +12,7 @@ import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.icourt.alpha.R;
@@ -35,7 +36,7 @@ import com.icourt.alpha.entity.event.SetTopEvent;
 import com.icourt.alpha.entity.event.UnReadEvent;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
-import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
+import com.icourt.alpha.interfaces.OnPageFragmentCallBack;
 import com.icourt.alpha.interfaces.OnTabDoubleClickListener;
 import com.icourt.alpha.utils.IMUtils;
 import com.icourt.alpha.utils.JsonUtils;
@@ -69,6 +70,7 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 import butterknife.Unbinder;
 import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
@@ -99,12 +101,17 @@ public class MessageListFragment extends BaseRecentContactFragment
     private final List<String> localNoDisturbs = new ArrayList<>();
     @BindView(R.id.login_status_tv)
     TextView loginStatusTv;
+    @BindView(R.id.start_chat_tv)
+    TextView startChatTv;
+    @BindView(R.id.empty_layout_rl)
+    RelativeLayout emptyLayoutRl;
     private int totalUnReadCount;
     private DataChangeAdapterObserver dataChangeAdapterObserver = new DataChangeAdapterObserver() {
         @Override
         protected void updateUI() {
             if (imSessionAdapter != null) {
                 List<IMSessionEntity> data = imSessionAdapter.getData();
+                emptyLayoutRl.setVisibility(data.isEmpty() ? View.VISIBLE : View.GONE);
                 int unReadCount = 0;
                 for (IMSessionEntity sessionEntity : data) {
                     if (sessionEntity != null && sessionEntity.recentContact != null) {
@@ -128,7 +135,7 @@ public class MessageListFragment extends BaseRecentContactFragment
     LinearLayoutManager linearLayoutManager;
     HeaderFooterAdapter<IMSessionAdapter> headerFooterAdapter;
     AlphaUserInfo loginUserInfo;
-    OnFragmentCallBackListener parentFragmentCallBackListener;
+    OnPageFragmentCallBack onPageFragmentCallBack;
     Comparator<IMSessionEntity> imSessionEntityComparator = new Comparator<IMSessionEntity>() {
 
         @Override
@@ -376,7 +383,7 @@ public class MessageListFragment extends BaseRecentContactFragment
     public void onAttach(Context context) {
         super.onAttach(context);
         try {
-            parentFragmentCallBackListener = (OnFragmentCallBackListener) context;
+            onPageFragmentCallBack = (OnPageFragmentCallBack) context;
         } catch (ClassCastException e) {
         }
     }
@@ -765,6 +772,8 @@ public class MessageListFragment extends BaseRecentContactFragment
         return true;
     }
 
+
+    @OnClick({R.id.start_chat_tv})
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
@@ -772,7 +781,17 @@ public class MessageListFragment extends BaseRecentContactFragment
                 SearchPolymerizationActivity.launch(getContext(),
                         SearchPolymerizationActivity.SEARCH_PRIORITY_CHAT_HISTORTY);
                 break;
+            case R.id.start_chat_tv:
+                if (getParentFragment() instanceof OnPageFragmentCallBack) {
+                    onPageFragmentCallBack = (OnPageFragmentCallBack) getParentFragment();
+                }
+                if (onPageFragmentCallBack != null) {
+                    onPageFragmentCallBack.onRequest2NextPage(MessageListFragment.this, 0, null);
+                }
+                break;
+            default:
+                super.onClick(v);
+                break;
         }
-        super.onClick(v);
     }
 }

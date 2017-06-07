@@ -527,6 +527,7 @@ public class GroupDetailActivity extends BaseActivity
                     @Override
                     public void onSuccess(Call<ResEntity<Boolean>> call, Response<ResEntity<Boolean>> response) {
                         getData(true);
+                        showTopSnackBar("加入成功");
                         EventBus.getDefault().post(
                                 new GroupActionEvent(GroupActionEvent.GROUP_ACTION_JOIN, getIntent().getStringExtra(KEY_TID)));
                     }
