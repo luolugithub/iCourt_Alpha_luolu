@@ -124,6 +124,7 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
     private static final String KEY_TID = "key_tid";
     private static final String KEY_TITLE = "key_title";
     private static final String KEY_TOTAL_UNREAD_NUM = "key_total_unread_num";
+    private static final String KEY_HIDDEN_MORE_BTN = "key_hidden_more_btn";
     private static final String KEY_LOCATION_MSG_TIME = "key_location_msg_time";
     private static final String KEY_CHAT_TYPE = "key_chat_type";
 
@@ -194,6 +195,24 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
         }
     };
 
+    public static final void launchP2P(@NonNull Context context,
+                                       @NonNull String uid,
+                                       String title,
+                                       long locationMsgTime,
+                                       int totalUnreadCount,
+                                       boolean hiddenMoreBtn) {
+        if (context == null) return;
+        if (TextUtils.isEmpty(uid)) return;
+        Intent intent = new Intent(context, ChatActivity.class);
+        intent.putExtra(KEY_UID, uid);
+        intent.putExtra(KEY_TITLE, title);
+        intent.putExtra(KEY_CHAT_TYPE, CHAT_TYPE_P2P);
+        intent.putExtra(KEY_LOCATION_MSG_TIME, locationMsgTime);
+        intent.putExtra(KEY_TOTAL_UNREAD_NUM, totalUnreadCount);
+        intent.putExtra(KEY_HIDDEN_MORE_BTN, hiddenMoreBtn);
+        context.startActivity(intent);
+    }
+
 
     /**
      * 启动 单聊
@@ -208,15 +227,7 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
                                        String title,
                                        long locationMsgTime,
                                        int totalUnreadCount) {
-        if (context == null) return;
-        if (TextUtils.isEmpty(uid)) return;
-        Intent intent = new Intent(context, ChatActivity.class);
-        intent.putExtra(KEY_UID, uid);
-        intent.putExtra(KEY_TITLE, title);
-        intent.putExtra(KEY_CHAT_TYPE, CHAT_TYPE_P2P);
-        intent.putExtra(KEY_LOCATION_MSG_TIME, locationMsgTime);
-        intent.putExtra(KEY_TOTAL_UNREAD_NUM, totalUnreadCount);
-        context.startActivity(intent);
+        launchP2P(context, uid, title, locationMsgTime, totalUnreadCount, false);
     }
 
 
@@ -232,6 +243,22 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
                                   String title,
                                   long locationMsgTime,
                                   int totalUnreadCount) {
+        launchTEAM(context, tid, title, locationMsgTime, totalUnreadCount, false);
+    }
+
+    /**
+     * 启动 群聊
+     *
+     * @param context
+     * @param tid             云信tid
+     * @param locationMsgTime 定位消息的时间 小于0=不定位消息
+     */
+    public static void launchTEAM(@NonNull Context context,
+                                  String tid,
+                                  String title,
+                                  long locationMsgTime,
+                                  int totalUnreadCount,
+                                  boolean hiddenMoreBtn) {
         if (context == null) return;
         if (TextUtils.isEmpty(tid)) return;
         Intent intent = new Intent(context, ChatActivity.class);
@@ -240,6 +267,7 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
         intent.putExtra(KEY_TITLE, title);
         intent.putExtra(KEY_LOCATION_MSG_TIME, locationMsgTime);
         intent.putExtra(KEY_TOTAL_UNREAD_NUM, totalUnreadCount);
+        intent.putExtra(KEY_HIDDEN_MORE_BTN, hiddenMoreBtn);
         context.startActivity(intent);
     }
 
@@ -299,7 +327,6 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
         initView();
         initEmoticonsKeyBoardBar();
         getLocalContacts();
-        getTeamINFO(teamCallBack);
         if (getLocationTime() > 0) {
             getAfterLocationMsgs();
         } else {
@@ -701,6 +728,11 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
         ImageView titleActionImage2 = getTitleActionImage2();
         if (titleActionImage2 != null) {
             titleActionImage2.setImageResource(R.mipmap.header_icon_more);
+            titleActionImage2.setVisibility(getIntent().getBooleanExtra(KEY_HIDDEN_MORE_BTN, false) ? View.INVISIBLE : View.VISIBLE);
+        }
+
+        if (!getIntent().getBooleanExtra(KEY_HIDDEN_MORE_BTN, false)) {
+            getTeamINFO(teamCallBack);
         }
         ImageView titleActionImage = getTitleActionImage();
         if (titleActionImage != null) {
@@ -753,7 +785,7 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
                             ekBar.reset();
                         }
                         // ekBar.reset();
-                           // SystemUtils.hideSoftKeyBoard(getActivity(), etContactName, true);
+                        // SystemUtils.hideSoftKeyBoard(getActivity(), etContactName, true);
                     }
                     break;
                 }
