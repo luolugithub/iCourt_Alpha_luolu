@@ -939,6 +939,15 @@ public interface ApiAlphaService {
     Call<ResEntity<List<String>>> permissionQuery(@Path("uid") String uid,
                                                   @Query("type") String type,
                                                   @Query("subjectid") String subjectid);
+
+    /**
+     * 获取任务详情(返回权限)
+     *
+     * @param id
+     * @return
+     */
+    @GET("api/v2/taskflow/getWithRight/{id}")
+    Call<ResEntity<TaskEntity.TaskItemEntity>> taskQueryDetailWithRight(@Path("id") String id);
 }
 
 

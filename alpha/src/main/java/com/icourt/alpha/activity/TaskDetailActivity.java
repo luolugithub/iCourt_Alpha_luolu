@@ -136,9 +136,9 @@ public class TaskDetailActivity extends BaseActivity implements OnFragmentCallBa
     TaskUsersAdapter usersAdapter;
     @BindView(R.id.comment_layout)
     LinearLayout commentLayout;
-    boolean isEditTask = false;//编辑任务权限
-    boolean isDeleteTask = false;//删除任务权限
-    boolean isAddTime = false;//添加计时权限
+//    boolean isEditTask = false;//编辑任务权限
+//    boolean isDeleteTask = false;//删除任务权限
+//    boolean isAddTime = false;//添加计时权限
 
     public static void launch(@NonNull Context context, @NonNull String taskId) {
         if (context == null) return;
@@ -199,7 +199,7 @@ public class TaskDetailActivity extends BaseActivity implements OnFragmentCallBa
                 showBottomMeau();
                 break;
             case R.id.task_name:
-                if (isEditTask) {
+                if (hasTaskEditPermission()) {
                     TaskDescUpdateActivity.launch(getContext(), taskName.getText().toString(), TaskDescUpdateActivity.UPDATE_TASK_NAME);
                 } else {
                     showTopSnackBar("您没有编辑任务的权限");
@@ -207,7 +207,7 @@ public class TaskDetailActivity extends BaseActivity implements OnFragmentCallBa
                 break;
             case R.id.task_user_layout:
             case R.id.task_users_layout:
-                if (isEditTask) {
+                if (hasTaskEditPermission()) {
                     if (taskItemEntity.matter != null) {
                         showTaskAllotSelectDialogFragment(taskItemEntity.matter.id);
                     } else {
@@ -236,7 +236,7 @@ public class TaskDetailActivity extends BaseActivity implements OnFragmentCallBa
                     });
                 break;
             case R.id.task_checkbox://  完成／取消完成
-                if (isEditTask) {
+                if (hasTaskEditPermission()) {
                     if (taskItemEntity.state) {
                         if (taskItemEntity.attendeeUsers != null) {
                             if (taskItemEntity.attendeeUsers.size() > 1) {
@@ -409,7 +409,23 @@ public class TaskDetailActivity extends BaseActivity implements OnFragmentCallBa
     @Override
     protected void getData(boolean isRefresh) {
         showLoadingDialog(null);
-        getApi().taskQueryDetail(taskId).enqueue(new SimpleCallBack<TaskEntity.TaskItemEntity>() {
+        //没有返回权限
+//        getApi().taskQueryDetail(taskId).enqueue(new SimpleCallBack<TaskEntity.TaskItemEntity>() {
+//            @Override
+//            public void onSuccess(Call<ResEntity<TaskEntity.TaskItemEntity>> call, Response<ResEntity<TaskEntity.TaskItemEntity>> response) {
+//                dismissLoadingDialog();
+//                taskItemEntity = response.body().result;
+//                setDataToView(response.body().result);
+//            }
+//
+//            @Override
+//            public void onFailure(Call<ResEntity<TaskEntity.TaskItemEntity>> call, Throwable t) {
+//                super.onFailure(call, t);
+//                dismissLoadingDialog();
+//            }
+//        });
+        //有返回权限
+        getApi().taskQueryDetailWithRight(taskId).enqueue(new SimpleCallBack<TaskEntity.TaskItemEntity>() {
             @Override
             public void onSuccess(Call<ResEntity<TaskEntity.TaskItemEntity>> call, Response<ResEntity<TaskEntity.TaskItemEntity>> response) {
                 dismissLoadingDialog();
@@ -426,50 +442,34 @@ public class TaskDetailActivity extends BaseActivity implements OnFragmentCallBa
     }
 
     /**
-     * 获取权限列表
+     * 是否有任务删除权限
      */
-    private void checkAddTaskAndDocumentPms(String projectId) {
-        getApi().permissionQuery(getLoginUserId(), "MAT", projectId).enqueue(new SimpleCallBack<List<String>>() {
-            @Override
-            public void onSuccess(Call<ResEntity<List<String>>> call, Response<ResEntity<List<String>>> response) {
-
-                if (response.body().result != null) {
-                    if (response.body().result.contains("MAT:matter.task:edit")) {
-                        isEditTask = true;
-                    }
-                    if (response.body().result.contains("MAT:matter.task:delete")) {
-                        isDeleteTask = true;
-                    }
-                    if (response.body().result.contains("MAT:matter.timeLog:add")) {
-                        isAddTime = true;
-                        taskStartIamge.setVisibility(View.VISIBLE);
-                    } else {
-                        taskStartIamge.setVisibility(View.GONE);
-                    }
-                }
-            }
-        });
+    private boolean hasTaskDeletePermission() {
+        if (taskItemEntity != null && taskItemEntity.right != null) {
+            return taskItemEntity.right.contains("MAT:matter.task:delete");
+        }
+        return false;
     }
 
-//    /**
-//     * 是否有任务删除权限
-//     */
-//    private boolean hasTaskDeletePermission() {
-//        if (taskItemEntity != null && taskItemEntity.right != null) {
-//            return taskItemEntity.right.contains("MAT:matter.task:delete");
-//        }
-//        return false;
-//    }
-//
-//    /**
-//     * 是否有任务编辑权限
-//     */
-//    private boolean hasTaskEditPermission() {
-//        if (taskItemEntity != null && taskItemEntity.right != null) {
-//            return taskItemEntity.right.contains("MAT:matter.task:edit");
-//        }
-//        return false;
-//    }
+    /**
+     * 是否有任务编辑权限
+     */
+    private boolean hasTaskEditPermission() {
+        if (taskItemEntity != null && taskItemEntity.right != null) {
+            return taskItemEntity.right.contains("MAT:matter.task:edit");
+        }
+        return false;
+    }
+
+    /**
+     * 是否有添加计时权限
+     */
+    private boolean hasAddTimerPermission() {
+        if (taskItemEntity != null && taskItemEntity.right != null) {
+            return taskItemEntity.right.contains("MAT:matter.timeLog:add");
+        }
+        return false;
+    }
 
     /**
      * 展示选择负责人对话框
@@ -503,15 +503,10 @@ public class TaskDetailActivity extends BaseActivity implements OnFragmentCallBa
     private void setDataToView(TaskEntity.TaskItemEntity taskItemEntity) {
         if (taskItemEntity != null) {
 
-            if (taskItemEntity.matter != null) {
-                checkAddTaskAndDocumentPms(taskItemEntity.matter.id);
-            } else {
-                isDeleteTask = true;
-                isEditTask = true;
-            }
             if (titleAction2 != null) {
-                titleAction2.setVisibility(isDeleteTask ? View.VISIBLE : View.GONE);
+                titleAction2.setVisibility(hasTaskDeletePermission() ? View.VISIBLE : View.GONE);
             }
+            taskStartIamge.setVisibility(hasAddTimerPermission() ? View.VISIBLE : View.GONE);
             taskName.setText(taskItemEntity.name);
             myStar = taskItemEntity.attentioned;
             commentTv.setText(taskItemEntity.commentCount + "条动态");
@@ -535,8 +530,8 @@ public class TaskDetailActivity extends BaseActivity implements OnFragmentCallBa
             ));
             baseFragmentAdapter.bindData(false, Arrays.asList(
                     TaskDetailFragment.newInstance(taskItemEntity),
-                    TaskCheckItemFragment.newInstance(taskItemEntity.id, isEditTask),
-                    TaskAttachmentFragment.newInstance(taskItemEntity.id, isEditTask)
+                    TaskCheckItemFragment.newInstance(taskItemEntity.id, hasTaskEditPermission()),
+                    TaskAttachmentFragment.newInstance(taskItemEntity.id, hasTaskEditPermission())
             ));
             if (taskItemEntity.attendeeUsers != null) {
                 if (taskItemEntity.attendeeUsers.size() > 0) {
