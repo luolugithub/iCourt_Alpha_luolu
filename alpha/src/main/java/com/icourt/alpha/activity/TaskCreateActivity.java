@@ -132,6 +132,11 @@ public class TaskCreateActivity extends BaseActivity implements ProjectSelectDia
         projectId = getIntent().getStringExtra("projectId");
         projectName = getIntent().getStringExtra("projectName");
         if (!TextUtils.isEmpty(content)) {
+            if (content.length() > 200) {
+                taskNameEt.setText(content.substring(0, 200));
+            } else {
+                taskNameEt.setText(content);
+            }
             taskDescEt.setText(content);
         }
         if (!TextUtils.isEmpty(startTime)) {
