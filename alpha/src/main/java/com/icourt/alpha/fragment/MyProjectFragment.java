@@ -55,6 +55,7 @@ public class MyProjectFragment extends BaseFragment {
     RecyclerView recyclerView;
     @BindView(R.id.refreshLayout)
     RefreshLayout refreshLayout;
+
     @IntDef({TYPE_ALL_PROJECT,
             TYPE_MY_ATTENTION_PROJECT, TYPE_MY_PARTIC_PROJECT})
     @Retention(RetentionPolicy.SOURCE)
@@ -136,7 +137,7 @@ public class MyProjectFragment extends BaseFragment {
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.rl_comm_search:
-                SearchProjectActivity.launchProject(getContext(),projectType,SearchProjectActivity.SEARCH_PROJECT);
+                SearchProjectActivity.launchProject(getContext(), projectType, SearchProjectActivity.SEARCH_PROJECT);
                 break;
             default:
                 super.onClick(v);
@@ -199,9 +200,7 @@ public class MyProjectFragment extends BaseFragment {
     public void onRefrshEvent(ProjectActionEvent event) {
         if (event == null) return;
         if (event.action == ProjectActionEvent.PROJECT_REFRESG_ACTION) {
-            if (projectType == TYPE_MY_ATTENTION_PROJECT) {
-                refreshLayout.startRefresh();
-            }
+            refreshLayout.startRefresh();
         }
     }
 
