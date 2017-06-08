@@ -383,6 +383,24 @@ public interface ApiChatService {
                                                              @Query("msg_id") long msg_id);
 
     /**
+     * 获取某条消息是否被搜藏过
+     *
+     * @param msg_id
+     * @return
+     */
+    @GET("im/v1/msgs/stars/{msgId}/starred")
+    Call<ResEntity<Boolean>> msgIsCollected(@Path("msgId") long msg_id);
+
+    /**
+     * 获取某条消息是否被钉过
+     *
+     * @param msg_id
+     * @return
+     */
+    @GET("im/v1/msgs/pins/{msgId}/pined")
+    Call<ResEntity<Boolean>> msgIsDinged(@Path("msgId") long msg_id);
+
+    /**
      * 查询所有联系人【客户端理解为联系人】
      * 文档地址:https://www.showdoc.cc/1620156?page_id=14893618
      *
