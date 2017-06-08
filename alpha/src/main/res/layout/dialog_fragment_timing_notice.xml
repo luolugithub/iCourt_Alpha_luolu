@@ -32,11 +32,12 @@
 
             <ImageView
                 android:id="@+id/notice_timing_stop_iv"
-                android:layout_width="18dp"
-                android:layout_height="18dp"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
                 android:layout_alignParentRight="true"
                 android:layout_centerVertical="true"
-                android:layout_margin="24dp"
+                android:layout_margin="14dp"
+                android:padding="10dp"
                 android:src="@drawable/orange_side_dot_bg" />
         </RelativeLayout>
 
