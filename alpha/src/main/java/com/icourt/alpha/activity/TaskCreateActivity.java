@@ -198,6 +198,7 @@ public class TaskCreateActivity extends BaseActivity implements ProjectSelectDia
         Calendar calendar = Calendar.getInstance();
         calendar.set(Calendar.HOUR_OF_DAY, 23);
         calendar.set(Calendar.MINUTE, 59);
+        calendar.set(Calendar.SECOND, 59);
         //默认当天23：59
         DateSelectDialogFragment.newInstance(calendar)
                 .show(mFragTransaction, tag);
@@ -248,7 +249,16 @@ public class TaskCreateActivity extends BaseActivity implements ProjectSelectDia
         if (params != null) {
             if (fragment instanceof DateSelectDialogFragment) {
                 dueTime = params.getLong(KEY_FRAGMENT_RESULT);
-                taskDuetimeTv.setText(DateUtils.getTimeDateFormatMm(dueTime));
+                Calendar calendar = Calendar.getInstance();
+                calendar.setTimeInMillis(dueTime);
+                int hour = calendar.get(Calendar.HOUR_OF_DAY);
+                int minute = calendar.get(Calendar.MINUTE);
+                int second = calendar.get(Calendar.SECOND);
+                if ((hour == 23 && minute == 59 && second == 59) || (hour == 0 && minute == 0)) {
+                    taskDuetimeTv.setText(DateUtils.getMMMdd(dueTime) + "(" + DateUtils.getWeekOfDateFromZ(dueTime) + ")");
+                } else {
+                    taskDuetimeTv.setText(DateUtils.getMMMdd(dueTime) + "(" + DateUtils.getWeekOfDateFromZ(dueTime) + ") " + DateUtils.getHHmm(dueTime));
+                }
             } else if (fragment instanceof TaskAllotSelectDialogFragment) {
                 attendeeUserEntities = (List<TaskEntity.TaskItemEntity.AttendeeUserEntity>) params.getSerializable("list");
                 if (attendeeUserEntities != null) {

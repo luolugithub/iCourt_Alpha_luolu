@@ -110,6 +110,20 @@ public class DateUtils {
     }
 
     /**
+     * 根据日期获得星期
+     *
+     * @param millis
+     * @return
+     */
+    public static String getWeekOfDateFromZ(long millis) {
+        String[] weekDaysName = {"周日", "周一", "周二", "周三", "周四", "周五", "周六"};
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(millis);
+        int intWeek = calendar.get(Calendar.DAY_OF_WEEK) - 1;
+        return weekDaysName[intWeek];
+    }
+
+    /**
      * 获得当前时间的毫秒数
      * <p>
      * 详见{@link System#currentTimeMillis()}
