@@ -23,6 +23,7 @@ import android.widget.TextView;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.IMContactAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
+import com.icourt.alpha.adapter.baseadapter.adapterObserver.DataChangeAdapterObserver;
 import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.db.convertor.IConvertModel;
 import com.icourt.alpha.db.convertor.ListConvertor;
@@ -51,15 +52,17 @@ import io.realm.RealmResults;
 public class ContactSearchActivity extends BaseActivity implements BaseRecyclerAdapter.OnItemClickListener {
     public static final String KEY_KEYWORD = "keyWord";
     IMContactAdapter imContactAdapter;
-    @BindView(R.id.et_contact_name)
-    EditText etContactName;
+    ContactDbService contactDbService;
+    @BindView(R.id.et_input_name)
+    EditText etInputName;
     @BindView(R.id.tv_search_cancel)
     TextView tvSearchCancel;
     @BindView(R.id.recyclerView)
     RecyclerView recyclerView;
+    @BindView(R.id.contentEmptyText)
+    TextView contentEmptyText;
     @BindView(R.id.softKeyboardSizeWatchLayout)
     SoftKeyboardSizeWatchLayout softKeyboardSizeWatchLayout;
-    ContactDbService contactDbService;
 
     public static void launch(@NonNull Context context,
                               @Nullable View searchLayout,
@@ -81,7 +84,7 @@ public class ContactSearchActivity extends BaseActivity implements BaseRecyclerA
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_contact_search);
+        setContentView(R.layout.activity_base_search_reyclerview);
         ButterKnife.bind(this);
         initView();
     }
@@ -89,6 +92,9 @@ public class ContactSearchActivity extends BaseActivity implements BaseRecyclerA
     @Override
     protected void initView() {
         super.initView();
+        contentEmptyText.setText("暂无联系人");
+        contentEmptyText.setCompoundDrawablesWithIntrinsicBounds(
+                0, R.mipmap.ic_search_cuatomer_gray, 0, 0);
         contactDbService = new ContactDbService(getLoginUserId());
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setAdapter(imContactAdapter = new IMContactAdapter());
@@ -101,7 +107,7 @@ public class ContactSearchActivity extends BaseActivity implements BaseRecyclerA
                     case RecyclerView.SCROLL_STATE_DRAGGING: {
                         if (softKeyboardSizeWatchLayout != null
                                 && softKeyboardSizeWatchLayout.isSoftKeyboardPop()) {
-                            SystemUtils.hideSoftKeyBoard(getActivity(), etContactName, true);
+                            SystemUtils.hideSoftKeyBoard(getActivity(), etInputName, true);
                         }
                     }
                     break;
@@ -113,7 +119,7 @@ public class ContactSearchActivity extends BaseActivity implements BaseRecyclerA
                 super.onScrolled(recyclerView, dx, dy);
             }
         });
-        etContactName.addTextChangedListener(new TextWatcher() {
+        etInputName.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
 
@@ -135,13 +141,13 @@ public class ContactSearchActivity extends BaseActivity implements BaseRecyclerA
                 }
             }
         });
-        etContactName.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+        etInputName.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 switch (actionId) {
                     case EditorInfo.IME_ACTION_SEARCH: {
-                        SystemUtils.hideSoftKeyBoard(getActivity(), etContactName);
-                        if (!TextUtils.isEmpty(etContactName.getText())) {
+                        SystemUtils.hideSoftKeyBoard(getActivity(), etInputName);
+                        if (!TextUtils.isEmpty(etInputName.getText())) {
                             getData(true);
                         }
                     }
@@ -151,15 +157,22 @@ public class ContactSearchActivity extends BaseActivity implements BaseRecyclerA
                 }
             }
         });
-        etContactName.setText(getIntent().getStringExtra(KEY_KEYWORD));
-        etContactName.setSelection(etContactName.getText().length());
+        etInputName.setText(getIntent().getStringExtra(KEY_KEYWORD));
+        etInputName.setSelection(etInputName.getText().length());
+
+        imContactAdapter.registerAdapterDataObserver(new DataChangeAdapterObserver() {
+            @Override
+            protected void updateUI() {
+                contentEmptyText.setVisibility(imContactAdapter.getItemCount() > 0 ? View.GONE : View.VISIBLE);
+            }
+        });
     }
 
     @Override
     protected void getData(boolean isRefresh) {
         super.getData(isRefresh);
         try {
-            RealmResults<ContactDbModel> name = contactDbService.contains("name", etContactName.getText().toString());
+            RealmResults<ContactDbModel> name = contactDbService.contains("name", etInputName.getText().toString());
             if (name == null) {
                 imContactAdapter.clearData();
                 return;
@@ -187,7 +200,7 @@ public class ContactSearchActivity extends BaseActivity implements BaseRecyclerA
         super.onClick(v);
         switch (v.getId()) {
             case R.id.tv_search_cancel:
-                SystemUtils.hideSoftKeyBoard(getActivity(), etContactName, true);
+                SystemUtils.hideSoftKeyBoard(getActivity(), etInputName, true);
                 finish();
                 break;
         }

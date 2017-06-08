@@ -23,6 +23,7 @@ import android.widget.TextView;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.SearchItemAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
+import com.icourt.alpha.adapter.baseadapter.adapterObserver.DataChangeAdapterObserver;
 import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.db.dbmodel.ContactDbModel;
 import com.icourt.alpha.db.dbservice.ContactDbService;
@@ -71,15 +72,17 @@ public class ChatHistortySearchActivity extends BaseActivity implements BaseRecy
     public static final String KEY_KEYWORD = "keyWord";
     int foregroundColor = 0xFFed6c00;
     SearchItemAdapter searchItemAdapter;
-    @BindView(R.id.et_contact_name)
-    EditText etContactName;
+    ContactDbService contactDbService;
+    @BindView(R.id.et_input_name)
+    EditText etInputName;
     @BindView(R.id.tv_search_cancel)
     TextView tvSearchCancel;
     @BindView(R.id.recyclerView)
     RecyclerView recyclerView;
+    @BindView(R.id.contentEmptyText)
+    TextView contentEmptyText;
     @BindView(R.id.softKeyboardSizeWatchLayout)
     SoftKeyboardSizeWatchLayout softKeyboardSizeWatchLayout;
-    ContactDbService contactDbService;
 
     public static void launch(@NonNull Context context,
                               @Nullable View searchLayout,
@@ -101,7 +104,7 @@ public class ChatHistortySearchActivity extends BaseActivity implements BaseRecy
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_contact_search);
+        setContentView(R.layout.activity_base_search_reyclerview);
         ButterKnife.bind(this);
         initView();
     }
@@ -109,6 +112,9 @@ public class ChatHistortySearchActivity extends BaseActivity implements BaseRecy
     @Override
     protected void initView() {
         super.initView();
+        contentEmptyText.setText("暂无消息");
+        contentEmptyText.setCompoundDrawablesWithIntrinsicBounds(
+                0, R.mipmap.ic_search_message_gray, 0, 0);
         AlphaUserInfo loginUserInfo = getLoginUserInfo();
         contactDbService = new ContactDbService(loginUserInfo == null ? "" : loginUserInfo.getUserId());
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
@@ -122,7 +128,7 @@ public class ChatHistortySearchActivity extends BaseActivity implements BaseRecy
                     case RecyclerView.SCROLL_STATE_DRAGGING: {
                         if (softKeyboardSizeWatchLayout != null
                                 && softKeyboardSizeWatchLayout.isSoftKeyboardPop()) {
-                            SystemUtils.hideSoftKeyBoard(getActivity(), etContactName, true);
+                            SystemUtils.hideSoftKeyBoard(getActivity(), etInputName, true);
                         }
                     }
                     break;
@@ -134,7 +140,7 @@ public class ChatHistortySearchActivity extends BaseActivity implements BaseRecy
                 super.onScrolled(recyclerView, dx, dy);
             }
         });
-        etContactName.addTextChangedListener(new TextWatcher() {
+        etInputName.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
 
@@ -154,13 +160,13 @@ public class ChatHistortySearchActivity extends BaseActivity implements BaseRecy
                 }
             }
         });
-        etContactName.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+        etInputName.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 switch (actionId) {
                     case EditorInfo.IME_ACTION_SEARCH: {
-                        SystemUtils.hideSoftKeyBoard(getActivity(), etContactName);
-                        if (!TextUtils.isEmpty(etContactName.getText())) {
+                        SystemUtils.hideSoftKeyBoard(getActivity(), etInputName);
+                        if (!TextUtils.isEmpty(etInputName.getText())) {
                             getData(true);
                         }
                     }
@@ -170,14 +176,21 @@ public class ChatHistortySearchActivity extends BaseActivity implements BaseRecy
                 }
             }
         });
-        etContactName.setText(getIntent().getStringExtra(KEY_KEYWORD));
-        etContactName.setSelection(etContactName.getText().length());
+        etInputName.setText(getIntent().getStringExtra(KEY_KEYWORD));
+        etInputName.setSelection(etInputName.getText().length());
+
+        searchItemAdapter.registerAdapterDataObserver(new DataChangeAdapterObserver() {
+            @Override
+            protected void updateUI() {
+                contentEmptyText.setVisibility(searchItemAdapter.getItemCount() > 0 ? View.GONE : View.VISIBLE);
+            }
+        });
     }
 
     @Override
     protected void getData(boolean isRefresh) {
         super.getData(isRefresh);
-        final String keyWord = etContactName.getText().toString();
+        final String keyWord = etInputName.getText().toString();
         Observable.create(new ObservableOnSubscribe<List<SearchItemEntity>>() {
             @Override
             public void subscribe(ObservableEmitter<List<SearchItemEntity>> e) throws Exception {
@@ -267,7 +280,7 @@ public class ChatHistortySearchActivity extends BaseActivity implements BaseRecy
         super.onClick(v);
         switch (v.getId()) {
             case R.id.tv_search_cancel:
-                SystemUtils.hideSoftKeyBoard(getActivity(), etContactName, true);
+                SystemUtils.hideSoftKeyBoard(getActivity(), etInputName, true);
                 finish();
                 break;
         }
