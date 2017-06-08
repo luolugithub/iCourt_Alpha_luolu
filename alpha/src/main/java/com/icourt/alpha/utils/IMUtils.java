@@ -270,6 +270,9 @@ public class IMUtils {
                 sb.append("\nSessionType:" + recentContact.getSessionType());
                 sb.append("\nRecentMessageId:" + recentContact.getRecentMessageId());
                 sb.append("\nMsgType:" + recentContact.getMsgType());
+                if (recentContact.getMsgType() != null) {
+                    sb.append("\nMsgTypeValue:" + recentContact.getMsgType().getValue());
+                }
                 sb.append("\nMsgStatus:" + recentContact.getMsgStatus());
                 sb.append("\nUnreadCount:" + recentContact.getUnreadCount());
                 sb.append("\nContent:" + recentContact.getContent());

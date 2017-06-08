@@ -190,37 +190,44 @@ public class MessageListFragment extends BaseRecentContactFragment
                         IMMessageCustomBody customIMBody = null;
                         if (recentContact.getMsgType() == MsgTypeEnum.custom) {
                             customIMBody = getAlphaHelper(recentContact);
+                            if (customIMBody != null) {
+                                imSessionEntity.customIMBody = customIMBody;
+                                imSessionEntity.recentContact = recentContact;
+                            }
                         } else {
                             try {
                                 customIMBody = JsonUtils.Gson2Bean(recentContact.getContent(), IMMessageCustomBody.class);
                             } catch (Exception ex) {
                                 ex.printStackTrace();
                             }
-                        }
-                        if (customIMBody != null) {
-                            if (IMUtils.isFilterChatIMMessage(customIMBody)) continue;
-                            imSessionEntity.customIMBody = customIMBody;
-                            imSessionEntity.recentContact = recentContact;
+                            if (customIMBody != null) {
+                                if (IMUtils.isFilterChatIMMessage(customIMBody)) continue;
+                                imSessionEntity.customIMBody = customIMBody;
+                                imSessionEntity.recentContact = recentContact;
+                            }
                         }
                     }
                 }
             }
             if (!isExist) {
-                //解析自定义的消息体
                 IMMessageCustomBody customIMBody = null;
-                String jsonBody = recentContact.getContent();
-                if (recentContact.getMsgType() == MsgTypeEnum.custom && recentContact.getAttachment() != null) {
-                    jsonBody = recentContact.getAttachment().toJson(false);
-                }
-                try {
-                    customIMBody = JsonUtils.Gson2Bean(jsonBody, IMMessageCustomBody.class);
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                }
-                if (customIMBody != null) {
-                    if (IMUtils.isFilterChatIMMessage(customIMBody)) continue;
-                    //装饰实体
-                    data.add(new IMSessionEntity(recentContact, customIMBody));
+                if (recentContact.getMsgType() == MsgTypeEnum.custom) {
+                    customIMBody = getAlphaHelper(recentContact);
+                    if (customIMBody != null) {
+                        data.add(new IMSessionEntity(recentContact, customIMBody));
+                    }
+                } else {
+                    String jsonBody = recentContact.getContent();
+                    try {
+                        customIMBody = JsonUtils.Gson2Bean(jsonBody, IMMessageCustomBody.class);
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    }
+                    if (customIMBody != null) {
+                        if (IMUtils.isFilterChatIMMessage(customIMBody)) continue;
+                        //装饰实体
+                        data.add(new IMSessionEntity(recentContact, customIMBody));
+                    }
                 }
             }
         }
@@ -567,6 +574,10 @@ public class MessageListFragment extends BaseRecentContactFragment
                     IMMessageCustomBody customIMBody = null;
                     if (recentContact.getMsgType() == MsgTypeEnum.custom) {
                         customIMBody = getAlphaHelper(recentContact);
+                        if (customIMBody == null) continue;
+                        IMSessionEntity imSessionEntity = new IMSessionEntity(recentContact, customIMBody);
+                        //装饰实体
+                        imSessionEntities.add(imSessionEntity);
                     } else {
                         try {
                             customIMBody = JsonUtils.Gson2Bean(recentContact.getContent(), IMMessageCustomBody.class);
@@ -574,12 +585,12 @@ public class MessageListFragment extends BaseRecentContactFragment
                             ex.printStackTrace();
                             log("------------->解析异常:" + ex + "\n" + recentContact.getContactId() + " \n" + recentContact.getContent());
                         }
+                        if (customIMBody == null) continue;
+                        if (IMUtils.isFilterChatIMMessage(customIMBody)) continue;
+                        IMSessionEntity imSessionEntity = new IMSessionEntity(recentContact, customIMBody);
+                        //装饰实体
+                        imSessionEntities.add(imSessionEntity);
                     }
-                    if (customIMBody == null) continue;
-                    if (IMUtils.isFilterChatIMMessage(customIMBody)) continue;
-                    IMSessionEntity imSessionEntity = new IMSessionEntity(recentContact, customIMBody);
-                    //装饰实体
-                    imSessionEntities.add(imSessionEntity);
                 }
                 contactDbService.releaseService();
                 e.onNext(imSessionEntities);
