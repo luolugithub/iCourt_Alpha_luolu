@@ -65,19 +65,28 @@ public class ImportFile2AlphaActivity extends BaseActivity
         String action = getIntent().getAction();
         String type = getIntent().getType();
         Uri fileUir = null;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-            if (getIntent().getClipData() != null) {
-                if (getIntent().getClipData().getItemCount() > 0) {
-                    fileUir = getIntent().getClipData().getItemAt(0).getUri();
+        if (TextUtils.equals(action, Intent.ACTION_SEND)) {//分享
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                if (getIntent().getClipData() != null) {
+                    if (getIntent().getClipData().getItemCount() > 0) {
+                        fileUir = getIntent().getClipData().getItemAt(0).getUri();
+                    }
                 }
+            } else {
+                fileUir = getIntent().getData();
             }
-        } else {
+        } else {//打开方式
             fileUir = getIntent().getData();
         }
-
         String extraSubject = getIntent().getStringExtra(Intent.EXTRA_SUBJECT);
         String extraText = getIntent().getStringExtra(Intent.EXTRA_TEXT);
         String extraStream = getIntent().getStringExtra(Intent.EXTRA_STREAM);
+        log("-------->share action:" + action);
+        log("-------->share type:" + type);
+        log("-------->share uri:" + fileUir);
+        log("-------->share extraSubject:" + extraSubject);
+        log("-------->share extraText:" + extraText);
+        log("-------->share extraStream:" + extraStream);
 
         LogUtils.logBundle(getIntent().getExtras());
         if (!isUserLogin()) {
@@ -121,6 +130,7 @@ public class ImportFile2AlphaActivity extends BaseActivity
         if (TextUtils.isEmpty(path) && fileUir != null) {
             path = fileUir.toString();
         }
+        log("----------->path:" + path);
         viewPager.setAdapter(baseFragmentAdapter = new BaseFragmentAdapter(getSupportFragmentManager()));
         baseFragmentAdapter.bindData(true,
                 Arrays.asList(FileImportNavFragment.newInstance(path, desc),
