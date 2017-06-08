@@ -438,7 +438,7 @@ public class TimerDetailActivity extends BaseTimerActivity
                     itemEntity.matterName = projectEntity.name;
                     projectNameTv.setText(projectEntity.name);
                 }
-                taskNameTv.setText(itemEntity.name);
+                taskNameTv.setText(itemEntity.taskName);
             }
         } else if (fragment instanceof CalendaerSelectDialogFragment && params != null) {
             long aLong = params.getLong(BaseDialogFragment.KEY_FRAGMENT_RESULT);
