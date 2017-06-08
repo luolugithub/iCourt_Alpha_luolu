@@ -67,7 +67,7 @@ public class TaskItemAdapter extends BaseArrayRecyclerAdapter<TaskEntity.TaskIte
         if (timeView != null) {
             if (taskItemEntity.dueTime > 0) {
                 timeView.setVisibility(View.VISIBLE);
-                timeView.setText(DateUtils.get23Hour59Min(taskItemEntity.dueTime));
+                timeView.setText(DateUtils.get23Hour59MinFormat(taskItemEntity.dueTime));
                 if (taskItemEntity.dueTime < DateUtils.millis()) {
                     timeView.setTextColor(Color.parseColor("#FF0000"));
                     timeView.setCompoundDrawablesWithIntrinsicBounds(R.mipmap.ic_fail, 0, 0, 0);
@@ -107,17 +107,18 @@ public class TaskItemAdapter extends BaseArrayRecyclerAdapter<TaskEntity.TaskIte
             if (taskItemEntity.attendeeUsers != null) {
                 TaskUsersAdapter usersAdapter;
                 if (recyclerView.getLayoutManager() == null) {
+                    recyclerView.setHasFixedSize(true);
                     LinearLayoutManager layoutManager = new LinearLayoutManager(recyclerView.getContext());
+                    layoutManager.setAutoMeasureEnabled(true);
                     layoutManager.setOrientation(LinearLayoutManager.HORIZONTAL);
                     layoutManager.setReverseLayout(true);
                     recyclerView.setLayoutManager(layoutManager);
-                    usersAdapter = new TaskUsersAdapter();
-                    recyclerView.setAdapter(usersAdapter);
+                    recyclerView.setAdapter(usersAdapter = new TaskUsersAdapter());
                 }
                 usersAdapter = (TaskUsersAdapter) recyclerView.getAdapter();
                 usersAdapter.bindData(true, taskItemEntity.attendeeUsers);
             } else {
-                recyclerView.setVisibility(View.GONE);
+                recyclerView.setVisibility(View.INVISIBLE);
             }
         }
         if (startTimmingView != null) {

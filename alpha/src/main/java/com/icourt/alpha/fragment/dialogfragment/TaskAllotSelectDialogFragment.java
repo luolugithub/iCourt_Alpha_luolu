@@ -120,11 +120,12 @@ public class TaskAllotSelectDialogFragment extends BaseDialogFragment implements
                 }
                 if (onFragmentCallBackListener != null) {
                     List<TaskEntity.TaskItemEntity.AttendeeUserEntity> attusers = getSelectUsers();
-                    if (attusers != null) {
-                        Bundle bunble = new Bundle();
-                        bunble.putSerializable("list", (Serializable) attusers);
-                        onFragmentCallBackListener.onFragmentCallBack(TaskAllotSelectDialogFragment.this, 0, bunble);
+                    if (attusers == null) {
+                        attusers =  new ArrayList<>();
                     }
+                    Bundle bunble = new Bundle();
+                    bunble.putSerializable("list", (Serializable) attusers);
+                    onFragmentCallBackListener.onFragmentCallBack(TaskAllotSelectDialogFragment.this, 0, bunble);
                 }
                 dismiss();
                 break;

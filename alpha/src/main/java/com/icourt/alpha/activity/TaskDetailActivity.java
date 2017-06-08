@@ -553,8 +553,16 @@ public class TaskDetailActivity extends BaseActivity implements OnFragmentCallBa
                         taskUserName.setText(taskItemEntity.attendeeUsers.get(0).userName);
                     }
                 } else {
-                    taskTimeParentLayout.setVisibility(View.GONE);
+                    taskUsersLayout.setVisibility(View.GONE);
+                    taskUserLayout.setVisibility(View.VISIBLE);
+                    taskUserPic.setVisibility(View.GONE);
+                    taskUserName.setText("未分配");
                 }
+            } else {
+                taskUsersLayout.setVisibility(View.GONE);
+                taskUserLayout.setVisibility(View.VISIBLE);
+                taskUserPic.setVisibility(View.GONE);
+                taskUserName.setText("未分配");
             }
         }
     }
@@ -659,8 +667,6 @@ public class TaskDetailActivity extends BaseActivity implements OnFragmentCallBa
                     for (TaskEntity.TaskItemEntity.AttendeeUserEntity attendeeUser : itemEntity.attendeeUsers) {
                         jsonarr.add(attendeeUser.userId);
                     }
-                } else {
-                    jsonarr.add(getLoginUserId());
                 }
             }
             jsonObject.add("attendees", jsonarr);
@@ -717,24 +723,39 @@ public class TaskDetailActivity extends BaseActivity implements OnFragmentCallBa
         if (fragment instanceof TaskAllotSelectDialogFragment) {//选择负责人回调
             if (params != null) {
                 List<TaskEntity.TaskItemEntity.AttendeeUserEntity> attusers = (List<TaskEntity.TaskItemEntity.AttendeeUserEntity>) params.getSerializable("list");
-                if (attusers != null) {
-                    taskUsersLayout.setVisibility(View.VISIBLE);
-                    taskUserLayout.setVisibility(View.GONE);
-                    if (taskUserRecyclerview.getLayoutManager() == null) {
-                        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
-                        layoutManager.setOrientation(LinearLayoutManager.HORIZONTAL);
-                        layoutManager.setReverseLayout(true);
-                        taskUserRecyclerview.setLayoutManager(layoutManager);
-                        taskUserRecyclerview.setAdapter(usersAdapter = new TaskUsersAdapter());
-                        usersAdapter.setOnItemClickListener(this);
+                if (attusers != null && attusers.size() > 0) {
+                    if (attusers.size() == 1) {
+                        taskUsersLayout.setVisibility(View.GONE);
+                        taskUserLayout.setVisibility(View.VISIBLE);
+                        GlideUtils.loadUser(this, attusers.get(0).pic, taskUserPic);
+                        taskUserName.setText(attusers.get(0).userName);
+                    } else {
+                        taskUsersLayout.setVisibility(View.VISIBLE);
+                        taskUserLayout.setVisibility(View.GONE);
+                        if (taskUserRecyclerview.getLayoutManager() == null) {
+                            LinearLayoutManager layoutManager = new LinearLayoutManager(this);
+                            layoutManager.setOrientation(LinearLayoutManager.HORIZONTAL);
+                            layoutManager.setReverseLayout(true);
+                            taskUserRecyclerview.setLayoutManager(layoutManager);
+                            taskUserRecyclerview.setAdapter(usersAdapter = new TaskUsersAdapter());
+                            usersAdapter.setOnItemClickListener(this);
+                        }
                     }
-                    if (taskItemEntity.attendeeUsers != null) {
-                        taskItemEntity.attendeeUsers.clear();
-                        taskItemEntity.attendeeUsers.addAll(attusers);
-                        updateTask(taskItemEntity, taskItemEntity.state, taskCheckbox);
+                } else {
+                    taskUsersLayout.setVisibility(View.GONE);
+                    taskUserLayout.setVisibility(View.VISIBLE);
+                    taskUserName.setText("未分配");
+                    taskUserPic.setVisibility(View.GONE);
+                }
+                if (taskItemEntity.attendeeUsers != null) {
+                    taskItemEntity.attendeeUsers.clear();
+                    taskItemEntity.attendeeUsers.addAll(attusers);
+                    updateTask(taskItemEntity, taskItemEntity.state, taskCheckbox);
+                    if (usersAdapter != null) {
+                        if (taskItemEntity.attendeeUsers.size() > 0)
+                            Collections.reverse(taskItemEntity.attendeeUsers);
+                        usersAdapter.bindData(true, taskItemEntity.attendeeUsers);
                     }
-                    Collections.reverse(taskItemEntity.attendeeUsers);
-                    usersAdapter.bindData(true, taskItemEntity.attendeeUsers);
                 }
             }
         }

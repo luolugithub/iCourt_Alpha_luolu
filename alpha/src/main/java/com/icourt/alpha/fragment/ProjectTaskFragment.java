@@ -252,7 +252,7 @@ public class ProjectTaskFragment extends BaseFragment implements TaskAdapter.OnS
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onDeleteTaskEvent(TaskActionEvent event) {
+    public void onUpdateTaskEvent(TaskActionEvent event) {
         if (event == null) return;
         if (event.action == TaskActionEvent.TASK_REFRESG_ACTION) {
             refreshLayout.startRefresh();

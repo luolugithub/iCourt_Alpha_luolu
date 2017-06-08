@@ -220,13 +220,38 @@ public class DateUtils {
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm");
         return formatter.format(milliseconds);
     }
-
+    /**
+     * 获取日期 MM/dd HH:mm
+     *
+     * @param milliseconds
+     * @return
+     */
+    public static String getTimeDateFormatXMm(long milliseconds) {
+        SimpleDateFormat formatter = new SimpleDateFormat("MM/dd HH:mm");
+        return formatter.format(milliseconds);
+    }
     /**
      * @param milliseconds
      * @return
      */
     public static String getMMMdd(long milliseconds) {
         SimpleDateFormat formatter = new SimpleDateFormat("MM月dd日");
+        try {
+            return formatter.format(milliseconds);
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
+        } catch (NullPointerException e) {
+            e.printStackTrace();
+        }
+        return String.valueOf(milliseconds);
+    }
+
+    /**
+     * @param milliseconds
+     * @return
+     */
+    public static String getMMXdd(long milliseconds) {
+        SimpleDateFormat formatter = new SimpleDateFormat("MM/dd");
         try {
             return formatter.format(milliseconds);
         } catch (IllegalArgumentException e) {
@@ -369,7 +394,7 @@ public class DateUtils {
     }
 
     /**
-     * 23:59:59 不显示
+     * 23:59:59 不显示  xx月xx日 hh：mm
      *
      * @param millis
      * @return
@@ -386,4 +411,24 @@ public class DateUtils {
             return getTimeDateFormatMm(millis);
         }
     }
+
+    /**
+     * 23:59:59 不显示 xx/xx hh：mm
+     *
+     * @param millis
+     * @return
+     */
+    public static String get23Hour59MinFormat(long millis) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(millis);
+        int hour = calendar.get(Calendar.HOUR_OF_DAY);
+        int minute = calendar.get(Calendar.MINUTE);
+        int second = calendar.get(Calendar.SECOND);
+        if ((hour == 23 && minute == 59 && second == 59) || (hour == 0 && minute == 0)) {
+            return getMMXdd(millis);
+        } else {
+            return getTimeDateFormatXMm(millis);
+        }
+    }
+
 }
