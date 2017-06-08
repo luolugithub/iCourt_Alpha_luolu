@@ -67,7 +67,7 @@ public class TaskItemAdapter extends BaseArrayRecyclerAdapter<TaskEntity.TaskIte
         if (timeView != null) {
             if (taskItemEntity.dueTime > 0) {
                 timeView.setVisibility(View.VISIBLE);
-                timeView.setText(DateUtils.getTimeDateFormatMm(taskItemEntity.dueTime));
+                timeView.setText(DateUtils.get23Hour59Min(taskItemEntity.dueTime));
                 if (taskItemEntity.dueTime < DateUtils.millis()) {
                     timeView.setTextColor(Color.parseColor("#FF0000"));
                     timeView.setCompoundDrawablesWithIntrinsicBounds(R.mipmap.ic_fail, 0, 0, 0);

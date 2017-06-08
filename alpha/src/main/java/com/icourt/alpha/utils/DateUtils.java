@@ -353,4 +353,23 @@ public class DateUtils {
         return millis / 1000 < today.getTimeInMillis() / 1000
                 && millis / 1000 >= yesterday.getTimeInMillis() / 1000;
     }
+
+    /**
+     * 23:59:59 不显示
+     *
+     * @param millis
+     * @return
+     */
+    public static String get23Hour59Min(long millis) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(millis);
+        int hour = calendar.get(Calendar.HOUR_OF_DAY);
+        int minute = calendar.get(Calendar.MINUTE);
+        int second = calendar.get(Calendar.SECOND);
+        if ((hour == 23 && minute == 59 && second == 59) || (hour == 0 && minute == 0)) {
+            return getMMMdd(millis);
+        } else {
+            return getTimeDateFormatMm(millis);
+        }
+    }
 }

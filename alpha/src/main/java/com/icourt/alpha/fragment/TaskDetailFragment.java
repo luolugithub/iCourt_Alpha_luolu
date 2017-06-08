@@ -114,7 +114,7 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
             }
 
             if (taskItemEntity.dueTime > 0) {
-                taskTimeTv.setText(DateUtils.getTimeDateFormatMm(taskItemEntity.dueTime));
+                taskTimeTv.setText(DateUtils.get23Hour59Min(taskItemEntity.dueTime));
             } else {
                 taskTimeTv.setText("添加到期时间");
             }
@@ -369,7 +369,17 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
         if (params != null) {
             if (fragment instanceof DateSelectDialogFragment) {//选择到期时间回调
                 long millis = params.getLong(KEY_FRAGMENT_RESULT);
-                taskTimeTv.setText(DateUtils.getTimeDateFormatMm(millis));
+                Calendar calendar = Calendar.getInstance();
+                calendar.setTimeInMillis(millis);
+                int hour = calendar.get(Calendar.HOUR_OF_DAY);
+                int minute = calendar.get(Calendar.MINUTE);
+                int second = calendar.get(Calendar.SECOND);
+                if (hour == 23 && minute == 59 && second == 59) {
+                    taskTimeTv.setText(DateUtils.getTimeDate(millis));
+                } else {
+                    taskTimeTv.setText(DateUtils.getTimeDateFormatMm(millis));
+                }
+
                 taskItemEntity.dueTime = millis;
                 updateTask(taskItemEntity, null, null);
             } else if (fragment instanceof TaskGroupSelectFragment) {//选择任务组回调

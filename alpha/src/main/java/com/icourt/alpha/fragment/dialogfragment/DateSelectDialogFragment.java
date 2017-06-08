@@ -83,6 +83,8 @@ public class DateSelectDialogFragment extends BaseDialogFragment {
     private SimpleDateFormat dateFormatForMonth = new SimpleDateFormat("yyyy年MMM", Locale.getDefault());
     Date selectedDate;
 
+    Calendar selectedCalendar;
+
     public static DateSelectDialogFragment newInstance(@Nullable Calendar calendar) {
         DateSelectDialogFragment dateSelectDialogFragment = new DateSelectDialogFragment();
         Bundle args = new Bundle();
@@ -157,18 +159,37 @@ public class DateSelectDialogFragment extends BaseDialogFragment {
         hourWheelView.setOnItemSelectedListener(new OnItemSelectedListener() {
             @Override
             public void onItemSelected(int i) {
-                log("------------i:" + i);
+                if (selectedCalendar == null)
+                    selectedCalendar = Calendar.getInstance();
+                selectedCalendar.set(Calendar.HOUR_OF_DAY, i);
+                selectedCalendar.set(Calendar.SECOND, 0);
+            }
+        });
+        minuteWheelView.setOnItemSelectedListener(new OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(int i) {
+                if (selectedCalendar == null)
+                    selectedCalendar = Calendar.getInstance();
+                selectedCalendar.set(Calendar.MINUTE, i);
+                selectedCalendar.set(Calendar.SECOND, 0);
             }
         });
         initCompactCalendar();
-        Calendar calendar = (Calendar) getArguments().getSerializable("calendar");
-        if (calendar != null) {
-            duetimeTv.setText(DateUtils.getHHmm(calendar.getTimeInMillis()));
-            hourWheelView.setCurrentItem(calendar.get(Calendar.HOUR_OF_DAY));
-            minuteWheelView.setCurrentItem(calendar.get(Calendar.MINUTE));
+        selectedCalendar = (Calendar) getArguments().getSerializable("calendar");
+        if (selectedCalendar != null) {
+            int hour = selectedCalendar.get(Calendar.HOUR_OF_DAY);
+            int minute = selectedCalendar.get(Calendar.MINUTE);
+            int second = selectedCalendar.get(Calendar.SECOND);
+            if (hour == 23 && minute == 59 && second == 59) {
+                duetimeTv.setText("未设置");
+            } else {
+                duetimeTv.setText(DateUtils.getHHmm(selectedCalendar.getTimeInMillis()));
+            }
+            hourWheelView.setCurrentItem(selectedCalendar.get(Calendar.HOUR_OF_DAY));
+            minuteWheelView.setCurrentItem(selectedCalendar.get(Calendar.MINUTE));
 
-            titleContent.setText(dateFormatForMonth.format(calendar.getTimeInMillis()));
-            compactcalendarView.setCurrentDate(calendar.getTime());
+            titleContent.setText(dateFormatForMonth.format(selectedCalendar.getTimeInMillis()));
+            compactcalendarView.setCurrentDate(selectedCalendar.getTime());
             compactcalendarView.invalidate();
         }
 
@@ -242,9 +263,10 @@ public class DateSelectDialogFragment extends BaseDialogFragment {
                 }
                 break;
             case R.id.clear_dutime_iv:
-                duetimeTv.setText("23:59");
-                hourWheelView.setCurrentItem(23);
-                minuteWheelView.setCurrentItem(59);
+                duetimeTv.setText("未设置");
+                selectedCalendar.set(Calendar.HOUR_OF_DAY, 23);
+                selectedCalendar.set(Calendar.MINUTE, 59);
+                selectedCalendar.set(Calendar.SECOND, 59);
                 break;
             case R.id.notice_ll:
                 break;
@@ -271,14 +293,15 @@ public class DateSelectDialogFragment extends BaseDialogFragment {
     }
 
     private long getSelectedMillis() {
+        Calendar instance = Calendar.getInstance();
         if (selectedDate == null) {
             selectedDate = new Date();
+            selectedDate.setTime(selectedCalendar.getTimeInMillis());
         }
-        Calendar instance = Calendar.getInstance();
         instance.setTime(selectedDate);
-        log("---------->in:" + hourWheelView.getCurrentItem());
-        instance.set(Calendar.HOUR_OF_DAY, hourWheelView.getCurrentItem());
-        instance.set(Calendar.MINUTE, minuteWheelView.getCurrentItem());
+        instance.set(Calendar.HOUR_OF_DAY, selectedCalendar.get(Calendar.HOUR_OF_DAY));
+        instance.set(Calendar.MINUTE, selectedCalendar.get(Calendar.MINUTE));
+        instance.set(Calendar.SECOND, selectedCalendar.get(Calendar.SECOND));
         return instance.getTimeInMillis();
     }
 
