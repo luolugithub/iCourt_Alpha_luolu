@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="260dp"
     android:layout_height="198dp"
     android:orientation="vertical">
@@ -14,16 +15,20 @@
             android:layout_width="260dp"
             android:layout_height="81dp">
 
-            <TextView
+            <com.icourt.alpha.view.fittextview.AutofitTextView
                 android:id="@+id/notice_timing_tv"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_centerInParent="true"
+                android:layout_marginLeft="45dp"
+                android:layout_marginRight="45dp"
                 android:ellipsize="end"
+                android:gravity="center"
                 android:maxLines="1"
                 android:text="00:00"
                 android:textColor="@color/alpha_font_color_orange"
-                android:textSize="40dp" />
+                android:textSize="40dp"
+                app:minTextSize="8sp" />
 
             <ImageView
                 android:id="@+id/notice_timing_stop_iv"

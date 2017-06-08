@@ -73,6 +73,7 @@ import butterknife.OnLongClick;
 import q.rorbin.badgeview.Badge;
 import q.rorbin.badgeview.QBadgeView;
 import retrofit2.Call;
+import retrofit2.Callback;
 import retrofit2.Response;
 
 
@@ -504,7 +505,20 @@ public class MainActivity extends BaseAppUpdateActivity
                 if (TimerManager.getInstance().hasTimer()) {
                     showTimingDialogFragment();
                 } else {
-                    TimerManager.getInstance().addTimer(new TimeEntity.ItemEntity());
+                    TimerManager.getInstance().addTimer(new TimeEntity.ItemEntity(),
+                            new Callback<TimeEntity.ItemEntity>() {
+                                @Override
+                                public void onResponse(Call<TimeEntity.ItemEntity> call, Response<TimeEntity.ItemEntity> response) {
+                                    if (TimerManager.getInstance().hasTimer()) {
+                                        showTimingDialogFragment();
+                                    }
+                                }
+
+                                @Override
+                                public void onFailure(Call<TimeEntity.ItemEntity> call, Throwable throwable) {
+
+                                }
+                            });
                 }
                 break;
             default:
@@ -692,7 +706,10 @@ public class MainActivity extends BaseAppUpdateActivity
         long hour = times / 3600;
         long minute = times % 3600 / 60;
         long second = times % 60;
-        return String.format("%02d:%02d:%02d", hour, minute, second);
+        if (hour > 0) {
+            return String.format("%02d:%02d:%02d", hour, minute, second);
+        }
+        return String.format("%02d:%02d", minute, second);
     }
 
     private void getPermission() {

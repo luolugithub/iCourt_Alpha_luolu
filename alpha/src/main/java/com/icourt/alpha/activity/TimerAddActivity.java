@@ -9,6 +9,7 @@ import android.support.design.widget.AppBarLayout;
 import android.support.v4.app.Fragment;
 import android.text.TextUtils;
 import android.view.KeyEvent;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.CheckedTextView;
 import android.widget.EditText;
@@ -35,6 +36,7 @@ import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.JsonUtils;
 import com.icourt.alpha.utils.StringUtils;
+import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.view.CircleTimerView;
 import com.icourt.api.RequestUtils;
 
@@ -140,7 +142,7 @@ public class TimerAddActivity extends BaseTimerActivity
 
         useTimeDate.setText(DateUtils.getyyyyMMdd(selectedStartDate.getTimeInMillis()));
         startTimeMinTv.setText(DateUtils.getHHmm(selectedStartDate.getTimeInMillis()));
-        stopTimeMinTv.setText(DateUtils.getHHmm(selectedStartDate.getTimeInMillis()));
+        stopTimeMinTv.setText(DateUtils.getHHmm(selectedEndDate.getTimeInMillis()));
 
         //circleTimerView.setOneCircle(true);
         circleTimerView.setMiniTime(70);
@@ -175,6 +177,17 @@ public class TimerAddActivity extends BaseTimerActivity
 
             @Override
             public void onTimerSetValueChange(int time) {
+            }
+        });
+        circleTimerView.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_DOWN:
+                        SystemUtils.hideSoftKeyBoard(getActivity(), true);
+                        break;
+                }
+                return false;
             }
         });
         timeNameTv.setOnEditorActionListener(new TextView.OnEditorActionListener() {

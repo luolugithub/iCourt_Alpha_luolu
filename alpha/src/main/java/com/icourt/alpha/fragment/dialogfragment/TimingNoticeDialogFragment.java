@@ -20,6 +20,7 @@ import com.icourt.alpha.activity.TimerTimingActivity;
 import com.icourt.alpha.entity.bean.TimeEntity;
 import com.icourt.alpha.entity.event.TimingEvent;
 import com.icourt.alpha.utils.DensityUtil;
+import com.icourt.alpha.view.fittextview.AutofitTextView;
 import com.icourt.alpha.widget.manager.TimerManager;
 
 import org.greenrobot.eventbus.EventBus;
@@ -34,7 +35,6 @@ import butterknife.OnClick;
 import butterknife.Unbinder;
 
 
-
 /**
  * Description
  * Company Beijing icourt
@@ -44,15 +44,16 @@ import butterknife.Unbinder;
  */
 public class TimingNoticeDialogFragment extends BaseDialogFragment {
 
+
     @BindView(R.id.notice_timing_tv)
-    TextView noticeTimingTv;
+    AutofitTextView noticeTimingTv;
     @BindView(R.id.notice_timing_stop_iv)
     ImageView noticeTimingStopIv;
     @BindView(R.id.notice_timing_title_tv)
     TextView noticeTimingTitleTv;
-    Unbinder unbinder;
     @BindView(R.id.timing_empty_view)
     View timingEmptyView;
+    Unbinder unbinder;
 
     public static TimingNoticeDialogFragment newInstance(@NonNull TimeEntity.ItemEntity itemEntity) {
         TimingNoticeDialogFragment fragment = new TimingNoticeDialogFragment();
@@ -122,7 +123,10 @@ public class TimingNoticeDialogFragment extends BaseDialogFragment {
         long hour = times / 3600;
         long minute = times % 3600 / 60;
         long second = times % 60;
-        return String.format("%02d:%02d:%02d", hour, minute, second);
+        if (hour > 0) {
+            return String.format("%02d:%02d:%02d", hour, minute, second);
+        }
+        return String.format("%02d:%02d", minute, second);
     }
 
     @OnClick({R.id.notice_timing_stop_iv,
