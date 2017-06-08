@@ -11,6 +11,8 @@ public interface ISearchItemEntity {
 
     String getId();
 
+    long getId2();
+
     int type();
 
     int classfyType();

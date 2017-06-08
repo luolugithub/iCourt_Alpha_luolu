@@ -162,14 +162,14 @@ public class MyAtedAdapter extends BaseArrayRecyclerAdapter<IMMessageCustomBody>
                 ChatActivity.launchP2P(view.getContext(),
                         item.to,
                         item.name,
-                        item.send_time,0);
+                        item.id, 0);
                 break;
             case CHAT_TYPE_TEAM:
                 Team team = getTeam(item.to);
                 ChatActivity.launchTEAM(view.getContext(),
                         item.to,
                         team != null ? team.getName() : "",
-                        item.send_time,0);
+                        item.id, 0);
                 break;
         }
     }

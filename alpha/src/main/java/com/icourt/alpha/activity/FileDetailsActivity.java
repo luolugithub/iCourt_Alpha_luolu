@@ -174,14 +174,18 @@ public class FileDetailsActivity extends BaseActivity {
                             ChatActivity.launchP2P(getContext(),
                                     item.to,
                                     item.name,
-                                    item.send_time, 0, true);
+                                    item.id,
+                                    0,
+                                    true);
                             break;
                         case CHAT_TYPE_TEAM:
                             Team team = getTeam(item.to);
                             ChatActivity.launchTEAM(getContext(),
                                     item.to,
                                     team != null ? team.getName() : "",
-                                    item.send_time, 0, true);
+                                    item.id,
+                                    0,
+                                    true);
                             break;
                     }
                 }

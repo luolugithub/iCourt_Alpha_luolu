@@ -31,12 +31,12 @@ import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.icourt.alpha.entity.bean.IMMessageCustomBody;
 import com.icourt.alpha.entity.bean.ISearchItemEntity;
 import com.icourt.alpha.entity.bean.SearchItemEntity;
-import com.icourt.alpha.widget.nim.GlobalMessageObserver;
 import com.icourt.alpha.utils.IMUtils;
 import com.icourt.alpha.utils.SpannableUtils;
 import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.view.SoftKeyboardSizeWatchLayout;
+import com.icourt.alpha.widget.nim.GlobalMessageObserver;
 import com.netease.nimlib.sdk.NIMClient;
 import com.netease.nimlib.sdk.msg.MsgService;
 import com.netease.nimlib.sdk.search.model.MsgIndexRecord;
@@ -248,6 +248,7 @@ public class ChatHistortySearchActivity extends BaseActivity implements BaseRecy
                         }
                         SearchItemEntity searchItemEntity = new SearchItemEntity(title, content, icon, keyWord);
                         searchItemEntity.id = imBody.to;
+                        searchItemEntity.id2 = imBody.id;
                         searchItemEntity.type = imBody.ope;
                         searchItemEntity.classfyType = SEARCH_TYPE_MSG;
                         searchItemEntity.recordTime = item.getTime();
@@ -293,14 +294,14 @@ public class ChatHistortySearchActivity extends BaseActivity implements BaseRecy
                                 ChatActivity.launchP2P(getContext(),
                                         StringUtils.toLowerCase(item.getId()),
                                         TextUtils.isEmpty(item.getTitle()) ? "" : item.getTitle().toString(),
-                                        item.getRecordTime(),
+                                        item.getId2(),
                                         0);
                                 break;
                             case CHAT_TYPE_TEAM:
                                 ChatActivity.launchTEAM(getContext(),
                                         item.getId(),
                                         TextUtils.isEmpty(item.getTitle()) ? "" : item.getTitle().toString(),
-                                        item.getRecordTime(),
+                                        item.getId2(),
                                         0);
                                 break;
                         }
