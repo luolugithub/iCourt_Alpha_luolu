@@ -45,6 +45,7 @@ import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.callback.SimpleTextWatcher;
 import com.icourt.alpha.utils.IMUtils;
+import com.icourt.alpha.utils.ImageUtils;
 import com.icourt.alpha.utils.LogUtils;
 import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.utils.SystemUtils;
@@ -510,6 +511,9 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
                 if (pics != null && pics.size() > 0) {
                     for (int i = 0; i < pics.size(); i++) {
                         String path = pics.get(i);
+                        if (ImageUtils.getBitmapDegree(path) > 0) {
+                            ImageUtils.degreeImage(path);
+                        }
                         if (!TextUtils.isEmpty(path)) {
                             sendIMPicMsg(path);
                         }
@@ -649,16 +653,6 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
     private void sendTextMsg(String text) {
         if (TextUtils.isEmpty(text)) return;
         super.sendIMTextMsg(text);
-    }
-
-
-    /**
-     * 发送文件消息
-     *
-     * @param path
-     */
-    private void sendFileMsg(String path) {
-        super.sendIMPicMsg(path);
     }
 
 
@@ -1169,7 +1163,10 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
         switch (requestCode) {
             case REQUEST_CODE_CAMERA:
                 if (resultCode == Activity.RESULT_OK) {
-                    sendFileMsg(path);
+                    if (!TextUtils.isEmpty(path) && ImageUtils.getBitmapDegree(path) > 0) {
+                        ImageUtils.degreeImage(path);
+                    }
+                    sendIMPicMsg(path);
                 }
                 break;
             case REQUEST_CODE_AT_MEMBER:

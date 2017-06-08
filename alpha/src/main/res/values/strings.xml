@@ -116,7 +116,7 @@
     <string name="progect_member_names_text">项目成员</string>
 
     <!-- 智能搜索-->
-    <string name="search_edittext_hint_text">请输入关键词检索</string>
+    <string name="search_edittext_hint_text">请输入关键词搜索</string>
     <string name="search_audio_speck_text">请说出搜索内容</string>
     <string name="search_text_hint_text">请点选搜索引擎</string>
     <string name="search_text_max_num_text">最多选择5种引擎</string>

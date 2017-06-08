@@ -29,7 +29,6 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@android:color/white"
         android:gravity="center_vertical"
         android:orientation="horizontal">
 
@@ -76,7 +75,6 @@
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@android:color/white"
         android:fillViewport="true">
 
         <LinearLayout
@@ -89,7 +87,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_margin="10dp"
-                android:text="选中搜索引擎"
+                android:text="选择搜索引擎"
                 android:textColor="@color/alpha_font_color_black"
                 android:textSize="@dimen/alpha_font_size_comm_medium" />
 
