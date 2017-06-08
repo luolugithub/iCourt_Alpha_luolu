@@ -14,6 +14,7 @@ import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.google.gson.JsonElement;
@@ -80,6 +81,10 @@ public class TaskAttachmentFragment extends BaseFragment implements BaseRecycler
     TaskAttachmentAdapter taskAttachmentAdapter;
     OnUpdateTaskListener updateTaskListener;
     boolean hasPermission;
+    @BindView(R.id.empty_layout)
+    LinearLayout emptyLayout;
+    @BindView(R.id.list_layout)
+    LinearLayout listLayout;
 
     public static TaskAttachmentFragment newInstance(@NonNull String taskId, boolean hasPermission) {
         TaskAttachmentFragment taskAttachmentFragment = new TaskAttachmentFragment();
@@ -220,7 +225,18 @@ public class TaskAttachmentFragment extends BaseFragment implements BaseRecycler
         getApi().taskAttachMentListQuery(taskId).enqueue(new SimpleCallBack<List<TaskAttachmentEntity>>() {
             @Override
             public void onSuccess(Call<ResEntity<List<TaskAttachmentEntity>>> call, Response<ResEntity<List<TaskAttachmentEntity>>> response) {
-                taskAttachmentAdapter.bindData(true, response.body().result);
+                if (response.body().result != null) {
+                    taskAttachmentAdapter.bindData(true, response.body().result);
+                    if (response.body().result.size() <= 0) {
+                        if (!hasPermission) {
+                            listLayout.setVisibility(View.GONE);
+                            emptyLayout.setVisibility(View.VISIBLE);
+                        } else {
+                            listLayout.setVisibility(View.VISIBLE);
+                            emptyLayout.setVisibility(View.GONE);
+                        }
+                    }
+                }
                 updateDocument();
             }
         });

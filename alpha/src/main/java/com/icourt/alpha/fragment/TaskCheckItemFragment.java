@@ -67,6 +67,10 @@ public class TaskCheckItemFragment extends BaseFragment implements BaseRecyclerA
     boolean hasPermission;
     @BindView(R.id.add_item_layout)
     LinearLayout addItemLayout;
+    @BindView(R.id.empty_layout)
+    LinearLayout emptyLayout;
+    @BindView(R.id.list_layout)
+    LinearLayout listLayout;
 
     public static TaskCheckItemFragment newInstance(@NonNull String taskId, boolean hasPermission) {
         TaskCheckItemFragment taskCheckItemFragment = new TaskCheckItemFragment();
@@ -148,6 +152,15 @@ public class TaskCheckItemFragment extends BaseFragment implements BaseRecyclerA
                 dismissLoadingDialog();
                 if (response.body().result.items != null) {
                     taskCheckItemAdapter.bindData(false, response.body().result.items);
+                    if (response.body().result.items.size() <= 0) {
+                        if (!hasPermission) {
+                            listLayout.setVisibility(View.GONE);
+                            emptyLayout.setVisibility(View.VISIBLE);
+                        }else{
+                            listLayout.setVisibility(View.VISIBLE);
+                            emptyLayout.setVisibility(View.GONE);
+                        }
+                    }
                 }
             }
 

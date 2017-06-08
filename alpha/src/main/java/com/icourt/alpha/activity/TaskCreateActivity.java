@@ -134,10 +134,10 @@ public class TaskCreateActivity extends BaseActivity implements ProjectSelectDia
         if (!TextUtils.isEmpty(content)) {
             if (content.length() > 200) {
                 taskNameEt.setText(content.substring(0, 200));
+                taskDescEt.setText(content);
             } else {
                 taskNameEt.setText(content);
             }
-            taskDescEt.setText(content);
         }
         if (!TextUtils.isEmpty(startTime)) {
             taskDuetimeTv.setText(startTime);

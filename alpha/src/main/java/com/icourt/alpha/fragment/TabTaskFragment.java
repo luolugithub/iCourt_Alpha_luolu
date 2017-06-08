@@ -88,19 +88,20 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
                 TaskCreateActivity.launch(getContext(), null, null);
                 break;
             case R.id.titleAction2:
-                new BottomActionDialog(getContext(), null, Arrays.asList("我分配的任务", "已完成的任务", "选择查看对象"), new BottomActionDialog.OnActionItemClickListener() {
+//                new BottomActionDialog(getContext(), null, Arrays.asList("我分配的任务", "已完成的任务", "选择查看对象"), new BottomActionDialog.OnActionItemClickListener() {
+                new BottomActionDialog(getContext(), null, Arrays.asList( "查看他人任务", "查看已完成的"), new BottomActionDialog.OnActionItemClickListener() {
                     @Override
                     public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
                         dialog.dismiss();
                         switch (position) {
+//                            case 0:
+//                                MyAllotTaskActivity.launch(getContext(), TaskOtherListFragment.MY_ALLOT_TYPE, null);
+//                                break;
                             case 0:
-                                MyAllotTaskActivity.launch(getContext(), TaskOtherListFragment.MY_ALLOT_TYPE, null);
+                                showMemberSelectDialogFragment();
                                 break;
                             case 1:
                                 MyFinishTaskActivity.launch(getContext());
-                                break;
-                            case 2:
-                                showMemberSelectDialogFragment();
                                 break;
                         }
                     }

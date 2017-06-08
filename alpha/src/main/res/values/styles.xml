@@ -56,6 +56,16 @@
         <item name="android:taskToBackExitAnimation">@null</item>
     </style>
 
+    <style name="AppThemeSlideAnimation" parent="SlideAnimBottom">
+        <item name="android:windowAnimationStyle">@style/SlideAnimBottom</item>
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowContentOverlay">@null</item>
+    </style>
+
+    <style name="SlideAnimBottom" parent="AppTheme">
+        <item name="android:windowEnterAnimation">@anim/push_bottom_in</item>
+        <item name="android:windowExitAnimation">@anim/push_bottom_out</item>
+    </style>
 
     <style name="SplashTheme" parent="AppTheme">
         <!-- 将splash图片设置在这，这样这张图片取代白屏 -->

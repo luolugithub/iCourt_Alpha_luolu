@@ -3,37 +3,68 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <LinearLayout
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical">
+        android:layout_height="match_parent">
 
-        <android.support.v7.widget.RecyclerView
-            android:id="@+id/recyclerview"
+        <LinearLayout
+            android:id="@+id/list_layout"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:overScrollMode="never">
+            android:layout_height="match_parent"
+            android:orientation="vertical">
 
-        </android.support.v7.widget.RecyclerView>
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/recyclerview"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:overScrollMode="never">
 
-        <RelativeLayout
-            android:layout_width="match_parent"
+            </android.support.v7.widget.RecyclerView>
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/dp20"
+                android:gravity="center_vertical"
+                android:padding="@dimen/dp5">
+
+                <TextView
+                    android:id="@+id/add_attachment_view"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerHorizontal="true"
+                    android:background="?android:attr/selectableItemBackground"
+                    android:drawablePadding="@dimen/dp10"
+                    android:drawableTop="@mipmap/icon_add_36"
+                    android:padding="@dimen/dp10"
+                    android:text="添加附件" />
+
+            </RelativeLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/empty_layout"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/dp20"
-            android:gravity="center_vertical"
-            android:padding="@dimen/dp5">
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:minHeight="200dp"
+            android:orientation="vertical"
+            android:visibility="gone"
+            >
+
+            <ImageView
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:src="@mipmap/icon_placeholder_project" />
 
             <TextView
-                android:id="@+id/add_attachment_view"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:background="?android:attr/selectableItemBackground"
-                android:layout_centerHorizontal="true"
-                android:drawablePadding="@dimen/dp10"
-                android:drawableTop="@mipmap/icon_add_36"
-                android:padding="@dimen/dp10"
-                android:text="添加附件" />
-
-        </RelativeLayout>
-    </LinearLayout>
+                android:layout_marginTop="@dimen/dp10"
+                android:text="暂无附件"
+                android:textColor="@color/alpha_font_color_gray"
+                android:textSize="15sp" />
+        </LinearLayout>
+    </FrameLayout>
 </android.support.v4.widget.NestedScrollView>

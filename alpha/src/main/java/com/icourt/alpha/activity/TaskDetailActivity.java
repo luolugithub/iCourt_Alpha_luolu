@@ -528,7 +528,7 @@ public class TaskDetailActivity extends BaseActivity implements OnFragmentCallBa
             baseFragmentAdapter.bindTitle(true, Arrays.asList(
                     "任务详情", "检查项 " + taskItemEntity.doneItemCount + "/" + taskItemEntity.itemCount, "附件 " + taskItemEntity.attachmentCount
             ));
-            baseFragmentAdapter.bindData(false, Arrays.asList(
+            baseFragmentAdapter.bindData(true, Arrays.asList(
                     TaskDetailFragment.newInstance(taskItemEntity),
                     TaskCheckItemFragment.newInstance(taskItemEntity.id, hasTaskEditPermission()),
                     TaskAttachmentFragment.newInstance(taskItemEntity.id, hasTaskEditPermission())
