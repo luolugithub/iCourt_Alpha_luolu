@@ -19,6 +19,7 @@ import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.entity.bean.TaskGroupEntity;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
+import com.icourt.alpha.utils.ItemDecorationUtils;
 
 import java.util.List;
 
@@ -80,6 +81,7 @@ public class TaskGroupListFragment extends BaseFragment implements BaseRecyclerA
     protected void initView() {
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setAdapter(projectTaskGroupAdapter = new ProjectTaskGroupAdapter(true));
+        recyclerView.addItemDecoration(ItemDecorationUtils.getCommFull05Divider(getContext(), false, R.color.alpha_divider_color));
         projectTaskGroupAdapter.setOnItemClickListener(this);
         projectTaskGroupAdapter.registerAdapterDataObserver(new DataChangeAdapterObserver() {
             @Override

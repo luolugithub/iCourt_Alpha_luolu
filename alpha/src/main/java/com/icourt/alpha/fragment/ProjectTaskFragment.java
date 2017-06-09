@@ -158,18 +158,20 @@ public class ProjectTaskFragment extends BaseFragment implements TaskAdapter.OnS
     @Override
     protected void getData(boolean isRefresh) {
         clearLists();
-        getApi().taskListQueryByMatterId(0, projectId, -1).enqueue(new SimpleCallBack<TaskEntity>() {
+        getApi().taskQueryByName("", "", 0, 0, projectId).enqueue(new SimpleCallBack<TaskEntity>() {
             @Override
             public void onSuccess(Call<ResEntity<TaskEntity>> call, Response<ResEntity<TaskEntity>> response) {
                 stopRefresh();
 //                getTaskGroupData(response.body().result);
                 getTaskGroupDatas(response.body().result);
+
             }
 
             @Override
             public void onFailure(Call<ResEntity<TaskEntity>> call, Throwable t) {
                 super.onFailure(call, t);
                 stopRefresh();
+                enableEmptyView(null);
             }
         });
     }
@@ -177,6 +179,7 @@ public class ProjectTaskFragment extends BaseFragment implements TaskAdapter.OnS
 
     private void getTaskGroupDatas(TaskEntity taskEntity) {
         if (taskEntity != null) {
+            enableEmptyView(taskEntity.items);
             if (taskEntity.items != null) {
                 List<TaskEntity.TaskItemEntity> noitems = new ArrayList<>();//未分组
                 for (TaskEntity.TaskItemEntity taskItemEntity : taskEntity.items) {
@@ -231,6 +234,8 @@ public class ProjectTaskFragment extends BaseFragment implements TaskAdapter.OnS
                     TimerManager.getInstance().timerQuerySync();
                 }
             }
+        }else{
+            enableEmptyView(null);
         }
     }
 
@@ -242,6 +247,20 @@ public class ProjectTaskFragment extends BaseFragment implements TaskAdapter.OnS
             taskEntities.clear();
         if (myStarTaskEntities != null)
             myStarTaskEntities.clear();
+    }
+
+    private void enableEmptyView(List result) {
+        if (refreshLayout != null) {
+            if (result != null) {
+                if (result.size() > 0) {
+                    refreshLayout.enableEmptyView(false);
+                } else {
+                    refreshLayout.enableEmptyView(true);
+                }
+            } else {
+                refreshLayout.enableEmptyView(true);
+            }
+        }
     }
 
     private void stopRefresh() {

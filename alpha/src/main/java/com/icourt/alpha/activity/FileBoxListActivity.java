@@ -170,6 +170,7 @@ public class FileBoxListActivity extends BaseActivity implements BaseRecyclerAda
                 stopRefresh();
                 if (response.body() != null) {
                     fileBoxBeanList = response.body();
+                    enableEmptyView(fileBoxBeanList);
                     projectFileBoxAdapter.bindData(isRefresh, fileBoxBeanList);
                 }
             }
@@ -186,6 +187,20 @@ public class FileBoxListActivity extends BaseActivity implements BaseRecyclerAda
         if (refreshLayout != null) {
             refreshLayout.stopRefresh();
             refreshLayout.stopLoadMore();
+        }
+    }
+
+    private void enableEmptyView(List result) {
+        if (refreshLayout != null) {
+            if (result != null) {
+                if (result.size() > 0) {
+                    refreshLayout.enableEmptyView(false);
+                } else {
+                    refreshLayout.enableEmptyView(true);
+                }
+            } else {
+                refreshLayout.enableEmptyView(true);
+            }
         }
     }
 
@@ -433,7 +448,7 @@ public class FileBoxListActivity extends BaseActivity implements BaseRecyclerAda
     private void uploadFile(String uploadUrl, String filePath) {
         String key = "file\";filename=\"" + DateUtils.millis() + ".png";
         Map<String, RequestBody> params = new HashMap<>();
-        params.put("parent_dir", RequestUtils.createTextBody("/"));
+        params.put("parent_dir", RequestUtils.createTextBody("/" + rootName));
         params.put(key, RequestUtils.createImgBody(new File(filePath)));
         getSFileApi().projectUploadFile("Token " + authToken, uploadUrl, params).enqueue(new Callback<JsonElement>() {
             @Override

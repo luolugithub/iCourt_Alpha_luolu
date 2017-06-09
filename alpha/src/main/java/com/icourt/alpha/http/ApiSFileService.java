@@ -66,7 +66,9 @@ public interface ApiSFileService {
      * @return
      */
     @GET("api2/repos/{seaFileRepoId}/dir/")
-    Call<List<FileBoxBean>> projectQueryFileBoxByDir(@Header("Authorization") String authToken, @Path("seaFileRepoId") String seaFileRepoId, @Query("p") String rootName);
+    Call<List<FileBoxBean>> projectQueryFileBoxByDir(@Header("Authorization") String authToken,
+                                                     @Path("seaFileRepoId") String seaFileRepoId,
+                                                     @Query("p") String rootName);
 
     /**
      * 获取文件下载地址

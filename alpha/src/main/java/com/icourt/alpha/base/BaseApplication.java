@@ -15,6 +15,7 @@ import com.icourt.alpha.R;
 import com.icourt.alpha.activity.ChatActivity;
 import com.icourt.alpha.constants.Const;
 import com.icourt.alpha.entity.bean.AlphaUserInfo;
+import com.icourt.alpha.http.AlphaClient;
 import com.icourt.alpha.http.HConst;
 import com.icourt.alpha.utils.ActivityLifecycleTaskCallbacks;
 import com.icourt.alpha.utils.GlideImageLoader;
@@ -58,6 +59,8 @@ import cn.finalteam.galleryfinal.ThemeConfig;
 import io.realm.Realm;
 import okhttp3.OkHttpClient;
 
+import static com.icourt.alpha.utils.LoginInfoUtils.getLoginUserInfo;
+
 /**
  * Description
  * Company Beijing icourt
@@ -95,6 +98,18 @@ public class BaseApplication extends MultiDexApplication {
         initBugtags();
         initGalleryFinal();
         initShengCe();
+        initApiInfo();
+    }
+
+    /**
+     * 设置api token等参数
+     */
+    private void initApiInfo() {
+        if (LoginInfoUtils.isUserLogin()) {
+            AlphaUserInfo loginUserInfo = LoginInfoUtils.getLoginUserInfo();
+            AlphaClient.setToken(loginUserInfo.getToken());
+            AlphaClient.setOfficeId(loginUserInfo.getOfficeId());
+        }
     }
 
     private void initShengCe() {
@@ -148,7 +163,7 @@ public class BaseApplication extends MultiDexApplication {
     private void initYunXin() {
 
         LoginInfo loginInfo = null;
-        AlphaUserInfo loginUserInfo = LoginInfoUtils.getLoginUserInfo();
+        AlphaUserInfo loginUserInfo = getLoginUserInfo();
         if (loginUserInfo != null) {
             loginInfo = new LoginInfo(loginUserInfo.getThirdpartId(), loginUserInfo.getChatToken());
         }

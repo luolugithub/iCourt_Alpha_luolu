@@ -23,7 +23,6 @@ import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.adapterObserver.RefreshViewEmptyObserver;
 import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.entity.bean.FileBoxBean;
-import com.icourt.alpha.utils.AppManager;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.ItemDecorationUtils;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
@@ -96,7 +95,7 @@ public class FolderboxSelectActivity extends BaseActivity implements BaseRecycle
         filePath = getIntent().getStringExtra("filePath");
         authToken = getIntent().getStringExtra("authToken");
         rootName = getIntent().getStringExtra("rootName");
-        refreshLayout.setNoticeEmpty(R.mipmap.icon_placeholder_project, R.string.null_project);
+        refreshLayout.setNoticeEmpty(R.mipmap.icon_placeholder_project, "暂无文件夹");
         refreshLayout.setMoveForHorizontal(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.addItemDecoration(ItemDecorationUtils.getCommFull05Divider(getContext(), true));
@@ -261,17 +260,15 @@ public class FolderboxSelectActivity extends BaseActivity implements BaseRecycle
     private void uploadFile(String uploadUrl, String filePath) {
         String key = "file\";filename=\"" + DateUtils.millis() + ".png";
         Map<String, RequestBody> params = new HashMap<>();
-        params.put("parent_dir", RequestUtils.createTextBody("/"));
+        params.put("parent_dir", RequestUtils.createTextBody("/" + rootName));
         params.put(key, RequestUtils.createImgBody(new File(filePath)));
         getSFileApi().projectUploadFile("Token " + authToken, uploadUrl, params).enqueue(new Callback<JsonElement>() {
             @Override
             public void onResponse(Call<JsonElement> call, Response<JsonElement> response) {
                 dismissLoadingDialog();
                 showTopSnackBar("上传成功");
-                FileBoxDownloadActivity activity = AppManager.getAppManager().getActivity(FileBoxDownloadActivity.class);
-                if (activity != null) {
-                    FileBoxDownloadActivity.launchClearTop(activity, activity.getIntent());
-                }
+                ImportFile2AlphaActivity.lauchClose(FolderboxSelectActivity.this);
+                finish();
             }
 
             @Override

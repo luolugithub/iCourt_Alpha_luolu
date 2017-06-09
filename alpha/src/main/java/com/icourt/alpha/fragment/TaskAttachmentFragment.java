@@ -118,7 +118,7 @@ public class TaskAttachmentFragment extends BaseFragment implements BaseRecycler
         taskId = getArguments().getString(KEY_TASK_ID);
         hasPermission = getArguments().getBoolean(KEY_HAS_PERMISSION);
         recyclerview.setLayoutManager(new LinearLayoutManager(getContext()));
-        recyclerview.addItemDecoration(ItemDecorationUtils.getCommFull05Divider(getContext(), true));
+        recyclerview.addItemDecoration(ItemDecorationUtils.getCommFull05Divider(getContext(), true, R.color.alpha_divider_color));
         recyclerview.setAdapter(taskAttachmentAdapter = new TaskAttachmentAdapter());
         taskAttachmentAdapter.setOnItemClickListener(this);
         getData(true);

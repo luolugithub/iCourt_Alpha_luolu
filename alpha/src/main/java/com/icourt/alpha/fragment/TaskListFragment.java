@@ -168,13 +168,7 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
     @Override
     protected void getData(boolean isRefresh) {
         clearLists();
-        int attentionType = 0;
-        if (type == TYPE_ALL) {
-            attentionType = 0;
-        } else if (type == TYPE_MY_ATTENTION) {
-            attentionType = 1;
-        }
-        getApi().taskListQuery(0, getLoginUserId(), 0, attentionType, "dueTime", 1, -1, 0).enqueue(new SimpleCallBack<TaskEntity>() {
+        getApi().taskQueryByName(getLoginUserId(), "", 0, type).enqueue(new SimpleCallBack<TaskEntity>() {
             @Override
             public void onSuccess(Call<ResEntity<TaskEntity>> call, Response<ResEntity<TaskEntity>> response) {
                 stopRefresh();

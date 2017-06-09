@@ -203,6 +203,7 @@ public class ProjectFileBoxFragment extends BaseFragment implements BaseRecycler
                     stopRefresh();
                     if (response.body() != null) {
                         fileBoxBeanList = response.body();
+                        enableEmptyView(fileBoxBeanList);
                         projectFileBoxAdapter.bindData(isRefresh, fileBoxBeanList);
                     }
                 }
@@ -223,6 +224,20 @@ public class ProjectFileBoxFragment extends BaseFragment implements BaseRecycler
         if (refreshLayout != null) {
             refreshLayout.stopRefresh();
             refreshLayout.stopLoadMore();
+        }
+    }
+
+    private void enableEmptyView(List result) {
+        if (refreshLayout != null) {
+            if (result != null) {
+                if (result.size() > 0) {
+                    refreshLayout.enableEmptyView(false);
+                } else {
+                    refreshLayout.enableEmptyView(true);
+                }
+            } else {
+                refreshLayout.enableEmptyView(true);
+            }
         }
     }
 

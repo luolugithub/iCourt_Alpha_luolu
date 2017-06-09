@@ -1,9 +1,11 @@
 package com.icourt.alpha.activity;
 
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
@@ -38,7 +40,7 @@ import butterknife.OnClick;
  */
 public class ImportFile2AlphaActivity extends BaseActivity
         implements OnPageFragmentCallBack {
-
+    private static final String CLOSE_ACTION = "close_action";//关闭当前页面
     BaseFragmentAdapter baseFragmentAdapter;
     @BindView(R.id.titleBack)
     ImageView titleBack;
@@ -50,6 +52,26 @@ public class ImportFile2AlphaActivity extends BaseActivity
     NoScrollViewPager viewPager;
     @BindView(R.id.titleAction)
     TextView titleAction;
+
+    public static void lauchClose(@NonNull Context context) {
+        if (context == null) return;
+        Intent intent = new Intent(context, ImportFile2AlphaActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        intent.setAction(CLOSE_ACTION);
+        context.startActivity(intent);
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        if (intent != null) {
+            String action = intent.getAction();
+            if (TextUtils.equals(action, CLOSE_ACTION)) {
+                finish();
+            }
+        }
+    }
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
