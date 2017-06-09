@@ -7,7 +7,6 @@ import com.icourt.alpha.entity.bean.AppVersionEntity;
 import com.icourt.alpha.entity.bean.CommentEntity;
 import com.icourt.alpha.entity.bean.ContactDeatilBean;
 import com.icourt.alpha.entity.bean.CustomerEntity;
-import com.icourt.alpha.entity.bean.FileBoxBean;
 import com.icourt.alpha.entity.bean.GroupBean;
 import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.icourt.alpha.entity.bean.IMMessageCustomBody;
@@ -41,7 +40,6 @@ import retrofit2.http.DELETE;
 import retrofit2.http.Field;
 import retrofit2.http.FormUrlEncoded;
 import retrofit2.http.GET;
-import retrofit2.http.Header;
 import retrofit2.http.Multipart;
 import retrofit2.http.POST;
 import retrofit2.http.PUT;
@@ -349,15 +347,6 @@ public interface ApiAlphaService {
     @GET("api/v2/documents/getRepo/{projectId}")
     Call<JsonObject> projectQueryDocumentId(@Path("projectId") String projectId);
 
-    /**
-     * 获取项目详情文档列表
-     *
-     * @param authToken
-     * @param seaFileRepoId
-     * @return
-     */
-    @GET("https://box.alphalawyer.cn/api2/repos/{seaFileRepoId}/dir/")
-    Call<List<FileBoxBean>> projectQueryFileBoxList(@Header("Authorization") String authToken, @Path("seaFileRepoId") String seaFileRepoId);
 
     /**
      * 项目下任务列表
@@ -618,16 +607,6 @@ public interface ApiAlphaService {
                                                       @Query("pageSize") int pageSize);
 
     /**
-     * 获取上传文件url
-     *
-     * @param seaFileRepoId
-     * @return
-     */
-    @GET("https://box.alphalawyer.cn/api2/repos/{seaFileRepoId}/upload-link/")
-    Call<JsonElement> projectUploadUrlQuery(@Header("Authorization") String authToken, @Path("seaFileRepoId") String seaFileRepoId);
-
-
-    /**
      * 获取指定时间段的计时统计
      *
      * @param workStartDate 2015-05-03
@@ -638,50 +617,6 @@ public interface ApiAlphaService {
     Call<ResEntity<ItemPageEntity<TimingCountEntity>>> queryTimingCountByTime(@Query("workStartDate") String workStartDate,
                                                                               @Query("workEndDate") String workEndDate);
 
-    /**
-     * 项目下上传文件
-     *
-     * @param authToken
-     * @param url
-     * @param params
-     * @return
-     */
-    @Multipart
-    @POST()
-    Call<JsonElement> projectUploadFile(@Header("Authorization") String authToken,
-                                        @Url String url,
-                                        @PartMap Map<String, RequestBody> params);
-
-    /**
-     * 获取项目下文档列表
-     *
-     * @param authToken
-     * @param seaFileRepoId
-     * @param rootName
-     * @return
-     */
-    @GET("https://box.alphalawyer.cn/api2/repos/{seaFileRepoId}/dir/")
-    Call<List<FileBoxBean>> projectQueryFileBoxByDir(@Header("Authorization") String authToken, @Path("seaFileRepoId") String seaFileRepoId, @Query("p") String rootName);
-
-    /**
-     * 获取文件下载地址
-     *
-     * @param seaFileRepoId
-     * @param rootName
-     * @return
-     */
-    @GET("https://box.alphalawyer.cn/api2/repos/{seaFileRepoId}/file/")
-    Call<JsonElement> fileboxDownloadUrlQuery(@Header("Authorization") String authToken, @Path("seaFileRepoId") String seaFileRepoId, @Query("p") String rootName);
-
-    /**
-     * 下载文件
-     *
-     * @param authToken
-     * @param url
-     * @return
-     */
-    @GET()
-    Call<JsonElement> fileboxDownload(@Header("Authorization") String authToken, @Url String url);
 
     /**
      * 获取项目下的工作类型

@@ -9,10 +9,12 @@ import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.ProjectTaskGroupAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
+import com.icourt.alpha.adapter.baseadapter.adapterObserver.DataChangeAdapterObserver;
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.entity.bean.TaskGroupEntity;
 import com.icourt.alpha.http.callback.SimpleCallBack;
@@ -37,6 +39,8 @@ public class TaskGroupListFragment extends BaseFragment implements BaseRecyclerA
     @BindView(R.id.recyclerView)
     RecyclerView recyclerView;
     Unbinder unbinder;
+    @BindView(R.id.empty_layout)
+    LinearLayout emptyLayout;
 
     public static TaskGroupListFragment newInstance(String projectId) {
         TaskGroupListFragment taskGroupListFragment = new TaskGroupListFragment();
@@ -77,6 +81,13 @@ public class TaskGroupListFragment extends BaseFragment implements BaseRecyclerA
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setAdapter(projectTaskGroupAdapter = new ProjectTaskGroupAdapter(true));
         projectTaskGroupAdapter.setOnItemClickListener(this);
+        projectTaskGroupAdapter.registerAdapterDataObserver(new DataChangeAdapterObserver() {
+            @Override
+            protected void updateUI() {
+                if (emptyLayout == null) return;
+                emptyLayout.setVisibility(projectTaskGroupAdapter.getItemCount() <= 0 ? View.VISIBLE : View.GONE);
+            }
+        });
         getData(true);
     }
 
@@ -114,8 +125,8 @@ public class TaskGroupListFragment extends BaseFragment implements BaseRecyclerA
     }
 
     @Override
-    public void onDestroyView() {
-        super.onDestroyView();
+    public void onDestroy() {
+        super.onDestroy();
         unbinder.unbind();
     }
 

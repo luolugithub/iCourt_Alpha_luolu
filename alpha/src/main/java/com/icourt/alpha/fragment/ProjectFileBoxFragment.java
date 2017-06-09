@@ -197,7 +197,7 @@ public class ProjectFileBoxFragment extends BaseFragment implements BaseRecycler
     @Override
     protected void getData(final boolean isRefresh) {
         if (!TextUtils.isEmpty(authToken) && !TextUtils.isEmpty(seaFileRepoId)) {
-            getApi().projectQueryFileBoxList("Token " + authToken, seaFileRepoId).enqueue(new Callback<List<FileBoxBean>>() {
+            getSFileApi().projectQueryFileBoxList("Token " + authToken, seaFileRepoId).enqueue(new Callback<List<FileBoxBean>>() {
                 @Override
                 public void onResponse(Call<List<FileBoxBean>> call, Response<List<FileBoxBean>> response) {
                     stopRefresh();
@@ -419,7 +419,7 @@ public class ProjectFileBoxFragment extends BaseFragment implements BaseRecycler
             return;
         }
         showLoadingDialog("正在上传...");
-        getApi().projectUploadUrlQuery("Token " + authToken, seaFileRepoId).enqueue(new Callback<JsonElement>() {
+        getSFileApi().projectUploadUrlQuery("Token " + authToken, seaFileRepoId).enqueue(new Callback<JsonElement>() {
             @Override
             public void onResponse(Call<JsonElement> call, Response<JsonElement> response) {
                 if (response.body() != null) {
@@ -453,7 +453,7 @@ public class ProjectFileBoxFragment extends BaseFragment implements BaseRecycler
         Map<String, RequestBody> params = new HashMap<>();
         params.put("parent_dir", RequestUtils.createTextBody("/"));
         params.put(key, RequestUtils.createImgBody(new File(filePath)));
-        getApi().projectUploadFile("Token " + authToken, uploadUrl, params).enqueue(new Callback<JsonElement>() {
+        getSFileApi().projectUploadFile("Token " + authToken, uploadUrl, params).enqueue(new Callback<JsonElement>() {
 
             @Override
             public void onResponse(Call<JsonElement> call, Response<JsonElement> response) {

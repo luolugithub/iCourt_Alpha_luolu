@@ -237,7 +237,6 @@ public class CommentListActivity extends BaseActivity implements BaseRecyclerAda
             @Override
             public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
                 dismissLoadingDialog();
-                showTopSnackBar("添加评论成功");
                 CommentEntity.CommentItemEntity commentItemEntity = getNewComment();
                 commentItemEntity.id = response.body().result.getAsString();
                 commentListAdapter.addItem(0, commentItemEntity);

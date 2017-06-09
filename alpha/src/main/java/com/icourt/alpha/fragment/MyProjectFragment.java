@@ -178,6 +178,8 @@ public class MyProjectFragment extends BaseFragment {
                 } else {
                     refreshLayout.enableEmptyView(true);
                 }
+            } else {
+                refreshLayout.enableEmptyView(true);
             }
         }
     }
