@@ -2,6 +2,7 @@ package com.icourt.alpha.view.xrefreshlayout;
 
 import android.content.Context;
 import android.support.annotation.DrawableRes;
+import android.support.annotation.FloatRange;
 import android.support.annotation.NonNull;
 import android.support.annotation.StringRes;
 import android.support.v7.widget.RecyclerView;
@@ -10,6 +11,7 @@ import android.view.View;
 import android.widget.TextView;
 
 import com.andview.refreshview.XRefreshView;
+import com.andview.refreshview.callback.IFooterCallBack;
 import com.icourt.alpha.R;
 
 /**
@@ -111,5 +113,29 @@ public class RefreshLayout extends XRefreshView {
         } else if (adapter.getItemCount() <= 0 && !isEmptyViewShowing()) {
             enableEmptyView(true);
         }
+    }
+
+    /**
+     * 上拉加载 是否拉到最大距离
+     *
+     * @param xRefreshView
+     * @param distanceScale
+     * @return
+     */
+    public static final boolean isLoadMoreMaxDistance(XRefreshView xRefreshView,
+                                                      @FloatRange(from = 0.0, to = 1.0) float distanceScale) {
+        if (xRefreshView != null) {
+            try {
+                View contentView = xRefreshView.getChildAt(1);
+                View footerView = xRefreshView.getChildAt(2);
+                if (contentView != null && footerView instanceof IFooterCallBack) {
+                    IFooterCallBack iFooterCallBack = (IFooterCallBack) footerView;
+                    return contentView.getY() < -(iFooterCallBack.getFooterHeight() * distanceScale);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        return true;
     }
 }

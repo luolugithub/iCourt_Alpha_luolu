@@ -17,6 +17,7 @@ import com.icourt.alpha.activity.TimerDetailActivity;
 import com.icourt.alpha.activity.TimerTimingActivity;
 import com.icourt.alpha.adapter.TimeAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
+import com.icourt.alpha.adapter.baseadapter.adapterObserver.RefreshViewEmptyObserver;
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.entity.bean.ItemPageEntity;
 import com.icourt.alpha.entity.bean.TimeEntity;
@@ -25,8 +26,10 @@ import com.icourt.alpha.entity.event.TimingEvent;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.DateUtils;
+import com.icourt.alpha.utils.DensityUtil;
 import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.utils.SystemUtils;
+import com.icourt.alpha.view.CustomerXRefreshViewFooter;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 import com.icourt.alpha.widget.manager.TimerManager;
 
@@ -79,6 +82,27 @@ public class TabTimingFragment extends BaseFragment implements BaseRecyclerAdapt
     RefreshLayout refreshLayout;
     Unbinder unbinder;
 
+    @Nullable
+    @Override
+    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        View view = super.onCreateView(R.layout.fragment_tab_find_timing, inflater, container, savedInstanceState);
+        unbinder = ButterKnife.bind(this, view);
+        return view;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        getData(true);
+    }
+
+    @Override
+    public void onDestroy() {
+        EventBus.getDefault().unregister(this);
+        super.onDestroy();
+        unbinder.unbind();
+    }
+
     public static TabTimingFragment newInstance() {
         return new TabTimingFragment();
     }
@@ -97,16 +121,8 @@ public class TabTimingFragment extends BaseFragment implements BaseRecyclerAdapt
     private final long weekMillSecond = 7 * 24 * 60 * 60 * 1000;
     private TimeAdapter timeAdapter;
     private final List<TimingCountEntity> timingCountEntities = new ArrayList<>();
-
-    @Nullable
-    @Override
-    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = super.onCreateView(R.layout.fragment_tab_find_timing, inflater, container, savedInstanceState);
-        unbinder = ButterKnife.bind(this, view);
-        return view;
-    }
-
     int pageIndex = 0;
+    CustomerXRefreshViewFooter customerXRefreshViewFooter;
 
     @Override
     protected void initView() {
@@ -116,13 +132,20 @@ public class TabTimingFragment extends BaseFragment implements BaseRecyclerAdapt
         recyclerView.setAdapter(timeAdapter = new TimeAdapter(true));
         timeAdapter.setOnItemClickListener(this);
 
-        String weekStart = new SimpleDateFormat("MM月dd日").format(DateUtils.getCurrWeekStartTime());
-        String weekEnd = new SimpleDateFormat("MM月dd日").format(DateUtils.getCurrWeekEndTime());
+        String weekStart = DateUtils.getMMMdd(DateUtils.getCurrWeekStartTime());
+        String weekEnd = DateUtils.getMMMdd(DateUtils.getCurrWeekEndTime());
         timingDateTitle.setText(String.format("%s-%s", weekStart, weekEnd));
         generateData();
 
         resetViewport();
 
+        customerXRefreshViewFooter = new CustomerXRefreshViewFooter(getContext());
+        int dp20 = DensityUtil.dip2px(getContext(), 20);
+        customerXRefreshViewFooter.setPadding(0, dp20, 0, dp20);
+        customerXRefreshViewFooter.setFooterLoadmoreTitle("加载前一周");
+        refreshLayout.setCustomFooterView(customerXRefreshViewFooter);
+        refreshLayout.setNoticeEmpty(R.mipmap.icon_placeholder_timing, "暂无计时");
+        timeAdapter.registerAdapterDataObserver(new RefreshViewEmptyObserver(refreshLayout, timeAdapter));
         refreshLayout.setXRefreshViewListener(new XRefreshView.SimpleXRefreshListener() {
             @Override
             public void onRefresh(boolean isPullDown) {
@@ -136,19 +159,17 @@ public class TabTimingFragment extends BaseFragment implements BaseRecyclerAdapt
             @Override
             public void onLoadMore(boolean isSilence) {
                 super.onLoadMore(isSilence);
-                pageIndex++;
-                getData(false);
+                if (RefreshLayout.isLoadMoreMaxDistance(refreshLayout, 0.8f)) {
+                    pageIndex++;
+                    getData(false);
+                } else {
+                    stopRefresh();
+                }
             }
+
         });
         refreshLayout.setPullLoadEnable(true);
-        refreshLayout.setDampingRatio(2.5f);
         refreshLayout.startRefresh();
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        getData(true);
     }
 
     private void stopRefresh() {
@@ -171,9 +192,14 @@ public class TabTimingFragment extends BaseFragment implements BaseRecyclerAdapt
         String weekStartTime = getFromatTime(weekStartTimeMillSecond);
         String weekEndTime = getFromatTime(weekEndTimeMillSecond);
 
-        String weekStart = new SimpleDateFormat("MM月dd日").format(weekStartTimeMillSecond);
-        String weekEnd = new SimpleDateFormat("MM月dd日").format(weekEndTimeMillSecond);
+        String weekStart = DateUtils.getMMMdd(weekStartTimeMillSecond);
+        String weekEnd = DateUtils.getMMMdd(weekEndTimeMillSecond);
         timingDateTitle.setText(String.format("%s-%s", weekStart, weekEnd));
+
+        //footer设置
+        String lastWeekStart = DateUtils.getMMMdd(weekStartTimeMillSecond - weekMillSecond);
+        String lastWeekEnd = DateUtils.getMMMdd(weekEndTimeMillSecond - weekMillSecond);
+        customerXRefreshViewFooter.setFooterLoadmoreDesc(String.format("%s-%s", lastWeekStart, lastWeekEnd));
 
         getWeekTimingCount(weekStartTime, weekEndTime);
 
@@ -370,13 +396,6 @@ public class TabTimingFragment extends BaseFragment implements BaseRecyclerAdapt
         return String.format("%02d:%02d", hour, minute);
     }
 
-
-    @Override
-    public void onDestroy() {
-        EventBus.getDefault().unregister(this);
-        super.onDestroy();
-        unbinder.unbind();
-    }
 
     @Override
     public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {

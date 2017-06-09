@@ -758,6 +758,13 @@ public class MainActivity extends BaseAppUpdateActivity
                             }
                             initTabChangeableData();
                         }
+
+                    }
+
+                    @Override
+                    public void onFailure(Call<ResEntity<Boolean>> call, Throwable t) {
+                        super.onFailure(call, t);
+                        initTabChangeableData();
                     }
                 });
 
@@ -808,6 +815,12 @@ public class MainActivity extends BaseAppUpdateActivity
                             }
                             initTabChangeableData();
                         }
+                    }
+
+                    @Override
+                    public void onFailure(Call<ResEntity<Boolean>> call, Throwable t) {
+                        super.onFailure(call, t);
+                        initTabChangeableData();
                     }
                 });
     }
