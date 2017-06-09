@@ -9,12 +9,14 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.AppBarLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.andview.refreshview.XRefreshView;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.ImUserMessageAdapter;
+import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.adapterObserver.RefreshViewEmptyObserver;
 import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.constants.Const;
@@ -57,7 +59,7 @@ import static com.icourt.alpha.constants.Const.CHAT_TYPE_TEAM;
  * date createTime：2017/4/19
  * version 1.0.0
  */
-public class ChatMsgClassfyActivity extends BaseActivity {
+public class ChatMsgClassfyActivity extends BaseActivity implements BaseRecyclerAdapter.OnItemClickListener {
     public static final int MSG_CLASSFY_MY_COLLECTEED = 0;  //我收藏的消息
     public static final int MSG_CLASSFY_CHAT_DING = 1;      //讨论组钉的消息
     public static final int MSG_CLASSFY_CHAT_FILE = 2;      //讨论组的文件消息
@@ -65,6 +67,7 @@ public class ChatMsgClassfyActivity extends BaseActivity {
     private static final String KEY_CLASSFY_TYPE = "KEY_CLASSFY_TYPE";
     private static final String KEY_ID = "KEY_ID";
     private static final String KEY_CHAT_TYPE = " KEY_CHAT_TYPE";
+
 
     @IntDef({
             MSG_CLASSFY_MY_COLLECTEED,
@@ -77,6 +80,14 @@ public class ChatMsgClassfyActivity extends BaseActivity {
 
     //本地同步的联系人
     protected final List<GroupContactBean> localContactList = new ArrayList<>();
+
+    @Override
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_my_ated);
+        ButterKnife.bind(this);
+        initView();
+    }
 
     /**
      * 聊天钉的消息
@@ -153,17 +164,8 @@ public class ChatMsgClassfyActivity extends BaseActivity {
     }
 
     @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_my_ated);
-        ButterKnife.bind(this);
-        initView();
-    }
-
-    @Override
     protected void initView() {
         super.initView();
-
         switch (getMsgClassfyType()) {
             case MSG_CLASSFY_CHAT_DING:
                 setTitle("钉的消息");
@@ -188,6 +190,7 @@ public class ChatMsgClassfyActivity extends BaseActivity {
         recyclerView.setHasFixedSize(true);
         recyclerView.setAdapter(imUserMessageAdapter = new ImUserMessageAdapter(localContactList));
         imUserMessageAdapter.registerAdapterDataObserver(new RefreshViewEmptyObserver(refreshLayout, imUserMessageAdapter));
+        imUserMessageAdapter.setOnItemClickListener(this);
         refreshLayout.setXRefreshViewListener(new XRefreshView.SimpleXRefreshListener() {
             @Override
             public void onRefresh(boolean isPullDown) {
@@ -312,5 +315,12 @@ public class ChatMsgClassfyActivity extends BaseActivity {
             refreshLayout.stopRefresh();
             refreshLayout.stopLoadMore();
         }
+    }
+
+    @Override
+    public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
+        IMMessageCustomBody item = imUserMessageAdapter.getItem(adapter.getRealPos(position));
+        if (item == null) return;
+        FileDetailsActivity.launch(getContext(), item, getMsgClassfyType());
     }
 }

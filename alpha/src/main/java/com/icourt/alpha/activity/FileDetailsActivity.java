@@ -47,6 +47,9 @@ import io.realm.RealmResults;
 import retrofit2.Call;
 import retrofit2.Response;
 
+import static com.icourt.alpha.activity.ChatMsgClassfyActivity.MSG_CLASSFY_CHAT_DING;
+import static com.icourt.alpha.activity.ChatMsgClassfyActivity.MSG_CLASSFY_CHAT_FILE;
+import static com.icourt.alpha.activity.ChatMsgClassfyActivity.MSG_CLASSFY_MY_COLLECTEED;
 import static com.icourt.alpha.constants.Const.CHAT_TYPE_P2P;
 import static com.icourt.alpha.constants.Const.CHAT_TYPE_TEAM;
 
@@ -60,6 +63,7 @@ import static com.icourt.alpha.constants.Const.CHAT_TYPE_TEAM;
 public class FileDetailsActivity extends BaseActivity {
 
     private static final String KEY_FILE_INFO = "key_file_info";
+    private static final String KEY_CLASSFY_TYPE = "KEY_CLASSFY_TYPE";
     IMMessageCustomBody item;
     @BindView(R.id.titleBack)
     ImageView titleBack;
@@ -76,6 +80,29 @@ public class FileDetailsActivity extends BaseActivity {
     //本地同步的联系人
     protected final List<GroupContactBean> localContactList = new ArrayList<>();
     private final List<Team> localTeams = new ArrayList<>();
+
+    @Override
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_file_details);
+        ButterKnife.bind(this);
+        initView();
+        getData(true);
+    }
+
+    @ChatMsgClassfyActivity.MsgClassfyType
+    public int getMsgClassfyType() {
+        switch (getIntent().getIntExtra(KEY_CLASSFY_TYPE, 0)) {
+            case MSG_CLASSFY_MY_COLLECTEED:
+                return MSG_CLASSFY_MY_COLLECTEED;
+            case MSG_CLASSFY_CHAT_DING:
+                return MSG_CLASSFY_CHAT_DING;
+            case MSG_CLASSFY_CHAT_FILE:
+                return MSG_CLASSFY_CHAT_FILE;
+            default:
+                return MSG_CLASSFY_MY_COLLECTEED;
+        }
+    }
 
     /**
      * 获取本地联系人
@@ -126,21 +153,15 @@ public class FileDetailsActivity extends BaseActivity {
                 .subscribe(consumer);
     }
 
-    public static void launch(@NonNull Context context, IMMessageCustomBody imFileEntity) {
+    public static void launch(@NonNull Context context,
+                              IMMessageCustomBody imFileEntity,
+                              @ChatMsgClassfyActivity.MsgClassfyType int msgClassfyType) {
         if (context == null) return;
         if (imFileEntity == null) return;
         Intent intent = new Intent(context, FileDetailsActivity.class);
         intent.putExtra(KEY_FILE_INFO, imFileEntity);
+        intent.putExtra(KEY_CLASSFY_TYPE, msgClassfyType);
         context.startActivity(intent);
-    }
-
-    @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_file_details);
-        ButterKnife.bind(this);
-        initView();
-        getData(true);
     }
 
     @Override
@@ -150,6 +171,7 @@ public class FileDetailsActivity extends BaseActivity {
         TextView titleActionTextView = getTitleActionTextView();
         if (titleActionTextView != null) {
             titleActionTextView.setText("跳转");
+            titleActionTextView.setVisibility(View.INVISIBLE);
         }
         Serializable serializableExtra = getIntent().getSerializableExtra(KEY_FILE_INFO);
         if (serializableExtra instanceof IMMessageCustomBody) {
@@ -164,23 +186,34 @@ public class FileDetailsActivity extends BaseActivity {
     @Override
     protected void getData(boolean isRefresh) {
         super.getData(isRefresh);
-        getChatApi().msgIsCollected(item.id)
-                .enqueue(new SimpleCallBack<Boolean>() {
-                    @Override
-                    public void onSuccess(Call<ResEntity<Boolean>> call, Response<ResEntity<Boolean>> response) {
-
-                    }
-                });
-        getChatApi().msgIsDinged(item.id)
-                .enqueue(new SimpleCallBack<Boolean>() {
-                    @Override
-                    public void onSuccess(Call<ResEntity<Boolean>> call, Response<ResEntity<Boolean>> response) {
-
-                    }
-                });
+        switch (getMsgClassfyType()) {
+            case MSG_CLASSFY_CHAT_DING:
+                getChatApi().msgIsDinged(item.id)
+                        .enqueue(new SimpleCallBack<Boolean>() {
+                            @Override
+                            public void onSuccess(Call<ResEntity<Boolean>> call, Response<ResEntity<Boolean>> response) {
+                                titleAction.setVisibility(response.body().result != null && response.body().result.booleanValue()
+                                        ? View.VISIBLE : View.INVISIBLE);
+                            }
+                        });
+                break;
+            case MSG_CLASSFY_CHAT_FILE:
+                break;
+            case MSG_CLASSFY_MY_COLLECTEED:
+                getChatApi().msgIsCollected(item.id)
+                        .enqueue(new SimpleCallBack<Boolean>() {
+                            @Override
+                            public void onSuccess(Call<ResEntity<Boolean>> call, Response<ResEntity<Boolean>> response) {
+                                titleAction.setVisibility(response.body().result != null && response.body().result.booleanValue()
+                                        ? View.VISIBLE : View.INVISIBLE);
+                            }
+                        });
+                break;
+        }
         getLocalContacts();
         getTeams();
     }
+
 
     @Override
     public void onClick(View v) {
@@ -206,6 +239,7 @@ public class FileDetailsActivity extends BaseActivity {
                                     true);
                             break;
                     }
+                    finish();
                 }
                 break;
             default:

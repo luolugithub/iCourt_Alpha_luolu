@@ -12,7 +12,10 @@ import android.view.ViewGroup;
 
 import com.andview.refreshview.XRefreshView;
 import com.icourt.alpha.R;
+import com.icourt.alpha.activity.ChatMsgClassfyActivity;
+import com.icourt.alpha.activity.FileDetailsActivity;
 import com.icourt.alpha.adapter.ImUserMessageAdapter;
+import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.adapterObserver.RefreshViewEmptyObserver;
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.db.convertor.IConvertModel;
@@ -52,10 +55,12 @@ import retrofit2.Response;
  * date createTime：2017/4/17
  * version 1.0.0
  */
-public class FileListFragment extends BaseFragment {
+public class FileListFragment
+        extends BaseFragment implements BaseRecyclerAdapter.OnItemClickListener {
     public static final int TYPE_ALL_FILE = 0;
     public static final int TYPE_MY_FILE = 2;
     private static final String KEY_FILE_TYPE = "key_file_type";
+
 
     @IntDef({TYPE_ALL_FILE,
             TYPE_MY_FILE})
@@ -111,6 +116,7 @@ public class FileListFragment extends BaseFragment {
         recyclerView.addItemDecoration(ItemDecorationUtils.getCommFullDivider(getContext(), false));
         recyclerView.setHasFixedSize(true);
         recyclerView.setAdapter(fileAdapter = new ImUserMessageAdapter(localContactList));
+        fileAdapter.setOnItemClickListener(this);
         fileAdapter.registerAdapterDataObserver(new RefreshViewEmptyObserver(refreshLayout, fileAdapter));
         refreshLayout.setXRefreshViewListener(new XRefreshView.SimpleXRefreshListener() {
             @Override
@@ -233,6 +239,15 @@ public class FileListFragment extends BaseFragment {
                 .subscribe(consumer);
     }
 
+
+    @Override
+    public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
+        IMMessageCustomBody item = fileAdapter.getItem(adapter.getRealPos(position));
+        if (item == null) return;
+        FileDetailsActivity.launch(getContext(),
+                item,
+                ChatMsgClassfyActivity.MSG_CLASSFY_CHAT_FILE);
+    }
 
     @Override
     public void onDestroyView() {
