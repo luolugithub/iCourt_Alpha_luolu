@@ -25,11 +25,11 @@ ext {
             api_chat_url_release: "\"https://im.alphalawyer.cn/\""//正式
     ]
 
-    alphaHostUrl = [
-            host_url_debug  : "\"https://dev.alphalawyer.cn/\"",//开发
-            host_url_test   : "\"https://test.alphalawyer.cn/\"",//内测
-            host_url_preview: "\"https://pre.alphalawyer.cn／\"",//预览
-            host_url_release: "\"https://alphalawyer.cn/\""//正式
+    alphaSFileUrl = [
+            api_url_debug  : "\"http://devbox.alphalawyer.cn/\"",//开发
+            api_url_test   : "\"http://testbox.alphalawyer.cn/\"",//内测
+            api_url_preview: "\"https://box.alphalawyer.cn／\"",//预览
+            api_url_release: "\"https://box.alphalawyer.cn/\""//正式
     ]
 
     alphaApkUpdateUrl = [

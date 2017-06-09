@@ -41,6 +41,10 @@ public class RetrofitServiceFactory {
         return getApiService(BuildConfig.API_URL, ApiProjectService.class);
     }
 
+    public static final ApiSFileService getSFileApiService() {
+        return getApiService(BuildConfig.API_SFILE_URL, ApiSFileService.class);
+    }
+
     private static OkHttpClient mOkHttpClient;
 
     public static final OkHttpClient provideOkHttpClient() {

@@ -22,6 +22,7 @@ import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.icourt.alpha.http.ApiAlphaService;
 import com.icourt.alpha.http.ApiChatService;
 import com.icourt.alpha.http.ApiProjectService;
+import com.icourt.alpha.http.ApiSFileService;
 import com.icourt.alpha.http.RetrofitServiceFactory;
 import com.icourt.alpha.interfaces.INotifyFragment;
 import com.icourt.alpha.interfaces.ProgressHUDImp;
@@ -308,6 +309,16 @@ public abstract class BaseFragment
     @NonNull
     protected final ApiProjectService getProjectApi() {
         return RetrofitServiceFactory.getProjectApiService();
+    }
+
+    /**
+     * 接口 http通信
+     *
+     * @return
+     */
+    @NonNull
+    protected final ApiSFileService getSFileApi() {
+        return RetrofitServiceFactory.getSFileApiService();
     }
 
     /**

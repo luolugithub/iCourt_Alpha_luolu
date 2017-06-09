@@ -112,7 +112,7 @@ import static com.netease.nimlib.sdk.msg.model.QueryDirectionEnum.QUERY_OLD;
  * date createTime：2017/4/24
  * version 1.0.0
  */
-public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapter.OnItemChildClickListener, BaseRecyclerAdapter.OnItemChildLongClickListener {
+public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapter.OnItemChildClickListener, BaseRecyclerAdapter.OnItemChildLongClickListener, BaseRecyclerAdapter.OnItemClickListener {
     private static final int REQUEST_CODE_CAMERA = 1000;
     private static final int REQUEST_CODE_GALLERY = 1001;
     private static final int REQUEST_CODE_AT_MEMBER = 1002;
@@ -746,6 +746,7 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
         recyclerView.setLayoutManager(linearLayoutManager);
         recyclerView.setHasFixedSize(true);
         recyclerView.setAdapter(chatAdapter = new ChatAdapter(localContactList));
+        chatAdapter.setOnItemClickListener(this);
         chatAdapter.setOnItemLongClickListener(this);
         chatAdapter.setOnItemChildClickListener(this);
         chatAdapter.setOnItemChildLongClickListener(this);
@@ -1392,4 +1393,10 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
     }
 
 
+    @Override
+    public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
+        if (ekBar != null) {
+            ekBar.reset();
+        }
+    }
 }

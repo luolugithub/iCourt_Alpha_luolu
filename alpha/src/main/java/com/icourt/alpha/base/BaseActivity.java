@@ -29,6 +29,7 @@ import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.icourt.alpha.http.ApiAlphaService;
 import com.icourt.alpha.http.ApiChatService;
 import com.icourt.alpha.http.ApiProjectService;
+import com.icourt.alpha.http.ApiSFileService;
 import com.icourt.alpha.http.RetrofitServiceFactory;
 import com.icourt.alpha.interfaces.IContextResourcesImp;
 import com.icourt.alpha.interfaces.ProgressHUDImp;
@@ -244,6 +245,16 @@ public class BaseActivity
         return RetrofitServiceFactory.getProjectApiService();
     }
 
+
+    /**
+     * 接口 http通信
+     *
+     * @return
+     */
+    @NonNull
+    protected final ApiSFileService getSFileApi() {
+        return RetrofitServiceFactory.getSFileApiService();
+    }
     /**
      * Toast提示
      * 缺陷 有的rom 会禁用掉taost 比如huawei rom
