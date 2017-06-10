@@ -183,7 +183,7 @@ public class ProjectDetailActivity extends BaseActivity implements OnFragmentCal
                     titleAction.setImageResource(R.mipmap.header_icon_add);
                     titleAction.setVisibility(View.VISIBLE);
                 } else {
-                    titleAction.setVisibility(View.GONE);
+                    titleAction.setVisibility(View.INVISIBLE);
                 }
                 break;
             case 2:
@@ -195,7 +195,7 @@ public class ProjectDetailActivity extends BaseActivity implements OnFragmentCal
                     titleAction.setImageResource(R.mipmap.header_icon_add);
                     titleAction.setVisibility(View.VISIBLE);
                 } else {
-                    titleAction.setVisibility(View.GONE);
+                    titleAction.setVisibility(View.INVISIBLE);
                 }
                 titleAction2.setImageResource(R.mipmap.header_icon_more);
                 titleAction2.setVisibility(View.VISIBLE);

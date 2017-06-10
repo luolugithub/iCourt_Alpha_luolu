@@ -211,7 +211,8 @@ public class FileBoxDownloadActivity extends BaseActivity {
                 uri = Uri.fromFile(file);
             }
             //添加这一句表示对目标应用临时授权该Uri所代表的文件
-            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION
+                    | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
             if (action.equals(Intent.ACTION_VIEW)) {
                 intent.setDataAndType(uri, type);
                 startActivity(intent);     //这里最好try一下，有可能会报错。 //比如说你的MIME类型是打开邮箱，但是你手机里面没装邮箱客户端，就会报错。

@@ -189,6 +189,7 @@ public class FolderboxSelectActivity extends BaseActivity implements BaseRecycle
             @Override
             public void onFailure(Call<JsonObject> call, Throwable throwable) {
                 showTopSnackBar("获取文档根目录id失败");
+                enableEmptyView(null);
             }
         });
     }
@@ -201,6 +202,20 @@ public class FolderboxSelectActivity extends BaseActivity implements BaseRecycle
             }
         }
         return fileBoxBeens;
+    }
+
+    private void enableEmptyView(List result) {
+        if (refreshLayout != null) {
+            if (result != null) {
+                if (result.size() > 0) {
+                    refreshLayout.enableEmptyView(false);
+                } else {
+                    refreshLayout.enableEmptyView(true);
+                }
+            }else {
+                refreshLayout.enableEmptyView(true);
+            }
+        }
     }
 
     private void stopRefresh() {
