@@ -113,7 +113,7 @@ public class SelectLiaisonActivity extends BaseActivity implements BaseRecyclerA
     @Override
     protected void initView() {
         super.initView();
-        setTitle("选择联络人");
+        setTitle("添加关联人/机构");
         liaisonsList = (List<CustomerEntity>) getIntent().getSerializableExtra("liaisonsList");
         pkid = getIntent().getStringExtra("pkid");
         action = getIntent().getAction();

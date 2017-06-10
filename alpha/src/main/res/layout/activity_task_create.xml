@@ -76,6 +76,7 @@
                     android:id="@+id/project_name_tv"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:hint="选择项目"
                     android:textColor="@color/alpha_font_color_black"
                     android:textSize="13sp" />
 
@@ -136,6 +137,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
+                    android:hint="选择任务组"
                     android:gravity="right|center_vertical"
                     android:textColor="@color/alpha_font_color_black"
                     android:textSize="13sp" />

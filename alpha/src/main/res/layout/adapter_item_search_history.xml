@@ -11,6 +11,8 @@
         android:layout_weight="1"
         android:ellipsize="end"
         android:maxLines="1"
+        android:textColor="@color/alpha_font_color_gray"
+        android:textSize="14sp"
         android:text="keyWord" />
 
     <TextView
@@ -19,6 +21,8 @@
         android:layout_height="wrap_content"
         android:ellipsize="end"
         android:maxLines="1"
+        android:textSize="11sp"
+        android:textColor="@color/alpha_font_color_gray"
         android:layout_marginLeft="10dp"
         android:text="百度" />
 </LinearLayout>

@@ -59,6 +59,8 @@ public class ProjectTaskGroupActivity extends BaseActivity implements BaseRecycl
 
     String projectId;
     ProjectTaskGroupAdapter projectTaskGroupAdapter;
+    boolean isCanAddGroup = false;//是否可以添加任务组
+    boolean isCanEditGroup = false;//是否可以编辑任务组
 
     public static void launch(@NonNull Context context, @NonNull String projectId) {
         if (context == null) return;
@@ -109,8 +111,9 @@ public class ProjectTaskGroupActivity extends BaseActivity implements BaseRecycl
                 getData(false);
             }
         });
-        refreshLayout.setAutoRefresh(true);
         refreshLayout.startRefresh();
+        titleAction.setVisibility(View.INVISIBLE);
+        checkProjectPms();
     }
 
     @Override
@@ -121,6 +124,31 @@ public class ProjectTaskGroupActivity extends BaseActivity implements BaseRecycl
                 TaskGroupCreateActivity.launchForResult(this, projectId, TaskGroupCreateActivity.CREAT_TASK_GROUP_TYPE, CREATE_GROUP_REQUEST_CODE);
                 break;
         }
+    }
+
+    /**
+     * 获取项目权限
+     */
+    private void checkProjectPms() {
+        getApi().permissionQuery(getLoginUserId(), "MAT", projectId).enqueue(new SimpleCallBack<List<String>>() {
+            @Override
+            public void onSuccess(Call<ResEntity<List<String>>> call, Response<ResEntity<List<String>>> response) {
+
+                if (response.body().result != null) {
+                    if (response.body().result.contains("MAT:matter.task:add")) {
+                        isCanAddGroup = true;
+                        titleAction.setVisibility(View.VISIBLE);
+                    }
+                    if (response.body().result.contains("MAT:matter.task:edit")) {
+                        isCanEditGroup = true;
+                    }
+                    if (projectTaskGroupAdapter != null) {
+                        projectTaskGroupAdapter.setCanEditGroup(isCanEditGroup);
+                        projectTaskGroupAdapter.notifyDataSetChanged();
+                    }
+                }
+            }
+        });
     }
 
     @Override
@@ -161,7 +189,9 @@ public class ProjectTaskGroupActivity extends BaseActivity implements BaseRecycl
 
     @Override
     public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
-        TaskGroupEntity entity = (TaskGroupEntity) adapter.getItem(position);
-        TaskGroupCreateActivity.launchForResult(this, entity, TaskGroupCreateActivity.UPDATE_TASK_GROUP_TYPE, UPDATE_GROUP_REQUEST_CODE);
+        if (isCanEditGroup) {
+            TaskGroupEntity entity = (TaskGroupEntity) adapter.getItem(position);
+            TaskGroupCreateActivity.launchForResult(this, entity, TaskGroupCreateActivity.UPDATE_TASK_GROUP_TYPE, UPDATE_GROUP_REQUEST_CODE);
+        }
     }
 }

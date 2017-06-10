@@ -28,7 +28,6 @@ import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.CommentListAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.HeaderFooterAdapter;
-import com.icourt.alpha.adapter.baseadapter.adapterObserver.RefreshViewEmptyObserver;
 import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.entity.bean.CommentEntity;
 import com.icourt.alpha.entity.bean.TaskEntity;
@@ -126,7 +125,7 @@ public class CommentListActivity extends BaseActivity implements BaseRecyclerAda
 
         recyclerview.addItemDecoration(ItemDecorationUtils.getCommFull05Divider(this, true));
         recyclerview.setHasFixedSize(true);
-        commentListAdapter.registerAdapterDataObserver(new RefreshViewEmptyObserver(refreshLayout, commentListAdapter));
+//        commentListAdapter.registerAdapterDataObserver(new RefreshViewEmptyObserver(refreshLayout, commentListAdapter));
         commentListAdapter.setOnItemChildClickListener(this);
         recyclerview.setAdapter(headerFooterAdapter);
         refreshLayout.setXRefreshViewListener(new XRefreshView.SimpleXRefreshListener() {

@@ -2,6 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/activity_bg_color"
     android:orientation="vertical">
 
     <android.support.design.widget.AppBarLayout
@@ -89,7 +90,7 @@
                 android:layout_margin="10dp"
                 android:text="选择搜索引擎"
                 android:textColor="@color/alpha_font_color_black"
-                android:textSize="@dimen/alpha_font_size_comm_medium" />
+                android:textSize="@dimen/alpha_font_size_mini" />
 
             <RelativeLayout
                 android:layout_width="match_parent"
@@ -125,7 +126,7 @@
                         android:layout_weight="1"
                         android:text="搜索历史"
                         android:textColor="@color/alpha_font_color_black"
-                        android:textSize="@dimen/alpha_font_size_comm_medium" />
+                        android:textSize="@dimen/alpha_font_size_mini" />
 
                     <ImageView
                         android:id="@+id/search_history_clear_btn"

@@ -16,5 +16,5 @@
         android:padding="6dp"
         android:text="百度"
         android:textColor="@color/alpha_font_color_gray"
-        android:textSize="@dimen/alpha_font_size_comm_medium" />
+        android:textSize="@dimen/alpha_font_size_mini" />
 </FrameLayout>

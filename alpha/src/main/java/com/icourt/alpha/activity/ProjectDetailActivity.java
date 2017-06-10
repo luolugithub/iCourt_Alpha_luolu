@@ -140,7 +140,7 @@ public class ProjectDetailActivity extends BaseActivity implements OnFragmentCal
     }
 
     /**
-     * 是否有新建任务的权限
+     * 获取项目权限
      */
     private void checkAddTaskAndDocumentPms() {
         getApi().permissionQuery(getLoginUserId(), "MAT", projectId).enqueue(new SimpleCallBack<List<String>>() {
