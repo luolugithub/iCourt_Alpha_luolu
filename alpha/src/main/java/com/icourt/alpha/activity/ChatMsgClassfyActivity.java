@@ -26,11 +26,16 @@ import com.icourt.alpha.db.dbmodel.ContactDbModel;
 import com.icourt.alpha.db.dbservice.ContactDbService;
 import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.icourt.alpha.entity.bean.IMMessageCustomBody;
+import com.icourt.alpha.entity.event.MessageEvent;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.ActionConstants;
 import com.icourt.alpha.utils.ItemDecorationUtils;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
+
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -166,6 +171,7 @@ public class ChatMsgClassfyActivity extends BaseActivity implements BaseRecycler
     @Override
     protected void initView() {
         super.initView();
+        EventBus.getDefault().register(this);
         switch (getMsgClassfyType()) {
             case MSG_CLASSFY_CHAT_DING:
                 setTitle("钉的消息");
@@ -316,11 +322,30 @@ public class ChatMsgClassfyActivity extends BaseActivity implements BaseRecycler
             refreshLayout.stopLoadMore();
         }
     }
-
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onMessageEvent(MessageEvent event) {
+        if (event == null) return;
+        switch (event.action) {
+            case MessageEvent.ACTION_MSG_CANCEL_COLLECT:
+                List<IMMessageCustomBody> data = imUserMessageAdapter.getData();
+                IMMessageCustomBody targetBody = new IMMessageCustomBody();
+                targetBody.id = event.msgId;
+                if (data.contains(targetBody)) {
+                    imUserMessageAdapter.removeItem(targetBody);
+                }
+                break;
+        }
+    }
     @Override
     public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
         IMMessageCustomBody item = imUserMessageAdapter.getItem(adapter.getRealPos(position));
         if (item == null) return;
         FileDetailsActivity.launch(getContext(), item, getMsgClassfyType());
+    }
+
+    @Override
+    protected void onDestroy() {
+        EventBus.getDefault().unregister(this);
+        super.onDestroy();
     }
 }

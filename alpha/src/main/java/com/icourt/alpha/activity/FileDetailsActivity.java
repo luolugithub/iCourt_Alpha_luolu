@@ -195,15 +195,17 @@ public class FileDetailsActivity extends BaseActivity {
                         if (response.body().result == null) return;
                         switch (getMsgClassfyType()) {
                             case MSG_CLASSFY_CHAT_DING:
-                                titleAction.setVisibility(response.body().result.pin
+                                titleAction.setVisibility(!response.body().result.recalled
+                                        && response.body().result.pinned
                                         ? View.VISIBLE : View.INVISIBLE);
                                 break;
                             case MSG_CLASSFY_CHAT_FILE:
-                                titleAction.setVisibility(!response.body().result.recall
+                                titleAction.setVisibility(!response.body().result.recalled
                                         ? View.VISIBLE : View.INVISIBLE);
                                 break;
                             case MSG_CLASSFY_MY_COLLECTEED:
-                                titleAction.setVisibility(response.body().result.star
+                                titleAction.setVisibility(!response.body().result.recalled
+                                        && response.body().result.starred
                                         ? View.VISIBLE : View.INVISIBLE);
                                 break;
                         }

@@ -249,6 +249,7 @@ public class FileListFragment
                 ChatMsgClassfyActivity.MSG_CLASSFY_CHAT_FILE);
     }
 
+
     @Override
     public void onDestroyView() {
         super.onDestroyView();

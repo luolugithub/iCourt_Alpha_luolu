@@ -8,7 +8,7 @@ package com.icourt.alpha.entity.bean;
  * version 1.0.0
  */
 public class MsgStatusEntity {
-    public boolean pin;
-    public boolean recall;
-    public boolean star;
+    public boolean pinned;
+    public boolean recalled;
+    public boolean starred;
 }

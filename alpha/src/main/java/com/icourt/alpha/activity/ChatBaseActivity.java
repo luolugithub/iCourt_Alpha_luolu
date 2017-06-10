@@ -27,6 +27,7 @@ import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.icourt.alpha.entity.bean.IMMessageCustomBody;
 import com.icourt.alpha.entity.bean.MsgConvert2Task;
+import com.icourt.alpha.entity.event.MessageEvent;
 import com.icourt.alpha.fragment.dialogfragment.ContactShareDialogFragment;
 import com.icourt.alpha.http.RetrofitServiceFactory;
 import com.icourt.alpha.http.callback.SimpleCallBack;
@@ -1269,6 +1270,7 @@ public abstract class ChatBaseActivity
                     public void onSuccess(Call<ResEntity<Boolean>> call, Response<ResEntity<Boolean>> response) {
                         if (response.body().result != null && response.body().result.booleanValue()) {
                             showTopSnackBar("取消收藏成功");
+                            EventBus.getDefault().post(new MessageEvent(MessageEvent.ACTION_MSG_CANCEL_COLLECT,msgId));
                             msgCollectedIdsList.remove(msgId);
                         } else {
                             showTopSnackBar("取消收藏失败");
