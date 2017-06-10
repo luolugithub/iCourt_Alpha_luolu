@@ -66,6 +66,7 @@ public class SearchProjectActivity extends BaseActivity implements BaseRecyclerA
     private static final String KEY_SEARCH_PRIORITY = "search_priority";
     private static final String KEY_SEARCH_PROJECT_TYPE = "search_search_project_type";
     private static final String KEY_SEARCH_TASK_TYPE = "search_search_task_type";
+    private static final String KEY_SEARCH_TASK_STATUS_TYPE = "search_search_task_status_type";
     @BindView(R.id.et_search_name)
     EditText etSearchName;
     @BindView(R.id.tv_search_cancel)
@@ -92,15 +93,43 @@ public class SearchProjectActivity extends BaseActivity implements BaseRecyclerA
     }
 
     int search_priority;
-    int searchProjectType;
-    int searchTaskType;
+    int searchProjectType;//搜索项目type
+    int searchTaskType;//搜索任务type
 
+    int taskStatuType;//搜索任务状态type
+    String projectId;
 
-    public static void launchTask(@NonNull Context context, int searchTaskType,@SEARCH_PRIORITY int search_priority) {
+    /**
+     * 搜索未完成（全部、新任务、我关注的）的任务
+     *
+     * @param context
+     * @param searchTaskType
+     * @param search_priority
+     */
+    public static void launchTask(@NonNull Context context, int searchTaskType, @SEARCH_PRIORITY int search_priority) {
         if (context == null) return;
         Intent intent = new Intent(context, SearchProjectActivity.class);
         intent.putExtra(KEY_SEARCH_PRIORITY, search_priority);
         intent.putExtra(KEY_SEARCH_TASK_TYPE, searchTaskType);
+        context.startActivity(intent);
+    }
+
+    /**
+     * 搜索已完成的全部任务
+     *
+     * @param context
+     * @param taskStatuType   0:未完成；1：已完成；2：已删除
+     * @param searchTaskType  0:全部；1：新任务；2：我关注的；3我部门的
+     * @param projectId       项目id
+     * @param search_priority
+     */
+    public static void launchFinishTask(@NonNull Context context, int searchTaskType, int taskStatuType, @SEARCH_PRIORITY int search_priority, String projectId) {
+        if (context == null) return;
+        Intent intent = new Intent(context, SearchProjectActivity.class);
+        intent.putExtra(KEY_SEARCH_PRIORITY, search_priority);
+        intent.putExtra(KEY_SEARCH_TASK_TYPE, searchTaskType);
+        intent.putExtra(KEY_SEARCH_TASK_STATUS_TYPE, taskStatuType);
+        intent.putExtra("projectId", projectId);
         context.startActivity(intent);
     }
 
@@ -127,6 +156,8 @@ public class SearchProjectActivity extends BaseActivity implements BaseRecyclerA
         search_priority = getIntent().getIntExtra(KEY_SEARCH_PRIORITY, -1);
         searchProjectType = getIntent().getIntExtra(KEY_SEARCH_PROJECT_TYPE, -1);
         searchTaskType = getIntent().getIntExtra(KEY_SEARCH_TASK_TYPE, -1);
+        taskStatuType = getIntent().getIntExtra(KEY_SEARCH_TASK_STATUS_TYPE, -1);
+        projectId = getIntent().getStringExtra("projectId");
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         if (search_priority == SEARCH_PROJECT) {
             recyclerView.setAdapter(projectListAdapter = new ProjectListAdapter());
@@ -202,7 +233,14 @@ public class SearchProjectActivity extends BaseActivity implements BaseRecyclerA
      * 搜索任务
      */
     private void searchTask(String keyword) {
-        getApi().taskQueryByName(getLoginUserId(), keyword, 0, searchTaskType).enqueue(new SimpleCallBack<TaskEntity>() {
+        int statusType = -1;
+        if (taskStatuType == -1) {
+            statusType = 0;
+        } else {
+            statusType = 1;
+        }
+        searchTaskType = 0;//我关注的，新任务，都搜索全部
+        getApi().taskQueryByName(getLoginUserId(), keyword, statusType, searchTaskType, projectId).enqueue(new SimpleCallBack<TaskEntity>() {
             @Override
             public void onSuccess(Call<ResEntity<TaskEntity>> call, Response<ResEntity<TaskEntity>> response) {
                 if (response.body().result != null) {

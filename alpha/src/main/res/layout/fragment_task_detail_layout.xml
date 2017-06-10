@@ -34,7 +34,7 @@
                     android:layout_marginLeft="@dimen/dp10"
                     android:layout_weight="1"
                     android:ellipsize="end"
-                    android:hint="添加所属项目"
+                    android:hint="选择所属项目"
                     android:maxLines="1"
                     android:textColor="@color/alpha_font_color_gray"
                     android:textSize="16sp" />
@@ -78,7 +78,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="@dimen/dp10"
                     android:layout_weight="1"
-                    android:hint="添加任务组"
+                    android:hint="选择任务组"
                     android:ellipsize="end"
                     android:maxLines="1"
                     android:textColor="@color/alpha_font_color_gray"
@@ -125,7 +125,7 @@
                     android:layout_weight="1"
                     android:ellipsize="end"
                     android:maxLines="1"
-                    android:hint="添加到期时间"
+                    android:hint="选择到期时间"
                     android:textColor="@color/alpha_font_color_gray"
                     android:textSize="16sp" />
 

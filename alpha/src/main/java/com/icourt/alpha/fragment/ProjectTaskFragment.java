@@ -158,13 +158,12 @@ public class ProjectTaskFragment extends BaseFragment implements TaskAdapter.OnS
     @Override
     protected void getData(boolean isRefresh) {
         clearLists();
-        getApi().taskQueryByName("", "", 0, 0, projectId).enqueue(new SimpleCallBack<TaskEntity>() {
+        getApi().taskListQueryByMatterId(0, projectId, -1, 1, -1).enqueue(new SimpleCallBack<TaskEntity>() {
             @Override
             public void onSuccess(Call<ResEntity<TaskEntity>> call, Response<ResEntity<TaskEntity>> response) {
                 stopRefresh();
 //                getTaskGroupData(response.body().result);
                 getTaskGroupDatas(response.body().result);
-
             }
 
             @Override
@@ -234,7 +233,7 @@ public class ProjectTaskFragment extends BaseFragment implements TaskAdapter.OnS
                     TimerManager.getInstance().timerQuerySync();
                 }
             }
-        }else{
+        } else {
             enableEmptyView(null);
         }
     }
@@ -249,6 +248,13 @@ public class ProjectTaskFragment extends BaseFragment implements TaskAdapter.OnS
             myStarTaskEntities.clear();
     }
 
+    private void stopRefresh() {
+        if (refreshLayout != null) {
+            refreshLayout.stopRefresh();
+            refreshLayout.stopLoadMore();
+        }
+    }
+
     private void enableEmptyView(List result) {
         if (refreshLayout != null) {
             if (result != null) {
@@ -260,13 +266,6 @@ public class ProjectTaskFragment extends BaseFragment implements TaskAdapter.OnS
             } else {
                 refreshLayout.enableEmptyView(true);
             }
-        }
-    }
-
-    private void stopRefresh() {
-        if (refreshLayout != null) {
-            refreshLayout.stopRefresh();
-            refreshLayout.stopLoadMore();
         }
     }
 

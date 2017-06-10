@@ -110,13 +110,13 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
             } else {
                 taskProjectLayout.setVisibility(View.VISIBLE);
                 taskGroupLayout.setVisibility(View.GONE);
-                taskProjectTv.setText("添加所属项目");
+                taskProjectTv.setText("选择所属项目");
             }
 
             if (taskItemEntity.dueTime > 0) {
                 taskTimeTv.setText(DateUtils.get23Hour59Min(taskItemEntity.dueTime));
             } else {
-                taskTimeTv.setText("添加到期时间");
+                taskTimeTv.setText("选择到期时间");
             }
 
             if (!TextUtils.isEmpty(taskItemEntity.description)) {
@@ -246,8 +246,8 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
     }
 
     @Override
-    public void onDestroyView() {
-        super.onDestroyView();
+    public void onDestroy() {
+        super.onDestroy();
         unbinder.unbind();
     }
 

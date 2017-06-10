@@ -8,12 +8,14 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.AppBarLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.andview.refreshview.XRefreshView;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.TaskItemAdapter;
+import com.icourt.alpha.adapter.baseadapter.HeaderFooterAdapter;
 import com.icourt.alpha.adapter.baseadapter.adapterObserver.RefreshViewEmptyObserver;
 import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.entity.bean.TaskEntity;
@@ -54,6 +56,7 @@ public class ProjectEndTaskActivity extends BaseActivity {
     @BindView(R.id.titleView)
     AppBarLayout titleView;
     private int pageIndex = 1;
+    HeaderFooterAdapter<TaskItemAdapter> headerFooterAdapter;
 
     public static void launch(@NonNull Context context, @NonNull String projectId) {
         if (context == null) return;
@@ -74,13 +77,22 @@ public class ProjectEndTaskActivity extends BaseActivity {
     protected void initView() {
         super.initView();
         projectId = getIntent().getStringExtra(KEY_PROJECT_ID);
-        setTitle(R.string.select_me_finish_object_text);
-        refreshLayout.setNoticeEmpty(R.mipmap.icon_placeholder_task, R.string.task_list_null_text);
+        setTitle("查看已完成任务");
+
+        refreshLayout.setNoticeEmpty(R.mipmap.icon_placeholder_task, "暂无已完成任务");
         refreshLayout.setMoveForHorizontal(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setHasFixedSize(true);
-        recyclerView.setAdapter(taskAdapter = new TaskItemAdapter());
+
+        headerFooterAdapter = new HeaderFooterAdapter<>(taskAdapter = new TaskItemAdapter());
+        View headerView = HeaderFooterAdapter.inflaterView(getContext(), R.layout.header_search_comm, recyclerView);
+        View rl_comm_search = headerView.findViewById(R.id.rl_comm_search);
+        registerClick(rl_comm_search);
+        headerFooterAdapter.addHeader(headerView);
+        recyclerView.setAdapter(headerFooterAdapter);
         taskAdapter.registerAdapterDataObserver(new RefreshViewEmptyObserver(refreshLayout, taskAdapter));
+
+
         refreshLayout.setXRefreshViewListener(new XRefreshView.SimpleXRefreshListener() {
             @Override
             public void onRefresh(boolean isPullDown) {
@@ -94,8 +106,20 @@ public class ProjectEndTaskActivity extends BaseActivity {
                 getData(false);
             }
         });
-        refreshLayout.setAutoRefresh(true);
         refreshLayout.startRefresh();
+    }
+
+    @Override
+    public void onClick(View v) {
+        super.onClick(v);
+        switch (v.getId()) {
+            case R.id.rl_comm_search:
+                SearchProjectActivity.launchFinishTask(getContext(), 0, 1, SearchProjectActivity.SEARCH_TASK,projectId);
+                break;
+            default:
+                super.onClick(v);
+                break;
+        }
     }
 
     @Override
@@ -104,7 +128,7 @@ public class ProjectEndTaskActivity extends BaseActivity {
         if (isRefresh) {
             pageIndex = 1;
         }
-        getApi().projectQueryTaskList(projectId, 1, 0, pageIndex, ActionConstants.DEFAULT_PAGE_SIZE).enqueue(new SimpleCallBack<TaskEntity>() {
+        getApi().taskListQueryByMatterId(1, projectId, 0, pageIndex, ActionConstants.DEFAULT_PAGE_SIZE).enqueue(new SimpleCallBack<TaskEntity>() {
             @Override
             public void onSuccess(Call<ResEntity<TaskEntity>> call, Response<ResEntity<TaskEntity>> response) {
                 stopRefresh();

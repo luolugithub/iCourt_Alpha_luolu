@@ -10,11 +10,13 @@ import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.ProjectTaskGroupAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
+import com.icourt.alpha.adapter.baseadapter.adapterObserver.DataChangeAdapterObserver;
 import com.icourt.alpha.entity.bean.TaskGroupEntity;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
@@ -44,6 +46,10 @@ public class TaskGroupSelectFragment extends BaseDialogFragment implements BaseR
     TextView btCancel;
     @BindView(R.id.bt_ok)
     TextView btOk;
+    @BindView(R.id.titleContent)
+    TextView titleContent;
+    @BindView(R.id.empty_layout)
+    LinearLayout emptyLayout;
 
     public static TaskGroupSelectFragment newInstance(String projectId) {
         TaskGroupSelectFragment taskGroupListFragment = new TaskGroupSelectFragment();
@@ -93,8 +99,16 @@ public class TaskGroupSelectFragment extends BaseDialogFragment implements BaseR
     @Override
     protected void initView() {
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        recyclerView.setHasFixedSize(true);
         recyclerView.setAdapter(projectTaskGroupAdapter = new ProjectTaskGroupAdapter(true));
         projectTaskGroupAdapter.setOnItemClickListener(this);
+        projectTaskGroupAdapter.registerAdapterDataObserver(new DataChangeAdapterObserver() {
+            @Override
+            protected void updateUI() {
+                if (emptyLayout == null) return;
+                emptyLayout.setVisibility(projectTaskGroupAdapter.getItemCount() <= 0 ? View.VISIBLE : View.GONE);
+            }
+        });
         getData(true);
     }
 
@@ -151,8 +165,8 @@ public class TaskGroupSelectFragment extends BaseDialogFragment implements BaseR
     }
 
     @Override
-    public void onDestroyView() {
-        super.onDestroyView();
+    public void onDestroy() {
+        super.onDestroy();
         unbinder.unbind();
     }
 

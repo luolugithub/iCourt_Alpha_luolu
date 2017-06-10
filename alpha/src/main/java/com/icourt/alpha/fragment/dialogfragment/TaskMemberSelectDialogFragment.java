@@ -11,6 +11,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.icourt.alpha.R;
@@ -52,6 +53,8 @@ public class TaskMemberSelectDialogFragment extends BaseDialogFragment {
     TextView btOk;
     Unbinder unbinder;
     TaskMemberAdapter taskMemberAdapter;
+    @BindView(R.id.empty_layout)
+    LinearLayout emptyLayout;
 
     public static TaskMemberSelectDialogFragment newInstance() {
         TaskMemberSelectDialogFragment contactSelectDialogFragment = new TaskMemberSelectDialogFragment();
@@ -134,12 +137,24 @@ public class TaskMemberSelectDialogFragment extends BaseDialogFragment {
                             memberEntities.addAll(taskMemberWrapEntity.members);
                         }
                     }
+                    enableEmptyView(memberEntities);
                     taskMemberAdapter.bindData(isRefresh, memberEntities);
                 }
             }
         });
     }
 
+    private void enableEmptyView(List result) {
+        if (result != null) {
+            if (result.size() > 0) {
+                emptyLayout.setVisibility(View.GONE);
+            } else {
+                emptyLayout.setVisibility(View.VISIBLE);
+            }
+        } else {
+            emptyLayout.setVisibility(View.VISIBLE);
+        }
+    }
 
     @OnClick({R.id.bt_cancel, R.id.bt_ok})
     @Override
@@ -166,8 +181,8 @@ public class TaskMemberSelectDialogFragment extends BaseDialogFragment {
     }
 
     @Override
-    public void onDestroyView() {
-        super.onDestroyView();
+    public void onDestroy() {
+        super.onDestroy();
         unbinder.unbind();
     }
 }

@@ -253,6 +253,15 @@ public interface ApiAlphaService {
     @GET("api/v1/matters/keyValue")
     Call<ResEntity<List<ProjectEntity>>> projectSelectListQuery(@Query("status") String status);
 
+    /**
+     * 创建／编辑任务 选择项目列表
+     * @param status
+     * @param word
+     * @return
+     */
+    @GET("api/v2/taskflow/getMatterList")
+    Call<ResEntity<List<ProjectEntity>>> projectSelectByTask(@Query("status") String status,
+                                                             @Query("word") String word);
 
     /**
      * 计时项目列表搜索
@@ -558,16 +567,18 @@ public interface ApiAlphaService {
     /**
      * 项目下任务列表
      *
-     * @param stateType
+     * @param stateType 全部任务:－1    已完成:1     未完成:0
      * @param matterId
-     * @param type
+     * @param type      任务和任务组：-1;    任务：0;    任务组：1;
      * @return
      */
     @GET("api/v2/taskflow")
     Call<ResEntity<TaskEntity>> taskListQueryByMatterId(
             @Query("stateType") int stateType,
             @Query("matterId") String matterId,
-            @Query("type") int type);
+            @Query("type") int type,
+            @Query("pageIndex") int pageIndex,
+            @Query("pageSize") int pageSize);
 
     /**
      * 获取任务下的附件列表
@@ -835,7 +846,7 @@ public interface ApiAlphaService {
 
 
     /**
-     * 搜索任务列表
+     * 搜索项目下任务列表
      *
      * @param assignTos
      * @param name
@@ -849,6 +860,23 @@ public interface ApiAlphaService {
                                                 @Query("stateType") int stateType,
                                                 @Query("queryType") int queryType,
                                                 @Query("matterId") String matterId);
+
+    /**
+     * 搜索已完成任务列表
+     *
+     * @param assignTos
+     * @param name
+     * @param stateType 0:未完成；1：已完成；2：已删除
+     * @param queryType 0:全部；1：新任务；2：我关注的；3我部门的
+     * @return
+     */
+    @GET("api/v2/taskflow/queryMobileTask")
+    Call<ResEntity<TaskEntity>> taskQueryByName(@Query("assignTos") String assignTos,
+                                                @Query("name") String name,
+                                                @Query("stateType") int stateType,
+                                                @Query("queryType") int queryType,
+                                                @Query("pageIndex") int pageIndex,
+                                                @Query("pageSize") int pageSize);
     /**************************权限模块**************************/
     /**
      * 获取各个模块是否有权限 接口真烂

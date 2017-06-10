@@ -122,12 +122,12 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
         registerClick(rl_comm_search);
         headerFooterAdapter.addHeader(headerView);
 
+        taskAdapter.registerAdapterDataObserver(new RefreshViewEmptyObserver(refreshLayout, taskAdapter));
         recyclerView.setAdapter(headerFooterAdapter);
         taskAdapter.setDeleteTask(true);
         taskAdapter.setEditTask(true);
         taskAdapter.setAddTime(true);
         taskAdapter.setOnShowFragmenDialogListener(this);
-        taskAdapter.registerAdapterDataObserver(new RefreshViewEmptyObserver(refreshLayout, taskAdapter));
 
         refreshLayout.setXRefreshViewListener(new XRefreshView.SimpleXRefreshListener() {
             @Override
@@ -168,7 +168,13 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
     @Override
     protected void getData(boolean isRefresh) {
         clearLists();
-        getApi().taskQueryByName(getLoginUserId(), "", 0, type).enqueue(new SimpleCallBack<TaskEntity>() {
+        int attentionType = 0;
+        if (type == TYPE_ALL) {
+            attentionType = 0;
+        } else if (type == TYPE_MY_ATTENTION) {
+            attentionType = 1;
+        }
+        getApi().taskListQuery(0, getLoginUserId(), 0, attentionType, "dueTime", 1, -1, 0).enqueue(new SimpleCallBack<TaskEntity>() {
             @Override
             public void onSuccess(Call<ResEntity<TaskEntity>> call, Response<ResEntity<TaskEntity>> response) {
                 stopRefresh();

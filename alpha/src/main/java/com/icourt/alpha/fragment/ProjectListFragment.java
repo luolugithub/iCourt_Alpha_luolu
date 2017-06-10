@@ -162,7 +162,7 @@ public class ProjectListFragment extends BaseFragment implements BaseRecyclerAda
     @Override
     protected void getData(boolean isRefresh) {
         super.getData(isRefresh);
-        getApi().projectSelectListQuery("0,2,7")
+        getApi().projectSelectByTask("0,2,7", null)
                 .enqueue(new SimpleCallBack<List<ProjectEntity>>() {
                     @Override
                     public void onSuccess(Call<ResEntity<List<ProjectEntity>>> call, Response<ResEntity<List<ProjectEntity>>> response) {
@@ -186,7 +186,7 @@ public class ProjectListFragment extends BaseFragment implements BaseRecyclerAda
     private void searchProjectByName(final String projectName) {
         if (TextUtils.isEmpty(projectName)) return;
         //pms独有 带权限
-        getApi().timingProjectQuery(0, "0,2,7", projectName)
+        getApi().projectSelectByTask("0,2,7", projectName)
                 .enqueue(new SimpleCallBack<List<ProjectEntity>>() {
                     @Override
                     public void onSuccess(Call<ResEntity<List<ProjectEntity>>> call, Response<ResEntity<List<ProjectEntity>>> response) {

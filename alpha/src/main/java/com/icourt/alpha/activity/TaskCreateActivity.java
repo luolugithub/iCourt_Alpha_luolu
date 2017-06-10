@@ -91,6 +91,10 @@ public class TaskCreateActivity extends BaseActivity implements ProjectSelectDia
     long dueTime;
     TaskUsersAdapter usersAdapter;
     String projectName;
+    @BindView(R.id.task_group_tv)
+    TextView taskGroupTv;
+    @BindView(R.id.task_group_layout)
+    LinearLayout taskGroupLayout;
 
     public static void launch(@NonNull Context context, @NonNull String content, String startTime) {
         if (context == null) return;
@@ -147,7 +151,7 @@ public class TaskCreateActivity extends BaseActivity implements ProjectSelectDia
         }
     }
 
-    @OnClick({R.id.titleAction, R.id.project_layout, R.id.duetime_layout, R.id.ower_layout})
+    @OnClick({R.id.titleAction, R.id.project_layout,R.id.task_group_layout, R.id.duetime_layout, R.id.ower_layout})
     @Override
     public void onClick(View v) {
         super.onClick(v);
@@ -156,7 +160,10 @@ public class TaskCreateActivity extends BaseActivity implements ProjectSelectDia
                 createNewTask();
                 break;
             case R.id.project_layout://选择项目
-                showProjectSelectDialogFragment();
+                showProjectSelectDialogFragment(projectId);
+                break;
+            case R.id.task_group_layout://选择任务组
+                showProjectSelectDialogFragment(projectId);
                 break;
             case R.id.duetime_layout://选择到期时间
                 showDateSelectDialogFragment();
@@ -174,14 +181,14 @@ public class TaskCreateActivity extends BaseActivity implements ProjectSelectDia
     /**
      * 展示选择项目对话框
      */
-    public void showProjectSelectDialogFragment() {
+    public void showProjectSelectDialogFragment(String projectId) {
         String tag = ProjectSelectDialogFragment.class.getSimpleName();
         FragmentTransaction mFragTransaction = getSupportFragmentManager().beginTransaction();
         Fragment fragment = getSupportFragmentManager().findFragmentByTag(tag);
         if (fragment != null) {
             mFragTransaction.remove(fragment);
         }
-        ProjectSelectDialogFragment.newInstance()
+        ProjectSelectDialogFragment.newInstance(projectId)
                 .show(mFragTransaction, tag);
     }
 
@@ -230,6 +237,7 @@ public class TaskCreateActivity extends BaseActivity implements ProjectSelectDia
         if (projectEntity != null) {
             projectNameTv.setText(projectEntity.name);
             projectId = projectEntity.pkId;
+            taskGroupLayout.setVisibility(View.VISIBLE);
         }
         if (taskGroupEntity != null) {
             taskGroupNameTv.setText(taskGroupEntity.name);

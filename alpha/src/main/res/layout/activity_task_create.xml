@@ -18,8 +18,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@null"
-            android:hint="任务标题"
             android:gravity="top"
+            android:hint="任务标题"
             android:maxLines="5"
             android:scrollHorizontally="false"
             android:textColor="@color/alpha_font_color_black"
@@ -80,11 +80,12 @@
                     android:textSize="13sp" />
 
                 <TextView
-                    android:id="@+id/task_group_name_tv"
+                    android:id="@+id/task_group_name_tv_gr"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textColor="@color/alpha_font_color_gray"
-                    android:textSize="11sp" />
+                    android:textSize="11sp"
+                    android:visibility="gone" />
             </LinearLayout>
 
             <ImageView
@@ -98,6 +99,60 @@
             android:layout_height="@dimen/alpha_height_divider"
             android:layout_marginLeft="30dp"
             android:background="@color/alpha_divider_color" />
+
+        <LinearLayout
+            android:id="@+id/task_group_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingBottom="12dp"
+                android:paddingTop="12dp">
+
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@mipmap/project_type_icon" />
+
+                <TextView
+                    android:id="@+id/task_group_tv"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="@dimen/dp8"
+                    android:ellipsize="end"
+                    android:text="任务组"
+                    android:maxLines="1"
+                    android:textColor="@color/alpha_font_color_black"
+                    android:textSize="16sp" />
+
+                <TextView
+                    android:id="@+id/task_group_name_tv"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="right|center_vertical"
+                    android:textColor="@color/alpha_font_color_black"
+                    android:textSize="13sp" />
+
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="@dimen/dp10"
+                    android:src="@mipmap/arrow_right" />
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/alpha_height_divider"
+                android:layout_marginLeft="30dp"
+                android:background="@color/alpha_divider_color" />
+        </LinearLayout>
 
         <LinearLayout
             android:id="@+id/duetime_layout"

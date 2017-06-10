@@ -38,10 +38,38 @@
             android:layout_height="@dimen/alpha_height_divider"
             android:background="@color/alpha_divider_color" />
 
-        <android.support.v7.widget.RecyclerView
-            android:id="@+id/recyclerView"
+        <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="350dp" />
+            android:layout_height="350dp">
+
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/recyclerView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+            <LinearLayout
+                android:id="@+id/empty_layout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:visibility="gone"
+                android:orientation="vertical">
+
+                <ImageView
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:src="@mipmap/icon_placeholder_user" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/dp10"
+                    android:text="暂无成员"
+                    android:textColor="@color/alpha_font_color_gray"
+                    android:textSize="15sp" />
+            </LinearLayout>
+        </FrameLayout>
 
         <RelativeLayout
             android:layout_width="match_parent"

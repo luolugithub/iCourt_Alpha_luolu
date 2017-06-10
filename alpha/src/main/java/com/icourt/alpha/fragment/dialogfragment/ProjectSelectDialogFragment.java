@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
+import android.text.TextUtils;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -63,6 +64,14 @@ public class ProjectSelectDialogFragment extends BaseDialogFragment
         return new ProjectSelectDialogFragment();
     }
 
+    public static ProjectSelectDialogFragment newInstance(String projectId) {
+        ProjectSelectDialogFragment projectSelectDialogFragment = new ProjectSelectDialogFragment();
+        Bundle args = new Bundle();
+        args.putString("projectId", projectId);
+        projectSelectDialogFragment.setArguments(args);
+        return projectSelectDialogFragment;
+    }
+
     OnProjectTaskGroupSelectListener onProjectTaskGroupSelectListener;
 
     public interface OnProjectTaskGroupSelectListener {
@@ -102,6 +111,9 @@ public class ProjectSelectDialogFragment extends BaseDialogFragment
                 }
             }
         }
+        if (getArguments() != null) {
+            projectId = getArguments().getString("projectId");
+        }
         viewPager.setAdapter(baseFragmentAdapter = new BaseFragmentAdapter(getChildFragmentManager()));
         titleContent.setText("选择项目");
         titleBack.setVisibility(View.INVISIBLE);
@@ -121,7 +133,9 @@ public class ProjectSelectDialogFragment extends BaseDialogFragment
             }
         });
         baseFragmentAdapter.bindData(true, Arrays.asList(ProjectListFragment.newInstance(),
-                TaskGroupListFragment.newInstance(null)));
+                TaskGroupListFragment.newInstance(projectId)));
+        if (!TextUtils.isEmpty(projectId))
+            viewPager.setCurrentItem(1);
 
     }
 
@@ -159,8 +173,8 @@ public class ProjectSelectDialogFragment extends BaseDialogFragment
     }
 
     @Override
-    public void onDestroyView() {
-        super.onDestroyView();
+    public void onDestroy() {
+        super.onDestroy();
         unbinder.unbind();
     }
 

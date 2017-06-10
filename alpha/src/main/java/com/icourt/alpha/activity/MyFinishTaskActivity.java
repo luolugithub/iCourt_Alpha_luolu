@@ -23,6 +23,7 @@ import com.google.gson.JsonObject;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.TaskItemAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
+import com.icourt.alpha.adapter.baseadapter.HeaderFooterAdapter;
 import com.icourt.alpha.adapter.baseadapter.adapterObserver.RefreshViewEmptyObserver;
 import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.entity.bean.TaskEntity;
@@ -71,6 +72,7 @@ public class MyFinishTaskActivity extends BaseActivity implements BaseRecyclerAd
     RefreshLayout refreshLayout;
     private int pageIndex = 1;
     TaskItemAdapter taskItemAdapter;
+    HeaderFooterAdapter<TaskItemAdapter> headerFooterAdapter;
 
     public static void launch(@NonNull Context context) {
         if (context == null) return;
@@ -89,13 +91,21 @@ public class MyFinishTaskActivity extends BaseActivity implements BaseRecyclerAd
     @Override
     protected void initView() {
         super.initView();
-        setTitle("已完成的任务");
+        setTitle("查看已完成的任务");
         EventBus.getDefault().register(this);
         refreshLayout.setNoticeEmpty(R.mipmap.icon_placeholder_task, "暂无已完成任务");
         refreshLayout.setMoveForHorizontal(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setHasFixedSize(true);
-        recyclerView.setAdapter(taskItemAdapter = new TaskItemAdapter());
+
+        headerFooterAdapter = new HeaderFooterAdapter<>(taskItemAdapter = new TaskItemAdapter());
+        View headerView = HeaderFooterAdapter.inflaterView(getContext(), R.layout.header_search_comm, recyclerView);
+        View rl_comm_search = headerView.findViewById(R.id.rl_comm_search);
+        registerClick(rl_comm_search);
+        headerFooterAdapter.addHeader(headerView);
+        recyclerView.setAdapter(headerFooterAdapter);
+
+
         taskItemAdapter.setOnItemClickListener(this);
         taskItemAdapter.setOnItemChildClickListener(this);
         taskItemAdapter.registerAdapterDataObserver(new RefreshViewEmptyObserver(refreshLayout, taskItemAdapter));
@@ -112,8 +122,20 @@ public class MyFinishTaskActivity extends BaseActivity implements BaseRecyclerAd
                 getData(false);
             }
         });
-        refreshLayout.setAutoRefresh(true);
         refreshLayout.startRefresh();
+    }
+
+    @Override
+    public void onClick(View v) {
+        super.onClick(v);
+        switch (v.getId()) {
+            case R.id.rl_comm_search:
+                SearchProjectActivity.launchFinishTask(getContext(), 0, 1, SearchProjectActivity.SEARCH_TASK,null);
+                break;
+            default:
+                super.onClick(v);
+                break;
+        }
     }
 
     @Override
