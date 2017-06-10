@@ -205,6 +205,8 @@ public class ProjectFileBoxFragment extends BaseFragment implements BaseRecycler
                         fileBoxBeanList = response.body();
                         enableEmptyView(fileBoxBeanList);
                         projectFileBoxAdapter.bindData(isRefresh, fileBoxBeanList);
+                    } else {
+                        projectFileBoxAdapter.notifyDataSetChanged();
                     }
                 }
 
