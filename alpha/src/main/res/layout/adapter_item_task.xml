@@ -20,7 +20,7 @@
         android:layout_height="match_parent"
         android:background="?attr/selectableItemBackground"
         android:orientation="horizontal"
-        android:padding="@dimen/dp10">
+        >
 
         <CheckBox
             android:id="@+id/task_item_checkbox"
