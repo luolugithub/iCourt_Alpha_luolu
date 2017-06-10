@@ -763,11 +763,6 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
                 super.onLoadMore(isSilence);
             }
 
-            @Override
-            public void onRelease(float direction) {
-                super.onRelease(direction);
-                log("------------->12:" + direction);
-            }
         });
         recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
@@ -775,11 +770,9 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
                 super.onScrollStateChanged(recyclerView, newState);
                 switch (newState) {
                     case RecyclerView.SCROLL_STATE_DRAGGING: {
-                        if (ekBar.isSoftKeyboardPop()) {
+                        if (ekBar.isSoftKeyboardPop() || ekBar.isShowFunc()) {
                             ekBar.reset();
                         }
-                        // ekBar.reset();
-                        // SystemUtils.hideSoftKeyBoard(getActivity(), etContactName, true);
                     }
                     break;
                 }
