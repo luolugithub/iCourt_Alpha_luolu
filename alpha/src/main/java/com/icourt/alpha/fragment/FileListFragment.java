@@ -141,7 +141,7 @@ public class FileListFragment
         if (isRefresh) {
             msgid = Integer.MAX_VALUE;
         } else {
-            if (fileAdapter.getData().isEmpty()) {
+            if (!fileAdapter.getData().isEmpty()) {
                 IMMessageCustomBody item = fileAdapter.getItem(fileAdapter.getData().size() - 1);
                 if (item != null) {
                     msgid = item.id;
