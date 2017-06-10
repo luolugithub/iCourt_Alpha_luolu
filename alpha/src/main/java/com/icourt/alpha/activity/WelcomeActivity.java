@@ -1,5 +1,6 @@
 package com.icourt.alpha.activity;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.view.WindowManager;
@@ -68,5 +69,17 @@ public class WelcomeActivity extends BaseActivity implements Animation.Animation
     @Override
     public void onAnimationRepeat(Animation animation) {
 
+    }
+
+    @Override
+    public void startActivity(Intent intent) {
+        super.startActivity(intent);
+        overridePendingTransition(R.anim.activity_fade_enter, R.anim.activity_zoom_fade_exit);
+    }
+
+    @Override
+    public void finish() {
+        super.finish();
+        overridePendingTransition(R.anim.activity_fade_enter, R.anim.activity_zoom_fade_exit);
     }
 }

@@ -71,8 +71,14 @@
         <!-- 将splash图片设置在这，这样这张图片取代白屏 -->
         <item name="android:windowBackground">@mipmap/android_splash</item>
         <item name="android:windowFullscreen">true</item>
+        <item name="android:windowAnimationStyle">@style/activity_splash_anim</item>
         <!-- 或者是将主题设置成透明，虽然点击图标会有点小小的卡顿，但是用户体验不影响 -->
         <!-- <item name="android:windowIsTranslucent">true</item> --> <!-- 透明背景不要了 -->
+    </style>
+
+    <style name="activity_splash_anim" parent="@android:style/Animation.Activity">
+        <item name="android:activityOpenEnterAnimation">@anim/activity_fade_enter</item>
+        <item name="android:activityOpenExitAnimation">@anim/activity_zoom_fade_exit</item>
     </style>
 
     <style name="Theme.AppCompat.Light.NoActionBar">
