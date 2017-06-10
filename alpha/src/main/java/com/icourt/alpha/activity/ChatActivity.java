@@ -195,6 +195,21 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
         }
     };
 
+    @Override
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_chat);
+        ButterKnife.bind(this);
+        initView();
+        initEmoticonsKeyBoardBar();
+        getLocalContacts();
+        if (getLocationMsgId() > 0) {
+            getLocationCenterMsgId();
+        } else {
+            getData(true);
+        }
+    }
+
     public static final void launchP2P(@NonNull Context context,
                                        @NonNull String uid,
                                        String title,
@@ -316,21 +331,6 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
                     break;
                 }
             }
-        }
-    }
-
-    @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_chat);
-        ButterKnife.bind(this);
-        initView();
-        initEmoticonsKeyBoardBar();
-        getLocalContacts();
-        if (getLocationMsgId() > 0) {
-            getLocationCenterMsgId();
-        } else {
-            getData(true);
         }
     }
 
@@ -1113,6 +1113,11 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
         }
     }
 
+    @Override
+    public void onMessageRevoke(long msgId) {
+        removeFromAdapter(msgId);
+    }
+
 
     /**
      * 是列表适配器中移除
@@ -1370,6 +1375,8 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
             case R.id.chat_txt_tv:
                 return super.onItemLongClick(adapter, holder, view, position);
             case R.id.chat_ll_file:
+                return super.onItemLongClick(adapter, holder, view, position);
+            case R.id.chat_ding_content_iamge_iv:
                 return super.onItemLongClick(adapter, holder, view, position);
         }
         return false;

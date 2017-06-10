@@ -41,6 +41,7 @@ public class SnackbarUtils {
         if (TextUtils.isEmpty(resStr)) return;
         showBottomSnack(view, resStr);
     }
+
     @UiThread
     public static void showBottomSnack(Activity activity, CharSequence msg) {
         if (activity == null) return;
@@ -65,6 +66,7 @@ public class SnackbarUtils {
         if (activity == null) return;
         showTopSnackBar(activity, msg, Color.WHITE, 0xFF17AF6C);
     }
+
     @UiThread
     public static void showTopSnackBar(View view, CharSequence msg) {
         if (view == null) return;
@@ -80,7 +82,7 @@ public class SnackbarUtils {
     @UiThread
     public static void showTopSnackBarWithError(View view, CharSequence msg) {
         if (view == null) return;
-        showTopSnackBar(view, msg, Color.YELLOW, 0xFFCC00CC);
+        showTopSnackBar(view, msg, Color.WHITE, 0xFFDE732C);
     }
 
     /**
@@ -94,7 +96,7 @@ public class SnackbarUtils {
         if (activity == null) return;
         View view = activity.getWindow().getDecorView();
         if (view == null) return;
-        showTopSnackBar(view, msg, Color.YELLOW, 0xFFCC00CC);
+        showTopSnackBarWithError(view, msg);
     }
 
     public static void showTopSnackBar(Activity activity, CharSequence msg, int textColor, int backgroundColor) {

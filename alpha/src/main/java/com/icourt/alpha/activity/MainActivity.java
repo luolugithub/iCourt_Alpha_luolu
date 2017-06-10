@@ -419,7 +419,9 @@ public class MainActivity extends BaseAppUpdateActivity
      */
     private void showTabMenu(final View target) {
         if (target == null) return;
-        new ListActionItemPop(getContext(), getShowTabMenuData())
+        List<ItemsEntity> showTabMenuData = getShowTabMenuData();
+        if (showTabMenuData.isEmpty()) return;
+        new ListActionItemPop(getContext(), showTabMenuData)
                 .withOnItemClick(new BaseListActionItemPop.OnItemClickListener() {
                     @Override
                     public void onItemClick(BaseListActionItemPop listActionItemPop, BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {

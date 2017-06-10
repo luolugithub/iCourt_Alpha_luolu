@@ -34,4 +34,12 @@ public interface INIMessageListener {
      * @param message
      */
     void onMessageRevoke(IMMessage message);
+
+
+    /**
+     * 自己撤回的消息 不是云信平台
+     *
+     * @param msgId
+     */
+    void onMessageRevoke(long msgId);
 }

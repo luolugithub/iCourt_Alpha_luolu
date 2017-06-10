@@ -7,6 +7,7 @@ import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.icourt.alpha.entity.bean.GroupDetailEntity;
 import com.icourt.alpha.entity.bean.GroupEntity;
 import com.icourt.alpha.entity.bean.IMMessageCustomBody;
+import com.icourt.alpha.entity.bean.MsgStatusEntity;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 
 import java.util.List;
@@ -294,6 +295,16 @@ public interface ApiChatService {
      */
     @DELETE("im/v1/msgs/{msgId}")
     Call<ResEntity<JsonElement>> msgRevoke(@Path("msgId") long msgId);
+
+
+    /**
+     * 消息的状态
+     *
+     * @param id
+     * @return
+     */
+    @GET("im/v1/msgs/{id}/status")
+    Call<ResEntity<MsgStatusEntity>> msgStatus(@Path("id") long id);
 
 
     /**

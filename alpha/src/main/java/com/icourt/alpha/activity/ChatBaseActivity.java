@@ -1015,6 +1015,7 @@ public abstract class ChatBaseActivity
                 case MSG_TYPE_DING://不能撤回 不能转发 收藏的是钉的消息体,钉的消息[文本]可以转任务
                     menuItems.clear();
                     menuItems.addAll(Arrays.asList(
+                            isDinged(iMMessageCustomBody.ext != null ? iMMessageCustomBody.ext.id : 0) ? "取消钉" : "钉",
                             isCollected(iMMessageCustomBody.ext != null ? iMMessageCustomBody.ext.id : 0) ? "取消收藏" : "收藏"
                     ));
                     break;
@@ -1089,9 +1090,17 @@ public abstract class ChatBaseActivity
                         if (TextUtils.equals(actionName, "复制")) {
                             msgActionCopy(customIMBody.content);
                         } else if (TextUtils.equals(actionName, "钉")) {
-                            msgActionDing(true, customIMBody.id);
+                            if (customIMBody.show_type == MSG_TYPE_DING) {
+                                msgActionDing(true, customIMBody.ext != null ? customIMBody.ext.id : 0);
+                            } else {
+                                msgActionDing(true, customIMBody.id);
+                            }
                         } else if (TextUtils.equals(actionName, "取消钉")) {
-                            msgActionDing(false, customIMBody.id);
+                            if (customIMBody.show_type == MSG_TYPE_DING) {
+                                msgActionDing(false, customIMBody.ext != null ? customIMBody.ext.id : 0);
+                            } else {
+                                msgActionDing(false, customIMBody.id);
+                            }
                         } else if (TextUtils.equals(actionName, "收藏")) {
                             switch (customIMBody.show_type) {
                                 case MSG_TYPE_DING:
@@ -1276,37 +1285,45 @@ public abstract class ChatBaseActivity
      */
     protected final void msgActionRevoke(@NonNull final long msgId, @Nullable final IMMessage imMessage) {
         if (msgId <= 0) return;
-        if (imMessage == null) return;
-        NIMClient.getService(MsgService.class)
-                .revokeMessage(imMessage)
-                .setCallback(new RequestCallback<Void>() {
-                    @Override
-                    public void onSuccess(Void param) {
-                        //deleteItem(imMessage, true);
-                        //网络
-                        getChatApi().msgRevoke(msgId)
-                                .enqueue(new SimpleCallBack<JsonElement>() {
-                                    @Override
-                                    public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
-                                    }
-                                });
-                    }
-
-                    @Override
-                    public void onFailed(int code) {
-                        if (code == 508) {
-                            showTopSnackBar("消息撤回时间超限");
-                        } else {
-                            showTopSnackBar("消息撤回:" + code);
+        if (imMessage == null) {
+            getChatApi().msgRevoke(msgId)
+                    .enqueue(new SimpleCallBack<JsonElement>() {
+                        @Override
+                        public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
+                            onMessageRevoke(msgId);
                         }
-                    }
+                    });
+        } else {
+            NIMClient.getService(MsgService.class)
+                    .revokeMessage(imMessage)
+                    .setCallback(new RequestCallback<Void>() {
+                        @Override
+                        public void onSuccess(Void param) {
+                            //deleteItem(imMessage, true);
+                            //网络
+                            getChatApi().msgRevoke(msgId)
+                                    .enqueue(new SimpleCallBack<JsonElement>() {
+                                        @Override
+                                        public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
+                                        }
+                                    });
+                        }
 
-                    @Override
-                    public void onException(Throwable exception) {
-                        showTopSnackBar("消息撤回异常:" + exception);
-                    }
-                });
+                        @Override
+                        public void onFailed(int code) {
+                            if (code == 508) {
+                                showTopSnackBar("消息撤回时间超限");
+                            } else {
+                                showTopSnackBar("消息撤回:" + code);
+                            }
+                        }
 
+                        @Override
+                        public void onException(Throwable exception) {
+                            showTopSnackBar("消息撤回异常:" + exception);
+                        }
+                    });
+        }
     }
 
 

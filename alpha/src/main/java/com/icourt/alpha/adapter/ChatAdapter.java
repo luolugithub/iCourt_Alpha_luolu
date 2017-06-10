@@ -619,6 +619,7 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMMessageCustomBody> i
         }
 
         holder.bindChildClick(chat_ding_content_iamge_iv);
+        holder.bindChildLongClick(chat_ding_content_iamge_iv);
         setTypeDingFromUser(holder, imMessageCustomBody, position);
     }
 

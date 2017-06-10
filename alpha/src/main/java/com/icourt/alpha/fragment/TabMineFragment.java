@@ -154,13 +154,13 @@ public class TabMineFragment extends BaseFragment {
                         .bitmapTransform(new BlurTransformation(getContext(), 50))
                         .crossFade()
                         .into(photoBigImage);
-            }
-            userNameTv.setText(alphaUserInfo.getName());
-            officeNameTv.setText(getUserGroup(alphaUserInfo.getGroups()));
-            try {
-                myCenterClearCacheTextview.setText(DataCleanManager.getTotalCacheSize(getContext()));
-            } catch (Exception e) {
-                e.printStackTrace();
+                userNameTv.setText(alphaUserInfo.getName());
+                officeNameTv.setText(getUserGroup(alphaUserInfo.getGroups()));
+                try {
+                    myCenterClearCacheTextview.setText(DataCleanManager.getTotalCacheSize(getContext()));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
         }
     }
@@ -315,6 +315,7 @@ public class TabMineFragment extends BaseFragment {
             baseAppUpdateActivity.checkAppUpdate(new AppUpdateCallBack() {
                 @Override
                 public void onSuccess(Call<AppVersionEntity> call, Response<AppVersionEntity> response) {
+                    if (myCenterAboutCountView == null) return;
                     myCenterAboutCountView.setVisibility(baseAppUpdateActivity.shouldUpdate(response.body()) ? View.VISIBLE : View.INVISIBLE);
                 }
             });

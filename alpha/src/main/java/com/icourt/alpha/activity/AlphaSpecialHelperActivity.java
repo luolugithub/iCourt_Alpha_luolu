@@ -226,6 +226,11 @@ public class AlphaSpecialHelperActivity extends ChatBaseActivity {
 
     }
 
+    @Override
+    public void onMessageRevoke(long msgId) {
+
+    }
+
     @OnClick({R.id.titleAction})
     @Override
     public void onClick(View v) {

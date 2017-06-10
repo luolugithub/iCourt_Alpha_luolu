@@ -22,6 +22,7 @@ import com.icourt.alpha.db.dbmodel.ContactDbModel;
 import com.icourt.alpha.db.dbservice.ContactDbService;
 import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.icourt.alpha.entity.bean.IMMessageCustomBody;
+import com.icourt.alpha.entity.bean.MsgStatusEntity;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.StringUtils;
@@ -186,30 +187,28 @@ public class FileDetailsActivity extends BaseActivity {
     @Override
     protected void getData(boolean isRefresh) {
         super.getData(isRefresh);
-        switch (getMsgClassfyType()) {
-            case MSG_CLASSFY_CHAT_DING:
-                getChatApi().msgIsDinged(item.id)
-                        .enqueue(new SimpleCallBack<Boolean>() {
-                            @Override
-                            public void onSuccess(Call<ResEntity<Boolean>> call, Response<ResEntity<Boolean>> response) {
-                                titleAction.setVisibility(response.body().result != null && response.body().result.booleanValue()
+        getChatApi()
+                .msgStatus(item.id)
+                .enqueue(new SimpleCallBack<MsgStatusEntity>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<MsgStatusEntity>> call, Response<ResEntity<MsgStatusEntity>> response) {
+                        if (response.body().result == null) return;
+                        switch (getMsgClassfyType()) {
+                            case MSG_CLASSFY_CHAT_DING:
+                                titleAction.setVisibility(response.body().result.pin
                                         ? View.VISIBLE : View.INVISIBLE);
-                            }
-                        });
-                break;
-            case MSG_CLASSFY_CHAT_FILE:
-                break;
-            case MSG_CLASSFY_MY_COLLECTEED:
-                getChatApi().msgIsCollected(item.id)
-                        .enqueue(new SimpleCallBack<Boolean>() {
-                            @Override
-                            public void onSuccess(Call<ResEntity<Boolean>> call, Response<ResEntity<Boolean>> response) {
-                                titleAction.setVisibility(response.body().result != null && response.body().result.booleanValue()
+                                break;
+                            case MSG_CLASSFY_CHAT_FILE:
+                                titleAction.setVisibility(!response.body().result.recall
                                         ? View.VISIBLE : View.INVISIBLE);
-                            }
-                        });
-                break;
-        }
+                                break;
+                            case MSG_CLASSFY_MY_COLLECTEED:
+                                titleAction.setVisibility(response.body().result.star
+                                        ? View.VISIBLE : View.INVISIBLE);
+                                break;
+                        }
+                    }
+                });
         getLocalContacts();
         getTeams();
     }
