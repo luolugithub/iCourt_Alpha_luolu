@@ -17,7 +17,9 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.SpannableString;
 import android.text.TextUtils;
+import android.util.SparseArray;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
@@ -50,6 +52,7 @@ import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.interfaces.OnUpdateTaskListener;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.GlideUtils;
+import com.icourt.alpha.utils.SpannableUtils;
 import com.icourt.alpha.widget.dialog.BottomActionDialog;
 import com.icourt.alpha.widget.manager.TimerManager;
 import com.icourt.api.RequestUtils;
@@ -136,9 +139,25 @@ public class TaskDetailActivity extends BaseActivity implements OnFragmentCallBa
     TaskUsersAdapter usersAdapter;
     @BindView(R.id.comment_layout)
     LinearLayout commentLayout;
+
+    final SparseArray<CharSequence> tabTitles = new SparseArray<>();
 //    boolean isEditTask = false;//编辑任务权限
 //    boolean isDeleteTask = false;//删除任务权限
 //    boolean isAddTime = false;//添加计时权限
+
+    @Override
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_task_detail_layout);
+        ButterKnife.bind(this);
+        initView();
+    }
+
+    @Override
+    protected void onDestroy() {
+        EventBus.getDefault().unregister(this);
+        super.onDestroy();
+    }
 
     public static void launch(@NonNull Context context, @NonNull String taskId) {
         if (context == null) return;
@@ -157,14 +176,6 @@ public class TaskDetailActivity extends BaseActivity implements OnFragmentCallBa
     }
 
     @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_task_detail_layout);
-        ButterKnife.bind(this);
-        initView();
-    }
-
-    @Override
     protected void initView() {
         super.initView();
         setTitle("");
@@ -173,14 +184,26 @@ public class TaskDetailActivity extends BaseActivity implements OnFragmentCallBa
         baseFragmentAdapter = new BaseFragmentAdapter(getSupportFragmentManager());
         viewpager.setAdapter(baseFragmentAdapter);
         taskTablayout.setupWithViewPager(viewpager);
+        taskTablayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+            @Override
+            public void onTabSelected(TabLayout.Tab tab) {
+                log("----------->onTabSelected:" + tab.getPosition());
+                if (tab == null) return;
+                tab.setText(tabTitles.get(tab.getPosition(), ""));
+            }
+
+            @Override
+            public void onTabUnselected(TabLayout.Tab tab) {
+
+            }
+
+            @Override
+            public void onTabReselected(TabLayout.Tab tab) {
+
+            }
+        });
         titleAction2.setImageResource(R.mipmap.header_icon_more);
         getData(false);
-    }
-
-    @Override
-    protected void onDestroy() {
-        EventBus.getDefault().unregister(this);
-        super.onDestroy();
     }
 
     @OnClick({R.id.titleAction, R.id.titleAction2, R.id.task_name, task_user_recyclerview, R.id.comment_layout, R.id.task_checkbox, R.id.task_user_layout, R.id.task_users_layout, R.id.task_start_iamge})
@@ -525,9 +548,21 @@ public class TaskDetailActivity extends BaseActivity implements OnFragmentCallBa
             } else {
                 taskTime.setText(getHm(taskItemEntity.timingSum));
             }
-            baseFragmentAdapter.bindTitle(true, Arrays.asList(
-                    "任务详情", "检查项 " + taskItemEntity.doneItemCount + "/" + taskItemEntity.itemCount, "附件 " + taskItemEntity.attachmentCount
-            ));
+            String checkTargetStr = String.format("%s/%s", taskItemEntity.doneItemCount, taskItemEntity.itemCount);
+            String checkOriginStr = "检查项 " + checkTargetStr;
+            SpannableString checkTextForegroundColorSpan = SpannableUtils.getTextForegroundColorSpan(checkOriginStr, checkTargetStr, 0xFFCACACA);
+
+            String attachTargetStr = String.valueOf(taskItemEntity.attachmentCount);
+            String attachOriginStr = "附件 " + attachTargetStr;
+            SpannableString attachTextForegroundColorSpan = SpannableUtils.getTextForegroundColorSpan(attachOriginStr, attachTargetStr, 0xFFCACACA);
+
+            tabTitles.put(0, "任务详情");
+            tabTitles.put(1, checkTextForegroundColorSpan);
+            tabTitles.put(2, attachTextForegroundColorSpan);
+
+            baseFragmentAdapter.bindTitle(true, Arrays.asList(tabTitles.get(0, ""),
+                    tabTitles.get(1, ""),
+                    tabTitles.get(2, "")));
             baseFragmentAdapter.bindData(true, Arrays.asList(
                     TaskDetailFragment.newInstance(taskItemEntity),
                     TaskCheckItemFragment.newInstance(taskItemEntity.id, hasTaskEditPermission()),
@@ -816,15 +851,25 @@ public class TaskDetailActivity extends BaseActivity implements OnFragmentCallBa
 
     @Override
     public void onUpdateCheckItem(String checkItemCount) {
-        baseFragmentAdapter.bindTitle(true, Arrays.asList(
-                "任务详情", "检查项 " + checkItemCount, "附件 " + taskItemEntity.attachmentCount
-        ));
+        String checkTargetStr = checkItemCount;
+        String checkOriginStr = "检查项 " + checkTargetStr;
+        SpannableString checkTextForegroundColorSpan = SpannableUtils.getTextForegroundColorSpan(checkOriginStr, checkTargetStr, 0xFFCACACA);
+        tabTitles.put(1, checkTextForegroundColorSpan);
+
+        baseFragmentAdapter.bindTitle(true, Arrays.asList(tabTitles.get(0, ""),
+                tabTitles.get(1, ""),
+                tabTitles.get(2, "")));
     }
 
     @Override
     public void onUpdateDocument(String documentCount) {
-        baseFragmentAdapter.bindTitle(true, Arrays.asList(
-                "任务详情", "检查项 " + taskItemEntity.doneItemCount + "/" + taskItemEntity.itemCount, "附件 " + documentCount
-        ));
+        String attachTargetStr = documentCount;
+        String attachOriginStr = "附件 " + attachTargetStr;
+        SpannableString attachTextForegroundColorSpan = SpannableUtils.getTextForegroundColorSpan(attachOriginStr, attachTargetStr, 0xFFCACACA);
+        tabTitles.put(2, attachTextForegroundColorSpan);
+
+        baseFragmentAdapter.bindTitle(true, Arrays.asList(tabTitles.get(0, ""),
+                tabTitles.get(1, ""),
+                tabTitles.get(2, "")));
     }
 }

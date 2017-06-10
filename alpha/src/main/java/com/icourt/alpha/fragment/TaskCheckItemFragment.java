@@ -156,7 +156,7 @@ public class TaskCheckItemFragment extends BaseFragment implements BaseRecyclerA
                         if (!hasPermission) {
                             listLayout.setVisibility(View.GONE);
                             emptyLayout.setVisibility(View.VISIBLE);
-                        }else{
+                        } else {
                             listLayout.setVisibility(View.VISIBLE);
                             emptyLayout.setVisibility(View.GONE);
                         }
@@ -285,6 +285,7 @@ public class TaskCheckItemFragment extends BaseFragment implements BaseRecyclerA
      * @param itemEntity
      */
     private void deleteCheckItem(final TaskCheckItemEntity.ItemEntity itemEntity) {
+        if (itemEntity == null) return;
         getApi().taskCheckItemDelete(itemEntity.id).enqueue(new SimpleCallBack<JsonElement>() {
             @Override
             public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
