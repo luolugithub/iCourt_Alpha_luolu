@@ -76,16 +76,31 @@ public class ContactListFragment extends BaseFragment implements BaseRecyclerAda
     ContactDbService contactDbService;
     LinearLayoutManager linearLayoutManager;
 
-    public static ContactListFragment newInstance() {
-        return new ContactListFragment();
-    }
-
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = super.onCreateView(R.layout.fragment_contact_list, inflater, container, savedInstanceState);
         unbinder = ButterKnife.bind(this, view);
         return view;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        getContactsFromDb();
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        unbinder.unbind();
+        if (contactDbService != null) {
+            contactDbService.releaseService();
+        }
+    }
+
+    public static ContactListFragment newInstance() {
+        return new ContactListFragment();
     }
 
 
@@ -148,12 +163,6 @@ public class ContactListFragment extends BaseFragment implements BaseRecyclerAda
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
-        getContactsFromDb();
-    }
-
-    @Override
     public void onClick(View v) {
         super.onClick(v);
         switch (v.getId()) {
@@ -173,6 +182,7 @@ public class ContactListFragment extends BaseFragment implements BaseRecyclerAda
             if (contactDbModels != null) {
                 List<GroupContactBean> contactBeen = ListConvertor.convertList(new ArrayList<IConvertModel<GroupContactBean>>(contactDbModels));
                 filterRobot(contactBeen);
+                filterMySelf(contactBeen);
                 IndexUtils.setSuspensions(getContext(), contactBeen);
                 Collections.sort(contactBeen, new PinyinComparator<GroupContactBean>());
                 imContactAdapter.bindData(true, contactBeen);
@@ -233,6 +243,19 @@ public class ContactListFragment extends BaseFragment implements BaseRecyclerAda
     }
 
     /**
+     * 过滤调自己
+     *
+     * @param data
+     * @return
+     */
+    private List<GroupContactBean> filterMySelf(List<GroupContactBean> data) {
+        GroupContactBean groupContactBean = new GroupContactBean();
+        groupContactBean.accid = StringUtils.toLowerCase(getLoginUserId());
+        new ListFilter<GroupContactBean>().filter(data, groupContactBean);
+        return data;
+    }
+
+    /**
      * 更新indextBar
      *
      * @param data
@@ -264,15 +287,6 @@ public class ContactListFragment extends BaseFragment implements BaseRecyclerAda
         }
     }
 
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        unbinder.unbind();
-        if (contactDbService != null) {
-            contactDbService.releaseService();
-        }
-    }
 
     @Override
     public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {

@@ -4,7 +4,6 @@ import android.app.Dialog;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v4.app.DialogFragment;
 import android.text.TextUtils;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -36,7 +35,7 @@ import butterknife.Unbinder;
 
 
 /**
- * Description
+ * Description  计时悬浮框
  * Company Beijing icourt
  * author  youxuan  E-mail:xuanyouwu@163.com
  * date createTime：2017/5/17
@@ -65,12 +64,6 @@ public class TimingNoticeDialogFragment extends BaseDialogFragment {
 
     TimeEntity.ItemEntity itemEntity;
 
-    @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setStyle(DialogFragment.STYLE_NO_TITLE, android.R.style.Theme_Holo_Light_Dialog_MinWidth);
-    }
-
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -94,9 +87,11 @@ public class TimingNoticeDialogFragment extends BaseDialogFragment {
     protected void initView() {
         Dialog dialog = getDialog();
         if (dialog != null) {
+            dialog.setCanceledOnTouchOutside(true);
             Window window = dialog.getWindow();
             if (window != null) {
                 window.setGravity(Gravity.BOTTOM);
+                window.setWindowAnimations(R.style.AppThemeSlideAnimation);
             }
         }
         Serializable data = getArguments().getSerializable("data");

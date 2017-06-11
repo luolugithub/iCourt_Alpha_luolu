@@ -28,6 +28,7 @@
                     android:id="@+id/group_name_tv"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_marginTop="30dp"
                     android:layout_weight="1"
                     android:ellipsize="end"
                     android:gravity="bottom"
@@ -36,13 +37,18 @@
                     android:textColor="@color/alpha_font_color_title"
                     android:textSize="20dp" />
 
+                <View
+                    android:layout_width="60dp"
+                    android:layout_height="1.5dp"
+                    android:layout_margin="15dp"
+                    android:background="#FFBAC8CA" />
+
                 <TextView
                     android:id="@+id/group_desc_tv"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:ellipsize="end"
-                    android:gravity="center_vertical"
                     android:maxLines="2"
                     android:text="讨论组介绍"
                     android:textColor="@color/alpha_font_color_gray"

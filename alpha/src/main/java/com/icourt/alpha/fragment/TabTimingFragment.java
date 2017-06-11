@@ -289,13 +289,13 @@ public class TabTimingFragment extends BaseFragment implements BaseRecyclerAdapt
 
         List<PointValue> values = new ArrayList<PointValue>();
         List<AxisValue> axisXValues = Arrays.asList(
-                new AxisValue(0).setLabel("星期一"),
-                new AxisValue(1).setLabel("星期二"),
-                new AxisValue(2).setLabel("星期三"),
-                new AxisValue(3).setLabel("星期四"),
-                new AxisValue(4).setLabel("星期五"),
-                new AxisValue(5).setLabel("星期六"),
-                new AxisValue(6).setLabel("星期七"));
+                new AxisValue(0).setLabel("周一"),
+                new AxisValue(1).setLabel("周二"),
+                new AxisValue(2).setLabel("周三"),
+                new AxisValue(3).setLabel("周四"),
+                new AxisValue(4).setLabel("周五"),
+                new AxisValue(5).setLabel("周六"),
+                new AxisValue(6).setLabel("周日"));
         List<AxisValue> axisYValues = new ArrayList<>();
         for (int i = 0; i <= 24; i += 4) {
             axisYValues.add(new AxisValue(i).setLabel(String.format("%sh", i)));

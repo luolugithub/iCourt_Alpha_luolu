@@ -30,6 +30,7 @@ import com.icourt.alpha.db.convertor.ListConvertor;
 import com.icourt.alpha.db.dbmodel.ContactDbModel;
 import com.icourt.alpha.db.dbservice.ContactDbService;
 import com.icourt.alpha.entity.bean.GroupContactBean;
+import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.view.SoftKeyboardSizeWatchLayout;
 import com.icourt.alpha.widget.filter.ListFilter;
@@ -179,6 +180,7 @@ public class ContactSearchActivity extends BaseActivity implements BaseRecyclerA
             }
             List<GroupContactBean> contactBeen = ListConvertor.convertList(new ArrayList<IConvertModel<GroupContactBean>>(name));
             fiterRobots(contactBeen);
+            filterMySelf(contactBeen);
             imContactAdapter.bindData(true, contactBeen);
         } catch (Throwable e) {
             e.printStackTrace();
@@ -192,6 +194,19 @@ public class ContactSearchActivity extends BaseActivity implements BaseRecyclerA
      */
     private List<GroupContactBean> fiterRobots(List<GroupContactBean> contactBeen) {
         return new ListFilter<GroupContactBean>().filter(contactBeen, GroupContactBean.TYPE_ROBOT);
+    }
+
+    /**
+     * 过滤调自己
+     *
+     * @param data
+     * @return
+     */
+    private List<GroupContactBean> filterMySelf(List<GroupContactBean> data) {
+        GroupContactBean groupContactBean = new GroupContactBean();
+        groupContactBean.accid = StringUtils.toLowerCase(getLoginUserId());
+        new ListFilter<GroupContactBean>().filter(data, groupContactBean);
+        return data;
     }
 
     @OnClick({R.id.tv_search_cancel})

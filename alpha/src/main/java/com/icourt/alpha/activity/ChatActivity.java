@@ -179,8 +179,12 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
     private RequestCallback<Team> teamCallBack = new RequestCallback<Team>() {
         @Override
         public void onSuccess(Team param) {
-            if (param != null) {
+            if (param == null) return;
+            if (!getIntent().getBooleanExtra(KEY_HIDDEN_MORE_BTN, false)) {
                 setViewInVisible(getTitleActionImage(), param.mute());
+            }
+            if (chatAdapter != null) {
+                chatAdapter.setShowMemberUserName(param.getMemberCount() >= 5);
             }
         }
 
@@ -723,10 +727,6 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
             titleActionImage2.setImageResource(R.mipmap.header_icon_more);
             titleActionImage2.setVisibility(getIntent().getBooleanExtra(KEY_HIDDEN_MORE_BTN, false) ? View.INVISIBLE : View.VISIBLE);
         }
-
-        if (!getIntent().getBooleanExtra(KEY_HIDDEN_MORE_BTN, false)) {
-            getTeamINFO(teamCallBack);
-        }
         ImageView titleActionImage = getTitleActionImage();
         if (titleActionImage != null) {
             titleActionImage.setImageResource(R.mipmap.icon_mute);
@@ -778,7 +778,7 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
                 }
             }
         });
-
+        getTeamINFO(teamCallBack);
         updateTotalUnRead(getIntent().getIntExtra(KEY_TOTAL_UNREAD_NUM, 0));
     }
 

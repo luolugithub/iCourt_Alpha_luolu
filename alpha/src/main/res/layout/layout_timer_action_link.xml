@@ -30,6 +30,7 @@
                 android:layout_weight="1"
                 android:background="@null"
                 android:ellipsize="end"
+                android:hint="请输入计时标题"
                 android:imeOptions="actionNone"
                 android:maxLines="3"
                 android:paddingBottom="12dp"

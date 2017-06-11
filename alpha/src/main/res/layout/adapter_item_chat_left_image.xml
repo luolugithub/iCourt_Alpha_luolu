@@ -12,22 +12,40 @@
         android:layout_height="42dp"
         android:src="@mipmap/avatar_default_24" />
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
 
-    <com.icourt.alpha.view.BubbleImageView
-        android:id="@+id/chat_image_iv"
-        android:layout_width="207dp"
-        android:layout_height="170dp"
-        android:layout_marginLeft="9dp"
-        android:layout_marginRight="72dp"
-        android:adjustViewBounds="true"
-        android:scaleType="fitCenter"
-        app:bubble_angle="4dp"
-        app:bubble_arrowHeight="10dp"
-        app:bubble_arrowLocation="left"
-        app:bubble_arrowOffset="-5dp"
-        app:bubble_arrowTop="15dp"
-        app:bubble_arrowWidth="8dp"
-        app:bubble_showShadow="false"
-        app:bubble_showText="false" />
+        <TextView
+            android:id="@+id/chat_user_name_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="7dp"
+            android:layout_marginLeft="15dp"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:text="阿三哥"
+            android:textSize="@dimen/alpha_font_size_mini" />
+
+
+        <com.icourt.alpha.view.BubbleImageView
+            android:id="@+id/chat_image_iv"
+            android:layout_width="207dp"
+            android:layout_height="170dp"
+            android:layout_marginLeft="9dp"
+            android:layout_marginRight="72dp"
+            android:adjustViewBounds="true"
+            android:scaleType="fitCenter"
+            android:src="@drawable/placeholder_chat_img"
+            app:bubble_angle="4dp"
+            app:bubble_arrowHeight="10dp"
+            app:bubble_arrowLocation="left"
+            app:bubble_arrowOffset="-5dp"
+            app:bubble_arrowTop="15dp"
+            app:bubble_arrowWidth="8dp"
+            app:bubble_showShadow="false"
+            app:bubble_showText="false" />
+    </LinearLayout>
 
 </LinearLayout>

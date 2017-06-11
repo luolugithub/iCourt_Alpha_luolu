@@ -12,20 +12,38 @@
         android:layout_height="42dp"
         android:src="@mipmap/avatar_default_24" />
 
-
-    <TextView
-        android:id="@+id/chat_txt_tv"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="9dp"
-        android:layout_marginRight="72dp"
-        android:background="@drawable/chat_bubble_left_bg"
-        android:paddingBottom="10dp"
-        android:paddingLeft="15dp"
-        android:gravity="center_vertical"
-        android:paddingRight="10dp"
-        android:paddingTop="10dp"
-        android:text="消息 hahah很多刚果共和国给各国纷纷过分过分过分过分复古风复古a"
-        android:textColor="@color/alpha_font_color_black"
-        android:textSize="@dimen/alpha_font_size_comm" />
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/chat_user_name_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="7dp"
+            android:layout_marginLeft="15dp"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:text="阿三哥"
+            android:textSize="@dimen/alpha_font_size_mini" />
+
+        <TextView
+            android:id="@+id/chat_txt_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="9dp"
+            android:layout_marginRight="72dp"
+            android:background="@drawable/chat_bubble_left_bg"
+            android:gravity="center_vertical"
+            android:paddingBottom="10dp"
+            android:paddingLeft="15dp"
+            android:paddingRight="10dp"
+            android:paddingTop="10dp"
+            android:text="消息 hahah很多刚果共和国给各国纷纷过分过分过分过分复古风复古a"
+            android:textColor="@color/alpha_font_color_black"
+            android:textSize="@dimen/alpha_font_size_comm" />
+    </LinearLayout>
+
+
 </LinearLayout>

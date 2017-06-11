@@ -332,6 +332,7 @@ public abstract class BaseDialogFragment extends DialogFragment
     protected final ApiSFileService getSFileApi() {
         return RetrofitServiceFactory.getSFileApiService();
     }
+
     /**
      * Toast提示
      * 缺陷 有的rom 会禁用掉taost 比如huawei rom
