@@ -211,8 +211,8 @@ public abstract class BaseRecentContactFragment extends BaseFragment {
     }
 
     @Override
-    public void onDestroy() {
+    public void onDestroyView() {
         registerNimObserver(false);
-        super.onDestroy();
+        super.onDestroyView();
     }
 }

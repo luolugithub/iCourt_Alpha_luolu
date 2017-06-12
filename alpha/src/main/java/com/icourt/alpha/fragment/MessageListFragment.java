@@ -109,7 +109,7 @@ public class MessageListFragment extends BaseRecentContactFragment
     private DataChangeAdapterObserver dataChangeAdapterObserver = new DataChangeAdapterObserver() {
         @Override
         protected void updateUI() {
-            if (imSessionAdapter != null) {
+            if (imSessionAdapter != null && emptyLayoutRl != null) {
                 List<IMSessionEntity> data = imSessionAdapter.getData();
                 emptyLayoutRl.setVisibility(data.isEmpty() ? View.VISIBLE : View.GONE);
                 int unReadCount = 0;
@@ -161,6 +161,31 @@ public class MessageListFragment extends BaseRecentContactFragment
         }
     };
 
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        try {
+            onPageFragmentCallBack = (OnPageFragmentCallBack) context;
+        } catch (ClassCastException e) {
+        }
+    }
+
+    @Nullable
+    @Override
+    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        View view = super.onCreateView(R.layout.fragment_message_list, inflater, container, savedInstanceState);
+        unbinder = ButterKnife.bind(this, view);
+        return view;
+    }
+
+    @Override
+    public void onDestroy() {
+        if (unbinder != null)
+            unbinder.unbind();
+        super.onDestroy();
+        EventBus.getDefault().unregister(this);
+    }
 
     public static MessageListFragment newInstance() {
         return new MessageListFragment();
@@ -284,7 +309,7 @@ public class MessageListFragment extends BaseRecentContactFragment
             updateLoginStateView(false, "");
         } else {
             OnlineClient client = onlineClients.get(0);
-            log("------------>onlineClientEvent:" + client.getOs() + "  gettype:" + client.getClientType());
+            log("------------>onlineClientEvent:first:" + client.getOs() + "  gettype:" + client.getClientType() + "  loginTime:" + client.getLoginTime());
             switch (client.getClientType()) {
                 case ClientType.Windows:
                     updateLoginStateView(true, getString(R.string.message_statu_hint_multiport_logging) + getString(R.string.message_statu_hint_computer_version));
@@ -314,7 +339,9 @@ public class MessageListFragment extends BaseRecentContactFragment
                                 }
                             });
                     updateLoginStateView(true, getString(R.string.message_statu_hint_multiport_logging) + getString(R.string.message_statu_hint_mobile_version));
-                    loginout();
+                    if (NIMClient.getStatus() == StatusCode.LOGINED) {
+                        loginout();
+                    }
                     break;
                 default:
                     updateLoginStateView(false, "");
@@ -386,23 +413,6 @@ public class MessageListFragment extends BaseRecentContactFragment
 
     }
 
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-        try {
-            onPageFragmentCallBack = (OnPageFragmentCallBack) context;
-        } catch (ClassCastException e) {
-        }
-    }
-
-
-    @Nullable
-    @Override
-    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = super.onCreateView(R.layout.fragment_message_list, inflater, container, savedInstanceState);
-        unbinder = ButterKnife.bind(this, view);
-        return view;
-    }
 
     @Override
     protected void initView() {
@@ -638,14 +648,6 @@ public class MessageListFragment extends BaseRecentContactFragment
         return recentContacts;
     }
 
-
-    @Override
-    public void onDestroy() {
-        if (unbinder != null)
-            unbinder.unbind();
-        super.onDestroy();
-        EventBus.getDefault().unregister(this);
-    }
 
     @Override
     public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
