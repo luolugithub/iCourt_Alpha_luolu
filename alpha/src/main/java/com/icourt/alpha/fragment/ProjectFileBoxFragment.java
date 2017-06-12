@@ -259,6 +259,8 @@ public class ProjectFileBoxFragment extends BaseFragment implements BaseRecycler
      * @param isUp
      */
     public void sortFileByNameList(final boolean isUp) {
+        if (fileBoxBeanList == null) return;
+        if (fileBoxBeanList.size() <= 0) return;
         Collections.sort(fileBoxBeanList, new Comparator<FileBoxBean>() {
             @Override
             public int compare(FileBoxBean o1, FileBoxBean o2) {
@@ -299,6 +301,8 @@ public class ProjectFileBoxFragment extends BaseFragment implements BaseRecycler
      * @param isUp
      */
     public void sortFileBySizeList(final boolean isUp) {
+        if (fileBoxBeanList == null) return;
+        if (fileBoxBeanList.size() <= 0) return;
         Collections.sort(fileBoxBeanList, new Comparator<FileBoxBean>() {
             @Override
             public int compare(FileBoxBean o1, FileBoxBean o2) {

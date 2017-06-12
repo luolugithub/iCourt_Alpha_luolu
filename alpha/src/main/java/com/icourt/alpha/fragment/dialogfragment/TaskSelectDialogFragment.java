@@ -25,6 +25,7 @@ import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.TaskSelectAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.HeaderFooterAdapter;
+import com.icourt.alpha.adapter.baseadapter.adapterObserver.DataChangeAdapterObserver;
 import com.icourt.alpha.entity.bean.TaskEntity;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
@@ -138,6 +139,13 @@ public class TaskSelectDialogFragment
         registerClick(headerView.findViewById(R.id.header_comm_search_ll));
         recyclerView.setAdapter(headerFooterAdapter);
         taskSelectAdapter.setOnItemClickListener(this);
+        taskSelectAdapter.registerAdapterDataObserver(new DataChangeAdapterObserver() {
+            @Override
+            protected void updateUI() {
+                if (contentEmptyText == null) return;
+                contentEmptyText.setVisibility(taskSelectAdapter.getItemCount() <= 0 ? View.VISIBLE : View.GONE);
+            }
+        });
 
         headerCommSearchInputEt.addTextChangedListener(new TextWatcher() {
             @Override

@@ -181,6 +181,7 @@
                 android:layout_marginLeft="@dimen/dp15"
                 android:layout_marginRight="@dimen/dp15"
                 android:layout_weight="1"
+                android:hint="选择到期时间"
                 android:gravity="center_vertical|right"
                 android:textColor="@color/alpha_font_color_black"
                 android:textSize="13sp" />

@@ -5,13 +5,10 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.design.widget.AppBarLayout;
 import android.view.View;
-import android.widget.CheckedTextView;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.TextView;
 
 import com.google.gson.JsonElement;
 import com.icourt.alpha.R;
@@ -39,14 +36,6 @@ import retrofit2.Response;
 
 public class SettingActivity extends BaseActivity {
 
-    @BindView(R.id.titleBack)
-    CheckedTextView titleBack;
-    @BindView(R.id.titleContent)
-    TextView titleContent;
-    @BindView(R.id.titleAction)
-    CheckedTextView titleAction;
-    @BindView(R.id.titleView)
-    AppBarLayout titleView;
     @BindView(R.id.photo_image)
     ImageView photoImage;
     @BindView(R.id.photo_layout)

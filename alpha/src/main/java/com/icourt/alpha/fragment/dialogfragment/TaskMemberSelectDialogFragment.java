@@ -145,7 +145,7 @@ public class TaskMemberSelectDialogFragment extends BaseDialogFragment {
                     taskMemberAdapter.clearSelected();
                     getData(true);
                 } else {
-//                    searchUserByName(s.toString());
+                    searchUserByName(s.toString());
                 }
             }
         });
@@ -156,7 +156,7 @@ public class TaskMemberSelectDialogFragment extends BaseDialogFragment {
                     case EditorInfo.IME_ACTION_SEARCH: {
                         SystemUtils.hideSoftKeyBoard(getActivity(), headerCommSearchInputEt);
                         if (!TextUtils.isEmpty(headerCommSearchInputEt.getText())) {
-//                            searchUserByName(headerCommSearchInputEt.getText().toString());
+                            searchUserByName(headerCommSearchInputEt.getText().toString());
                         }
                     }
                     return true;
@@ -167,6 +167,26 @@ public class TaskMemberSelectDialogFragment extends BaseDialogFragment {
         });
         headerCommSearchInputLl.setVisibility(View.GONE);
         getData(true);
+    }
+
+    /**
+     * 搜索
+     *
+     * @param name
+     */
+    private void searchUserByName(String name) {
+        if (TextUtils.isEmpty(name)) return;
+        if (taskMemberAdapter != null) {
+            if (taskMemberAdapter.getData() == null) return;
+            List<TaskMemberEntity> memberEntities = new ArrayList<TaskMemberEntity>();
+            for (int i = 0; i < taskMemberAdapter.getData().size(); i++) {
+                if (taskMemberAdapter.getData().get(i).userName.contains(name)) {
+                    memberEntities.add(taskMemberAdapter.getData().get(i));
+                }
+            }
+            taskMemberAdapter.clearSelected();
+            taskMemberAdapter.bindData(true, memberEntities);
+        }
     }
 
     @Override
@@ -215,12 +235,21 @@ public class TaskMemberSelectDialogFragment extends BaseDialogFragment {
         }
     }
 
-    @OnClick({R.id.bt_cancel, R.id.bt_ok})
+    @OnClick({R.id.bt_cancel, R.id.bt_ok, R.id.header_comm_search_cancel_tv})
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.bt_cancel:
                 dismiss();
+                break;
+            case R.id.header_comm_search_ll:
+                headerCommSearchInputLl.setVisibility(View.VISIBLE);
+                SystemUtils.showSoftKeyBoard(getActivity(), headerCommSearchInputEt);
+                break;
+            case R.id.header_comm_search_cancel_tv:
+                headerCommSearchInputEt.setText("");
+                SystemUtils.hideSoftKeyBoard(getActivity(), headerCommSearchInputEt, true);
+                headerCommSearchInputLl.setVisibility(View.GONE);
                 break;
             case R.id.bt_ok:
                 if (getParentFragment() instanceof OnFragmentCallBackListener) {

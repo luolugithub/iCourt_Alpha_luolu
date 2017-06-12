@@ -24,8 +24,10 @@ import com.icourt.alpha.base.BaseAppUpdateActivity;
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.icourt.alpha.entity.bean.AppVersionEntity;
+import com.icourt.alpha.entity.bean.GroupBean;
 import com.icourt.alpha.entity.bean.SelectGroupBean;
 import com.icourt.alpha.entity.bean.UserDataEntity;
+import com.icourt.alpha.entity.event.TimingEvent;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.callback.AppUpdateCallBack;
@@ -35,6 +37,10 @@ import com.icourt.alpha.widget.manager.DataCleanManager;
 import com.umeng.socialize.UMAuthListener;
 import com.umeng.socialize.UMShareAPI;
 import com.umeng.socialize.bean.SHARE_MEDIA;
+
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.List;
 import java.util.Locale;
@@ -127,6 +133,7 @@ public class TabMineFragment extends BaseFragment {
 
     @Override
     protected void initView() {
+        EventBus.getDefault().register(this);
         getData(false);
 //        setDataToView(getLoginUserInfo());
         mShareAPI = UMShareAPI.get(getContext());
@@ -178,6 +185,26 @@ public class TabMineFragment extends BaseFragment {
             buffer.append(group.groupName).append(" ");
         }
         return buffer.toString();
+    }
+
+    /**
+     * 计时事件
+     *
+     * @param event
+     */
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onTimerEvent(TimingEvent event) {
+        if (event == null) return;
+        switch (event.action) {
+            case TimingEvent.TIMING_ADD:
+
+                break;
+            case TimingEvent.TIMING_UPDATE_PROGRESS:
+                break;
+            case TimingEvent.TIMING_STOP:
+                getMyDoneTask();
+                break;
+        }
     }
 
     @OnClick({R.id.set_image,
@@ -299,6 +326,23 @@ public class TabMineFragment extends BaseFragment {
                 setDataToView(getLoginUserInfo());
             }
         });
+        getMyDoneTask();
+        getGroupList();
+        if (baseAppUpdateActivity != null) {
+            baseAppUpdateActivity.checkAppUpdate(new AppUpdateCallBack() {
+                @Override
+                public void onSuccess(Call<AppVersionEntity> call, Response<AppVersionEntity> response) {
+                    if (myCenterAboutCountView == null) return;
+                    myCenterAboutCountView.setVisibility(baseAppUpdateActivity.shouldUpdate(response.body()) ? View.VISIBLE : View.INVISIBLE);
+                }
+            });
+        }
+    }
+
+    /**
+     * 获取我的今日计时、本月计时、本月完成任务
+     */
+    private void getMyDoneTask() {
 
         getApi().getUserData(getLoginUserId()).enqueue(new SimpleCallBack<UserDataEntity>() {
             @Override
@@ -310,17 +354,27 @@ public class TabMineFragment extends BaseFragment {
                 }
             }
         });
+    }
 
-        if (baseAppUpdateActivity != null) {
-            baseAppUpdateActivity.checkAppUpdate(new AppUpdateCallBack() {
-                @Override
-                public void onSuccess(Call<AppVersionEntity> call, Response<AppVersionEntity> response) {
-                    if (myCenterAboutCountView == null) return;
-                    myCenterAboutCountView.setVisibility(baseAppUpdateActivity.shouldUpdate(response.body()) ? View.VISIBLE : View.INVISIBLE);
+    /**
+     * 获取负责团队列表
+     */
+    private void getGroupList() {
+        getApi().lawyerGroupListQuery().enqueue(new SimpleCallBack<List<GroupBean>>() {
+            @Override
+            public void onSuccess(Call<ResEntity<List<GroupBean>>> call, Response<ResEntity<List<GroupBean>>> response) {
+                List<GroupBean> myGroups = response.body().result;
+                StringBuffer stringBuffer = new StringBuffer();
+                if (myGroups != null) {
+                    if (myGroups.size() > 0) {
+                        for (GroupBean groupBean : myGroups) {
+                            stringBuffer.append(groupBean.getName() + ",");
+                        }
+                        officeNameTv.setText(stringBuffer.toString().substring(0, stringBuffer.toString().length() - 1));
+                    }
                 }
-            });
-        }
-
+            }
+        });
     }
 
     public String getHm(long times) {
@@ -341,6 +395,7 @@ public class TabMineFragment extends BaseFragment {
     @Override
     public void onDestroy() {
         super.onDestroy();
+        EventBus.getDefault().unregister(this);
         unbinder.unbind();
     }
 }

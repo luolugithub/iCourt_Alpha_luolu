@@ -22,6 +22,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.TaskUsersAdapter;
+import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.entity.bean.ProjectEntity;
 import com.icourt.alpha.entity.bean.TaskEntity;
@@ -56,7 +57,7 @@ import static com.icourt.alpha.fragment.dialogfragment.BaseDialogFragment.KEY_FR
  * date createTime：2017/5/4
  * version 2.0.0
  */
-public class TaskCreateActivity extends BaseActivity implements ProjectSelectDialogFragment.OnProjectTaskGroupSelectListener, OnFragmentCallBackListener {
+public class TaskCreateActivity extends BaseActivity implements ProjectSelectDialogFragment.OnProjectTaskGroupSelectListener, OnFragmentCallBackListener, BaseRecyclerAdapter.OnItemClickListener {
 
     String content, startTime;
     @BindView(R.id.titleBack)
@@ -149,9 +150,12 @@ public class TaskCreateActivity extends BaseActivity implements ProjectSelectDia
         if (!TextUtils.isEmpty(projectName)) {
             projectNameTv.setText(projectName);
         }
+        if (!TextUtils.isEmpty(projectId)) {
+            taskGroupLayout.setVisibility(View.VISIBLE);
+        }
     }
 
-    @OnClick({R.id.titleAction, R.id.project_layout,R.id.task_group_layout, R.id.duetime_layout, R.id.ower_layout})
+    @OnClick({R.id.titleAction, R.id.project_layout, R.id.task_group_layout, R.id.duetime_layout, R.id.ower_layout})
     @Override
     public void onClick(View v) {
         super.onClick(v);
@@ -276,6 +280,7 @@ public class TaskCreateActivity extends BaseActivity implements ProjectSelectDia
                         layoutManager.setReverseLayout(true);
                         taskOwerRecyclerview.setLayoutManager(layoutManager);
                         taskOwerRecyclerview.setAdapter(usersAdapter = new TaskUsersAdapter());
+                        usersAdapter.setOnItemClickListener(this);
                         usersAdapter.bindData(false, attendeeUserEntities);
                     }
                 }
@@ -304,7 +309,8 @@ public class TaskCreateActivity extends BaseActivity implements ProjectSelectDia
 
     private String getNewTaskJson() {
         JsonObject jsonObject = new JsonObject();
-        if (!TextUtils.isEmpty(taskNameEt.getText().toString())) {
+        String name = taskNameEt.getText().toString().trim();
+        if (!TextUtils.isEmpty(name)) {
             if (taskNameEt.getText().length() <= 200) {
                 jsonObject.addProperty("name", taskNameEt.getText().toString());
             } else {
@@ -341,5 +347,13 @@ public class TaskCreateActivity extends BaseActivity implements ProjectSelectDia
         }
         jsonObject.add("attendees", jsonArray);
         return jsonObject.toString();
+    }
+
+    @Override
+    public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
+        if (!TextUtils.isEmpty(projectId))
+            showTaskAllotSelectDialogFragment(projectId);
+        else
+            showTopSnackBar("请优先选择项目");
     }
 }
