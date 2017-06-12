@@ -135,29 +135,36 @@ public class FileListFragment
         getLocalContacts();
     }
 
+    private long getEndlyId() {
+        long msg_id = fileAdapter.getData().size() > 0
+                ? fileAdapter.getItemId(fileAdapter.getData().size() - 1) : 0;
+        return msg_id;
+    }
+
     @Override
     protected void getData(final boolean isRefresh) {
-        long msgid = 0;
-        if (isRefresh) {
-            msgid = Integer.MAX_VALUE;
-        } else {
-            if (!fileAdapter.getData().isEmpty()) {
-                IMMessageCustomBody item = fileAdapter.getItem(fileAdapter.getData().size() - 1);
-                if (item != null) {
-                    msgid = item.id;
-                }
-            }
-        }
         Call<ResEntity<List<IMMessageCustomBody>>> call;
         switch (getQueryFileType()) {
             case TYPE_ALL_FILE:
-                call = getChatApi().getMyAllFiles(msgid);
+                if (isRefresh) {
+                    call = getChatApi().getMyAllFiles();
+                } else {
+                    call = getChatApi().getMyAllFiles(getEndlyId());
+                }
                 break;
             case TYPE_MY_FILE:
-                call = getChatApi().getMyFiles(msgid);
+                if (isRefresh) {
+                    call = getChatApi().getMyFiles();
+                } else {
+                    call = getChatApi().getMyFiles(getEndlyId());
+                }
                 break;
             default:
-                call = getChatApi().getMyFiles(msgid);
+                if (isRefresh) {
+                    call = getChatApi().getMyFiles();
+                } else {
+                    call = getChatApi().getMyFiles(getEndlyId());
+                }
                 break;
         }
         call.enqueue(new SimpleCallBack<List<IMMessageCustomBody>>() {

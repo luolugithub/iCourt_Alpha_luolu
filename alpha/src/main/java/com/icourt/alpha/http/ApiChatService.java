@@ -318,6 +318,15 @@ public interface ApiChatService {
     Call<ResEntity<List<IMMessageCustomBody>>> getMyFiles(@Query("msg_id") long msg_id);
 
     /**
+     * 获取我的文件
+     * 文档地址：https://www.showdoc.cc/1620156?page_id=14909461
+     *
+     * @return
+     */
+    @GET("im/v1/msgs/files/me")
+    Call<ResEntity<List<IMMessageCustomBody>>> getMyFiles();
+
+    /**
      * 获取我的所有文件
      * 文档地址：https://www.showdoc.cc/1620156?page_id=14909461
      *
@@ -326,6 +335,15 @@ public interface ApiChatService {
      */
     @GET("im/v1/msgs/files/all")
     Call<ResEntity<List<IMMessageCustomBody>>> getMyAllFiles(@Query("msg_id") long msg_id);
+
+    /**
+     * 获取我的所有文件
+     * 文档地址：https://www.showdoc.cc/1620156?page_id=14909461
+     *
+     * @return
+     */
+    @GET("im/v1/msgs/files/all")
+    Call<ResEntity<List<IMMessageCustomBody>>> getMyAllFiles();
 
     /**
      * 获取  @我  的消息
@@ -338,6 +356,15 @@ public interface ApiChatService {
     Call<ResEntity<List<IMMessageCustomBody>>> getAtMeMsg(@Query("msg_id") long msg_id);
 
     /**
+     * 获取  @我  的消息
+     * 【注意 这个接口只能post】
+     *
+     * @param msg_id
+     * @return
+     */
+    @GET("im/v1/msgs/ats")
+    Call<ResEntity<List<IMMessageCustomBody>>> getAtMeMsg();
+    /**
      * 获取我收藏的消息
      * 文档地址:https://www.showdoc.cc/1620156?page_id=14892528
      *
@@ -346,6 +373,16 @@ public interface ApiChatService {
      */
     @GET("im/v1/msgs/stars")
     Call<ResEntity<List<IMMessageCustomBody>>> getMyCollectedMessages(@Query("msg_id") long msg_id);
+
+
+    /**
+     * 获取我收藏的消息
+     * 文档地址:https://www.showdoc.cc/1620156?page_id=14892528
+     *
+     * @return
+     */
+    @GET("im/v1/msgs/stars")
+    Call<ResEntity<List<IMMessageCustomBody>>> getMyCollectedMessages();
 
     /**
      * 获取钉的消息
@@ -361,6 +398,18 @@ public interface ApiChatService {
                                                                @Query("to") String to,
                                                                @Query("msg_id") long msg_id);
 
+
+    /**
+     * 获取钉的消息
+     * 文档地址 https://www.showdoc.cc/1620156?page_id=14899073
+     *
+     * @param ope
+     * @param to
+     * @return
+     */
+    @GET("im/v1/msgs/pins")
+    Call<ResEntity<List<IMMessageCustomBody>>> getDingMessages(@Query("ope") @Const.CHAT_TYPE int ope,
+                                                               @Query("to") String to);
 
     /**
      * 查询网络消息
@@ -392,6 +441,18 @@ public interface ApiChatService {
     Call<ResEntity<List<IMMessageCustomBody>>> msgQueryFiles(@Query("ope") @Const.CHAT_TYPE int ope,
                                                              @Query("to") String to,
                                                              @Query("msg_id") long msg_id);
+
+
+    /**
+     * 获取文件消息列表
+     *
+     * @param ope
+     * @param to
+     * @return
+     */
+    @GET("im/v1/msgs/files")
+    Call<ResEntity<List<IMMessageCustomBody>>> msgQueryFiles(@Query("ope") @Const.CHAT_TYPE int ope,
+                                                             @Query("to") String to);
 
     /**
      * 获取某条消息是否被搜藏过

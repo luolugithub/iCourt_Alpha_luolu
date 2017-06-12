@@ -94,6 +94,12 @@ public class ChatMsgClassfyActivity extends BaseActivity implements BaseRecycler
         initView();
     }
 
+    @Override
+    protected void onDestroy() {
+        EventBus.getDefault().unregister(this);
+        super.onDestroy();
+    }
+
     /**
      * 聊天钉的消息
      *
@@ -214,34 +220,58 @@ public class ChatMsgClassfyActivity extends BaseActivity implements BaseRecycler
         getLocalContacts();
     }
 
+    private long getEndlyId() {
+        long msg_id = imUserMessageAdapter.getData().size() > 0
+                ? imUserMessageAdapter.getItemId(imUserMessageAdapter.getData().size() - 1) : 0;
+        return msg_id;
+    }
+
     @Override
     protected void getData(final boolean isRefresh) {
         super.getData(isRefresh);
-        long msg_id = imUserMessageAdapter.getData().size() > 0 ? imUserMessageAdapter.getItemId(imUserMessageAdapter.getData().size() - 1) : Integer.MAX_VALUE;
-        if (isRefresh) {
-            msg_id = Integer.MAX_VALUE;
-        }
         Call<ResEntity<List<IMMessageCustomBody>>> call = null;
         switch (getMsgClassfyType()) {
             case MSG_CLASSFY_CHAT_DING:
-                call = getChatApi()
-                        .getDingMessages(getMsgChatType(),
-                                getIntent().getStringExtra(KEY_ID),
-                                msg_id);
+                if (isRefresh) {
+                    call = getChatApi()
+                            .getDingMessages(getMsgChatType(),
+                                    getIntent().getStringExtra(KEY_ID));
+                } else {
+                    call = getChatApi()
+                            .getDingMessages(getMsgChatType(),
+                                    getIntent().getStringExtra(KEY_ID),
+                                    getEndlyId());
+                }
                 break;
             case MSG_CLASSFY_CHAT_FILE:
-                call = getChatApi()
-                        .msgQueryFiles(getMsgChatType(),
-                                getIntent().getStringExtra(KEY_ID),
-                                msg_id);
+                if (isRefresh) {
+                    call = getChatApi()
+                            .msgQueryFiles(getMsgChatType(),
+                                    getIntent().getStringExtra(KEY_ID));
+                } else {
+                    call = getChatApi()
+                            .msgQueryFiles(getMsgChatType(),
+                                    getIntent().getStringExtra(KEY_ID),
+                                    getEndlyId());
+                }
                 break;
             case MSG_CLASSFY_MY_COLLECTEED:
-                call = getChatApi()
-                        .getMyCollectedMessages(msg_id);
+                if (isRefresh) {
+                    call = getChatApi()
+                            .getMyCollectedMessages();
+                } else {
+                    call = getChatApi()
+                            .getMyCollectedMessages(getEndlyId());
+                }
                 break;
             default:
-                call = getChatApi()
-                        .getMyCollectedMessages(msg_id);
+                if (isRefresh) {
+                    call = getChatApi()
+                            .getMyCollectedMessages();
+                } else {
+                    call = getChatApi()
+                            .getMyCollectedMessages(getEndlyId());
+                }
                 break;
         }
         call.enqueue(new SimpleCallBack<List<IMMessageCustomBody>>() {
@@ -322,6 +352,7 @@ public class ChatMsgClassfyActivity extends BaseActivity implements BaseRecycler
             refreshLayout.stopLoadMore();
         }
     }
+
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onMessageEvent(MessageEvent event) {
         if (event == null) return;
@@ -336,6 +367,7 @@ public class ChatMsgClassfyActivity extends BaseActivity implements BaseRecycler
                 break;
         }
     }
+
     @Override
     public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
         IMMessageCustomBody item = imUserMessageAdapter.getItem(adapter.getRealPos(position));
@@ -343,9 +375,4 @@ public class ChatMsgClassfyActivity extends BaseActivity implements BaseRecycler
         FileDetailsActivity.launch(getContext(), item, getMsgClassfyType());
     }
 
-    @Override
-    protected void onDestroy() {
-        EventBus.getDefault().unregister(this);
-        super.onDestroy();
-    }
 }
