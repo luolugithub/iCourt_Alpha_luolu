@@ -185,7 +185,7 @@ public class FileBoxDownloadActivity extends BaseActivity {
                 }
                 break;
             case R.id.share_view://分享
-                openOrShareFile(new File(filePath), Intent.ACTION_SEND);
+                shareFile(new File(filePath));
                 break;
         }
     }
@@ -197,6 +197,11 @@ public class FileBoxDownloadActivity extends BaseActivity {
      */
     private void openOrShareFile(File file, String action) {
         try {
+            if (file == null || !file.exists()) {
+                showTopSnackBar("文件不存在");
+                return;
+            }
+            log("-------------->file path:" + file.getAbsolutePath());
             Intent intent = new Intent();
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             //设置intent的Action属性
@@ -210,6 +215,7 @@ public class FileBoxDownloadActivity extends BaseActivity {
             } else {
                 uri = Uri.fromFile(file);
             }
+            log("-------------->open uri:" + uri);
             //添加这一句表示对目标应用临时授权该Uri所代表的文件
             intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION
                     | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
@@ -222,6 +228,34 @@ public class FileBoxDownloadActivity extends BaseActivity {
                 startActivity(Intent.createChooser(intent, "Alpha Share"));
             }
 
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * 分享文件
+     *
+     * @param file
+     */
+    private void shareFile(File file) {
+        try {
+            if (file == null || !file.exists()) {
+                showTopSnackBar("文件不存在");
+                return;
+            }
+            log("-------------->file path:" + file.getAbsolutePath());
+            Intent intent = new Intent(Intent.ACTION_SEND);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            //设置intent的data和Type属性。
+            Uri uri = Uri.fromFile(file);
+            log("-------------->share uri:" + uri);
+            //添加这一句表示对目标应用临时授权该Uri所代表的文件
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION
+                    | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+            intent.putExtra(Intent.EXTRA_STREAM, uri);
+            intent.setType("*/*");
+            startActivity(Intent.createChooser(intent, "Alpha Share"));
         } catch (Exception e) {
             e.printStackTrace();
         }
