@@ -47,14 +47,16 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
 
+            <include layout="@layout/header_search_input_text2" />
+
             <LinearLayout
                 android:id="@+id/empty_layout"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:gravity="center"
-                android:visibility="gone"
-                android:orientation="vertical">
+                android:orientation="vertical"
+                android:visibility="gone">
 
                 <ImageView
                     android:layout_width="40dp"
@@ -75,10 +77,10 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center_vertical"
-            android:paddingBottom="20dp"
+            android:paddingBottom="15dp"
             android:paddingLeft="20dp"
             android:paddingRight="20dp"
-            android:paddingTop="10dp">
+            android:paddingTop="15dp">
 
             <TextView
                 android:id="@+id/bt_cancel"
