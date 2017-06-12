@@ -333,9 +333,11 @@ public class BaseApplication extends MultiDexApplication {
      */
     private void initGalleryFinal() {
         ThemeConfig themeConfig = new ThemeConfig.Builder()
-                .setTitleBarTextColor(getResources().getColor(R.color.alpha_font_color_black))
+                .setCheckSelectedColor(SystemUtils.getColor(this, R.color.alpha_font_color_orange))
+                .setFabNornalColor(SystemUtils.getColor(this, R.color.alpha_font_color_orange))
+                .setTitleBarTextColor(SystemUtils.getColor(this, R.color.alpha_font_color_black))
                 .setTitleBarBgColor(Color.WHITE)
-                .setTitleBarIconColor(getResources().getColor(R.color.alpha_font_color_orange))
+                .setTitleBarIconColor(SystemUtils.getColor(this, R.color.alpha_font_color_orange))
                 .build();
 
         FunctionConfig.Builder functionConfigBuilder = new FunctionConfig.Builder();
