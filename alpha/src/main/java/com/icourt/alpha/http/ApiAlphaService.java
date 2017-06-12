@@ -575,6 +575,7 @@ public interface ApiAlphaService {
     @GET("api/v2/taskflow")
     Call<ResEntity<TaskEntity>> taskListQueryByMatterId(
             @Query("stateType") int stateType,
+            @Query("orderBy") String orderBy,
             @Query("matterId") String matterId,
             @Query("type") int type,
             @Query("pageIndex") int pageIndex,

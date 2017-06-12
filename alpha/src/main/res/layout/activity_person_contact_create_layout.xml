@@ -447,7 +447,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginLeft="14dp"
-                        android:text="添加即时通讯号码"
+                        android:text="添加即时通讯"
                         android:textColor="@color/search_history_keyword_color"
                         android:textSize="14dp" />
 

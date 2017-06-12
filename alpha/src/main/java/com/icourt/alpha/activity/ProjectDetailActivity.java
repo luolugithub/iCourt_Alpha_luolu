@@ -69,7 +69,7 @@ public class ProjectDetailActivity extends BaseActivity implements OnFragmentCal
     int myStar;
     BaseFragmentAdapter baseFragmentAdapter;
     ProjectFileBoxFragment projectFileBoxFragment;
-    boolean isCanlookAddTask = false, isCanlookAddDocument = false;
+    boolean isCanlookAddTask = false, isCanAddTimer = false, isCanlookAddDocument = false;
     private boolean nameIsUp = false, timeIsUp = false, sizeIsUp = false;
 
     public static void launch(@NonNull Context context, @NonNull String projectId, @NonNull String proectName) {
@@ -154,6 +154,9 @@ public class ProjectDetailActivity extends BaseActivity implements OnFragmentCal
                     if (response.body().result.contains("MAT:matter.document:readwrite")) {
                         isCanlookAddDocument = true;
                     }
+                    if (response.body().result.contains("MAT:matter.timeLog:add")) {
+                        isCanAddTimer = true;
+                    }
                 }
             }
         });
@@ -187,8 +190,13 @@ public class ProjectDetailActivity extends BaseActivity implements OnFragmentCal
                 }
                 break;
             case 2:
+                if (isCanAddTimer) {
+                    titleAction2.setImageResource(R.mipmap.header_icon_add);
+                    titleAction2.setVisibility(View.VISIBLE);
+                } else {
+                    titleAction2.setVisibility(View.INVISIBLE);
+                }
                 titleAction.setVisibility(View.INVISIBLE);
-                titleAction2.setVisibility(View.INVISIBLE);
                 break;
             case 3:
                 if (isCanlookAddDocument) {
@@ -212,7 +220,11 @@ public class ProjectDetailActivity extends BaseActivity implements OnFragmentCal
                 titleActionClick();
                 break;
             case R.id.titleAction2:
-                showBottomMeau();
+                if (detailTablayout.getSelectedTabPosition() == 2) {
+                    titleActionClick();
+                } else {
+                    showBottomMeau();
+                }
                 break;
         }
     }
@@ -221,6 +233,7 @@ public class ProjectDetailActivity extends BaseActivity implements OnFragmentCal
         switch (detailTablayout.getSelectedTabPosition()) {
             case 0:     //概览
             case 2:     //计时
+                TimerAddActivity.launch(this, projectId, projectName);
                 break;
             case 1:     //任务
                 TaskCreateActivity.launchFomProject(this, projectId, projectName);

@@ -62,6 +62,8 @@ public class TimerAddActivity extends BaseTimerActivity
         implements
         OnFragmentCallBackListener {
 
+    private static final String KEY_PROJECT_ID = "key_project_id";
+    private static final String KEY_PROJECT_NAME = "key_project_name";
 
     @BindView(R.id.titleBack)
     CheckedTextView titleBack;
@@ -101,6 +103,7 @@ public class TimerAddActivity extends BaseTimerActivity
     private WorkType selectedWorkType;
     private TaskEntity.TaskItemEntity selectedTaskItem;
     Calendar selectedStartDate, selectedEndDate;
+    String projectId, projectName;
 
     public static void launch(@NonNull Context context) {
         if (context == null) return;
@@ -108,6 +111,13 @@ public class TimerAddActivity extends BaseTimerActivity
         context.startActivity(intent);
     }
 
+    public static void launch(@NonNull Context context, @NonNull String projectId, @NonNull String projectName) {
+        if (context == null) return;
+        Intent intent = new Intent(context, TimerAddActivity.class);
+        intent.putExtra(KEY_PROJECT_ID, projectId);
+        intent.putExtra(KEY_PROJECT_NAME, projectName);
+        context.startActivity(intent);
+    }
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -126,7 +136,18 @@ public class TimerAddActivity extends BaseTimerActivity
         if (titleActionTextView != null) {
             titleActionTextView.setText("完成");
         }
-
+        projectId = getIntent().getStringExtra(KEY_PROJECT_ID);
+        projectName = getIntent().getStringExtra(KEY_PROJECT_NAME);
+        if (selectedProjectEntity == null) {
+            selectedProjectEntity = new ProjectEntity();
+        }
+        if (!TextUtils.isEmpty(projectName)) {
+            projectNameTv.setText(projectName);
+            selectedProjectEntity.name = projectName;
+        }
+        if (!TextUtils.isEmpty(projectId)) {
+            selectedProjectEntity.pkId = projectId;
+        }
         selectedStartDate = Calendar.getInstance();
         //默认开始时间 早上9点整开始
         selectedStartDate.set(Calendar.HOUR_OF_DAY, 9);

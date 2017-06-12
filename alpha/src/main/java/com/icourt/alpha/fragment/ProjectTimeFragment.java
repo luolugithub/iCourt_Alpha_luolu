@@ -113,8 +113,13 @@ public class ProjectTimeFragment extends BaseFragment implements BaseRecyclerAda
                 getData(false);
             }
         });
-        refreshLayout.setAutoRefresh(true);
         refreshLayout.startRefresh();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        getData(true);
     }
 
     @Override

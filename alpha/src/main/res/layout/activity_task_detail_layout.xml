@@ -49,7 +49,7 @@
 
                 android:drawableLeft="@mipmap/icon_edit_16"
                 android:drawablePadding="@dimen/dp5"
-                android:text="12条动态"
+                android:text="0条动态"
                 android:textColor="@color/alpha_font_color_black"
                 android:textSize="14sp" />
         </LinearLayout>
