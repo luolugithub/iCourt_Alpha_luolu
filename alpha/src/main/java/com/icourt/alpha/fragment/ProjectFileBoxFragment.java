@@ -51,6 +51,7 @@ import cn.finalteam.galleryfinal.model.PhotoInfo;
 import okhttp3.RequestBody;
 import retrofit2.Call;
 import retrofit2.Callback;
+import retrofit2.HttpException;
 import retrofit2.Response;
 
 /**
@@ -71,10 +72,6 @@ public class ProjectFileBoxFragment extends BaseFragment implements BaseRecycler
     private static final int REQ_CODE_PERMISSION_CAMERA = 1100;
     private static final int REQ_CODE_PERMISSION_ACCESS_FILE = 1101;
     Unbinder unbinder;
-    @BindView(R.id.recyclerView)
-    RecyclerView recyclerView;
-    @BindView(R.id.refreshLayout)
-    RefreshLayout refreshLayout;
 
     ProjectFileBoxAdapter projectFileBoxAdapter;
     String projectId;
@@ -82,15 +79,12 @@ public class ProjectFileBoxFragment extends BaseFragment implements BaseRecycler
     String seaFileRepoId;//文档根目录id
     String path;
     List<FileBoxBean> fileBoxBeanList;
+    @Nullable
+    @BindView(R.id.recyclerView)
+    RecyclerView recyclerView;
+    @BindView(R.id.refreshLayout)
+    RefreshLayout refreshLayout;
     private List<String> firstlist;
-
-    public static ProjectFileBoxFragment newInstance(@NonNull String projectId) {
-        ProjectFileBoxFragment projectFileBoxFragment = new ProjectFileBoxFragment();
-        Bundle bundle = new Bundle();
-        bundle.putString(KEY_PROJECT_ID, projectId);
-        projectFileBoxFragment.setArguments(bundle);
-        return projectFileBoxFragment;
-    }
 
     @Nullable
     @Override
@@ -98,6 +92,22 @@ public class ProjectFileBoxFragment extends BaseFragment implements BaseRecycler
         View view = super.onCreateView(R.layout.fragment_project_mine, inflater, container, savedInstanceState);
         unbinder = ButterKnife.bind(this, view);
         return view;
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if (unbinder != null) {
+            unbinder.unbind();
+        }
+    }
+
+    public static ProjectFileBoxFragment newInstance(@NonNull String projectId) {
+        ProjectFileBoxFragment projectFileBoxFragment = new ProjectFileBoxFragment();
+        Bundle bundle = new Bundle();
+        bundle.putString(KEY_PROJECT_ID, projectId);
+        projectFileBoxFragment.setArguments(bundle);
+        return projectFileBoxFragment;
     }
 
     @Override
@@ -147,12 +157,12 @@ public class ProjectFileBoxFragment extends BaseFragment implements BaseRecycler
                                 authToken = element.getAsString();
                                 if (!TextUtils.isEmpty(authToken)) getDocumentId();
                             } else {
-                                onFailure(call, new retrofit2.HttpException(response));
+                                onFailure(call, new HttpException(response));
                             }
                         }
                     }
                 } else {
-                    onFailure(call, new retrofit2.HttpException(response));
+                    onFailure(call, new HttpException(response));
                 }
             }
 
@@ -178,12 +188,12 @@ public class ProjectFileBoxFragment extends BaseFragment implements BaseRecycler
                                 seaFileRepoId = element.getAsString();
                                 getData(false);
                             } else {
-                                onFailure(call, new retrofit2.HttpException(response));
+                                onFailure(call, new HttpException(response));
                             }
                         }
                     }
                 } else {
-                    onFailure(call, new retrofit2.HttpException(response));
+                    onFailure(call, new HttpException(response));
                 }
             }
 
@@ -318,12 +328,6 @@ public class ProjectFileBoxFragment extends BaseFragment implements BaseRecycler
         });
 
         projectFileBoxAdapter.bindData(true, fileBoxBeanList);
-    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        unbinder.unbind();
     }
 
     @Override
@@ -486,4 +490,6 @@ public class ProjectFileBoxFragment extends BaseFragment implements BaseRecycler
             }
         });
     }
+
+
 }
