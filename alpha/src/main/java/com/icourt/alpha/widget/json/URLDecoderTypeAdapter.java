@@ -33,8 +33,13 @@ public class URLDecoderTypeAdapter extends TypeAdapter<String> {
         switch (peek) {
             case STRING:
                 String content = in.nextString();
-                if (!TextUtils.isEmpty(content)) {
-                    content = content.replaceAll("%", "%25");
+                try {
+                    return URLDecoder.decode(content, "utf-8");
+                } catch (IllegalArgumentException e) {
+                    //IllegalArgumentException: URLDecoder: Incomplete trailing escape (%) pattern
+                    if (!TextUtils.isEmpty(content)) {
+                        content = content.replaceAll("%", "%25");
+                    }
                 }
                 return URLDecoder.decode(content, "utf-8");
         }
