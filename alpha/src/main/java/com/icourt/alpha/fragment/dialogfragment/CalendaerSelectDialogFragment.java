@@ -16,6 +16,7 @@ import com.github.sundeepk.compactcalendarview.CompactCalendarView;
 import com.github.sundeepk.compactcalendarview.domain.Event;
 import com.icourt.alpha.R;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
+import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.DensityUtil;
 
 import java.text.SimpleDateFormat;
@@ -112,6 +113,7 @@ public class CalendaerSelectDialogFragment extends BaseDialogFragment {
             @Override
             public void onDayClick(Date date) {
                 selectedDate = date;
+                btOk.setEnabled(selectedDate != null && !DateUtils.isOverToday(selectedDate.getTime()));
             }
 
             @Override
@@ -124,7 +126,7 @@ public class CalendaerSelectDialogFragment extends BaseDialogFragment {
         compactcalendarView.removeAllEvents();
         //loadEvents();
         compactcalendarView.invalidate();
-       // logEventsByMonth(compactcalendarView);
+        // logEventsByMonth(compactcalendarView);
     }
 
 

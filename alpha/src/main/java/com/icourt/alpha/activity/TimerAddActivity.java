@@ -215,17 +215,15 @@ public class TimerAddActivity extends BaseTimerActivity
             case R.id.titleAction:
                 addTimer();
                 break;
-            case R.id.minus_time_image://－时间 //5分钟
-                if (circleTimerView.getCurrentTime() >= 15 * 60) {
+            case R.id.minus_time_image://－时间
+                if (circleTimerView.getCurrentTime() >= 16 * 60) {
                     circleTimerView.setCurrentTime(circleTimerView.getCurrentTime() - 15 * 60);
+                } else {
+                    circleTimerView.setCurrentTime(60);
                 }
                 break;
             case R.id.add_time_image://＋时间
-                if (circleTimerView.getCurrentTime() < (24 * 60 * 60 - 15 * 60)) {
-                    circleTimerView.setCurrentTime(circleTimerView.getCurrentTime() + 15 * 60);
-                } else {
-                    circleTimerView.setCurrentTime(24 * 60 * 60);
-                }
+                circleTimerView.setCurrentTime(circleTimerView.getCurrentTime() + 15 * 60);
                 break;
             case R.id.use_time_date:
                 showCalendaerSelectDialogFragment();

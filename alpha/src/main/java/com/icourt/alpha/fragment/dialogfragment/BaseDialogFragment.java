@@ -22,6 +22,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
 import android.view.Window;
+import android.view.WindowManager;
 
 import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.icourt.alpha.http.ApiAlphaService;
@@ -102,6 +103,8 @@ public abstract class BaseDialogFragment extends DialogFragment
     public void onStart() {
         super.onStart();
         lifecycleSubject.onNext(FragmentEvent.START);
+        Window window = getDialog().getWindow();
+        window.setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.WRAP_CONTENT);
     }
 
     @Override
