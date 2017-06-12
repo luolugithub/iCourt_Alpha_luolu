@@ -911,6 +911,14 @@ public interface ApiAlphaService {
      */
     @GET("api/v2/taskflow/getWithRight/{id}")
     Call<ResEntity<TaskEntity.TaskItemEntity>> taskQueryDetailWithRight(@Path("id") String id);
+
+    /**
+     * 删除任务评论
+     * @param id
+     * @return
+     */
+    @DELETE("api/v2/comment/{id}")
+    Call<ResEntity<JsonElement>> taskDeleteComment(@Path("id") String id);
 }
 
 

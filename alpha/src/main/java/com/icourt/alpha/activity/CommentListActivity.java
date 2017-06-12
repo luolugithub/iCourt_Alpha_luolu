@@ -38,10 +38,13 @@ import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.ActionConstants;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.ItemDecorationUtils;
+import com.icourt.alpha.utils.LogUtils;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
+import com.icourt.alpha.widget.dialog.BottomActionDialog;
 
 import org.greenrobot.eventbus.EventBus;
 
+import java.util.Arrays;
 import java.util.List;
 
 import butterknife.BindView;
@@ -58,7 +61,7 @@ import retrofit2.Response;
  * version 2.0.0
  */
 
-public class CommentListActivity extends BaseActivity implements BaseRecyclerAdapter.OnItemChildClickListener {
+public class CommentListActivity extends BaseActivity implements BaseRecyclerAdapter.OnItemChildClickListener, BaseRecyclerAdapter.OnItemLongClickListener {
 
     private static final String KEY_TASK_ID = "key_task_id";
     @BindView(R.id.titleView)
@@ -127,6 +130,7 @@ public class CommentListActivity extends BaseActivity implements BaseRecyclerAda
         recyclerview.setHasFixedSize(true);
 //        commentListAdapter.registerAdapterDataObserver(new RefreshViewEmptyObserver(refreshLayout, commentListAdapter));
         commentListAdapter.setOnItemChildClickListener(this);
+        commentListAdapter.setOnItemLongClickListener(this);
         recyclerview.setAdapter(headerFooterAdapter);
         refreshLayout.setXRefreshViewListener(new XRefreshView.SimpleXRefreshListener() {
             @Override
@@ -185,18 +189,19 @@ public class CommentListActivity extends BaseActivity implements BaseRecyclerAda
         });
     }
 
-    @OnClick({R.id.send_tv, R.id.titleBack})
+    @OnClick({R.id.send_tv})
     @Override
     public void onClick(View v) {
-        super.onClick(v);
         switch (v.getId()) {
             case R.id.titleBack:
+                LogUtils.e("返回");
                 TaskDetailActivity.setResultLaunch(this, commentListAdapter.getItemCount());
                 break;
             case R.id.send_tv:
                 sendComment();
                 break;
         }
+        super.onClick(v);
     }
 
     private void enableLoadMore(List result) {
@@ -302,6 +307,60 @@ public class CommentListActivity extends BaseActivity implements BaseRecyclerAda
                 }
                 break;
         }
+    }
+
+    @Override
+    public boolean onItemLongClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
+        showBottomMeau((CommentEntity.CommentItemEntity) adapter.getItem(adapter.getRealPos(position)));
+        return true;
+    }
+
+    /**
+     * 显示底部菜单
+     */
+    private void showBottomMeau(final CommentEntity.CommentItemEntity commentItemEntity) {
+        if (commentItemEntity == null) return;
+        new BottomActionDialog(getContext(),
+                null,
+                Arrays.asList("删除"),
+                new BottomActionDialog.OnActionItemClickListener() {
+                    @Override
+                    public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
+                        dialog.dismiss();
+                        switch (position) {
+                            case 0:
+                                deleteComment(commentItemEntity);
+                                break;
+                        }
+                    }
+                }).show();
+    }
+
+    /**
+     * 删除评论
+     *
+     * @param commentItemEntity
+     */
+    private void deleteComment(final CommentEntity.CommentItemEntity commentItemEntity) {
+        if (commentItemEntity == null) return;
+        showLoadingDialog(null);
+        getApi().taskDeleteComment(commentItemEntity.id).enqueue(new SimpleCallBack<JsonElement>() {
+            @Override
+            public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
+                dismissLoadingDialog();
+                if (commentListAdapter != null) {
+                    commentListAdapter.removeItem(commentItemEntity);
+                    commentTv.setText(commentListAdapter.getItemCount() + "条动态");
+                    EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION));
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
+                super.onFailure(call, t);
+                dismissLoadingDialog();
+            }
+        });
     }
 
     @Override

@@ -302,6 +302,7 @@ public class CustomerCompanyCreateActivity extends BaseActivity {
             case R.id.titleAction://完成
                 if (isCanAddContact) {
                     String name = activityAddGroupContactEnterpriseNameEdittext.getText().toString().trim();
+
                     if (!TextUtils.isEmpty(name)) {
                         addContact();
                     } else {

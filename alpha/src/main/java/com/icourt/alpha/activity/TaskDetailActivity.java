@@ -417,6 +417,9 @@ public class TaskDetailActivity extends BaseActivity implements OnFragmentCallBa
                             }
                         }
                         break;
+                    case Dialog.BUTTON_NEGATIVE:
+                        taskCheckbox.setChecked(taskItemEntity.state);
+                        break;
                 }
             }
         };

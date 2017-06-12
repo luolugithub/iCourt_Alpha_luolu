@@ -6,23 +6,31 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.Editable;
+import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.view.Gravity;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
+import android.view.inputmethod.EditorInfo;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.TaskMemberAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
+import com.icourt.alpha.adapter.baseadapter.HeaderFooterAdapter;
 import com.icourt.alpha.entity.bean.TaskMemberEntity;
 import com.icourt.alpha.entity.bean.TaskMemberWrapEntity;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.utils.DensityUtil;
+import com.icourt.alpha.utils.SystemUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -55,6 +63,13 @@ public class TaskMemberSelectDialogFragment extends BaseDialogFragment {
     TaskMemberAdapter taskMemberAdapter;
     @BindView(R.id.empty_layout)
     LinearLayout emptyLayout;
+    HeaderFooterAdapter<TaskMemberAdapter> headerFooterAdapter;
+    @BindView(R.id.header_comm_search_input_et)
+    EditText headerCommSearchInputEt;
+    @BindView(R.id.header_comm_search_cancel_tv)
+    TextView headerCommSearchCancelTv;
+    @BindView(R.id.header_comm_search_input_ll)
+    LinearLayout headerCommSearchInputLl;
 
     public static TaskMemberSelectDialogFragment newInstance() {
         TaskMemberSelectDialogFragment contactSelectDialogFragment = new TaskMemberSelectDialogFragment();
@@ -98,15 +113,59 @@ public class TaskMemberSelectDialogFragment extends BaseDialogFragment {
                 }
             }
         }
+
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getContext());
         recyclerView.setLayoutManager(linearLayoutManager);
-        recyclerView.setAdapter(taskMemberAdapter = new TaskMemberAdapter(true));
+        headerFooterAdapter = new HeaderFooterAdapter<>(taskMemberAdapter = new TaskMemberAdapter(true));
+        View headerView = HeaderFooterAdapter.inflaterView(getContext(), R.layout.header_search_comm, recyclerView);
+        headerFooterAdapter.addHeader(headerView);
+        registerClick(headerView.findViewById(R.id.header_comm_search_ll));
+        recyclerView.setAdapter(headerFooterAdapter);
+
         taskMemberAdapter.setOnItemClickListener(new BaseRecyclerAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
                 taskMemberAdapter.setSelectedPos(position);
             }
         });
+        headerCommSearchInputEt.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                if (TextUtils.isEmpty(s)) {
+                    taskMemberAdapter.clearSelected();
+                    getData(true);
+                } else {
+//                    searchUserByName(s.toString());
+                }
+            }
+        });
+        headerCommSearchInputEt.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                switch (actionId) {
+                    case EditorInfo.IME_ACTION_SEARCH: {
+                        SystemUtils.hideSoftKeyBoard(getActivity(), headerCommSearchInputEt);
+                        if (!TextUtils.isEmpty(headerCommSearchInputEt.getText())) {
+//                            searchUserByName(headerCommSearchInputEt.getText().toString());
+                        }
+                    }
+                    return true;
+                    default:
+                        return false;
+                }
+            }
+        });
+        headerCommSearchInputLl.setVisibility(View.GONE);
         getData(true);
     }
 

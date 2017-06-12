@@ -160,7 +160,7 @@ public class TaskCreateActivity extends BaseActivity implements ProjectSelectDia
                 createNewTask();
                 break;
             case R.id.project_layout://选择项目
-                showProjectSelectDialogFragment(projectId);
+                showProjectSelectDialogFragment(null);
                 break;
             case R.id.task_group_layout://选择任务组
                 showProjectSelectDialogFragment(projectId);

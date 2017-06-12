@@ -212,7 +212,7 @@ public class CustomerPersonDetailActivity extends BaseActivity {
             activityPersonContactDetailGroupLayout.removeAllViews();
             if (contactDeatilBean.getGroups() != null) {
                 if (contactDeatilBean.getGroups().size() > 0) {
-                    activityPersonContactDetailOtherParentLayout.setVisibility(View.VISIBLE);
+                    activityPersonContactDetailGroupLayout.setVisibility(View.VISIBLE);
                     addGroupItemView(contactDeatilBean.getGroups());
                 }
             }
