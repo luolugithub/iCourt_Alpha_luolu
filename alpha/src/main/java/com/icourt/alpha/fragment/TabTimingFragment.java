@@ -8,6 +8,8 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.andview.refreshview.XRefreshView;
@@ -17,7 +19,7 @@ import com.icourt.alpha.activity.TimerDetailActivity;
 import com.icourt.alpha.activity.TimerTimingActivity;
 import com.icourt.alpha.adapter.TimeAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
-import com.icourt.alpha.adapter.baseadapter.adapterObserver.RefreshViewEmptyObserver;
+import com.icourt.alpha.adapter.baseadapter.adapterObserver.DataChangeAdapterObserver;
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.entity.bean.ItemPageEntity;
 import com.icourt.alpha.entity.bean.TimeEntity;
@@ -81,6 +83,10 @@ public class TabTimingFragment extends BaseFragment implements BaseRecyclerAdapt
     @BindView(R.id.refreshLayout)
     RefreshLayout refreshLayout;
     Unbinder unbinder;
+    @BindView(R.id.titleAction)
+    ImageView titleAction;
+    @BindView(R.id.empty_layout)
+    LinearLayout emptyLayout;
 
     @Nullable
     @Override
@@ -144,8 +150,15 @@ public class TabTimingFragment extends BaseFragment implements BaseRecyclerAdapt
         customerXRefreshViewFooter.setPadding(0, dp20, 0, dp20);
         customerXRefreshViewFooter.setFooterLoadmoreTitle("加载前一周");
         refreshLayout.setCustomFooterView(customerXRefreshViewFooter);
-        refreshLayout.setNoticeEmpty(R.mipmap.icon_placeholder_timing, "暂无计时");
-        timeAdapter.registerAdapterDataObserver(new RefreshViewEmptyObserver(refreshLayout, timeAdapter));
+        //refreshLayout.setNoticeEmpty(R.mipmap.icon_placeholder_timing, "暂无计时");
+        timeAdapter.registerAdapterDataObserver(new DataChangeAdapterObserver() {
+            @Override
+            protected void updateUI() {
+                if (emptyLayout != null) {
+                    emptyLayout.setVisibility(timeAdapter.getItemCount() <= 0 ? View.VISIBLE : View.GONE);
+                }
+            }
+        });
         refreshLayout.setXRefreshViewListener(new XRefreshView.SimpleXRefreshListener() {
             @Override
             public void onRefresh(boolean isPullDown) {
@@ -406,4 +419,5 @@ public class TabTimingFragment extends BaseFragment implements BaseRecyclerAdapt
             TimerDetailActivity.launch(view.getContext(), itemEntity);
         }
     }
+
 }

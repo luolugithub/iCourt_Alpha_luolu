@@ -176,7 +176,7 @@ public class BaseApplication extends MultiDexApplication {
         }
         // 点击通知需要跳转到的界面
         config.notificationEntrance = ChatActivity.class;//通知栏提醒的响应intent的activity类型
-        config.notificationSmallIconId = R.mipmap.android_app_icon;//状态栏提醒的小图标的资源ID
+        config.notificationSmallIconId = R.mipmap.ic_launcher;//状态栏提醒的小图标的资源ID
 
         // 通知铃声的uri字符串
 //        config.notificationSound = "android.resource://com.netease.nim.demo/raw/msg";

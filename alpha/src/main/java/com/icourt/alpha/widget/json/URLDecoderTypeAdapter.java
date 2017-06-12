@@ -1,5 +1,7 @@
 package com.icourt.alpha.widget.json;
 
+import android.text.TextUtils;
+
 import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonToken;
@@ -30,7 +32,11 @@ public class URLDecoderTypeAdapter extends TypeAdapter<String> {
         JsonToken peek = in.peek();
         switch (peek) {
             case STRING:
-                return URLDecoder.decode(in.nextString(), "utf-8");
+                String content = in.nextString();
+                if (!TextUtils.isEmpty(content)) {
+                    content = content.replaceAll("%", "%25");
+                }
+                return URLDecoder.decode(content, "utf-8");
         }
         return "";
     }
