@@ -119,7 +119,7 @@ public class ProjectDetailActivity extends BaseActivity implements OnFragmentCal
                         ProjectDetailFragment.newInstance(projectId),
                         ProjectTaskFragment.newInstance(projectId),
                         ProjectTimeFragment.newInstance(projectId),
-                        projectFileBoxFragment = ProjectFileBoxFragment.newInstance(projectId)
+                        projectFileBoxFragment = ProjectFileBoxFragment.newInstance(projectId, isCanlookAddDocument)
                 ));
         detailTablayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
@@ -202,11 +202,13 @@ public class ProjectDetailActivity extends BaseActivity implements OnFragmentCal
                 if (isCanlookAddDocument) {
                     titleAction.setImageResource(R.mipmap.header_icon_add);
                     titleAction.setVisibility(View.VISIBLE);
+                    titleAction2.setImageResource(R.mipmap.header_icon_more);
+                    titleAction2.setVisibility(View.VISIBLE);
                 } else {
                     titleAction.setVisibility(View.INVISIBLE);
+                    titleAction2.setVisibility(View.INVISIBLE);
                 }
-                titleAction2.setImageResource(R.mipmap.header_icon_more);
-                titleAction2.setVisibility(View.VISIBLE);
+
                 break;
         }
     }

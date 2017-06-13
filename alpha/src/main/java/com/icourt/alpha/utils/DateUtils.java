@@ -182,6 +182,17 @@ public class DateUtils {
     }
 
     /**
+     * 获取日期 yyyy.MM.dd
+     *
+     * @param milliseconds
+     * @return
+     */
+    public static String getTimeDateFormatYearDot(long milliseconds) {
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy.MM.dd");
+        return formatter.format(milliseconds);
+    }
+
+    /**
      * 获取日期 MM月dd日
      *
      * @param milliseconds
@@ -220,6 +231,7 @@ public class DateUtils {
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm");
         return formatter.format(milliseconds);
     }
+
     /**
      * 获取日期 MM/dd HH:mm
      *
@@ -230,6 +242,7 @@ public class DateUtils {
         SimpleDateFormat formatter = new SimpleDateFormat("MM/dd HH:mm");
         return formatter.format(milliseconds);
     }
+
     /**
      * @param milliseconds
      * @return

@@ -311,7 +311,15 @@ public class CommentListActivity extends BaseActivity implements BaseRecyclerAda
 
     @Override
     public boolean onItemLongClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
-        showBottomMeau((CommentEntity.CommentItemEntity) adapter.getItem(adapter.getRealPos(position)));
+        CommentEntity.CommentItemEntity entity = (CommentEntity.CommentItemEntity) adapter.getItem(adapter.getRealPos(position));
+        if (entity != null) {
+            if (entity.createUser == null) {
+                return false;
+            }
+            if (TextUtils.equals(entity.createUser.userId.toLowerCase(), getLoginUserId().toLowerCase())) {
+                showBottomMeau(entity);
+            }
+        }
         return true;
     }
 

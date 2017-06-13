@@ -236,6 +236,9 @@ public class TaskAttachmentFragment extends BaseFragment implements BaseRecycler
                             emptyLayout.setVisibility(View.GONE);
                         }
                     }
+                } else {
+                    listLayout.setVisibility(View.GONE);
+                    emptyLayout.setVisibility(View.VISIBLE);
                 }
                 updateDocument();
             }

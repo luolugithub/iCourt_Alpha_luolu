@@ -130,7 +130,7 @@ public class MyFinishTaskActivity extends BaseActivity implements BaseRecyclerAd
         super.onClick(v);
         switch (v.getId()) {
             case R.id.rl_comm_search:
-                SearchProjectActivity.launchFinishTask(getContext(), 0, 1, SearchProjectActivity.SEARCH_TASK,null);
+                SearchProjectActivity.launchFinishTask(getContext(),getLoginUserId(), 0, 1, SearchProjectActivity.SEARCH_TASK,null);
                 break;
             default:
                 super.onClick(v);

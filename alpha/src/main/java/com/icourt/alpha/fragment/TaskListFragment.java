@@ -157,7 +157,7 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
         super.onClick(v);
         switch (v.getId()) {
             case R.id.rl_comm_search:
-                SearchProjectActivity.launchTask(getContext(), type, SearchProjectActivity.SEARCH_TASK);
+                SearchProjectActivity.launchTask(getContext(),getLoginUserId(), type, SearchProjectActivity.SEARCH_TASK);
                 break;
             default:
                 super.onClick(v);

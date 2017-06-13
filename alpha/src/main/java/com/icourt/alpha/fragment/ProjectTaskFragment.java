@@ -17,9 +17,11 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.icourt.alpha.R;
+import com.icourt.alpha.activity.SearchProjectActivity;
 import com.icourt.alpha.adapter.TaskAdapter;
 import com.icourt.alpha.adapter.TaskItemAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseArrayRecyclerAdapter;
+import com.icourt.alpha.adapter.baseadapter.HeaderFooterAdapter;
 import com.icourt.alpha.adapter.baseadapter.adapterObserver.RefreshViewEmptyObserver;
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.entity.bean.ProjectEntity;
@@ -81,6 +83,7 @@ public class ProjectTaskFragment extends BaseFragment implements TaskAdapter.OnS
     boolean isEditTask = false;//编辑任务权限
     boolean isDeleteTask = false;//删除任务权限
     boolean isAddTime = false;//添加计时权限
+    HeaderFooterAdapter<TaskAdapter> headerFooterAdapter;
 
     public static ProjectTaskFragment newInstance(@NonNull String projectId) {
         ProjectTaskFragment projectTaskFragment = new ProjectTaskFragment();
@@ -108,9 +111,15 @@ public class ProjectTaskFragment extends BaseFragment implements TaskAdapter.OnS
         recyclerView.addItemDecoration(ItemDecorationUtils.getCommTrans5Divider(getContext(), true));
         recyclerView.setHasFixedSize(true);
 
-        recyclerView.setAdapter(taskAdapter = new TaskAdapter());
-        taskAdapter.setOnShowFragmenDialogListener(this);
+        headerFooterAdapter = new HeaderFooterAdapter<>(taskAdapter = new TaskAdapter());
+        View headerView = HeaderFooterAdapter.inflaterView(getContext(), R.layout.header_search_comm, recyclerView);
+        View rl_comm_search = headerView.findViewById(R.id.rl_comm_search);
+        registerClick(rl_comm_search);
+        headerFooterAdapter.addHeader(headerView);
+
         taskAdapter.registerAdapterDataObserver(new RefreshViewEmptyObserver(refreshLayout, taskAdapter));
+        recyclerView.setAdapter(headerFooterAdapter);
+        taskAdapter.setOnShowFragmenDialogListener(this);
 
         refreshLayout.setXRefreshViewListener(new XRefreshView.SimpleXRefreshListener() {
             @Override
@@ -130,6 +139,19 @@ public class ProjectTaskFragment extends BaseFragment implements TaskAdapter.OnS
         allTaskEntities = new ArrayList<>();
         taskEntities = new ArrayList<>();
         myStarTaskEntities = new ArrayList<>();
+    }
+
+    @Override
+    public void onClick(View v) {
+        super.onClick(v);
+        switch (v.getId()) {
+            case R.id.rl_comm_search:
+                SearchProjectActivity.launchFinishTask(getContext(),"", 0, 0, SearchProjectActivity.SEARCH_TASK, projectId);
+                break;
+            default:
+                super.onClick(v);
+                break;
+        }
     }
 
     /**
@@ -158,7 +180,7 @@ public class ProjectTaskFragment extends BaseFragment implements TaskAdapter.OnS
     @Override
     protected void getData(boolean isRefresh) {
         clearLists();
-        getApi().taskListQueryByMatterId(0,"dueTime", projectId, -1, 1, -1).enqueue(new SimpleCallBack<TaskEntity>() {
+        getApi().taskListQueryByMatterId(0, "dueTime", projectId, -1, 1, -1).enqueue(new SimpleCallBack<TaskEntity>() {
             @Override
             public void onSuccess(Call<ResEntity<TaskEntity>> call, Response<ResEntity<TaskEntity>> response) {
                 stopRefresh();

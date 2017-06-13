@@ -130,8 +130,11 @@ public class GroupSelectActivity extends BaseActivity implements BaseRecyclerAda
             @Override
             public void onSuccess(Call<ResEntity<List<SelectGroupBean>>> call, Response<ResEntity<List<SelectGroupBean>>> response) {
                 stopRefresh();
-
+                if (response.body().result != null && response.body().result.size() <= 0) {
+                    response.body().result.addAll(groupBeanList);
+                }
                 selectGroupAdapter.bindData(true, response.body().result);
+
                 if (response.body().result != null && groupBeanList != null) {
                     for (int i = 0; i < response.body().result.size(); i++) {
                         for (int j = 0; j < groupBeanList.size(); j++) {

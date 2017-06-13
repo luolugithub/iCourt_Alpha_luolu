@@ -114,7 +114,7 @@ public class ProjectEndTaskActivity extends BaseActivity {
         super.onClick(v);
         switch (v.getId()) {
             case R.id.rl_comm_search:
-                SearchProjectActivity.launchFinishTask(getContext(), 0, 1, SearchProjectActivity.SEARCH_TASK,projectId);
+                SearchProjectActivity.launchFinishTask(getContext(), "", 0, 1, SearchProjectActivity.SEARCH_TASK, projectId);
                 break;
             default:
                 super.onClick(v);
@@ -128,7 +128,7 @@ public class ProjectEndTaskActivity extends BaseActivity {
         if (isRefresh) {
             pageIndex = 1;
         }
-        getApi().taskListQueryByMatterId(1,"dueTime", projectId, 0, pageIndex, ActionConstants.DEFAULT_PAGE_SIZE).enqueue(new SimpleCallBack<TaskEntity>() {
+        getApi().taskListQueryByMatterId(1, "dueTime", projectId, 0, pageIndex, ActionConstants.DEFAULT_PAGE_SIZE).enqueue(new SimpleCallBack<TaskEntity>() {
             @Override
             public void onSuccess(Call<ResEntity<TaskEntity>> call, Response<ResEntity<TaskEntity>> response) {
                 stopRefresh();

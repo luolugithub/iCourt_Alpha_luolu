@@ -233,7 +233,7 @@ public class ProjectDetailFragment extends BaseFragment {
             if (projectDetailBean.beginDate > 0 && projectDetailBean.endDate > 0) {//项目时间
                 ProjectBasicItemEntity itemEntity = new ProjectBasicItemEntity();
                 itemEntity.key = "项目时间";
-                itemEntity.value = DateUtils.getTimeDateFormatYear(projectDetailBean.beginDate) + " - " + DateUtils.getTimeDateFormatYear(projectDetailBean.endDate);
+                itemEntity.value = DateUtils.getTimeDateFormatYearDot(projectDetailBean.beginDate) + " - " + DateUtils.getTimeDateFormatYearDot(projectDetailBean.endDate);
                 itemEntity.type = ProjectBasicItemEntity.PROJECT_TIME_TYPE;
                 basicItemEntities.add(itemEntity);
             }

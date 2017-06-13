@@ -25,6 +25,8 @@ import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.adapterObserver.RefreshViewEmptyObserver;
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.entity.bean.FileBoxBean;
+import com.icourt.alpha.http.callback.SimpleCallBack;
+import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.ItemDecorationUtils;
 import com.icourt.alpha.utils.PingYinUtil;
@@ -65,6 +67,7 @@ import retrofit2.Response;
 public class ProjectFileBoxFragment extends BaseFragment implements BaseRecyclerAdapter.OnItemClickListener {
 
     private static final String KEY_PROJECT_ID = "key_project_id";
+    private static final String KEY_HAS_READWRITE_PMS = "key_has_readwrite_pms";
     private static final int REQUEST_CODE_CAMERA = 1000;
     private static final int REQUEST_CODE_GALLERY = 1001;
     private static final int REQUEST_CODE_AT_MEMBER = 1002;
@@ -85,6 +88,7 @@ public class ProjectFileBoxFragment extends BaseFragment implements BaseRecycler
     @BindView(R.id.refreshLayout)
     RefreshLayout refreshLayout;
     private List<String> firstlist;
+    private boolean hasReadWritePms;
 
     @Nullable
     @Override
@@ -102,10 +106,11 @@ public class ProjectFileBoxFragment extends BaseFragment implements BaseRecycler
         }
     }
 
-    public static ProjectFileBoxFragment newInstance(@NonNull String projectId) {
+    public static ProjectFileBoxFragment newInstance(@NonNull String projectId, boolean hasReadWritePms) {
         ProjectFileBoxFragment projectFileBoxFragment = new ProjectFileBoxFragment();
         Bundle bundle = new Bundle();
         bundle.putString(KEY_PROJECT_ID, projectId);
+        bundle.putBoolean(KEY_HAS_READWRITE_PMS, hasReadWritePms);
         projectFileBoxFragment.setArguments(bundle);
         return projectFileBoxFragment;
     }
@@ -113,6 +118,7 @@ public class ProjectFileBoxFragment extends BaseFragment implements BaseRecycler
     @Override
     protected void initView() {
         projectId = getArguments().getString(KEY_PROJECT_ID);
+        hasReadWritePms = getArguments().getBoolean(KEY_HAS_READWRITE_PMS);
         firstlist = TextFormater.firstList();
         firstlist.add(0, "#");
         refreshLayout.setNoticeEmpty(R.mipmap.icon_placeholder_project, "暂无文件");
@@ -129,17 +135,51 @@ public class ProjectFileBoxFragment extends BaseFragment implements BaseRecycler
             @Override
             public void onRefresh(boolean isPullDown) {
                 super.onRefresh(isPullDown);
-                getData(true);
+                if (hasReadWritePms) {
+                    if (!TextUtils.isEmpty(authToken) && !TextUtils.isEmpty(seaFileRepoId)) {
+                        getData(true);
+                    } else {
+                        getFileBoxToken();
+                    }
+                } else {
+                    stopRefresh();
+                    enableEmptyView(null);
+                }
             }
 
             @Override
             public void onLoadMore(boolean isSilence) {
                 super.onLoadMore(isSilence);
-                getData(false);
+                if (hasReadWritePms)
+                    getData(false);
             }
         });
-        getFileBoxToken();
+        checkAddTaskAndDocumentPms();
+    }
 
+    /**
+     * 获取项目权限
+     */
+    private void checkAddTaskAndDocumentPms() {
+        getApi().permissionQuery(getLoginUserId(), "MAT", projectId).enqueue(new SimpleCallBack<List<String>>() {
+            @Override
+            public void onSuccess(Call<ResEntity<List<String>>> call, Response<ResEntity<List<String>>> response) {
+
+                if (response.body().result != null) {
+                    if (response.body().result.contains("MAT:matter.document:readwrite")) {
+                        hasReadWritePms = true;
+                    }
+                    refreshLayout.startRefresh();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResEntity<List<String>>> call, Throwable t) {
+                super.onFailure(call, t);
+                hasReadWritePms = false;
+                enableEmptyView(null);
+            }
+        });
     }
 
     /**
@@ -186,7 +226,7 @@ public class ProjectFileBoxFragment extends BaseFragment implements BaseRecycler
                             JsonElement element = response.body().get("seaFileRepoId");
                             if (!TextUtils.isEmpty(element.toString()) && !TextUtils.equals("null", element.toString())) {
                                 seaFileRepoId = element.getAsString();
-                                getData(false);
+                                getData(true);
                             } else {
                                 onFailure(call, new HttpException(response));
                             }

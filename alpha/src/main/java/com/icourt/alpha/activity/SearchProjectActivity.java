@@ -36,6 +36,7 @@ import com.icourt.alpha.entity.event.TimingEvent;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.DateUtils;
+import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.view.SoftKeyboardSizeWatchLayout;
 import com.icourt.alpha.widget.manager.TimerManager;
 import com.icourt.api.RequestUtils;
@@ -97,7 +98,7 @@ public class SearchProjectActivity extends BaseActivity implements BaseRecyclerA
     int searchTaskType;//搜索任务type
 
     int taskStatuType;//搜索任务状态type
-    String projectId;
+    String projectId, assignTos;
 
     /**
      * 搜索未完成（全部、新任务、我关注的）的任务
@@ -106,11 +107,12 @@ public class SearchProjectActivity extends BaseActivity implements BaseRecyclerA
      * @param searchTaskType
      * @param search_priority
      */
-    public static void launchTask(@NonNull Context context, int searchTaskType, @SEARCH_PRIORITY int search_priority) {
+    public static void launchTask(@NonNull Context context, String assignTos, int searchTaskType, @SEARCH_PRIORITY int search_priority) {
         if (context == null) return;
         Intent intent = new Intent(context, SearchProjectActivity.class);
         intent.putExtra(KEY_SEARCH_PRIORITY, search_priority);
         intent.putExtra(KEY_SEARCH_TASK_TYPE, searchTaskType);
+        intent.putExtra("assignTos", assignTos);
         context.startActivity(intent);
     }
 
@@ -123,13 +125,14 @@ public class SearchProjectActivity extends BaseActivity implements BaseRecyclerA
      * @param projectId       项目id
      * @param search_priority
      */
-    public static void launchFinishTask(@NonNull Context context, int searchTaskType, int taskStatuType, @SEARCH_PRIORITY int search_priority, String projectId) {
+    public static void launchFinishTask(@NonNull Context context, String assignTos, int searchTaskType, int taskStatuType, @SEARCH_PRIORITY int search_priority, String projectId) {
         if (context == null) return;
         Intent intent = new Intent(context, SearchProjectActivity.class);
         intent.putExtra(KEY_SEARCH_PRIORITY, search_priority);
         intent.putExtra(KEY_SEARCH_TASK_TYPE, searchTaskType);
         intent.putExtra(KEY_SEARCH_TASK_STATUS_TYPE, taskStatuType);
         intent.putExtra("projectId", projectId);
+        intent.putExtra("assignTos", assignTos);
         context.startActivity(intent);
     }
 
@@ -158,6 +161,7 @@ public class SearchProjectActivity extends BaseActivity implements BaseRecyclerA
         searchTaskType = getIntent().getIntExtra(KEY_SEARCH_TASK_TYPE, -1);
         taskStatuType = getIntent().getIntExtra(KEY_SEARCH_TASK_STATUS_TYPE, -1);
         projectId = getIntent().getStringExtra("projectId");
+        assignTos = getIntent().getStringExtra("assignTos");
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         if (search_priority == SEARCH_PROJECT) {
             recyclerView.setAdapter(projectListAdapter = new ProjectListAdapter());
@@ -198,6 +202,7 @@ public class SearchProjectActivity extends BaseActivity implements BaseRecyclerA
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.tv_search_cancel:
+                SystemUtils.hideSoftKeyBoard(this);
                 finish();
                 break;
             default:
@@ -240,7 +245,7 @@ public class SearchProjectActivity extends BaseActivity implements BaseRecyclerA
             statusType = 1;
         }
         searchTaskType = 0;//我关注的，新任务，都搜索全部
-        getApi().taskQueryByName(getLoginUserId(), keyword, statusType, searchTaskType, projectId).enqueue(new SimpleCallBack<TaskEntity>() {
+        getApi().taskQueryByName(assignTos, keyword, statusType, searchTaskType, projectId).enqueue(new SimpleCallBack<TaskEntity>() {
             @Override
             public void onSuccess(Call<ResEntity<TaskEntity>> call, Response<ResEntity<TaskEntity>> response) {
                 if (response.body().result != null) {
