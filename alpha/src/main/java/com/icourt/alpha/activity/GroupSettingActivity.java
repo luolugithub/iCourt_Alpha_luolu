@@ -153,14 +153,16 @@ public class GroupSettingActivity extends BaseActivity {
                 break;
             case R.id.titleAction:
                 if (StringUtils.isEmpty(getTextString(groupNameTv, ""))) {
-                    showTopSnackBar("群组名称为空");
+                    showTopSnackBar("讨论组名称为空");
                     return;
                 }
                 if (getTextString(groupNameTv, "").length() < 2) {
-                    showTopSnackBar("群组名称太短");
+                    showTopSnackBar("讨论组名称太短");
+                    return;
                 }
                 if (getTextString(groupNameTv, "").length() > 20) {
-                    showTopSnackBar("群组名称太长");
+                    showTopSnackBar("讨论组名称太长");
+                    return;
                 }
                 updateGroupInfo();
                 break;

@@ -151,6 +151,10 @@ public class GroupCreateActivity extends BaseActivity implements OnFragmentCallB
                     showTopSnackBar("讨论组名称太短!");
                     return;
                 }
+                if (getTextString(groupNameEt, "").length() > 20) {
+                    showTopSnackBar("讨论组名称太长");
+                    return;
+                }
                 groupCreate(groupNameEt.getText().toString(),
                         TextUtils.isEmpty(groupDescEt.getText()) ? "" : groupDescEt.getText().toString(),
                         groupPrivateSwitch.isChecked());
