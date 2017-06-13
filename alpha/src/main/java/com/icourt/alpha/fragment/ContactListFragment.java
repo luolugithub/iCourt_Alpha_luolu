@@ -93,7 +93,9 @@ public class ContactListFragment extends BaseFragment implements BaseRecyclerAda
     @Override
     public void onDestroy() {
         super.onDestroy();
-        unbinder.unbind();
+        if (unbinder != null) {
+            unbinder.unbind();
+        }
         if (contactDbService != null) {
             contactDbService.releaseService();
         }

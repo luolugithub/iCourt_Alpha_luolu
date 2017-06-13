@@ -297,6 +297,7 @@ public class TabTimingFragment extends BaseFragment implements BaseRecyclerAdapt
     }
 
     private void generateData() {
+        if (timingChartView == null) return;
         resetViewport();
         List<Line> lines = new ArrayList<Line>();
 
