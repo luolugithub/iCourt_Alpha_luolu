@@ -172,7 +172,7 @@ public class TabTimingFragment extends BaseFragment implements BaseRecyclerAdapt
             @Override
             public void onLoadMore(boolean isSilence) {
                 super.onLoadMore(isSilence);
-                if (RefreshLayout.isLoadMoreMaxDistance(refreshLayout, 0.8f)) {
+                if (RefreshLayout.isLoadMoreMaxDistance(refreshLayout, 1.0f)) {
                     pageIndex++;
                     getData(false);
                 } else {
