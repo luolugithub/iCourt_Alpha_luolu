@@ -841,6 +841,7 @@ public class MainActivity extends BaseAppUpdateActivity
     }
 
     private void showTimingDialogFragment() {
+        if (isDestroyOrFinishing()) return;
         TimeEntity.ItemEntity timer = TimerManager.getInstance().getTimer();
         if (timer == null) return;
         String tag = TimingNoticeDialogFragment.class.getSimpleName();
