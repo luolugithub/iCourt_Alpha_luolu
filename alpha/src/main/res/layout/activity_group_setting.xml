@@ -72,7 +72,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:drawableLeft="@mipmap/icon_task_group_18_copy"
+                android:drawableLeft="@mipmap/project_detail_icon"
                 android:drawablePadding="20dp"
                 android:gravity="center"
                 android:padding="12dp"
@@ -205,7 +205,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:drawableLeft="@mipmap/ic_crown"
+                    android:drawableLeft="@mipmap/ic_history"
                     android:drawablePadding="20dp"
                     android:gravity="center"
                     android:padding="12dp"
@@ -241,7 +241,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:drawableLeft="@mipmap/ic_members"
+            android:drawableLeft="@mipmap/ic_crown"
             android:drawablePadding="20dp"
             android:gravity="center"
             android:padding="12dp"

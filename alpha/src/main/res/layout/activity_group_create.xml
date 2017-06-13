@@ -30,7 +30,7 @@
             android:layout_marginTop="15dp"
             android:background="@null"
             android:gravity="top"
-            android:hint="讨论目标(可选)"
+            android:hint="讨论目标 (可选)"
             android:maxLength="400"
             android:maxLines="5"
             android:minLines="3"
