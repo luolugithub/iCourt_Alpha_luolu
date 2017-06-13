@@ -20,7 +20,7 @@
             android:src="@mipmap/avatar_default_24"
             app:badge_dragable="false"
             app:badge_horizontalMargin="1dp"
-            app:badge_textSize="11.5sp"
+            app:badge_textSize="9sp"
             app:badge_verticalMargin="4dp" />
 
         <RelativeLayout
