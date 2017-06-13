@@ -1,6 +1,5 @@
 package com.icourt.alpha.activity;
 
-import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -165,14 +164,6 @@ public class TaskDetailActivity extends BaseActivity implements OnFragmentCallBa
         Intent intent = new Intent(context, TaskDetailActivity.class);
         intent.putExtra(KEY_TASK_ID, taskId);
         context.startActivity(intent);
-    }
-
-    public static void setResultLaunch(@NonNull Activity context, int commentCount) {
-        if (context == null) return;
-        Intent intent = new Intent(context, TaskDetailActivity.class);
-        intent.putExtra(KEY_ACTIVITY_RESULT, commentCount);
-        context.setResult(RESULT_OK, intent);
-        context.finish();
     }
 
     @Override
@@ -488,6 +479,18 @@ public class TaskDetailActivity extends BaseActivity implements OnFragmentCallBa
     }
 
     /**
+     * 是否有上传附件权限
+     *
+     * @return
+     */
+    private boolean hasTaskAddDocument() {
+        if (taskItemEntity != null && taskItemEntity.right != null) {
+            return taskItemEntity.right.contains("MAT:matter.document:readwrite");
+        }
+        return false;
+    }
+
+    /**
      * 是否有添加计时权限
      */
     private boolean hasAddTimerPermission() {
@@ -569,7 +572,7 @@ public class TaskDetailActivity extends BaseActivity implements OnFragmentCallBa
             baseFragmentAdapter.bindData(true, Arrays.asList(
                     TaskDetailFragment.newInstance(taskItemEntity),
                     TaskCheckItemFragment.newInstance(taskItemEntity.id, hasTaskEditPermission()),
-                    TaskAttachmentFragment.newInstance(taskItemEntity.id, hasTaskEditPermission())
+                    TaskAttachmentFragment.newInstance(taskItemEntity.id, (hasTaskAddDocument() && hasTaskEditPermission()))
             ));
             if (taskItemEntity.attendeeUsers != null) {
                 if (taskItemEntity.attendeeUsers.size() > 0) {
@@ -621,6 +624,12 @@ public class TaskDetailActivity extends BaseActivity implements OnFragmentCallBa
                 titleAction.setImageResource(R.mipmap.header_icon_star_solid);
                 EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION));
             }
+
+            @Override
+            public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
+                super.onFailure(call, t);
+                dismissLoadingDialog();
+            }
         });
     }
 
@@ -636,6 +645,12 @@ public class TaskDetailActivity extends BaseActivity implements OnFragmentCallBa
                 myStar = TaskEntity.UNATTENTIONED;
                 titleAction.setImageResource(R.mipmap.header_icon_star_line);
                 EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION));
+            }
+
+            @Override
+            public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
+                super.onFailure(call, t);
+                dismissLoadingDialog();
             }
         });
     }

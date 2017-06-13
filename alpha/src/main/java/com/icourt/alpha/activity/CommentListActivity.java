@@ -14,7 +14,6 @@ import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
-import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
@@ -28,6 +27,7 @@ import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.CommentListAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.HeaderFooterAdapter;
+import com.icourt.alpha.adapter.baseadapter.adapterObserver.DataChangeAdapterObserver;
 import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.entity.bean.CommentEntity;
 import com.icourt.alpha.entity.bean.TaskEntity;
@@ -38,7 +38,7 @@ import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.ActionConstants;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.ItemDecorationUtils;
-import com.icourt.alpha.utils.LogUtils;
+import com.icourt.alpha.view.SoftKeyboardSizeWatchLayout;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 import com.icourt.alpha.widget.dialog.BottomActionDialog;
 
@@ -85,9 +85,12 @@ public class CommentListActivity extends BaseActivity implements BaseRecyclerAda
     @BindView(R.id.titleContent)
     TextView titleContent;
     HeaderFooterAdapter<CommentListAdapter> headerFooterAdapter;
+    @BindView(R.id.softKeyboardSizeWatchLayout)
+    SoftKeyboardSizeWatchLayout softKeyboardSizeWatchLayout;
 
     public static void launch(@NonNull Context context, @NonNull TaskEntity.TaskItemEntity taskItemEntity) {
         if (context == null) return;
+        if (taskItemEntity == null) return;
         Intent intent = new Intent(context, CommentListActivity.class);
         intent.putExtra(KEY_TASK_ID, taskItemEntity);
         context.startActivity(intent);
@@ -95,6 +98,7 @@ public class CommentListActivity extends BaseActivity implements BaseRecyclerAda
 
     public static void forResultLaunch(@NonNull Activity context, @NonNull TaskEntity.TaskItemEntity taskItemEntity, int requestCode) {
         if (context == null) return;
+        if (taskItemEntity == null) return;
         Intent intent = new Intent(context, CommentListActivity.class);
         intent.putExtra(KEY_TASK_ID, taskItemEntity);
         context.startActivityForResult(intent, requestCode);
@@ -128,6 +132,17 @@ public class CommentListActivity extends BaseActivity implements BaseRecyclerAda
 
         recyclerview.addItemDecoration(ItemDecorationUtils.getCommFull05Divider(this, true));
         recyclerview.setHasFixedSize(true);
+        commentListAdapter.registerAdapterDataObserver(new DataChangeAdapterObserver() {
+            @Override
+            protected void updateUI() {
+                if (getIntent() != null) {
+                    Intent intent = getIntent();
+                    int count = commentListAdapter.getItemCount();
+                    intent.putExtra(KEY_ACTIVITY_RESULT, count);
+                    setResult(RESULT_OK, intent);
+                }
+            }
+        });
 //        commentListAdapter.registerAdapterDataObserver(new RefreshViewEmptyObserver(refreshLayout, commentListAdapter));
         commentListAdapter.setOnItemChildClickListener(this);
         commentListAdapter.setOnItemLongClickListener(this);
@@ -167,6 +182,7 @@ public class CommentListActivity extends BaseActivity implements BaseRecyclerAda
             }
         });
         refreshLayout.startRefresh();
+        commentEdit.setMaxEms(1500);
     }
 
     @Override
@@ -193,10 +209,6 @@ public class CommentListActivity extends BaseActivity implements BaseRecyclerAda
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
-            case R.id.titleBack:
-                LogUtils.e("返回");
-                TaskDetailActivity.setResultLaunch(this, commentListAdapter.getItemCount());
-                break;
             case R.id.send_tv:
                 sendComment();
                 break;
@@ -409,13 +421,5 @@ public class CommentListActivity extends BaseActivity implements BaseRecyclerAda
             }
         }
         return false;
-    }
-
-    @Override
-    public boolean onKeyUp(int keyCode, KeyEvent event) {
-        if (event.getKeyCode() == KeyEvent.KEYCODE_BACK) {
-            TaskDetailActivity.setResultLaunch(this, commentListAdapter.getItemCount());
-        }
-        return super.onKeyUp(keyCode, event);
     }
 }
