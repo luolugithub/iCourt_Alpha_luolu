@@ -146,7 +146,7 @@ public class ProjectDetailFragment extends BaseFragment {
      * @param projectDetailBean
      */
     private void setDataToView(ProjectDetailEntity projectDetailBean) {
-
+        if (projectMemberLayout == null) return;
         if (projectDetailBean != null) {
             EventBus.getDefault().post(new ProjectActionEvent(ProjectActionEvent.PROJECT_TIMER_ACTION, projectDetailBean.sumTime));
             if (onFragmentCallBackListener != null) {
