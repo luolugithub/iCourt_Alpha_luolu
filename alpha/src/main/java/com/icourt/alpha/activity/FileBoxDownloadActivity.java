@@ -230,6 +230,7 @@ public class FileBoxDownloadActivity extends BaseActivity {
 
         } catch (Exception e) {
             e.printStackTrace();
+            bugSync("外部打开文件失败", e);
         }
     }
 
@@ -258,6 +259,7 @@ public class FileBoxDownloadActivity extends BaseActivity {
             startActivity(Intent.createChooser(intent, "Alpha Share"));
         } catch (Exception e) {
             e.printStackTrace();
+            bugSync("外部分享文件失败", e);
         }
     }
 
@@ -466,6 +468,7 @@ public class FileBoxDownloadActivity extends BaseActivity {
                     showMeau();
                 } catch (NullPointerException e) {
                     e.printStackTrace();
+                    bugSync("下载文件失败", e);
                 }
             }
         }

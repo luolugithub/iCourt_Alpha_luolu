@@ -143,6 +143,7 @@ public class TaskCreateActivity extends BaseActivity implements ProjectSelectDia
             } else {
                 taskNameEt.setText(content);
             }
+            taskNameEt.setSelection(taskNameEt.getText().length());
         }
         if (!TextUtils.isEmpty(startTime)) {
             taskDuetimeTv.setText(startTime);

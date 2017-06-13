@@ -413,6 +413,7 @@ public class SearchProjectActivity extends BaseActivity implements BaseRecyclerA
             return jsonObject.toString();
         } catch (Exception e) {
             e.printStackTrace();
+
         }
         return null;
     }

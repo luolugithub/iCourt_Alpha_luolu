@@ -711,6 +711,7 @@ public class TaskDetailActivity extends BaseActivity implements OnFragmentCallBa
             return jsonObject.toString();
         } catch (Exception e) {
             e.printStackTrace();
+            bugSync("获取任务json失败", e);
         }
         return null;
     }

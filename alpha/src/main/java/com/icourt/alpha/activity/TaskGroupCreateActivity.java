@@ -191,6 +191,7 @@ public class TaskGroupCreateActivity extends BaseActivity {
             return json;
         } catch (JsonIOException e) {
             e.printStackTrace();
+            bugSync("获取添加任务组json失败", e);
         }
         return json;
     }
@@ -212,6 +213,7 @@ public class TaskGroupCreateActivity extends BaseActivity {
             return json;
         } catch (JsonIOException e) {
             e.printStackTrace();
+            bugSync("获取修改任务组json失败", e);
         }
         return json;
     }
