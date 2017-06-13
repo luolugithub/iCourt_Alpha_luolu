@@ -32,6 +32,7 @@ import butterknife.OnClick;
 public class EditItemActivity extends BaseActivity {
     private static final String KEY_TITLE = "key_title";
     private static final String KEY_DEFAULT_VALUE = "key_value";
+    private static final String KEY_INPUT_LINE_NUM = "key_input_line_num";
     @BindView(R.id.titleBack)
     CheckedTextView titleBack;
     @BindView(R.id.titleContent)
@@ -45,24 +46,27 @@ public class EditItemActivity extends BaseActivity {
     @BindView(R.id.value_input_clear_iv)
     ImageView valueInputClearIv;
 
-    public static void launchForResult(@NonNull Activity context,
-                                       @NonNull String title,
-                                       @Nullable String defaultValue,
-                                       int reqCode) {
-        if (context == null) return;
-        if (TextUtils.isEmpty(title)) return;
-        Intent intent = new Intent(context, EditItemActivity.class);
-        intent.putExtra(KEY_TITLE, title);
-        intent.putExtra(KEY_DEFAULT_VALUE, defaultValue);
-        context.startActivityForResult(intent, reqCode);
-    }
-
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit_item);
         ButterKnife.bind(this);
         initView();
+    }
+
+    public static void launchForResult(@NonNull Activity context,
+                                       @NonNull String title,
+                                       @Nullable String defaultValue,
+                                       int reqCode,
+                                       int inputLineNum) {
+        if (context == null) return;
+        if (TextUtils.isEmpty(title)) return;
+        if (inputLineNum < 0) return;
+        Intent intent = new Intent(context, EditItemActivity.class);
+        intent.putExtra(KEY_TITLE, title);
+        intent.putExtra(KEY_DEFAULT_VALUE, defaultValue);
+        intent.putExtra(KEY_INPUT_LINE_NUM, inputLineNum);
+        context.startActivityForResult(intent, reqCode);
     }
 
     @Override
@@ -74,6 +78,13 @@ public class EditItemActivity extends BaseActivity {
         if (titleActionTextView != null) {
             titleActionTextView.setText("确定");
         }
+        if (getIntent().getIntExtra(KEY_INPUT_LINE_NUM, 1) <= 1) {
+            valueInputEt.setSingleLine(true);
+        } else {
+            valueInputEt.setSingleLine(false);
+            valueInputEt.setMaxLines(getIntent().getIntExtra(KEY_INPUT_LINE_NUM, 1));
+        }
+
         valueInputEt.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {

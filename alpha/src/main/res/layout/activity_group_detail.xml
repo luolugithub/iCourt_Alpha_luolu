@@ -49,7 +49,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:ellipsize="end"
-                    android:maxLines="2"
+                    android:maxLines="3"
                     android:text="讨论组介绍"
                     android:textColor="@color/alpha_font_color_gray"
                     android:textSize="@dimen/alpha_font_size_mini" />

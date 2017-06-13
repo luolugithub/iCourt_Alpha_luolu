@@ -141,13 +141,15 @@ public class GroupSettingActivity extends BaseActivity {
                 EditItemActivity.launchForResult(getActivity(),
                         "讨论组名称",
                         getTextString(groupNameTv, ""),
-                        CODE_REQUEST_NAME);
+                        CODE_REQUEST_NAME,
+                        1);
                 break;
             case R.id.group_desc_ll:
                 EditItemActivity.launchForResult(getActivity(),
                         "讨论组目标",
                         getTextString(groupDescTv, ""),
-                        CODE_REQUEST_DESC);
+                        CODE_REQUEST_DESC,
+                        3);
                 break;
             case R.id.titleAction:
                 if (StringUtils.isEmpty(getTextString(groupNameTv, ""))) {
