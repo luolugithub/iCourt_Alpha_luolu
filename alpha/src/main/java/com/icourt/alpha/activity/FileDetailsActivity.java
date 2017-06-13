@@ -81,6 +81,7 @@ public class FileDetailsActivity extends BaseActivity {
     //本地同步的联系人
     protected final List<GroupContactBean> localContactList = new ArrayList<>();
     private final List<Team> localTeams = new ArrayList<>();
+    private boolean isRevoke;//消息是否撤回
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -193,22 +194,8 @@ public class FileDetailsActivity extends BaseActivity {
                     @Override
                     public void onSuccess(Call<ResEntity<MsgStatusEntity>> call, Response<ResEntity<MsgStatusEntity>> response) {
                         if (response.body().result == null) return;
-                        switch (getMsgClassfyType()) {
-                            case MSG_CLASSFY_CHAT_DING:
-                                titleAction.setVisibility(!response.body().result.recalled
-                                        && response.body().result.pinned
-                                        ? View.VISIBLE : View.INVISIBLE);
-                                break;
-                            case MSG_CLASSFY_CHAT_FILE:
-                                titleAction.setVisibility(!response.body().result.recalled
-                                        ? View.VISIBLE : View.INVISIBLE);
-                                break;
-                            case MSG_CLASSFY_MY_COLLECTEED:
-                                titleAction.setVisibility(!response.body().result.recalled
-                                        && response.body().result.starred
-                                        ? View.VISIBLE : View.INVISIBLE);
-                                break;
-                        }
+                        isRevoke = response.body().result.recalled;
+                        titleAction.setVisibility(View.VISIBLE);
                     }
                 });
         getLocalContacts();
@@ -220,6 +207,10 @@ public class FileDetailsActivity extends BaseActivity {
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.titleAction:
+                if (isRevoke) {
+                    showTopSnackBar("该消息已被撤回");
+                    return;
+                }
                 if (item != null) {
                     switch (item.ope) {
                         case CHAT_TYPE_P2P:

@@ -79,6 +79,15 @@ public class MyAtedAdapter extends BaseArrayRecyclerAdapter<IMMessageCustomBody>
     }
 
     @Override
+    public long getItemId(int position) {
+        IMMessageCustomBody item = getItem(position);
+        if (item != null) {
+            return item.id;
+        }
+        return super.getItemId(position);
+    }
+
+    @Override
     public int bindView(int viewtype) {
         return R.layout.adapter_my_ated;
     }
