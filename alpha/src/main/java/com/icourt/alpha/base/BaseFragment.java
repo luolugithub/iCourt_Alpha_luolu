@@ -13,11 +13,13 @@ import android.support.annotation.UiThread;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
 
+import com.bugtags.library.Bugtags;
 import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.icourt.alpha.http.ApiAlphaService;
 import com.icourt.alpha.http.ApiChatService;
@@ -29,6 +31,7 @@ import com.icourt.alpha.interfaces.ProgressHUDImp;
 import com.icourt.alpha.utils.LogUtils;
 import com.icourt.alpha.utils.LoginInfoUtils;
 import com.icourt.alpha.utils.SnackbarUtils;
+import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.utils.ToastUtils;
 import com.kaopiz.kprogresshud.KProgressHUD;
 import com.trello.rxlifecycle2.LifecycleProvider;
@@ -539,6 +542,42 @@ public abstract class BaseFragment
     @CheckResult
     protected final String getLoginUserId() {
         return LoginInfoUtils.getLoginUserId();
+    }
+
+    /**
+     * 同步bug到bugtags
+     *
+     * @param tag
+     * @param log
+     */
+    protected void bugSync(String tag, String log) {
+        if (!TextUtils.isEmpty(tag) && !TextUtils.isEmpty(log)) {
+            try {
+                StringBuilder stringBuilder = new StringBuilder(tag);
+                stringBuilder.append("\n");
+                stringBuilder.append("page:" + getClass().getSimpleName());
+                stringBuilder.append("\n");
+                stringBuilder.append(log);
+                stringBuilder.append("\n");
+                stringBuilder.append("uid:");
+                stringBuilder.append(getLoginUserId());
+                Bugtags.sendFeedback(stringBuilder.toString());
+            } catch (Throwable e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    /**
+     * 同步bug到bugtags
+     *
+     * @param tag
+     * @param throwable
+     */
+    protected void bugSync(String tag, Throwable throwable) {
+        if (!TextUtils.isEmpty(tag) && throwable != null) {
+            bugSync(tag, StringUtils.throwable2string(throwable));
+        }
     }
 
 }

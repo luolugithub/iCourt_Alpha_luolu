@@ -36,6 +36,7 @@ import com.icourt.alpha.interfaces.ProgressHUDImp;
 import com.icourt.alpha.utils.LogUtils;
 import com.icourt.alpha.utils.LoginInfoUtils;
 import com.icourt.alpha.utils.SnackbarUtils;
+import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.utils.ToastUtils;
 import com.kaopiz.kprogresshud.KProgressHUD;
@@ -255,6 +256,7 @@ public class BaseActivity
     protected final ApiSFileService getSFileApi() {
         return RetrofitServiceFactory.getSFileApiService();
     }
+
     /**
      * Toast提示
      * 缺陷 有的rom 会禁用掉taost 比如huawei rom
@@ -488,20 +490,38 @@ public class BaseActivity
     }
 
     /**
-     * 发送日志到bugtags上面去
+     * 同步bug到bugtags
      *
      * @param tag
      * @param log
      */
-    protected void postLog2Bugtags(String tag, String log) {
+    protected void bugSync(String tag, String log) {
         if (!TextUtils.isEmpty(tag) && !TextUtils.isEmpty(log)) {
-            StringBuilder stringBuilder = new StringBuilder(tag);
-            stringBuilder.append("\n");
-            stringBuilder.append(log);
-            stringBuilder.append("\n");
-            stringBuilder.append("uid:");
-            stringBuilder.append(getLoginUserId());
-            Bugtags.sendFeedback(stringBuilder.toString());
+            try {
+                StringBuilder stringBuilder = new StringBuilder(tag);
+                stringBuilder.append("\n");
+                stringBuilder.append("page:" + getClass().getSimpleName());
+                stringBuilder.append("\n");
+                stringBuilder.append(log);
+                stringBuilder.append("\n");
+                stringBuilder.append("uid:");
+                stringBuilder.append(getLoginUserId());
+                Bugtags.sendFeedback(stringBuilder.toString());
+            } catch (Throwable e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    /**
+     * 同步bug到bugtags
+     *
+     * @param tag
+     * @param throwable
+     */
+    protected void bugSync(String tag, Throwable throwable) {
+        if (!TextUtils.isEmpty(tag) && throwable != null) {
+            bugSync(tag, StringUtils.throwable2string(throwable));
         }
     }
 

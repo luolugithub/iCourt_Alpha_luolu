@@ -257,7 +257,7 @@ public class BaseUmengActivity extends BaseActivity implements UMAuthListener {
         public void onError(SHARE_MEDIA share_media, Throwable throwable) {
             log("--------->share error:+" + throwable);
             showTopSnackBar("分享失败:" + StringUtils.throwable2string(throwable));
-            postLog2Bugtags("分享失败:", StringUtils.throwable2string(throwable));
+            bugSync("分享失败:", StringUtils.throwable2string(throwable));
         }
 
         @Override

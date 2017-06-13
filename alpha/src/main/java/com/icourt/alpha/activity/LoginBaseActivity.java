@@ -16,7 +16,6 @@ import com.icourt.alpha.http.callback.BaseCallBack;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.exception.ResponseException;
 import com.icourt.alpha.http.httpmodel.ResEntity;
-import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.utils.UserPreferences;
 import com.icourt.api.RequestUtils;
 import com.netease.nimlib.sdk.NIMClient;
@@ -197,7 +196,7 @@ public class LoginBaseActivity extends BaseUmengActivity {
                             } else {
 
                             }
-                            feedBackYunXinLog(result + " code:" + code);
+                            bugSync("云信登陆失败", result + " code:" + code);
                             // 进入主界面
                             MainActivity.launch(getContext());
                         }
@@ -205,7 +204,7 @@ public class LoginBaseActivity extends BaseUmengActivity {
                         @Override
                         public void onException(Throwable exception) {
                             showToast("云信登陆异常:" + exception);
-                            feedBackYunXinLog(result + " ex:" + StringUtils.throwable2string(exception));
+                            bugSync("云信登陆异常", exception);
                             // 进入主界面
                             MainActivity.launch(getContext());
                         }
@@ -213,8 +212,6 @@ public class LoginBaseActivity extends BaseUmengActivity {
         }
     }
 
-    public void feedBackYunXinLog(String errorlog) {
-    }
 
     @Nullable
     @CheckResult
