@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!--  【统一颜色定义区域】 -->
-    <color name="alpha_background_window">#FFf4f4f4</color>                  <!-- 窗体的背景色 -->
+    <color name="alpha_background_window">#FFf3f3f3</color>                  <!-- 窗体的背景色 -->
     <color name="alpha_background_title">@android:color/white</color>        <!-- 标题栏颜色 -->
 
 
