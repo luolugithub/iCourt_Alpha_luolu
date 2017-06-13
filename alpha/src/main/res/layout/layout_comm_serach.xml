@@ -10,7 +10,7 @@
     android:paddingTop="10dp"
     android:transitionName="searchLayout">
 
-    <EditText
+    <com.icourt.alpha.view.ClearEditText
         android:id="@+id/et_search_name"
         android:layout_width="0dp"
         android:layout_height="wrap_content"

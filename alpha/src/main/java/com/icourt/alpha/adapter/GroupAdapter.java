@@ -26,6 +26,7 @@ import com.icourt.alpha.utils.SpannableUtils;
 public class GroupAdapter extends MultiSelectRecyclerAdapter<GroupEntity> implements BaseRecyclerAdapter.OnItemClickListener {
 
     int foregroundColor = 0xFFed6c00;
+
     public GroupAdapter() {
         this.setOnItemClickListener(this);
     }
@@ -71,7 +72,7 @@ public class GroupAdapter extends MultiSelectRecyclerAdapter<GroupEntity> implem
     @Override
     public void onItemClick(BaseRecyclerAdapter adapter, ViewHolder holder, View view, int position) {
         if (isSelectable()) {
-            toggleSelected(getRealPos(position));
+            toggleSelected(position);
         } else {
             GroupEntity item = getItem(getRealPos(position));
             if (item == null) return;

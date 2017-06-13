@@ -4,7 +4,7 @@
     android:layout_height="wrap_content"
     android:orientation="vertical">
 
-    <include layout="@layout/header_search_input_text" />
+    <include layout="@layout/header_search_comm" />
 
     <LinearLayout
         android:id="@+id/header_group_item_ll"

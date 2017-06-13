@@ -77,7 +77,7 @@ public class ContactShareDialogFragment extends BaseDialogFragment
     }
 
     /**
-     * 文档转发到享聊  //TODO youxuan补充逻辑
+     * 文档转发到享聊
      *
      * @param filePath
      * @return

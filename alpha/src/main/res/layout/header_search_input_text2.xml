@@ -14,7 +14,7 @@
         android:background="@drawable/bg_round_white"
         android:gravity="center_vertical">
 
-        <EditText
+        <com.icourt.alpha.view.ClearEditText
             android:id="@+id/header_comm_search_input_et"
             android:layout_width="match_parent"
             android:layout_height="match_parent"

@@ -10,21 +10,25 @@ import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.EditText;
-import android.widget.RelativeLayout;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.GroupAdapter;
+import com.icourt.alpha.adapter.baseadapter.HeaderFooterAdapter;
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.entity.bean.GroupEntity;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
+import com.icourt.alpha.utils.SystemUtils;
+import com.icourt.alpha.view.ClearEditText;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 import butterknife.Unbinder;
 import retrofit2.Call;
 import retrofit2.Response;
@@ -39,17 +43,16 @@ import retrofit2.Response;
 public class GroupActionFragment extends BaseFragment {
     Unbinder unbinder;
     GroupAdapter groupAdapter;
-    @BindView(R.id.header_input_et)
-    EditText headerInputEt;
-    @BindView(R.id.rl_comm_search)
-    RelativeLayout rlCommSearch;
+    HeaderFooterAdapter<GroupAdapter> headerFooterAdapter;
+    private final List<GroupEntity> groupEntities = new ArrayList<>();
     @BindView(R.id.recyclerView)
     RecyclerView recyclerView;
-    private final List<GroupEntity> groupEntities = new ArrayList<>();
-
-    public static GroupActionFragment newInstance() {
-        return new GroupActionFragment();
-    }
+    @BindView(R.id.header_comm_search_input_et)
+    ClearEditText headerCommSearchInputEt;
+    @BindView(R.id.header_comm_search_cancel_tv)
+    TextView headerCommSearchCancelTv;
+    @BindView(R.id.header_comm_search_input_ll)
+    LinearLayout headerCommSearchInputLl;
 
     @Nullable
     @Override
@@ -60,11 +63,25 @@ public class GroupActionFragment extends BaseFragment {
     }
 
     @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        unbinder.unbind();
+    }
+
+    public static GroupActionFragment newInstance() {
+        return new GroupActionFragment();
+    }
+
+    @Override
     protected void initView() {
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        recyclerView.setAdapter(groupAdapter = new GroupAdapter());
+        headerFooterAdapter = new HeaderFooterAdapter<>(groupAdapter = new GroupAdapter());
+        View headerView = HeaderFooterAdapter.inflaterView(getContext(), R.layout.header_search_comm, recyclerView);
+        headerFooterAdapter.addHeader(headerView);
+        registerClick(headerView.findViewById(R.id.header_comm_search_ll));
+        recyclerView.setAdapter(headerFooterAdapter);
         groupAdapter.setSelectable(true);
-        headerInputEt.addTextChangedListener(new TextWatcher() {
+        headerCommSearchInputEt.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
 
@@ -84,7 +101,27 @@ public class GroupActionFragment extends BaseFragment {
                 }
             }
         });
+        headerCommSearchInputLl.setVisibility(View.GONE);
         getData(true);
+    }
+
+    @OnClick({R.id.header_comm_search_cancel_tv})
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.header_comm_search_ll:
+                headerCommSearchInputLl.setVisibility(View.VISIBLE);
+                SystemUtils.showSoftKeyBoard(getActivity(), headerCommSearchInputEt);
+                break;
+            case R.id.header_comm_search_cancel_tv:
+                headerCommSearchInputEt.setText("");
+                SystemUtils.hideSoftKeyBoard(getActivity(), headerCommSearchInputEt, true);
+                headerCommSearchInputLl.setVisibility(View.GONE);
+                break;
+            default:
+                super.onClick(v);
+                break;
+        }
     }
 
     @Override
@@ -120,9 +157,4 @@ public class GroupActionFragment extends BaseFragment {
         return bundle;
     }
 
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        unbinder.unbind();
-    }
 }
