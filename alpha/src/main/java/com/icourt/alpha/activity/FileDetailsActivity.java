@@ -188,6 +188,7 @@ public class FileDetailsActivity extends BaseActivity {
     @Override
     protected void getData(boolean isRefresh) {
         super.getData(isRefresh);
+
         getChatApi()
                 .msgStatus(item.id)
                 .enqueue(new SimpleCallBack<MsgStatusEntity>() {
