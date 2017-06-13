@@ -263,6 +263,7 @@ public class ProjectFileBoxFragment extends BaseFragment implements BaseRecycler
                 @Override
                 public void onFailure(Call<List<FileBoxBean>> call, Throwable t) {
                     stopRefresh();
+                    enableEmptyView(null);
                     showTopSnackBar("获取文档列表失败");
                 }
             });

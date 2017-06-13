@@ -253,7 +253,9 @@ public class SearchProjectActivity extends BaseActivity implements BaseRecyclerA
         int statusType = -1;
         if (taskStatuType == -1) {
             statusType = 0;
-        } else {
+        } else if(taskStatuType == 0){
+            statusType = taskStatuType;
+        }else{
             statusType = 1;
         }
         searchTaskType = 0;//我关注的，新任务，都搜索全部

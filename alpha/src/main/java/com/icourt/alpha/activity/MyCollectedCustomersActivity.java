@@ -93,9 +93,13 @@ public class MyCollectedCustomersActivity extends BaseActivity implements BaseRe
         refreshLayout.setNoticeEmptyText("暂无关注联系人");
         refreshLayout.setNoticeEmptyImage(R.mipmap.icon_placeholder_user);
 
-
-        refreshLayout.setAutoRefresh(true);
         refreshLayout.startRefresh();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        getData(true);
     }
 
     @Override

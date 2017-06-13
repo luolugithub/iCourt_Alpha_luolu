@@ -23,7 +23,6 @@ import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.adapterObserver.RefreshViewEmptyObserver;
 import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.entity.bean.FileBoxBean;
-import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.ItemDecorationUtils;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 import com.icourt.api.RequestUtils;
@@ -151,12 +150,15 @@ public class FolderboxSelectActivity extends BaseActivity implements BaseRecycle
                 stopRefresh();
                 if (response.body() != null) {
                     projectFileBoxAdapter.bindData(isRefresh, getFolders(response.body()));
+                } else {
+                    enableEmptyView(null);
                 }
             }
 
             @Override
             public void onFailure(Call<List<FileBoxBean>> call, Throwable t) {
                 stopRefresh();
+                enableEmptyView(null);
                 showTopSnackBar("获取文档列表失败");
             }
         });
@@ -175,7 +177,7 @@ public class FolderboxSelectActivity extends BaseActivity implements BaseRecycle
                             JsonElement element = response.body().get("seaFileRepoId");
                             if (!TextUtils.isEmpty(element.toString()) && !TextUtils.equals("null", element.toString())) {
                                 seaFileRepoId = element.getAsString();
-                                getData(false);
+                                getData(true);
                             } else {
                                 onFailure(call, new retrofit2.HttpException(response));
                             }
@@ -212,7 +214,7 @@ public class FolderboxSelectActivity extends BaseActivity implements BaseRecycle
                 } else {
                     refreshLayout.enableEmptyView(true);
                 }
-            }else {
+            } else {
                 refreshLayout.enableEmptyView(true);
             }
         }
@@ -254,6 +256,9 @@ public class FolderboxSelectActivity extends BaseActivity implements BaseRecycle
                 if (response.body() != null) {
                     String uploadUrl = response.body().getAsString();
                     uploadFile(uploadUrl, filePath);
+                } else {
+                    dismissLoadingDialog();
+                    showTopSnackBar("上传失败");
                 }
             }
 
@@ -266,6 +271,7 @@ public class FolderboxSelectActivity extends BaseActivity implements BaseRecycle
         });
     }
 
+
     /**
      * 上传文件
      *
@@ -273,10 +279,13 @@ public class FolderboxSelectActivity extends BaseActivity implements BaseRecycle
      * @param filePath
      */
     private void uploadFile(String uploadUrl, String filePath) {
-        String key = "file\";filename=\"" + DateUtils.millis() + ".png";
+        if (TextUtils.isEmpty(filePath)) return;
+        File file = new File(filePath);
+        String fileName = file.getName();
+        String key = "file\";filename=\"" + fileName;
         Map<String, RequestBody> params = new HashMap<>();
-        params.put("parent_dir", RequestUtils.createTextBody("/" + rootName));
-        params.put(key, RequestUtils.createImgBody(new File(filePath)));
+        params.put("parent_dir", TextUtils.isEmpty(rootName) ? RequestUtils.createTextBody("/") : RequestUtils.createTextBody("/" + rootName));
+        params.put(key, RequestUtils.createStreamBody(file));
         getSFileApi().projectUploadFile("Token " + authToken, uploadUrl, params).enqueue(new Callback<JsonElement>() {
             @Override
             public void onResponse(Call<JsonElement> call, Response<JsonElement> response) {
