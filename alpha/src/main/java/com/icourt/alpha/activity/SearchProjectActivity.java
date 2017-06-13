@@ -195,6 +195,18 @@ public class SearchProjectActivity extends BaseActivity implements BaseRecyclerA
                 }
             }
         });
+        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+                super.onScrollStateChanged(recyclerView, newState);
+                SystemUtils.hideSoftKeyBoard(SearchProjectActivity.this);
+            }
+
+            @Override
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+            }
+        });
     }
 
     @OnClick({R.id.tv_search_cancel})
