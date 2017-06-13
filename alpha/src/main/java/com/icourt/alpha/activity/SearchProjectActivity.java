@@ -214,7 +214,6 @@ public class SearchProjectActivity extends BaseActivity implements BaseRecyclerA
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.tv_search_cancel:
-                SystemUtils.hideSoftKeyBoard(this);
                 finish();
                 break;
             default:

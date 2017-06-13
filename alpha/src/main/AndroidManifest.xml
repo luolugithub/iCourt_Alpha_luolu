@@ -201,9 +201,11 @@
             android:screenOrientation="portrait" />
         <activity
             android:name=".activity.ProjectDetailActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize"
             android:screenOrientation="portrait" />
         <activity
             android:name=".activity.ProjectEndTaskActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize"
             android:screenOrientation="portrait" />
         <activity
             android:name=".activity.ProjectTaskGroupActivity"
@@ -286,9 +288,11 @@
             android:screenOrientation="portrait" />
         <activity
             android:name=".activity.MyAllotTaskActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize"
             android:screenOrientation="portrait" />
         <activity
             android:name=".activity.MyFinishTaskActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize"
             android:screenOrientation="portrait" />
         <activity
             android:name=".activity.SearchProjectActivity"
