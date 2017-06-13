@@ -253,20 +253,31 @@ public class SearchProjectActivity extends BaseActivity implements BaseRecyclerA
         int statusType = -1;
         if (taskStatuType == -1) {
             statusType = 0;
-        } else if(taskStatuType == 0){
+        } else if (taskStatuType == 0) {
             statusType = taskStatuType;
-        }else{
+        } else {
             statusType = 1;
         }
         searchTaskType = 0;//我关注的，新任务，都搜索全部
-        getApi().taskQueryByName(assignTos, keyword, statusType, searchTaskType, projectId).enqueue(new SimpleCallBack<TaskEntity>() {
-            @Override
-            public void onSuccess(Call<ResEntity<TaskEntity>> call, Response<ResEntity<TaskEntity>> response) {
-                if (response.body().result != null) {
-                    taskItemAdapter.bindData(true, response.body().result.items);
+        if (!TextUtils.isEmpty(assignTos)) {
+            getApi().taskQueryByName(assignTos, keyword, statusType, searchTaskType, projectId).enqueue(new SimpleCallBack<TaskEntity>() {
+                @Override
+                public void onSuccess(Call<ResEntity<TaskEntity>> call, Response<ResEntity<TaskEntity>> response) {
+                    if (response.body().result != null) {
+                        taskItemAdapter.bindData(true, response.body().result.items);
+                    }
                 }
-            }
-        });
+            });
+        } else {
+            getApi().taskQueryByNameFromMatter(keyword, statusType, searchTaskType, projectId).enqueue(new SimpleCallBack<TaskEntity>() {
+                @Override
+                public void onSuccess(Call<ResEntity<TaskEntity>> call, Response<ResEntity<TaskEntity>> response) {
+                    if (response.body().result != null) {
+                        taskItemAdapter.bindData(true, response.body().result.items);
+                    }
+                }
+            });
+        }
     }
 
     @Override

@@ -56,6 +56,7 @@ public class TimeAdapter extends BaseArrayRecyclerAdapter<TimeEntity.ItemEntity>
 
     public void setSumTime(long sumTime) {
         this.sumTime = sumTime;
+        notifyDataSetChanged();
     }
 
     @Override

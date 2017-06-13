@@ -71,6 +71,7 @@ public class ProjectDetailActivity extends BaseActivity implements OnFragmentCal
     ProjectFileBoxFragment projectFileBoxFragment;
     boolean isCanlookAddTask = false, isCanAddTimer = false, isCanlookAddDocument = false;
     private boolean nameIsUp = false, timeIsUp = false, sizeIsUp = false;
+    long sumTime;
 
     public static void launch(@NonNull Context context, @NonNull String projectId, @NonNull String proectName) {
         if (context == null) return;

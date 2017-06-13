@@ -11,6 +11,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.andview.refreshview.XRefreshView;
+import com.google.gson.JsonElement;
 import com.icourt.alpha.R;
 import com.icourt.alpha.activity.TimerDetailActivity;
 import com.icourt.alpha.activity.TimerTimingActivity;
@@ -105,6 +106,7 @@ public class ProjectTimeFragment extends BaseFragment implements BaseRecyclerAda
             public void onRefresh(boolean isPullDown) {
                 super.onRefresh(isPullDown);
                 getData(true);
+                getSumTimeByMatterId();
             }
 
             @Override
@@ -120,6 +122,7 @@ public class ProjectTimeFragment extends BaseFragment implements BaseRecyclerAda
     public void onResume() {
         super.onResume();
         getData(true);
+        getSumTimeByMatterId();
     }
 
     @Override
@@ -136,7 +139,7 @@ public class ProjectTimeFragment extends BaseFragment implements BaseRecyclerAda
                         if (response.body().result.items.size() > 0) {
                             response.body().result.items.add(0, new TimeEntity.ItemEntity());
                         }
-                        timeAdapter.setSumTime(sumTime);
+
                         timeAdapter.bindData(isRefresh, response.body().result.items);
                         pageIndex += 1;
                         enableLoadMore(response.body().result.items);
@@ -148,6 +151,20 @@ public class ProjectTimeFragment extends BaseFragment implements BaseRecyclerAda
             public void onFailure(Call<ResEntity<TimeEntity>> call, Throwable t) {
                 super.onFailure(call, t);
                 stopRefresh();
+            }
+        });
+    }
+
+    /**
+     * 获取项目总计时
+     */
+    private void getSumTimeByMatterId() {
+        getApi().getSumTimeByMatterId(projectId).enqueue(new SimpleCallBack<JsonElement>() {
+            @Override
+            public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
+                if (response.body().result != null) {
+                    timeAdapter.setSumTime(response.body().result.getAsLong());
+                }
             }
         });
     }

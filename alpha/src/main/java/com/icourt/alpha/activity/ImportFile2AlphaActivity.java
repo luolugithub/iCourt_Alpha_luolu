@@ -76,6 +76,12 @@ public class ImportFile2AlphaActivity extends BaseActivity
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if (getIntent() != null) {
+            if (TextUtils.equals(getIntent().getAction(), CLOSE_ACTION)) {
+                finish();
+                return;
+            }
+        }
         setContentView(R.layout.activity_import_file_to_alpha);
         ButterKnife.bind(this);
         initView();

@@ -23,6 +23,8 @@ import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.adapterObserver.RefreshViewEmptyObserver;
 import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.entity.bean.FileBoxBean;
+import com.icourt.alpha.http.callback.SimpleCallBack;
+import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.ItemDecorationUtils;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 import com.icourt.api.RequestUtils;
@@ -65,6 +67,7 @@ public class FolderboxSelectActivity extends BaseActivity implements BaseRecycle
     RefreshLayout refreshLayout;
     ProjectFileBoxAdapter projectFileBoxAdapter;
     String projectId, authToken, seaFileRepoId, filePath, rootName;
+    boolean isCanlookAddDocument;
 
     public static void launch(@NonNull Context context, @NonNull String projectId, @NonNull String authToken, @NonNull String seaFileRepoId, @NonNull String filePath, @NonNull String rootName) {
         if (context == null) return;
@@ -125,8 +128,8 @@ public class FolderboxSelectActivity extends BaseActivity implements BaseRecycle
                 }
             }
         });
-        refreshLayout.setAutoRefresh(true);
-        refreshLayout.startRefresh();
+
+        checkAddTaskAndDocumentPms();
 
     }
 
@@ -139,6 +142,37 @@ public class FolderboxSelectActivity extends BaseActivity implements BaseRecycle
                 getUploadUrl(filePath);
                 break;
         }
+    }
+
+    /**
+     * 获取项目权限
+     */
+    private void checkAddTaskAndDocumentPms() {
+        getApi().permissionQuery(getLoginUserId(), "MAT", projectId).enqueue(new SimpleCallBack<List<String>>() {
+            @Override
+            public void onSuccess(Call<ResEntity<List<String>>> call, Response<ResEntity<List<String>>> response) {
+
+                if (response.body().result != null) {
+                    if (response.body().result.contains("MAT:matter.document:readwrite")) {
+                        isCanlookAddDocument = true;
+                        titleAction.setVisibility(View.VISIBLE);
+                        refreshLayout.startRefresh();
+                    } else {
+                        titleAction.setVisibility(View.INVISIBLE);
+                        enableEmptyView(null);
+                    }
+                } else {
+                    titleAction.setVisibility(View.INVISIBLE);
+                    enableEmptyView(null);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResEntity<List<String>>> call, Throwable t) {
+                super.onFailure(call, t);
+                enableEmptyView(null);
+            }
+        });
     }
 
     @Override

@@ -255,6 +255,7 @@ public interface ApiAlphaService {
 
     /**
      * 创建／编辑任务 选择项目列表
+     *
      * @param status
      * @param word
      * @return
@@ -863,6 +864,20 @@ public interface ApiAlphaService {
                                                 @Query("matterId") String matterId);
 
     /**
+     * 搜索项目下任务列表
+     *
+     * @param name
+     * @param stateType 0:未完成；1：已完成；2：已删除
+     * @param queryType 0:全部；1：新任务；2：我关注的；3我部门的
+     * @return
+     */
+    @GET("api/v2/taskflow/queryMobileTask")
+    Call<ResEntity<TaskEntity>> taskQueryByNameFromMatter(@Query("name") String name,
+                                                          @Query("stateType") int stateType,
+                                                          @Query("queryType") int queryType,
+                                                          @Query("matterId") String matterId);
+
+    /**
      * 搜索已完成任务列表
      *
      * @param assignTos
@@ -915,11 +930,21 @@ public interface ApiAlphaService {
 
     /**
      * 删除任务评论
+     *
      * @param id
      * @return
      */
     @DELETE("api/v2/comment/{id}")
     Call<ResEntity<JsonElement>> taskDeleteComment(@Path("id") String id);
+
+    /**
+     * 获取项目总计时
+     *
+     * @param matterId
+     * @return
+     */
+    @GET("api/v2/timing/timing/getSumByMatterId")
+    Call<ResEntity<JsonElement>> getSumTimeByMatterId(@Query("matterId") String matterId);
 }
 
 
