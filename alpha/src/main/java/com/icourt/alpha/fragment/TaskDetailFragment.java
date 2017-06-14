@@ -134,7 +134,7 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
                 case R.id.task_project_layout://选择项目
                     if (taskItemEntity != null) {
                         if (taskItemEntity.matter == null) {
-                            showProjectSelectDialogFragment();
+                            showProjectSelectDialogFragment(null);
                         } else {
                             showBottomMeau();
                         }
@@ -143,7 +143,7 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
                 case R.id.task_group_layout://选择任务组
                     if (taskItemEntity.matter != null) {
                         if (!TextUtils.isEmpty(taskItemEntity.matter.id)) {
-                            showTaskGroupSelectFragment(taskItemEntity.matter.id);
+                            showProjectSelectDialogFragment(taskItemEntity.matter.id);
                         }
                     }
                     break;
@@ -182,7 +182,7 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
                         dialog.dismiss();
                         switch (position) {
                             case 0:
-                                showProjectSelectDialogFragment();
+                                showProjectSelectDialogFragment(null);
                                 break;
                             case 1:
                                 if (taskItemEntity != null)
@@ -198,7 +198,7 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
     /**
      * 展示选择项目对话框
      */
-    public void showProjectSelectDialogFragment() {
+    public void showProjectSelectDialogFragment(String projectId) {
         String tag = "ProjectSelectDialogFragment";
         FragmentTransaction mFragTransaction = getChildFragmentManager().beginTransaction();
         Fragment fragment = getChildFragmentManager().findFragmentByTag(tag);
@@ -206,7 +206,7 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
             mFragTransaction.remove(fragment);
         }
 
-        ProjectSelectDialogFragment.newInstance()
+        ProjectSelectDialogFragment.newInstance(projectId)
                 .show(mFragTransaction, tag);
     }
 
