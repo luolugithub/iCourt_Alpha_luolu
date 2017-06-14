@@ -25,9 +25,9 @@ import static com.icourt.alpha.constants.Const.MSG_TYPE_VOICE;
 
 /**
  * Description  享聊推送提示文案
- *
- *  （ SDK 1.8.0 及以上版本支持）本地定制的通知栏提醒文案，目前支持配置Ticker文案（通知栏弹框条显示内容）和通知内容文案（下拉通知栏显示的通知内容）
- *   http://dev.netease.im/docs/product/IM%E5%8D%B3%E6%97%B6%E9%80%9A%E8%AE%AF/SDK%E5%BC%80%E5%8F%91%E9%9B%86%E6%88%90/Android%E5%BC%80%E5%8F%91%E9%9B%86%E6%88%90?#推送
+ * <p>
+ * （ SDK 1.8.0 及以上版本支持）本地定制的通知栏提醒文案，目前支持配置Ticker文案（通知栏弹框条显示内容）和通知内容文案（下拉通知栏显示的通知内容）
+ * http://dev.netease.im/docs/product/IM%E5%8D%B3%E6%97%B6%E9%80%9A%E8%AE%AF/SDK%E5%BC%80%E5%8F%91%E9%9B%86%E6%88%90/Android%E5%BC%80%E5%8F%91%E9%9B%86%E6%88%90?#推送
  * Company Beijing icourt
  * author  youxuan  E-mail:xuanyouwu@163.com
  * date createTime：2017/4/10
@@ -46,14 +46,13 @@ public class AlphaMessageNotifierCustomization
     private String getCombString(String nick, String content) {
         StringBuilder stringBuilder = new StringBuilder();
         if (!TextUtils.isEmpty(nick)) {
-            stringBuilder.append(nick + "     :");
+            stringBuilder.append(nick + ":");
         }
         if (!TextUtils.isEmpty(content)) {
             stringBuilder.append(content);
         } else {
             stringBuilder.append("您收到一条消息");
         }
-        LogUtils.d("----------->notify content:" + stringBuilder.toString());
         return stringBuilder.toString();
     }
 
@@ -118,12 +117,15 @@ public class AlphaMessageNotifierCustomization
 
     @Override
     public String makeNotifyContent(String nick, IMMessage message) {
-
-        return getMsgContent(nick, message); // 采用SDK默认文案
+        String notifyContent = getMsgContent(nick, message);
+        LogUtils.d("----------->makeNotifyContent notifyContent:" + notifyContent);
+        return notifyContent; // 采用SDK默认文案
     }
 
     @Override
     public String makeTicker(String nick, IMMessage message) {
-        return getMsgContent(nick, message); // 采用SDK默认文案
+        String notifyContent = getMsgContent(nick, message);
+        LogUtils.d("----------->makeTicker notifyContent:" + notifyContent);
+        return notifyContent; // 采用SDK默认文案
     }
 }

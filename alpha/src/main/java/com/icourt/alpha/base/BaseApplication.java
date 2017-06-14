@@ -200,6 +200,7 @@ public class BaseApplication extends MultiDexApplication {
 
         // 配置数据库加密秘钥
         options.databaseEncryptKey = "NETEASE";
+        options.sessionReadAck = true;
 
         // 配置是否需要预下载附件缩略图
         options.preloadAttach = true;
