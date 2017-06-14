@@ -153,6 +153,53 @@ public abstract class ChatBaseActivity
     private ContactDbService contactDbService;
     private AlphaUserInfo loadedLoginUserInfo;
 
+    @Override
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        EventBus.getDefault().register(this);
+        loadedLoginUserInfo = getLoginUserInfo();
+        contactDbService = new ContactDbService(getLoginUserId());
+        registerObservers(true);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        getMsgCollectedIds();
+        getMsgDingedIds();
+        switch (getIMChatType()) {
+            case CHAT_TYPE_P2P:
+                NIMClient.getService(MsgService.class)
+                        .setChattingAccount(getIMChatId(), SessionTypeEnum.P2P);
+                break;
+            case CHAT_TYPE_TEAM:
+                NIMClient.getService(MsgService.class)
+                        .setChattingAccount(getIMChatId(), SessionTypeEnum.Team);
+                break;
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        NIMClient.getService(MsgService.class)
+                .setChattingAccount(MsgService.MSG_CHATTING_ACCOUNT_NONE, SessionTypeEnum.None);
+    }
+
+    @Override
+    protected void onDestroy() {
+        clearUnReadNum();
+        registerObservers(false);
+        if (contactDbService != null) {
+            contactDbService.releaseService();
+        }
+        EventBus.getDefault().unregister(this);
+        if (mHandler != null) {
+            mHandler.removeCallbacksAndMessages(null);
+        }
+        super.onDestroy();
+    }
+
     /**
      * team更新
      *
@@ -203,15 +250,6 @@ public abstract class ChatBaseActivity
         return loadedLoginUserInfo != null ? loadedLoginUserInfo.getToken() : "";
     }
 
-    @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        EventBus.getDefault().register(this);
-        loadedLoginUserInfo = getLoginUserInfo();
-        contactDbService = new ContactDbService(getLoginUserId());
-        registerObservers(true);
-    }
-
     @Subscribe(threadMode = ThreadMode.MAIN)
     public final void onMessageEvent(IMMessageCustomBody customBody) {
         if (customBody == null) return;
@@ -236,24 +274,6 @@ public abstract class ChatBaseActivity
                         msgDingedIdsList.remove(customBody.ext.id);
                     }
                 }
-                break;
-        }
-    }
-
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        getMsgCollectedIds();
-        getMsgDingedIds();
-        switch (getIMChatType()) {
-            case CHAT_TYPE_P2P:
-                NIMClient.getService(MsgService.class)
-                        .setChattingAccount(getIMChatId(), SessionTypeEnum.P2P);
-                break;
-            case CHAT_TYPE_TEAM:
-                NIMClient.getService(MsgService.class)
-                        .setChattingAccount(getIMChatId(), SessionTypeEnum.Team);
                 break;
         }
     }
@@ -345,20 +365,6 @@ public abstract class ChatBaseActivity
     }
 
 
-    @Override
-    protected void onDestroy() {
-        clearUnReadNum();
-        registerObservers(false);
-        if (contactDbService != null) {
-            contactDbService.releaseService();
-        }
-        EventBus.getDefault().unregister(this);
-        if (mHandler != null) {
-            mHandler.removeCallbacksAndMessages(null);
-        }
-        super.onDestroy();
-    }
-
     private void registerObservers(boolean register) {
         MsgServiceObserve service = NIMClient.getService(MsgServiceObserve.class);
         service.observeMessageReceipt(messageReceiptObserver, register);
@@ -437,13 +443,6 @@ public abstract class ChatBaseActivity
                 .subscribe();
     }
 
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        NIMClient.getService(MsgService.class)
-                .setChattingAccount(MsgService.MSG_CHATTING_ACCOUNT_NONE, SessionTypeEnum.None);
-    }
 
     /**
      * 从本地删除消息
@@ -1024,7 +1023,7 @@ public abstract class ChatBaseActivity
                     break;
                 case MSG_TYPE_LINK:
                     menuItems.clear();
-                    menuItems.addAll(Arrays.asList(
+                    menuItems.addAll(Arrays.asList("复制",
                             isDinged(iMMessageCustomBody.id) ? "取消钉" : "钉",
                             isCollected(iMMessageCustomBody.id) ? "取消收藏" : "收藏"));
                     menuItems.add("转发");
@@ -1089,7 +1088,13 @@ public abstract class ChatBaseActivity
                     public void onClick(DialogInterface dialog, int which) {
                         String actionName = menuItems.get(which);
                         if (TextUtils.equals(actionName, "复制")) {
-                            msgActionCopy(customIMBody.content);
+                            if (customIMBody.show_type == MSG_TYPE_LINK) {
+                                if (customIMBody.ext != null) {
+                                    msgActionCopy(customIMBody.ext.url);
+                                }
+                            } else {
+                                msgActionCopy(customIMBody.content);
+                            }
                         } else if (TextUtils.equals(actionName, "钉")) {
                             if (customIMBody.show_type == MSG_TYPE_DING) {
                                 msgActionDing(true, customIMBody.ext != null ? customIMBody.ext.id : 0);
@@ -1270,7 +1275,7 @@ public abstract class ChatBaseActivity
                     public void onSuccess(Call<ResEntity<Boolean>> call, Response<ResEntity<Boolean>> response) {
                         if (response.body().result != null && response.body().result.booleanValue()) {
                             showTopSnackBar("取消收藏成功");
-                            EventBus.getDefault().post(new MessageEvent(MessageEvent.ACTION_MSG_CANCEL_COLLECT,msgId));
+                            EventBus.getDefault().post(new MessageEvent(MessageEvent.ACTION_MSG_CANCEL_COLLECT, msgId));
                             msgCollectedIdsList.remove(msgId);
                         } else {
                             showTopSnackBar("取消收藏失败");
