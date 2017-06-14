@@ -22,6 +22,7 @@ import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.SearchItemAdapter;
 import com.icourt.alpha.adapter.SearchPolymerizationAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
+import com.icourt.alpha.adapter.baseadapter.adapterObserver.DataChangeAdapterObserver;
 import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.db.convertor.IConvertModel;
 import com.icourt.alpha.db.convertor.ListConvertor;
@@ -96,6 +97,8 @@ public class SearchPolymerizationActivity extends BaseActivity implements BaseRe
     RecyclerView recyclerView;
     @BindView(R.id.softKeyboardSizeWatchLayout)
     SoftKeyboardSizeWatchLayout softKeyboardSizeWatchLayout;
+    @BindView(R.id.contentEmptyText)
+    TextView contentEmptyText;
     SearchPolymerizationAdapter searchPolymerizationAdapter;
     @BindView(R.id.searchLayout)
     LinearLayout searchLayout;
@@ -104,6 +107,7 @@ public class SearchPolymerizationActivity extends BaseActivity implements BaseRe
     public static final int SEARCH_PRIORITY_CONTACT = 1;
     public static final int SEARCH_PRIORITY_CHAT_HISTORTY = 2;
     public static final int SEARCH_PRIORITY_TEAM = 3;
+
 
     @IntDef({SEARCH_PRIORITY_CONTACT,
             SEARCH_PRIORITY_CHAT_HISTORTY,
@@ -134,6 +138,14 @@ public class SearchPolymerizationActivity extends BaseActivity implements BaseRe
         super.initView();
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setAdapter(searchPolymerizationAdapter = new SearchPolymerizationAdapter());
+        searchPolymerizationAdapter.registerAdapterDataObserver(new DataChangeAdapterObserver() {
+            @Override
+            protected void updateUI() {
+                if (contentEmptyText != null) {
+                    contentEmptyText.setVisibility(searchPolymerizationAdapter.getItemCount() > 0 ? View.GONE : View.VISIBLE);
+                }
+            }
+        });
         searchPolymerizationAdapter.setOnItemClickListener(this);
         searchPolymerizationAdapter.setOnItemChildClickListener(this);
         etSearchName.addTextChangedListener(new TextWatcher() {

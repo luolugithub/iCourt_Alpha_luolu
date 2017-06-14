@@ -88,6 +88,21 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:visibility="gone" />
+
+            <TextView
+                android:id="@id/contentEmptyText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:drawablePadding="26dp"
+                android:drawableTop="@mipmap/icon_placeholder_warn"
+                android:gravity="center"
+                android:maxLines="3"
+                android:paddingLeft="10dp"
+                android:paddingRight="10dp"
+                android:text="暂无数据"
+                android:textSize="14dp"
+                android:visibility="gone" />
         </FrameLayout>
 
     </LinearLayout>
