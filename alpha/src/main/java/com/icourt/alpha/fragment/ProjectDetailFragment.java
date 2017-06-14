@@ -175,59 +175,65 @@ public class ProjectDetailFragment extends BaseFragment {
                 basicItemEntities.add(itemEntity);
             }
             if (projectDetailBean.groups != null) {//负责部门
-                ProjectBasicItemEntity itemEntity = new ProjectBasicItemEntity();
-                if (projectDetailBean.groups.size() > 1) {
-                    itemEntity.key = "负责部门 (" + projectDetailBean.groups.size() + ")";
-                } else {
-                    itemEntity.key = "负责部门";
+                if (projectDetailBean.groups.size() > 0) {
+                    ProjectBasicItemEntity itemEntity = new ProjectBasicItemEntity();
+                    if (projectDetailBean.groups.size() > 1) {
+                        itemEntity.key = "负责部门 (" + projectDetailBean.groups.size() + ")";
+                    } else {
+                        itemEntity.key = "负责部门";
+                    }
+                    StringBuffer buffer = new StringBuffer();
+                    for (ProjectDetailEntity.GroupsBean group : projectDetailBean.groups) {
+                        buffer.append(group.name).append(",");
+                    }
+                    itemEntity.value = buffer.toString();
+                    if (itemEntity.value.length() > 0) {
+                        itemEntity.value = itemEntity.value.substring(0, itemEntity.value.length() - 1);
+                    }
+                    itemEntity.type = ProjectBasicItemEntity.PROJECT_DEPARTMENT_TYPE;
+                    basicItemEntities.add(itemEntity);
                 }
-                StringBuffer buffer = new StringBuffer();
-                for (ProjectDetailEntity.GroupsBean group : projectDetailBean.groups) {
-                    buffer.append(group.name).append(",");
-                }
-                itemEntity.value = buffer.toString();
-                if (itemEntity.value.length() > 0) {
-                    itemEntity.value = itemEntity.value.substring(0, itemEntity.value.length() - 1);
-                }
-                itemEntity.type = ProjectBasicItemEntity.PROJECT_DEPARTMENT_TYPE;
-                basicItemEntities.add(itemEntity);
             }
             if (projectDetailBean.clients != null) {//客户
-                ProjectBasicItemEntity itemEntity = new ProjectBasicItemEntity();
-                if (projectDetailBean.clients.size() > 1) {
-                    itemEntity.key = "客户 (" + projectDetailBean.clients.size() + ")";
-                } else {
-                    itemEntity.key = "客户";
+                if (projectDetailBean.clients.size() > 0) {
+                    ProjectBasicItemEntity itemEntity = new ProjectBasicItemEntity();
+                    if (projectDetailBean.clients.size() > 1) {
+                        itemEntity.key = "客户 (" + projectDetailBean.clients.size() + ")";
+                    } else {
+                        itemEntity.key = "客户";
+                    }
+                    StringBuffer buffer = new StringBuffer();
+                    for (ProjectDetailEntity.ClientsBean client : projectDetailBean.clients) {
+                        buffer.append(client.contactName).append(",");
+                    }
+                    itemEntity.value = buffer.toString();
+                    if (itemEntity.value.length() > 0) {
+                        itemEntity.value = itemEntity.value.substring(0, itemEntity.value.length() - 1);
+                    }
+                    itemEntity.type = ProjectBasicItemEntity.PROJECT_CLIENT_TYPE;
+                    basicItemEntities.add(itemEntity);
                 }
-                StringBuffer buffer = new StringBuffer();
-                for (ProjectDetailEntity.ClientsBean client : projectDetailBean.clients) {
-                    buffer.append(client.contactName).append(",");
-                }
-                itemEntity.value = buffer.toString();
-                if (itemEntity.value.length() > 0) {
-                    itemEntity.value = itemEntity.value.substring(0, itemEntity.value.length() - 1);
-                }
-                itemEntity.type = ProjectBasicItemEntity.PROJECT_CLIENT_TYPE;
-                basicItemEntities.add(itemEntity);
             }
 
             if (projectDetailBean.litigants != null) {//其他当事人
-                ProjectBasicItemEntity itemEntity = new ProjectBasicItemEntity();
-                if (projectDetailBean.litigants.size() > 1) {
-                    itemEntity.key = "其他当事人 (" + projectDetailBean.litigants.size() + ")";
-                } else {
-                    itemEntity.key = "其他当事人";
+                if (projectDetailBean.litigants.size() > 0) {
+                    ProjectBasicItemEntity itemEntity = new ProjectBasicItemEntity();
+                    if (projectDetailBean.litigants.size() > 1) {
+                        itemEntity.key = "其他当事人 (" + projectDetailBean.litigants.size() + ")";
+                    } else {
+                        itemEntity.key = "其他当事人";
+                    }
+                    StringBuffer buffer = new StringBuffer();
+                    for (ProjectDetailEntity.LitigantsBean litigant : projectDetailBean.litigants) {
+                        buffer.append(litigant.contactName).append(",");
+                    }
+                    itemEntity.value = buffer.toString();
+                    if (itemEntity.value.length() > 0) {
+                        itemEntity.value = itemEntity.value.substring(0, itemEntity.value.length() - 1);
+                    }
+                    itemEntity.type = ProjectBasicItemEntity.PROJECT_OTHER_PERSON_TYPE;
+                    basicItemEntities.add(itemEntity);
                 }
-                StringBuffer buffer = new StringBuffer();
-                for (ProjectDetailEntity.LitigantsBean litigant : projectDetailBean.litigants) {
-                    buffer.append(litigant.contactName).append(",");
-                }
-                itemEntity.value = buffer.toString();
-                if (itemEntity.value.length() > 0) {
-                    itemEntity.value = itemEntity.value.substring(0, itemEntity.value.length() - 1);
-                }
-                itemEntity.type = ProjectBasicItemEntity.PROJECT_OTHER_PERSON_TYPE;
-                basicItemEntities.add(itemEntity);
             }
 
             if (projectDetailBean.beginDate > 0 && projectDetailBean.endDate > 0) {//项目时间
@@ -239,30 +245,34 @@ public class ProjectDetailFragment extends BaseFragment {
             }
 
             if (projectDetailBean.originatingAttorneys != null) {//案源律师
-                ProjectBasicItemEntity itemEntity = new ProjectBasicItemEntity();
-                if (projectDetailBean.originatingAttorneys.size() > 1) {
-                    itemEntity.key = "案源律师 (" + projectDetailBean.originatingAttorneys.size() + ")";
-                } else {
-                    itemEntity.key = "案源律师";
+                if (projectDetailBean.originatingAttorneys.size() > 0) {
+                    ProjectBasicItemEntity itemEntity = new ProjectBasicItemEntity();
+                    if (projectDetailBean.originatingAttorneys.size() > 1) {
+                        itemEntity.key = "案源律师 (" + projectDetailBean.originatingAttorneys.size() + ")";
+                    } else {
+                        itemEntity.key = "案源律师";
+                    }
+                    StringBuffer buffer = new StringBuffer();
+                    for (ProjectDetailEntity.OriginatingAttorneyBean originat : projectDetailBean.originatingAttorneys) {
+                        buffer.append(originat.attorneyName).append(",");
+                    }
+                    itemEntity.value = buffer.toString();
+                    if (itemEntity.value.length() > 0) {
+                        itemEntity.value = itemEntity.value.substring(0, itemEntity.value.length() - 1);
+                    }
+                    itemEntity.type = ProjectBasicItemEntity.PROJECT_ANYUAN_LAWYER_TYPE;
+                    basicItemEntities.add(itemEntity);
                 }
-                StringBuffer buffer = new StringBuffer();
-                for (ProjectDetailEntity.OriginatingAttorneyBean originat : projectDetailBean.originatingAttorneys) {
-                    buffer.append(originat.attorneyName).append(",");
-                }
-                itemEntity.value = buffer.toString();
-                if (itemEntity.value.length() > 0) {
-                    itemEntity.value = itemEntity.value.substring(0, itemEntity.value.length() - 1);
-                }
-                itemEntity.type = ProjectBasicItemEntity.PROJECT_ANYUAN_LAWYER_TYPE;
-                basicItemEntities.add(itemEntity);
             }
 
             projectBasicInfoAdapter.bindData(true, basicItemEntities);
 
             if (projectDetailBean.participants != null) {//项目成员
-                projectMemberLayout.setVisibility(View.VISIBLE);
-                projectMemberCount.setText("项目成员（" + projectDetailBean.participants.size() + "）");
-                projectMemberAdapter.bindData(false, projectDetailBean.participants);
+                if (projectDetailBean.participants.size() > 0) {
+                    projectMemberLayout.setVisibility(View.VISIBLE);
+                    projectMemberCount.setText("项目成员（" + projectDetailBean.participants.size() + "）");
+                    projectMemberAdapter.bindData(false, projectDetailBean.participants);
+                }
             } else {
                 projectMemberLayout.setVisibility(View.GONE);
             }
@@ -274,7 +284,7 @@ public class ProjectDetailFragment extends BaseFragment {
                 serviceContentLayout.setVisibility(View.GONE);
             }
             if (projectDetailBean.matterType == 0) {//争议解决
-                procedureLayout.setVisibility(View.VISIBLE);
+                procedureLayout.setVisibility(View.GONE);
                 baseFragmentAdapter = new BaseFragmentAdapter(getChildFragmentManager());
                 projectViewpager.setAdapter(baseFragmentAdapter);
                 baseFragmentAdapter.bindData(true,
