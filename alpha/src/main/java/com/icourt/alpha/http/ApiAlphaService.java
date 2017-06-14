@@ -945,6 +945,14 @@ public interface ApiAlphaService {
      */
     @GET("api/v2/timing/timing/getSumByMatterId")
     Call<ResEntity<JsonElement>> getSumTimeByMatterId(@Query("matterId") String matterId);
+
+    /**
+     * 新任务修改为已读任务
+     * @param ids
+     * @return
+     */
+    @PUT("api/v2/taskflow/newTaskAfterReadingIs")
+    Call<ResEntity<JsonElement>> checkAllNewTask(@Query("ids") List<String> ids);
 }
 
 

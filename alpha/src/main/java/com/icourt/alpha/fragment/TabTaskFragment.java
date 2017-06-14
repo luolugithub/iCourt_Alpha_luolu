@@ -53,9 +53,14 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
     BaseFragmentAdapter baseFragmentAdapter;
     @BindView(R.id.titleAction2)
     ImageView titleAction2;
+    OnCheckAllNewTaskListener onCheckAllNewTaskListener;
 
     public static TabTaskFragment newInstance() {
         return new TabTaskFragment();
+    }
+
+    public void setOnCheckAllNewTaskListener(OnCheckAllNewTaskListener onCheckAllNewTaskListener) {
+        this.onCheckAllNewTaskListener = onCheckAllNewTaskListener;
     }
 
     @Nullable
@@ -77,6 +82,44 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
                         TaskListFragment.newInstance(0),
                         TaskListFragment.newInstance(1),
                         TaskListFragment.newInstance(2)));
+        viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+
+            }
+
+            @Override
+            public void onPageSelected(int position) {
+                setTititleActionIcon(position);
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+
+            }
+        });
+    }
+
+    /**
+     * 设置顶部icon
+     *
+     * @param position
+     */
+    private void setTititleActionIcon(int position) {
+        switch (position) {
+            case 0://全部
+                titleAction.setImageResource(R.mipmap.header_icon_add);
+                titleAction2.setImageResource(R.mipmap.header_icon_more);
+                break;
+            case 1://新任务
+                titleAction.setImageResource(R.mipmap.header_icon_add);
+                titleAction2.setImageResource(R.mipmap.header_icon_checkall);
+                break;
+            case 2://我关注的
+                titleAction.setImageResource(R.mipmap.header_icon_add);
+                titleAction2.setImageResource(R.mipmap.header_icon_more);
+                break;
+        }
     }
 
     @OnClick({R.id.titleAction, R.id.titleAction2})
@@ -88,24 +131,29 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
                 TaskCreateActivity.launch(getContext(), null, null);
                 break;
             case R.id.titleAction2:
+                if (viewPager.getCurrentItem() != 1) {
 //                new BottomActionDialog(getContext(), null, Arrays.asList("我分配的任务", "已完成的任务", "选择查看对象"), new BottomActionDialog.OnActionItemClickListener() {
-                new BottomActionDialog(getContext(), null, Arrays.asList( "查看他人任务", "查看已完成的"), new BottomActionDialog.OnActionItemClickListener() {
-                    @Override
-                    public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
-                        dialog.dismiss();
-                        switch (position) {
+                    new BottomActionDialog(getContext(), null, Arrays.asList("查看他人任务", "查看已完成的"), new BottomActionDialog.OnActionItemClickListener() {
+                        @Override
+                        public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
+                            dialog.dismiss();
+                            switch (position) {
 //                            case 0:
 //                                MyAllotTaskActivity.launch(getContext(), TaskOtherListFragment.MY_ALLOT_TYPE, null);
 //                                break;
-                            case 0:
-                                showMemberSelectDialogFragment();
-                                break;
-                            case 1:
-                                MyFinishTaskActivity.launch(getContext());
-                                break;
+                                case 0:
+                                    showMemberSelectDialogFragment();
+                                    break;
+                                case 1:
+                                    MyFinishTaskActivity.launch(getContext());
+                                    break;
+                            }
                         }
-                    }
-                }).show();
+                    }).show();
+                } else {
+                    if (onCheckAllNewTaskListener != null)
+                        onCheckAllNewTaskListener.onCheckAll();
+                }
                 break;
         }
     }
@@ -141,5 +189,9 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
                 MyAllotTaskActivity.launch(getContext(), TaskOtherListFragment.SELECT_OTHER_TYPE, ids);
             }
         }
+    }
+
+    public interface OnCheckAllNewTaskListener {
+        void onCheckAll();
     }
 }

@@ -64,7 +64,7 @@ import retrofit2.Response;
  * version 2.0.0
  */
 
-public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShowFragmenDialogListener, OnFragmentCallBackListener, ProjectSelectDialogFragment.OnProjectTaskGroupSelectListener {
+public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShowFragmenDialogListener, OnFragmentCallBackListener, ProjectSelectDialogFragment.OnProjectTaskGroupSelectListener, TabTaskFragment.OnCheckAllNewTaskListener {
 
     public static final int TYPE_ALL = 0;//全部
     public static final int TYPE_NEW = 1;//新任务
@@ -150,6 +150,11 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
         noDueTaskEntities = new ArrayList<>();
         newTaskEntities = new ArrayList<>();
         datedTaskEntities = new ArrayList<>();
+        if (type == 1) {
+            if (getParentFragment() instanceof TabTaskFragment) {
+                ((TabTaskFragment) getParentFragment()).setOnCheckAllNewTaskListener(this);
+            }
+        }
     }
 
     @Override
@@ -157,7 +162,7 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
         super.onClick(v);
         switch (v.getId()) {
             case R.id.rl_comm_search:
-                SearchProjectActivity.launchTask(getContext(),getLoginUserId(), type, SearchProjectActivity.SEARCH_TASK);
+                SearchProjectActivity.launchTask(getContext(), getLoginUserId(), type, SearchProjectActivity.SEARCH_TASK);
                 break;
             default:
                 super.onClick(v);
@@ -201,7 +206,6 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
                     if (taskItemEntity.dueTime > 0) {
                         if (TextUtils.equals(DateUtils.getTimeDateFormatYear(taskItemEntity.dueTime), DateUtils.getTimeDateFormatYear(DateUtils.millis())) || DateUtils.getDayDiff(new Date(DateUtils.millis()), new Date(taskItemEntity.dueTime)) < 0) {
                             todayTaskEntities.add(taskItemEntity);
-
                         } else if (DateUtils.getDayDiff(new Date(DateUtils.millis()), new Date(taskItemEntity.dueTime)) <= 3 && DateUtils.getDayDiff(new Date(DateUtils.millis()), new Date(taskItemEntity.dueTime)) > 0) {
                             beAboutToTaskEntities.add(taskItemEntity);
                         } else if (DateUtils.getDayDiff(new Date(DateUtils.millis()), new Date(taskItemEntity.dueTime)) > 3) {
@@ -212,8 +216,16 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
                     } else {
                         noDueTaskEntities.add(taskItemEntity);
                     }
-                    if (DateUtils.millis() - taskItemEntity.assignTime <= (24 * 60 * 60 * 1000)) {
-                        newTaskEntities.add(taskItemEntity);
+                    if (type == 1) {
+                        if (DateUtils.millis() - taskItemEntity.assignTime <= (24 * 60 * 60 * 1000)) {
+                            if (!TextUtils.isEmpty(taskItemEntity.readUserIds)) {
+                                if (!taskItemEntity.readUserIds.contains(getLoginUserId())) {
+                                    newTaskEntities.add(taskItemEntity);
+                                }
+                            } else {
+                                newTaskEntities.add(taskItemEntity);
+                            }
+                        }
                     }
                 }
                 if (type != 1) {
@@ -576,5 +588,26 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
             e.printStackTrace();
         }
         return null;
+    }
+
+    /**
+     * 我知道了
+     */
+    @Override
+    public void onCheckAll() {
+        if (newTaskEntities == null) return;
+        if (newTaskEntities.size() <= 0) return;
+        List<String> ids = new ArrayList();
+        for (int i = 0; i < newTaskEntities.size(); i++) {
+            ids.add(newTaskEntities.get(i).id);
+        }
+        getApi().checkAllNewTask(ids).enqueue(new SimpleCallBack<JsonElement>() {
+            @Override
+            public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
+                if (taskAdapter != null) {
+                    taskAdapter.clearData();
+                }
+            }
+        });
     }
 }

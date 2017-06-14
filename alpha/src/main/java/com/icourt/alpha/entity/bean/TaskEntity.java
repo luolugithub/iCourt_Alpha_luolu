@@ -43,6 +43,7 @@ public class TaskEntity implements Serializable {
         public int attentioned;//关注   0:未关注  1:关注
         public int type;//类型   0:任务  1:任务组
         public boolean isTiming;
+        public String readUserIds;//查看过此任务的人的id
 
         public ParentFlowEntity parentFlow;//详情任务组信息
         public MatterEntity matter;//项目信息
