@@ -38,6 +38,7 @@ import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.ActionConstants;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.ItemDecorationUtils;
+import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.view.SoftKeyboardSizeWatchLayout;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 import com.icourt.alpha.widget.dialog.BottomActionDialog;
@@ -329,31 +330,68 @@ public class CommentListActivity extends BaseActivity implements BaseRecyclerAda
                 return false;
             }
             if (TextUtils.equals(entity.createUser.userId.toLowerCase(), getLoginUserId().toLowerCase())) {
-                showBottomMeau(entity);
+                showSelfBottomMeau(entity);
+            } else {
+                showOthersBottomMeau(entity);
             }
         }
         return true;
     }
 
     /**
-     * 显示底部菜单
+     * 显示我的底部菜单
      */
-    private void showBottomMeau(final CommentEntity.CommentItemEntity commentItemEntity) {
+    private void showSelfBottomMeau(final CommentEntity.CommentItemEntity commentItemEntity) {
         if (commentItemEntity == null) return;
         new BottomActionDialog(getContext(),
                 null,
-                Arrays.asList("删除"),
+                Arrays.asList("复制", "删除"),
                 new BottomActionDialog.OnActionItemClickListener() {
                     @Override
                     public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
                         dialog.dismiss();
                         switch (position) {
                             case 0:
+                                commentActionCopy(commentItemEntity.content);
+                                break;
+                            case 1:
                                 deleteComment(commentItemEntity);
                                 break;
                         }
                     }
                 }).show();
+    }
+
+    /**
+     * 显示他人底部菜单
+     */
+    private void showOthersBottomMeau(final CommentEntity.CommentItemEntity commentItemEntity) {
+        if (commentItemEntity == null) return;
+        new BottomActionDialog(getContext(),
+                null,
+                Arrays.asList("复制"),
+                new BottomActionDialog.OnActionItemClickListener() {
+                    @Override
+                    public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
+                        dialog.dismiss();
+                        switch (position) {
+                            case 0:
+                                commentActionCopy(commentItemEntity.content);
+                                break;
+                        }
+                    }
+                }).show();
+    }
+
+    /**
+     * 评论复制
+     *
+     * @param charSequence
+     */
+    protected final void commentActionCopy(CharSequence charSequence) {
+        if (TextUtils.isEmpty(charSequence)) return;
+        SystemUtils.copyToClipboard(getContext(), "comment", charSequence);
+        showTopSnackBar("复制成功");
     }
 
     /**

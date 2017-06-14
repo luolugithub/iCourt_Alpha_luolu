@@ -348,7 +348,7 @@ public class TabMineFragment extends BaseFragment {
             @Override
             public void onSuccess(Call<ResEntity<UserDataEntity>> call, Response<ResEntity<UserDataEntity>> response) {
                 if (response.body().result != null) {
-                    if(todayDuractionTv==null) return;
+                    if (todayDuractionTv == null) return;
                     todayDuractionTv.setText(getHm(response.body().result.timingCountToday));
                     monthDuractionTv.setText(getHm(response.body().result.timingCountMonth));
                     doneTaskTv.setText(response.body().result.taskMonthConutDone + "/" + response.body().result.taskMonthConut);

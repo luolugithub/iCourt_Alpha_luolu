@@ -133,11 +133,11 @@ public class TaskAdapter extends BaseArrayRecyclerAdapter<TaskEntity>
         }
         if (isEditTask && isDeleteTask) {
             showLongMeau(view.getContext(), Arrays.asList(
+                    new ItemsEntity("项目/任务组", R.mipmap.project_orange),
                     new ItemsEntity("分配给", R.mipmap.assign_orange),
                     new ItemsEntity("到期日", R.mipmap.date_orange),
-                    new ItemsEntity("查看详情", R.mipmap.info_orange),
-                    new ItemsEntity("项目/任务组", R.mipmap.project_orange),
                     timeEntity,
+                    new ItemsEntity("查看详情", R.mipmap.info_orange),
                     new ItemsEntity("删除", R.mipmap.trash_orange)), taskItemEntity);
         } else if (isDeleteTask && !isEditTask) {
             showLongMeau(view.getContext(), Arrays.asList(
@@ -146,11 +146,13 @@ public class TaskAdapter extends BaseArrayRecyclerAdapter<TaskEntity>
                     new ItemsEntity("删除", R.mipmap.trash_orange)), taskItemEntity);
         } else if (!isDeleteTask && isEditTask) {
             showLongMeau(view.getContext(), Arrays.asList(
+                    new ItemsEntity("项目/任务组", R.mipmap.project_orange),
                     new ItemsEntity("分配给", R.mipmap.assign_orange),
                     new ItemsEntity("到期日", R.mipmap.date_orange),
-                    new ItemsEntity("查看详情", R.mipmap.info_orange),
-                    new ItemsEntity("项目/任务组", R.mipmap.project_orange),
-                    timeEntity), taskItemEntity);
+                    timeEntity,
+                    new ItemsEntity("查看详情", R.mipmap.info_orange)
+                    ),
+                    taskItemEntity);
         }
         return true;
     }
