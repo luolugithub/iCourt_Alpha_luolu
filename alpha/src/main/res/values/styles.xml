@@ -153,6 +153,16 @@
         <item name="tabSelectedTextColor">@color/alpha_font_color_black</item>
     </style>
 
+    <!-- 标题栏的tab 黑色较重 -->
+    <style name="AlphaTitleTabLayout" parent="AlphaTabLayout">
+        <item name="tabTextAppearance">@style/CustomTitleTabTextAppearance</item>
+        <item name="tabSelectedTextColor">@color/alpha_font_color_title</item>
+    </style>
+
+    <style name="CustomTitleTabTextAppearance" parent="CustomTabTextAppearance">
+        <item name="android:textSize">18sp</item>
+    </style>
+
     <!--  tablayout tab -->
     <style name="CustomTabTextAppearance" parent="TextAppearance.Design.Tab">
         <item name="android:textSize">16sp</item>

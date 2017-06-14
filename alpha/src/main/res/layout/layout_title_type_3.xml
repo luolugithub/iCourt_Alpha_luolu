@@ -26,7 +26,7 @@
             android:layout_marginLeft="5dp"
             android:text="取消"
             android:textColor="@color/alpha_font_color_gray"
-            android:textSize="@dimen/alpha_font_size_mini" />
+            android:textSize="@dimen/alpha_font_size_comm" />
 
         <TextView
             android:id="@id/titleContent"
@@ -39,6 +39,7 @@
             android:gravity="center"
             android:maxLines="1"
             android:text="标题"
+            android:textStyle="bold"
             android:textColor="@color/alpha_font_color_title"
             android:textSize="@dimen/alpha_font_size_title" />
 
@@ -53,7 +54,7 @@
             android:layout_marginRight="5dp"
             android:text="保存"
             android:textColor="@color/alpha_font_color_orange"
-            android:textSize="@dimen/alpha_font_size_mini" />
+            android:textSize="@dimen/alpha_font_size_comm" />
     </LinearLayout>
 
 </android.support.design.widget.AppBarLayout>

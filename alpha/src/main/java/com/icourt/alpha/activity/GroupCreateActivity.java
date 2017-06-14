@@ -22,7 +22,6 @@ import android.widget.Switch;
 import android.widget.TextView;
 
 import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.IMContactAdapter;
@@ -32,6 +31,7 @@ import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.constants.Const;
 import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.icourt.alpha.entity.bean.GroupContactBean;
+import com.icourt.alpha.entity.bean.GroupEntity;
 import com.icourt.alpha.fragment.dialogfragment.BaseDialogFragment;
 import com.icourt.alpha.fragment.dialogfragment.ContactSelectDialogFragment;
 import com.icourt.alpha.http.callback.SimpleCallBack;
@@ -239,16 +239,25 @@ public class GroupCreateActivity extends BaseActivity implements OnFragmentCallB
         groupJsonObject.add("members", memberArray);
 
         getChatApi().groupCreate(RequestUtils.createJsonBody(groupJsonObject.toString()))
-                .enqueue(new SimpleCallBack<JsonElement>() {
+                .enqueue(new SimpleCallBack<GroupEntity>() {
                     @Override
-                    public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
+                    public void onSuccess(Call<ResEntity<GroupEntity>> call, Response<ResEntity<GroupEntity>> response) {
                         dismissLoadingDialog();
-                        showToast("创建成功");
+                        if (response.body().result != null) {
+                            ChatActivity.launchTEAM(
+                                    getContext(),
+                                    response.body().result.tid,
+                                    response.body().result.name,
+                                    0,
+                                    0);
+                        } else {
+                            showToast("创建成功");
+                        }
                         finish();
                     }
 
                     @Override
-                    public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
+                    public void onFailure(Call<ResEntity<GroupEntity>> call, Throwable t) {
                         super.onFailure(call, t);
                         dismissLoadingDialog();
                     }

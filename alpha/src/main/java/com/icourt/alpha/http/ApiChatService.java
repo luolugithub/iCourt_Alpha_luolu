@@ -43,7 +43,7 @@ public interface ApiChatService {
      * @return
      */
     @POST("im/v1/groups")
-    Call<ResEntity<JsonElement>> groupCreate(@Body RequestBody groupInfo);
+    Call<ResEntity<GroupEntity>> groupCreate(@Body RequestBody groupInfo);
 
 
     /**
