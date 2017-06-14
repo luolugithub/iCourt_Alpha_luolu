@@ -22,7 +22,6 @@ import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.SearchItemAdapter;
 import com.icourt.alpha.adapter.SearchPolymerizationAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
-import com.icourt.alpha.adapter.baseadapter.adapterObserver.DataChangeAdapterObserver;
 import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.db.convertor.IConvertModel;
 import com.icourt.alpha.db.convertor.ListConvertor;
@@ -138,14 +137,6 @@ public class SearchPolymerizationActivity extends BaseActivity implements BaseRe
         super.initView();
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setAdapter(searchPolymerizationAdapter = new SearchPolymerizationAdapter());
-        searchPolymerizationAdapter.registerAdapterDataObserver(new DataChangeAdapterObserver() {
-            @Override
-            protected void updateUI() {
-                if (contentEmptyText != null) {
-                    contentEmptyText.setVisibility(searchPolymerizationAdapter.getItemCount() > 0 ? View.GONE : View.VISIBLE);
-                }
-            }
-        });
         searchPolymerizationAdapter.setOnItemClickListener(this);
         searchPolymerizationAdapter.setOnItemChildClickListener(this);
         etSearchName.addTextChangedListener(new TextWatcher() {
@@ -272,6 +263,9 @@ public class SearchPolymerizationActivity extends BaseActivity implements BaseRe
                     @Override
                     public void accept(List<SearchPolymerizationEntity> searchPolymerizationEntities) throws Exception {
                         searchPolymerizationAdapter.bindData(true, searchPolymerizationEntities);
+                        if (contentEmptyText != null) {
+                            contentEmptyText.setVisibility(searchPolymerizationAdapter.getItemCount() > 0 ? View.GONE : View.VISIBLE);
+                        }
                     }
                 });
     }
