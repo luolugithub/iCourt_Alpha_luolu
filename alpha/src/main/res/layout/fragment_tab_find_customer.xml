@@ -33,9 +33,10 @@
             <ImageView
                 android:id="@id/titleAction"
                 android:layout_width="38dp"
-                android:layout_height="38dp"
+                android:layout_height="match_parent"
                 android:background="?attr/selectableItemBackground"
                 android:padding="10dp"
+                android:scaleType="fitCenter"
                 android:src="@mipmap/header_icon_add" />
         </LinearLayout>
     </android.support.design.widget.AppBarLayout>

@@ -48,6 +48,7 @@ import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.concurrent.TimeUnit;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -178,6 +179,10 @@ public class TimerDetailActivity extends BaseTimerActivity
             useTimeDate.setText(DateUtils.getTimeDateFormatYear(selectedStartDate.getTime().getTime()));
             startTimeMinTv.setText(DateUtils.getHHmm(selectedStartDate.getTime().getTime()));
 
+            //避免服务器小于1分钟
+            if (itemEntity.endTime - itemEntity.startTime < TimeUnit.MINUTES.toMillis(1)) {
+                itemEntity.endTime = itemEntity.startTime + TimeUnit.MINUTES.toMillis(1);
+            }
             selectedEndDate = Calendar.getInstance();
             selectedEndDate.setTimeInMillis(itemEntity.endTime);
             stopTimeMinTv.setText(DateUtils.getHHmm(selectedEndDate.getTime().getTime()));
