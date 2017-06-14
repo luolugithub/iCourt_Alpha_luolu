@@ -1014,6 +1014,11 @@ public abstract class ChatBaseActivity
                     break;
                 case MSG_TYPE_DING://不能撤回 不能转发 收藏的是钉的消息体,钉的消息[文本]可以转任务
                     menuItems.clear();
+                    boolean isCanCopy = iMMessageCustomBody.ext != null
+                            && (iMMessageCustomBody.ext.show_type == MSG_TYPE_TXT || iMMessageCustomBody.ext.show_type == MSG_TYPE_LINK);
+                    if (isCanCopy) {
+                        menuItems.add("复制");
+                    }
                     menuItems.addAll(Arrays.asList(
                             isDinged(iMMessageCustomBody.ext != null ? iMMessageCustomBody.ext.id : 0) ? "取消钉" : "钉",
                             isCollected(iMMessageCustomBody.ext != null ? iMMessageCustomBody.ext.id : 0) ? "取消收藏" : "收藏"
@@ -1091,6 +1096,19 @@ public abstract class ChatBaseActivity
                             if (customIMBody.show_type == MSG_TYPE_LINK) {
                                 if (customIMBody.ext != null) {
                                     msgActionCopy(customIMBody.ext.url);
+                                }
+                            } else if (customIMBody.show_type == MSG_TYPE_DING) {
+                                if (customIMBody.ext != null) {
+                                    switch (customIMBody.ext.show_type) {
+                                        case MSG_TYPE_TXT:
+                                            msgActionCopy(customIMBody.ext.content);
+                                            break;
+                                        case MSG_TYPE_LINK:
+                                            if (customIMBody.ext.ext != null) {
+                                                msgActionCopy(customIMBody.ext.ext.url);
+                                            }
+                                            break;
+                                    }
                                 }
                             } else {
                                 msgActionCopy(customIMBody.content);
