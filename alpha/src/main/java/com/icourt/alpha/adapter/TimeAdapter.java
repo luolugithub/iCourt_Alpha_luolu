@@ -11,6 +11,7 @@ import com.icourt.alpha.adapter.baseadapter.BaseArrayRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.entity.bean.TimeEntity;
 import com.icourt.alpha.utils.DateUtils;
+import com.icourt.alpha.utils.GlideUtils;
 import com.icourt.alpha.view.recyclerviewDivider.ITimeDividerInterface;
 import com.icourt.alpha.widget.manager.TimerManager;
 
@@ -115,7 +116,7 @@ public class TimeAdapter extends BaseArrayRecyclerAdapter<TimeEntity.ItemEntity>
         View divider_ll = holder.obtainView(R.id.divider_ll);
         TextView divider_time = holder.obtainView(R.id.divider_time);
         TextView divider_time_count = holder.obtainView(R.id.divider_time_count);
-        timer_title_tv.setText(TextUtils.isEmpty(timeEntity.name) ? "还未录入工作描述" : timeEntity.name);
+        timer_title_tv.setText(TextUtils.isEmpty(timeEntity.name) ? "未录入工作描述" : timeEntity.name);
         if (timeEntity.state == TimeEntity.ItemEntity.TIMER_STATE_START) {
             long useTime = timeEntity.useTime;
             if (useTime <= 0 && timeEntity.startTime > 0) {
@@ -200,8 +201,8 @@ public class TimeAdapter extends BaseArrayRecyclerAdapter<TimeEntity.ItemEntity>
         TextView typeView = holder.obtainView(R.id.time_item_type_tv);
         durationView.setText(getHm(timeEntity.useTime));
         quantumView.setText(DateUtils.getTimeDurationDate(timeEntity.startTime) + "-" + DateUtils.getTimeDurationDate(timeEntity.endTime));
-//        GlideUtils.loadUser(holder.itemView.getContext(), itemEntity.timeUserPic, photoView);
-        descView.setText(timeEntity.name);
+        GlideUtils.loadUser(holder.itemView.getContext(), timeEntity.userPic, photoView);
+        descView.setText(TextUtils.isEmpty(timeEntity.name) ? "未录入工作描述" : timeEntity.name);
         userNameView.setText(timeEntity.username);
         typeView.setText(timeEntity.workTypeName);
     }

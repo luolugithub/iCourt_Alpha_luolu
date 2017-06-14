@@ -43,6 +43,7 @@ public class TimeEntity implements Serializable {
         public long endTime;
         public long useTime;
         public String createUserId;
+        public String userPic;
         public long createTime;
         public long workDate;
         public int state;//计时的状态 0 正在计时  1 暂停就是结束状态

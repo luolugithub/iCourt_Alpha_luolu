@@ -6,6 +6,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -209,10 +210,12 @@ public class ProjectTimeFragment extends BaseFragment implements BaseRecyclerAda
     public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
         if (holder.getItemViewType() == 1) {
             TimeEntity.ItemEntity itemEntity = (TimeEntity.ItemEntity) adapter.getItem(position);
-            if (itemEntity != null && StringUtils.equalsIgnoreCase(itemEntity.pkId, TimerManager.getInstance().getTimerId(), false)) {
-                TimerTimingActivity.launch(view.getContext(), itemEntity);
-            } else {
-                TimerDetailActivity.launch(view.getContext(), itemEntity);
+            if (TextUtils.equals(itemEntity.createUserId, getLoginUserId())) {
+                if (itemEntity != null && StringUtils.equalsIgnoreCase(itemEntity.pkId, TimerManager.getInstance().getTimerId(), false)) {
+                    TimerTimingActivity.launch(view.getContext(), itemEntity);
+                } else {
+                    TimerDetailActivity.launch(view.getContext(), itemEntity);
+                }
             }
         }
     }
