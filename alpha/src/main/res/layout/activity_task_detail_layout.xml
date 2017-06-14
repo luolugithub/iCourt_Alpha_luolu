@@ -1,15 +1,109 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/main_content"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
+
+
+    <android.support.design.widget.AppBarLayout
+        android:id="@+id/appbar"
+        style="@style/AlphaTitleAppBarLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/white"
+        android:fitsSystemWindows="true">
+        <!-- 【标题布局 请勿轻易修改】 -->
+        <LinearLayout xmlns:app="http://schemas.android.com/apk/res-auto"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/alpha_height_title"
+            android:background="@color/alpha_background_title"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            app:layout_scrollFlags="scroll|enterAlways|snap">
+
+            <ImageView
+                android:id="@id/titleBack"
+                android:layout_width="38dp"
+                android:layout_height="match_parent"
+                android:layout_marginLeft="5dp"
+                android:background="?attr/selectableItemBackground"
+                android:padding="10dp"
+                android:src="@mipmap/header_icon_back" />
+
+            <TextView
+                android:id="@id/titleContent"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginLeft="48dp"
+                android:layout_marginRight="10dp"
+                android:layout_weight="1"
+                android:ellipsize="end"
+                android:gravity="center"
+                android:maxLines="1"
+                android:text="标题"
+                android:textColor="@color/alpha_font_color_title"
+                android:textSize="@dimen/alpha_font_size_title" />
+
+            <ImageView
+                android:id="@id/titleAction"
+                android:layout_width="38dp"
+                android:layout_height="match_parent"
+                android:background="?attr/selectableItemBackground"
+                android:padding="10dp"
+                android:scaleType="fitCenter"
+                android:src="@mipmap/header_icon_star_solid" />
+
+            <ImageView
+                android:id="@id/titleAction2"
+                android:layout_width="38dp"
+                android:layout_height="match_parent"
+                android:layout_marginRight="5dp"
+                android:background="?attr/selectableItemBackground"
+                android:padding="10dp"
+                android:scaleType="fitCenter"
+                android:src="@mipmap/header_icon_add" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/white"
+            android:paddingBottom="@dimen/dp50"
+            android:minHeight="@dimen/dp10"
+            app:layout_scrollFlags="scroll|enterAlwaysCollapsed|exitUntilCollapsed">
+
+            <include layout="@layout/task_detail_top_layout" />
+        </LinearLayout>
+
+        <android.support.design.widget.TabLayout
+            android:id="@+id/task_tablayout"
+            style="@style/AlphaTabLayout"
+            android:layout_width="wrap_content"
+            android:layout_height="44dp"
+            android:layout_gravity="center_horizontal"
+            android:background="@color/white"
+            app:tabMode="scrollable">
+
+        </android.support.design.widget.TabLayout>
+
+    </android.support.design.widget.AppBarLayout>
+
+    <android.support.v4.view.ViewPager
+        android:id="@+id/viewpager"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:overScrollMode="never"
+        android:paddingBottom="50dp"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
     <LinearLayout
         android:id="@+id/bottom_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
+        android:layout_gravity="bottom"
         android:background="@color/white"
         android:orientation="vertical">
 
@@ -54,63 +148,4 @@
                 android:textSize="14sp" />
         </LinearLayout>
     </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_above="@+id/bottom_layout"
-        android:orientation="vertical">
-
-        <include layout="@layout/layout_title_type_4" />
-
-
-        <android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
-            xmlns:app="http://schemas.android.com/apk/res-auto"
-            android:id="@+id/main_content"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical"
-            app:layout_scrollFlags="scroll|exitUntilCollapsed">
-
-
-            <android.support.design.widget.AppBarLayout
-                android:id="@+id/appbar"
-                style="@style/AlphaTitleAppBarLayout"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="@color/white">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="@color/white"
-                    android:paddingBottom="@dimen/dp50"
-                    app:layout_scrollFlags="scroll|enterAlways">
-
-                    <include layout="@layout/task_detail_top_layout" />
-                </LinearLayout>
-
-                <android.support.design.widget.TabLayout
-                    android:id="@+id/task_tablayout"
-                    style="@style/AlphaTabLayout"
-                    android:layout_width="wrap_content"
-                    android:layout_gravity="center_horizontal"
-                    app:tabMode="scrollable"
-                    android:layout_height="44dp"
-                    android:background="@color/white">
-
-                </android.support.design.widget.TabLayout>
-
-            </android.support.design.widget.AppBarLayout>
-
-            <android.support.v4.view.ViewPager
-                android:id="@+id/viewpager"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:overScrollMode="never"
-                app:layout_behavior="@string/appbar_scrolling_view_behavior" />
-        </android.support.design.widget.CoordinatorLayout>
-    </LinearLayout>
-
-
-</RelativeLayout>
+</android.support.design.widget.CoordinatorLayout>

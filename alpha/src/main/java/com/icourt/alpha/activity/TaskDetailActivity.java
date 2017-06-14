@@ -119,8 +119,6 @@ public class TaskDetailActivity extends BaseActivity implements OnFragmentCallBa
     AppBarLayout appbar;
     @BindView(R.id.viewpager)
     ViewPager viewpager;
-    @BindView(R.id.titleView)
-    AppBarLayout titleView;
     @BindView(R.id.task_user_layout)
     LinearLayout taskUserLayout;
     @BindView(R.id.task_users_layout)
@@ -170,6 +168,16 @@ public class TaskDetailActivity extends BaseActivity implements OnFragmentCallBa
     protected void initView() {
         super.initView();
         setTitle("");
+        appbar.addOnOffsetChangedListener(new AppBarLayout.OnOffsetChangedListener() {
+            @Override
+            public void onOffsetChanged(AppBarLayout appBarLayout, int verticalOffset) {
+                log("appBarLayout : " + appBarLayout.getHeight());
+                log("verticalOffset : " + verticalOffset);
+//                if (Math.abs(verticalOffset) > DensityUtil.dip2px(getContext(), 10)) {
+//                    appBarLayout.setExpanded(false, true);
+//                }
+            }
+        });
         EventBus.getDefault().register(this);
         taskId = getIntent().getStringExtra(KEY_TASK_ID);
         baseFragmentAdapter = new BaseFragmentAdapter(getSupportFragmentManager());
