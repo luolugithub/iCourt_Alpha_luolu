@@ -97,7 +97,7 @@ public class TimingNoticeDialogFragment extends BaseDialogFragment {
         Serializable data = getArguments().getSerializable("data");
         if (data instanceof TimeEntity.ItemEntity) {
             itemEntity = (TimeEntity.ItemEntity) data;
-            noticeTimingTitleTv.setText(TextUtils.isEmpty(itemEntity.name) ? "还未录入工作描述" : itemEntity.name);
+            noticeTimingTitleTv.setText(TextUtils.isEmpty(itemEntity.name) ? "未录入工作描述" : itemEntity.name);
         }
         EventBus.getDefault().register(this);
     }

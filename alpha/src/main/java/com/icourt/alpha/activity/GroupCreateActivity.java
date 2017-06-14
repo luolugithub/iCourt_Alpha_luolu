@@ -30,6 +30,7 @@ import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.adapterObserver.DataChangeAdapterObserver;
 import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.constants.Const;
+import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.icourt.alpha.fragment.dialogfragment.BaseDialogFragment;
 import com.icourt.alpha.fragment.dialogfragment.ContactSelectDialogFragment;
@@ -40,6 +41,7 @@ import com.icourt.alpha.utils.StringUtils;
 import com.icourt.api.RequestUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import butterknife.BindView;
@@ -95,18 +97,18 @@ public class GroupCreateActivity extends BaseActivity implements OnFragmentCallB
     @BindView(R.id.member_layout)
     FrameLayout memberLayout;
 
-    public static void launch(Context context) {
-        if (context == null) return;
-        Intent intent = new Intent(context, GroupCreateActivity.class);
-        context.startActivity(intent);
-    }
-
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_group_create);
         ButterKnife.bind(this);
         initView();
+    }
+
+    public static void launch(Context context) {
+        if (context == null) return;
+        Intent intent = new Intent(context, GroupCreateActivity.class);
+        context.startActivity(intent);
     }
 
     @Override
@@ -134,6 +136,20 @@ public class GroupCreateActivity extends BaseActivity implements OnFragmentCallB
                         REQ_CODE_DEL_USER);
             }
         });
+
+        imContactAdapter.addItem(0, getMyAsContactBean());
+    }
+
+    private GroupContactBean getMyAsContactBean() {
+        AlphaUserInfo loginUserInfo = getLoginUserInfo();
+        if (loginUserInfo != null) {
+            GroupContactBean my = new GroupContactBean();
+            my.name = loginUserInfo.getName();
+            my.pic = loginUserInfo.getPic();
+            my.accid = StringUtils.toLowerCase(loginUserInfo.getUserId());
+            return my;
+        }
+        return null;
     }
 
     @OnClick({R.id.group_member_invite_tv,
@@ -164,9 +180,11 @@ public class GroupCreateActivity extends BaseActivity implements OnFragmentCallB
                 break;
             case R.id.member_layout:
             case R.id.group_member_arrow_iv:
+                ArrayList<GroupContactBean> data = new ArrayList<>(imContactAdapter.getData());
+                data.remove(getMyAsContactBean());
                 GroupMemberDelActivity.launchForResult(getActivity(),
                         null,
-                        (ArrayList<GroupContactBean>) imContactAdapter.getData(),
+                        data,
                         false,
                         REQ_CODE_DEL_USER);
                 break;
@@ -186,7 +204,8 @@ public class GroupCreateActivity extends BaseActivity implements OnFragmentCallB
         if (fragment != null) {
             mFragTransaction.remove(fragment);
         }
-        ContactSelectDialogFragment.newInstance((ArrayList<GroupContactBean>) imContactAdapter.getData())
+        ArrayList<GroupContactBean> data = (ArrayList<GroupContactBean>) imContactAdapter.getData();
+        ContactSelectDialogFragment.newInstance(data)
                 .show(mFragTransaction, tag);
     }
 
@@ -210,8 +229,10 @@ public class GroupCreateActivity extends BaseActivity implements OnFragmentCallB
         groupJsonObject.addProperty("chat_history", true);*/
 
         JsonArray memberArray = new JsonArray();
+        GroupContactBean myAsContactBean = getMyAsContactBean();
         for (GroupContactBean groupContactBean : imContactAdapter.getData()) {
-            if (groupContactBean != null) {
+            if (groupContactBean != null &&
+                    !groupContactBean.equals(myAsContactBean)) {
                 memberArray.add(groupContactBean.accid);
             }
         }
@@ -239,10 +260,16 @@ public class GroupCreateActivity extends BaseActivity implements OnFragmentCallB
         switch (requestCode) {
             case REQ_CODE_DEL_USER:
                 if (resultCode == Activity.RESULT_OK && data != null) {
+                    //删除后的数据
                     List<GroupContactBean> result = (List<GroupContactBean>) data.getSerializableExtra(KEY_ACTIVITY_RESULT);
-                    if (result != null) {
-                        imContactAdapter.bindData(true, result);
+                    if (result == null) {
+                        result = Arrays.asList(getMyAsContactBean());
+                    } else {
+                        if (!result.contains(getMyAsContactBean())) {
+                            result.add(0, getMyAsContactBean());
+                        }
                     }
+                    imContactAdapter.bindData(true, result);
                 }
                 break;
             default:
@@ -255,9 +282,9 @@ public class GroupCreateActivity extends BaseActivity implements OnFragmentCallB
     @Override
     public void onFragmentCallBack(Fragment fragment, int type, Bundle params) {
         if (fragment instanceof ContactSelectDialogFragment && params != null) {
+            //选中的成员
             List<GroupContactBean> result = (List<GroupContactBean>) params.getSerializable(BaseDialogFragment.KEY_FRAGMENT_RESULT);
             if (result != null) {
-                imContactAdapter.getData();
                 for (int i = result.size() - 1; i >= 0; i--) {
                     GroupContactBean contactBean = result.get(i);
                     if (imContactAdapter.getData().contains(contactBean)) {
