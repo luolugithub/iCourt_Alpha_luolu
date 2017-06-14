@@ -109,9 +109,6 @@ public class GroupSearchActivity extends BaseActivity implements BaseRecyclerAda
     @Override
     protected void initView() {
         super.initView();
-        contentEmptyText.setText("暂无讨论组");
-        contentEmptyText.setCompoundDrawablesWithIntrinsicBounds(
-                0, R.mipmap.ic_search_group_gray, 0, 0);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setAdapter(groupAdapter = new GroupAdapter());
         groupAdapter.setOnItemClickListener(this);

@@ -27,6 +27,7 @@ import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.ProjectListAdapter;
 import com.icourt.alpha.adapter.TaskItemAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
+import com.icourt.alpha.adapter.baseadapter.adapterObserver.DataChangeAdapterObserver;
 import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.entity.bean.ProjectEntity;
 import com.icourt.alpha.entity.bean.TaskEntity;
@@ -84,6 +85,8 @@ public class SearchProjectActivity extends BaseActivity implements BaseRecyclerA
 
     public static final int SEARCH_PROJECT = 1;//搜索项目
     public static final int SEARCH_TASK = 2;//搜索任务
+    @BindView(R.id.contentEmptyText)
+    TextView contentEmptyText;
 
     @IntDef({SEARCH_PROJECT,
             SEARCH_TASK
@@ -166,10 +169,26 @@ public class SearchProjectActivity extends BaseActivity implements BaseRecyclerA
         if (search_priority == SEARCH_PROJECT) {
             recyclerView.setAdapter(projectListAdapter = new ProjectListAdapter());
             projectListAdapter.setOnItemClickListener(this);
+            projectListAdapter.registerAdapterDataObserver(new DataChangeAdapterObserver() {
+                @Override
+                protected void updateUI() {
+                    if (contentEmptyText != null) {
+                        contentEmptyText.setVisibility(projectListAdapter.getItemCount() > 0 ? View.GONE : View.VISIBLE);
+                    }
+                }
+            });
         } else if (search_priority == SEARCH_TASK) {
             recyclerView.setAdapter(taskItemAdapter = new TaskItemAdapter());
             taskItemAdapter.setOnItemClickListener(this);
             taskItemAdapter.setOnItemChildClickListener(this);
+            taskItemAdapter.registerAdapterDataObserver(new DataChangeAdapterObserver() {
+                @Override
+                protected void updateUI() {
+                    if (contentEmptyText != null) {
+                        contentEmptyText.setVisibility(taskItemAdapter.getItemCount() > 0 ? View.GONE : View.VISIBLE);
+                    }
+                }
+            });
         }
         etSearchName.addTextChangedListener(new TextWatcher() {
             @Override

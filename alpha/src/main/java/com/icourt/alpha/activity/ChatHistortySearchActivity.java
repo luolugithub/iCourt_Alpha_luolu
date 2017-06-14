@@ -112,9 +112,6 @@ public class ChatHistortySearchActivity extends BaseActivity implements BaseRecy
     @Override
     protected void initView() {
         super.initView();
-        contentEmptyText.setText("暂无消息");
-        contentEmptyText.setCompoundDrawablesWithIntrinsicBounds(
-                0, R.mipmap.ic_search_message_gray, 0, 0);
         AlphaUserInfo loginUserInfo = getLoginUserInfo();
         contactDbService = new ContactDbService(loginUserInfo == null ? "" : loginUserInfo.getUserId());
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));

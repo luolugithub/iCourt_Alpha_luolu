@@ -24,6 +24,7 @@ import android.widget.TextView;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.CustomerAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
+import com.icourt.alpha.adapter.baseadapter.adapterObserver.DataChangeAdapterObserver;
 import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.constants.Const;
 import com.icourt.alpha.db.convertor.IConvertModel;
@@ -69,6 +70,8 @@ public class CustomerSearchActivity extends BaseActivity implements BaseRecycler
     @BindView(R.id.softKeyboardSizeWatchLayout)
     SoftKeyboardSizeWatchLayout softKeyboardSizeWatchLayout;
     CustomerDbService customerDbService;
+    @BindView(R.id.contentEmptyText)
+    TextView contentEmptyText;
 
     @IntDef({SEARCH_LIAISON_TYPE,
             SEARCH_CUSTOMER_TYPE})
@@ -127,6 +130,14 @@ public class CustomerSearchActivity extends BaseActivity implements BaseRecycler
         customerDbService = new CustomerDbService(getLoginUserId());
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setAdapter(customerAdapter = new CustomerAdapter());
+        customerAdapter.registerAdapterDataObserver(new DataChangeAdapterObserver() {
+            @Override
+            protected void updateUI() {
+                if (contentEmptyText != null) {
+                    contentEmptyText.setVisibility(customerAdapter.getItemCount() > 0 ? View.GONE : View.VISIBLE);
+                }
+            }
+        });
         customerAdapter.setOnItemClickListener(this);
         recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override

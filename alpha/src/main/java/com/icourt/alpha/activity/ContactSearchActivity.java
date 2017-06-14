@@ -93,9 +93,6 @@ public class ContactSearchActivity extends BaseActivity implements BaseRecyclerA
     @Override
     protected void initView() {
         super.initView();
-        contentEmptyText.setText("暂无联系人");
-        contentEmptyText.setCompoundDrawablesWithIntrinsicBounds(
-                0, R.mipmap.ic_search_cuatomer_gray, 0, 0);
         contactDbService = new ContactDbService(getLoginUserId());
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setAdapter(imContactAdapter = new IMContactAdapter());

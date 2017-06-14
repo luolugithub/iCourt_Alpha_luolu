@@ -198,6 +198,12 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
 
         }
     };
+    private Runnable scrollToBottomTask = new Runnable() {
+        @Override
+        public void run() {
+            linearLayoutManager.scrollToPositionWithOffset(linearLayoutManager.getItemCount() - 1, 0);
+        }
+    };
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -829,12 +835,16 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
         return false;
     }
 
+
     /**
      * 滚动到底部
      */
     private void scrollToBottom() {
         if (linearLayoutManager != null && linearLayoutManager.getItemCount() > 0) {
             linearLayoutManager.scrollToPositionWithOffset(linearLayoutManager.getItemCount() - 1, 0);
+            if (recyclerView != null) {
+                recyclerView.postDelayed(scrollToBottomTask, 300);
+            }
         }
     }
 

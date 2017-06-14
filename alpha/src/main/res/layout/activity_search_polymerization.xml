@@ -89,20 +89,10 @@
                 android:layout_height="match_parent"
                 android:visibility="gone" />
 
-            <TextView
-                android:id="@id/contentEmptyText"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:drawablePadding="10dp"
-                android:drawableTop="@mipmap/ic_empty_data"
-                android:gravity="center"
-                android:maxLines="3"
-                android:paddingLeft="10dp"
-                android:paddingRight="10dp"
-                android:text="未搜索到结果"
-                android:textSize="14dp"
-                android:visibility="gone"/>
+
+            <include
+                layout="@layout/layout_empty_tv"
+                android:visibility="gone" />
         </FrameLayout>
 
     </LinearLayout>
