@@ -465,7 +465,12 @@ public class FileBoxDownloadActivity extends BaseActivity {
             if (task != null && !TextUtils.isEmpty(task.getPath())) {
                 try {
                     loadingLayout.setVisibility(View.GONE);
+                    if (IMUtils.isPIC(task.getPath())) {
+                        ImagePagerActivity.launch(FileBoxDownloadActivity.this,
+                                Arrays.asList(filePath));
+                    }
                     showMeau();
+
                 } catch (NullPointerException e) {
                     e.printStackTrace();
                     bugSync("下载文件失败", e);

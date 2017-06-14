@@ -233,7 +233,7 @@ public class TabMineFragment extends BaseFragment {
                 break;
             case R.id.my_center_clear_cache_layout://清除缓存
                 DataCleanManager.clearAllCache(getActivity());
-                myCenterClearCacheTextview.setText("0KB");
+                myCenterClearCacheTextview.setText("0K");
                 showTopSnackBar(R.string.my_center_clear_cache_succee_text);
                 break;
             case R.id.my_center_clear_about_layout://关于
