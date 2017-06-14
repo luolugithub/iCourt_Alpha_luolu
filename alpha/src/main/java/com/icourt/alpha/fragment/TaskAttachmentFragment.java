@@ -60,7 +60,7 @@ import retrofit2.Response;
  * version 2.0.0
  */
 
-public class TaskAttachmentFragment extends BaseFragment implements BaseRecyclerAdapter.OnItemClickListener {
+public class TaskAttachmentFragment extends BaseFragment implements BaseRecyclerAdapter.OnItemClickListener, BaseRecyclerAdapter.OnItemLongClickListener {
     private static final String KEY_TASK_ID = "key_task_id";
     private static final String KEY_HAS_PERMISSION = "key_has_permission";
     private static final int REQUEST_CODE_CAMERA = 1000;
@@ -121,6 +121,7 @@ public class TaskAttachmentFragment extends BaseFragment implements BaseRecycler
         recyclerview.addItemDecoration(ItemDecorationUtils.getCommFull05Divider(getContext(), true, R.color.alpha_divider_color));
         recyclerview.setAdapter(taskAttachmentAdapter = new TaskAttachmentAdapter());
         taskAttachmentAdapter.setOnItemClickListener(this);
+        taskAttachmentAdapter.setOnItemLongClickListener(this);
         getData(true);
         addAttachmentView.setVisibility(hasPermission ? View.VISIBLE : View.GONE);
     }
@@ -132,7 +133,7 @@ public class TaskAttachmentFragment extends BaseFragment implements BaseRecycler
         switch (v.getId()) {
             case R.id.add_attachment_view://添加附件
                 if (hasPermission) {
-                    showBottomMeau();
+                    showBottomAddMeau();
                 } else {
                     showTopSnackBar("您没有编辑任务的权限");
                 }
@@ -188,9 +189,9 @@ public class TaskAttachmentFragment extends BaseFragment implements BaseRecycler
     };
 
     /**
-     * 显示底部菜单
+     * 显示底部添加菜单
      */
-    private void showBottomMeau() {
+    private void showBottomAddMeau() {
         new BottomActionDialog(getContext(),
                 null,
                 Arrays.asList("拍照", "从手机相册选择"),
@@ -207,6 +208,28 @@ public class TaskAttachmentFragment extends BaseFragment implements BaseRecycler
                                 break;
                         }
                     }
+                }).show();
+    }
+
+    /**
+     * 显示底部删除菜单
+     */
+    private void showBottomDeleteMeau(final TaskAttachmentEntity entity) {
+        new BottomActionDialog(getContext(),
+                null,
+                Arrays.asList("删除"),
+                new BottomActionDialog.OnActionItemClickListener() {
+                    @Override
+                    public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
+                        dialog.dismiss();
+                        switch (position) {
+                            case 0:
+                                deleteAttachment(entity);
+                                break;
+                        }
+                    }
+
+
                 }).show();
     }
 
@@ -279,6 +302,31 @@ public class TaskAttachmentFragment extends BaseFragment implements BaseRecycler
         });
     }
 
+    /**
+     * 删除任务附件
+     *
+     * @param entity
+     */
+    private void deleteAttachment(final TaskAttachmentEntity entity) {
+        if (entity.pathInfoVo == null) return;
+        showLoadingDialog(null);
+        getApi().taskDocumentDelete(taskId, entity.pathInfoVo.filePath).enqueue(new SimpleCallBack<JsonElement>() {
+            @Override
+            public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
+                dismissLoadingDialog();
+                if (taskAttachmentAdapter != null)
+                    taskAttachmentAdapter.removeItem(entity);
+            }
+
+            @Override
+            public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
+                super.onFailure(call, t);
+                dismissLoadingDialog();
+                showTopSnackBar("删除失败");
+            }
+        });
+    }
+
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         switch (requestCode) {
@@ -294,8 +342,8 @@ public class TaskAttachmentFragment extends BaseFragment implements BaseRecycler
     }
 
     @Override
-    public void onDestroyView() {
-        super.onDestroyView();
+    public void onDestroy() {
+        super.onDestroy();
         unbinder.unbind();
     }
 
@@ -304,5 +352,15 @@ public class TaskAttachmentFragment extends BaseFragment implements BaseRecycler
         TaskAttachmentEntity entity = (TaskAttachmentEntity) adapter.getItem(position);
         if (entity.pathInfoVo != null)
             FileBoxDownloadActivity.launch(getContext(), null, entity.pathInfoVo.repoId, entity.pathInfoVo.filePath, FileBoxDownloadActivity.TASK_DOWNLOAD_FILE_ACTION);
+    }
+
+    @Override
+    public boolean onItemLongClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
+        if (hasPermission) {
+            TaskAttachmentEntity entity = (TaskAttachmentEntity) adapter.getItem(position);
+            if (entity.pathInfoVo != null)
+                showBottomDeleteMeau(entity);
+        }
+        return false;
     }
 }

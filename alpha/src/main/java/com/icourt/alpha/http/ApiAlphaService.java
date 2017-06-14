@@ -948,11 +948,22 @@ public interface ApiAlphaService {
 
     /**
      * 新任务修改为已读任务
+     *
      * @param ids
      * @return
      */
     @PUT("api/v2/taskflow/newTaskAfterReadingIs")
     Call<ResEntity<JsonElement>> checkAllNewTask(@Query("ids") List<String> ids);
+
+    /**
+     * 删除任务附件
+     * @param taskId
+     * @param filePath
+     * @return
+     */
+    @PUT("api/v2/task/{taskId}/attachment/unbind")
+    Call<ResEntity<JsonElement>> taskDocumentDelete(@Path("taskId") String taskId,
+                                                    @Query("filePath") String filePath);
 }
 
 

@@ -413,6 +413,10 @@ public class FileBoxDownloadActivity extends BaseActivity {
         }
         if (isFileExists(filePath)) {
             loadingLayout.setVisibility(View.GONE);
+            if (IMUtils.isPIC(filePath)) {
+                ImagePagerActivity.launch(FileBoxDownloadActivity.this,
+                        Arrays.asList(filePath));
+            }
             showMeau();
             return;
         } else {
@@ -467,7 +471,7 @@ public class FileBoxDownloadActivity extends BaseActivity {
                     loadingLayout.setVisibility(View.GONE);
                     if (IMUtils.isPIC(task.getPath())) {
                         ImagePagerActivity.launch(FileBoxDownloadActivity.this,
-                                Arrays.asList(filePath));
+                                Arrays.asList(task.getPath()));
                     }
                     showMeau();
 
