@@ -302,6 +302,10 @@
         <activity
             android:name=".activity.AlphaSpeciaSetActivity"
             android:screenOrientation="portrait" />
+        <meta-data
+            android:name="com.icourt.alpha.utils.glide.MyGlideModule"
+            android:value="GlideModule" />
+
         <!-- umeng appkey配置 -->
         <meta-data
             android:name="UMENG_APPKEY"
