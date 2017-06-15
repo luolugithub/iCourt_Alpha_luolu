@@ -278,6 +278,7 @@
             android:screenOrientation="portrait" />
         <activity
             android:name=".activity.CustomerPersonCreateActivity"
+            android:windowSoftInputMode="adjustUnspecified|adjustResize|stateHidden"
             android:screenOrientation="portrait" />
         <activity
             android:name=".activity.GroupSelectActivity"
@@ -287,6 +288,7 @@
             android:screenOrientation="portrait" />
         <activity
             android:name=".activity.CustomerCompanyCreateActivity"
+            android:windowSoftInputMode="adjustUnspecified|adjustResize|stateHidden"
             android:screenOrientation="portrait" />
         <activity
             android:name=".activity.MyAllotTaskActivity"

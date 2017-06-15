@@ -556,8 +556,7 @@ public interface ApiAlphaService {
      * @return
      */
     @GET("api/v2/taskflow")
-    Call<ResEntity<TaskEntity>> taskListItemQuery(@Query("assignedByMe") int assignedByMe,
-                                                  @Query("assignTos") String assignTos,
+    Call<ResEntity<TaskEntity>> taskListItemQuery(@Query("assignTos") String assignTos,
                                                   @Query("stateType") int stateType,
                                                   @Query("attentionType") int attentionType,
                                                   @Query("orderBy") String orderBy,

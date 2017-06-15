@@ -165,7 +165,7 @@ public class SelectLiaisonActivity extends BaseActivity implements BaseRecyclerA
 
         getLocalCustomers();
 
-        refreshLayout.startRefresh();
+//        refreshLayout.startRefresh();
     }
 
     @Override
@@ -174,9 +174,9 @@ public class SelectLiaisonActivity extends BaseActivity implements BaseRecyclerA
         switch (v.getId()) {
             case R.id.rl_comm_search:
                 if (TextUtils.equals(action, Const.SELECT_LIAISONS_TAG_ACTION))
-                    CustomerSearchActivity.launchResult(this, v, CustomerSearchActivity.SEARCH_LIAISON_TYPE, CustomerSearchActivity.CUSTOMER_PERSON_TYPE,SEARCH_LIAISON_REQUEST_CODE);
+                    CustomerSearchActivity.launchResult(this, v, CustomerSearchActivity.SEARCH_LIAISON_TYPE, CustomerSearchActivity.CUSTOMER_PERSON_TYPE, SEARCH_LIAISON_REQUEST_CODE);
                 else if (TextUtils.equals(action, Const.SELECT_ENTERPRISE_LIAISONS_TAG_ACTION))
-                    CustomerSearchActivity.launchResult(this, v, CustomerSearchActivity.SEARCH_LIAISON_TYPE, CustomerSearchActivity.CUSTOMER_COMPANY_TYPE,SEARCH_LIAISON_REQUEST_CODE);
+                    CustomerSearchActivity.launchResult(this, v, CustomerSearchActivity.SEARCH_LIAISON_TYPE, CustomerSearchActivity.CUSTOMER_COMPANY_TYPE, SEARCH_LIAISON_REQUEST_CODE);
                 break;
         }
     }
@@ -207,14 +207,22 @@ public class SelectLiaisonActivity extends BaseActivity implements BaseRecyclerA
     }
 
     private void removeSelected(List<CustomerEntity> list) {
+
         if (list != null && liaisonsList != null) {
-            list.removeAll(liaisonsList);
-        }
-        if (!TextUtils.isEmpty(pkid)) {
             Iterator<CustomerEntity> it = list.iterator();
-            while (it.hasNext()) {
-                if (TextUtils.equals(pkid, it.next().pkid)) {
-                    it.remove();
+            if (!TextUtils.isEmpty(pkid)) {
+                while (it.hasNext()) {
+                    if (TextUtils.equals(pkid, it.next().pkid)) {
+                        it.remove();
+                        break;
+                    }
+                }
+            }
+            for (int i = list.size(); i > 0; i--) {
+                for (CustomerEntity customerEntity : liaisonsList) {
+                    if (TextUtils.equals(list.get(i - 1).pkid, customerEntity.pkid)) {
+                        list.remove(i - 1);
+                    }
                 }
             }
         }
@@ -271,8 +279,8 @@ public class SelectLiaisonActivity extends BaseActivity implements BaseRecyclerA
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if(data!=null){
-            if(requestCode == SEARCH_LIAISON_REQUEST_CODE){
+        if (data != null) {
+            if (requestCode == SEARCH_LIAISON_REQUEST_CODE) {
                 String action = data.getAction();
                 CustomerEntity entity = (CustomerEntity) data.getSerializableExtra("customerEntity");
                 if (TextUtils.equals(action, Const.SELECT_LIAISONS_TAG_ACTION))

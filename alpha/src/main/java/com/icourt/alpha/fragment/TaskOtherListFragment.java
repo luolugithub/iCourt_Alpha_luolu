@@ -183,16 +183,16 @@ public class TaskOtherListFragment extends BaseFragment implements BaseRecyclerA
         }
         int assignedByMe = 0, stateType = 0;
         if (startType == MY_ALLOT_TYPE) {
-            assignedByMe = 1;
-        } else if (startType == SELECT_OTHER_TYPE) {
             assignedByMe = 0;
+        } else if (startType == SELECT_OTHER_TYPE) {
+            assignedByMe = 1;
         }
         if (finishType == FINISH_TYPE) {
             stateType = 1;
         } else if (finishType == UNFINISH_TYPE) {
             stateType = 0;
         }
-        getApi().taskListItemQuery(assignedByMe, getAssignTos(), stateType, 0, null, pageIndex, ActionConstants.DEFAULT_PAGE_SIZE, 0).enqueue(new SimpleCallBack<TaskEntity>() {
+        getApi().taskListItemQuery(getAssignTos(), stateType, 0, null, pageIndex, ActionConstants.DEFAULT_PAGE_SIZE, 0).enqueue(new SimpleCallBack<TaskEntity>() {
             @Override
             public void onSuccess(Call<ResEntity<TaskEntity>> call, Response<ResEntity<TaskEntity>> response) {
                 if (response.body().result != null) {

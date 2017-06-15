@@ -1,6 +1,8 @@
 package com.icourt.alpha.activity;
 
+import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -8,9 +10,11 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.AppBarLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.CheckedTextView;
 import android.widget.EditText;
@@ -35,6 +39,7 @@ import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.utils.DateUtils;
+import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.api.RequestUtils;
 
 import org.greenrobot.eventbus.EventBus;
@@ -159,8 +164,12 @@ public class TaskCreateActivity extends BaseActivity implements ProjectSelectDia
     @OnClick({R.id.titleAction, R.id.project_layout, R.id.task_group_layout, R.id.duetime_layout, R.id.ower_layout})
     @Override
     public void onClick(View v) {
-        super.onClick(v);
+
         switch (v.getId()) {
+            case R.id.titleBack:
+                SystemUtils.hideSoftKeyBoard(this);
+                checkIsSave();
+                break;
             case R.id.titleAction://保存
                 createNewTask();
                 break;
@@ -179,7 +188,9 @@ public class TaskCreateActivity extends BaseActivity implements ProjectSelectDia
                 else
                     showTopSnackBar("请优先选择项目");
                 break;
-
+            default:
+                super.onClick(v);
+                break;
         }
     }
 
@@ -356,5 +367,52 @@ public class TaskCreateActivity extends BaseActivity implements ProjectSelectDia
             showTaskAllotSelectDialogFragment(projectId);
         else
             showTopSnackBar("请优先选择项目");
+    }
+
+    private void showSaveDialog(String message) {
+        //先new出一个监听器，设置好监听
+        DialogInterface.OnClickListener dialogOnclicListener = new DialogInterface.OnClickListener() {
+
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+                switch (which) {
+                    case Dialog.BUTTON_POSITIVE://确定
+                        TaskCreateActivity.this.finish();
+                        break;
+                    case Dialog.BUTTON_NEGATIVE://取消
+
+                        break;
+                }
+            }
+        };
+        //dialog参数设置
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);  //先得到构造器
+        builder.setTitle("提示"); //设置标题
+        builder.setMessage(message); //设置内容
+        builder.setPositiveButton("确认", dialogOnclicListener);
+        builder.setNegativeButton("取消", dialogOnclicListener);
+        builder.create().show();
+    }
+
+    public void checkIsSave() {
+        if (!TextUtils.isEmpty(taskNameEt.getText().toString()) ||
+                !TextUtils.isEmpty(projectId) ||
+                !TextUtils.isEmpty(taskGroupId) ||
+                !TextUtils.isEmpty(taskDescEt.getText().toString()) ||
+                !TextUtils.isEmpty(taskDuetimeTv.getText().toString()))
+            showSaveDialog(getString(R.string.timer_is_save_timer_text));
+        else
+            finish();
+
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (keyCode == KeyEvent.KEYCODE_BACK && event.getRepeatCount() == 0) {
+            checkIsSave();
+            return true;
+        }
+        return super.onKeyDown(keyCode, event);
     }
 }

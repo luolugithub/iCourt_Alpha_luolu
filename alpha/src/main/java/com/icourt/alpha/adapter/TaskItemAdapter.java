@@ -23,7 +23,7 @@ import com.icourt.alpha.utils.DateUtils;
  */
 
 public class TaskItemAdapter extends BaseArrayRecyclerAdapter<TaskEntity.TaskItemEntity> {
-    private boolean isAddTime = false;//添加计时权限
+    private boolean isAddTime = true;//添加计时权限
 
     public void setAddTime(boolean addTime) {
         isAddTime = addTime;

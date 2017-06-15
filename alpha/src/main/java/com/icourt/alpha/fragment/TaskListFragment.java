@@ -216,13 +216,15 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
                         noDueTaskEntities.add(taskItemEntity);
                     }
                     if (type == 1) {
-                        if (DateUtils.millis() - taskItemEntity.assignTime <= (24 * 60 * 60 * 1000)) {
-                            if (!TextUtils.isEmpty(taskItemEntity.readUserIds) && !TextUtils.isEmpty(getLoginUserId())) {
-                                if (!taskItemEntity.readUserIds.contains(getLoginUserId())) {
-                                    newTaskEntities.add(taskItemEntity);
+                        if (DateUtils.millis() - taskItemEntity.assignTime <= (24 * 60 * 60 * 1000) && !TextUtils.isEmpty(getLoginUserId())) {
+                            if (taskItemEntity.createUser != null) {
+                                if (!TextUtils.equals(taskItemEntity.createUser.userId, getLoginUserId())) {
+                                    if (!TextUtils.isEmpty(taskItemEntity.readUserIds)) {
+                                        if (!taskItemEntity.readUserIds.contains(getLoginUserId())) {
+                                            newTaskEntities.add(taskItemEntity);
+                                        }
+                                    }
                                 }
-                            } else {
-                                newTaskEntities.add(taskItemEntity);
                             }
                         }
                     }

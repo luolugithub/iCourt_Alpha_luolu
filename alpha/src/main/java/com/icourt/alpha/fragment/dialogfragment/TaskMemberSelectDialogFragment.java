@@ -125,7 +125,7 @@ public class TaskMemberSelectDialogFragment extends BaseDialogFragment {
         taskMemberAdapter.setOnItemClickListener(new BaseRecyclerAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
-                taskMemberAdapter.setSelectedPos(position);
+                taskMemberAdapter.setSelectedPos(adapter.getRealPos(position));
             }
         });
         headerCommSearchInputEt.addTextChangedListener(new TextWatcher() {
@@ -193,34 +193,35 @@ public class TaskMemberSelectDialogFragment extends BaseDialogFragment {
     protected void getData(final boolean isRefresh) {
         super.getData(isRefresh);
         //有权限
-//        getApi().getPremissionTaskMembers()
-//                .enqueue(new SimpleCallBack<List<TaskMemberWrapEntity>>() {
-//                    @Override
-//                    public void onSuccess(Call<ResEntity<List<TaskMemberWrapEntity>>> call, Response<ResEntity<List<TaskMemberWrapEntity>>> response) {
-//                        if (response.body().result != null && !response.body().result.isEmpty()) {
-//                            TaskMemberWrapEntity taskMemberWrapEntity = response.body().result.get(0);
-//                            if (taskMemberWrapEntity != null) {
-//                                taskMemberAdapter.bindData(isRefresh, taskMemberWrapEntity.members);
-//                            }
-//                        }
-//                    }
-//                });
-        //无权限
-        getApi().getUnPremissionTaskMembers().enqueue(new SimpleCallBack<List<TaskMemberWrapEntity>>() {
-            @Override
-            public void onSuccess(Call<ResEntity<List<TaskMemberWrapEntity>>> call, Response<ResEntity<List<TaskMemberWrapEntity>>> response) {
-                if (response.body().result != null && !response.body().result.isEmpty()) {
-                    List<TaskMemberEntity> memberEntities = new ArrayList<TaskMemberEntity>();
-                    for (TaskMemberWrapEntity taskMemberWrapEntity : response.body().result) {
-                        if (taskMemberWrapEntity.members != null) {
-                            memberEntities.addAll(taskMemberWrapEntity.members);
+        getApi().getPremissionTaskMembers()
+                .enqueue(new SimpleCallBack<List<TaskMemberWrapEntity>>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<List<TaskMemberWrapEntity>>> call, Response<ResEntity<List<TaskMemberWrapEntity>>> response) {
+                        if (response.body().result != null && !response.body().result.isEmpty()) {
+                            TaskMemberWrapEntity taskMemberWrapEntity = response.body().result.get(0);
+                            if (taskMemberWrapEntity != null) {
+                                enableEmptyView(taskMemberWrapEntity.members);
+                                taskMemberAdapter.bindData(isRefresh, taskMemberWrapEntity.members);
+                            }
                         }
                     }
-                    enableEmptyView(memberEntities);
-                    taskMemberAdapter.bindData(isRefresh, memberEntities);
-                }
-            }
-        });
+                });
+        //无权限
+//        getApi().getUnPremissionTaskMembers().enqueue(new SimpleCallBack<List<TaskMemberWrapEntity>>() {
+//            @Override
+//            public void onSuccess(Call<ResEntity<List<TaskMemberWrapEntity>>> call, Response<ResEntity<List<TaskMemberWrapEntity>>> response) {
+//                if (response.body().result != null && !response.body().result.isEmpty()) {
+//                    List<TaskMemberEntity> memberEntities = new ArrayList<TaskMemberEntity>();
+//                    for (TaskMemberWrapEntity taskMemberWrapEntity : response.body().result) {
+//                        if (taskMemberWrapEntity.members != null) {
+//                            memberEntities.addAll(taskMemberWrapEntity.members);
+//                        }
+//                    }
+//                    enableEmptyView(memberEntities);
+//                    taskMemberAdapter.bindData(isRefresh, memberEntities);
+//                }
+//            }
+//        });
     }
 
     private void enableEmptyView(List result) {

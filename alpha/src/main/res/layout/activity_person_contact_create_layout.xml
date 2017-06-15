@@ -55,6 +55,7 @@
                             android:layout_weight="1"
                             android:background="@null"
                             android:maxLines="1"
+                            android:singleLine="true"
                             android:padding="10dp"
                             android:textColor="@color/search_history_keyword_color"
                             android:textSize="14dp" />

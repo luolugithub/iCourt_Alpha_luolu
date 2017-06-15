@@ -144,7 +144,7 @@ public class MyFinishTaskActivity extends BaseActivity implements BaseRecyclerAd
         if (isRefresh) {
             pageIndex = 1;
         }
-        getApi().taskListItemQuery(0, getLoginUserId(), 1, 0, null, pageIndex, ActionConstants.DEFAULT_PAGE_SIZE, 0).enqueue(new SimpleCallBack<TaskEntity>() {
+        getApi().taskListQuery(0, getLoginUserId(), 1, 0, null, pageIndex, ActionConstants.DEFAULT_PAGE_SIZE, 0).enqueue(new SimpleCallBack<TaskEntity>() {
             @Override
             public void onSuccess(Call<ResEntity<TaskEntity>> call, Response<ResEntity<TaskEntity>> response) {
                 if (response.body().result != null) {
@@ -194,8 +194,9 @@ public class MyFinishTaskActivity extends BaseActivity implements BaseRecyclerAd
     @Override
     public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
         if (adapter instanceof TaskItemAdapter) {
-            TaskEntity.TaskItemEntity taskItemEntity = (TaskEntity.TaskItemEntity) adapter.getItem(position);
-            TaskDetailActivity.launch(view.getContext(), taskItemEntity.id);
+            TaskEntity.TaskItemEntity taskItemEntity = (TaskEntity.TaskItemEntity) adapter.getItem(adapter.getRealPos(position));
+            if (taskItemEntity != null)
+                TaskDetailActivity.launch(view.getContext(), taskItemEntity.id);
         }
     }
 
