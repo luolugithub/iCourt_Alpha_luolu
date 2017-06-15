@@ -27,6 +27,7 @@ import com.icourt.alpha.utils.ItemDecorationUtils;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.BindView;
@@ -59,7 +60,7 @@ public class GroupSelectActivity extends BaseActivity implements BaseRecyclerAda
     RefreshLayout refreshLayout;
 
     SelectGroupAdapter selectGroupAdapter;
-    List<SelectGroupBean> groupBeanList;
+    final List<SelectGroupBean> groupBeanList = new ArrayList<>();
     List<SelectGroupBean> userGroups;
 
     public static void launchForResult(@NonNull Activity context, List<SelectGroupBean> groupBeanList, int requestCode) {
@@ -83,7 +84,11 @@ public class GroupSelectActivity extends BaseActivity implements BaseRecyclerAda
         setTitle("负责团队");
         if (getLoginUserInfo() != null)
             userGroups = getLoginUserInfo().getGroups();
-        groupBeanList = (List<SelectGroupBean>) getIntent().getSerializableExtra("groupBeanList");
+        groupBeanList.clear();
+        List<SelectGroupBean> groupList = (List<SelectGroupBean>) getIntent().getSerializableExtra("groupBeanList");
+        if (groupList != null) {
+            groupBeanList.addAll(groupList);
+        }
         refreshLayout.setNoticeEmpty(R.mipmap.icon_placeholder_user, "暂无负责团队");
         refreshLayout.setMoveForHorizontal(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));

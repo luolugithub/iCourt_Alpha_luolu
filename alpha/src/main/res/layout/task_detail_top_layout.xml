@@ -20,7 +20,7 @@
             android:padding="@dimen/dp5"
             android:src="@mipmap/tab_explorer" />
 
-        <TextView
+        <com.icourt.alpha.view.ClickTouchTextView
             android:id="@+id/task_name"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -85,8 +85,8 @@
                     android:id="@+id/task_user_recyclerview"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:overScrollMode="never"
-                    >
+                    android:nestedScrollingEnabled="false"
+                    android:overScrollMode="never">
 
                 </android.support.v7.widget.RecyclerView>
 

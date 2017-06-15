@@ -19,9 +19,9 @@ import android.support.v7.widget.RecyclerView;
 import android.text.SpannableString;
 import android.text.TextUtils;
 import android.util.SparseArray;
+import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -50,8 +50,10 @@ import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.interfaces.OnUpdateTaskListener;
 import com.icourt.alpha.utils.DateUtils;
+import com.icourt.alpha.utils.DensityUtil;
 import com.icourt.alpha.utils.GlideUtils;
 import com.icourt.alpha.utils.SpannableUtils;
+import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.widget.dialog.BottomActionDialog;
 import com.icourt.alpha.widget.manager.TimerManager;
 import com.icourt.api.RequestUtils;
@@ -82,7 +84,10 @@ import static com.icourt.alpha.R.id.task_user_recyclerview;
  * version 2.0.0
  */
 
-public class TaskDetailActivity extends BaseActivity implements OnFragmentCallBackListener, BaseRecyclerAdapter.OnItemClickListener, OnUpdateTaskListener {
+public class TaskDetailActivity extends BaseActivity
+        implements OnFragmentCallBackListener,
+        BaseRecyclerAdapter.OnItemClickListener,
+        OnUpdateTaskListener {
 
     private static final String KEY_TASK_ID = "key_task_id";
     private static final int SHOW_DELETE_DIALOG = 0;//删除提示对话框
@@ -205,7 +210,15 @@ public class TaskDetailActivity extends BaseActivity implements OnFragmentCallBa
         getData(false);
     }
 
-    @OnClick({R.id.titleAction, R.id.titleAction2, R.id.task_name, task_user_recyclerview, R.id.comment_layout, R.id.task_checkbox, R.id.task_user_layout, R.id.task_users_layout, R.id.task_start_iamge})
+    @OnClick({R.id.titleAction,
+            R.id.titleAction2,
+            R.id.task_name,
+            R.id.task_user_recyclerview,
+            R.id.comment_layout,
+            R.id.task_checkbox,
+            R.id.task_user_layout,
+            R.id.task_users_layout,
+            R.id.task_start_iamge})
     @Override
     public void onClick(View v) {
         super.onClick(v);
@@ -573,7 +586,6 @@ public class TaskDetailActivity extends BaseActivity implements OnFragmentCallBa
             tabTitles.put(0, "任务详情");
             tabTitles.put(1, checkTextForegroundColorSpan);
             tabTitles.put(2, attachTextForegroundColorSpan);
-
             baseFragmentAdapter.bindTitle(true, Arrays.asList(tabTitles.get(0, ""),
                     tabTitles.get(1, ""),
                     tabTitles.get(2, "")));
@@ -739,25 +751,38 @@ public class TaskDetailActivity extends BaseActivity implements OnFragmentCallBa
         return null;
     }
 
+    GestureDetector gestureDetector;
 
     @Override
     public boolean dispatchTouchEvent(MotionEvent ev) {
-        if (ev.getAction() == MotionEvent.ACTION_DOWN) {
-            View v = getCurrentFocus();
-            if (isShouldHideInput(v, ev)) {
-
-                InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-                if (imm != null) {
-                    imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
+        if (gestureDetector == null) {
+            gestureDetector = new GestureDetector(getContext(), new GestureDetector.SimpleOnGestureListener() {
+                @Override
+                public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
+                    boolean canFastScroll = e1.getRawX() > appbar.getBottom() && e2.getRawX() > appbar.getBottom();
+                    if (!canFastScroll) return super.onFling(e1, e2, velocityX, velocityY);
+                    int limit = DensityUtil.dip2px(getContext(), 3500);
+                    log("---------->dy:" + velocityY + "  limit:" + limit);
+                    if (velocityY > limit) {
+                        appbar.setExpanded(true, true);
+                    } else if (velocityY < -limit) {
+                        appbar.setExpanded(false, true);
+                    }
+                    return super.onFling(e1, e2, velocityX, velocityY);
                 }
-            }
+            });
+        }
+
+
+        gestureDetector.onTouchEvent(ev);
+
+
+        if (ev.getAction() == MotionEvent.ACTION_DOWN) {
+            SystemUtils.hideSoftKeyBoard(getActivity());
             return super.dispatchTouchEvent(ev);
         }
-        // 必不可少，否则所有的组件都不会有TouchEvent了
-        if (getWindow().superDispatchTouchEvent(ev)) {
-            return true;
-        }
-        return onTouchEvent(ev);
+
+        return super.dispatchTouchEvent(ev);
     }
 
     public boolean isShouldHideInput(View v, MotionEvent event) {
@@ -899,4 +924,6 @@ public class TaskDetailActivity extends BaseActivity implements OnFragmentCallBa
                 tabTitles.get(1, ""),
                 tabTitles.get(2, "")));
     }
+
+
 }

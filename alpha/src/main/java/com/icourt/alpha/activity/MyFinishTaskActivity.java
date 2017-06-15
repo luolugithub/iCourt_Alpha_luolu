@@ -103,6 +103,7 @@ public class MyFinishTaskActivity extends BaseActivity implements BaseRecyclerAd
         View rl_comm_search = headerView.findViewById(R.id.rl_comm_search);
         registerClick(rl_comm_search);
         headerFooterAdapter.addHeader(headerView);
+        recyclerView.setBackgroundResource(R.color.alpha_background_window);
         recyclerView.setAdapter(headerFooterAdapter);
 
 
@@ -130,7 +131,7 @@ public class MyFinishTaskActivity extends BaseActivity implements BaseRecyclerAd
         super.onClick(v);
         switch (v.getId()) {
             case R.id.rl_comm_search:
-                SearchProjectActivity.launchFinishTask(getContext(),getLoginUserId(), 0, 1, SearchProjectActivity.SEARCH_TASK,null);
+                SearchProjectActivity.launchFinishTask(getContext(), getLoginUserId(), 0, 1, SearchProjectActivity.SEARCH_TASK, null);
                 break;
             default:
                 super.onClick(v);
