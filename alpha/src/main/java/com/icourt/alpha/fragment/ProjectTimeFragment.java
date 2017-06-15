@@ -185,15 +185,12 @@ public class ProjectTimeFragment extends BaseFragment implements BaseRecyclerAda
     }
 
     @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        unbinder.unbind();
-    }
-
-    @Override
     public void onDestroy() {
         super.onDestroy();
         EventBus.getDefault().unregister(this);
+        if(unbinder!=null){
+            unbinder.unbind();
+        }
     }
 
     /**

@@ -47,7 +47,6 @@ import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 
 import butterknife.BindView;
@@ -204,11 +203,11 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
             if (taskEntity.items != null) {
                 for (TaskEntity.TaskItemEntity taskItemEntity : taskEntity.items) {
                     if (taskItemEntity.dueTime > 0) {
-                        if (TextUtils.equals(DateUtils.getTimeDateFormatYear(taskItemEntity.dueTime), DateUtils.getTimeDateFormatYear(DateUtils.millis())) || DateUtils.getDayDiff(new Date(DateUtils.millis()), new Date(taskItemEntity.dueTime)) < 0) {
+                        if (TextUtils.equals(DateUtils.getTimeDateFormatYear(taskItemEntity.dueTime), DateUtils.getTimeDateFormatYear(DateUtils.millis())) || DateUtils.getDayDiff(DateUtils.millis(), taskItemEntity.dueTime) < 0) {
                             todayTaskEntities.add(taskItemEntity);
-                        } else if (DateUtils.getDayDiff(new Date(DateUtils.millis()), new Date(taskItemEntity.dueTime)) <= 3 && DateUtils.getDayDiff(new Date(DateUtils.millis()), new Date(taskItemEntity.dueTime)) > 0) {
+                        } else if (DateUtils.getDayDiff(DateUtils.millis(), taskItemEntity.dueTime) <= 3 && DateUtils.getDayDiff(DateUtils.millis(), taskItemEntity.dueTime) > 0) {
                             beAboutToTaskEntities.add(taskItemEntity);
-                        } else if (DateUtils.getDayDiff(new Date(DateUtils.millis()), new Date(taskItemEntity.dueTime)) > 3) {
+                        } else if (DateUtils.getDayDiff(DateUtils.millis(), taskItemEntity.dueTime) > 3) {
                             futureTaskEntities.add(taskItemEntity);
                         } else {
                             datedTaskEntities.add(taskItemEntity);
@@ -218,7 +217,7 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
                     }
                     if (type == 1) {
                         if (DateUtils.millis() - taskItemEntity.assignTime <= (24 * 60 * 60 * 1000)) {
-                            if (!TextUtils.isEmpty(taskItemEntity.readUserIds)) {
+                            if (!TextUtils.isEmpty(taskItemEntity.readUserIds) && !TextUtils.isEmpty(getLoginUserId())) {
                                 if (!taskItemEntity.readUserIds.contains(getLoginUserId())) {
                                     newTaskEntities.add(taskItemEntity);
                                 }

@@ -282,14 +282,14 @@ public class DateUtils {
      * @param end
      * @return
      */
-    public static long getDayDiff(Date begin, Date end) {
+    public static long getDayDiff(long begin, long end) {
         long day = 1;
-        if (end.getTime() < begin.getTime()) {
+        if (end < begin) {
             day = -1;
-        } else if (end.getTime() == begin.getTime()) {
+        } else if (end == begin) {
             day = 0;
         } else {
-            day += (end.getTime() - begin.getTime()) / (24 * 60 * 60 * 1000);
+            day += (end - begin) / (24 * 60 * 60 * 1000);
         }
         return day;
     }
