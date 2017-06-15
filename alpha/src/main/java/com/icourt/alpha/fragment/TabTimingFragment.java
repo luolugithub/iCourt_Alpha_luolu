@@ -264,6 +264,7 @@ public class TabTimingFragment extends BaseFragment implements BaseRecyclerAdapt
                             timingCountEntities.clear();
                             timingCountEntities.addAll(response.body().result.items);
                             generateData();
+                            timingTodayTotal.setText(getHm(0));
                             if (response.body().result.items != null && pageIndex <= 0) {
                                 for (TimingCountEntity timingCountEntity : response.body().result.items) {
                                     if (timingCountEntity != null) {
@@ -409,7 +410,7 @@ public class TabTimingFragment extends BaseFragment implements BaseRecyclerAdapt
         milliSecond /= 1000;
         long hour = milliSecond / 3600;
         long minute = milliSecond % 3600 / 60;
-        return String.format("%02d:%02d", hour, minute);
+        return String.format("%d:%02d", hour, minute);
     }
 
 
