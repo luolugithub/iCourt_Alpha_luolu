@@ -15,6 +15,7 @@ import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.view.View;
+import android.widget.CheckedTextView;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -24,10 +25,9 @@ import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.IMContactAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.HeaderFooterAdapter;
+import com.icourt.alpha.adapter.baseadapter.adapterObserver.DataChangeAdapterObserver;
 import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.constants.Const;
-import com.icourt.alpha.db.convertor.IConvertModel;
-import com.icourt.alpha.db.convertor.ListConvertor;
 import com.icourt.alpha.db.dbmodel.ContactDbModel;
 import com.icourt.alpha.db.dbservice.ContactDbService;
 import com.icourt.alpha.entity.bean.GroupContactBean;
@@ -55,7 +55,6 @@ import io.reactivex.ObservableOnSubscribe;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
-import io.realm.RealmResults;
 import retrofit2.Call;
 import retrofit2.Response;
 
@@ -76,6 +75,7 @@ public class GroupMemberListActivity
     private static final String KEY_ADD_AT_ALL = "key_add_at_all";
     private static final String KEY_SELECTED_DATA = "key_selected_data";
     private static final String KEY_TID = "key_tid";
+    private static final String KEY_IS_FILTER_ME = "key_is_filter_me";
     @BindView(R.id.titleBack)
     ImageView titleBack;
     @BindView(R.id.titleContent)
@@ -95,6 +95,11 @@ public class GroupMemberListActivity
     LinearLayoutManager linearLayoutManager;
     HeaderFooterAdapter<IMContactAdapter> headerFooterAdapter;
     EditText header_input_et;
+    final List<GroupContactBean> groupMembers = new ArrayList<>();
+    @BindView(R.id.titleAction)
+    CheckedTextView titleAction;
+    @BindView(R.id.contentEmptyText)
+    TextView contentEmptyText;
 
 
     /**
@@ -110,16 +115,19 @@ public class GroupMemberListActivity
             @NonNull String tid,
             @Const.ChoiceType int type,
             int reqCode, boolean addAtAll,
-            @Nullable ArrayList<String> selectedData) {
+            @Nullable ArrayList<String> selectedData,
+            boolean isFilterMySelf) {
         if (context == null) return;
         if (TextUtils.isEmpty(tid)) return;
         Intent intent = new Intent(context, GroupMemberListActivity.class);
         intent.putExtra(KEY_TID, tid);
         intent.putExtra(KEY_SELCTED_TYPE, type);
         intent.putExtra(KEY_ADD_AT_ALL, addAtAll);
+        intent.putExtra(KEY_IS_FILTER_ME, isFilterMySelf);
         intent.putExtra(KEY_SELECTED_DATA, selectedData);
         context.startActivityForResult(intent, reqCode);
     }
+
 
     /**
      * 浏览模式
@@ -129,11 +137,13 @@ public class GroupMemberListActivity
      */
     public static void launch(
             @NonNull Activity context,
-            @NonNull String tid) {
+            @NonNull String tid,
+            boolean isFilterMySelf) {
         if (context == null) return;
         if (TextUtils.isEmpty(tid)) return;
         Intent intent = new Intent(context, GroupMemberListActivity.class);
         intent.putExtra(KEY_TID, tid);
+        intent.putExtra(KEY_IS_FILTER_ME, isFilterMySelf);
         context.startActivity(intent);
     }
 
@@ -169,6 +179,14 @@ public class GroupMemberListActivity
             }
         });
         headerFooterAdapter = new HeaderFooterAdapter<>(imContactAdapter = new IMContactAdapter());
+        imContactAdapter.registerAdapterDataObserver(new DataChangeAdapterObserver() {
+            @Override
+            protected void updateUI() {
+                if (contentEmptyText != null) {
+                    contentEmptyText.setVisibility(imContactAdapter.getItemCount() > 0 ? View.GONE : View.VISIBLE);
+                }
+            }
+        });
         View headerView = HeaderFooterAdapter.inflaterView(getContext(), R.layout.header_search_input_text, recyclerView);
         headerFooterAdapter.addHeader(headerView);
         header_input_et = (EditText) headerView.findViewById(R.id.header_input_et);
@@ -314,7 +332,15 @@ public class GroupMemberListActivity
                     public void accept(List<GroupContactBean> contactBeanList) throws Exception {
                         try {
                             filterRobot(contactBeanList);
+                            //过滤自己
+                            if (getIntent().getBooleanExtra(KEY_IS_FILTER_ME, false)) {
+                                filterMySelf(contactBeanList);
+                            }
                             IndexUtils.setSuspensions(getContext(), contactBeanList);
+                            if (contactBeanList != null) {
+                                groupMembers.clear();
+                                groupMembers.addAll(contactBeanList);
+                            }
                             Collections.sort(contactBeanList, new PinyinComparator<GroupContactBean>());
                             //添加@所有人
                             if (getIntent().getBooleanExtra(KEY_ADD_AT_ALL, false)) {
@@ -337,20 +363,34 @@ public class GroupMemberListActivity
                 });
     }
 
+    /**
+     * 过滤调自己
+     *
+     * @param data
+     * @return
+     */
+    private List<GroupContactBean> filterMySelf(List<GroupContactBean> data) {
+        GroupContactBean groupContactBean = new GroupContactBean();
+        groupContactBean.accid = StringUtils.toLowerCase(getLoginUserId());
+        new ListFilter<GroupContactBean>().filter(data, groupContactBean);
+        return data;
+    }
 
     /**
-     * 搜索用户
+     * 搜索用户 当前讨论组
      *
      * @param name
      */
     private void serachGroupMember(String name) {
         try {
-            RealmResults<ContactDbModel> result = contactDbService.contains("name", name);
-            if (result == null) {
-                imContactAdapter.clearData();
-                return;
+            List<GroupContactBean> contactBeen = new ArrayList<>();
+            for (GroupContactBean contactBean : groupMembers) {
+                if (contactBean == null) continue;
+                if (StringUtils.equalsIgnoreCase(contactBean.name, name, false)
+                        || StringUtils.containsIgnoreCase(contactBean.name, name)) {
+                    contactBeen.add(contactBean);
+                }
             }
-            List<GroupContactBean> contactBeen = ListConvertor.convertList(new ArrayList<IConvertModel<GroupContactBean>>(result));
             filterRobot(contactBeen);
             imContactAdapter.bindData(true, contactBeen);
             updateIndexBar(contactBeen);

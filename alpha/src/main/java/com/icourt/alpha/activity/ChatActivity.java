@@ -689,7 +689,7 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
                     Const.CHOICE_TYPE_SINGLE,
                     REQUEST_CODE_AT_MEMBER,
                     true,
-                    null);
+                    null,true);
         }
     }
 

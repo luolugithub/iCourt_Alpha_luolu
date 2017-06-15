@@ -173,7 +173,7 @@ public class GroupSettingActivity extends BaseActivity {
                         Const.CHOICE_TYPE_SINGLE,
                         CODE_REQUEST_TRANSFER_ADMIN,
                         false,
-                        null);
+                        null, true);
                 break;
             case R.id.group_set_private_switch:
                 groupSetPrivateChildPerLl.setVisibility(!groupSetPrivateSwitch.isChecked() ? View.GONE : View.VISIBLE);

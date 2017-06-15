@@ -292,7 +292,7 @@ public class GroupDetailActivity extends BaseActivity
                             true, 2001);
                 } else {
                     GroupMemberListActivity.launch(getContext(),
-                            groupDetailEntity.tid);
+                            groupDetailEntity.tid, false);
                 }
                 break;
             case R.id.group_setTop_switch:

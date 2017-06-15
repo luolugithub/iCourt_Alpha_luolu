@@ -100,6 +100,20 @@ public class StringUtils {
     }
 
     /**
+     * 是否包含
+     *
+     * @param a
+     * @param key
+     * @return
+     */
+    public static final boolean containsIgnoreCase(String a, String key) {
+        if (!TextUtils.isEmpty(a) && !TextUtils.isEmpty(key)) {
+            return a.toLowerCase().contains(key.toLowerCase());
+        }
+        return false;
+    }
+
+    /**
      * 转化成大写
      *
      * @param list
