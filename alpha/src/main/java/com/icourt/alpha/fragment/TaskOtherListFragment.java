@@ -520,11 +520,9 @@ public class TaskOtherListFragment extends BaseFragment implements BaseRecyclerA
     public void onDestroy() {
         super.onDestroy();
         EventBus.getDefault().unregister(this);
+        if (unbinder != null) {
+            unbinder.unbind();
+        }
     }
 
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        unbinder.unbind();
-    }
 }

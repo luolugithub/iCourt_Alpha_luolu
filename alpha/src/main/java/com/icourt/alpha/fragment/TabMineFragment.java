@@ -152,6 +152,7 @@ public class TabMineFragment extends BaseFragment {
      * @param alphaUserInfo
      */
     private void setDataToView(AlphaUserInfo alphaUserInfo) {
+        if (userNameTv == null) return;
         if (alphaUserInfo != null) {
             GlideUtils.loadUser(getContext(), alphaUserInfo.getPic(), photoImage);
             if (GlideUtils.canLoadImage(getContext())) {

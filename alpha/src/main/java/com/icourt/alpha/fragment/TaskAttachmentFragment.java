@@ -344,7 +344,9 @@ public class TaskAttachmentFragment extends BaseFragment implements BaseRecycler
     @Override
     public void onDestroy() {
         super.onDestroy();
-        unbinder.unbind();
+        if (unbinder != null) {
+            unbinder.unbind();
+        }
     }
 
     @Override

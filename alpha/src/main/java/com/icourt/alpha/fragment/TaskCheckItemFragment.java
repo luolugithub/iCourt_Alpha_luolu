@@ -232,9 +232,11 @@ public class TaskCheckItemFragment extends BaseFragment implements BaseRecyclerA
     }
 
     @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        unbinder.unbind();
+    public void onDestroy() {
+        super.onDestroy();
+        if (unbinder != null) {
+            unbinder.unbind();
+        }
     }
 
     @Override

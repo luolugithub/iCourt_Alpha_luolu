@@ -129,7 +129,9 @@ public class TaskGroupListFragment extends BaseFragment implements BaseRecyclerA
     @Override
     public void onDestroy() {
         super.onDestroy();
-        unbinder.unbind();
+        if (unbinder != null) {
+            unbinder.unbind();
+        }
     }
 
     @Override

@@ -104,9 +104,11 @@ public class TabTimingFragment extends BaseFragment implements BaseRecyclerAdapt
 
     @Override
     public void onDestroy() {
-        EventBus.getDefault().unregister(this);
         super.onDestroy();
-        unbinder.unbind();
+        EventBus.getDefault().unregister(this);
+        if (unbinder != null) {
+            unbinder.unbind();
+        }
     }
 
     public static TabTimingFragment newInstance() {
