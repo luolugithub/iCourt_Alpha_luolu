@@ -80,7 +80,7 @@
         <com.github.sundeepk.compactcalendarview.CompactCalendarView xmlns:app="http://schemas.android.com/apk/res-auto"
             android:id="@+id/compactcalendar_view"
             android:layout_width="fill_parent"
-            android:layout_height="220dp"
+            android:layout_height="200dp"
             app:compactCalendarBackgroundColor="@android:color/white"
             app:compactCalendarCurrentDayBackgroundColor="@android:color/transparent"
             app:compactCalendarCurrentDayIndicatorStyle="fill_large_indicator"
@@ -91,7 +91,7 @@
             app:compactCalendarDisplayOtherMonthDays="true"
             app:compactCalendarOtherMonthDaysTextColor="#D9D9D9"
             app:compactCalendarShouldSelectFirstDayOfMonthOnScroll="false"
-            app:compactCalendarTargetHeight="220dp"
+            app:compactCalendarTargetHeight="200dp"
             app:compactCalendarTextColor="@color/alpha_font_color_black"
             app:compactCalendarTextSize="@dimen/alpha_font_size_comm" />
 
