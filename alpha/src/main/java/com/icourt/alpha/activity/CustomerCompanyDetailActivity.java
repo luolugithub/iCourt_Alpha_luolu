@@ -205,9 +205,10 @@ public class CustomerCompanyDetailActivity extends BaseActivity {
             activityPersonContactDetailOtherParentLayout.removeAllViews();
             activityPersonContactDetailGroupLayout.removeAllViews();
             if (contactDeatilBean.getGroups() != null) {
-                if (contactDeatilBean.getGroups().size() > 0)
+                if (contactDeatilBean.getGroups().size() > 0) {
                     activityPersonContactDetailGroupLayout.setVisibility(View.VISIBLE);
                     addGroupItemView(contactDeatilBean.getGroups());
+                }
             }
             if (contactDeatilBean.getMails() != null) {
                 if (contactDeatilBean.getMails().size() > 0) {

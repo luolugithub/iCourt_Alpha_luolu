@@ -356,6 +356,8 @@ public class TaskAttachmentFragment extends BaseFragment implements BaseRecycler
             TaskAttachmentEntity entity = (TaskAttachmentEntity) adapter.getItem(position);
             if (entity.pathInfoVo != null)
                 FileBoxDownloadActivity.launch(getContext(), null, entity.pathInfoVo.repoId, entity.pathInfoVo.filePath, FileBoxDownloadActivity.TASK_DOWNLOAD_FILE_ACTION);
+        } else {
+            showTopSnackBar("对不起，您没有查看此文件的权限");
         }
     }
 
@@ -365,6 +367,8 @@ public class TaskAttachmentFragment extends BaseFragment implements BaseRecycler
             TaskAttachmentEntity entity = (TaskAttachmentEntity) adapter.getItem(position);
             if (entity.pathInfoVo != null)
                 showBottomDeleteMeau(entity);
+        } else {
+            showTopSnackBar("对不起，您没有查看此文件的权限");
         }
         return false;
     }

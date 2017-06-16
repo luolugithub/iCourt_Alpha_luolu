@@ -417,7 +417,8 @@ public class FileBoxDownloadActivity extends BaseActivity {
                 ImagePagerActivity.launch(FileBoxDownloadActivity.this,
                         Arrays.asList(filePath));
             }
-            showMeau();
+//            showMeau();
+            activityDownloadFileMeauLayout.setVisibility(View.VISIBLE);
             return;
         } else {
             activityDownloadFileMeauLayout.setVisibility(View.GONE);
@@ -473,8 +474,8 @@ public class FileBoxDownloadActivity extends BaseActivity {
                         ImagePagerActivity.launch(FileBoxDownloadActivity.this,
                                 Arrays.asList(task.getPath()));
                     }
-                    showMeau();
-
+//                    showMeau();
+                    activityDownloadFileMeauLayout.setVisibility(View.VISIBLE);
                 } catch (NullPointerException e) {
                     e.printStackTrace();
                     bugSync("下载文件失败", e);
