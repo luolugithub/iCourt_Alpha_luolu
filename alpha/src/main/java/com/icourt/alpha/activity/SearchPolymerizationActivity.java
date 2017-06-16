@@ -159,6 +159,7 @@ public class SearchPolymerizationActivity extends BaseActivity implements BaseRe
                     searchPolymerizationAdapter.clearData();
                     recyclerView.setVisibility(View.GONE);
                     searchClassfyLl.setVisibility(View.VISIBLE);
+                    contentEmptyText.setVisibility(View.GONE);
                 } else {
                     recyclerView.setVisibility(View.VISIBLE);
                     searchClassfyLl.setVisibility(View.GONE);
