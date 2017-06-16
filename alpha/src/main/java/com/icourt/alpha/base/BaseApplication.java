@@ -23,9 +23,6 @@ import com.icourt.alpha.utils.LogUtils;
 import com.icourt.alpha.utils.LoginInfoUtils;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.utils.UserPreferences;
-import com.icourt.alpha.utils.logger.AndroidLogAdapter;
-import com.icourt.alpha.utils.logger.LogLevel;
-import com.icourt.alpha.utils.logger.Logger;
 import com.icourt.alpha.widget.nim.AlphaMessageNotifierCustomization;
 import com.icourt.alpha.widget.nim.NimAttachParser;
 import com.iflytek.cloud.SpeechConstant;
@@ -41,6 +38,10 @@ import com.netease.nimlib.sdk.msg.model.IMMessage;
 import com.netease.nimlib.sdk.team.constant.TeamFieldEnum;
 import com.netease.nimlib.sdk.team.model.IMMessageFilter;
 import com.netease.nimlib.sdk.team.model.UpdateTeamAttachment;
+import com.orhanobut.logger.AndroidLogAdapter;
+import com.orhanobut.logger.FormatStrategy;
+import com.orhanobut.logger.Logger;
+import com.orhanobut.logger.PrettyFormatStrategy;
 import com.umeng.analytics.MobclickAgent;
 import com.umeng.socialize.Config;
 import com.umeng.socialize.PlatformConfig;
@@ -280,12 +281,18 @@ public class BaseApplication extends MultiDexApplication {
      * 初始化比较友好的日志工具
      */
     private void initLogger() {
-        Logger.init("logger")                 // default PRETTYLOGGER or use just init()
-                .methodCount(0)                 // default 2
-                .hideThreadInfo()               // default shown
-                .logLevel(BuildConfig.IS_DEBUG ? LogLevel.FULL : LogLevel.NONE)        // default LogLevel.FULL
-                .methodOffset(0)                // default 0
-                .logAdapter(new AndroidLogAdapter()); //default AndroidLogAdapter
+        FormatStrategy formatStrategy = PrettyFormatStrategy.newBuilder()
+                .showThreadInfo(false)  // (Optional) Whether to show thread info or not. Default true
+                .methodCount(0)         // (Optional) How many method line to show. Default 2
+                .methodOffset(7)        // (Optional) Hides internal method calls up to offset. Default 5
+                .tag("logger")   // (Optional) Global tag for every log. Default PRETTY_LOGGER
+                .build();
+        Logger.addLogAdapter(new AndroidLogAdapter(formatStrategy) {
+            @Override
+            public boolean isLoggable(int priority, String tag) {
+                return BuildConfig.IS_DEBUG;
+            }
+        });
     }
 
     /**

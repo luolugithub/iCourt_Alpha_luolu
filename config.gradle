@@ -84,10 +84,10 @@ ext {
             rxJava                    : 'io.reactivex.rxjava2:rxjava:2.0.1',
 
             // ------------- json解析 -------------
-            gson                      : 'com.google.code.gson:gson:2.8.0',
+            gson                      : 'com.google.code.gson:gson:2.8.1',
 
             // ------------- log打印工具 -------------
-            logger                    : 'com.orhanobut:logger:1.15',
+            logger                    : 'com.orhanobut:logger:2.1.1',
 
             greendao                  : 'org.greenrobot:greendao:3.2.0',
 
