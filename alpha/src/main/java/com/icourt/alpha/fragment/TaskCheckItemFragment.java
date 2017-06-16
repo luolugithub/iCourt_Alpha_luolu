@@ -199,19 +199,16 @@ public class TaskCheckItemFragment extends BaseFragment implements BaseRecyclerA
      * 添加检查项
      */
     private void addCheckItem() {
-        showLoadingDialog(null);
         final TaskCheckItemEntity.ItemEntity itemEntity = getCheckItem();
         getApi().taskCheckItemCreate(RequestUtils.createJsonBody(new Gson().toJson(itemEntity))).enqueue(new SimpleCallBack<JsonElement>() {
             @Override
             public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
-                dismissLoadingDialog();
                 if (response.body() != null) {
                     if (response.body().result != null) {
                         String id = response.body().result.getAsString();
                         itemEntity.id = id;
                         taskCheckItemAdapter.addItem(itemEntity);
                         checkItemEdit.setText("");
-                        checkItemEdit.clearFocus();
                         EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION));
                         updateCheckItem();
                     }
@@ -221,7 +218,6 @@ public class TaskCheckItemFragment extends BaseFragment implements BaseRecyclerA
             @Override
             public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
                 super.onFailure(call, t);
-                dismissLoadingDialog();
                 showTopSnackBar("添加检查项失败");
             }
         });
