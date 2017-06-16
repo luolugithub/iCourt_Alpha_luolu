@@ -55,7 +55,10 @@ public class ProjectSelectActivity extends BaseActivity implements BaseRecyclerA
     RefreshLayout refreshLayout;
     ProjectAdapter projectAdapter;
 
-    public static void launch(@NonNull Context context, @NonNull String authToken, @NonNull String seaFileRepoId, @NonNull String filePath) {
+    public static void launch(@NonNull Context context,
+                              @NonNull String authToken,
+                              @NonNull String seaFileRepoId,
+                              @NonNull String filePath) {
         if (context == null) return;
         Intent intent = new Intent(context, ProjectSelectActivity.class);
         intent.putExtra("authToken", authToken);
@@ -82,11 +85,14 @@ public class ProjectSelectActivity extends BaseActivity implements BaseRecyclerA
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setAdapter(projectAdapter = new ProjectAdapter(false));
         projectAdapter.setOnItemClickListener(this);
-        if (TextUtils.isEmpty(authToken)) {
+        //token 分享和保存到项目 token替换了
+       /* if (TextUtils.isEmpty(authToken)) {
             getFileBoxToken();
         } else {
             getData(true);
-        }
+        }*/
+
+        getFileBoxToken();
     }
 
     @Override

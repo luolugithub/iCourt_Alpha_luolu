@@ -69,7 +69,12 @@ public class FolderboxSelectActivity extends BaseActivity implements BaseRecycle
     String projectId, authToken, seaFileRepoId, filePath, rootName;
     boolean isCanlookAddDocument;
 
-    public static void launch(@NonNull Context context, @NonNull String projectId, @NonNull String authToken, @NonNull String seaFileRepoId, @NonNull String filePath, @NonNull String rootName) {
+    public static void launch(@NonNull Context context,
+                              @NonNull String projectId,
+                              @NonNull String authToken,
+                              @NonNull String seaFileRepoId,
+                              @NonNull String filePath,
+                              @NonNull String rootName) {
         if (context == null) return;
         Intent intent = new Intent(context, FolderboxSelectActivity.class);
         intent.putExtra("authToken", authToken);
