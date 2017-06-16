@@ -20,7 +20,6 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 import com.icourt.alpha.R;
 import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.constants.Const;
@@ -162,7 +161,6 @@ public class CustomerCompanyCreateActivity extends BaseActivity {
         intent.putExtra("customerEntity", customerEntity);
         activity.setResult(RESULT_OK, intent);
     }
-
 
 
     /**
@@ -377,7 +375,7 @@ public class CustomerCompanyCreateActivity extends BaseActivity {
             @Override
             public void onClick(View view) {
 
-                SelectCustomerTagActivity.launchForResult(CustomerCompanyCreateActivity.this, Const.SELECT_ENTERPRISE_ADDRESS_TAG_ACTION, addressTag, keynameText.getText().toString().trim(), SELECT_OTHER_REQUEST,SelectCustomerTagActivity.COMPANY_SELECT_TYPE);
+                SelectCustomerTagActivity.launchForResult(CustomerCompanyCreateActivity.this, Const.SELECT_ENTERPRISE_ADDRESS_TAG_ACTION, addressTag, keynameText.getText().toString().trim(), SELECT_OTHER_REQUEST, SelectCustomerTagActivity.COMPANY_SELECT_TYPE);
             }
         });
     }
@@ -418,7 +416,7 @@ public class CustomerCompanyCreateActivity extends BaseActivity {
             @Override
             public void onClick(View view) {
 
-                SelectCustomerTagActivity.launchForResult(CustomerCompanyCreateActivity.this, Const.SELECT_ENTERPRISE_EMAIL_TAG_ACTION, emailTag, keynameText.getText().toString().trim(), SELECT_OTHER_REQUEST,SelectCustomerTagActivity.COMPANY_SELECT_TYPE);
+                SelectCustomerTagActivity.launchForResult(CustomerCompanyCreateActivity.this, Const.SELECT_ENTERPRISE_EMAIL_TAG_ACTION, emailTag, keynameText.getText().toString().trim(), SELECT_OTHER_REQUEST, SelectCustomerTagActivity.COMPANY_SELECT_TYPE);
             }
         });
     }
@@ -459,7 +457,7 @@ public class CustomerCompanyCreateActivity extends BaseActivity {
             public void onClick(View view) {
 
 
-                SelectCustomerTagActivity.launchForResult(CustomerCompanyCreateActivity.this, Const.SELECT_ENTERPRISE_DATE_TAG_ACTION, dateTag, keynameText.getText().toString().trim(), SELECT_OTHER_REQUEST,SelectCustomerTagActivity.COMPANY_SELECT_TYPE);
+                SelectCustomerTagActivity.launchForResult(CustomerCompanyCreateActivity.this, Const.SELECT_ENTERPRISE_DATE_TAG_ACTION, dateTag, keynameText.getText().toString().trim(), SELECT_OTHER_REQUEST, SelectCustomerTagActivity.COMPANY_SELECT_TYPE);
             }
         });
         valuenameText.setOnClickListener(new View.OnClickListener() {
@@ -508,7 +506,7 @@ public class CustomerCompanyCreateActivity extends BaseActivity {
             @Override
             public void onClick(View view) {
 
-                SelectCustomerTagActivity.launchForResult(CustomerCompanyCreateActivity.this, Const.SELECT_ENTERPRISE_PARPER_TAG_ACTION, paperTag, keynameText.getText().toString().trim(), SELECT_OTHER_REQUEST,SelectCustomerTagActivity.COMPANY_SELECT_TYPE);
+                SelectCustomerTagActivity.launchForResult(CustomerCompanyCreateActivity.this, Const.SELECT_ENTERPRISE_PARPER_TAG_ACTION, paperTag, keynameText.getText().toString().trim(), SELECT_OTHER_REQUEST, SelectCustomerTagActivity.COMPANY_SELECT_TYPE);
             }
         });
     }
@@ -565,7 +563,7 @@ public class CustomerCompanyCreateActivity extends BaseActivity {
             setRelationText.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    SelectCustomerTagActivity.launchForResult(CustomerCompanyCreateActivity.this, Const.SELECT_RELATION_TAG_ACTION, liaisonsList.indexOf(customerEntity) + 1, null, SELECT_OTHER_REQUEST,SelectCustomerTagActivity.COMPANY_SELECT_TYPE);
+                    SelectCustomerTagActivity.launchForResult(CustomerCompanyCreateActivity.this, Const.SELECT_RELATION_TAG_ACTION, liaisonsList.indexOf(customerEntity) + 1, null, SELECT_OTHER_REQUEST, SelectCustomerTagActivity.COMPANY_SELECT_TYPE);
                 }
             });
         }
@@ -732,16 +730,14 @@ public class CustomerCompanyCreateActivity extends BaseActivity {
      * 检测填写的姓名是否有重名
      */
     private void checkName(String name) {
-        getApi().companyCheckReName(name).enqueue(new SimpleCallBack<JsonObject>() {
+        getApi().companyCheckReName(name).enqueue(new SimpleCallBack<List<CustomerEntity>>() {
             @Override
-            public void onSuccess(Call<ResEntity<JsonObject>> call, Response<ResEntity<JsonObject>> response) {
-                if (response.body().result != null) {
-                    if (response.body().result.has("count")) {
-                        int count = response.body().result.get("count").getAsInt();
-                        if (count > 0) {
-                            isCanAddContact = false;
-                            showTopSnackBar(R.string.group_contact_warn_top_text);
-                        }
+            public void onSuccess(Call<ResEntity<List<CustomerEntity>>> call, Response<ResEntity<List<CustomerEntity>>> response) {
+                if (response.body().result!=null) {
+                    int count = response.body().result.size();
+                    if (count > 0) {
+                        isCanAddContact = false;
+                        showTopSnackBar(R.string.group_contact_warn_top_text);
                     }
                 }
             }

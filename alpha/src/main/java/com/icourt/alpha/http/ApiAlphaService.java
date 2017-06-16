@@ -778,7 +778,7 @@ public interface ApiAlphaService {
      * @return
      */
     @GET("api/v2/contact")
-    Call<ResEntity<JsonObject>> companyCheckReName(@Query("accuratename") String accuratename);
+    Call<ResEntity<List<CustomerEntity>>> companyCheckReName(@Query("accuratename") String accuratename);
 
 
     /**

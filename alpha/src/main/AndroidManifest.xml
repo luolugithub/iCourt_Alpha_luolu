@@ -231,7 +231,7 @@
         <activity
             android:name=".activity.TaskDetailActivity"
             android:screenOrientation="portrait"
-            android:windowSoftInputMode="adjustPan" />
+            android:windowSoftInputMode="adjustUnspecified|adjustResize|stateHidden" />
         <activity
             android:name=".activity.CommentListActivity"
             android:screenOrientation="portrait"

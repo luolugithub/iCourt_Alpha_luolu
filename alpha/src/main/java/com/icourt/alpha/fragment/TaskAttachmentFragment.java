@@ -352,9 +352,11 @@ public class TaskAttachmentFragment extends BaseFragment implements BaseRecycler
 
     @Override
     public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
-        TaskAttachmentEntity entity = (TaskAttachmentEntity) adapter.getItem(position);
-        if (entity.pathInfoVo != null)
-            FileBoxDownloadActivity.launch(getContext(), null, entity.pathInfoVo.repoId, entity.pathInfoVo.filePath, FileBoxDownloadActivity.TASK_DOWNLOAD_FILE_ACTION);
+        if (hasPermission) {
+            TaskAttachmentEntity entity = (TaskAttachmentEntity) adapter.getItem(position);
+            if (entity.pathInfoVo != null)
+                FileBoxDownloadActivity.launch(getContext(), null, entity.pathInfoVo.repoId, entity.pathInfoVo.filePath, FileBoxDownloadActivity.TASK_DOWNLOAD_FILE_ACTION);
+        }
     }
 
     @Override
