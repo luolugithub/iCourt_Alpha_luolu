@@ -252,17 +252,21 @@ public class TaskAttachmentFragment extends BaseFragment implements BaseRecycler
                 if (response.body().result != null) {
                     taskAttachmentAdapter.bindData(true, response.body().result);
                     if (response.body().result.size() <= 0) {
-                        if (!hasPermission) {
-                            listLayout.setVisibility(View.GONE);
-                            emptyLayout.setVisibility(View.VISIBLE);
-                        } else {
-                            listLayout.setVisibility(View.VISIBLE);
-                            emptyLayout.setVisibility(View.GONE);
+                        if (listLayout != null) {
+                            if (!hasPermission) {
+                                listLayout.setVisibility(View.GONE);
+                                emptyLayout.setVisibility(View.VISIBLE);
+                            } else {
+                                listLayout.setVisibility(View.VISIBLE);
+                                emptyLayout.setVisibility(View.GONE);
+                            }
                         }
                     }
                 } else {
-                    listLayout.setVisibility(View.GONE);
-                    emptyLayout.setVisibility(View.VISIBLE);
+                    if (listLayout != null) {
+                        listLayout.setVisibility(View.GONE);
+                        emptyLayout.setVisibility(View.VISIBLE);
+                    }
                 }
                 updateDocument();
             }

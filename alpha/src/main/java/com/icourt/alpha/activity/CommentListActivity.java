@@ -182,6 +182,18 @@ public class CommentListActivity extends BaseActivity implements BaseRecyclerAda
         });
         refreshLayout.startRefresh();
         commentEdit.setMaxEms(1500);
+        recyclerview.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+                super.onScrollStateChanged(recyclerView, newState);
+                switch (newState) {
+                    case RecyclerView.SCROLL_STATE_DRAGGING: {
+                        SystemUtils.hideSoftKeyBoard(CommentListActivity.this);
+                    }
+                    break;
+                }
+            }
+        });
     }
 
     @Override
@@ -197,9 +209,14 @@ public class CommentListActivity extends BaseActivity implements BaseRecyclerAda
                 stopRefresh();
                 commentListAdapter.bindData(isRefresh, response.body().result.items);
                 pageIndex += 1;
-                enableLoadMore(response.body().result.items);
                 commentCount = commentListAdapter.getItemCount();
                 commentTv.setText(commentCount + "条动态");
+            }
+
+            @Override
+            public void onFailure(Call<ResEntity<CommentEntity>> call, Throwable t) {
+                super.onFailure(call, t);
+                stopRefresh();
             }
         });
     }

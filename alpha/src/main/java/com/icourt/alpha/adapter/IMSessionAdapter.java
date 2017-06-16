@@ -289,14 +289,17 @@ public class IMSessionAdapter extends BaseArrayRecyclerAdapter<IMSessionEntity> 
                 tvSessionContent.setText(stringBuilder.toString());
                 break;
             case Const.MSG_TYPE_TXT:    //文本消息
+                stringBuilder.append(getSessionContent(customIMBody));
                 stringBuilder.append(customIMBody.content);
                 tvSessionContent.setText(stringBuilder.toString());
                 break;
             case Const.MSG_TYPE_IMAGE:
+                stringBuilder.append(getSessionContent(customIMBody));
                 stringBuilder.append("[ 图片 ]");
                 tvSessionContent.setText(stringBuilder.toString());
                 break;
             case Const.MSG_TYPE_FILE:     //文件消息
+                stringBuilder.append(getSessionContent(customIMBody));
                 stringBuilder.append("[ 文件 ]");
                 tvSessionContent.setText(stringBuilder.toString());
                 break;
@@ -307,7 +310,6 @@ public class IMSessionAdapter extends BaseArrayRecyclerAdapter<IMSessionEntity> 
                         case CHAT_TYPE_P2P:
                             break;
                         case CHAT_TYPE_TEAM:
-
                             dingStringBuilder.append(customIMBody.name + " : ");
                             break;
                     }
@@ -354,6 +356,7 @@ public class IMSessionAdapter extends BaseArrayRecyclerAdapter<IMSessionEntity> 
                 break;
             case Const.MSG_TYPE_LINK://链接消息
                 if (customIMBody.ext != null) {
+                    stringBuilder.append(getSessionContent(customIMBody));
                     stringBuilder.append(customIMBody.ext.url);
                     tvSessionContent.setText(stringBuilder.toString());
                 } else {
@@ -369,6 +372,24 @@ public class IMSessionAdapter extends BaseArrayRecyclerAdapter<IMSessionEntity> 
         }
     }
 
+    /**
+     * ope ＝＝ team时，content显示发送者名称
+     * <p>
+     * 获取sessioncontent
+     *
+     * @param customIMBody
+     * @return
+     */
+    private String getSessionContent(IMMessageCustomBody customIMBody) {
+        String sessionName = "";
+        if (customIMBody == null) return sessionName;
+        if (customIMBody.ope == Const.CHAT_TYPE_TEAM) {
+            if (!StringUtils.equalsIgnoreCase(customIMBody.from, getLoginUserId(), false)) {
+                sessionName = customIMBody.name + " : ";
+            }
+        }
+        return sessionName;
+    }
 
     /**
      * 设置消息展示的时间
