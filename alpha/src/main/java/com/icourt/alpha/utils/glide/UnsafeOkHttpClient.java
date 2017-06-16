@@ -36,6 +36,7 @@ public class UnsafeOkHttpClient {
                 Request request = chain.request();
                 Request requestBuilder = request.newBuilder()
                         .addHeader("Cookie", "officeId=" + AlphaClient.getOfficeId())
+                        .addHeader("token", AlphaClient.getToken())
                         .build();
                 Response response = chain.proceed(requestBuilder);
                 return response;
