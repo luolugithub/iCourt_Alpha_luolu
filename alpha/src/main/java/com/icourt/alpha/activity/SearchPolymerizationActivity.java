@@ -28,11 +28,13 @@ import com.icourt.alpha.db.convertor.ListConvertor;
 import com.icourt.alpha.db.dbmodel.ContactDbModel;
 import com.icourt.alpha.db.dbservice.ContactDbService;
 import com.icourt.alpha.entity.bean.GroupContactBean;
+import com.icourt.alpha.entity.bean.GroupEntity;
 import com.icourt.alpha.entity.bean.IMMessageCustomBody;
 import com.icourt.alpha.entity.bean.ISearchItemEntity;
 import com.icourt.alpha.entity.bean.SearchItemEntity;
 import com.icourt.alpha.entity.bean.SearchPolymerizationEntity;
 import com.icourt.alpha.fragment.dialogfragment.ContactDialogFragment;
+import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.IMUtils;
 import com.icourt.alpha.utils.SpannableUtils;
 import com.icourt.alpha.utils.StringUtils;
@@ -45,6 +47,7 @@ import com.netease.nimlib.sdk.search.model.MsgIndexRecord;
 import com.netease.nimlib.sdk.team.TeamService;
 import com.netease.nimlib.sdk.team.model.Team;
 
+import java.io.IOException;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
@@ -60,6 +63,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
 import io.realm.RealmResults;
+import retrofit2.Response;
 
 import static com.icourt.alpha.R.id.search_customer_tv;
 import static com.icourt.alpha.constants.Const.CHAT_TYPE_P2P;
@@ -76,7 +80,6 @@ import static com.icourt.alpha.constants.Const.SEARCH_TYPE_TEAM;
  * version 1.0.0
  */
 public class SearchPolymerizationActivity extends BaseActivity implements BaseRecyclerAdapter.OnItemChildClickListener, BaseRecyclerAdapter.OnItemClickListener {
-    private final List<Team> localTeams = new ArrayList<>();
 
     private static final String KEY_SEARCH_PRIORITY = "search_priority";
     int foregroundColor = 0xFFed6c00;
@@ -185,7 +188,7 @@ public class SearchPolymerizationActivity extends BaseActivity implements BaseRe
 
 
                 //查询讨论组
-                List<Team> teamByKeyWord = getTeamByKeyWord(keyWord);
+                List<GroupEntity> teamByKeyWord = getTeamByKeyWord(keyWord);
                 List<SearchItemEntity> searchTeamItems = convertTeam2SearchItem(teamByKeyWord, keyWord);
 
 
@@ -277,18 +280,19 @@ public class SearchPolymerizationActivity extends BaseActivity implements BaseRe
      * @param keyWord
      * @return
      */
-    private List<Team> getTeamByKeyWord(String keyWord) {
-        if (localTeams.isEmpty()) {
-            localTeams.addAll(NIMClient.getService(TeamService.class)
-                    .queryTeamListBlock());
-        }
-        List<Team> teams = new ArrayList<>();
-        for (Team team : localTeams) {
-            if (team != null
-                    && !TextUtils.isEmpty(team.getName())
-                    && team.getName().contains(keyWord)) {
-                teams.add(team);
+    private List<GroupEntity> getTeamByKeyWord(String keyWord) {
+        List<GroupEntity> teams = new ArrayList<>();
+        try {
+            Response<ResEntity<List<GroupEntity>>> execute = getChatApi()
+                    .groupQueryByName(keyWord)
+                    .execute();
+            if (execute != null
+                    && execute.body() != null
+                    && execute.body().result != null) {
+                teams.addAll(execute.body().result);
             }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
         return teams;
     }
@@ -375,14 +379,14 @@ public class SearchPolymerizationActivity extends BaseActivity implements BaseRe
      * @param keyWord
      * @return
      */
-    private List<SearchItemEntity> convertTeam2SearchItem(List<Team> teams, String keyWord) {
+    private List<SearchItemEntity> convertTeam2SearchItem(List<GroupEntity> teams, String keyWord) {
         List<SearchItemEntity> data = new ArrayList<>();
         if (teams != null) {
-            for (Team item : teams) {
+            for (GroupEntity item : teams) {
                 if (item != null) {
-                    CharSequence originalText = item.getName();
-                    SearchItemEntity searchItemEntity = new SearchItemEntity(SpannableUtils.getTextForegroundColorSpan(originalText, keyWord, foregroundColor), null, item.getIcon(), keyWord);
-                    searchItemEntity.id = item.getId();
+                    CharSequence originalText = item.name;
+                    SearchItemEntity searchItemEntity = new SearchItemEntity(SpannableUtils.getTextForegroundColorSpan(originalText, keyWord, foregroundColor), null, item.pic, keyWord);
+                    searchItemEntity.id = item.tid;
                     searchItemEntity.classfyType = SEARCH_TYPE_TEAM;
                     data.add(searchItemEntity);
                 }
@@ -491,11 +495,15 @@ public class SearchPolymerizationActivity extends BaseActivity implements BaseRe
                         }
                         break;
                     case SEARCH_TYPE_TEAM:
-                        ChatActivity.launchTEAM(getContext(),
-                                item.getId(),
-                                TextUtils.isEmpty(item.getTitle()) ? "" : item.getTitle().toString(),
-                                0,
-                                0);
+                        if (IMUtils.isMyJionedGroup(item.getId())) {
+                            ChatActivity.launchTEAM(getContext(),
+                                    item.getId(),
+                                    TextUtils.isEmpty(item.getTitle()) ? "" : item.getTitle().toString(),
+                                    0,
+                                    0);
+                        } else {
+                            GroupDetailActivity.launchTEAM(getContext(), item.getId());
+                        }
                         break;
                 }
             }

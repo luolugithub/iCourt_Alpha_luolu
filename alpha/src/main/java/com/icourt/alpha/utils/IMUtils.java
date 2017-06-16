@@ -5,8 +5,10 @@ import android.widget.ImageView;
 
 import com.icourt.alpha.entity.bean.IMMessageCustomBody;
 import com.icourt.alpha.view.TextDrawable;
+import com.netease.nimlib.sdk.NIMClient;
 import com.netease.nimlib.sdk.msg.model.IMMessage;
 import com.netease.nimlib.sdk.msg.model.RecentContact;
+import com.netease.nimlib.sdk.team.TeamService;
 import com.netease.nimlib.sdk.team.model.MemberChangeAttachment;
 import com.netease.nimlib.sdk.team.model.Team;
 
@@ -296,5 +298,22 @@ public class IMUtils {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    /**
+     * 是否是我加入的群组
+     *
+     * @param tid
+     * @return
+     */
+    public static final boolean isMyJionedGroup(String tid) {
+        try {
+            Team team = NIMClient.getService(TeamService.class)
+                    .queryTeamBlock(tid);
+            return team != null && team.isMyTeam();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 }

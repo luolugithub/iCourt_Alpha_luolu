@@ -27,13 +27,11 @@ import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.ActionConstants;
 import com.icourt.alpha.utils.DensityUtil;
+import com.icourt.alpha.utils.IMUtils;
 import com.icourt.alpha.utils.IndexUtils;
 import com.icourt.alpha.utils.PinyinComparator;
 import com.icourt.alpha.view.recyclerviewDivider.SuspensionDecoration;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
-import com.netease.nimlib.sdk.NIMClient;
-import com.netease.nimlib.sdk.team.TeamService;
-import com.netease.nimlib.sdk.team.model.Team;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -305,14 +303,7 @@ public class GroupListActivity extends BaseActivity implements BaseRecyclerAdapt
      * @return
      */
     private boolean isMyJionedGroup(String tid) {
-        try {
-            Team team = NIMClient.getService(TeamService.class)
-                    .queryTeamBlock(tid);
-            return team != null && team.isMyTeam();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return false;
+        return IMUtils.isMyJionedGroup(tid);
     }
 
     @Override
