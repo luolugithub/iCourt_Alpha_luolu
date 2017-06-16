@@ -84,7 +84,9 @@
         <lecho.lib.hellocharts.view.LineChartView
             android:id="@+id/timing_chart_view"
             android:layout_width="match_parent"
-            android:layout_height="150dp" />
+            android:layout_height="150dp"
+            android:paddingRight="10dp"
+            android:paddingTop="10dp" />
     </LinearLayout>
 
     <FrameLayout

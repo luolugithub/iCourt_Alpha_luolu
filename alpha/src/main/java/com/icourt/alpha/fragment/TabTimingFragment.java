@@ -315,7 +315,7 @@ public class TabTimingFragment extends BaseFragment implements BaseRecyclerAdapt
                 new AxisValue(6).setLabel("周日"));
         List<AxisValue> axisYValues = new ArrayList<>();
         for (int i = 0; i <= 24; i += 4) {
-            axisYValues.add(new AxisValue(i).setLabel(String.format("%sh", i)));
+            axisYValues.add(new AxisValue(i).setLabel(String.format("%sh ", i)));
         }
         for (int j = 0; j < numberOfPoints; j++) {
             float hour = 0;
@@ -331,6 +331,7 @@ public class TabTimingFragment extends BaseFragment implements BaseRecyclerAdapt
                     hour = (itemEntity.timingCount - day * dd) * 1.0f / hh;
                 }
             }
+            //最大24
             if (hour >= 24) {
                 hour = 23.9f;
             }
@@ -353,14 +354,13 @@ public class TabTimingFragment extends BaseFragment implements BaseRecyclerAdapt
 
 
         Axis axisX = new Axis().setHasLines(true).setValues(axisXValues);
-        Axis axisY = new Axis().setHasLines(true);
+        Axis axisY = new Axis().setHasLines(true).setValues(axisYValues);
         //.setValues(axisYValues);
         data.setAxisXBottom(axisX);
         data.setAxisYLeft(axisY);
 
-        //data.setBaseValue(Float.NEGATIVE_INFINITY);
+        data.setBaseValue(Float.NEGATIVE_INFINITY);
         timingChartView.setLineChartData(data);
-
     }
 
     @OnClick({R.id.titleAction})
