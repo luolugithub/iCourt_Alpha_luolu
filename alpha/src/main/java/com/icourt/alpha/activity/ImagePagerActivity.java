@@ -13,6 +13,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.SystemClock;
+import android.support.annotation.CheckResult;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -25,6 +26,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.bumptech.glide.DrawableRequestBuilder;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.load.resource.drawable.GlideDrawable;
@@ -78,7 +80,6 @@ import io.reactivex.schedulers.Schedulers;
 import retrofit2.Call;
 import retrofit2.Response;
 
-import static com.icourt.alpha.R.id.imageView;
 import static com.icourt.alpha.constants.Const.CHAT_TYPE_P2P;
 import static com.icourt.alpha.constants.Const.CHAT_TYPE_TEAM;
 
@@ -199,29 +200,29 @@ public class ImagePagerActivity extends BaseUmengActivity implements BasePagerAd
     }
 
     /**
-     * 先展示小图 查看原图
+     * 先展示中图 查看原图
      *
      * @param context
-     * @param smallUrls
+     * @param mediumUrls             中等图片
      * @param sFileImageInfoEntities sfile对应详细信息
      */
     public static void launch(Context context,
-                              @NonNull List<String> smallUrls,
+                              @NonNull List<String> mediumUrls,
                               @Nullable ArrayList<SFileImageInfoEntity> sFileImageInfoEntities,
                               int pos,
                               @Nullable View transitionView,
                               @Const.CHAT_TYPE int chatType,
                               String chatId) {
         if (context == null) return;
-        if (smallUrls == null) return;
-        if (smallUrls.size() == 0) return;
+        if (mediumUrls == null) return;
+        if (mediumUrls.size() == 0) return;
         Intent intent = new Intent(context, ImagePagerActivity.class);
-        String[] urlsArr = (String[]) smallUrls.toArray(new String[smallUrls.size()]);
+        String[] urlsArr = (String[]) mediumUrls.toArray(new String[mediumUrls.size()]);
         intent.putExtra(KEY_URLS, urlsArr);
         if (pos < 0) {
             pos = 0;
-        } else if (pos >= smallUrls.size()) {
-            pos = smallUrls.size() - 1;
+        } else if (pos >= mediumUrls.size()) {
+            pos = mediumUrls.size() - 1;
         }
         intent.putExtra(KEY_POS, pos);
         intent.putExtra(KEY_CHAT_ID, chatId);
@@ -232,7 +233,7 @@ public class ImagePagerActivity extends BaseUmengActivity implements BasePagerAd
         if (context instanceof Activity
                 && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP
                 && transitionView != null) {
-            String transitionName = smallUrls.get(pos);
+            String transitionName = mediumUrls.get(pos);
             if (TextUtils.isEmpty(transitionName)) {
                 transitionName = "transitionView";
             }
@@ -428,11 +429,7 @@ public class ImagePagerActivity extends BaseUmengActivity implements BasePagerAd
     @Override
     public boolean OnItemLongClick(BasePagerAdapter adapter, final View v, final int pos) {
         if (v instanceof ImageView) {
-            SFileImageInfoEntity sFileImageInfoEntity = null;
-            if (sFileImageInfoEntities != null
-                    && pos < sFileImageInfoEntities.size()) {
-                sFileImageInfoEntity = sFileImageInfoEntities.get(pos);
-            }
+            SFileImageInfoEntity sFileImageInfoEntity = getSFileImageInfoEntity(pos);
             ImageView imageView = (ImageView) v;
             final Drawable drawable = imageView.getDrawable();
             if (drawable == null) return false;
@@ -730,6 +727,15 @@ public class ImagePagerActivity extends BaseUmengActivity implements BasePagerAd
         }
     }
 
+    @CheckResult
+    private SFileImageInfoEntity getSFileImageInfoEntity(int pos) {
+        if (sFileImageInfoEntities != null
+                && pos < sFileImageInfoEntities.size()) {
+            return sFileImageInfoEntities.get(pos);
+        }
+        return null;
+    }
+
     class ImagePagerAdapter extends BasePagerAdapter<String> {
 
         @Override
@@ -739,7 +745,7 @@ public class ImagePagerActivity extends BaseUmengActivity implements BasePagerAd
 
         @Override
         public void bindDataToItem(final String s, ViewGroup container, View itemView, final int pos) {
-            final TouchImageView touchImageView = (TouchImageView) itemView.findViewById(imageView);
+            final TouchImageView touchImageView = (TouchImageView) itemView.findViewById(R.id.imageView);
             setTransitionView(touchImageView, s);
             touchImageView.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -772,66 +778,141 @@ public class ImagePagerActivity extends BaseUmengActivity implements BasePagerAd
                 handler.postDelayed(new Runnable() {
                     @Override
                     public void run() {
-                        Glide.with(getContext())
-                                .load(s)
-                                .override(Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL)
-                                .error(R.mipmap.default_img_failed)
-                                .thumbnail(0.1f)
-                                .listener(new RequestListener<String, GlideDrawable>() {
-                                    @Override
-                                    public boolean onException(Exception e, String model, Target<GlideDrawable> target, boolean isFirstResource) {
-                                        img_look_original_tv.setVisibility(View.GONE);
-                                        return false;
-                                    }
+                        if (!GlideUtils.canLoadImage(getContext())) return;
 
-                                    @Override
-                                    public boolean onResourceReady(GlideDrawable resource, String model, Target<GlideDrawable> target, boolean isFromMemoryCache, boolean isFirstResource) {
-                                        //有sfile原图 原图的分界线是高度>=800
-                                        if (!TextUtils.isEmpty(bigUrl)
-                                                && resource != null
-                                                && resource.getIntrinsicHeight() >= 800) {
-                                            Observable.create(new ObservableOnSubscribe<Boolean>() {
-                                                @Override
-                                                public void subscribe(ObservableEmitter<Boolean> e) throws Exception {
-                                                    if (e.isDisposed()) return;
-                                                    File file = null;
-                                                    try {
-                                                        file = Glide.with(getContext())
-                                                                .load(bigUrl)
-                                                                .downloadOnly(Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL)
-                                                                .get(200, TimeUnit.MILLISECONDS);
-                                                    } catch (Exception ex) {
-                                                        ex.printStackTrace();
-                                                    }
-                                                    e.onNext(file != null && file.exists());
-                                                    e.onComplete();
-                                                }
-                                            }).compose(ImagePagerActivity.this.<Boolean>bindToLifecycle())
-                                                    .subscribeOn(Schedulers.newThread())
-                                                    .observeOn(AndroidSchedulers.mainThread())
-                                                    .subscribe(new io.reactivex.functions.Consumer<Boolean>() {
-                                                        @Override
-                                                        public void accept(Boolean aBoolean) throws Exception {
-                                                            if (aBoolean != null && aBoolean.booleanValue()) {
-                                                                log("--------->yes");
-                                                                loadOriginalPic2(img_look_original_tv, bigUrl, touchImageView);
-                                                            } else {
-                                                                log("--------->no");
-                                                                img_look_original_tv.setVisibility(View.VISIBLE);
-                                                            }
-                                                        }
-                                                    });
-                                        } else {
-                                            img_look_original_tv.setVisibility(View.GONE);
+                        final SFileImageInfoEntity sFileImageInfoEntity = getSFileImageInfoEntity(pos);
+                        if (sFileImageInfoEntity != null
+                                && !TextUtils.isEmpty(sFileImageInfoEntity.thumb)) {
+                            Glide.with(getContext())
+                                    .load(sFileImageInfoEntity.thumb)
+                                    .diskCacheStrategy(DiskCacheStrategy.SOURCE)
+                                    .listener(new RequestListener<String, GlideDrawable>() {
+                                        @Override
+                                        public boolean onException(Exception e, String model, Target<GlideDrawable> target, boolean isFirstResource) {
+                                            loadBigImage(img_look_original_tv,
+                                                    null,
+                                                    null,
+                                                    s,
+                                                    bigUrl,
+                                                    touchImageView);
+                                            return true;
                                         }
-                                        return false;
-                                    }
-                                })
-                                .into(touchImageView);
+
+                                        @Override
+                                        public boolean onResourceReady(GlideDrawable resource, String model, Target<GlideDrawable> target, boolean isFromMemoryCache, boolean isFirstResource) {
+                                            loadBigImage(img_look_original_tv,
+                                                    resource,
+                                                    resource,
+                                                    s,
+                                                    bigUrl,
+                                                    touchImageView);
+                                            return true;
+                                        }
+                                    }).dontAnimate()
+                                    .into(touchImageView);
+
+                        } else {
+                            loadBigImage(img_look_original_tv,
+                                    null,
+                                    null,
+                                    s,
+                                    bigUrl,
+                                    touchImageView);
+                        }
                     }
                 }, new Random().nextInt(50));
             }
         }
+
+        /**
+         * 加载大图
+         *
+         * @param img_look_original_tv 加载原图的按钮
+         * @param url                  大图地址
+         * @param bigUrl               原图地址
+         * @param imageView
+         */
+        private void loadBigImage(final View img_look_original_tv,
+                                  Drawable placeholder,
+                                  Drawable errorDrawable,
+                                  String url,
+                                  final String bigUrl,
+                                  final ImageView imageView) {
+            if (!GlideUtils.canLoadImage(getContext())) return;
+            final DrawableRequestBuilder<String> drawableRequestBuilder = Glide.with(getContext())
+                    .load(url)
+                    .diskCacheStrategy(DiskCacheStrategy.SOURCE);
+            if (placeholder != null) {
+                drawableRequestBuilder.placeholder(placeholder);
+            } else {
+                drawableRequestBuilder.thumbnail(0.1f);
+            }
+            if (errorDrawable != null) {
+                drawableRequestBuilder.error(errorDrawable);
+            } else {
+                drawableRequestBuilder.error(R.mipmap.default_img_failed);
+            }
+            drawableRequestBuilder
+                    .listener(new RequestListener<String, GlideDrawable>() {
+                        @Override
+                        public boolean onException(Exception e, String model, Target<GlideDrawable> target, boolean isFirstResource) {
+                            img_look_original_tv.setVisibility(View.GONE);
+                            return false;
+                        }
+
+                        @Override
+                        public boolean onResourceReady(GlideDrawable resource, String model, Target<GlideDrawable> target, boolean isFromMemoryCache, boolean isFirstResource) {
+                            //有sfile原图 原图的分界线是高度>=800
+                            if (!TextUtils.isEmpty(bigUrl)
+                                    && resource != null
+                                    && resource.getIntrinsicHeight() >= 800) {
+                                Observable.create(new ObservableOnSubscribe<Boolean>() {
+                                    @Override
+                                    public void subscribe(ObservableEmitter<Boolean> e) throws Exception {
+                                        if (e.isDisposed()) return;
+                                        File file = null;
+                                        try {
+                                            file = Glide.with(getContext())
+                                                    .load(bigUrl)
+                                                    .downloadOnly(Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL)
+                                                    .get(200, TimeUnit.MILLISECONDS);
+                                        } catch (Exception ex) {
+                                            ex.printStackTrace();
+                                        }
+                                        e.onNext(file != null && file.exists());
+                                        e.onComplete();
+                                    }
+                                }).compose(ImagePagerActivity.this.<Boolean>bindToLifecycle())
+                                        .subscribeOn(Schedulers.newThread())
+                                        .observeOn(AndroidSchedulers.mainThread())
+                                        .subscribe(new io.reactivex.functions.Consumer<Boolean>() {
+                                            @Override
+                                            public void accept(Boolean aBoolean) throws Exception {
+                                                if (!GlideUtils.canLoadImage(getContext())) return;
+
+                                                if (aBoolean != null && aBoolean.booleanValue()) {
+                                                    loadOriginalPic2(img_look_original_tv, bigUrl, imageView);
+                                                } else {
+                                                    img_look_original_tv.setVisibility(View.VISIBLE);
+                                                }
+                                            }
+                                        });
+                            } else {
+                                img_look_original_tv.setVisibility(View.GONE);
+                            }
+                            return false;
+                        }
+                    }).dontAnimate()
+                    .into(imageView);
+        }
+
+        /**
+         * 加载缩略图
+         *
+         * @param imageView
+         * @param pos
+         */
+
 
         /**
          * 加载原图
@@ -887,6 +968,7 @@ public class ImagePagerActivity extends BaseUmengActivity implements BasePagerAd
             img_look_original_tv.setVisibility(View.GONE);
             Glide.with(getContext())
                     .load(originalUrl)
+                    .diskCacheStrategy(DiskCacheStrategy.SOURCE)
                     .placeholder(imageView.getDrawable())
                     .into(imageView);
         }

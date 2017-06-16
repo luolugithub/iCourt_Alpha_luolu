@@ -44,7 +44,7 @@ public class UnsafeOkHttpClient {
         builder.addInterceptor(new HttpLoggingInterceptor(new HttpLoggingInterceptor.Logger() {
             @Override
             public void log(String s) {
-                LogUtils.d("------------->glide:" + s);
+                LogUtils.d("glide:" + s);
             }
         }).setLevel(HttpLoggingInterceptor.Level.BODY));
         builder.writeTimeout(apiConfig.SOCKET_WRITE_TIME_OUT, TimeUnit.MILLISECONDS);

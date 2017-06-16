@@ -11,6 +11,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.baseadapter.BaseArrayRecyclerAdapter;
 import com.icourt.alpha.constants.Const;
@@ -554,8 +555,10 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMMessageCustomBody> i
             Glide.with(chat_image_iv.getContext())
                     .load(picUrl)
                     .asBitmap()
+                    .diskCacheStrategy(DiskCacheStrategy.SOURCE)
                     .error(R.mipmap.default_img_failed)
                     .into(new FitHeightImgViewTarget(chat_image_iv));
+
         }
     }
 
