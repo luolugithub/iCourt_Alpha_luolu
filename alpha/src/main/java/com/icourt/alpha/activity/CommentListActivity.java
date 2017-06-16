@@ -247,7 +247,7 @@ public class CommentListActivity extends BaseActivity implements BaseRecyclerAda
             showTopSnackBar("评论内容不能超过1500字");
             return;
         }
-        showLoadingDialog("正在发送...");
+        showLoadingDialog(null);
         getApi().commentCreate(100, taskItemEntity.id, content).enqueue(new SimpleCallBack<JsonElement>() {
             @Override
             public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {

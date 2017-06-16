@@ -778,6 +778,7 @@ public class CustomerCompanyCreateActivity extends BaseActivity {
         getApi().customerUpdate(RequestUtils.createJsonBody(getUpdateContactJson())).enqueue(new SimpleCallBack<List<ContactDeatilBean>>() {
             @Override
             public void onSuccess(Call<ResEntity<List<ContactDeatilBean>>> call, Response<ResEntity<List<ContactDeatilBean>>> response) {
+                dismissLoadingDialog();
                 List<ContactDeatilBean> list = response.body().result;
                 if (list != null) {
                     contactDeatilBean = list.get(0);

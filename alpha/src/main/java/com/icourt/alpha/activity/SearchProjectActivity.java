@@ -405,11 +405,7 @@ public class SearchProjectActivity extends BaseActivity implements BaseRecyclerA
      * @param checkbox
      */
     private void updateTask(final TaskEntity.TaskItemEntity itemEntity, final boolean state, final CheckBox checkbox) {
-        if (state) {
-            showLoadingDialog("完成任务...");
-        } else {
-            showLoadingDialog("取消完成任务...");
-        }
+        showLoadingDialog(null);
         getApi().taskUpdate(RequestUtils.createJsonBody(getTaskJson(itemEntity, state))).enqueue(new SimpleCallBack<JsonElement>() {
             @Override
             public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {

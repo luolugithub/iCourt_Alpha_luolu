@@ -132,8 +132,8 @@ public class TaskGroupCreateActivity extends BaseActivity {
         getApi().taskGroupCreate(RequestUtils.createJsonBody(getAddGroupJson())).enqueue(new SimpleCallBack<TaskGroupEntity>() {
             @Override
             public void onSuccess(Call<ResEntity<TaskGroupEntity>> call, Response<ResEntity<TaskGroupEntity>> response) {
+                dismissLoadingDialog();
                 if (response.body().result != null) {
-                    dismissLoadingDialog();
                     ProjectTaskGroupActivity.launchSetResult(TaskGroupCreateActivity.this, response.body().result);
                     TaskGroupCreateActivity.this.finish();
                 }
@@ -155,8 +155,8 @@ public class TaskGroupCreateActivity extends BaseActivity {
         getApi().taskUpdate(RequestUtils.createJsonBody(updateGroupJson())).enqueue(new SimpleCallBack<JsonElement>() {
             @Override
             public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
+                dismissLoadingDialog();
                 if (response.body().result != null) {
-                    dismissLoadingDialog();
                     entity.name = groupNameEdittext.getText().toString();
                     ProjectTaskGroupActivity.launchSetResult(TaskGroupCreateActivity.this, entity);
                     TaskGroupCreateActivity.this.finish();

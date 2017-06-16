@@ -284,6 +284,12 @@ public class TaskCheckItemFragment extends BaseFragment implements BaseRecyclerA
                 }
                 updateCheckItem();
             }
+
+            @Override
+            public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
+                super.onFailure(call, t);
+                dismissLoadingDialog();
+            }
         });
     }
 
@@ -301,6 +307,12 @@ public class TaskCheckItemFragment extends BaseFragment implements BaseRecyclerA
                 EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION));
                 taskCheckItemAdapter.removeItem(itemEntity);
                 updateCheckItem();
+            }
+
+            @Override
+            public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
+                super.onFailure(call, t);
+                dismissLoadingDialog();
             }
         });
     }

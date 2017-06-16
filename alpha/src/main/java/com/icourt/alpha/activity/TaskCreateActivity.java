@@ -315,6 +315,12 @@ public class TaskCreateActivity extends BaseActivity implements ProjectSelectDia
                     EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION));
                     finish();
                 }
+
+                @Override
+                public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
+                    super.onFailure(call, t);
+                    dismissLoadingDialog();
+                }
             });
         }
     }

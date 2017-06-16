@@ -169,7 +169,8 @@ public class ProjectFileBoxFragment extends BaseFragment implements BaseRecycler
                     if (response.body().result.contains("MAT:matter.document:readwrite")) {
                         hasReadWritePms = true;
                     }
-                    refreshLayout.startRefresh();
+                    if (refreshLayout != null)
+                        refreshLayout.startRefresh();
                 }
             }
 
@@ -240,6 +241,10 @@ public class ProjectFileBoxFragment extends BaseFragment implements BaseRecycler
             @Override
             public void onFailure(Call<JsonObject> call, Throwable throwable) {
                 showTopSnackBar("获取文档根目录id失败");
+                if (refreshLayout != null) {
+                    refreshLayout.stopRefresh();
+                    enableEmptyView(null);
+                }
             }
         });
     }

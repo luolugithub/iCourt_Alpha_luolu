@@ -101,7 +101,7 @@ public class SettingActivity extends BaseActivity {
             showTopSnackBar("请输入正确的手机格式");
             return;
         }
-        showLoadingDialog("正在修改...");
+        showLoadingDialog(null);
         getApi().updateUserInfo(alphaUserInfo.getUserId(), phone, email).enqueue(new SimpleCallBack<JsonElement>() {
             @Override
             public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {

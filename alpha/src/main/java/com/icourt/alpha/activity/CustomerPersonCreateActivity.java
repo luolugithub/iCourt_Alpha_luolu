@@ -1033,6 +1033,7 @@ public class CustomerPersonCreateActivity extends BaseActivity {
         getApi().customerUpdate(RequestUtils.createJsonBody(json)).enqueue(new SimpleCallBack<List<ContactDeatilBean>>() {
             @Override
             public void onSuccess(Call<ResEntity<List<ContactDeatilBean>>> call, Response<ResEntity<List<ContactDeatilBean>>> response) {
+                dismissLoadingDialog();
                 List<ContactDeatilBean> list = response.body().result;
                 if (list != null) {
                     contactDeatilBean = list.get(0);
@@ -1060,6 +1061,7 @@ public class CustomerPersonCreateActivity extends BaseActivity {
         getApi().customerCreate(RequestUtils.createJsonBody(getAddContactJson())).enqueue(new SimpleCallBack<List<ContactDeatilBean>>() {
             @Override
             public void onSuccess(Call<ResEntity<List<ContactDeatilBean>>> call, Response<ResEntity<List<ContactDeatilBean>>> response) {
+                dismissLoadingDialog();
                 List<ContactDeatilBean> list = response.body().result;
                 if (list != null) {
                     newAddContactDetailBean = list.get(0);

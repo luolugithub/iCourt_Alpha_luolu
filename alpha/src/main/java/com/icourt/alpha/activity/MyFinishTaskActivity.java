@@ -74,18 +74,24 @@ public class MyFinishTaskActivity extends BaseActivity implements BaseRecyclerAd
     TaskItemAdapter taskItemAdapter;
     HeaderFooterAdapter<TaskItemAdapter> headerFooterAdapter;
 
-    public static void launch(@NonNull Context context) {
-        if (context == null) return;
-        Intent intent = new Intent(context, MyFinishTaskActivity.class);
-        context.startActivity(intent);
-    }
-
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_my_ated);
         ButterKnife.bind(this);
         initView();
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        EventBus.getDefault().unregister(this);
+    }
+
+    public static void launch(@NonNull Context context) {
+        if (context == null) return;
+        Intent intent = new Intent(context, MyFinishTaskActivity.class);
+        context.startActivity(intent);
     }
 
     @Override
@@ -312,11 +318,7 @@ public class MyFinishTaskActivity extends BaseActivity implements BaseRecyclerAd
      * @param checkbox
      */
     private void updateTask(final TaskEntity.TaskItemEntity itemEntity, final boolean state, final CheckBox checkbox) {
-        if (state) {
-            showLoadingDialog("完成任务...");
-        } else {
-            showLoadingDialog("取消完成任务...");
-        }
+        showLoadingDialog(null);
         getApi().taskUpdate(RequestUtils.createJsonBody(getTaskJson(itemEntity, state))).enqueue(new SimpleCallBack<JsonElement>() {
             @Override
             public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
@@ -438,9 +440,4 @@ public class MyFinishTaskActivity extends BaseActivity implements BaseRecyclerAd
         }
     }
 
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        EventBus.getDefault().unregister(this);
-    }
 }

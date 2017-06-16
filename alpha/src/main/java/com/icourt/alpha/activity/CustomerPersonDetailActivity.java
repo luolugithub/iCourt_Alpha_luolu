@@ -646,9 +646,9 @@ public class CustomerPersonDetailActivity extends BaseActivity {
         getApi().customerDetailQuery(contact_id).enqueue(new SimpleCallBack<List<ContactDeatilBean>>() {
             @Override
             public void onSuccess(Call<ResEntity<List<ContactDeatilBean>>> call, Response<ResEntity<List<ContactDeatilBean>>> response) {
+                dismissLoadingDialog();
                 if (response.body().result != null) {
                     if (response.body().result.size() > 0) {
-                        dismissLoadingDialog();
                         contactDeatilBean = response.body().result.get(0);
                         setDataToView();
                     }

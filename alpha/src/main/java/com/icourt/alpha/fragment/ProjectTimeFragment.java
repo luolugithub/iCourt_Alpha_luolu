@@ -188,7 +188,7 @@ public class ProjectTimeFragment extends BaseFragment implements BaseRecyclerAda
     public void onDestroy() {
         super.onDestroy();
         EventBus.getDefault().unregister(this);
-        if(unbinder!=null){
+        if (unbinder != null) {
             unbinder.unbind();
         }
     }
