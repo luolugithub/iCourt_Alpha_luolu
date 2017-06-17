@@ -94,18 +94,4 @@ public class ActionConstants {
 
     public static final String FILE_DOWNLOAD_PATH = "alpha_download";//下载文件保存路径
 
-    //消息类型
-    @Deprecated
-    public static final int IM_MESSAGE_TEXT_SHOWTYPE = 0;//文本消息
-    @Deprecated
-    public static final int IM_MESSAGE_FILE_SHOWTYPE = 1;//文件消息
-    @Deprecated
-    public static final int IM_MESSAGE_PIN_SHOWTYPE = 2;//钉消息
-    @Deprecated
-    public static final int IM_MESSAGE_AT_SHOWTYPE = 3;//@消息
-
-    public static final long MESSAGE_GROUP_TOP = 11;//置顶
-    public static final long MESSAGE_GROUP_NO_TOP = 10;//未置顶
-
-
 }
