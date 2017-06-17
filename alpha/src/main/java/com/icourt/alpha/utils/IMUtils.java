@@ -3,6 +3,7 @@ package com.icourt.alpha.utils;
 import android.text.TextUtils;
 import android.widget.ImageView;
 
+import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.icourt.alpha.entity.bean.IMMessageCustomBody;
 import com.icourt.alpha.view.TextDrawable;
 import com.netease.nimlib.sdk.NIMClient;
@@ -11,6 +12,7 @@ import com.netease.nimlib.sdk.msg.model.RecentContact;
 import com.netease.nimlib.sdk.team.TeamService;
 import com.netease.nimlib.sdk.team.model.MemberChangeAttachment;
 import com.netease.nimlib.sdk.team.model.Team;
+import com.netease.nimlib.sdk.uinfo.model.NimUserInfo;
 
 import java.util.Arrays;
 import java.util.List;
@@ -298,6 +300,22 @@ public class IMUtils {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+
+    /**
+     * 转为自定义的联系人
+     *
+     * @param nimUserInfo
+     * @return
+     */
+    public static final GroupContactBean convert2GroupContact(NimUserInfo nimUserInfo) {
+        if (nimUserInfo == null) return null;
+        GroupContactBean groupContactBean = new GroupContactBean();
+        groupContactBean.accid = nimUserInfo.getAccount();
+        groupContactBean.name = nimUserInfo.getName();
+        groupContactBean.pic = nimUserInfo.getAvatar();
+        return groupContactBean;
     }
 
     /**

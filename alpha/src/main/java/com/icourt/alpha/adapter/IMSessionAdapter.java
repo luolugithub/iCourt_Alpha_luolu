@@ -21,7 +21,10 @@ import com.icourt.alpha.utils.LoginInfoUtils;
 import com.icourt.alpha.utils.SpannableUtils;
 import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.view.bgabadgeview.BGABadgeImageView;
+import com.netease.nimlib.sdk.NIMClient;
 import com.netease.nimlib.sdk.team.model.Team;
+import com.netease.nimlib.sdk.uinfo.UserService;
+import com.netease.nimlib.sdk.uinfo.model.NimUserInfo;
 
 import java.util.List;
 
@@ -73,6 +76,23 @@ public class IMSessionAdapter extends BaseArrayRecyclerAdapter<IMSessionEntity> 
             if (indexOf >= 0) {
                 return groupContactBeans.get(indexOf);
             }
+        }
+        return IMUtils.convert2GroupContact(getNimUser(accid));
+    }
+
+
+    /**
+     * @param accid
+     * @return
+     */
+    @CheckResult
+    @Nullable
+    protected NimUserInfo getNimUser(String accid) {
+        try {
+            return NIMClient.getService(UserService.class)
+                    .getUserInfo(accid);
+        } catch (Throwable e) {
+            e.printStackTrace();
         }
         return null;
     }
@@ -206,8 +226,8 @@ public class IMSessionAdapter extends BaseArrayRecyclerAdapter<IMSessionEntity> 
                     GlideUtils.loadUser(ivSessionIcon.getContext(),
                             user.pic,
                             ivSessionIcon);
-                }
-                break;
+                } else
+                    break;
             case CHAT_TYPE_TEAM:
                 Team team = getTeam(imSessionEntity.customIMBody.to);
                 if (team != null) {
