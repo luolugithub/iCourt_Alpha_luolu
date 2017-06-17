@@ -290,7 +290,9 @@ public class TimerAddActivity extends BaseTimerActivity
                 selectedStartDate.set(Calendar.MINUTE, calendar.get(Calendar.MINUTE));
                 text.setText(DateUtils.getHHmm(selectedStartDate.getTime().getTime()));
 
-                circleTimerView.setCurrentTime((int) (selectedEndDate.getTimeInMillis() - selectedStartDate.getTimeInMillis()) / 1000);
+                selectedEndDate.setTimeInMillis(circleTimerView.getCurrentTime() * 1_000 + selectedStartDate.getTimeInMillis());
+                stopTimeMinTv.setText(DateUtils.getHHmm(selectedEndDate.getTimeInMillis()));
+
             }
         }).setType(TimePickerView.Type.HOURS_MINS)
                 .build();
@@ -322,8 +324,10 @@ public class TimerAddActivity extends BaseTimerActivity
                 }
                 selectedEndDate.set(Calendar.HOUR_OF_DAY, calendar.get(Calendar.HOUR_OF_DAY));
                 selectedEndDate.set(Calendar.MINUTE, calendar.get(Calendar.MINUTE));
-                text.setText(DateUtils.getHHmm(selectedEndDate.getTime().getTime()));
-                circleTimerView.setCurrentTime((int) (selectedEndDate.getTimeInMillis() - selectedStartDate.getTimeInMillis()) / 1000);
+
+                long rangeTime = (selectedEndDate.getTimeInMillis() - selectedStartDate.getTimeInMillis());
+                log("------------>endTime:" + (rangeTime / 1000));
+                circleTimerView.setCurrentTime((int) (rangeTime / 1000));
             }
         }).setType(TimePickerView.Type.HOURS_MINS)
                 .build();
