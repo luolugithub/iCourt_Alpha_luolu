@@ -48,6 +48,7 @@ import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.ActionConstants;
 import com.icourt.alpha.utils.FileUtils;
 import com.icourt.alpha.utils.GlideUtils;
+import com.icourt.alpha.utils.IMUtils;
 import com.icourt.alpha.utils.JsonUtils;
 import com.icourt.alpha.utils.Md5Utils;
 import com.icourt.alpha.utils.StringUtils;
@@ -689,8 +690,12 @@ public class ImagePagerActivity extends BaseUmengActivity implements BasePagerAd
         pathBuilder.append(File.separator);
         pathBuilder.append(ActionConstants.FILE_DOWNLOAD_PATH);
         pathBuilder.append(File.separator);
-        pathBuilder.append(Md5Utils.md5(url, url));
-        pathBuilder.append(".png");
+        if (!IMUtils.isPIC(url)) {
+            pathBuilder.append(Md5Utils.md5(url, url));
+            pathBuilder.append(".png");
+        }else{
+            pathBuilder.append(url);
+        }
         return pathBuilder.toString();
     }
 
