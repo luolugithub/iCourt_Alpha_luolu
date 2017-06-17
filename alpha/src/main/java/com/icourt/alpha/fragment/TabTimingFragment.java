@@ -260,7 +260,7 @@ public class TabTimingFragment extends BaseFragment implements BaseRecyclerAdapt
                 .enqueue(new SimpleCallBack<ItemPageEntity<TimingCountEntity>>() {
                     @Override
                     public void onSuccess(Call<ResEntity<ItemPageEntity<TimingCountEntity>>> call, Response<ResEntity<ItemPageEntity<TimingCountEntity>>> response) {
-                        if (response.body().result != null) {
+                        if (response.body().result != null && timingTodayTotal != null) {
                             timingCountEntities.clear();
                             timingCountEntities.addAll(response.body().result.items);
                             generateData();
