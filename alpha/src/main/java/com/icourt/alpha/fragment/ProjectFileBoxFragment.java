@@ -88,7 +88,7 @@ public class ProjectFileBoxFragment extends BaseFragment implements BaseRecycler
     @BindView(R.id.refreshLayout)
     RefreshLayout refreshLayout;
     private List<String> firstlist;
-    private boolean hasReadWritePms;
+    private boolean hasReadWritePms, hasReadPms;
 
     @Nullable
     @Override
@@ -135,7 +135,7 @@ public class ProjectFileBoxFragment extends BaseFragment implements BaseRecycler
             @Override
             public void onRefresh(boolean isPullDown) {
                 super.onRefresh(isPullDown);
-                if (hasReadWritePms) {
+                if (hasReadWritePms || hasReadPms) {
                     if (!TextUtils.isEmpty(authToken) && !TextUtils.isEmpty(seaFileRepoId)) {
                         getData(true);
                     } else {
@@ -150,7 +150,7 @@ public class ProjectFileBoxFragment extends BaseFragment implements BaseRecycler
             @Override
             public void onLoadMore(boolean isSilence) {
                 super.onLoadMore(isSilence);
-                if (hasReadWritePms)
+                if (hasReadWritePms|| hasReadPms)
                     getData(false);
             }
         });
@@ -168,6 +168,9 @@ public class ProjectFileBoxFragment extends BaseFragment implements BaseRecycler
                 if (response.body().result != null) {
                     if (response.body().result.contains("MAT:matter.document:readwrite")) {
                         hasReadWritePms = true;
+                    }
+                    if (response.body().result.contains("MAT:matter.document:read")) {
+                        hasReadPms = true;
                     }
                     if (refreshLayout != null)
                         refreshLayout.startRefresh();
@@ -501,6 +504,9 @@ public class ProjectFileBoxFragment extends BaseFragment implements BaseRecycler
                         dismissLoadingDialog();
                         showTopSnackBar("上传失败");
                     }
+                } else {
+                    dismissLoadingDialog();
+                    showTopSnackBar("上传失败");
                 }
             }
 

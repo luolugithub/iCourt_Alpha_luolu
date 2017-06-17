@@ -31,6 +31,7 @@ import com.icourt.alpha.widget.dialog.BottomActionDialog;
 
 import org.greenrobot.eventbus.EventBus;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -72,6 +73,7 @@ public class ProjectDetailActivity extends BaseActivity implements OnFragmentCal
     boolean isCanlookAddTask = false, isCanAddTimer = false, isCanlookAddDocument = false;
     private boolean nameIsUp = false, timeIsUp = false, sizeIsUp = false;
     long sumTime;
+    List<String> list = new ArrayList<>();
 
     public static void launch(@NonNull Context context, @NonNull String projectId, @NonNull String proectName) {
         if (context == null) return;
@@ -125,6 +127,7 @@ public class ProjectDetailActivity extends BaseActivity implements OnFragmentCal
         detailTablayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
+                log("tab.getPosition() --------  " + tab.getPosition());
                 isShowTitleAction(tab.getPosition());
             }
 
@@ -138,6 +141,8 @@ public class ProjectDetailActivity extends BaseActivity implements OnFragmentCal
 
             }
         });
+        list.add("按文件名升序排序");
+        list.add("按文件大小升序排序");
     }
 
     /**
@@ -180,9 +185,9 @@ public class ProjectDetailActivity extends BaseActivity implements OnFragmentCal
                 titleAction2.setVisibility(View.VISIBLE);
                 break;
             case 1:
-
-                titleAction2.setImageResource(R.mipmap.header_icon_more);
                 titleAction2.setVisibility(View.VISIBLE);
+                titleAction2.setImageResource(0);
+                titleAction2.setImageResource(R.mipmap.header_icon_more);
                 if (isCanlookAddTask) {
                     titleAction.setImageResource(R.mipmap.header_icon_add);
                     titleAction.setVisibility(View.VISIBLE);
@@ -299,9 +304,10 @@ public class ProjectDetailActivity extends BaseActivity implements OnFragmentCal
      * 显示文档更多菜单
      */
     private void showDocumentMeau() {
+
         new BottomActionDialog(getContext(),
                 null,
-                Arrays.asList("按文件名升序排序", "按文件大小升序排序"),
+                list,
                 new BottomActionDialog.OnActionItemClickListener() {
                     @Override
                     public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
@@ -313,6 +319,14 @@ public class ProjectDetailActivity extends BaseActivity implements OnFragmentCal
                                     nameIsUp = !nameIsUp;
                                     timeIsUp = false;
                                     sizeIsUp = false;
+                                    list.clear();
+                                    if (nameIsUp) {
+                                        list.add("按文件名降序排序");
+                                        list.add("按文件大小升序排序");
+                                    } else {
+                                        list.add("按文件名升序排序");
+                                        list.add("按文件大小升序排序");
+                                    }
                                 }
                                 break;
                             case 1:
@@ -321,6 +335,14 @@ public class ProjectDetailActivity extends BaseActivity implements OnFragmentCal
                                     sizeIsUp = !sizeIsUp;
                                     nameIsUp = false;
                                     timeIsUp = false;
+                                    list.clear();
+                                    if (sizeIsUp) {
+                                        list.add("按文件名升序排序");
+                                        list.add("按文件大小降序排序");
+                                    } else {
+                                        list.add("按文件名升序排序");
+                                        list.add("按文件大小升序排序");
+                                    }
                                 }
                                 break;
                         }
@@ -376,10 +398,12 @@ public class ProjectDetailActivity extends BaseActivity implements OnFragmentCal
     public void onFragmentCallBack(Fragment fragment, int type, Bundle params) {
         if (fragment instanceof ProjectDetailFragment) {
             myStar = params.getInt("myStar");
-            if (myStar != 1) {
-                titleAction2.setImageResource(R.mipmap.header_icon_star_line);
-            } else {
-                titleAction2.setImageResource(R.mipmap.header_icon_star_solid);
+            if (baseFragmentAdapter.getItem(detailViewpager.getCurrentItem()) == fragment) {
+                if (myStar != 1) {
+                    titleAction2.setImageResource(R.mipmap.header_icon_star_line);
+                } else {
+                    titleAction2.setImageResource(R.mipmap.header_icon_star_solid);
+                }
             }
         }
     }

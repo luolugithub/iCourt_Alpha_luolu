@@ -386,7 +386,7 @@ public class ProjectTaskFragment extends BaseFragment implements TaskAdapter.OnS
      * @param taskId
      */
     private void updateChildTimeing(String taskId, boolean isTiming) {
-        int parentPos = getParentPositon(taskId);
+        int parentPos = getParentPositon(taskId) + headerFooterAdapter.getHeaderCount();
         if (parentPos >= 0) {
             int childPos = getChildPositon(taskId);
             if (childPos >= 0) {

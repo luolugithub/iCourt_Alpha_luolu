@@ -150,7 +150,7 @@ public class MyFinishTaskActivity extends BaseActivity implements BaseRecyclerAd
         if (isRefresh) {
             pageIndex = 1;
         }
-        getApi().taskListQuery(0, getLoginUserId(), 1, 0, null, pageIndex, ActionConstants.DEFAULT_PAGE_SIZE, 0).enqueue(new SimpleCallBack<TaskEntity>() {
+        getApi().taskListQuery(0, getLoginUserId(), 1, 0, "updateTime", pageIndex, ActionConstants.DEFAULT_PAGE_SIZE, 0).enqueue(new SimpleCallBack<TaskEntity>() {
             @Override
             public void onSuccess(Call<ResEntity<TaskEntity>> call, Response<ResEntity<TaskEntity>> response) {
                 if (response.body().result != null) {

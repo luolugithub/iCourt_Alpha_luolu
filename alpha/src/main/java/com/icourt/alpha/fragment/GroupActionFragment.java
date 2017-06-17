@@ -127,7 +127,8 @@ public class GroupActionFragment extends BaseFragment {
     @Override
     protected void getData(boolean isRefresh) {
         super.getData(isRefresh);
-        getChatApi().groupsQuery(0, true)
+//        getChatApi().groupsQuery(0, true)  //获取所有讨论组
+        getChatApi().groupsQueryJoind(0, true)//???是不是应该获取我加入的讨论组列表
                 .enqueue(new SimpleCallBack<List<GroupEntity>>() {
                     @Override
                     public void onSuccess(Call<ResEntity<List<GroupEntity>>> call, Response<ResEntity<List<GroupEntity>>> response) {

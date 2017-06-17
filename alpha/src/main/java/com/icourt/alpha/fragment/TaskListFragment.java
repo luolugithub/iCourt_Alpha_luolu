@@ -223,6 +223,8 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
                                         if (!taskItemEntity.readUserIds.contains(getLoginUserId())) {
                                             newTaskEntities.add(taskItemEntity);
                                         }
+                                    }else{
+                                        newTaskEntities.add(taskItemEntity);
                                     }
                                 }
                             }

@@ -186,7 +186,7 @@ public class TaskCreateActivity extends BaseActivity implements ProjectSelectDia
                 if (!TextUtils.isEmpty(projectId))
                     showTaskAllotSelectDialogFragment(projectId);
                 else
-                    showTopSnackBar("请优先选择项目");
+                    showTopSnackBar("请先选择项目");
                 break;
             default:
                 super.onClick(v);
