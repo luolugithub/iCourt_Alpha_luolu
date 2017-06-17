@@ -101,7 +101,7 @@ public class TaskAdapter extends BaseArrayRecyclerAdapter<TaskEntity>
             LinearLayoutManager layoutManager = new LinearLayoutManager(recyclerView.getContext());
             recyclerView.setLayoutManager(layoutManager);
             taskItemAdapter = new TaskItemAdapter();
-            taskItemAdapter.setAddTime(isAddTime);
+            taskItemAdapter.setAddTime(true);
             recyclerView.setAdapter(taskItemAdapter);
             taskItemAdapter.setOnItemClickListener(super.onItemClickListener);
             taskItemAdapter.setOnItemChildClickListener(super.onItemChildClickListener);
