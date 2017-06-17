@@ -256,17 +256,32 @@ public class TaskSelectDialogFragment
      */
     private void searchTaskByName(final String taskName) {
         if (TextUtils.isEmpty(taskName)) return;
-        //pms 环境有
-        getApi().taskQueryByName(getLoginUserId(), taskName, 0, 0)
-                .enqueue(new SimpleCallBack<TaskEntity>() {
-                    @Override
-                    public void onSuccess(Call<ResEntity<TaskEntity>> call, Response<ResEntity<TaskEntity>> response) {
-                        if (response.body().result != null) {
-                            taskSelectAdapter.bindData(true, response.body().result.items);
-                            setSelectedTask();
+        if (!TextUtils.isEmpty(projectId)) {
+            //pms 环境有
+            getApi().taskQueryByName(null, taskName, 0, 0, projectId)
+                    .enqueue(new SimpleCallBack<TaskEntity>() {
+                        @Override
+                        public void onSuccess(Call<ResEntity<TaskEntity>> call, Response<ResEntity<TaskEntity>> response) {
+                            if (response.body().result != null) {
+                                taskSelectAdapter.bindData(true, response.body().result.items);
+                                setSelectedTask();
+                            }
                         }
-                    }
-                });
+                    });
+        } else {
+            //pms 环境有
+            getApi().taskQueryByName(getLoginUserId(), taskName, 0, 0)
+                    .enqueue(new SimpleCallBack<TaskEntity>() {
+                        @Override
+                        public void onSuccess(Call<ResEntity<TaskEntity>> call, Response<ResEntity<TaskEntity>> response) {
+                            if (response.body().result != null) {
+                                taskSelectAdapter.bindData(true, response.body().result.items);
+                                setSelectedTask();
+                            }
+                        }
+                    });
+        }
+
     }
 
     @OnClick({R.id.bt_cancel,

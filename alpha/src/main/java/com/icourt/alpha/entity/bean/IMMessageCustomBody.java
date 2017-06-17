@@ -1,11 +1,9 @@
 package com.icourt.alpha.entity.bean;
 
 import com.google.gson.annotations.Expose;
-import com.google.gson.annotations.JsonAdapter;
 import com.icourt.alpha.constants.Const;
 import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.widget.comparators.ILongFieldEntity;
-import com.icourt.alpha.widget.json.URLDecoderTypeAdapter;
 import com.netease.nimlib.sdk.msg.MessageBuilder;
 import com.netease.nimlib.sdk.msg.constant.SessionTypeEnum;
 import com.netease.nimlib.sdk.msg.model.IMMessage;
@@ -47,7 +45,7 @@ public class IMMessageCustomBody implements ILongFieldEntity, Serializable {
     public String magic_id;
     public String platform;
     public IMMessageExtBody ext;
-    @JsonAdapter(URLDecoderTypeAdapter.class)
+    //@JsonAdapter(URLDecoderTypeAdapter.class)
     public String content;
 
     public IMMessageCustomBody() {

@@ -500,6 +500,14 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
         ekBar.setRequestActionListener(new MyXhsEmoticonsKeyBoard.OnRequestActionListener() {
             @Override
             public void onRequestSendText(EmoticonsEditText inputText) {
+                if (StringUtils.isEmpty(inputText.getText())) {
+                    inputText.setText("");
+                    new AlertDialog.Builder(getContext())
+                            .setMessage("不能发送空白消息")
+                            .setPositiveButton("确定", null)
+                            .show();
+                    return;
+                }
                 dispatchEditTextSend(inputText);
             }
 
@@ -1144,8 +1152,12 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.chat_unread_num_tv:
-                clearUnReadNum();
-                setUnreadNum(0);
+
+                //找到当页第一条未读消息
+                // 滚动到
+                scrollToUnreadMsg();
+                //滚动到消息未读的第一条
+
                 break;
             case R.id.titleAction2:
                 switch (getIMChatType()) {
@@ -1156,14 +1168,41 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
                                 false,
                                 true
                         );
+                        break;
                     case CHAT_TYPE_TEAM:
                         GroupDetailActivity.launchTEAM(getContext(),
                                 getIntent().getStringExtra(KEY_TID));
+                        break;
                 }
                 break;
             default:
                 super.onClick(v);
                 break;
+        }
+    }
+
+    /**
+     * 滚动到第一条未读消息
+     */
+    private void scrollToUnreadMsg() {
+        List<IMMessageCustomBody> data = chatAdapter.getData();
+        if (!data.isEmpty()) {
+            int unreadMsgIndex = -1;
+            for (int i = 0; i < data.size(); i++) {
+                IMMessageCustomBody imMessageCustomBody = data.get(i);
+                if (imMessageCustomBody != null
+                        && imMessageCustomBody.imMessage != null) {
+                    unreadMsgIndex = i;
+                }
+            }
+            if (unreadMsgIndex >= 0) {
+                linearLayoutManager.scrollToPositionWithOffset(unreadMsgIndex, 0);
+                clearUnReadNum();
+                setUnreadNum(0);
+            } else {
+                //找寻下一页未读消息
+
+            }
         }
     }
 

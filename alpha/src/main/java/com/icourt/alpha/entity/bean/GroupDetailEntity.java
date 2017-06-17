@@ -8,7 +8,6 @@ package com.icourt.alpha.entity.bean;
  * version 1.0.0
  */
 public class GroupDetailEntity extends GroupEntity {
-    public int isJoin;
     public int count;
     public boolean is_private;
     public boolean member_invite;

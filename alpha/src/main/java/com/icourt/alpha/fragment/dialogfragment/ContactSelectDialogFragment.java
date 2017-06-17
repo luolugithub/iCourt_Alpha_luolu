@@ -212,6 +212,10 @@ public class ContactSelectDialogFragment extends BaseDialogFragment {
                 List<GroupContactBean> contactBeen = ListConvertor.convertList(new ArrayList<IConvertModel<GroupContactBean>>(result));
                 filterRobot(contactBeen);
                 filterMySelf(contactBeen);
+                ArrayList<GroupContactBean> selectedData = getSelectedData();
+                if (selectedData != null) {
+                    contactBeen.removeAll(selectedData);
+                }
                 imContactAdapter.clearSelected();
                 imContactAdapter.bindData(true, contactBeen);
             }
@@ -246,7 +250,10 @@ public class ContactSelectDialogFragment extends BaseDialogFragment {
                     RealmResults<ContactDbModel> contactDbModels = contactDbService.queryAll();
                     if (contactDbModels != null) {
                         contactBeen.addAll(ListConvertor.convertList(new ArrayList<IConvertModel<GroupContactBean>>(contactDbModels)));
-                        contactBeen.removeAll(getSelectedData());
+                        ArrayList<GroupContactBean> selectedData = getSelectedData();
+                        if (selectedData != null) {
+                            contactBeen.removeAll(selectedData);
+                        }
                         filterRobot(contactBeen);
                         Collections.sort(contactBeen, new PinyinComparator<GroupContactBean>());
                     }

@@ -175,11 +175,8 @@ public class GroupDetailActivity extends BaseActivity
                         dismissLoadingDialog();
                         if (response.body().result != null) {
                             groupDetailEntity = response.body().result;
-
                             groupNameTv.setText(response.body().result.name);
                             groupDescTv.setText(response.body().result.intro);
-                            groupJoinOrQuitBtn.setSelected(response.body().result.isJoin == 1);
-                            groupJoinOrQuitBtn.setText(groupJoinOrQuitBtn.isSelected() ? "退出讨论组" : "加入讨论组");
                             ImageView titleActionImage = getTitleActionImage();
 
                             isAdmin = StringUtils.equalsIgnoreCase(getLoginUserId(), response.body().result.admin_id, false);
@@ -191,20 +188,14 @@ public class GroupDetailActivity extends BaseActivity
                                 setViewVisible(groupSessionActionLl, true);
                                 setViewVisible(groupDataLl, true);
                             } else {
-                                //管理员设置按钮隐藏
+                                //非管理员
                                 setViewVisible(titleActionImage, false);
                                 joined = StringUtils.containsIgnoreCase(response.body().result.members, getLoginUserId());
                                 setViewVisible(groupJoinOrQuitBtn, true);
                                 groupJoinOrQuitBtn.setText(joined ? "退出讨论组" : "加入讨论组");
                                 setViewVisible(groupSessionActionLl, joined);
                                 setViewVisible(groupDataLl, joined);
-                                if (response.body().result.is_private) {
-                                    setViewVisible(groupMemberInviteTv, false);
-                                } else if (response.body().result.member_invite) {
-                                    setViewVisible(groupMemberInviteTv, true);
-                                } else {
-                                    setViewVisible(groupMemberInviteTv, false);
-                                }
+                                setViewVisible(groupMemberInviteTv, joined && response.body().result.member_invite);
                             }
                             //查询本地uid对应的头像
                             queryMembersByUids(response.body().result.members);
