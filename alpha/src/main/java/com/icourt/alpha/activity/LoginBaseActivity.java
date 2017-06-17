@@ -16,6 +16,7 @@ import com.icourt.alpha.http.callback.BaseCallBack;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.exception.ResponseException;
 import com.icourt.alpha.http.httpmodel.ResEntity;
+import com.icourt.alpha.service.SyncDataService;
 import com.icourt.alpha.utils.UserPreferences;
 import com.icourt.api.RequestUtils;
 import com.netease.nimlib.sdk.NIMClient;
@@ -148,6 +149,7 @@ public class LoginBaseActivity extends BaseUmengActivity {
                             //神策统计
                            /* SensorsDataAPI.sharedInstance(getContext())
                                     .login(result.getUserId());*/
+                            SyncDataService.startSysnContact(getContext());
 
                             //登陆云信im
                             loginChatEase(response.body().result);
