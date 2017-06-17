@@ -103,6 +103,7 @@ import sj.keyboard.widget.FuncLayout;
 
 import static com.icourt.alpha.constants.Const.CHAT_TYPE_P2P;
 import static com.icourt.alpha.constants.Const.CHAT_TYPE_TEAM;
+import static com.netease.nimlib.sdk.msg.constant.MsgStatusEnum.unread;
 import static com.netease.nimlib.sdk.msg.model.QueryDirectionEnum.QUERY_OLD;
 
 /**
@@ -819,12 +820,15 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
         }
     }
 
+    private int unReadCount = 0;
+
     /**
      * 0自动隐藏
      *
      * @param num
      */
     private void setUnreadNum(int num) {
+        unReadCount = num;
         setViewVisible(chatUnreadNumTv, num > 20);
         chatUnreadNumTv.setText(String.format("%s条未读", num));
     }
@@ -1152,12 +1156,7 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.chat_unread_num_tv:
-
-                //找到当页第一条未读消息
-                // 滚动到
                 scrollToUnreadMsg();
-                //滚动到消息未读的第一条
-
                 break;
             case R.id.titleAction2:
                 switch (getIMChatType()) {
@@ -1185,25 +1184,68 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
      * 滚动到第一条未读消息
      */
     private void scrollToUnreadMsg() {
+        if (unReadCount > chatAdapter.getItemCount()) {
+            final int loadCount = unReadCount - chatAdapter.getItemCount();
+            NIMClient.getService(MsgService.class)
+                    .queryMessageListEx(getLastMessage(), QUERY_OLD, loadCount, true)
+                    .setCallback(new RequestCallback<List<IMMessage>>() {
+                        @Override
+                        public void onSuccess(List<IMMessage> param) {
+                            LogUtils.d("----------->query result3:" + param);
+                            param = filterMsgs(param);
+                            chatAdapter.addItems(0, convert2CustomerMessages(param));
+
+                            //滚动到最近未读的一条
+                            int unreadMsgIndex = getUnReadMsgIndex();
+                           /* if (unreadMsgIndex >= 0) {
+                                linearLayoutManager.scrollToPositionWithOffset(unreadMsgIndex, 0);
+                                clearUnReadNum();
+                                setUnreadNum(0);
+                            }*/
+
+
+                            linearLayoutManager.scrollToPositionWithOffset(0, 0);
+                            clearUnReadNum();
+                            setUnreadNum(0);
+                        }
+
+                        @Override
+                        public void onFailed(int code) {
+                            LogUtils.d("----------->query result3:Failed code" + code);
+                        }
+
+                        @Override
+                        public void onException(Throwable exception) {
+                            LogUtils.d("----------->query result3:Exception" + exception);
+                        }
+                    });
+        } else {
+            clearUnReadNum();
+            setUnreadNum(0);
+        }
+    }
+
+    /**
+     * 获取列表中未读消息index
+     * bug 所有消息都是success
+     *
+     * @return
+     */
+    @Deprecated
+    private int getUnReadMsgIndex() {
         List<IMMessageCustomBody> data = chatAdapter.getData();
-        if (!data.isEmpty()) {
-            int unreadMsgIndex = -1;
-            for (int i = 0; i < data.size(); i++) {
-                IMMessageCustomBody imMessageCustomBody = data.get(i);
-                if (imMessageCustomBody != null
-                        && imMessageCustomBody.imMessage != null) {
-                    unreadMsgIndex = i;
+        if (data == null || data.isEmpty()) return -1;
+        for (int i = 0; i < data.size(); i++) {
+            IMMessageCustomBody imMessageCustomBody = data.get(i);
+            if (imMessageCustomBody != null
+                    && imMessageCustomBody.imMessage != null) {
+                IMUtils.logIMMessage("-------->unReadMsgIndex:" + i + " :", imMessageCustomBody.imMessage);
+                if (imMessageCustomBody.imMessage.getStatus() == unread) {
+                    return i;
                 }
             }
-            if (unreadMsgIndex >= 0) {
-                linearLayoutManager.scrollToPositionWithOffset(unreadMsgIndex, 0);
-                clearUnReadNum();
-                setUnreadNum(0);
-            } else {
-                //找寻下一页未读消息
-
-            }
         }
+        return -1;
     }
 
     @Override
@@ -1237,6 +1279,7 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
      *
      * @param contactBean
      */
+
     private void appendAtMember(GroupContactBean contactBean) {
         if (contactBean == null) return;
         atContactList.add(contactBean);
@@ -1256,7 +1299,8 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
         switch (requestCode) {
             case REQ_CODE_PERMISSION_CAMERA:
                 if (grantResults[0] == PackageManager.PERMISSION_DENIED) {
@@ -1278,7 +1322,8 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
 
 
     @Override
-    public void onItemChildClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
+    public void onItemChildClick(BaseRecyclerAdapter
+                                         adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
         IMMessageCustomBody item = chatAdapter.getItem(position);
         if (item == null) return;
         switch (view.getId()) {
@@ -1408,7 +1453,8 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
     }
 
     @Override
-    public boolean onItemChildLongClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
+    public boolean onItemChildLongClick(BaseRecyclerAdapter
+                                                adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
         switch (view.getId()) {
             case R.id.chat_image_iv:
                 return super.onItemLongClick(adapter, holder, view, position);
@@ -1443,7 +1489,8 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
 
 
     @Override
-    public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
+    public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder
+            holder, View view, int position) {
         if (ekBar != null) {
             ekBar.reset();
         }
