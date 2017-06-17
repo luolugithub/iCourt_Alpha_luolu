@@ -182,8 +182,11 @@ public class TaskAdapter extends BaseArrayRecyclerAdapter<TaskEntity>
                     switch (entity.getItemIconRes()) {
                         case R.mipmap.assign_orange://分配给
                             if (onShowFragmenDialogListener != null)
-                                if (taskItemEntity.matter != null)
+                                if (taskItemEntity.matter != null) {
                                     onShowFragmenDialogListener.showUserSelectDialog(taskItemEntity.matter.id, taskItemEntity);
+                                } else {
+                                    showToast("请先选择项目");
+                                }
                             break;
                         case R.mipmap.date_orange://到期日
                             if (onShowFragmenDialogListener != null)

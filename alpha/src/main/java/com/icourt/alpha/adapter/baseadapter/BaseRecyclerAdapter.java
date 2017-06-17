@@ -21,6 +21,7 @@ import com.icourt.alpha.http.ApiProjectService;
 import com.icourt.alpha.http.ApiSFileService;
 import com.icourt.alpha.http.RetrofitServiceFactory;
 import com.icourt.alpha.utils.SnackbarUtils;
+import com.icourt.alpha.utils.ToastUtils;
 import com.kaopiz.kprogresshud.KProgressHUD;
 
 /**
@@ -257,6 +258,7 @@ public abstract class BaseRecyclerAdapter extends RecyclerView.Adapter<BaseRecyc
      */
     @UiThread
     protected void showToast(@NonNull CharSequence notice) {
+        ToastUtils.showToast(notice);
     }
 
     /**

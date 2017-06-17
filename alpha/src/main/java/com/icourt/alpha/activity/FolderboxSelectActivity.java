@@ -271,7 +271,11 @@ public class FolderboxSelectActivity extends BaseActivity implements BaseRecycle
         FileBoxBean fileBoxBean = (FileBoxBean) adapter.getItem(position);
         if (!TextUtils.isEmpty(fileBoxBean.type)) {
             if (TextUtils.equals("dir", fileBoxBean.type)) {
-                FolderboxSelectActivity.launch(this, projectId, authToken, seaFileRepoId, filePath, rootName + "/" + fileBoxBean.name);
+                if (TextUtils.isEmpty(rootName)) {
+                    FolderboxSelectActivity.launch(this, projectId, authToken, seaFileRepoId, filePath, "/" + fileBoxBean.name);
+                } else {
+                    FolderboxSelectActivity.launch(this, projectId, authToken, seaFileRepoId, filePath, rootName + "/" + fileBoxBean.name);
+                }
             }
         }
     }
@@ -323,7 +327,7 @@ public class FolderboxSelectActivity extends BaseActivity implements BaseRecycle
         String fileName = file.getName();
         String key = "file\";filename=\"" + fileName;
         Map<String, RequestBody> params = new HashMap<>();
-        params.put("parent_dir", TextUtils.isEmpty(rootName) ? RequestUtils.createTextBody("/") : RequestUtils.createTextBody("/" + rootName));
+        params.put("parent_dir", TextUtils.isEmpty(rootName) ? RequestUtils.createTextBody("/") : RequestUtils.createTextBody(rootName));
         params.put(key, RequestUtils.createStreamBody(file));
         getSFileApi().projectUploadFile("Token " + authToken, uploadUrl, params).enqueue(new Callback<JsonElement>() {
             @Override

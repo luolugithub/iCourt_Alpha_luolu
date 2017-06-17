@@ -266,9 +266,9 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
                 if (taskItemEntity.attendeeUsers != null) {
                     taskItemEntity.attendeeUsers.clear();
                 }
-                updateTask(taskItemEntity, projectEntity, taskGroupEntity);
             }
         }
+        updateTask(taskItemEntity, projectEntity, taskGroupEntity);
     }
 
     /**
