@@ -683,7 +683,7 @@ public class CustomerPersonDetailActivity extends BaseActivity {
      * @param contact_id
      */
     private void addStarContact(String contact_id) {
-        showLoadingDialog("正在关注...");
+        showLoadingDialog(null);
         getApi().customerAddStar(contact_id).enqueue(new SimpleCallBack<JsonElement>() {
             @Override
             public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
@@ -707,7 +707,7 @@ public class CustomerPersonDetailActivity extends BaseActivity {
      * @param contact_id
      */
     private void deleteStarContact(String contact_id) {
-        showLoadingDialog("正在取消关注...");
+        showLoadingDialog(null);
         getApi().customerDeleteStar(contact_id).enqueue(new SimpleCallBack<JsonElement>() {
             @Override
             public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {

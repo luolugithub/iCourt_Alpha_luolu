@@ -354,7 +354,7 @@ public class ProjectDetailActivity extends BaseActivity implements OnFragmentCal
      * 添加关注
      */
     private void addStar() {
-        showLoadingDialog("正在关注...");
+        showLoadingDialog(null);
         getApi().projectAddStar(projectId).enqueue(new SimpleCallBack<JsonElement>() {
             @Override
             public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
@@ -376,7 +376,7 @@ public class ProjectDetailActivity extends BaseActivity implements OnFragmentCal
      * 取消关注
      */
     private void deleteStar() {
-        showLoadingDialog("正在取消关注...");
+        showLoadingDialog(null);
         getApi().projectDeleteStar(projectId).enqueue(new SimpleCallBack<JsonElement>() {
             @Override
             public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
