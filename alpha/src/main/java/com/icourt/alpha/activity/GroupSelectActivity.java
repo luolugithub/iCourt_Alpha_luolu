@@ -172,10 +172,10 @@ public class GroupSelectActivity extends BaseActivity implements BaseRecyclerAda
     public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
         SelectGroupBean groupBean = (SelectGroupBean) adapter.getItem(position);
         int last = 0;
-        if (userGroups != null) {
-            if (userGroups.contains(groupBean) && selectGroupAdapter.getSelectedData().contains(groupBean)) {
+        if (selectGroupAdapter.getData() != null) {
+            if (selectGroupAdapter.getData().contains(groupBean) && selectGroupAdapter.getSelectedData().contains(groupBean)) {
                 if (selectGroupAdapter.getSelectedData() != null) {
-                    for (SelectGroupBean selectGroupBean : userGroups) {
+                    for (SelectGroupBean selectGroupBean : selectGroupAdapter.getData()) {
                         if (selectGroupAdapter.getSelectedData().contains(selectGroupBean)) {
                             last += 1;
                         }

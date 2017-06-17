@@ -68,15 +68,15 @@ public class TaskAdapter extends BaseArrayRecyclerAdapter<TaskEntity>
     }
 
     public void setEditTask(boolean editTask) {
-        isEditTask = editTask;
+        isEditTask = true;
     }
 
     public void setDeleteTask(boolean deleteTask) {
-        isDeleteTask = deleteTask;
+        isDeleteTask = true;
     }
 
     public void setAddTime(boolean addTime) {
-        isAddTime = addTime;
+        isAddTime = true;
     }
 
     public void setOnShowFragmenDialogListener(OnShowFragmenDialogListener onShowFragmenDialogListener) {
@@ -101,7 +101,7 @@ public class TaskAdapter extends BaseArrayRecyclerAdapter<TaskEntity>
             LinearLayoutManager layoutManager = new LinearLayoutManager(recyclerView.getContext());
             recyclerView.setLayoutManager(layoutManager);
             taskItemAdapter = new TaskItemAdapter();
-            taskItemAdapter.setAddTime(true);
+            taskItemAdapter.setAddTime(isAddTime);
             recyclerView.setAdapter(taskItemAdapter);
             taskItemAdapter.setOnItemClickListener(super.onItemClickListener);
             taskItemAdapter.setOnItemChildClickListener(super.onItemChildClickListener);
@@ -365,11 +365,7 @@ public class TaskAdapter extends BaseArrayRecyclerAdapter<TaskEntity>
      * @param checkbox
      */
     private void updateTask(TaskEntity.TaskItemEntity itemEntity, final boolean state, final CheckBox checkbox) {
-        if (state) {
-            showLoadingDialog(checkbox.getContext(), "完成任务...");
-        } else {
-            showLoadingDialog(checkbox.getContext(), "取消完成任务...");
-        }
+        showLoadingDialog(checkbox.getContext(), null);
         getApi().taskUpdate(RequestUtils.createJsonBody(getTaskJson(itemEntity, state))).enqueue(new SimpleCallBack<JsonElement>() {
             @Override
             public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
@@ -397,6 +393,12 @@ public class TaskAdapter extends BaseArrayRecyclerAdapter<TaskEntity>
                 dismissLoadingDialog();
                 EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION));
 
+            }
+
+            @Override
+            public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
+                super.onFailure(call, t);
+                dismissLoadingDialog();
             }
         });
     }
