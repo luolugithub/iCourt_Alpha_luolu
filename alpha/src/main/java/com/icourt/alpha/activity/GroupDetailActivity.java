@@ -233,7 +233,7 @@ public class GroupDetailActivity extends BaseActivity
             groupContactBeens.clear();
             if (contactDbService != null) {
                 //最多展示20个
-                for (int i = 0; i < Math.min(members.size(), 20); i++) {
+                for (int i = 0; i < members.size(); i++) {
                     String uid = members.get(i);
                     if (!TextUtils.isEmpty(uid)) {
                         ContactDbModel contactDbModel = contactDbService.queryFirst("accid", uid);

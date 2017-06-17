@@ -129,6 +129,7 @@ public class LoginBaseActivity extends BaseUmengActivity {
             * @param result
     */
     private void getChatEaseAccount(@NonNull final AlphaUserInfo result) {
+        log("-------->token:" + result != null ? result.getToken() : "");
         showLoadingDialog(null);
         getApi().getChatToken()
                 .enqueue(new SimpleCallBack<LoginIMToken>() {
