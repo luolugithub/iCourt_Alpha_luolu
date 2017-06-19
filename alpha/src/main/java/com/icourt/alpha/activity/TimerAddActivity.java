@@ -300,6 +300,16 @@ public class TimerAddActivity extends BaseTimerActivity
         pvTime.show();
     }
 
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent ev) {
+        switch (ev.getAction()) {
+            case MotionEvent.ACTION_DOWN:
+                SystemUtils.hideSoftKeyBoard(getActivity(), true);
+                break;
+        }
+        return super.dispatchTouchEvent(ev);
+    }
+
     /**
      * 时间选择
      *

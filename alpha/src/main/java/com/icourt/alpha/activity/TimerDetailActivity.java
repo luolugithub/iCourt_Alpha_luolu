@@ -390,7 +390,15 @@ public class TimerDetailActivity extends BaseTimerActivity
         pvTime.setDate(Calendar.getInstance());
         pvTime.show();
     }
-
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent ev) {
+        switch (ev.getAction()) {
+            case MotionEvent.ACTION_DOWN:
+                SystemUtils.hideSoftKeyBoard(getActivity(), true);
+                break;
+        }
+        return super.dispatchTouchEvent(ev);
+    }
 
     @Override
     protected void onPause() {
