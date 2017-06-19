@@ -6,10 +6,20 @@
 
     <include layout="@layout/layout_title_type_3" />
 
-    <android.support.v7.widget.RecyclerView
-        android:id="@id/recyclerView"
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@android:color/white" />
+        android:layout_height="match_parent">
 
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@id/recyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@android:color/white" />
+        <include layout="@layout/layout_empty_tv"
+            android:visibility="gone"/>
+
+        <include layout="@layout/header_search_input_text2" />
+
+    </FrameLayout>
 </LinearLayout>
