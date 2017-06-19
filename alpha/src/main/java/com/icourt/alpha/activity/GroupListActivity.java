@@ -210,7 +210,11 @@ public class GroupListActivity extends BaseActivity implements BaseRecyclerAdapt
                 stopRefresh();
                 if (response.body().result != null) {
                     IndexUtils.setSuspensions(getContext(), response.body().result);
-                    Collections.sort(response.body().result, new PinyinComparator<GroupEntity>());
+                    try {
+                        Collections.sort(response.body().result, new PinyinComparator<GroupEntity>());
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                     groupAdapter.bindData(true, response.body().result);
                     updateIndexBar(groupAdapter.getData());
                 }
