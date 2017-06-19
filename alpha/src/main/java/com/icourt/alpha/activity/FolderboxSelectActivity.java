@@ -334,6 +334,7 @@ public class FolderboxSelectActivity extends BaseActivity implements BaseRecycle
             public void onResponse(Call<JsonElement> call, Response<JsonElement> response) {
                 dismissLoadingDialog();
                 showTopSnackBar("上传成功");
+                ProjectSelectActivity.lauchClose(FolderboxSelectActivity.this);
                 ImportFile2AlphaActivity.lauchClose(FolderboxSelectActivity.this);
                 finish();
             }

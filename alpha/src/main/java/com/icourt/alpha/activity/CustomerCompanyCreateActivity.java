@@ -704,6 +704,7 @@ public class CustomerCompanyCreateActivity extends BaseActivity {
             }
         } catch (JSONException e) {
             e.printStackTrace();
+            bugSync("获取修改团队json失败", e);
         }
         return null;
     }
@@ -971,6 +972,7 @@ public class CustomerCompanyCreateActivity extends BaseActivity {
             return json;
         } catch (JSONException e) {
             e.printStackTrace();
+            bugSync("获取添加机构联系人json失败", e);
         }
         return json;
     }
@@ -1040,6 +1042,7 @@ public class CustomerCompanyCreateActivity extends BaseActivity {
             return json;
         } catch (JSONException e) {
             e.printStackTrace();
+            bugSync("获取修改联系人json失败", e);
         }
         return json;
     }
@@ -1059,6 +1062,7 @@ public class CustomerCompanyCreateActivity extends BaseActivity {
             }
         } catch (JSONException e) {
             e.printStackTrace();
+            bugSync("获取添加联络人Json失败", e);
         }
         return null;
     }
@@ -1090,6 +1094,7 @@ public class CustomerCompanyCreateActivity extends BaseActivity {
             return addreeArr;
         } catch (JSONException e) {
             e.printStackTrace();
+            bugSync("获取每个item的json失败", e);
         }
         return addreeArr;
     }

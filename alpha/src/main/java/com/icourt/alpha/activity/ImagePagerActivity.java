@@ -686,17 +686,17 @@ public class ImagePagerActivity extends BaseUmengActivity implements BasePagerAd
     }
 
     private String getPicSavePath(String url) {
-        StringBuilder pathBuilder = new StringBuilder(Environment.getExternalStorageDirectory().getAbsolutePath());
-        pathBuilder.append(File.separator);
-        pathBuilder.append(ActionConstants.FILE_DOWNLOAD_PATH);
-        pathBuilder.append(File.separator);
         if (!IMUtils.isPIC(url)) {
+            StringBuilder pathBuilder = new StringBuilder(Environment.getExternalStorageDirectory().getAbsolutePath());
+            pathBuilder.append(File.separator);
+            pathBuilder.append(ActionConstants.FILE_DOWNLOAD_PATH);
+            pathBuilder.append(File.separator);
             pathBuilder.append(Md5Utils.md5(url, url));
             pathBuilder.append(".png");
+            return pathBuilder.toString();
         }else{
-            pathBuilder.append(url);
+            return url;
         }
-        return pathBuilder.toString();
     }
 
     /**

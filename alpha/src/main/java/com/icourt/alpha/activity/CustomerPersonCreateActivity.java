@@ -1083,21 +1083,26 @@ public class CustomerPersonCreateActivity extends BaseActivity {
      * 获取修改团队json
      */
     private String getUpdateGroupJson() {
-        if (groupBeanList != null) {
-            if (groupBeanList.size() > 0) {
-                JsonObject jsonObject = new JsonObject();
-                if (contactDeatilBean != null) {
-                    if (contactDeatilBean.getContact() != null) {
-                        jsonObject.addProperty("contactId", contactDeatilBean.getContact().getPkid());
+        try {
+            if (groupBeanList != null) {
+                if (groupBeanList.size() > 0) {
+                    JsonObject jsonObject = new JsonObject();
+                    if (contactDeatilBean != null) {
+                        if (contactDeatilBean.getContact() != null) {
+                            jsonObject.addProperty("contactId", contactDeatilBean.getContact().getPkid());
+                        }
                     }
+                    JsonArray jsonArray = new JsonArray();
+                    for (SelectGroupBean groupBean : groupBeanList) {
+                        jsonArray.add(groupBean.groupId);
+                    }
+                    jsonObject.add("groupIds", jsonArray);
+                    return jsonObject.toString();
                 }
-                JsonArray jsonArray = new JsonArray();
-                for (SelectGroupBean groupBean : groupBeanList) {
-                    jsonArray.add(groupBean.groupId);
-                }
-                jsonObject.add("groupIds", jsonArray);
-                return jsonObject.toString();
             }
+        } catch (Exception e) {
+            e.printStackTrace();
+            bugSync("个人联系人：获取修改团队json失败", e);
         }
         return null;
     }
@@ -1227,6 +1232,7 @@ public class CustomerPersonCreateActivity extends BaseActivity {
             return json;
         } catch (JSONException e) {
             e.printStackTrace();
+            bugSync("个人联系人：获取添加个人联系人json失败", e);
         }
         return json;
     }
@@ -1326,6 +1332,7 @@ public class CustomerPersonCreateActivity extends BaseActivity {
             return json;
         } catch (JSONException e) {
             e.printStackTrace();
+            bugSync("个人联系人：获取更新个人联系人json失败", e);
         }
         return json;
     }
@@ -1345,6 +1352,7 @@ public class CustomerPersonCreateActivity extends BaseActivity {
             }
         } catch (JSONException e) {
             e.printStackTrace();
+            bugSync("个人联系人：获取添加联络人Json失败", e);
         }
         return null;
     }
@@ -1386,6 +1394,7 @@ public class CustomerPersonCreateActivity extends BaseActivity {
             return addreeArr;
         } catch (JSONException e) {
             e.printStackTrace();
+            bugSync("个人联系人：获取每个item的json失败", e);
         }
         return addreeArr;
     }

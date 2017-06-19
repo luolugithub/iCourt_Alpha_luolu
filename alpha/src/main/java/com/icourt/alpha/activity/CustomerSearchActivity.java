@@ -210,6 +210,7 @@ public class CustomerSearchActivity extends BaseActivity implements BaseRecycler
             customerAdapter.bindData(true, customerEntities);
         } catch (Throwable e) {
             e.printStackTrace();
+            bugSync("加载本地联系人失败", e);
         }
     }
 

@@ -44,7 +44,7 @@ import retrofit2.Response;
  */
 
 public class ProjectSelectActivity extends BaseActivity implements BaseRecyclerAdapter.OnItemClickListener {
-
+    private static final String CLOSE_ACTION = "close_action";//关闭当前页面
     String authToken, seaFileRepoId, filePath;
     @BindView(R.id.titleBack)
     ImageView titleBack;
@@ -70,9 +70,33 @@ public class ProjectSelectActivity extends BaseActivity implements BaseRecyclerA
         context.startActivity(intent);
     }
 
+    public static void lauchClose(@NonNull Context context) {
+        if (context == null) return;
+        Intent intent = new Intent(context, ProjectSelectActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        intent.setAction(CLOSE_ACTION);
+        context.startActivity(intent);
+    }
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        if (intent != null) {
+            String action = intent.getAction();
+            if (TextUtils.equals(action, CLOSE_ACTION)) {
+                finish();
+            }
+        }
+    }
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if (getIntent() != null) {
+            if (TextUtils.equals(getIntent().getAction(), CLOSE_ACTION)) {
+                finish();
+                return;
+            }
+        }
         setContentView(R.layout.activity_project_select_layout);
         ButterKnife.bind(this);
         initView();
