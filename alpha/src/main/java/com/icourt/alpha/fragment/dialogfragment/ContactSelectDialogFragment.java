@@ -92,6 +92,7 @@ public class ContactSelectDialogFragment extends BaseDialogFragment {
     }
 
     OnFragmentCallBackListener onFragmentCallBackListener;
+    final List<GroupContactBean> currSelectedList = new ArrayList<>();
 
     @Override
     public void onAttach(Context context) {
@@ -154,7 +155,17 @@ public class ContactSelectDialogFragment extends BaseDialogFragment {
         imContactAdapter.setOnItemClickListener(new BaseRecyclerAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
+                log("----------->pos:"+position);
                 imContactAdapter.toggleSelected(position);
+                GroupContactBean item = imContactAdapter.getItem(adapter.getRealPos(position));
+                if (item == null) return;
+                if (imContactAdapter.isSelected(adapter.getRealPos(position))) {
+                    if (!currSelectedList.contains(item)) {
+                        currSelectedList.add(item);
+                    }
+                } else {
+                    currSelectedList.remove(item);
+                }
             }
         });
         headerCommSearchInputEt.addTextChangedListener(new TextWatcher() {
@@ -218,6 +229,14 @@ public class ContactSelectDialogFragment extends BaseDialogFragment {
                 }
                 imContactAdapter.clearSelected();
                 imContactAdapter.bindData(true, contactBeen);
+
+                //设置上次选中的
+                for (int i = 0; i < contactBeen.size(); i++) {
+                    GroupContactBean groupContactBean = contactBeen.get(i);
+                    if (currSelectedList.contains(groupContactBean)) {
+                        imContactAdapter.setSelected(i, true);
+                    }
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -270,6 +289,14 @@ public class ContactSelectDialogFragment extends BaseDialogFragment {
                     @Override
                     public void accept(ArrayList<GroupContactBean> groupContactBeen) throws Exception {
                         imContactAdapter.bindData(true, groupContactBeen);
+                        if (groupContactBeen == null) return;
+
+                        for (int i = 0; i < groupContactBeen.size(); i++) {
+                            GroupContactBean groupContactBean = groupContactBeen.get(i);
+                            if (currSelectedList.contains(groupContactBean)) {
+                                imContactAdapter.setSelected(i, true);
+                            }
+                        }
                     }
                 });
     }
