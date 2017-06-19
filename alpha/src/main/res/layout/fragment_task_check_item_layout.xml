@@ -33,19 +33,19 @@
                     android:id="@+id/check_item_add"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:padding="@dimen/dp10"
+                    android:padding="@dimen/dp15"
                     android:src="@mipmap/add_circle" />
 
                 <EditText
                     android:id="@+id/check_item_edit"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginLeft="5dp"
                     android:layout_marginRight="@dimen/dp10"
                     android:background="@null"
                     android:hint="添加检查项"
                     android:imeOptions="actionDone"
-                    android:padding="@dimen/dp5"
+                    android:paddingTop="@dimen/dp15"
+                    android:paddingBottom="@dimen/dp15"
                     android:singleLine="true"
                     android:textColor="@color/alpha_font_color_black"
                     android:textSize="15sp" />

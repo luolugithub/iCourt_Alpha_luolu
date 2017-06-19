@@ -143,6 +143,8 @@ public class TaskDetailActivity extends BaseActivity
     LinearLayout commentLayout;
 
     final SparseArray<CharSequence> tabTitles = new SparseArray<>();
+    @BindView(R.id.task_tieming_image)
+    ImageView taskTiemingImage;
 //    boolean isEditTask = false;//编辑任务权限
 //    boolean isDeleteTask = false;//删除任务权限
 //    boolean isAddTime = false;//添加计时权限
@@ -348,6 +350,7 @@ public class TaskDetailActivity extends BaseActivity
                     if (taskItemEntity != null) {
                         if (TextUtils.equals(addItem.taskPkId, taskItemEntity.id)) {
                             taskStartIamge.setImageResource(R.drawable.orange_side_dot_bg);
+                            taskTiemingImage.setImageResource(R.mipmap.task_detail_timing);
                         }
                     }
                 }
@@ -359,6 +362,7 @@ public class TaskDetailActivity extends BaseActivity
                     if (taskItemEntity != null) {
                         if (TextUtils.equals(updateItem.taskPkId, taskItemEntity.id)) {
                             taskStartIamge.setImageResource(R.drawable.orange_side_dot_bg);
+                            taskTiemingImage.setImageResource(R.mipmap.task_detail_timing);
                             taskTime.setText(toTime(event.timingSecond));
                         }
                     }
@@ -367,6 +371,7 @@ public class TaskDetailActivity extends BaseActivity
             case TimingEvent.TIMING_STOP:
                 isStrat = false;
                 taskStartIamge.setImageResource(R.mipmap.icon_start_20);
+                taskTiemingImage.setImageResource(R.mipmap.project_time_icon);
                 long mis = event.timingSecond * 1000;
                 if (mis > 0 && mis / 1000 / 60 <= 0) {
                     mis = 60000;

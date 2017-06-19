@@ -116,6 +116,7 @@
                 android:paddingTop="@dimen/dp5">
 
                 <ImageView
+                    android:id="@+id/task_tieming_image"
                     android:layout_width="16dp"
                     android:layout_height="16dp"
                     android:layout_marginRight="@dimen/dp5"
