@@ -99,7 +99,7 @@ public class AlphaSpecialHelperActivity extends ChatBaseActivity {
     @Override
     protected void initView() {
         super.initView();
-        setTitle("Alpha助手");
+        setTitle("Alpha小助手");
         ImageView titleActionImage = getTitleActionImage();
         if (titleActionImage != null) {
             titleActionImage.setImageResource(R.mipmap.header_icon_more);
