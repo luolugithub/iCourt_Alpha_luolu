@@ -179,8 +179,8 @@ public class TabCustomerFragment extends BaseFragment implements BaseRecyclerAda
                         if (response.body().result != null) {
                             IndexUtils.setSuspensions(getContext(), response.body().result);
                             Collections.sort(response.body().result, new PinyinComparator<CustomerEntity>());
-                            updateIndexBar(response.body().result);
                             customerAdapter.bindData(true, response.body().result);
+                            updateIndexBar(response.body().result);
                             insert2Db(response.body().result);
                         }
                     }

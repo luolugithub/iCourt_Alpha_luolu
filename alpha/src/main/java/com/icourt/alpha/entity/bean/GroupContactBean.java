@@ -8,7 +8,6 @@ import android.text.TextUtils;
 import com.google.gson.annotations.SerializedName;
 import com.icourt.alpha.db.convertor.IConvertModel;
 import com.icourt.alpha.db.dbmodel.ContactDbModel;
-import com.icourt.alpha.view.recyclerviewDivider.ISuspensionAction;
 import com.icourt.alpha.view.recyclerviewDivider.ISuspensionInterface;
 import com.icourt.alpha.widget.filter.IFilterEntity;
 
@@ -25,7 +24,6 @@ public class GroupContactBean
         implements IConvertModel<ContactDbModel>,
         Serializable,
         ISuspensionInterface,
-        ISuspensionAction,
         IFilterEntity, Parcelable {
 
     public static final int TYPE_ROBOT = 100;

@@ -4,7 +4,6 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
 
-import com.icourt.alpha.view.recyclerviewDivider.ISuspensionAction;
 import com.icourt.alpha.view.recyclerviewDivider.ISuspensionInterface;
 
 import java.io.Serializable;
@@ -17,7 +16,7 @@ import java.util.List;
  * date createTime：2017/4/22
  * version 1.0.0
  */
-public class GroupEntity implements ISuspensionInterface, ISuspensionAction, Serializable {
+public class GroupEntity implements ISuspensionInterface, Serializable {
     public String suspensionTag;
     public String id;
     public String tid;

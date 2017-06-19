@@ -20,6 +20,11 @@ public class PinyinComparator<T extends ISuspensionInterface> implements Compara
     public int compare(T t1, T t2) {
         if (t1 != null && t2 != null) {
             if (TextUtils.equals(t1.getSuspensionTag(), t2.getSuspensionTag())) {
+                if (TextUtils.equals(t1.getSuspensionTag(), "#")
+                        && !TextUtils.isEmpty(t1.getTargetField())
+                        && !TextUtils.isEmpty(t2.getTargetField())) {
+                    return t1.getTargetField().compareToIgnoreCase(t2.getTargetField());
+                }
                 return 0;
             } else if (TextUtils.equals(t1.getSuspensionTag(), "#")) {
                 return 1;
