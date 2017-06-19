@@ -176,28 +176,28 @@ public class TimerAddActivity extends BaseTimerActivity
             }
 
             @Override
-            public void onTimerStart(int time) {
+            public void onTimerStart(long time) {
 
             }
 
             @Override
-            public void onTimerPause(int time) {
+            public void onTimerPause(long time) {
 
             }
 
             @Override
-            public void onTimerTimingValueChanged(int time) {
+            public void onTimerTimingValueChanged(long time) {
             }
 
             @Override
-            public void onTimerSetValueChanged(int time) {
+            public void onTimerSetValueChanged(long time) {
                 log("---------->onTimerSetValueChanged:" + time);
                 selectedEndDate.setTimeInMillis(selectedStartDate.getTimeInMillis() + time * 1000);
                 stopTimeMinTv.setText(DateUtils.getHHmm(selectedEndDate.getTimeInMillis()));
             }
 
             @Override
-            public void onTimerSetValueChange(int time) {
+            public void onTimerSetValueChange(long time) {
             }
         });
         circleTimerView.setOnTouchListener(new View.OnTouchListener() {
@@ -263,7 +263,7 @@ public class TimerAddActivity extends BaseTimerActivity
                     showTopSnackBar("请选择项目");
                     return;
                 }
-                showWorkTypeSelectDialogFragment(selectedProjectEntity.pkId);
+                showWorkTypeSelectDialogFragment(selectedProjectEntity.pkId, selectedWorkType != null ? selectedWorkType.pkId : null);
                 break;
             case R.id.task_layout://关联任务
                 showTaskSelectDialogFragment(selectedProjectEntity != null ? selectedProjectEntity.pkId : null,

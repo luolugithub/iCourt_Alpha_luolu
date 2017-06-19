@@ -216,7 +216,7 @@ public class FileDetailsActivity extends BaseActivity {
                     switch (item.ope) {
                         case CHAT_TYPE_P2P:
                             ChatActivity.launchP2P(getContext(),
-                                    item.to,
+                                    item.from,
                                     item.name,
                                     item.id,
                                     0,

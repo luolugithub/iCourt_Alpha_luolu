@@ -187,7 +187,7 @@ public class TimerTimingActivity extends BaseTimerActivity
                     showTopSnackBar("请选择项目");
                     return;
                 }
-                showWorkTypeSelectDialogFragment(itemEntity.matterPkId);
+                showWorkTypeSelectDialogFragment(itemEntity.matterPkId, itemEntity.workTypeId);
                 break;
             case R.id.task_layout://关联任务
                 showTaskSelectDialogFragment(itemEntity.matterPkId, itemEntity.taskPkId);

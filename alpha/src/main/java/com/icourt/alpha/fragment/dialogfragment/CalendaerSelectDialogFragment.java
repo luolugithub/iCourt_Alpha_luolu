@@ -108,7 +108,7 @@ public class CalendaerSelectDialogFragment extends BaseDialogFragment {
         compactcalendarView.setUseThreeLetterAbbreviation(false);
         compactcalendarView.setLocale(TimeZone.getDefault(), Locale.CHINESE);
         compactcalendarView.setUseThreeLetterAbbreviation(true);
-        compactcalendarView.setDayColumnNames(new String[]{"日", "一", "二", "三", "四", "五", "六"});
+        compactcalendarView.setDayColumnNames(new String[]{"一", "二", "三", "四", "五", "六","日"});
         compactcalendarView.setListener(new CompactCalendarView.CompactCalendarViewListener() {
             @Override
             public void onDayClick(Date date) {

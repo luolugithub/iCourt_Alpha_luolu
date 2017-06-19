@@ -118,10 +118,7 @@ public class TimingNoticeDialogFragment extends BaseDialogFragment {
         long hour = times / 3600;
         long minute = times % 3600 / 60;
         long second = times % 60;
-        if (hour > 0) {
-            return String.format("%02d:%02d:%02d", hour, minute, second);
-        }
-        return String.format("%02d:%02d", minute, second);
+        return String.format("%02d:%02d:%02d", hour, minute, second);
     }
 
     @OnClick({R.id.notice_timing_stop_iv,

@@ -191,6 +191,7 @@ public class TaskSelectDialogFragment
     @Override
     protected void getData(final boolean isRefresh) {
         super.getData(isRefresh);
+        taskSelectAdapter.clearSelected();
         if (!TextUtils.isEmpty(projectId)) {
             getApi().projectQueryTaskList(projectId, 0, 0, 1, -1)
                     .enqueue(new SimpleCallBack<TaskEntity>() {
@@ -242,7 +243,7 @@ public class TaskSelectDialogFragment
     private void setSelectedTask() {
         List<TaskEntity.TaskItemEntity> data = taskSelectAdapter.getData();
         TaskEntity.TaskItemEntity itemEntity = new TaskEntity.TaskItemEntity();
-        itemEntity.matterId = selectedTaskId;
+        itemEntity.id = selectedTaskId;
         int indexOf = data.indexOf(itemEntity);
         if (indexOf >= 0) {
             taskSelectAdapter.setSelectedPos(indexOf);
@@ -256,6 +257,7 @@ public class TaskSelectDialogFragment
      */
     private void searchTaskByName(final String taskName) {
         if (TextUtils.isEmpty(taskName)) return;
+        taskSelectAdapter.clearSelected();
         if (!TextUtils.isEmpty(projectId)) {
             //pms 环境有
             getApi().taskQueryByName(null, taskName, 0, 0, projectId)

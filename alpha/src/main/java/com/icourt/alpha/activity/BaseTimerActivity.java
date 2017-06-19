@@ -76,14 +76,14 @@ public class BaseTimerActivity extends BaseActivity {
     /**
      * 展示选择工作类型对话框
      */
-    protected final void showWorkTypeSelectDialogFragment(String projectId) {
+    protected final void showWorkTypeSelectDialogFragment(String projectId, String selectedWorkType) {
         String tag = WorkTypeSelectDialogFragment.class.getSimpleName();
         FragmentTransaction mFragTransaction = getSupportFragmentManager().beginTransaction();
         Fragment fragment = getSupportFragmentManager().findFragmentByTag(tag);
         if (fragment != null) {
             mFragTransaction.remove(fragment);
         }
-        WorkTypeSelectDialogFragment.newInstance(projectId)
+        WorkTypeSelectDialogFragment.newInstance(projectId, selectedWorkType)
                 .show(mFragTransaction, tag);
     }
 

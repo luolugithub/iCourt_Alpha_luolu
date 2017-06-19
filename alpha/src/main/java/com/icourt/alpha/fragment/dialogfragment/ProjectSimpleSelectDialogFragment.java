@@ -180,6 +180,7 @@ public class ProjectSimpleSelectDialogFragment
      */
     private void searchProjectByName(final String projectName) {
         if (TextUtils.isEmpty(projectName)) return;
+        projectAdapter.clearSelected();
         //pms独有 带权限
         getApi().timingProjectQuery(0, "0,2,7", projectName)
                 .enqueue(new SimpleCallBack<List<ProjectEntity>>() {
@@ -205,6 +206,7 @@ public class ProjectSimpleSelectDialogFragment
     @Override
     protected void getData(boolean isRefresh) {
         super.getData(isRefresh);
+        projectAdapter.clearSelected();
         /**
          * 默认获取的关注的非完结的项目 带权限的
          */

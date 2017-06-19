@@ -146,7 +146,7 @@ public class TimeAdapter extends BaseArrayRecyclerAdapter<TimeEntity.ItemEntity>
             } else {
                 divider_time.setText(DateUtils.getMMMdd(timeEntity.workDate));
             }
-            int dayTimingLength = 0;//某天的计时时长
+            long dayTimingLength = 0;//某天的计时时长
             for (int i = position; i < getData().size(); i++) {
                 TimeEntity.ItemEntity item = getItem(i);
                 if (item != null && item.workDate == timeEntity.workDate) {
