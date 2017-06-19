@@ -9,6 +9,7 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.AppBarLayout;
 import android.text.Editable;
 import android.text.InputFilter;
+import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.view.View;
 import android.widget.CheckedTextView;
@@ -93,10 +94,18 @@ public class TaskDescUpdateActivity extends BaseActivity {
         descOrName = getIntent().getStringExtra(KEY_TASK_UPDATE);
         type = getIntent().getIntExtra(KEY_TASK_TYPE, -1);
         if (type == UPDATE_TASK_DESC) {
-            setTitle("编辑任务详情");
+            if (TextUtils.isEmpty(descOrName)) {
+                setTitle("添加任务详情");
+            } else {
+                setTitle("编辑任务详情");
+            }
             descEditText.setHint("添加任务详情");
         } else if (type == UPDATE_TASK_NAME) {
-            setTitle("编辑任务名称");
+            if (TextUtils.isEmpty(descOrName)) {
+                setTitle("添加任务名称");
+            } else {
+                setTitle("编辑任务名称");
+            }
             descEditText.setHint("添加任务名称");
             descEditText.setMaxEms(200);
             descEditText.setFilters(new InputFilter[]{new InputFilter.LengthFilter(200)});

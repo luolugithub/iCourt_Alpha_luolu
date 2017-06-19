@@ -78,6 +78,7 @@ public class ProjectSelectActivity extends BaseActivity implements BaseRecyclerA
         intent.setAction(CLOSE_ACTION);
         context.startActivity(intent);
     }
+
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
@@ -88,6 +89,7 @@ public class ProjectSelectActivity extends BaseActivity implements BaseRecyclerA
             }
         }
     }
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -144,7 +146,7 @@ public class ProjectSelectActivity extends BaseActivity implements BaseRecyclerA
     @Override
     protected void getData(boolean isRefresh) {
         super.getData(isRefresh);
-        getApi().projectSelectListQuery("0,2,7")
+        getApi().projectPmsSelectListQuery("MAT:matter.document:readwrite")
                 .enqueue(new SimpleCallBack<List<ProjectEntity>>() {
                     @Override
                     public void onSuccess(Call<ResEntity<List<ProjectEntity>>> call, Response<ResEntity<List<ProjectEntity>>> response) {

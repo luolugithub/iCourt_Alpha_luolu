@@ -254,6 +254,15 @@ public interface ApiAlphaService {
     Call<ResEntity<List<ProjectEntity>>> projectSelectListQuery(@Query("status") String status);
 
     /**
+     * 获取选择项目列表
+     *
+     * @param pmsStr MAT:matter.document:readwrite 文档读写权限
+     * @return
+     */
+    @GET("api/v1/matters/getWithRight")
+    Call<ResEntity<List<ProjectEntity>>> projectPmsSelectListQuery(@Query("pmsStr") String pmsStr);
+
+    /**
      * 创建／编辑任务 选择项目列表
      *
      * @param status
