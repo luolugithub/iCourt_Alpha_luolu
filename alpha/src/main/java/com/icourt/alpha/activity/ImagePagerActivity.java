@@ -48,7 +48,6 @@ import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.ActionConstants;
 import com.icourt.alpha.utils.FileUtils;
 import com.icourt.alpha.utils.GlideUtils;
-import com.icourt.alpha.utils.IMUtils;
 import com.icourt.alpha.utils.JsonUtils;
 import com.icourt.alpha.utils.Md5Utils;
 import com.icourt.alpha.utils.StringUtils;
@@ -686,7 +685,7 @@ public class ImagePagerActivity extends BaseUmengActivity implements BasePagerAd
     }
 
     private String getPicSavePath(String url) {
-        if (!IMUtils.isPIC(url)) {
+        if (url.startsWith("http")) {
             StringBuilder pathBuilder = new StringBuilder(Environment.getExternalStorageDirectory().getAbsolutePath());
             pathBuilder.append(File.separator);
             pathBuilder.append(ActionConstants.FILE_DOWNLOAD_PATH);
@@ -694,7 +693,7 @@ public class ImagePagerActivity extends BaseUmengActivity implements BasePagerAd
             pathBuilder.append(Md5Utils.md5(url, url));
             pathBuilder.append(".png");
             return pathBuilder.toString();
-        }else{
+        } else {
             return url;
         }
     }

@@ -738,11 +738,10 @@ public interface ApiAlphaService {
     /**
      * 获取所在律所中的团队列表
      *
-     * @param id
      * @return
      */
-    @GET("api/v1/auth/groups/up/q/office/{id}")
-    Call<ResEntity<List<SelectGroupBean>>> officeGroupsQuery(@Path("id") String id);
+    @GET("api/v2/permission/department/allDepartmentList")
+    Call<ResEntity<List<SelectGroupBean>>> officeGroupsQuery();
 
     /**
      * 修改联系人所属团队

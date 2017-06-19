@@ -50,7 +50,6 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -58,7 +57,6 @@ import java.util.Map;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-import okhttp3.RequestBody;
 import retrofit2.Call;
 import retrofit2.Response;
 
@@ -1055,10 +1053,10 @@ public class CustomerPersonCreateActivity extends BaseActivity {
      * 添加联系人
      */
     private void addContact() {
+        String json = getAddContactJson();
+        if (TextUtils.isEmpty(json)) return;
         showLoadingDialog(null);
-        Map<String, RequestBody> requestBodyMap = new HashMap<>();
-        requestBodyMap.put("contactvo", RequestUtils.createJsonBody(getAddContactJson()));
-        getApi().customerCreate(RequestUtils.createJsonBody(getAddContactJson())).enqueue(new SimpleCallBack<List<ContactDeatilBean>>() {
+        getApi().customerCreate(RequestUtils.createJsonBody(json)).enqueue(new SimpleCallBack<List<ContactDeatilBean>>() {
             @Override
             public void onSuccess(Call<ResEntity<List<ContactDeatilBean>>> call, Response<ResEntity<List<ContactDeatilBean>>> response) {
                 dismissLoadingDialog();

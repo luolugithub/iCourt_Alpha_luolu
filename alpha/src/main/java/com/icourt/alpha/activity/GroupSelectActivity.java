@@ -131,7 +131,7 @@ public class GroupSelectActivity extends BaseActivity implements BaseRecyclerAda
     protected void getData(boolean isRefresh) {
         super.getData(isRefresh);
         if (getLoginUserInfo() == null) return;
-        getApi().officeGroupsQuery(getLoginUserInfo().getOfficeId()).enqueue(new SimpleCallBack<List<SelectGroupBean>>() {
+        getApi().officeGroupsQuery().enqueue(new SimpleCallBack<List<SelectGroupBean>>() {
             @Override
             public void onSuccess(Call<ResEntity<List<SelectGroupBean>>> call, Response<ResEntity<List<SelectGroupBean>>> response) {
                 stopRefresh();

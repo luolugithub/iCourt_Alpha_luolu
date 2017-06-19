@@ -52,6 +52,7 @@ import com.icourt.alpha.interfaces.OnUpdateTaskListener;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.DensityUtil;
 import com.icourt.alpha.utils.GlideUtils;
+import com.icourt.alpha.utils.LoginInfoUtils;
 import com.icourt.alpha.utils.SpannableUtils;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.widget.dialog.BottomActionDialog;
@@ -258,7 +259,7 @@ public class TaskDetailActivity extends BaseActivity
                 if (isStrat)
                     TimerManager.getInstance().stopTimer();
                 else
-                    TimerManager.getInstance().addTimer(getTimer(), new Callback<TimeEntity.ItemEntity>() {
+                    TimerManager.getInstance().addTimer(getTimer(taskItemEntity), new Callback<TimeEntity.ItemEntity>() {
                         @Override
                         public void onResponse(Call<TimeEntity.ItemEntity> call, Response<TimeEntity.ItemEntity> response) {
                             if (response.body() != null) {
@@ -322,6 +323,35 @@ public class TaskDetailActivity extends BaseActivity
             itemEntity.startTime = DateUtils.millis();
             if (taskItemEntity.matter != null) {
                 itemEntity.matterPkId = taskItemEntity.matter.id;
+            }
+        }
+        return itemEntity;
+    }
+
+    /**
+     * 获取添加计时实体
+     *
+     * @return
+     */
+    private TimeEntity.ItemEntity getTimer(TaskEntity.TaskItemEntity taskItemEntity) {
+        TimeEntity.ItemEntity itemEntity = new TimeEntity.ItemEntity();
+        if (taskItemEntity != null) {
+            itemEntity.taskPkId = taskItemEntity.id;
+            itemEntity.taskName = taskItemEntity.name;
+            itemEntity.name = taskItemEntity.name;
+            itemEntity.workDate = DateUtils.millis();
+            itemEntity.createUserId = getLoginUserId();
+            if (LoginInfoUtils.getLoginUserInfo() != null) {
+                itemEntity.username = LoginInfoUtils.getLoginUserInfo().getName();
+            }
+            itemEntity.startTime = DateUtils.millis();
+            if (taskItemEntity.matter != null) {
+                itemEntity.matterPkId = taskItemEntity.matter.id;
+                itemEntity.matterName = taskItemEntity.matter.name;
+            }
+            if (taskItemEntity.parentFlow != null) {
+                itemEntity.workTypeName = taskItemEntity.parentFlow.name;
+                itemEntity.workTypeId = taskItemEntity.parentFlow.id;
             }
         }
         return itemEntity;

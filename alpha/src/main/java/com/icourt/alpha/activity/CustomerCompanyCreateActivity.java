@@ -734,7 +734,7 @@ public class CustomerCompanyCreateActivity extends BaseActivity {
         getApi().companyCheckReName(name).enqueue(new SimpleCallBack<List<CustomerEntity>>() {
             @Override
             public void onSuccess(Call<ResEntity<List<CustomerEntity>>> call, Response<ResEntity<List<CustomerEntity>>> response) {
-                if (response.body().result!=null) {
+                if (response.body().result != null) {
                     int count = response.body().result.size();
                     if (count > 0) {
                         isCanAddContact = false;
@@ -749,8 +749,10 @@ public class CustomerCompanyCreateActivity extends BaseActivity {
      * 添加企业联系人
      */
     private void addContact() {
+        String json = getAddContactJson();
+        if (TextUtils.isEmpty(json)) return;
         showLoadingDialog(null);
-        getApi().customerCompanyCreate(RequestUtils.createJsonBody(getAddContactJson())).enqueue(new SimpleCallBack<List<ContactDeatilBean>>() {
+        getApi().customerCompanyCreate(RequestUtils.createJsonBody(json)).enqueue(new SimpleCallBack<List<ContactDeatilBean>>() {
             @Override
             public void onSuccess(Call<ResEntity<List<ContactDeatilBean>>> call, Response<ResEntity<List<ContactDeatilBean>>> response) {
                 dismissLoadingDialog();
@@ -775,8 +777,10 @@ public class CustomerCompanyCreateActivity extends BaseActivity {
      * 修改联系人
      */
     private void updateContact() {
+        String json = getUpdateContactJson();
+        if (TextUtils.isEmpty(json)) return;
         showLoadingDialog(null);
-        getApi().customerUpdate(RequestUtils.createJsonBody(getUpdateContactJson())).enqueue(new SimpleCallBack<List<ContactDeatilBean>>() {
+        getApi().customerUpdate(RequestUtils.createJsonBody(json)).enqueue(new SimpleCallBack<List<ContactDeatilBean>>() {
             @Override
             public void onSuccess(Call<ResEntity<List<ContactDeatilBean>>> call, Response<ResEntity<List<ContactDeatilBean>>> response) {
                 dismissLoadingDialog();

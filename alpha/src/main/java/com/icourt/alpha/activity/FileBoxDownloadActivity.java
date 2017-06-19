@@ -201,6 +201,10 @@ public class FileBoxDownloadActivity extends BaseActivity {
                 showTopSnackBar("文件不存在");
                 return;
             }
+            if (TextUtils.equals(FileUtils.getFileType(file.getName()), ".key")) {
+                showTopSnackBar("此文件类型不支持打开");
+                return;
+            }
             log("-------------->file path:" + file.getAbsolutePath());
             Intent intent = new Intent();
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
