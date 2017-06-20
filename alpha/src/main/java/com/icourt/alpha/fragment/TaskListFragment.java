@@ -106,6 +106,16 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
     }
 
     @Override
+    public void onHiddenChanged(boolean hidden) {
+        super.onHiddenChanged(hidden);
+        if (!hidden) {
+            if (type == 1) {
+                getData(true);
+            }
+        }
+    }
+
+    @Override
     protected void initView() {
         EventBus.getDefault().register(this);
         type = getArguments().getInt("type");
@@ -223,7 +233,7 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
                                         if (!taskItemEntity.readUserIds.contains(getLoginUserId())) {
                                             newTaskEntities.add(taskItemEntity);
                                         }
-                                    }else{
+                                    } else {
                                         newTaskEntities.add(taskItemEntity);
                                     }
                                 }
@@ -613,5 +623,12 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
                 }
             }
         });
+    }
+
+    @Override
+    public void onRefreshNewTask() {
+        if (type == 1) {
+            getData(true);
+        }
     }
 }

@@ -182,7 +182,9 @@ public class DateSelectDialogFragment extends BaseDialogFragment {
             int second = selectedCalendar.get(Calendar.SECOND);
             if (hour == 23 && minute == 59 && second == 59) {
                 duetimeTv.setText("未设置");
+                clearDutimeIv.setVisibility(View.INVISIBLE);
             } else {
+                clearDutimeIv.setVisibility(View.VISIBLE);
                 duetimeTv.setText(DateUtils.getHHmm(selectedCalendar.getTimeInMillis()));
             }
             hourWheelView.setCurrentItem(selectedCalendar.get(Calendar.HOUR_OF_DAY));
@@ -193,6 +195,7 @@ public class DateSelectDialogFragment extends BaseDialogFragment {
             compactcalendarView.invalidate();
         }else{
             duetimeTv.setText("未设置");
+            clearDutimeIv.setVisibility(View.INVISIBLE);
         }
 
         //延迟显示 必须 否则默认值无效
@@ -266,6 +269,7 @@ public class DateSelectDialogFragment extends BaseDialogFragment {
                 break;
             case R.id.clear_dutime_iv:
                 duetimeTv.setText("未设置");
+                clearDutimeIv.setVisibility(View.INVISIBLE);
                 selectedCalendar.set(Calendar.HOUR_OF_DAY, 23);
                 selectedCalendar.set(Calendar.MINUTE, 59);
                 selectedCalendar.set(Calendar.SECOND, 59);
