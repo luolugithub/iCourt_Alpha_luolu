@@ -215,8 +215,11 @@ public class FileDetailsActivity extends BaseActivity {
                 if (item != null) {
                     switch (item.ope) {
                         case CHAT_TYPE_P2P:
+                            // 我->cl  from me to:cl;
+                            //cl ——>我  from cl:to:me
+                            boolean isMySend = StringUtils.equalsIgnoreCase(getLoginUserId(), item.from, false);
                             ChatActivity.launchP2P(getContext(),
-                                    item.from,
+                                    isMySend ? item.to : item.from,
                                     item.name,
                                     item.id,
                                     0,

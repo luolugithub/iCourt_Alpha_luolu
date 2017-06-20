@@ -229,7 +229,7 @@ public class IMSessionAdapter extends BaseArrayRecyclerAdapter<IMSessionEntity> 
                 } else
                     break;
             case CHAT_TYPE_TEAM:
-                Team team = getTeam(imSessionEntity.customIMBody.to);
+                Team team = getTeam(imSessionEntity.recentContact.getContactId());
                 if (team != null) {
                     if (!TextUtils.isEmpty(team.getIcon())) {
                         GlideUtils.loadGroup(ivSessionIcon.getContext(),

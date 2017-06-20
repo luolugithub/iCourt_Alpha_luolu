@@ -3,8 +3,10 @@ package com.icourt.alpha.utils;
 import android.text.TextUtils;
 import android.widget.ImageView;
 
+import com.icourt.alpha.constants.Const;
 import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.icourt.alpha.entity.bean.IMMessageCustomBody;
+import com.icourt.alpha.entity.bean.IMSessionEntity;
 import com.icourt.alpha.view.TextDrawable;
 import com.netease.nimlib.sdk.NIMClient;
 import com.netease.nimlib.sdk.msg.model.IMMessage;
@@ -316,6 +318,37 @@ public class IMUtils {
         groupContactBean.name = nimUserInfo.getName();
         groupContactBean.pic = nimUserInfo.getAvatar();
         return groupContactBean;
+    }
+
+
+    /***
+     * 兼容 1.0的消息
+     * @param imSessionEntity
+     * @param recentContact
+     * @param customIMBody
+     */
+    public static final void wrapV1Message(IMSessionEntity imSessionEntity, RecentContact recentContact, IMMessageCustomBody customIMBody) {
+        if (imSessionEntity == null) return;
+        if (recentContact == null) return;
+        if (customIMBody == null) return;
+        //v1 没有platform
+        if (TextUtils.isEmpty(customIMBody.platform)) {
+            customIMBody.send_time = recentContact.getTime();
+            switch (recentContact.getSessionType()) {
+                case P2P:
+                    customIMBody.ope = Const.CHAT_TYPE_P2P;
+                    customIMBody.from = recentContact.getFromAccount();
+                    customIMBody.to = recentContact.getContactId();
+                    break;
+                case Team:
+                    customIMBody.ope = Const.CHAT_TYPE_TEAM;
+                    customIMBody.from = recentContact.getFromAccount();
+                    customIMBody.to = recentContact.getContactId();
+                    break;
+            }
+            customIMBody.msg_statu = Const.MSG_STATU_SUCCESS;
+            // customIMBody.to=re
+        }
     }
 
     /**

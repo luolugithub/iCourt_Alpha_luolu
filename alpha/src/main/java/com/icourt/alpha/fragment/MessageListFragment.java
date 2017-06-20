@@ -43,7 +43,6 @@ import com.icourt.alpha.utils.JsonUtils;
 import com.icourt.alpha.utils.LogUtils;
 import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.widget.dialog.BottomActionDialog;
-import com.icourt.alpha.widget.nim.GlobalMessageObserver;
 import com.netease.nimlib.sdk.NIMClient;
 import com.netease.nimlib.sdk.RequestCallback;
 import com.netease.nimlib.sdk.RequestCallbackWrapper;
@@ -229,6 +228,7 @@ public class MessageListFragment extends BaseRecentContactFragment
                                 if (IMUtils.isFilterChatIMMessage(customIMBody)) continue;
                                 imSessionEntity.customIMBody = customIMBody;
                                 imSessionEntity.recentContact = recentContact;
+                                IMUtils.wrapV1Message(imSessionEntity, recentContact, customIMBody);
                             }
                         }
                     }
@@ -250,8 +250,10 @@ public class MessageListFragment extends BaseRecentContactFragment
                     }
                     if (customIMBody != null) {
                         if (IMUtils.isFilterChatIMMessage(customIMBody)) continue;
+                        IMSessionEntity imSessionEntity = new IMSessionEntity(recentContact, customIMBody);
+                        IMUtils.wrapV1Message(imSessionEntity, recentContact, customIMBody);
                         //装饰实体
-                        data.add(new IMSessionEntity(recentContact, customIMBody));
+                        data.add(imSessionEntity);
                     }
                 }
             }
@@ -598,6 +600,8 @@ public class MessageListFragment extends BaseRecentContactFragment
                         if (customIMBody == null) continue;
                         if (IMUtils.isFilterChatIMMessage(customIMBody)) continue;
                         IMSessionEntity imSessionEntity = new IMSessionEntity(recentContact, customIMBody);
+
+                        IMUtils.wrapV1Message(imSessionEntity, recentContact, customIMBody);
                         //装饰实体
                         imSessionEntities.add(imSessionEntity);
                     }
@@ -639,9 +643,9 @@ public class MessageListFragment extends BaseRecentContactFragment
                 } else if (item.getMsgType() == MsgTypeEnum.text) {
                     if (TextUtils.isEmpty(item.getContent())) {//去除空的消息
                         recentContacts.remove(i);
-                    } else if (GlobalMessageObserver.isFilterMsg(item.getTime())) {
+                    } /*else if (GlobalMessageObserver.isFilterMsg(item.getTime())) {
                         recentContacts.remove(i);
-                    }
+                    }*/
                 }
             }
         }
