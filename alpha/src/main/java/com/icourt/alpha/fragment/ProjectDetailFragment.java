@@ -284,7 +284,11 @@ public class ProjectDetailFragment extends BaseFragment {
                 serviceContentLayout.setVisibility(View.GONE);
             }
             if (projectDetailBean.matterType == 0) {//争议解决
-                procedureLayout.setVisibility(View.GONE);
+                if (!TextUtils.isEmpty(projectDetailBean.matterCaseName) || !TextUtils.isEmpty(projectDetailBean.competentCourt) || projectDetailBean.judges != null) {
+                    procedureLayout.setVisibility(View.VISIBLE);
+                } else {
+                    procedureLayout.setVisibility(View.GONE);
+                }
                 baseFragmentAdapter = new BaseFragmentAdapter(getChildFragmentManager());
                 projectViewpager.setAdapter(baseFragmentAdapter);
                 baseFragmentAdapter.bindData(true,

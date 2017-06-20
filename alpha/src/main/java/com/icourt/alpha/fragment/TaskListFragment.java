@@ -570,6 +570,7 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
             jsonObject.addProperty("id", itemEntity.id);
             jsonObject.addProperty("state", itemEntity.state);
             jsonObject.addProperty("valid", true);
+            jsonObject.addProperty("name", itemEntity.name);
             jsonObject.addProperty("parentId", itemEntity.parentId);
             jsonObject.addProperty("dueTime", itemEntity.dueTime);
             jsonObject.addProperty("updateTime", DateUtils.millis());

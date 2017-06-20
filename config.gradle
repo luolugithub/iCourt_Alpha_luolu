@@ -26,8 +26,8 @@ ext {
     ]
 
     alphaSFileUrl = [
-            api_url_debug  : "\"http://devbox.alphalawyer.cn/\"",//开发
-            api_url_test   : "\"http://testbox.alphalawyer.cn/\"",//内测
+            api_url_debug  : "\"https://devbox.alphalawyer.cn/\"",//开发
+            api_url_test   : "\"https://testbox.alphalawyer.cn/\"",//内测
             api_url_preview: "\"https://box.alphalawyer.cn／\"",//预览
             api_url_release: "\"https://box.alphalawyer.cn/\""//正式
     ]

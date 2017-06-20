@@ -120,6 +120,12 @@ public class TaskItemAdapter extends BaseArrayRecyclerAdapter<TaskEntity.TaskIte
             } else {
                 recyclerView.setVisibility(View.INVISIBLE);
             }
+            if (checkListView.getVisibility() == View.VISIBLE &&
+                    documentNumView.getVisibility() == View.VISIBLE &&
+                    commentNumView.getVisibility() == View.VISIBLE &&
+                    timeView.getVisibility() == View.VISIBLE) {
+                recyclerView.setVisibility(View.INVISIBLE);
+            }
         }
         if (startTimmingView != null) {
             if (taskItemEntity.isTiming) {

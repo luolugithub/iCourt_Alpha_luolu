@@ -336,6 +336,7 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
             JsonObject jsonObject = new JsonObject();
             jsonObject.addProperty("id", itemEntity.id);
             jsonObject.addProperty("state", itemEntity.state);
+            jsonObject.addProperty("name", itemEntity.name);
             jsonObject.addProperty("dueTime", itemEntity.dueTime);
             jsonObject.addProperty("description", itemEntity.description);
             jsonObject.addProperty("valid", true);

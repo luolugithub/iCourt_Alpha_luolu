@@ -308,10 +308,10 @@ public class TaskAdapter extends BaseArrayRecyclerAdapter<TaskEntity>
                 itemEntity.matterPkId = taskItemEntity.matter.id;
                 itemEntity.matterName = taskItemEntity.matter.name;
             }
-            if (taskItemEntity.parentFlow != null) {
-                itemEntity.workTypeName = taskItemEntity.parentFlow.name;
-                itemEntity.workTypeId = taskItemEntity.parentFlow.id;
-            }
+//            if (taskItemEntity.parentFlow != null) {
+//                itemEntity.workTypeName = taskItemEntity.parentFlow.name;
+//                itemEntity.workTypeId = taskItemEntity.parentFlow.id;
+//            }
         }
         return itemEntity;
     }
@@ -343,6 +343,7 @@ public class TaskAdapter extends BaseArrayRecyclerAdapter<TaskEntity>
                         }
                         break;
                     case Dialog.BUTTON_NEGATIVE://取消
+                        checkbox.setChecked(itemEntity.state);
                         break;
                 }
             }
@@ -416,6 +417,7 @@ public class TaskAdapter extends BaseArrayRecyclerAdapter<TaskEntity>
             JsonObject jsonObject = new JsonObject();
             jsonObject.addProperty("id", itemEntity.id);
             jsonObject.addProperty("state", itemEntity.state);
+            jsonObject.addProperty("name", itemEntity.name);
             jsonObject.addProperty("valid", true);
             jsonObject.addProperty("updateTime", DateUtils.millis());
             return jsonObject.toString();

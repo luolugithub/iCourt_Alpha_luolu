@@ -349,10 +349,10 @@ public class TaskDetailActivity extends BaseActivity
                 itemEntity.matterPkId = taskItemEntity.matter.id;
                 itemEntity.matterName = taskItemEntity.matter.name;
             }
-            if (taskItemEntity.parentFlow != null) {
-                itemEntity.workTypeName = taskItemEntity.parentFlow.name;
-                itemEntity.workTypeId = taskItemEntity.parentFlow.id;
-            }
+//            if (taskItemEntity.parentFlow != null) {
+//                itemEntity.workTypeName = taskItemEntity.parentFlow.name;
+//                itemEntity.workTypeId = taskItemEntity.parentFlow.id;
+//            }
         }
         return itemEntity;
     }

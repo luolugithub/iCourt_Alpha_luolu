@@ -85,24 +85,24 @@ public class ProjectRangeFragment extends BaseFragment {
             if (projectDetailEntity.judges != null) {
                 rangeItemEntities.add(new RangeItemEntity("法官", getJudgeName(projectDetailEntity.judges)));
             }
-            if (projectDetailEntity.clients != null) {
-                for (ProjectDetailEntity.ClientsBean client : projectDetailEntity.clients) {
-                    if (!TextUtils.isEmpty(client.customerPositionName)) {
-                        rangeItemEntities.add(new RangeItemEntity(client.customerPositionName + "(客户)", client.contactName));
-                    } else {
-                        rangeItemEntities.add(new RangeItemEntity("客户", client.contactName));
-                    }
-                }
-            }
-            if (projectDetailEntity.litigants != null) {
-                for (ProjectDetailEntity.LitigantsBean litigant : projectDetailEntity.litigants) {
-                    if (!TextUtils.isEmpty(litigant.customerPositionName)) {
-                        rangeItemEntities.add(new RangeItemEntity(litigant.customerPositionName, litigant.contactName));
-                    } else {
-                        rangeItemEntities.add(new RangeItemEntity("当事人", litigant.contactName));
-                    }
-                }
-            }
+//            if (projectDetailEntity.clients != null) {
+//                for (ProjectDetailEntity.ClientsBean client : projectDetailEntity.clients) {
+//                    if (!TextUtils.isEmpty(client.customerPositionName)) {
+//                        rangeItemEntities.add(new RangeItemEntity(client.customerPositionName + "(客户)", client.contactName));
+//                    } else {
+//                        rangeItemEntities.add(new RangeItemEntity("客户", client.contactName));
+//                    }
+//                }
+//            }
+//            if (projectDetailEntity.litigants != null) {
+//                for (ProjectDetailEntity.LitigantsBean litigant : projectDetailEntity.litigants) {
+//                    if (!TextUtils.isEmpty(litigant.customerPositionName)) {
+//                        rangeItemEntities.add(new RangeItemEntity(litigant.customerPositionName, litigant.contactName));
+//                    } else {
+//                        rangeItemEntities.add(new RangeItemEntity("当事人", litigant.contactName));
+//                    }
+//                }
+//            }
             rangeRecyclerview.setLayoutManager(new LinearLayoutManager(getContext()));
             rangeRecyclerview.addItemDecoration(ItemDecorationUtils.getCommMagin5Divider(getContext(), false));
             rangeRecyclerview.setHasFixedSize(true);
