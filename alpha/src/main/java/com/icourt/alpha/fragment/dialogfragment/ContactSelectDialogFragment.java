@@ -33,6 +33,7 @@ import com.icourt.alpha.db.dbservice.ContactDbService;
 import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.utils.DensityUtil;
+import com.icourt.alpha.utils.IndexUtils;
 import com.icourt.alpha.utils.PinyinComparator;
 import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.utils.SystemUtils;
@@ -227,6 +228,10 @@ public class ContactSelectDialogFragment extends BaseDialogFragment {
                 if (selectedData != null) {
                     contactBeen.removeAll(selectedData);
                 }
+                if (contactBeen != null) {
+                    IndexUtils.setSuspensions(getContext(), contactBeen);
+                    Collections.sort(contactBeen, new PinyinComparator<GroupContactBean>());
+                }
                 imContactAdapter.clearSelected();
                 imContactAdapter.bindData(true, contactBeen);
                 setLastSelected();
@@ -279,7 +284,10 @@ public class ContactSelectDialogFragment extends BaseDialogFragment {
                             contactBeen.removeAll(selectedData);
                         }
                         filterRobot(contactBeen);
-                        Collections.sort(contactBeen, new PinyinComparator<GroupContactBean>());
+                        if (contactBeen != null) {
+                            IndexUtils.setSuspensions(getContext(), contactBeen);
+                            Collections.sort(contactBeen, new PinyinComparator<GroupContactBean>());
+                        }
                     }
                 } catch (Throwable ex) {
                     ex.printStackTrace();
