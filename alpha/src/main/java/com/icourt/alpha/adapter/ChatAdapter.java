@@ -552,13 +552,22 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMMessageCustomBody> i
             if (imMessageCustomBody.ext != null) {
                 picUrl = imMessageCustomBody.ext.thumb;
             }
-            Glide.with(chat_image_iv.getContext())
-                    .load(picUrl)
-                    .asBitmap()
-                    .diskCacheStrategy(DiskCacheStrategy.SOURCE)
-                    .error(R.mipmap.default_img_failed)
-                    .into(new FitHeightImgViewTarget(chat_image_iv));
+            if (!TextUtils.isEmpty(picUrl)
+                    && picUrl.endsWith(".gif")) {
+                Glide.with(chat_image_iv.getContext())
+                        .load(picUrl)
+                        .diskCacheStrategy(DiskCacheStrategy.SOURCE)
+                        .error(R.mipmap.default_img_failed)
+                        .into(chat_image_iv);
+            } else {
+                Glide.with(chat_image_iv.getContext())
+                        .load(picUrl)
+                        .asBitmap()
+                        .diskCacheStrategy(DiskCacheStrategy.SOURCE)
+                        .error(R.mipmap.default_img_failed)
+                        .into(new FitHeightImgViewTarget(chat_image_iv));
 
+            }
         }
     }
 
