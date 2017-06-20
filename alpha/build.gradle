@@ -12,7 +12,7 @@ android {
         minSdkVersion rootProject.ext.android.minSdkVersion
         targetSdkVersion rootProject.ext.android.targetSdkVersion
         multiDexEnabled true
-        versionCode 6
+        versionCode 8
         versionName "v2.0.0" //3位版本号
         compileOptions {
             sourceCompatibility JavaVersion.VERSION_1_7

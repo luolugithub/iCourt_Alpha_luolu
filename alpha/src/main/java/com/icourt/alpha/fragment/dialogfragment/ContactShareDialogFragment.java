@@ -85,10 +85,11 @@ public class ContactShareDialogFragment extends BaseDialogFragment
     TextView titleContent;
 
 
-    public static ContactShareDialogFragment newInstance(@NonNull long msgId) {
+    public static ContactShareDialogFragment newInstance(@NonNull long msgId, boolean isFilterMySelef) {
         ContactShareDialogFragment contactDialogFragment = new ContactShareDialogFragment();
         Bundle args = new Bundle();
         args.putLong("msgId", msgId);
+        args.putBoolean("isFilterMySelef", isFilterMySelef);
         contactDialogFragment.setArguments(args);
         return contactDialogFragment;
     }
@@ -99,10 +100,11 @@ public class ContactShareDialogFragment extends BaseDialogFragment
      * @param filePath
      * @return
      */
-    public static ContactShareDialogFragment newInstanceFile(@NonNull String filePath) {
+    public static ContactShareDialogFragment newInstanceFile(@NonNull String filePath, boolean isFilterMySelef) {
         ContactShareDialogFragment contactDialogFragment = new ContactShareDialogFragment();
         Bundle args = new Bundle();
         args.putString("filePath", filePath);
+        args.putBoolean("isFilterMySelef", isFilterMySelef);
         contactDialogFragment.setArguments(args);
         return contactDialogFragment;
     }
@@ -113,6 +115,10 @@ public class ContactShareDialogFragment extends BaseDialogFragment
         View view = super.onCreateView(R.layout.dialog_fragment_share, inflater, container, savedInstanceState);
         unbinder = ButterKnife.bind(this, view);
         return view;
+    }
+
+    private boolean isFilterMySelef() {
+        return getArguments().getBoolean("isFilterMySelef", false);
     }
 
     @Override
@@ -137,7 +143,7 @@ public class ContactShareDialogFragment extends BaseDialogFragment
                 titleContent.setText(position == 0 ? "享聊" : "讨论组");
             }
         });
-        baseFragmentAdapter.bindData(true, Arrays.asList(ContactActionFragment.newInstance()
+        baseFragmentAdapter.bindData(true, Arrays.asList(ContactActionFragment.newInstance(isFilterMySelef())
                 , GroupActionFragment.newInstance()));
     }
 

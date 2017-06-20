@@ -26,8 +26,10 @@ import com.icourt.alpha.db.dbmodel.ContactDbModel;
 import com.icourt.alpha.db.dbservice.ContactDbService;
 import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
+import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.view.ClearEditText;
+import com.icourt.alpha.widget.filter.ListFilter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -64,8 +66,29 @@ public class ContactActionFragment extends BaseFragment implements BaseRecyclerA
     private GroupMemberActionAdapter groupMemberActionAdapter;
     HeaderFooterAdapter<GroupMemberActionAdapter> headerFooterAdapter;
 
-    public static ContactActionFragment newInstance() {
-        return new ContactActionFragment();
+    public static ContactActionFragment newInstance(boolean isFilterMySelef) {
+        ContactActionFragment contactActionFragment = new ContactActionFragment();
+        Bundle args = new Bundle();
+        args.putBoolean("isFilterMySelef", isFilterMySelef);
+        contactActionFragment.setArguments(args);
+        return contactActionFragment;
+    }
+
+    /**
+     * 过滤调自己
+     *
+     * @param data
+     * @return
+     */
+    private List<GroupContactBean> filterMySelf(List<GroupContactBean> data) {
+        GroupContactBean groupContactBean = new GroupContactBean();
+        groupContactBean.accid = StringUtils.toLowerCase(getLoginUserId());
+        new ListFilter<GroupContactBean>().filter(data, groupContactBean);
+        return data;
+    }
+
+    private boolean isFilterMySelef() {
+        return getArguments().getBoolean("isFilterMySelef", false);
     }
 
     OnFragmentCallBackListener onFragmentCallBackListener;
@@ -95,6 +118,9 @@ public class ContactActionFragment extends BaseFragment implements BaseRecyclerA
                         RealmResults<ContactDbModel> contactDbModels = threadContactDbService.queryAll();
                         if (contactDbModels != null) {
                             List<GroupContactBean> contactBeen = ListConvertor.convertList(new ArrayList<IConvertModel<GroupContactBean>>(contactDbModels));
+                            if (contactBeen != null && isFilterMySelef()) {
+                                filterMySelf(contactBeen);
+                            }
                             e.onNext(contactBeen);
                         }
                         e.onComplete();
@@ -157,6 +183,7 @@ public class ContactActionFragment extends BaseFragment implements BaseRecyclerA
         headerCommSearchInputLl.setVisibility(View.GONE);
     }
 
+
     @Override
     protected void getData(boolean isRefresh) {
         super.getData(isRefresh);
@@ -179,6 +206,9 @@ public class ContactActionFragment extends BaseFragment implements BaseRecyclerA
                         RealmResults<ContactDbModel> contactDbModels = threadContactDbService.contains("name", name);
                         if (contactDbModels != null) {
                             List<GroupContactBean> contactBeen = ListConvertor.convertList(new ArrayList<IConvertModel<GroupContactBean>>(contactDbModels));
+                            if (contactBeen != null && isFilterMySelef()) {
+                                filterMySelf(contactBeen);
+                            }
                             e.onNext(contactBeen);
                         }
                         e.onComplete();

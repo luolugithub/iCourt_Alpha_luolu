@@ -279,7 +279,7 @@ public class FileBoxDownloadActivity extends BaseActivity {
         if (fragment != null) {
             mFragTransaction.remove(fragment);
         }
-        ContactShareDialogFragment.newInstanceFile(filePath)
+        ContactShareDialogFragment.newInstanceFile(filePath,true)
                 .show(mFragTransaction, tag);
     }
 

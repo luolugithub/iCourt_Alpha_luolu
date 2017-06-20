@@ -592,7 +592,7 @@ public class ImagePagerActivity extends BaseUmengActivity implements BasePagerAd
         if (fragment != null) {
             mFragTransaction.remove(fragment);
         }
-        ContactShareDialogFragment.newInstance(id)
+        ContactShareDialogFragment.newInstance(id, true)
                 .show(mFragTransaction, tag);
     }
 

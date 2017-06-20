@@ -1364,7 +1364,7 @@ public abstract class ChatBaseActivity
         if (fragment != null) {
             mFragTransaction.remove(fragment);
         }
-        ContactShareDialogFragment.newInstance(id)
+        ContactShareDialogFragment.newInstance(id,true)
                 .show(mFragTransaction, tag);
     }
 }
