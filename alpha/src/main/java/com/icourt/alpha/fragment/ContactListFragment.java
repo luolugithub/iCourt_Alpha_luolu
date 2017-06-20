@@ -130,8 +130,8 @@ public class ContactListFragment extends BaseFragment implements BaseRecyclerAda
 
 
         mDecoration = new SuspensionDecoration(getActivity(), null);
-        mDecoration.setColorTitleBg(0xFFf4f4f4);
-        mDecoration.setColorTitleFont(0xFF4a4a4a);
+        mDecoration.setColorTitleBg(0xFFF3F3F3);
+        mDecoration.setColorTitleFont(0xFFa6a6a6);
         mDecoration.setTitleFontSize(DensityUtil.sp2px(getContext(), 16));
         mDecoration.setHeaderViewCount(headerFooterAdapter.getHeaderCount());
         recyclerView.addItemDecoration(mDecoration);

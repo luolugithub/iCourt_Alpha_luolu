@@ -30,7 +30,7 @@ public class TaskUsersAdapter extends BaseArrayRecyclerAdapter<TaskEntity.TaskIt
 
         if (getItemCount() > 2) {
             if (position == 0) {
-                TextDrawable textDrawable = TextDrawable.builder().buildRound(String.valueOf(getData().size()), 0xFF8c8f92);
+                TextDrawable textDrawable = TextDrawable.builder().beginConfig().textColor(0xFFcacaca).fontSize(DensityUtil.sp2px(imageView.getContext(),13)).endConfig().buildRound(String.valueOf(getData().size()), 0xFFf8f8f9);
                 imageView.setImageDrawable(textDrawable);
                 setChildViewParams(holder, DensityUtil.dip2px(imageView.getContext(), -8));
             } else {
