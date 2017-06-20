@@ -7,7 +7,7 @@
 
     <include layout="@layout/layout_title_type_3" />
 
-    <LinearLayout
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
@@ -17,9 +17,9 @@
         android:paddingLeft="10dp"
         android:paddingRight="10dp">
 
-        <EditText
+        <com.icourt.alpha.view.ClearEditText
             android:id="@+id/value_input_et"
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:background="@null"
@@ -30,12 +30,14 @@
             android:paddingTop="12dp"
             android:singleLine="true" />
 
-        <ImageView
-            android:id="@+id/value_input_clear_iv"
+        <TextView
+            android:id="@+id/value_input_limit"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:padding="10dp"
-            android:src="@mipmap/icon_close"
-            android:tint="@android:color/black" />
-    </LinearLayout>
+            android:layout_gravity="bottom|right"
+            android:layout_margin="5dp"
+            android:text="0／140"
+            android:textSize="@dimen/alpha_font_size_mini_lowest" />
+
+    </FrameLayout>
 </LinearLayout>

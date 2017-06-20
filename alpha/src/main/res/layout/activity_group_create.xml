@@ -31,7 +31,7 @@
             android:background="@null"
             android:gravity="top"
             android:hint="讨论目标 (可选)"
-            android:maxLength="400"
+            android:maxLength="140"
             android:maxLines="5"
             android:minLines="3"
             android:textColor="@color/alpha_font_color_black"
