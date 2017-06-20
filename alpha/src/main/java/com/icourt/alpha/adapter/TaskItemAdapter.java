@@ -65,18 +65,27 @@ public class TaskItemAdapter extends BaseArrayRecyclerAdapter<TaskEntity.TaskIte
             }
         }
         if (timeView != null) {
-            if (taskItemEntity.dueTime > 0) {
-                timeView.setVisibility(View.VISIBLE);
-                timeView.setText(DateUtils.get23Hour59MinFormat(taskItemEntity.dueTime));
-                if (taskItemEntity.dueTime < DateUtils.millis()) {
-                    timeView.setTextColor(Color.parseColor("#FF0000"));
-                    timeView.setCompoundDrawablesWithIntrinsicBounds(R.mipmap.ic_fail, 0, 0, 0);
+            if (taskItemEntity.state) {
+                if (taskItemEntity.updateTime > 0) {
+                    timeView.setVisibility(View.VISIBLE);
+                    timeView.setText(DateUtils.get23Hour59MinFormat(taskItemEntity.updateTime));
                 } else {
-                    timeView.setTextColor(Color.parseColor("#FF8c8f92"));
-                    timeView.setCompoundDrawablesWithIntrinsicBounds(R.mipmap.task_time_icon, 0, 0, 0);
+                    timeView.setVisibility(View.GONE);
                 }
             } else {
-                timeView.setVisibility(View.GONE);
+                if (taskItemEntity.dueTime > 0) {
+                    timeView.setVisibility(View.VISIBLE);
+                    timeView.setText(DateUtils.get23Hour59MinFormat(taskItemEntity.dueTime));
+                    if (taskItemEntity.dueTime < DateUtils.millis()) {
+                        timeView.setTextColor(Color.parseColor("#FF0000"));
+                        timeView.setCompoundDrawablesWithIntrinsicBounds(R.mipmap.ic_fail, 0, 0, 0);
+                    } else {
+                        timeView.setTextColor(Color.parseColor("#FF8c8f92"));
+                        timeView.setCompoundDrawablesWithIntrinsicBounds(R.mipmap.task_time_icon, 0, 0, 0);
+                    }
+                } else {
+                    timeView.setVisibility(View.GONE);
+                }
             }
         }
         if (checkListView != null) {

@@ -3,6 +3,7 @@ package com.icourt.alpha.adapter;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.graphics.Color;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -365,13 +366,37 @@ public class TaskAdapter extends BaseArrayRecyclerAdapter<TaskEntity>
      * @param state
      * @param checkbox
      */
-    private void updateTask(TaskEntity.TaskItemEntity itemEntity, final boolean state, final CheckBox checkbox) {
+    private void updateTask(final TaskEntity.TaskItemEntity itemEntity, final boolean state, final CheckBox checkbox) {
         showLoadingDialog(checkbox.getContext(), null);
         getApi().taskUpdate(RequestUtils.createJsonBody(getTaskJson(itemEntity, state))).enqueue(new SimpleCallBack<JsonElement>() {
             @Override
             public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
                 dismissLoadingDialog();
                 checkbox.setChecked(state);
+                View view = (View) checkbox.getParent();
+                if (view != null) {
+                    TextView timeView = (TextView) view.findViewById(R.id.task_time_tv);
+                    if (state) {
+                        timeView.setTextColor(Color.parseColor("#FF8c8f92"));
+                        timeView.setCompoundDrawablesWithIntrinsicBounds(R.mipmap.task_time_icon, 0, 0, 0);
+                        timeView.setVisibility(View.VISIBLE);
+                        timeView.setText(DateUtils.get23Hour59MinFormat(DateUtils.millis()));
+                    } else {
+                        if (itemEntity.dueTime > 0) {
+                            timeView.setVisibility(View.VISIBLE);
+                            timeView.setText(DateUtils.get23Hour59MinFormat(itemEntity.dueTime));
+                            if (itemEntity.dueTime < DateUtils.millis()) {
+                                timeView.setTextColor(Color.parseColor("#FF0000"));
+                                timeView.setCompoundDrawablesWithIntrinsicBounds(R.mipmap.ic_fail, 0, 0, 0);
+                            } else {
+                                timeView.setTextColor(Color.parseColor("#FF8c8f92"));
+                                timeView.setCompoundDrawablesWithIntrinsicBounds(R.mipmap.task_time_icon, 0, 0, 0);
+                            }
+                        } else {
+                            timeView.setVisibility(View.GONE);
+                        }
+                    }
+                }
             }
 
             @Override

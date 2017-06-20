@@ -4,6 +4,7 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -34,6 +35,7 @@ import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.ActionConstants;
 import com.icourt.alpha.utils.DateUtils;
+import com.icourt.alpha.utils.LoginInfoUtils;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 import com.icourt.alpha.widget.manager.TimerManager;
 import com.icourt.api.RequestUtils;
@@ -266,14 +268,22 @@ public class MyFinishTaskActivity extends BaseActivity implements BaseRecyclerAd
         TimeEntity.ItemEntity itemEntity = new TimeEntity.ItemEntity();
         if (taskItemEntity != null) {
             itemEntity.taskPkId = taskItemEntity.id;
+            itemEntity.taskName = taskItemEntity.name;
             itemEntity.name = taskItemEntity.name;
             itemEntity.workDate = DateUtils.millis();
             itemEntity.createUserId = getLoginUserId();
-            itemEntity.username = getLoginUserInfo().getName();
+            if (LoginInfoUtils.getLoginUserInfo() != null) {
+                itemEntity.username = LoginInfoUtils.getLoginUserInfo().getName();
+            }
             itemEntity.startTime = DateUtils.millis();
             if (taskItemEntity.matter != null) {
                 itemEntity.matterPkId = taskItemEntity.matter.id;
+                itemEntity.matterName = taskItemEntity.matter.name;
             }
+//            if (taskItemEntity.parentFlow != null) {
+//                itemEntity.workTypeName = taskItemEntity.parentFlow.name;
+//                itemEntity.workTypeId = taskItemEntity.parentFlow.id;
+//            }
         }
         return itemEntity;
     }
@@ -324,6 +334,30 @@ public class MyFinishTaskActivity extends BaseActivity implements BaseRecyclerAd
             public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
                 dismissLoadingDialog();
                 checkbox.setChecked(state);
+                View view = (View) checkbox.getParent();
+                if (view != null) {
+                    TextView timeView = (TextView) view.findViewById(R.id.task_time_tv);
+                    if (state) {
+                        timeView.setTextColor(Color.parseColor("#FF8c8f92"));
+                        timeView.setCompoundDrawablesWithIntrinsicBounds(R.mipmap.task_time_icon, 0, 0, 0);
+                        timeView.setVisibility(View.VISIBLE);
+                        timeView.setText(DateUtils.get23Hour59MinFormat(DateUtils.millis()));
+                    } else {
+                        if (itemEntity.dueTime > 0) {
+                            timeView.setVisibility(View.VISIBLE);
+                            timeView.setText(DateUtils.get23Hour59MinFormat(itemEntity.dueTime));
+                            if (itemEntity.dueTime < DateUtils.millis()) {
+                                timeView.setTextColor(Color.parseColor("#FF0000"));
+                                timeView.setCompoundDrawablesWithIntrinsicBounds(R.mipmap.ic_fail, 0, 0, 0);
+                            } else {
+                                timeView.setTextColor(Color.parseColor("#FF8c8f92"));
+                                timeView.setCompoundDrawablesWithIntrinsicBounds(R.mipmap.task_time_icon, 0, 0, 0);
+                            }
+                        } else {
+                            timeView.setVisibility(View.GONE);
+                        }
+                    }
+                }
             }
 
             @Override
@@ -347,6 +381,7 @@ public class MyFinishTaskActivity extends BaseActivity implements BaseRecyclerAd
             itemEntity.state = state;
             JsonObject jsonObject = new JsonObject();
             jsonObject.addProperty("id", itemEntity.id);
+            jsonObject.addProperty("name", itemEntity.name);
             jsonObject.addProperty("state", itemEntity.state);
             jsonObject.addProperty("valid", true);
             jsonObject.addProperty("updateTime", DateUtils.millis());

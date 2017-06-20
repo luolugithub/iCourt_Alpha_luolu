@@ -33,6 +33,7 @@ public class TaskEntity implements Serializable {
         public String description;//任务描述
         public boolean state;//是否完成
         public long dueTime;//到期时间
+        public long updateTime;//更新时间
         public long timingSum;//总计时
         public long assignTime;//任务分配时间
         public long createTime;//任务创建时间
