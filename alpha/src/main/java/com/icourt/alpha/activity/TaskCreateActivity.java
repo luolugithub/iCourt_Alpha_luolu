@@ -254,6 +254,20 @@ public class TaskCreateActivity extends BaseActivity implements ProjectSelectDia
             projectNameTv.setText(projectEntity.name);
             projectId = projectEntity.pkId;
             taskGroupLayout.setVisibility(View.VISIBLE);
+            if (taskGroupEntity != null) {
+                taskGroupNameTv.setText(taskGroupEntity.name);
+                taskGroupId = taskGroupEntity.id;
+            } else {
+                taskGroupNameTv.setText("");
+                taskGroupNameTv.setHint("选择任务组");
+                taskGroupId = null;
+            }
+            if (attendeeUserEntities != null) {
+                attendeeUserEntities.clear();
+                if (usersAdapter != null) {
+                    usersAdapter.clearData();
+                }
+            }
         }
         if (taskGroupEntity != null) {
             taskGroupNameTv.setText(taskGroupEntity.name);

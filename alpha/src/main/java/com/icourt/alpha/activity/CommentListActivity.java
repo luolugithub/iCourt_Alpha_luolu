@@ -36,6 +36,7 @@ import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.ActionConstants;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.ItemDecorationUtils;
+import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.view.SoftKeyboardSizeWatchLayout;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
@@ -252,11 +253,8 @@ public class CommentListActivity extends BaseActivity implements BaseRecyclerAda
     private void sendComment() {
         if (taskItemEntity == null) return;
         String content = commentEdit.getText().toString();
-        if (!TextUtils.isEmpty(content)) {
-            content = content.replace(" ", "");
-            content = content.replace("\n", "");
-        }
-        if (TextUtils.isEmpty(content)) {
+
+        if (StringUtils.isEmpty(content)) {
             showTopSnackBar("请输入评论内容");
             commentEdit.setText("");
             return;

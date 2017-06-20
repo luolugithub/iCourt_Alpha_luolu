@@ -256,6 +256,7 @@ public class SearchProjectActivity extends BaseActivity implements BaseRecyclerA
      * 搜索项目
      */
     private void searchProject(String keyword) {
+        searchProjectType = 0;
         getApi().projectQueryByName(keyword, searchProjectType).enqueue(new SimpleCallBack<List<ProjectEntity>>() {
             @Override
             public void onSuccess(Call<ResEntity<List<ProjectEntity>>> call, Response<ResEntity<List<ProjectEntity>>> response) {
