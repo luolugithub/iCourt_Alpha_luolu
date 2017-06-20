@@ -6,6 +6,8 @@ import android.widget.ImageView;
 import com.icourt.alpha.constants.Const;
 import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.icourt.alpha.entity.bean.IMMessageCustomBody;
+import com.icourt.alpha.entity.bean.IMMessageCustomBody_v1;
+import com.icourt.alpha.entity.bean.IMMessageExtBody;
 import com.icourt.alpha.entity.bean.IMSessionEntity;
 import com.icourt.alpha.view.TextDrawable;
 import com.netease.nimlib.sdk.NIMClient;
@@ -334,6 +336,13 @@ public class IMUtils {
         //v1 没有platform
         if (TextUtils.isEmpty(customIMBody.platform)) {
             customIMBody.send_time = recentContact.getTime();
+            customIMBody.msg_statu = Const.MSG_STATU_SUCCESS;
+            IMMessageCustomBody_v1 imMessageCustomBody_v1 = null;
+            try {
+                imMessageCustomBody_v1 = JsonUtils.Gson2Bean(recentContact.getContent(), IMMessageCustomBody_v1.class);
+            } catch (Throwable e) {
+                e.printStackTrace();
+            }
             switch (recentContact.getSessionType()) {
                 case P2P:
                     customIMBody.ope = Const.CHAT_TYPE_P2P;
@@ -346,8 +355,19 @@ public class IMUtils {
                     customIMBody.to = recentContact.getContactId();
                     break;
             }
-            customIMBody.msg_statu = Const.MSG_STATU_SUCCESS;
-            // customIMBody.to=re
+            if (imMessageCustomBody_v1 == null) return;
+            customIMBody.name = imMessageCustomBody_v1.name;
+            switch (customIMBody.show_type) {
+                case MSG_TYPE_DING:
+                    customIMBody.ext = IMMessageExtBody.createDingExtBody(imMessageCustomBody_v1.isPining == 1, 0);
+                    customIMBody.content = imMessageCustomBody_v1.isPining == 1 ? "钉了一条消息" : "取消钉了一条消息";
+                    break;
+                case MSG_TYPE_AT:
+                    customIMBody.ext = IMMessageExtBody.createAtExtBody(null, imMessageCustomBody_v1.atAll == 1);
+                    break;
+                case MSG_TYPE_SYS:
+                    break;
+            }
         }
     }
 
