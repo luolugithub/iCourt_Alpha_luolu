@@ -218,10 +218,10 @@ public class SelectLiaisonActivity extends BaseActivity implements BaseRecyclerA
                     }
                 }
             }
-            for (int i = list.size(); i > 0; i--) {
+            for (int i = list.size() - 1; i > 0; i--) {
                 for (CustomerEntity customerEntity : liaisonsList) {
-                    if (TextUtils.equals(list.get(i - 1).pkid, customerEntity.pkid)) {
-                        list.remove(i - 1);
+                    if (TextUtils.equals(list.get(i).pkid, customerEntity.pkid)) {
+                        list.remove(i);
                     }
                 }
             }

@@ -156,7 +156,7 @@ public class TabTimingFragment extends BaseFragment implements BaseRecyclerAdapt
         refreshLayout.setCustomFooterView(customerXRefreshViewFooter);
 
         customerXRefreshViewHeader = new CustomerXRefreshViewHeader(getContext());
-        customerXRefreshViewHeader.setPadding(0, dp20, 0, dp20);
+        customerXRefreshViewHeader.setPadding(0, dp20, 0, 0);
         customerXRefreshViewHeader.setHeaderRefreshTitle("加载后一周");
         refreshLayout.setCustomHeaderView(customerXRefreshViewHeader);
 
