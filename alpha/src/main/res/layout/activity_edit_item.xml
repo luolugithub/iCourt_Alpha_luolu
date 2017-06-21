@@ -24,6 +24,7 @@
             android:layout_weight="1"
             android:background="@null"
             android:maxLines="1"
+            android:gravity="top"
             android:paddingBottom="12dp"
             android:paddingLeft="5dp"
             android:paddingRight="5dp"

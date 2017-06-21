@@ -31,7 +31,8 @@ import butterknife.ButterKnife;
 public class EditItemActivity extends BaseActivity {
     private static final String KEY_TITLE = "key_title";
     private static final String KEY_DEFAULT_VALUE = "key_value";
-    private static final String KEY_INPUT_LINE_NUM = "key_input_line_num";
+    private static final String KEY_INPUT_MINI_LINE_NUM = "key_input_mini_line_num";
+    private static final String KEY_INPUT_MAX_LINE_NUM = "key_input_max_line_num";
     private static final String KEY_IS_SHOW_LIMIT_NUM = " key_is_show_limit_num";
     private static final String KEY_LIMIT_NUM = "key_limit_num";
     @BindView(R.id.titleBack)
@@ -57,28 +58,31 @@ public class EditItemActivity extends BaseActivity {
 
     /**
      * @param context
-     * @param title
-     * @param defaultValue   输入框的默认文案
+     * @param title            页面标题
+     * @param defaultValue     输入框的默认文案
      * @param reqCode
-     * @param inputLineNum   默认展示几行
-     * @param isShowLimitNum //是否展示s数字显示提示
-     * @param limitNum       数字限制长度
+     * @param inputMiniLineNum 默认最小展示行数
+     * @param inputMaxLineNum  默认展示几行
+     * @param isShowLimitNum   是否展示数字显示提示
+     * @param limitNum         数字限制长度
      */
     public static void launchForResult(@NonNull Activity context,
                                        @NonNull String title,
                                        @Nullable String defaultValue,
                                        int reqCode,
-                                       int inputLineNum,
+                                       int inputMiniLineNum,
+                                       int inputMaxLineNum,
                                        boolean isShowLimitNum,
                                        int limitNum) {
         if (context == null) return;
         if (TextUtils.isEmpty(title)) return;
-        if (inputLineNum < 0) return;
+        if (inputMaxLineNum < 0) return;
         if (limitNum < 0) return;
         Intent intent = new Intent(context, EditItemActivity.class);
         intent.putExtra(KEY_TITLE, title);
         intent.putExtra(KEY_DEFAULT_VALUE, defaultValue);
-        intent.putExtra(KEY_INPUT_LINE_NUM, inputLineNum);
+        intent.putExtra(KEY_INPUT_MINI_LINE_NUM, inputMiniLineNum);
+        intent.putExtra(KEY_INPUT_MAX_LINE_NUM, inputMaxLineNum);
         intent.putExtra(KEY_IS_SHOW_LIMIT_NUM, isShowLimitNum);
         intent.putExtra(KEY_LIMIT_NUM, limitNum);
         context.startActivityForResult(intent, reqCode);
@@ -98,11 +102,12 @@ public class EditItemActivity extends BaseActivity {
         if (titleActionTextView != null) {
             titleActionTextView.setText("确定");
         }
-        if (getIntent().getIntExtra(KEY_INPUT_LINE_NUM, 1) <= 1) {
+        if (getIntent().getIntExtra(KEY_INPUT_MAX_LINE_NUM, 1) <= 1) {
             valueInputEt.setSingleLine(true);
         } else {
             valueInputEt.setSingleLine(false);
-            valueInputEt.setMaxLines(getIntent().getIntExtra(KEY_INPUT_LINE_NUM, 1));
+            valueInputEt.setMinLines(getIntent().getIntExtra(KEY_INPUT_MINI_LINE_NUM, 1));
+            valueInputEt.setMaxLines(getIntent().getIntExtra(KEY_INPUT_MAX_LINE_NUM, 1));
         }
 
         valueInputLimit.setVisibility(isShowLimitNum ? View.VISIBLE : View.GONE);

@@ -20,7 +20,7 @@
             android:background="@null"
             android:hint="讨论组名称"
             android:maxLength="50"
-            android:singleLine="true"
+            android:maxLines="3"
             android:textColor="@color/alpha_font_color_black"
             android:textSize="22dp" />
 

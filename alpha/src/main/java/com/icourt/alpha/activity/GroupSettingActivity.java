@@ -142,8 +142,9 @@ public class GroupSettingActivity extends BaseActivity {
                         "讨论组名称",
                         getTextString(groupNameTv, ""),
                         CODE_REQUEST_NAME,
-                        1,
-                        false,
+                        3,
+                        3,
+                        true,
                         50);
                 break;
             case R.id.group_desc_ll:
@@ -151,7 +152,8 @@ public class GroupSettingActivity extends BaseActivity {
                         "讨论组目标",
                         getTextString(groupDescTv, ""),
                         CODE_REQUEST_DESC,
-                        5,
+                        3,
+                        10,
                         true,
                         140);
                 break;
