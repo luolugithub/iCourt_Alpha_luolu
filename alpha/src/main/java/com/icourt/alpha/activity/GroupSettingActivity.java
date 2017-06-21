@@ -144,7 +144,7 @@ public class GroupSettingActivity extends BaseActivity {
                         CODE_REQUEST_NAME,
                         1,
                         false,
-                        20);
+                        50);
                 break;
             case R.id.group_desc_ll:
                 EditItemActivity.launchForResult(getActivity(),
@@ -160,11 +160,11 @@ public class GroupSettingActivity extends BaseActivity {
                     showTopSnackBar("讨论组名称为空");
                     return;
                 }
-                if (getTextString(groupNameTv, "").length() < 2) {
+                if (getTextString(groupNameTv, "").length() < 1) {
                     showTopSnackBar("讨论组名称太短");
                     return;
                 }
-                if (getTextString(groupNameTv, "").length() > 20) {
+                if (getTextString(groupNameTv, "").length() > 50) {
                     showTopSnackBar("讨论组名称太长");
                     return;
                 }
