@@ -2,28 +2,41 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="horizontal"
-    android:padding="@dimen/dp15">
+    android:orientation="vertical">
 
-    <CheckedTextView
-        android:id="@+id/check_item_checktext_tv"
-        android:layout_width="20dp"
-        android:layout_height="20dp"
-        android:background="@drawable/son_task_checkbox_selector_bg" />
-
-    <TextView
-        android:id="@+id/check_item_name_tv"
-        android:layout_width="0dp"
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="12dp"
-        android:layout_weight="1"
-        android:textColor="@color/alpha_font_color_black"
-        android:textSize="15sp" />
+        android:orientation="horizontal"
+        android:padding="@dimen/dp15">
 
-    <ImageView
-        android:id="@+id/check_item_delete_image"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:padding="@dimen/dp5"
-        android:src="@mipmap/icon_close_14" />
+        <CheckedTextView
+            android:id="@+id/check_item_checktext_tv"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:background="@drawable/son_task_checkbox_selector_bg" />
+
+        <TextView
+            android:id="@+id/check_item_name_tv"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="12dp"
+            android:layout_weight="1"
+            android:text="1111"
+            android:textColor="@color/alpha_font_color_black"
+            android:textSize="15sp" />
+
+        <ImageView
+            android:id="@+id/check_item_delete_image"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="@dimen/dp5"
+            android:src="@mipmap/icon_close_14" />
+    </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/alpha_height_divider"
+        android:layout_marginLeft="48dp"
+        android:background="#e9e9e9" />
 </LinearLayout>

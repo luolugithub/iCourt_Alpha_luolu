@@ -30,7 +30,6 @@ import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.interfaces.OnUpdateTaskListener;
 import com.icourt.alpha.utils.DateUtils;
-import com.icourt.alpha.utils.ItemDecorationUtils;
 import com.icourt.alpha.utils.LogUtils;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.widget.dialog.BottomActionDialog;
@@ -122,7 +121,7 @@ public class TaskAttachmentFragment extends BaseFragment implements BaseRecycler
         hasPermission = getArguments().getBoolean(KEY_HAS_PERMISSION);
         recyclerview.setNestedScrollingEnabled(false);
         recyclerview.setLayoutManager(new LinearLayoutManager(getContext()));
-        recyclerview.addItemDecoration(ItemDecorationUtils.getCommFull05Divider(getContext(), true, R.color.alpha_divider_color));
+//        recyclerview.addItemDecoration(ItemDecorationUtils.getCommFull05Divider(getContext(), true, R.color.alpha_divider_color));
         recyclerview.setAdapter(taskAttachmentAdapter = new TaskAttachmentAdapter());
         taskAttachmentAdapter.setOnItemClickListener(this);
         taskAttachmentAdapter.setOnItemLongClickListener(this);

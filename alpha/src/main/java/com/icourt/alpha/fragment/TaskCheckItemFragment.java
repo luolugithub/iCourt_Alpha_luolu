@@ -31,7 +31,6 @@ import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.interfaces.OnUpdateTaskListener;
-import com.icourt.alpha.utils.ItemDecorationUtils;
 import com.icourt.api.RequestUtils;
 
 import org.greenrobot.eventbus.EventBus;
@@ -115,7 +114,7 @@ public class TaskCheckItemFragment extends BaseFragment implements BaseRecyclerA
         recyclerview.setNestedScrollingEnabled(false);
         recyclerview.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerview.setAdapter(taskCheckItemAdapter = new TaskCheckItemAdapter());
-        recyclerview.addItemDecoration(ItemDecorationUtils.getCommFull05Divider(getContext(), true, R.color.alpha_divider_color));
+//        recyclerview.addItemDecoration(ItemDecorationUtils.getCommFull05Divider(getContext(), true, R.color.alpha_divider_color));
         getData(false);
         if (hasPermission) {
             addItemLayout.setVisibility(View.VISIBLE);

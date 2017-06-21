@@ -198,7 +198,7 @@ public class ChatMsgClassfyActivity extends BaseActivity implements BaseRecycler
         }
         refreshLayout.setMoveForHorizontal(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        recyclerView.addItemDecoration(ItemDecorationUtils.getCommFullDivider(getContext(), false));
+        recyclerView.addItemDecoration(ItemDecorationUtils.getCommFull10Divider(getContext(), false));
         recyclerView.setHasFixedSize(true);
         recyclerView.setAdapter(imUserMessageAdapter = new ImUserMessageAdapter(localContactList));
         imUserMessageAdapter.registerAdapterDataObserver(new RefreshViewEmptyObserver(refreshLayout, imUserMessageAdapter));

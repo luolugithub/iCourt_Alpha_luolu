@@ -32,6 +32,7 @@ import com.icourt.alpha.utils.DensityUtil;
 import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.view.CustomerXRefreshViewFooter;
+import com.icourt.alpha.view.CustomerXRefreshViewHeader;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 import com.icourt.alpha.widget.manager.TimerManager;
 
@@ -131,6 +132,7 @@ public class TabTimingFragment extends BaseFragment implements BaseRecyclerAdapt
     private final List<TimingCountEntity> timingCountEntities = new ArrayList<>();
     int pageIndex = 0;
     CustomerXRefreshViewFooter customerXRefreshViewFooter;
+    CustomerXRefreshViewHeader customerXRefreshViewHeader;
 
     @Override
     protected void initView() {
@@ -152,6 +154,12 @@ public class TabTimingFragment extends BaseFragment implements BaseRecyclerAdapt
         customerXRefreshViewFooter.setPadding(0, dp20, 0, dp20);
         customerXRefreshViewFooter.setFooterLoadmoreTitle("加载前一周");
         refreshLayout.setCustomFooterView(customerXRefreshViewFooter);
+
+        customerXRefreshViewHeader = new CustomerXRefreshViewHeader(getContext());
+        customerXRefreshViewHeader.setPadding(0, dp20, 0, dp20);
+        customerXRefreshViewHeader.setHeaderRefreshTitle("加载后一周");
+        refreshLayout.setCustomHeaderView(customerXRefreshViewHeader);
+
         //refreshLayout.setNoticeEmpty(R.mipmap.icon_placeholder_timing, "暂无计时");
         timeAdapter.registerAdapterDataObserver(new DataChangeAdapterObserver() {
             @Override
@@ -197,28 +205,49 @@ public class TabTimingFragment extends BaseFragment implements BaseRecyclerAdapt
     @Override
     protected void getData(final boolean isRefresh) {
         super.getData(isRefresh);
+        long dividerTime = (pageIndex * weekMillSecond);
         if (isRefresh) {
             TimerManager.getInstance().timerQuerySync();
+            long headerWeekStartTimeMillSecond = DateUtils.getCurrWeekStartTime() + dividerTime;
+            long headerWeekEndTimeMillSecond = DateUtils.getCurrWeekEndTime() + dividerTime;
+
+            String headerWeekStartTime = getFromatTime(headerWeekStartTimeMillSecond);
+            String headerWeekEndTime = getFromatTime(headerWeekEndTimeMillSecond);
+
+            String weekStart = DateUtils.getMMMdd(headerWeekStartTimeMillSecond);
+            String weekEnd = DateUtils.getMMMdd(headerWeekEndTimeMillSecond);
+            timingDateTitle.setText(String.format("%s-%s", weekStart, weekEnd));
+
+            //header设置
+            String headerLastWeekStart = DateUtils.getMMMdd(headerWeekStartTimeMillSecond + weekMillSecond);
+            String headerLastWeekEnd = DateUtils.getMMMdd(headerWeekEndTimeMillSecond + weekMillSecond);
+            customerXRefreshViewHeader.setHeaderRefreshDesc(String.format("%s-%s", headerLastWeekStart, headerLastWeekEnd));
+
+            getWeekTimingCount(headerWeekStartTime, headerWeekEndTime);
+
+            timingListQueryByTime(headerWeekStartTime, headerWeekEndTime);
+        } else {
+
+            long footerWeekStartTimeMillSecond = DateUtils.getCurrWeekStartTime() - dividerTime;
+            long footerWeekEndTimeMillSecond = DateUtils.getCurrWeekEndTime() - dividerTime;
+
+            String footerWeekStartTime = getFromatTime(footerWeekStartTimeMillSecond);
+            String footerWeekEndTime = getFromatTime(footerWeekEndTimeMillSecond);
+
+            String weekStart = DateUtils.getMMMdd(footerWeekStartTimeMillSecond);
+            String weekEnd = DateUtils.getMMMdd(footerWeekEndTimeMillSecond);
+            timingDateTitle.setText(String.format("%s-%s", weekStart, weekEnd));
+
+
+            //footer设置
+            String lastWeekStart = DateUtils.getMMMdd(footerWeekStartTimeMillSecond - weekMillSecond);
+            String lastWeekEnd = DateUtils.getMMMdd(footerWeekEndTimeMillSecond - weekMillSecond);
+            customerXRefreshViewFooter.setFooterLoadmoreDesc(String.format("%s-%s", lastWeekStart, lastWeekEnd));
+            getWeekTimingCount(footerWeekStartTime, footerWeekEndTime);
+
+            timingListQueryByTime(footerWeekStartTime, footerWeekEndTime);
         }
-        long dividerTime = (pageIndex * weekMillSecond);
-        long weekStartTimeMillSecond = DateUtils.getCurrWeekStartTime() - dividerTime;
-        long weekEndTimeMillSecond = DateUtils.getCurrWeekEndTime() - dividerTime;
 
-        String weekStartTime = getFromatTime(weekStartTimeMillSecond);
-        String weekEndTime = getFromatTime(weekEndTimeMillSecond);
-
-        String weekStart = DateUtils.getMMMdd(weekStartTimeMillSecond);
-        String weekEnd = DateUtils.getMMMdd(weekEndTimeMillSecond);
-        timingDateTitle.setText(String.format("%s-%s", weekStart, weekEnd));
-
-        //footer设置
-        String lastWeekStart = DateUtils.getMMMdd(weekStartTimeMillSecond - weekMillSecond);
-        String lastWeekEnd = DateUtils.getMMMdd(weekEndTimeMillSecond - weekMillSecond);
-        customerXRefreshViewFooter.setFooterLoadmoreDesc(String.format("%s-%s", lastWeekStart, lastWeekEnd));
-
-        getWeekTimingCount(weekStartTime, weekEndTime);
-
-        timingListQueryByTime(weekStartTime, weekEndTime);
     }
 
 

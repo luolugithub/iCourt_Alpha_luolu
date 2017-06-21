@@ -4,6 +4,7 @@
     android:layout_height="wrap_content"
     android:gravity="center_vertical"
     android:orientation="vertical"
+    android:background="?android:attr/selectableItemBackground"
     android:padding="10dp">
 
     <include layout="@layout/adapter_item_file_user" />

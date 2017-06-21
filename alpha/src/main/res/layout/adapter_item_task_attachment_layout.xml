@@ -2,48 +2,60 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="horizontal"
-    android:padding="@dimen/dp15">
+    android:orientation="vertical">
 
-    <ImageView
-        android:id="@+id/task_file_icon"
-        android:layout_width="36dp"
-        android:layout_height="36dp" />
-
-    <LinearLayout
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="@dimen/dp10"
-        android:orientation="vertical">
+        android:orientation="horizontal"
+        android:padding="@dimen/dp15">
 
-        <TextView
-            android:id="@+id/task_file_name_tv"
+        <ImageView
+            android:id="@+id/task_file_icon"
+            android:layout_width="36dp"
+            android:layout_height="36dp" />
+
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:ellipsize="end"
-            android:maxLines="1"
-            android:textColor="@color/alpha_font_color_black"
-            android:textSize="15sp" />
-
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:layout_marginLeft="@dimen/dp10"
+            android:orientation="vertical">
 
             <TextView
-                android:id="@+id/task_file_user_tv"
-                android:layout_width="wrap_content"
+                android:id="@+id/task_file_name_tv"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textColor="@color/alpha_font_color_gray"
-                android:textSize="13sp" />
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:textColor="@color/alpha_font_color_black"
+                android:textSize="15sp" />
 
-            <TextView
-                android:id="@+id/task_file_size_tv"
-                android:layout_width="wrap_content"
+            <RelativeLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_alignParentRight="true"
-                android:textColor="@color/alpha_font_color_gray"
-                android:textSize="13sp" />
-        </RelativeLayout>
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/task_file_user_tv"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/alpha_font_color_gray"
+                    android:textSize="13sp" />
+
+                <TextView
+                    android:id="@+id/task_file_size_tv"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentRight="true"
+                    android:textColor="@color/alpha_font_color_gray"
+                    android:textSize="13sp" />
+            </RelativeLayout>
+        </LinearLayout>
     </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/alpha_height_divider"
+        android:layout_marginLeft="60dp"
+        android:background="#e9e9e9" />
 </LinearLayout>

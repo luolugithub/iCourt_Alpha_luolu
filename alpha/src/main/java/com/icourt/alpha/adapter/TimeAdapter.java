@@ -12,6 +12,7 @@ import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.entity.bean.TimeEntity;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.GlideUtils;
+import com.icourt.alpha.utils.LoginInfoUtils;
 import com.icourt.alpha.view.recyclerviewDivider.ITimeDividerInterface;
 import com.icourt.alpha.widget.manager.TimerManager;
 
@@ -209,6 +210,12 @@ public class TimeAdapter extends BaseArrayRecyclerAdapter<TimeEntity.ItemEntity>
         TextView descView = holder.obtainView(R.id.time_item_desc_tv);
         TextView userNameView = holder.obtainView(R.id.time_item_user_name_tv);
         TextView typeView = holder.obtainView(R.id.time_item_type_tv);
+        ImageView rightArrow = holder.obtainView(R.id.time_item_right_arrow);
+        if (TextUtils.equals(timeEntity.createUserId, LoginInfoUtils.getLoginUserId())) {
+            rightArrow.setVisibility(View.VISIBLE);
+        } else {
+            rightArrow.setVisibility(View.INVISIBLE);
+        }
         durationView.setText(getHm(timeEntity.useTime));
         quantumView.setText(DateUtils.getTimeDurationDate(timeEntity.startTime) + "-" + DateUtils.getTimeDurationDate(timeEntity.endTime));
         GlideUtils.loadUser(holder.itemView.getContext(), timeEntity.userPic, photoView);

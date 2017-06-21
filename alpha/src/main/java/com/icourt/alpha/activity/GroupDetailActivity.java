@@ -265,26 +265,7 @@ public class GroupDetailActivity extends BaseActivity
                 showMemberSelectDialogFragment();
                 break;
             case R.id.group_member_arrow_iv:
-                if (groupDetailEntity == null) return;
-                if (isAdmin) {
-                    ArrayList<GroupContactBean> contactBeanArrayList = new ArrayList<>(contactAdapter.getData());
-
-                    //移除本人
-                    String loginUserId = getLoginUserId();
-                    if (!TextUtils.isEmpty(loginUserId)) {
-                        loginUserId = loginUserId.toLowerCase();
-                    }
-                    GroupContactBean contactBean = new GroupContactBean();
-                    contactBean.accid = loginUserId;
-                    contactBeanArrayList.remove(contactBean);
-                    GroupMemberDelActivity.launchForResult(getActivity(),
-                            getIntent().getStringExtra(KEY_TID),
-                            contactBeanArrayList,
-                            true, 2001);
-                } else {
-                    GroupMemberListActivity.launch(getContext(),
-                            groupDetailEntity.tid, false);
-                }
+                gotoMembersList();
                 break;
             case R.id.group_setTop_switch:
                 if (!groupSetTopSwitch.isChecked()) {
@@ -323,6 +304,32 @@ public class GroupDetailActivity extends BaseActivity
             default:
                 super.onClick(v);
                 break;
+        }
+    }
+
+    /**
+     * 到成员列表
+     */
+    private void gotoMembersList(){
+        if (groupDetailEntity == null) return;
+        if (isAdmin) {
+            ArrayList<GroupContactBean> contactBeanArrayList = new ArrayList<>(contactAdapter.getData());
+
+            //移除本人
+            String loginUserId = getLoginUserId();
+            if (!TextUtils.isEmpty(loginUserId)) {
+                loginUserId = loginUserId.toLowerCase();
+            }
+            GroupContactBean contactBean = new GroupContactBean();
+            contactBean.accid = loginUserId;
+            contactBeanArrayList.remove(contactBean);
+            GroupMemberDelActivity.launchForResult(getActivity(),
+                    getIntent().getStringExtra(KEY_TID),
+                    contactBeanArrayList,
+                    true, 2001);
+        } else {
+            GroupMemberListActivity.launch(getContext(),
+                    groupDetailEntity.tid, false);
         }
     }
 
@@ -619,7 +626,8 @@ public class GroupDetailActivity extends BaseActivity
     public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
         GroupContactBean item = contactAdapter.getItem(position);
         if (item == null) return;
-        showContactDialogFragment(item.accid, StringUtils.equalsIgnoreCase(item.accid, getLoginUserId(), false));
+//        showContactDialogFragment(item.accid, StringUtils.equalsIgnoreCase(item.accid, getLoginUserId(), false));
+        gotoMembersList();
     }
 
     /**

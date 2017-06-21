@@ -61,7 +61,7 @@ public class TaskItemAdapter extends BaseArrayRecyclerAdapter<TaskEntity.TaskIte
                         projectNameView.setText(taskItemEntity.matter.name);
                 }
             } else {
-                projectNameView.setText("");
+                projectNameView.setText("未指定所属项目");
             }
         }
         if (timeView != null) {
