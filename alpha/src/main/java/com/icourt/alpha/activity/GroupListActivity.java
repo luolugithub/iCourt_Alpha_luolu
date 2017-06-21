@@ -20,6 +20,7 @@ import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.GroupAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.HeaderFooterAdapter;
+import com.icourt.alpha.adapter.baseadapter.adapterObserver.DataChangeAdapterObserver;
 import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.entity.bean.GroupEntity;
 import com.icourt.alpha.entity.event.GroupActionEvent;
@@ -65,6 +66,8 @@ public class GroupListActivity extends BaseActivity implements BaseRecyclerAdapt
     public static final int GROUP_TYPE_TYPE_ALL = 1;
     @BindView(R.id.recyclerIndexBar)
     WaveSideBar recyclerIndexBar;
+    @BindView(R.id.contentEmptyText)
+    TextView contentEmptyText;
 
 
     @IntDef({GROUP_TYPE_MY_JOIN,
@@ -132,6 +135,15 @@ public class GroupListActivity extends BaseActivity implements BaseRecyclerAdapt
         recyclerView.setLayoutManager(linearLayoutManager);
         headerFooterAdapter = new HeaderFooterAdapter<>(groupAdapter = new GroupAdapter());
         groupAdapter.setOnItemClickListener(this);
+        groupAdapter.registerAdapterDataObserver(new DataChangeAdapterObserver() {
+            @Override
+            protected void updateUI() {
+                if (contentEmptyText != null) {
+                    contentEmptyText.setText("暂无讨论组");
+                    contentEmptyText.setVisibility(groupAdapter.getItemCount() > 0 ? View.GONE : View.VISIBLE);
+                }
+            }
+        });
         View headerView = HeaderFooterAdapter.inflaterView(getContext(), R.layout.header_search_comm, recyclerView);
         View rl_comm_search = headerView.findViewById(R.id.rl_comm_search);
         registerClick(rl_comm_search);
