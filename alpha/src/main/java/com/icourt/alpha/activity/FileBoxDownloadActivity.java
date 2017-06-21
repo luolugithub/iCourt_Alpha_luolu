@@ -279,7 +279,7 @@ public class FileBoxDownloadActivity extends BaseActivity {
         if (fragment != null) {
             mFragTransaction.remove(fragment);
         }
-        ContactShareDialogFragment.newInstanceFile(filePath,true)
+        ContactShareDialogFragment.newInstanceFile(filePath, true)
                 .show(mFragTransaction, tag);
     }
 
@@ -295,8 +295,9 @@ public class FileBoxDownloadActivity extends BaseActivity {
                     getData(true);
                 }
 
-            } else if (!TextUtils.isEmpty(authToken) && !TextUtils.isEmpty(seaFileRepoId))
+            } else if (!TextUtils.isEmpty(authToken) && !TextUtils.isEmpty(seaFileRepoId)) {
                 getData(true);
+            }
 
         } else {
             reqPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, "下载文件需要文件写入权限!", CODE_PERMISSION_FILE);
@@ -339,7 +340,18 @@ public class FileBoxDownloadActivity extends BaseActivity {
         switch (requestCode) {
             case CODE_PERMISSION_FILE:
                 if (grantResults[0] == PackageManager.PERMISSION_DENIED) {
-                    showTopSnackBar("文件写入权限被拒绝!");
+                    showToast("文件写入权限被拒绝!");
+                } else {
+                    if (TextUtils.isEmpty(authToken)) {
+                        if (action == PROJECT_DOWNLOAD_FILE_ACTION || action == TASK_DOWNLOAD_FILE_ACTION) {
+                            getFileBoxToken();
+                        } else if (action == IM_DOWNLOAD_FILE_ACTION) {
+                            getData(true);
+                        }
+
+                    } else if (!TextUtils.isEmpty(authToken) && !TextUtils.isEmpty(seaFileRepoId)) {
+                        getData(true);
+                    }
                 }
                 break;
             default:
@@ -494,6 +506,7 @@ public class FileBoxDownloadActivity extends BaseActivity {
         @Override
         protected void error(BaseDownloadTask task, Throwable e) {
             showTopSnackBar(String.format("下载异常!" + StringUtils.throwable2string(e)));
+            bugSync("下载异常", e);
         }
 
         @Override
