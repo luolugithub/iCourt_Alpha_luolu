@@ -407,7 +407,7 @@ public class ProjectEndTaskActivity extends BaseActivity implements BaseRecycler
             case TimingEvent.TIMING_UPDATE_PROGRESS:
                 TimeEntity.ItemEntity updateItem = TimerManager.getInstance().getTimer();
                 if (updateItem != null) {
-                    getChildPositon(updateItem.taskPkId);
+//                    getChildPositon(updateItem.taskPkId);
                     updateChildTimeing(updateItem.taskPkId, true);
                 }
                 break;
@@ -459,7 +459,8 @@ public class ProjectEndTaskActivity extends BaseActivity implements BaseRecycler
                     }
                 if (entity.isTiming != isTiming) {
                     entity.isTiming = isTiming;
-                    taskAdapter.updateItem(entity);
+//                    taskAdapter.updateItem(entity);
+                    taskAdapter.notifyDataSetChanged();
                     lastEntity = entity;
                 }
             }

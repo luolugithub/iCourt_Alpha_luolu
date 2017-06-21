@@ -104,7 +104,7 @@ public class MyFinishTaskActivity extends BaseActivity implements BaseRecyclerAd
         refreshLayout.setNoticeEmpty(R.mipmap.icon_placeholder_task, "暂无已完成任务");
         refreshLayout.setMoveForHorizontal(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        recyclerView.setHasFixedSize(true);
+        //recyclerView.setHasFixedSize(true);
 
         headerFooterAdapter = new HeaderFooterAdapter<>(taskItemAdapter = new TaskItemAdapter());
         View headerView = HeaderFooterAdapter.inflaterView(getContext(), R.layout.header_search_comm, recyclerView);
@@ -415,7 +415,7 @@ public class MyFinishTaskActivity extends BaseActivity implements BaseRecyclerAd
             case TimingEvent.TIMING_UPDATE_PROGRESS:
                 TimeEntity.ItemEntity updateItem = TimerManager.getInstance().getTimer();
                 if (updateItem != null) {
-                    getChildPositon(updateItem.taskPkId);
+                    //getChildPositon(updateItem.taskPkId);
                     updateChildTimeing(updateItem.taskPkId, true);
                 }
                 break;
@@ -456,22 +456,26 @@ public class MyFinishTaskActivity extends BaseActivity implements BaseRecyclerAd
      * @param taskId
      */
     private void updateChildTimeing(String taskId, boolean isTiming) {
-        int childPos = getChildPositon(taskId);
-        if (childPos >= 0) {
-            TaskEntity.TaskItemEntity entity = taskItemAdapter.getItem(childPos);
-            if (entity != null) {
-                if (lastEntity != null)
-                    if (!TextUtils.equals(entity.id, lastEntity.id)) {
-                        lastEntity.isTiming = false;
+        try {
+            int childPos = getChildPositon(taskId);
+            if (childPos >= 0) {
+                TaskEntity.TaskItemEntity entity = taskItemAdapter.getItem(childPos);
+                if (entity != null) {
+                    if (lastEntity != null)
+                        if (!TextUtils.equals(entity.id, lastEntity.id)) {
+                            lastEntity.isTiming = false;
+                            taskItemAdapter.notifyDataSetChanged();
+                        }
+                    if (entity.isTiming != isTiming) {
+                        entity.isTiming = isTiming;
                         taskItemAdapter.notifyDataSetChanged();
+                        lastEntity = entity;
                     }
-                if (entity.isTiming != isTiming) {
-                    entity.isTiming = isTiming;
-                    taskItemAdapter.updateItem(entity);
-                    lastEntity = entity;
                 }
-            }
 
+            }
+        } catch (Throwable e) {
+            e.printStackTrace();
         }
     }
 

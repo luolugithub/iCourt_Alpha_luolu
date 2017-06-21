@@ -88,7 +88,7 @@ public abstract class BaseArrayRecyclerAdapter<T> extends BaseRecyclerAdapter {
     public boolean updateItem(T t) {
         if (t == null) return false;
         int index = dataList.indexOf(t);
-        if (index >= 0) {
+        if (index >= 0 && index < dataList.size()) {
             dataList.set(index, t);
             notifyItemChanged(index);
             return true;
