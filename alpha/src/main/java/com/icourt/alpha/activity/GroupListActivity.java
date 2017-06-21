@@ -226,6 +226,7 @@ public class GroupListActivity extends BaseActivity implements BaseRecyclerAdapt
                         Collections.sort(response.body().result, new PinyinComparator<GroupEntity>());
                     } catch (Exception e) {
                         e.printStackTrace();
+                        bugSync("排序异常", e);
                     }
                     groupAdapter.bindData(true, response.body().result);
                     updateIndexBar(groupAdapter.getData());

@@ -160,8 +160,13 @@ public class TabCustomerFragment extends BaseFragment implements BaseRecyclerAda
                 ArrayList<IConvertModel<CustomerEntity>> iConvertModels = new ArrayList<IConvertModel<CustomerEntity>>(customerDbModels);
                 List<CustomerEntity> customerEntities = ListConvertor.convertList(iConvertModels);
                 IndexUtils.setSuspensions(getContext(), customerEntities);
-                if (customerEntities != null)
-                    Collections.sort(customerEntities, new PinyinComparator<CustomerEntity>());
+                try {
+                    if (customerEntities != null)
+                        Collections.sort(customerEntities, new PinyinComparator<CustomerEntity>());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    bugSync("排序异常", e);
+                }
                 customerAdapter.bindData(true, customerEntities);
                 updateIndexBar(customerEntities);
             }
@@ -178,7 +183,12 @@ public class TabCustomerFragment extends BaseFragment implements BaseRecyclerAda
                         stopRefresh();
                         if (response.body().result != null) {
                             IndexUtils.setSuspensions(getContext(), response.body().result);
-                            Collections.sort(response.body().result, new PinyinComparator<CustomerEntity>());
+                            try {
+                                Collections.sort(response.body().result, new PinyinComparator<CustomerEntity>());
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                                bugSync("排序异常", e);
+                            }
                             customerAdapter.bindData(true, response.body().result);
                             updateIndexBar(response.body().result);
                             insert2Db(response.body().result);

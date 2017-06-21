@@ -341,7 +341,12 @@ public class GroupMemberListActivity
                                 groupMembers.clear();
                                 groupMembers.addAll(contactBeanList);
                             }
-                            Collections.sort(contactBeanList, new PinyinComparator<GroupContactBean>());
+                            try {
+                                Collections.sort(contactBeanList, new PinyinComparator<GroupContactBean>());
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                                bugSync("排序异常", e);
+                            }
                             //添加@所有人
                             if (getIntent().getBooleanExtra(KEY_ADD_AT_ALL, false)) {
                                 GroupContactBean atall = new GroupContactBean() {

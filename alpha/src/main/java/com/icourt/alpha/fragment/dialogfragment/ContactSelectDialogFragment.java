@@ -228,10 +228,16 @@ public class ContactSelectDialogFragment extends BaseDialogFragment {
                 if (selectedData != null) {
                     contactBeen.removeAll(selectedData);
                 }
-                if (contactBeen != null) {
-                    IndexUtils.setSuspensions(getContext(), contactBeen);
-                    Collections.sort(contactBeen, new PinyinComparator<GroupContactBean>());
+                try {
+                    if (contactBeen != null) {
+                        IndexUtils.setSuspensions(getContext(), contactBeen);
+                        Collections.sort(contactBeen, new PinyinComparator<GroupContactBean>());
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    bugSync("排序异常", e);
                 }
+
                 imContactAdapter.clearSelected();
                 imContactAdapter.bindData(true, contactBeen);
                 setLastSelected();
@@ -286,7 +292,12 @@ public class ContactSelectDialogFragment extends BaseDialogFragment {
                         filterRobot(contactBeen);
                         if (contactBeen != null) {
                             IndexUtils.setSuspensions(getContext(), contactBeen);
-                            Collections.sort(contactBeen, new PinyinComparator<GroupContactBean>());
+                            try {
+                                Collections.sort(contactBeen, new PinyinComparator<GroupContactBean>());
+                            } catch (Exception ex) {
+                                ex.printStackTrace();
+                                bugSync("排序异常", ex);
+                            }
                         }
                     }
                 } catch (Throwable ex) {

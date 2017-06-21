@@ -192,7 +192,12 @@ public class SelectLiaisonActivity extends BaseActivity implements BaseRecyclerA
                         if (response.body().result != null) {
                             removeSelected(response.body().result);
                             IndexUtils.setSuspensions(getContext(), response.body().result);
-                            Collections.sort(response.body().result, new PinyinComparator<CustomerEntity>());
+                            try {
+                                Collections.sort(response.body().result, new PinyinComparator<CustomerEntity>());
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                                bugSync("排序异常", e);
+                            }
                             updateIndexBar(response.body().result);
                             customerAdapter.bindData(true, response.body().result);
                         }

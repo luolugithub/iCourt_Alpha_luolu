@@ -186,7 +186,12 @@ public class ContactListFragment extends BaseFragment implements BaseRecyclerAda
                 filterRobot(contactBeen);
                 filterMySelf(contactBeen);
                 IndexUtils.setSuspensions(getContext(), contactBeen);
-                Collections.sort(contactBeen, new PinyinComparator<GroupContactBean>());
+                try {
+                    Collections.sort(contactBeen, new PinyinComparator<GroupContactBean>());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    bugSync("排序异常", e);
+                }
                 imContactAdapter.bindData(true, contactBeen);
                 updateIndexBar(contactBeen);
             }
@@ -212,7 +217,12 @@ public class ContactListFragment extends BaseFragment implements BaseRecyclerAda
                             insertAsynContact(data);
                             filterRobot(data);
                             IndexUtils.setSuspensions(getContext(), data);
-                            Collections.sort(data, new PinyinComparator<GroupContactBean>());
+                            try {
+                                Collections.sort(data, new PinyinComparator<GroupContactBean>());
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                                bugSync("排序异常", e);
+                            }
                             imContactAdapter.bindData(true, data);
                             updateIndexBar(data);
                         }
