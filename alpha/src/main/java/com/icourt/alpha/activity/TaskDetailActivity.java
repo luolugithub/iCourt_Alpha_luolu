@@ -465,7 +465,10 @@ public class TaskDetailActivity extends BaseActivity
                         }
                         break;
                     case Dialog.BUTTON_NEGATIVE:
-                        taskCheckbox.setChecked(taskItemEntity.state);
+                        if (type == SHOW_FINISH_DIALOG) {
+                            if (taskCheckbox != null)
+                                taskCheckbox.setChecked(taskItemEntity.state);
+                        }
                         break;
                 }
             }

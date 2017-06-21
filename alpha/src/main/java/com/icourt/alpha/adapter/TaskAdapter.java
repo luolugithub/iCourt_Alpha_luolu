@@ -344,7 +344,10 @@ public class TaskAdapter extends BaseArrayRecyclerAdapter<TaskEntity>
                         }
                         break;
                     case Dialog.BUTTON_NEGATIVE://取消
-                        checkbox.setChecked(itemEntity.state);
+                        if (type == SHOW_FINISH_DIALOG) {
+                            if (checkbox != null)
+                                checkbox.setChecked(itemEntity.state);
+                        }
                         break;
                 }
             }
