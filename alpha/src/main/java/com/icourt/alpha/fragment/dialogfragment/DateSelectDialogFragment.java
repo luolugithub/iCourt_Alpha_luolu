@@ -22,6 +22,7 @@ import com.icourt.alpha.R;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.DensityUtil;
+import com.icourt.alpha.utils.SystemUtils;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -182,10 +183,12 @@ public class DateSelectDialogFragment extends BaseDialogFragment {
             int second = selectedCalendar.get(Calendar.SECOND);
             if (hour == 23 && minute == 59 && second == 59) {
                 duetimeTv.setText("未设置");
+                duetimeTv.setTextColor(SystemUtils.getColor(getContext(), R.color.alpha_font_color_gray));
                 clearDutimeIv.setVisibility(View.INVISIBLE);
             } else {
                 clearDutimeIv.setVisibility(View.VISIBLE);
                 duetimeTv.setText(DateUtils.getHHmm(selectedCalendar.getTimeInMillis()));
+                duetimeTv.setTextColor(SystemUtils.getColor(getContext(), R.color.alpha_font_color_black));
             }
             hourWheelView.setCurrentItem(selectedCalendar.get(Calendar.HOUR_OF_DAY));
             minuteWheelView.setCurrentItem(selectedCalendar.get(Calendar.MINUTE));
@@ -196,6 +199,7 @@ public class DateSelectDialogFragment extends BaseDialogFragment {
         } else {
             duetimeTv.setText("未设置");
             clearDutimeIv.setVisibility(View.INVISIBLE);
+            duetimeTv.setTextColor(SystemUtils.getColor(getContext(), R.color.alpha_font_color_gray));
         }
 
         //延迟显示 必须 否则默认值无效
@@ -270,6 +274,7 @@ public class DateSelectDialogFragment extends BaseDialogFragment {
                 break;
             case R.id.clear_dutime_iv:
                 duetimeTv.setText("未设置");
+                duetimeTv.setTextColor(SystemUtils.getColor(getContext(), R.color.alpha_font_color_gray));
                 clearDutimeIv.setVisibility(View.INVISIBLE);
                 selectedCalendar.set(Calendar.HOUR_OF_DAY, 23);
                 selectedCalendar.set(Calendar.MINUTE, 59);

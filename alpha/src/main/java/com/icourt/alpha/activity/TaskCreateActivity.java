@@ -219,9 +219,14 @@ public class TaskCreateActivity extends BaseActivity implements ProjectSelectDia
             mFragTransaction.remove(fragment);
         }
         Calendar calendar = Calendar.getInstance();
-        calendar.set(Calendar.HOUR_OF_DAY, 23);
-        calendar.set(Calendar.MINUTE, 59);
-        calendar.set(Calendar.SECOND, 59);
+        if (dueTime <= 0) {
+            calendar.set(Calendar.HOUR_OF_DAY, 23);
+            calendar.set(Calendar.MINUTE, 59);
+            calendar.set(Calendar.SECOND, 59);
+        } else {
+            calendar.setTimeInMillis(dueTime);
+        }
+
         //默认当天23：59
         DateSelectDialogFragment.newInstance(calendar)
                 .show(mFragTransaction, tag);
