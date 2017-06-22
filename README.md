@@ -21,4 +21,8 @@
 2. 网络"http"
 3. 性能检测StrictMode
 4. activity生命周期:  ===========>onActivityXXX() 如:===========>onActivityCreated:com.tcmopen.tcmmooc.activitys.SplashActivity
-5. fragment生命周期:  ===========>fragmentOnXXX() 如:===========>fragmentOnResume:HomePageFragment{839ccb9 #0 id=0x7f0e0190 android:switcher:2131624336:0}
+5. fragment生命周期:  ===========>fragmentOnXXX() 如:===========>fragmentOnResume:HomePageFragment{839ccb9 #0 id=0x7f0e0190 android:switcher:2131624336:0}  
+
+
+#网易云通信状态码
+  http://dev.netease.im/docs/product/%E9%80%9A%E7%94%A8/%E7%8A%B6%E6%80%81%E7%A0%81  

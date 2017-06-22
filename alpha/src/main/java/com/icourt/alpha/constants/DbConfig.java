@@ -9,6 +9,8 @@ package com.icourt.alpha.constants;
  */
 public class DbConfig {
 
+    //  * 云信状态码  http://dev.netease.im/docs?doc=nim_status_code
+
     public static final String DB_REALM_CONTACT = "db_realm_contacts_%s.realm";//联系人数据库
 
     public static final String DB_REALM_SEARCH_HISTORY = "db_realm_search_historys_%s.realm";//搜索历史数据库

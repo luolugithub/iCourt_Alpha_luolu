@@ -169,6 +169,14 @@ public class SearchWebViewFragment extends BaseFragment {
         webSettings.setJavaScriptCanOpenWindowsAutomatically(true);
         webSettings.setDatabaseEnabled(true);
         webSettings.setDomStorageEnabled(true);
+
+        webSettings.setSupportZoom(true);
+        webSettings.setUseWideViewPort(true);
+        webSettings.setBuiltInZoomControls(true);
+        webSettings.setDisplayZoomControls(false);
+        webSettings.setLayoutAlgorithm(WebSettings.LayoutAlgorithm.SINGLE_COLUMN);
+        webSettings.setLoadWithOverviewMode(true);
+
         webView.setWebViewClient(mWebViewClient);
         webView.setWebChromeClient(mWebChromeClient);
         progressLayout.setMaxProgress(100);
