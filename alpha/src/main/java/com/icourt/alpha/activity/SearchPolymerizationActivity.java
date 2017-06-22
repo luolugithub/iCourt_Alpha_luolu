@@ -368,9 +368,29 @@ public class SearchPolymerizationActivity extends BaseActivity implements BaseRe
                     if (StringUtils.containsIgnoreCase(originalText, keyWord)) {
                         textForegroundColorSpan = SpannableUtils.getTextForegroundColorSpan(originalText, keyWord, foregroundColor);
                     } else {//可能是汉字
-                        try {
+                        textForegroundColorSpan = new SpannableString(item.name);
+                       /* try {
+                            //用本地提取的 目前网络不准确
+                            item.nameCharacter = PinyinUtil.toPinyin(getContext(), item.name);
+                            String[] split = null;
+                            if (item.nameCharacter != null) {
+                                split = item.nameCharacter.split(" ");
+                                item.nameCharacter = item.nameCharacter.replaceAll(" ", "");
+                            }
+                            //阿三哥  a san ge
+                            SpannableStringBuilder ssb = new SpannableStringBuilder(item.name);
+                            if (split != null) {
+                                for (int i = 0; i < split.length; i++) {
+                                    String s = split[i];
+                                    if (StringUtils.containsIgnoreCase(s, keyWord)) {
+                                    }
+                                }
+                            }
+
+
                             int start = item.nameCharacter.indexOf(keyWord);
                             int end = start + keyWord.length();
+                            log("-------------->nameCharacter:" + item.nameCharacter + "  start:" + start + "  end:" + end + "   " + keyWord.length());
                             if (start >= 0 && end < item.name.length()) {
                                 textForegroundColorSpan = SpannableUtils.getTextForegroundColorSpan(originalText, start, end, foregroundColor);
                             } else {
@@ -379,8 +399,9 @@ public class SearchPolymerizationActivity extends BaseActivity implements BaseRe
                         } catch (Exception e) {
                             e.printStackTrace();
                             textForegroundColorSpan = SpannableUtils.getTextForegroundColorSpan(originalText, keyWord, foregroundColor);
-                        }
+                        }*/
                     }
+
                     SearchItemEntity searchItemEntity = new SearchItemEntity(textForegroundColorSpan, null, item.pic, keyWord);
                     searchItemEntity.classfyType = SEARCH_TYPE_CONTACT;
                     searchItemEntity.type = item.type;

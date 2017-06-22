@@ -70,7 +70,15 @@ public class IMContactAdapter extends MultiSelectRecyclerAdapter<GroupContactBea
             if (StringUtils.containsIgnoreCase(originalText, keyWord)) {
                 textForegroundColorSpan = SpannableUtils.getTextForegroundColorSpan(originalText, keyWord, foregroundColor);
             } else {//可能是汉字
-                try {
+                textForegroundColorSpan=new SpannableString(groupContactBean.name);
+               /* try {
+                    //用本地提取的 目前网络不准确
+                    groupContactBean.nameCharacter = PinyinUtil.toPinyin(tv_contact_name.getContext(), groupContactBean.name);
+                    if (groupContactBean.nameCharacter != null) {
+                        groupContactBean.nameCharacter = groupContactBean.nameCharacter.replaceAll(" ", "");
+                    }
+                    LogUtils.d("-------------->nameCharacter:" + groupContactBean.nameCharacter);
+
                     int start = groupContactBean.nameCharacter.indexOf(keyWord);
                     int end = start + keyWord.length();
                     if (start >= 0 && end < groupContactBean.name.length()) {
@@ -81,7 +89,7 @@ public class IMContactAdapter extends MultiSelectRecyclerAdapter<GroupContactBea
                 } catch (Exception e) {
                     e.printStackTrace();
                     textForegroundColorSpan = SpannableUtils.getTextForegroundColorSpan(originalText, keyWord, foregroundColor);
-                }
+                }*/
             }
             tv_contact_name.setText(textForegroundColorSpan);
         } else {
