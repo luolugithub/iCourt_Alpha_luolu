@@ -297,7 +297,7 @@ public class TimerDetailActivity extends BaseTimerActivity
                     showTopSnackBar("请选择项目");
                     return;
                 }
-                showWorkTypeSelectDialogFragment(itemEntity.matterPkId,itemEntity.workTypeId);
+                showWorkTypeSelectDialogFragment(itemEntity.matterPkId, itemEntity.workTypeId);
                 break;
             case R.id.task_layout://关联任务
                 showTaskSelectDialogFragment(itemEntity.matterPkId, itemEntity.taskPkId);
@@ -347,7 +347,7 @@ public class TimerDetailActivity extends BaseTimerActivity
                 selectedStartDate.set(Calendar.MINUTE, calendar.get(Calendar.MINUTE));
                 text.setText(DateUtils.getHHmm(selectedStartDate.getTimeInMillis()));
 
-                selectedEndDate.setTimeInMillis(circleTimerView.getCurrentTime()*1_000+selectedStartDate.getTimeInMillis());
+                selectedEndDate.setTimeInMillis(circleTimerView.getCurrentTime() * 1_000 + selectedStartDate.getTimeInMillis());
                 stopTimeMinTv.setText(DateUtils.getHHmm(selectedEndDate.getTimeInMillis()));
             }
         }).setType(TimePickerView.Type.HOURS_MINS)
@@ -390,6 +390,7 @@ public class TimerDetailActivity extends BaseTimerActivity
         pvTime.setDate(Calendar.getInstance());
         pvTime.show();
     }
+
     @Override
     public boolean dispatchTouchEvent(MotionEvent ev) {
         switch (ev.getAction()) {
@@ -412,6 +413,13 @@ public class TimerDetailActivity extends BaseTimerActivity
             JsonObject jsonBody = null;
             itemEntity.useTime = selectedEndDate.getTimeInMillis() - selectedStartDate.getTimeInMillis();
             itemEntity.startTime = selectedStartDate.getTimeInMillis();
+            Calendar workDateCalendar = Calendar.getInstance();
+            workDateCalendar.set(Calendar.DAY_OF_YEAR, selectedStartDate.get(Calendar.DAY_OF_YEAR));
+            workDateCalendar.set(Calendar.HOUR_OF_DAY, 0);
+            workDateCalendar.set(Calendar.MINUTE, 0);
+            workDateCalendar.set(Calendar.SECOND, 0);
+            workDateCalendar.set(Calendar.MILLISECOND, 0);
+            itemEntity.workDate = workDateCalendar.getTimeInMillis();
             itemEntity.endTime = selectedEndDate.getTimeInMillis();
             try {
                 jsonBody = JsonUtils.object2JsonObject(itemEntity);

@@ -289,7 +289,9 @@ public class TabTimingFragment extends BaseFragment implements BaseRecyclerAdapt
                             timingCountEntities.clear();
                             timingCountEntities.addAll(response.body().result.items);
                             generateData();
-                            timingTodayTotal.setText(getHm(0));
+                            if (pageIndex <= 0) {
+                                timingTodayTotal.setText(getHm(0));
+                            }
                             if (response.body().result.items != null && pageIndex <= 0) {
                                 for (TimingCountEntity timingCountEntity : response.body().result.items) {
                                     if (timingCountEntity != null) {
