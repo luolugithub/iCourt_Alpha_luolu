@@ -198,11 +198,15 @@ public class TaskMemberSelectDialogFragment extends BaseDialogFragment {
                     @Override
                     public void onSuccess(Call<ResEntity<List<TaskMemberWrapEntity>>> call, Response<ResEntity<List<TaskMemberWrapEntity>>> response) {
                         if (response.body().result != null && !response.body().result.isEmpty()) {
-                            TaskMemberWrapEntity taskMemberWrapEntity = response.body().result.get(0);
-                            if (taskMemberWrapEntity != null) {
-                                enableEmptyView(taskMemberWrapEntity.members);
-                                taskMemberAdapter.bindData(isRefresh, taskMemberWrapEntity.members);
+
+                            List<TaskMemberEntity> members = new ArrayList<TaskMemberEntity>();
+                            for (TaskMemberWrapEntity taskMemberWrapEntity : response.body().result) {
+                                if (taskMemberWrapEntity.members != null) {
+                                    members.addAll(taskMemberWrapEntity.members);
+                                }
                             }
+                            enableEmptyView(members);
+                            taskMemberAdapter.bindData(isRefresh, members);
                         }
                     }
                 });

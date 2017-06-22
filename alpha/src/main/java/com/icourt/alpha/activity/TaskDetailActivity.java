@@ -213,6 +213,12 @@ public class TaskDetailActivity extends BaseActivity
         getData(false);
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        getData(false);
+    }
+
     @OnClick({R.id.titleAction,
             R.id.titleAction2,
             R.id.task_name,

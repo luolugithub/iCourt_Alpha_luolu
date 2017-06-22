@@ -69,15 +69,15 @@ public class TaskAdapter extends BaseArrayRecyclerAdapter<TaskEntity>
     }
 
     public void setEditTask(boolean editTask) {
-        isEditTask = true;
+        isEditTask = editTask;
     }
 
     public void setDeleteTask(boolean deleteTask) {
-        isDeleteTask = true;
+        isDeleteTask = deleteTask;
     }
 
     public void setAddTime(boolean addTime) {
-        isAddTime = true;
+        isAddTime = addTime;
     }
 
     public void setOnShowFragmenDialogListener(OnShowFragmenDialogListener onShowFragmenDialogListener) {
