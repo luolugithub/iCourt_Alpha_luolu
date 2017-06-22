@@ -661,7 +661,7 @@ public class MessageListFragment extends BaseRecentContactFragment
                 case CHAT_TYPE_P2P:
                     if (data.isRobot()) {
                         AlphaSpecialHelperActivity.launch(getActivity(),
-                                data.recentContact.getContactId());
+                                data.recentContact.getContactId(),totalUnReadCount);
                     } else {
                         if (!TextUtils.isEmpty(data.recentContact.getContactId())) {
                             GroupContactBean groupContactBean = new GroupContactBean();

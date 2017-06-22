@@ -264,20 +264,23 @@ public class TaskDetailActivity extends BaseActivity
             case R.id.task_start_iamge://开始计时
                 if (isStrat)
                     TimerManager.getInstance().stopTimer();
-                else
+                else {
+                    showLoadingDialog(null);
                     TimerManager.getInstance().addTimer(getTimer(taskItemEntity), new Callback<TimeEntity.ItemEntity>() {
                         @Override
                         public void onResponse(Call<TimeEntity.ItemEntity> call, Response<TimeEntity.ItemEntity> response) {
                             if (response.body() != null) {
+                                dismissLoadingDialog();
                                 TimerTimingActivity.launch(TaskDetailActivity.this, response.body());
                             }
                         }
 
                         @Override
                         public void onFailure(Call<TimeEntity.ItemEntity> call, Throwable throwable) {
-
+                            dismissLoadingDialog();
                         }
                     });
+                }
                 break;
             case R.id.task_checkbox://  完成／取消完成
                 if (hasTaskEditPermission()) {

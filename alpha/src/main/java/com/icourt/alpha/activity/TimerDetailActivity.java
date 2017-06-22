@@ -353,7 +353,8 @@ public class TimerDetailActivity extends BaseTimerActivity
             }
         }).setType(TimePickerView.Type.HOURS_MINS)
                 .build();
-        pvTime.setDate(Calendar.getInstance());
+//        pvTime.setDate(Calendar.getInstance());
+        pvTime.setDate(selectedStartDate);
         pvTime.show();
     }
 
@@ -390,7 +391,8 @@ public class TimerDetailActivity extends BaseTimerActivity
             }
         }).setType(TimePickerView.Type.HOURS_MINS)
                 .build();
-        pvTime.setDate(Calendar.getInstance());
+//        pvTime.setDate(Calendar.getInstance());
+        pvTime.setDate(selectedEndDate);
         pvTime.show();
     }
 

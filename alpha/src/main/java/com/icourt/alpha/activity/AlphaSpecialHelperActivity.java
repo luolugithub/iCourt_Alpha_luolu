@@ -17,9 +17,11 @@ import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.ChatAlphaSpecialHelperAdapter;
 import com.icourt.alpha.entity.bean.AlphaSecialHeplerMsgEntity;
 import com.icourt.alpha.entity.bean.IMMessageCustomBody;
+import com.icourt.alpha.entity.event.UnReadEvent;
 import com.icourt.alpha.utils.IMUtils;
 import com.icourt.alpha.utils.JsonUtils;
 import com.icourt.alpha.utils.LogUtils;
+import com.icourt.alpha.view.bgabadgeview.BGABadgeTextView;
 import com.icourt.alpha.view.recyclerviewDivider.ChatItemDecoration;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 import com.netease.nimlib.sdk.NIMClient;
@@ -30,6 +32,10 @@ import com.netease.nimlib.sdk.msg.constant.SessionTypeEnum;
 import com.netease.nimlib.sdk.msg.model.IMMessage;
 import com.netease.nimlib.sdk.msg.model.MessageReceipt;
 import com.netease.nimlib.sdk.team.model.Team;
+
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -50,6 +56,7 @@ import static com.netease.nimlib.sdk.msg.model.QueryDirectionEnum.QUERY_OLD;
  */
 public class AlphaSpecialHelperActivity extends ChatBaseActivity {
     private static final String KEY_UID = "key_uid";
+    private static final String KEY_TOTAL_UNREAD_NUM = "key_total_unread_num";
     @BindView(R.id.titleBack)
     ImageView titleBack;
     @BindView(R.id.titleContent)
@@ -65,11 +72,14 @@ public class AlphaSpecialHelperActivity extends ChatBaseActivity {
     ChatAlphaSpecialHelperAdapter chatAlphaSpecialHelperAdapter;
 
     LinearLayoutManager linearLayoutManager;
+    @BindView(R.id.title_Badge_tv)
+    BGABadgeTextView titleBadgeTv;
 
-    public static void launch(@NonNull Context context, String accid) {
+    public static void launch(@NonNull Context context, String accid,int totalUnreadCount) {
         if (context == null) return;
         Intent intent = new Intent(context, AlphaSpecialHelperActivity.class);
         intent.putExtra(KEY_UID, accid);
+        intent.putExtra(KEY_TOTAL_UNREAD_NUM, totalUnreadCount);
         context.startActivity(intent);
     }
 
@@ -116,6 +126,7 @@ public class AlphaSpecialHelperActivity extends ChatBaseActivity {
             }
         });
         getData(true);
+        updateTotalUnRead(getIntent().getIntExtra(KEY_TOTAL_UNREAD_NUM, 0));
     }
 
     @Override
@@ -166,6 +177,28 @@ public class AlphaSpecialHelperActivity extends ChatBaseActivity {
         return MessageBuilder.createEmptyMessage(getIMChatId(), SessionTypeEnum.P2P, 0);
     }
 
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onUnReadEvent(UnReadEvent event) {
+        if (event == null) return;
+        updateTotalUnRead(event.unReadCount);
+    }
+
+    /**
+     * 更新总数
+     *
+     * @param num
+     */
+    private void updateTotalUnRead(int num) {
+        int unReadNum = num;
+        if (unReadNum > 99) {
+            //显示99+
+            titleBadgeTv.showTextBadge("99+");
+        } else if (unReadNum > 0) {
+            titleBadgeTv.showTextBadge(String.valueOf(unReadNum));
+        } else {
+            titleBadgeTv.hiddenBadge();
+        }
+    }
 
     private void stopRefresh() {
         if (refreshLayout != null) {
@@ -251,5 +284,11 @@ public class AlphaSpecialHelperActivity extends ChatBaseActivity {
         if (linearLayoutManager != null) {
             linearLayoutManager.scrollToPositionWithOffset(linearLayoutManager.getItemCount() - 1, 0);
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        EventBus.getDefault().unregister(this);
     }
 }

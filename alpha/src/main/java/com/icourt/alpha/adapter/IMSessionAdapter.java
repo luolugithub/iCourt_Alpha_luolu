@@ -184,8 +184,8 @@ public class IMSessionAdapter extends BaseArrayRecyclerAdapter<IMSessionEntity> 
                 //直接显示
                 iv_session_icon.showTextBadge(String.valueOf(unreadCount));
             } else if (unreadCount > 99) {
-                // 显示...
-                iv_session_icon.showTextBadge("...");
+                // 显示99+
+                iv_session_icon.showTextBadge("99+");
             } else if (unreadCount <= 0) {
                 //隐藏
                 iv_session_icon.hiddenBadge();

@@ -128,7 +128,8 @@ public class TabNewsFragment extends BaseFragment
         StringBuilder newsTabBuilder = new StringBuilder("消息");
         int unReadNum = event.unReadCount;
         if (unReadNum > 99) {
-            newsTabBuilder.append("(...)");
+            //显示99+
+            newsTabBuilder.append("(99+)");
         } else if (unReadNum > 0) {
             newsTabBuilder.append("(" + unReadNum + ")");
         }

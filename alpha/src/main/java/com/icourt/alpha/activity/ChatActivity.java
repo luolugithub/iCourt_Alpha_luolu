@@ -812,7 +812,8 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
     private void updateTotalUnRead(int num) {
         int unReadNum = num;
         if (unReadNum > 99) {
-            titleBadgeTv.showTextBadge("...");
+            //显示99+
+            titleBadgeTv.showTextBadge("99+");
         } else if (unReadNum > 0) {
             titleBadgeTv.showTextBadge(String.valueOf(unReadNum));
         } else {

@@ -137,6 +137,8 @@ public class TaskItemAdapter extends BaseArrayRecyclerAdapter<TaskEntity.TaskIte
                     commentNumView.getVisibility() == View.VISIBLE &&
                     timeView.getVisibility() == View.VISIBLE) {
                 recyclerView.setVisibility(View.INVISIBLE);
+            } else {
+                recyclerView.setVisibility(View.VISIBLE);
             }
         }
         if (startTimmingView != null) {

@@ -633,7 +633,8 @@ public class MainActivity extends BaseAppUpdateActivity
     private void updateBadge(Badge badge, int num) {
         if (badge != null && num >= 0) {
             if (num > 99) {
-                badge.setBadgeText("...");
+                //显示99+
+                badge.setBadgeText("99+");
             } else {
                 badge.setBadgeNumber(num);
             }
