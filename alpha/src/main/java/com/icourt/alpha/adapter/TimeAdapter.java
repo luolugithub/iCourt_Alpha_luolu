@@ -195,7 +195,7 @@ public class TimeAdapter extends BaseArrayRecyclerAdapter<TimeEntity.ItemEntity>
         TextView totalView = holder.obtainView(R.id.time_top_total_tv);
         ImageView addView = holder.obtainView(R.id.time_top_add_img);
         if (sumTime > 0) {
-            totalView.setText(getHm(sumTime));
+            totalView.setText(getHm(sumTime) + "'");
         }
     }
 
@@ -263,6 +263,19 @@ public class TimeAdapter extends BaseArrayRecyclerAdapter<TimeEntity.ItemEntity>
     public String getShowTime(int pos) {
         if (pos != 0) {
             TimeEntity.ItemEntity item = getItem(pos);
+            if (item != null) {
+                if (DateUtils.isThisYear(item.workDate)) {
+                    if (DateUtils.isToday(item.workDate)) {
+                        return "今天";
+                    } else if (DateUtils.isYesterday(item.workDate)) {
+                        return "昨天";
+                    } else {
+                        DateUtils.getTimeDate(item.workDate);
+                    }
+                } else {
+                    DateUtils.getTimeDateFormatYear(item.workDate);
+                }
+            }
             return item != null ?
                     DateUtils.getTimeDate(item.workDate) : "null";
         }

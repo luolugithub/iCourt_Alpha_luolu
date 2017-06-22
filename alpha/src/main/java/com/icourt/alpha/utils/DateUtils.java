@@ -407,6 +407,21 @@ public class DateUtils {
     }
 
     /**
+     * 判断是否是今年
+     *
+     * @param millis
+     * @return
+     */
+    public static boolean isThisYear(long millis) {
+        Calendar otherYear = Calendar.getInstance();
+        otherYear.setTimeInMillis(millis);
+        Calendar thisYear = Calendar.getInstance();
+        thisYear.setTimeInMillis(millis());
+
+        return otherYear.get(Calendar.YEAR) == thisYear.get(Calendar.YEAR);
+    }
+
+    /**
      * 23:59:59 不显示  xx月xx日 hh：mm
      *
      * @param millis

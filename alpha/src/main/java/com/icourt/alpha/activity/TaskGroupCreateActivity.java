@@ -115,10 +115,14 @@ public class TaskGroupCreateActivity extends BaseActivity {
         super.onClick(v);
         switch (v.getId()) {
             case R.id.titleAction:
-                if (type == UPDATE_TASK_GROUP_TYPE) {
-                    updateGroup();
+                if (!TextUtils.isEmpty(groupNameEdittext.getText().toString())) {
+                    if (type == UPDATE_TASK_GROUP_TYPE) {
+                        updateGroup();
+                    } else {
+                        createGroup();
+                    }
                 } else {
-                    createGroup();
+                    showTopSnackBar("请输入任务组名称");
                 }
                 break;
         }
