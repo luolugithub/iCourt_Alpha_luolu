@@ -315,8 +315,13 @@ public class TabMineFragment extends BaseFragment {
             public void onSuccess(Call<ResEntity<AlphaUserInfo>> call, Response<ResEntity<AlphaUserInfo>> response) {
                 AlphaUserInfo info = response.body().result;
                 AlphaUserInfo alphaUserInfo = getLoginUserInfo();
-                if (alphaUserInfo != null) {
+                if (alphaUserInfo != null && info != null) {
                     info.setGroups(alphaUserInfo.getGroups());
+                    alphaUserInfo.setMail(info.getMail());
+                    alphaUserInfo.setPhone(info.getPhone());
+                    alphaUserInfo.setName(info.getName());
+                    alphaUserInfo.setPic(info.getPic());
+                    saveLoginUserInfo(alphaUserInfo);
                 }
                 setDataToView(info);
             }
