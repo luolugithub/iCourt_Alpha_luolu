@@ -31,6 +31,7 @@ import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.interfaces.OnUpdateTaskListener;
+import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.api.RequestUtils;
 
 import org.greenrobot.eventbus.EventBus;
@@ -142,12 +143,14 @@ public class TaskCheckItemFragment extends BaseFragment implements BaseRecyclerA
         super.onClick(v);
         switch (v.getId()) {
             case R.id.check_item_add:
-                if (hasPermission) {
-                    if (!TextUtils.isEmpty(checkItemEdit.getText().toString()))
-                        addCheckItem();
-                    else
-                        showTopSnackBar("请输入检查项名称");
-                }
+//                if (hasPermission) {
+//                    if (!TextUtils.isEmpty(checkItemEdit.getText().toString()))
+//                        addCheckItem();
+//                    else
+//                        showTopSnackBar("请输入检查项名称");
+//                }
+                checkItemEdit.requestFocus();
+                SystemUtils.showSoftKeyBoard(getActivity());
                 break;
         }
     }

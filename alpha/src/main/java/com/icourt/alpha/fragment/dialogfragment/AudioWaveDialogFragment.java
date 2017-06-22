@@ -139,14 +139,17 @@ public class AudioWaveDialogFragment extends BaseDialogFragment {
 
         @Override
         public void onVolumeChanged(int i, byte[] bytes) {
-            visualizer.prepare(i);
+            if (visualizer != null)
+                visualizer.prepare(i);
         }
 
         //结束录音
         public void onEndOfSpeech() {
-            titleTv.setText("正在识别...");
-            visualizer.setVisibility(View.GONE);
-            progressbar.setVisibility(View.VISIBLE);
+            if (visualizer != null) {
+                titleTv.setText("正在识别...");
+                visualizer.setVisibility(View.GONE);
+                progressbar.setVisibility(View.VISIBLE);
+            }
         }
 
         //扩展用接口

@@ -53,7 +53,10 @@ public class TaskItemAdapter extends BaseArrayRecyclerAdapter<TaskEntity.TaskIte
         if (projectNameView != null) {
             if (taskItemEntity.matter != null) {
                 if (taskItemEntity.parentFlow != null) {
-                    projectNameView.setText(taskItemEntity.matter.name + " - " + taskItemEntity.parentFlow.name);
+                    if (!TextUtils.isEmpty(taskItemEntity.parentFlow.name))
+                        projectNameView.setText(taskItemEntity.matter.name + " - " + taskItemEntity.parentFlow.name);
+                    else
+                        projectNameView.setText(taskItemEntity.matter.name);
                 } else {
                     if (!TextUtils.isEmpty(taskItemEntity.parentName))
                         projectNameView.setText(taskItemEntity.matter.name + " - " + taskItemEntity.parentName);
