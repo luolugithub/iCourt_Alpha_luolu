@@ -348,6 +348,7 @@ public interface ApiChatService {
     /**
      * 获取  @我  的消息
      * 【注意 这个接口只能post】
+     * 文档地址:https://www.showdoc.cc/1620156?page_id=14899069
      *
      * @param msg_id
      * @return
@@ -358,12 +359,13 @@ public interface ApiChatService {
     /**
      * 获取  @我  的消息
      * 【注意 这个接口只能post】
+     * 文档地址:https://www.showdoc.cc/1620156?page_id=14899069
      *
-     * @param msg_id
      * @return
      */
     @GET("im/v1/msgs/ats")
     Call<ResEntity<List<IMMessageCustomBody>>> getAtMeMsg();
+
     /**
      * 获取我收藏的消息
      * 文档地址:https://www.showdoc.cc/1620156?page_id=14892528
@@ -432,6 +434,7 @@ public interface ApiChatService {
 
     /**
      * 获取文件消息列表
+     * 文档地址:https://www.showdoc.cc/1620156?page_id=14909461
      *
      * @param ope
      * @param to
@@ -445,6 +448,7 @@ public interface ApiChatService {
 
     /**
      * 获取文件消息列表
+     * 文档地址:https://www.showdoc.cc/1620156?page_id=14909461
      *
      * @param ope
      * @param to
@@ -456,6 +460,7 @@ public interface ApiChatService {
 
     /**
      * 获取某条消息是否被搜藏过
+     * 文档地址:https://www.showdoc.cc/1620156?page_id=14899067
      *
      * @param msg_id
      * @return
@@ -465,6 +470,7 @@ public interface ApiChatService {
 
     /**
      * 获取某条消息是否被钉过
+     * 文档地址:https://www.showdoc.cc/1620156?page_id=14899073
      *
      * @param msg_id
      * @return
@@ -492,6 +498,7 @@ public interface ApiChatService {
 
     /**
      * 会话置顶
+     * 文档地址:https://www.showdoc.cc/1620156?page_id=14902507
      *
      * @param ope
      * @param to
@@ -516,6 +523,7 @@ public interface ApiChatService {
 
     /**
      * 获取所有会话免打扰id
+     * 文档地址：https://www.showdoc.cc/1620156?page_id=14902507
      *
      * @return
      */
@@ -549,6 +557,7 @@ public interface ApiChatService {
 
     /**
      * 获取我的最新信息
+     * 文档地址:https://www.showdoc.cc/1620156?page_id=14893727
      *
      * @return
      */
@@ -558,6 +567,7 @@ public interface ApiChatService {
 
     /**
      * 获取文件下载地址
+     * 文档地址:https://www.showdoc.cc/1620156?page_id=14909461
      *
      * @param repo_id
      * @param path
