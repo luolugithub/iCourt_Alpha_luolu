@@ -195,7 +195,8 @@ public class TimerDetailActivity extends BaseTimerActivity
             worktypeNameTv.setText(TextUtils.isEmpty(itemEntity.workTypeName) ? "未设置" : itemEntity.workTypeName);
             taskNameTv.setText(TextUtils.isEmpty(itemEntity.taskName) ? "未关联" : itemEntity.taskName);
             circleTimerView.setMiniTime(70);
-            circleTimerView.setCurrentTime((int) ((selectedEndDate.getTimeInMillis() - selectedStartDate.getTimeInMillis()) / 1000));
+            setCircleTimerViewTime();
+            //circleTimerView.setCurrentTime((int) ((selectedEndDate.getTimeInMillis() - selectedStartDate.getTimeInMillis()) / 1000));
             circleTimerView.setOnTouchListener(new View.OnTouchListener() {
                 @Override
                 public boolean onTouch(View v, MotionEvent event) {
@@ -381,14 +382,27 @@ public class TimerDetailActivity extends BaseTimerActivity
                 selectedEndDate.set(Calendar.HOUR_OF_DAY, calendar.get(Calendar.HOUR_OF_DAY));
                 selectedEndDate.set(Calendar.MINUTE, calendar.get(Calendar.MINUTE));
 
-                long rangeTime = (selectedEndDate.getTimeInMillis() - selectedStartDate.getTimeInMillis());
-                log("------------>endTime:" + (rangeTime / 1000));
-                circleTimerView.setCurrentTime((int) (rangeTime / 1000));
+                //展示分钟整数
+                /*long rangeTime = (selectedEndDate.getTimeInMillis() - selectedStartDate.getTimeInMillis());
+                log("------------>endTime:" + (rangeTime / 1000));*/
+                //circleTimerView.setCurrentTime((int) (rangeTime / 1000));
+                setCircleTimerViewTime();
             }
         }).setType(TimePickerView.Type.HOURS_MINS)
                 .build();
         pvTime.setDate(Calendar.getInstance());
         pvTime.show();
+    }
+
+    /**
+     * 避免秒的差异 展示取分钟差距
+     */
+    private void setCircleTimerViewTime() {
+        if (selectedStartDate == null) return;
+        if (selectedEndDate == null) return;
+        long one_minutes_millis = TimeUnit.MINUTES.toMillis(1);
+        long rangeTime = (selectedEndDate.getTimeInMillis() / one_minutes_millis * one_minutes_millis - selectedStartDate.getTimeInMillis() / one_minutes_millis * one_minutes_millis);
+        circleTimerView.setCurrentTime((int) (rangeTime / 1000));
     }
 
     @Override
