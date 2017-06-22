@@ -398,7 +398,7 @@ public class MessageListFragment extends BaseRecentContactFragment
     protected void teamUpdates(@NonNull List<Team> teams) {
         for (Team t : teams) {
             if (t == null) continue;
-            log("------------->teamUpdate:" + t.getId() + "  t.name:" + t.getName());
+            IMUtils.logIMTeam("-------->teamUpdate",t);
             boolean isExist = false;
             for (int i = 0; i < localTeams.size(); i++) {
                 Team team = localTeams.get(i);

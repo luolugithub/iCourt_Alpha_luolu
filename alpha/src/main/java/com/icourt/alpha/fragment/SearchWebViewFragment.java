@@ -1,6 +1,7 @@
 package com.icourt.alpha.fragment;
 
 import android.annotation.TargetApi;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Build;
@@ -21,6 +22,8 @@ import android.webkit.WebViewClient;
 
 import com.icourt.alpha.R;
 import com.icourt.alpha.base.BaseFragment;
+import com.icourt.alpha.interfaces.IWebViewPage;
+import com.icourt.alpha.interfaces.OnWebViewFragmentListener;
 import com.icourt.alpha.view.ProgressLayout;
 
 import butterknife.BindView;
@@ -34,7 +37,7 @@ import butterknife.Unbinder;
  * date createTime：2017/4/20
  * version 1.0.0
  */
-public class SearchWebViewFragment extends BaseFragment {
+public class SearchWebViewFragment extends BaseFragment implements IWebViewPage {
 
     @BindView(R.id.webView)
     WebView webView;
@@ -75,6 +78,9 @@ public class SearchWebViewFragment extends BaseFragment {
             if (progressLayout != null) {
                 progressLayout.setVisibility(View.VISIBLE);
             }
+            if (onWebViewFragmentListener != null) {
+                onWebViewFragmentListener.onWebViewStarted(SearchWebViewFragment.this, 0, null);
+            }
         }
 
         @Override
@@ -83,6 +89,9 @@ public class SearchWebViewFragment extends BaseFragment {
             log("-------->onPageFinished url:" + url);
             if (progressLayout != null) {
                 progressLayout.setVisibility(View.GONE);
+            }
+            if (onWebViewFragmentListener != null) {
+                onWebViewFragmentListener.onWebViewFinished(SearchWebViewFragment.this, 0, null);
             }
         }
 
@@ -138,6 +147,18 @@ public class SearchWebViewFragment extends BaseFragment {
 
     };
 
+    OnWebViewFragmentListener onWebViewFragmentListener;
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        if (getParentFragment() instanceof OnWebViewFragmentListener) {
+            onWebViewFragmentListener = (OnWebViewFragmentListener) getParentFragment();
+        } else if (context instanceof OnWebViewFragmentListener) {
+            onWebViewFragmentListener = (OnWebViewFragmentListener) context;
+        }
+    }
+
     /**
      * @param url
      * @return
@@ -191,11 +212,17 @@ public class SearchWebViewFragment extends BaseFragment {
                 switch (type) {
                     case 1://后退
                         if (webView.canGoBack()) {
+                            if (onWebViewFragmentListener != null) {
+                                onWebViewFragmentListener.onWebViewGoBack(SearchWebViewFragment.this, 0, null);
+                            }
                             webView.goBack();
                         }
                         break;
                     case 2://前进
                         if (webView.canGoForward()) {
+                            if (onWebViewFragmentListener != null) {
+                                onWebViewFragmentListener.onWebViewGoForward(SearchWebViewFragment.this, 0, null);
+                            }
                             webView.goForward();
                         }
                         break;
@@ -250,5 +277,10 @@ public class SearchWebViewFragment extends BaseFragment {
             }
             webView = null;
         }
+    }
+
+    @Override
+    public WebView getPageWebView() {
+        return webView;
     }
 }

@@ -13,6 +13,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
 import android.text.TextUtils;
 import android.view.View;
+import android.webkit.WebView;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -24,6 +25,8 @@ import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.entity.bean.SearchEngineEntity;
 import com.icourt.alpha.fragment.SearchWebViewFragment;
 import com.icourt.alpha.interfaces.INotifyFragment;
+import com.icourt.alpha.interfaces.IWebViewPage;
+import com.icourt.alpha.interfaces.OnWebViewFragmentListener;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,7 +42,7 @@ import butterknife.OnClick;
  * date createTime：2017/4/20
  * version 1.0.0
  */
-public class SearchTabActivity extends BaseActivity {
+public class SearchTabActivity extends BaseActivity implements OnWebViewFragmentListener {
 
     private static final String KEY_ENGINES = "searchEngineEntities";
     private static final String KEY_WORD = "key_word";
@@ -103,6 +106,13 @@ public class SearchTabActivity extends BaseActivity {
         tabLayout.setSelectedTabIndicatorHeight(0);
 
         viewPager.setAdapter(baseFragmentAdapter = new BaseFragmentAdapter(getSupportFragmentManager()));
+        viewPager.addOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
+            @Override
+            public void onPageSelected(int position) {
+                super.onPageSelected(position);
+                setBackForwardBtn();
+            }
+        });
         ArrayList<SearchEngineEntity> searchEngineEntities =
                 (ArrayList<SearchEngineEntity>) getIntent().getSerializableExtra(KEY_ENGINES);
         String keyWord = getIntent().getStringExtra(KEY_WORD);
@@ -167,6 +177,32 @@ public class SearchTabActivity extends BaseActivity {
         }
     }
 
+    private void setBackForwardBtn() {
+        try {
+            Fragment item = baseFragmentAdapter.getItem(viewPager.getCurrentItem());
+            if (item instanceof IWebViewPage) {
+                WebView pageWebView = ((IWebViewPage) item).getPageWebView();
+                if (pageWebView != null
+                        && bottomBackIv != null) {
+                    int unableColor = 0XFFF3F3F3;
+                    if (pageWebView.canGoBack()) {
+                        bottomBackIv.setColorFilter(0);
+                    } else {
+                        bottomBackIv.setColorFilter(unableColor);
+                    }
+
+                    if (pageWebView.canGoForward()) {
+                        bottomForwardIv.setColorFilter(0);
+                    } else {
+                        bottomForwardIv.setColorFilter(unableColor);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     /**
      * 用其它app打开网页
      */
@@ -190,5 +226,31 @@ public class SearchTabActivity extends BaseActivity {
         if (item instanceof INotifyFragment) {
             ((INotifyFragment) item).notifyFragmentUpdate(item, action, null);
         }
+    }
+
+    @Override
+    public void onWebViewStarted(IWebViewPage fragment, int type, Bundle bundle) {
+        Fragment item = baseFragmentAdapter.getItem(viewPager.getCurrentItem());
+        if (item == fragment) {
+            setBackForwardBtn();
+        }
+    }
+
+    @Override
+    public void onWebViewFinished(IWebViewPage fragment, int type, Bundle bundle) {
+        Fragment item = baseFragmentAdapter.getItem(viewPager.getCurrentItem());
+        if (item == fragment) {
+            setBackForwardBtn();
+        }
+    }
+
+    @Override
+    public void onWebViewGoBack(IWebViewPage fragment, int type, Bundle bundle) {
+
+    }
+
+    @Override
+    public void onWebViewGoForward(IWebViewPage fragment, int type, Bundle bundle) {
+
     }
 }
