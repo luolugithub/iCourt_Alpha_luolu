@@ -11,6 +11,7 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
+import android.text.SpannableString;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.view.View;
@@ -62,6 +63,7 @@ import io.reactivex.ObservableOnSubscribe;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
+import io.realm.Case;
 import io.realm.RealmResults;
 import retrofit2.Response;
 
@@ -181,7 +183,7 @@ public class SearchPolymerizationActivity extends BaseActivity implements BaseRe
 
                 //查询联系人
                 ContactDbService contactDbService = new ContactDbService(getLoginUserId());
-                RealmResults<ContactDbModel> name = contactDbService.contains("name", keyWord);
+                RealmResults<ContactDbModel> name = contactDbService.contains("name", keyWord, "nameCharacter", keyWord, Case.INSENSITIVE);
                 List<GroupContactBean> contactBeen = ListConvertor.convertList(new ArrayList<IConvertModel<GroupContactBean>>(name));
                 fiterRobots(contactBeen);
                 contactDbService.releaseService();
@@ -360,9 +362,26 @@ public class SearchPolymerizationActivity extends BaseActivity implements BaseRe
         List<SearchItemEntity> data = new ArrayList<>();
         if (contactBeen != null) {
             for (GroupContactBean item : contactBeen) {
-                if (item != null) {
-                    CharSequence originalText = item.name;
-                    SearchItemEntity searchItemEntity = new SearchItemEntity(SpannableUtils.getTextForegroundColorSpan(originalText, keyWord, foregroundColor), null, item.pic, keyWord);
+                if (item != null && !TextUtils.isEmpty(item.name)) {
+                    String originalText = item.name;
+                    SpannableString textForegroundColorSpan = null;
+                    if (StringUtils.containsIgnoreCase(originalText, keyWord)) {
+                        textForegroundColorSpan = SpannableUtils.getTextForegroundColorSpan(originalText, keyWord, foregroundColor);
+                    } else {//可能是汉字
+                        try {
+                            int start = item.nameCharacter.indexOf(keyWord);
+                            int end = start + keyWord.length();
+                            if (start >= 0 && end < item.name.length()) {
+                                textForegroundColorSpan = SpannableUtils.getTextForegroundColorSpan(originalText, start, end, foregroundColor);
+                            } else {
+                                textForegroundColorSpan = SpannableUtils.getTextForegroundColorSpan(originalText, keyWord, foregroundColor);
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            textForegroundColorSpan = SpannableUtils.getTextForegroundColorSpan(originalText, keyWord, foregroundColor);
+                        }
+                    }
+                    SearchItemEntity searchItemEntity = new SearchItemEntity(textForegroundColorSpan, null, item.pic, keyWord);
                     searchItemEntity.classfyType = SEARCH_TYPE_CONTACT;
                     searchItemEntity.type = item.type;
                     searchItemEntity.id = item.accid;

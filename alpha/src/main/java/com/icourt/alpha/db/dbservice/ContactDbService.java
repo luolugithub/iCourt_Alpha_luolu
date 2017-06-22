@@ -10,6 +10,7 @@ import com.icourt.alpha.db.dbmodel.ContactDbModel;
 
 import java.util.List;
 
+import io.realm.Case;
 import io.realm.RealmResults;
 
 /**
@@ -69,6 +70,37 @@ public class ContactDbService extends BaseRealmService<ContactDbModel, ContactDa
     public RealmResults<ContactDbModel> contains(String fieldName, String value) {
         if (isServiceAvailable()) {
             return dao.contains(ContactDbModel.class, fieldName, value);
+        }
+        return null;
+    }
+
+
+    /**
+     * 查询所有
+     *
+     * @return
+     */
+    @CheckResult
+    public RealmResults<ContactDbModel> contains(String fieldName, String value, Case casing) {
+        if (isServiceAvailable()) {
+            return dao.contains(ContactDbModel.class, fieldName, value, casing);
+        }
+        return null;
+    }
+
+    /**
+     * 多个查询
+     *
+     * @param fieldName1
+     * @param value1
+     * @param fieldName2
+     * @param value2
+     * @param casing
+     * @return
+     */
+    public RealmResults<ContactDbModel> contains(String fieldName1, String value1, String fieldName2, String value2, Case casing) {
+        if (isServiceAvailable()) {
+            return dao.contains(ContactDbModel.class, fieldName1, value1, fieldName2, value2, casing);
         }
         return null;
     }

@@ -41,6 +41,7 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import io.realm.Case;
 import io.realm.RealmResults;
 
 /**
@@ -170,7 +171,7 @@ public class ContactSearchActivity extends BaseActivity implements BaseRecyclerA
     protected void getData(boolean isRefresh) {
         super.getData(isRefresh);
         try {
-            RealmResults<ContactDbModel> name = contactDbService.contains("name", etInputName.getText().toString());
+            RealmResults<ContactDbModel> name = contactDbService.contains("name", etInputName.getText().toString(), "nameCharacter", etInputName.getText().toString(), Case.INSENSITIVE);
             if (name == null) {
                 imContactAdapter.clearData();
                 return;

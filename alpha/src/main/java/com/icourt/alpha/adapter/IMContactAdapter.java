@@ -13,6 +13,7 @@ import com.icourt.alpha.constants.Const;
 import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.icourt.alpha.utils.GlideUtils;
 import com.icourt.alpha.utils.SpannableUtils;
+import com.icourt.alpha.utils.StringUtils;
 
 /**
  * Descriptionn  联系人适配器
@@ -65,7 +66,23 @@ public class IMContactAdapter extends MultiSelectRecyclerAdapter<GroupContactBea
         GlideUtils.loadUser(iv_contact_icon.getContext(), groupContactBean.pic, iv_contact_icon);
         if (!TextUtils.isEmpty(keyWord)) {
             String originalText = groupContactBean.name;
-            SpannableString textForegroundColorSpan = SpannableUtils.getTextForegroundColorSpan(originalText, keyWord, foregroundColor);
+            SpannableString textForegroundColorSpan = null;
+            if (StringUtils.containsIgnoreCase(originalText, keyWord)) {
+                textForegroundColorSpan = SpannableUtils.getTextForegroundColorSpan(originalText, keyWord, foregroundColor);
+            } else {//可能是汉字
+                try {
+                    int start = groupContactBean.nameCharacter.indexOf(keyWord);
+                    int end = start + keyWord.length();
+                    if (start >= 0 && end < groupContactBean.name.length()) {
+                        textForegroundColorSpan = SpannableUtils.getTextForegroundColorSpan(originalText, start, end, foregroundColor);
+                    } else {
+                        textForegroundColorSpan = SpannableUtils.getTextForegroundColorSpan(originalText, keyWord, foregroundColor);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    textForegroundColorSpan = SpannableUtils.getTextForegroundColorSpan(originalText, keyWord, foregroundColor);
+                }
+            }
             tv_contact_name.setText(textForegroundColorSpan);
         } else {
             tv_contact_name.setText(groupContactBean.name);
