@@ -6,10 +6,11 @@
 
     <include layout="@layout/layout_title_type_3" />
 
-    <FrameLayout
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/dp20"
+        android:orientation="vertical"
         android:background="@color/white"
         android:padding="@dimen/dp10">
 
@@ -29,9 +30,9 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom|right"
+            android:paddingTop="@dimen/dp5"
             android:text="0/200"
-            android:visibility="gone"
             android:textColor="@color/alpha_font_color_gray"
             android:textSize="10sp" />
-    </FrameLayout>
+    </LinearLayout>
 </LinearLayout>
