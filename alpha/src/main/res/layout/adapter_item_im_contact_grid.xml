@@ -11,6 +11,7 @@
         android:id="@+id/iv_contact_icon"
         android:layout_width="32dp"
         android:layout_height="32dp"
+        android:scaleType="centerCrop"
         android:src="@mipmap/avatar_default_24" />
 
     <TextView

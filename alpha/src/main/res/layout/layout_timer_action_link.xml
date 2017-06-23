@@ -122,7 +122,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="@dimen/dp20"
-                android:text="工作类型"
+                android:text="工作类别"
                 android:textColor="@color/alpha_font_color_black"
                 android:textSize="16sp" />
 

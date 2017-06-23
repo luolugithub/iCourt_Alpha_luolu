@@ -44,7 +44,7 @@ public class CommentListAdapter extends BaseArrayRecyclerAdapter<CommentEntity.C
             GlideUtils.loadUser(photoView.getContext(), commentItemEntity.createUser.pic, photoView);
             nameView.setText(commentItemEntity.createUser.userName);
         }
-        timeView.setText(DateUtils.getTimeShowString(commentItemEntity.createTime, true));
+        timeView.setText(DateUtils.getFormatChatTime(commentItemEntity.createTime));
         holder.bindChildClick(photoView);
         setCommentUrlView(contentView, commentItemEntity.content);
 

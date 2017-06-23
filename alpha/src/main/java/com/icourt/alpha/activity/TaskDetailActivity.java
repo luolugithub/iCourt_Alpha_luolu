@@ -409,8 +409,8 @@ public class TaskDetailActivity extends BaseActivity
                 break;
             case TimingEvent.TIMING_STOP:
                 isStrat = false;
-                taskStartIamge.setImageResource(R.mipmap.icon_start_20);
-                taskTiemingImage.setImageResource(R.mipmap.project_time_icon);
+                taskStartIamge.setImageResource(R.mipmap.time_start_orange);
+                taskTiemingImage.setImageResource(R.mipmap.ic_task_time);
                 long mis = event.timingSecond * 1000;
                 if (mis > 0 && mis / 1000 / 60 <= 0) {
                     mis = 60000;
@@ -759,6 +759,7 @@ public class TaskDetailActivity extends BaseActivity
                 EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION));
                 if (checkbox != null)
                     checkbox.setChecked(state);
+                getData(true);
             }
 
             @Override
@@ -767,6 +768,12 @@ public class TaskDetailActivity extends BaseActivity
                 dismissLoadingDialog();
                 if (checkbox != null)
                     checkbox.setChecked(!state);
+            }
+
+            @Override
+            public void defNotify(String noticeStr) {
+                // super.defNotify(noticeStr);
+                showToast(noticeStr);
             }
         });
     }

@@ -10,7 +10,7 @@
         android:id="@+id/task_icon_iv"
         android:layout_width="20dp"
         android:layout_height="20dp"
-        android:src="@mipmap/icon_placeholder_task" />
+        android:src="@mipmap/task_entry_icon_40" />
 
     <TextView
         android:id="@+id/task_title_tv"

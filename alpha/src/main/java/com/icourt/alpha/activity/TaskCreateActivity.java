@@ -333,6 +333,7 @@ public class TaskCreateActivity extends BaseActivity implements ProjectSelectDia
                     dismissLoadingDialog();
                     EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION));
                     finish();
+                    showToast("创建任务成功");
                 }
 
                 @Override

@@ -122,7 +122,7 @@ public class MyAtedAdapter extends BaseArrayRecyclerAdapter<IMMessageCustomBody>
         }
 
         at_user_tv.setText(imAtEntity.name);
-        at_time_tv.setText(DateUtils.getMMMdd(imAtEntity.send_time));
+        at_time_tv.setText(DateUtils.getFormatChatTimeSimple(imAtEntity.send_time));
         if (!TextUtils.isEmpty(imAtEntity.content)) {
             String originalText = imAtEntity.content;
             String targetText = null;

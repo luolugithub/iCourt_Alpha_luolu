@@ -11,7 +11,13 @@ import static cn.finalteam.toolsfinal.DateUtils.date;
 
 public class DateUtils {
 
-    public static String getTimeShowString(long milliseconds, boolean abbreviate) {
+    /**
+     * 获取聊天的时间格式化 简写版
+     *
+     * @param milliseconds
+     * @return
+     */
+    public static String getFormatChatTimeSimple(long milliseconds) {
         String dataString;
         String timeStringBy24;
 
@@ -29,7 +35,45 @@ public class DateUtils {
         SimpleDateFormat timeformatter24 = new SimpleDateFormat("HH:mm", Locale.getDefault());
         timeStringBy24 = timeformatter24.format(currentTime);
         if (!currentTime.before(todaybegin)) {
-            dataString = getTodayTimeBucket(currentTime);
+            dataString = timeStringBy24;
+        } else if (!currentTime.before(yesterdaybegin)) {
+            dataString = "昨天";
+        } else if (!currentTime.before(preyesterday)) {
+            dataString = "前天";
+        } else if (isSameWeekDates(currentTime, today)) {
+            dataString = getWeekOfDate(currentTime);
+        } else {
+            SimpleDateFormat dateformatter = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+            dataString = dateformatter.format(currentTime);
+        }
+        return dataString;
+    }
+
+    /**
+     * 获取聊天的时间格式化
+     *
+     * @param milliseconds
+     * @return
+     */
+    public static String getFormatChatTime(long milliseconds) {
+        String dataString;
+        String timeStringBy24;
+
+        Date currentTime = new Date(milliseconds);
+        Date today = new Date();
+        Calendar todayStart = Calendar.getInstance();
+        todayStart.set(Calendar.HOUR_OF_DAY, 0);
+        todayStart.set(Calendar.MINUTE, 0);
+        todayStart.set(Calendar.SECOND, 0);
+        todayStart.set(Calendar.MILLISECOND, 0);
+        Date todaybegin = todayStart.getTime();
+        Date yesterdaybegin = new Date(todaybegin.getTime() - 3600 * 24 * 1000);
+        Date preyesterday = new Date(yesterdaybegin.getTime() - 3600 * 24 * 1000);
+
+        SimpleDateFormat timeformatter24 = new SimpleDateFormat("HH:mm", Locale.getDefault());
+        timeStringBy24 = timeformatter24.format(currentTime);
+        if (!currentTime.before(todaybegin)) {
+            dataString = timeStringBy24;
         } else if (!currentTime.before(yesterdaybegin)) {
             dataString = "昨天 " + timeStringBy24;
         } else if (!currentTime.before(preyesterday)) {
@@ -76,6 +120,7 @@ public class DateUtils {
      * @param date
      * @return
      */
+    @Deprecated
     public static String getTodayTimeBucket(Date date) {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);
@@ -234,6 +279,7 @@ public class DateUtils {
 
     /**
      * yyyy年MM月dd日 HH:mm
+     *
      * @param milliseconds
      * @return
      */

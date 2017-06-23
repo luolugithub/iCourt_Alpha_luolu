@@ -225,7 +225,7 @@ public class ImUserMessageAdapter extends BaseArrayRecyclerAdapter<IMMessageCust
                 getUserIcon(imFileEntity.from),
                 file_from_user_iv);
         file_from_user_tv.setText(imFileEntity.name);
-        file_from_time_tv.setText(DateUtils.getTimeShowString(imFileEntity.send_time, true));
+        file_from_time_tv.setText(DateUtils.getFormatChatTimeSimple(imFileEntity.send_time));
     }
 
     /**

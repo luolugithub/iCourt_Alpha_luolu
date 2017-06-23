@@ -120,7 +120,7 @@
                     android:layout_width="16dp"
                     android:layout_height="16dp"
                     android:layout_marginRight="@dimen/dp5"
-                    android:src="@mipmap/project_time_icon" />
+                    android:src="@mipmap/ic_task_time" />
 
                 <TextView
                     android:id="@+id/task_time"

@@ -162,7 +162,7 @@ public class ChatAlphaSpecialHelperAdapter
     public String getShowTime(int pos) {
         AlphaSecialHeplerMsgEntity item = getItem(pos);
         return item != null && item.imMessage != null ?
-                DateUtils.getTimeShowString(item.imMessage.getTime(), true) : "null";
+                DateUtils.getFormatChatTime(item.imMessage.getTime()) : "null";
     }
 
     @Override

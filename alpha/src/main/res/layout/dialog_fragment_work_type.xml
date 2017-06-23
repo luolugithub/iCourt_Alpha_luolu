@@ -25,7 +25,7 @@
                 android:ellipsize="end"
                 android:gravity="center"
                 android:maxLines="1"
-                android:text="选择工作类型"
+                android:text="选择工作类别"
                 android:textColor="@color/alpha_font_color_title"
                 android:textSize="@dimen/alpha_font_size_title" />
         </RelativeLayout>

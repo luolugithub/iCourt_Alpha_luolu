@@ -331,7 +331,7 @@ public class ImUserMessageDetailAdapter extends BaseArrayRecyclerAdapter<IMMessa
                 }
                 break;
         }
-        file_upload_time.setText(DateUtils.getTimeShowString(imMessageCustomBody.send_time, true));
+        file_upload_time.setText(DateUtils.getFormatChatTimeSimple(imMessageCustomBody.send_time));
     }
 
     @Override

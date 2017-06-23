@@ -885,7 +885,7 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMMessageCustomBody> i
     public String getShowTime(int pos) {
         IMMessageCustomBody item = getItem(pos);
         return item != null ?
-                DateUtils.getTimeShowString(item.send_time, true) : "null";
+                DateUtils.getFormatChatTime(item.send_time) : "null";
     }
 
 

@@ -249,7 +249,7 @@ public class GroupCreateActivity extends BaseActivity implements OnFragmentCallB
                                     response.body().result.tid,
                                     response.body().result.name,
                                     0,
-                                    0);
+                                    0, false);
                         } else {
                             showToast("创建成功");
                         }

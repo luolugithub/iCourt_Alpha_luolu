@@ -126,6 +126,7 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
     private static final String KEY_TITLE = "key_title";
     private static final String KEY_TOTAL_UNREAD_NUM = "key_total_unread_num";
     private static final String KEY_HIDDEN_MORE_BTN = "key_hidden_more_btn";
+    private static final String KEY_LOAD_SERVER_MSG = "key_load_server_msg";
     private static final String KEY_LOCATION_MSG_ID = "key_location_msg_id";
     private static final String KEY_CHAT_TYPE = "key_chat_type";
 
@@ -236,6 +237,7 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
         intent.putExtra(KEY_LOCATION_MSG_ID, locationMsgTime);
         intent.putExtra(KEY_TOTAL_UNREAD_NUM, totalUnreadCount);
         intent.putExtra(KEY_HIDDEN_MORE_BTN, hiddenMoreBtn);
+        intent.putExtra(KEY_LOAD_SERVER_MSG, true);
         context.startActivity(intent);
     }
 
@@ -285,6 +287,25 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
                                   long locationMsgId,
                                   int totalUnreadCount,
                                   boolean hiddenMoreBtn) {
+        launchTEAM(context, tid, title, locationMsgId, totalUnreadCount, hiddenMoreBtn, true);
+    }
+
+    /**
+     * @param context
+     * @param tid
+     * @param title
+     * @param locationMsgId
+     * @param totalUnreadCount
+     * @param hiddenMoreBtn
+     * @param loadNetMsg       是否加载网络消息
+     */
+    public static void launchTEAM(@NonNull Context context,
+                                  String tid,
+                                  String title,
+                                  long locationMsgId,
+                                  int totalUnreadCount,
+                                  boolean hiddenMoreBtn,
+                                  boolean loadNetMsg) {
         if (context == null) return;
         if (TextUtils.isEmpty(tid)) return;
         Intent intent = new Intent(context, ChatActivity.class);
@@ -294,6 +315,7 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
         intent.putExtra(KEY_LOCATION_MSG_ID, locationMsgId);
         intent.putExtra(KEY_TOTAL_UNREAD_NUM, totalUnreadCount);
         intent.putExtra(KEY_HIDDEN_MORE_BTN, hiddenMoreBtn);
+        intent.putExtra(KEY_LOAD_SERVER_MSG, loadNetMsg);
         context.startActivity(intent);
     }
 
@@ -898,7 +920,8 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
                     public void onSuccess(List<IMMessage> param) {
                         LogUtils.d("----------->query result:" + param);
                         param = filterMsgs(param);
-                        if (param == null || param.isEmpty()) {
+                        if (param == null || param.isEmpty()
+                                && getIntent().getBooleanExtra(KEY_LOAD_SERVER_MSG, true)) {
                             //本地为空从网络获取
                             getMsgFromServer(isRefresh);
                         } else {

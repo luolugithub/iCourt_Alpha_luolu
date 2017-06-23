@@ -384,6 +384,7 @@ public class TimerAddActivity extends BaseTimerActivity
                         @Override
                         public void onSuccess(Call<ResEntity<String>> call, Response<ResEntity<String>> response) {
                             dismissLoadingDialog();
+                            showToast("添加计时成功");
                             finish();
                         }
 

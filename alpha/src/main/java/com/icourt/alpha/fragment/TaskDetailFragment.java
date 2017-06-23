@@ -268,6 +268,7 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
                 }
             }
         }
+        selectedTaskGroup = taskGroupEntity;
         updateTask(taskItemEntity, projectEntity, taskGroupEntity);
     }
 
@@ -280,6 +281,7 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
      */
     private void updateTask(TaskEntity.TaskItemEntity itemEntity, final ProjectEntity projectEntity, final TaskGroupEntity taskGroupEntity) {
         showLoadingDialog(null);
+        log("------------>itemEntity:" + itemEntity + "\nprojectEntity:" + projectEntity + "\ntaskGroupEntity:" + taskGroupEntity);
         getApi().taskUpdate(RequestUtils.createJsonBody(getTaskJson(itemEntity, projectEntity, taskGroupEntity))).enqueue(new SimpleCallBack<JsonElement>() {
             @Override
             public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
@@ -324,6 +326,7 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
         });
     }
 
+
     /**
      * 获取任务json
      *
@@ -367,6 +370,8 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
         return null;
     }
 
+    TaskGroupEntity selectedTaskGroup;
+
     @Override
     public void onFragmentCallBack(Fragment fragment, int type, Bundle params) {
         if (params != null) {
@@ -384,10 +389,11 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
                 }
 
                 taskItemEntity.dueTime = millis;
-                updateTask(taskItemEntity, null, null);
+                updateTask(taskItemEntity, null, selectedTaskGroup);
             } else if (fragment instanceof TaskGroupSelectFragment) {//选择任务组回调
                 TaskGroupEntity taskGroupEntity = (TaskGroupEntity) params.getSerializable(KEY_FRAGMENT_RESULT);
                 if (taskGroupEntity != null) {
+                    selectedTaskGroup = taskGroupEntity;
                     taskGroupTv.setText(taskGroupEntity.name);
                     taskItemEntity.parentId = taskGroupEntity.id;
                     updateTask(taskItemEntity, null, taskGroupEntity);

@@ -419,7 +419,7 @@ public class IMSessionAdapter extends BaseArrayRecyclerAdapter<IMSessionEntity> 
      */
     private void setTimeView(TextView tvSessionTime, long time, int pos) {
         if (tvSessionTime == null) return;
-        tvSessionTime.setText(DateUtils.getTimeShowString(time, true));
+        tvSessionTime.setText(DateUtils.getFormatChatTimeSimple(time));
     }
 
 
