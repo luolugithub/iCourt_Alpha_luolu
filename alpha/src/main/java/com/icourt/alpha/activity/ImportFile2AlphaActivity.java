@@ -25,6 +25,7 @@ import com.icourt.alpha.utils.LogUtils;
 import com.icourt.alpha.utils.UriUtils;
 import com.icourt.alpha.view.NoScrollViewPager;
 
+import java.net.URLDecoder;
 import java.util.Arrays;
 
 import butterknife.BindView;
@@ -149,7 +150,19 @@ public class ImportFile2AlphaActivity extends BaseActivity
         String desc = null;
         if (TextUtils.equals(type, "text/plain"))//网页
         {
-            path = extraText;
+            //可能是.txt 带中文路径的
+            if (fileUir != null) {
+                try {
+                    String decodePath = URLDecoder.decode(fileUir.toString(), "utf-8");
+                    Uri parse = Uri.parse(decodePath);
+                    path = UriUtils.getPath(getContext(), parse);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    path = UriUtils.getPath(getContext(), fileUir);
+                }
+            } else {
+                path = extraText;
+            }
             desc = extraSubject;
         } else {//文件
             path = UriUtils.getPath(getContext(), fileUir);
@@ -157,6 +170,12 @@ public class ImportFile2AlphaActivity extends BaseActivity
         //fileProvider
         if (TextUtils.isEmpty(path) && fileUir != null) {
             path = fileUir.toString();
+            try {
+                path = URLDecoder.decode(fileUir.toString(), "utf-8");
+            } catch (Exception e) {
+                e.printStackTrace();
+                path = fileUir.toString();
+            }
         }
         log("----------->path:" + path);
         viewPager.setAdapter(baseFragmentAdapter = new BaseFragmentAdapter(getSupportFragmentManager()));
