@@ -233,6 +233,16 @@ public class DateUtils {
     }
 
     /**
+     * yyyy年MM月dd日 HH:mm
+     * @param milliseconds
+     * @return
+     */
+    public static String getyyyy_YEAR_MM_MONTH_dd_DAY_HHmm(long milliseconds) {
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy年MM月dd日 HH:mm");
+        return formatter.format(milliseconds);
+    }
+
+    /**
      * 获取日期 MM/dd HH:mm
      *
      * @param milliseconds

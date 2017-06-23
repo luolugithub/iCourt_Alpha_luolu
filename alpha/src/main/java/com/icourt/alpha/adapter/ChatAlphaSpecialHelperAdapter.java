@@ -82,14 +82,14 @@ public class ChatAlphaSpecialHelperAdapter
                 msg_title_tv.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.mipmap.message_arrow_14, 0);
                 msg_time_tv.setText(alphaSecialHeplerMsgEntity.reply);
             } else {
-                if (TextUtils.equals(alphaSecialHeplerMsgEntity.scene, AlphaSecialHeplerMsgEntity.TASK_STATUS_DELETE)||TextUtils.equals(alphaSecialHeplerMsgEntity.scene, AlphaSecialHeplerMsgEntity.TASK_PRINCIPAL_REMOVEU)) {
+                if (TextUtils.equals(alphaSecialHeplerMsgEntity.scene, AlphaSecialHeplerMsgEntity.TASK_STATUS_DELETE) || TextUtils.equals(alphaSecialHeplerMsgEntity.scene, AlphaSecialHeplerMsgEntity.TASK_PRINCIPAL_REMOVEU)) {
                     msg_title_tv.setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0);
                 } else {
                     msg_title_tv.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.mipmap.message_arrow_14, 0);
                 }
+                msg_time_tv.setText(DateUtils.getyyyy_YEAR_MM_MONTH_dd_DAY_HHmm(alphaSecialHeplerMsgEntity.dueTime));
             }
             msg_from_tv.setText(alphaSecialHeplerMsgEntity.matterName);
-            msg_time_tv.setText(alphaSecialHeplerMsgEntity.reply);
             msg_time_tv.setCompoundDrawablesWithIntrinsicBounds(TextUtils.isEmpty(alphaSecialHeplerMsgEntity.reply) ? 0 : R.mipmap.ic_message_due_14, 0, 0, 0);
 
         } else if (TextUtils.equals(alphaSecialHeplerMsgEntity.object, "MATTER")) {
