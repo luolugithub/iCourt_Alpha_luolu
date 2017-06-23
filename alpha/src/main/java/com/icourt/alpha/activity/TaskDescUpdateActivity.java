@@ -100,6 +100,9 @@ public class TaskDescUpdateActivity extends BaseActivity {
                 setTitle("编辑任务详情");
             }
             descEditText.setHint("添加任务详情");
+            descEditText.setMaxEms(3000);
+            descEditText.setFilters(new InputFilter[]{new InputFilter.LengthFilter(3000)});
+            contentLengthTv.setVisibility(View.VISIBLE);
         } else if (type == UPDATE_TASK_NAME) {
             if (TextUtils.isEmpty(descOrName)) {
                 setTitle("添加任务名称");
@@ -110,23 +113,23 @@ public class TaskDescUpdateActivity extends BaseActivity {
             descEditText.setMaxEms(200);
             descEditText.setFilters(new InputFilter[]{new InputFilter.LengthFilter(200)});
             contentLengthTv.setVisibility(View.VISIBLE);
-            descEditText.addTextChangedListener(new TextWatcher() {
-                @Override
-                public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-                    contentLengthTv.setText("0/" + descEditText.getMaxEms());
-                }
-
-                @Override
-                public void onTextChanged(CharSequence s, int start, int before, int count) {
-
-                }
-
-                @Override
-                public void afterTextChanged(Editable s) {
-                    contentLengthTv.setText(s.toString().length() + "/" + descEditText.getMaxEms());
-                }
-            });
         }
+        descEditText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                contentLengthTv.setText("0/" + descEditText.getMaxEms());
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                contentLengthTv.setText(s.toString().length() + "/" + descEditText.getMaxEms());
+            }
+        });
         descEditText.setText(descOrName);
         descEditText.setSelection(descEditText.getText().length());
     }

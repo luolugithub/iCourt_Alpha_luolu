@@ -281,7 +281,7 @@ public class CustomerPersonCreateActivity extends BaseActivity {
                 setTitle(contactDeatilBean.getContact().getName());
                 getLiaisons(contactDeatilBean.getContact().getPkid());
                 activityAddPersonContactNameTextview.setText(contactDeatilBean.getContact().getName());
-                if ("P".equals(contactDeatilBean.getContact().getContactType())) {
+                if (TextUtils.equals("P", contactDeatilBean.getContact().getContactType())) {
                     activityAddPersonContactSexTextview.setText(contactDeatilBean.getContact().getSex());
                 }
                 if (!TextUtils.isEmpty(contactDeatilBean.getContact().getImpression())) {
@@ -786,8 +786,8 @@ public class CustomerPersonCreateActivity extends BaseActivity {
             setRelationText.setHint("设置关系");
         }
 
-        if ("P".equals(customerEntity.contactType)) {
-            if ("女".equals(customerEntity.sex)) {
+        if (TextUtils.equals("P", customerEntity.contactType)) {
+            if (TextUtils.equals("女", customerEntity.sex)) {
                 photoView.setImageResource(R.mipmap.female);
             } else {
                 photoView.setImageResource(R.mipmap.male);
@@ -875,26 +875,27 @@ public class CustomerPersonCreateActivity extends BaseActivity {
                 String action = data.getAction();
                 int position = data.getIntExtra("position", -1);
                 String tagName = data.getStringExtra("tag");
-                if (action.equals(Const.SELECT_PHONE_TAG_ACTION)) {//电话标签
-                    ((TextView) phoneMap.get(position).findViewById(R.id.activity_add_contact_item_keyname_text)).setText(tagName);
-                } else if (action.equals(Const.SELECT_EMAIL_TAG_ACTION)) {//邮箱标签
-                    ((TextView) emailMap.get(position).findViewById(R.id.activity_add_contact_item_keyname_text)).setText(tagName);
-                } else if (action.equals(Const.SELECT_ADDRESS_TAG_ACTION)) {//地址标签
-                    ((TextView) addressMap.get(position).findViewById(R.id.activity_add_contact_item_keyname_text)).setText(tagName);
-                } else if (action.equals(Const.SELECT_PAPERS_TAG_ACTION)) {//证件标签
-                    ((TextView) paperMap.get(position).findViewById(R.id.activity_add_contact_item_keyname_text)).setText(tagName);
-                } else if (action.equals(Const.SELECT_IM_TAG_ACTION)) {//即时通讯标签
-                    ((TextView) imAccountMap.get(position).findViewById(R.id.activity_add_contact_item_keyname_text)).setText(tagName);
-                } else if (action.equals(Const.SELECT_DATE_TAG_ACTION)) {//日期标签
-                    ((TextView) dateMap.get(position).findViewById(R.id.activity_add_contact_item_keyname_text)).setText(tagName);
-                } else if (action.equals(Const.SELECT_ENTERPRISE_TAG_ACTION)) {//工作单位标签
-                    ((TextView) enterpriseMap.get(position).findViewById(R.id.activity_add_contact_item_keyname_text)).setText(tagName);
-                } else if (action.equals(Const.SELECT_LIAISONS_TAG_ACTION)) {//选择联络人
-                    addLiaisonsItemView((CustomerEntity) data.getSerializableExtra("customerEntity"));
-                } else if (action.equals(Const.SELECT_RELATION_TAG_ACTION)) {
-                    ((TextView) liaisonsMap.get(position).findViewById(R.id.activity_add_contact_liaisons_item_relation_text)).setText(tagName);
-                    liaisonsList.get(position - 1).itemSubType = tagName;
-                }
+                if (!TextUtils.isEmpty(action))
+                    if (action.equals(Const.SELECT_PHONE_TAG_ACTION)) {//电话标签
+                        ((TextView) phoneMap.get(position).findViewById(R.id.activity_add_contact_item_keyname_text)).setText(tagName);
+                    } else if (action.equals(Const.SELECT_EMAIL_TAG_ACTION)) {//邮箱标签
+                        ((TextView) emailMap.get(position).findViewById(R.id.activity_add_contact_item_keyname_text)).setText(tagName);
+                    } else if (action.equals(Const.SELECT_ADDRESS_TAG_ACTION)) {//地址标签
+                        ((TextView) addressMap.get(position).findViewById(R.id.activity_add_contact_item_keyname_text)).setText(tagName);
+                    } else if (action.equals(Const.SELECT_PAPERS_TAG_ACTION)) {//证件标签
+                        ((TextView) paperMap.get(position).findViewById(R.id.activity_add_contact_item_keyname_text)).setText(tagName);
+                    } else if (action.equals(Const.SELECT_IM_TAG_ACTION)) {//即时通讯标签
+                        ((TextView) imAccountMap.get(position).findViewById(R.id.activity_add_contact_item_keyname_text)).setText(tagName);
+                    } else if (action.equals(Const.SELECT_DATE_TAG_ACTION)) {//日期标签
+                        ((TextView) dateMap.get(position).findViewById(R.id.activity_add_contact_item_keyname_text)).setText(tagName);
+                    } else if (action.equals(Const.SELECT_ENTERPRISE_TAG_ACTION)) {//工作单位标签
+                        ((TextView) enterpriseMap.get(position).findViewById(R.id.activity_add_contact_item_keyname_text)).setText(tagName);
+                    } else if (action.equals(Const.SELECT_LIAISONS_TAG_ACTION)) {//选择联络人
+                        addLiaisonsItemView((CustomerEntity) data.getSerializableExtra("customerEntity"));
+                    } else if (action.equals(Const.SELECT_RELATION_TAG_ACTION)) {
+                        ((TextView) liaisonsMap.get(position).findViewById(R.id.activity_add_contact_liaisons_item_relation_text)).setText(tagName);
+                        liaisonsList.get(position - 1).itemSubType = tagName;
+                    }
             }
         }
 
