@@ -1120,13 +1120,7 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
     @Override
     public void onMessageRevoke(IMMessage message) {
         log("----------------->chat onMessageRevoke:" + message);
-        deleteMsgFromDb(message);
-        if (isCurrentRoomSession(message.getSessionId())) {
-            IMMessageCustomBody imBody = getIMBody(message);
-            if (imBody != null) {
-                removeFromAdapter(imBody.id);
-            }
-        }
+        //注意 本身原消息 和撤回的那一条消息 macgic_id是一样的;
     }
 
     @Override
@@ -1141,8 +1135,10 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
      * @param msgId
      */
     private synchronized void removeFromAdapter(long msgId) {
-        for (int i = chatAdapter.getData().size() - 1; i >= 0; i++) {
-            IMMessageCustomBody item = chatAdapter.getItem(i);
+        log("----------------->chat onMessageRevoke:msgId" + msgId);
+        List<IMMessageCustomBody> data = chatAdapter.getData();
+        for (int i = data.size() - 1; i >= 0; i--) {
+            IMMessageCustomBody item = data.get(i);
             if (item != null) {
                 if (msgId == item.id) {
                     chatAdapter.removeItem(item);

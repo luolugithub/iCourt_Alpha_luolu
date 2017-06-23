@@ -449,9 +449,17 @@ public abstract class ChatBaseActivity
      *
      * @param message
      */
-    protected void deleteMsgFromDb(IMMessage message) {
+    protected void deleteMsgFromDb(final IMMessage message) {
         if (message == null) return;
-        NIMClient.getService(MsgService.class).deleteChattingHistory(message);
+        Observable.create(new ObservableOnSubscribe<Boolean>() {
+            @Override
+            public void subscribe(@io.reactivex.annotations.NonNull ObservableEmitter<Boolean> observableEmitter) throws Exception {
+                if (observableEmitter.isDisposed()) return;
+                NIMClient.getService(MsgService.class).deleteChattingHistory(message);
+            }
+        }).compose(this.<Boolean>bindToLifecycle())
+                .subscribeOn(Schedulers.newThread())
+                .subscribe();
     }
 
 
@@ -1364,7 +1372,7 @@ public abstract class ChatBaseActivity
         if (fragment != null) {
             mFragTransaction.remove(fragment);
         }
-        ContactShareDialogFragment.newInstance(id,true)
+        ContactShareDialogFragment.newInstance(id, true)
                 .show(mFragTransaction, tag);
     }
 }
