@@ -163,7 +163,10 @@ public class FileBoxDownloadActivity extends BaseActivity {
         }
     }
 
-    @OnClick({R.id.save_matter_view, R.id.send_im_view, R.id.open_view, R.id.share_view})
+    @OnClick({R.id.save_matter_view,
+            R.id.send_im_view,
+            R.id.open_view,
+            R.id.share_view})
     @Override
     public void onClick(View v) {
         super.onClick(v);

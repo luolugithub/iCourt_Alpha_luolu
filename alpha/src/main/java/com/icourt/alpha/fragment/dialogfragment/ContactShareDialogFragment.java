@@ -309,7 +309,7 @@ public class ContactShareDialogFragment extends BaseDialogFragment
         AlphaUserInfo loginUserInfo = getLoginUserInfo();
         String uid = StringUtils.toLowerCase(loginUserInfo.getUserId());
         IMMessageCustomBody msgPostEntity = null;
-        showLoadingDialog(null);
+
         if (!sendGroupEntities.isEmpty()) {
             if (sendGroupEntities.size() > 0) {
                 showLoadingDialog(null);

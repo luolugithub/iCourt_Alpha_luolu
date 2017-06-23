@@ -27,7 +27,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
-            android:layout_marginTop="@dimen/dp10"
+            android:layout_margin="@dimen/dp10"
+
             android:text="会议纪要"
             android:textColor="@color/alpha_font_color_black"
             android:textSize="16sp" />
