@@ -81,7 +81,7 @@ public class ChatAlphaSpecialHelperAdapter
             if (TextUtils.equals(taskType, AlphaSecialHeplerMsgEntity.TASK_REPLY)) {
                 msg_title_tv.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.mipmap.message_arrow_14, 0);
                 msg_time_tv.setText(alphaSecialHeplerMsgEntity.reply);
-                msg_time_tv.setCompoundDrawablesWithIntrinsicBounds(TextUtils.isEmpty(alphaSecialHeplerMsgEntity.reply) ? 0 : R.mipmap.ic_message_due_14, 0, 0, 0);
+                msg_time_tv.setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0);
             } else {
                 if (TextUtils.equals(alphaSecialHeplerMsgEntity.scene, AlphaSecialHeplerMsgEntity.TASK_STATUS_DELETE) || TextUtils.equals(alphaSecialHeplerMsgEntity.scene, AlphaSecialHeplerMsgEntity.TASK_PRINCIPAL_REMOVEU)) {
                     msg_title_tv.setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0);

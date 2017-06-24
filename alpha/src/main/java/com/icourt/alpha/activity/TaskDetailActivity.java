@@ -54,6 +54,7 @@ import com.icourt.alpha.utils.DensityUtil;
 import com.icourt.alpha.utils.GlideUtils;
 import com.icourt.alpha.utils.LoginInfoUtils;
 import com.icourt.alpha.utils.SpannableUtils;
+import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.widget.dialog.BottomActionDialog;
 import com.icourt.alpha.widget.manager.TimerManager;
@@ -600,6 +601,8 @@ public class TaskDetailActivity extends BaseActivity
     private void setDataToView(TaskEntity.TaskItemEntity taskItemEntity) {
         if (taskItemEntity != null) {
 
+            if (taskName == null) return;
+
             if (titleAction2 != null) {
                 titleAction2.setVisibility(hasTaskDeletePermission() ? View.VISIBLE : View.GONE);
             }
@@ -935,6 +938,10 @@ public class TaskDetailActivity extends BaseActivity
             }
             if (taskItemEntity.matter != null) {
                 taskItemEntity.matter.id = event.projectId;
+            }
+        } else if (event.action == TaskActionEvent.TASK_REFRESG_ACTION) {
+            if (StringUtils.equalsIgnoreCase(getIntent().getStringExtra(KEY_TASK_ID), event.id, false)) {
+                getData(true);
             }
         }
     }

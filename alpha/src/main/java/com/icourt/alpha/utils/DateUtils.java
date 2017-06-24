@@ -397,11 +397,12 @@ public class DateUtils {
      */
     public static long getCurrWeekEndTime() {
         Calendar currentDate = Calendar.getInstance(TimeZone.getTimeZone("GMT+:08:00"));
-        currentDate.setFirstDayOfWeek(Calendar.SUNDAY);
+        // currentDate.setFirstDayOfWeek(Calendar.SUNDAY);
+        currentDate.setFirstDayOfWeek(Calendar.MONDAY);
         currentDate.set(Calendar.HOUR_OF_DAY, 23);
         currentDate.set(Calendar.MINUTE, 59);
         currentDate.set(Calendar.SECOND, 59);
-        currentDate.set(Calendar.DAY_OF_WEEK, Calendar.SUNDAY);
+        currentDate.set(Calendar.DAY_OF_WEEK, Calendar.SATURDAY);
         return currentDate.getTime().getTime();
     }
 

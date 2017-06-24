@@ -279,7 +279,7 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
      * @param projectEntity
      * @param taskGroupEntity
      */
-    private void updateTask(TaskEntity.TaskItemEntity itemEntity, final ProjectEntity projectEntity, final TaskGroupEntity taskGroupEntity) {
+    private void updateTask(final TaskEntity.TaskItemEntity itemEntity, final ProjectEntity projectEntity, final TaskGroupEntity taskGroupEntity) {
         showLoadingDialog(null);
         log("------------>itemEntity:" + itemEntity + "\nprojectEntity:" + projectEntity + "\ntaskGroupEntity:" + taskGroupEntity);
         getApi().taskUpdate(RequestUtils.createJsonBody(getTaskJson(itemEntity, projectEntity, taskGroupEntity))).enqueue(new SimpleCallBack<JsonElement>() {
@@ -315,7 +315,7 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
                     }
                 }
 
-                EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION));
+                EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION, itemEntity.id, ""));
             }
 
             @Override
