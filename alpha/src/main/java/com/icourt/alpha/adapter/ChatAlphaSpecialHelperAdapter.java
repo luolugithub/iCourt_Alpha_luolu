@@ -88,8 +88,13 @@ public class ChatAlphaSpecialHelperAdapter
                 } else {
                     msg_title_tv.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.mipmap.message_arrow_14, 0);
                 }
-                msg_time_tv.setText(DateUtils.getyyyy_YEAR_MM_MONTH_dd_DAY_HHmm(alphaSecialHeplerMsgEntity.dueTime));
-                msg_time_tv.setCompoundDrawablesWithIntrinsicBounds(R.mipmap.ic_message_due_14, 0, 0, 0);
+                if (alphaSecialHeplerMsgEntity.dueTime <= 0) {
+                    msg_time_tv.setText("");
+                    msg_time_tv.setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0);
+                } else {
+                    msg_time_tv.setText(DateUtils.getyyyy_YEAR_MM_MONTH_dd_DAY_HHmm(alphaSecialHeplerMsgEntity.dueTime));
+                    msg_time_tv.setCompoundDrawablesWithIntrinsicBounds(R.mipmap.ic_message_due_14, 0, 0, 0);
+                }
             }
             msg_from_tv.setText(alphaSecialHeplerMsgEntity.matterName);
         } else if (TextUtils.equals(alphaSecialHeplerMsgEntity.object, "MATTER")) {

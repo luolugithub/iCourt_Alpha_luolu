@@ -304,7 +304,7 @@ public class DateUtils {
      * @return
      */
     public static String getMMMdd(long milliseconds) {
-        SimpleDateFormat formatter = new SimpleDateFormat("MM月dd日");
+        SimpleDateFormat formatter = new SimpleDateFormat("MM月dd日", Locale.CHINA);
         try {
             return formatter.format(milliseconds);
         } catch (IllegalArgumentException e) {
@@ -382,13 +382,13 @@ public class DateUtils {
      * @return
      */
     public static long getCurrWeekStartTime() {
-        Calendar currentDate = new GregorianCalendar();
+        Calendar currentDate = Calendar.getInstance(TimeZone.getTimeZone("GMT+:08:00"));
         currentDate.setFirstDayOfWeek(Calendar.MONDAY);
         currentDate.set(Calendar.HOUR_OF_DAY, 0);
         currentDate.set(Calendar.MINUTE, 0);
         currentDate.set(Calendar.SECOND, 0);
         currentDate.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY);
-        return currentDate.getTime().getTime();
+        return currentDate.getTimeInMillis();
     }
 
 
@@ -396,8 +396,8 @@ public class DateUtils {
      * @return
      */
     public static long getCurrWeekEndTime() {
-        Calendar currentDate = new GregorianCalendar();
-        currentDate.setFirstDayOfWeek(Calendar.MONDAY);
+        Calendar currentDate = Calendar.getInstance(TimeZone.getTimeZone("GMT+:08:00"));
+        currentDate.setFirstDayOfWeek(Calendar.SUNDAY);
         currentDate.set(Calendar.HOUR_OF_DAY, 23);
         currentDate.set(Calendar.MINUTE, 59);
         currentDate.set(Calendar.SECOND, 59);

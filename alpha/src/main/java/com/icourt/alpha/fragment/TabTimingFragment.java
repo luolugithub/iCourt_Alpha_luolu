@@ -46,6 +46,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
 import butterknife.BindView;
@@ -313,7 +314,7 @@ public class TabTimingFragment extends BaseFragment implements BaseRecyclerAdapt
     }
 
     private String getFromatTime(long time) {
-        return new SimpleDateFormat("yyyy-MM-dd").format(time);
+        return new SimpleDateFormat("yyyy-MM-dd", Locale.CHINA).format(time);
     }
 
 
@@ -354,9 +355,11 @@ public class TabTimingFragment extends BaseFragment implements BaseRecyclerAdapt
             if (itemEntity != null) {
                 try {
                     Calendar calendar = Calendar.getInstance();
+                    calendar.setFirstDayOfWeek(Calendar.MONDAY);
                     calendar.setTimeInMillis(itemEntity.workDate);
-                    log("--------------->>i:" + i + "  day:" + (calendar.get(Calendar.DAY_OF_WEEK) - 1) + "  count:" + itemEntity.timingCount);
-                    weekDataArray.put((calendar.get(Calendar.DAY_OF_WEEK) - 1), itemEntity.timingCount);
+
+                    log("--------------->>i:" + i + "  day:" + (calendar.get(Calendar.DAY_OF_WEEK) + 5) % 7 + "  count:" + itemEntity.timingCount);
+                    weekDataArray.put((calendar.get(Calendar.DAY_OF_WEEK) + 5) % 7, itemEntity.timingCount);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

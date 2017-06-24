@@ -72,7 +72,7 @@ public class ProjectRangeFragment extends BaseFragment {
             List<RangeItemEntity> rangeItemEntities = new ArrayList<>();
             if (!TextUtils.isEmpty(projectDetailEntity.caseProcessName) && !"null".equals(projectDetailEntity.caseProcessName)) {
                 caseProcessLayout.setVisibility(View.VISIBLE);
-                rangeNameTv.setText(projectDetailEntity.caseProcessName);
+                rangeNowTv.setText(projectDetailEntity.caseProcessName);
             } else {
                 caseProcessLayout.setVisibility(View.GONE);
             }
@@ -118,11 +118,16 @@ public class ProjectRangeFragment extends BaseFragment {
      * @return
      */
     private String getJudgeName(List<ProjectDetailEntity.JudgeBean> judgeBeens) {
-        StringBuilder stringBuilder = new StringBuilder();
-        for (ProjectDetailEntity.JudgeBean judgeBeen : judgeBeens) {
-            stringBuilder.append(judgeBeen.name).append(",");
+        try {
+            StringBuilder stringBuilder = new StringBuilder();
+            for (ProjectDetailEntity.JudgeBean judgeBeen : judgeBeens) {
+                stringBuilder.append(judgeBeen.name).append(",");
+            }
+            return stringBuilder.toString().substring(0, stringBuilder.toString().length() - 1);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        return stringBuilder.toString().substring(0, stringBuilder.toString().length() - 1);
+        return "";
     }
 
     @Override
