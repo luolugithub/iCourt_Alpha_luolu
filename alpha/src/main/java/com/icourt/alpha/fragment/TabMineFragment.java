@@ -233,9 +233,17 @@ public class TabMineFragment extends BaseFragment {
                 MyFileTabActivity.launch(getContext());
                 break;
             case R.id.my_center_clear_cache_layout://清除缓存
-                DataCleanManager.clearAllCache(getActivity());
-                myCenterClearCacheTextview.setText("0K");
-                showTopSnackBar(R.string.my_center_clear_cache_succee_text);
+                new AlertDialog.Builder(getContext())
+                        .setMessage("确认清除?")
+                        .setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                DataCleanManager.clearAllCache(getActivity());
+                                myCenterClearCacheTextview.setText("0K");
+                                showTopSnackBar(R.string.my_center_clear_cache_succee_text);
+                            }
+                        }).setNegativeButton("取消", null)
+                        .show();
                 break;
             case R.id.my_center_clear_about_layout://关于
                 AboutActivity.launch(getContext());

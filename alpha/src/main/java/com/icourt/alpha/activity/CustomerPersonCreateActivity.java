@@ -1060,6 +1060,7 @@ public class CustomerPersonCreateActivity extends BaseActivity {
         getApi().customerCreate(RequestUtils.createJsonBody(json)).enqueue(new SimpleCallBack<List<ContactDeatilBean>>() {
             @Override
             public void onSuccess(Call<ResEntity<List<ContactDeatilBean>>> call, Response<ResEntity<List<ContactDeatilBean>>> response) {
+                showToast("添加联系人成功");
                 dismissLoadingDialog();
                 List<ContactDeatilBean> list = response.body().result;
                 if (list != null) {

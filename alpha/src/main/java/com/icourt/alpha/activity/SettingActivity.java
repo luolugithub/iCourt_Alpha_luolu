@@ -72,7 +72,7 @@ public class SettingActivity extends BaseActivity {
             phoneEdittext.setText(alphaUserInfo.getPhone());
             emailEdittext.setText(alphaUserInfo.getMail());
             phoneEdittext.setSelection(phoneEdittext.getText().length());
-           // phoneEdittext.setSelection(alphaUserInfo.getPhone().length());
+            // phoneEdittext.setSelection(alphaUserInfo.getPhone().length());
         }
     }
 
@@ -93,10 +93,11 @@ public class SettingActivity extends BaseActivity {
         final String phone = phoneEdittext.getText().toString().trim();
         final String email = emailEdittext.getText().toString().trim();
 
-        if (!TextFormater.isMailNO(email)) {
+        //非必填
+        /*if (!TextFormater.isMailNO(email)) {
             showTopSnackBar("请输入正确的邮箱格式");
             return;
-        }
+        }*/
         if (!TextFormater.isMobileNO(phone)) {
             showTopSnackBar("请输入正确的手机格式");
             return;
