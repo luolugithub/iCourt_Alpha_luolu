@@ -4,7 +4,6 @@ import android.os.Bundle;
 import android.support.annotation.CheckResult;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.text.TextUtils;
 import android.view.WindowManager;
 
 import com.google.gson.JsonObject;
@@ -132,15 +131,15 @@ public class LoginBaseActivity extends BaseUmengActivity {
     private void getChatEaseAccount(@NonNull final AlphaUserInfo result) {
         log("-------->token:" + result != null ? result.getToken() : "");
         showLoadingDialog(null);
-        getApi().getChatToken()
+        getChatApi().getChatToken()
                 .enqueue(new SimpleCallBack<LoginIMToken>() {
                     @Override
                     public void onSuccess(Call<ResEntity<LoginIMToken>> call, Response<ResEntity<LoginIMToken>> response) {
                         if (response.body().result == null) {
                             dismissLoadingDialog();
                         } else {
-                            result.setThirdpartId(response.body().result.thirdpartId);
-                            result.setChatToken(response.body().result.chatToken);
+                            result.setThirdpartId(response.body().result.accid);
+                            result.setChatToken(response.body().result.imToken);
                             result.setLoginTime(System.currentTimeMillis());
 
                             //保存登陆信息
@@ -173,9 +172,8 @@ public class LoginBaseActivity extends BaseUmengActivity {
         if (result == null) {
             dismissLoadingDialog();
         } else {
-            String upperThirdpartId = TextUtils.isEmpty(result.thirdpartId) ? result.thirdpartId : result.thirdpartId.toUpperCase();
             NIMClient.getService(AuthService.class)
-                    .login(new LoginInfo(upperThirdpartId, result.chatToken))
+                    .login(new LoginInfo(result.accid, result.imToken))
                     .setCallback(new RequestCallback<LoginInfo>() {
 
                         @Override

@@ -27,9 +27,9 @@
                 android:gravity="center"
                 android:maxLines="1"
                 android:text="客户"
-                android:textStyle="bold"
                 android:textColor="@color/alpha_font_color_title"
-                android:textSize="@dimen/alpha_font_size_title" />
+                android:textSize="@dimen/alpha_font_size_title"
+                android:textStyle="bold" />
 
             <ImageView
                 android:id="@id/titleAction"
@@ -58,6 +58,10 @@
                 android:background="@android:color/white" />
 
         </com.icourt.alpha.view.xrefreshlayout.RefreshLayout>
+
+        <include
+            layout="@layout/layout_empty_tv"
+            android:visibility="gone" />
 
         <com.gjiazhe.wavesidebar.WaveSideBar
             android:id="@+id/recyclerIndexBar"

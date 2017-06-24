@@ -542,7 +542,29 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
     @Override
     public void onProjectTaskGroupSelect(ProjectEntity projectEntity, TaskGroupEntity taskGroupEntity) {
 
-        updateTask(updateTaskItemEntity, projectEntity, taskGroupEntity);
+        updateTask2(updateTaskItemEntity, projectEntity, taskGroupEntity);
+    }
+
+    /**
+     * 修改任务
+     *
+     * @param itemEntity
+     */
+    private void updateTask2(TaskEntity.TaskItemEntity itemEntity, ProjectEntity projectEntity, TaskGroupEntity taskGroupEntity) {
+        showLoadingDialog(null);
+        getApi().taskUpdate(RequestUtils.createJsonBody(getTaskJson2(itemEntity, projectEntity, taskGroupEntity))).enqueue(new SimpleCallBack<JsonElement>() {
+            @Override
+            public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
+                dismissLoadingDialog();
+                refreshLayout.startRefresh();
+            }
+
+            @Override
+            public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
+                super.onFailure(call, t);
+                dismissLoadingDialog();
+            }
+        });
     }
 
     /**
@@ -589,6 +611,45 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
             }
             if (taskGroupEntity != null) {
                 jsonObject.addProperty("parentId", taskGroupEntity.id);
+            }
+            JsonArray jsonarr = new JsonArray();
+            if (itemEntity.attendeeUsers != null) {
+                for (TaskEntity.TaskItemEntity.AttendeeUserEntity attendeeUser : itemEntity.attendeeUsers) {
+                    jsonarr.add(attendeeUser.userId);
+                }
+            }
+            jsonObject.add("attendees", jsonarr);
+            return jsonObject.toString();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    /**
+     * 获取任务json
+     *
+     * @param itemEntity
+     * @return
+     */
+    private String getTaskJson2(TaskEntity.TaskItemEntity itemEntity, ProjectEntity projectEntity, TaskGroupEntity taskGroupEntity) {
+        if (itemEntity == null) return null;
+        try {
+            JsonObject jsonObject = new JsonObject();
+            jsonObject.addProperty("id", itemEntity.id);
+            jsonObject.addProperty("state", itemEntity.state);
+            jsonObject.addProperty("valid", true);
+            jsonObject.addProperty("name", itemEntity.name);
+            jsonObject.addProperty("parentId", itemEntity.parentId);
+            jsonObject.addProperty("dueTime", itemEntity.dueTime);
+            jsonObject.addProperty("updateTime", DateUtils.millis());
+            if (projectEntity != null) {
+                jsonObject.addProperty("matterId", projectEntity.pkId);
+            }
+            if (taskGroupEntity != null) {
+                jsonObject.addProperty("parentId", taskGroupEntity.id);
+            } else {
+                jsonObject.addProperty("parentId", 0);
             }
             JsonArray jsonarr = new JsonArray();
             if (itemEntity.attendeeUsers != null) {

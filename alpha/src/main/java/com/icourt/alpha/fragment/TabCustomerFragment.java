@@ -9,6 +9,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.andview.refreshview.XRefreshView;
 import com.gjiazhe.wavesidebar.WaveSideBar;
@@ -22,6 +23,7 @@ import com.icourt.alpha.activity.MyCollectedCustomersActivity;
 import com.icourt.alpha.adapter.CustomerAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.HeaderFooterAdapter;
+import com.icourt.alpha.adapter.baseadapter.adapterObserver.DataChangeAdapterObserver;
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.db.convertor.IConvertModel;
 import com.icourt.alpha.db.convertor.ListConvertor;
@@ -79,6 +81,8 @@ public class TabCustomerFragment extends BaseFragment implements BaseRecyclerAda
     SuspensionDecoration mDecoration;
     CustomerDbService customerDbService;
     LinearLayoutManager linearLayoutManager;
+    @BindView(R.id.contentEmptyText)
+    TextView contentEmptyText;
 
     public static TabCustomerFragment newInstance() {
         return new TabCustomerFragment();
@@ -100,6 +104,14 @@ public class TabCustomerFragment extends BaseFragment implements BaseRecyclerAda
         recyclerView.setLayoutManager(linearLayoutManager);
 
         headerFooterAdapter = new HeaderFooterAdapter<>(customerAdapter = new CustomerAdapter());
+        customerAdapter.registerAdapterDataObserver(new DataChangeAdapterObserver() {
+            @Override
+            protected void updateUI() {
+                if (contentEmptyText != null) {
+                    contentEmptyText.setVisibility(customerAdapter.getItemCount() > 0 ? View.GONE : View.VISIBLE);
+                }
+            }
+        });
         View headerView = HeaderFooterAdapter.inflaterView(getContext(), R.layout.header_customer_search, recyclerView);
         View header_customer_collected = headerView.findViewById(R.id.header_customer_collected);
         registerClick(header_customer_collected);

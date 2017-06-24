@@ -7,6 +7,7 @@ import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.icourt.alpha.entity.bean.GroupDetailEntity;
 import com.icourt.alpha.entity.bean.GroupEntity;
 import com.icourt.alpha.entity.bean.IMMessageCustomBody;
+import com.icourt.alpha.entity.bean.LoginIMToken;
 import com.icourt.alpha.entity.bean.MsgStatusEntity;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 
@@ -578,5 +579,15 @@ public interface ApiChatService {
     Call<ResEntity<JsonElement>> fileUrlQuery(@Query("repo_id") String repo_id,
                                               @Query("path") String path,
                                               @Query("name") String name);
+
+
+    /**
+     * 获取聊天的token
+     * 文档地址:https://www.showdoc.cc/1620156?page_id=14892422
+     *
+     * @return
+     */
+    @GET("im/v1/users/imToken")
+    Call<ResEntity<LoginIMToken>> getChatToken();
 
 }

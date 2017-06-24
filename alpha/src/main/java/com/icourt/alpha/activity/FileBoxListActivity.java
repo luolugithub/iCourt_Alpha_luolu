@@ -34,6 +34,7 @@ import com.icourt.alpha.widget.dialog.BottomActionDialog;
 import com.icourt.api.RequestUtils;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
@@ -87,6 +88,7 @@ public class FileBoxListActivity extends BaseActivity implements BaseRecyclerAda
     List<FileBoxBean> fileBoxBeanList;
     private List<String> firstlist;
     private boolean nameIsUp = false, timeIsUp = false, sizeIsUp = false;
+    final List<String> list = new ArrayList<>();
 
     public static void launch(@NonNull Context context, @NonNull FileBoxBean fileBoxBean, @NonNull String authToken, @NonNull String seaFileRepoId, @NonNull String rootName) {
         if (context == null) return;
@@ -110,6 +112,8 @@ public class FileBoxListActivity extends BaseActivity implements BaseRecyclerAda
     @Override
     protected void initView() {
         super.initView();
+        list.add("按文件名降序排序");
+        list.add("按文件大小升序排序");
         seaFileRepoId = getIntent().getStringExtra("seaFileRepoId");
         rootName = getIntent().getStringExtra("rootName");
         authToken = getIntent().getStringExtra("authToken");
@@ -370,7 +374,7 @@ public class FileBoxListActivity extends BaseActivity implements BaseRecyclerAda
     private void showDocumentMeau() {
         new BottomActionDialog(getContext(),
                 null,
-                Arrays.asList("按文件名升序排序", "按文件大小升序排序"),
+                list,
                 new BottomActionDialog.OnActionItemClickListener() {
                     @Override
                     public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
@@ -381,13 +385,28 @@ public class FileBoxListActivity extends BaseActivity implements BaseRecyclerAda
                                 nameIsUp = !nameIsUp;
                                 timeIsUp = false;
                                 sizeIsUp = false;
+                                list.clear();
+                                if (nameIsUp) {
+                                    list.add("按文件名降序排序");
+                                    list.add("按文件大小升序排序");
+                                } else {
+                                    list.add("按文件名升序排序");
+                                    list.add("按文件大小升序排序");
+                                }
                                 break;
                             case 1:
                                 sortFileBySizeList(sizeIsUp);
                                 sizeIsUp = !sizeIsUp;
                                 nameIsUp = false;
                                 timeIsUp = false;
-
+                                list.clear();
+                                if (sizeIsUp) {
+                                    list.add("按文件名升序排序");
+                                    list.add("按文件大小降序排序");
+                                } else {
+                                    list.add("按文件名升序排序");
+                                    list.add("按文件大小升序排序");
+                                }
                                 break;
                         }
                     }

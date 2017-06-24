@@ -5,6 +5,7 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.TabLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -43,7 +44,9 @@ import org.greenrobot.eventbus.ThreadMode;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -344,19 +347,28 @@ public class TabTimingFragment extends BaseFragment implements BaseRecyclerAdapt
         for (int i = 0; i <= 24; i += 4) {
             axisYValues.add(new AxisValue(i).setLabel(String.format("%sh ", i)));
         }
+
+        SparseArray<Long> weekDataArray = new SparseArray<>();
+        for (int i = 0; i < timingCountEntities.size(); i++) {
+            TimingCountEntity itemEntity = timingCountEntities.get(i);
+            if (itemEntity != null) {
+                try {
+                    Calendar calendar = Calendar.getInstance();
+                    calendar.setTimeInMillis(itemEntity.workDate);
+                    log("--------------->>i:" + i + "  day:" + (calendar.get(Calendar.DAY_OF_WEEK) - 1) + "  count:" + itemEntity.timingCount);
+                    weekDataArray.put((calendar.get(Calendar.DAY_OF_WEEK) - 1), itemEntity.timingCount);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+
         for (int j = 0; j < numberOfPoints; j++) {
             float hour = 0;
-            if (j < timingCountEntities.size()) {
-                TimingCountEntity itemEntity = timingCountEntities.get(j);
-                if (itemEntity != null) {
-                    long ss = 1000;
-                    long mi = ss * 60;
-                    long hh = mi * 60;
-                    long dd = hh * 24;
-
-                    long day = itemEntity.timingCount / dd;
-                    hour = (itemEntity.timingCount - day * dd) * 1.0f / hh;
-                }
+            Long weekDayTime = weekDataArray.get(j);
+            if (weekDayTime != null) {
+                hour = weekDayTime.longValue() * 1.0f / TimeUnit.HOURS.toMillis(1);
             }
             //最大24
             if (hour >= 24) {

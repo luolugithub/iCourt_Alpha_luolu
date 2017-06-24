@@ -124,6 +124,7 @@ public interface ApiAlphaService {
      * @return
      */
     @GET("api/v2/chat/msg/token")
+    @Deprecated
     Call<ResEntity<LoginIMToken>> getChatToken();
 
     /**

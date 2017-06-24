@@ -365,7 +365,7 @@ public class TabMineFragment extends BaseFragment {
                     if (todayDuractionTv == null) return;
                     todayDuractionTv.setText(getHm(response.body().result.timingCountToday));
                     monthDuractionTv.setText(getHm(response.body().result.timingCountMonth));
-                    doneTaskTv.setText(response.body().result.taskMonthConutDone + "/" + response.body().result.taskMonthConut);
+                    doneTaskTv.setText(response.body().result.taskMonthConutDone + "");
                 }
             }
         });
