@@ -590,4 +590,5 @@ public interface ApiChatService {
     @GET("im/v1/users/imToken")
     Call<ResEntity<LoginIMToken>> getChatToken();
 
+
 }

@@ -163,10 +163,11 @@ public class SearchWebViewFragment extends BaseFragment implements IWebViewPage 
      * @param url
      * @return
      */
-    public static SearchWebViewFragment newInstance(String url) {
+    public static SearchWebViewFragment newInstance(String url, String keyWord) {
         SearchWebViewFragment searchWebViewFragment = new SearchWebViewFragment();
         Bundle args = new Bundle();
         args.putString("url", url);
+        args.putString("keyWord", keyWord);
         searchWebViewFragment.setArguments(args);
         return searchWebViewFragment;
     }
@@ -201,7 +202,43 @@ public class SearchWebViewFragment extends BaseFragment implements IWebViewPage 
         webView.setWebViewClient(mWebViewClient);
         webView.setWebChromeClient(mWebChromeClient);
         progressLayout.setMaxProgress(100);
-        webView.loadUrl(getArguments().getString("url", ""));
+
+        final String url = getArguments().getString("url", "");
+       /* if (isSha256Url(url)) {
+            getApi().getSha256Url(3, getArguments().getString("keyWord", ""))
+                    .enqueue(new SimpleCallBack<String>() {
+                        @Override
+                        public void onSuccess(Call<ResEntity<String>> call, Response<ResEntity<String>> response) {
+                            if (webView != null) {
+                                webView.loadUrl(response.body().result);
+                            }
+                        }
+
+                        @Override
+                        public void onFailure(Call<ResEntity<String>> call, Throwable t) {
+                            super.onFailure(call, t);
+                            webView.loadUrl(url);
+                        }
+                    });
+        } else {
+            webView.loadUrl(url);
+        }*/
+
+        webView.loadUrl(url);
+    }
+
+    private boolean isSha256Url(String url) {
+        String startStr = "&url=";
+        try {
+            int indexOf = url.indexOf(startStr);
+            if (indexOf >= 0) {
+                int endOf = url.indexOf("&token=");
+                return endOf > indexOf;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 
     @Override

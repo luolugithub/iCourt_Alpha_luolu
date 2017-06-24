@@ -124,7 +124,7 @@ public class SearchTabActivity extends BaseActivity implements OnWebViewFragment
                 fragments.add(
                         SearchWebViewFragment.newInstance(
                                 TextUtils.isEmpty(searchEngineEntity.site)
-                                        ? "" : searchEngineEntity.site.replace("iCourt", keyWord)));
+                                        ? "" : searchEngineEntity.site.replace("iCourt", keyWord), keyWord));
             }
         }
 

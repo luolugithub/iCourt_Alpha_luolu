@@ -48,6 +48,8 @@ import retrofit2.http.Path;
 import retrofit2.http.Query;
 import retrofit2.http.Url;
 
+import static com.umeng.analytics.pro.x.P;
+
 /**
  * @author xuanyouwu
  * @email xuanyouwu@163.com
@@ -1144,6 +1146,13 @@ public interface ApiAlphaService {
      */
     @GET("api/v2/contact")
     Call<ResEntity<JsonElement>> contactSearch(@Query("pinyininitial") String name);
+
+
+    @POST("api/v2/sha256/getUrl")
+    @FormUrlEncoded
+    Call<ResEntity<String>> getSha256Url(@Field("id") int id,
+                                         @Field("value") String value);
+
 }
 
 
