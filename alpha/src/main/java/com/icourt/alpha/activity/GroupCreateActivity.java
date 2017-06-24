@@ -120,7 +120,6 @@ public class GroupCreateActivity extends BaseActivity implements OnFragmentCallB
             titleActionTextView.setText("完成");
         }
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false);
-        linearLayoutManager.setAutoMeasureEnabled(true);
         groupMemberRecyclerView.setLayoutManager(linearLayoutManager);
         groupMemberRecyclerView.setNestedScrollingEnabled(false);
         groupMemberRecyclerView.setAdapter(imContactAdapter = new IMContactAdapter(Const.VIEW_TYPE_GRID));
@@ -129,9 +128,13 @@ public class GroupCreateActivity extends BaseActivity implements OnFragmentCallB
         imContactAdapter.setOnItemClickListener(new BaseRecyclerAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
+                ArrayList<GroupContactBean> data = (ArrayList<GroupContactBean>) imContactAdapter.getData();
+                if (!data.isEmpty()) {
+                    data.remove(getMyAsContactBean());
+                }
                 GroupMemberDelActivity.launchForResult(getActivity(),
                         null,
-                        (ArrayList<GroupContactBean>) imContactAdapter.getData(),
+                        data,
                         false,
                         REQ_CODE_DEL_USER);
             }

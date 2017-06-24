@@ -157,50 +157,40 @@ public class DateSelectDialogFragment extends BaseDialogFragment {
 
         hourWheelView.setAdapter(new TimeWheelAdapter(24));
         minuteWheelView.setAdapter(new TimeWheelAdapter(60));
+        initCompactCalendar();
+        selectedCalendar = (Calendar) getArguments().getSerializable("calendar");
+        if (selectedCalendar == null) selectedCalendar = Calendar.getInstance();
+        if (isUnSetDate()) {
+            duetimeTv.setText("未设置");
+            duetimeTv.setTextColor(SystemUtils.getColor(getContext(), R.color.alpha_font_color_gray));
+            clearDutimeIv.setVisibility(View.INVISIBLE);
+        } else {
+            clearDutimeIv.setVisibility(View.VISIBLE);
+            duetimeTv.setText(DateUtils.getHHmm(selectedCalendar.getTimeInMillis()));
+            duetimeTv.setTextColor(SystemUtils.getColor(getContext(), R.color.alpha_font_color_black));
+        }
+        hourWheelView.setCurrentItem(selectedCalendar.get(Calendar.HOUR_OF_DAY));
         hourWheelView.setOnItemSelectedListener(new OnItemSelectedListener() {
             @Override
             public void onItemSelected(int i) {
-                if (selectedCalendar == null)
-                    selectedCalendar = Calendar.getInstance();
                 selectedCalendar.set(Calendar.HOUR_OF_DAY, i);
-                selectedCalendar.set(Calendar.SECOND, 0);
+                selectedCalendar.set(Calendar.MILLISECOND, 0);
+                duetimeTv.setText(DateUtils.getHHmm(selectedCalendar.getTimeInMillis()));
             }
         });
+        minuteWheelView.setCurrentItem(selectedCalendar.get(Calendar.MINUTE));
         minuteWheelView.setOnItemSelectedListener(new OnItemSelectedListener() {
             @Override
             public void onItemSelected(int i) {
-                if (selectedCalendar == null)
-                    selectedCalendar = Calendar.getInstance();
-                selectedCalendar.set(Calendar.MINUTE, i);
-                selectedCalendar.set(Calendar.SECOND, 0);
+                selectedCalendar.set(Calendar.SECOND, i);
+                selectedCalendar.set(Calendar.MILLISECOND, 0);
+                duetimeTv.setText(DateUtils.getHHmm(selectedCalendar.getTimeInMillis()));
             }
         });
-        initCompactCalendar();
-        selectedCalendar = (Calendar) getArguments().getSerializable("calendar");
-        if (selectedCalendar != null) {
-            int hour = selectedCalendar.get(Calendar.HOUR_OF_DAY);
-            int minute = selectedCalendar.get(Calendar.MINUTE);
-            int second = selectedCalendar.get(Calendar.SECOND);
-            if (hour == 23 && minute == 59 && second == 59) {
-                duetimeTv.setText("未设置");
-                duetimeTv.setTextColor(SystemUtils.getColor(getContext(), R.color.alpha_font_color_gray));
-                clearDutimeIv.setVisibility(View.INVISIBLE);
-            } else {
-                clearDutimeIv.setVisibility(View.VISIBLE);
-                duetimeTv.setText(DateUtils.getHHmm(selectedCalendar.getTimeInMillis()));
-                duetimeTv.setTextColor(SystemUtils.getColor(getContext(), R.color.alpha_font_color_black));
-            }
-            hourWheelView.setCurrentItem(selectedCalendar.get(Calendar.HOUR_OF_DAY));
-            minuteWheelView.setCurrentItem(selectedCalendar.get(Calendar.MINUTE));
 
-            titleContent.setText(dateFormatForMonth.format(selectedCalendar.getTimeInMillis()));
-            compactcalendarView.setCurrentDate(selectedCalendar.getTime());
-            compactcalendarView.invalidate();
-        } else {
-            duetimeTv.setText("未设置");
-            clearDutimeIv.setVisibility(View.INVISIBLE);
-            duetimeTv.setTextColor(SystemUtils.getColor(getContext(), R.color.alpha_font_color_gray));
-        }
+        titleContent.setText(dateFormatForMonth.format(selectedCalendar.getTimeInMillis()));
+        compactcalendarView.setCurrentDate(selectedCalendar.getTime());
+        compactcalendarView.invalidate();
 
         //延迟显示 必须 否则默认值无效
         deadlineSelectLl.postDelayed(new Runnable() {
@@ -210,6 +200,39 @@ public class DateSelectDialogFragment extends BaseDialogFragment {
                 deadlineSelectLl.setVisibility(View.GONE);
             }
         }, 200);
+    }
+
+    /**
+     * 是否未设置时间
+     *
+     * @return
+     */
+    private boolean isUnSetDate() {
+        if (selectedCalendar != null) {
+            int hour = selectedCalendar.get(Calendar.HOUR_OF_DAY);
+            int minute = selectedCalendar.get(Calendar.MINUTE);
+            int second = selectedCalendar.get(Calendar.SECOND);
+            return hour == 23 && minute == 59 && second == 59;
+        }
+        return true;
+    }
+
+    /**
+     * 归位未设置
+     *
+     * @return
+     */
+    private void setUnSetDate() {
+        if (selectedCalendar == null) {
+            selectedCalendar = Calendar.getInstance();
+        }
+        selectedCalendar.set(Calendar.HOUR_OF_DAY, 23);
+        selectedCalendar.set(Calendar.MINUTE, 59);
+        selectedCalendar.set(Calendar.SECOND, 59);
+
+        Calendar calendar = Calendar.getInstance();
+        minuteWheelView.setCurrentItem(calendar.get(Calendar.MINUTE));
+        hourWheelView.setCurrentItem(calendar.get(Calendar.HOUR_OF_DAY));
     }
 
     private void initCompactCalendar() {
@@ -270,15 +293,24 @@ public class DateSelectDialogFragment extends BaseDialogFragment {
                     deadlineSelectLl.setVisibility(View.GONE);
                 } else {
                     deadlineSelectLl.setVisibility(View.VISIBLE);
+                    //未设置时间
+                    if (isUnSetDate()) {
+                        Calendar calendar = Calendar.getInstance();
+                        selectedCalendar.set(Calendar.HOUR_OF_DAY, calendar.get(Calendar.HOUR_OF_DAY));
+                        selectedCalendar.set(Calendar.MILLISECOND, Calendar.MINUTE);
+                        selectedCalendar.set(Calendar.MILLISECOND, 0);
+                    }
+                    clearDutimeIv.setVisibility(View.VISIBLE);
+                    duetimeTv.setText(DateUtils.getHHmm(selectedCalendar.getTimeInMillis()));
+                    duetimeTv.setTextColor(SystemUtils.getColor(getContext(), R.color.alpha_font_color_black));
                 }
                 break;
             case R.id.clear_dutime_iv:
                 duetimeTv.setText("未设置");
                 duetimeTv.setTextColor(SystemUtils.getColor(getContext(), R.color.alpha_font_color_gray));
                 clearDutimeIv.setVisibility(View.INVISIBLE);
-                selectedCalendar.set(Calendar.HOUR_OF_DAY, 23);
-                selectedCalendar.set(Calendar.MINUTE, 59);
-                selectedCalendar.set(Calendar.SECOND, 59);
+                setUnSetDate();
+                deadlineSelectLl.setVisibility(View.GONE);
                 break;
             case R.id.notice_ll:
                 break;

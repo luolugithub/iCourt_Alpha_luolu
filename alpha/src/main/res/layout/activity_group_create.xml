@@ -125,7 +125,7 @@
             <FrameLayout
                 android:id="@+id/member_layout"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="45dp"
                 android:layout_alignLeft="@+id/group_title_divider"
                 android:layout_below="@+id/group_title_divider"
                 android:layout_marginLeft="30dp"
@@ -134,15 +134,16 @@
 
                 <android.support.v7.widget.RecyclerView
                     android:id="@+id/group_member_recyclerView"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
                     android:overScrollMode="never" />
 
 
                 <ImageView
                     android:id="@+id/group_member_arrow_iv"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_height="45dp"
+                    android:background="@android:color/white"
                     android:layout_gravity="right|center_vertical"
                     android:src="@mipmap/arrow_right" />
             </FrameLayout>

@@ -270,7 +270,7 @@ public class TimerTimingActivity extends BaseTimerActivity
                 taskNameTv.setText(itemEntity.taskName);
                 if (item.matter != null) {
                     ProjectEntity projectEntity = item.matter.convert2Model();
-                    if (!StringUtils.equalsIgnoreCase(item.matterId, projectEntity.pkId, false)) {
+                    if (!StringUtils.equalsIgnoreCase(itemEntity.matterPkId, projectEntity.pkId, false)) {
                         itemEntity.workTypeId = null;
                         itemEntity.workTypeName = null;
                         worktypeNameTv.setText("未选择");
