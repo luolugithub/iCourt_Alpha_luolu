@@ -13,6 +13,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.icourt.alpha.BuildConfig;
 import com.icourt.alpha.R;
 import com.icourt.alpha.activity.AboutActivity;
 import com.icourt.alpha.activity.ChatMsgClassfyActivity;
@@ -137,6 +138,7 @@ public class TabMineFragment extends BaseFragment {
         getData(false);
 //        setDataToView(getLoginUserInfo());
         mShareAPI = UMShareAPI.get(getContext());
+        menuTest.setVisibility(BuildConfig.IS_DEBUG ? View.VISIBLE : View.GONE);
     }
 
     @Override
