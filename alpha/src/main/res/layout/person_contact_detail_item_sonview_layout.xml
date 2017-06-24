@@ -9,8 +9,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:includeFontPadding="false"
-        android:maxLines="1"
-        android:singleLine="true"
+        android:maxLines="20"
         android:ellipsize="end"
         android:textColor="@color/search_history_keyword_color"
         android:textSize="16dp" />
