@@ -294,12 +294,12 @@ public class DateSelectDialogFragment extends BaseDialogFragment {
                 } else {
                     deadlineSelectLl.setVisibility(View.VISIBLE);
                     //未设置时间
-                    if (isUnSetDate()) {
-                        Calendar calendar = Calendar.getInstance();
-                        selectedCalendar.set(Calendar.HOUR_OF_DAY, calendar.get(Calendar.HOUR_OF_DAY));
-                        selectedCalendar.set(Calendar.MILLISECOND, Calendar.MINUTE);
-                        selectedCalendar.set(Calendar.MILLISECOND, 0);
-                    }
+//                    if (isUnSetDate()) {
+//                        Calendar calendar = Calendar.getInstance();
+//                        selectedCalendar.set(Calendar.HOUR_OF_DAY, calendar.get(Calendar.HOUR_OF_DAY));
+//                        selectedCalendar.set(Calendar.MILLISECOND, Calendar.MINUTE);
+//                        selectedCalendar.set(Calendar.MILLISECOND, 0);
+//                    }
                     clearDutimeIv.setVisibility(View.VISIBLE);
                     duetimeTv.setText(DateUtils.getHHmm(selectedCalendar.getTimeInMillis()));
                     duetimeTv.setTextColor(SystemUtils.getColor(getContext(), R.color.alpha_font_color_black));

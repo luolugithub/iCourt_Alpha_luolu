@@ -779,8 +779,7 @@ public class TaskDetailActivity extends BaseActivity
 
             @Override
             public void defNotify(String noticeStr) {
-                // super.defNotify(noticeStr);
-                showToast(noticeStr);
+                showTopSnackBar(noticeStr);
             }
         });
     }
