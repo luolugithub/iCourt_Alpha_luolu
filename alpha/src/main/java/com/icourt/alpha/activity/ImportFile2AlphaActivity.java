@@ -132,13 +132,8 @@ public class ImportFile2AlphaActivity extends BaseActivity
                     titleBack.setVisibility(View.GONE);
                     titleCancel.setVisibility(View.VISIBLE);
                     titleAction.setVisibility(View.GONE);
-                } else if (position == 1) {
-                    titleContent.setText("享聊");
-                    titleBack.setVisibility(View.VISIBLE);
-                    titleCancel.setVisibility(View.GONE);
-                    titleAction.setVisibility(View.VISIBLE);
                 } else {
-                    titleContent.setText("项目");
+                    titleContent.setText("享聊");
                     titleBack.setVisibility(View.VISIBLE);
                     titleCancel.setVisibility(View.GONE);
                     titleAction.setVisibility(View.VISIBLE);
