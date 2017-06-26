@@ -99,6 +99,7 @@ public class TabCustomerFragment extends BaseFragment implements BaseRecyclerAda
     @Override
     protected void initView() {
         EventBus.getDefault().register(this);
+        contentEmptyText.setText("暂无联系人");
         customerDbService = new CustomerDbService(getLoginUserId());
         linearLayoutManager = new LinearLayoutManager(getContext());
         recyclerView.setLayoutManager(linearLayoutManager);
