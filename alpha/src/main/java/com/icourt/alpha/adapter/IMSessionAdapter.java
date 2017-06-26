@@ -272,7 +272,11 @@ public class IMSessionAdapter extends BaseArrayRecyclerAdapter<IMSessionEntity> 
                 if (user != null) {
                     tvSessionTitle.setText(user.name);
                 } else {
-                    tvSessionTitle.setText("name field null");
+                    if (imSessionEntity.customIMBody.show_type == Const.MSG_TYPE_ALPHA_HELPER) {
+                        tvSessionTitle.setText("Alpha小助手");
+                    } else {
+                        tvSessionTitle.setText("name field null");
+                    }
                 }
                 break;
             case CHAT_TYPE_TEAM:
