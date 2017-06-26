@@ -217,7 +217,7 @@ public class TaskDetailActivity extends BaseActivity
     @Override
     protected void onResume() {
         super.onResume();
-        getData(false);
+        getData(true);
     }
 
     @OnClick({R.id.titleAction,
@@ -372,6 +372,10 @@ public class TaskDetailActivity extends BaseActivity
         long minute = times % 3600 / 60;
         long second = times % 60;
         return String.format(Locale.CHINA, "%02d:%02d:%02d", hour, minute, second);
+    }
+
+    public TaskEntity.TaskItemEntity getTaskItemEntity() {
+        return taskItemEntity;
     }
 
     /**
@@ -917,7 +921,7 @@ public class TaskDetailActivity extends BaseActivity
         if (event.action == TaskActionEvent.TASK_UPDATE_NAME_ACTION) {//修改任务名称
             String desc = event.desc;
             if (!TextUtils.isEmpty(desc)) {
-                taskName.setText(desc);
+//                taskName.setText(desc);
                 taskItemEntity.name = desc;
                 updateTask(taskItemEntity, taskItemEntity.state, null);
             }

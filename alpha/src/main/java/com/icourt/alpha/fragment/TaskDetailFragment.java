@@ -18,6 +18,7 @@ import com.google.gson.JsonObject;
 import com.icourt.alpha.R;
 import com.icourt.alpha.activity.ProjectDetailActivity;
 import com.icourt.alpha.activity.TaskDescUpdateActivity;
+import com.icourt.alpha.activity.TaskDetailActivity;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.entity.bean.ProjectEntity;
@@ -406,6 +407,9 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
     public void onUpdateTaskDescEvent(TaskActionEvent event) {
         if (event == null) return;
         if (event.action == TaskActionEvent.TASK_UPDATE_DESC_ACTION) {//修改任务描述
+            if(getActivity() instanceof TaskDetailActivity){
+                taskItemEntity = ((TaskDetailActivity) getActivity()).getTaskItemEntity();
+            }
             taskDescTv.setText(event.desc);
             taskItemEntity.description = event.desc;
             updateTask(taskItemEntity, null, null);
