@@ -33,8 +33,8 @@ ext {
     ]
 
     alphaApkUpdateUrl = [
-            apk_update_url_debug        : "\"http://api.fir.im/apps/latest/586650afca87a82c430016a5?api_token=2e8154d4f6d9500a4b037219b3fac385\"",//开发 zhaolu
-            apk_update_url_test         : "\"http://api.fir.im/apps/latest/586650afca87a82c430016a5?api_token=2e8154d4f6d9500a4b037219b3fac385\"",//内测 zhaolu
+            apk_update_url_debug        : "\"http://api.fir.im/apps/latest/586650afca87a82c430016a5?api_token=95f7eece0f10dc17f7ae044874bf3bd1\"",//开发 zhaolu
+            apk_update_url_test         : "\"http://api.fir.im/apps/latest/586650afca87a82c430016a5?api_token=95f7eece0f10dc17f7ae044874bf3bd1\"",//内测 zhaolu
             apk_update_url_preview      : "\"http://api.fir.im/apps/latest/58d08b53548b7a3e4f0000dc?api_token=d92e9e52e3a06bd969696315cc0e3f83\"",//预览 zhaolu
             /**apk_update_url_inner_release: "\"http://api.fir.im/apps/latest/58b0f632ca87a82a2d000022?api_token=83c16338713d06c42663b46f831a87dd\"",//内部版 公司*/
             apk_update_url_inner_release: "\"http://api.fir.im/apps/latest/594ea2bb548b7a2e3b000000?api_token=aa58871b40a05d26d51b3c569c70c4eb\"",//内部版 公司 2017.6.25 更改

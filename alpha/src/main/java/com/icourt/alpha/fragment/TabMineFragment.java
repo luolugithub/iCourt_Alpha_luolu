@@ -52,6 +52,7 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 import butterknife.Unbinder;
 import retrofit2.Call;
+import retrofit2.HttpException;
 import retrofit2.Response;
 
 /**
@@ -350,6 +351,18 @@ public class TabMineFragment extends BaseFragment {
                 public void onSuccess(Call<AppVersionEntity> call, Response<AppVersionEntity> response) {
                     if (myCenterAboutCountView == null) return;
                     myCenterAboutCountView.setVisibility(baseAppUpdateActivity.shouldUpdate(response.body()) ? View.VISIBLE : View.INVISIBLE);
+                }
+
+                @Override
+                public void onFailure(Call<AppVersionEntity> call, Throwable t) {
+                    if (t instanceof HttpException) {
+                        HttpException hx = (HttpException) t;
+                        if (hx.code() == 401) {
+                            showTopSnackBar("fir token 更改");
+                            return;
+                        }
+                    }
+                    super.onFailure(call, t);
                 }
             });
         }

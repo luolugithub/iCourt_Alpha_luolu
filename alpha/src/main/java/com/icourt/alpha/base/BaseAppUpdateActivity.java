@@ -28,6 +28,7 @@ import com.liulishuo.filedownloader.exception.FileDownloadOutOfSpaceException;
 import java.io.File;
 
 import retrofit2.Call;
+import retrofit2.HttpException;
 import retrofit2.Response;
 
 /**
@@ -67,6 +68,18 @@ public class BaseAppUpdateActivity extends BaseUmengActivity implements
             @Override
             public void onSuccess(Call<AppVersionEntity> call, Response<AppVersionEntity> response) {
                 showAppUpdateDialog(getActivity(), response.body());
+            }
+
+            @Override
+            public void onFailure(Call<AppVersionEntity> call, Throwable t) {
+                if (t instanceof HttpException) {
+                    HttpException hx = (HttpException) t;
+                    if (hx.code() == 401) {
+                        showTopSnackBar("fir token 更改");
+                        return;
+                    }
+                }
+                super.onFailure(call, t);
             }
         });
     }

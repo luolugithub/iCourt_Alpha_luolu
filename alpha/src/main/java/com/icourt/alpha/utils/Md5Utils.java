@@ -1,7 +1,6 @@
 package com.icourt.alpha.utils;
 
 import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 
 import Decoder.BASE64Encoder;
 
@@ -35,4 +34,38 @@ public class Md5Utils {
         }
         return defaultResult;
     }
+
+    /**
+     * 字符串 SHA 加密
+     *
+     * @return
+     */
+    private static final String SHA(final String strText, final String strType) {
+        MessageDigest sha = null;
+        try {
+            sha = MessageDigest.getInstance(strType);
+            sha.reset();
+            byte[] srcBytes = strText.getBytes();
+            return hexString(sha.digest(srcBytes));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    private static final String hexString(byte[] bytes) {
+        StringBuffer hexValue = new StringBuffer();
+        for (int i = 0; i < bytes.length; i++) {
+            int val = ((int) bytes[i]) & 0xff;
+            if (val < 16)
+                hexValue.append("0");
+            hexValue.append(Integer.toHexString(val));
+        }
+        return hexValue.toString();
+    }
+
+    public static final String sha256(String str) {
+        return SHA(str, "SHA-256");
+    }
+
 }

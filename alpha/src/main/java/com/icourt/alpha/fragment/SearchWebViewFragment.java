@@ -8,6 +8,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,7 +25,10 @@ import com.icourt.alpha.R;
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.interfaces.IWebViewPage;
 import com.icourt.alpha.interfaces.OnWebViewFragmentListener;
+import com.icourt.alpha.utils.Md5Utils;
 import com.icourt.alpha.view.ProgressLayout;
+
+import java.net.URLEncoder;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -65,6 +69,17 @@ public class SearchWebViewFragment extends BaseFragment implements IWebViewPage 
             return super.shouldInterceptRequest(view, url);
         }
 
+
+        @Override
+        public boolean shouldOverrideUrlLoading(WebView view, String url) {
+            log("-------->shouldOverrideUrlLoading url:" + url);
+            WebView.HitTestResult hit = view.getHitTestResult();
+            if (hit != null &&
+                    hit.getType() == 0) {//重定向
+
+            }
+            return super.shouldOverrideUrlLoading(view, url);
+        }
 
         @Override
         public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
@@ -204,41 +219,54 @@ public class SearchWebViewFragment extends BaseFragment implements IWebViewPage 
         progressLayout.setMaxProgress(100);
 
         final String url = getArguments().getString("url", "");
-       /* if (isSha256Url(url)) {
-            getApi().getSha256Url(3, getArguments().getString("keyWord", ""))
-                    .enqueue(new SimpleCallBack<String>() {
-                        @Override
-                        public void onSuccess(Call<ResEntity<String>> call, Response<ResEntity<String>> response) {
-                            if (webView != null) {
-                                webView.loadUrl(response.body().result);
-                            }
-                        }
-
-                        @Override
-                        public void onFailure(Call<ResEntity<String>> call, Throwable t) {
-                            super.onFailure(call, t);
-                            webView.loadUrl(url);
-                        }
-                    });
+        if (isSha256Url(url)) {
+            webView.loadUrl(getSha256Url(url));
         } else {
             webView.loadUrl(url);
-        }*/
-
-        webView.loadUrl(url);
+        }
     }
 
     private boolean isSha256Url(String url) {
-        String startStr = "&url=";
         try {
-            int indexOf = url.indexOf(startStr);
-            if (indexOf >= 0) {
-                int endOf = url.indexOf("&token=");
-                return endOf > indexOf;
-            }
+            String urlStartStr = "&url=";
+            String urlEndStr = "&token";
+            String userNameStartStr = "username=";
+            return url.contains(urlStartStr)
+                    && url.contains(urlEndStr)
+                    && url.contains(userNameStartStr);
         } catch (Exception e) {
             e.printStackTrace();
         }
         return false;
+    }
+
+    /**
+     * http:\/\/hk.lexiscn.com\/api\/thirdPartyMobileAccess.php?username=lawspirit&url=\/m\/?keyword=iCourt&c=landing&a=search&token=%wYuEm7rqv$*SawwXnDNBOWOqCsn@yTy
+     * 1.获取其中内部的url 并urlEncode
+     * 2.生成新的token(innerUrl,token,name);
+     * 3.重写组装新的url
+     * 后期升级正则
+     *
+     * @param url
+     */
+    private String getSha256Url(String url) {
+        try {
+            String urlStartStr = "&url=";
+            String urlEndStr = "&token=";
+            String innerUrl = url.substring(url.indexOf(urlStartStr) + urlStartStr.length(), url.indexOf(urlEndStr));
+            if (!TextUtils.isEmpty(innerUrl)) {
+                String token = url.substring(url.indexOf(urlEndStr) + urlEndStr.length());
+                String userNameStartStr = "username=";
+                String userName = url.substring(url.indexOf(userNameStartStr) + userNameStartStr.length(), url.indexOf(urlStartStr));
+                String newToken = Md5Utils.sha256(String.format("%s%s%s", innerUrl, userName, token));
+                String innerUrlEncode = URLEncoder.encode(innerUrl, "utf-8");
+                String basePath = url.substring(0, url.indexOf("?"));
+                return String.format("%s?username=%s&url=%s&token=%s", basePath, userName, innerUrlEncode, newToken);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return "";
     }
 
     @Override
