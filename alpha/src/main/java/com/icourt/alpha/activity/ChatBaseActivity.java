@@ -1207,6 +1207,11 @@ public abstract class ChatBaseActivity
                         TaskCreateActivity.launch(getContext(),
                                 textContentFinal, null);
                     }
+
+                    @Override
+                    public void defNotify(String noticeStr) {
+                        //super.defNotify(noticeStr);
+                    }
                 });
     }
 
