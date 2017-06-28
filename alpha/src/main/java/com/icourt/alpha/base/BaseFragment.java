@@ -476,17 +476,17 @@ public abstract class BaseFragment
             if (currentFragment == null) {
                 transaction
                         .add(containerViewId, targetFragment)
-                        .commit();
+                        .commitAllowingStateLoss();
             } else {
                 transaction.hide(currentFragment)
                         .add(containerViewId, targetFragment)
-                        .commit();
+                        .commitAllowingStateLoss();
             }
         } else {
             transaction
                     .hide(currentFragment)
                     .show(targetFragment)
-                    .commit();
+                    .commitAllowingStateLoss();
         }
         return targetFragment;
     }
