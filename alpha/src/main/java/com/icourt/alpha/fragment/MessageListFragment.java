@@ -140,19 +140,19 @@ public class MessageListFragment extends BaseRecentContactFragment
         @Override
         public int compare(IMSessionEntity o1, IMSessionEntity o2) {
             if (o1 != null
-                    && o1.customIMBody != null
+                    && o1.recentContact != null
                     && o2 != null
-                    && o2.customIMBody != null) {
+                    && o2.recentContact != null) {
                 //先置顶 都置顶 按时间
-                if (localSetTops.contains(o1.customIMBody.to) && localSetTops.contains(o2.customIMBody.to)) {
-                    long time = o1.customIMBody.send_time - o2.customIMBody.send_time;
+                if (localSetTops.contains(o1.recentContact.getContactId()) && localSetTops.contains(o2.recentContact.getContactId())) {
+                    long time = o1.recentContact.getTime() - o2.recentContact.getTime();
                     return time == 0 ? 0 : (time > 0 ? -1 : 1);
-                } else if (localSetTops.contains(o1.customIMBody.to)) {
+                } else if (localSetTops.contains(o1.recentContact.getContactId())) {
                     return -1;
-                } else if (localSetTops.contains(o2.customIMBody.to)) {
+                } else if (localSetTops.contains(o2.recentContact.getContactId())) {
                     return 1;
                 } else {
-                    long time = o1.customIMBody.send_time - o2.customIMBody.send_time;
+                    long time = o1.recentContact.getTime() - o2.recentContact.getTime();
                     return time == 0 ? 0 : (time > 0 ? -1 : 1);
                 }
             }
@@ -398,7 +398,7 @@ public class MessageListFragment extends BaseRecentContactFragment
     protected void teamUpdates(@NonNull List<Team> teams) {
         for (Team t : teams) {
             if (t == null) continue;
-            IMUtils.logIMTeam("-------->teamUpdate",t);
+            IMUtils.logIMTeam("-------->teamUpdate", t);
             boolean isExist = false;
             for (int i = 0; i < localTeams.size(); i++) {
                 Team team = localTeams.get(i);
@@ -661,7 +661,7 @@ public class MessageListFragment extends BaseRecentContactFragment
                 case CHAT_TYPE_P2P:
                     if (data.isRobot()) {
                         AlphaSpecialHelperActivity.launch(getActivity(),
-                                data.recentContact.getContactId(),totalUnReadCount);
+                                data.recentContact.getContactId(), totalUnReadCount);
                     } else {
                         if (!TextUtils.isEmpty(data.recentContact.getContactId())) {
                             GroupContactBean groupContactBean = new GroupContactBean();
