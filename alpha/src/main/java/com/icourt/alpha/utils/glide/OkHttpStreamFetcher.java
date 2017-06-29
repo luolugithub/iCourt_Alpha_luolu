@@ -4,6 +4,7 @@ import com.bumptech.glide.Priority;
 import com.bumptech.glide.load.data.DataFetcher;
 import com.bumptech.glide.load.model.GlideUrl;
 import com.bumptech.glide.util.ContentLengthInputStream;
+import com.icourt.alpha.utils.BugUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -40,6 +41,7 @@ public class OkHttpStreamFetcher implements DataFetcher<InputStream> {
         Response response = client.newCall(request).execute();
         responseBody = response.body();
         if (!response.isSuccessful()) {
+            BugUtils.bugSync("glide图片加载失败", response.toString());
             throw new IOException("Request failed with code: " + response.code());
         }
 
