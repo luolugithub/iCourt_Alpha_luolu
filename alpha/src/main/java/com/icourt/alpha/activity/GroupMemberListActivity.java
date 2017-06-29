@@ -76,6 +76,7 @@ public class GroupMemberListActivity
     private static final String KEY_SELECTED_DATA = "key_selected_data";
     private static final String KEY_TID = "key_tid";
     private static final String KEY_IS_FILTER_ME = "key_is_filter_me";
+    private static final String KEY_ADMIN_ID = "key_admin_id";
     @BindView(R.id.titleBack)
     ImageView titleBack;
     @BindView(R.id.titleContent)
@@ -134,16 +135,20 @@ public class GroupMemberListActivity
      *
      * @param context
      * @param tid
+     * @param isFilterMySelf
+     * @param adminId        管理员id
      */
     public static void launch(
             @NonNull Activity context,
             @NonNull String tid,
-            boolean isFilterMySelf) {
+            boolean isFilterMySelf,
+            String adminId) {
         if (context == null) return;
         if (TextUtils.isEmpty(tid)) return;
         Intent intent = new Intent(context, GroupMemberListActivity.class);
         intent.putExtra(KEY_TID, tid);
         intent.putExtra(KEY_IS_FILTER_ME, isFilterMySelf);
+        intent.putExtra(KEY_ADMIN_ID, adminId);
         context.startActivity(intent);
     }
 
@@ -347,6 +352,8 @@ public class GroupMemberListActivity
                                 e.printStackTrace();
                                 bugSync("排序异常", e);
                             }
+
+
                             //添加@所有人
                             if (getIntent().getBooleanExtra(KEY_ADD_AT_ALL, false)) {
                                 GroupContactBean atall = new GroupContactBean() {
@@ -358,9 +365,35 @@ public class GroupMemberListActivity
                                 atall.type = GroupContactBean.TYPE_ALL;
                                 atall.name = "所有人";
                                 contactBeanList.add(0, atall);
+                                imContactAdapter.bindData(true, contactBeanList);
+                                updateIndexBar(contactBeanList, contactBeanList);
+                            } else {
+                                //管理员 放到第一个位置
+                                String adminId = getIntent().getStringExtra(KEY_ADMIN_ID);
+                                GroupContactBean adminContact = null;
+                                if (!TextUtils.isEmpty(adminId)) {
+                                    adminContact = new GroupContactBean();
+                                    adminContact.accid = adminId;
+                                    int indexOf = contactBeanList.indexOf(adminContact);
+                                    if (indexOf >= 0) {
+                                        adminContact = contactBeanList.get(indexOf);
+                                        contactBeanList.remove(indexOf);
+                                        adminContact.setSuspensionTag("管理员");
+                                        contactBeanList.add(0, adminContact);
+                                    } else {
+                                        adminContact = null;
+                                    }
+                                }
+                                List<GroupContactBean> indexGroupContactBeen;
+                                if (adminContact != null) {
+                                    indexGroupContactBeen = new ArrayList<>(contactBeanList);
+                                    indexGroupContactBeen.remove(adminContact);
+                                } else {
+                                    indexGroupContactBeen = contactBeanList;
+                                }
+                                imContactAdapter.bindData(true, contactBeanList);
+                                updateIndexBar(indexGroupContactBeen, contactBeanList);
                             }
-                            imContactAdapter.bindData(true, contactBeanList);
-                            updateIndexBar(contactBeanList);
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
@@ -398,7 +431,7 @@ public class GroupMemberListActivity
             }
             filterRobot(contactBeen);
             imContactAdapter.bindData(true, contactBeen);
-            updateIndexBar(contactBeen);
+            updateIndexBar(contactBeen, contactBeen);
         } catch (Throwable e) {
             e.printStackTrace();
         }
@@ -409,9 +442,9 @@ public class GroupMemberListActivity
      *
      * @param data
      */
-    private void updateIndexBar(List<GroupContactBean> data) {
+    private void updateIndexBar(List<GroupContactBean> indexData, List<GroupContactBean> data) {
         try {
-            ArrayList<String> suspensions = IndexUtils.getSuspensions(data);
+            ArrayList<String> suspensions = IndexUtils.getSuspensions(indexData);
             suspensions.add(0, STRING_TOP);
             recyclerIndexBar.setIndexItems(suspensions.toArray(new String[suspensions.size()]));
             mDecoration.setmDatas(data);

@@ -172,7 +172,6 @@ public class TestActivity extends BaseAppUpdateActivity {
                 DemoRealmActivity.launch(getActivity());
                 break;
             case R.id.bt_bugs:
-                BugtagsDemoActivity.launch(getContext());
                 break;
             case R.id.bt_about:
                 AboutActivity.launch(getContext());

@@ -329,7 +329,9 @@ public class GroupDetailActivity extends BaseActivity
                     true, 2001);
         } else {
             GroupMemberListActivity.launch(getContext(),
-                    groupDetailEntity.tid, false);
+                    groupDetailEntity.tid,
+                    false,
+                    groupDetailEntity.admin_id);
         }
     }
 
