@@ -96,7 +96,14 @@ public class CommentListActivity extends BaseActivity implements BaseRecyclerAda
         context.startActivity(intent);
     }
 
-    public static void forResultLaunch(@NonNull Activity context, @NonNull TaskEntity.TaskItemEntity taskItemEntity, int requestCode) {
+    /**
+     * 返回最终评论数
+     *
+     * @param context
+     * @param taskItemEntity
+     * @param requestCode
+     */
+    public static void launchForResult(@NonNull Activity context, @NonNull TaskEntity.TaskItemEntity taskItemEntity, int requestCode) {
         if (context == null) return;
         if (taskItemEntity == null) return;
         Intent intent = new Intent(context, CommentListActivity.class);
@@ -172,12 +179,14 @@ public class CommentListActivity extends BaseActivity implements BaseRecyclerAda
 
             @Override
             public void afterTextChanged(Editable s) {
-                if (s.toString().length() > 0) {
-                    commentTv.setVisibility(View.GONE);
-                    sendTv.setVisibility(View.VISIBLE);
-                } else {
-                    commentTv.setVisibility(View.VISIBLE);
-                    sendTv.setVisibility(View.GONE);
+                if (!TextUtils.isEmpty(s)) {
+                    if (s.toString().length() > 0) {
+                        commentTv.setVisibility(View.GONE);
+                        sendTv.setVisibility(View.VISIBLE);
+                    } else {
+                        commentTv.setVisibility(View.VISIBLE);
+                        sendTv.setVisibility(View.GONE);
+                    }
                 }
             }
         });
@@ -252,6 +261,7 @@ public class CommentListActivity extends BaseActivity implements BaseRecyclerAda
      */
     private void sendComment() {
         if (taskItemEntity == null) return;
+        if (TextUtils.isEmpty(commentEdit.getText())) return;
         String content = commentEdit.getText().toString();
 
         if (StringUtils.isEmpty(content)) {
@@ -342,6 +352,8 @@ public class CommentListActivity extends BaseActivity implements BaseRecyclerAda
             if (entity.createUser == null) {
                 return false;
             }
+            if (TextUtils.isEmpty(entity.createUser.userId)) return false;
+            if (TextUtils.isEmpty(getLoginUserId())) return false;
             if (TextUtils.equals(entity.createUser.userId.toLowerCase(), getLoginUserId().toLowerCase())) {
                 showSelfBottomMeau(entity);
             } else {

@@ -77,6 +77,8 @@ public class SelectCustomerTagActivity extends BaseActivity implements BaseRecyc
 
     public static void launchForResult(@NonNull Activity context, @NonNull String action, int position, @NonNull String tagname, int requestCode, @CUSTOMER_ACTION int type) {
         if (context == null) return;
+        if (action == null) return;
+        if (tagname == null) return;
         Intent intent = new Intent(context, SelectCustomerTagActivity.class);
         intent.setAction(action);
         intent.putExtra("position", position);

@@ -126,6 +126,7 @@ public class ProjectRangeFragment extends BaseFragment {
             return stringBuilder.toString().substring(0, stringBuilder.toString().length() - 1);
         } catch (Exception e) {
             e.printStackTrace();
+            bugSync("获取法官名称失败",e);
         }
         return "";
     }

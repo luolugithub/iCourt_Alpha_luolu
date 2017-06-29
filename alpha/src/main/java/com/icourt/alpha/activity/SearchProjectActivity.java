@@ -441,7 +441,7 @@ public class SearchProjectActivity extends BaseActivity implements BaseRecyclerA
             return jsonObject.toString();
         } catch (Exception e) {
             e.printStackTrace();
-
+            bugSync("获取任务json",e);
         }
         return null;
     }

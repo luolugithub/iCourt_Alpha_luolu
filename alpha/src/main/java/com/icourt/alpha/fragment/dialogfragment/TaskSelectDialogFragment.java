@@ -97,6 +97,7 @@ public class TaskSelectDialogFragment
             onFragmentCallBackListener = (OnFragmentCallBackListener) context;
         } catch (ClassCastException e) {
             e.printStackTrace();
+            bugSync("选择任务：onFragmentCallBackListener",e);
         }
     }
 

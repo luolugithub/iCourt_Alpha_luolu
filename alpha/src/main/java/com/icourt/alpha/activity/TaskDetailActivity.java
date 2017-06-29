@@ -312,7 +312,7 @@ public class TaskDetailActivity extends BaseActivity
                 }
                 break;
             case R.id.comment_layout://更多评论动态
-                CommentListActivity.forResultLaunch(this, taskItemEntity, START_COMMENT_FORRESULT_CODE);
+                CommentListActivity.launchForResult(this, taskItemEntity, START_COMMENT_FORRESULT_CODE);
                 break;
         }
     }
