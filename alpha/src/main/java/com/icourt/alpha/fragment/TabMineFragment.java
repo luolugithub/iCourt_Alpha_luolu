@@ -166,7 +166,7 @@ public class TabMineFragment extends BaseFragment {
                         .crossFade()
                         .into(photoBigImage);
                 userNameTv.setText(alphaUserInfo.getName());
-                officeNameTv.setText(getUserGroup(alphaUserInfo.getGroups()));
+//                officeNameTv.setText(getUserGroup(alphaUserInfo.getGroups()));
                 try {
                     myCenterClearCacheTextview.setText(DataCleanManager.getTotalCacheSize(getContext()));
                 } catch (Exception e) {
@@ -327,7 +327,7 @@ public class TabMineFragment extends BaseFragment {
                 AlphaUserInfo info = response.body().result;
                 AlphaUserInfo alphaUserInfo = getLoginUserInfo();
                 if (alphaUserInfo != null && info != null) {
-                    info.setGroups(alphaUserInfo.getGroups());
+//                    info.setGroups(alphaUserInfo.getGroups());
                     alphaUserInfo.setMail(info.getMail());
                     alphaUserInfo.setPhone(info.getPhone());
                     alphaUserInfo.setName(info.getName());

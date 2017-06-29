@@ -518,7 +518,8 @@ public class FileBoxDownloadActivity extends BaseActivity {
         }
     };
 
-    private void showMeau() {
+    @Deprecated
+    private void showMenu() {
         activityDownloadFileMeauLayout.setVisibility(View.VISIBLE);
         switch (action) {
             case TASK_DOWNLOAD_FILE_ACTION:

@@ -108,9 +108,6 @@ public class ProjectDetailActivity extends BaseActivity implements OnFragmentCal
             titleAction2.setImageResource(R.mipmap.header_icon_star_solid);
         }
 
-        //第一次打开默认概览：隐藏更多菜单入口
-        titleAction.setVisibility(View.INVISIBLE);
-
         baseFragmentAdapter = new BaseFragmentAdapter(getSupportFragmentManager());
         detailViewpager.setAdapter(baseFragmentAdapter);
         detailTablayout.setupWithViewPager(detailViewpager);
@@ -141,8 +138,14 @@ public class ProjectDetailActivity extends BaseActivity implements OnFragmentCal
 
             }
         });
-        list.add("按文件名升序排序");
-        list.add("按文件大小升序排序");
+        if (detailTablayout.getTabAt(1) != null) {
+            detailTablayout.getTabAt(1).select();
+        }
+        detailViewpager.setCurrentItem(1);
+        isShowTitleAction(1);
+        list.add("按名称排序");
+        list.add("按大小排序");
+        list.add("按修改时间排序");
     }
 
     /**
@@ -163,6 +166,7 @@ public class ProjectDetailActivity extends BaseActivity implements OnFragmentCal
                     if (response.body().result.contains("MAT:matter.timeLog:add")) {
                         isCanAddTimer = true;
                     }
+                    isShowTitleAction(1);
                 }
             }
         });
@@ -239,12 +243,12 @@ public class ProjectDetailActivity extends BaseActivity implements OnFragmentCal
 
     private void titleActionClick() {
         switch (detailTablayout.getSelectedTabPosition()) {
+            case 1:     //任务
+                TaskCreateActivity.launchFomProject(this, projectId, projectName);
+                break;
             case 0:     //概览
             case 2:     //计时
                 TimerAddActivity.launch(this, projectId, projectName);
-                break;
-            case 1:     //任务
-                TaskCreateActivity.launchFomProject(this, projectId, projectName);
                 break;
             case 3:     //文档
                 if (projectFileBoxFragment != null) {
@@ -315,36 +319,29 @@ public class ProjectDetailActivity extends BaseActivity implements OnFragmentCal
                         switch (position) {
                             case 0:
                                 if (projectFileBoxFragment != null) {
-                                    projectFileBoxFragment.sortFileByNameList(nameIsUp);
-                                    nameIsUp = !nameIsUp;
-                                    timeIsUp = false;
-                                    sizeIsUp = false;
-                                    list.clear();
-                                    if (nameIsUp) {
-                                        list.add("按文件名降序排序");
-                                        list.add("按文件大小升序排序");
-                                    } else {
-                                        list.add("按文件名升序排序");
-                                        list.add("按文件大小升序排序");
-                                    }
-                                }
-                                break;
-                            case 1:
-                                if (projectFileBoxFragment != null) {
                                     projectFileBoxFragment.sortFileBySizeList(sizeIsUp);
                                     sizeIsUp = !sizeIsUp;
                                     nameIsUp = false;
                                     timeIsUp = false;
-                                    list.clear();
-                                    if (sizeIsUp) {
-                                        list.add("按文件名升序排序");
-                                        list.add("按文件大小降序排序");
-                                    } else {
-                                        list.add("按文件名升序排序");
-                                        list.add("按文件大小升序排序");
-                                    }
                                 }
                                 break;
+                            case 1:
+                                if (projectFileBoxFragment != null) {
+                                    projectFileBoxFragment.sortFileByNameList(nameIsUp);
+                                    nameIsUp = !nameIsUp;
+                                    timeIsUp = false;
+                                    sizeIsUp = false;
+                                }
+                                break;
+                            case 2:
+                                if (projectFileBoxFragment != null) {
+                                    projectFileBoxFragment.sortFileByTimeList(timeIsUp);
+                                    timeIsUp = !timeIsUp;
+                                    nameIsUp = false;
+                                    sizeIsUp = false;
+                                }
+                                break;
+
                         }
                     }
                 }).show();

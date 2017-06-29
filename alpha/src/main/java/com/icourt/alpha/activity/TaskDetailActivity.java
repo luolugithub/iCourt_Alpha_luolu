@@ -322,6 +322,7 @@ public class TaskDetailActivity extends BaseActivity
      *
      * @return
      */
+    @Deprecated
     private TimeEntity.ItemEntity getTimer() {
         TimeEntity.ItemEntity itemEntity = new TimeEntity.ItemEntity();
         if (taskItemEntity != null) {
@@ -420,7 +421,8 @@ public class TaskDetailActivity extends BaseActivity
                 if (mis > 0 && mis / 1000 / 60 <= 0) {
                     mis = 60000;
                 }
-                taskTime.setText(getHm(taskItemEntity.timingSum + mis));
+                if (taskItemEntity != null)
+                    taskTime.setText(getHm(taskItemEntity.timingSum + mis));
                 break;
         }
     }
@@ -471,10 +473,12 @@ public class TaskDetailActivity extends BaseActivity
                         if (type == SHOW_DELETE_DIALOG) {
                             deleteTask();
                         } else if (type == SHOW_FINISH_DIALOG) {
-                            if (taskItemEntity.state) {
-                                updateTask(taskItemEntity, false, taskCheckbox);
-                            } else {
-                                updateTask(taskItemEntity, true, taskCheckbox);
+                            if (taskItemEntity != null) {
+                                if (taskItemEntity.state) {
+                                    updateTask(taskItemEntity, false, taskCheckbox);
+                                } else {
+                                    updateTask(taskItemEntity, true, taskCheckbox);
+                                }
                             }
                         }
                         break;
@@ -583,9 +587,9 @@ public class TaskDetailActivity extends BaseActivity
         if (fragment != null) {
             mFragTransaction.remove(fragment);
         }
-
-        TaskAllotSelectDialogFragment.newInstance(projectId, taskItemEntity.attendeeUsers)
-                .show(mFragTransaction, tag);
+        if (taskItemEntity != null)
+            TaskAllotSelectDialogFragment.newInstance(projectId, taskItemEntity.attendeeUsers)
+                    .show(mFragTransaction, tag);
     }
 
     public String getHm(long times) {
@@ -851,6 +855,7 @@ public class TaskDetailActivity extends BaseActivity
         return super.dispatchTouchEvent(ev);
     }
 
+    @Deprecated
     public boolean isShouldHideInput(View v, MotionEvent event) {
         if (v != null && (v instanceof EditText)) {
             int[] leftTop = {0, 0};
@@ -917,6 +922,7 @@ public class TaskDetailActivity extends BaseActivity
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onUpdateTaskNameEvent(TaskActionEvent event) {
         if (event == null) return;
+        if (taskItemEntity == null) return;
         if (event.action == TaskActionEvent.TASK_UPDATE_NAME_ACTION) {//修改任务名称
             String desc = event.desc;
             if (!TextUtils.isEmpty(desc)) {
@@ -952,10 +958,12 @@ public class TaskDetailActivity extends BaseActivity
     @Override
     public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
         if (adapter instanceof TaskUsersAdapter) {
-            if (taskItemEntity.matter != null) {
-                showTaskAllotSelectDialogFragment(taskItemEntity.matter.id);
-            } else {
-                showTopSnackBar("请优先选择项目");
+            if (taskItemEntity != null) {
+                if (taskItemEntity.matter != null) {
+                    showTaskAllotSelectDialogFragment(taskItemEntity.matter.id);
+                } else {
+                    showTopSnackBar("请优先选择项目");
+                }
             }
         }
     }

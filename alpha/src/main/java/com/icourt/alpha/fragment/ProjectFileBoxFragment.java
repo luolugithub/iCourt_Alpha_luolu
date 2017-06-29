@@ -150,7 +150,7 @@ public class ProjectFileBoxFragment extends BaseFragment implements BaseRecycler
             @Override
             public void onLoadMore(boolean isSilence) {
                 super.onLoadMore(isSilence);
-                if (hasReadWritePms|| hasReadPms)
+                if (hasReadWritePms || hasReadPms)
                     getData(false);
             }
         });
@@ -380,6 +380,44 @@ public class ProjectFileBoxFragment extends BaseFragment implements BaseRecycler
             }
         });
 
+        projectFileBoxAdapter.bindData(true, fileBoxBeanList);
+    }
+
+    /**
+     * 按修改时间排序
+     *
+     * @param isUp
+     */
+    public void sortFileByTimeList(final boolean isUp) {
+        if (fileBoxBeanList == null) return;
+        if (fileBoxBeanList.size() <= 0) return;
+        Collections.sort(fileBoxBeanList, new Comparator<FileBoxBean>() {
+            @Override
+            public int compare(FileBoxBean o1, FileBoxBean o2) {
+
+                long o1Time = o1.mtime;
+                long o2Time = o2.mtime;
+                if (isUp) {
+                    //按照修改时间进行降序排列
+                    if (o1Time < o2Time) {
+                        return 1;
+                    }
+                    if (o1Time == o2Time) {
+                        return 0;
+                    }
+                    return -1;
+                } else {
+                    //按照修改时间进行升序排列
+                    if (o1Time > o2Time) {
+                        return 1;
+                    }
+                    if (o1Time == o2Time) {
+                        return 0;
+                    }
+                    return -1;
+                }
+            }
+        });
         projectFileBoxAdapter.bindData(true, fileBoxBeanList);
     }
 

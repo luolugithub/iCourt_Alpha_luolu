@@ -176,6 +176,8 @@ public class TaskOtherListFragment extends BaseFragment implements BaseRecyclerA
 
     /**
      * 获取我分配的任务
+     *
+     * assignedByMe：接口有可能会传该参数，该接口已修改无数遍 fuck
      */
     private void getMyAllotTask(final boolean isRefresh) {
         if (isRefresh) {

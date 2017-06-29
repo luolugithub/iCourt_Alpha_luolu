@@ -18,6 +18,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.icourt.alpha.R;
+import com.icourt.alpha.adapter.CustomerTagListAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.constants.Const;
@@ -149,12 +150,13 @@ public class SelectCustomerTagActivity extends BaseActivity implements BaseRecyc
         contactTagListAdapter.bindData(true, fixationTagList);
         contactTagListAdapter.setOnItemClickListener(this);
         customTagListAdapter.setOnItemClickListener(this);
-        for (int i = 0; i < fixationTagList.size(); i++) {
-            if (TextUtils.equals(fixationTagList.get(i), tagname)) {
-                contactTagListAdapter.setSelectedPos(i);
-                break;
+        if (fixationTagList != null)
+            for (int i = 0; i < fixationTagList.size(); i++) {
+                if (TextUtils.equals(fixationTagList.get(i), tagname)) {
+                    contactTagListAdapter.setSelectedPos(i);
+                    break;
+                }
             }
-        }
         getTagList();
         activitySelectCustomContactTagView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
 
@@ -183,9 +185,11 @@ public class SelectCustomerTagActivity extends BaseActivity implements BaseRecyc
         customTagList = new ArrayList<>();
         if (!TextUtils.isEmpty(custTagStr)) {
             buffer.append(custTagStr);
-            String[] tagV = custTagStr.substring(0, custTagStr.length() - 1).split(",");
-            customTagList.addAll(Arrays.asList(tagV));
-            customTagListAdapter.bindData(true, customTagList);
+            if (custTagStr.contains(",")) {
+                String[] tagV = custTagStr.substring(0, custTagStr.length() - 1).split(",");
+                customTagList.addAll(Arrays.asList(tagV));
+                customTagListAdapter.bindData(true, customTagList);
+            }
         }
     }
 

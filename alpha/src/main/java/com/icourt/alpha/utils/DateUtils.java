@@ -1,5 +1,7 @@
 package com.icourt.alpha.utils;
 
+import android.text.TextUtils;
+
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -244,8 +246,17 @@ public class DateUtils {
      * @return
      */
     public static String getTimeDate(long milliseconds) {
-        SimpleDateFormat formatter = new SimpleDateFormat("MM月dd日");
-        return formatter.format(milliseconds);
+        String formatStr = null;
+        if (isThisYear(milliseconds)) {
+            formatStr = "MM月dd日";
+        } else {
+            formatStr = "yyyy年MM月dd日";
+        }
+        if (!TextUtils.isEmpty(formatStr)) {
+            SimpleDateFormat formatter = new SimpleDateFormat(formatStr);
+            return formatter.format(milliseconds);
+        }
+        return "";
     }
 
     /**
@@ -255,8 +266,17 @@ public class DateUtils {
      * @return
      */
     public static String getTimeDateFormatMm(long milliseconds) {
-        SimpleDateFormat formatter = new SimpleDateFormat("MM月dd日 HH:mm");
-        return formatter.format(milliseconds);
+        String formatStr = null;
+        if (isThisYear(milliseconds)) {
+            formatStr = "MM月dd日 HH:mm";
+        } else {
+            formatStr = "yyyy年MM月dd日 HH:mm";
+        }
+        if (!TextUtils.isEmpty(formatStr)) {
+            SimpleDateFormat formatter = new SimpleDateFormat(formatStr);
+            return formatter.format(milliseconds);
+        }
+        return "";
     }
 
     /**
@@ -295,8 +315,17 @@ public class DateUtils {
      * @return
      */
     public static String getTimeDateFormatXMm(long milliseconds) {
-        SimpleDateFormat formatter = new SimpleDateFormat("MM/dd HH:mm");
-        return formatter.format(milliseconds);
+        String formatStr = null;
+        if (isThisYear(milliseconds)) {
+            formatStr = "MM/dd HH:mm";
+        } else {
+            formatStr = "yyyy/MM/dd HH:mm";
+        }
+        if (!TextUtils.isEmpty(formatStr)) {
+            SimpleDateFormat formatter = new SimpleDateFormat(formatStr);
+            return formatter.format(milliseconds);
+        }
+        return "";
     }
 
     /**
@@ -304,13 +333,21 @@ public class DateUtils {
      * @return
      */
     public static String getMMMdd(long milliseconds) {
-        SimpleDateFormat formatter = new SimpleDateFormat("MM月dd日", Locale.CHINA);
-        try {
-            return formatter.format(milliseconds);
-        } catch (IllegalArgumentException e) {
-            e.printStackTrace();
-        } catch (NullPointerException e) {
-            e.printStackTrace();
+        String formatStr = null;
+        if (isThisYear(milliseconds)) {
+            formatStr = "MM月dd日 HH:mm";
+        } else {
+            formatStr = "yyyy年MM月dd日 HH:mm";
+        }
+        if (!TextUtils.isEmpty(formatStr)) {
+            SimpleDateFormat formatter = new SimpleDateFormat(formatStr, Locale.CHINA);
+            try {
+                return formatter.format(milliseconds);
+            } catch (IllegalArgumentException e) {
+                e.printStackTrace();
+            } catch (NullPointerException e) {
+                e.printStackTrace();
+            }
         }
         return String.valueOf(milliseconds);
     }
@@ -320,13 +357,21 @@ public class DateUtils {
      * @return
      */
     public static String getMMXdd(long milliseconds) {
-        SimpleDateFormat formatter = new SimpleDateFormat("MM/dd");
-        try {
-            return formatter.format(milliseconds);
-        } catch (IllegalArgumentException e) {
-            e.printStackTrace();
-        } catch (NullPointerException e) {
-            e.printStackTrace();
+        String formatStr = null;
+        if (isThisYear(milliseconds)) {
+            formatStr = "MM/dd HH:mm";
+        } else {
+            formatStr = "yyyy/MM/dd HH:mm";
+        }
+        if (!TextUtils.isEmpty(formatStr)) {
+            SimpleDateFormat formatter = new SimpleDateFormat(formatStr);
+            try {
+                return formatter.format(milliseconds);
+            } catch (IllegalArgumentException e) {
+                e.printStackTrace();
+            } catch (NullPointerException e) {
+                e.printStackTrace();
+            }
         }
         return String.valueOf(milliseconds);
     }
