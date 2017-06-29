@@ -236,6 +236,7 @@ public abstract class BaseDialogFragment extends DialogFragment
                 Window window = dialog.getWindow();
                 if (window != null) {
                     window.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                    window.addFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
                 }
             }
             rootView = inflater.inflate(layoutId, container, false);
