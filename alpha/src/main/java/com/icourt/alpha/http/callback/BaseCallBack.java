@@ -71,6 +71,9 @@ public abstract class BaseCallBack<T> implements Callback<T> {
 
         } else if (t instanceof retrofit2.HttpException) {
             retrofit2.HttpException httpException = (retrofit2.HttpException) t;
+
+            String combHttpExceptionStr = String.format("%s:%s", httpException.code(), httpException.message());
+            sendLimitHttpLog(call, t, "http状态异常:" + combHttpExceptionStr);
             if (httpException.code() == 401) {
                 //强制登陆  token过期
                 try {
@@ -83,10 +86,7 @@ public abstract class BaseCallBack<T> implements Callback<T> {
                 }
                 return;
             }
-            String combHttpExceptionStr = String.format("%s:%s", httpException.code(), httpException.message());
             defNotify(combHttpExceptionStr);
-
-            sendLimitHttpLog(call, t, "http状态异常:" + combHttpExceptionStr);
         } else if (t instanceof JsonParseException) {
             defNotify("服务器Json格式错误");
 
