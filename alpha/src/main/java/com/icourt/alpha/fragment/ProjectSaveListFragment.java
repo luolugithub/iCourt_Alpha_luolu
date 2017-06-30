@@ -216,15 +216,14 @@ public class ProjectSaveListFragment extends BaseFragment implements BaseRecycle
     public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
         SystemUtils.hideSoftKeyBoard(getActivity(), headerCommSearchInputEt, true);
         if (getParentFragment() instanceof OnFragmentCallBackListener) {
+            onFragmentCallBackListener = (OnFragmentCallBackListener) getParentFragment();
+        }
+
+
+        if (onFragmentCallBackListener != null) {
             Bundle bundle = new Bundle();
             bundle.putSerializable(KEY_FRAGMENT_RESULT, projectAdapter.getItem(adapter.getRealPos(position)));
-            ((OnFragmentCallBackListener) getParentFragment()).onFragmentCallBack(ProjectSaveListFragment.this, 1, bundle);
-        } else {
-            if (onFragmentCallBackListener != null) {
-                Bundle bundle = new Bundle();
-                bundle.putSerializable(KEY_FRAGMENT_RESULT, projectAdapter.getItem(adapter.getRealPos(position)));
-                onFragmentCallBackListener.onFragmentCallBack(ProjectSaveListFragment.this, 1, bundle);
-            }
+            onFragmentCallBackListener.onFragmentCallBack(ProjectSaveListFragment.this, 1, bundle);
         }
     }
 }

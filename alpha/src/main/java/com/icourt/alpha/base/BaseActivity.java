@@ -548,6 +548,9 @@ public class BaseActivity
         if (targetFragment == currentFragment) return currentFragment;
         FragmentManager fm = getSupportFragmentManager();
         FragmentTransaction transaction = fm.beginTransaction();
+   /*     transaction.setCustomAnimations(
+                R.anim.fragment_slide_right_in, R.anim.fragment_slide_left_out,
+                R.anim.fragment_slide_left_in, R.anim.fragment_slide_right_out);*/
         if (!targetFragment.isAdded()) { // 如果当前fragment添加，则添加到Fragment管理器中
             if (currentFragment == null) {
                 transaction

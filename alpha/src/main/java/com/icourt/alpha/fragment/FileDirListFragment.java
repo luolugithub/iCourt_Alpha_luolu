@@ -121,7 +121,7 @@ public class FileDirListFragment extends BaseFragment implements BaseRecyclerAda
         getApi().permissionQuery(getLoginUserId(), "MAT", projectId).enqueue(new SimpleCallBack<List<String>>() {
             @Override
             public void onSuccess(Call<ResEntity<List<String>>> call, Response<ResEntity<List<String>>> response) {
-
+                if (refreshLayout == null) return;
                 if (response.body().result != null) {
                     if (response.body().result.contains("MAT:matter.document:readwrite")) {
                         isCanlookAddDocument = true;
