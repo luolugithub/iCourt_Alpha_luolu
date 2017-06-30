@@ -154,7 +154,6 @@ public class TestActivity extends BaseAppUpdateActivity {
             case R.id.bt_demo:
                 testDownload();
                 //shareDemo();
-                // DemoActivity.launch(getContext());
                 break;
             case R.id.bt_json:
                 test();
@@ -169,7 +168,6 @@ public class TestActivity extends BaseAppUpdateActivity {
             }
             break;
             case R.id.bt_db:
-                DemoRealmActivity.launch(getActivity());
                 break;
             case R.id.bt_bugs:
                 break;
@@ -177,7 +175,6 @@ public class TestActivity extends BaseAppUpdateActivity {
                 AboutActivity.launch(getContext());
                 break;
             case R.id.bt_fragment:
-                DemoViewPagerActivity.launch(getContext());
                 break;
             default:
                 super.onClick(v);
