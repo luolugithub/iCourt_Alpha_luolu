@@ -8,6 +8,7 @@ import android.widget.TextView;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 /**
  * @author xuanyouwu
@@ -92,9 +93,14 @@ public class SpannableUtils {
         if (TextUtils.isEmpty(targetText)) {
             return new SpannableString(originalText);
         }
-        Pattern pattern = Pattern.compile(targetText, Pattern.CASE_INSENSITIVE);
-        Matcher matcher = pattern.matcher(originalText);
-        return getTextForegroundColorSpan(originalText, matcher, foregroundColor);
+        try {
+            Pattern pattern = Pattern.compile(targetText, Pattern.CASE_INSENSITIVE);
+            Matcher matcher = pattern.matcher(originalText);
+            return getTextForegroundColorSpan(originalText, matcher, foregroundColor);
+        } catch (PatternSyntaxException e) {
+            e.printStackTrace();
+        }
+        return new SpannableString(originalText);
     }
 
     /**
