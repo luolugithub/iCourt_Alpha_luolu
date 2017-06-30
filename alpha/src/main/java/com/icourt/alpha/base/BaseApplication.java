@@ -374,6 +374,7 @@ public class BaseApplication extends MultiDexApplication {
                 .startAsync(true)
                 .trackingConsoleLog(true)//是否收集console log
                 .uploadDataOnlyViaWiFi(true)//wifi 上传
+                .trackingAnr(true)              //收集 ANR，默认 false
                 .trackingUserSteps(true)//是否收集用户操作步骤
                 //.trackingNetworkURLFilter("(.*)")//自定义网络请求跟踪的 url 规则，默认 null
                 .versionName(BuildConfig.VERSION_NAME)//自定义版本名称

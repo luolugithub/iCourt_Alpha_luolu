@@ -1,4 +1,4 @@
-package com.icourt.alpha.fragment.dialogfragment;
+package com.icourt.alpha.base;
 
 import android.app.Dialog;
 import android.content.Context;
@@ -577,7 +577,7 @@ public abstract class BaseDialogFragment extends DialogFragment
                 stringBuilder.append("\n");
                 stringBuilder.append(log);
                 stringBuilder.append("\n");
-                stringBuilder.append("loginUserInfo:"+getLoginUserInfo());
+                stringBuilder.append("loginUserInfo:\n" + getLoginUserInfo());
                 Bugtags.sendFeedback(stringBuilder.toString());
             } catch (Throwable e) {
                 e.printStackTrace();

@@ -6,6 +6,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.view.WindowManager;
 
+import com.bugtags.library.Bugtags;
 import com.google.gson.JsonObject;
 import com.icourt.alpha.base.BaseUmengActivity;
 import com.icourt.alpha.entity.bean.AlphaUserInfo;
@@ -16,6 +17,8 @@ import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.exception.ResponseException;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.service.SyncDataService;
+import com.icourt.alpha.utils.BugUtils;
+import com.icourt.alpha.utils.JsonUtils;
 import com.icourt.alpha.utils.UserPreferences;
 import com.icourt.api.RequestUtils;
 import com.netease.nimlib.sdk.NIMClient;
@@ -142,6 +145,11 @@ public class LoginBaseActivity extends BaseUmengActivity {
                             result.setChatToken(response.body().result.imToken);
                             result.setLoginTime(System.currentTimeMillis());
 
+                            //设置bugtags用户数据
+                            try {
+                                Bugtags.setUserData("AlphaUserInfo", JsonUtils.Gson2String(result));
+                            } catch (Throwable e) {
+                            }
                             //保存登陆信息
                             saveLoginUserInfo(result);
 

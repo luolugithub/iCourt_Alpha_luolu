@@ -560,7 +560,7 @@ public abstract class BaseFragment
                 stringBuilder.append("\n");
                 stringBuilder.append(log);
                 stringBuilder.append("\n");
-                stringBuilder.append("loginUserInfo:"+getLoginUserInfo());
+                stringBuilder.append("loginUserInfo:\n" + getLoginUserInfo());
                 Bugtags.sendFeedback(stringBuilder.toString());
             } catch (Throwable e) {
                 e.printStackTrace();

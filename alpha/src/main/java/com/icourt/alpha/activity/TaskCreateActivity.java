@@ -53,7 +53,7 @@ import butterknife.OnClick;
 import retrofit2.Call;
 import retrofit2.Response;
 
-import static com.icourt.alpha.fragment.dialogfragment.BaseDialogFragment.KEY_FRAGMENT_RESULT;
+import static com.icourt.alpha.base.BaseDialogFragment.KEY_FRAGMENT_RESULT;
 
 /**
  * Description

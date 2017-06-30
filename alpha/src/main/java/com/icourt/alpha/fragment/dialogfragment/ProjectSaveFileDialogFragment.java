@@ -10,7 +10,6 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
-import android.support.v4.view.ViewPager;
 import android.text.TextUtils;
 import android.util.SparseArray;
 import android.view.Gravity;
@@ -24,10 +23,9 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.icourt.alpha.R;
-import com.icourt.alpha.adapter.baseadapter.BaseFragmentAdapter;
+import com.icourt.alpha.base.BaseDialogFragment;
 import com.icourt.alpha.entity.bean.ProjectEntity;
 import com.icourt.alpha.fragment.FileDirListFragment;
-import com.icourt.alpha.fragment.GroupActionFragment;
 import com.icourt.alpha.fragment.ProjectSaveListFragment;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.utils.DensityUtil;
@@ -35,8 +33,6 @@ import com.icourt.alpha.utils.UriUtils;
 
 import java.io.File;
 import java.io.Serializable;
-import java.util.Arrays;
-import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;

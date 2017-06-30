@@ -24,6 +24,7 @@ import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.TaskMemberAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.HeaderFooterAdapter;
+import com.icourt.alpha.base.BaseDialogFragment;
 import com.icourt.alpha.entity.bean.TaskMemberEntity;
 import com.icourt.alpha.entity.bean.TaskMemberWrapEntity;
 import com.icourt.alpha.http.callback.SimpleCallBack;
