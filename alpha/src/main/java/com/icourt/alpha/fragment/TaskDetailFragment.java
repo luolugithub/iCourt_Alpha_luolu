@@ -345,25 +345,28 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
             jsonObject.addProperty("description", itemEntity.description);
             jsonObject.addProperty("valid", true);
             jsonObject.addProperty("updateTime", DateUtils.millis());
+            JsonArray jsonarr = new JsonArray();
             if (projectEntity != null) {
                 jsonObject.addProperty("matterId", projectEntity.pkId);
+                jsonarr.add(getLoginUserId());
+            } else {
+                if (itemEntity.attendeeUsers != null) {
+                    if (itemEntity.attendeeUsers.size() > 0) {
+                        for (TaskEntity.TaskItemEntity.AttendeeUserEntity attendeeUser : itemEntity.attendeeUsers) {
+                            jsonarr.add(attendeeUser.userId);
+                        }
+                    } else {
+                        jsonarr.add(getLoginUserId());
+                    }
+                }
             }
+            jsonObject.add("attendees", jsonarr);
             if (taskGroupEntity != null) {
                 jsonObject.addProperty("parentId", taskGroupEntity.id);
             } else {
                 jsonObject.addProperty("parentId", "");
             }
-            JsonArray jsonarr = new JsonArray();
-            if (itemEntity.attendeeUsers != null) {
-                if (itemEntity.attendeeUsers.size() > 0) {
-                    for (TaskEntity.TaskItemEntity.AttendeeUserEntity attendeeUser : itemEntity.attendeeUsers) {
-                        jsonarr.add(attendeeUser.userId);
-                    }
-                } else {
-                    jsonarr.add(getLoginUserId());
-                }
-            }
-            jsonObject.add("attendees", jsonarr);
+
             return jsonObject.toString();
         } catch (Exception e) {
             e.printStackTrace();
@@ -407,7 +410,7 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
     public void onUpdateTaskDescEvent(TaskActionEvent event) {
         if (event == null) return;
         if (event.action == TaskActionEvent.TASK_UPDATE_DESC_ACTION) {//修改任务描述
-            if(getActivity() instanceof TaskDetailActivity){
+            if (getActivity() instanceof TaskDetailActivity) {
                 taskItemEntity = ((TaskDetailActivity) getActivity()).getTaskItemEntity();
             }
             taskDescTv.setText(event.desc);

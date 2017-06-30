@@ -643,21 +643,23 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
             jsonObject.addProperty("parentId", itemEntity.parentId);
             jsonObject.addProperty("dueTime", itemEntity.dueTime);
             jsonObject.addProperty("updateTime", DateUtils.millis());
+            JsonArray jsonarr = new JsonArray();
             if (projectEntity != null) {
                 jsonObject.addProperty("matterId", projectEntity.pkId);
+                jsonarr.add(getLoginUserId());
+            }else{
+                if (itemEntity.attendeeUsers != null) {
+                    for (TaskEntity.TaskItemEntity.AttendeeUserEntity attendeeUser : itemEntity.attendeeUsers) {
+                        jsonarr.add(attendeeUser.userId);
+                    }
+                }
             }
+            jsonObject.add("attendees", jsonarr);
             if (taskGroupEntity != null) {
                 jsonObject.addProperty("parentId", taskGroupEntity.id);
             } else {
                 jsonObject.addProperty("parentId", 0);
             }
-            JsonArray jsonarr = new JsonArray();
-            if (itemEntity.attendeeUsers != null) {
-                for (TaskEntity.TaskItemEntity.AttendeeUserEntity attendeeUser : itemEntity.attendeeUsers) {
-                    jsonarr.add(attendeeUser.userId);
-                }
-            }
-            jsonObject.add("attendees", jsonarr);
             return jsonObject.toString();
         } catch (Exception e) {
             e.printStackTrace();
