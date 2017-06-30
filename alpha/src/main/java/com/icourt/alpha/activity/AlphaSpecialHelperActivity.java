@@ -109,6 +109,7 @@ public class AlphaSpecialHelperActivity extends ChatBaseActivity {
     @Override
     protected void initView() {
         super.initView();
+        EventBus.getDefault().register(this);
         setTitle("Alpha小助手");
         ImageView titleActionImage = getTitleActionImage();
         if (titleActionImage != null) {

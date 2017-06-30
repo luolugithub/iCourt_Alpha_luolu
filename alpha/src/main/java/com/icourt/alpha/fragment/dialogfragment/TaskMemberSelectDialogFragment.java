@@ -230,6 +230,7 @@ public class TaskMemberSelectDialogFragment extends BaseDialogFragment {
     }
 
     private void enableEmptyView(List result) {
+        if (emptyLayout == null) return;
         if (result != null) {
             if (result.size() > 0) {
                 emptyLayout.setVisibility(View.GONE);
