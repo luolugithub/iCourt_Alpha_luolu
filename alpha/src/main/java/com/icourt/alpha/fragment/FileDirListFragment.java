@@ -1,5 +1,6 @@
 package com.icourt.alpha.fragment;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -19,8 +20,7 @@ import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.adapterObserver.RefreshViewEmptyObserver;
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.entity.bean.FileBoxBean;
-import com.icourt.alpha.http.callback.SimpleCallBack;
-import com.icourt.alpha.http.httpmodel.ResEntity;
+import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.utils.ItemDecorationUtils;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 
@@ -50,16 +50,27 @@ public class FileDirListFragment extends BaseFragment implements BaseRecyclerAda
     RefreshLayout refreshLayout;
     ProjectFileBoxAdapter projectFileBoxAdapter;
     String projectId, authToken, seaFileRepoId, filePath, rootName;
-    boolean isCanlookAddDocument;
 
-    public static FileDirListFragment newInstance(@NonNull String projectId, @NonNull String authToken, @NonNull String seaFileRepoId, @NonNull String filePath, @NonNull String rootName) {
+    OnFragmentCallBackListener onFragmentCallBackListener;
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        try {
+            onFragmentCallBackListener = (OnFragmentCallBackListener) context;
+        } catch (ClassCastException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static FileDirListFragment newInstance(@NonNull String projectId, @NonNull String authToken, @NonNull String filePath, @NonNull String rootName, String seaFileRepoId) {
         FileDirListFragment fileDirListFragment = new FileDirListFragment();
         Bundle args = new Bundle();
         args.putString("projectId", projectId);
         args.putString("authToken", authToken);
-        args.putString("seaFileRepoId", seaFileRepoId);
         args.putString("filePath", filePath);
         args.putString("rootName", rootName);
+        args.putString("seaFileRepoId", seaFileRepoId);
         fileDirListFragment.setArguments(args);
         return fileDirListFragment;
     }
@@ -110,39 +121,7 @@ public class FileDirListFragment extends BaseFragment implements BaseRecyclerAda
                 }
             }
         });
-
-        checkAddTaskAndDocumentPms();
-    }
-
-    /**
-     * 获取项目权限
-     */
-    private void checkAddTaskAndDocumentPms() {
-        getApi().permissionQuery(getLoginUserId(), "MAT", projectId).enqueue(new SimpleCallBack<List<String>>() {
-            @Override
-            public void onSuccess(Call<ResEntity<List<String>>> call, Response<ResEntity<List<String>>> response) {
-                if (refreshLayout == null) return;
-                if (response.body().result != null) {
-                    if (response.body().result.contains("MAT:matter.document:readwrite")) {
-                        isCanlookAddDocument = true;
-                        // TODO: 17/6/30  如果有权限，则有保存按钮
-//                        titleAction.setVisibility(View.VISIBLE);
-                        refreshLayout.startRefresh();
-                    } else {
-                        // TODO: 17/6/30  如果没有权限，则没有保存按钮
-//                        titleAction.setVisibility(View.INVISIBLE);
-                    }
-                } else {
-                    // TODO: 17/6/30  如果没有权限，则没有保存按钮
-//                    titleAction.setVisibility(View.INVISIBLE);
-                }
-            }
-
-            @Override
-            public void onFailure(Call<ResEntity<List<String>>> call, Throwable t) {
-                super.onFailure(call, t);
-            }
-        });
+        refreshLayout.startRefresh();
     }
 
     /**
@@ -170,12 +149,20 @@ public class FileDirListFragment extends BaseFragment implements BaseRecyclerAda
                 stopRefresh();
                 if (response.body() != null) {
                     projectFileBoxAdapter.bindData(isRefresh, getFolders(response.body()));
+                    if (getFolders(response.body()) != null) {
+                        if (getFolders(response.body()).size() <= 0) {
+                            enableEmptyView(null);
+                        }
+                    }
+                } else {
+                    enableEmptyView(null);
                 }
             }
 
             @Override
             public void onFailure(Call<List<FileBoxBean>> call, Throwable t) {
                 stopRefresh();
+                enableEmptyView(null);
                 showTopSnackBar("获取文档列表失败");
             }
         });
@@ -208,8 +195,24 @@ public class FileDirListFragment extends BaseFragment implements BaseRecyclerAda
             @Override
             public void onFailure(Call<JsonObject> call, Throwable throwable) {
                 showTopSnackBar("获取文档根目录id失败");
+                stopRefresh();
+                enableEmptyView(null);
             }
         });
+    }
+
+    private void enableEmptyView(List result) {
+        if (refreshLayout != null) {
+            if (result != null) {
+                if (result.size() > 0) {
+                    refreshLayout.enableEmptyView(false);
+                } else {
+                    refreshLayout.enableEmptyView(true);
+                }
+            } else {
+                refreshLayout.enableEmptyView(true);
+            }
+        }
     }
 
     private void stopRefresh() {
@@ -227,6 +230,23 @@ public class FileDirListFragment extends BaseFragment implements BaseRecyclerAda
 
     @Override
     public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
+        if (getParentFragment() instanceof OnFragmentCallBackListener) {
+            onFragmentCallBackListener = (OnFragmentCallBackListener) getParentFragment();
+        }
+        if (onFragmentCallBackListener != null) {
+            Bundle bundle = new Bundle();
 
+            bundle.putString("projectId", projectId);
+            if (TextUtils.isEmpty(rootName)) {
+                bundle.putString("rootName", "/" + projectFileBoxAdapter.getItem(adapter.getRealPos(position)).name);
+            } else {
+                bundle.putString("rootName", rootName + "/" + projectFileBoxAdapter.getItem(adapter.getRealPos(position)).name);
+            }
+            bundle.putString("dirName", projectFileBoxAdapter.getItem(adapter.getRealPos(position)).name);
+            bundle.putString("authToken", authToken);
+            bundle.putString("seaFileRepoId", seaFileRepoId);
+
+            onFragmentCallBackListener.onFragmentCallBack(FileDirListFragment.this, 1, bundle);
+        }
     }
 }

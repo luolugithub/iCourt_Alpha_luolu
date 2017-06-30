@@ -175,7 +175,8 @@ public class ImportFile2AlphaActivity extends BaseActivity
         log("----------->path:" + path);
         viewPager.setAdapter(baseFragmentAdapter = new BaseFragmentAdapter(getSupportFragmentManager()));
         baseFragmentAdapter.bindData(true,
-                Arrays.asList(FileImportNavFragment.newInstance(path, desc),
+                Arrays.asList(
+                        FileImportNavFragment.newInstance(path, desc),
                         FileImportContactFragment.newInstance(path, desc, true),
                         FileImportTeamFragment.newInstance(path, desc)));
     }

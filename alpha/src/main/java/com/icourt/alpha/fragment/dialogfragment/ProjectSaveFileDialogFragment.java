@@ -5,6 +5,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.ParcelFileDescriptor;
 import android.support.annotation.IdRes;
+import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -22,22 +23,34 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.icourt.alpha.R;
 import com.icourt.alpha.base.BaseDialogFragment;
-import com.icourt.alpha.entity.bean.ProjectEntity;
 import com.icourt.alpha.fragment.FileDirListFragment;
 import com.icourt.alpha.fragment.ProjectSaveListFragment;
+import com.icourt.alpha.http.callback.SimpleCallBack;
+import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.utils.DensityUtil;
 import com.icourt.alpha.utils.UriUtils;
+import com.icourt.api.RequestUtils;
 
 import java.io.File;
-import java.io.Serializable;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import butterknife.Unbinder;
+import okhttp3.RequestBody;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 /**
  * Description  文件保存到项目
@@ -48,6 +61,9 @@ import butterknife.Unbinder;
  */
 public class ProjectSaveFileDialogFragment extends BaseDialogFragment
         implements OnFragmentCallBackListener, FragmentManager.OnBackStackChangedListener {
+
+    public static final int OTHER_TYPE = 1;//外部保存
+    public static final int ALPHA_TYPE = 2;//内部保存
 
     Unbinder unbinder;
     @BindView(R.id.titleBack)
@@ -61,6 +77,19 @@ public class ProjectSaveFileDialogFragment extends BaseDialogFragment
     Fragment currentFragment;
 
     SparseArray<CharSequence> titleArray = new SparseArray<>();
+    String projectId, authToken, seaFileRepoId, filePath, rootName;
+    @BindView(R.id.bt_cancel)
+    TextView btCancel;
+
+    @IntDef({OTHER_TYPE,
+            ALPHA_TYPE
+    })
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface SAVE_TYPE {
+
+    }
+
+    int type;
 
     /**
      * 文档转发到项目
@@ -86,6 +115,7 @@ public class ProjectSaveFileDialogFragment extends BaseDialogFragment
 
     @Override
     protected void initView() {
+        type = getArguments().getInt("type");
         Dialog dialog = getDialog();
         if (dialog != null) {
             Window window = dialog.getWindow();
@@ -93,28 +123,39 @@ public class ProjectSaveFileDialogFragment extends BaseDialogFragment
                 window.setGravity(Gravity.CENTER);
                 View decorView = window.getDecorView();
                 if (decorView != null) {
-                    int dp20 = DensityUtil.dip2px(getContext(), 20);
-                    decorView.setPadding(dp20 / 2, dp20, dp20 / 2, dp20);
+                    int dp20 = DensityUtil.dip2px(getContext(), 30);
+                    decorView.setPadding(dp20, dp20, dp20, dp20);
                 }
             }
         }
+        filePath = getArguments().getString("filePath");
         titleAction.setVisibility(View.INVISIBLE);
         titleContent.setText("选择项目");
+        titleAction.setText("保存");
         getChildFragmentManager().addOnBackStackChangedListener(this);
         showFragment(ProjectSaveListFragment.newInstance());
     }
 
-    @OnClick({R.id.titleBack, R.id.titleAction})
+    @OnClick({R.id.titleBack, R.id.titleAction, R.id.bt_cancel})
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.titleBack:
-                if (!getChildFragmentManager().popBackStackImmediate()) {
+                if (getChildFragmentManager().getBackStackEntryCount() > 1) {
+                    getChildFragmentManager().popBackStack();
+                } else {
                     dismiss();
                 }
                 break;
+            case R.id.bt_cancel:
+                dismiss();
+                break;
             case R.id.titleAction:
-
+                if (TextUtils.isEmpty(seaFileRepoId)) {
+                    getDocumentId();
+                } else {
+                    shareFile2Project(filePath, authToken, seaFileRepoId, rootName);
+                }
                 break;
             default:
                 super.onClick(v);
@@ -123,16 +164,47 @@ public class ProjectSaveFileDialogFragment extends BaseDialogFragment
     }
 
     /**
+     * 获取根目录id
+     */
+    private void getDocumentId() {
+        getApi().projectQueryDocumentId(projectId).enqueue(new Callback<JsonObject>() {
+            @Override
+            public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
+                if (response.code() == 200) {
+                    if (response.body() != null) {
+                        if (response.body().has("seaFileRepoId")) {
+                            JsonElement element = response.body().get("seaFileRepoId");
+                            if (!TextUtils.isEmpty(element.toString()) && !TextUtils.equals("null", element.toString())) {
+                                seaFileRepoId = element.getAsString();
+                                shareFile2Project(filePath, authToken, seaFileRepoId, rootName);
+                            } else {
+                                onFailure(call, new retrofit2.HttpException(response));
+                            }
+                        }
+                    }
+                } else {
+                    onFailure(call, new retrofit2.HttpException(response));
+                }
+            }
+
+            @Override
+            public void onFailure(Call<JsonObject> call, Throwable throwable) {
+                showTopSnackBar("获取文档根目录id失败");
+            }
+        });
+    }
+
+    /**
      * 保存文件到项目
      */
-    private void shareFile2Project(String path) {
-        if (TextUtils.isEmpty(path)) return;
+    private void shareFile2Project(String filePath, String authToken, String seaFileRepoId, String rootName) {
+        if (TextUtils.isEmpty(filePath)) return;
         ParcelFileDescriptor n_fileDescriptor = null;
         File file = null;
         Uri fileUri = null;
-        if (path.startsWith("content://")) {
+        if (filePath.startsWith("content://")) {
             try {
-                fileUri = Uri.parse(path);
+                fileUri = Uri.parse(filePath);
                 n_fileDescriptor = UriUtils.get_N_FileDescriptor(getContext(), fileUri);
             } catch (Exception e) {
                 e.printStackTrace();
@@ -142,13 +214,13 @@ public class ProjectSaveFileDialogFragment extends BaseDialogFragment
                 return;
             }
         } else {
-            file = new File(path);
+            file = new File(filePath);
             if (!file.exists()) {
                 showTopSnackBar("文件不存在啦");
                 return;
             }
         }
-
+        getUploadUrl(filePath, authToken, seaFileRepoId, rootName);
     }
 
     private void showFragment(Fragment fragment) {
@@ -178,20 +250,75 @@ public class ProjectSaveFileDialogFragment extends BaseDialogFragment
         unbinder.unbind();
     }
 
+    /**
+     * 获取项目权限
+     */
+    private void checkAddTaskAndDocumentPms(String projectId) {
+        getApi().permissionQuery(getLoginUserId(), "MAT", projectId).enqueue(new SimpleCallBack<List<String>>() {
+            @Override
+            public void onSuccess(Call<ResEntity<List<String>>> call, Response<ResEntity<List<String>>> response) {
+                if (response.body().result != null) {
+                    if (response.body().result.contains("MAT:matter.document:readwrite")) {
+                        showOrHiddenSaveBtn(true);
+                    } else {
+                        showOrHiddenSaveBtn(false);
+                    }
+                } else {
+                    showOrHiddenSaveBtn(false);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResEntity<List<String>>> call, Throwable t) {
+                super.onFailure(call, t);
+            }
+        });
+    }
+
+    /**
+     * 隐藏显示保存按钮
+     *
+     * @param isShow
+     */
+    private void showOrHiddenSaveBtn(boolean isShow) {
+        titleAction.setVisibility(isShow ? View.VISIBLE : View.INVISIBLE);
+    }
+
     @Override
     public void onFragmentCallBack(Fragment fragment, int type, Bundle params) {
-        if (fragment instanceof ProjectSaveListFragment && params != null) {
-            Serializable serializable = params.getSerializable(KEY_FRAGMENT_RESULT);
-            if (serializable instanceof ProjectEntity) {
-                ProjectEntity projectEntity = (ProjectEntity) serializable;
-                //1.保存标题
-                titleArray.put(getChildFragmentManager().getBackStackEntryCount(), projectEntity.name);
+        if (params == null) return;
+        projectId = params.getString("projectId");
+        authToken = params.getString("authToken");
+        seaFileRepoId = params.getString("seaFileRepoId");
+        log("projectId --- " + projectId);
+        log("authToken --- " + authToken);
+        log("seaFileRepoId --- " + seaFileRepoId);
+        if (TextUtils.isEmpty(projectId) || TextUtils.isEmpty(authToken)) return;
+        checkAddTaskAndDocumentPms(projectId);
+        titleBack.setVisibility(View.VISIBLE);
+        if (fragment instanceof ProjectSaveListFragment) {
+            String projectName = params.getString("projectName");
+            log("projectName --- " + projectName);
 
-                //2.替换
-                showFragment(FileDirListFragment.newInstance(projectEntity.pkId, null, null, null, null));
-            }
-        } else if (fragment instanceof FileDirListFragment && params != null) {
+            //1.保存标题
+            titleArray.put(getChildFragmentManager().getBackStackEntryCount(), projectName);
+
+            //2.替换
+            showFragment(FileDirListFragment.newInstance(projectId, authToken, filePath, null, null));
+
+        } else if (fragment instanceof FileDirListFragment) {
             //文件夹嵌套
+            String dirName = params.getString("dirName");
+            rootName = params.getString("rootName");
+            log("dirName --- " + dirName);
+            log("rootName --- " + rootName);
+
+            if (TextUtils.isEmpty(rootName)) return;
+            //1.保存标题
+            titleArray.put(getChildFragmentManager().getBackStackEntryCount(), dirName);
+
+            //2.替换
+            showFragment(FileDirListFragment.newInstance(projectId, authToken, filePath, rootName, seaFileRepoId));
         }
     }
 
@@ -199,7 +326,79 @@ public class ProjectSaveFileDialogFragment extends BaseDialogFragment
     public void onBackStackChanged() {
         //3.更改标题
         titleContent.setText(titleArray.get(getChildFragmentManager().getBackStackEntryCount() - 1, "选择项目"));
+        if (getChildFragmentManager().getBackStackEntryCount() > 1) {
+            titleBack.setVisibility(View.VISIBLE);
+            showOrHiddenSaveBtn(true);
+        } else {
+            titleBack.setVisibility(View.INVISIBLE);
+            showOrHiddenSaveBtn(false);
+        }
 
-        //4.保存按钮
     }
+
+    /**
+     * 获取上传文件url
+     *
+     * @param filePath
+     */
+    private void getUploadUrl(final String filePath, final String authToken, String seaFileRepoId, final String rootName) {
+        if (TextUtils.isEmpty(filePath)) return;
+        File file = new File(filePath);
+        if (!file.exists()) {
+            showTopSnackBar("文件不存在啦");
+            return;
+        }
+        showLoadingDialog("正在上传...");
+        getSFileApi().projectUploadUrlQuery("Token " + authToken, seaFileRepoId).enqueue(new Callback<JsonElement>() {
+            @Override
+            public void onResponse(Call<JsonElement> call, Response<JsonElement> response) {
+                if (response.body() != null) {
+                    String uploadUrl = response.body().getAsString();
+                    uploadFile(uploadUrl, filePath, authToken, rootName);
+                } else {
+                    dismissLoadingDialog();
+                    showTopSnackBar("上传失败");
+                }
+            }
+
+            @Override
+            public void onFailure(Call<JsonElement> call, Throwable throwable) {
+                dismissLoadingDialog();
+                showTopSnackBar("上传失败");
+            }
+
+        });
+    }
+
+
+    /**
+     * 上传文件
+     *
+     * @param uploadUrl
+     * @param filePath
+     */
+    private void uploadFile(String uploadUrl, String filePath, String authToken, String rootName) {
+        if (TextUtils.isEmpty(filePath)) return;
+        File file = new File(filePath);
+        String fileName = file.getName();
+        String key = "file\";filename=\"" + fileName;
+        Map<String, RequestBody> params = new HashMap<>();
+        params.put("parent_dir", TextUtils.isEmpty(rootName) ? RequestUtils.createTextBody("/") : RequestUtils.createTextBody(rootName));
+        params.put(key, RequestUtils.createStreamBody(file));
+        getSFileApi().projectUploadFile("Token " + authToken, uploadUrl, params).enqueue(new Callback<JsonElement>() {
+            @Override
+            public void onResponse(Call<JsonElement> call, Response<JsonElement> response) {
+                dismissLoadingDialog();
+                showTopSnackBar("上传成功");
+                dismiss();
+            }
+
+            @Override
+            public void onFailure(Call<JsonElement> call, Throwable t) {
+                dismissLoadingDialog();
+                showTopSnackBar("上传失败");
+            }
+        });
+    }
+
 }

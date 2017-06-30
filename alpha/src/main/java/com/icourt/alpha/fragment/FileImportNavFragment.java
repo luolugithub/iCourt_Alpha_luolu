@@ -6,6 +6,8 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.OpenableColumns;
 import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,8 +18,8 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.icourt.alpha.R;
-import com.icourt.alpha.activity.ProjectSelectActivity;
 import com.icourt.alpha.base.BaseFragment;
+import com.icourt.alpha.fragment.dialogfragment.ProjectSaveFileDialogFragment;
 import com.icourt.alpha.interfaces.OnPageFragmentCallBack;
 import com.icourt.alpha.utils.FileUtils;
 import com.icourt.alpha.utils.GlideUtils;
@@ -162,12 +164,29 @@ public class FileImportNavFragment extends BaseFragment {
                 }
                 break;
             case R.id.bt_send_program://分享到项目
-                ProjectSelectActivity.launch(getContext(), null, null, filePath);
+//                ProjectSelectActivity.launch(getContext(), null, null, filePath);
+                showProjectSaveFileDialogFragment(filePath);
                 break;
             default:
                 super.onClick(v);
                 break;
         }
+    }
+
+    /**
+     * 展示项目转发对话框
+     *
+     * @param filePath
+     */
+    public void showProjectSaveFileDialogFragment(String filePath) {
+        String tag = ProjectSaveFileDialogFragment.class.getSimpleName();
+        FragmentTransaction mFragTransaction = getChildFragmentManager().beginTransaction();
+        Fragment fragment = getChildFragmentManager().findFragmentByTag(tag);
+        if (fragment != null) {
+            mFragTransaction.remove(fragment);
+        }
+        ProjectSaveFileDialogFragment.newInstance(filePath)
+                .show(mFragTransaction, tag);
     }
 
     @Override
