@@ -577,8 +577,7 @@ public abstract class BaseDialogFragment extends DialogFragment
                 stringBuilder.append("\n");
                 stringBuilder.append(log);
                 stringBuilder.append("\n");
-                stringBuilder.append("uid:");
-                stringBuilder.append(getLoginUserId());
+                stringBuilder.append("loginUserInfo:"+getLoginUserInfo());
                 Bugtags.sendFeedback(stringBuilder.toString());
             } catch (Throwable e) {
                 e.printStackTrace();
