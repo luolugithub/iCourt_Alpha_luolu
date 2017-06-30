@@ -211,6 +211,7 @@ public class BaseActivity
     private KProgressHUD getSvProgressHUD() {
         if (progressHUD == null) {
             progressHUD = KProgressHUD.create(getContext())
+                    .setDimAmount(0.5f)
                     .setStyle(KProgressHUD.Style.SPIN_INDETERMINATE);
         }
         return progressHUD;

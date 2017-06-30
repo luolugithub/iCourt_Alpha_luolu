@@ -412,6 +412,7 @@ public abstract class BaseDialogFragment extends DialogFragment
     private KProgressHUD getSvProgressHUD() {
         if (progressHUD == null) {
             progressHUD = KProgressHUD.create(getActivity())
+                    .setDimAmount(0.5f)
                     .setStyle(KProgressHUD.Style.SPIN_INDETERMINATE);
         }
         return progressHUD;
