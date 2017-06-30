@@ -27,6 +27,7 @@ import com.icourt.alpha.BuildConfig;
 import com.icourt.alpha.R;
 import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.fragment.dialogfragment.ContactShareDialogFragment;
+import com.icourt.alpha.fragment.dialogfragment.ProjectSaveFileDialogFragment;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.ActionConstants;
@@ -174,7 +175,8 @@ public class FileBoxDownloadActivity extends BaseActivity {
         LogUtils.e("filePath ---  " + filePath);
         switch (v.getId()) {
             case R.id.save_matter_view://保存到项目
-                ProjectSelectActivity.launch(this, authToken, seaFileRepoId, filePath);
+//                ProjectSelectActivity.launch(this, authToken, seaFileRepoId, filePath);
+                showProjectSaveFileDialogFragment(filePath);
                 break;
             case R.id.send_im_view://发送到享聊
                 showContactShareDialogFragment(filePath);
@@ -283,6 +285,22 @@ public class FileBoxDownloadActivity extends BaseActivity {
             mFragTransaction.remove(fragment);
         }
         ContactShareDialogFragment.newInstanceFile(filePath, true)
+                .show(mFragTransaction, tag);
+    }
+
+    /**
+     * 展示项目转发对话框
+     *
+     * @param filePath
+     */
+    public void showProjectSaveFileDialogFragment(String filePath) {
+        String tag = ProjectSaveFileDialogFragment.class.getSimpleName();
+        FragmentTransaction mFragTransaction = getSupportFragmentManager().beginTransaction();
+        Fragment fragment = getSupportFragmentManager().findFragmentByTag(tag);
+        if (fragment != null) {
+            mFragTransaction.remove(fragment);
+        }
+        ProjectSaveFileDialogFragment.newInstance(filePath)
                 .show(mFragTransaction, tag);
     }
 
