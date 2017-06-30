@@ -18,6 +18,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
+import android.view.WindowManager;
 import android.widget.CheckedTextView;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
@@ -97,10 +98,11 @@ public class ProjectSaveFileDialogFragment extends BaseDialogFragment
      * @param filePath
      * @return
      */
-    public static ProjectSaveFileDialogFragment newInstance(@NonNull String filePath) {
+    public static ProjectSaveFileDialogFragment newInstance(@NonNull String filePath, @SAVE_TYPE int type) {
         ProjectSaveFileDialogFragment contactDialogFragment = new ProjectSaveFileDialogFragment();
         Bundle args = new Bundle();
         args.putString("filePath", filePath);
+        args.putInt("type", type);
         contactDialogFragment.setArguments(args);
         return contactDialogFragment;
     }
@@ -121,10 +123,13 @@ public class ProjectSaveFileDialogFragment extends BaseDialogFragment
             Window window = dialog.getWindow();
             if (window != null) {
                 window.setGravity(Gravity.CENTER);
+                if (type == OTHER_TYPE) {
+                    window.clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
+                }
                 View decorView = window.getDecorView();
                 if (decorView != null) {
                     int dp20 = DensityUtil.dip2px(getContext(), 30);
-                    decorView.setPadding(dp20, dp20, dp20, dp20);
+                    decorView.setPadding(dp20, 0, dp20, 0);
                 }
             }
         }
