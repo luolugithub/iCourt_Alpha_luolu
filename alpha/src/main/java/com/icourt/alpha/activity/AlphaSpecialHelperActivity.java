@@ -75,7 +75,7 @@ public class AlphaSpecialHelperActivity extends ChatBaseActivity {
     @BindView(R.id.title_Badge_tv)
     BGABadgeTextView titleBadgeTv;
 
-    public static void launch(@NonNull Context context, String accid,int totalUnreadCount) {
+    public static void launch(@NonNull Context context, String accid, int totalUnreadCount) {
         if (context == null) return;
         Intent intent = new Intent(context, AlphaSpecialHelperActivity.class);
         intent.putExtra(KEY_UID, accid);
@@ -109,7 +109,6 @@ public class AlphaSpecialHelperActivity extends ChatBaseActivity {
     @Override
     protected void initView() {
         super.initView();
-        EventBus.getDefault().register(this);
         setTitle("Alpha小助手");
         ImageView titleActionImage = getTitleActionImage();
         if (titleActionImage != null) {

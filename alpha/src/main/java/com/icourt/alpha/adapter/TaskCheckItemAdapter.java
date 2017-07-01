@@ -7,6 +7,7 @@ import android.widget.TextView;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.baseadapter.MultiSelectRecyclerAdapter;
 import com.icourt.alpha.entity.bean.TaskCheckItemEntity;
+import com.icourt.alpha.utils.SpannableUtils;
 
 /**
  * Description
@@ -39,6 +40,7 @@ public class TaskCheckItemAdapter extends MultiSelectRecyclerAdapter<TaskCheckIt
         }
 
         nameView.setText(itemEntity.name);
+//        SpannableUtils.setCommentUrlView(nameView,itemEntity.name);  //检查项支持链接
         holder.bindChildClick(checkedTextView);
         holder.bindChildClick(deleteView);
     }

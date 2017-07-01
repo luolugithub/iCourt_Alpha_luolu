@@ -1,9 +1,15 @@
 package com.icourt.alpha.utils;
 
+import android.graphics.Color;
+import android.text.Html;
+import android.text.Spannable;
 import android.text.SpannableString;
+import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.TextUtils;
+import android.text.method.LinkMovementMethod;
 import android.text.style.ForegroundColorSpan;
+import android.text.style.URLSpan;
 import android.widget.TextView;
 
 import java.util.regex.Matcher;
@@ -131,4 +137,36 @@ public class SpannableUtils {
         Matcher matcher = pattern.matcher(originalText);
         return getTextForegroundColorSpan(originalText, matcher, numTextColor);
     }
+
+    /**
+     * 识别具体web地址
+     * @param contentView
+     * @param content
+     */
+    public static void setCommentUrlView(TextView contentView, CharSequence content) {
+        if (contentView == null) return;
+        if (TextUtils.isEmpty(content)) return;
+        if (UrlUtils.isHttpLink(content.toString())) {
+            contentView.setText(Html.fromHtml("<a href=\"" + content + "\">" + content + "</a>"));
+            contentView.setMovementMethod(LinkMovementMethod.getInstance());
+            CharSequence text = contentView.getText();
+            if (text instanceof Spannable) {
+                int end = text.length();
+                Spannable sp = (Spannable) contentView.getText();
+                URLSpan[] urls = sp.getSpans(0, end, URLSpan.class);
+
+                SpannableStringBuilder style = new SpannableStringBuilder(text);
+                style.clearSpans(); // should clear old spans
+                for (URLSpan url : urls) {
+                    URLSpan myURLSpan = new URLSpan(url.getURL());
+                    style.setSpan(myURLSpan, sp.getSpanStart(url), sp.getSpanEnd(url), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                    style.setSpan(new ForegroundColorSpan(Color.RED), sp.getSpanStart(url), sp.getSpanEnd(url), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);//设置前景色为橙色
+                }
+                contentView.setText(style);
+            }
+        } else {
+            contentView.setText(content);
+        }
+    }
+
 }
