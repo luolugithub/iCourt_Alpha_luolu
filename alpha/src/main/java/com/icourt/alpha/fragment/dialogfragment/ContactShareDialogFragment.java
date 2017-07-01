@@ -232,6 +232,7 @@ public class ContactShareDialogFragment extends BaseDialogFragment
                         @Override
                         public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
                             dismissLoadingDialog();
+                            showTopSnackBar("转发成功");
                             dismiss();
                         }
 
@@ -374,6 +375,7 @@ public class ContactShareDialogFragment extends BaseDialogFragment
                     @Override
                     public void onSuccess(Call<ResEntity<IMMessageCustomBody>> call, Response<ResEntity<IMMessageCustomBody>> response) {
                         dismissLoadingDialog();
+                        showTopSnackBar("转发成功");
                         dismiss();
                     }
 
