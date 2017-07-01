@@ -24,6 +24,7 @@ import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.entity.bean.ProjectEntity;
 import com.icourt.alpha.entity.bean.TaskEntity;
 import com.icourt.alpha.entity.bean.TaskGroupEntity;
+import com.icourt.alpha.entity.bean.TaskReminderEntity;
 import com.icourt.alpha.entity.event.TaskActionEvent;
 import com.icourt.alpha.fragment.dialogfragment.DateSelectDialogFragment;
 import com.icourt.alpha.fragment.dialogfragment.ProjectSelectDialogFragment;
@@ -167,9 +168,9 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
      * @param taskId
      */
     private void getTaskReminder(String taskId) {
-        getApi().taskReminderQuery(taskId).enqueue(new SimpleCallBack<JsonElement>() {
+        getApi().taskReminderQuery(taskId).enqueue(new SimpleCallBack<TaskReminderEntity>() {
             @Override
-            public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
+            public void onSuccess(Call<ResEntity<TaskReminderEntity>> call, Response<ResEntity<TaskReminderEntity>> response) {
 
             }
         });

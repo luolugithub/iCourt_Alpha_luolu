@@ -24,6 +24,7 @@ import com.icourt.alpha.entity.bean.TaskEntity;
 import com.icourt.alpha.entity.bean.TaskGroupEntity;
 import com.icourt.alpha.entity.bean.TaskMemberWrapEntity;
 import com.icourt.alpha.entity.bean.TaskOwerEntity;
+import com.icourt.alpha.entity.bean.TaskReminderEntity;
 import com.icourt.alpha.entity.bean.TimeEntity;
 import com.icourt.alpha.entity.bean.TimingCountEntity;
 import com.icourt.alpha.entity.bean.UserDataEntity;
@@ -1160,7 +1161,7 @@ public interface ApiAlphaService {
      * @return
      */
     @GET("api/v2/taskflow/tasks/{taskId}/reminder")
-    Call<ResEntity<JsonElement>> taskReminderQuery(@Path("taskId") String taskId);
+    Call<ResEntity<TaskReminderEntity>> taskReminderQuery(@Path("taskId") String taskId);
 
 }
 
