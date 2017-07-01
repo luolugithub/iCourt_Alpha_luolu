@@ -161,6 +161,19 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
     }
 
     /**
+     * 查询任务提醒
+     * @param taskId
+     */
+    private void getTaskReminder(String taskId){
+        getApi().taskReminderQuery(taskId).enqueue(new SimpleCallBack<JsonElement>() {
+            @Override
+            public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
+
+            }
+        });
+    }
+
+    /**
      * 是否有任务编辑权限
      */
     private boolean hasTaskEditPermission() {

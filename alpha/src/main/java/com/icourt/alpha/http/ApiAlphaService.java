@@ -1153,6 +1153,15 @@ public interface ApiAlphaService {
     Call<ResEntity<String>> getSha256Url(@Field("id") int id,
                                          @Field("value") String value);
 
+    /**
+     * 查询任务提醒
+     * 文档地址：https://test.alphalawyer.cn/ilaw/swagger/index.html#!/taskflow-api/queryTaskRemindersUsingGET
+     * @param taskId
+     * @return
+     */
+    @GET("api/v2/taskflow/tasks/{taskId}/reminder")
+    Call<ResEntity<JsonElement>> taskReminderQuery(@Path("taskId") String taskId);
+
 }
 
 

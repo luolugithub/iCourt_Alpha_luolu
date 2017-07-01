@@ -335,9 +335,9 @@ public class DateUtils {
     public static String getMMMdd(long milliseconds) {
         String formatStr = null;
         if (isThisYear(milliseconds)) {
-            formatStr = "MM月dd日 HH:mm";
+            formatStr = "MM月dd日";
         } else {
-            formatStr = "yyyy年MM月dd日 HH:mm";
+            formatStr = "yyyy年MM月dd日";
         }
         if (!TextUtils.isEmpty(formatStr)) {
             SimpleDateFormat formatter = new SimpleDateFormat(formatStr, Locale.CHINA);
@@ -359,9 +359,9 @@ public class DateUtils {
     public static String getMMXdd(long milliseconds) {
         String formatStr = null;
         if (isThisYear(milliseconds)) {
-            formatStr = "MM/dd HH:mm";
+            formatStr = "MM/dd";
         } else {
-            formatStr = "yyyy/MM/dd HH:mm";
+            formatStr = "yyyy/MM/dd";
         }
         if (!TextUtils.isEmpty(formatStr)) {
             SimpleDateFormat formatter = new SimpleDateFormat(formatStr);
