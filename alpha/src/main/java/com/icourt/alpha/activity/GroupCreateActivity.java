@@ -128,7 +128,7 @@ public class GroupCreateActivity extends BaseActivity implements OnFragmentCallB
         imContactAdapter.setOnItemClickListener(new BaseRecyclerAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
-                ArrayList<GroupContactBean> data = (ArrayList<GroupContactBean>) imContactAdapter.getData();
+                ArrayList<GroupContactBean> data = new ArrayList<GroupContactBean>(imContactAdapter.getData());
                 if (!data.isEmpty()) {
                     data.remove(getMyAsContactBean());
                 }
