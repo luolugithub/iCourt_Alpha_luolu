@@ -43,6 +43,7 @@ import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.icourt.alpha.entity.bean.IMMessageCustomBody;
 import com.icourt.alpha.entity.bean.SFileImageInfoEntity;
 import com.icourt.alpha.fragment.dialogfragment.ContactShareDialogFragment;
+import com.icourt.alpha.fragment.dialogfragment.ProjectSaveFileDialogFragment;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.ActionConstants;
@@ -637,7 +638,7 @@ public class ImagePagerActivity extends BaseUmengActivity implements BasePagerAd
                     @Override
                     public void accept(String s) throws Exception {
                         dismissLoadingDialog();
-                        ProjectSelectActivity.launch(getContext(), null, null, s);
+                        showProjectSaveFileDialogFragment(s);
                     }
                 }, new Consumer<Throwable>() {
                     @Override
@@ -647,6 +648,21 @@ public class ImagePagerActivity extends BaseUmengActivity implements BasePagerAd
                 });
     }
 
+    /**
+     * 展示项目转发对话框
+     *
+     * @param filePath
+     */
+    public void showProjectSaveFileDialogFragment(String filePath) {
+        String tag = ProjectSaveFileDialogFragment.class.getSimpleName();
+        FragmentTransaction mFragTransaction = getSupportFragmentManager().beginTransaction();
+        Fragment fragment = getSupportFragmentManager().findFragmentByTag(tag);
+        if (fragment != null) {
+            mFragTransaction.remove(fragment);
+        }
+        ProjectSaveFileDialogFragment.newInstance(filePath, ProjectSaveFileDialogFragment.ALPHA_TYPE)
+                .show(mFragTransaction, tag);
+    }
 
     /**
      * 检查权限或者下载
