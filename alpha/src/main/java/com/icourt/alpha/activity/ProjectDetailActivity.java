@@ -143,9 +143,9 @@ public class ProjectDetailActivity extends BaseActivity implements OnFragmentCal
         }
         detailViewpager.setCurrentItem(1);
         isShowTitleAction(1);
-        list.add("按名称排序");
-        list.add("按大小排序");
-        list.add("按修改时间排序");
+        list.add("按文件名升序排序");
+        list.add("按文件大小升序排序");
+        list.add("按修改时间升序排序");
     }
 
     /**
@@ -319,26 +319,57 @@ public class ProjectDetailActivity extends BaseActivity implements OnFragmentCal
                         switch (position) {
                             case 0:
                                 if (projectFileBoxFragment != null) {
-                                    projectFileBoxFragment.sortFileBySizeList(sizeIsUp);
-                                    sizeIsUp = !sizeIsUp;
-                                    nameIsUp = false;
-                                    timeIsUp = false;
-                                }
-                                break;
-                            case 1:
-                                if (projectFileBoxFragment != null) {
                                     projectFileBoxFragment.sortFileByNameList(nameIsUp);
                                     nameIsUp = !nameIsUp;
                                     timeIsUp = false;
                                     sizeIsUp = false;
+                                    list.clear();
+                                    if (nameIsUp) {
+                                        list.add("按文件名降序排序");
+                                        list.add("按文件大小升序排序");
+                                        list.add("按修改时间升序排序");
+                                    } else {
+                                        list.add("按文件名升序排序");
+                                        list.add("按文件大小升序排序");
+                                        list.add("按修改时间升序排序");
+                                    }
                                 }
                                 break;
+                            case 1:
+                                if (projectFileBoxFragment != null) {
+                                    projectFileBoxFragment.sortFileBySizeList(sizeIsUp);
+                                    sizeIsUp = !sizeIsUp;
+                                    nameIsUp = false;
+                                    timeIsUp = false;
+                                    list.clear();
+                                    if (sizeIsUp) {
+                                        list.add("按文件名升序排序");
+                                        list.add("按文件大小降序排序");
+                                        list.add("按修改时间升序排序");
+                                    } else {
+                                        list.add("按文件名升序排序");
+                                        list.add("按文件大小升序排序");
+                                        list.add("按修改时间升序排序");
+                                    }
+                                }
+                                break;
+
                             case 2:
                                 if (projectFileBoxFragment != null) {
                                     projectFileBoxFragment.sortFileByTimeList(timeIsUp);
                                     timeIsUp = !timeIsUp;
                                     nameIsUp = false;
                                     sizeIsUp = false;
+                                    list.clear();
+                                    if (timeIsUp) {
+                                        list.add("按文件名升序排序");
+                                        list.add("按文件大小升序排序");
+                                        list.add("按修改时间降序排序");
+                                    } else {
+                                        list.add("按文件名升序排序");
+                                        list.add("按文件大小升序排序");
+                                        list.add("按修改时间升序排序");
+                                    }
                                 }
                                 break;
 

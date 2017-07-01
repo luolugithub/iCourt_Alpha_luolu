@@ -176,7 +176,8 @@ public class DateSelectDialogFragment extends BaseDialogFragment {
             public void onItemSelected(int i) {
                 selectedCalendar.set(Calendar.HOUR_OF_DAY, i);
                 selectedCalendar.set(Calendar.MILLISECOND, 0);
-                duetimeTv.setText(DateUtils.getHHmm(selectedCalendar.getTimeInMillis()));
+                if (duetimeTv != null)
+                    duetimeTv.setText(DateUtils.getHHmm(selectedCalendar.getTimeInMillis()));
             }
         });
         minuteWheelView.setCurrentItem(selectedCalendar.get(Calendar.MINUTE));
@@ -185,7 +186,8 @@ public class DateSelectDialogFragment extends BaseDialogFragment {
             public void onItemSelected(int i) {
                 selectedCalendar.set(Calendar.SECOND, i);
                 selectedCalendar.set(Calendar.MILLISECOND, 0);
-                duetimeTv.setText(DateUtils.getHHmm(selectedCalendar.getTimeInMillis()));
+                if (duetimeTv != null)
+                    duetimeTv.setText(DateUtils.getHHmm(selectedCalendar.getTimeInMillis()));
             }
         });
 
@@ -231,9 +233,9 @@ public class DateSelectDialogFragment extends BaseDialogFragment {
         selectedCalendar.set(Calendar.MINUTE, 59);
         selectedCalendar.set(Calendar.SECOND, 59);
 
-        Calendar calendar = Calendar.getInstance();
-        minuteWheelView.setCurrentItem(calendar.get(Calendar.MINUTE));
-        hourWheelView.setCurrentItem(calendar.get(Calendar.HOUR_OF_DAY));
+//        Calendar calendar = Calendar.getInstance();
+        minuteWheelView.setCurrentItem(selectedCalendar.get(Calendar.MINUTE));
+        hourWheelView.setCurrentItem(selectedCalendar.get(Calendar.HOUR_OF_DAY));
     }
 
     private void initCompactCalendar() {
