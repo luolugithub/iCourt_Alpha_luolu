@@ -125,24 +125,7 @@ public class MyAtedAdapter extends BaseArrayRecyclerAdapter<IMMessageCustomBody>
         at_time_tv.setText(DateUtils.getFormatChatTimeSimple(imAtEntity.send_time));
         if (!TextUtils.isEmpty(imAtEntity.content)) {
             String originalText = imAtEntity.content;
-            String targetText = null;
-            try {
-                targetText = originalText.substring(originalText.trim().indexOf("@"), originalText.trim().indexOf(" "));
-            } catch (Exception e) {
-            }
-            if (TextUtils.isEmpty(targetText)) {
-                if (originalText.startsWith("@")) {
-                    if (originalText.trim().startsWith("@所有人")) {
-                        targetText = "@所有人";
-                    } else {
-                        targetText = originalText;
-                    }
-                } else if (originalText.contains("@所有人")) {
-                    targetText = "@所有人";
-                } else if (originalText.contains("@" + loginName)) {
-                    targetText = "@" + loginName;
-                }
-            }
+            String targetText = "@[\\w\\u4E00-\\u9FA5\\uF900-\\uFA2D]*";
             SpannableUtils.setTextForegroundColorSpan(at_content_tv,
                     originalText,
                     targetText,
