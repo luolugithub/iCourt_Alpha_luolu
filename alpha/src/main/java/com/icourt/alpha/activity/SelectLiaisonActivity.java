@@ -37,7 +37,6 @@ import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 
 import butterknife.BindView;
@@ -75,7 +74,7 @@ public class SelectLiaisonActivity extends BaseActivity implements BaseRecyclerA
     LinearLayoutManager linearLayoutManager;
     HeaderFooterAdapter<CustomerAdapter> headerFooterAdapter;
     List<CustomerEntity> liaisonsList;
-    String pkid, action;
+    String pkid = null, action;
 
     public static void launchForResult(@NonNull Activity context, @NonNull String action, @NonNull String pkid, @NonNull List<CustomerEntity> liaisonsList, int requestCode) {
         if (context == null) return;
@@ -214,18 +213,18 @@ public class SelectLiaisonActivity extends BaseActivity implements BaseRecyclerA
     private void removeSelected(List<CustomerEntity> list) {
 
         if (list != null && liaisonsList != null) {
-            Iterator<CustomerEntity> it = list.iterator();
-            if (!TextUtils.isEmpty(pkid)) {
-                while (it.hasNext()) {
-                    if (TextUtils.equals(pkid, it.next().pkid)) {
-                        it.remove();
-                        break;
-                    }
-                }
-            }
+//            Iterator<CustomerEntity> it = list.iterator();
+//            if (!TextUtils.isEmpty(pkid)) {
+//                while (it.hasNext()) {
+//                    if (TextUtils.equals(pkid, it.next().pkid)) {
+//                        it.remove();
+//                        break;
+//                    }
+//                }
+//            }
             for (int i = list.size() - 1; i > 0; i--) {
                 for (CustomerEntity customerEntity : liaisonsList) {
-                    if (TextUtils.equals(list.get(i).pkid, customerEntity.pkid)) {
+                    if (TextUtils.equals(list.get(i).pkid, customerEntity.pkid) || TextUtils.equals(pkid, customerEntity.pkid)) {
                         list.remove(i);
                     }
                 }

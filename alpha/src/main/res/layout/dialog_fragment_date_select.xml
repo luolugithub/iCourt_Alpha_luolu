@@ -147,13 +147,13 @@
                 android:id="@+id/hour_wheelView"
                 android:layout_width="100dp"
                 android:layout_height="wrap_content"
-                android:minHeight="80dp" />
+                android:minHeight="60dp" />
 
             <com.bigkoo.pickerview.lib.WheelView
                 android:id="@+id/minute_wheelView"
                 android:layout_width="100dp"
                 android:layout_height="wrap_content"
-                android:minHeight="80dp" />
+                android:minHeight="60dp" />
         </LinearLayout>
 
         <LinearLayout

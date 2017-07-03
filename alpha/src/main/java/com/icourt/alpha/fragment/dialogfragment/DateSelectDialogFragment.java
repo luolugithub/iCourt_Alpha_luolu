@@ -171,6 +171,7 @@ public class DateSelectDialogFragment extends BaseDialogFragment {
             duetimeTv.setTextColor(SystemUtils.getColor(getContext(), R.color.alpha_font_color_black));
         }
         hourWheelView.setCurrentItem(selectedCalendar.get(Calendar.HOUR_OF_DAY));
+        hourWheelView.setTextSize(16);
         hourWheelView.setOnItemSelectedListener(new OnItemSelectedListener() {
             @Override
             public void onItemSelected(int i) {
@@ -181,6 +182,7 @@ public class DateSelectDialogFragment extends BaseDialogFragment {
             }
         });
         minuteWheelView.setCurrentItem(selectedCalendar.get(Calendar.MINUTE));
+        minuteWheelView.setTextSize(16);
         minuteWheelView.setOnItemSelectedListener(new OnItemSelectedListener() {
             @Override
             public void onItemSelected(int i) {
