@@ -31,27 +31,29 @@
             android:textSize="22sp" />
     </LinearLayout>
 
-    <RelativeLayout
+    <LinearLayout
         android:id="@+id/task_time_parent_layout"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@color/white"
+        android:gravity="center_vertical"
         android:paddingLeft="@dimen/dp20"
         android:paddingRight="@dimen/dp15">
 
         <RelativeLayout
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-
+            android:layout_weight="1"
             android:layout_centerVertical="true">
 
             <LinearLayout
                 android:id="@+id/task_user_layout"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:visibility="gone"
                 android:gravity="center_vertical"
                 android:orientation="horizontal"
-                android:visibility="gone">
+                >
 
                 <ImageView
                     android:id="@+id/task_user_pic"
@@ -62,15 +64,18 @@
                 <TextView
                     android:id="@+id/task_user_name"
                     android:layout_width="wrap_content"
+                    android:layout_weight="1"
                     android:layout_height="wrap_content"
+                    android:text="123asdasdasdasdasdasdasdasdasdasdasd"
                     android:layout_marginLeft="@dimen/dp10"
+                    android:singleLine="true"
                     android:textColor="@color/alpha_font_color_black"
                     android:textSize="16sp" />
 
                 <ImageView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginLeft="@dimen/dp5"
+                    android:layout_marginLeft="3dp"
                     android:src="@mipmap/arrow_right" />
             </LinearLayout>
 
@@ -79,6 +84,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:clipChildren="false"
+
                 android:gravity="center_vertical">
 
                 <android.support.v7.widget.RecyclerView
@@ -98,11 +104,11 @@
         </RelativeLayout>
 
         <LinearLayout
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
+            android:layout_marginLeft="@dimen/dp5"
             android:layout_height="wrap_content"
-            android:layout_alignParentRight="true"
-            android:layout_centerVertical="true"
-            android:gravity="center_vertical"
+            android:layout_weight="0.5"
+            android:gravity="center|right"
             android:orientation="horizontal">
 
             <LinearLayout
@@ -141,7 +147,7 @@
                 android:src="@mipmap/time_start_orange" />
         </LinearLayout>
 
-    </RelativeLayout>
+    </LinearLayout>
 
 
 </LinearLayout>

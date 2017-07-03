@@ -26,7 +26,6 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.google.gson.JsonArray;
@@ -133,7 +132,7 @@ public class TaskDetailActivity extends BaseActivity
     @BindView(R.id.main_content)
     CoordinatorLayout mainContent;
     @BindView(R.id.task_time_parent_layout)
-    RelativeLayout taskTimeParentLayout;
+    LinearLayout taskTimeParentLayout;
     @BindView(R.id.comment_tv)
     TextView commentTv;
 
