@@ -571,12 +571,22 @@ public class ImagePagerActivity extends BaseUmengActivity implements BasePagerAd
                     public void onSuccess(Call<ResEntity<IMMessageCustomBody>> call, Response<ResEntity<IMMessageCustomBody>> response) {
                         dismissLoadingDialog();
                         getMsgDingedIds();
+                        if (isDing) {
+                            showTopSnackBar("钉成功");
+                        } else {
+                            showTopSnackBar("取消钉成功");
+                        }
                     }
 
                     @Override
                     public void onFailure(Call<ResEntity<IMMessageCustomBody>> call, Throwable t) {
                         super.onFailure(call, t);
                         dismissLoadingDialog();
+                        if (isDing) {
+                            showTopSnackBar("钉失败");
+                        } else {
+                            showTopSnackBar("取消钉失败");
+                        }
                     }
                 });
     }
