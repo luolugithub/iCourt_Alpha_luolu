@@ -128,7 +128,7 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
             if (!TextUtils.isEmpty(taskItemEntity.description)) {
                 taskDescTv.setText(taskItemEntity.description);
             }
-            getTaskReminder(taskItemEntity.id); //获取任务提醒数据
+//            getTaskReminder(taskItemEntity.id); //获取任务提醒数据
         }
     }
 

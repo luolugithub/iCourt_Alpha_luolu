@@ -690,6 +690,9 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
             public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
                 if (taskAdapter != null) {
                     taskAdapter.clearData();
+                    if (getParentFragment() instanceof TabTaskFragment) {
+                        ((TabTaskFragment) getParentFragment()).showOrHiddeTitleAction2(false);
+                    }
                 }
             }
         });
