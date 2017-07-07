@@ -28,6 +28,7 @@ import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.DensityUtil;
 import com.icourt.alpha.utils.SystemUtils;
+import com.icourt.alpha.utils.TaskReminderUtils;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -86,6 +87,10 @@ public class DateSelectDialogFragment extends BaseDialogFragment {
     TextView duetimeTv;
     @BindView(R.id.clear_dutime_iv)
     ImageView clearDutimeIv;
+    @BindView(R.id.task_reminder_text)
+    TextView taskReminderText;
+    @BindView(R.id.add_reminder_layout)
+    LinearLayout addReminderLayout;
     private Calendar currentCalender = Calendar.getInstance(Locale.getDefault());
     private SimpleDateFormat dateFormatForDisplaying = new SimpleDateFormat("dd-M-yyyy hh:mm:ss a", Locale.getDefault());
     private SimpleDateFormat dateFormatForMonth = new SimpleDateFormat("yyyy年MMM", Locale.getDefault());
@@ -174,6 +179,9 @@ public class DateSelectDialogFragment extends BaseDialogFragment {
         taskId = getArguments().getString("taskId");
         if (taskReminderEntity == null && !TextUtils.isEmpty(taskId)) {
             getTaskReminder(taskId);
+        } else if (taskReminderEntity != null) {
+            addReminderLayout.setVisibility(View.VISIBLE);
+            noticeLl.setVisibility(View.GONE);
         }
         if (selectedCalendar == null) selectedCalendar = Calendar.getInstance();
         if (isUnSetDate()) {
@@ -297,6 +305,30 @@ public class DateSelectDialogFragment extends BaseDialogFragment {
             @Override
             public void onSuccess(Call<ResEntity<TaskReminderEntity>> call, Response<ResEntity<TaskReminderEntity>> response) {
                 taskReminderEntity = response.body().result;
+                if (taskReminderEntity != null) {
+                    if (taskReminderEntity.ruleTime != null) {
+                        noticeLl.setVisibility(View.VISIBLE);
+                        StringBuffer buffer = new StringBuffer();
+                        for (String s : taskReminderEntity.ruleTime) {
+                            if (TextUtils.equals(TaskReminderEntity.ALL_DAY, taskReminderEntity.taskReminderType)) {
+                                if (TaskReminderUtils.alldayMap.containsKey(s)) {
+                                    buffer.append(TaskReminderUtils.alldayMap.get(s) + ",");
+                                }
+                            } else if (TextUtils.equals(TaskReminderEntity.PRECISE, taskReminderEntity.taskReminderType)) {
+                                if (TaskReminderUtils.preciseMap.containsKey(s)) {
+                                    buffer.append(TaskReminderUtils.preciseMap.get(s) + ",");
+                                }
+                            }
+                        }
+                        if (buffer.length() > 0) {
+                            taskReminderText.setText(buffer.toString().substring(0, buffer.toString().length() - 1));
+                        }
+                    } else {
+                        noticeLl.setVisibility(View.GONE);
+                    }
+                } else {
+                    noticeLl.setVisibility(View.GONE);
+                }
             }
         });
     }
@@ -306,6 +338,7 @@ public class DateSelectDialogFragment extends BaseDialogFragment {
             R.id.titleAction,
             R.id.deadline_ll,
             R.id.clear_dutime_iv,
+            R.id.add_reminder_layout,
             R.id.notice_ll,
             R.id.repeat_notice_ll,
             R.id.bt_cancel,
@@ -345,6 +378,10 @@ public class DateSelectDialogFragment extends BaseDialogFragment {
                 clearDutimeIv.setVisibility(View.INVISIBLE);
                 setUnSetDate();
                 deadlineSelectLl.setVisibility(View.GONE);
+                break;
+            case R.id.add_reminder_layout://添加提醒
+                addReminderLayout.setVisibility(View.GONE);
+                noticeLl.setVisibility(View.VISIBLE);
                 break;
             case R.id.notice_ll:
                 break;
