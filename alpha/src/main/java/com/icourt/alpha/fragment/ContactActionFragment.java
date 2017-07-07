@@ -120,6 +120,7 @@ public class ContactActionFragment extends BaseFragment implements BaseRecyclerA
                             List<GroupContactBean> contactBeen = ListConvertor.convertList(new ArrayList<IConvertModel<GroupContactBean>>(contactDbModels));
                             if (contactBeen != null && isFilterMySelef()) {
                                 filterMySelf(contactBeen);
+                                filterRobot(contactBeen);
                             }
                             e.onNext(contactBeen);
                         }
@@ -137,6 +138,16 @@ public class ContactActionFragment extends BaseFragment implements BaseRecyclerA
                 .subscribeOn(Schedulers.newThread())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(consumer);
+    }
+
+    /**
+     * 过滤掉 机器人（robot == 100）
+     *
+     * @param data
+     * @return
+     */
+    private List<GroupContactBean> filterRobot(List<GroupContactBean> data) {
+        return new ListFilter<GroupContactBean>().filter(data, GroupContactBean.TYPE_ROBOT);
     }
 
     @Nullable
