@@ -145,7 +145,8 @@ public class GroupSettingActivity extends BaseActivity {
                         3,
                         3,
                         true,
-                        50);
+                        50,
+                        false);
                 break;
             case R.id.group_desc_ll:
                 EditItemActivity.launchForResult(getActivity(),
@@ -155,7 +156,7 @@ public class GroupSettingActivity extends BaseActivity {
                         3,
                         10,
                         true,
-                        140);
+                        140, true);
                 break;
             case R.id.titleAction:
                 if (StringUtils.isEmpty(getTextString(groupNameTv, ""))) {

@@ -138,7 +138,6 @@ public class TabSearchFragment extends BaseFragment implements OnFragmentCallBac
         RecyclerView.LayoutManager historyLayoutManager = new LinearLayoutManager(getContext());
         historyLayoutManager.setAutoMeasureEnabled(true);
         historyRecyclerView.setLayoutManager(historyLayoutManager);
-        historyRecyclerView.addItemDecoration(ItemDecorationUtils.getCommTrans10Divider(getContext(), true));
         historyRecyclerView.setAdapter(searchHistoryAdapter = new SearchHistoryAdapter());
         searchHistoryAdapter.setOnItemClickListener(new BaseRecyclerAdapter.OnItemClickListener() {
             @Override
