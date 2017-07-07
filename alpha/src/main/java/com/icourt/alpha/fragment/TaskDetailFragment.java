@@ -80,6 +80,7 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
     TaskEntity.TaskItemEntity taskItemEntity;
     @BindView(R.id.task_desc_layout)
     LinearLayout taskDescLayout;
+    TaskReminderEntity taskReminderEntity;
 
     public static TaskDetailFragment newInstance(@NonNull TaskEntity.TaskItemEntity taskItemEntity) {
         TaskDetailFragment taskDetailFragment = new TaskDetailFragment();
@@ -171,7 +172,7 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
         getApi().taskReminderQuery(taskId).enqueue(new SimpleCallBack<TaskReminderEntity>() {
             @Override
             public void onSuccess(Call<ResEntity<TaskReminderEntity>> call, Response<ResEntity<TaskReminderEntity>> response) {
-
+                taskReminderEntity = response.body().result;
             }
         });
     }

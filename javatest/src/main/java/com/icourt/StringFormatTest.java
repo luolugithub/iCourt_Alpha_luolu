@@ -20,8 +20,7 @@ public class StringFormatTest {
         String name7 = "@分三@你好 的阿妹啊等；卢卡斯的7";
         String name8 = "@分三@你好的阿妹啊等；卢卡斯的8";
 
-        String regularcode = "";
-
+        String regularcode = "@\\d{2}";
         System.out.print("");
 
     }
