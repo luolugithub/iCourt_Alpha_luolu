@@ -177,21 +177,25 @@ public class DateSelectDialogFragment extends BaseDialogFragment {
         selectedCalendar = (Calendar) getArguments().getSerializable("calendar");
         taskReminderEntity = (TaskReminderEntity) getArguments().getSerializable("taskReminder");
         taskId = getArguments().getString("taskId");
-        if (taskReminderEntity == null && !TextUtils.isEmpty(taskId)) {
-            getTaskReminder(taskId);
-        } else if (taskReminderEntity != null) {
-            addReminderLayout.setVisibility(View.VISIBLE);
-            noticeLl.setVisibility(View.GONE);
-        }
+
         if (selectedCalendar == null) selectedCalendar = Calendar.getInstance();
         if (isUnSetDate()) {
             duetimeTv.setText("未设置");
             duetimeTv.setTextColor(SystemUtils.getColor(getContext(), R.color.alpha_font_color_gray));
             clearDutimeIv.setVisibility(View.INVISIBLE);
+            addReminderLayout.setVisibility(View.VISIBLE);
+            noticeLl.setVisibility(View.GONE);
         } else {
+            addReminderLayout.setVisibility(View.GONE);
+            noticeLl.setVisibility(View.VISIBLE);
             clearDutimeIv.setVisibility(View.VISIBLE);
             duetimeTv.setText(DateUtils.getHHmm(selectedCalendar.getTimeInMillis()));
             duetimeTv.setTextColor(SystemUtils.getColor(getContext(), R.color.alpha_font_color_black));
+            if (taskReminderEntity == null && !TextUtils.isEmpty(taskId)) {
+                getTaskReminder(taskId);
+            } else if (taskReminderEntity != null) {
+                setReminder(taskReminderEntity);
+            }
         }
         hourWheelView.setCurrentItem(selectedCalendar.get(Calendar.HOUR_OF_DAY));
         hourWheelView.setTextSize(16);
@@ -296,6 +300,55 @@ public class DateSelectDialogFragment extends BaseDialogFragment {
     }
 
     /**
+     * 设置提醒数据
+     *
+     * @param taskReminderEntity
+     */
+    private void setReminder(TaskReminderEntity taskReminderEntity) {
+        StringBuffer buffer = new StringBuffer();
+        if (taskReminderEntity != null) {
+            if (taskReminderEntity.ruleTime != null) {
+                for (String s : taskReminderEntity.ruleTime) {
+                    if (TextUtils.equals(TaskReminderEntity.ALL_DAY, taskReminderEntity.taskReminderType)) {
+                        if (TaskReminderUtils.alldayMap.containsKey(s)) {
+                            buffer.append(TaskReminderUtils.alldayMap.get(s) + ",");
+                        }
+                    } else if (TextUtils.equals(TaskReminderEntity.PRECISE, taskReminderEntity.taskReminderType)) {
+                        if (TaskReminderUtils.preciseMap.containsKey(s)) {
+                            buffer.append(TaskReminderUtils.preciseMap.get(s) + ",");
+                        }
+                    }
+                }
+            }
+            if (taskReminderEntity.customTime != null) {
+                for (TaskReminderEntity.CustomTimeItemEntity customTimeItemEntity : taskReminderEntity.customTime) {
+                    buffer.append(getCustReminderData(customTimeItemEntity) + ",");
+                }
+            }
+        }
+        if (buffer.length() > 0) {
+            taskReminderText.setText(buffer.toString().substring(0, buffer.toString().length() - 1));
+        }
+    }
+
+    /**
+     * 获取自定义提醒str
+     *
+     * @param custReminderData
+     * @return
+     */
+    private String getCustReminderData(TaskReminderEntity.CustomTimeItemEntity custReminderData) {
+        if (custReminderData != null) {
+            String unitStr = null;
+            if (TaskReminderUtils.unitMap.containsKey(custReminderData.unit)) {
+                unitStr = TaskReminderUtils.unitMap.get(custReminderData.unit);
+            }
+            return custReminderData.unitNumber + unitStr + custReminderData.point;
+        }
+        return "";
+    }
+
+    /**
      * 查询任务提醒
      *
      * @param taskId
@@ -308,21 +361,8 @@ public class DateSelectDialogFragment extends BaseDialogFragment {
                 if (taskReminderEntity != null) {
                     if (taskReminderEntity.ruleTime != null) {
                         noticeLl.setVisibility(View.VISIBLE);
-                        StringBuffer buffer = new StringBuffer();
-                        for (String s : taskReminderEntity.ruleTime) {
-                            if (TextUtils.equals(TaskReminderEntity.ALL_DAY, taskReminderEntity.taskReminderType)) {
-                                if (TaskReminderUtils.alldayMap.containsKey(s)) {
-                                    buffer.append(TaskReminderUtils.alldayMap.get(s) + ",");
-                                }
-                            } else if (TextUtils.equals(TaskReminderEntity.PRECISE, taskReminderEntity.taskReminderType)) {
-                                if (TaskReminderUtils.preciseMap.containsKey(s)) {
-                                    buffer.append(TaskReminderUtils.preciseMap.get(s) + ",");
-                                }
-                            }
-                        }
-                        if (buffer.length() > 0) {
-                            taskReminderText.setText(buffer.toString().substring(0, buffer.toString().length() - 1));
-                        }
+                        addReminderLayout.setVisibility(View.GONE);
+                        setReminder(taskReminderEntity);
                     } else {
                         noticeLl.setVisibility(View.GONE);
                     }

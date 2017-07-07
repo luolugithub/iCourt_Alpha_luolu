@@ -41,4 +41,14 @@ public class TaskReminderUtils {
         }
     };
 
+    /**
+     * 提醒时间单位
+     */
+    public static final Map<String, String> unitMap = new HashMap<String, String>() {
+        {
+            put("day", "天");
+            put("hour", "小时");
+            put("minute", "分钟");
+        }
+    };
 }
