@@ -156,6 +156,19 @@ public class FileImportContactFragment extends BaseFragment implements BaseRecyc
         headerCommSearchInputLl.setVisibility(View.GONE);
     }
 
+    /**
+     * 过滤调自己
+     *
+     * @param data
+     * @return
+     */
+    private List<GroupContactBean> filterMySelf(List<GroupContactBean> data) {
+        GroupContactBean groupContactBean = new GroupContactBean();
+        groupContactBean.accid = StringUtils.toLowerCase(getLoginUserId());
+        new ListFilter<GroupContactBean>().filter(data, groupContactBean);
+        return data;
+    }
+
     @Override
     protected void getData(boolean isRefresh) {
         super.getData(isRefresh);
@@ -179,12 +192,7 @@ public class FileImportContactFragment extends BaseFragment implements BaseRecyc
                     @Override
                     public void accept(List<GroupContactBean> groupContactBeen) throws Exception {
                         if (groupContactBeen != null && isFilterMyself()) {
-                            GroupContactBean groupContactBean = new GroupContactBean();
-                            String loginUserId = getLoginUserId();
-                            if (!TextUtils.isEmpty(loginUserId)) {
-                                loginUserId = loginUserId.toLowerCase();
-                            }
-                            groupContactBean.accid = loginUserId;
+                            filterMySelf(groupContactBeen);
                         }
                         imContactAdapter.bindData(true, groupContactBeen);
                     }
@@ -365,6 +373,9 @@ public class FileImportContactFragment extends BaseFragment implements BaseRecyc
             }
             List<GroupContactBean> contactBeen = ListConvertor.convertList(new ArrayList<IConvertModel<GroupContactBean>>(result));
             filterRobot(contactBeen);
+            if (isFilterMyself()) {
+                filterMySelf(contactBeen);
+            }
             imContactAdapter.clearSelected();
             imContactAdapter.bindData(true, contactBeen);
         } catch (Throwable e) {
