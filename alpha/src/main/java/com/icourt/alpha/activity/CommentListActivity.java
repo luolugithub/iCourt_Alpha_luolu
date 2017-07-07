@@ -15,6 +15,7 @@ import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -64,6 +65,7 @@ import retrofit2.Response;
 public class CommentListActivity extends BaseActivity implements BaseRecyclerAdapter.OnItemChildClickListener, BaseRecyclerAdapter.OnItemLongClickListener {
 
     private static final String KEY_TASK_ID = "key_task_id";
+    private static final String KEY_OPEN_SOFT_KEYBOARD = "key_open_Soft_Keyboard";
     @BindView(R.id.titleView)
     AppBarLayout titleView;
     @BindView(R.id.recyclerview)
@@ -88,13 +90,6 @@ public class CommentListActivity extends BaseActivity implements BaseRecyclerAda
     @BindView(R.id.softKeyboardSizeWatchLayout)
     SoftKeyboardSizeWatchLayout softKeyboardSizeWatchLayout;
 
-    public static void launch(@NonNull Context context, @NonNull TaskEntity.TaskItemEntity taskItemEntity) {
-        if (context == null) return;
-        if (taskItemEntity == null) return;
-        Intent intent = new Intent(context, CommentListActivity.class);
-        intent.putExtra(KEY_TASK_ID, taskItemEntity);
-        context.startActivity(intent);
-    }
 
     /**
      * 返回最终评论数
@@ -102,18 +97,37 @@ public class CommentListActivity extends BaseActivity implements BaseRecyclerAda
      * @param context
      * @param taskItemEntity
      * @param requestCode
+     * @param openSoftKeyboard
      */
-    public static void launchForResult(@NonNull Activity context, @NonNull TaskEntity.TaskItemEntity taskItemEntity, int requestCode) {
+    public static void launchForResult(@NonNull Activity context,
+                                       @NonNull TaskEntity.TaskItemEntity taskItemEntity,
+                                       int requestCode,
+                                       boolean openSoftKeyboard) {
         if (context == null) return;
         if (taskItemEntity == null) return;
         Intent intent = new Intent(context, CommentListActivity.class);
         intent.putExtra(KEY_TASK_ID, taskItemEntity);
+        intent.putExtra(KEY_OPEN_SOFT_KEYBOARD, openSoftKeyboard);
         context.startActivityForResult(intent, requestCode);
+    }
+
+    /**
+     * 是否打开软键盘
+     *
+     * @return
+     */
+    private boolean shouldOpenSoftKeyboard() {
+        return getIntent().getBooleanExtra(KEY_OPEN_SOFT_KEYBOARD, true);
     }
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if (shouldOpenSoftKeyboard()) {
+            getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE | WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
+        } else {
+            getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE | WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
+        }
         setContentView(R.layout.activity_comment_list_layout);
         ButterKnife.bind(this);
         initView();
