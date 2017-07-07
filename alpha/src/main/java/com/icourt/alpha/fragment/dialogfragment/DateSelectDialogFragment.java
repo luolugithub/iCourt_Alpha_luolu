@@ -293,12 +293,14 @@ public class DateSelectDialogFragment extends BaseDialogFragment {
      * @param taskId
      */
     private void getTaskReminder(String taskId) {
-        getApi().taskReminderQuery(taskId).enqueue(new SimpleCallBack<TaskReminderEntity>() {
-            @Override
-            public void onSuccess(Call<ResEntity<TaskReminderEntity>> call, Response<ResEntity<TaskReminderEntity>> response) {
-                taskReminderEntity = response.body().result;
-            }
-        });
+        //TODO 还没发版本 报404
+    /*    getApi().taskReminderQuery(taskId)
+                .enqueue(new SimpleCallBack<TaskReminderEntity>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<TaskReminderEntity>> call, Response<ResEntity<TaskReminderEntity>> response) {
+                        taskReminderEntity = response.body().result;
+                    }
+                });*/
     }
 
     @OnClick({R.id.titleBack,
