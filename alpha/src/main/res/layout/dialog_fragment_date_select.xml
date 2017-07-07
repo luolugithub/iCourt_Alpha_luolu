@@ -60,15 +60,15 @@
                 android:layout_height="wrap_content"
                 android:layout_alignParentRight="true"
                 android:layout_centerVertical="true"
-                android:layout_marginRight="10dp"
                 android:layout_marginLeft="@dimen/dp10"
+                android:layout_marginRight="10dp"
                 android:background="@drawable/bg_round_rect_white_gray_line"
                 android:paddingBottom="2dp"
                 android:paddingLeft="7dp"
                 android:paddingRight="7dp"
                 android:paddingTop="2dp"
-                android:textSize="@dimen/alpha_font_size_comm"
-                android:text="今天" />
+                android:text="今天"
+                android:textSize="@dimen/alpha_font_size_comm" />
 
         </RelativeLayout>
 
@@ -162,8 +162,7 @@
             android:layout_height="wrap_content"
             android:gravity="center_vertical"
             android:orientation="horizontal"
-            android:paddingRight="12dp"
-            android:visibility="gone">
+            android:paddingRight="12dp">
 
             <TextView
                 android:layout_width="match_parent"
@@ -172,16 +171,21 @@
                 android:drawableLeft="@mipmap/ic_alarm_gary"
                 android:drawablePadding="10dp"
                 android:padding="12dp"
-                android:text="到期时间" />
+                android:text="提醒" />
 
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:drawableRight="@mipmap/arrow_right"
                 android:hint="未设置"
                 android:textColor="@color/alpha_font_color_black"
                 android:textSize="@dimen/alpha_font_size_comm" />
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="9dp"
+                android:src="@mipmap/arrow_right" />
 
         </LinearLayout>
 
@@ -256,8 +260,8 @@
                 android:paddingBottom="5dp"
                 android:paddingTop="5dp"
                 android:text="完成"
-                android:textSize="14sp"
-                android:textColor="@android:color/white" />
+                android:textColor="@android:color/white"
+                android:textSize="14sp" />
         </RelativeLayout>
 
     </LinearLayout>

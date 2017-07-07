@@ -146,7 +146,7 @@ public class ProjectTaskFragment extends BaseFragment implements TaskAdapter.OnS
         super.onClick(v);
         switch (v.getId()) {
             case R.id.rl_comm_search:
-                SearchProjectActivity.launchFinishTask(getContext(),"", 0, 0, SearchProjectActivity.SEARCH_TASK, projectId);
+                SearchProjectActivity.launchFinishTask(getContext(), "", 0, 0, SearchProjectActivity.SEARCH_TASK, projectId);
                 break;
             default:
                 super.onClick(v);
@@ -449,7 +449,7 @@ public class ProjectTaskFragment extends BaseFragment implements TaskAdapter.OnS
     /**
      * 展示选择到期时间对话框
      */
-    private void showDateSelectDialogFragment(long dueTime) {
+    private void showDateSelectDialogFragment(long dueTime, String taskId) {
         String tag = DateSelectDialogFragment.class.getSimpleName();
         FragmentTransaction mFragTransaction = getChildFragmentManager().beginTransaction();
         Fragment fragment = getChildFragmentManager().findFragmentByTag(tag);
@@ -463,7 +463,7 @@ public class ProjectTaskFragment extends BaseFragment implements TaskAdapter.OnS
         } else {
             calendar.setTimeInMillis(dueTime);
         }
-        DateSelectDialogFragment.newInstance(calendar)
+        DateSelectDialogFragment.newInstance(calendar, null, taskId)
                 .show(mFragTransaction, tag);
     }
 
@@ -484,7 +484,7 @@ public class ProjectTaskFragment extends BaseFragment implements TaskAdapter.OnS
     public void showDateSelectDialog(TaskEntity.TaskItemEntity taskItemEntity) {
         updateTaskItemEntity = taskItemEntity;
         if (taskItemEntity != null)
-            showDateSelectDialogFragment(taskItemEntity.dueTime);
+            showDateSelectDialogFragment(taskItemEntity.dueTime, taskItemEntity.id);
     }
 
     @Override

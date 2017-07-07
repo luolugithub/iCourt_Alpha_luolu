@@ -287,6 +287,13 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
                         task.groupName = "新任务";
                         task.groupTaskCount = newTaskEntities.size();
                         allTaskEntities.add(task);
+                        if (getParentFragment() instanceof TabTaskFragment) {
+                            ((TabTaskFragment) getParentFragment()).showOrHiddeTitleAction2(true);
+                        }
+                    } else {
+                        if (getParentFragment() instanceof TabTaskFragment) {
+                            ((TabTaskFragment) getParentFragment()).showOrHiddeTitleAction2(false);
+                        }
                     }
                 }
                 taskAdapter.bindData(true, allTaskEntities);
@@ -475,7 +482,7 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
     /**
      * 展示选择到期时间对话框
      */
-    private void showDateSelectDialogFragment(long dueTime) {
+    private void showDateSelectDialogFragment(long dueTime, String taskId) {
         String tag = DateSelectDialogFragment.class.getSimpleName();
         FragmentTransaction mFragTransaction = getChildFragmentManager().beginTransaction();
         Fragment fragment = getChildFragmentManager().findFragmentByTag(tag);
@@ -489,7 +496,7 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
         } else {
             calendar.setTimeInMillis(dueTime);
         }
-        DateSelectDialogFragment.newInstance(calendar)
+        DateSelectDialogFragment.newInstance(calendar, null, taskId)
                 .show(mFragTransaction, tag);
     }
 
@@ -512,7 +519,7 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
     public void showDateSelectDialog(TaskEntity.TaskItemEntity taskItemEntity) {
         updateTaskItemEntity = taskItemEntity;
         if (taskItemEntity != null)
-            showDateSelectDialogFragment(taskItemEntity.dueTime);
+            showDateSelectDialogFragment(taskItemEntity.dueTime, taskItemEntity.id);
     }
 
     @Override
@@ -647,7 +654,7 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
             if (projectEntity != null) {
                 jsonObject.addProperty("matterId", projectEntity.pkId);
                 jsonarr.add(getLoginUserId());
-            }else{
+            } else {
                 if (itemEntity.attendeeUsers != null) {
                     for (TaskEntity.TaskItemEntity.AttendeeUserEntity attendeeUser : itemEntity.attendeeUsers) {
                         jsonarr.add(attendeeUser.userId);

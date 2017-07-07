@@ -9,6 +9,7 @@ import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -81,6 +82,8 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
     @BindView(R.id.task_desc_layout)
     LinearLayout taskDescLayout;
     TaskReminderEntity taskReminderEntity;
+    @BindView(R.id.task_reminder_icon)
+    ImageView taskReminderIcon;
 
     public static TaskDetailFragment newInstance(@NonNull TaskEntity.TaskItemEntity taskItemEntity) {
         TaskDetailFragment taskDetailFragment = new TaskDetailFragment();
@@ -125,7 +128,7 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
             if (!TextUtils.isEmpty(taskItemEntity.description)) {
                 taskDescTv.setText(taskItemEntity.description);
             }
-//            getTaskReminder(taskItemEntity.id); //获取任务提醒数据
+            getTaskReminder(taskItemEntity.id); //获取任务提醒数据
         }
     }
 
@@ -152,7 +155,8 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
                     }
                     break;
                 case R.id.task_time_layout://选择到期时间
-                    showDateSelectDialogFragment(taskItemEntity.dueTime);
+                    if (taskItemEntity != null)
+                        showDateSelectDialogFragment(taskItemEntity.dueTime, taskItemEntity.id);
                     break;
                 case R.id.task_desc_tv://添加任务详情
                     TaskDescUpdateActivity.launch(getContext(), taskDescTv.getText().toString(), TaskDescUpdateActivity.UPDATE_TASK_DESC);
@@ -173,6 +177,15 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
             @Override
             public void onSuccess(Call<ResEntity<TaskReminderEntity>> call, Response<ResEntity<TaskReminderEntity>> response) {
                 taskReminderEntity = response.body().result;
+                if (taskReminderEntity != null) {
+                    if (taskReminderEntity.ruleTime != null) {
+                        taskReminderIcon.setVisibility(View.VISIBLE);
+                    } else {
+                        taskReminderIcon.setVisibility(View.INVISIBLE);
+                    }
+                } else {
+                    taskReminderIcon.setVisibility(View.INVISIBLE);
+                }
             }
         });
     }
@@ -231,7 +244,7 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
     /**
      * 展示选择到期时间对话框
      */
-    private void showDateSelectDialogFragment(long dueTime) {
+    private void showDateSelectDialogFragment(long dueTime, String taskId) {
         String tag = DateSelectDialogFragment.class.getSimpleName();
         FragmentTransaction mFragTransaction = getChildFragmentManager().beginTransaction();
         Fragment fragment = getChildFragmentManager().findFragmentByTag(tag);
@@ -245,7 +258,7 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
         } else {
             calendar.setTimeInMillis(dueTime);
         }
-        DateSelectDialogFragment.newInstance(calendar)
+        DateSelectDialogFragment.newInstance(calendar, taskReminderEntity, taskId)
                 .show(mFragTransaction, tag);
     }
 
@@ -435,4 +448,5 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
             updateTask(taskItemEntity, null, null);
         }
     }
+
 }

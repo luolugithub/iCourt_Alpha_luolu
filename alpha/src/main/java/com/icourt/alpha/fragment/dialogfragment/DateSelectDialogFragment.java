@@ -4,6 +4,7 @@ import android.app.Dialog;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.text.TextUtils;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -20,6 +21,9 @@ import com.github.sundeepk.compactcalendarview.CompactCalendarView;
 import com.github.sundeepk.compactcalendarview.domain.Event;
 import com.icourt.alpha.R;
 import com.icourt.alpha.base.BaseDialogFragment;
+import com.icourt.alpha.entity.bean.TaskReminderEntity;
+import com.icourt.alpha.http.callback.SimpleCallBack;
+import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.DensityUtil;
@@ -39,6 +43,8 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import butterknife.Unbinder;
+import retrofit2.Call;
+import retrofit2.Response;
 
 /**
  * Description   返回KEY_FRAGMENT_RESULT long时间戳
@@ -86,11 +92,15 @@ public class DateSelectDialogFragment extends BaseDialogFragment {
     Date selectedDate;
 
     Calendar selectedCalendar;
+    TaskReminderEntity taskReminderEntity;
+    String taskId;//任务id
 
-    public static DateSelectDialogFragment newInstance(@Nullable Calendar calendar) {
+    public static DateSelectDialogFragment newInstance(@Nullable Calendar calendar, TaskReminderEntity taskReminderEntity, String taskId) {
         DateSelectDialogFragment dateSelectDialogFragment = new DateSelectDialogFragment();
         Bundle args = new Bundle();
+        args.putString("taskId", taskId);
         args.putSerializable("calendar", calendar);
+        args.putSerializable("taskReminder", taskReminderEntity);
         dateSelectDialogFragment.setArguments(args);
         return dateSelectDialogFragment;
     }
@@ -160,6 +170,11 @@ public class DateSelectDialogFragment extends BaseDialogFragment {
         minuteWheelView.setAdapter(new TimeWheelAdapter(60));
         initCompactCalendar();
         selectedCalendar = (Calendar) getArguments().getSerializable("calendar");
+        taskReminderEntity = (TaskReminderEntity) getArguments().getSerializable("taskReminder");
+        taskId = getArguments().getString("taskId");
+        if (taskReminderEntity == null && !TextUtils.isEmpty(taskId)) {
+            getTaskReminder(taskId);
+        }
         if (selectedCalendar == null) selectedCalendar = Calendar.getInstance();
         if (isUnSetDate()) {
             duetimeTv.setText("未设置");
@@ -270,6 +285,20 @@ public class DateSelectDialogFragment extends BaseDialogFragment {
         titleContent.setText(dateFormatForMonth.format(System.currentTimeMillis()));
         compactcalendarView.setCurrentDate(new Date());
         compactcalendarView.invalidate();
+    }
+
+    /**
+     * 查询任务提醒
+     *
+     * @param taskId
+     */
+    private void getTaskReminder(String taskId) {
+        getApi().taskReminderQuery(taskId).enqueue(new SimpleCallBack<TaskReminderEntity>() {
+            @Override
+            public void onSuccess(Call<ResEntity<TaskReminderEntity>> call, Response<ResEntity<TaskReminderEntity>> response) {
+                taskReminderEntity = response.body().result;
+            }
+        });
     }
 
     @OnClick({R.id.titleBack,

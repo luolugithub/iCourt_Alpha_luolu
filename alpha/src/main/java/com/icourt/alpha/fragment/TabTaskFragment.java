@@ -114,14 +114,17 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
             case 0://全部
                 titleAction.setImageResource(R.mipmap.header_icon_add);
                 titleAction2.setImageResource(R.mipmap.header_icon_more);
+                titleAction2.setVisibility(View.VISIBLE);
                 break;
             case 1://新任务
                 titleAction.setImageResource(R.mipmap.header_icon_add);
                 titleAction2.setImageResource(R.mipmap.header_icon_checkall);
+                titleAction2.setVisibility(View.GONE);
                 break;
             case 2://我关注的
                 titleAction.setImageResource(R.mipmap.header_icon_add);
                 titleAction2.setImageResource(R.mipmap.header_icon_more);
+                titleAction2.setVisibility(View.VISIBLE);
                 break;
         }
     }
@@ -201,5 +204,14 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
         void onCheckAll();
 
         void onRefreshNewTask();
+    }
+
+    /**
+     * 显示隐藏'我知道了'按钮
+     *
+     * @param isShow
+     */
+    public void showOrHiddeTitleAction2(boolean isShow) {
+        titleAction2.setVisibility(isShow ? View.VISIBLE : View.GONE);
     }
 }
