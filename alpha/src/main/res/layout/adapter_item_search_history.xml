@@ -2,7 +2,10 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="horizontal">
+    android:background="?attr/selectableItemBackground"
+    android:orientation="horizontal"
+    android:paddingBottom="7dp"
+    android:paddingTop="7dp">
 
     <TextView
         android:id="@+id/search_keyWord_tv"
@@ -11,18 +14,18 @@
         android:layout_weight="1"
         android:ellipsize="end"
         android:maxLines="1"
+        android:text="keyWord"
         android:textColor="@color/alpha_font_color_gray"
-        android:textSize="14sp"
-        android:text="keyWord" />
+        android:textSize="14sp" />
 
     <TextView
         android:id="@+id/search_engines_tv"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginLeft="10dp"
         android:ellipsize="end"
         android:maxLines="1"
-        android:textSize="11sp"
+        android:text="百度"
         android:textColor="@color/alpha_font_color_gray"
-        android:layout_marginLeft="10dp"
-        android:text="百度" />
+        android:textSize="11sp" />
 </LinearLayout>
