@@ -16,6 +16,7 @@ import android.widget.TextView;
 
 import com.icourt.alpha.R;
 import com.icourt.alpha.base.BaseActivity;
+import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.view.ClearEditText;
 
 import butterknife.BindView;
@@ -35,6 +36,7 @@ public class EditItemActivity extends BaseActivity {
     private static final String KEY_INPUT_MAX_LINE_NUM = "key_input_max_line_num";
     private static final String KEY_IS_SHOW_LIMIT_NUM = " key_is_show_limit_num";
     private static final String KEY_LIMIT_NUM = "key_limit_num";
+    private static final String KEY_IS_ALLOW_INPUT_EMPTY = "key_isAllowInputEmpty";
     @BindView(R.id.titleBack)
     CheckedTextView titleBack;
     @BindView(R.id.titleContent)
@@ -58,13 +60,14 @@ public class EditItemActivity extends BaseActivity {
 
     /**
      * @param context
-     * @param title            页面标题
-     * @param defaultValue     输入框的默认文案
+     * @param title             页面标题
+     * @param defaultValue      输入框的默认文案
      * @param reqCode
-     * @param inputMiniLineNum 默认最小展示行数
-     * @param inputMaxLineNum  默认展示几行
-     * @param isShowLimitNum   是否展示数字显示提示
-     * @param limitNum         数字限制长度
+     * @param inputMiniLineNum  默认最小展示行数
+     * @param inputMaxLineNum   默认展示几行
+     * @param isShowLimitNum    是否展示数字显示提示
+     * @param limitNum          数字限制长度
+     * @param isAllowInputEmpty 是否允许输入为空
      */
     public static void launchForResult(@NonNull Activity context,
                                        @NonNull String title,
@@ -73,7 +76,8 @@ public class EditItemActivity extends BaseActivity {
                                        int inputMiniLineNum,
                                        int inputMaxLineNum,
                                        boolean isShowLimitNum,
-                                       int limitNum) {
+                                       int limitNum,
+                                       boolean isAllowInputEmpty) {
         if (context == null) return;
         if (TextUtils.isEmpty(title)) return;
         if (inputMaxLineNum < 0) return;
@@ -85,6 +89,7 @@ public class EditItemActivity extends BaseActivity {
         intent.putExtra(KEY_INPUT_MAX_LINE_NUM, inputMaxLineNum);
         intent.putExtra(KEY_IS_SHOW_LIMIT_NUM, isShowLimitNum);
         intent.putExtra(KEY_LIMIT_NUM, limitNum);
+        intent.putExtra(KEY_IS_ALLOW_INPUT_EMPTY, isAllowInputEmpty);
         context.startActivityForResult(intent, reqCode);
     }
 
@@ -139,6 +144,11 @@ public class EditItemActivity extends BaseActivity {
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.titleAction:
+                if (!getIntent().getBooleanExtra(KEY_IS_ALLOW_INPUT_EMPTY, false)
+                        && StringUtils.isEmpty(valueInputEt.getText())) {
+                    showTopSnackBar(String.format("%s不能为空", getIntent().getStringExtra(KEY_TITLE)));
+                    return;
+                }
                 Intent intent = getIntent();
                 intent.putExtra(KEY_ACTIVITY_RESULT, getTextString(valueInputEt, ""));
                 setResult(Activity.RESULT_OK, intent);
