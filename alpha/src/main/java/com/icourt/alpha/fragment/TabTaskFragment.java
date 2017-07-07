@@ -91,7 +91,7 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
             @Override
             public void onPageSelected(int position) {
                 setTititleActionIcon(position);
-                if (position == 1) {
+                if (position == 1 || position == 2) {
                     if (onCheckAllNewTaskListener != null)
                         onCheckAllNewTaskListener.onRefreshNewTask();
                 }

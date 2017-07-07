@@ -105,15 +105,15 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
         return view;
     }
 
-    @Override
-    public void onHiddenChanged(boolean hidden) {
-        super.onHiddenChanged(hidden);
-        if (!hidden) {
-            if (type == 1) {
-                getData(true);
-            }
-        }
-    }
+//    @Override
+//    public void onHiddenChanged(boolean hidden) {
+//        super.onHiddenChanged(hidden);
+//        if (!hidden) {
+//            if (type == 1 || type == 2) {
+//                getData(true);
+//            }
+//        }
+//    }
 
     @Override
     protected void initView() {
@@ -159,7 +159,7 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
         noDueTaskEntities = new ArrayList<>();
         newTaskEntities = new ArrayList<>();
         datedTaskEntities = new ArrayList<>();
-        if (type == 1) {
+        if (type == 1 || type == 2) {
             if (getParentFragment() instanceof TabTaskFragment) {
                 ((TabTaskFragment) getParentFragment()).setOnCheckAllNewTaskListener(this);
             }
@@ -446,6 +446,8 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
                     }
                 }
             }
+        } else {
+            taskAdapter.notifyDataSetChanged();
         }
     }
 
@@ -700,7 +702,7 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
 
     @Override
     public void onRefreshNewTask() {
-        if (type == 1) {
+        if (type == 1 || type == 2) {
             getData(true);
         }
     }

@@ -87,6 +87,8 @@ public class TaskAttachmentFragment extends BaseFragment implements BaseRecycler
     LinearLayout emptyLayout;
     @BindView(R.id.list_layout)
     LinearLayout listLayout;
+    @BindView(R.id.empty_text)
+    TextView emptyText;
 
     public static TaskAttachmentFragment newInstance(@NonNull String taskId, boolean hasPermission) {
         TaskAttachmentFragment taskAttachmentFragment = new TaskAttachmentFragment();
@@ -125,8 +127,15 @@ public class TaskAttachmentFragment extends BaseFragment implements BaseRecycler
         recyclerview.setAdapter(taskAttachmentAdapter = new TaskAttachmentAdapter());
         taskAttachmentAdapter.setOnItemClickListener(this);
         taskAttachmentAdapter.setOnItemLongClickListener(this);
-        getData(true);
+
         addAttachmentView.setVisibility(hasPermission ? View.VISIBLE : View.GONE);
+        if (hasPermission) {
+            getData(true);
+            emptyText.setText("暂无附件");
+        } else {
+            emptyLayout.setVisibility(View.VISIBLE);
+            emptyText.setText("暂无权限查看");
+        }
     }
 
     @OnClick({R.id.add_attachment_view})
@@ -263,6 +272,8 @@ public class TaskAttachmentFragment extends BaseFragment implements BaseRecycler
                                 emptyLayout.setVisibility(View.GONE);
                             }
                         }
+                    } else {
+                        updateDocument();
                     }
                 } else {
                     if (listLayout != null) {
@@ -270,7 +281,7 @@ public class TaskAttachmentFragment extends BaseFragment implements BaseRecycler
                         emptyLayout.setVisibility(View.VISIBLE);
                     }
                 }
-                updateDocument();
+
             }
         });
     }
@@ -382,4 +393,5 @@ public class TaskAttachmentFragment extends BaseFragment implements BaseRecycler
         }
         return false;
     }
+
 }

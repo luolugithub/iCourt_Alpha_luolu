@@ -74,6 +74,8 @@ public class TaskCheckItemFragment extends BaseFragment implements BaseRecyclerA
     LinearLayout listLayout;
     @BindView(R.id.nestedScrollView)
     NestedScrollView nestedScrollView;
+    @BindView(R.id.empty_text)
+    TextView emptyText;
 
     public static TaskCheckItemFragment newInstance(@NonNull String taskId, boolean hasPermission) {
         TaskCheckItemFragment taskCheckItemFragment = new TaskCheckItemFragment();
@@ -119,6 +121,7 @@ public class TaskCheckItemFragment extends BaseFragment implements BaseRecyclerA
         getData(false);
         if (hasPermission) {
             addItemLayout.setVisibility(View.VISIBLE);
+            emptyText.setText("暂无检查项");
             taskCheckItemAdapter.setOnItemChildClickListener(this);
             checkItemEdit.setOnEditorActionListener(new TextView.OnEditorActionListener() {
                 @Override
@@ -133,6 +136,8 @@ public class TaskCheckItemFragment extends BaseFragment implements BaseRecyclerA
                 }
             });
         } else {
+            emptyText.setText("暂无权限查看");
+            emptyLayout.setVisibility(View.VISIBLE);
             addItemLayout.setVisibility(View.GONE);
         }
     }
@@ -172,6 +177,11 @@ public class TaskCheckItemFragment extends BaseFragment implements BaseRecyclerA
                             listLayout.setVisibility(View.VISIBLE);
                             emptyLayout.setVisibility(View.GONE);
                         }
+                    }
+                } else {
+                    if (listLayout != null) {
+                        listLayout.setVisibility(View.GONE);
+                        emptyLayout.setVisibility(View.VISIBLE);
                     }
                 }
             }
@@ -318,4 +328,5 @@ public class TaskCheckItemFragment extends BaseFragment implements BaseRecyclerA
             }
         });
     }
+
 }
