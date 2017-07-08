@@ -1157,10 +1157,11 @@ public interface ApiAlphaService {
     /**
      * 查询任务提醒
      * 文档地址：https://test.alphalawyer.cn/ilaw/swagger/index.html#!/taskflow-api/queryTaskRemindersUsingGET
+     *
      * @param taskId
      * @return
      */
-    @GET("api/v2/taskflow/tasks/{taskId}/reminder")
+    @GET("api/v2/tasks/{taskId}/reminders")
     Call<ResEntity<TaskReminderEntity>> taskReminderQuery(@Path("taskId") String taskId);
 
 }

@@ -224,6 +224,7 @@ public class TaskDetailActivity extends BaseActivity
             R.id.task_name,
             R.id.task_user_recyclerview,
             R.id.comment_layout,
+            R.id.comment_tv,
             R.id.task_checkbox,
             R.id.task_user_layout,
             R.id.task_users_layout,
@@ -310,8 +311,17 @@ public class TaskDetailActivity extends BaseActivity
                     showTopSnackBar("您没有编辑任务的权限");
                 }
                 break;
+            case R.id.comment_tv:
+                CommentListActivity.launchForResult(this,
+                        taskItemEntity,
+                        START_COMMENT_FORRESULT_CODE,
+                        false);
+                break;
             case R.id.comment_layout://更多评论动态
-                CommentListActivity.launchForResult(this, taskItemEntity, START_COMMENT_FORRESULT_CODE);
+                CommentListActivity.launchForResult(this,
+                        taskItemEntity,
+                        START_COMMENT_FORRESULT_CODE,
+                        true);
                 break;
         }
     }
