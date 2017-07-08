@@ -221,6 +221,20 @@ public interface ApiAlphaService {
 
 
     /**
+     * 获取所有任务
+     * <p>
+     * 文档地址：http://testpms.alphalawyer.cn/ilaw/swagger/index.html#!/taskflow-api/queryTaskByDueUsingGET
+     *
+     * @return
+     */
+    @GET("api/v2/taskflow/queryTaskByDue")
+    Call<ResEntity<PageEntity<TaskEntity.TaskItemEntity>>> getAllTask(@Query("dueStart") String dueStart,
+                                                                      @Query("dueEnd") String dueEnd,
+                                                                      @Query("assignTos") List<String> assignTos,
+                                                                      @Query("contentNull") int contentNull,
+                                                                      @Query("attentionType") int attentionType);
+
+    /**
      * 消息转任务
      * <p>
      * 文档地址：http://testpms.alphalawyer.cn/ilaw/swagger/index.html#!/chat-api/addTaskUsingPOST

@@ -468,7 +468,7 @@ public abstract class BaseFragment
      * @param containerViewId 替换的viewid
      * @return 当前执行显示的fragment
      */
-    protected final Fragment addOrShowFragment(@NonNull Fragment targetFragment, Fragment currentFragment, @IdRes int containerViewId) {
+    protected Fragment addOrShowFragment(@NonNull Fragment targetFragment, Fragment currentFragment, @IdRes int containerViewId) {
         if (targetFragment == null) return currentFragment;
         if (targetFragment == currentFragment) return currentFragment;
         FragmentManager fm = getChildFragmentManager();

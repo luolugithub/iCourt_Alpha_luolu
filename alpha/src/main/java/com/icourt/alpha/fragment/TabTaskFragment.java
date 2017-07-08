@@ -54,6 +54,8 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
     @BindView(R.id.titleAction2)
     ImageView titleAction2;
     OnCheckAllNewTaskListener onCheckAllNewTaskListener;
+    @BindView(R.id.titleCalendar)
+    ImageView titleCalendar;
 
     public static TabTaskFragment newInstance() {
         return new TabTaskFragment();
@@ -79,7 +81,7 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
         baseFragmentAdapter.bindTitle(true, Arrays.asList("全部", "新任务", "我关注的"));
         baseFragmentAdapter.bindData(true,
                 Arrays.asList(
-                        TaskListFragment.newInstance(0),
+                        TaskAllFragment.newInstance(),
                         TaskListFragment.newInstance(1),
                         TaskListFragment.newInstance(2)));
         viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
@@ -91,9 +93,12 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
             @Override
             public void onPageSelected(int position) {
                 setTititleActionIcon(position);
+                titleCalendar.setVisibility(View.GONE);
                 if (position == 1) {
                     if (onCheckAllNewTaskListener != null)
                         onCheckAllNewTaskListener.onRefreshNewTask();
+                } else if (position == 0) {
+                    titleCalendar.setVisibility(View.VISIBLE);
                 }
             }
 
@@ -129,11 +134,27 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
         }
     }
 
-    @OnClick({R.id.titleAction, R.id.titleAction2})
+    @OnClick({R.id.titleAction,
+            R.id.titleAction2,
+            R.id.titleCalendar})
     @Override
     public void onClick(View v) {
         super.onClick(v);
         switch (v.getId()) {
+            case R.id.titleCalendar:
+                Fragment item = baseFragmentAdapter.getItem(viewPager.getCurrentItem());
+                if (item instanceof TaskAllFragment) {
+                    TaskAllFragment taskAllFragment = (TaskAllFragment) item;
+                    switch (taskAllFragment.getChildFragmentType()) {
+                        case TaskAllFragment.TYPE_ALL_TASK:
+                            taskAllFragment.notifyFragmentUpdate(taskAllFragment, TaskAllFragment.TYPE_ALL_TASK_CALENDAR, null);
+                            break;
+                        case TaskAllFragment.TYPE_ALL_TASK_CALENDAR:
+                            taskAllFragment.notifyFragmentUpdate(taskAllFragment, TaskAllFragment.TYPE_ALL_TASK, null);
+                            break;
+                    }
+                }
+                break;
             case R.id.titleAction:
                 TaskCreateActivity.launch(getContext(), null, null);
                 break;
@@ -199,6 +220,7 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
             }
         }
     }
+
 
     public interface OnCheckAllNewTaskListener {
         void onCheckAll();
