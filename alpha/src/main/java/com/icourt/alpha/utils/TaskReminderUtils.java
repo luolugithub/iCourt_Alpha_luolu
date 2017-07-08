@@ -1,6 +1,6 @@
 package com.icourt.alpha.utils;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -16,7 +16,7 @@ public class TaskReminderUtils {
     /**
      * 全天任务
      */
-    public static final Map<String, String> alldayMap = new HashMap<String, String>() {
+    public static final Map<String, String> alldayMap = new LinkedHashMap<String, String>() {
         {
             put("ODB", "当天（9:00)");
             put("1DB", "一天前（9:00)");
@@ -28,7 +28,7 @@ public class TaskReminderUtils {
     /**
      * 特定到期任务
      */
-    public static final Map<String, String> preciseMap = new HashMap<String, String>() {
+    public static final Map<String, String> preciseMap = new LinkedHashMap<String, String>() {
         {
             put("0MB", "任务到期时");
             put("5MB", "5分钟前");
@@ -44,7 +44,7 @@ public class TaskReminderUtils {
     /**
      * 提醒时间单位
      */
-    public static final Map<String, String> unitMap = new HashMap<String, String>() {
+    public static final Map<String, String> unitMap = new LinkedHashMap<String, String>() {
         {
             put("day", "天");
             put("hour", "小时");
