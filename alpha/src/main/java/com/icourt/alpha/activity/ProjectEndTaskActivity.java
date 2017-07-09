@@ -106,7 +106,7 @@ public class ProjectEndTaskActivity extends BaseActivity implements BaseRecycler
         projectId = getIntent().getStringExtra(KEY_PROJECT_ID);
         setTitle("查看已完成任务");
         EventBus.getDefault().register(this);
-        refreshLayout.setNoticeEmpty(R.mipmap.icon_placeholder_task, "暂无已完成任务");
+        refreshLayout.setNoticeEmpty(R.mipmap.bg_no_task, "暂无已完成任务");
         refreshLayout.setMoveForHorizontal(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setHasFixedSize(true);

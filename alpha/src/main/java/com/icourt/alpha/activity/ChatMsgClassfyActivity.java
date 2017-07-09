@@ -181,19 +181,19 @@ public class ChatMsgClassfyActivity extends BaseActivity implements BaseRecycler
         switch (getMsgClassfyType()) {
             case MSG_CLASSFY_CHAT_DING:
                 setTitle("钉的消息");
-                refreshLayout.setNoticeEmpty(R.mipmap.icon_placeholder_task, "暂无钉的消息");
+                refreshLayout.setNoticeEmpty(R.mipmap.bg_no_task, "暂无钉的消息");
                 break;
             case MSG_CLASSFY_CHAT_FILE:
                 setTitle("文件");
-                refreshLayout.setNoticeEmpty(R.mipmap.icon_placeholder_task, "暂无文件");
+                refreshLayout.setNoticeEmpty(R.mipmap.bg_no_task, "暂无文件");
                 break;
             case MSG_CLASSFY_MY_COLLECTEED:
                 setTitle("我收藏的消息");
-                refreshLayout.setNoticeEmpty(R.mipmap.icon_placeholder_task, R.string.my_center_null_collect_text);
+                refreshLayout.setNoticeEmpty(R.mipmap.bg_no_task, R.string.my_center_null_collect_text);
                 break;
             default:
                 setTitle("我收藏的消息");
-                refreshLayout.setNoticeEmpty(R.mipmap.icon_placeholder_task, R.string.my_center_null_collect_text);
+                refreshLayout.setNoticeEmpty(R.mipmap.bg_no_task, R.string.my_center_null_collect_text);
                 break;
         }
         refreshLayout.setMoveForHorizontal(true);

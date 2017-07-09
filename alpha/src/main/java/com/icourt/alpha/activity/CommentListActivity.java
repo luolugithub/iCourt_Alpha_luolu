@@ -1,7 +1,6 @@
 package com.icourt.alpha.activity;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -148,7 +147,7 @@ public class CommentListActivity extends BaseActivity implements BaseRecyclerAda
         }
         headerFooterAdapter.addFooter(footerview);
 
-        refreshLayout.setNoticeEmpty(R.mipmap.icon_placeholder_task, R.string.task_no_comment_text);
+        refreshLayout.setNoticeEmpty(R.mipmap.bg_no_task, R.string.task_no_comment_text);
         refreshLayout.setMoveForHorizontal(true);
 
         recyclerview.addItemDecoration(ItemDecorationUtils.getCommFull05Divider(this, true));

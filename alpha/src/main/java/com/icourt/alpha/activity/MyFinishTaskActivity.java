@@ -101,7 +101,7 @@ public class MyFinishTaskActivity extends BaseActivity implements BaseRecyclerAd
         super.initView();
         setTitle("查看已完成的任务");
         EventBus.getDefault().register(this);
-        refreshLayout.setNoticeEmpty(R.mipmap.icon_placeholder_task, "暂无已完成任务");
+        refreshLayout.setNoticeEmpty(R.mipmap.bg_no_task, "暂无已完成任务");
         refreshLayout.setMoveForHorizontal(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         //recyclerView.setHasFixedSize(true);

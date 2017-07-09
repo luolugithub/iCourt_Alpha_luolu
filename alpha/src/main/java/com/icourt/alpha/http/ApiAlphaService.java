@@ -231,7 +231,6 @@ public interface ApiAlphaService {
     Call<ResEntity<PageEntity<TaskEntity.TaskItemEntity>>> getAllTask(@Query("dueStart") String dueStart,
                                                                       @Query("dueEnd") String dueEnd,
                                                                       @Query("assignTos") List<String> assignTos,
-                                                                      @Query("contentNull") int contentNull,
                                                                       @Query("attentionType") int attentionType);
 
     /**

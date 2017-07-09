@@ -3,6 +3,8 @@ package com.icourt.alpha.fragment;
 import android.content.res.ColorStateList;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
+import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -10,28 +12,24 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import com.codbking.calendar.CaledarAdapter;
-import com.codbking.calendar.CalendarBean;
-import com.codbking.calendar.CalendarDateView;
-import com.codbking.calendar.CalendarUtil;
-import com.codbking.calendar.CalendarView;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.TaskSimpleAdapter;
-import com.icourt.alpha.adapter.baseadapter.BaseArrayRecyclerAdapter;
-import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
+import com.icourt.alpha.adapter.baseadapter.adapterObserver.DataChangeAdapterObserver;
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.entity.bean.PageEntity;
 import com.icourt.alpha.entity.bean.TaskEntity;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
-import com.icourt.alpha.utils.DensityUtil;
-import com.icourt.alpha.utils.SystemUtils;
+import com.jeek.calendar.widget.calendar.OnCalendarClickListener;
+import com.jeek.calendar.widget.calendar.month.MonthCalendarView;
+import com.jeek.calendar.widget.calendar.schedule.ScheduleLayout;
+import com.jeek.calendar.widget.calendar.schedule.ScheduleRecyclerView;
+import com.jeek.calendar.widget.calendar.week.WeekCalendarView;
 
 import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Date;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -50,6 +48,11 @@ import retrofit2.Response;
 
 public class TaskListCalendarFragment extends BaseFragment {
 
+    public static Fragment newInstance() {
+        return new TaskListCalendarFragment();
+    }
+
+
     @BindView(R.id.titleBack)
     ImageView titleBack;
     @BindView(R.id.titleContent)
@@ -58,18 +61,22 @@ public class TaskListCalendarFragment extends BaseFragment {
     ImageView titleForward;
     @BindView(R.id.titleAction)
     TextView titleAction;
-    @BindView(R.id.calendarDateView)
-    CalendarDateView calendarDateView;
+    @BindView(R.id.mcvCalendar)
+    MonthCalendarView mcvCalendar;
+    @BindView(R.id.rlMonthCalendar)
+    RelativeLayout rlMonthCalendar;
+    @BindView(R.id.wcvCalendar)
+    WeekCalendarView wcvCalendar;
+    @BindView(R.id.rvScheduleList)
+    ScheduleRecyclerView rvScheduleList;
+    @BindView(R.id.rlNoTask)
+    RelativeLayout rlNoTask;
+    @BindView(R.id.rlScheduleList)
+    RelativeLayout rlScheduleList;
+    @BindView(R.id.slSchedule)
+    ScheduleLayout slSchedule;
     Unbinder unbinder;
-    @BindView(R.id.recyclerView)
-    RecyclerView recyclerView;
     TaskSimpleAdapter taskSimpleAdapter;
-
-    public static TaskListCalendarFragment newInstance() {
-        return new TaskListCalendarFragment();
-    }
-
-    final Calendar todayCalendar = Calendar.getInstance();
 
     @Nullable
     @Override
@@ -82,78 +89,54 @@ public class TaskListCalendarFragment extends BaseFragment {
     @Override
     protected void initView() {
         initCalendarDateView();
-        recyclerView.setNestedScrollingEnabled(false);
-        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        recyclerView.setAdapter(taskSimpleAdapter = new TaskSimpleAdapter());
-        getData(true);
     }
 
     private void initCalendarDateView() {
-        calendarDateView.setAdapter(new CaledarAdapter() {
+        slSchedule.addTaskHints(Arrays.asList(8, 9, 10));
+        slSchedule.setOnCalendarClickListener(new OnCalendarClickListener() {
             @Override
-            public View getView(View convertView, ViewGroup parentView, CalendarBean bean) {
-                if (convertView == null) {
-                    convertView = LayoutInflater.from(parentView.getContext()).inflate(R.layout.adapter_item_calendar, null);
-                    ViewGroup.LayoutParams params = new ViewGroup.LayoutParams(DensityUtil.dip2px(getContext(), 32), DensityUtil.dip2px(getContext(), 32));
-                    convertView.setLayoutParams(params);
-                }
-                TextView text = (TextView) convertView.findViewById(R.id.text);
+            public void onClickDate(int year, int month, int day) {
+                updateTitle(year, month + 1, day);
+            }
 
-                text.setText("" + bean.day);
-                if (isToday(bean)) {//今天
-                    ColorStateList colorStateList = SystemUtils.getColorStateList(getContext(), R.color.sl_orange_2_white);
-                    if (colorStateList != null) {
-                        text.setTextColor(colorStateList);
-                    }
-                } else if (bean.mothFlag == 0) {//当月的
-                    ColorStateList colorStateList = SystemUtils.getColorStateList(getContext(), R.color.sl_balck_2_white);
-                    if (colorStateList != null) {
-                        text.setTextColor(colorStateList);
-                    }
-                } else {
-                    ColorStateList colorStateList = SystemUtils.getColorStateList(getContext(), R.color.sl_gray_2_white);
-                    if (colorStateList != null) {
-                        text.setTextColor(colorStateList);
-                    }
-                }
-                return convertView;
+            @Override
+            public void onPageChange(int year, int month, int day) {
+                updateTitle(year, month + 1, day);
             }
         });
-        calendarDateView.setOnItemClickListener(new CalendarView.OnItemClickListener() {
+        updateTitle(slSchedule.getCurrentSelectYear(),
+                slSchedule.getCurrentSelectMonth() + 1,
+                slSchedule.getCurrentSelectDay());
+        LinearLayoutManager manager = new LinearLayoutManager(getContext());
+        manager.setOrientation(LinearLayoutManager.VERTICAL);
+        rvScheduleList.setLayoutManager(manager);
+        DefaultItemAnimator itemAnimator = new DefaultItemAnimator();
+        itemAnimator.setSupportsChangeAnimations(false);
+        rvScheduleList.setItemAnimator(itemAnimator);
+        rvScheduleList.setAdapter(taskSimpleAdapter = new TaskSimpleAdapter());
+        taskSimpleAdapter.registerAdapterDataObserver(new DataChangeAdapterObserver() {
             @Override
-            public void onItemClick(View view, int postion, CalendarBean bean) {
-                titleContent.setText(String.format("%s年%s月", bean.year, bean.moth));
+            protected void updateUI() {
+                if (rlNoTask != null) {
+                    rlNoTask.setVisibility(taskSimpleAdapter.getItemCount() > 0 ? View.GONE : View.VISIBLE);
+                }
             }
         });
 
-
-        int[] data = CalendarUtil.getYMD(new Date());
-        titleContent.setText(String.format("%s年%s月", data[0], data[1]));
+        getData(true);
     }
 
-    /**
-     * 是否是今天
-     *
-     * @param calendarBean
-     * @return
-     */
-    private boolean isToday(CalendarBean calendarBean) {
-        int year = todayCalendar.get(Calendar.YEAR);
-        int month = todayCalendar.get(Calendar.MONTH) + 1;
-        int day = todayCalendar.get(Calendar.DAY_OF_MONTH);
-        if (calendarBean != null) {
-            return year == calendarBean.year
-                    && month == calendarBean.moth
-                    && day == calendarBean.day;
-        }
-        return false;
+
+    private void updateTitle(int year, int month, int day) {
+        titleContent.setText(String.format("%s年%s月", year, month));
     }
+
 
     @Override
     protected void getData(final boolean isRefresh) {
         super.getData(isRefresh);
         //2017-04-07 -2017-04-08
-        getApi().getAllTask("2017-04-07", "2017-04-08", Arrays.asList(getLoginUserId()), 1, 0)
+        getApi().getAllTask("2017-07-08", "2017-07-09", Arrays.asList(getLoginUserId()), 0)
                 .enqueue(new SimpleCallBack<PageEntity<TaskEntity.TaskItemEntity>>() {
                     @Override
                     public void onSuccess(Call<ResEntity<PageEntity<TaskEntity.TaskItemEntity>>> call, Response<ResEntity<PageEntity<TaskEntity.TaskItemEntity>>> response) {
@@ -170,27 +153,17 @@ public class TaskListCalendarFragment extends BaseFragment {
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.titleBack:
-                if (calendarDateView.getCurrentItem() > 0) {
-                    calendarDateView.setCurrentItem(calendarDateView.getCurrentItem() - 1, true);
+                if (mcvCalendar.getCurrentItem() > 0) {
+                    mcvCalendar.setCurrentItem(mcvCalendar.getCurrentItem() - 1);
                 }
                 break;
             case R.id.titleForward:
-                if (calendarDateView.getCurrentItem() < calendarDateView.getAdapter().getCount() - 1) {
-                    calendarDateView.setCurrentItem(calendarDateView.getCurrentItem() + 1, true);
+                if (mcvCalendar.getCurrentItem() < mcvCalendar.getAdapter().getCount() - 1) {
+                    mcvCalendar.setCurrentItem(mcvCalendar.getCurrentItem() + 1);
                 }
                 break;
             case R.id.titleAction:
-                //calendarDateView.setCurrentItem(Integer.MAX_VALUE / 2, true);//直接设置崩溃
-                int centerPos = Integer.MAX_VALUE / 2;
-                if (calendarDateView.getCurrentItem() < centerPos) {
-                    while (calendarDateView.getCurrentItem() < centerPos) {
-                        calendarDateView.setCurrentItem(calendarDateView.getCurrentItem() + 1, true);
-                    }
-                } else if (calendarDateView.getCurrentItem() > centerPos) {
-                    while (calendarDateView.getCurrentItem() > centerPos) {
-                        calendarDateView.setCurrentItem(calendarDateView.getCurrentItem() - 1, true);
-                    }
-                }
+                mcvCalendar.setTodayToView();
                 break;
         }
     }

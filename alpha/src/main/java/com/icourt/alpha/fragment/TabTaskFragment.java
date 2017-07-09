@@ -147,9 +147,11 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
                     TaskAllFragment taskAllFragment = (TaskAllFragment) item;
                     switch (taskAllFragment.getChildFragmentType()) {
                         case TaskAllFragment.TYPE_ALL_TASK:
+                            titleCalendar.setImageResource(R.mipmap.ic_card_list);
                             taskAllFragment.notifyFragmentUpdate(taskAllFragment, TaskAllFragment.TYPE_ALL_TASK_CALENDAR, null);
                             break;
                         case TaskAllFragment.TYPE_ALL_TASK_CALENDAR:
+                            titleCalendar.setImageResource(R.mipmap.ic_calendar);
                             taskAllFragment.notifyFragmentUpdate(taskAllFragment, TaskAllFragment.TYPE_ALL_TASK, null);
                             break;
                     }

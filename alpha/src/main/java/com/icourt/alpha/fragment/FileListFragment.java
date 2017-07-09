@@ -110,7 +110,7 @@ public class FileListFragment
 
     @Override
     protected void initView() {
-        refreshLayout.setNoticeEmpty(R.mipmap.icon_placeholder_task, R.string.null_files);
+        refreshLayout.setNoticeEmpty(R.mipmap.bg_no_task, R.string.null_files);
         refreshLayout.setMoveForHorizontal(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.addItemDecoration(ItemDecorationUtils.getCommFullDivider(getContext(), false));

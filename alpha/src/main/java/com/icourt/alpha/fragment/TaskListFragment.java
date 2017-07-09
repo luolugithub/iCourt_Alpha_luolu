@@ -119,7 +119,7 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
     protected void initView() {
         EventBus.getDefault().register(this);
         type = getArguments().getInt("type");
-        refreshLayout.setNoticeEmpty(R.mipmap.icon_placeholder_task, R.string.task_list_null_text);
+        refreshLayout.setNoticeEmpty(R.mipmap.bg_no_task, R.string.task_list_null_text);
         refreshLayout.setMoveForHorizontal(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.addItemDecoration(ItemDecorationUtils.getCommTrans5Divider(getContext(), true));
