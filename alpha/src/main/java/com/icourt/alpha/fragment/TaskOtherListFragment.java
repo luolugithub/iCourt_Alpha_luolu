@@ -119,7 +119,7 @@ public class TaskOtherListFragment extends BaseFragment implements BaseRecyclerA
         startType = getArguments().getInt("startType");
         finishType = getArguments().getInt("finishType");
         ids = getArguments().getStringArrayList("ids");
-        refreshLayout.setNoticeEmpty(R.mipmap.icon_placeholder_task, R.string.task_list_null_text);
+        refreshLayout.setNoticeEmpty(R.mipmap.bg_no_task, R.string.task_list_null_text);
         refreshLayout.setMoveForHorizontal(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setHasFixedSize(true);

@@ -88,7 +88,7 @@ public class AtMeFragment extends BaseFragment {
 
     @Override
     protected void initView() {
-        refreshLayout.setNoticeEmpty(R.mipmap.icon_placeholder_task, R.string.my_center_null_atme_text);
+        refreshLayout.setNoticeEmpty(R.mipmap.bg_no_task, R.string.my_center_null_atme_text);
         refreshLayout.setMoveForHorizontal(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setHasFixedSize(true);

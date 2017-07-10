@@ -86,7 +86,7 @@ public class MyAtedActivity extends BaseActivity {
     protected void initView() {
         super.initView();
         setTitle("提及我的");
-        refreshLayout.setNoticeEmpty(R.mipmap.icon_placeholder_task, R.string.my_center_null_atme_text);
+        refreshLayout.setNoticeEmpty(R.mipmap.bg_no_task, R.string.my_center_null_atme_text);
         refreshLayout.setMoveForHorizontal(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setHasFixedSize(true);

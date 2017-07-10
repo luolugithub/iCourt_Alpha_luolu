@@ -66,7 +66,7 @@
             <ImageView
                 android:layout_width="40dp"
                 android:layout_height="40dp"
-                android:src="@mipmap/icon_placeholder_task" />
+                android:src="@mipmap/bg_no_task" />
 
             <TextView
                 android:id="@+id/empty_text"

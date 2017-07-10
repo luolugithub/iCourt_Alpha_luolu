@@ -90,7 +90,7 @@ public class ProjectTaskGroupActivity extends BaseActivity implements BaseRecycl
         super.initView();
         projectId = getIntent().getStringExtra(KEY_PROJECT_ID);
         setTitle(R.string.manage_task_group_text);
-        refreshLayout.setNoticeEmpty(R.mipmap.icon_placeholder_task, R.string.task_list_group_null_text);
+        refreshLayout.setNoticeEmpty(R.mipmap.bg_no_task, R.string.task_list_group_null_text);
         refreshLayout.setMoveForHorizontal(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setHasFixedSize(true);
