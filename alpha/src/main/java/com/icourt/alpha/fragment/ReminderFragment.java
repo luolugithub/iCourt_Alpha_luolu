@@ -40,7 +40,7 @@ import butterknife.Unbinder;
  * version 2.0.0
  */
 
-public class ReminderFragment extends BaseFragment implements BaseRecyclerAdapter.OnItemClickListener {
+public class ReminderFragment extends BaseFragment implements BaseRecyclerAdapter.OnItemClickListener, BaseRecyclerAdapter.OnItemChildClickListener {
     Unbinder unbinder;
     @BindView(R.id.titleBack)
     ImageView titleBack;
@@ -55,6 +55,9 @@ public class ReminderFragment extends BaseFragment implements BaseRecyclerAdapte
     TextView btClearReminder;
     @BindView(R.id.bt_ok)
     TextView btOk;
+    @BindView(R.id.add_reminder_text)
+    TextView addReminderText;
+    int customPosition;//自定义的position
 
     public static ReminderFragment newInstance(TaskReminderEntity taskReminderEntity) {
         ReminderFragment reminderFragment = new ReminderFragment();
@@ -76,6 +79,7 @@ public class ReminderFragment extends BaseFragment implements BaseRecyclerAdapte
         }
     }
 
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -86,14 +90,21 @@ public class ReminderFragment extends BaseFragment implements BaseRecyclerAdapte
 
     @Override
     protected void initView() {
+
         titleContent.setText("提醒");
         taskReminderEntity = (TaskReminderEntity) getArguments().getSerializable("taskReminder");
+
         recyclerview.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerview.setHasFixedSize(true);
         recyclerview.addItemDecoration(ItemDecorationUtils.getCommFull05Divider(getContext(), true));
         recyclerview.setAdapter(reminderListAdapter = new ReminderListAdapter());
+        if (taskReminderEntity != null)
+            reminderListAdapter.setTaskReminderType(taskReminderEntity.taskReminderType);
         reminderListAdapter.setOnItemClickListener(this);
+        reminderListAdapter.setOnItemChildClickListener(this);
         getData(true);
+
+
     }
 
     @Override
@@ -117,12 +128,20 @@ public class ReminderFragment extends BaseFragment implements BaseRecyclerAdapte
                 }
             }
             reminderListAdapter.bindData(true, reminderItemEntities);
+            if (taskReminderEntity.ruleTime != null) {
+                for (int i = 0; i < reminderItemEntities.size(); i++) {
+                    if (taskReminderEntity.ruleTime.contains(reminderItemEntities.get(i).timeKey)) {
+                        reminderListAdapter.setSelected(i, true);
+                    }
+                }
+            }
         }
     }
 
     @OnClick({R.id.titleBack,
             R.id.bt_clear_reminder,
-            R.id.bt_ok})
+            R.id.bt_ok,
+            R.id.add_reminder_text})
     @Override
     public void onClick(View v) {
         super.onClick(v);
@@ -141,10 +160,46 @@ public class ReminderFragment extends BaseFragment implements BaseRecyclerAdapte
                 }
                 if (onFragmentCallBackListener != null) {
                     Bundle bundle = new Bundle();
-                    onFragmentCallBackListener.onFragmentCallBack(ReminderFragment.this, DateSelectDialogFragment.SELECT_REMINDER, bundle);
+                    TaskReminderEntity taskReminderEntity = getTaskReminderEntity();
+                    bundle.putSerializable("taskReminder", taskReminderEntity);
+                    onFragmentCallBackListener.onFragmentCallBack(ReminderFragment.this, DateSelectDialogFragment.SELECT_REMINDER_FINISH, bundle);
+                }
+                if (getParentFragment().getChildFragmentManager().getBackStackEntryCount() > 1) {
+                    getParentFragment().getChildFragmentManager().popBackStack();
                 }
                 break;
+            case R.id.add_reminder_text://添加自定义
+                ReminderItemEntity itemEntity = new ReminderItemEntity();
+                TaskReminderEntity.CustomTimeItemEntity ctie = new TaskReminderEntity.CustomTimeItemEntity();
+                ctie.point = "09:00";
+                ctie.unitNumber = "1";
+                ctie.unit = "天前";
+                itemEntity.customTimeItemEntity = ctie;
+                reminderListAdapter.addItem(itemEntity);
+                customPosition = reminderListAdapter.getItemCount() - 1;
+                recyclerview.scrollToPosition(customPosition);
+                break;
         }
+    }
+
+    private TaskReminderEntity getTaskReminderEntity() {
+        TaskReminderEntity entity = new TaskReminderEntity();
+        if (taskReminderEntity != null) {
+            entity.taskReminderType = taskReminderEntity.taskReminderType;
+        }
+        if (reminderListAdapter != null) {
+            if (reminderListAdapter.getSelectedData().size() > 0) {
+                for (ReminderItemEntity reminderItemEntity : reminderListAdapter.getSelectedData()) {
+                    if (entity.ruleTime == null) {
+                        entity.ruleTime = new ArrayList<>();
+                    }
+                    entity.ruleTime.add(reminderItemEntity.timeKey);
+                }
+                return entity;
+            }
+
+        }
+        return entity;
     }
 
     @Override
@@ -155,6 +210,14 @@ public class ReminderFragment extends BaseFragment implements BaseRecyclerAdapte
 
     @Override
     public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
+
         reminderListAdapter.toggleSelected(position);
+    }
+
+    @Override
+    public void onItemChildClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
+        customPosition = position;
+        ((ReminderListAdapter) adapter).setCustomPosition(position);
+        adapter.notifyDataSetChanged();
     }
 }

@@ -13,6 +13,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -404,6 +405,51 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
         return null;
     }
 
+    /**
+     * 添加任务提醒
+     *
+     * @param taskReminderEntity
+     */
+    private void addReminders(final TaskReminderEntity taskReminderEntity) {
+        if (taskReminderEntity == null) return;
+        if (taskItemEntity == null) return;
+        String json = getReminderJson(taskReminderEntity);
+        if (TextUtils.isEmpty(json)) return;
+        getApi().taskReminderAdd(taskItemEntity.id, RequestUtils.createJsonBody(json)).enqueue(new SimpleCallBack<TaskReminderEntity>() {
+            @Override
+            public void onSuccess(Call<ResEntity<TaskReminderEntity>> call, Response<ResEntity<TaskReminderEntity>> response) {
+                if (taskReminderEntity.ruleTime != null || taskReminderEntity.customTime != null) {
+                    taskReminderIcon.setVisibility(View.VISIBLE);
+                } else {
+                    taskReminderIcon.setVisibility(View.INVISIBLE);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResEntity<TaskReminderEntity>> call, Throwable t) {
+                super.onFailure(call, t);
+                taskReminderIcon.setVisibility(View.INVISIBLE);
+            }
+        });
+    }
+
+    /**
+     * 获取提醒json
+     *
+     * @param taskReminderEntity
+     * @return
+     */
+    private String getReminderJson(TaskReminderEntity taskReminderEntity) {
+        try {
+            if (taskReminderEntity == null) return null;
+            Gson gson = new Gson();
+            return gson.toJson(taskReminderEntity);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     TaskGroupEntity selectedTaskGroup;
 
     @Override
@@ -424,6 +470,8 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
 
                 taskItemEntity.dueTime = millis;
                 updateTask(taskItemEntity, null, selectedTaskGroup);
+                taskReminderEntity = (TaskReminderEntity) params.getSerializable("taskReminder");
+                addReminders(taskReminderEntity);
             } else if (fragment instanceof TaskGroupSelectFragment) {//选择任务组回调
                 TaskGroupEntity taskGroupEntity = (TaskGroupEntity) params.getSerializable(KEY_FRAGMENT_RESULT);
                 if (taskGroupEntity != null) {

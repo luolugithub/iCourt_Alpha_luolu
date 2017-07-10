@@ -56,9 +56,25 @@
     <android.support.v7.widget.RecyclerView
         android:id="@+id/recyclerview"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:overScrollMode="never"
+
+        android:layout_height="260dp">
 
     </android.support.v7.widget.RecyclerView>
+
+    <TextView
+        android:id="@+id/add_reminder_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="@dimen/dp15"
+        android:text="自定义提醒"
+        android:textColor="#8c8f92"
+        android:textSize="16sp" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/alpha_height_divider"
+        android:background="@color/alpha_divider_color" />
 
     <RelativeLayout
         android:layout_width="match_parent"

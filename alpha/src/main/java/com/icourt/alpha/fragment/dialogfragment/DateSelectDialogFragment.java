@@ -49,6 +49,8 @@ public class DateSelectDialogFragment extends BaseDialogFragment implements OnFr
     TaskReminderEntity taskReminderEntity;
     String taskId;//任务id
 
+    OnSelectReminderCallBlack onSelectReminderCallBlack;
+
     public static DateSelectDialogFragment newInstance(@Nullable Calendar calendar, TaskReminderEntity taskReminderEntity, String taskId) {
         DateSelectDialogFragment dateSelectDialogFragment = new DateSelectDialogFragment();
         Bundle args = new Bundle();
@@ -143,12 +145,15 @@ public class DateSelectDialogFragment extends BaseDialogFragment implements OnFr
                     dismiss();
                 }
             } else if (type == SELECT_REMINDER) {
+                taskReminderEntity = (TaskReminderEntity) params.getSerializable("taskReminder");
                 showFragment(ReminderFragment.newInstance(taskReminderEntity));
             }
         } else if (fragment instanceof ReminderFragment) {
-            if (onFragmentCallBackListener != null) {
-                if (type == SELECT_REMINDER_FINISH) {
-                    taskReminderEntity = (TaskReminderEntity) params.getSerializable("taskReminder");
+            if (type == SELECT_REMINDER_FINISH) {
+                taskReminderEntity = (TaskReminderEntity) params.getSerializable("taskReminder");
+
+                if (onSelectReminderCallBlack != null) {
+                    onSelectReminderCallBlack.setReminderCallBlack(taskReminderEntity);
                 }
             }
         }
@@ -158,4 +163,13 @@ public class DateSelectDialogFragment extends BaseDialogFragment implements OnFr
     public void onBackStackChanged() {
 
     }
+
+    public void setOnSelectReminderCallBlack(OnSelectReminderCallBlack onSelectReminderCallBlack) {
+        this.onSelectReminderCallBlack = onSelectReminderCallBlack;
+    }
+
+    public interface OnSelectReminderCallBlack {
+        void setReminderCallBlack(TaskReminderEntity taskReminderEntity);
+    }
+
 }

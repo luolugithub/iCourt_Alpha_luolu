@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/white"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingBottom="@dimen/dp15"
+                android:paddingLeft="@dimen/dp15"
+                android:paddingTop="@dimen/dp15"
+                android:text="自定义"
+                android:textColor="#8c8f92"
+                android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/custom_unit_number_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="@dimen/dp10"
+                android:text="10"
+                android:textColor="#4a4a4a"
+                android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/custom_unit_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingBottom="@dimen/dp10"
+                android:paddingTop="@dimen/dp10"
+                android:text="天前"
+                android:textColor="#4a4a4a"
+                android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/custom_point_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="@dimen/dp10"
+                android:text="09:00"
+                android:textColor="#4a4a4a"
+                android:textSize="16sp" />
+        </LinearLayout>
+
+        <ImageView
+            android:id="@+id/custom_check_image"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:padding="@dimen/dp15" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/deadline_select_ll"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:orientation="horizontal"
+        android:visibility="visible">
+
+        <com.bigkoo.pickerview.lib.WheelView
+            android:id="@+id/hour_wheelView"
+            android:layout_width="100dp"
+            android:layout_height="wrap_content"
+            android:minHeight="60dp" />
+
+        <com.bigkoo.pickerview.lib.WheelView
+            android:id="@+id/minute_wheelView"
+            android:layout_width="100dp"
+            android:layout_height="wrap_content"
+            android:minHeight="60dp" />
+    </LinearLayout>
+</LinearLayout>
