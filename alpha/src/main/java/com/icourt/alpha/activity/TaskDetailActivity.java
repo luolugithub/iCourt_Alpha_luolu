@@ -511,7 +511,7 @@ public class TaskDetailActivity extends BaseActivity
 
     @Override
     protected void getData(boolean isRefresh) {
-        showLoadingDialog(null);
+//        showLoadingDialog(null);
         //没有返回权限
 //        getApi().taskQueryDetail(taskId).enqueue(new SimpleCallBack<TaskEntity.TaskItemEntity>() {
 //            @Override
@@ -990,14 +990,15 @@ public class TaskDetailActivity extends BaseActivity
 
     @Override
     public void onUpdateCheckItem(String checkItemCount) {
-        String checkTargetStr = checkItemCount;
-        String checkOriginStr = "检查项 " + checkTargetStr;
-        SpannableString checkTextForegroundColorSpan = SpannableUtils.getTextForegroundColorSpan(checkOriginStr, checkTargetStr, 0xFFCACACA);
-        tabTitles.put(1, checkTextForegroundColorSpan);
-
-        baseFragmentAdapter.bindTitle(true, Arrays.asList(tabTitles.get(0, ""),
-                tabTitles.get(1, ""),
-                tabTitles.get(2, "")));
+//        String checkTargetStr = checkItemCount;
+//        String checkOriginStr = "检查项 " + checkTargetStr;
+//        SpannableString checkTextForegroundColorSpan = SpannableUtils.getTextForegroundColorSpan(checkOriginStr, checkTargetStr, 0xFFCACACA);
+//        tabTitles.put(1, checkTextForegroundColorSpan);
+//
+//        baseFragmentAdapter.bindTitle(true, Arrays.asList(tabTitles.get(0, ""),
+//                tabTitles.get(1, ""),
+//                tabTitles.get(2, "")));
+        getData(true);
     }
 
     @Override

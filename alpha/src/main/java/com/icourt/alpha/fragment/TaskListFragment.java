@@ -724,7 +724,8 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
     }
 
     @Override
-    public void onRefreshNewTask() {
+    public void onRefreshNewTask(int type) {
+        this.type = type;
         if (type == 1 || type == 2) {
             getData(true);
         }

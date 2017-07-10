@@ -31,6 +31,7 @@ import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.interfaces.OnUpdateTaskListener;
+import com.icourt.alpha.utils.LogUtils;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.api.RequestUtils;
 
@@ -199,8 +200,9 @@ public class TaskCheckItemFragment extends BaseFragment implements BaseRecyclerA
             updateTaskListener = (OnUpdateTaskListener) getParentFragment();
         }
         if (updateTaskListener != null) {
-            if (taskCheckItemAdapter.getSelectedData() != null) {
-                updateTaskListener.onUpdateCheckItem(taskCheckItemAdapter.getSelectedData().size() + "/" + taskCheckItemAdapter.getItemCount());
+            if (taskCheckItemAdapter.getSelectedArray() != null) {
+                LogUtils.e("size : ----   " + taskCheckItemAdapter.getSelectedArray().size());
+                updateTaskListener.onUpdateCheckItem(taskCheckItemAdapter.getSelectedArray().size() + "/" + taskCheckItemAdapter.getItemCount());
             } else {
                 updateTaskListener.onUpdateCheckItem(0 + "/" + taskCheckItemAdapter.getItemCount());
             }
@@ -259,7 +261,7 @@ public class TaskCheckItemFragment extends BaseFragment implements BaseRecyclerA
 
     @Override
     public void onItemChildClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
-        TaskCheckItemEntity.ItemEntity itemEntity = (TaskCheckItemEntity.ItemEntity) adapter.getItem(position);
+        TaskCheckItemEntity.ItemEntity itemEntity = (TaskCheckItemEntity.ItemEntity) adapter.getItem(adapter.getRealPos(position));
         showLoadingDialog(null);
         switch (view.getId()) {
             case R.id.check_item_checktext_tv:
@@ -269,10 +271,11 @@ public class TaskCheckItemFragment extends BaseFragment implements BaseRecyclerA
                 } else {
                     itemEntity.state = true;
                 }
-                finisCheckItem(itemEntity, position);
+                finisCheckItem(itemEntity, adapter.getRealPos(position));
                 break;
             case R.id.check_item_delete_image:
-                deleteCheckItem(itemEntity);
+                deleteCheckItem(itemEntity,adapter.getRealPos(position));
+
                 break;
         }
     }
@@ -310,7 +313,7 @@ public class TaskCheckItemFragment extends BaseFragment implements BaseRecyclerA
      *
      * @param itemEntity
      */
-    private void deleteCheckItem(final TaskCheckItemEntity.ItemEntity itemEntity) {
+    private void deleteCheckItem(final TaskCheckItemEntity.ItemEntity itemEntity, final int position) {
         if (itemEntity == null) return;
         getApi().taskCheckItemDelete(itemEntity.id).enqueue(new SimpleCallBack<JsonElement>() {
             @Override
@@ -318,6 +321,7 @@ public class TaskCheckItemFragment extends BaseFragment implements BaseRecyclerA
                 dismissLoadingDialog();
                 EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION));
                 taskCheckItemAdapter.removeItem(itemEntity);
+                taskCheckItemAdapter.getSelectedArray().delete(position);
                 updateCheckItem();
             }
 

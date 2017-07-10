@@ -101,7 +101,7 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
                 titleCalendar.setVisibility(View.GONE);
                 if (position == 1 || position == 2) {
                     if (onCheckAllNewTaskListener != null)
-                        onCheckAllNewTaskListener.onRefreshNewTask();
+                        onCheckAllNewTaskListener.onRefreshNewTask(position);
                 } else if (position == 0) {
                     titleCalendar.setVisibility(taskItemEntityList.isEmpty() ? View.GONE : View.VISIBLE);
                 }
@@ -250,7 +250,7 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
     public interface OnCheckAllNewTaskListener {
         void onCheckAll();
 
-        void onRefreshNewTask();
+        void onRefreshNewTask(int type);
     }
 
     /**
