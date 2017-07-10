@@ -7,6 +7,7 @@ import android.support.v4.app.Fragment;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,15 +22,23 @@ import com.icourt.alpha.adapter.baseadapter.adapterObserver.DataChangeAdapterObs
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.entity.bean.PageEntity;
 import com.icourt.alpha.entity.bean.TaskEntity;
+import com.icourt.alpha.entity.bean.TimeEntity;
+import com.icourt.alpha.entity.event.TimingEvent;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
+import com.icourt.alpha.widget.manager.TimerManager;
 import com.jeek.calendar.widget.calendar.OnCalendarClickListener;
 import com.jeek.calendar.widget.calendar.month.MonthCalendarView;
 import com.jeek.calendar.widget.calendar.schedule.ScheduleLayout;
 import com.jeek.calendar.widget.calendar.schedule.ScheduleRecyclerView;
 import com.jeek.calendar.widget.calendar.week.WeekCalendarView;
 
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
+
 import java.util.Arrays;
+import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -89,6 +98,7 @@ public class TaskListCalendarFragment extends BaseFragment {
     @Override
     protected void initView() {
         initCalendarDateView();
+        EventBus.getDefault().register(this);
     }
 
     private void initCalendarDateView() {
@@ -142,6 +152,17 @@ public class TaskListCalendarFragment extends BaseFragment {
                     public void onSuccess(Call<ResEntity<PageEntity<TaskEntity.TaskItemEntity>>> call, Response<ResEntity<PageEntity<TaskEntity.TaskItemEntity>>> response) {
                         if (response.body().result == null) return;
                         taskSimpleAdapter.bindData(isRefresh, response.body().result.items);
+                        TimeEntity.ItemEntity timer = TimerManager.getInstance().getTimer();
+                        if (timer != null) {
+                            TaskEntity.TaskItemEntity taskItemEntity = new TaskEntity.TaskItemEntity();
+                            taskItemEntity.id = timer.taskPkId;
+                            int indexOf = taskSimpleAdapter.getData().indexOf(taskItemEntity);
+                            if (indexOf >= 0) {
+                                taskItemEntity = taskSimpleAdapter.getItem(indexOf);
+                                taskItemEntity.isTiming = true;
+                                taskSimpleAdapter.updateItem(taskItemEntity);
+                            }
+                        }
                     }
                 });
     }
@@ -168,9 +189,61 @@ public class TaskListCalendarFragment extends BaseFragment {
         }
     }
 
+    /**
+     * 计时事件
+     *
+     * @param event
+     */
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onTimerEvent(TimingEvent event) {
+        if (event == null) return;
+        switch (event.action) {
+            case TimingEvent.TIMING_ADD:
+                List<TaskEntity.TaskItemEntity> data = taskSimpleAdapter.getData();
+                TimeEntity.ItemEntity timer = TimerManager.getInstance().getTimer();
+                if (timer != null) {
+                    for (TaskEntity.TaskItemEntity taskItemEntity : data) {
+                        taskItemEntity.isTiming = false;
+                        if (TextUtils.equals(taskItemEntity.id, timer.taskPkId)) {
+                            taskItemEntity.isTiming = true;
+                        }
+                    }
+                    taskSimpleAdapter.notifyDataSetChanged();
+                }
+                break;
+            case TimingEvent.TIMING_UPDATE_PROGRESS:
+                updateTimingItem(event.timingId, event.timingSecond);
+                break;
+            case TimingEvent.TIMING_STOP:
+                List<TaskEntity.TaskItemEntity> data1 = taskSimpleAdapter.getData();
+                for (TaskEntity.TaskItemEntity taskItemEntity : data1) {
+                    taskItemEntity.isTiming = false;
+                }
+                taskSimpleAdapter.notifyDataSetChanged();
+                break;
+        }
+    }
+
+    /**
+     * 更新计时item
+     *
+     * @param id
+     * @param time
+     */
+    private void updateTimingItem(String id, long time) {
+
+    }
+
+
     @Override
     public void onDestroyView() {
         super.onDestroyView();
         unbinder.unbind();
+    }
+
+    @Override
+    public void onDestroy() {
+        EventBus.getDefault().unregister(this);
+        super.onDestroy();
     }
 }

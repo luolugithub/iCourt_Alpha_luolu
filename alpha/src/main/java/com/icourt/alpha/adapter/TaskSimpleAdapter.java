@@ -12,15 +12,20 @@ import android.widget.TextView;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.icourt.alpha.R;
+import com.icourt.alpha.activity.TimerTimingActivity;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.MultiSelectRecyclerAdapter;
 import com.icourt.alpha.entity.bean.TaskEntity;
+import com.icourt.alpha.entity.bean.TimeEntity;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.DateUtils;
+import com.icourt.alpha.utils.LoginInfoUtils;
+import com.icourt.alpha.widget.manager.TimerManager;
 import com.icourt.api.RequestUtils;
 
 import retrofit2.Call;
+import retrofit2.Callback;
 import retrofit2.Response;
 
 /**
@@ -48,6 +53,7 @@ public class TaskSimpleAdapter extends MultiSelectRecyclerAdapter<TaskEntity.Tas
         ImageView task_item_checkbox = holder.obtainView(R.id.task_item_checkbox);
         TextView task_name_tv = holder.obtainView(R.id.task_name_tv);
         TextView task_desc_tv = holder.obtainView(R.id.task_desc_tv);
+        ImageView task_item_timming_iv = holder.obtainView(R.id.task_item_timming_iv);
         task_name_tv.setText(taskItemEntity.name);
         if (taskItemEntity.state)//已完成
         {
@@ -61,7 +67,13 @@ public class TaskSimpleAdapter extends MultiSelectRecyclerAdapter<TaskEntity.Tas
                     DateUtils.get23Hour59MinFormat(taskItemEntity.dueTime)
                     , getProjectTaskGroupInfo(taskItemEntity)));
         }
+        if (taskItemEntity.isTiming) {
+
+        }
+        task_item_timming_iv.setImageResource(taskItemEntity.isTiming ? R.drawable.orange_side_dot_bg : R.mipmap.icon_start_20);
+
         holder.bindChildClick(task_item_checkbox);
+        holder.bindChildClick(task_item_timming_iv);
     }
 
     /**
@@ -110,7 +122,57 @@ public class TaskSimpleAdapter extends MultiSelectRecyclerAdapter<TaskEntity.Tas
                     updateTask(view.getContext(), itemEntity, !itemEntity.state);
                 }
                 break;
+            case R.id.task_item_timming_iv:
+                if (itemEntity.isTiming) {
+                    TimerManager.getInstance().stopTimer();
+                } else {
+                    showLoadingDialog(view.getContext(), null);
+                    TimerManager.getInstance().addTimer(getTimer(itemEntity), new Callback<TimeEntity.ItemEntity>() {
+                        @Override
+                        public void onResponse(Call<TimeEntity.ItemEntity> call, Response<TimeEntity.ItemEntity> response) {
+                            dismissLoadingDialog();
+                            if (response.body() != null) {
+                                TimerTimingActivity.launch(view.getContext(), response.body());
+                            }
+                        }
+
+                        @Override
+                        public void onFailure(Call<TimeEntity.ItemEntity> call, Throwable throwable) {
+                            dismissLoadingDialog();
+                        }
+                    });
+                }
+                break;
         }
+    }
+
+    /**
+     * 获取添加计时实体
+     *
+     * @return
+     */
+    private TimeEntity.ItemEntity getTimer(TaskEntity.TaskItemEntity taskItemEntity) {
+        TimeEntity.ItemEntity itemEntity = new TimeEntity.ItemEntity();
+        if (taskItemEntity != null) {
+            itemEntity.taskPkId = taskItemEntity.id;
+            itemEntity.taskName = taskItemEntity.name;
+            itemEntity.name = taskItemEntity.name;
+            itemEntity.workDate = DateUtils.millis();
+            itemEntity.createUserId = LoginInfoUtils.getLoginUserId();
+            if (LoginInfoUtils.getLoginUserInfo() != null) {
+                itemEntity.username = LoginInfoUtils.getLoginUserInfo().getName();
+            }
+            itemEntity.startTime = DateUtils.millis();
+            if (taskItemEntity.matter != null) {
+                itemEntity.matterPkId = taskItemEntity.matter.id;
+                itemEntity.matterName = taskItemEntity.matter.name;
+            }
+//            if (taskItemEntity.parentFlow != null) {
+//                itemEntity.workTypeName = taskItemEntity.parentFlow.name;
+//                itemEntity.workTypeId = taskItemEntity.parentFlow.id;
+//            }
+        }
+        return itemEntity;
     }
 
     /**
