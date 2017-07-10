@@ -24,6 +24,7 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -44,13 +45,19 @@ import retrofit2.Response;
 
 public class TaskEverydayFragment extends BaseFragment {
 
+    private static final String KEY_TASKS = "key_tasks";
     @BindView(R.id.recyclerView)
     RecyclerView recyclerView;
     Unbinder unbinder;
     TaskSimpleAdapter taskSimpleAdapter;
+    final ArrayList<TaskEntity.TaskItemEntity> taskItemEntityList = new ArrayList<>();
 
-    public static TaskEverydayFragment newInstance() {
-        return new TaskEverydayFragment();
+    public static TaskEverydayFragment newInstance(ArrayList<TaskEntity.TaskItemEntity> data) {
+        TaskEverydayFragment fragment = new TaskEverydayFragment();
+        Bundle args = new Bundle();
+        args.putSerializable(KEY_TASKS, data);
+        fragment.setArguments(args);
+        return fragment;
     }
 
     @Nullable
@@ -63,6 +70,11 @@ public class TaskEverydayFragment extends BaseFragment {
 
     @Override
     protected void initView() {
+        taskItemEntityList.clear();
+        ArrayList<TaskEntity.TaskItemEntity> taskEntity = (ArrayList<TaskEntity.TaskItemEntity>) getArguments().getSerializable(KEY_TASKS);
+        if (taskEntity != null) {
+            taskItemEntityList.addAll(taskEntity);
+        }
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setAdapter(taskSimpleAdapter = new TaskSimpleAdapter());
         EventBus.getDefault().register(this);
@@ -72,26 +84,7 @@ public class TaskEverydayFragment extends BaseFragment {
     @Override
     protected void getData(final boolean isRefresh) {
         super.getData(isRefresh);
-        //2017-04-07 -2017-04-08
-        getApi().getAllTask("2017-07-08", "2017-07-09", Arrays.asList(getLoginUserId()), 0)
-                .enqueue(new SimpleCallBack<PageEntity<TaskEntity.TaskItemEntity>>() {
-                    @Override
-                    public void onSuccess(Call<ResEntity<PageEntity<TaskEntity.TaskItemEntity>>> call, Response<ResEntity<PageEntity<TaskEntity.TaskItemEntity>>> response) {
-                        if (response.body().result == null) return;
-                        taskSimpleAdapter.bindData(isRefresh, response.body().result.items);
-                        TimeEntity.ItemEntity timer = TimerManager.getInstance().getTimer();
-                        if (timer != null) {
-                            TaskEntity.TaskItemEntity taskItemEntity = new TaskEntity.TaskItemEntity();
-                            taskItemEntity.id = timer.taskPkId;
-                            int indexOf = taskSimpleAdapter.getData().indexOf(taskItemEntity);
-                            if (indexOf >= 0) {
-                                taskItemEntity = taskSimpleAdapter.getItem(indexOf);
-                                taskItemEntity.isTiming = true;
-                                taskSimpleAdapter.updateItem(taskItemEntity);
-                            }
-                        }
-                    }
-                });
+        taskSimpleAdapter.bindData(isRefresh, taskItemEntityList);
     }
 
     /**
