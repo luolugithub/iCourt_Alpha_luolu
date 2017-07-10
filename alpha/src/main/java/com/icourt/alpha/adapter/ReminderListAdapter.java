@@ -1,5 +1,6 @@
 package com.icourt.alpha.adapter;
 
+import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.MotionEvent;
 import android.view.View;
@@ -34,6 +35,7 @@ public class ReminderListAdapter extends MultiSelectRecyclerAdapter<ReminderItem
 
     private String taskReminderType;
     int customPosition;//自定义的position
+    private RecyclerView recyclerView;
 
     public void setTaskReminderType(String taskReminderType) {
         this.taskReminderType = taskReminderType;
@@ -50,6 +52,19 @@ public class ReminderListAdapter extends MultiSelectRecyclerAdapter<ReminderItem
         } else {
             return CUSTOM_TYPE;
         }
+    }
+
+
+    @Override
+    public void onAttachedToRecyclerView(RecyclerView recyclerView) {
+        super.onAttachedToRecyclerView(recyclerView);
+        this.recyclerView = recyclerView;
+    }
+
+    @Override
+    public void onDetachedFromRecyclerView(RecyclerView recyclerView) {
+        super.onDetachedFromRecyclerView(recyclerView);
+        this.recyclerView = null;
     }
 
     @Override
@@ -149,16 +164,33 @@ public class ReminderListAdapter extends MultiSelectRecyclerAdapter<ReminderItem
             }
 
 
-            deadlineSelectLl.setOnTouchListener(new View.OnTouchListener() {
+            hourWheelView.setOnTouchListener(new View.OnTouchListener() {
                 @Override
                 public boolean onTouch(View v, MotionEvent event) {
+                    if (recyclerView == null) return false;
                     switch (event.getAction()) {
                         case MotionEvent.ACTION_DOWN:
-                            v.getParent().requestDisallowInterceptTouchEvent(true);
+                            recyclerView.requestDisallowInterceptTouchEvent(true);
                             break;
                         case MotionEvent.ACTION_UP:
                         case MotionEvent.ACTION_CANCEL:
-                            v.getParent().requestDisallowInterceptTouchEvent(false);
+                            recyclerView.requestDisallowInterceptTouchEvent(false);
+                            break;
+                    }
+                    return false;
+                }
+            });
+            minuteWheelView.setOnTouchListener(new View.OnTouchListener() {
+                @Override
+                public boolean onTouch(View v, MotionEvent event) {
+                    if (recyclerView == null) return false;
+                    switch (event.getAction()) {
+                        case MotionEvent.ACTION_DOWN:
+                            recyclerView.requestDisallowInterceptTouchEvent(true);
+                            break;
+                        case MotionEvent.ACTION_UP:
+                        case MotionEvent.ACTION_CANCEL:
+                            recyclerView.requestDisallowInterceptTouchEvent(false);
                             break;
                     }
                     return false;
@@ -167,6 +199,8 @@ public class ReminderListAdapter extends MultiSelectRecyclerAdapter<ReminderItem
 
         }
     }
+
+
 
     private class TimeWheelAdapter implements WheelAdapter<String> {
         List<String> timeList = new ArrayList<>();
