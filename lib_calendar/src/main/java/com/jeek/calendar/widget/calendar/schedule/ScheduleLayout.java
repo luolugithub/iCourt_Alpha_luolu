@@ -264,17 +264,23 @@ public class ScheduleLayout extends FrameLayout {
                 float x = ev.getRawX();
                 float y = ev.getRawY();
                 float distanceX = Math.abs(x - mDownPosition[0]);
-                float distanceY = Math.abs(y - mDownPosition[1]);
+                float realDistanceY = y - mDownPosition[1];
+                float distanceY = Math.abs(realDistanceY);
                 if (distanceY > mMinDistance && distanceY > distanceX * 2.0f) {
-                    return (y > mDownPosition[1] && isRecyclerViewTouch()) || (y < mDownPosition[1] && mState == ScheduleState.OPEN);
+                    return (y > mDownPosition[1] && isRecyclerViewTouch(realDistanceY)) || (y < mDownPosition[1] && mState == ScheduleState.OPEN);
                 }
                 break;
         }
         return super.onInterceptTouchEvent(ev);
     }
 
-    private boolean isRecyclerViewTouch() {
-        return mState == ScheduleState.CLOSE && (rvScheduleList.getChildCount() == 0 || rvScheduleList.isScrollTop());
+    private boolean isRecyclerViewTouch(float realDistanceY) {
+        if (rvScheduleList == null) {
+            if (realDistanceY < 0) return false;
+            return mState == ScheduleState.CLOSE;
+        }
+        return mState == ScheduleState.CLOSE
+                && (rvScheduleList.getChildCount() == 0 || rvScheduleList.isScrollTop());
     }
 
 

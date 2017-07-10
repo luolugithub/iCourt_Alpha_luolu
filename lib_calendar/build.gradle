@@ -22,5 +22,5 @@ android {
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     compile 'joda-time:joda-time:2.9.4'
-    compile rootProject.ext.dependencies.recyclerview
+    provided rootProject.ext.dependencies.recyclerview
 }

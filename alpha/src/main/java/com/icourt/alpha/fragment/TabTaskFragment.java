@@ -19,14 +19,17 @@ import com.icourt.alpha.activity.TaskCreateActivity;
 import com.icourt.alpha.adapter.baseadapter.BaseFragmentAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.base.BaseFragment;
+import com.icourt.alpha.entity.bean.TaskEntity;
 import com.icourt.alpha.entity.bean.TaskMemberEntity;
 import com.icourt.alpha.fragment.dialogfragment.TaskMemberSelectDialogFragment;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
+import com.icourt.alpha.interfaces.OnTasksChangeListener;
 import com.icourt.alpha.widget.dialog.BottomActionDialog;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -40,7 +43,7 @@ import butterknife.Unbinder;
  * date createTime：2017/4/8
  * version 1.0.0
  */
-public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackListener {
+public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackListener, OnTasksChangeListener {
     @BindView(R.id.tabLayout)
     TabLayout tabLayout;
     @BindView(R.id.titleAction)
@@ -60,6 +63,8 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
     public static TabTaskFragment newInstance() {
         return new TabTaskFragment();
     }
+
+    final ArrayList<TaskEntity.TaskItemEntity> taskItemEntityList = new ArrayList<>();
 
     public void setOnCheckAllNewTaskListener(OnCheckAllNewTaskListener onCheckAllNewTaskListener) {
         this.onCheckAllNewTaskListener = onCheckAllNewTaskListener;
@@ -98,7 +103,7 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
                     if (onCheckAllNewTaskListener != null)
                         onCheckAllNewTaskListener.onRefreshNewTask();
                 } else if (position == 0) {
-                    titleCalendar.setVisibility(View.VISIBLE);
+                    titleCalendar.setVisibility(taskItemEntityList.isEmpty() ? View.GONE : View.VISIBLE);
                 }
             }
 
@@ -107,6 +112,7 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
 
             }
         });
+        titleCalendar.setVisibility(View.GONE);
     }
 
     /**
@@ -221,6 +227,23 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
                 MyAllotTaskActivity.launch(getContext(), TaskOtherListFragment.SELECT_OTHER_TYPE, ids);
             }
         }
+    }
+
+    @Override
+    public void onTasksChanged(List<TaskEntity.TaskItemEntity> taskItemEntities) {
+        if (taskItemEntities != null) {
+            taskItemEntityList.clear();
+            taskItemEntityList.addAll(taskItemEntities);
+
+            if (viewPager.getCurrentItem() == 0) {
+                titleCalendar.setVisibility(taskItemEntityList.isEmpty() ? View.GONE : View.VISIBLE);
+            }
+        }
+    }
+
+    @Override
+    public void onTaskChanged(TaskEntity.TaskItemEntity taskItemEntity) {
+
     }
 
 

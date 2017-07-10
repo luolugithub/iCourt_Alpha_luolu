@@ -1,5 +1,6 @@
 package com.icourt.alpha.fragment;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.IdRes;
 import android.support.annotation.IntDef;
@@ -17,9 +18,13 @@ import android.widget.FrameLayout;
 
 import com.icourt.alpha.R;
 import com.icourt.alpha.base.BaseFragment;
+import com.icourt.alpha.entity.bean.TaskEntity;
+import com.icourt.alpha.interfaces.OnTasksChangeListener;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.ArrayList;
+import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -32,9 +37,29 @@ import butterknife.Unbinder;
  * date createTime：2017/7/8
  * version 1.0.0
  */
-public class TaskAllFragment extends BaseFragment {
+public class TaskAllFragment extends BaseFragment implements OnTasksChangeListener {
     public static final int TYPE_ALL_TASK = 1;
     public static final int TYPE_ALL_TASK_CALENDAR = 2;
+    final ArrayList<TaskEntity.TaskItemEntity> taskItemEntityList = new ArrayList<>();
+    OnTasksChangeListener onTasksChangeListener;
+
+    @Override
+    public void onTasksChanged(List<TaskEntity.TaskItemEntity> taskItemEntities) {
+        if (onTasksChangeListener != null) {
+            onTasksChangeListener.onTasksChanged(taskItemEntities);
+        }
+        if (taskItemEntities != null) {
+            taskItemEntityList.clear();
+            taskItemEntityList.addAll(taskItemEntities);
+        }
+    }
+
+    @Override
+    public void onTaskChanged(TaskEntity.TaskItemEntity taskItemEntity) {
+        if (onTasksChangeListener != null) {
+            onTasksChangeListener.onTaskChanged(taskItemEntity);
+        }
+    }
 
     @IntDef({TYPE_ALL_TASK, TYPE_ALL_TASK_CALENDAR})
     @Retention(RetentionPolicy.SOURCE)
@@ -53,6 +78,20 @@ public class TaskAllFragment extends BaseFragment {
         args.putInt("childFragment", TYPE_ALL_TASK);
         taskAllFragment.setArguments(args);
         return taskAllFragment;
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        if (getParentFragment() instanceof OnTasksChangeListener) {
+            onTasksChangeListener = (OnTasksChangeListener) getParentFragment();
+        } else {
+            try {
+                onTasksChangeListener = (OnTasksChangeListener) context;
+            } catch (ClassCastException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     @Nullable
@@ -74,7 +113,7 @@ public class TaskAllFragment extends BaseFragment {
                     putFragment(type, TaskListFragment.newInstance(0));
                     break;
                 case TYPE_ALL_TASK_CALENDAR:
-                    putFragment(type, TaskListCalendarFragment.newInstance());
+                    putFragment(type, TaskListCalendarFragment.newInstance(taskItemEntityList));
                     break;
             }
         }

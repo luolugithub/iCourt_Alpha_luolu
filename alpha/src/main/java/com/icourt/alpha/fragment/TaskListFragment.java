@@ -1,5 +1,6 @@
 package com.icourt.alpha.fragment;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -35,6 +36,7 @@ import com.icourt.alpha.fragment.dialogfragment.TaskAllotSelectDialogFragment;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
+import com.icourt.alpha.interfaces.OnTasksChangeListener;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.ItemDecorationUtils;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
@@ -88,6 +90,8 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
 
     int type;
     HeaderFooterAdapter<TaskAdapter> headerFooterAdapter;
+    OnTasksChangeListener onTasksChangeListener;
+
 
     public static TaskListFragment newInstance(int type) {
         TaskListFragment projectTaskFragment = new TaskListFragment();
@@ -111,6 +115,20 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
         if (!hidden) {
             if (type == 1) {
                 getData(true);
+            }
+        }
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        if (getParentFragment() instanceof OnTasksChangeListener) {
+            onTasksChangeListener = (OnTasksChangeListener) getParentFragment();
+        } else {
+            try {
+                onTasksChangeListener = (OnTasksChangeListener) context;
+            } catch (ClassCastException e) {
+                e.printStackTrace();
             }
         }
     }
@@ -193,6 +211,11 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
             public void onSuccess(Call<ResEntity<TaskEntity>> call, Response<ResEntity<TaskEntity>> response) {
                 stopRefresh();
                 getTaskGroupData(response.body().result);
+                if (response.body().result != null) {
+                    if (onTasksChangeListener != null) {
+                        onTasksChangeListener.onTasksChanged(response.body().result.items);
+                    }
+                }
             }
 
             @Override
