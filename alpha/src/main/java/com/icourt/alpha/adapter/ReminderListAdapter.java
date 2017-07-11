@@ -64,7 +64,7 @@ public class ReminderListAdapter extends MultiSelectRecyclerAdapter<ReminderItem
     }
 
     @Override
-    public void onBindSelectableHolder(ViewHolder holder, ReminderItemEntity reminderItemEntity, boolean selected, int position) {
+    public void onBindSelectableHolder(ViewHolder holder, final ReminderItemEntity reminderItemEntity, boolean selected, int position) {
         if (getItemViewType(position) == UNCUSTOM_TYPE) {
             TextView nameView = holder.obtainView(R.id.group_name_tv);
             ImageView arrowView = holder.obtainView(R.id.group_isselect_view);
@@ -72,8 +72,8 @@ public class ReminderListAdapter extends MultiSelectRecyclerAdapter<ReminderItem
             nameView.setText(reminderItemEntity.timeValue);
             arrowView.setImageResource(selected ? R.mipmap.checkmark : 0);
         } else if (getItemViewType(position) == CUSTOM_TYPE) {
-            TextView unitNumberTv = holder.obtainView(R.id.custom_unit_number_text);
-            TextView unitTv = holder.obtainView(R.id.custom_unit_text);
+            final TextView unitNumberTv = holder.obtainView(R.id.custom_unit_number_text);
+            final TextView unitTv = holder.obtainView(R.id.custom_unit_text);
             TextView pointTv = holder.obtainView(R.id.custom_point_text);
             ImageView checkView = holder.obtainView(R.id.custom_check_image);
 
@@ -106,13 +106,7 @@ public class ReminderListAdapter extends MultiSelectRecyclerAdapter<ReminderItem
             hourWheelView.setOnItemSelectedListener(new OnItemSelectedListener() {
                 @Override
                 public void onItemSelected(int i) {
-                    ReminderItemEntity entity = getItem(customPosition);
-                    if (entity != null) {
-                        if (entity.customTimeItemEntity != null) {
-                            entity.customTimeItemEntity.unitNumber = (String) hourWheelView.getAdapter().getItem(i);
-                        }
-                    }
-                    updateItem(entity);
+                    unitNumberTv.setText((String) hourWheelView.getAdapter().getItem(i));
                 }
             });
             minuteWheelView.setCurrentItem(0);
@@ -122,14 +116,7 @@ public class ReminderListAdapter extends MultiSelectRecyclerAdapter<ReminderItem
                 @Override
                 public void onItemSelected(int i) {
 
-                    ReminderItemEntity entity = getItem(customPosition);
-                    if (entity != null) {
-                        if (entity.customTimeItemEntity != null) {
-                            entity.customTimeItemEntity.unit = ((String) minuteWheelView.getAdapter().getItem(i)) + "前";
-                        }
-                    }
-                    updateItem(entity);
-
+                    unitTv.setText(((String) minuteWheelView.getAdapter().getItem(i)) + "前");
                     if (TextUtils.equals((String) minuteWheelView.getAdapter().getItem(i), "天")) {
                         hourWheelView.setAdapter(new TimeWheelAdapter(getDay365()));
                     } else if (TextUtils.equals((String) minuteWheelView.getAdapter().getItem(i), "小时") || TextUtils.equals((String) minuteWheelView.getAdapter().getItem(i), "分钟")) {
@@ -172,11 +159,6 @@ public class ReminderListAdapter extends MultiSelectRecyclerAdapter<ReminderItem
         List<String> timeList = new ArrayList<>();
 
         public TimeWheelAdapter(List<String> timeList) {
-            this.timeList = timeList;
-        }
-
-        public void setTimeList(List<String> timeList) {
-            timeList.clear();
             this.timeList = timeList;
         }
 

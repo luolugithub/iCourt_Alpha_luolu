@@ -1,0 +1,237 @@
+[
+    {
+        "outputFile": "/Users/icourt/Documents/alpha_workspace/alpha_android_2.0/lib_calendar/build/intermediates/incremental/mergeDebugAndroidTestResources/merged.dir/values/values.xml",
+        "map": [
+            {
+                "to": {
+                    "startLine": 2,
+                    "startColumn": 4,
+                    "startOffset": 55,
+                    "endLine": 10,
+                    "endColumn": 19,
+                    "endOffset": 271
+                },
+                "from": {
+                    "file": "/Users/icourt/Documents/alpha_workspace/alpha_android_2.0/lib_calendar/build/intermediates/bundles/debug/res/values/values.xml",
+                    "position": {
+                        "startLine": 2,
+                        "startColumn": 4,
+                        "startOffset": 55,
+                        "endLine": 10,
+                        "endColumn": 19,
+                        "endOffset": 271
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 11,
+                    "startColumn": 4,
+                    "startOffset": 276,
+                    "endColumn": 51,
+                    "endOffset": 323
+                },
+                "from": {
+                    "file": "/Users/icourt/Documents/alpha_workspace/alpha_android_2.0/lib_calendar/build/intermediates/bundles/debug/res/values/values.xml",
+                    "position": {
+                        "startLine": 11,
+                        "startColumn": 4,
+                        "startOffset": 276,
+                        "endColumn": 51,
+                        "endOffset": 323
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 12,
+                    "startColumn": 4,
+                    "startOffset": 328,
+                    "endColumn": 49,
+                    "endOffset": 373
+                },
+                "from": {
+                    "file": "/Users/icourt/Documents/alpha_workspace/alpha_android_2.0/lib_calendar/build/intermediates/bundles/debug/res/values/values.xml",
+                    "position": {
+                        "startLine": 12,
+                        "startColumn": 4,
+                        "startOffset": 328,
+                        "endColumn": 49,
+                        "endOffset": 373
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 13,
+                    "startColumn": 4,
+                    "startOffset": 378,
+                    "endColumn": 52,
+                    "endOffset": 426
+                },
+                "from": {
+                    "file": "/Users/icourt/Documents/alpha_workspace/alpha_android_2.0/lib_calendar/build/intermediates/bundles/debug/res/values/values.xml",
+                    "position": {
+                        "startLine": 13,
+                        "startColumn": 4,
+                        "startOffset": 378,
+                        "endColumn": 52,
+                        "endOffset": 426
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 14,
+                    "startColumn": 4,
+                    "startOffset": 431,
+                    "endColumn": 52,
+                    "endOffset": 479
+                },
+                "from": {
+                    "file": "/Users/icourt/Documents/alpha_workspace/alpha_android_2.0/lib_calendar/build/intermediates/bundles/debug/res/values/values.xml",
+                    "position": {
+                        "startLine": 14,
+                        "startColumn": 4,
+                        "startOffset": 431,
+                        "endColumn": 52,
+                        "endOffset": 479
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 15,
+                    "startColumn": 4,
+                    "startOffset": 484,
+                    "endColumn": 55,
+                    "endOffset": 535
+                },
+                "from": {
+                    "file": "/Users/icourt/Documents/alpha_workspace/alpha_android_2.0/lib_calendar/build/intermediates/bundles/debug/res/values/values.xml",
+                    "position": {
+                        "startLine": 15,
+                        "startColumn": 4,
+                        "startOffset": 484,
+                        "endColumn": 55,
+                        "endOffset": 535
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 23,
+                    "startColumn": 4,
+                    "startOffset": 2608,
+                    "endColumn": 51,
+                    "endOffset": 2655
+                },
+                "from": {
+                    "file": "/Users/icourt/Documents/alpha_workspace/alpha_android_2.0/lib_calendar/build/intermediates/bundles/debug/res/values/values.xml",
+                    "position": {
+                        "startLine": 23,
+                        "startColumn": 4,
+                        "startOffset": 2608,
+                        "endColumn": 51,
+                        "endOffset": 2655
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 24,
+                    "startColumn": 4,
+                    "startOffset": 2660,
+                    "endColumn": 51,
+                    "endOffset": 2707
+                },
+                "from": {
+                    "file": "/Users/icourt/Documents/alpha_workspace/alpha_android_2.0/lib_calendar/build/intermediates/bundles/debug/res/values/values.xml",
+                    "position": {
+                        "startLine": 24,
+                        "startColumn": 4,
+                        "startOffset": 2660,
+                        "endColumn": 51,
+                        "endOffset": 2707
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 25,
+                    "startColumn": 4,
+                    "startOffset": 2712,
+                    "endColumn": 53,
+                    "endOffset": 2761
+                },
+                "from": {
+                    "file": "/Users/icourt/Documents/alpha_workspace/alpha_android_2.0/lib_calendar/build/intermediates/bundles/debug/res/values/values.xml",
+                    "position": {
+                        "startLine": 25,
+                        "startColumn": 4,
+                        "startOffset": 2712,
+                        "endColumn": 53,
+                        "endOffset": 2761
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 26,
+                    "startColumn": 4,
+                    "startOffset": 2766,
+                    "endColumn": 46,
+                    "endOffset": 2808
+                },
+                "from": {
+                    "file": "/Users/icourt/Documents/alpha_workspace/alpha_android_2.0/lib_calendar/build/intermediates/bundles/debug/res/values/values.xml",
+                    "position": {
+                        "startLine": 26,
+                        "startColumn": 4,
+                        "startOffset": 2766,
+                        "endColumn": 46,
+                        "endOffset": 2808
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 27,
+                    "startColumn": 4,
+                    "startOffset": 2813,
+                    "endColumn": 51,
+                    "endOffset": 2860
+                },
+                "from": {
+                    "file": "/Users/icourt/Documents/alpha_workspace/alpha_android_2.0/lib_calendar/build/intermediates/bundles/debug/res/values/values.xml",
+                    "position": {
+                        "startLine": 27,
+                        "startColumn": 4,
+                        "startOffset": 2813,
+                        "endColumn": 51,
+                        "endOffset": 2860
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 28,
+                    "startColumn": 4,
+                    "startOffset": 2865,
+                    "endColumn": 51,
+                    "endOffset": 2912
+                },
+                "from": {
+                    "file": "/Users/icourt/Documents/alpha_workspace/alpha_android_2.0/lib_calendar/build/intermediates/bundles/debug/res/values/values.xml",
+                    "position": {
+                        "startLine": 28,
+                        "startColumn": 4,
+                        "startOffset": 2865,
+                        "endColumn": 51,
+                        "endOffset": 2912
+                    }
+                }
+            }
+        ]
+    }
+]
