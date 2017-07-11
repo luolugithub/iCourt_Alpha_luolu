@@ -180,6 +180,9 @@ public class LoginBaseActivity extends BaseUmengActivity {
         if (result == null) {
             dismissLoadingDialog();
         } else {
+            //模拟用户
+       /*     result.accid = "D6A26515644911E7855190E2BACDCE28";
+            result.imToken = "d781a5ee1ccff209b403cc6cf924d6c3";*/
             NIMClient.getService(AuthService.class)
                     .login(new LoginInfo(result.accid, result.imToken))
                     .setCallback(new RequestCallback<LoginInfo>() {

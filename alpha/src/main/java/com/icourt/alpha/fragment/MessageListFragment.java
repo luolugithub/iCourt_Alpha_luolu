@@ -378,11 +378,13 @@ public class MessageListFragment extends BaseRecentContactFragment
     protected void onUserStatusChanged(StatusCode code) {
         log("------------>onUserStatusChanged:" + code);
         if (code.wontAutoLogin()) {
+            bugSync("用户登陆状态:", "" + code + "  被踢出、账号被禁用、密码错误等情况，自动登录失败，需要返回到登录界面进行重新登录操作");
             loginout();
         } else {
             if (code == StatusCode.NET_BROKEN) {
                 updateLoginStateView(true, getString(R.string.error_please_check_network));
             } else if (code == StatusCode.UNLOGIN) {
+                bugSync("用户登陆状态:", "" + code);
                 updateLoginStateView(true, getString(R.string.message_statu_hint_no_login));
             } else if (code == StatusCode.CONNECTING) {
                 updateLoginStateView(true, getString(R.string.message_statu_hint_nim_status_connecting));
