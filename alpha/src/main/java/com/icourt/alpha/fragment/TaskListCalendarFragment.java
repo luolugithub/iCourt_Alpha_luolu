@@ -135,53 +135,66 @@ public class TaskListCalendarFragment extends BaseFragment {
         //今天 定位在中间
         viewPager.setCurrentItem(MAXDAILYPAGE / 2, false);
         dailyTaskPagePOS = viewPager.getCurrentItem();
-        viewPager.addOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
-
-            /**
-             * 是否是向右滑动
-             * @param pos
-             * @return
-             */
-            private boolean isRight(int pos) {
-                return pos > dailyTaskPagePOS;
-            }
-
-            @Override
-            public void onPageSelected(int position) {
-                super.onPageSelected(position);
-                int maxDay = CalendarUtils.getMaxDay(slSchedule.getCurrentSelectYear(), slSchedule.getCurrentSelectMonth());
-                int selectedDay = slSchedule.getCurrentSelectDay();
-
-                //得到这个页面 对应的日期
-                Calendar clendar = Calendar.getInstance();
-                clendar.set(Calendar.HOUR_OF_DAY, 0);
-                clendar.set(Calendar.MINUTE, 0);
-                clendar.set(Calendar.SECOND, 0);
-                clendar.set(Calendar.MILLISECOND, 0);
-                int centerPos = MAXDAILYPAGE / 2;
-                long key = clendar.getTimeInMillis() - (centerPos - position) * TimeUnit.DAYS.toMillis(1);
-                clendar.setTimeInMillis(key);
-
-
-                if (isRight(position)) {
-                    if (slSchedule.getCurrentSelectDay() < maxDay) {
-                        mcvCalendar.onClickThisMonth(selectedDay + 1);
-                    }
-                } else {
-                    if (slSchedule.getCurrentSelectDay() > 0) {
-                        mcvCalendar.onClickThisMonth(selectedDay - 1);
-                    }
-                }
-                dailyTaskPagePOS = position;
-
-                //计算出对应的年月日
-                int months = mcvCalendar.getAdapter().getCount();//月的总数
-
-                //mcvCalendar.onClickThisMonth();
-            }
-        });
+        viewPager.removeOnPageChangeListener(taskPageChangeListener);
+        viewPager.addOnPageChangeListener(taskPageChangeListener);
         initCalendarDateView();
     }
+
+    private ViewPager.SimpleOnPageChangeListener taskPageChangeListener = new ViewPager.SimpleOnPageChangeListener() {
+
+        /**
+         * 是否是向右滑动
+         * @param pos
+         * @return
+         */
+        private boolean isRight(int pos) {
+            return pos > dailyTaskPagePOS;
+        }
+
+        @Override
+        public void onPageSelected(int position) {
+            super.onPageSelected(position);
+            int maxDay = CalendarUtils.getMaxDay(slSchedule.getCurrentSelectYear(), slSchedule.getCurrentSelectMonth());
+            int selectedDay = slSchedule.getCurrentSelectDay();
+
+            //得到这个页面 对应的日期
+            Calendar clendar = Calendar.getInstance();
+            clendar.set(Calendar.HOUR_OF_DAY, 0);
+            clendar.set(Calendar.MINUTE, 0);
+            clendar.set(Calendar.SECOND, 0);
+            clendar.set(Calendar.MILLISECOND, 0);
+            int centerPos = MAXDAILYPAGE / 2;
+            long key = clendar.getTimeInMillis() - (centerPos - position) * TimeUnit.DAYS.toMillis(1);
+            clendar.setTimeInMillis(key);
+
+
+            log("----------->maxday:" + slSchedule.getCurrentSelectYear() + " " + slSchedule.getCurrentSelectMonth() + "  " + maxDay);
+            if (isRight(position)) {
+                if (slSchedule.getCurrentSelectDay() < maxDay) {
+                    mcvCalendar.onClickThisMonth(selectedDay + 1);
+                } else {
+                    mcvCalendar.setCurrentItem(mcvCalendar.getCurrentItem() + 1);
+                    //自动定位到第一天
+                    mcvCalendar.onClickThisMonth(1);
+                }
+            } else {
+                if (slSchedule.getCurrentSelectDay() > 1) {
+                    mcvCalendar.onClickThisMonth(selectedDay - 1);
+                } else {
+                    mcvCalendar.setCurrentItem(mcvCalendar.getCurrentItem() - 1);
+                    int maxDay1 = CalendarUtils.getMaxDay(slSchedule.getCurrentSelectYear(), slSchedule.getCurrentSelectMonth());
+                    //自动定位到最后一天
+                    mcvCalendar.onClickThisMonth(maxDay1);
+                }
+            }
+            dailyTaskPagePOS = position;
+
+            //计算出对应的年月日
+            int months = mcvCalendar.getAdapter().getCount();//月的总数
+
+            //mcvCalendar.onClickThisMonth();
+        }
+    };
 
     /**
      * 计算每日的任务
@@ -239,7 +252,10 @@ public class TaskListCalendarFragment extends BaseFragment {
         if (distanceDay != 0) {
             int targetPos = viewPager.getCurrentItem() + distanceDay;
             if (targetPos >= 0) {
+                viewPager.removeOnPageChangeListener(taskPageChangeListener);
                 viewPager.setCurrentItem(targetPos);
+                viewPager.addOnPageChangeListener(taskPageChangeListener);
+                dailyTaskPagePOS = viewPager.getCurrentItem();
             }
         }
     }

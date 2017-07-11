@@ -289,10 +289,10 @@ public class CalendarUtils {
      * @return
      */
     public static int getMaxDay(int year, int month) {
-        Calendar c = Calendar.getInstance();
-        c.set(year, month, 1);
-        c.add(Calendar.DAY_OF_YEAR, -1);
-        return c.get(Calendar.DAY_OF_MONTH);
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(Calendar.YEAR, year - 1);
+        calendar.set(Calendar.MONTH, month);
+        return calendar.getActualMaximum(Calendar.DATE);
     }
 }
 
