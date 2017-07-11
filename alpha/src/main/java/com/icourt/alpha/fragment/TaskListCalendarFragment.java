@@ -79,8 +79,8 @@ public class TaskListCalendarFragment extends BaseFragment {
     final ArrayList<TaskEntity.TaskItemEntity> taskItemEntityList = new ArrayList<>();
     final Map<Long, ArrayList<TaskEntity.TaskItemEntity>> dailyTaskMap = new HashMap();
     FragmentPagerAdapter fragmentPagerAdapter;
-    private Handler mHandler = new Handler();
     private int MAXDAILYPAGE = 5000;
+    private int dailyTaskPagePOS;
 
     public static Fragment newInstance(ArrayList<TaskEntity.TaskItemEntity> data) {
         TaskListCalendarFragment taskListCalendarFragment = new TaskListCalendarFragment();
@@ -134,15 +134,49 @@ public class TaskListCalendarFragment extends BaseFragment {
 
         //今天 定位在中间
         viewPager.setCurrentItem(MAXDAILYPAGE / 2, false);
+        dailyTaskPagePOS = viewPager.getCurrentItem();
         viewPager.addOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
+
+            /**
+             * 是否是向右滑动
+             * @param pos
+             * @return
+             */
+            private boolean isRight(int pos) {
+                return pos > dailyTaskPagePOS;
+            }
+
             @Override
             public void onPageSelected(int position) {
                 super.onPageSelected(position);
-                //TODO 联动
+                int maxDay = CalendarUtils.getMaxDay(slSchedule.getCurrentSelectYear(), slSchedule.getCurrentSelectMonth());
+                int selectedDay = slSchedule.getCurrentSelectDay();
+
+                //得到这个页面 对应的日期
+                Calendar clendar = Calendar.getInstance();
+                clendar.set(Calendar.HOUR_OF_DAY, 0);
+                clendar.set(Calendar.MINUTE, 0);
+                clendar.set(Calendar.SECOND, 0);
+                clendar.set(Calendar.MILLISECOND, 0);
                 int centerPos = MAXDAILYPAGE / 2;
+                long key = clendar.getTimeInMillis() - (centerPos - position) * TimeUnit.DAYS.toMillis(1);
+                clendar.setTimeInMillis(key);
+
+
+                if (isRight(position)) {
+                    if (slSchedule.getCurrentSelectDay() < maxDay) {
+                        mcvCalendar.onClickThisMonth(selectedDay + 1);
+                    }
+                } else {
+                    if (slSchedule.getCurrentSelectDay() > 0) {
+                        mcvCalendar.onClickThisMonth(selectedDay - 1);
+                    }
+                }
+                dailyTaskPagePOS = position;
 
                 //计算出对应的年月日
                 int months = mcvCalendar.getAdapter().getCount();//月的总数
+
                 //mcvCalendar.onClickThisMonth();
             }
         });
@@ -290,7 +324,6 @@ public class TaskListCalendarFragment extends BaseFragment {
     public void onDestroyView() {
         super.onDestroyView();
         unbinder.unbind();
-        mHandler.removeCallbacksAndMessages(null);
     }
 
 }

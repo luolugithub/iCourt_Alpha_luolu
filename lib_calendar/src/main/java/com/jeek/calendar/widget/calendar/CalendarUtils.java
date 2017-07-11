@@ -281,5 +281,18 @@ public class CalendarUtils {
         return size % 7 == 0 ? size / 7 : (size / 7) + 1;
     }
 
+    /**
+     * 获取某月的最大天数
+     *
+     * @param year
+     * @param month
+     * @return
+     */
+    public static int getMaxDay(int year, int month) {
+        Calendar c = Calendar.getInstance();
+        c.set(year, month, 1);
+        c.add(Calendar.DAY_OF_YEAR, -1);
+        return c.get(Calendar.DAY_OF_MONTH);
+    }
 }
 

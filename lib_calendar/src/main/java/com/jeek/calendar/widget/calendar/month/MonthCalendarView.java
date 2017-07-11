@@ -55,6 +55,20 @@ public class MonthCalendarView extends ViewPager implements OnMonthClickListener
         setCurrentItem(getCurrentItem() - 1, true);
     }
 
+    /**
+     * 本月选中..
+     *
+     * @param day
+     */
+    public void onClickThisMonth(int day) {
+        MonthView monthDateView = mMonthAdapter.getViews().get(getCurrentItem());
+        if (monthDateView != null) {
+            monthDateView.setSelectYearMonth(monthDateView.getSelectYear(), monthDateView.getSelectMonth(), day);
+            monthDateView.invalidate();
+        }
+        onClickThisMonth(monthDateView.getSelectYear(), monthDateView.getSelectMonth(), day);
+    }
+
     @Override
     public void onClickNextMonth(int year, int month, int day) {
         MonthView monthDateView = mMonthAdapter.getViews().get(getCurrentItem() + 1);
