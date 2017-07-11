@@ -179,7 +179,7 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
             public void onSuccess(Call<ResEntity<TaskReminderEntity>> call, Response<ResEntity<TaskReminderEntity>> response) {
                 taskReminderEntity = response.body().result;
                 if (taskReminderEntity != null) {
-                    if (taskReminderEntity.ruleTime != null) {
+                    if (taskReminderEntity.ruleTime != null || taskReminderEntity.customTime != null) {
                         taskReminderIcon.setVisibility(View.VISIBLE);
                     } else {
                         taskReminderIcon.setVisibility(View.INVISIBLE);

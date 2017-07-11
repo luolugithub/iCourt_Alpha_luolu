@@ -58,7 +58,7 @@
         android:layout_width="match_parent"
         android:overScrollMode="never"
 
-        android:layout_height="260dp">
+        android:layout_height="320dp">
 
     </android.support.v7.widget.RecyclerView>
 

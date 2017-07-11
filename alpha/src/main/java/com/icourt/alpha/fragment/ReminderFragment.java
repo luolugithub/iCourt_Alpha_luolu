@@ -12,8 +12,10 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.bigkoo.pickerview.lib.WheelView;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.ReminderListAdapter;
+import com.icourt.alpha.adapter.TimeWheelAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.entity.bean.ReminderItemEntity;
@@ -58,6 +60,7 @@ public class ReminderFragment extends BaseFragment implements BaseRecyclerAdapte
     @BindView(R.id.add_reminder_text)
     TextView addReminderText;
     int customPosition;//自定义的position
+    LinearLayoutManager linearLayoutManager;
 
     public static ReminderFragment newInstance(TaskReminderEntity taskReminderEntity) {
         ReminderFragment reminderFragment = new ReminderFragment();
@@ -94,7 +97,8 @@ public class ReminderFragment extends BaseFragment implements BaseRecyclerAdapte
         titleContent.setText("提醒");
         taskReminderEntity = (TaskReminderEntity) getArguments().getSerializable("taskReminder");
 
-        recyclerview.setLayoutManager(new LinearLayoutManager(getContext()));
+        linearLayoutManager = new LinearLayoutManager(getContext());
+        recyclerview.setLayoutManager(linearLayoutManager);
         recyclerview.setHasFixedSize(true);
         recyclerview.addItemDecoration(ItemDecorationUtils.getCommFull05Divider(getContext(), true));
         recyclerview.setAdapter(reminderListAdapter = new ReminderListAdapter());
@@ -127,11 +131,29 @@ public class ReminderFragment extends BaseFragment implements BaseRecyclerAdapte
                     reminderItemEntities.add(reminderItemEntity);
                 }
             }
+
+            if (taskReminderEntity.customTime != null) {
+                for (TaskReminderEntity.CustomTimeItemEntity customTimeItemEntity : taskReminderEntity.customTime) {
+                    ReminderItemEntity reminderItemEntity = new ReminderItemEntity();
+                    reminderItemEntity.customTimeItemEntity = customTimeItemEntity;
+                    reminderItemEntities.add(reminderItemEntity);
+                }
+            }
+
             reminderListAdapter.bindData(true, reminderItemEntities);
             if (taskReminderEntity.ruleTime != null) {
                 for (int i = 0; i < reminderItemEntities.size(); i++) {
                     if (taskReminderEntity.ruleTime.contains(reminderItemEntities.get(i).timeKey)) {
                         reminderListAdapter.setSelected(i, true);
+                    }
+                }
+            }
+            if (taskReminderEntity.customTime != null) {
+                for (int i = 0; i < reminderListAdapter.getData().size(); i++) {
+                    if (reminderListAdapter.getData().get(i) != null) {
+                        if (reminderListAdapter.getData().get(i).customTimeItemEntity != null) {
+                            reminderListAdapter.setSelected(i, true);
+                        }
                     }
                 }
             }
@@ -173,11 +195,12 @@ public class ReminderFragment extends BaseFragment implements BaseRecyclerAdapte
                 TaskReminderEntity.CustomTimeItemEntity ctie = new TaskReminderEntity.CustomTimeItemEntity();
                 ctie.point = "09:00";
                 ctie.unitNumber = "1";
-                ctie.unit = "天前";
+                ctie.unit = "day";
                 itemEntity.customTimeItemEntity = ctie;
                 reminderListAdapter.addItem(itemEntity);
                 customPosition = reminderListAdapter.getItemCount() - 1;
-                recyclerview.scrollToPosition(customPosition);
+                reminderListAdapter.setSelected(customPosition, true);
+                scrollToPosition(customPosition);
                 break;
         }
     }
@@ -190,10 +213,18 @@ public class ReminderFragment extends BaseFragment implements BaseRecyclerAdapte
         if (reminderListAdapter != null) {
             if (reminderListAdapter.getSelectedData().size() > 0) {
                 for (ReminderItemEntity reminderItemEntity : reminderListAdapter.getSelectedData()) {
-                    if (entity.ruleTime == null) {
-                        entity.ruleTime = new ArrayList<>();
+                    if (!TextUtils.isEmpty(reminderItemEntity.timeKey)) {
+                        if (entity.ruleTime == null) {
+                            entity.ruleTime = new ArrayList<>();
+                        }
+                        entity.ruleTime.add(reminderItemEntity.timeKey);
                     }
-                    entity.ruleTime.add(reminderItemEntity.timeKey);
+                    if (reminderItemEntity.customTimeItemEntity != null) {
+                        if (entity.customTime == null) {
+                            entity.customTime = new ArrayList<>();
+                        }
+                        entity.customTime.add(reminderItemEntity.customTimeItemEntity);
+                    }
                 }
                 return entity;
             }
@@ -208,6 +239,15 @@ public class ReminderFragment extends BaseFragment implements BaseRecyclerAdapte
         unbinder.unbind();
     }
 
+    /**
+     * 滚动到指定位置
+     */
+    private void scrollToPosition(int position) {
+        if (linearLayoutManager != null && linearLayoutManager.getItemCount() > 0) {
+            linearLayoutManager.scrollToPositionWithOffset(position, 50);
+        }
+    }
+
     @Override
     public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
 
@@ -219,5 +259,30 @@ public class ReminderFragment extends BaseFragment implements BaseRecyclerAdapte
         customPosition = position;
         ((ReminderListAdapter) adapter).setCustomPosition(position);
         adapter.notifyDataSetChanged();
+        scrollToPosition(position);
+        switch (view.getId()) {
+            case R.id.custom_point_text:
+                ((ReminderListAdapter) adapter).setSelect_type(2);
+                ((WheelView) holder.obtainView(R.id.hour_wheelView)).setAdapter(new TimeWheelAdapter(getTime24or60(24)));
+                ((WheelView) holder.obtainView(R.id.minute_wheelView)).setAdapter(new TimeWheelAdapter(getTime24or60(60)));
+                break;
+            case R.id.custom_unit_number_text:
+            case R.id.custom_unit_text:
+                ((ReminderListAdapter) adapter).setSelect_type(1);
+                break;
+        }
+    }
+
+    /**
+     * 获取时间：小时list
+     *
+     * @return
+     */
+    private List<String> getTime24or60(int num) {
+        List<String> timeList = new ArrayList<>();
+        for (int i = 1; i < num; i++) {
+            timeList.add(String.valueOf(i));
+        }
+        return timeList;
     }
 }

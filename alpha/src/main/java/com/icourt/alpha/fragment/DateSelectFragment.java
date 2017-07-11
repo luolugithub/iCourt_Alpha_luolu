@@ -177,7 +177,7 @@ public class DateSelectFragment extends BaseFragment implements DateSelectDialog
 
         if (selectedCalendar == null) selectedCalendar = Calendar.getInstance();
         if (isUnSetDate()) {
-            duetimeTv.setText("未设置");
+            duetimeTv.setText("");
             duetimeTv.setTextColor(SystemUtils.getColor(getContext(), R.color.alpha_font_color_gray));
             clearDutimeIv.setVisibility(View.INVISIBLE);
             addReminderLayout.setVisibility(View.VISIBLE);
@@ -216,7 +216,7 @@ public class DateSelectFragment extends BaseFragment implements DateSelectDialog
         minuteWheelView.setOnItemSelectedListener(new OnItemSelectedListener() {
             @Override
             public void onItemSelected(int i) {
-                selectedCalendar.set(Calendar.SECOND, i);
+                selectedCalendar.set(Calendar.MINUTE, i);
                 selectedCalendar.set(Calendar.MILLISECOND, 0);
                 if (duetimeTv != null)
                     duetimeTv.setText(DateUtils.getHHmm(selectedCalendar.getTimeInMillis()));
@@ -351,11 +351,9 @@ public class DateSelectFragment extends BaseFragment implements DateSelectDialog
      */
     private String getCustReminderData(TaskReminderEntity.CustomTimeItemEntity custReminderData) {
         if (custReminderData != null) {
-            String unitStr = null;
             if (TaskReminderUtils.unitMap.containsKey(custReminderData.unit)) {
-                unitStr = TaskReminderUtils.unitMap.get(custReminderData.unit);
+                return custReminderData.unitNumber + TaskReminderUtils.unitMap.get(custReminderData.unit) + "前" + custReminderData.point;
             }
-            return custReminderData.unitNumber + unitStr + custReminderData.point;
         }
         return "";
     }
@@ -371,15 +369,17 @@ public class DateSelectFragment extends BaseFragment implements DateSelectDialog
             public void onSuccess(Call<ResEntity<TaskReminderEntity>> call, Response<ResEntity<TaskReminderEntity>> response) {
                 taskReminderEntity = response.body().result;
                 if (taskReminderEntity != null) {
-                    if (taskReminderEntity.ruleTime != null) {
+                    if (taskReminderEntity.ruleTime != null || taskReminderEntity.customTime != null) {
                         noticeLl.setVisibility(View.VISIBLE);
                         addReminderLayout.setVisibility(View.GONE);
                         setReminder(taskReminderEntity);
                     } else {
                         noticeLl.setVisibility(View.GONE);
+                        addReminderLayout.setVisibility(View.VISIBLE);
                     }
                 } else {
                     noticeLl.setVisibility(View.GONE);
+                    addReminderLayout.setVisibility(View.VISIBLE);
                 }
             }
         });
@@ -425,7 +425,7 @@ public class DateSelectFragment extends BaseFragment implements DateSelectDialog
                 }
                 break;
             case R.id.clear_dutime_iv:
-                duetimeTv.setText("未设置");
+                duetimeTv.setText("");
                 duetimeTv.setTextColor(SystemUtils.getColor(getContext(), R.color.alpha_font_color_gray));
                 clearDutimeIv.setVisibility(View.INVISIBLE);
                 setUnSetDate();
@@ -444,6 +444,16 @@ public class DateSelectFragment extends BaseFragment implements DateSelectDialog
                 }
                 if (onFragmentCallBackListener != null) {
                     Bundle bundle = new Bundle();
+                    if (taskReminderEntity == null) {
+                        taskReminderEntity = new TaskReminderEntity();
+                    }
+
+                    if (TextUtils.isEmpty(duetimeTv.getText())) {
+                        taskReminderEntity.taskReminderType = TaskReminderEntity.ALL_DAY;
+                    } else {
+                        taskReminderEntity.taskReminderType = TaskReminderEntity.PRECISE;
+                    }
+
                     bundle.putSerializable("taskReminder", taskReminderEntity);
                     onFragmentCallBackListener.onFragmentCallBack(DateSelectFragment.this, DateSelectDialogFragment.SELECT_REMINDER, bundle);
                 }
