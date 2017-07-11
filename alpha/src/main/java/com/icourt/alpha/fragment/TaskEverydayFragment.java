@@ -8,16 +8,15 @@ import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.TaskSimpleAdapter;
+import com.icourt.alpha.adapter.baseadapter.adapterObserver.DataChangeAdapterObserver;
 import com.icourt.alpha.base.BaseFragment;
-import com.icourt.alpha.entity.bean.PageEntity;
 import com.icourt.alpha.entity.bean.TaskEntity;
 import com.icourt.alpha.entity.bean.TimeEntity;
 import com.icourt.alpha.entity.event.TimingEvent;
-import com.icourt.alpha.http.callback.SimpleCallBack;
-import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.widget.manager.TimerManager;
 
 import org.greenrobot.eventbus.EventBus;
@@ -25,14 +24,11 @@ import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
-import retrofit2.Call;
-import retrofit2.Response;
 
 /**
  * Description  每天的任务 fragment
@@ -51,6 +47,8 @@ public class TaskEverydayFragment extends BaseFragment {
     Unbinder unbinder;
     TaskSimpleAdapter taskSimpleAdapter;
     final ArrayList<TaskEntity.TaskItemEntity> taskItemEntityList = new ArrayList<>();
+    @BindView(R.id.contentEmptyText)
+    TextView contentEmptyText;
 
     public static TaskEverydayFragment newInstance(ArrayList<TaskEntity.TaskItemEntity> data) {
         TaskEverydayFragment fragment = new TaskEverydayFragment();
@@ -76,7 +74,16 @@ public class TaskEverydayFragment extends BaseFragment {
             taskItemEntityList.addAll(taskEntity);
         }
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        recyclerView.setHasFixedSize(true);
         recyclerView.setAdapter(taskSimpleAdapter = new TaskSimpleAdapter());
+        taskSimpleAdapter.registerAdapterDataObserver(new DataChangeAdapterObserver() {
+            @Override
+            protected void updateUI() {
+                if (contentEmptyText != null) {
+                    contentEmptyText.setVisibility(taskSimpleAdapter.getItemCount() > 0 ? View.GONE : View.VISIBLE);
+                }
+            }
+        });
         EventBus.getDefault().register(this);
         getData(true);
     }

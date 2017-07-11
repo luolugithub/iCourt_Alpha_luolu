@@ -1,6 +1,7 @@
 package com.icourt.alpha.fragment;
 
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentPagerAdapter;
@@ -34,6 +35,14 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import butterknife.Unbinder;
+import io.reactivex.Observable;
+import io.reactivex.ObservableEmitter;
+import io.reactivex.ObservableOnSubscribe;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.annotations.NonNull;
+import io.reactivex.functions.Consumer;
+import io.reactivex.internal.operators.observable.ObservableAmb;
+import io.reactivex.schedulers.Schedulers;
 
 /**
  * Description  任务周视图
@@ -70,6 +79,8 @@ public class TaskListCalendarFragment extends BaseFragment {
     final ArrayList<TaskEntity.TaskItemEntity> taskItemEntityList = new ArrayList<>();
     final Map<Long, ArrayList<TaskEntity.TaskItemEntity>> dailyTaskMap = new HashMap();
     FragmentPagerAdapter fragmentPagerAdapter;
+    private Handler mHandler = new Handler();
+    private int MAXDAILYPAGE = 5000;
 
     public static Fragment newInstance(ArrayList<TaskEntity.TaskItemEntity> data) {
         TaskListCalendarFragment taskListCalendarFragment = new TaskListCalendarFragment();
@@ -109,25 +120,30 @@ public class TaskListCalendarFragment extends BaseFragment {
                 clendar.set(Calendar.MINUTE, 0);
                 clendar.set(Calendar.SECOND, 0);
                 clendar.set(Calendar.MILLISECOND, 0);
-                int centerPos = Integer.MAX_VALUE / 2;
+                int centerPos = MAXDAILYPAGE / 2;
                 long key = clendar.getTimeInMillis() - (centerPos - position) * TimeUnit.DAYS.toMillis(1);
                 return TaskEverydayFragment.newInstance(dailyTaskMap.get(key));
             }
 
             @Override
             public int getCount() {
-                return Integer.MAX_VALUE;
+                return MAXDAILYPAGE;
             }
         });
 
 
         //今天 定位在中间
-        viewPager.setCurrentItem(Integer.MAX_VALUE / 2, false);
+        viewPager.setCurrentItem(MAXDAILYPAGE / 2, false);
         viewPager.addOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
             @Override
             public void onPageSelected(int position) {
                 super.onPageSelected(position);
-                int centerPos = Integer.MAX_VALUE / 2;
+                //TODO 联动
+                int centerPos = MAXDAILYPAGE / 2;
+
+                //计算出对应的年月日
+                int months = mcvCalendar.getAdapter().getCount();//月的总数
+                //mcvCalendar.onClickThisMonth();
             }
         });
         initCalendarDateView();
@@ -165,11 +181,15 @@ public class TaskListCalendarFragment extends BaseFragment {
      * @param day
      */
     private void scrollToTaskPage(int year, int month, int day) {
+
         Calendar clendar = Calendar.getInstance();
         clendar.set(Calendar.HOUR_OF_DAY, 0);
         clendar.set(Calendar.MINUTE, 0);
         clendar.set(Calendar.SECOND, 0);
         clendar.set(Calendar.MILLISECOND, 0);
+        int centerPos = MAXDAILYPAGE / 2;
+        long currPageTime = clendar.getTimeInMillis() - (centerPos - viewPager.getCurrentItem()) * TimeUnit.DAYS.toMillis(1);
+        clendar.setTimeInMillis(currPageTime);
 
 
         Calendar targetCalendar = Calendar.getInstance();
@@ -182,10 +202,9 @@ public class TaskListCalendarFragment extends BaseFragment {
         targetCalendar.set(Calendar.MILLISECOND, 0);
 
         int distanceDay = (int) ((targetCalendar.getTimeInMillis() - clendar.getTimeInMillis()) / TimeUnit.DAYS.toMillis(1));
-        int centerPos = Integer.MAX_VALUE / 2;
         if (distanceDay != 0) {
-            int targetPos = centerPos + distanceDay;
-            if (targetPos != viewPager.getCurrentItem() && targetPos >= 0) {
+            int targetPos = viewPager.getCurrentItem() + distanceDay;
+            if (targetPos >= 0) {
                 viewPager.setCurrentItem(targetPos);
             }
         }
@@ -196,7 +215,6 @@ public class TaskListCalendarFragment extends BaseFragment {
             @Override
             public void onClickDate(int year, int month, int day) {
                 updateTitle(year, month + 1, day);
-                showTopSnackBar("y:" + year + " m:" + month + " d:" + day);
                 scrollToTaskPage(year, month, day);
             }
 
@@ -205,7 +223,6 @@ public class TaskListCalendarFragment extends BaseFragment {
                 updateTitle(year, month + 1, day);
                 slSchedule.addTaskHints(
                         getMonthTaskHint(year, month));
-                scrollToTaskPage(year, month, day);
             }
         });
         updateTitle(slSchedule.getCurrentSelectYear(),
@@ -273,6 +290,7 @@ public class TaskListCalendarFragment extends BaseFragment {
     public void onDestroyView() {
         super.onDestroyView();
         unbinder.unbind();
+        mHandler.removeCallbacksAndMessages(null);
     }
 
 }
