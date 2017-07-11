@@ -1177,6 +1177,15 @@ public interface ApiAlphaService {
     @GET("api/v2/tasks/{taskId}/reminders")
     Call<ResEntity<TaskReminderEntity>> taskReminderQuery(@Path("taskId") String taskId);
 
+    /**
+     * 新增任务提醒
+     * 文档地址：https://test.alphalawyer.cn/ilaw/swagger/index.html#!/taskflow-api/addTaskRemindersUsingPOST
+     * @param taskId
+     * @return
+     */
+    @POST("api/v2/tasks/{taskId}/reminders")
+    Call<ResEntity<TaskReminderEntity>> taskReminderAdd(@Path("taskId") String taskId,
+                                                        @Body RequestBody body);
 }
 
 

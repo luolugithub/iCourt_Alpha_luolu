@@ -13,6 +13,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.andview.refreshview.XRefreshView;
+import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -27,6 +28,7 @@ import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.entity.bean.ProjectEntity;
 import com.icourt.alpha.entity.bean.TaskEntity;
 import com.icourt.alpha.entity.bean.TaskGroupEntity;
+import com.icourt.alpha.entity.bean.TaskReminderEntity;
 import com.icourt.alpha.entity.bean.TimeEntity;
 import com.icourt.alpha.entity.event.TaskActionEvent;
 import com.icourt.alpha.entity.event.TimingEvent;
@@ -507,6 +509,9 @@ public class ProjectTaskFragment extends BaseFragment implements TaskAdapter.OnS
                 long millis = params.getLong(KEY_FRAGMENT_RESULT);
                 updateTaskItemEntity.dueTime = millis;
                 updateTask(updateTaskItemEntity, null, null);
+
+                TaskReminderEntity taskReminderEntity = (TaskReminderEntity) params.getSerializable("taskReminder");
+                addReminders(updateTaskItemEntity, taskReminderEntity);
             }
         }
     }
@@ -569,6 +574,47 @@ public class ProjectTaskFragment extends BaseFragment implements TaskAdapter.OnS
             }
             jsonObject.add("attendees", jsonarr);
             return jsonObject.toString();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    /**
+     * 添加任务提醒
+     *
+     * @param taskItemEntity
+     * @param taskReminderEntity
+     */
+    private void addReminders(TaskEntity.TaskItemEntity taskItemEntity, final TaskReminderEntity taskReminderEntity) {
+        if (taskReminderEntity == null) return;
+        if (taskItemEntity == null) return;
+        String json = getReminderJson(taskReminderEntity);
+        if (TextUtils.isEmpty(json)) return;
+        getApi().taskReminderAdd(taskItemEntity.id, RequestUtils.createJsonBody(json)).enqueue(new SimpleCallBack<TaskReminderEntity>() {
+            @Override
+            public void onSuccess(Call<ResEntity<TaskReminderEntity>> call, Response<ResEntity<TaskReminderEntity>> response) {
+
+            }
+
+            @Override
+            public void onFailure(Call<ResEntity<TaskReminderEntity>> call, Throwable t) {
+                super.onFailure(call, t);
+            }
+        });
+    }
+
+    /**
+     * 获取提醒json
+     *
+     * @param taskReminderEntity
+     * @return
+     */
+    private String getReminderJson(TaskReminderEntity taskReminderEntity) {
+        try {
+            if (taskReminderEntity == null) return null;
+            Gson gson = new Gson();
+            return gson.toJson(taskReminderEntity);
         } catch (Exception e) {
             e.printStackTrace();
         }
