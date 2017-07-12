@@ -216,6 +216,7 @@ public class ContactListFragment extends BaseFragment implements BaseRecyclerAda
                             //插入数据库
                             insertAsynContact(data);
                             filterRobot(data);
+                            filterMySelf(data);
                             IndexUtils.setSuspensions(getContext(), data);
                             try {
                                 Collections.sort(data, new PinyinComparator<GroupContactBean>());
