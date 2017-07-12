@@ -167,8 +167,6 @@ public class TaskListCalendarFragment extends BaseFragment {
             long key = clendar.getTimeInMillis() - (centerPos - position) * TimeUnit.DAYS.toMillis(1);
             clendar.setTimeInMillis(key);
 
-
-            log("----------->maxday:" + slSchedule.getCurrentSelectYear() + " " + slSchedule.getCurrentSelectMonth() + "  " + maxDay);
             if (isRight(position)) {
                 if (slSchedule.getCurrentSelectDay() < maxDay) {
                     mcvCalendar.onClickThisMonth(selectedDay + 1);

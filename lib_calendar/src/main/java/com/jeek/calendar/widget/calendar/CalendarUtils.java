@@ -89,6 +89,13 @@ public class CalendarUtils {
         }
     }
 
+    public void removeAllTaskHint() {
+        Map<String, List<Integer>> sMonthTaskHint = sUtils.sMonthTaskHint;
+        if (sMonthTaskHint != null) {
+            sMonthTaskHint.clear();
+        }
+    }
+
     public boolean removeTaskHint(int year, int month, int day) {
         String key = hashKey(year, month);
         List<Integer> hints = sUtils.sMonthTaskHint.get(key);

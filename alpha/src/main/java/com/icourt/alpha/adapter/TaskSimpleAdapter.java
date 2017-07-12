@@ -12,6 +12,7 @@ import android.widget.TextView;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.icourt.alpha.R;
+import com.icourt.alpha.activity.TaskDetailActivity;
 import com.icourt.alpha.activity.TimerTimingActivity;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.MultiSelectRecyclerAdapter;
@@ -37,9 +38,10 @@ import retrofit2.Response;
  */
 
 public class TaskSimpleAdapter extends MultiSelectRecyclerAdapter<TaskEntity.TaskItemEntity>
-        implements BaseRecyclerAdapter.OnItemChildClickListener {
+        implements BaseRecyclerAdapter.OnItemChildClickListener, BaseRecyclerAdapter.OnItemClickListener {
     public TaskSimpleAdapter() {
         this.setOnItemChildClickListener(this);
+        this.setOnItemClickListener(this);
     }
 
     @Override
@@ -50,6 +52,7 @@ public class TaskSimpleAdapter extends MultiSelectRecyclerAdapter<TaskEntity.Tas
 
     @Override
     public void onBindSelectableHolder(ViewHolder holder, TaskEntity.TaskItemEntity taskItemEntity, boolean selected, int position) {
+        if (taskItemEntity == null) return;
         ImageView task_item_checkbox = holder.obtainView(R.id.task_item_checkbox);
         TextView task_name_tv = holder.obtainView(R.id.task_name_tv);
         TextView task_desc_tv = holder.obtainView(R.id.task_desc_tv);
@@ -222,5 +225,12 @@ public class TaskSimpleAdapter extends MultiSelectRecyclerAdapter<TaskEntity.Tas
             e.printStackTrace();
         }
         return null;
+    }
+
+    @Override
+    public void onItemClick(BaseRecyclerAdapter adapter, ViewHolder holder, View view, int position) {
+        TaskEntity.TaskItemEntity taskItemEntity = getItem(position);
+        if (taskItemEntity == null) return;
+        TaskDetailActivity.launch(view.getContext(), taskItemEntity.id);
     }
 }

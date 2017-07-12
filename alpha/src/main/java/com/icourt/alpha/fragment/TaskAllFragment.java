@@ -20,6 +20,7 @@ import com.icourt.alpha.R;
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.entity.bean.TaskEntity;
 import com.icourt.alpha.interfaces.OnTasksChangeListener;
+import com.jeek.calendar.widget.calendar.CalendarUtils;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -49,8 +50,16 @@ public class TaskAllFragment extends BaseFragment implements OnTasksChangeListen
             onTasksChangeListener.onTasksChanged(taskItemEntities);
         }
         if (taskItemEntities != null) {
-            taskItemEntityList.clear();
-            taskItemEntityList.addAll(taskItemEntities);
+            if (taskItemEntities.hashCode() != taskItemEntityList.hashCode()) {
+                taskItemEntityList.clear();
+                taskItemEntityList.addAll(taskItemEntities);
+
+                //数据发生改变 替换
+                if (getArguments().getInt("childFragment", TYPE_ALL_TASK) == TYPE_ALL_TASK_CALENDAR) {
+                    currFragment = addOrShowFragmentAnim(getFragment(TYPE_ALL_TASK_CALENDAR), currFragment, R.id.main_fl_content, false);
+                }
+            }
+
         }
     }
 
@@ -106,6 +115,11 @@ public class TaskAllFragment extends BaseFragment implements OnTasksChangeListen
     final SparseArray<Fragment> fragmentSparseArray = new SparseArray<>();
 
     private Fragment getFragment(int type) {
+        if (type == TYPE_ALL_TASK_CALENDAR) {
+            CalendarUtils.getInstance(getContext()).removeAllTaskHint();
+            //伪实时刷新
+            return TaskListCalendarFragment.newInstance(taskItemEntityList);
+        }
         Fragment fragment = fragmentSparseArray.get(type);
         if (fragment == null) {
             switch (type) {
@@ -129,20 +143,27 @@ public class TaskAllFragment extends BaseFragment implements OnTasksChangeListen
         currFragment = addOrShowFragment(getFragment(TYPE_ALL_TASK), currFragment, R.id.main_fl_content);
     }
 
+
     @Override
     protected Fragment addOrShowFragment(@NonNull Fragment targetFragment, Fragment currentFragment, @IdRes int containerViewId) {
+        return addOrShowFragmentAnim(targetFragment, currentFragment, containerViewId, true);
+    }
+
+    protected Fragment addOrShowFragmentAnim(@NonNull Fragment targetFragment, Fragment currentFragment, @IdRes int containerViewId, boolean isAnim) {
         if (targetFragment == null) return currentFragment;
         if (targetFragment == currentFragment) return currentFragment;
         FragmentManager fm = getChildFragmentManager();
         FragmentTransaction transaction = fm.beginTransaction();
-        if (targetFragment instanceof TaskListCalendarFragment) {
-            transaction.setCustomAnimations(
-                    R.anim.fragment_slide_top_in, 0);
-        } else {
-            transaction.setCustomAnimations(0, R.anim.fragment_slide_top_out);
+        if (isAnim) {
+            if (targetFragment instanceof TaskListCalendarFragment) {
+                transaction.setCustomAnimations(
+                        R.anim.fragment_slide_top_in, 0);
+            } else {
+                transaction.setCustomAnimations(0, R.anim.fragment_slide_top_out);
+            }
         }
         transaction.replace(containerViewId, targetFragment, String.valueOf(targetFragment.hashCode())).commitAllowingStateLoss();
-        transaction.addToBackStack(String.valueOf(targetFragment.hashCode()));
+        transaction.addToBackStack(null);
         return targetFragment;
     }
 
