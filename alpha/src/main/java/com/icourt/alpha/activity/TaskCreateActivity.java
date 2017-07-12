@@ -21,8 +21,8 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.google.gson.Gson;
 import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.TaskUsersAdapter;
@@ -31,6 +31,7 @@ import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.entity.bean.ProjectEntity;
 import com.icourt.alpha.entity.bean.TaskEntity;
 import com.icourt.alpha.entity.bean.TaskGroupEntity;
+import com.icourt.alpha.entity.bean.TaskReminderEntity;
 import com.icourt.alpha.entity.event.TaskActionEvent;
 import com.icourt.alpha.fragment.dialogfragment.DateSelectDialogFragment;
 import com.icourt.alpha.fragment.dialogfragment.ProjectSelectDialogFragment;
@@ -101,6 +102,8 @@ public class TaskCreateActivity extends BaseActivity implements ProjectSelectDia
     TextView taskGroupTv;
     @BindView(R.id.task_group_layout)
     LinearLayout taskGroupLayout;
+
+    TaskReminderEntity taskReminderEntity;
 
     public static void launch(@NonNull Context context, @NonNull String content, String startTime) {
         if (context == null) return;
@@ -228,7 +231,7 @@ public class TaskCreateActivity extends BaseActivity implements ProjectSelectDia
         }
 
         //默认当天23：59
-        DateSelectDialogFragment.newInstance(calendar,null,null)
+        DateSelectDialogFragment.newInstance(calendar, null, null)
                 .show(mFragTransaction, tag);
     }
 
@@ -302,6 +305,8 @@ public class TaskCreateActivity extends BaseActivity implements ProjectSelectDia
                 } else {
                     taskDuetimeTv.setText(DateUtils.getMMMdd(dueTime) + "(" + DateUtils.getWeekOfDateFromZ(dueTime) + ") " + DateUtils.getHHmm(dueTime));
                 }
+                taskReminderEntity = (TaskReminderEntity) params.getSerializable("taskReminder");
+
             } else if (fragment instanceof TaskAllotSelectDialogFragment) {
                 attendeeUserEntities = (List<TaskEntity.TaskItemEntity.AttendeeUserEntity>) params.getSerializable("list");
                 if (attendeeUserEntities != null) {
@@ -327,17 +332,22 @@ public class TaskCreateActivity extends BaseActivity implements ProjectSelectDia
         String bodyStr = getNewTaskJson();
         if (!TextUtils.isEmpty(bodyStr)) {
             showLoadingDialog(null);
-            getApi().taskCreate(RequestUtils.createJsonBody(getNewTaskJson())).enqueue(new SimpleCallBack<JsonElement>() {
+            getApi().taskCreate(RequestUtils.createJsonBody(getNewTaskJson())).enqueue(new SimpleCallBack<TaskEntity.TaskItemEntity>() {
                 @Override
-                public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
-                    dismissLoadingDialog();
-                    EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION));
-                    finish();
-                    showToast("创建任务成功");
+                public void onSuccess(Call<ResEntity<TaskEntity.TaskItemEntity>> call, Response<ResEntity<TaskEntity.TaskItemEntity>> response) {
+                    if (response.body().result != null) {
+                        if (taskReminderEntity != null) {
+                            addReminders(response.body().result, taskReminderEntity);
+                        } else {
+                            dismissLoadingDialog();
+                            EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION));
+                            finish();
+                        }
+                    }
                 }
 
                 @Override
-                public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
+                public void onFailure(Call<ResEntity<TaskEntity.TaskItemEntity>> call, Throwable t) {
                     super.onFailure(call, t);
                     dismissLoadingDialog();
                 }
@@ -385,6 +395,49 @@ public class TaskCreateActivity extends BaseActivity implements ProjectSelectDia
         }
         jsonObject.add("attendees", jsonArray);
         return jsonObject.toString();
+    }
+
+    /**
+     * 添加任务提醒
+     *
+     * @param taskItemEntity
+     * @param taskReminderEntity
+     */
+    private void addReminders(TaskEntity.TaskItemEntity taskItemEntity, final TaskReminderEntity taskReminderEntity) {
+        if (taskReminderEntity == null) return;
+        if (taskItemEntity == null) return;
+        String json = getReminderJson(taskReminderEntity);
+        if (TextUtils.isEmpty(json)) return;
+        getApi().taskReminderAdd(taskItemEntity.id, RequestUtils.createJsonBody(json)).enqueue(new SimpleCallBack<TaskReminderEntity>() {
+            @Override
+            public void onSuccess(Call<ResEntity<TaskReminderEntity>> call, Response<ResEntity<TaskReminderEntity>> response) {
+                dismissLoadingDialog();
+                EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION));
+                finish();
+            }
+
+            @Override
+            public void onFailure(Call<ResEntity<TaskReminderEntity>> call, Throwable t) {
+                super.onFailure(call, t);
+            }
+        });
+    }
+
+    /**
+     * 获取提醒json
+     *
+     * @param taskReminderEntity
+     * @return
+     */
+    private String getReminderJson(TaskReminderEntity taskReminderEntity) {
+        try {
+            if (taskReminderEntity == null) return null;
+            Gson gson = new Gson();
+            return gson.toJson(taskReminderEntity);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     @Override

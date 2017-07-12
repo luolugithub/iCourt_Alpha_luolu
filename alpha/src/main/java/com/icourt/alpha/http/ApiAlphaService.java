@@ -796,7 +796,7 @@ public interface ApiAlphaService {
      * @return
      */
     @POST("api/v2/taskflow")
-    Call<ResEntity<JsonElement>> taskCreate(@Body RequestBody body);
+    Call<ResEntity<TaskEntity.TaskItemEntity>> taskCreate(@Body RequestBody body);
 
 
     /**
