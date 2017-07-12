@@ -103,7 +103,7 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
                     if (onCheckAllNewTaskListener != null)
                         onCheckAllNewTaskListener.onRefreshNewTask(position);
                 } else if (position == 0) {
-                    titleCalendar.setVisibility(taskItemEntityList.isEmpty() ? View.GONE : View.VISIBLE);
+                    titleCalendar.setVisibility(taskItemEntityList.isEmpty() ? View.GONE : View.GONE);
                 }
             }
 
@@ -236,7 +236,7 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
             taskItemEntityList.addAll(taskItemEntities);
 
             if (viewPager.getCurrentItem() == 0) {
-                titleCalendar.setVisibility(taskItemEntityList.isEmpty() ? View.GONE : View.VISIBLE);
+                titleCalendar.setVisibility(taskItemEntityList.isEmpty() ? View.GONE : View.GONE);
             }
         }
     }

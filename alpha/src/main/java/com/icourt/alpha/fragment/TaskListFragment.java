@@ -77,6 +77,7 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
     @Nullable
     @BindView(R.id.recyclerView)
     RecyclerView recyclerView;
+    @Nullable
     @BindView(R.id.refreshLayout)
     RefreshLayout refreshLayout;
 
@@ -93,6 +94,8 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
     int type;
     HeaderFooterAdapter<TaskAdapter> headerFooterAdapter;
     OnTasksChangeListener onTasksChangeListener;
+
+    Call call;
 
 
     public static TaskListFragment newInstance(int type) {
@@ -112,6 +115,16 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
     }
 
 //    @Override
+//    public void setUserVisibleHint(boolean isVisibleToUser) {
+//        super.setUserVisibleHint(isVisibleToUser);
+//        if (!isVisibleToUser) {
+//            if (call != null && !call.isExecuted()) {
+//                call.cancel();
+//            }
+//        }
+//    }
+
+    //    @Override
 //    public void onHiddenChanged(boolean hidden) {
 //        super.onHiddenChanged(hidden);
 //        if (!hidden) {
@@ -137,6 +150,8 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
 
     @Override
     protected void initView() {
+        rootView.setId(this.hashCode());
+
         EventBus.getDefault().register(this);
         type = getArguments().getInt("type");
         refreshLayout.setNoticeEmpty(R.mipmap.bg_no_task, R.string.task_list_null_text);
@@ -208,7 +223,8 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
         } else if (type == TYPE_MY_ATTENTION) {
             attentionType = 1;
         }
-        getApi().taskListQuery(0, getLoginUserId(), 0, attentionType, "dueTime", 1, -1, 0).enqueue(new SimpleCallBack<TaskEntity>() {
+        call = getApi().taskListQuery(0, getLoginUserId(), 0, attentionType, "dueTime", 1, -1, 0);
+        call.enqueue(new SimpleCallBack<TaskEntity>() {
             @Override
             public void onSuccess(Call<ResEntity<TaskEntity>> call, Response<ResEntity<TaskEntity>> response) {
                 stopRefresh();
@@ -226,6 +242,7 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
                 stopRefresh();
             }
         });
+
     }
 
     /**

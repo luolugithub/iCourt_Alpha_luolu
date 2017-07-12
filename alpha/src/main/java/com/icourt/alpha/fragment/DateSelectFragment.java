@@ -180,17 +180,21 @@ public class DateSelectFragment extends BaseFragment implements DateSelectDialog
             duetimeTv.setText("");
             duetimeTv.setTextColor(SystemUtils.getColor(getContext(), R.color.alpha_font_color_gray));
             clearDutimeIv.setVisibility(View.INVISIBLE);
-            addReminderLayout.setVisibility(View.VISIBLE);
-            noticeLl.setVisibility(View.GONE);
+//            addReminderLayout.setVisibility(View.VISIBLE);
+//            noticeLl.setVisibility(View.GONE);
         } else {
-            addReminderLayout.setVisibility(View.GONE);
-            noticeLl.setVisibility(View.VISIBLE);
+//            addReminderLayout.setVisibility(View.GONE);
+//            noticeLl.setVisibility(View.VISIBLE);
             clearDutimeIv.setVisibility(View.VISIBLE);
             duetimeTv.setText(DateUtils.getHHmm(selectedCalendar.getTimeInMillis()));
             duetimeTv.setTextColor(SystemUtils.getColor(getContext(), R.color.alpha_font_color_black));
-            if (taskReminderEntity == null && !TextUtils.isEmpty(taskId)) {
+        }
+        if (taskReminderEntity != null) {
+            if (TextUtils.isEmpty(taskReminderEntity.taskReminderType) && !TextUtils.isEmpty(taskId)) {
                 getTaskReminder(taskId);
-            } else if (taskReminderEntity != null) {
+            } else {
+                addReminderLayout.setVisibility(View.GONE);
+                noticeLl.setVisibility(View.VISIBLE);
                 setReminder(taskReminderEntity);
             }
         }

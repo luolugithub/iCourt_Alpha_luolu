@@ -62,16 +62,6 @@ public class ReminderFragment extends BaseFragment implements BaseRecyclerAdapte
     int customPosition;//自定义的position
     LinearLayoutManager linearLayoutManager;
 
-    public static ReminderFragment newInstance(TaskReminderEntity taskReminderEntity) {
-        ReminderFragment reminderFragment = new ReminderFragment();
-        Bundle args = new Bundle();
-        args.putSerializable("taskReminder", taskReminderEntity);
-        reminderFragment.setArguments(args);
-        return reminderFragment;
-    }
-
-    OnFragmentCallBackListener onFragmentCallBackListener;
-
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
@@ -82,7 +72,6 @@ public class ReminderFragment extends BaseFragment implements BaseRecyclerAdapte
         }
     }
 
-
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -90,6 +79,23 @@ public class ReminderFragment extends BaseFragment implements BaseRecyclerAdapte
         unbinder = ButterKnife.bind(this, view);
         return view;
     }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        unbinder.unbind();
+    }
+
+    public static ReminderFragment newInstance(TaskReminderEntity taskReminderEntity) {
+        ReminderFragment reminderFragment = new ReminderFragment();
+        Bundle args = new Bundle();
+        args.putSerializable("taskReminder", taskReminderEntity);
+        reminderFragment.setArguments(args);
+        return reminderFragment;
+    }
+
+    OnFragmentCallBackListener onFragmentCallBackListener;
+
 
     @Override
     protected void initView() {
@@ -233,12 +239,6 @@ public class ReminderFragment extends BaseFragment implements BaseRecyclerAdapte
         return entity;
     }
 
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        unbinder.unbind();
-    }
-
     /**
      * 滚动到指定位置
      */
@@ -263,8 +263,19 @@ public class ReminderFragment extends BaseFragment implements BaseRecyclerAdapte
         switch (view.getId()) {
             case R.id.custom_point_text:
                 ((ReminderListAdapter) adapter).setSelect_type(2);
+                String poit = ((TextView) view).getText().toString();
+
                 ((WheelView) holder.obtainView(R.id.hour_wheelView)).setAdapter(new TimeWheelAdapter(getTime24or60(24)));
                 ((WheelView) holder.obtainView(R.id.minute_wheelView)).setAdapter(new TimeWheelAdapter(getTime24or60(60)));
+                if (!TextUtils.isEmpty(poit)) {
+                    if (poit.contains(":")) {
+                        String[] da = poit.split(":");
+                        if (da.length == 2) {
+                            ((WheelView) holder.obtainView(R.id.hour_wheelView)).setCurrentItem(Integer.parseInt(da[0]) == 0 ? 0 : Integer.parseInt(da[0]) - 1);
+                            ((WheelView) holder.obtainView(R.id.minute_wheelView)).setCurrentItem(Integer.parseInt(da[1]) == 0 ? 0 : Integer.parseInt(da[0]) - 1);
+                        }
+                    }
+                }
                 break;
             case R.id.custom_unit_number_text:
             case R.id.custom_unit_text:

@@ -60,6 +60,7 @@ public class ReminderListAdapter extends MultiSelectRecyclerAdapter<ReminderItem
         }
     }
 
+
     @Override
     public int getItemViewType(int position) {
         if (getItem(position).customTimeItemEntity == null) {
@@ -286,7 +287,11 @@ public class ReminderListAdapter extends MultiSelectRecyclerAdapter<ReminderItem
     private List<String> getTime24or60(int num) {
         List<String> timeList = new ArrayList<>();
         for (int i = 0; i < num; i++) {
-            timeList.add(String.valueOf(i));
+            if (i < 10) {
+                timeList.add("0" + String.valueOf(i));
+            } else {
+                timeList.add(String.valueOf(i));
+            }
         }
         return timeList;
     }
