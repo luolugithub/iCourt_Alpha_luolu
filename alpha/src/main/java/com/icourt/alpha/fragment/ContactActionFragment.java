@@ -219,6 +219,7 @@ public class ContactActionFragment extends BaseFragment implements BaseRecyclerA
                             List<GroupContactBean> contactBeen = ListConvertor.convertList(new ArrayList<IConvertModel<GroupContactBean>>(contactDbModels));
                             if (contactBeen != null && isFilterMySelef()) {
                                 filterMySelf(contactBeen);
+                                filterRobot(contactBeen);
                             }
                             e.onNext(contactBeen);
                         }
