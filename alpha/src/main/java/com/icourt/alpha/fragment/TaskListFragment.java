@@ -214,7 +214,7 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
                 stopRefresh();
                 getTaskGroupData(response.body().result);
                 if (response.body().result != null) {
-                    if (onTasksChangeListener != null) {
+                    if (type == TYPE_ALL && onTasksChangeListener != null) {
                         onTasksChangeListener.onTasksChanged(response.body().result.items);
                     }
                 }
@@ -571,11 +571,10 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
                 updateTask(updateTaskItemEntity, null, null);
 
                 TaskReminderEntity taskReminderEntity = (TaskReminderEntity) params.getSerializable("taskReminder");
-                addReminders(updateTaskItemEntity,taskReminderEntity);
+                addReminders(updateTaskItemEntity, taskReminderEntity);
             }
         }
     }
-
 
 
     @Override
@@ -708,10 +707,11 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
 
     /**
      * 添加任务提醒
+     *
      * @param taskItemEntity
      * @param taskReminderEntity
      */
-    private void addReminders(TaskEntity.TaskItemEntity taskItemEntity,final TaskReminderEntity taskReminderEntity) {
+    private void addReminders(TaskEntity.TaskItemEntity taskItemEntity, final TaskReminderEntity taskReminderEntity) {
         if (taskReminderEntity == null) return;
         if (taskItemEntity == null) return;
         String json = getReminderJson(taskReminderEntity);

@@ -30,6 +30,10 @@ public class MyClass {
 
     public static void main(String[] args) throws Exception {
 
+        int age=Integer.parseInt("06");
+        log("------age:"+age);
+
+
         System.out.println("name hash:" + NAME.hashCode());
         String str1 = "h";
         String str2 = "h";
