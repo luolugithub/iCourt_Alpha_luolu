@@ -150,8 +150,6 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
 
     @Override
     protected void initView() {
-        rootView.setId(this.hashCode());
-
         EventBus.getDefault().register(this);
         type = getArguments().getInt("type");
         refreshLayout.setNoticeEmpty(R.mipmap.bg_no_task, R.string.task_list_null_text);
@@ -223,7 +221,8 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
         } else if (type == TYPE_MY_ATTENTION) {
             attentionType = 1;
         }
-        call = getApi().taskListQuery(0, getLoginUserId(), 0, attentionType, "dueTime", 1, -1, 0);
+        call = getApi()
+                .taskListQuery(0, getLoginUserId(), 0, attentionType, "dueTime", 1, -1, 0);
         call.enqueue(new SimpleCallBack<TaskEntity>() {
             @Override
             public void onSuccess(Call<ResEntity<TaskEntity>> call, Response<ResEntity<TaskEntity>> response) {
@@ -789,7 +788,7 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
 
     @Override
     public void onRefreshNewTask(int type) {
-        this.type = type;
+        //this.type = type;
         if (type == 1 || type == 2) {
             getData(true);
         }
