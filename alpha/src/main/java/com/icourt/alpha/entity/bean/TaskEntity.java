@@ -49,6 +49,7 @@ public class TaskEntity implements Serializable {
         public ParentFlowEntity parentFlow;//详情任务组信息
         public MatterEntity matter;//项目信息
         public CreateUserEntity createUser;//任务创建人
+        public boolean valid;//是否有效 如果删除 返回false
 
         public List<AttendeeUserEntity> attendeeUsers;//任务相关人
         public List<String> right;//权限

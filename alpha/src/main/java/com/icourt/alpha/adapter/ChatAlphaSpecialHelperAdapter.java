@@ -13,6 +13,9 @@ import com.icourt.alpha.activity.TaskDetailActivity;
 import com.icourt.alpha.adapter.baseadapter.BaseArrayRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.entity.bean.AlphaSecialHeplerMsgEntity;
+import com.icourt.alpha.entity.bean.TaskEntity;
+import com.icourt.alpha.http.callback.SimpleCallBack;
+import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.GlideUtils;
 import com.icourt.alpha.view.recyclerviewDivider.ITimeDividerInterface;
@@ -21,6 +24,9 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Set;
+
+import retrofit2.Call;
+import retrofit2.Response;
 
 /**
  * Description
@@ -175,21 +181,46 @@ public class ChatAlphaSpecialHelperAdapter
         AlphaSecialHeplerMsgEntity msgEntity = getItem(position);
         if (msgEntity == null) return;
         if (!TextUtils.isEmpty(msgEntity.route) && msgEntity.route.startsWith("alpha://")) {
-            notifacionMsgJump(view.getContext(), msgEntity);
+            notifacionMsgJump(view, msgEntity);
         }
     }
 
     /**
      * 通知消息跳转
      */
-    private void notifacionMsgJump(Context context, AlphaSecialHeplerMsgEntity msgEntity) {
+    private void notifacionMsgJump(final View view, final AlphaSecialHeplerMsgEntity msgEntity) {
+        if (view == null) return;
+        if (msgEntity == null) return;
         if (TextUtils.equals(msgEntity.object, "TASK")) {
-            if (!TextUtils.equals(msgEntity.scene, AlphaSecialHeplerMsgEntity.TASK_STATUS_DELETE) && !TextUtils.equals(msgEntity.scene, AlphaSecialHeplerMsgEntity.TASK_PRINCIPAL_REMOVEU)) {
-                TaskDetailActivity.launch(context, msgEntity.id);
+            if (!TextUtils.equals(msgEntity.scene, AlphaSecialHeplerMsgEntity.TASK_STATUS_DELETE)
+                    && !TextUtils.equals(msgEntity.scene, AlphaSecialHeplerMsgEntity.TASK_PRINCIPAL_REMOVEU)) {
+                showLoadingDialog(view.getContext(), null);
+                //有返回权限
+                getApi().taskQueryDetailWithRight(msgEntity.id)
+                        .enqueue(new SimpleCallBack<TaskEntity.TaskItemEntity>() {
+                            @Override
+                            public void onSuccess(Call<ResEntity<TaskEntity.TaskItemEntity>> call, Response<ResEntity<TaskEntity.TaskItemEntity>> response) {
+                                dismissLoadingDialog();
+                                if (response.body().result != null) {
+                                    if (response.body().result.valid) {
+                                        TaskDetailActivity.launch(view.getContext(), msgEntity.id);
+                                    } else {
+                                        showTopSnackBar(null, "该任务已删除");
+                                    }
+                                }
+                            }
+
+                            @Override
+                            public void onFailure(Call<ResEntity<TaskEntity.TaskItemEntity>> call, Throwable t) {
+                                super.onFailure(call, t);
+                                dismissLoadingDialog();
+                            }
+                        });
+
             }
         } else if (TextUtils.equals(msgEntity.object, "MATTER")) {
             if (!TextUtils.equals(msgEntity.scene, AlphaSecialHeplerMsgEntity.MATTER_MEMBER_REMOVEU)) {
-                ProjectDetailActivity.launch(context, msgEntity.id, msgEntity.matterName);
+                ProjectDetailActivity.launch(view.getContext(), msgEntity.id, msgEntity.matterName);
             }
         }
     }
