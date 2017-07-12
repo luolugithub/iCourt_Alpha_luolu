@@ -1,6 +1,8 @@
 package com.jeek.calendar.widget.calendar;
 
+import android.app.Fragment;
 import android.content.Context;
+import android.util.Log;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -11,6 +13,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.TimeZone;
 
 /**
  * Created by Jimmy on 2016/10/6 0006.
@@ -171,6 +174,27 @@ public class CalendarUtils {
         return calendar.get(Calendar.DAY_OF_WEEK);
     }
 
+
+    /**
+     * 是否是一周
+     *
+     * @param lastYear
+     * @param lastMonth
+     * @param lastDay
+     * @param year
+     * @param month
+     * @param day
+     * @return
+     */
+    public static boolean isSameWeek(int lastYear, int lastMonth, int lastDay, int year, int month, int day) {
+        Calendar start = Calendar.getInstance();
+        start.set(lastYear, lastMonth, lastDay);
+        Calendar end = Calendar.getInstance();
+        end.set(year, month, day);
+        return lastYear == year
+                && start.get(Calendar.WEEK_OF_YEAR) == end.get(Calendar.WEEK_OF_YEAR);
+    }
+
     /**
      * 获得两个日期距离几周
      *
@@ -178,15 +202,12 @@ public class CalendarUtils {
      */
     public static int getWeeksAgo(int lastYear, int lastMonth, int lastDay, int year, int month, int day) {
         Calendar start = Calendar.getInstance();
-        Calendar end = Calendar.getInstance();
+        start.setFirstDayOfWeek(Calendar.MONDAY);
         start.set(lastYear, lastMonth, lastDay);
+        Calendar end = Calendar.getInstance();
+        end.setFirstDayOfWeek(Calendar.MONDAY);
         end.set(year, month, day);
-        int week = start.get(Calendar.DAY_OF_WEEK);
-        start.add(Calendar.DATE, -week);
-        week = end.get(Calendar.DAY_OF_WEEK);
-        end.add(Calendar.DATE, 7 - week);
-        float v = (end.getTimeInMillis() - start.getTimeInMillis()) / (3600 * 1000 * 24 * 7 * 1.0f);
-        return (int) (v - 1);
+        return end.get(Calendar.WEEK_OF_YEAR) - start.get(Calendar.WEEK_OF_YEAR);
     }
 
     /**

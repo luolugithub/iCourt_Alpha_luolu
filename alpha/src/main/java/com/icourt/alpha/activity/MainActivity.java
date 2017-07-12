@@ -581,16 +581,21 @@ public class MainActivity extends BaseAppUpdateActivity
      * 刷新登陆的token
      */
     protected final void refreshToken() {
-        AlphaUserInfo loginUserInfo = getLoginUserInfo();
+        final AlphaUserInfo loginUserInfo = getLoginUserInfo();
         if (loginUserInfo == null) return;
         getApi().refreshToken(loginUserInfo.getRefreshToken())
                 .enqueue(new SimpleCallBack<AlphaUserInfo>() {
                     @Override
                     public void onSuccess(Call<ResEntity<AlphaUserInfo>> call, Response<ResEntity<AlphaUserInfo>> response) {
                         if (response.body().result != null) {
-                            AlphaClient.setOfficeId(response.body().result.getOfficeId());
                             AlphaClient.setToken(response.body().result.getToken());
-                            saveLoginUserInfo(response.body().result);
+                            
+                            //重新附值两个最新的token
+                            loginUserInfo.setToken(response.body().result.getToken());
+                            loginUserInfo.setRefreshToken(response.body().result.getRefreshToken());
+
+                            //保存
+                            saveLoginUserInfo(loginUserInfo);
                         }
                     }
 

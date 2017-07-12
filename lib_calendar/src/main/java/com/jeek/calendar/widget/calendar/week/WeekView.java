@@ -10,6 +10,7 @@ import android.graphics.Paint;
 import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
@@ -180,6 +181,7 @@ public class WeekView extends View {
         mSelYear = year;
         mSelMonth = month;
         mSelDay = day;
+        Log.d("------->", String.format("mSelYear:%s mSelMonth:%s  mSelDay:%s", year, month, day));
     }
 
     @Override
