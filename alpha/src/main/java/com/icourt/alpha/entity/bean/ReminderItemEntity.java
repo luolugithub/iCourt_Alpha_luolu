@@ -16,4 +16,13 @@ public class ReminderItemEntity implements Serializable {
     public String timeValue;//一天前，1小时前，一周前...
 
     public TaskReminderEntity.CustomTimeItemEntity customTimeItemEntity;//自定义提醒
+
+    @Override
+    public String toString() {
+        return "ReminderItemEntity{" +
+                "timeKey='" + timeKey + '\'' +
+                ", timeValue='" + timeValue + '\'' +
+                ", customTimeItemEntity=" + customTimeItemEntity +
+                '}';
+    }
 }

@@ -15,7 +15,6 @@ import com.icourt.alpha.adapter.baseadapter.MultiSelectRecyclerAdapter;
 import com.icourt.alpha.entity.bean.ReminderItemEntity;
 import com.icourt.alpha.entity.bean.TaskReminderEntity;
 import com.icourt.alpha.utils.DateUtils;
-import com.icourt.alpha.utils.LogUtils;
 import com.icourt.alpha.utils.TaskReminderUtils;
 
 import java.util.ArrayList;
@@ -95,7 +94,7 @@ public class ReminderListAdapter extends MultiSelectRecyclerAdapter<ReminderItem
     }
 
     @Override
-    public void onBindSelectableHolder(ViewHolder holder, final ReminderItemEntity reminderItemEntity, boolean selected, int position) {
+    public void onBindSelectableHolder(ViewHolder holder, final ReminderItemEntity reminderItemEntity, final boolean selected, int position) {
         if (getItemViewType(position) == UNCUSTOM_TYPE) {
             TextView nameView = holder.obtainView(R.id.group_name_tv);
             ImageView arrowView = holder.obtainView(R.id.group_isselect_view);
@@ -132,12 +131,24 @@ public class ReminderListAdapter extends MultiSelectRecyclerAdapter<ReminderItem
                     hourWheelView.setAdapter(new TimeWheelAdapter(getDay365()));
                     minuteWheelView.setAdapter(new TimeWheelAdapter(getUnit("天", "小时", "分钟")));
                 }
+                hourWheelView.setCurrentItem(0);
+                minuteWheelView.setCurrentItem(0);
             } else if (select_type == SELECT_TIME_TYPE) {
                 hourWheelView.setAdapter(new TimeWheelAdapter(getTime24or60(24)));
                 minuteWheelView.setAdapter(new TimeWheelAdapter(getTime24or60(60)));
+                String point = pointTv.getText().toString();
+                if (!TextUtils.isEmpty(point)) {
+                    if (point.contains(":")) {
+                        String[] da = point.split(":");
+                        if (da.length == 2) {
+                            hourWheelView.setCurrentItem(Integer.parseInt(da[0]));
+                            minuteWheelView.setCurrentItem(Integer.parseInt(da[1]));
+                        }
+                    }
+                }
             }
 
-            hourWheelView.setCurrentItem(0);
+
             hourWheelView.setTextSize(16);
             hourWheelView.setCyclic(false);
             hourWheelView.setOnItemSelectedListener(new OnItemSelectedListener() {
@@ -149,6 +160,7 @@ public class ReminderListAdapter extends MultiSelectRecyclerAdapter<ReminderItem
                     } else if (select_type == SELECT_TIME_TYPE) {
                         if (selectedCalendar != null) {
                             selectedCalendar.set(Calendar.HOUR_OF_DAY, i);
+                            selectedCalendar.set(Calendar.MINUTE, minuteWheelView.getCurrentItem());
                             selectedCalendar.set(Calendar.MILLISECOND, 0);
                             pointTv.setText(DateUtils.getHHmm(selectedCalendar.getTimeInMillis()));
                             reminderItemEntity.customTimeItemEntity.point = DateUtils.getHHmm(selectedCalendar.getTimeInMillis());
@@ -156,7 +168,7 @@ public class ReminderListAdapter extends MultiSelectRecyclerAdapter<ReminderItem
                     }
                 }
             });
-            minuteWheelView.setCurrentItem(0);
+
             minuteWheelView.setTextSize(16);
             minuteWheelView.setCyclic(false);
             minuteWheelView.setOnItemSelectedListener(new OnItemSelectedListener() {
@@ -182,13 +194,11 @@ public class ReminderListAdapter extends MultiSelectRecyclerAdapter<ReminderItem
                         }
                     } else if (select_type == SELECT_TIME_TYPE) {
                         if (selectedCalendar != null) {
+                            selectedCalendar.set(Calendar.HOUR_OF_DAY, hourWheelView.getCurrentItem());
                             selectedCalendar.set(Calendar.MINUTE, i);
                             selectedCalendar.set(Calendar.MILLISECOND, 0);
                             pointTv.setText(DateUtils.getHHmm(selectedCalendar.getTimeInMillis()));
                             reminderItemEntity.customTimeItemEntity.point = DateUtils.getHHmm(selectedCalendar.getTimeInMillis());
-                            LogUtils.e("i：" + selectedCalendar.get(Calendar.MINUTE));
-                            LogUtils.e("Millis：" + selectedCalendar.getTimeInMillis());
-                            LogUtils.e("选择时间：" + DateUtils.getHHmm(selectedCalendar.getTimeInMillis()));
                         }
                     }
                 }

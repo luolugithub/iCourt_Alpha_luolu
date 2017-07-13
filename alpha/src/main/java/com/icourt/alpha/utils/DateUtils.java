@@ -561,4 +561,19 @@ public class DateUtils {
         }
     }
 
+    /**
+     * 根据小时：分钟 获取时间戳
+     *
+     * @param hour
+     * @param min
+     * @return
+     */
+    public static long getMillByHourmin(int hour, int min) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(Calendar.HOUR_OF_DAY, hour);
+        calendar.set(Calendar.MINUTE, min);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+        return calendar.getTimeInMillis();
+    }
 }

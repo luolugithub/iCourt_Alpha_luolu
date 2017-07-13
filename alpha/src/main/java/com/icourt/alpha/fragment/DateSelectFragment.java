@@ -24,6 +24,7 @@ import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.utils.DateUtils;
+import com.icourt.alpha.utils.LogUtils;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.utils.TaskReminderUtils;
 
@@ -443,6 +444,8 @@ public class DateSelectFragment extends BaseFragment implements DateSelectDialog
                 noticeLl.setVisibility(View.VISIBLE);
                 break;
             case R.id.notice_ll:
+
+                LogUtils.d("reminderItemEntities.size() --Select--  " + taskReminderEntity);
                 if (getParentFragment() instanceof OnFragmentCallBackListener) {
                     onFragmentCallBackListener = (OnFragmentCallBackListener) getParentFragment();
                 }
@@ -457,7 +460,9 @@ public class DateSelectFragment extends BaseFragment implements DateSelectDialog
                     } else {
                         taskReminderEntity.taskReminderType = TaskReminderEntity.PRECISE;
                     }
-
+                    if(!TextUtils.isEmpty(duetimeTv.getText())){
+                        bundle.putLong(KEY_FRAGMENT_RESULT, getSelectedMillis());
+                    }
                     bundle.putSerializable("taskReminder", taskReminderEntity);
                     onFragmentCallBackListener.onFragmentCallBack(DateSelectFragment.this, DateSelectDialogFragment.SELECT_REMINDER, bundle);
                 }

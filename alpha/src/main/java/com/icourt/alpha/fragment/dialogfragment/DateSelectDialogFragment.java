@@ -145,8 +145,18 @@ public class DateSelectDialogFragment extends BaseDialogFragment implements OnFr
                     dismiss();
                 }
             } else if (type == SELECT_REMINDER) {
-                taskReminderEntity = (TaskReminderEntity) params.getSerializable("taskReminder");
-                showFragment(ReminderFragment.newInstance(taskReminderEntity));
+                TaskReminderEntity taskReminderEntity = (TaskReminderEntity) params.getSerializable("taskReminder");
+                long millis = params.getLong(KEY_FRAGMENT_RESULT);
+                Calendar calendar = Calendar.getInstance();
+                calendar.setTimeInMillis(millis);
+                int hour = calendar.get(Calendar.HOUR_OF_DAY);
+                int minute = calendar.get(Calendar.MINUTE);
+                int second = calendar.get(Calendar.SECOND);
+                if (hour == 23 && minute == 59 && second == 59) {
+                    showFragment(ReminderFragment.newInstance(taskReminderEntity, null));
+                } else {
+                    showFragment(ReminderFragment.newInstance(taskReminderEntity, calendar));
+                }
             }
         } else if (fragment instanceof ReminderFragment) {
             if (type == SELECT_REMINDER_FINISH) {

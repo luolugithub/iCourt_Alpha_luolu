@@ -470,7 +470,7 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
 
                 taskItemEntity.dueTime = millis;
                 updateTask(taskItemEntity, null, selectedTaskGroup);
-                taskReminderEntity = (TaskReminderEntity) params.getSerializable("taskReminder");
+                TaskReminderEntity taskReminderEntity = (TaskReminderEntity) params.getSerializable("taskReminder");
                 addReminders(taskReminderEntity);
             } else if (fragment instanceof TaskGroupSelectFragment) {//选择任务组回调
                 TaskGroupEntity taskGroupEntity = (TaskGroupEntity) params.getSerializable(KEY_FRAGMENT_RESULT);
