@@ -1,5 +1,7 @@
 package com.icourt.alpha.entity.bean;
 
+import android.text.TextUtils;
+
 import java.io.Serializable;
 import java.util.List;
 
@@ -49,6 +51,16 @@ public class TaskReminderEntity implements Serializable, Cloneable {
                     ", unit='" + unit + '\'' +
                     ", unitNumber='" + unitNumber + '\'' +
                     '}';
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj instanceof CustomTimeItemEntity) {
+                CustomTimeItemEntity entity = (CustomTimeItemEntity) obj;
+                return TextUtils.equals(point, entity.point) && TextUtils.equals(unit, entity.unit) && TextUtils.equals(unitNumber, entity.unitNumber);
+            } else {
+                return false;
+            }
         }
     }
 

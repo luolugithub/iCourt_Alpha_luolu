@@ -418,7 +418,8 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
         getApi().taskReminderAdd(taskItemEntity.id, RequestUtils.createJsonBody(json)).enqueue(new SimpleCallBack<TaskReminderEntity>() {
             @Override
             public void onSuccess(Call<ResEntity<TaskReminderEntity>> call, Response<ResEntity<TaskReminderEntity>> response) {
-                if (taskReminderEntity.ruleTime != null || taskReminderEntity.customTime != null) {
+                if ((taskReminderEntity.ruleTime != null && taskReminderEntity.ruleTime.size() > 0) ||
+                        (taskReminderEntity.customTime != null && taskReminderEntity.customTime.size() > 0)) {
                     taskReminderIcon.setVisibility(View.VISIBLE);
                 } else {
                     taskReminderIcon.setVisibility(View.INVISIBLE);
@@ -470,7 +471,7 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
 
                 taskItemEntity.dueTime = millis;
                 updateTask(taskItemEntity, null, selectedTaskGroup);
-                TaskReminderEntity taskReminderEntity = (TaskReminderEntity) params.getSerializable("taskReminder");
+                taskReminderEntity = (TaskReminderEntity) params.getSerializable("taskReminder");
                 addReminders(taskReminderEntity);
             } else if (fragment instanceof TaskGroupSelectFragment) {//选择任务组回调
                 TaskGroupEntity taskGroupEntity = (TaskGroupEntity) params.getSerializable(KEY_FRAGMENT_RESULT);
@@ -482,6 +483,7 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
                 }
             }
         }
+
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)

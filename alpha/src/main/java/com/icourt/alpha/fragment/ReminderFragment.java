@@ -25,7 +25,6 @@ import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.interfaces.OnPageFragmentCallBack;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.ItemDecorationUtils;
-import com.icourt.alpha.utils.LogUtils;
 import com.icourt.alpha.utils.TaskReminderUtils;
 
 import java.util.ArrayList;
@@ -108,7 +107,8 @@ public class ReminderFragment extends BaseFragment
         ReminderFragment reminderFragment = new ReminderFragment();
         Bundle args = new Bundle();
         try {
-            args.putSerializable("taskReminder", (TaskReminderEntity) taskReminderEntity.clone());
+            if (taskReminderEntity != null)
+                args.putSerializable("taskReminder", (TaskReminderEntity) taskReminderEntity.clone());
         } catch (CloneNotSupportedException e) {
             e.printStackTrace();
         }
@@ -125,7 +125,6 @@ public class ReminderFragment extends BaseFragment
 
         titleContent.setText("提醒");
         taskReminderEntity = (TaskReminderEntity) getArguments().getSerializable("taskReminder");
-        LogUtils.d("---------------data  hashcode: init" + taskReminderEntity.hashCode());
         calendar = (Calendar) getArguments().getSerializable("calendar");
 
         linearLayoutManager = new LinearLayoutManager(getContext());
@@ -159,7 +158,6 @@ public class ReminderFragment extends BaseFragment
                     reminderItemEntities.add(reminderItemEntity);
                 }
             }
-            log("---------------data add before" + reminderItemEntities);
             /**
              * ruleTime设置时间集合
              * 根据ruleTime --->
@@ -172,11 +170,17 @@ public class ReminderFragment extends BaseFragment
                     //
                     if (TextUtils.equals(taskReminderEntity.taskReminderType, TaskReminderEntity.ALL_DAY)) {
                         if (!TaskReminderUtils.alldayMap.containsKey(ruleTimeitem)) {
-                            taskReminderEntity.customTime.add(getCustomTime(ruleTimeitem, taskReminderEntity.taskReminderType));
+                            TaskReminderEntity.CustomTimeItemEntity entity = getCustomTime(ruleTimeitem, taskReminderEntity.taskReminderType);
+                            if (!taskReminderEntity.customTime.contains(entity)) {
+                                taskReminderEntity.customTime.add(getCustomTime(ruleTimeitem, taskReminderEntity.taskReminderType));
+                            }
                         }
                     } else if (TextUtils.equals(taskReminderEntity.taskReminderType, TaskReminderEntity.PRECISE)) {
                         if (!TaskReminderUtils.preciseMap.containsKey(ruleTimeitem)) {
-                            taskReminderEntity.customTime.add(getCustomTime(ruleTimeitem, taskReminderEntity.taskReminderType));
+                            TaskReminderEntity.CustomTimeItemEntity entity = getCustomTime(ruleTimeitem, taskReminderEntity.taskReminderType);
+                            if (!taskReminderEntity.customTime.contains(entity)) {
+                                taskReminderEntity.customTime.add(getCustomTime(ruleTimeitem, taskReminderEntity.taskReminderType));
+                            }
                         }
                     }
                 }
@@ -189,8 +193,6 @@ public class ReminderFragment extends BaseFragment
                     reminderItemEntities.add(reminderItemEntity);
                 }
             }
-            log("---------------data updated" + taskReminderEntity);
-            log("---------------data add after" + reminderItemEntities);
             reminderListAdapter.bindData(true, reminderItemEntities);
             if (taskReminderEntity.customTime != null) {
                 for (int i = 0; i < reminderListAdapter.getData().size(); i++) {
@@ -283,11 +285,6 @@ public class ReminderFragment extends BaseFragment
                     unit = "day";
                     point = "09:00";
                 }
-                if (TextUtils.equals(timeKey, "ODB")) {
-                    unitNumber = "0";
-                    unit = "day";
-                    point = "09:00";
-                }
                 if (TextUtils.equals(timeKey, "2DB")) {
                     unitNumber = "2";
                     unit = "day";
@@ -331,7 +328,6 @@ public class ReminderFragment extends BaseFragment
                 if (onFragmentCallBackListener != null) {
                     Bundle bundle = new Bundle();
                     TaskReminderEntity taskReminderEntity = getTrlTaskReminderEntity();
-                    log("---------------data return before:" + taskReminderEntity);
                     bundle.putSerializable("taskReminder", taskReminderEntity);
                     onFragmentCallBackListener.onFragmentCallBack(ReminderFragment.this, DateSelectDialogFragment.SELECT_REMINDER_FINISH, bundle);
                 }

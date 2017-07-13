@@ -26,7 +26,6 @@ import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.interfaces.OnPageFragmentCallBack;
 import com.icourt.alpha.utils.DateUtils;
-import com.icourt.alpha.utils.LogUtils;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.utils.TaskReminderUtils;
 
@@ -183,11 +182,7 @@ public class DateSelectFragment extends BaseFragment {
             duetimeTv.setText("");
             duetimeTv.setTextColor(SystemUtils.getColor(getContext(), R.color.alpha_font_color_gray));
             clearDutimeIv.setVisibility(View.INVISIBLE);
-//            addReminderLayout.setVisibility(View.VISIBLE);
-//            noticeLl.setVisibility(View.GONE);
         } else {
-//            addReminderLayout.setVisibility(View.GONE);
-//            noticeLl.setVisibility(View.VISIBLE);
             clearDutimeIv.setVisibility(View.VISIBLE);
             duetimeTv.setText(DateUtils.getHHmm(selectedCalendar.getTimeInMillis()));
             duetimeTv.setTextColor(SystemUtils.getColor(getContext(), R.color.alpha_font_color_black));
@@ -273,7 +268,6 @@ public class DateSelectFragment extends BaseFragment {
         selectedCalendar.set(Calendar.MINUTE, 59);
         selectedCalendar.set(Calendar.SECOND, 59);
 
-//        Calendar calendar = Calendar.getInstance();
         minuteWheelView.setCurrentItem(selectedCalendar.get(Calendar.MINUTE));
         hourWheelView.setCurrentItem(selectedCalendar.get(Calendar.HOUR_OF_DAY));
     }
@@ -298,9 +292,6 @@ public class DateSelectFragment extends BaseFragment {
 
         compactcalendarView.removeAllEvents();
 
-        /*loadEvents();
-        compactcalendarView.invalidate();
-        logEventsByMonth(compactcalendarView);*/
     }
 
 
@@ -317,7 +308,7 @@ public class DateSelectFragment extends BaseFragment {
         super.notifyFragmentUpdate(targetFrgament, type, bundle);
         if (targetFrgament != this) return;
         if (bundle != null && type == 100) {
-            this.taskReminderEntity = (TaskReminderEntity) bundle.getSerializable(KEY_FRAGMENT_RESULT);
+            this.taskReminderEntity = ((TaskReminderEntity) bundle.getSerializable(KEY_FRAGMENT_RESULT));
             getArguments().putSerializable("taskReminder", taskReminderEntity);
             setReminder(taskReminderEntity);
         }
@@ -435,13 +426,6 @@ public class DateSelectFragment extends BaseFragment {
                     deadlineSelectLl.setVisibility(View.GONE);
                 } else {
                     deadlineSelectLl.setVisibility(View.VISIBLE);
-                    //未设置时间
-//                    if (isUnSetDate()) {
-//                        Calendar calendar = Calendar.getInstance();
-//                        selectedCalendar.set(Calendar.HOUR_OF_DAY, calendar.get(Calendar.HOUR_OF_DAY));
-//                        selectedCalendar.set(Calendar.MILLISECOND, Calendar.MINUTE);
-//                        selectedCalendar.set(Calendar.MILLISECOND, 0);
-//                    }
                     clearDutimeIv.setVisibility(View.VISIBLE);
                     duetimeTv.setText(DateUtils.getHHmm(selectedCalendar.getTimeInMillis()));
                     duetimeTv.setTextColor(SystemUtils.getColor(getContext(), R.color.alpha_font_color_black));
@@ -462,7 +446,6 @@ public class DateSelectFragment extends BaseFragment {
                 noticeLl.setVisibility(View.VISIBLE);
                 break;
             case R.id.notice_ll://点击提醒 切换
-                LogUtils.d("reminderItemEntities.size() --Select--  " + taskReminderEntity);
                 if (getParentFragment() instanceof OnFragmentCallBackListener) {
                     onFragmentCallBackListener = (OnFragmentCallBackListener) getParentFragment();
                 }

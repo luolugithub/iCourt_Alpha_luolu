@@ -23,7 +23,6 @@ import com.icourt.alpha.fragment.ReminderFragment;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.interfaces.OnPageFragmentCallBack;
 import com.icourt.alpha.utils.DensityUtil;
-import com.icourt.alpha.utils.LogUtils;
 
 import java.util.Calendar;
 
@@ -125,7 +124,6 @@ public class DateSelectDialogFragment extends BaseDialogFragment
         transaction.replace(containerViewId, targetFragment, String.valueOf(targetFragment.hashCode())).commitAllowingStateLoss();
         transaction.addToBackStack(String.valueOf(targetFragment.hashCode()));
         return targetFragment;
-        // return super.addOrShowFragment(targetFragment, currentFragment, containerViewId);
     }
 
 
@@ -154,8 +152,6 @@ public class DateSelectDialogFragment extends BaseDialogFragment
                 int hour = calendar.get(Calendar.HOUR_OF_DAY);
                 int minute = calendar.get(Calendar.MINUTE);
                 int second = calendar.get(Calendar.SECOND);
-                LogUtils.d("---------------data  hashcode: showFragment" + taskReminderEntity.hashCode());
-                log("---------------data  showFragment:" + taskReminderEntity);
                 if (hour == 23 && minute == 59 && second == 59) {
                     showFragment(ReminderFragment.newInstance(taskReminderEntity, null));
                 } else {
@@ -165,8 +161,6 @@ public class DateSelectDialogFragment extends BaseDialogFragment
         } else if (fragment instanceof ReminderFragment) {
             if (type == SELECT_REMINDER_FINISH) {
                 taskReminderEntity = (TaskReminderEntity) params.getSerializable("taskReminder");
-                log("---------------data  notifyFragmentUpdate:" + taskReminderEntity);
-
 
                 //通知DateSelectFragment刷新设置的自定义通知时间
                 Bundle inBundle = new Bundle();
