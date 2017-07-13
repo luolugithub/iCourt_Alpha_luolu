@@ -22,6 +22,7 @@ import com.icourt.alpha.entity.bean.ReminderItemEntity;
 import com.icourt.alpha.entity.bean.TaskReminderEntity;
 import com.icourt.alpha.fragment.dialogfragment.DateSelectDialogFragment;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
+import com.icourt.alpha.interfaces.OnPageFragmentCallBack;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.ItemDecorationUtils;
 import com.icourt.alpha.utils.LogUtils;
@@ -45,7 +46,9 @@ import butterknife.Unbinder;
  * version 2.0.0
  */
 
-public class ReminderFragment extends BaseFragment implements BaseRecyclerAdapter.OnItemClickListener, BaseRecyclerAdapter.OnItemChildClickListener {
+public class ReminderFragment extends BaseFragment
+        implements BaseRecyclerAdapter.OnItemClickListener,
+        BaseRecyclerAdapter.OnItemChildClickListener {
     Unbinder unbinder;
     @BindView(R.id.titleBack)
     ImageView titleBack;
@@ -65,6 +68,7 @@ public class ReminderFragment extends BaseFragment implements BaseRecyclerAdapte
     int customPosition;//自定义的position
     LinearLayoutManager linearLayoutManager;
     Calendar calendar;
+    OnPageFragmentCallBack onPageFragmentCallBack;
 
     @Override
     public void onAttach(Context context) {
@@ -73,6 +77,16 @@ public class ReminderFragment extends BaseFragment implements BaseRecyclerAdapte
             onFragmentCallBackListener = (OnFragmentCallBackListener) context;
         } catch (ClassCastException e) {
             e.printStackTrace();
+        }
+
+        if (getParentFragment() instanceof OnPageFragmentCallBack) {
+            onPageFragmentCallBack = (OnPageFragmentCallBack) getParentFragment();
+        } else {
+            try {
+                onPageFragmentCallBack = (OnPageFragmentCallBack) context;
+            } catch (ClassCastException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -93,8 +107,11 @@ public class ReminderFragment extends BaseFragment implements BaseRecyclerAdapte
     public static ReminderFragment newInstance(TaskReminderEntity taskReminderEntity, Calendar calendar) {
         ReminderFragment reminderFragment = new ReminderFragment();
         Bundle args = new Bundle();
-        args.putSerializable("taskReminder", taskReminderEntity);
-        LogUtils.d("reminderItemEntities.size() --new  Reninder--  " + taskReminderEntity);
+        try {
+            args.putSerializable("taskReminder", (TaskReminderEntity) taskReminderEntity.clone());
+        } catch (CloneNotSupportedException e) {
+            e.printStackTrace();
+        }
         args.putSerializable("calendar", calendar);
         reminderFragment.setArguments(args);
         return reminderFragment;
@@ -108,6 +125,7 @@ public class ReminderFragment extends BaseFragment implements BaseRecyclerAdapte
 
         titleContent.setText("提醒");
         taskReminderEntity = (TaskReminderEntity) getArguments().getSerializable("taskReminder");
+        LogUtils.d("---------------data  hashcode: init" + taskReminderEntity.hashCode());
         calendar = (Calendar) getArguments().getSerializable("calendar");
 
         linearLayoutManager = new LinearLayoutManager(getContext());
@@ -141,15 +159,17 @@ public class ReminderFragment extends BaseFragment implements BaseRecyclerAdapte
                     reminderItemEntities.add(reminderItemEntity);
                 }
             }
-            log("reminderItemEntities.size() ----1---  " + reminderItemEntities);
+            log("---------------data add before" + reminderItemEntities);
             /**
              * ruleTime设置时间集合
+             * 根据ruleTime --->
              */
             if (taskReminderEntity.ruleTime != null) {
                 for (String ruleTimeitem : taskReminderEntity.ruleTime) {
                     if (taskReminderEntity.customTime == null) {
                         taskReminderEntity.customTime = new ArrayList<>();
                     }
+                    //
                     if (TextUtils.equals(taskReminderEntity.taskReminderType, TaskReminderEntity.ALL_DAY)) {
                         if (!TaskReminderUtils.alldayMap.containsKey(ruleTimeitem)) {
                             taskReminderEntity.customTime.add(getCustomTime(ruleTimeitem, taskReminderEntity.taskReminderType));
@@ -169,7 +189,8 @@ public class ReminderFragment extends BaseFragment implements BaseRecyclerAdapte
                     reminderItemEntities.add(reminderItemEntity);
                 }
             }
-            log("reminderItemEntities.size() ----2---  " + reminderItemEntities);
+            log("---------------data updated" + taskReminderEntity);
+            log("---------------data add after" + reminderItemEntities);
             reminderListAdapter.bindData(true, reminderItemEntities);
             if (taskReminderEntity.customTime != null) {
                 for (int i = 0; i < reminderListAdapter.getData().size(); i++) {
@@ -294,10 +315,8 @@ public class ReminderFragment extends BaseFragment implements BaseRecyclerAdapte
         super.onClick(v);
         switch (v.getId()) {
             case R.id.titleBack:
-                if (getParentFragment() == null) return;
-                if (getParentFragment().getChildFragmentManager() == null) return;
-                if (getParentFragment().getChildFragmentManager().getBackStackEntryCount() > 1) {
-                    getParentFragment().getChildFragmentManager().popBackStack();
+                if (onPageFragmentCallBack != null) {
+                    onPageFragmentCallBack.onRequest2Page(this, 0, 0, null);
                 }
                 break;
             case R.id.bt_clear_reminder://清除提醒
@@ -311,12 +330,13 @@ public class ReminderFragment extends BaseFragment implements BaseRecyclerAdapte
                 }
                 if (onFragmentCallBackListener != null) {
                     Bundle bundle = new Bundle();
-                    TaskReminderEntity taskReminderEntity = getTaskReminderEntity();
+                    TaskReminderEntity taskReminderEntity = getTrlTaskReminderEntity();
+                    log("---------------data return before:" + taskReminderEntity);
                     bundle.putSerializable("taskReminder", taskReminderEntity);
                     onFragmentCallBackListener.onFragmentCallBack(ReminderFragment.this, DateSelectDialogFragment.SELECT_REMINDER_FINISH, bundle);
                 }
-                if (getParentFragment().getChildFragmentManager().getBackStackEntryCount() > 1) {
-                    getParentFragment().getChildFragmentManager().popBackStack();
+                if (onPageFragmentCallBack != null) {
+                    onPageFragmentCallBack.onRequest2Page(this, 0, 0, null);
                 }
                 break;
             case R.id.add_reminder_text://添加自定义
@@ -334,8 +354,15 @@ public class ReminderFragment extends BaseFragment implements BaseRecyclerAdapte
         }
     }
 
-    private TaskReminderEntity getTaskReminderEntity() {
+
+    /**
+     * 获取返回的数据
+     *
+     * @return
+     */
+    private TaskReminderEntity getTrlTaskReminderEntity() {
         TaskReminderEntity entity = new TaskReminderEntity();
+        entity.ruleTime = new ArrayList<>();
         if (taskReminderEntity != null) {
             entity.taskReminderType = taskReminderEntity.taskReminderType;
         }
@@ -343,9 +370,6 @@ public class ReminderFragment extends BaseFragment implements BaseRecyclerAdapte
             if (reminderListAdapter.getSelectedData().size() > 0) {
                 for (ReminderItemEntity reminderItemEntity : reminderListAdapter.getSelectedData()) {
                     if (!TextUtils.isEmpty(reminderItemEntity.timeKey)) {
-                        if (entity.ruleTime == null) {
-                            entity.ruleTime = new ArrayList<>();
-                        }
                         entity.ruleTime.add(reminderItemEntity.timeKey);
                     }
                     if (reminderItemEntity.customTimeItemEntity != null) {

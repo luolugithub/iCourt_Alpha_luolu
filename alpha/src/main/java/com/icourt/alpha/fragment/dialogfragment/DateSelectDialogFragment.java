@@ -21,7 +21,9 @@ import com.icourt.alpha.entity.bean.TaskReminderEntity;
 import com.icourt.alpha.fragment.DateSelectFragment;
 import com.icourt.alpha.fragment.ReminderFragment;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
+import com.icourt.alpha.interfaces.OnPageFragmentCallBack;
 import com.icourt.alpha.utils.DensityUtil;
+import com.icourt.alpha.utils.LogUtils;
 
 import java.util.Calendar;
 
@@ -35,7 +37,8 @@ import butterknife.Unbinder;
  * date createTime：2017/5/12
  * version 1.0.0
  */
-public class DateSelectDialogFragment extends BaseDialogFragment implements OnFragmentCallBackListener, FragmentManager.OnBackStackChangedListener {
+public class DateSelectDialogFragment extends BaseDialogFragment
+        implements OnFragmentCallBackListener, OnPageFragmentCallBack {
 
     public static final int SELECT_DATE_FINISH = 1;//选择到期日期完成
     public static final int SELECT_REMINDER = 2;//选择提醒
@@ -49,7 +52,6 @@ public class DateSelectDialogFragment extends BaseDialogFragment implements OnFr
     TaskReminderEntity taskReminderEntity;
     String taskId;//任务id
 
-    OnSelectReminderCallBlack onSelectReminderCallBlack;
 
     public static DateSelectDialogFragment newInstance(@Nullable Calendar calendar, TaskReminderEntity taskReminderEntity, String taskId) {
         DateSelectDialogFragment dateSelectDialogFragment = new DateSelectDialogFragment();
@@ -82,6 +84,7 @@ public class DateSelectDialogFragment extends BaseDialogFragment implements OnFr
         return view;
     }
 
+    DateSelectFragment dateSelectFragment;
 
     @Override
     protected void initView() {
@@ -100,8 +103,8 @@ public class DateSelectDialogFragment extends BaseDialogFragment implements OnFr
         selectedCalendar = (Calendar) getArguments().getSerializable("calendar");
         taskReminderEntity = (TaskReminderEntity) getArguments().getSerializable("taskReminder");
         taskId = getArguments().getString("taskId");
-        getChildFragmentManager().addOnBackStackChangedListener(this);
-        showFragment(DateSelectFragment.newInstance(selectedCalendar, taskReminderEntity, taskId));
+
+        showFragment(dateSelectFragment = DateSelectFragment.newInstance(selectedCalendar, taskReminderEntity, taskId));
     }
 
     private void showFragment(Fragment fragment) {
@@ -145,13 +148,14 @@ public class DateSelectDialogFragment extends BaseDialogFragment implements OnFr
                     dismiss();
                 }
             } else if (type == SELECT_REMINDER) {
-                TaskReminderEntity taskReminderEntity = (TaskReminderEntity) params.getSerializable("taskReminder");
                 long millis = params.getLong(KEY_FRAGMENT_RESULT);
                 Calendar calendar = Calendar.getInstance();
                 calendar.setTimeInMillis(millis);
                 int hour = calendar.get(Calendar.HOUR_OF_DAY);
                 int minute = calendar.get(Calendar.MINUTE);
                 int second = calendar.get(Calendar.SECOND);
+                LogUtils.d("---------------data  hashcode: showFragment" + taskReminderEntity.hashCode());
+                log("---------------data  showFragment:" + taskReminderEntity);
                 if (hour == 23 && minute == 59 && second == 59) {
                     showFragment(ReminderFragment.newInstance(taskReminderEntity, null));
                 } else {
@@ -161,25 +165,43 @@ public class DateSelectDialogFragment extends BaseDialogFragment implements OnFr
         } else if (fragment instanceof ReminderFragment) {
             if (type == SELECT_REMINDER_FINISH) {
                 taskReminderEntity = (TaskReminderEntity) params.getSerializable("taskReminder");
+                log("---------------data  notifyFragmentUpdate:" + taskReminderEntity);
 
-                if (onSelectReminderCallBlack != null) {
-                    onSelectReminderCallBlack.setReminderCallBlack(taskReminderEntity);
-                }
+
+                //通知DateSelectFragment刷新设置的自定义通知时间
+                Bundle inBundle = new Bundle();
+                inBundle.putSerializable(KEY_FRAGMENT_RESULT, taskReminderEntity);
+                dateSelectFragment.notifyFragmentUpdate(dateSelectFragment, 100, inBundle);
             }
         }
     }
 
     @Override
-    public void onBackStackChanged() {
+    public void onRequest2NextPage(Fragment fragment, int type, Bundle bundle) {
 
     }
 
-    public void setOnSelectReminderCallBlack(OnSelectReminderCallBlack onSelectReminderCallBlack) {
-        this.onSelectReminderCallBlack = onSelectReminderCallBlack;
+    @Override
+    public void onRequest2LastPage(Fragment fragment, int type, Bundle bundle) {
+
     }
 
-    public interface OnSelectReminderCallBlack {
-        void setReminderCallBlack(TaskReminderEntity taskReminderEntity);
+    @Override
+    public void onRequest2Page(Fragment fragment, int type, int pagePos, Bundle bundle) {
+        if (fragment instanceof ReminderFragment) {
+            if (getChildFragmentManager().getBackStackEntryCount() > 1) {
+                getChildFragmentManager().popBackStack();
+            }
+        }
     }
 
+    @Override
+    public boolean canGoNextFragment(Fragment fragment) {
+        return false;
+    }
+
+    @Override
+    public boolean canGoLastFragment(Fragment fragment) {
+        return false;
+    }
 }

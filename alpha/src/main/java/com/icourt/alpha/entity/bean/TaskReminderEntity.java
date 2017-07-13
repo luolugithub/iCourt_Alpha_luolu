@@ -11,7 +11,7 @@ import java.util.List;
  * version 2.0.0
  */
 
-public class TaskReminderEntity implements Serializable {
+public class TaskReminderEntity implements Serializable, Cloneable {
 
     public static final String ALL_DAY = "allday";//全天任务
     public static final String PRECISE = "precise";//有具体时间的任务
@@ -50,6 +50,11 @@ public class TaskReminderEntity implements Serializable {
                     ", unitNumber='" + unitNumber + '\'' +
                     '}';
         }
+    }
+
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+        return (TaskReminderEntity) super.clone();
     }
 
     @Override

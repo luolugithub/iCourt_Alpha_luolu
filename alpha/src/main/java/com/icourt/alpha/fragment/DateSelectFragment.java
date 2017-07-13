@@ -3,6 +3,7 @@ package com.icourt.alpha.fragment;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -23,6 +24,7 @@ import com.icourt.alpha.fragment.dialogfragment.DateSelectDialogFragment;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
+import com.icourt.alpha.interfaces.OnPageFragmentCallBack;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.LogUtils;
 import com.icourt.alpha.utils.SystemUtils;
@@ -53,7 +55,7 @@ import retrofit2.Response;
  * version 2.0.0
  */
 
-public class DateSelectFragment extends BaseFragment implements DateSelectDialogFragment.OnSelectReminderCallBlack {
+public class DateSelectFragment extends BaseFragment {
 
     Unbinder unbinder;
     @BindView(R.id.titleBack)
@@ -111,6 +113,7 @@ public class DateSelectFragment extends BaseFragment implements DateSelectDialog
 
 
     OnFragmentCallBackListener onFragmentCallBackListener;
+    OnPageFragmentCallBack onPageFragmentCallBack;
 
     @Override
     public void onAttach(Context context) {
@@ -119,6 +122,15 @@ public class DateSelectFragment extends BaseFragment implements DateSelectDialog
             onFragmentCallBackListener = (OnFragmentCallBackListener) context;
         } catch (ClassCastException e) {
             e.printStackTrace();
+        }
+        if (getParentFragment() instanceof OnPageFragmentCallBack) {
+            onPageFragmentCallBack = (OnPageFragmentCallBack) getParentFragment();
+        } else {
+            try {
+                onPageFragmentCallBack = (OnPageFragmentCallBack) context;
+            } catch (ClassCastException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -130,16 +142,6 @@ public class DateSelectFragment extends BaseFragment implements DateSelectDialog
         return view;
     }
 
-    /**
-     * 选择提醒之后设置数据
-     *
-     * @param taskReminderEntity
-     */
-    @Override
-    public void setReminderCallBlack(TaskReminderEntity taskReminderEntity) {
-        this.taskReminderEntity = taskReminderEntity;
-        setReminder(taskReminderEntity);
-    }
 
     private class TimeWheelAdapter implements WheelAdapter<Integer> {
         List<Integer> timeList = new ArrayList<>();
@@ -198,9 +200,6 @@ public class DateSelectFragment extends BaseFragment implements DateSelectDialog
                 noticeLl.setVisibility(View.VISIBLE);
                 setReminder(taskReminderEntity);
             }
-        }
-        if (getParentFragment() instanceof DateSelectDialogFragment) {
-            ((DateSelectDialogFragment) getParentFragment()).setOnSelectReminderCallBlack(this);
         }
         hourWheelView.setCurrentItem(selectedCalendar.get(Calendar.HOUR_OF_DAY));
         hourWheelView.setTextSize(16);
@@ -304,6 +303,25 @@ public class DateSelectFragment extends BaseFragment implements DateSelectDialog
         logEventsByMonth(compactcalendarView);*/
     }
 
+
+    /**
+     * type =100 更新任务提醒数据
+     *
+     * @param targetFrgament
+     * @param type
+     * @param bundle
+     * @see
+     */
+    @Override
+    public void notifyFragmentUpdate(Fragment targetFrgament, int type, Bundle bundle) {
+        super.notifyFragmentUpdate(targetFrgament, type, bundle);
+        if (targetFrgament != this) return;
+        if (bundle != null && type == 100) {
+            this.taskReminderEntity = (TaskReminderEntity) bundle.getSerializable(KEY_FRAGMENT_RESULT);
+            getArguments().putSerializable("taskReminder", taskReminderEntity);
+            setReminder(taskReminderEntity);
+        }
+    }
 
     private void scrollToToday() {
         titleContent.setText(dateFormatForMonth.format(System.currentTimeMillis()));
@@ -429,7 +447,7 @@ public class DateSelectFragment extends BaseFragment implements DateSelectDialog
                     duetimeTv.setTextColor(SystemUtils.getColor(getContext(), R.color.alpha_font_color_black));
                 }
                 break;
-            case R.id.clear_dutime_iv:
+            case R.id.clear_dutime_iv://1 到期日 转换全天任务
                 duetimeTv.setText("");
                 duetimeTv.setTextColor(SystemUtils.getColor(getContext(), R.color.alpha_font_color_gray));
                 clearDutimeIv.setVisibility(View.INVISIBLE);
@@ -443,8 +461,7 @@ public class DateSelectFragment extends BaseFragment implements DateSelectDialog
                 addReminderLayout.setVisibility(View.GONE);
                 noticeLl.setVisibility(View.VISIBLE);
                 break;
-            case R.id.notice_ll:
-
+            case R.id.notice_ll://点击提醒 切换
                 LogUtils.d("reminderItemEntities.size() --Select--  " + taskReminderEntity);
                 if (getParentFragment() instanceof OnFragmentCallBackListener) {
                     onFragmentCallBackListener = (OnFragmentCallBackListener) getParentFragment();
@@ -460,7 +477,7 @@ public class DateSelectFragment extends BaseFragment implements DateSelectDialog
                     } else {
                         taskReminderEntity.taskReminderType = TaskReminderEntity.PRECISE;
                     }
-                    if(!TextUtils.isEmpty(duetimeTv.getText())){
+                    if (!TextUtils.isEmpty(duetimeTv.getText())) {
                         bundle.putLong(KEY_FRAGMENT_RESULT, getSelectedMillis());
                     }
                     bundle.putSerializable("taskReminder", taskReminderEntity);
