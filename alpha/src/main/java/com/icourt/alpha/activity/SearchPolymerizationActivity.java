@@ -12,8 +12,11 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
 import android.text.SpannableString;
+import android.text.SpannableStringBuilder;
+import android.text.Spanned;
 import android.text.TextUtils;
 import android.text.TextWatcher;
+import android.text.style.ForegroundColorSpan;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -47,6 +50,7 @@ import com.netease.nimlib.sdk.msg.MsgService;
 import com.netease.nimlib.sdk.search.model.MsgIndexRecord;
 import com.netease.nimlib.sdk.team.TeamService;
 import com.netease.nimlib.sdk.team.model.Team;
+import com.pinyin4android.PinyinUtil;
 
 import java.io.IOException;
 import java.lang.annotation.Retention;
@@ -187,6 +191,7 @@ public class SearchPolymerizationActivity extends BaseActivity implements BaseRe
                 List<GroupContactBean> contactBeen = ListConvertor.convertList(new ArrayList<IConvertModel<GroupContactBean>>(name));
                 fiterRobots(contactBeen);
                 contactDbService.releaseService();
+                log("------------>query联系人:" + contactBeen);
                 List<SearchItemEntity> searchContactItems = convert2SearchItem(contactBeen, keyWord);
 
 
@@ -367,39 +372,34 @@ public class SearchPolymerizationActivity extends BaseActivity implements BaseRe
                     SpannableString textForegroundColorSpan = null;
                     if (StringUtils.containsIgnoreCase(originalText, keyWord)) {
                         textForegroundColorSpan = SpannableUtils.getTextForegroundColorSpan(originalText, keyWord, foregroundColor);
-                    } else {//可能是汉字
+                    } else {//可能是汉字  首字母搜索
                         textForegroundColorSpan = new SpannableString(item.name);
-                       /* try {
+                        try {
                             //用本地提取的 目前网络不准确
                             item.nameCharacter = PinyinUtil.toPinyin(getContext(), item.name);
                             String[] split = null;
                             if (item.nameCharacter != null) {
                                 split = item.nameCharacter.split(" ");
-                                item.nameCharacter = item.nameCharacter.replaceAll(" ", "");
                             }
+                            boolean isExist = false;
                             //阿三哥  a san ge
-                            SpannableStringBuilder ssb = new SpannableStringBuilder(item.name);
                             if (split != null) {
                                 for (int i = 0; i < split.length; i++) {
                                     String s = split[i];
                                     if (StringUtils.containsIgnoreCase(s, keyWord)) {
+                                        textForegroundColorSpan.setSpan(new ForegroundColorSpan(foregroundColor),
+                                                i, i + 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                                        isExist = true;
                                     }
                                 }
                             }
-
-
-                            int start = item.nameCharacter.indexOf(keyWord);
-                            int end = start + keyWord.length();
-                            log("-------------->nameCharacter:" + item.nameCharacter + "  start:" + start + "  end:" + end + "   " + keyWord.length());
-                            if (start >= 0 && end < item.name.length()) {
-                                textForegroundColorSpan = SpannableUtils.getTextForegroundColorSpan(originalText, start, end, foregroundColor);
-                            } else {
-                                textForegroundColorSpan = SpannableUtils.getTextForegroundColorSpan(originalText, keyWord, foregroundColor);
+                            if (!isExist) {
+                                continue;
                             }
                         } catch (Exception e) {
                             e.printStackTrace();
                             textForegroundColorSpan = SpannableUtils.getTextForegroundColorSpan(originalText, keyWord, foregroundColor);
-                        }*/
+                        }
                     }
 
                     SearchItemEntity searchItemEntity = new SearchItemEntity(textForegroundColorSpan, null, item.pic, keyWord);

@@ -1,7 +1,9 @@
 package com.icourt.alpha.adapter;
 
 import android.text.SpannableString;
+import android.text.Spanned;
 import android.text.TextUtils;
+import android.text.style.ForegroundColorSpan;
 import android.view.View;
 import android.widget.CheckedTextView;
 import android.widget.ImageView;
@@ -14,6 +16,7 @@ import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.icourt.alpha.utils.GlideUtils;
 import com.icourt.alpha.utils.SpannableUtils;
 import com.icourt.alpha.utils.StringUtils;
+import com.pinyin4android.PinyinUtil;
 
 /**
  * Descriptionn  联系人适配器
@@ -70,26 +73,24 @@ public class IMContactAdapter extends MultiSelectRecyclerAdapter<GroupContactBea
             if (StringUtils.containsIgnoreCase(originalText, keyWord)) {
                 textForegroundColorSpan = SpannableUtils.getTextForegroundColorSpan(originalText, keyWord, foregroundColor);
             } else {//可能是汉字
-                textForegroundColorSpan=new SpannableString(groupContactBean.name);
-               /* try {
+                textForegroundColorSpan = new SpannableString(groupContactBean.name);
+                try {
                     //用本地提取的 目前网络不准确
                     groupContactBean.nameCharacter = PinyinUtil.toPinyin(tv_contact_name.getContext(), groupContactBean.name);
-                    if (groupContactBean.nameCharacter != null) {
-                        groupContactBean.nameCharacter = groupContactBean.nameCharacter.replaceAll(" ", "");
-                    }
-                    LogUtils.d("-------------->nameCharacter:" + groupContactBean.nameCharacter);
-
-                    int start = groupContactBean.nameCharacter.indexOf(keyWord);
-                    int end = start + keyWord.length();
-                    if (start >= 0 && end < groupContactBean.name.length()) {
-                        textForegroundColorSpan = SpannableUtils.getTextForegroundColorSpan(originalText, start, end, foregroundColor);
-                    } else {
-                        textForegroundColorSpan = SpannableUtils.getTextForegroundColorSpan(originalText, keyWord, foregroundColor);
+                    String[] split = groupContactBean.nameCharacter.split(" ");
+                    if (split != null) {
+                        for (int i = 0; i < split.length; i++) {
+                            String s = split[i];
+                            if (StringUtils.containsIgnoreCase(s, keyWord)) {
+                                textForegroundColorSpan.setSpan(new ForegroundColorSpan(foregroundColor),
+                                        i, i + 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                            }
+                        }
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
                     textForegroundColorSpan = SpannableUtils.getTextForegroundColorSpan(originalText, keyWord, foregroundColor);
-                }*/
+                }
             }
             tv_contact_name.setText(textForegroundColorSpan);
         } else {

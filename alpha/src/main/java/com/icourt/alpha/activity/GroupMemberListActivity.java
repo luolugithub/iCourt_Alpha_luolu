@@ -427,6 +427,8 @@ public class GroupMemberListActivity
                 if (StringUtils.equalsIgnoreCase(contactBean.name, name, false)
                         || StringUtils.containsIgnoreCase(contactBean.name, name)) {
                     contactBeen.add(contactBean);
+                } else if (StringUtils.containsIgnoreCase(contactBean.nameCharacter, name)) {
+                    contactBeen.add(contactBean);
                 }
             }
             filterRobot(contactBeen);

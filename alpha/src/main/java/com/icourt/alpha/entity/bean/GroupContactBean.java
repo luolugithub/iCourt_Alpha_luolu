@@ -35,6 +35,7 @@ public class GroupContactBean
     @SerializedName(value = "userId", alternate = "user_id")
     public String userId;
     public String name;
+    @SerializedName(value = "nameCharacter", alternate = "name_character")
     public String nameCharacter;
     public String title;
     public String phone;
