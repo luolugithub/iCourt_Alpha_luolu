@@ -336,6 +336,7 @@ public class TaskCreateActivity extends BaseActivity implements ProjectSelectDia
                 @Override
                 public void onSuccess(Call<ResEntity<TaskEntity.TaskItemEntity>> call, Response<ResEntity<TaskEntity.TaskItemEntity>> response) {
                     if (response.body().result != null) {
+                        showToast("新建任务成功");
                         if (taskReminderEntity != null) {
                             addReminders(response.body().result, taskReminderEntity);
                         } else {

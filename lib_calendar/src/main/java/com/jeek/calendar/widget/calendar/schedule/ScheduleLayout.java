@@ -133,12 +133,12 @@ public class ScheduleLayout extends FrameLayout {
         @Override
         public void onClickDate(int year, int month, int day) {
             wcvCalendar.setOnCalendarClickListener(null);
-            Log.d("============>m1:", "year:" + year + "  month:" + month + "   day:" + day);
-            Log.d("============>m:", "CurrentSelectYear:" + mCurrentSelectYear + "  mCurrentSelectMonth:" + mCurrentSelectMonth + "   mCurrentSelectDay:" + mCurrentSelectDay);
+           // Log.d("============>m1:", "year:" + year + "  month:" + month + "   day:" + day);
+           // Log.d("============>m:", "CurrentSelectYear:" + mCurrentSelectYear + "  mCurrentSelectMonth:" + mCurrentSelectMonth + "   mCurrentSelectDay:" + mCurrentSelectDay);
             int weeks = CalendarUtils.getWeeksAgo(mCurrentSelectYear, mCurrentSelectMonth, mCurrentSelectDay, year, month, day);
-            Log.d("============>week:", "" + weeks);
+           // Log.d("============>week:", "" + weeks);
             resetCurrentSelectDate(year, month, day);
-            Log.d("============>m2:", "CurrentSelectYear:" + mCurrentSelectYear + "  mCurrentSelectMonth:" + mCurrentSelectMonth + "   mCurrentSelectDay:" + mCurrentSelectDay);
+          //  Log.d("============>m2:", "CurrentSelectYear:" + mCurrentSelectYear + "  mCurrentSelectMonth:" + mCurrentSelectMonth + "   mCurrentSelectDay:" + mCurrentSelectDay);
             int position = wcvCalendar.getCurrentItem() + weeks;
             if (weeks != 0) {
                 wcvCalendar.setCurrentItem(position, false);
@@ -191,8 +191,8 @@ public class ScheduleLayout extends FrameLayout {
         @Override
         public void onClickDate(int year, int month, int day) {
             mcvCalendar.setOnCalendarClickListener(null);
-            Log.d("============>w:", "year:" + year + "  month:" + month + "   day:" + day);
-            Log.d("============>w1:", "CurrentSelectYear:" + mCurrentSelectYear + "  mCurrentSelectMonth:" + mCurrentSelectMonth + "   mCurrentSelectDay:" + mCurrentSelectDay);
+            //Log.d("============>w:", "year:" + year + "  month:" + month + "   day:" + day);
+           // Log.d("============>w1:", "CurrentSelectYear:" + mCurrentSelectYear + "  mCurrentSelectMonth:" + mCurrentSelectMonth + "   mCurrentSelectDay:" + mCurrentSelectDay);
             int months = CalendarUtils.getMonthsAgo(mCurrentSelectYear, mCurrentSelectMonth, year, month);
             resetCurrentSelectDate(year, month, day);
             if (months != 0) {

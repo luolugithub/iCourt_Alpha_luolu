@@ -181,7 +181,7 @@ public class WeekView extends View {
         mSelYear = year;
         mSelMonth = month;
         mSelDay = day;
-        Log.d("------->", String.format("mSelYear:%s mSelMonth:%s  mSelDay:%s", year, month, day));
+       // Log.d("------->", String.format("mSelYear:%s mSelMonth:%s  mSelDay:%s", year, month, day));
     }
 
     @Override
