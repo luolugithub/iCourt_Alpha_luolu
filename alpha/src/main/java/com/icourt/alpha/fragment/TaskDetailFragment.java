@@ -252,15 +252,24 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
         if (fragment != null) {
             mFragTransaction.remove(fragment);
         }
-        Calendar calendar = Calendar.getInstance();
-        if (dueTime <= 0) {
-            calendar.set(Calendar.HOUR_OF_DAY, 23);
-            calendar.set(Calendar.MINUTE, 59);
-        } else {
+//        Calendar calendar = Calendar.getInstance();
+//        if (dueTime <= 0) {
+//            calendar.set(Calendar.HOUR_OF_DAY, 23);
+//            calendar.set(Calendar.MINUTE, 59);
+
+//        } else {
+//            calendar.setTimeInMillis(dueTime);
+//        }
+        if (dueTime > 0) {
+            Calendar calendar = Calendar.getInstance();
             calendar.setTimeInMillis(dueTime);
+            DateSelectDialogFragment.newInstance(calendar, taskReminderEntity, taskId)
+                    .show(mFragTransaction, tag);
+        }else{
+            DateSelectDialogFragment.newInstance(null, taskReminderEntity, taskId)
+                    .show(mFragTransaction, tag);
         }
-        DateSelectDialogFragment.newInstance(calendar, taskReminderEntity, taskId)
-                .show(mFragTransaction, tag);
+
     }
 
     /**

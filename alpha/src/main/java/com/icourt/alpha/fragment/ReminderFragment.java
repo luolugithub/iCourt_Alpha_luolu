@@ -69,6 +69,7 @@ public class ReminderFragment extends BaseFragment
     LinearLayoutManager linearLayoutManager;
     Calendar calendar;
     OnPageFragmentCallBack onPageFragmentCallBack;
+    String taskReminderType;
 
     @Override
     public void onAttach(Context context) {
@@ -104,7 +105,7 @@ public class ReminderFragment extends BaseFragment
         unbinder.unbind();
     }
 
-    public static ReminderFragment newInstance(TaskReminderEntity taskReminderEntity, Calendar calendar) {
+    public static ReminderFragment newInstance(TaskReminderEntity taskReminderEntity, Calendar calendar, String taskReminderType) {
         ReminderFragment reminderFragment = new ReminderFragment();
         Bundle args = new Bundle();
         try {
@@ -114,6 +115,7 @@ public class ReminderFragment extends BaseFragment
             e.printStackTrace();
         }
         args.putSerializable("calendar", calendar);
+        args.putString("taskReminderType", taskReminderType);
         reminderFragment.setArguments(args);
         return reminderFragment;
     }
@@ -127,6 +129,7 @@ public class ReminderFragment extends BaseFragment
         titleContent.setText("提醒");
         taskReminderEntity = (TaskReminderEntity) getArguments().getSerializable("taskReminder");
         calendar = (Calendar) getArguments().getSerializable("calendar");
+        taskReminderType = getArguments().getString("taskReminderType");
 
         linearLayoutManager = new LinearLayoutManager(getContext());
         recyclerview.setLayoutManager(linearLayoutManager);
@@ -144,14 +147,14 @@ public class ReminderFragment extends BaseFragment
     protected void getData(boolean isRefresh) {
         List<ReminderItemEntity> reminderItemEntities = new ArrayList<>();
         if (taskReminderEntity != null) {
-            if (TextUtils.equals(TaskReminderEntity.ALL_DAY, taskReminderEntity.taskReminderType)) {
+            if (TextUtils.equals(TaskReminderEntity.ALL_DAY, taskReminderType)) {
                 for (Map.Entry<String, String> entry : TaskReminderUtils.alldayMap.entrySet()) {
                     ReminderItemEntity reminderItemEntity = new ReminderItemEntity();
                     reminderItemEntity.timeKey = entry.getKey();
                     reminderItemEntity.timeValue = entry.getValue();
                     reminderItemEntities.add(reminderItemEntity);
                 }
-            } else if (TextUtils.equals(TaskReminderEntity.PRECISE, taskReminderEntity.taskReminderType)) {
+            } else if (TextUtils.equals(TaskReminderEntity.PRECISE, taskReminderType)) {
                 for (Map.Entry<String, String> entry : TaskReminderUtils.preciseMap.entrySet()) {
                     ReminderItemEntity reminderItemEntity = new ReminderItemEntity();
                     reminderItemEntity.timeKey = entry.getKey();
@@ -163,24 +166,26 @@ public class ReminderFragment extends BaseFragment
              * ruleTime设置时间集合
              * 根据ruleTime --->
              */
-            if (taskReminderEntity.ruleTime != null) {
-                for (String ruleTimeitem : taskReminderEntity.ruleTime) {
-                    if (taskReminderEntity.customTime == null) {
-                        taskReminderEntity.customTime = new ArrayList<>();
-                    }
-                    if (TextUtils.equals(taskReminderEntity.taskReminderType, TaskReminderEntity.ALL_DAY)) {
-                        if (!TaskReminderUtils.alldayMap.containsKey(ruleTimeitem)) {
-                            addCoustomReminder(ruleTimeitem, taskReminderEntity.taskReminderType);
-                        } else {
-                            if (calendar != null) {
-                                if (!TextUtils.equals(calendar.get(Calendar.HOUR_OF_DAY) + ":" + calendar.get(Calendar.MINUTE), "09:00")) {
-                                    addCoustomReminder(ruleTimeitem, taskReminderEntity.taskReminderType);
+            if (!TextUtils.equals(taskReminderType, taskReminderEntity.taskReminderType)) {
+                if (taskReminderEntity.ruleTime != null) {
+                    for (String ruleTimeitem : taskReminderEntity.ruleTime) {
+                        if (taskReminderEntity.customTime == null) {
+                            taskReminderEntity.customTime = new ArrayList<>();
+                        }
+                        if (TextUtils.equals(taskReminderType, TaskReminderEntity.ALL_DAY)) {
+                            if (!TaskReminderUtils.alldayMap.containsKey(ruleTimeitem)) {
+                                addCoustomReminder(ruleTimeitem, taskReminderType);
+                            } else {
+                                if (calendar != null) {
+                                    if (!TextUtils.equals(calendar.get(Calendar.HOUR_OF_DAY) + ":" + calendar.get(Calendar.MINUTE), "09:00")) {
+                                        addCoustomReminder(ruleTimeitem, taskReminderType);
+                                    }
                                 }
                             }
-                        }
-                    } else if (TextUtils.equals(taskReminderEntity.taskReminderType, TaskReminderEntity.PRECISE)) {
-                        if (!TaskReminderUtils.preciseMap.containsKey(ruleTimeitem)) {
-                            addCoustomReminder(ruleTimeitem, taskReminderEntity.taskReminderType);
+                        } else if (TextUtils.equals(taskReminderType, TaskReminderEntity.PRECISE)) {
+                            if (!TaskReminderUtils.preciseMap.containsKey(ruleTimeitem)) {
+                                addCoustomReminder(ruleTimeitem, taskReminderType);
+                            }
                         }
                     }
                 }
@@ -206,15 +211,19 @@ public class ReminderFragment extends BaseFragment
             if (taskReminderEntity.ruleTime != null) {
                 for (int i = 0; i < reminderItemEntities.size(); i++) {
                     if (taskReminderEntity.ruleTime.contains(reminderItemEntities.get(i).timeKey)) {
-                        if (TextUtils.equals(taskReminderEntity.taskReminderType, TaskReminderEntity.ALL_DAY)) {
-                            if (calendar != null) {
-                                if (TextUtils.equals(calendar.get(Calendar.HOUR_OF_DAY) + ":" + calendar.get(Calendar.MINUTE), "09:00")) {
+                        if (TextUtils.equals(taskReminderType, TaskReminderEntity.ALL_DAY)) {
+                            if (!TextUtils.equals(taskReminderType, taskReminderEntity.taskReminderType)) {
+                                if (calendar != null) {
+                                    if (TextUtils.equals(calendar.get(Calendar.HOUR_OF_DAY) + ":" + calendar.get(Calendar.MINUTE), "09:00")) {
+                                        reminderListAdapter.setSelected(i, true);
+                                    }
+                                } else {
                                     reminderListAdapter.setSelected(i, true);
                                 }
-                            } else {
+                            }else {
                                 reminderListAdapter.setSelected(i, true);
                             }
-                        } else if (TextUtils.equals(taskReminderEntity.taskReminderType, TaskReminderEntity.PRECISE)) {
+                        } else if (TextUtils.equals(taskReminderType, TaskReminderEntity.PRECISE)) {
                             reminderListAdapter.setSelected(i, true);
                         }
                     }
@@ -230,7 +239,7 @@ public class ReminderFragment extends BaseFragment
      * @param taskReminderType
      */
     private void addCoustomReminder(String ruleTimeitem, String taskReminderType) {
-        TaskReminderEntity.CustomTimeItemEntity entity = getCustomTime(ruleTimeitem, taskReminderEntity.taskReminderType);
+        TaskReminderEntity.CustomTimeItemEntity entity = getCustomTime(ruleTimeitem, taskReminderType);
         if (!taskReminderEntity.customTime.contains(entity)) {
             taskReminderEntity.customTime.add(entity);
         }
@@ -361,7 +370,7 @@ public class ReminderFragment extends BaseFragment
         TaskReminderEntity entity = new TaskReminderEntity();
         entity.ruleTime = new ArrayList<>();
         if (taskReminderEntity != null) {
-            entity.taskReminderType = taskReminderEntity.taskReminderType;
+            entity.taskReminderType = taskReminderType;
         }
         if (reminderListAdapter != null) {
             if (reminderListAdapter.getSelectedData().size() > 0) {

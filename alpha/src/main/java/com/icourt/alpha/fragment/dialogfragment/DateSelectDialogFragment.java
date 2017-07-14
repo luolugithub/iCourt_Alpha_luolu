@@ -146,6 +146,8 @@ public class DateSelectDialogFragment extends BaseDialogFragment
                     dismiss();
                 }
             } else if (type == SELECT_REMINDER) {
+                taskReminderEntity = (TaskReminderEntity) params.getSerializable("taskReminder");
+               String taskReminderType = params.getString("taskReminderType");
                 long millis = params.getLong(KEY_FRAGMENT_RESULT);
                 Calendar calendar = Calendar.getInstance();
                 calendar.setTimeInMillis(millis);
@@ -153,9 +155,9 @@ public class DateSelectDialogFragment extends BaseDialogFragment
                 int minute = calendar.get(Calendar.MINUTE);
                 int second = calendar.get(Calendar.SECOND);
                 if (hour == 23 && minute == 59 && second == 59) {
-                    showFragment(ReminderFragment.newInstance(taskReminderEntity, null));
+                    showFragment(ReminderFragment.newInstance(taskReminderEntity, null,taskReminderType));
                 } else {
-                    showFragment(ReminderFragment.newInstance(taskReminderEntity, calendar));
+                    showFragment(ReminderFragment.newInstance(taskReminderEntity, calendar,taskReminderType));
                 }
             }
         } else if (fragment instanceof ReminderFragment) {

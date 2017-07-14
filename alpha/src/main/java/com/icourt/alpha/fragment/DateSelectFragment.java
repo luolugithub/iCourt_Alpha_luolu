@@ -99,6 +99,7 @@ public class DateSelectFragment extends BaseFragment {
     Calendar selectedCalendar, reminderCalendar;
     TaskReminderEntity taskReminderEntity;
     String taskId;//任务id
+    String taskReminderType;
 
     public static DateSelectFragment newInstance(@Nullable Calendar calendar, TaskReminderEntity taskReminderEntity, String taskId) {
         DateSelectFragment dateSelectFragment = new DateSelectFragment();
@@ -177,15 +178,21 @@ public class DateSelectFragment extends BaseFragment {
         taskReminderEntity = (TaskReminderEntity) getArguments().getSerializable("taskReminder");
         taskId = getArguments().getString("taskId");
 
-        if (selectedCalendar == null) selectedCalendar = Calendar.getInstance();
+//        if (selectedCalendar == null) selectedCalendar = Calendar.getInstance();
         if (isUnSetDate()) {
             duetimeTv.setText("");
             duetimeTv.setTextColor(SystemUtils.getColor(getContext(), R.color.alpha_font_color_gray));
             clearDutimeIv.setVisibility(View.INVISIBLE);
         } else {
             clearDutimeIv.setVisibility(View.VISIBLE);
-            duetimeTv.setText(DateUtils.getHHmm(selectedCalendar.getTimeInMillis()));
-            duetimeTv.setTextColor(SystemUtils.getColor(getContext(), R.color.alpha_font_color_black));
+            if (selectedCalendar != null) {
+                duetimeTv.setText(DateUtils.getHHmm(selectedCalendar.getTimeInMillis()));
+                duetimeTv.setTextColor(SystemUtils.getColor(getContext(), R.color.alpha_font_color_black));
+            } else {
+                duetimeTv.setText("");
+                duetimeTv.setTextColor(SystemUtils.getColor(getContext(), R.color.alpha_font_color_gray));
+                clearDutimeIv.setVisibility(View.INVISIBLE);
+            }
         }
         if (taskReminderEntity != null) {
             if (TextUtils.isEmpty(taskReminderEntity.taskReminderType) && !TextUtils.isEmpty(taskId)) {
@@ -196,6 +203,7 @@ public class DateSelectFragment extends BaseFragment {
                 setReminder(taskReminderEntity);
             }
         }
+        if (selectedCalendar == null) selectedCalendar = Calendar.getInstance();
         hourWheelView.setCurrentItem(selectedCalendar.get(Calendar.HOUR_OF_DAY));
         hourWheelView.setTextSize(16);
         hourWheelView.setOnItemSelectedListener(new OnItemSelectedListener() {
@@ -205,9 +213,10 @@ public class DateSelectFragment extends BaseFragment {
                 selectedCalendar.set(Calendar.MILLISECOND, 0);
                 if (duetimeTv != null)
                     duetimeTv.setText(DateUtils.getHHmm(selectedCalendar.getTimeInMillis()));
-                if (taskReminderEntity != null) {
-                    taskReminderEntity.taskReminderType = TaskReminderEntity.PRECISE;
-                }
+//                if (taskReminderEntity != null) {
+//                    taskReminderEntity.taskReminderType = TaskReminderEntity.PRECISE;
+//                }
+                taskReminderType = TaskReminderEntity.PRECISE;
             }
         });
         minuteWheelView.setCurrentItem(selectedCalendar.get(Calendar.MINUTE));
@@ -219,9 +228,10 @@ public class DateSelectFragment extends BaseFragment {
                 selectedCalendar.set(Calendar.MILLISECOND, 0);
                 if (duetimeTv != null)
                     duetimeTv.setText(DateUtils.getHHmm(selectedCalendar.getTimeInMillis()));
-                if (taskReminderEntity != null) {
-                    taskReminderEntity.taskReminderType = TaskReminderEntity.PRECISE;
-                }
+//                if (taskReminderEntity != null) {
+//                    taskReminderEntity.taskReminderType = TaskReminderEntity.PRECISE;
+//                }
+                taskReminderType = TaskReminderEntity.PRECISE;
             }
         });
 
@@ -334,6 +344,7 @@ public class DateSelectFragment extends BaseFragment {
     public void setReminder(TaskReminderEntity taskReminderEntity) {
         StringBuffer buffer = new StringBuffer();
         if (taskReminderEntity != null) {
+            taskReminderType = taskReminderEntity.taskReminderType;
             if (taskReminderEntity.ruleTime != null) {
                 for (String s : taskReminderEntity.ruleTime) {
                     if (TextUtils.equals(TaskReminderEntity.ALL_DAY, taskReminderEntity.taskReminderType)) {
@@ -431,6 +442,7 @@ public class DateSelectFragment extends BaseFragment {
                 if (deadlineSelectLl.getVisibility() == View.VISIBLE) {
                     deadlineSelectLl.setVisibility(View.GONE);
                 } else {
+                    taskReminderType = TaskReminderEntity.PRECISE;
                     deadlineSelectLl.setVisibility(View.VISIBLE);
                     clearDutimeIv.setVisibility(View.VISIBLE);
                     duetimeTv.setText(DateUtils.getHHmm(selectedCalendar.getTimeInMillis()));
@@ -443,9 +455,10 @@ public class DateSelectFragment extends BaseFragment {
                 clearDutimeIv.setVisibility(View.INVISIBLE);
                 setUnSetDate();
                 deadlineSelectLl.setVisibility(View.GONE);
-                if (taskReminderEntity != null) {
-                    taskReminderEntity.taskReminderType = TaskReminderEntity.ALL_DAY;
-                }
+//                if (taskReminderEntity != null) {
+//                    taskReminderEntity.taskReminderType = TaskReminderEntity.ALL_DAY;
+//                }
+                taskReminderType = TaskReminderEntity.ALL_DAY;
                 break;
             case R.id.add_reminder_layout://添加提醒
                 addReminderLayout.setVisibility(View.GONE);
@@ -459,13 +472,14 @@ public class DateSelectFragment extends BaseFragment {
                     Bundle bundle = new Bundle();
                     if (taskReminderEntity == null) {
                         taskReminderEntity = new TaskReminderEntity();
+                        if (TextUtils.isEmpty(duetimeTv.getText())) {
+                            taskReminderEntity.taskReminderType = TaskReminderEntity.ALL_DAY;
+                        } else {
+                            taskReminderEntity.taskReminderType = TaskReminderEntity.PRECISE;
+                        }
                     }
 
-                    if (TextUtils.isEmpty(duetimeTv.getText())) {
-                        taskReminderEntity.taskReminderType = TaskReminderEntity.ALL_DAY;
-                    } else {
-                        taskReminderEntity.taskReminderType = TaskReminderEntity.PRECISE;
-                    }
+
                     if (!TextUtils.isEmpty(duetimeTv.getText())) {
                         bundle.putLong(KEY_FRAGMENT_RESULT, getSelectedMillis());
                     }
@@ -476,6 +490,7 @@ public class DateSelectFragment extends BaseFragment {
                     if (reminderCalendar != null)
                         bundle.putLong(KEY_FRAGMENT_RESULT, reminderCalendar.getTimeInMillis());
                     bundle.putSerializable("taskReminder", taskReminderEntity);
+                    bundle.putSerializable("taskReminderType", taskReminderType);
                     onFragmentCallBackListener.onFragmentCallBack(DateSelectFragment.this, DateSelectDialogFragment.SELECT_REMINDER, bundle);
                 }
                 break;
@@ -501,6 +516,7 @@ public class DateSelectFragment extends BaseFragment {
                 super.onClick(v);
                 break;
         }
+
     }
 
     private long getSelectedMillis() {
