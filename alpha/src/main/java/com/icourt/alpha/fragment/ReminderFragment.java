@@ -1,6 +1,7 @@
 package com.icourt.alpha.fragment;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
@@ -167,20 +168,19 @@ public class ReminderFragment extends BaseFragment
                     if (taskReminderEntity.customTime == null) {
                         taskReminderEntity.customTime = new ArrayList<>();
                     }
-                    //
                     if (TextUtils.equals(taskReminderEntity.taskReminderType, TaskReminderEntity.ALL_DAY)) {
                         if (!TaskReminderUtils.alldayMap.containsKey(ruleTimeitem)) {
-                            TaskReminderEntity.CustomTimeItemEntity entity = getCustomTime(ruleTimeitem, taskReminderEntity.taskReminderType);
-                            if (!taskReminderEntity.customTime.contains(entity)) {
-                                taskReminderEntity.customTime.add(getCustomTime(ruleTimeitem, taskReminderEntity.taskReminderType));
+                            addCoustomReminder(ruleTimeitem, taskReminderEntity.taskReminderType);
+                        } else {
+                            if (calendar != null) {
+                                if (!TextUtils.equals(calendar.get(Calendar.HOUR_OF_DAY) + ":" + calendar.get(Calendar.MINUTE), "09:00")) {
+                                    addCoustomReminder(ruleTimeitem, taskReminderEntity.taskReminderType);
+                                }
                             }
                         }
                     } else if (TextUtils.equals(taskReminderEntity.taskReminderType, TaskReminderEntity.PRECISE)) {
                         if (!TaskReminderUtils.preciseMap.containsKey(ruleTimeitem)) {
-                            TaskReminderEntity.CustomTimeItemEntity entity = getCustomTime(ruleTimeitem, taskReminderEntity.taskReminderType);
-                            if (!taskReminderEntity.customTime.contains(entity)) {
-                                taskReminderEntity.customTime.add(getCustomTime(ruleTimeitem, taskReminderEntity.taskReminderType));
-                            }
+                            addCoustomReminder(ruleTimeitem, taskReminderEntity.taskReminderType);
                         }
                     }
                 }
@@ -206,10 +206,33 @@ public class ReminderFragment extends BaseFragment
             if (taskReminderEntity.ruleTime != null) {
                 for (int i = 0; i < reminderItemEntities.size(); i++) {
                     if (taskReminderEntity.ruleTime.contains(reminderItemEntities.get(i).timeKey)) {
-                        reminderListAdapter.setSelected(i, true);
+                        if (TextUtils.equals(taskReminderEntity.taskReminderType, TaskReminderEntity.ALL_DAY)) {
+                            if (calendar != null) {
+                                if (TextUtils.equals(calendar.get(Calendar.HOUR_OF_DAY) + ":" + calendar.get(Calendar.MINUTE), "09:00")) {
+                                    reminderListAdapter.setSelected(i, true);
+                                }
+                            } else {
+                                reminderListAdapter.setSelected(i, true);
+                            }
+                        } else if (TextUtils.equals(taskReminderEntity.taskReminderType, TaskReminderEntity.PRECISE)) {
+                            reminderListAdapter.setSelected(i, true);
+                        }
                     }
                 }
             }
+        }
+    }
+
+    /**
+     * 添加自定义
+     *
+     * @param ruleTimeitem
+     * @param taskReminderType
+     */
+    private void addCoustomReminder(String ruleTimeitem, String taskReminderType) {
+        TaskReminderEntity.CustomTimeItemEntity entity = getCustomTime(ruleTimeitem, taskReminderEntity.taskReminderType);
+        if (!taskReminderEntity.customTime.contains(entity)) {
+            taskReminderEntity.customTime.add(entity);
         }
     }
 
@@ -236,71 +259,49 @@ public class ReminderFragment extends BaseFragment
      */
     private TaskReminderEntity.CustomTimeItemEntity getCustomTime(String timeKey, String taskReminderType) {
         TaskReminderEntity.CustomTimeItemEntity customTimeItemEntity = new TaskReminderEntity.CustomTimeItemEntity();
-        String unitNumber = null, unit = null, point = null;
         if (TextUtils.equals(taskReminderType, TaskReminderEntity.ALL_DAY)) {
-            if (TaskReminderUtils.preciseMap.containsKey(timeKey)) {
-                if (TextUtils.equals(timeKey, "0MB") && calendar != null) {
-                    unitNumber = "0";
-                    unit = "day";
-                    point = calendar.get(Calendar.HOUR_OF_DAY) + ":" + calendar.get(Calendar.MINUTE);
+            if (TaskReminderUtils.preciseMap.containsKey(timeKey) && calendar != null) {
+                if (TextUtils.equals(timeKey, "0MB")) {
+                    setAllDayReminder(customTimeItemEntity, "0", "day", calendar.get(Calendar.HOUR_OF_DAY) + ":" + calendar.get(Calendar.MINUTE));
                 } else if (TextUtils.equals(timeKey, "5MB")) {
-                    unitNumber = "0";
-                    unit = "day";
-                    point = DateUtils.getHHmm(DateUtils.getMillByHourmin(9, 0) - (5 * 60 * 1000));
+                    setAllDayReminder(customTimeItemEntity, "0", "day", DateUtils.getHHmm(DateUtils.getMillByHourmin(calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE)) - (5 * 60 * 1000)));
                 } else if (TextUtils.equals(timeKey, "10MB")) {
-                    unitNumber = "0";
-                    unit = "day";
-                    point = DateUtils.getHHmm(DateUtils.getMillByHourmin(9, 0) - (10 * 60 * 1000));
+                    setAllDayReminder(customTimeItemEntity, "0", "day", DateUtils.getHHmm(DateUtils.getMillByHourmin(calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE)) - (10 * 60 * 1000)));
                 } else if (TextUtils.equals(timeKey, "30MB")) {
-                    unitNumber = "0";
-                    unit = "day";
-                    point = DateUtils.getHHmm(DateUtils.getMillByHourmin(9, 0) - (30 * 60 * 1000));
+                    setAllDayReminder(customTimeItemEntity, "0", "day", DateUtils.getHHmm(DateUtils.getMillByHourmin(calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE)) - (30 * 60 * 1000)));
                 } else if (TextUtils.equals(timeKey, "1HB")) {
-                    unitNumber = "0";
-                    unit = "day";
-                    point = DateUtils.getHHmm(DateUtils.getMillByHourmin(9, 0) - (60 * 60 * 1000));
+                    setAllDayReminder(customTimeItemEntity, "0", "day", DateUtils.getHHmm(DateUtils.getMillByHourmin(calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE)) - (60 * 60 * 1000)));
                 } else if (TextUtils.equals(timeKey, "2HB")) {
-                    unitNumber = "0";
-                    unit = "day";
-                    point = DateUtils.getHHmm(DateUtils.getMillByHourmin(9, 0) - (2 * 60 * 60 * 1000));
+                    setAllDayReminder(customTimeItemEntity, "0", "day", DateUtils.getHHmm(DateUtils.getMillByHourmin(calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE)) - (2 * 60 * 60 * 1000)));
                 } else if (TextUtils.equals(timeKey, "1DB")) {
-                    unitNumber = "1";
-                    unit = "day";
-                    point = "09:00";
+                    setAllDayReminder(customTimeItemEntity, "1", "day", calendar.get(Calendar.HOUR_OF_DAY) + ":" + calendar.get(Calendar.MINUTE));
                 } else if (TextUtils.equals(timeKey, "2DB")) {
-                    unitNumber = "2";
-                    unit = "day";
-                    point = "09:00";
+                    setAllDayReminder(customTimeItemEntity, "2", "day", calendar.get(Calendar.HOUR_OF_DAY) + ":" + calendar.get(Calendar.MINUTE));
                 }
             }
         } else if (TextUtils.equals(taskReminderType, TaskReminderEntity.PRECISE)) {
             if (TaskReminderUtils.alldayMap.containsKey(timeKey)) {
                 if (TextUtils.equals(timeKey, "ODB")) {
-                    unitNumber = "0";
-                    unit = "day";
-                    point = "09:00";
+                    setAllDayReminder(customTimeItemEntity, "0", "day", "09:00");
                 }
                 if (TextUtils.equals(timeKey, "1DB")) {
-                    unitNumber = "1";
-                    unit = "day";
-                    point = "09:00";
+                    setAllDayReminder(customTimeItemEntity, "1", "day", "09:00");
                 }
                 if (TextUtils.equals(timeKey, "2DB")) {
-                    unitNumber = "2";
-                    unit = "day";
-                    point = "09:00";
+                    setAllDayReminder(customTimeItemEntity, "2", "day", "09:00");
                 }
                 if (TextUtils.equals(timeKey, "1WB")) {
-                    unitNumber = "7";
-                    unit = "day";
-                    point = "09:00";
+                    setAllDayReminder(customTimeItemEntity, "7", "day", "09:00");
                 }
             }
         }
+        return customTimeItemEntity;
+    }
+
+    private void setAllDayReminder(TaskReminderEntity.CustomTimeItemEntity customTimeItemEntity, String unitNumber, String unit, String point) {
         customTimeItemEntity.unitNumber = unitNumber;
         customTimeItemEntity.unit = unit;
         customTimeItemEntity.point = point;
-        return customTimeItemEntity;
     }
 
     @OnClick({R.id.titleBack,
@@ -403,18 +404,32 @@ public class ReminderFragment extends BaseFragment
         ((ReminderListAdapter) adapter).setCustomPosition(position);
         adapter.notifyDataSetChanged();
         scrollToPosition(position);
+        TextView pointTv = holder.obtainView(R.id.custom_point_text);
+        TextView unitNumberTv = holder.obtainView(R.id.custom_unit_number_text);
+        TextView unitTv = holder.obtainView(R.id.custom_unit_text);
         switch (view.getId()) {
+
             case R.id.custom_point_text:
                 ((ReminderListAdapter) adapter).setSelect_type(2);
                 ((WheelView) holder.obtainView(R.id.hour_wheelView)).setAdapter(new TimeWheelAdapter(getTime24or60(24)));
                 ((WheelView) holder.obtainView(R.id.minute_wheelView)).setAdapter(new TimeWheelAdapter(getTime24or60(60)));
+
+                unitNumberTv.setTextColor(Color.parseColor("#d9d9d9"));
+                unitTv.setTextColor(Color.parseColor("#d9d9d9"));
+                pointTv.setTextColor(Color.parseColor("#4a4a4a"));
+
                 break;
             case R.id.custom_unit_number_text:
             case R.id.custom_unit_text:
+
+                unitNumberTv.setTextColor(Color.parseColor("#4a4a4a"));
+                unitTv.setTextColor(Color.parseColor("#4a4a4a"));
+                pointTv.setTextColor(Color.parseColor("#d9d9d9"));
                 ((ReminderListAdapter) adapter).setSelect_type(1);
                 break;
         }
     }
+
 
     /**
      * 获取时间：小时list

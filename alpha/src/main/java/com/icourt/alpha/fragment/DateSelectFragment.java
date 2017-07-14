@@ -96,7 +96,7 @@ public class DateSelectFragment extends BaseFragment {
     private SimpleDateFormat dateFormatForMonth = new SimpleDateFormat("yyyy年MMM", Locale.getDefault());
     Date selectedDate;
 
-    Calendar selectedCalendar;
+    Calendar selectedCalendar, reminderCalendar;
     TaskReminderEntity taskReminderEntity;
     String taskId;//任务id
 
@@ -261,15 +261,21 @@ public class DateSelectFragment extends BaseFragment {
      * @return
      */
     private void setUnSetDate() {
-        if (selectedCalendar == null) {
-            selectedCalendar = Calendar.getInstance();
-        }
-        selectedCalendar.set(Calendar.HOUR_OF_DAY, 23);
-        selectedCalendar.set(Calendar.MINUTE, 59);
-        selectedCalendar.set(Calendar.SECOND, 59);
+        try {
+            if (selectedCalendar == null) {
+                selectedCalendar = Calendar.getInstance();
+            } else {
+                reminderCalendar = (Calendar) selectedCalendar.clone();
+            }
+            selectedCalendar.set(Calendar.HOUR_OF_DAY, 23);
+            selectedCalendar.set(Calendar.MINUTE, 59);
+            selectedCalendar.set(Calendar.SECOND, 59);
 
-        minuteWheelView.setCurrentItem(selectedCalendar.get(Calendar.MINUTE));
-        hourWheelView.setCurrentItem(selectedCalendar.get(Calendar.HOUR_OF_DAY));
+            minuteWheelView.setCurrentItem(selectedCalendar.get(Calendar.MINUTE));
+            hourWheelView.setCurrentItem(selectedCalendar.get(Calendar.HOUR_OF_DAY));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private void initCompactCalendar() {
@@ -463,6 +469,12 @@ public class DateSelectFragment extends BaseFragment {
                     if (!TextUtils.isEmpty(duetimeTv.getText())) {
                         bundle.putLong(KEY_FRAGMENT_RESULT, getSelectedMillis());
                     }
+
+                    if (reminderCalendar == null && selectedCalendar != null) {
+                        reminderCalendar = (Calendar) selectedCalendar.clone();
+                    }
+                    if (reminderCalendar != null)
+                        bundle.putLong(KEY_FRAGMENT_RESULT, reminderCalendar.getTimeInMillis());
                     bundle.putSerializable("taskReminder", taskReminderEntity);
                     onFragmentCallBackListener.onFragmentCallBack(DateSelectFragment.this, DateSelectDialogFragment.SELECT_REMINDER, bundle);
                 }

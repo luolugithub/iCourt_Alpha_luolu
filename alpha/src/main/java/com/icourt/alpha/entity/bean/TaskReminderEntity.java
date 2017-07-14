@@ -40,7 +40,7 @@ public class TaskReminderEntity implements Serializable, Cloneable {
     public List<CustomTimeItemEntity> customTime;//自定义时间提醒
 
     public static class CustomTimeItemEntity implements Serializable {
-        public String point;//自定义设置的提醒时间点
+        public String point;//自定义设置的提醒时间点    "05:44"
         public String unit;//自定义设置的提醒时间单位,参数：day，天；hour，小时；minute，分钟； ,
         public String unitNumber;//自定义设置的提醒时间单位数量
 
