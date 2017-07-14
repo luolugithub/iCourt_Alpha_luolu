@@ -18,12 +18,13 @@
 
     <TextView
         android:id="@+id/file_from_tv"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
+        android:layout_weight="2"
         android:layout_height="wrap_content"
         android:ellipsize="end"
         android:maxEms="20"
         android:maxLines="1"
-        android:text="来自: bug提交asdaskdjaklsjdla"
+        android:text="来自: bug提交asdaskdjaklsjlaasdasdasdasd"
         android:textColor="@color/alpha_font_color_gray"
         android:textSize="@dimen/alpha_font_size_mini" />
 
