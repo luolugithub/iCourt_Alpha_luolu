@@ -112,8 +112,9 @@ public class FileBoxListActivity extends BaseActivity implements BaseRecyclerAda
     @Override
     protected void initView() {
         super.initView();
-        list.add("按文件名降序排序");
+        list.add("按文件名升序排序");
         list.add("按文件大小升序排序");
+        list.add("按修改时间升序排序");
         seaFileRepoId = getIntent().getStringExtra("seaFileRepoId");
         rootName = getIntent().getStringExtra("rootName");
         authToken = getIntent().getStringExtra("authToken");
@@ -299,6 +300,44 @@ public class FileBoxListActivity extends BaseActivity implements BaseRecyclerAda
     }
 
     /**
+     * 按修改时间排序
+     *
+     * @param isUp
+     */
+    public void sortFileByTimeList(final boolean isUp) {
+        if (fileBoxBeanList == null) return;
+        if (fileBoxBeanList.size() <= 0) return;
+        Collections.sort(fileBoxBeanList, new Comparator<FileBoxBean>() {
+            @Override
+            public int compare(FileBoxBean o1, FileBoxBean o2) {
+
+                long o1Time = o1.mtime;
+                long o2Time = o2.mtime;
+                if (isUp) {
+                    //按照修改时间进行降序排列
+                    if (o1Time < o2Time) {
+                        return 1;
+                    }
+                    if (o1Time == o2Time) {
+                        return 0;
+                    }
+                    return -1;
+                } else {
+                    //按照修改时间进行升序排列
+                    if (o1Time > o2Time) {
+                        return 1;
+                    }
+                    if (o1Time == o2Time) {
+                        return 0;
+                    }
+                    return -1;
+                }
+            }
+        });
+        projectFileBoxAdapter.bindData(true, fileBoxBeanList);
+    }
+
+    /**
      * 打开相机
      */
     private void checkAndOpenCamera() {
@@ -389,9 +428,11 @@ public class FileBoxListActivity extends BaseActivity implements BaseRecyclerAda
                                 if (nameIsUp) {
                                     list.add("按文件名降序排序");
                                     list.add("按文件大小升序排序");
+                                    list.add("按修改时间升序排序");
                                 } else {
                                     list.add("按文件名升序排序");
                                     list.add("按文件大小升序排序");
+                                    list.add("按修改时间升序排序");
                                 }
                                 break;
                             case 1:
@@ -403,9 +444,29 @@ public class FileBoxListActivity extends BaseActivity implements BaseRecyclerAda
                                 if (sizeIsUp) {
                                     list.add("按文件名升序排序");
                                     list.add("按文件大小降序排序");
+                                    list.add("按修改时间升序排序");
                                 } else {
                                     list.add("按文件名升序排序");
                                     list.add("按文件大小升序排序");
+                                    list.add("按修改时间升序排序");
+                                }
+
+                                break;
+
+                            case 2:
+                                sortFileByTimeList(timeIsUp);
+                                timeIsUp = !timeIsUp;
+                                nameIsUp = false;
+                                sizeIsUp = false;
+                                list.clear();
+                                if (timeIsUp) {
+                                    list.add("按文件名升序排序");
+                                    list.add("按文件大小升序排序");
+                                    list.add("按修改时间降序排序");
+                                } else {
+                                    list.add("按文件名升序排序");
+                                    list.add("按文件大小升序排序");
+                                    list.add("按修改时间升序排序");
                                 }
                                 break;
                         }
