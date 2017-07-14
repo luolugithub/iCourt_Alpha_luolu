@@ -135,6 +135,38 @@ public class TaskListCalendarFragment extends BaseFragment {
         //今天 定位在中间
         viewPager.setCurrentItem(MAXDAILYPAGE / 2, false);
         dailyTaskPagePOS = viewPager.getCurrentItem();
+        viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+
+            }
+
+            @Override
+            public void onPageSelected(int position) {
+                //移除每一天已经完成的任务
+                Calendar clendar = Calendar.getInstance();
+                clendar.set(Calendar.HOUR_OF_DAY, 0);
+                clendar.set(Calendar.MINUTE, 0);
+                clendar.set(Calendar.SECOND, 0);
+                clendar.set(Calendar.MILLISECOND, 0);
+                int centerPos = MAXDAILYPAGE / 2;
+                long key = clendar.getTimeInMillis() - (centerPos - position) * TimeUnit.DAYS.toMillis(1);
+                List<TaskEntity.TaskItemEntity> data = dailyTaskMap.get(key);
+                if (data != null) {
+                    for (int i = data.size() - 1; i >= 0; i--) {
+                        TaskEntity.TaskItemEntity taskItemEntity = data.get(i);
+                        if (taskItemEntity.state) {
+                            data.remove(i);
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+
+            }
+        });
         viewPager.removeOnPageChangeListener(taskPageChangeListener);
         viewPager.addOnPageChangeListener(taskPageChangeListener);
         initCalendarDateView();
@@ -262,12 +294,14 @@ public class TaskListCalendarFragment extends BaseFragment {
         slSchedule.setOnCalendarClickListener(new OnCalendarClickListener() {
             @Override
             public void onClickDate(int year, int month, int day) {
+                log("----------->onClickDate year:" + year + "  month:" + month + "   day:" + day);
                 updateTitle(year, month + 1, day);
                 scrollToTaskPage(year, month, day);
             }
 
             @Override
             public void onPageChange(int year, int month, int day) {
+                log("----------->onPageChange year:" + year + "  month:" + month + "   day:" + day);
                 updateTitle(year, month + 1, day);
                 slSchedule.addTaskHints(
                         getMonthTaskHint(year, month));

@@ -89,7 +89,19 @@ public class MonthCalendarView extends ViewPager implements OnMonthClickListener
         public void onPageSelected(final int position) {
             MonthView monthView = mMonthAdapter.getViews().get(getCurrentItem());
             if (monthView != null) {
-                monthView.clickThisMonth(monthView.getSelectYear(), monthView.getSelectMonth(), monthView.getSelectDay());
+                //非今日所在月份选中第一天
+                //今日所在月份选中今日
+                //monthView.clickThisMonth(monthView.getSelectYear(), monthView.getSelectMonth(), monthView.getSelectDay());
+                Calendar calendar = Calendar.getInstance();
+                int currYear = calendar.get(Calendar.YEAR);
+                int currMonth = calendar.get(Calendar.MONTH);
+                if (currYear == monthView.getSelectYear() &&
+                        currMonth == monthView.getSelectMonth()) {
+                    monthView.clickThisMonth(monthView.getSelectYear(), monthView.getSelectMonth(), calendar.get(Calendar.DAY_OF_MONTH));
+                } else {
+                    monthView.clickThisMonth(monthView.getSelectYear(), monthView.getSelectMonth(), 1);
+                }
+
                 if (mOnCalendarClickListener != null) {
                     mOnCalendarClickListener.onPageChange(monthView.getSelectYear(), monthView.getSelectMonth(), monthView.getSelectDay());
                 }

@@ -2,6 +2,8 @@ package com.icourt.alpha.fragment;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
@@ -10,25 +12,44 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.TaskSimpleAdapter;
 import com.icourt.alpha.adapter.baseadapter.adapterObserver.DataChangeAdapterObserver;
 import com.icourt.alpha.base.BaseFragment;
+import com.icourt.alpha.entity.bean.ProjectEntity;
 import com.icourt.alpha.entity.bean.TaskEntity;
+import com.icourt.alpha.entity.bean.TaskGroupEntity;
+import com.icourt.alpha.entity.bean.TaskReminderEntity;
 import com.icourt.alpha.entity.bean.TimeEntity;
 import com.icourt.alpha.entity.event.TimingEvent;
+import com.icourt.alpha.fragment.dialogfragment.DateSelectDialogFragment;
+import com.icourt.alpha.fragment.dialogfragment.ProjectSelectDialogFragment;
+import com.icourt.alpha.fragment.dialogfragment.TaskAllotSelectDialogFragment;
+import com.icourt.alpha.http.callback.SimpleCallBack;
+import com.icourt.alpha.http.httpmodel.ResEntity;
+import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
+import com.icourt.alpha.interfaces.OnPageFragmentChangeListener;
+import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.widget.manager.TimerManager;
+import com.icourt.api.RequestUtils;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
+import retrofit2.Call;
+import retrofit2.Response;
 
 /**
  * Description  每天的任务 fragment
@@ -39,7 +60,10 @@ import butterknife.Unbinder;
  */
 
 
-public class TaskEverydayFragment extends BaseFragment {
+public class TaskEverydayFragment extends BaseFragment
+        implements TaskSimpleAdapter.OnShowFragmenDialogListener,
+        OnFragmentCallBackListener,
+        ProjectSelectDialogFragment.OnProjectTaskGroupSelectListener {
 
     private static final String KEY_TASKS = "key_tasks";
     @BindView(R.id.recyclerView)
@@ -76,6 +100,7 @@ public class TaskEverydayFragment extends BaseFragment {
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setHasFixedSize(true);
         recyclerView.setAdapter(taskSimpleAdapter = new TaskSimpleAdapter());
+        taskSimpleAdapter.setOnShowFragmenDialogListener(this);
         taskSimpleAdapter.registerAdapterDataObserver(new DataChangeAdapterObserver() {
             @Override
             protected void updateUI() {
@@ -139,5 +164,286 @@ public class TaskEverydayFragment extends BaseFragment {
     public void onDestroy() {
         EventBus.getDefault().unregister(this);
         super.onDestroy();
+    }
+
+    /**
+     * 展示选择到期时间对话框
+     */
+    private void showDateSelectDialogFragment(long dueTime, String taskId) {
+        String tag = DateSelectDialogFragment.class.getSimpleName();
+        FragmentTransaction mFragTransaction = getChildFragmentManager().beginTransaction();
+        Fragment fragment = getChildFragmentManager().findFragmentByTag(tag);
+        if (fragment != null) {
+            mFragTransaction.remove(fragment);
+        }
+        Calendar calendar = Calendar.getInstance();
+        if (dueTime <= 0) {
+            calendar.set(Calendar.HOUR_OF_DAY, 23);
+            calendar.set(Calendar.MINUTE, 59);
+        } else {
+            calendar.setTimeInMillis(dueTime);
+        }
+        DateSelectDialogFragment.newInstance(calendar, null, taskId)
+                .show(mFragTransaction, tag);
+    }
+
+    /**
+     * 展示选择负责人对话框
+     */
+    public void showTaskAllotSelectDialogFragment(String projectId, List<TaskEntity.TaskItemEntity.AttendeeUserEntity> attendeeUsers) {
+        String tag = "TaskAllotSelectDialogFragment";
+        FragmentTransaction mFragTransaction = getChildFragmentManager().beginTransaction();
+        Fragment fragment = getChildFragmentManager().findFragmentByTag(tag);
+        if (fragment != null) {
+            mFragTransaction.remove(fragment);
+        }
+
+        TaskAllotSelectDialogFragment.newInstance(projectId, attendeeUsers)
+                .show(mFragTransaction, tag);
+    }
+
+    /**
+     * 展示选择项目对话框
+     */
+    public void showProjectSelectDialogFragment() {
+        String tag = "ProjectSelectDialogFragment";
+        FragmentTransaction mFragTransaction = getChildFragmentManager().beginTransaction();
+        Fragment fragment = getChildFragmentManager().findFragmentByTag(tag);
+        if (fragment != null) {
+            mFragTransaction.remove(fragment);
+        }
+
+        ProjectSelectDialogFragment.newInstance()
+                .show(mFragTransaction, tag);
+    }
+
+    TaskEntity.TaskItemEntity updateTaskItemEntity;
+
+    @Override
+    public void showUserSelectDialog(String projectId, TaskEntity.TaskItemEntity taskItemEntity) {
+        updateTaskItemEntity = taskItemEntity;
+        showTaskAllotSelectDialogFragment(projectId, taskItemEntity.attendeeUsers);
+    }
+
+    @Override
+    public void showDateSelectDialog(TaskEntity.TaskItemEntity taskItemEntity) {
+        updateTaskItemEntity = taskItemEntity;
+        if (taskItemEntity != null)
+            showDateSelectDialogFragment(taskItemEntity.dueTime, taskItemEntity.id);
+    }
+
+    @Override
+    public void showProjectSelectDialog(TaskEntity.TaskItemEntity taskItemEntity) {
+        updateTaskItemEntity = taskItemEntity;
+        showProjectSelectDialogFragment();
+    }
+
+    @Override
+    public void onFragmentCallBack(Fragment fragment, int type, Bundle params) {
+        if (params != null) {
+            if (fragment instanceof TaskAllotSelectDialogFragment) {
+                List<TaskEntity.TaskItemEntity.AttendeeUserEntity> attusers = (List<TaskEntity.TaskItemEntity.AttendeeUserEntity>) params.getSerializable("list");
+                if (updateTaskItemEntity.attendeeUsers != null) {
+                    updateTaskItemEntity.attendeeUsers.clear();
+                    updateTaskItemEntity.attendeeUsers.addAll(attusers);
+                    updateTask(updateTaskItemEntity, null, null);
+                }
+            } else if (fragment instanceof DateSelectDialogFragment) {
+                long millis = params.getLong(KEY_FRAGMENT_RESULT);
+                updateTaskItemEntity.dueTime = millis;
+                updateTask(updateTaskItemEntity, null, null);
+
+                TaskReminderEntity taskReminderEntity = (TaskReminderEntity) params.getSerializable("taskReminder");
+                addReminders(updateTaskItemEntity, taskReminderEntity);
+            }
+        }
+    }
+
+    /**
+     * 获取提醒json
+     *
+     * @param taskReminderEntity
+     * @return
+     */
+    private String getReminderJson(TaskReminderEntity taskReminderEntity) {
+        try {
+            if (taskReminderEntity == null) return null;
+            Gson gson = new Gson();
+            return gson.toJson(taskReminderEntity);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    /**
+     * 添加任务提醒
+     *
+     * @param taskItemEntity
+     * @param taskReminderEntity
+     */
+    private void addReminders(TaskEntity.TaskItemEntity taskItemEntity, final TaskReminderEntity taskReminderEntity) {
+        if (taskReminderEntity == null) return;
+        if (taskItemEntity == null) return;
+        String json = getReminderJson(taskReminderEntity);
+        if (TextUtils.isEmpty(json)) return;
+        getApi().taskReminderAdd(taskItemEntity.id, RequestUtils.createJsonBody(json)).enqueue(new SimpleCallBack<TaskReminderEntity>() {
+            @Override
+            public void onSuccess(Call<ResEntity<TaskReminderEntity>> call, Response<ResEntity<TaskReminderEntity>> response) {
+
+            }
+
+            @Override
+            public void onFailure(Call<ResEntity<TaskReminderEntity>> call, Throwable t) {
+                super.onFailure(call, t);
+            }
+        });
+    }
+
+    /**
+     * 修改任务
+     *
+     * @param itemEntity
+     */
+    private void updateTask(TaskEntity.TaskItemEntity itemEntity, ProjectEntity projectEntity, TaskGroupEntity taskGroupEntity) {
+        showLoadingDialog(null);
+        getApi().taskUpdate(RequestUtils.createJsonBody(getTaskJson(itemEntity, projectEntity, taskGroupEntity))).enqueue(new SimpleCallBack<JsonElement>() {
+            @Override
+            public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
+                dismissLoadingDialog();
+            }
+
+            @Override
+            public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
+                super.onFailure(call, t);
+                dismissLoadingDialog();
+            }
+        });
+    }
+
+    /**
+     * 获取任务json
+     *
+     * @param itemEntity
+     * @return
+     */
+    private String getTaskJson(TaskEntity.TaskItemEntity itemEntity, ProjectEntity projectEntity, TaskGroupEntity taskGroupEntity) {
+        if (itemEntity == null) return null;
+        try {
+            JsonObject jsonObject = new JsonObject();
+            jsonObject.addProperty("id", itemEntity.id);
+            jsonObject.addProperty("state", itemEntity.state);
+            jsonObject.addProperty("valid", true);
+            jsonObject.addProperty("name", itemEntity.name);
+            jsonObject.addProperty("parentId", itemEntity.parentId);
+            jsonObject.addProperty("dueTime", itemEntity.dueTime);
+            jsonObject.addProperty("updateTime", DateUtils.millis());
+            if (projectEntity != null) {
+                jsonObject.addProperty("matterId", projectEntity.pkId);
+            }
+            if (taskGroupEntity != null) {
+                jsonObject.addProperty("parentId", taskGroupEntity.id);
+            }
+            JsonArray jsonarr = new JsonArray();
+            if (itemEntity.attendeeUsers != null) {
+                for (TaskEntity.TaskItemEntity.AttendeeUserEntity attendeeUser : itemEntity.attendeeUsers) {
+                    jsonarr.add(attendeeUser.userId);
+                }
+            }
+            jsonObject.add("attendees", jsonarr);
+            return jsonObject.toString();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    @Override
+    public void onProjectTaskGroupSelect(ProjectEntity projectEntity, TaskGroupEntity taskGroupEntity) {
+
+        updateTask2(updateTaskItemEntity, projectEntity, taskGroupEntity);
+    }
+
+    /**
+     * 修改任务
+     *
+     * @param itemEntity
+     */
+    private void updateTask2(TaskEntity.TaskItemEntity itemEntity, ProjectEntity projectEntity, TaskGroupEntity taskGroupEntity) {
+        showLoadingDialog(null);
+        getApi().taskUpdate(RequestUtils.createJsonBody(getTaskJson2(itemEntity, projectEntity, taskGroupEntity))).enqueue(new SimpleCallBack<JsonElement>() {
+            @Override
+            public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
+                dismissLoadingDialog();
+            }
+
+            @Override
+            public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
+                super.onFailure(call, t);
+                dismissLoadingDialog();
+            }
+        });
+    }
+
+    /**
+     * 获取任务json
+     *
+     * @param itemEntity
+     * @return
+     */
+    private String getTaskJson2(TaskEntity.TaskItemEntity itemEntity, ProjectEntity projectEntity, TaskGroupEntity taskGroupEntity) {
+        if (itemEntity == null) return null;
+        try {
+            JsonObject jsonObject = new JsonObject();
+            jsonObject.addProperty("id", itemEntity.id);
+            jsonObject.addProperty("state", itemEntity.state);
+            jsonObject.addProperty("valid", true);
+            jsonObject.addProperty("name", itemEntity.name);
+            jsonObject.addProperty("parentId", itemEntity.parentId);
+            jsonObject.addProperty("dueTime", itemEntity.dueTime);
+            jsonObject.addProperty("updateTime", DateUtils.millis());
+            JsonArray jsonarr = new JsonArray();
+            if (projectEntity != null) {
+                jsonObject.addProperty("matterId", projectEntity.pkId);
+                jsonarr.add(getLoginUserId());
+            } else {
+                if (itemEntity.attendeeUsers != null) {
+                    for (TaskEntity.TaskItemEntity.AttendeeUserEntity attendeeUser : itemEntity.attendeeUsers) {
+                        jsonarr.add(attendeeUser.userId);
+                    }
+                }
+            }
+            jsonObject.add("attendees", jsonarr);
+            if (taskGroupEntity != null) {
+                jsonObject.addProperty("parentId", taskGroupEntity.id);
+            } else {
+                jsonObject.addProperty("parentId", 0);
+            }
+            return jsonObject.toString();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    @Override
+    public void onHiddenChanged(boolean hidden) {
+        super.onHiddenChanged(hidden);
+        if (hidden
+                && rootView != null
+                && taskSimpleAdapter != null) {
+            //移除已经完成的任务
+            boolean isActioned = false;
+            for (int i = taskItemEntityList.size() - 1; i >= 0; i--) {
+                TaskEntity.TaskItemEntity taskItemEntity = taskItemEntityList.get(i);
+                if (taskItemEntity.state) {
+                    isActioned = true;
+                    taskItemEntityList.remove(i);
+                }
+            }
+            if (isActioned) {
+                taskSimpleAdapter.notifyDataSetChanged();
+            }
+        }
     }
 }

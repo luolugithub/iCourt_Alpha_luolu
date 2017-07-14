@@ -205,7 +205,7 @@ public class ChatAlphaSpecialHelperAdapter
                                     if (response.body().result.valid) {
                                         TaskDetailActivity.launch(view.getContext(), msgEntity.id);
                                     } else {
-                                        showTopSnackBar(null, "该任务已删除");
+                                        showTopSnackBar(view, "该任务已删除");
                                     }
                                 }
                             }

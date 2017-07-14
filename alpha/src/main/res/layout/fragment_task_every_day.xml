@@ -13,7 +13,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
-        android:layout_marginTop="100dp"
+        android:layout_marginTop="70dp"
         android:drawablePadding="10dp"
         android:drawableTop="@mipmap/ic_empty_data"
         android:gravity="center"

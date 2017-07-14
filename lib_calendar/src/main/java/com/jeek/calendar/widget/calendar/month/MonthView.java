@@ -393,6 +393,7 @@ public class MonthView extends View {
      * @param canvas
      */
     private void drawHintCircle(Canvas canvas) {
+
         if (mIsShowHint) {
             List<Integer> hints = CalendarUtils.getInstance(getContext()).getTaskHints(mSelYear, mSelMonth);
             if (hints.size() > 0) {
@@ -400,6 +401,9 @@ public class MonthView extends View {
                 int monthDays = CalendarUtils.getMonthDays(mSelYear, mSelMonth);
                 int weekNumber = CalendarUtils.getFirstDayWeek(mSelYear, mSelMonth);
                 for (int day = 0; day < monthDays; day++) {
+
+                    if (day + 1 == mSelDay) continue;    //选中的日期不描点
+
                     int col = (day + weekNumber - 1) % 7;
                     int row = (day + weekNumber - 1) / 7;
                     if (!hints.contains(day + 1)) continue;

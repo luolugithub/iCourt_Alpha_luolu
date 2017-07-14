@@ -181,7 +181,7 @@ public class WeekView extends View {
         mSelYear = year;
         mSelMonth = month;
         mSelDay = day;
-       // Log.d("------->", String.format("mSelYear:%s mSelMonth:%s  mSelDay:%s", year, month, day));
+        Log.d("------->mSelYear:", String.format("%s mSelMonth:%s  mSelDay:%s", year, month, day));
     }
 
     @Override
@@ -351,6 +351,7 @@ public class WeekView extends View {
 
     private void drawHintCircle(List<Integer> hints, int day, int col, Canvas canvas) {
         if (!hints.contains(day)) return;
+        if (day == mSelDay) return; //选中的日期不描点
         float circleX = (float) (mColumnSize * col + mColumnSize * 0.5);
         float circleY = (float) (mRowSize * 0.75);
         canvas.drawCircle(circleX, circleY, mCircleRadius, mPaint);
@@ -372,10 +373,12 @@ public class WeekView extends View {
         int column = x / mColumnSize;
         column = Math.min(column, 6);
         DateTime date = mStartDate.plusDays(column);
+        Log.d("-------------->8:d:",""+date.getDayOfMonth());
         clickThisWeek(date.getYear(), date.getMonthOfYear() - 1, date.getDayOfMonth());
     }
 
     public void clickThisWeek(int year, int month, int day) {
+        Log.d("-------------->7:d:",""+day);
         if (mOnWeekClickListener != null) {
             mOnWeekClickListener.onClickDate(year, month, day);
         }

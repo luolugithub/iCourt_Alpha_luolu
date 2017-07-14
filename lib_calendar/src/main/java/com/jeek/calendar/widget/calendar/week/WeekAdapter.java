@@ -3,6 +3,7 @@ package com.jeek.calendar.widget.calendar.week;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.support.v4.view.PagerAdapter;
+import android.util.Log;
 import android.util.SparseArray;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,6 +11,8 @@ import android.view.ViewGroup;
 import com.jeek.calendar.library.R;
 
 import org.joda.time.DateTime;
+
+import java.text.SimpleDateFormat;
 
 /**
  * Created by Jimmy on 2016/10/7 0007.
@@ -73,6 +76,9 @@ public class WeekAdapter extends PagerAdapter {
     }
 
     public WeekView instanceWeekView(int position) {
+        DateTime dateTime = mStartDate.plusWeeks(position - mWeekCount / 2);
+
+        Log.d("-------->dateTime:", getTimeDateFormatYear(dateTime.getMillis()));
         WeekView weekView = new WeekView(mContext, mArray, mStartDate.plusWeeks(position - mWeekCount / 2));
         weekView.setId(position);
         weekView.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
@@ -80,6 +86,17 @@ public class WeekAdapter extends PagerAdapter {
         weekView.invalidate();
         mViews.put(position, weekView);
         return weekView;
+    }
+
+    /**
+     * 获取日期 yyyy年MM月dd日
+     *
+     * @param milliseconds
+     * @return
+     */
+    public static String getTimeDateFormatYear(long milliseconds) {
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy年MM月dd日");
+        return formatter.format(milliseconds);
     }
 
 }
