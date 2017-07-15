@@ -13,7 +13,6 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.andview.refreshview.XRefreshView;
-import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -41,6 +40,7 @@ import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.interfaces.OnTasksChangeListener;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.ItemDecorationUtils;
+import com.icourt.alpha.utils.JsonUtils;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 import com.icourt.alpha.widget.manager.TimerManager;
 import com.icourt.api.RequestUtils;
@@ -52,6 +52,7 @@ import org.greenrobot.eventbus.ThreadMode;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -95,9 +96,6 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
     HeaderFooterAdapter<TaskAdapter> headerFooterAdapter;
     OnTasksChangeListener onTasksChangeListener;
 
-    Call call;
-
-
     public static TaskListFragment newInstance(int type) {
         TaskListFragment projectTaskFragment = new TaskListFragment();
         Bundle bundle = new Bundle();
@@ -113,26 +111,6 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
         unbinder = ButterKnife.bind(this, view);
         return view;
     }
-
-//    @Override
-//    public void setUserVisibleHint(boolean isVisibleToUser) {
-//        super.setUserVisibleHint(isVisibleToUser);
-//        if (!isVisibleToUser) {
-//            if (call != null && !call.isExecuted()) {
-//                call.cancel();
-//            }
-//        }
-//    }
-
-    //    @Override
-//    public void onHiddenChanged(boolean hidden) {
-//        super.onHiddenChanged(hidden);
-//        if (!hidden) {
-//            if (type == 1 || type == 2) {
-//                getData(true);
-//            }
-//        }
-//    }
 
     @Override
     public void onAttach(Context context) {
@@ -192,7 +170,7 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
         noDueTaskEntities = new ArrayList<>();
         newTaskEntities = new ArrayList<>();
         datedTaskEntities = new ArrayList<>();
-        if (type == 1 || type == 2) {
+        if (type == TYPE_NEW || type == TYPE_MY_ATTENTION) {
             if (getParentFragment() instanceof TabTaskFragment) {
                 ((TabTaskFragment) getParentFragment()).setOnCheckAllNewTaskListener(this);
             }
@@ -221,9 +199,14 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
         } else if (type == TYPE_MY_ATTENTION) {
             attentionType = 1;
         }
-        call = getApi()
-                .taskListQuery(0, getLoginUserId(), 0, attentionType, "dueTime", 1, -1, 0);
-        call.enqueue(new SimpleCallBack<TaskEntity>() {
+        getApi().taskListQuery(0,
+                getLoginUserId(),
+                0,
+                attentionType,
+                "dueTime",
+                1,
+                -1,
+                0).enqueue(new SimpleCallBack<TaskEntity>() {
             @Override
             public void onSuccess(Call<ResEntity<TaskEntity>> call, Response<ResEntity<TaskEntity>> response) {
                 stopRefresh();
@@ -266,8 +249,8 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
                     } else {
                         noDueTaskEntities.add(taskItemEntity);
                     }
-                    if (type == 1) {
-                        if (DateUtils.millis() - taskItemEntity.assignTime <= (24 * 60 * 60 * 1000) && !TextUtils.isEmpty(getLoginUserId())) {
+                    if (type == TYPE_NEW) {
+                        if (DateUtils.millis() - taskItemEntity.assignTime <= TimeUnit.DAYS.toMillis(1) && !TextUtils.isEmpty(getLoginUserId())) {
                             if (taskItemEntity.createUser != null) {
                                 if (!TextUtils.equals(taskItemEntity.createUser.userId, getLoginUserId())) {
                                     if (!TextUtils.isEmpty(taskItemEntity.readUserIds)) {
@@ -282,7 +265,7 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
                         }
                     }
                 }
-                if (type != 1) {
+                if (type != TYPE_NEW) {
                     if (datedTaskEntities.size() > 0) {
                         TaskEntity todayTask = new TaskEntity();
                         todayTask.items = datedTaskEntities;
@@ -496,7 +479,7 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
      * 展示选择负责人对话框
      */
     public void showTaskAllotSelectDialogFragment(String projectId, List<TaskEntity.TaskItemEntity.AttendeeUserEntity> attendeeUsers) {
-        String tag = "TaskAllotSelectDialogFragment";
+        String tag = TaskAllotSelectDialogFragment.class.getSimpleName();
         FragmentTransaction mFragTransaction = getChildFragmentManager().beginTransaction();
         Fragment fragment = getChildFragmentManager().findFragmentByTag(tag);
         if (fragment != null) {
@@ -511,7 +494,7 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
      * 展示选择项目对话框
      */
     public void showProjectSelectDialogFragment() {
-        String tag = "ProjectSelectDialogFragment";
+        String tag = ProjectSelectDialogFragment.class.getSimpleName();
         FragmentTransaction mFragTransaction = getChildFragmentManager().beginTransaction();
         Fragment fragment = getChildFragmentManager().findFragmentByTag(tag);
         if (fragment != null) {
@@ -651,33 +634,28 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
      */
     private String getTaskJson(TaskEntity.TaskItemEntity itemEntity, ProjectEntity projectEntity, TaskGroupEntity taskGroupEntity) {
         if (itemEntity == null) return null;
-        try {
-            JsonObject jsonObject = new JsonObject();
-            jsonObject.addProperty("id", itemEntity.id);
-            jsonObject.addProperty("state", itemEntity.state);
-            jsonObject.addProperty("valid", true);
-            jsonObject.addProperty("name", itemEntity.name);
-            jsonObject.addProperty("parentId", itemEntity.parentId);
-            jsonObject.addProperty("dueTime", itemEntity.dueTime);
-            jsonObject.addProperty("updateTime", DateUtils.millis());
-            if (projectEntity != null) {
-                jsonObject.addProperty("matterId", projectEntity.pkId);
-            }
-            if (taskGroupEntity != null) {
-                jsonObject.addProperty("parentId", taskGroupEntity.id);
-            }
-            JsonArray jsonarr = new JsonArray();
-            if (itemEntity.attendeeUsers != null) {
-                for (TaskEntity.TaskItemEntity.AttendeeUserEntity attendeeUser : itemEntity.attendeeUsers) {
-                    jsonarr.add(attendeeUser.userId);
-                }
-            }
-            jsonObject.add("attendees", jsonarr);
-            return jsonObject.toString();
-        } catch (Exception e) {
-            e.printStackTrace();
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("id", itemEntity.id);
+        jsonObject.addProperty("state", itemEntity.state);
+        jsonObject.addProperty("valid", true);
+        jsonObject.addProperty("name", itemEntity.name);
+        jsonObject.addProperty("parentId", itemEntity.parentId);
+        jsonObject.addProperty("dueTime", itemEntity.dueTime);
+        jsonObject.addProperty("updateTime", DateUtils.millis());
+        if (projectEntity != null) {
+            jsonObject.addProperty("matterId", projectEntity.pkId);
         }
-        return null;
+        if (taskGroupEntity != null) {
+            jsonObject.addProperty("parentId", taskGroupEntity.id);
+        }
+        JsonArray jsonarr = new JsonArray();
+        if (itemEntity.attendeeUsers != null) {
+            for (TaskEntity.TaskItemEntity.AttendeeUserEntity attendeeUser : itemEntity.attendeeUsers) {
+                jsonarr.add(attendeeUser.userId);
+            }
+        }
+        jsonObject.add("attendees", jsonarr);
+        return jsonObject.toString();
     }
 
     /**
@@ -688,37 +666,32 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
      */
     private String getTaskJson2(TaskEntity.TaskItemEntity itemEntity, ProjectEntity projectEntity, TaskGroupEntity taskGroupEntity) {
         if (itemEntity == null) return null;
-        try {
-            JsonObject jsonObject = new JsonObject();
-            jsonObject.addProperty("id", itemEntity.id);
-            jsonObject.addProperty("state", itemEntity.state);
-            jsonObject.addProperty("valid", true);
-            jsonObject.addProperty("name", itemEntity.name);
-            jsonObject.addProperty("parentId", itemEntity.parentId);
-            jsonObject.addProperty("dueTime", itemEntity.dueTime);
-            jsonObject.addProperty("updateTime", DateUtils.millis());
-            JsonArray jsonarr = new JsonArray();
-            if (projectEntity != null) {
-                jsonObject.addProperty("matterId", projectEntity.pkId);
-                jsonarr.add(getLoginUserId());
-            } else {
-                if (itemEntity.attendeeUsers != null) {
-                    for (TaskEntity.TaskItemEntity.AttendeeUserEntity attendeeUser : itemEntity.attendeeUsers) {
-                        jsonarr.add(attendeeUser.userId);
-                    }
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("id", itemEntity.id);
+        jsonObject.addProperty("state", itemEntity.state);
+        jsonObject.addProperty("valid", true);
+        jsonObject.addProperty("name", itemEntity.name);
+        jsonObject.addProperty("parentId", itemEntity.parentId);
+        jsonObject.addProperty("dueTime", itemEntity.dueTime);
+        jsonObject.addProperty("updateTime", DateUtils.millis());
+        JsonArray jsonarr = new JsonArray();
+        if (projectEntity != null) {
+            jsonObject.addProperty("matterId", projectEntity.pkId);
+            jsonarr.add(getLoginUserId());
+        } else {
+            if (itemEntity.attendeeUsers != null) {
+                for (TaskEntity.TaskItemEntity.AttendeeUserEntity attendeeUser : itemEntity.attendeeUsers) {
+                    jsonarr.add(attendeeUser.userId);
                 }
             }
-            jsonObject.add("attendees", jsonarr);
-            if (taskGroupEntity != null) {
-                jsonObject.addProperty("parentId", taskGroupEntity.id);
-            } else {
-                jsonObject.addProperty("parentId", 0);
-            }
-            return jsonObject.toString();
-        } catch (Exception e) {
-            e.printStackTrace();
         }
-        return null;
+        jsonObject.add("attendees", jsonarr);
+        if (taskGroupEntity != null) {
+            jsonObject.addProperty("parentId", taskGroupEntity.id);
+        } else {
+            jsonObject.addProperty("parentId", 0);
+        }
+        return jsonObject.toString();
     }
 
     /**
@@ -754,8 +727,7 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
     private String getReminderJson(TaskReminderEntity taskReminderEntity) {
         try {
             if (taskReminderEntity == null) return null;
-            Gson gson = new Gson();
-            return gson.toJson(taskReminderEntity);
+            return JsonUtils.getGson().toJson(taskReminderEntity);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -788,8 +760,7 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
 
     @Override
     public void onRefreshNewTask(int type) {
-        //this.type = type;
-        if (type == 1 || type == 2) {
+        if (type == TYPE_NEW || type == TYPE_MY_ATTENTION) {
             getData(true);
         }
     }
