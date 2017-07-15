@@ -1,7 +1,10 @@
 package com.icourt;
 
+import java.text.CollationKey;
+import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -30,8 +33,30 @@ public class MyClass {
 
     public static void main(String[] args) throws Exception {
 
-        int age=Integer.parseInt("06");
-        log("------age:"+age);
+        List<String> data = Arrays.asList("测试二","测5","测试三", "aa");
+        Collections.sort(data, new Comparator<String>() {
+            @Override
+            public int compare(String s, String t1) {
+                Collator cmp = Collator.getInstance(java.util.Locale.CHINA);
+                CollationKey c1 = cmp.getCollationKey(s);
+                CollationKey c2 = cmp.getCollationKey(t1);
+                return cmp.compare(c1.getSourceString(),c2.getSourceString());
+            }
+        });
+        log("-------->data:" + data);
+        Calendar keyClendar = Calendar.getInstance();
+        keyClendar.clear();
+        log("------Y:" + keyClendar.get(Calendar.YEAR));
+        log("------M:" + keyClendar.get(Calendar.MONTH));
+        log("------H:" + keyClendar.get(Calendar.HOUR));
+        log("------H2:" + keyClendar.get(Calendar.MILLISECOND));
+    /*    keyClendar.set(Calendar.HOUR,0);
+        keyClendar.set(Calendar.SECOND,0);
+        keyClendar.set(Calendar.MINUTE,0);*/
+
+
+        int age = Integer.parseInt("06");
+        log("------age:" + age);
 
 
         System.out.println("name hash:" + NAME.hashCode());

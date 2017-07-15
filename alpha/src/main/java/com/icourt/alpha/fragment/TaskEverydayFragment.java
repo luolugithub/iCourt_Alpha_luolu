@@ -89,8 +89,7 @@ public class TaskEverydayFragment extends BaseFragment
                 int taskHour1 = calendarTask1.get(Calendar.HOUR_OF_DAY);
                 int taskMinute1 = calendarTask1.get(Calendar.MINUTE);
                 int taskSecond1 = calendarTask1.get(Calendar.SECOND);
-                boolean isAllDayTask1 = ((taskHour1 == 0 && taskMinute1 == 0)
-                        || (taskHour1 == 23 && taskMinute1 == 59 && taskSecond1 == 59));
+                boolean isAllDayTask1 = (taskHour1 == 23 && taskMinute1 == 59 && taskSecond1 == 59);
 
 
                 Calendar calendarTask2 = Calendar.getInstance();
@@ -98,8 +97,7 @@ public class TaskEverydayFragment extends BaseFragment
                 int taskHour2 = calendarTask2.get(Calendar.HOUR_OF_DAY);
                 int taskMinute2 = calendarTask2.get(Calendar.MINUTE);
                 int taskSecond2 = calendarTask2.get(Calendar.SECOND);
-                boolean isAllDayTask2 = ((taskHour2 == 0 && taskMinute2 == 0)
-                        || (taskHour2 == 23 && taskMinute2 == 59 && taskSecond2 == 59));
+                boolean isAllDayTask2 = (taskHour2 == 23 && taskMinute2 == 59 && taskSecond2 == 59);
 
                 if (isAllDayTask1 && isAllDayTask2) {
                     return 0;

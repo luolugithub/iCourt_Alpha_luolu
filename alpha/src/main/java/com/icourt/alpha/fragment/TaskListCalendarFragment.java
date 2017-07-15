@@ -6,6 +6,7 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -105,7 +106,7 @@ public class TaskListCalendarFragment extends BaseFragment {
     @Override
     protected void initView() {
         taskItemEntityList.clear();
-        ArrayList<TaskEntity.TaskItemEntity> taskEntity = (ArrayList<TaskEntity.TaskItemEntity>) getArguments().getSerializable(KEY_TASKS);
+        final ArrayList<TaskEntity.TaskItemEntity> taskEntity = (ArrayList<TaskEntity.TaskItemEntity>) getArguments().getSerializable(KEY_TASKS);
         if (taskEntity != null) {
             taskItemEntityList.addAll(taskEntity);
         }
@@ -157,8 +158,18 @@ public class TaskListCalendarFragment extends BaseFragment {
                         TaskEntity.TaskItemEntity taskItemEntity = data.get(i);
                         if (taskItemEntity.state) {
                             data.remove(i);
+
+
                         }
                     }
+                }
+
+                //移除本天的小红点
+                List<TaskEntity.TaskItemEntity> data2 = dailyTaskMap.get(key);
+                if (data2 == null || data2.isEmpty()) {
+                    Calendar calendar = Calendar.getInstance();
+                    calendar.setTimeInMillis(key);
+                    slSchedule.removeTaskHint(calendar.get(Calendar.DAY_OF_MONTH));
                 }
             }
 
@@ -303,21 +314,63 @@ public class TaskListCalendarFragment extends BaseFragment {
             public void onPageChange(int year, int month, int day) {
                 log("----------->onPageChange year:" + year + "  month:" + month + "   day:" + day);
                 updateTitle(year, month + 1, day);
-                slSchedule.addTaskHints(
-                        getMonthTaskHint(year, month));
             }
         });
         updateTitle(slSchedule.getCurrentSelectYear(),
                 slSchedule.getCurrentSelectMonth() + 1,
                 slSchedule.getCurrentSelectDay());
 
-        slSchedule.addTaskHints(
-                getMonthTaskHint(slSchedule.getCurrentSelectYear(), slSchedule.getCurrentSelectMonth()));
+
+        CalendarUtils.getInstance(getContext()).removeAllTaskHint();
+        HashMap<Long, List<Integer>> allTaskHint = getAllTaskHint();
+        for (Map.Entry<Long, List<Integer>> entry : allTaskHint.entrySet()) {
+            Long key = entry.getKey();
+            if (key == null) continue;
+            List<Integer> value = entry.getValue();
+            if (value == null) continue;
+            Calendar clendar = Calendar.getInstance();
+            clendar.setTimeInMillis(key);
+            CalendarUtils.getInstance(getContext())
+                    .addTaskHints(clendar.get(Calendar.YEAR), clendar.get(Calendar.MONTH), value);
+        }
+        slSchedule.invalidate();
     }
 
 
     private void updateTitle(int year, int month, int day) {
         titleContent.setText(String.format("%s年%s月", year, month));
+    }
+
+
+    /**
+     * 获取所有的任务提示[天 0-31]
+     *
+     * @return
+     */
+    private HashMap<Long, List<Integer>> getAllTaskHint() {
+        HashMap<Long, List<Integer>> allTaskHintMap = new HashMap<>();
+        for (TaskEntity.TaskItemEntity item : taskItemEntityList) {
+            if (item == null) continue;
+            Calendar clendar = Calendar.getInstance();
+            clendar.setTimeInMillis(item.dueTime);
+            int day = clendar.get(Calendar.DAY_OF_MONTH);
+
+            Calendar keyClendar = Calendar.getInstance();
+            keyClendar.clear();
+            keyClendar.set(Calendar.YEAR, clendar.get(Calendar.YEAR));
+            keyClendar.set(Calendar.MONTH, clendar.get(Calendar.MONTH));
+
+            long key = keyClendar.getTimeInMillis();
+            List<Integer> integers = allTaskHintMap.get(keyClendar.getTimeInMillis());
+            if (integers == null) {
+                integers = new ArrayList<>();
+            }
+            if (!integers.contains(day)) {
+                integers.add(day);
+            }
+            allTaskHintMap.put(key, integers);
+        }
+        return allTaskHintMap;
     }
 
     /**

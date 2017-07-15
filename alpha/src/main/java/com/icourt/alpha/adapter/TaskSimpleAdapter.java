@@ -31,8 +31,10 @@ import com.icourt.alpha.widget.manager.TimerManager;
 import com.icourt.api.RequestUtils;
 
 import org.greenrobot.eventbus.EventBus;
+import org.w3c.dom.Text;
 
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.List;
 
 import retrofit2.Call;
@@ -75,25 +77,52 @@ public class TaskSimpleAdapter extends MultiSelectRecyclerAdapter<TaskEntity.Tas
         TextView task_desc_tv = holder.obtainView(R.id.task_desc_tv);
         ImageView task_item_timming_iv = holder.obtainView(R.id.task_item_timming_iv);
         task_name_tv.setText(taskItemEntity.name);
-        if (taskItemEntity.state)//已完成
+        if (taskItemEntity.state)//已完成-->updateTime
         {
             task_item_checkbox.setImageResource(R.mipmap.checkbox_selected);
-            task_desc_tv.setText(String.format("%s %s",
-                    DateUtils.get23Hour59MinFormat(taskItemEntity.updateTime)
-                    , getProjectTaskGroupInfo(taskItemEntity)));
+            String adjustTimeFormat = getAdjustTimeFormat(taskItemEntity.updateTime);
+            if (!TextUtils.isEmpty(adjustTimeFormat)) {
+                task_desc_tv.setText(String.format("%s  %s",
+                        adjustTimeFormat
+                        , getProjectTaskGroupInfo(taskItemEntity)));
+            } else {
+                task_desc_tv.setText(getProjectTaskGroupInfo(taskItemEntity));
+            }
         } else {
             task_item_checkbox.setImageResource(R.mipmap.checkbox_unselect);
-            task_desc_tv.setText(String.format("%s %s",
-                    DateUtils.get23Hour59MinFormat(taskItemEntity.dueTime)
-                    , getProjectTaskGroupInfo(taskItemEntity)));
-        }
-        if (taskItemEntity.isTiming) {
-
+            String adjustTimeFormat = getAdjustTimeFormat(taskItemEntity.dueTime);
+            if (!TextUtils.isEmpty(adjustTimeFormat)) {
+                task_desc_tv.setText(String.format("%s  %s",
+                        adjustTimeFormat
+                        , getProjectTaskGroupInfo(taskItemEntity)));
+            } else {
+                task_desc_tv.setText(getProjectTaskGroupInfo(taskItemEntity));
+            }
         }
         task_item_timming_iv.setImageResource(taskItemEntity.isTiming ? R.drawable.orange_side_dot_bg : R.mipmap.icon_start_20);
 
         holder.bindChildClick(task_item_checkbox);
         holder.bindChildClick(task_item_timming_iv);
+    }
+
+    /**
+     * 获取显示时间
+     * 23:59:59 不显示
+     *
+     * @param millis
+     * @return
+     */
+    private String getAdjustTimeFormat(long millis) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(millis);
+        int hourOfDay = calendar.get(Calendar.HOUR_OF_DAY);
+        int minute = calendar.get(Calendar.MINUTE);
+        int second = calendar.get(Calendar.SECOND);
+        if (hourOfDay == 23 && minute == 59 && second == 59) {
+            return "";
+        } else {
+            return DateUtils.getHHmm(millis);
+        }
     }
 
     /**

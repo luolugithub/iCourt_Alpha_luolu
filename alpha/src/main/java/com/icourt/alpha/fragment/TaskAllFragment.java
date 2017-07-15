@@ -116,7 +116,6 @@ public class TaskAllFragment extends BaseFragment implements OnTasksChangeListen
 
     private Fragment getFragment(int type) {
         if (type == TYPE_ALL_TASK_CALENDAR) {
-            CalendarUtils.getInstance(getContext()).removeAllTaskHint();
             //伪实时刷新
             return TaskListCalendarFragment.newInstance(taskItemEntityList);
         }
