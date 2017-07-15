@@ -183,9 +183,9 @@ public class ReminderFragment extends BaseFragment
                                 }
                             }
                         } else if (TextUtils.equals(taskReminderType, TaskReminderEntity.PRECISE)) {
-                            if (!TaskReminderUtils.preciseMap.containsKey(ruleTimeitem)) {
-                                addCoustomReminder(ruleTimeitem, taskReminderType);
-                            }
+//                            if (!TaskReminderUtils.preciseMap.containsKey(ruleTimeitem)) {
+                            addCoustomReminder(ruleTimeitem, taskReminderType);
+//                            }
                         }
                     }
                 }
@@ -220,11 +220,13 @@ public class ReminderFragment extends BaseFragment
                                 } else {
                                     reminderListAdapter.setSelected(i, true);
                                 }
-                            }else {
+                            } else {
                                 reminderListAdapter.setSelected(i, true);
                             }
                         } else if (TextUtils.equals(taskReminderType, TaskReminderEntity.PRECISE)) {
-                            reminderListAdapter.setSelected(i, true);
+                            if (TextUtils.equals(taskReminderType, taskReminderEntity.taskReminderType)) {
+                                reminderListAdapter.setSelected(i, true);
+                            }
                         }
                     }
                 }
