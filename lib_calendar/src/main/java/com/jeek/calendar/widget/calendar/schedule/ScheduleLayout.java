@@ -127,19 +127,18 @@ public class ScheduleLayout extends FrameLayout {
         mCurrentSelectYear = year;
         mCurrentSelectMonth = month;
         mCurrentSelectDay = day;
-        Log.d("-------------->10:d:", "" + day);
     }
 
     private OnCalendarClickListener mMonthCalendarClickListener = new OnCalendarClickListener() {
         @Override
         public void onClickDate(int year, int month, int day) {
             wcvCalendar.setOnCalendarClickListener(null);
-           // Log.d("============>m1:", "year:" + year + "  month:" + month + "   day:" + day);
-           // Log.d("============>m:", "CurrentSelectYear:" + mCurrentSelectYear + "  mCurrentSelectMonth:" + mCurrentSelectMonth + "   mCurrentSelectDay:" + mCurrentSelectDay);
+            // Log.d("============>m1:", "year:" + year + "  month:" + month + "   day:" + day);
+            // Log.d("============>m:", "CurrentSelectYear:" + mCurrentSelectYear + "  mCurrentSelectMonth:" + mCurrentSelectMonth + "   mCurrentSelectDay:" + mCurrentSelectDay);
             int weeks = CalendarUtils.getWeeksAgo(mCurrentSelectYear, mCurrentSelectMonth, mCurrentSelectDay, year, month, day);
-           // Log.d("============>week:", "" + weeks);
+            // Log.d("============>week:", "" + weeks);
             resetCurrentSelectDate(year, month, day);
-          //  Log.d("============>m2:", "CurrentSelectYear:" + mCurrentSelectYear + "  mCurrentSelectMonth:" + mCurrentSelectMonth + "   mCurrentSelectDay:" + mCurrentSelectDay);
+            //  Log.d("============>m2:", "CurrentSelectYear:" + mCurrentSelectYear + "  mCurrentSelectMonth:" + mCurrentSelectMonth + "   mCurrentSelectDay:" + mCurrentSelectDay);
             int position = wcvCalendar.getCurrentItem() + weeks;
             if (weeks != 0) {
                 wcvCalendar.setCurrentItem(position, false);
@@ -175,11 +174,9 @@ public class ScheduleLayout extends FrameLayout {
     private void resetWeekView(int position) {
         WeekView weekView = wcvCalendar.getCurrentWeekView();
         if (weekView != null) {
-            Log.d("-------------->3:d:",""+mCurrentSelectDay);
             weekView.setSelectYearMonth(mCurrentSelectYear, mCurrentSelectMonth, mCurrentSelectDay);
             weekView.invalidate();
         } else {
-            Log.d("-------------->4:d:",""+mCurrentSelectDay);
             WeekView newWeekView = wcvCalendar.getWeekAdapter().instanceWeekView(position);
             newWeekView.setSelectYearMonth(mCurrentSelectYear, mCurrentSelectMonth, mCurrentSelectDay);
             newWeekView.invalidate();
@@ -193,10 +190,9 @@ public class ScheduleLayout extends FrameLayout {
     private OnCalendarClickListener mWeekCalendarClickListener = new OnCalendarClickListener() {
         @Override
         public void onClickDate(int year, int month, int day) {
-            Log.d("-------------->9:d:", "" + day);
             mcvCalendar.setOnCalendarClickListener(null);
             //Log.d("============>w:", "year:" + year + "  month:" + month + "   day:" + day);
-           // Log.d("============>w1:", "CurrentSelectYear:" + mCurrentSelectYear + "  mCurrentSelectMonth:" + mCurrentSelectMonth + "   mCurrentSelectDay:" + mCurrentSelectDay);
+            // Log.d("============>w1:", "CurrentSelectYear:" + mCurrentSelectYear + "  mCurrentSelectMonth:" + mCurrentSelectMonth + "   mCurrentSelectDay:" + mCurrentSelectDay);
             int months = CalendarUtils.getMonthsAgo(mCurrentSelectYear, mCurrentSelectMonth, year, month);
             resetCurrentSelectDate(year, month, day);
             if (months != 0) {
@@ -457,11 +453,9 @@ public class ScheduleLayout extends FrameLayout {
         if (week != 0) {
             int position = wcvCalendar.getCurrentItem() + week;
             if (wcvCalendar.getWeekViews().get(position) != null) {
-                Log.d("-------------->1:d:",""+mCurrentSelectDay);
                 wcvCalendar.getWeekViews().get(position).setSelectYearMonth(mCurrentSelectYear, mCurrentSelectMonth, mCurrentSelectDay);
                 wcvCalendar.getWeekViews().get(position).invalidate();
             } else {
-                Log.d("-------------->2:d:",""+mCurrentSelectDay);
                 WeekView newWeekView = wcvCalendar.getWeekAdapter().instanceWeekView(position);
                 newWeekView.setSelectYearMonth(mCurrentSelectYear, mCurrentSelectMonth, mCurrentSelectDay);
                 newWeekView.invalidate();

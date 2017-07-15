@@ -181,7 +181,6 @@ public class WeekView extends View {
         mSelYear = year;
         mSelMonth = month;
         mSelDay = day;
-        Log.d("------->mSelYear:", String.format("%s mSelMonth:%s  mSelDay:%s", year, month, day));
     }
 
     @Override
@@ -373,12 +372,10 @@ public class WeekView extends View {
         int column = x / mColumnSize;
         column = Math.min(column, 6);
         DateTime date = mStartDate.plusDays(column);
-        Log.d("-------------->8:d:",""+date.getDayOfMonth());
         clickThisWeek(date.getYear(), date.getMonthOfYear() - 1, date.getDayOfMonth());
     }
 
     public void clickThisWeek(int year, int month, int day) {
-        Log.d("-------------->7:d:",""+day);
         if (mOnWeekClickListener != null) {
             mOnWeekClickListener.onClickDate(year, month, day);
         }

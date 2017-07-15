@@ -78,7 +78,6 @@ public class WeekAdapter extends PagerAdapter {
     public WeekView instanceWeekView(int position) {
         DateTime dateTime = mStartDate.plusWeeks(position - mWeekCount / 2);
 
-        Log.d("-------->dateTime:", getTimeDateFormatYear(dateTime.getMillis()));
         WeekView weekView = new WeekView(mContext, mArray, mStartDate.plusWeeks(position - mWeekCount / 2));
         weekView.setId(position);
         weekView.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));

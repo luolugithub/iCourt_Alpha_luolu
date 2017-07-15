@@ -11,6 +11,7 @@ import com.jeek.calendar.library.R;
 import com.jeek.calendar.widget.calendar.CalendarUtils;
 import com.jeek.calendar.widget.calendar.OnCalendarClickListener;
 
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
 /**
@@ -57,7 +58,6 @@ public class WeekCalendarView extends ViewPager implements OnWeekClickListener {
     @Override
     public void onClickDate(int year, int month, int day) {
         setSlectedYearMonthDay(year, month, day);
-        Log.d("-------------->6:d:", "" + day);
         if (mOnCalendarClickListener != null) {
             mOnCalendarClickListener.onClickDate(year, month, day);
         }
@@ -78,18 +78,29 @@ public class WeekCalendarView extends ViewPager implements OnWeekClickListener {
                 calendar2.set(Calendar.MONTH, weekView.getSelectMonth());
                 calendar2.set(Calendar.DAY_OF_MONTH, weekView.getSelectDay());
 
-                Log.d("-------------->51:", "day:" + weekView.getSelectDay());
+                Calendar selCalendar = Calendar.getInstance();
+                selCalendar.set(Calendar.YEAR, mSelYear);
+                selCalendar.set(Calendar.MONTH, mSelMonth);
+                selCalendar.set(Calendar.DAY_OF_MONTH, mSelDay);
 
-                int year = calendar2.get(Calendar.YEAR);
-                int month = calendar2.get(Calendar.MONTH);
-                int day = calendar2.get(Calendar.DAY_OF_MONTH);
+                if (calendar2.getTimeInMillis() > selCalendar.getTimeInMillis()) {
+                    selCalendar.add(Calendar.DAY_OF_MONTH, 7);
+                } else if (calendar2.getTimeInMillis() < selCalendar.getTimeInMillis()) {
+                    selCalendar.add(Calendar.DAY_OF_MONTH, -7);
+                }
+
+                //calendar2.set(Calendar.DAY_OF_WEEK,selCalendar.get(Calendar.DAY_OF_WEEK));
+
+                int year = selCalendar.get(Calendar.YEAR);
+                int month = selCalendar.get(Calendar.MONTH);
+                int day = selCalendar.get(Calendar.DAY_OF_MONTH);
+
                 weekView.clickThisWeek(year, month, day);
 
 
                 if (mOnCalendarClickListener != null) {
                     mOnCalendarClickListener.onPageChange(year, month, day);
                 }
-                Log.d("-------------->5:d:", "" + weekView.getSelectDay());
             } else {
                 WeekCalendarView.this.postDelayed(new Runnable() {
                     @Override
