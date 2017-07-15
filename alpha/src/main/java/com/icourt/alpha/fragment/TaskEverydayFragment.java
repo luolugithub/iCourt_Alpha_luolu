@@ -43,6 +43,8 @@ import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import butterknife.BindView;
@@ -73,6 +75,58 @@ public class TaskEverydayFragment extends BaseFragment
     final ArrayList<TaskEntity.TaskItemEntity> taskItemEntityList = new ArrayList<>();
     @BindView(R.id.contentEmptyText)
     TextView contentEmptyText;
+    /**
+     * 排序规则
+     * 1:全天任务的优先级应该大于非全天任务
+     * 2:同一时间到期的任务，应该按修改时间刷新排序
+     */
+    Comparator<TaskEntity.TaskItemEntity> taskItemEntityComparator = new Comparator<TaskEntity.TaskItemEntity>() {
+        @Override
+        public int compare(TaskEntity.TaskItemEntity o1, TaskEntity.TaskItemEntity o2) {
+            if (o1 != null && o2 != null) {
+                Calendar calendarTask1 = Calendar.getInstance();
+                calendarTask1.setTimeInMillis(o1.dueTime);
+                int taskHour1 = calendarTask1.get(Calendar.HOUR_OF_DAY);
+                int taskMinute1 = calendarTask1.get(Calendar.MINUTE);
+                int taskSecond1 = calendarTask1.get(Calendar.SECOND);
+                boolean isAllDayTask1 = ((taskHour1 == 0 && taskMinute1 == 0)
+                        || (taskHour1 == 23 && taskMinute1 == 59 && taskSecond1 == 59));
+
+
+                Calendar calendarTask2 = Calendar.getInstance();
+                calendarTask2.setTimeInMillis(o2.dueTime);
+                int taskHour2 = calendarTask2.get(Calendar.HOUR_OF_DAY);
+                int taskMinute2 = calendarTask2.get(Calendar.MINUTE);
+                int taskSecond2 = calendarTask2.get(Calendar.SECOND);
+                boolean isAllDayTask2 = ((taskHour2 == 0 && taskMinute2 == 0)
+                        || (taskHour2 == 23 && taskMinute2 == 59 && taskSecond2 == 59));
+
+                if (isAllDayTask1 && isAllDayTask2) {
+                    return 0;
+                } else if (isAllDayTask1) {
+                    return -1;
+                } else if (isAllDayTask2) {
+                    return 1;
+                } else {
+                    //同一时间到期的任务，应该按修改时间刷新排序
+                    long distanceCreateTime = calendarTask1.getTimeInMillis() - calendarTask1.getTimeInMillis();
+                    if (distanceCreateTime == 0) {
+                        long distanceUpdateTime = o1.updateTime - o2.updateTime;
+                        if (distanceUpdateTime > 0) {
+                            return -1;
+                        } else if (distanceUpdateTime < 0) {
+                            return 1;
+                        } else {
+                            return 0;
+                        }
+                    } else {
+                        return distanceCreateTime > 0 ? -1 : 1;
+                    }
+                }
+            }
+            return 0;
+        }
+    };
 
     public static TaskEverydayFragment newInstance(ArrayList<TaskEntity.TaskItemEntity> data) {
         TaskEverydayFragment fragment = new TaskEverydayFragment();
@@ -96,6 +150,7 @@ public class TaskEverydayFragment extends BaseFragment
         ArrayList<TaskEntity.TaskItemEntity> taskEntity = (ArrayList<TaskEntity.TaskItemEntity>) getArguments().getSerializable(KEY_TASKS);
         if (taskEntity != null) {
             taskItemEntityList.addAll(taskEntity);
+            Collections.sort(taskItemEntityList, taskItemEntityComparator);
         }
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setHasFixedSize(true);
@@ -427,10 +482,9 @@ public class TaskEverydayFragment extends BaseFragment
     }
 
     @Override
-    public void onHiddenChanged(boolean hidden) {
-        super.onHiddenChanged(hidden);
-        if (hidden
-                && rootView != null
+    public void setUserVisibleHint(boolean isVisibleToUser) {
+        super.setUserVisibleHint(isVisibleToUser);
+        if (isVisibleToUser
                 && taskSimpleAdapter != null) {
             //移除已经完成的任务
             boolean isActioned = false;
@@ -442,8 +496,10 @@ public class TaskEverydayFragment extends BaseFragment
                 }
             }
             if (isActioned) {
-                taskSimpleAdapter.notifyDataSetChanged();
+                Collections.sort(taskItemEntityList, taskItemEntityComparator);
+                taskSimpleAdapter.bindData(true, taskItemEntityList);
             }
         }
     }
+
 }
