@@ -1,13 +1,11 @@
 package com.icourt.alpha.adapter;
 
-import android.widget.CheckedTextView;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.baseadapter.MultiSelectRecyclerAdapter;
 import com.icourt.alpha.entity.bean.TaskCheckItemEntity;
-import com.icourt.alpha.utils.SpannableUtils;
 
 /**
  * Description
@@ -26,17 +24,15 @@ public class TaskCheckItemAdapter extends MultiSelectRecyclerAdapter<TaskCheckIt
 
     @Override
     public void onBindSelectableHolder(ViewHolder holder, TaskCheckItemEntity.ItemEntity itemEntity, boolean selected, int position) {
-        CheckedTextView checkedTextView = holder.obtainView(R.id.check_item_checktext_tv);
+        ImageView checkedTextView = holder.obtainView(R.id.check_item_checktext_tv);
         TextView nameView = holder.obtainView(R.id.check_item_name_tv);
         ImageView deleteView = holder.obtainView(R.id.check_item_delete_image);
         if (itemEntity.state) {
-            checkedTextView.setChecked(true);
-            getSelectedArray().put(position, true);
+            checkedTextView.setImageResource(R.mipmap.checkbox_square_checked_highlight);
             nameView.setTextColor(0xFF8c8f92);
         } else {
-            checkedTextView.setChecked(false);
+            checkedTextView.setImageResource(R.mipmap.checkbox_square);
             nameView.setTextColor(0xFF4A4A4A);
-            getSelectedArray().delete(position);
         }
 
         nameView.setText(itemEntity.name);

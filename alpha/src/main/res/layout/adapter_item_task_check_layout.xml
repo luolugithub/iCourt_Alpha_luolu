@@ -10,11 +10,11 @@
         android:orientation="horizontal"
         android:padding="@dimen/dp15">
 
-        <CheckedTextView
+        <ImageView
             android:id="@+id/check_item_checktext_tv"
             android:layout_width="20dp"
             android:layout_height="20dp"
-            android:background="@drawable/son_task_checkbox_selector_bg" />
+            android:background="@mipmap/checkbox_square" />
 
         <TextView
             android:id="@+id/check_item_name_tv"

@@ -13,7 +13,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
-import android.widget.CheckedTextView;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -265,16 +264,17 @@ public class TaskCheckItemFragment extends BaseFragment implements BaseRecyclerA
         showLoadingDialog(null);
         switch (view.getId()) {
             case R.id.check_item_checktext_tv:
-                CheckedTextView checkedTextView = (CheckedTextView) view;
-                if (checkedTextView.isChecked()) {
-                    itemEntity.state = false;
-                } else {
-                    itemEntity.state = true;
-                }
+//                CheckedTextView checkedTextView = (CheckedTextView) view;
+//                if (checkedTextView.isChecked()) {
+//                    itemEntity.state = false;
+//                } else {
+//                    itemEntity.state = true;
+//                }
+                itemEntity.state = !itemEntity.state;
                 finisCheckItem(itemEntity, adapter.getRealPos(position));
                 break;
             case R.id.check_item_delete_image:
-                deleteCheckItem(itemEntity,adapter.getRealPos(position));
+                deleteCheckItem(itemEntity, adapter.getRealPos(position));
 
                 break;
         }
@@ -291,12 +291,13 @@ public class TaskCheckItemFragment extends BaseFragment implements BaseRecyclerA
             public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
                 dismissLoadingDialog();
                 EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION));
+                taskCheckItemAdapter.setSelected(position, itemEntity.state);
                 taskCheckItemAdapter.updateItem(itemEntity);
-                if (itemEntity.state) {
-                    taskCheckItemAdapter.getSelectedArray().put(position, true);
-                } else {
-                    taskCheckItemAdapter.getSelectedArray().delete(position);
-                }
+//                if (itemEntity.state) {
+//                    taskCheckItemAdapter.getSelectedArray().put(position, true);
+//                } else {
+//                    taskCheckItemAdapter.getSelectedArray().delete(position);
+//                }
                 updateCheckItem();
             }
 
