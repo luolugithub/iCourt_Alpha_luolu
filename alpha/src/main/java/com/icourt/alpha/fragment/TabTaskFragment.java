@@ -24,6 +24,7 @@ import com.icourt.alpha.entity.bean.TaskMemberEntity;
 import com.icourt.alpha.fragment.dialogfragment.TaskMemberSelectDialogFragment;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.interfaces.OnTasksChangeListener;
+import com.icourt.alpha.view.NoScrollViewPager;
 import com.icourt.alpha.widget.dialog.BottomActionDialog;
 
 import java.io.Serializable;
@@ -51,7 +52,7 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
     @BindView(R.id.titleView)
     AppBarLayout titleView;
     @BindView(R.id.viewPager)
-    ViewPager viewPager;
+    NoScrollViewPager viewPager;
     Unbinder unbinder;
     BaseFragmentAdapter baseFragmentAdapter;
     @BindView(R.id.titleAction2)
@@ -81,6 +82,7 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
     @Override
     protected void initView() {
         baseFragmentAdapter = new BaseFragmentAdapter(getChildFragmentManager());
+        viewPager.setNoScroll(false);
         viewPager.setAdapter(baseFragmentAdapter);
         tabLayout.setupWithViewPager(viewPager);
         baseFragmentAdapter.bindTitle(true, Arrays.asList("全部", "新任务", "我关注的"));
@@ -153,10 +155,12 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
                     TaskAllFragment taskAllFragment = (TaskAllFragment) item;
                     switch (taskAllFragment.getChildFragmentType()) {
                         case TaskAllFragment.TYPE_ALL_TASK:
+                            viewPager.setNoScroll(true);
                             titleCalendar.setImageResource(R.mipmap.ic_card_list);
                             taskAllFragment.notifyFragmentUpdate(taskAllFragment, TaskAllFragment.TYPE_ALL_TASK_CALENDAR, null);
                             break;
                         case TaskAllFragment.TYPE_ALL_TASK_CALENDAR:
+                            viewPager.setNoScroll(false);
                             titleCalendar.setImageResource(R.mipmap.ic_calendar);
                             taskAllFragment.notifyFragmentUpdate(taskAllFragment, TaskAllFragment.TYPE_ALL_TASK, null);
                             break;
@@ -169,23 +173,26 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
             case R.id.titleAction2:
                 if (viewPager.getCurrentItem() != 1) {
 //                new BottomActionDialog(getContext(), null, Arrays.asList("我分配的任务", "已完成的任务", "选择查看对象"), new BottomActionDialog.OnActionItemClickListener() {
-                    new BottomActionDialog(getContext(), null, Arrays.asList("查看他人任务", "查看已完成的"), new BottomActionDialog.OnActionItemClickListener() {
-                        @Override
-                        public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
-                            dialog.dismiss();
-                            switch (position) {
+                    new BottomActionDialog(getContext(),
+                            null,
+                            Arrays.asList("查看他人任务", "查看已完成的"),
+                            new BottomActionDialog.OnActionItemClickListener() {
+                                @Override
+                                public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
+                                    dialog.dismiss();
+                                    switch (position) {
 //                            case 0:
 //                                MyAllotTaskActivity.launch(getContext(), TaskOtherListFragment.MY_ALLOT_TYPE, null);
 //                                break;
-                                case 0:
-                                    showMemberSelectDialogFragment();
-                                    break;
-                                case 1:
-                                    MyFinishTaskActivity.launch(getContext());
-                                    break;
-                            }
-                        }
-                    }).show();
+                                        case 0:
+                                            showMemberSelectDialogFragment();
+                                            break;
+                                        case 1:
+                                            MyFinishTaskActivity.launch(getContext());
+                                            break;
+                                    }
+                                }
+                            }).show();
                 } else {
                     if (onCheckAllNewTaskListener != null)
                         onCheckAllNewTaskListener.onCheckAll();
