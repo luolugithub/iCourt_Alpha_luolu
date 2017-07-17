@@ -35,7 +35,7 @@ import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.utils.DensityUtil;
 import com.icourt.alpha.utils.IndexUtils;
-import com.icourt.alpha.utils.PinyinComparator;
+import com.icourt.alpha.widget.comparators.PinyinComparator;
 import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.widget.filter.ListFilter;

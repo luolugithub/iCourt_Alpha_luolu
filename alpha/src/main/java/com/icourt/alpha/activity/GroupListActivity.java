@@ -30,7 +30,7 @@ import com.icourt.alpha.utils.ActionConstants;
 import com.icourt.alpha.utils.DensityUtil;
 import com.icourt.alpha.utils.IMUtils;
 import com.icourt.alpha.utils.IndexUtils;
-import com.icourt.alpha.utils.PinyinComparator;
+import com.icourt.alpha.widget.comparators.PinyinComparator;
 import com.icourt.alpha.view.recyclerviewDivider.SuspensionDecoration;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 

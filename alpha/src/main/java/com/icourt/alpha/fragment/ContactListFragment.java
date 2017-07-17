@@ -33,7 +33,7 @@ import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.DensityUtil;
 import com.icourt.alpha.utils.IndexUtils;
-import com.icourt.alpha.utils.PinyinComparator;
+import com.icourt.alpha.widget.comparators.PinyinComparator;
 import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.view.recyclerviewDivider.SuspensionDecoration;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;

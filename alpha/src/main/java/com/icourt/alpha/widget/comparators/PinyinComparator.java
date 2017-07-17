@@ -1,4 +1,4 @@
-package com.icourt.alpha.utils;
+package com.icourt.alpha.widget.comparators;
 
 
 import android.text.TextUtils;
