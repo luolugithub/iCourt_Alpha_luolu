@@ -273,7 +273,8 @@ public class ReminderFragment extends BaseFragment
         if (TextUtils.equals(taskReminderType, TaskReminderEntity.ALL_DAY)) {
             if (TaskReminderUtils.preciseMap.containsKey(timeKey) && calendar != null) {
                 if (TextUtils.equals(timeKey, "0MB")) {
-                    setAllDayReminder(customTimeItemEntity, "0", "day", calendar.get(Calendar.HOUR_OF_DAY) + ":" + calendar.get(Calendar.MINUTE));
+//                    setAllDayReminder(customTimeItemEntity, "0", "day", calendar.get(Calendar.HOUR_OF_DAY) + ":" + calendar.get(Calendar.MINUTE));
+                    setAllDayReminder(customTimeItemEntity, "0", "day", DateUtils.getHHmm(calendar.getTimeInMillis()));
                 } else if (TextUtils.equals(timeKey, "5MB")) {
                     setAllDayReminder(customTimeItemEntity, "0", "day", DateUtils.getHHmm(DateUtils.getMillByHourmin(calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE)) - (5 * 60 * 1000)));
                 } else if (TextUtils.equals(timeKey, "10MB")) {
@@ -285,9 +286,11 @@ public class ReminderFragment extends BaseFragment
                 } else if (TextUtils.equals(timeKey, "2HB")) {
                     setAllDayReminder(customTimeItemEntity, "0", "day", DateUtils.getHHmm(DateUtils.getMillByHourmin(calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE)) - (2 * 60 * 60 * 1000)));
                 } else if (TextUtils.equals(timeKey, "1DB")) {
-                    setAllDayReminder(customTimeItemEntity, "1", "day", calendar.get(Calendar.HOUR_OF_DAY) + ":" + calendar.get(Calendar.MINUTE));
+//                    setAllDayReminder(customTimeItemEntity, "1", "day", calendar.get(Calendar.HOUR_OF_DAY) + ":" + calendar.get(Calendar.MINUTE));
+                    setAllDayReminder(customTimeItemEntity, "1", "day", DateUtils.getHHmm(calendar.getTimeInMillis()));
                 } else if (TextUtils.equals(timeKey, "2DB")) {
-                    setAllDayReminder(customTimeItemEntity, "2", "day", calendar.get(Calendar.HOUR_OF_DAY) + ":" + calendar.get(Calendar.MINUTE));
+//                    setAllDayReminder(customTimeItemEntity, "2", "day", calendar.get(Calendar.HOUR_OF_DAY) + ":" + calendar.get(Calendar.MINUTE));
+                    setAllDayReminder(customTimeItemEntity, "2", "day", DateUtils.getHHmm(calendar.getTimeInMillis()));
                 }
             }
         } else if (TextUtils.equals(taskReminderType, TaskReminderEntity.PRECISE)) {

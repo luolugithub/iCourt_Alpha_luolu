@@ -252,14 +252,6 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
         if (fragment != null) {
             mFragTransaction.remove(fragment);
         }
-//        Calendar calendar = Calendar.getInstance();
-//        if (dueTime <= 0) {
-//            calendar.set(Calendar.HOUR_OF_DAY, 23);
-//            calendar.set(Calendar.MINUTE, 59);
-
-//        } else {
-//            calendar.setTimeInMillis(dueTime);
-//        }
         if (dueTime > 0) {
             Calendar calendar = Calendar.getInstance();
             calendar.setTimeInMillis(dueTime);
@@ -322,7 +314,6 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
      */
     private void updateTask(final TaskEntity.TaskItemEntity itemEntity, final ProjectEntity projectEntity, final TaskGroupEntity taskGroupEntity) {
         showLoadingDialog(null);
-        log("------------>itemEntity:" + itemEntity + "\nprojectEntity:" + projectEntity + "\ntaskGroupEntity:" + taskGroupEntity);
         getApi().taskUpdate(RequestUtils.createJsonBody(getTaskJson(itemEntity, projectEntity, taskGroupEntity))).enqueue(new SimpleCallBack<JsonElement>() {
             @Override
             public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
@@ -355,7 +346,7 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
                         taskGroupTv.setText(taskItemEntity != null ? taskItemEntity.parentFlow != null ? taskItemEntity.parentFlow.name : "" : "");
                     }
                 }
-
+                addReminders(taskReminderEntity);
                 EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION, itemEntity.id, ""));
             }
 
@@ -479,9 +470,9 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
                 }
 
                 taskItemEntity.dueTime = millis;
-                updateTask(taskItemEntity, null, selectedTaskGroup);
                 taskReminderEntity = (TaskReminderEntity) params.getSerializable("taskReminder");
-                addReminders(taskReminderEntity);
+                updateTask(taskItemEntity, null, selectedTaskGroup);
+
             } else if (fragment instanceof TaskGroupSelectFragment) {//选择任务组回调
                 TaskGroupEntity taskGroupEntity = (TaskGroupEntity) params.getSerializable(KEY_FRAGMENT_RESULT);
                 if (taskGroupEntity != null) {
