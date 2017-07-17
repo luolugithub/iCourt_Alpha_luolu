@@ -482,9 +482,22 @@ public interface ApiAlphaService {
      *
      * @param msg
      * @return
+     * @see {taskUpdateNew}
      */
+    @Deprecated
     @PUT("api/v2/taskflow")
     Call<ResEntity<JsonElement>> taskUpdate(@Body RequestBody msg);
+
+    /**
+     * 修改任务
+     * <p>
+     * 文档地址：http://testpms.alphalawyer.cn/ilaw/swagger/index.html#!/taskflow-api/updateTaskFlowUsingPUT
+     *
+     * @param msg
+     * @return
+     */
+    @PUT("api/v2/taskflow")
+    Call<ResEntity<TaskEntity.TaskItemEntity>> taskUpdateNew(@Body RequestBody msg);
 
     /**
      * 获取任务详情
@@ -1180,6 +1193,7 @@ public interface ApiAlphaService {
     /**
      * 新增任务提醒
      * 文档地址：https://test.alphalawyer.cn/ilaw/swagger/index.html#!/taskflow-api/addTaskRemindersUsingPOST
+     *
      * @param taskId
      * @return
      */

@@ -20,6 +20,7 @@ import com.icourt.alpha.R;
 import com.icourt.alpha.activity.SearchProjectActivity;
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.entity.bean.TaskEntity;
+import com.icourt.alpha.entity.event.TaskActionEvent;
 import com.icourt.alpha.utils.DensityUtil;
 import com.icourt.alpha.view.GestureDetectorLayout;
 import com.jeek.calendar.widget.calendar.CalendarUtils;
@@ -28,6 +29,10 @@ import com.jeek.calendar.widget.calendar.month.MonthCalendarView;
 import com.jeek.calendar.widget.calendar.schedule.ScheduleLayout;
 import com.jeek.calendar.widget.calendar.schedule.ScheduleState;
 import com.jeek.calendar.widget.calendar.week.WeekCalendarView;
+
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -74,7 +79,6 @@ public class TaskListCalendarFragment extends BaseFragment {
     @BindView(R.id.slSchedule)
     ScheduleLayout slSchedule;
     final ArrayList<TaskEntity.TaskItemEntity> taskItemEntityList = new ArrayList<>();
-    final Map<Long, ArrayList<TaskEntity.TaskItemEntity>> dailyTaskMap = new HashMap();
     FragmentPagerAdapter fragmentPagerAdapter;
     @BindView(R.id.rl_comm_search)
     RelativeLayout rlCommSearch;
@@ -108,12 +112,12 @@ public class TaskListCalendarFragment extends BaseFragment {
 
     @Override
     protected void initView() {
+        EventBus.getDefault().register(this);
         taskItemEntityList.clear();
         final ArrayList<TaskEntity.TaskItemEntity> taskEntity = (ArrayList<TaskEntity.TaskItemEntity>) getArguments().getSerializable(KEY_TASKS);
         if (taskEntity != null) {
             taskItemEntityList.addAll(taskEntity);
         }
-        calculateDailyTasks();
         viewPager.setAdapter(fragmentPagerAdapter = new FragmentPagerAdapter(getChildFragmentManager()) {
             @Override
             public Fragment getItem(int position) {
@@ -126,7 +130,7 @@ public class TaskListCalendarFragment extends BaseFragment {
                 clendar.set(Calendar.MILLISECOND, 0);
                 int centerPos = MAXDAILYPAGE / 2;
                 long key = clendar.getTimeInMillis() - (centerPos - position) * TimeUnit.DAYS.toMillis(1);
-                return TaskEverydayFragment.newInstance(dailyTaskMap.get(key));
+                return TaskEverydayFragment.newInstance(key, getDayTask(key));
             }
 
             @Override
@@ -155,24 +159,23 @@ public class TaskListCalendarFragment extends BaseFragment {
                 clendar.set(Calendar.MILLISECOND, 0);
                 int centerPos = MAXDAILYPAGE / 2;
                 long key = clendar.getTimeInMillis() - (centerPos - position) * TimeUnit.DAYS.toMillis(1);
-                List<TaskEntity.TaskItemEntity> data = dailyTaskMap.get(key);
-                if (data != null) {
-                    for (int i = data.size() - 1; i >= 0; i--) {
-                        TaskEntity.TaskItemEntity taskItemEntity = data.get(i);
-                        if (taskItemEntity.state) {
-                            data.remove(i);
-
-
-                        }
+                boolean deleted = false;
+                for (int i = taskItemEntityList.size() - 1; i >= 0; i--) {
+                    TaskEntity.TaskItemEntity taskItemEntity = taskItemEntityList.get(i);
+                    if (taskItemEntity.state) {
+                        deleted = true;
+                        taskItemEntityList.remove(i);
                     }
                 }
 
-                //移除本天的小红点
-                List<TaskEntity.TaskItemEntity> data2 = dailyTaskMap.get(key);
-                if (data2 == null || data2.isEmpty()) {
-                    Calendar calendar = Calendar.getInstance();
-                    calendar.setTimeInMillis(key);
-                    slSchedule.removeTaskHint(calendar.get(Calendar.DAY_OF_MONTH));
+                if (deleted) {
+                    List<Integer> taskHint = slSchedule.getTaskHint();
+                    if (taskHint != null && !taskHint.isEmpty()) {
+                        slSchedule.removeTaskHints(taskHint);
+                    }
+
+                    //更新本月的小红点
+                    slSchedule.addTaskHints(getMonthTaskHint(slSchedule.getCurrentSelectYear(), slSchedule.getCurrentSelectMonth()));
                 }
             }
 
@@ -196,6 +199,8 @@ public class TaskListCalendarFragment extends BaseFragment {
         gestureDetectorLayout.setGestureDetector(new GestureDetector(getContext(), new GestureDetector.SimpleOnGestureListener() {
             @Override
             public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
+                if (Math.abs(distanceX) >= Math.abs(distanceY))
+                    return super.onScroll(e1, e2, distanceX, distanceY);
                 if (slSchedule.getmState() == ScheduleState.CLOSE
                         && distanceY > 0) {
                     if (Math.abs(gestureDetectorLayout.getY()) < calendarTitleLl.getHeight()) {
@@ -268,29 +273,6 @@ public class TaskListCalendarFragment extends BaseFragment {
         }
     };
 
-    /**
-     * 计算每日的任务
-     */
-    private void calculateDailyTasks() {
-        for (TaskEntity.TaskItemEntity item : taskItemEntityList) {
-            if (item == null) continue;
-            if (item.dueTime <= 0) continue;
-            Calendar clendar = Calendar.getInstance();
-            clendar.setTimeInMillis(item.dueTime);
-            clendar.set(Calendar.HOUR_OF_DAY, 0);
-            clendar.set(Calendar.MINUTE, 0);
-            clendar.set(Calendar.SECOND, 0);
-            clendar.set(Calendar.MILLISECOND, 0);
-            ArrayList<TaskEntity.TaskItemEntity> taskItemEntities = dailyTaskMap.get(clendar.getTimeInMillis());
-            if (taskItemEntities == null) {
-                taskItemEntities = new ArrayList<>();
-            }
-            if (!taskItemEntities.contains(item)) {
-                taskItemEntities.add(item);
-            }
-            dailyTaskMap.put(clendar.getTimeInMillis(), taskItemEntities);
-        }
-    }
 
     /**
      * 滚动到某天的任务列表
@@ -372,6 +354,34 @@ public class TaskListCalendarFragment extends BaseFragment {
         titleContent.setText(String.format("%s年%s月", year, month));
     }
 
+
+    /**
+     * 动态计算
+     *
+     * @param targetDayTime
+     * @return
+     */
+    private ArrayList<TaskEntity.TaskItemEntity> getDayTask(long targetDayTime) {
+        ArrayList<TaskEntity.TaskItemEntity> taskItemEntities = new ArrayList<>();
+        Calendar targetDay = Calendar.getInstance();
+        targetDay.setTimeInMillis(targetDayTime);
+        for (TaskEntity.TaskItemEntity item : taskItemEntityList) {
+            if (item == null) continue;
+            if (item.dueTime <= 0) continue;
+            Calendar clendar = Calendar.getInstance();
+            clendar.setTimeInMillis(item.dueTime);
+            clendar.set(Calendar.HOUR_OF_DAY, 0);
+            clendar.set(Calendar.MINUTE, 0);
+            clendar.set(Calendar.SECOND, 0);
+            clendar.set(Calendar.MILLISECOND, 0);
+
+            if (targetDay.get(Calendar.YEAR) == clendar.get(Calendar.YEAR)
+                    && targetDay.get(Calendar.DAY_OF_YEAR) == clendar.get(Calendar.DAY_OF_YEAR)) {
+                taskItemEntities.add(item);
+            }
+        }
+        return taskItemEntities;
+    }
 
     /**
      * 获取所有的任务提示[天 0-31]
@@ -458,6 +468,42 @@ public class TaskListCalendarFragment extends BaseFragment {
         }
     }
 
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onTaskEvent(TaskActionEvent event) {
+        if (event == null) return;
+        if (event.action == TaskActionEvent.TASK_UPDATE_ITEM) {
+            if (event.entity == null) return;
+            int indexOf = taskItemEntityList.indexOf(event.entity);
+            if (indexOf >= 0) {
+                TaskEntity.TaskItemEntity taskItemEntity = taskItemEntityList.get(indexOf);
+
+                Calendar targetCalendar = Calendar.getInstance();
+                targetCalendar.setTimeInMillis(taskItemEntity.dueTime);
+                int targetYear = targetCalendar.get(Calendar.YEAR);
+                int targetMonth = targetCalendar.get(Calendar.MONTH);
+
+
+                Calendar eventCalendar = Calendar.getInstance();
+                eventCalendar.setTimeInMillis(event.entity.dueTime);
+                int eventYear = eventCalendar.get(Calendar.YEAR);
+                int eventMonth = eventCalendar.get(Calendar.MONTH);
+                if (slSchedule != null) {
+                    if ((targetYear == slSchedule.getCurrentSelectYear() && targetMonth == slSchedule.getCurrentSelectMonth())
+                            || (eventYear == slSchedule.getCurrentSelectYear() && eventMonth == slSchedule.getCurrentSelectMonth())) {
+                        List<Integer> taskHint = slSchedule.getTaskHint();
+                        if (taskHint != null && !taskHint.isEmpty()) {
+                            slSchedule.removeTaskHints(taskHint);
+                        }
+
+                        //更新本月的小红点
+                        slSchedule.addTaskHints(getMonthTaskHint(slSchedule.getCurrentSelectYear(), slSchedule.getCurrentSelectMonth()));
+                    }
+                }
+                taskItemEntityList.set(indexOf, event.entity);
+            }
+
+        }
+    }
 
     @Override
     public void onDestroyView() {
@@ -465,4 +511,9 @@ public class TaskListCalendarFragment extends BaseFragment {
         unbinder.unbind();
     }
 
+    @Override
+    public void onDestroy() {
+        EventBus.getDefault().unregister(this);
+        super.onDestroy();
+    }
 }

@@ -192,6 +192,25 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
         }
     }
 
+    @Override
+    public void setUserVisibleHint(boolean isVisibleToUser) {
+        super.setUserVisibleHint(isVisibleToUser);
+        if (isVisibleToUser && recyclerView != null) {
+            if (type == TYPE_NEW) {
+                getData(true);
+            }
+        }
+    }
+
+    @Override
+    public void notifyFragmentUpdate(Fragment targetFrgament, int type, Bundle bundle) {
+        super.notifyFragmentUpdate(targetFrgament, type, bundle);
+        //刷新
+        if (targetFrgament == this && type == 100
+                && recyclerView != null) {
+            getData(true);
+        }
+    }
 
     @Override
     protected void getData(boolean isRefresh) {

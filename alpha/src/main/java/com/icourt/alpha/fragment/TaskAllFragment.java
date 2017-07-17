@@ -171,6 +171,11 @@ public class TaskAllFragment extends BaseFragment implements OnTasksChangeListen
         super.notifyFragmentUpdate(targetFrgament, type, bundle);
         getArguments().putInt("childFragment", type);
         currFragment = addOrShowFragment(getFragment(type), currFragment, R.id.main_fl_content);
+
+        if (type == TYPE_ALL_TASK) {
+            BaseFragment fragment = (BaseFragment) getFragment(TYPE_ALL_TASK);
+            if (fragment != null) fragment.notifyFragmentUpdate(fragment, 100, null);
+        }
     }
 
     @ChildFragmentType

@@ -563,6 +563,11 @@ public class MonthView extends View {
         return false;
     }
 
+
+    public List<Integer> getTaskHints() {
+        return CalendarUtils.getInstance(getContext()).getTaskHints(mCurrYear, mCurrMonth);
+    }
+
     /**
      * 删除一个圆点提示
      *

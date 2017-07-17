@@ -588,6 +588,13 @@ public class ScheduleLayout extends FrameLayout {
         }
     }
 
+    public List<Integer> getTaskHint() {
+        if (mcvCalendar.getCurrentMonthView() != null) {
+            return mcvCalendar.getCurrentMonthView().getTaskHints();
+        }
+        return null;
+    }
+
     public ScheduleRecyclerView getSchedulerRecyclerView() {
         return rvScheduleList;
     }

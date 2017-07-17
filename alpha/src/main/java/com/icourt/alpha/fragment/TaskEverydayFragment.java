@@ -25,6 +25,7 @@ import com.icourt.alpha.entity.bean.TaskEntity;
 import com.icourt.alpha.entity.bean.TaskGroupEntity;
 import com.icourt.alpha.entity.bean.TaskReminderEntity;
 import com.icourt.alpha.entity.bean.TimeEntity;
+import com.icourt.alpha.entity.event.TaskActionEvent;
 import com.icourt.alpha.entity.event.TimingEvent;
 import com.icourt.alpha.fragment.dialogfragment.DateSelectDialogFragment;
 import com.icourt.alpha.fragment.dialogfragment.ProjectSelectDialogFragment;
@@ -67,6 +68,7 @@ public class TaskEverydayFragment extends BaseFragment
         ProjectSelectDialogFragment.OnProjectTaskGroupSelectListener {
 
     private static final String KEY_TASKS = "key_tasks";
+    private static final String KEY_DAY = "key_day";
     @BindView(R.id.recyclerView)
     RecyclerView recyclerView;
     Unbinder unbinder;
@@ -125,9 +127,10 @@ public class TaskEverydayFragment extends BaseFragment
         }
     };
 
-    public static TaskEverydayFragment newInstance(ArrayList<TaskEntity.TaskItemEntity> data) {
+    public static TaskEverydayFragment newInstance(long dayTime, ArrayList<TaskEntity.TaskItemEntity> data) {
         TaskEverydayFragment fragment = new TaskEverydayFragment();
         Bundle args = new Bundle();
+        args.putLong(KEY_DAY, dayTime);
         args.putSerializable(KEY_TASKS, data);
         fragment.setArguments(args);
         return fragment;
@@ -163,6 +166,49 @@ public class TaskEverydayFragment extends BaseFragment
         });
         EventBus.getDefault().register(this);
         getData(true);
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onTaskEvent(TaskActionEvent event) {
+        if (event == null) return;
+        if (event.action == TaskActionEvent.TASK_UPDATE_ITEM) {
+            if (event.entity == null) return;
+
+            int indexOf = taskItemEntityList.indexOf(event.entity);
+            if (indexOf >= 0) {
+                if (isSameTodayTask(event.entity.dueTime)) {
+                    taskItemEntityList.set(indexOf, event.entity);
+                    taskSimpleAdapter.updateItem(event.entity);
+                } else {
+                    taskItemEntityList.remove(indexOf);
+                    taskSimpleAdapter.bindData(true, taskItemEntityList);
+                }
+            } else {
+                if (isSameTodayTask(event.entity.dueTime)) {
+                    taskItemEntityList.add(event.entity);
+                    Collections.sort(taskItemEntityList, taskItemEntityComparator);
+                    taskSimpleAdapter.bindData(true, taskItemEntityList);
+                }
+            }
+        }
+    }
+
+
+    /**
+     * 是否是同一天任务
+     *
+     * @param time
+     * @return
+     */
+    private boolean isSameTodayTask(long time) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(getArguments().getLong(KEY_DAY));
+
+        Calendar targetCalendar = Calendar.getInstance();
+        targetCalendar.setTimeInMillis(time);
+
+        return calendar.get(Calendar.YEAR) == targetCalendar.get(Calendar.YEAR)
+                && calendar.get(Calendar.DAY_OF_YEAR) == targetCalendar.get(Calendar.DAY_OF_YEAR);
     }
 
     @Override
@@ -359,18 +405,21 @@ public class TaskEverydayFragment extends BaseFragment
      */
     private void updateTask(TaskEntity.TaskItemEntity itemEntity, ProjectEntity projectEntity, TaskGroupEntity taskGroupEntity) {
         showLoadingDialog(null);
-        getApi().taskUpdate(RequestUtils.createJsonBody(getTaskJson(itemEntity, projectEntity, taskGroupEntity))).enqueue(new SimpleCallBack<JsonElement>() {
-            @Override
-            public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
-                dismissLoadingDialog();
-            }
+        getApi().taskUpdateNew(RequestUtils.createJsonBody(getTaskJson(itemEntity, projectEntity, taskGroupEntity)))
+                .enqueue(new SimpleCallBack<TaskEntity.TaskItemEntity>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<TaskEntity.TaskItemEntity>> call, Response<ResEntity<TaskEntity.TaskItemEntity>> response) {
+                        dismissLoadingDialog();
+                        if (response.body().result != null)
+                            EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_UPDATE_ITEM, response.body().result));
+                    }
 
-            @Override
-            public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
-                super.onFailure(call, t);
-                dismissLoadingDialog();
-            }
-        });
+                    @Override
+                    public void onFailure(Call<ResEntity<TaskEntity.TaskItemEntity>> call, Throwable t) {
+                        dismissLoadingDialog();
+                        super.onFailure(call, t);
+                    }
+                });
     }
 
     /**
@@ -423,18 +472,21 @@ public class TaskEverydayFragment extends BaseFragment
      */
     private void updateTask2(TaskEntity.TaskItemEntity itemEntity, ProjectEntity projectEntity, TaskGroupEntity taskGroupEntity) {
         showLoadingDialog(null);
-        getApi().taskUpdate(RequestUtils.createJsonBody(getTaskJson2(itemEntity, projectEntity, taskGroupEntity))).enqueue(new SimpleCallBack<JsonElement>() {
-            @Override
-            public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
-                dismissLoadingDialog();
-            }
+        getApi().taskUpdateNew(RequestUtils.createJsonBody(getTaskJson2(itemEntity, projectEntity, taskGroupEntity)))
+                .enqueue(new SimpleCallBack<TaskEntity.TaskItemEntity>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<TaskEntity.TaskItemEntity>> call, Response<ResEntity<TaskEntity.TaskItemEntity>> response) {
+                        dismissLoadingDialog();
+                        if (response.body().result != null)
+                            EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_UPDATE_ITEM, response.body().result));
+                    }
 
-            @Override
-            public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
-                super.onFailure(call, t);
-                dismissLoadingDialog();
-            }
-        });
+                    @Override
+                    public void onFailure(Call<ResEntity<TaskEntity.TaskItemEntity>> call, Throwable t) {
+                        dismissLoadingDialog();
+                        super.onFailure(call, t);
+                    }
+                });
     }
 
     /**
