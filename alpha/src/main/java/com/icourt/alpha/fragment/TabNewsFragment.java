@@ -43,7 +43,9 @@ import butterknife.Unbinder;
  * version 1.0.0
  */
 public class TabNewsFragment extends BaseFragment
-        implements OnTabDoubleClickListener, OnFragmentCallBackListener, OnPageFragmentCallBack {
+        implements OnTabDoubleClickListener,
+        OnFragmentCallBackListener,
+        OnPageFragmentCallBack {
 
     Unbinder unbinder;
     @BindView(R.id.tabLayout)
@@ -103,6 +105,15 @@ public class TabNewsFragment extends BaseFragment
                 Arrays.asList(MessageListFragment.newInstance(),
                         AtMeFragment.newInstance(),
                         ContactListFragment.newInstance()));
+    }
+
+    @Override
+    public void setUserVisibleHint(boolean isVisibleToUser) {
+        super.setUserVisibleHint(isVisibleToUser);
+        if (isVisibleToUser && viewPager != null) {
+            //无论tab滑动到哪一页 都选中消息
+            viewPager.setCurrentItem(0);
+        }
     }
 
     @OnClick({R.id.ivActionAdd})

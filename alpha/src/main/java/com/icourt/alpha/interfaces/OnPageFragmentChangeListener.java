@@ -13,5 +13,11 @@ import android.support.v4.app.Fragment;
 
 public interface OnPageFragmentChangeListener {
 
+    /**
+     * 设置选中的fragment
+     * @param frgament
+     * @param pos
+     * @param bundle
+     */
     void onPageFragmentSelected(Fragment frgament, int pos, Bundle bundle);
 }

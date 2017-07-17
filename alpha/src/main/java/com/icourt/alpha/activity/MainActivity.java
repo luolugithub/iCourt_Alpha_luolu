@@ -480,6 +480,7 @@ public class MainActivity extends BaseAppUpdateActivity
 
     public void checkedFragment(@ChildFragmentType int type) {
         currentFragment = addOrShowFragment(getTabFragment(type), currentFragment, R.id.main_fl_content);
+        currentFragment.setUserVisibleHint(true);
     }
 
 
@@ -589,7 +590,7 @@ public class MainActivity extends BaseAppUpdateActivity
                     public void onSuccess(Call<ResEntity<AlphaUserInfo>> call, Response<ResEntity<AlphaUserInfo>> response) {
                         if (response.body().result != null) {
                             AlphaClient.setToken(response.body().result.getToken());
-                            
+
                             //重新附值两个最新的token
                             loginUserInfo.setToken(response.body().result.getToken());
                             loginUserInfo.setRefreshToken(response.body().result.getRefreshToken());
