@@ -36,6 +36,7 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
@@ -488,6 +489,7 @@ public class DateSelectFragment extends BaseFragment {
                     }
                     duetimeTv.setText(DateUtils.getHHmm(selectedCalendar.getTimeInMillis()));
                     duetimeTv.setTextColor(SystemUtils.getColor(getContext(), R.color.alpha_font_color_black));
+                    convertCoustomReminder();
                 }
                 break;
             case R.id.clear_dutime_iv://1 到期日 转换全天任务
@@ -496,10 +498,8 @@ public class DateSelectFragment extends BaseFragment {
                 clearDutimeIv.setVisibility(View.INVISIBLE);
                 setUnSetDate(23, 59, 59);
                 deadlineSelectLl.setVisibility(View.GONE);
-//                if (taskReminderEntity != null) {
-//                    taskReminderEntity.taskReminderType = TaskReminderEntity.ALL_DAY;
-//                }
                 taskReminderType = TaskReminderEntity.ALL_DAY;
+                convertCoustomReminder();
                 break;
             case R.id.add_reminder_layout://添加提醒
                 addReminderLayout.setVisibility(View.GONE);
@@ -645,6 +645,133 @@ public class DateSelectFragment extends BaseFragment {
     public void onDestroyView() {
         super.onDestroyView();
         unbinder.unbind();
+    }
+
+    /**
+     * 转换自定义
+     */
+    private void convertCoustomReminder() {
+        /**
+         * ruleTime设置时间集合
+         * 根据ruleTime --->
+         */
+        if (!TextUtils.equals(taskReminderType, taskReminderEntity.taskReminderType)) {
+            if (taskReminderEntity.ruleTime != null) {
+                Iterator it = taskReminderEntity.ruleTime.iterator();
+                while (it.hasNext()) {
+                    String ruleTimeitem = (String) it.next();
+                    if (taskReminderEntity.customTime == null) {
+                        taskReminderEntity.customTime = new ArrayList<>();
+                    }
+                    if (TextUtils.equals(taskReminderType, TaskReminderEntity.ALL_DAY)) {
+                        if (!TaskReminderUtils.alldayMap.containsKey(ruleTimeitem)) {
+                            addCoustomReminder(ruleTimeitem, taskReminderType);
+                            it.remove();
+                        } else {
+                            if (reminderCalendar != null) {
+                                if (!TextUtils.equals(DateUtils.getHHmm(reminderCalendar.getTimeInMillis()), "09:00")) {
+                                    addCoustomReminder(ruleTimeitem, taskReminderType);
+                                    it.remove();
+                                }
+                            }
+                        }
+                    } else if (TextUtils.equals(taskReminderType, TaskReminderEntity.PRECISE)) {
+                        if (!TaskReminderUtils.preciseMap.containsKey(ruleTimeitem)) {
+                            addCoustomReminder(ruleTimeitem, taskReminderType);
+                            it.remove();
+                        } else {
+                            if (!TextUtils.equals(duetimeTv.getText(), "09:00")) {
+                                addCoustomReminder(ruleTimeitem, taskReminderType);
+                                it.remove();
+                            }
+                        }
+                    }
+                }
+            }
+            taskReminderEntity.taskReminderType = taskReminderType;
+            setReminder(taskReminderEntity);
+        }
+    }
+
+    /**
+     * 添加自定义
+     *
+     * @param ruleTimeitem
+     * @param taskReminderType
+     */
+    private void addCoustomReminder(String ruleTimeitem, String taskReminderType) {
+        TaskReminderEntity.CustomTimeItemEntity entity = getCustomTime(ruleTimeitem, taskReminderType);
+        if (!taskReminderEntity.customTime.contains(entity)) {
+            taskReminderEntity.customTime.add(entity);
+        }
+    }
+
+    /**
+     * 默认转自定义
+     * <p>
+     * put("0MB", "任务到期时");
+     * put("5MB", "5分钟前");
+     * put("10MB", "10分钟前");
+     * put("30MB", "半小时前");
+     * put("1HB", "1小时前");
+     * put("2HB", "2小时前");
+     * put("1DB", "一天前");
+     * put("2DB", "两天前");
+     * <p>
+     * <p>
+     * put("ODB", "当天（9:00)");
+     * put("1DB", "一天前（9:00)");
+     * put("2DB", "两天前（9:00)");
+     * put("1WB", "一周前（9:00)");
+     *
+     * @param timeKey
+     * @return
+     */
+    private TaskReminderEntity.CustomTimeItemEntity getCustomTime(String timeKey, String taskReminderType) {
+        TaskReminderEntity.CustomTimeItemEntity customTimeItemEntity = new TaskReminderEntity.CustomTimeItemEntity();
+        if (TextUtils.equals(taskReminderType, TaskReminderEntity.ALL_DAY)) {
+            if (TaskReminderUtils.preciseMap.containsKey(timeKey) && reminderCalendar != null) {
+                if (TextUtils.equals(timeKey, "0MB")) {
+                    setAllDayReminder(customTimeItemEntity, "0", "day", DateUtils.getHHmm(reminderCalendar.getTimeInMillis()));
+                } else if (TextUtils.equals(timeKey, "5MB")) {
+                    setAllDayReminder(customTimeItemEntity, "0", "day", DateUtils.getHHmm(DateUtils.getMillByHourmin(reminderCalendar.get(Calendar.HOUR_OF_DAY), reminderCalendar.get(Calendar.MINUTE)) - (5 * 60 * 1000)));
+                } else if (TextUtils.equals(timeKey, "10MB")) {
+                    setAllDayReminder(customTimeItemEntity, "0", "day", DateUtils.getHHmm(DateUtils.getMillByHourmin(reminderCalendar.get(Calendar.HOUR_OF_DAY), reminderCalendar.get(Calendar.MINUTE)) - (10 * 60 * 1000)));
+                } else if (TextUtils.equals(timeKey, "30MB")) {
+                    setAllDayReminder(customTimeItemEntity, "0", "day", DateUtils.getHHmm(DateUtils.getMillByHourmin(reminderCalendar.get(Calendar.HOUR_OF_DAY), reminderCalendar.get(Calendar.MINUTE)) - (30 * 60 * 1000)));
+                } else if (TextUtils.equals(timeKey, "1HB")) {
+                    setAllDayReminder(customTimeItemEntity, "0", "day", DateUtils.getHHmm(DateUtils.getMillByHourmin(reminderCalendar.get(Calendar.HOUR_OF_DAY), reminderCalendar.get(Calendar.MINUTE)) - (60 * 60 * 1000)));
+                } else if (TextUtils.equals(timeKey, "2HB")) {
+                    setAllDayReminder(customTimeItemEntity, "0", "day", DateUtils.getHHmm(DateUtils.getMillByHourmin(reminderCalendar.get(Calendar.HOUR_OF_DAY), reminderCalendar.get(Calendar.MINUTE)) - (2 * 60 * 60 * 1000)));
+                } else if (TextUtils.equals(timeKey, "1DB")) {
+                    setAllDayReminder(customTimeItemEntity, "1", "day", DateUtils.getHHmm(reminderCalendar.getTimeInMillis()));
+                } else if (TextUtils.equals(timeKey, "2DB")) {
+                    setAllDayReminder(customTimeItemEntity, "2", "day", DateUtils.getHHmm(reminderCalendar.getTimeInMillis()));
+                }
+            }
+        } else if (TextUtils.equals(taskReminderType, TaskReminderEntity.PRECISE)) {
+            if (TaskReminderUtils.alldayMap.containsKey(timeKey)) {
+                if (TextUtils.equals(timeKey, "ODB")) {
+                    setAllDayReminder(customTimeItemEntity, "0", "day", "09:00");
+                }
+                if (TextUtils.equals(timeKey, "1DB")) {
+                    setAllDayReminder(customTimeItemEntity, "1", "day", "09:00");
+                }
+                if (TextUtils.equals(timeKey, "2DB")) {
+                    setAllDayReminder(customTimeItemEntity, "2", "day", "09:00");
+                }
+                if (TextUtils.equals(timeKey, "1WB")) {
+                    setAllDayReminder(customTimeItemEntity, "7", "day", "09:00");
+                }
+            }
+        }
+        return customTimeItemEntity;
+    }
+
+    private void setAllDayReminder(TaskReminderEntity.CustomTimeItemEntity customTimeItemEntity, String unitNumber, String unit, String point) {
+        customTimeItemEntity.unitNumber = unitNumber;
+        customTimeItemEntity.unit = unit;
+        customTimeItemEntity.point = point;
     }
 
 }
