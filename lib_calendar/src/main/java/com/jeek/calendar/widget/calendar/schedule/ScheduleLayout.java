@@ -52,6 +52,11 @@ public class ScheduleLayout extends FrameLayout {
     private boolean mCurrentRowsIsSix = true;
 
     private ScheduleState mState;
+
+    public ScheduleState getmState() {
+        return mState;
+    }
+
     private OnCalendarClickListener mOnCalendarClickListener;
     private GestureDetector mGestureDetector;
 
@@ -488,6 +493,7 @@ public class ScheduleLayout extends FrameLayout {
             scheduleY = Math.min(scheduleY, mcvCalendar.getHeight() - mRowSize);
         }
         scheduleY = Math.max(scheduleY, scheduleTop);
+        Log.d("--------->scheduleY:", "" + scheduleY);
         rlScheduleList.setY(scheduleY);
     }
 

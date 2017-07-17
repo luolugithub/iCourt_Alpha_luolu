@@ -1,31 +1,35 @@
 package com.icourt.alpha.fragment;
 
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
-import android.util.SparseArray;
+import android.view.GestureDetector;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.icourt.alpha.R;
-import com.icourt.alpha.adapter.baseadapter.BaseFragmentAdapter;
+import com.icourt.alpha.activity.SearchProjectActivity;
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.entity.bean.TaskEntity;
+import com.icourt.alpha.utils.DensityUtil;
+import com.icourt.alpha.view.GestureDetectorLayout;
 import com.jeek.calendar.widget.calendar.CalendarUtils;
 import com.jeek.calendar.widget.calendar.OnCalendarClickListener;
 import com.jeek.calendar.widget.calendar.month.MonthCalendarView;
 import com.jeek.calendar.widget.calendar.schedule.ScheduleLayout;
+import com.jeek.calendar.widget.calendar.schedule.ScheduleState;
 import com.jeek.calendar.widget.calendar.week.WeekCalendarView;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
@@ -36,14 +40,6 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import butterknife.Unbinder;
-import io.reactivex.Observable;
-import io.reactivex.ObservableEmitter;
-import io.reactivex.ObservableOnSubscribe;
-import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.annotations.NonNull;
-import io.reactivex.functions.Consumer;
-import io.reactivex.internal.operators.observable.ObservableAmb;
-import io.reactivex.schedulers.Schedulers;
 
 /**
  * Description  任务周视图
@@ -80,8 +76,18 @@ public class TaskListCalendarFragment extends BaseFragment {
     final ArrayList<TaskEntity.TaskItemEntity> taskItemEntityList = new ArrayList<>();
     final Map<Long, ArrayList<TaskEntity.TaskItemEntity>> dailyTaskMap = new HashMap();
     FragmentPagerAdapter fragmentPagerAdapter;
+    @BindView(R.id.rl_comm_search)
+    RelativeLayout rlCommSearch;
+    @BindView(R.id.header_comm_search_ll)
+    LinearLayout headerCommSearchLl;
+    @BindView(R.id.calendar_title_ll)
+    LinearLayout calendarTitleLl;
+    Unbinder unbinder;
+    @BindView(R.id.gestureDetectorLayout)
+    GestureDetectorLayout gestureDetectorLayout;
     private int MAXDAILYPAGE = 5000;
     private int dailyTaskPagePOS;
+
 
     public static Fragment newInstance(ArrayList<TaskEntity.TaskItemEntity> data) {
         TaskListCalendarFragment taskListCalendarFragment = new TaskListCalendarFragment();
@@ -90,9 +96,6 @@ public class TaskListCalendarFragment extends BaseFragment {
         taskListCalendarFragment.setArguments(args);
         return taskListCalendarFragment;
     }
-
-
-    Unbinder unbinder;
 
 
     @Nullable
@@ -181,6 +184,34 @@ public class TaskListCalendarFragment extends BaseFragment {
         viewPager.removeOnPageChangeListener(taskPageChangeListener);
         viewPager.addOnPageChangeListener(taskPageChangeListener);
         initCalendarDateView();
+        initGestureDetector();
+    }
+
+    /**
+     * 手势解析:处理滚动
+     */
+    private void initGestureDetector() {
+        //第一次 默认隐藏
+        gestureDetectorLayout.setY(-DensityUtil.dip2px(getContext(), 50));
+        gestureDetectorLayout.setGestureDetector(new GestureDetector(getContext(), new GestureDetector.SimpleOnGestureListener() {
+            @Override
+            public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
+                if (slSchedule.getmState() == ScheduleState.CLOSE
+                        && distanceY > 0) {
+                    if (Math.abs(gestureDetectorLayout.getY()) < calendarTitleLl.getHeight()) {
+                        float distance = Math.max(-calendarTitleLl.getHeight(), gestureDetectorLayout.getY() - Math.abs(distanceY));
+                        gestureDetectorLayout.setY(distance);
+                    }
+                } else if (slSchedule.getmState() == ScheduleState.OPEN
+                        && distanceY < 0) {
+                    if (gestureDetectorLayout.getY() < 0) {
+                        float distance = Math.min(0, gestureDetectorLayout.getY() + Math.abs(distanceY));
+                        gestureDetectorLayout.setY(distance);
+                    }
+                }
+                return super.onScroll(e1, e2, distanceX, distanceY);
+            }
+        }));
     }
 
     private ViewPager.SimpleOnPageChangeListener taskPageChangeListener = new ViewPager.SimpleOnPageChangeListener() {
@@ -400,7 +431,8 @@ public class TaskListCalendarFragment extends BaseFragment {
 
     @OnClick({R.id.titleBack,
             R.id.titleForward,
-            R.id.titleAction})
+            R.id.titleAction,
+            R.id.header_comm_search_ll})
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
@@ -416,6 +448,12 @@ public class TaskListCalendarFragment extends BaseFragment {
                 break;
             case R.id.titleAction:
                 mcvCalendar.setTodayToView();
+                break;
+            case R.id.header_comm_search_ll:
+                SearchProjectActivity.launchTask(getContext(),
+                        getLoginUserId(),
+                        0,
+                        SearchProjectActivity.SEARCH_TASK);
                 break;
         }
     }
