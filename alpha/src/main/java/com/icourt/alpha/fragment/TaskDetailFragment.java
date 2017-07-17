@@ -42,6 +42,8 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.util.Arrays;
 import java.util.Calendar;
 
@@ -127,7 +129,13 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
             }
 
             if (!TextUtils.isEmpty(taskItemEntity.description)) {
-                taskDescTv.setText(taskItemEntity.description);
+                try {
+                    taskDescTv.setText(URLDecoder.decode(taskItemEntity.description, "utf-8"));
+                } catch (UnsupportedEncodingException e) {
+                    e.printStackTrace();
+                    taskDescTv.setText(taskItemEntity.description);
+                    bugSync("任务详情转码失败", e);
+                }
             }
             getTaskReminder(taskItemEntity.id); //获取任务提醒数据
         }
@@ -257,7 +265,7 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
             calendar.setTimeInMillis(dueTime);
             DateSelectDialogFragment.newInstance(calendar, taskReminderEntity, taskId)
                     .show(mFragTransaction, tag);
-        }else{
+        } else {
             DateSelectDialogFragment.newInstance(null, taskReminderEntity, taskId)
                     .show(mFragTransaction, tag);
         }
