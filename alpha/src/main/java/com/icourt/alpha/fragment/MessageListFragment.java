@@ -620,6 +620,8 @@ public class MessageListFragment extends BaseRecentContactFragment
                     public void accept(List<IMSessionEntity> imSessionEntities) throws Exception {
                         Collections.sort(imSessionEntities, imSessionEntityComparator);
                         imSessionAdapter.bindData(true, imSessionEntities);
+                        //隐藏搜索栏
+                        linearLayoutManager.scrollToPositionWithOffset(headerFooterAdapter.getHeaderCount(), 0);
                         getDontDisturbs();
                         getTopSession();
                     }
@@ -713,6 +715,7 @@ public class MessageListFragment extends BaseRecentContactFragment
                             localNoDisturbs.addAll(response.body().result);
                         }
                         imSessionAdapter.notifyDataSetChanged();
+                        linearLayoutManager.scrollToPositionWithOffset(headerFooterAdapter.getHeaderCount(), 0);
                     }
                 });
     }
@@ -764,6 +767,7 @@ public class MessageListFragment extends BaseRecentContactFragment
                         }
                         Collections.sort(imSessionAdapter.getData(), imSessionEntityComparator);
                         imSessionAdapter.notifyDataSetChanged();
+                        linearLayoutManager.scrollToPositionWithOffset(headerFooterAdapter.getHeaderCount(), 0);
                     }
                 });
     }

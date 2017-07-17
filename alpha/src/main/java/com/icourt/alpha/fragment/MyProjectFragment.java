@@ -70,6 +70,9 @@ public class MyProjectFragment extends BaseFragment {
     HeaderFooterAdapter<ProjectListAdapter> headerFooterAdapter;
     ProjectListAdapter projectListAdapter;
 
+    boolean isFirstTimeIntoPage = true;
+    LinearLayoutManager linearLayoutManager;
+
     public static MyProjectFragment newInstance(@QueryProjectType int projectType) {
         MyProjectFragment myProjectFragment = new MyProjectFragment();
         Bundle bundle = new Bundle();
@@ -104,7 +107,7 @@ public class MyProjectFragment extends BaseFragment {
             refreshLayout.setNoticeEmpty(R.mipmap.icon_placeholder_project, "暂无参与项目");
         }
         refreshLayout.setMoveForHorizontal(true);
-        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        recyclerView.setLayoutManager(linearLayoutManager = new LinearLayoutManager(getContext()));
         recyclerView.setHasFixedSize(true);
 
         headerFooterAdapter = new HeaderFooterAdapter<>(projectListAdapter = new ProjectListAdapter());
@@ -155,6 +158,13 @@ public class MyProjectFragment extends BaseFragment {
                     @Override
                     public void onSuccess(Call<ResEntity<List<ProjectEntity>>> call, Response<ResEntity<List<ProjectEntity>>> response) {
                         projectListAdapter.bindData(isRefresh, response.body().result);
+
+                        //第一次进入 隐藏搜索框
+                        if (isFirstTimeIntoPage) {
+                            linearLayoutManager.scrollToPositionWithOffset(headerFooterAdapter.getHeaderCount(), 0);
+                            isFirstTimeIntoPage = false;
+                        }
+
                         if (isRefresh)
                             enableEmptyView(response.body().result);
                         stopRefresh();

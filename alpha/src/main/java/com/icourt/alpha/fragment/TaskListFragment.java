@@ -82,6 +82,7 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
     @BindView(R.id.refreshLayout)
     RefreshLayout refreshLayout;
 
+    LinearLayoutManager linearLayoutManager;
     TaskAdapter taskAdapter;
     TaskEntity.TaskItemEntity updateTaskItemEntity;
     List<TaskEntity> allTaskEntities;
@@ -95,6 +96,7 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
     int type;
     HeaderFooterAdapter<TaskAdapter> headerFooterAdapter;
     OnTasksChangeListener onTasksChangeListener;
+    boolean isFirstTimeIntoPage = true;
 
     public static TaskListFragment newInstance(int type) {
         TaskListFragment projectTaskFragment = new TaskListFragment();
@@ -132,7 +134,7 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
         type = getArguments().getInt("type");
         refreshLayout.setNoticeEmpty(R.mipmap.bg_no_task, R.string.task_list_null_text);
         refreshLayout.setMoveForHorizontal(true);
-        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        recyclerView.setLayoutManager(linearLayoutManager = new LinearLayoutManager(getContext()));
         recyclerView.addItemDecoration(ItemDecorationUtils.getCommTrans5Divider(getContext(), true));
         recyclerView.setHasFixedSize(true);
 
@@ -189,6 +191,7 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
                 break;
         }
     }
+
 
     @Override
     protected void getData(boolean isRefresh) {
@@ -321,6 +324,11 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
                     }
                 }
                 taskAdapter.bindData(true, allTaskEntities);
+                //第一次进入 隐藏搜索框
+                if (isFirstTimeIntoPage) {
+                    linearLayoutManager.scrollToPositionWithOffset(headerFooterAdapter.getHeaderCount(), 0);
+                    isFirstTimeIntoPage = false;
+                }
                 TimerManager.getInstance().timerQuerySync();
             }
         }
