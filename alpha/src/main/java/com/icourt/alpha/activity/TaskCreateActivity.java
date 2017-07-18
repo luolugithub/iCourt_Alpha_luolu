@@ -420,6 +420,7 @@ public class TaskCreateActivity extends BaseActivity implements ProjectSelectDia
             @Override
             public void onFailure(Call<ResEntity<TaskReminderEntity>> call, Throwable t) {
                 super.onFailure(call, t);
+                finish();
             }
         });
     }

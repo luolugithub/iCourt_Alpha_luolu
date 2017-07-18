@@ -520,8 +520,6 @@ public class TaskEverydayFragment extends BaseFragment
             jsonObject.add("attendees", jsonarr);
             if (taskGroupEntity != null) {
                 jsonObject.addProperty("parentId", taskGroupEntity.id);
-            } else {
-                jsonObject.addProperty("parentId", 0);
             }
             return jsonObject.toString();
         } catch (Exception e) {

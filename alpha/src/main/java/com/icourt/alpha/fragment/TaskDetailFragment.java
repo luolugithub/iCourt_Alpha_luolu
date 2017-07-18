@@ -402,8 +402,6 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
             jsonObject.add("attendees", jsonarr);
             if (taskGroupEntity != null) {
                 jsonObject.addProperty("parentId", taskGroupEntity.id);
-            } else {
-                jsonObject.addProperty("parentId", "");
             }
 
             return jsonObject.toString();
