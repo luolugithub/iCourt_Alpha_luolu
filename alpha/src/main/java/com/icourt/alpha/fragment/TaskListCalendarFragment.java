@@ -197,6 +197,25 @@ public class TaskListCalendarFragment extends BaseFragment {
         //第一次 默认隐藏
         gestureDetectorLayout.setY(-DensityUtil.dip2px(getContext(), 50));
         gestureDetectorLayout.setGestureDetector(new GestureDetector(getContext(), new GestureDetector.SimpleOnGestureListener() {
+
+            @Override
+            public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
+                if (Math.abs(velocityY) > DensityUtil.dip2px(getContext(), 50)) {
+                    if (slSchedule.getmState() == ScheduleState.CLOSE) {
+                        if (gestureDetectorLayout.getY() > -calendarTitleLl.getHeight()
+                                && velocityY < 0) {
+                            gestureDetectorLayout.setY(-calendarTitleLl.getHeight());
+                        }
+                    } else if (slSchedule.getmState() == ScheduleState.OPEN) {
+                        if (gestureDetectorLayout.getY() < 0
+                                && velocityY > 0) {
+                            gestureDetectorLayout.setY(0);
+                        }
+                    }
+                }
+                return super.onFling(e1, e2, velocityX, velocityY);
+            }
+
             @Override
             public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
                 if (Math.abs(distanceX) >= Math.abs(distanceY))
