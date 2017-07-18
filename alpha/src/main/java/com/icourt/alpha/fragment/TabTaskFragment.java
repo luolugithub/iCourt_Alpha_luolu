@@ -44,7 +44,7 @@ import butterknife.Unbinder;
  * date createTime：2017/4/8
  * version 1.0.0
  */
-public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackListener, OnTasksChangeListener {
+public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackListener {
     @BindView(R.id.tabLayout)
     TabLayout tabLayout;
     @BindView(R.id.titleAction)
@@ -66,7 +66,6 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
         return new TabTaskFragment();
     }
 
-    final ArrayList<TaskEntity.TaskItemEntity> taskItemEntityList = new ArrayList<>();
 
     @Nullable
     @Override
@@ -100,10 +99,10 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
                 titleCalendar.setVisibility(View.GONE);
                 switch (position) {
                     case 0:
-                        titleCalendar.setVisibility(taskItemEntityList.isEmpty() ? View.GONE : View.VISIBLE);
+                        titleCalendar.setVisibility(View.VISIBLE);
                         break;
                     case 1:
-                        newTaskFragment.notifyFragmentUpdate(newTaskFragment,position,null);
+                        newTaskFragment.notifyFragmentUpdate(newTaskFragment, position, null);
                         break;
                     case 2:
                         attentionTaskFragment.notifyFragmentUpdate(attentionTaskFragment, position, null);
@@ -116,7 +115,6 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
 
             }
         });
-        titleCalendar.setVisibility(View.GONE);
     }
 
     /**
@@ -236,23 +234,6 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
                 MyAllotTaskActivity.launch(getContext(), TaskOtherListFragment.SELECT_OTHER_TYPE, ids);
             }
         }
-    }
-
-    @Override
-    public void onTasksChanged(List<TaskEntity.TaskItemEntity> taskItemEntities) {
-        if (taskItemEntities != null) {
-            taskItemEntityList.clear();
-            taskItemEntityList.addAll(taskItemEntities);
-
-            if (viewPager.getCurrentItem() == 0) {
-                titleCalendar.setVisibility(taskItemEntityList.isEmpty() ? View.GONE : View.VISIBLE);
-            }
-        }
-    }
-
-    @Override
-    public void onTaskChanged(TaskEntity.TaskItemEntity taskItemEntity) {
-
     }
 
     /**
