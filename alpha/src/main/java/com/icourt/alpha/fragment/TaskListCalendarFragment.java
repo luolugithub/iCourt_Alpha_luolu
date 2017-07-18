@@ -3,14 +3,13 @@ package com.icourt.alpha.fragment;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.util.SparseArray;
 import android.view.GestureDetector;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewTreeObserver;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
@@ -18,9 +17,12 @@ import android.widget.TextView;
 
 import com.icourt.alpha.R;
 import com.icourt.alpha.activity.SearchProjectActivity;
+import com.icourt.alpha.adapter.baseadapter.BaseFragmentAdapter;
+import com.icourt.alpha.adapter.baseadapter.BaseRefreshFragmentAdapter;
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.entity.bean.TaskEntity;
 import com.icourt.alpha.entity.event.TaskActionEvent;
+import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.DensityUtil;
 import com.icourt.alpha.view.GestureDetectorLayout;
 import com.jeek.calendar.widget.calendar.CalendarUtils;
@@ -78,8 +80,8 @@ public class TaskListCalendarFragment extends BaseFragment {
     RelativeLayout rlScheduleList;
     @BindView(R.id.slSchedule)
     ScheduleLayout slSchedule;
-    final ArrayList<TaskEntity.TaskItemEntity> taskItemEntityList = new ArrayList<>();
-    FragmentPagerAdapter fragmentPagerAdapter;
+    ArrayList<TaskEntity.TaskItemEntity> taskItemEntityList;
+    BaseFragmentAdapter fragmentPagerAdapter;
     @BindView(R.id.rl_comm_search)
     RelativeLayout rlCommSearch;
     @BindView(R.id.header_comm_search_ll)
@@ -112,13 +114,12 @@ public class TaskListCalendarFragment extends BaseFragment {
 
     @Override
     protected void initView() {
-        EventBus.getDefault().register(this);
-        taskItemEntityList.clear();
-        final ArrayList<TaskEntity.TaskItemEntity> taskEntity = (ArrayList<TaskEntity.TaskItemEntity>) getArguments().getSerializable(KEY_TASKS);
-        if (taskEntity != null) {
-            taskItemEntityList.addAll(taskEntity);
+        taskItemEntityList = (ArrayList<TaskEntity.TaskItemEntity>) getArguments().getSerializable(KEY_TASKS);
+        if (taskItemEntityList == null) {
+            taskItemEntityList = new ArrayList<>();
         }
-        viewPager.setAdapter(fragmentPagerAdapter = new FragmentPagerAdapter(getChildFragmentManager()) {
+        EventBus.getDefault().register(this);
+        viewPager.setAdapter(fragmentPagerAdapter = new BaseRefreshFragmentAdapter(getChildFragmentManager()) {
             @Override
             public Fragment getItem(int position) {
                 //Integer.MAX_VALUE/2 为今天
@@ -132,6 +133,7 @@ public class TaskListCalendarFragment extends BaseFragment {
                 long key = clendar.getTimeInMillis() - (centerPos - position) * TimeUnit.DAYS.toMillis(1);
                 return TaskEverydayFragment.newInstance(key, getDayTask(key));
             }
+
 
             @Override
             public int getCount() {
@@ -286,11 +288,6 @@ public class TaskListCalendarFragment extends BaseFragment {
                 }
             }
             dailyTaskPagePOS = position;
-
-            //计算出对应的年月日
-            int months = mcvCalendar.getAdapter().getCount();//月的总数
-
-            //mcvCalendar.onClickThisMonth();
         }
     };
 
@@ -353,8 +350,15 @@ public class TaskListCalendarFragment extends BaseFragment {
         updateTitle(slSchedule.getCurrentSelectYear(),
                 slSchedule.getCurrentSelectMonth() + 1,
                 slSchedule.getCurrentSelectDay());
+        addTaskHints();
 
+        slSchedule.invalidate();
+    }
 
+    /**
+     * 添加任务提示
+     */
+    private void addTaskHints() {
         CalendarUtils.getInstance(getContext()).removeAllTaskHint();
         HashMap<Long, List<Integer>> allTaskHint = getAllTaskHint();
         for (Map.Entry<Long, List<Integer>> entry : allTaskHint.entrySet()) {
@@ -367,7 +371,6 @@ public class TaskListCalendarFragment extends BaseFragment {
             CalendarUtils.getInstance(getContext())
                     .addTaskHints(clendar.get(Calendar.YEAR), clendar.get(Calendar.MONTH), value);
         }
-        slSchedule.invalidate();
     }
 
 
@@ -508,6 +511,8 @@ public class TaskListCalendarFragment extends BaseFragment {
                 eventCalendar.setTimeInMillis(event.entity.dueTime);
                 int eventYear = eventCalendar.get(Calendar.YEAR);
                 int eventMonth = eventCalendar.get(Calendar.MONTH);
+
+                //刷新本月
                 if (slSchedule != null) {
                     if ((targetYear == slSchedule.getCurrentSelectYear() && targetMonth == slSchedule.getCurrentSelectMonth())
                             || (eventYear == slSchedule.getCurrentSelectYear() && eventMonth == slSchedule.getCurrentSelectMonth())) {
@@ -520,11 +525,44 @@ public class TaskListCalendarFragment extends BaseFragment {
                         slSchedule.addTaskHints(getMonthTaskHint(slSchedule.getCurrentSelectYear(), slSchedule.getCurrentSelectMonth()));
                     }
                 }
+
                 taskItemEntityList.set(indexOf, event.entity);
+
+                //重新计算所有小红点
+                addTaskHints();
             }
 
         }
     }
+
+    @Override
+    public synchronized void notifyFragmentUpdate(Fragment targetFrgament, int type, Bundle bundle) {
+        super.notifyFragmentUpdate(targetFrgament, type, bundle);
+        if (targetFrgament != this) return;
+        if (bundle != null) {
+            ArrayList<TaskEntity.TaskItemEntity> tasks = (ArrayList<TaskEntity.TaskItemEntity>) bundle.getSerializable(KEY_FRAGMENT_RESULT);
+            if (tasks != null && taskItemEntityList != null) {
+                taskItemEntityList = tasks;
+
+                if (viewPager == null) return;
+
+                //1.更新子fragment
+                fragmentPagerAdapter.notifyDataSetChanged();
+
+                //2.更新本月份的小红点
+                List<Integer> taskHint = slSchedule.getTaskHint();
+                if (taskHint != null && !taskHint.isEmpty()) {
+                    slSchedule.removeTaskHints(taskHint);
+                }
+                slSchedule.addTaskHints(getMonthTaskHint(slSchedule.getCurrentSelectYear(), slSchedule.getCurrentSelectMonth()));
+
+                //3.将容器中的小红点再更新一次
+                addTaskHints();
+                slSchedule.invalidate();
+            }
+        }
+    }
+
 
     @Override
     public void onDestroyView() {

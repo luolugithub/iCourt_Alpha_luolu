@@ -19,6 +19,7 @@ import android.widget.FrameLayout;
 import com.icourt.alpha.R;
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.entity.bean.TaskEntity;
+import com.icourt.alpha.interfaces.INotifyFragment;
 import com.icourt.alpha.interfaces.OnTasksChangeListener;
 import com.jeek.calendar.widget.calendar.CalendarUtils;
 
@@ -42,22 +43,16 @@ public class TaskAllFragment extends BaseFragment implements OnTasksChangeListen
     public static final int TYPE_ALL_TASK = 1;
     public static final int TYPE_ALL_TASK_CALENDAR = 2;
     final ArrayList<TaskEntity.TaskItemEntity> taskItemEntityList = new ArrayList<>();
-    OnTasksChangeListener onTasksChangeListener;
 
     @Override
     public void onTasksChanged(List<TaskEntity.TaskItemEntity> taskItemEntities) {
-        if (onTasksChangeListener != null) {
-            onTasksChangeListener.onTasksChanged(taskItemEntities);
-        }
         if (taskItemEntities != null) {
+            //数据发生改变 替换
             if (taskItemEntities.hashCode() != taskItemEntityList.hashCode()) {
                 taskItemEntityList.clear();
                 taskItemEntityList.addAll(taskItemEntities);
 
-                //数据发生改变 替换
-                if (getArguments().getInt("childFragment", TYPE_ALL_TASK) == TYPE_ALL_TASK_CALENDAR) {
-                    currFragment = addOrShowFragmentAnim(getFragment(TYPE_ALL_TASK_CALENDAR), currFragment, R.id.main_fl_content, false);
-                }
+                updateCalendarRefresh();
             }
 
         }
@@ -65,9 +60,6 @@ public class TaskAllFragment extends BaseFragment implements OnTasksChangeListen
 
     @Override
     public void onTaskChanged(TaskEntity.TaskItemEntity taskItemEntity) {
-        if (onTasksChangeListener != null) {
-            onTasksChangeListener.onTaskChanged(taskItemEntity);
-        }
     }
 
     @IntDef({TYPE_ALL_TASK, TYPE_ALL_TASK_CALENDAR})
@@ -89,19 +81,6 @@ public class TaskAllFragment extends BaseFragment implements OnTasksChangeListen
         return taskAllFragment;
     }
 
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-        if (getParentFragment() instanceof OnTasksChangeListener) {
-            onTasksChangeListener = (OnTasksChangeListener) getParentFragment();
-        } else {
-            try {
-                onTasksChangeListener = (OnTasksChangeListener) context;
-            } catch (ClassCastException e) {
-                e.printStackTrace();
-            }
-        }
-    }
 
     @Nullable
     @Override
@@ -115,10 +94,6 @@ public class TaskAllFragment extends BaseFragment implements OnTasksChangeListen
     final SparseArray<Fragment> fragmentSparseArray = new SparseArray<>();
 
     private Fragment getFragment(int type) {
-        if (type == TYPE_ALL_TASK_CALENDAR) {
-            //伪实时刷新
-            return TaskListCalendarFragment.newInstance(taskItemEntityList);
-        }
         Fragment fragment = fragmentSparseArray.get(type);
         if (fragment == null) {
             switch (type) {
@@ -172,10 +147,25 @@ public class TaskAllFragment extends BaseFragment implements OnTasksChangeListen
         getArguments().putInt("childFragment", type);
         currFragment = addOrShowFragment(getFragment(type), currFragment, R.id.main_fl_content);
 
-        if (type == TYPE_ALL_TASK) {
-            BaseFragment fragment = (BaseFragment) getFragment(TYPE_ALL_TASK);
-            if (fragment != null) fragment.notifyFragmentUpdate(fragment, 100, null);
+        switch (type) {
+            case TYPE_ALL_TASK_CALENDAR:
+                updateCalendarRefresh();
+                break;
+            case TYPE_ALL_TASK:
+                BaseFragment fragment = (BaseFragment) getFragment(TYPE_ALL_TASK);
+                if (fragment != null) fragment.notifyFragmentUpdate(fragment, 100, null);
+                break;
         }
+    }
+
+    /**
+     * 更新日历刷新
+     */
+    private void updateCalendarRefresh() {
+        Bundle args = new Bundle();
+        args.putSerializable(KEY_FRAGMENT_RESULT, taskItemEntityList);
+        Fragment fragment = getFragment(TYPE_ALL_TASK_CALENDAR);
+        ((INotifyFragment) fragment).notifyFragmentUpdate(fragment, 0, args);
     }
 
     @ChildFragmentType

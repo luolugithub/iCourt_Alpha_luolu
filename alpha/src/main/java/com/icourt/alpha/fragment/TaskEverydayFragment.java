@@ -73,7 +73,7 @@ public class TaskEverydayFragment extends BaseFragment
     RecyclerView recyclerView;
     Unbinder unbinder;
     TaskSimpleAdapter taskSimpleAdapter;
-    final ArrayList<TaskEntity.TaskItemEntity> taskItemEntityList = new ArrayList<>();
+    ArrayList<TaskEntity.TaskItemEntity> taskItemEntityList;
     @BindView(R.id.contentEmptyText)
     TextView contentEmptyText;
     /**
@@ -146,12 +146,11 @@ public class TaskEverydayFragment extends BaseFragment
 
     @Override
     protected void initView() {
-        taskItemEntityList.clear();
-        ArrayList<TaskEntity.TaskItemEntity> taskEntity = (ArrayList<TaskEntity.TaskItemEntity>) getArguments().getSerializable(KEY_TASKS);
-        if (taskEntity != null) {
-            taskItemEntityList.addAll(taskEntity);
-            Collections.sort(taskItemEntityList, taskItemEntityComparator);
-        }
+        taskItemEntityList = (ArrayList<TaskEntity.TaskItemEntity>) getArguments().getSerializable(KEY_TASKS);
+        if (taskItemEntityList == null) taskItemEntityList = new ArrayList<>();
+        Collections.sort(taskItemEntityList, taskItemEntityComparator);
+
+
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setHasFixedSize(true);
         recyclerView.setAdapter(taskSimpleAdapter = new TaskSimpleAdapter());
@@ -215,6 +214,22 @@ public class TaskEverydayFragment extends BaseFragment
     protected void getData(final boolean isRefresh) {
         super.getData(isRefresh);
         taskSimpleAdapter.bindData(isRefresh, taskItemEntityList);
+    }
+
+    @Override
+    public void notifyFragmentUpdate(Fragment targetFrgament, int type, Bundle bundle) {
+        super.notifyFragmentUpdate(targetFrgament, type, bundle);
+        if (targetFrgament != this) return;
+        if (bundle != null) {
+            ArrayList<TaskEntity.TaskItemEntity> taskItemEntities = (ArrayList<TaskEntity.TaskItemEntity>) bundle.getSerializable(KEY_FRAGMENT_RESULT);
+            if (taskItemEntities != null
+                    && taskItemEntityList != null
+                    && taskItemEntities.hashCode() != taskItemEntityList.hashCode()) {
+                taskItemEntityList = taskItemEntities;
+                Collections.sort(taskItemEntityList, taskItemEntityComparator);
+                taskSimpleAdapter.bindData(true, taskItemEntityList);
+            }
+        }
     }
 
     /**
