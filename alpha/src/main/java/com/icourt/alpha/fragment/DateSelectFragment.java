@@ -402,6 +402,7 @@ public class DateSelectFragment extends BaseFragment {
             @Override
             public void onSuccess(Call<ResEntity<TaskReminderEntity>> call, Response<ResEntity<TaskReminderEntity>> response) {
                 taskReminderEntity = response.body().result;
+                if (addReminderLayout == null) return;
                 if (itemEntity.state) {
                     addReminderLayout.setVisibility(View.GONE);
                     noticeLl.setVisibility(View.GONE);
