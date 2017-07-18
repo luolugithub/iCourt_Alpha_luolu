@@ -68,7 +68,7 @@ import retrofit2.Response;
  * version 2.0.0
  */
 
-public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShowFragmenDialogListener, OnFragmentCallBackListener, ProjectSelectDialogFragment.OnProjectTaskGroupSelectListener, TabTaskFragment.OnCheckAllNewTaskListener {
+public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShowFragmenDialogListener, OnFragmentCallBackListener, ProjectSelectDialogFragment.OnProjectTaskGroupSelectListener {
 
     public static final int TYPE_ALL = 0;//全部
     public static final int TYPE_NEW = 1;//新任务
@@ -172,11 +172,11 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
         noDueTaskEntities = new ArrayList<>();
         newTaskEntities = new ArrayList<>();
         datedTaskEntities = new ArrayList<>();
-        if (type == TYPE_NEW || type == TYPE_MY_ATTENTION) {
-            if (getParentFragment() instanceof TabTaskFragment) {
-                ((TabTaskFragment) getParentFragment()).setOnCheckAllNewTaskListener(this);
-            }
-        }
+//        if (type == TYPE_NEW || type == TYPE_MY_ATTENTION) {
+//            if (getParentFragment() instanceof TabTaskFragment) {
+//                ((TabTaskFragment) getParentFragment()).setOnCheckAllNewTaskListener(this);
+//            }
+//        }
     }
 
     @Override
@@ -193,22 +193,18 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
     }
 
     @Override
-    public void setUserVisibleHint(boolean isVisibleToUser) {
-        super.setUserVisibleHint(isVisibleToUser);
-        if (isVisibleToUser && recyclerView != null) {
-            if (type == TYPE_NEW) {
-                getData(true);
-            }
-        }
-    }
-
-    @Override
     public void notifyFragmentUpdate(Fragment targetFrgament, int type, Bundle bundle) {
         super.notifyFragmentUpdate(targetFrgament, type, bundle);
+        if (targetFrgament != this) return;
         //刷新
         if (targetFrgament == this && type == 100
                 && recyclerView != null) {
             getData(true);
+        }
+        if (type == TYPE_NEW || type == TYPE_MY_ATTENTION) {
+            getData(true);
+        } else if (type == 100) {
+            onCheckAll();
         }
     }
 
@@ -764,7 +760,6 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
     /**
      * 我知道了
      */
-    @Override
     public void onCheckAll() {
         if (newTaskEntities == null) return;
         if (newTaskEntities.size() <= 0) return;
@@ -772,9 +767,11 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
         for (int i = 0; i < newTaskEntities.size(); i++) {
             ids.add(newTaskEntities.get(i).id);
         }
+        showLoadingDialog(null);
         getApi().checkAllNewTask(ids).enqueue(new SimpleCallBack<JsonElement>() {
             @Override
             public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
+                dismissLoadingDialog();
                 if (taskAdapter != null) {
                     taskAdapter.clearData();
                     if (getParentFragment() instanceof TabTaskFragment) {
@@ -785,10 +782,4 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
         });
     }
 
-    @Override
-    public void onRefreshNewTask(int type) {
-        if (type == TYPE_NEW || type == TYPE_MY_ATTENTION) {
-            getData(true);
-        }
-    }
 }

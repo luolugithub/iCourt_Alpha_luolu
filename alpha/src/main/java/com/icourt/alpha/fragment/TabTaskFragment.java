@@ -57,19 +57,16 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
     BaseFragmentAdapter baseFragmentAdapter;
     @BindView(R.id.titleAction2)
     ImageView titleAction2;
-    OnCheckAllNewTaskListener onCheckAllNewTaskListener;
     @BindView(R.id.titleCalendar)
     ImageView titleCalendar;
+
+    TaskListFragment newTaskFragment, attentionTaskFragment;
 
     public static TabTaskFragment newInstance() {
         return new TabTaskFragment();
     }
 
     final ArrayList<TaskEntity.TaskItemEntity> taskItemEntityList = new ArrayList<>();
-
-    public void setOnCheckAllNewTaskListener(OnCheckAllNewTaskListener onCheckAllNewTaskListener) {
-        this.onCheckAllNewTaskListener = onCheckAllNewTaskListener;
-    }
 
     @Nullable
     @Override
@@ -89,8 +86,8 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
         baseFragmentAdapter.bindData(true,
                 Arrays.asList(
                         TaskAllFragment.newInstance(),
-                        TaskListFragment.newInstance(1),
-                        TaskListFragment.newInstance(2)));
+                        newTaskFragment = TaskListFragment.newInstance(1),
+                        attentionTaskFragment = TaskListFragment.newInstance(2)));
         viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
@@ -101,11 +98,16 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
             public void onPageSelected(int position) {
                 setTititleActionIcon(position);
                 titleCalendar.setVisibility(View.GONE);
-                if (position == 1 || position == 2) {
-                    if (onCheckAllNewTaskListener != null)
-                        onCheckAllNewTaskListener.onRefreshNewTask(position);
-                } else if (position == 0) {
-                    titleCalendar.setVisibility(taskItemEntityList.isEmpty() ? View.GONE : View.VISIBLE);
+                switch (position) {
+                    case 0:
+                        titleCalendar.setVisibility(taskItemEntityList.isEmpty() ? View.GONE : View.VISIBLE);
+                        break;
+                    case 1:
+                        newTaskFragment.notifyFragmentUpdate(newTaskFragment,position,null);
+                        break;
+                    case 2:
+                        attentionTaskFragment.notifyFragmentUpdate(attentionTaskFragment, position, null);
+                        break;
                 }
             }
 
@@ -194,8 +196,8 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
                                 }
                             }).show();
                 } else {
-                    if (onCheckAllNewTaskListener != null)
-                        onCheckAllNewTaskListener.onCheckAll();
+                    //type＝101，"我知道了"
+                    newTaskFragment.notifyFragmentUpdate(newTaskFragment, 101, null);
                 }
                 break;
         }
@@ -251,13 +253,6 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
     @Override
     public void onTaskChanged(TaskEntity.TaskItemEntity taskItemEntity) {
 
-    }
-
-
-    public interface OnCheckAllNewTaskListener {
-        void onCheckAll();
-
-        void onRefreshNewTask(int type);
     }
 
     /**
