@@ -203,7 +203,7 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
         }
         if (type == TYPE_NEW || type == TYPE_MY_ATTENTION) {
             getData(true);
-        } else if (type == 100) {
+        } else if (type == 101) {
             onCheckAll();
         }
     }
