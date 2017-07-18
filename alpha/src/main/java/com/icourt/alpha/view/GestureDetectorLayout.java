@@ -45,4 +45,9 @@ public class GestureDetectorLayout extends FrameLayout {
             gestureDetector.onTouchEvent(ev);
         return super.dispatchTouchEvent(ev);
     }
+
+    @Override
+    public boolean onInterceptTouchEvent(MotionEvent ev) {
+        return super.onInterceptTouchEvent(ev);
+    }
 }

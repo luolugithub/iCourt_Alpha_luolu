@@ -21,6 +21,7 @@ import com.icourt.alpha.entity.event.UnReadEvent;
 import com.icourt.alpha.utils.IMUtils;
 import com.icourt.alpha.utils.JsonUtils;
 import com.icourt.alpha.utils.LogUtils;
+import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.view.bgabadgeview.BGABadgeTextView;
 import com.icourt.alpha.view.recyclerviewDivider.ChatItemDecoration;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
@@ -239,9 +240,29 @@ public class AlphaSpecialHelperActivity extends ChatBaseActivity {
 
     }
 
+
+    /**
+     * 是否
+     *
+     * @param id
+     * @return
+     */
+    private boolean isMyRoomMsg(String id) {
+        return StringUtils.equalsIgnoreCase(getIntent().getStringExtra(KEY_UID), id, false);
+    }
+
     @Override
     public void onMessageReceived(IMMessageCustomBody customBody) {
-
+        if (customBody != null
+                && customBody.imMessage != null
+                && isMyRoomMsg(customBody.imMessage.getSessionId())) {
+            AlphaSecialHeplerMsgEntity imBody = getAlphaBody(customBody.imMessage);
+            if (imBody != null) {
+                imBody.imMessage = customBody.imMessage;
+                chatAlphaSpecialHelperAdapter.addItem(imBody);
+                scrollToBottom();
+            }
+        }
     }
 
     @Override
@@ -280,6 +301,7 @@ public class AlphaSpecialHelperActivity extends ChatBaseActivity {
     /**
      * 滚动到底部
      */
+
     private void scrollToBottom() {
         if (linearLayoutManager != null) {
             linearLayoutManager.scrollToPositionWithOffset(linearLayoutManager.getItemCount() - 1, 0);

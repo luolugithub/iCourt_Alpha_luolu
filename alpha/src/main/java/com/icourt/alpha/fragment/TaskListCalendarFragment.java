@@ -222,12 +222,14 @@ public class TaskListCalendarFragment extends BaseFragment {
                     return super.onScroll(e1, e2, distanceX, distanceY);
                 if (slSchedule.getmState() == ScheduleState.CLOSE
                         && distanceY > 0) {
+                    //向上
                     if (Math.abs(gestureDetectorLayout.getY()) < calendarTitleLl.getHeight()) {
                         float distance = Math.max(-calendarTitleLl.getHeight(), gestureDetectorLayout.getY() - Math.abs(distanceY));
                         gestureDetectorLayout.setY(distance);
                     }
                 } else if (slSchedule.getmState() == ScheduleState.OPEN
                         && distanceY < 0) {
+                    //向下
                     if (gestureDetectorLayout.getY() < 0) {
                         float distance = Math.min(0, gestureDetectorLayout.getY() + Math.abs(distanceY));
                         gestureDetectorLayout.setY(distance);
