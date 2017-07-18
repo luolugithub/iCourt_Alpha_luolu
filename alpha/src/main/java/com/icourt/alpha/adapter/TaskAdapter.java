@@ -176,11 +176,12 @@ public class TaskAdapter extends BaseArrayRecyclerAdapter<TaskEntity>
         }
 
         @Override
-        public void onItemClick(BaseRecyclerAdapter adapter, ViewHolder holder, View view, int position) {
+        public void onItemClick(final BaseRecyclerAdapter adapter, ViewHolder holder, final View view, int position) {
             if (centerMenuDialog != null)
                 centerMenuDialog.dismiss();
             if (adapter instanceof CenterMenuDialog.MenuAdapter) {
-                ItemsEntity entity = (ItemsEntity) adapter.getItem(position);
+                final ItemsEntity entity = (ItemsEntity) adapter.getItem(position);
+                final CenterMenuDialog.MenuAdapter menuAdapter = (CenterMenuDialog.MenuAdapter) adapter;
                 if (taskItemEntity != null) {
                     switch (entity.getItemIconRes()) {
                         case R.mipmap.assign_orange://分配给
@@ -204,18 +205,29 @@ public class TaskAdapter extends BaseArrayRecyclerAdapter<TaskEntity>
                             break;
                         case R.mipmap.time_start_orange_task://开始计时
                             if (!taskItemEntity.isTiming) {
-                                TimerManager.getInstance().addTimer(getTimer(taskItemEntity));
-                                entity.itemIconRes = R.mipmap.time_stop_orange_task;
-                                entity.itemTitle = "停止计时";
-                                ((CenterMenuDialog.MenuAdapter) adapter).updateItem(entity);
+                                TimerManager.getInstance().addTimer(getTimer(taskItemEntity), new Callback<TimeEntity.ItemEntity>() {
+                                    @Override
+                                    public void onResponse(Call<TimeEntity.ItemEntity> call, Response<TimeEntity.ItemEntity> response) {
+                                        dismissLoadingDialog();
+                                        if (response.body() != null) {
+                                            updateMeauItem(entity, true, menuAdapter);
+                                            TimerTimingActivity.launch(view.getContext(), response.body());
+                                        }
+                                    }
+
+                                    @Override
+                                    public void onFailure(Call<TimeEntity.ItemEntity> call, Throwable throwable) {
+                                        dismissLoadingDialog();
+                                        updateMeauItem(entity, false, menuAdapter);
+                                    }
+                                });
+
                             }
                             break;
                         case R.mipmap.time_stop_orange_task://停止计时
                             if (taskItemEntity.isTiming) {
                                 TimerManager.getInstance().stopTimer();
-                                entity.itemIconRes = R.mipmap.time_start_orange_task;
-                                entity.itemTitle = "开始计时";
-                                ((CenterMenuDialog.MenuAdapter) adapter).updateItem(entity);
+                                updateMeauItem(entity, true, menuAdapter);
                             }
                             break;
                         case R.mipmap.trash_orange://删除
@@ -233,6 +245,15 @@ public class TaskAdapter extends BaseArrayRecyclerAdapter<TaskEntity>
                 }
             }
         }
+    }
+
+    /**
+     * 开始／结束计时之后，更新meau
+     */
+    private void updateMeauItem(ItemsEntity entity, boolean isTimering, CenterMenuDialog.MenuAdapter menuAdapter) {
+        entity.itemIconRes = isTimering ? R.mipmap.time_start_orange_task : R.mipmap.time_start_orange;
+        entity.itemTitle = isTimering ? "停止计时" : "开始计时";
+        menuAdapter.updateItem(entity);
     }
 
     @Override
