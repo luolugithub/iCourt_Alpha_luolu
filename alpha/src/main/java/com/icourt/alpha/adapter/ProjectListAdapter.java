@@ -44,7 +44,7 @@ public class ProjectListAdapter extends BaseArrayRecyclerAdapter<ProjectEntity> 
         TextView timeView = holder.obtainView(R.id.project_time_tv);
 
         nameView.setText(projectEntity.name);
-        taskView.setText(projectEntity.unfinishTask + "/" + projectEntity.allTask);
+        taskView.setText((projectEntity.allTask - projectEntity.unfinishTask) + "/" + projectEntity.allTask);
         if (projectEntity.sumTime > 0) {
             timeView.setText(toTime(projectEntity.sumTime / 1000));
         } else {
