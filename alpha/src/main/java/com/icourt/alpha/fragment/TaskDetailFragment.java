@@ -182,10 +182,12 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
      * @param taskId
      */
     private void getTaskReminder(String taskId) {
+
         getApi().taskReminderQuery(taskId).enqueue(new SimpleCallBack<TaskReminderEntity>() {
             @Override
             public void onSuccess(Call<ResEntity<TaskReminderEntity>> call, Response<ResEntity<TaskReminderEntity>> response) {
                 taskReminderEntity = response.body().result;
+                if (taskReminderIcon == null) return;
                 if (taskReminderEntity != null) {
                     if (taskReminderEntity.ruleTime != null || taskReminderEntity.customTime != null) {
                         taskReminderIcon.setVisibility(View.VISIBLE);
