@@ -592,7 +592,7 @@ public class TaskDetailActivity extends BaseActivity
      * 展示选择负责人对话框
      */
     public void showTaskAllotSelectDialogFragment(String projectId) {
-        String tag = "TaskAllotSelectDialogFragment";
+        String tag = TaskAllotSelectDialogFragment.class.getSimpleName();
         FragmentTransaction mFragTransaction = getSupportFragmentManager().beginTransaction();
         Fragment fragment = getSupportFragmentManager().findFragmentByTag(tag);
         if (fragment != null) {
