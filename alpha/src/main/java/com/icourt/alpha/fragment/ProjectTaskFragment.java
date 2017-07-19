@@ -136,11 +136,17 @@ public class ProjectTaskFragment extends BaseFragment implements TaskAdapter.OnS
                 super.onLoadMore(isSilence);
             }
         });
-        refreshLayout.startRefresh();
+//        refreshLayout.startRefresh();
 
         allTaskEntities = new ArrayList<>();
         taskEntities = new ArrayList<>();
         myStarTaskEntities = new ArrayList<>();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        refreshLayout.startRefresh();
     }
 
     @Override
@@ -316,9 +322,7 @@ public class ProjectTaskFragment extends BaseFragment implements TaskAdapter.OnS
             case TimingEvent.TIMING_UPDATE_PROGRESS:
                 TimeEntity.ItemEntity updateItem = TimerManager.getInstance().getTimer();
                 if (updateItem != null) {
-                    getParentPositon(updateItem.taskPkId);
-                    getChildPositon(updateItem.taskPkId);
-                    updateChildTimeing(updateItem.taskPkId, true);
+                    updateChildTimeing(updateItem.taskPkId, false);
                 }
                 break;
             case TimingEvent.TIMING_STOP:

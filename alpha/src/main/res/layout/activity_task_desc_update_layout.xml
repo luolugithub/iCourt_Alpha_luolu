@@ -19,6 +19,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@null"
+            android:maxLines="10"
             android:gravity="start"
             android:hint="添加任务详情"
             android:minHeight="180dp"
