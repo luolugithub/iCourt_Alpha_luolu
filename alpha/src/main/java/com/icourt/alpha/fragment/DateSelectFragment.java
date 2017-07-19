@@ -529,9 +529,12 @@ public class DateSelectFragment extends BaseFragment {
                         }
                     }
 
-
                     if (!TextUtils.isEmpty(duetimeTv.getText())) {
                         bundle.putLong(KEY_FRAGMENT_RESULT, getSelectedMillis());
+                    }
+
+                    if (TextUtils.isEmpty(taskReminderType)) {
+                        taskReminderType = taskReminderEntity.taskReminderType;
                     }
 
                     if (reminderCalendar == null && selectedCalendar != null) {
