@@ -74,6 +74,10 @@ public class ProjectFileBoxFragment extends BaseFragment implements BaseRecycler
 
     private static final int REQ_CODE_PERMISSION_CAMERA = 1100;
     private static final int REQ_CODE_PERMISSION_ACCESS_FILE = 1101;
+
+    private static final int NAME_SORT_TYPE = 1;//按名称排序
+    private static final int TIME_SORT_TYPE = 2;//按时间排序
+    private static final int SIZE_SORT_TYPE = 3;//按大小排序
     Unbinder unbinder;
 
     ProjectFileBoxAdapter projectFileBoxAdapter;
@@ -89,6 +93,8 @@ public class ProjectFileBoxFragment extends BaseFragment implements BaseRecycler
     RefreshLayout refreshLayout;
     private List<String> firstlist;
     private boolean hasReadWritePms, hasReadPms;
+    private boolean sortIsUp = false;
+    private int sort_type = 0;//排序方式
 
     @Nullable
     @Override
@@ -262,7 +268,20 @@ public class ProjectFileBoxFragment extends BaseFragment implements BaseRecycler
                     if (response.body() != null) {
                         fileBoxBeanList = response.body();
                         enableEmptyView(fileBoxBeanList);
-                        projectFileBoxAdapter.bindData(isRefresh, fileBoxBeanList);
+                        switch (sort_type) {
+                            case 0:
+                                projectFileBoxAdapter.bindData(isRefresh, fileBoxBeanList);
+                                break;
+                            case NAME_SORT_TYPE:
+                                sortFileByNameList(sortIsUp);
+                                break;
+                            case TIME_SORT_TYPE:
+                                sortFileByTimeList(sortIsUp);
+                                break;
+                            case SIZE_SORT_TYPE:
+                                sortFileBySizeList(sortIsUp);
+                                break;
+                        }
                     } else {
                         projectFileBoxAdapter.notifyDataSetChanged();
                     }
@@ -308,6 +327,8 @@ public class ProjectFileBoxFragment extends BaseFragment implements BaseRecycler
      * @param isUp
      */
     public void sortFileByNameList(final boolean isUp) {
+        sort_type = NAME_SORT_TYPE;
+        sortIsUp = isUp;
         if (fileBoxBeanList == null) return;
         if (fileBoxBeanList.size() <= 0) return;
         Collections.sort(fileBoxBeanList, new Comparator<FileBoxBean>() {
@@ -350,6 +371,8 @@ public class ProjectFileBoxFragment extends BaseFragment implements BaseRecycler
      * @param isUp
      */
     public void sortFileBySizeList(final boolean isUp) {
+        sort_type = SIZE_SORT_TYPE;
+        sortIsUp = isUp;
         if (fileBoxBeanList == null) return;
         if (fileBoxBeanList.size() <= 0) return;
         Collections.sort(fileBoxBeanList, new Comparator<FileBoxBean>() {
@@ -389,6 +412,8 @@ public class ProjectFileBoxFragment extends BaseFragment implements BaseRecycler
      * @param isUp
      */
     public void sortFileByTimeList(final boolean isUp) {
+        sort_type = TIME_SORT_TYPE;
+        sortIsUp = isUp;
         if (fileBoxBeanList == null) return;
         if (fileBoxBeanList.size() <= 0) return;
         Collections.sort(fileBoxBeanList, new Comparator<FileBoxBean>() {

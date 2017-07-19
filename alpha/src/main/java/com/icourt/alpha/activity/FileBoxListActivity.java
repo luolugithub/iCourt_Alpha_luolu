@@ -89,6 +89,11 @@ public class FileBoxListActivity extends BaseActivity implements BaseRecyclerAda
     private List<String> firstlist;
     private boolean nameIsUp = false, timeIsUp = false, sizeIsUp = false;
     final List<String> list = new ArrayList<>();
+    private boolean sortIsUp = false;
+    private int sort_type = 0;//排序方式
+    private static final int NAME_SORT_TYPE = 1;//按名称排序
+    private static final int TIME_SORT_TYPE = 2;//按时间排序
+    private static final int SIZE_SORT_TYPE = 3;//按大小排序
 
     public static void launch(@NonNull Context context, @NonNull FileBoxBean fileBoxBean, @NonNull String authToken, @NonNull String seaFileRepoId, @NonNull String rootName) {
         if (context == null) return;
@@ -176,7 +181,20 @@ public class FileBoxListActivity extends BaseActivity implements BaseRecyclerAda
                 if (response.body() != null) {
                     fileBoxBeanList = response.body();
                     enableEmptyView(fileBoxBeanList);
-                    projectFileBoxAdapter.bindData(isRefresh, fileBoxBeanList);
+                    switch (sort_type) {
+                        case 0:
+                            projectFileBoxAdapter.bindData(isRefresh, fileBoxBeanList);
+                            break;
+                        case NAME_SORT_TYPE:
+                            sortFileByNameList(sortIsUp);
+                            break;
+                        case TIME_SORT_TYPE:
+                            sortFileByTimeList(sortIsUp);
+                            break;
+                        case SIZE_SORT_TYPE:
+                            sortFileBySizeList(sortIsUp);
+                            break;
+                    }
                 }
             }
 
@@ -228,6 +246,10 @@ public class FileBoxListActivity extends BaseActivity implements BaseRecyclerAda
      * @param isUp
      */
     public void sortFileByNameList(final boolean isUp) {
+        sort_type = NAME_SORT_TYPE;
+        sortIsUp = isUp;
+        if (fileBoxBeanList == null) return;
+        if (fileBoxBeanList.size() <= 0) return;
         Collections.sort(fileBoxBeanList, new Comparator<FileBoxBean>() {
             @Override
             public int compare(FileBoxBean o1, FileBoxBean o2) {
@@ -268,6 +290,10 @@ public class FileBoxListActivity extends BaseActivity implements BaseRecyclerAda
      * @param isUp
      */
     public void sortFileBySizeList(final boolean isUp) {
+        sort_type = SIZE_SORT_TYPE;
+        sortIsUp = isUp;
+        if (fileBoxBeanList == null) return;
+        if (fileBoxBeanList.size() <= 0) return;
         Collections.sort(fileBoxBeanList, new Comparator<FileBoxBean>() {
             @Override
             public int compare(FileBoxBean o1, FileBoxBean o2) {
@@ -305,6 +331,8 @@ public class FileBoxListActivity extends BaseActivity implements BaseRecyclerAda
      * @param isUp
      */
     public void sortFileByTimeList(final boolean isUp) {
+        sort_type = TIME_SORT_TYPE;
+        sortIsUp = isUp;
         if (fileBoxBeanList == null) return;
         if (fileBoxBeanList.size() <= 0) return;
         Collections.sort(fileBoxBeanList, new Comparator<FileBoxBean>() {
