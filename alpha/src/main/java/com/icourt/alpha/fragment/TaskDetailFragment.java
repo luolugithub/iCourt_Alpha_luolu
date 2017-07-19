@@ -421,6 +421,7 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
     private void addReminders(final TaskReminderEntity taskReminderEntity) {
         if (taskReminderEntity == null) return;
         if (taskItemEntity == null) return;
+        if (TextUtils.isEmpty(taskReminderEntity.taskReminderType)) return;
         String json = getReminderJson(taskReminderEntity);
         if (TextUtils.isEmpty(json)) return;
         getApi().taskReminderAdd(taskItemEntity.id, RequestUtils.createJsonBody(json)).enqueue(new SimpleCallBack<TaskReminderEntity>() {

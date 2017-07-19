@@ -287,11 +287,13 @@ public class TaskDetailActivity extends BaseActivity
                 if (hasTaskEditPermission()) {
                     if (taskItemEntity.state) {
                         if (taskItemEntity.attendeeUsers != null) {
-                            if (taskItemEntity.attendeeUsers.size() > 1) {
-                                showDeleteDialog("该任务为多人任务，确定要取消完成吗?", SHOW_FINISH_DIALOG);
-                            } else {
-                                updateTask(taskItemEntity, false, taskCheckbox);
-                            }
+                            //去掉了取消完成的对话框，避免再次加回来。
+//                            if (taskItemEntity.attendeeUsers.size() > 1) {
+//                                showDeleteDialog("该任务为多人任务，确定要取消完成吗?", SHOW_FINISH_DIALOG);
+//                            } else {
+//                                updateTask(taskItemEntity, false, taskCheckbox);
+//                            }
+                            updateTask(taskItemEntity, false, taskCheckbox);
                         } else {
                             updateTask(taskItemEntity, false, taskCheckbox);
                         }
