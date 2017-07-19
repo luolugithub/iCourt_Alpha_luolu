@@ -95,7 +95,7 @@ public class LoginBaseActivity extends BaseUmengActivity {
         jsonObject.addProperty("opneid", openid);
         jsonObject.addProperty("unionid", unionid);
         jsonObject.addProperty("uniqueDevice", "device");
-        jsonObject.addProperty("deviceTyp", "android");
+        jsonObject.addProperty("deviceType", "android");
         return jsonObject;
     }
 
