@@ -1,5 +1,6 @@
 package com.icourt.alpha.fragment;
 
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.TabLayout;
@@ -367,6 +368,7 @@ public class TabTimingFragment extends BaseFragment implements BaseRecyclerAdapt
         }
 
 
+        float maxValue = 0f;
         for (int j = 0; j < numberOfPoints; j++) {
             float hour = 0;
             Long weekDayTime = weekDataArray.get(j);
@@ -377,8 +379,33 @@ public class TabTimingFragment extends BaseFragment implements BaseRecyclerAdapt
             if (hour >= 24) {
                 hour = 23.9f;
             }
+            if (hour > maxValue) {
+                maxValue = hour;
+            }
             log("--------j:" + j + "  time:" + hour);
             values.add(new PointValue(j, hour));
+        }
+
+        //用第二条先提高高度
+        if (maxValue < 8.0f) {
+            List<PointValue> values2 = Arrays.asList(
+                    new PointValue(0, 1.0f),
+                    new PointValue(1, 2.0f),
+                    new PointValue(2, 2.0f),
+                    new PointValue(3, 3.0f),
+                    new PointValue(4, 3.0f),
+                    new PointValue(5, 5.0f),
+                    new PointValue(6, 8.0f));
+            Line line2 = new Line(values2);
+            line2.setShape(shape);
+            line2.setCubic(false);
+            line2.setFilled(false);
+            line2.setHasLabels(hasLabels);
+            line2.setHasLabelsOnlyForSelected(hasLabelForSelected);
+            line2.setHasLines(false);
+            line2.setHasPoints(hasPoints);
+            line2.setColor(Color.TRANSPARENT);
+            lines.add(line2);
         }
 
         Line line = new Line(values);
