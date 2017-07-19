@@ -8,6 +8,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;
 import com.google.gson.reflect.TypeToken;
+import com.icourt.json.StringNullAdapter;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -41,6 +42,7 @@ public class JsonUtils {
                     .enableComplexMapKeySerialization()//支持Map的key为复杂对象的形式
                     .setPrettyPrinting()// 调教格式
                     .disableHtmlEscaping() //默认是GSON把HTML 转义的
+                    .registerTypeAdapter(String.class, new StringNullAdapter())//将空字符串转换成""
                     .create();
         }
     }
