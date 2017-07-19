@@ -52,7 +52,9 @@ public class MonthCalendarView extends ViewPager implements OnMonthClickListener
         if (monthDateView != null) {
             monthDateView.setSelectYearMonth(year, month, day);
         }
+        mOnPageChangeListener.setResetDate(false);
         setCurrentItem(getCurrentItem() - 1, true);
+        mOnPageChangeListener.setResetDate(true);
     }
 
     /**
@@ -77,10 +79,27 @@ public class MonthCalendarView extends ViewPager implements OnMonthClickListener
             monthDateView.invalidate();
         }
         onClickThisMonth(year, month, day);
+        mOnPageChangeListener.setResetDate(false);
         setCurrentItem(getCurrentItem() + 1, true);
+        mOnPageChangeListener.setResetDate(true);
     }
 
-    private OnPageChangeListener mOnPageChangeListener = new OnPageChangeListener() {
+    abstract class MyOnPageChangeListener implements OnPageChangeListener {
+        private boolean isResetDate = true;
+
+        public void setResetDate(boolean resetDate) {
+            isResetDate = resetDate;
+        }
+
+        public boolean isResetDate() {
+            return isResetDate;
+        }
+
+    }
+
+    private MyOnPageChangeListener mOnPageChangeListener = new MyOnPageChangeListener() {
+
+
         @Override
         public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
         }
@@ -89,17 +108,22 @@ public class MonthCalendarView extends ViewPager implements OnMonthClickListener
         public void onPageSelected(final int position) {
             MonthView monthView = mMonthAdapter.getViews().get(getCurrentItem());
             if (monthView != null) {
-                //非今日所在月份选中第一天
-                //今日所在月份选中今日
-                //monthView.clickThisMonth(monthView.getSelectYear(), monthView.getSelectMonth(), monthView.getSelectDay());
-                Calendar calendar = Calendar.getInstance();
-                int currYear = calendar.get(Calendar.YEAR);
-                int currMonth = calendar.get(Calendar.MONTH);
-                if (currYear == monthView.getSelectYear() &&
-                        currMonth == monthView.getSelectMonth()) {
-                    monthView.clickThisMonth(monthView.getSelectYear(), monthView.getSelectMonth(), calendar.get(Calendar.DAY_OF_MONTH));
+                //重置
+                if (isResetDate()) {
+                    //非今日所在月份选中第一天
+                    //今日所在月份选中今日
+                    //monthView.clickThisMonth(monthView.getSelectYear(), monthView.getSelectMonth(), monthView.getSelectDay());
+                    Calendar calendar = Calendar.getInstance();
+                    int currYear = calendar.get(Calendar.YEAR);
+                    int currMonth = calendar.get(Calendar.MONTH);
+                    if (currYear == monthView.getSelectYear() &&
+                            currMonth == monthView.getSelectMonth()) {
+                        monthView.clickThisMonth(monthView.getSelectYear(), monthView.getSelectMonth(), calendar.get(Calendar.DAY_OF_MONTH));
+                    } else {
+                        monthView.clickThisMonth(monthView.getSelectYear(), monthView.getSelectMonth(), 1);
+                    }
                 } else {
-                    monthView.clickThisMonth(monthView.getSelectYear(), monthView.getSelectMonth(), 1);
+                    monthView.clickThisMonth(monthView.getSelectYear(), monthView.getSelectMonth(), monthView.getSelectDay());
                 }
 
                 if (mOnCalendarClickListener != null) {
