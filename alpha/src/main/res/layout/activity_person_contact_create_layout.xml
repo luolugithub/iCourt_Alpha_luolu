@@ -547,6 +547,7 @@
                 android:background="@drawable/top_bottom_line_layout_bg"
                 android:gravity="start"
                 android:hint="印象"
+                android:maxLength="2000"
                 android:minHeight="110dp"
                 android:padding="10dp"
                 android:textSize="16dp" />

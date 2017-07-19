@@ -18,7 +18,7 @@ public class TaskReminderUtils {
      */
     public static final Map<String, String> alldayMap = new LinkedHashMap<String, String>() {
         {
-            put("ODB", "当天（9:00)");
+            put("0DB", "当天（9:00)");
             put("1DB", "一天前（9:00)");
             put("2DB", "两天前（9:00)");
             put("1WB", "一周前（9:00)");
