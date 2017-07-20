@@ -167,6 +167,25 @@ public class TaskEverydayFragment extends BaseFragment
         getData(true);
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        List<TaskEntity.TaskItemEntity> datas = new ArrayList<>(taskSimpleAdapter.getData());
+        if (datas != null) {
+            boolean updated = false;
+            for (int i = datas.size() - 1; i >= 0; i--) {
+                TaskEntity.TaskItemEntity taskItemEntity = datas.get(i);
+                if (taskItemEntity != null && taskItemEntity.state) {
+                    datas.remove(i);
+                    updated = true;
+                }
+            }
+            if (updated) {
+                taskSimpleAdapter.bindData(true, datas);
+            }
+        }
+    }
+
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onTaskEvent(TaskActionEvent event) {
         if (event == null) return;

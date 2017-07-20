@@ -471,13 +471,25 @@ public class TaskListCalendarFragment extends BaseFragment {
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.titleBack:
-                if (mcvCalendar.getCurrentItem() > 0) {
-                    mcvCalendar.setCurrentItem(mcvCalendar.getCurrentItem() - 1);
+                if (slSchedule.getmState() == ScheduleState.CLOSE) {
+                    if (wcvCalendar.getCurrentItem() > 0) {
+                        wcvCalendar.setCurrentItem(wcvCalendar.getCurrentItem() - 1);
+                    }
+                } else {
+                    if (mcvCalendar.getCurrentItem() > 0) {
+                        mcvCalendar.setCurrentItem(mcvCalendar.getCurrentItem() - 1);
+                    }
                 }
                 break;
             case R.id.titleForward:
-                if (mcvCalendar.getCurrentItem() < mcvCalendar.getAdapter().getCount() - 1) {
-                    mcvCalendar.setCurrentItem(mcvCalendar.getCurrentItem() + 1);
+                if (slSchedule.getmState() == ScheduleState.CLOSE) {
+                    if (wcvCalendar.getCurrentItem() < wcvCalendar.getAdapter().getCount() - 1) {
+                        wcvCalendar.setCurrentItem(wcvCalendar.getCurrentItem() + 1);
+                    }
+                } else {
+                    if (mcvCalendar.getCurrentItem() < mcvCalendar.getAdapter().getCount() - 1) {
+                        mcvCalendar.setCurrentItem(mcvCalendar.getCurrentItem() + 1);
+                    }
                 }
                 break;
             case R.id.titleAction:
