@@ -231,7 +231,7 @@ public class TaskCreateActivity extends BaseActivity implements ProjectSelectDia
         }
 
         //默认当天23：59
-        DateSelectDialogFragment.newInstance(calendar, null, null)
+        DateSelectDialogFragment.newInstance(calendar, taskReminderEntity, null)
                 .show(mFragTransaction, tag);
     }
 

@@ -197,7 +197,11 @@ public class DateSelectFragment extends BaseFragment {
                 clearDutimeIv.setVisibility(View.INVISIBLE);
             }
         }
-        getTaskDetail(taskId);
+        if (TextUtils.isEmpty(taskId)) {
+            visibiLayout();
+        } else {
+            getTaskDetail(taskId);
+        }
         if (selectedCalendar == null) selectedCalendar = Calendar.getInstance();
         if (isUnSetDate()) {
             hourWheelView.setCurrentItem(10);
@@ -245,6 +249,30 @@ public class DateSelectFragment extends BaseFragment {
             }
         }, 200);
 
+    }
+
+    /**
+     * 显示隐藏layout
+     */
+    private void visibiLayout(){
+        if (taskReminderEntity != null) {
+            if (taskReminderEntity.ruleTime != null || taskReminderEntity.customTime != null) {
+                noticeLl.setVisibility(View.VISIBLE);
+                addReminderLayout.setVisibility(View.GONE);
+                setReminder(taskReminderEntity);
+            } else {
+                if (TextUtils.isEmpty(taskReminderEntity.taskReminderType)) {
+                    taskReminderType = TaskReminderEntity.ALL_DAY;
+                } else {
+                    taskReminderType = taskReminderEntity.taskReminderType;
+                }
+                noticeLl.setVisibility(View.GONE);
+                addReminderLayout.setVisibility(View.VISIBLE);
+            }
+        } else {
+            noticeLl.setVisibility(View.GONE);
+            addReminderLayout.setVisibility(View.VISIBLE);
+        }
     }
 
     /**
@@ -332,6 +360,7 @@ public class DateSelectFragment extends BaseFragment {
         titleContent.setText(dateFormatForMonth.format(System.currentTimeMillis()));
         compactcalendarView.setCurrentDate(new Date());
         compactcalendarView.invalidate();
+        selectedDate = new Date();
     }
 
     /**
@@ -407,24 +436,7 @@ public class DateSelectFragment extends BaseFragment {
                     addReminderLayout.setVisibility(View.GONE);
                     noticeLl.setVisibility(View.GONE);
                 } else {
-                    if (taskReminderEntity != null) {
-                        if (taskReminderEntity.ruleTime != null || taskReminderEntity.customTime != null) {
-                            noticeLl.setVisibility(View.VISIBLE);
-                            addReminderLayout.setVisibility(View.GONE);
-                            setReminder(taskReminderEntity);
-                        } else {
-                            if (TextUtils.isEmpty(taskReminderEntity.taskReminderType)) {
-                                taskReminderType = TaskReminderEntity.ALL_DAY;
-                            } else {
-                                taskReminderType = taskReminderEntity.taskReminderType;
-                            }
-                            noticeLl.setVisibility(View.GONE);
-                            addReminderLayout.setVisibility(View.VISIBLE);
-                        }
-                    } else {
-                        noticeLl.setVisibility(View.GONE);
-                        addReminderLayout.setVisibility(View.VISIBLE);
-                    }
+                    visibiLayout();
                 }
             }
         });
@@ -655,6 +667,8 @@ public class DateSelectFragment extends BaseFragment {
      * 转换自定义
      */
     private void convertCoustomReminder() {
+        if (taskReminderEntity == null)
+            taskReminderEntity = new TaskReminderEntity();
         /**
          * ruleTime设置时间集合
          * 根据ruleTime --->
@@ -756,7 +770,7 @@ public class DateSelectFragment extends BaseFragment {
             }
         } else if (TextUtils.equals(taskReminderType, TaskReminderEntity.PRECISE)) {
             if (TaskReminderUtils.alldayMap.containsKey(timeKey)) {
-                if (TextUtils.equals(timeKey, "ODB")) {
+                if (TextUtils.equals(timeKey, "0DB")) {
                     setAllDayReminder(customTimeItemEntity, "0", "day", "09:00");
                 }
                 if (TextUtils.equals(timeKey, "1DB")) {
