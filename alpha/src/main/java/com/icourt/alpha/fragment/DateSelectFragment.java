@@ -183,18 +183,21 @@ public class DateSelectFragment extends BaseFragment {
 
 //        if (selectedCalendar == null) selectedCalendar = Calendar.getInstance();
         if (isUnSetDate()) {
-            duetimeTv.setText("");
-            duetimeTv.setTextColor(SystemUtils.getColor(getContext(), R.color.alpha_font_color_gray));
-            clearDutimeIv.setVisibility(View.INVISIBLE);
+            setNullDueTime();
         } else {
             clearDutimeIv.setVisibility(View.VISIBLE);
             if (selectedCalendar != null) {
-                duetimeTv.setText(DateUtils.getHHmm(selectedCalendar.getTimeInMillis()));
-                duetimeTv.setTextColor(SystemUtils.getColor(getContext(), R.color.alpha_font_color_black));
+                int hour = selectedCalendar.get(Calendar.HOUR_OF_DAY);
+                int minute = selectedCalendar.get(Calendar.MINUTE);
+                int second = selectedCalendar.get(Calendar.SECOND);
+                if ((hour == 23 && minute == 59 && second == 59) || (hour == 0 && minute == 0)) {
+                    setNullDueTime();
+                } else {
+                    duetimeTv.setText(DateUtils.getHHmm(selectedCalendar.getTimeInMillis()));
+                    duetimeTv.setTextColor(SystemUtils.getColor(getContext(), R.color.alpha_font_color_black));
+                }
             } else {
-                duetimeTv.setText("");
-                duetimeTv.setTextColor(SystemUtils.getColor(getContext(), R.color.alpha_font_color_gray));
-                clearDutimeIv.setVisibility(View.INVISIBLE);
+                setNullDueTime();
             }
         }
         if (TextUtils.isEmpty(taskId)) {
@@ -252,9 +255,18 @@ public class DateSelectFragment extends BaseFragment {
     }
 
     /**
-     * 显示隐藏layout
+     * 具体时间text为'未设置'
      */
-    private void visibiLayout(){
+    private void setNullDueTime(){
+        duetimeTv.setText("");
+        duetimeTv.setTextColor(SystemUtils.getColor(getContext(), R.color.alpha_font_color_gray));
+        clearDutimeIv.setVisibility(View.INVISIBLE);
+    }
+
+    /**
+     * 显示隐藏提醒layout
+     */
+    private void visibiLayout() {
         if (taskReminderEntity != null) {
             if (taskReminderEntity.ruleTime != null || taskReminderEntity.customTime != null) {
                 noticeLl.setVisibility(View.VISIBLE);
@@ -506,9 +518,7 @@ public class DateSelectFragment extends BaseFragment {
                 }
                 break;
             case R.id.clear_dutime_iv://1 到期日 转换全天任务
-                duetimeTv.setText("");
-                duetimeTv.setTextColor(SystemUtils.getColor(getContext(), R.color.alpha_font_color_gray));
-                clearDutimeIv.setVisibility(View.INVISIBLE);
+                setNullDueTime();
                 setUnSetDate(23, 59, 59);
                 deadlineSelectLl.setVisibility(View.GONE);
                 taskReminderType = TaskReminderEntity.ALL_DAY;
@@ -594,6 +604,7 @@ public class DateSelectFragment extends BaseFragment {
         instance.set(Calendar.HOUR_OF_DAY, selectedCalendar.get(Calendar.HOUR_OF_DAY));
         instance.set(Calendar.MINUTE, selectedCalendar.get(Calendar.MINUTE));
         instance.set(Calendar.SECOND, selectedCalendar.get(Calendar.SECOND));
+        instance.set(Calendar.MILLISECOND, 0);
         return instance.getTimeInMillis();
     }
 
