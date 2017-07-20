@@ -25,6 +25,8 @@ import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.utils.UserPreferences;
 import com.icourt.alpha.widget.nim.AlphaMessageNotifierCustomization;
 import com.icourt.alpha.widget.nim.NimAttachParser;
+import com.icourt.lib.daemon.DaemonEnv;
+import com.icourt.lib.daemon.DaemonService;
 import com.iflytek.cloud.SpeechConstant;
 import com.iflytek.cloud.SpeechUtility;
 import com.liulishuo.filedownloader.FileDownloader;
@@ -33,6 +35,7 @@ import com.liulishuo.filedownloader.util.FileDownloadLog;
 import com.netease.nimlib.sdk.NIMClient;
 import com.netease.nimlib.sdk.SDKOptions;
 import com.netease.nimlib.sdk.auth.LoginInfo;
+import com.netease.nimlib.sdk.mixpush.NIMPushClient;
 import com.netease.nimlib.sdk.msg.MsgService;
 import com.netease.nimlib.sdk.msg.model.IMMessage;
 import com.netease.nimlib.sdk.team.constant.TeamFieldEnum;
@@ -47,6 +50,7 @@ import com.umeng.socialize.Config;
 import com.umeng.socialize.PlatformConfig;
 import com.umeng.socialize.UMShareAPI;
 import com.umeng.socialize.utils.Log;
+import com.xiaomi.channel.commonutils.logger.LoggerInterface;
 
 import java.net.Proxy;
 import java.util.Map;
@@ -87,6 +91,7 @@ public class BaseApplication extends MultiDexApplication {
     public void onCreate() {
         super.onCreate();
         baseApplication = this;
+        initDaemon();
         SpeechUtility.createUtility(getApplicationContext(), SpeechConstant.APPID + "=" + Const.MSC_XUN_APPID);
         initStrictMode();
         initActivityLifecycleCallbacks();
@@ -100,6 +105,14 @@ public class BaseApplication extends MultiDexApplication {
         initGalleryFinal();
         initShengCe();
         initApiInfo();
+    }
+
+    /**
+     * 初始化线程守护
+     */
+    private void initDaemon() {
+        DaemonEnv.initialize(this, DaemonService.class, DaemonEnv.DEFAULT_WAKE_UP_INTERVAL);
+        DaemonService.start(this);
     }
 
     /**
@@ -163,6 +176,17 @@ public class BaseApplication extends MultiDexApplication {
 
     private void initYunXin() {
 
+
+        if (SystemUtils.isMainProcess(this)) {
+            //TODO 小米证书
+            // 此处 certificate 请传入为开发者配置好的小米证书名称
+            // NIMPushClient.registerMiPush(this, certificate, appID, appKey);
+
+            //TODO 华为证书
+            // 此处 certificate 请传入开发者自身的华为证书名称
+            // NIMPushClient.registerHWPush(context, certificate);
+        }
+
         LoginInfo loginInfo = null;
         AlphaUserInfo loginUserInfo = getLoginUserInfo();
         if (loginUserInfo != null) {
@@ -186,8 +210,21 @@ public class BaseApplication extends MultiDexApplication {
         config.ledARGB = Color.GREEN;//呼吸灯的颜色 The color of the led.
         config.ledOnMs = 1000;//呼吸灯亮时的持续时间（毫秒）
         config.ledOffMs = 1500;//呼吸灯熄灭时的持续时间（毫秒）
+        config.ring = true;
         Uri actualDefaultRingtoneUri = RingtoneManager.getActualDefaultRingtoneUri(this,
                 RingtoneManager.TYPE_NOTIFICATION);
+        if (actualDefaultRingtoneUri == null) {
+            actualDefaultRingtoneUri = RingtoneManager
+                    .getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+        }
+        if (actualDefaultRingtoneUri == null) {
+            actualDefaultRingtoneUri = RingtoneManager
+                    .getDefaultUri(RingtoneManager.TYPE_ALARM);
+        }
+        if (actualDefaultRingtoneUri == null) {
+            actualDefaultRingtoneUri = RingtoneManager
+                    .getDefaultUri(RingtoneManager.TYPE_ALL);
+        }
         if (actualDefaultRingtoneUri != null) {
             config.notificationSound = actualDefaultRingtoneUri.toString();
         }
