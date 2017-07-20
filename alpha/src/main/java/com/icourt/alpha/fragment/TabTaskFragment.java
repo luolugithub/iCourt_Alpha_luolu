@@ -19,11 +19,9 @@ import com.icourt.alpha.activity.TaskCreateActivity;
 import com.icourt.alpha.adapter.baseadapter.BaseFragmentAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.base.BaseFragment;
-import com.icourt.alpha.entity.bean.TaskEntity;
 import com.icourt.alpha.entity.bean.TaskMemberEntity;
 import com.icourt.alpha.fragment.dialogfragment.TaskMemberSelectDialogFragment;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
-import com.icourt.alpha.interfaces.OnTasksChangeListener;
 import com.icourt.alpha.utils.RAUtils;
 import com.icourt.alpha.view.NoScrollViewPager;
 import com.icourt.alpha.widget.dialog.BottomActionDialog;
@@ -31,7 +29,6 @@ import com.icourt.alpha.widget.dialog.BottomActionDialog;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -158,7 +155,7 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
                     switch (taskAllFragment.getChildFragmentType()) {
                         case TaskAllFragment.TYPE_ALL_TASK:
                             viewPager.setNoScroll(true);
-                            titleCalendar.setImageResource(R.mipmap.ic_card_list);
+                            titleCalendar.setImageResource(R.mipmap.icon_calendar_selected);
                             taskAllFragment.notifyFragmentUpdate(taskAllFragment, TaskAllFragment.TYPE_ALL_TASK_CALENDAR, null);
                             break;
                         case TaskAllFragment.TYPE_ALL_TASK_CALENDAR:
