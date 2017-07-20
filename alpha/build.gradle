@@ -84,11 +84,11 @@ android {
             buildConfigField "String", "APK_UPDATE_URL", rootProject.ext.alphaApkUpdateUrl.apk_update_url_release
             manifestPlaceholders = [NIM_APPKEY: rootProject.ext.nimAppKey.releaseAppKey]
             //测试用
-             buildConfigField "String", "API_URL", rootProject.ext.alphaAPIUrl.api_url_test
+          /*   buildConfigField "String", "API_URL", rootProject.ext.alphaAPIUrl.api_url_test
              buildConfigField "String", "API_CHAT_URL", rootProject.ext.alphaChatAPIUrl.api_chat_url_test
              buildConfigField "String", "API_SFILE_URL", rootProject.ext.alphaSFileUrl.api_url_test
              buildConfigField "String", "APK_UPDATE_URL", rootProject.ext.alphaApkUpdateUrl.apk_update_url_test
-             manifestPlaceholders = [NIM_APPKEY: rootProject.ext.nimAppKey.testAppKey]
+             manifestPlaceholders = [NIM_APPKEY: rootProject.ext.nimAppKey.testAppKey]*/
             //预览版用
 //            buildConfigField "String", "API_URL", rootProject.ext.alphaAPIUrl.api_url_preview
 //            buildConfigField "String", "API_CHAT_URL", rootProject.ext.alphaChatAPIUrl.api_chat_url_preview
@@ -252,7 +252,7 @@ dependencies {
     compile 'com.gjiazhe:wavesidebar:1.3'
 
     // 基础功能 (必需)
-    compile 'com.netease.nimlib:basesdk:3.3.0'
+    compile 'com.netease.nimlib:basesdk:4.0.0'
     // 音视频需要
 //    compile 'com.netease.nimlib:avchat:3.2.0'
     // 聊天室需要
