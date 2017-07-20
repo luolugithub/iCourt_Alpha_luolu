@@ -21,6 +21,9 @@ import com.icourt.alpha.utils.LoginInfoUtils;
 import com.icourt.alpha.utils.SpannableUtils;
 import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.utils.SystemUtils;
+import com.netease.nimlib.sdk.NIMClient;
+import com.netease.nimlib.sdk.RequestCallback;
+import com.netease.nimlib.sdk.team.TeamService;
 import com.netease.nimlib.sdk.team.model.Team;
 
 import java.util.List;
@@ -49,6 +52,25 @@ public class MyAtedAdapter extends BaseArrayRecyclerAdapter<IMMessageCustomBody>
                 return team;
             }
         }
+        NIMClient.getService(TeamService.class).queryTeam(id).setCallback(new RequestCallback<Team>() {
+            @Override
+            public void onSuccess(Team team) {
+                if (team != null) {
+                    teams.add(team);
+                    notifyDataSetChanged();
+                }
+            }
+
+            @Override
+            public void onFailed(int i) {
+
+            }
+
+            @Override
+            public void onException(Throwable throwable) {
+
+            }
+        });
         return null;
     }
 
@@ -112,6 +134,8 @@ public class MyAtedAdapter extends BaseArrayRecyclerAdapter<IMMessageCustomBody>
             } else {
                 setTeamIcon(team.getName(), at_user_iv);
             }
+        } else {
+            at_from_group_tv.setText("未查询到讨论组");
         }
 
         GroupContactBean user = getUser(imAtEntity.from);
