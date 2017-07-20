@@ -544,21 +544,24 @@ public class TaskListCalendarFragment extends BaseFragment {
             if (tasks != null && taskItemEntityList != null) {
                 taskItemEntityList = tasks;
 
-                if (viewPager == null) return;
 
                 //1.更新子fragment
                 fragmentPagerAdapter.notifyDataSetChanged();
 
                 //2.更新本月份的小红点
-                List<Integer> taskHint = slSchedule.getTaskHint();
-                if (taskHint != null && !taskHint.isEmpty()) {
-                    slSchedule.removeTaskHints(taskHint);
+                if (slSchedule != null) {
+                    List<Integer> taskHint = slSchedule.getTaskHint();
+                    if (taskHint != null && !taskHint.isEmpty()) {
+                        slSchedule.removeTaskHints(taskHint);
+                    }
+                    slSchedule.addTaskHints(getMonthTaskHint(slSchedule.getCurrentSelectYear(), slSchedule.getCurrentSelectMonth()));
                 }
-                slSchedule.addTaskHints(getMonthTaskHint(slSchedule.getCurrentSelectYear(), slSchedule.getCurrentSelectMonth()));
-
                 //3.将容器中的小红点再更新一次
                 addTaskHints();
-                slSchedule.invalidate();
+
+                if (slSchedule != null) {
+                    slSchedule.invalidate();
+                }
             }
         }
     }

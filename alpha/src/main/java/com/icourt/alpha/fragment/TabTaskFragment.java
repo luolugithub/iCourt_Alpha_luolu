@@ -24,6 +24,7 @@ import com.icourt.alpha.entity.bean.TaskMemberEntity;
 import com.icourt.alpha.fragment.dialogfragment.TaskMemberSelectDialogFragment;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.interfaces.OnTasksChangeListener;
+import com.icourt.alpha.utils.RAUtils;
 import com.icourt.alpha.view.NoScrollViewPager;
 import com.icourt.alpha.widget.dialog.BottomActionDialog;
 
@@ -150,6 +151,7 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
         super.onClick(v);
         switch (v.getId()) {
             case R.id.titleCalendar:
+                if (!RAUtils.isLegal(RAUtils.DURATION_DEFAULT)) return;
                 Fragment item = baseFragmentAdapter.getItem(viewPager.getCurrentItem());
                 if (item instanceof TaskAllFragment) {
                     TaskAllFragment taskAllFragment = (TaskAllFragment) item;

@@ -659,6 +659,7 @@ public class DateSelectFragment extends BaseFragment {
          * ruleTime设置时间集合
          * 根据ruleTime --->
          */
+        if (taskReminderEntity == null) return;
         if (!TextUtils.equals(taskReminderType, taskReminderEntity.taskReminderType)) {
             if (taskReminderEntity.ruleTime != null) {
                 Iterator it = taskReminderEntity.ruleTime.iterator();
