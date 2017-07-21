@@ -840,10 +840,12 @@ public class MainActivity extends BaseAppUpdateActivity
     protected void onDestroy() {
         DaemonService.start(this);
 
-        Intent intent = getBaseContext().getPackageManager().getLaunchIntentForPackage(getBaseContext().getPackageName());
-        PendingIntent restartIntent = PendingIntent.getActivity(getApplicationContext(), 0, intent, PendingIntent.FLAG_ONE_SHOT);
-        AlarmManager mgr = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-        mgr.set(AlarmManager.RTC, System.currentTimeMillis() + 50, restartIntent);
+        if (isUserLogin()) {
+            Intent intent = getBaseContext().getPackageManager().getLaunchIntentForPackage(getBaseContext().getPackageName());
+            PendingIntent restartIntent = PendingIntent.getActivity(getApplicationContext(), 0, intent, PendingIntent.FLAG_ONE_SHOT);
+            AlarmManager mgr = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+            mgr.set(AlarmManager.RTC, System.currentTimeMillis() + 50, restartIntent);
+        }
 
         super.onDestroy();
         EventBus.getDefault().unregister(this);
