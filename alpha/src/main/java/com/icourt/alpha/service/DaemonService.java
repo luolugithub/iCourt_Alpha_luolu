@@ -1,9 +1,18 @@
-package com.icourt.lib.daemon;
+package com.icourt.alpha.service;
 
 import android.content.Context;
 import android.content.Intent;
 import android.os.IBinder;
-import android.support.annotation.Nullable;
+
+import com.icourt.alpha.entity.bean.AlphaUserInfo;
+import com.icourt.alpha.utils.LogUtils;
+import com.icourt.alpha.utils.LoginInfoUtils;
+import com.icourt.lib.daemon.AbsWorkService;
+import com.netease.nimlib.sdk.NIMClient;
+import com.netease.nimlib.sdk.RequestCallback;
+import com.netease.nimlib.sdk.StatusCode;
+import com.netease.nimlib.sdk.auth.AuthService;
+import com.netease.nimlib.sdk.auth.LoginInfo;
 
 import java.util.concurrent.TimeUnit;
 
@@ -62,7 +71,7 @@ public class DaemonService extends AbsWorkService {
 
     @Override
     public void startWork(Intent intent, int flags, int startId) {
-        System.out.println("检查磁盘中是否有上次销毁时保存的数据");
+        LogUtils.d("检查磁盘中是否有上次销毁时保存的数据");
         sDisposable = Flowable
                 .interval(3, TimeUnit.SECONDS)
                 //取消任务时取消定时唤醒
@@ -75,9 +84,40 @@ public class DaemonService extends AbsWorkService {
                 }).subscribe(new Consumer<Long>() {
                     @Override
                     public void accept(Long count) throws Exception {
-                        System.out.println("每 3 秒采集一次数据... count = " + count);
+                        //如果云信出现未登陆 主动连接一次
+                        StatusCode status = NIMClient.getStatus();
+                        if (status == StatusCode.UNLOGIN
+                                || status == StatusCode.NET_BROKEN) {
+                            LogUtils.d("-------------->云信连接状态异常:" + status);
+                            AlphaUserInfo loginUserInfo = LoginInfoUtils.getLoginUserInfo();
+                            if (loginUserInfo != null) {
+                                try {
+                                    NIMClient.getService(AuthService.class)
+                                            .login(new LoginInfo(loginUserInfo.getThirdpartId(), loginUserInfo.getChatToken()))
+                                            .setCallback(new RequestCallback() {
+                                                @Override
+                                                public void onSuccess(Object o) {
+
+                                                }
+
+                                                @Override
+                                                public void onFailed(int i) {
+
+                                                }
+
+                                                @Override
+                                                public void onException(Throwable throwable) {
+
+                                                }
+                                            });
+                                } catch (Throwable e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                        }
+                        LogUtils.d("每 3 秒采集一次数据... count = " + count);
                         if (count > 0 && count % 18 == 0)
-                            System.out.println("保存数据到磁盘。 saveCount = " + (count / 18 - 1));
+                            LogUtils.d("保存数据到磁盘。 saveCount = " + (count / 18 - 1));
                     }
                 });
     }

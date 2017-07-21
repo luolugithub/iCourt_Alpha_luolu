@@ -57,7 +57,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <!-- 进程守护 -->
-        <service android:name="com.icourt.lib.daemon.DaemonService" />
+        <service android:name=".service.DaemonService" />
         <activity
             android:name=".activity.WelcomeActivity"
             android:screenOrientation="portrait"

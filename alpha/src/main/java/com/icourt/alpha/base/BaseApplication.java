@@ -26,7 +26,7 @@ import com.icourt.alpha.utils.UserPreferences;
 import com.icourt.alpha.widget.nim.AlphaMessageNotifierCustomization;
 import com.icourt.alpha.widget.nim.NimAttachParser;
 import com.icourt.lib.daemon.DaemonEnv;
-import com.icourt.lib.daemon.DaemonService;
+import com.icourt.alpha.service.DaemonService;
 import com.iflytek.cloud.SpeechConstant;
 import com.iflytek.cloud.SpeechUtility;
 import com.liulishuo.filedownloader.FileDownloader;
@@ -35,7 +35,6 @@ import com.liulishuo.filedownloader.util.FileDownloadLog;
 import com.netease.nimlib.sdk.NIMClient;
 import com.netease.nimlib.sdk.SDKOptions;
 import com.netease.nimlib.sdk.auth.LoginInfo;
-import com.netease.nimlib.sdk.mixpush.NIMPushClient;
 import com.netease.nimlib.sdk.msg.MsgService;
 import com.netease.nimlib.sdk.msg.model.IMMessage;
 import com.netease.nimlib.sdk.team.constant.TeamFieldEnum;
@@ -50,7 +49,6 @@ import com.umeng.socialize.Config;
 import com.umeng.socialize.PlatformConfig;
 import com.umeng.socialize.UMShareAPI;
 import com.umeng.socialize.utils.Log;
-import com.xiaomi.channel.commonutils.logger.LoggerInterface;
 
 import java.net.Proxy;
 import java.util.Map;
@@ -172,6 +170,12 @@ public class BaseApplication extends MultiDexApplication {
     private void initEmoji() {
 
         //EmojiManager.install(new EmojiOneProvider());
+    }
+
+    @Override
+    public void onTerminate() {
+        super.onTerminate();
+        LogUtils.d("==========>app:onTerminate");
     }
 
     private void initYunXin() {
