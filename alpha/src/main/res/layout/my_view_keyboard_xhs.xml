@@ -37,7 +37,7 @@
                 android:focusableInTouchMode="false"
                 android:hint="请输入要发送的内容"
                 android:lineSpacingExtra="4dp"
-                android:maxLength="1999"
+                android:maxLength="2000"
                 android:maxLines="4"
                 android:paddingBottom="8dp"
                 android:paddingLeft="10dp"

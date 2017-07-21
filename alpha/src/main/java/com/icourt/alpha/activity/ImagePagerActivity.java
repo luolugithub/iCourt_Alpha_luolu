@@ -751,13 +751,13 @@ public class ImagePagerActivity extends BaseUmengActivity implements BasePagerAd
 
     }
 
-    @Override
-    public void onBackPressed() {
-        super.onBackPressed();
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            finishAfterTransition();
-        }
-    }
+//    @Override
+//    public void onBackPressed() {
+//        super.onBackPressed();
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+//            finishAfterTransition();
+//        }
+//    }
 
     @CheckResult
     private SFileImageInfoEntity getSFileImageInfoEntity(int pos) {
