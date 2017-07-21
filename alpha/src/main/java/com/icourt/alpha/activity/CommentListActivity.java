@@ -1,6 +1,8 @@
 package com.icourt.alpha.activity;
 
 import android.app.Activity;
+import android.app.Dialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -8,6 +10,7 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.AppBarLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
@@ -393,7 +396,7 @@ public class CommentListActivity extends BaseActivity implements BaseRecyclerAda
                                 commentActionCopy(commentItemEntity.content);
                                 break;
                             case 1:
-                                deleteComment(commentItemEntity);
+                                showDeleteDialog("是非成败转头空，确定要删除吗?", commentItemEntity);
                                 break;
                         }
                     }
@@ -419,6 +422,35 @@ public class CommentListActivity extends BaseActivity implements BaseRecyclerAda
                         }
                     }
                 }).show();
+    }
+
+    /**
+     * 删除评论确定弹框
+     *
+     * @param message
+     * @param commentItemEntity
+     */
+    private void showDeleteDialog(String message, final CommentEntity.CommentItemEntity commentItemEntity) {
+        DialogInterface.OnClickListener dialogOnclicListener = new DialogInterface.OnClickListener() {
+
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                switch (which) {
+                    case Dialog.BUTTON_POSITIVE://确定
+                        deleteComment(commentItemEntity);
+                        break;
+                    case Dialog.BUTTON_NEGATIVE://取消
+                        break;
+                }
+            }
+        };
+        //dialog参数设置
+        new AlertDialog.Builder(this)
+                .setTitle("提示")//设置标题
+                .setMessage(message) //设置内容
+                .setPositiveButton("确认", dialogOnclicListener)
+                .setNegativeButton("取消", dialogOnclicListener)
+                .show();
     }
 
     /**

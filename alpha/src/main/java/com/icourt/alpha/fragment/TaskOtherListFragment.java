@@ -189,12 +189,15 @@ public class TaskOtherListFragment extends BaseFragment implements BaseRecyclerA
         } else if (startType == SELECT_OTHER_TYPE) {
             assignedByMe = 1;
         }
+        String orderBy = null;
         if (finishType == FINISH_TYPE) {
             stateType = 1;
+            orderBy = "updateTime";
         } else if (finishType == UNFINISH_TYPE) {
             stateType = 0;
+            orderBy = "dueTime";
         }
-        getApi().taskListItemQuery(getAssignTos(), stateType, 0, null, pageIndex, ActionConstants.DEFAULT_PAGE_SIZE, 0).enqueue(new SimpleCallBack<TaskEntity>() {
+        getApi().taskListItemQuery(getAssignTos(), stateType, 0, orderBy, pageIndex, ActionConstants.DEFAULT_PAGE_SIZE, 0).enqueue(new SimpleCallBack<TaskEntity>() {
             @Override
             public void onSuccess(Call<ResEntity<TaskEntity>> call, Response<ResEntity<TaskEntity>> response) {
                 if (response.body().result != null) {
