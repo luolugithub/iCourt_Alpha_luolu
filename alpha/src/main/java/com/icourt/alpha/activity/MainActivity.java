@@ -1,17 +1,22 @@
 package com.icourt.alpha.activity;
 
+import android.Manifest;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.provider.Settings;
 import android.support.annotation.IdRes;
 import android.support.annotation.IntDef;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.app.NotificationManagerCompat;
+import android.support.v7.app.AlertDialog;
 import android.util.SparseArray;
 import android.view.Gravity;
 import android.view.KeyEvent;
@@ -53,6 +58,7 @@ import com.icourt.alpha.interfaces.OnTabDoubleClickListener;
 import com.icourt.alpha.utils.DensityUtil;
 import com.icourt.alpha.utils.SimpleViewGestureListener;
 import com.icourt.alpha.utils.SpUtils;
+import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.view.CheckableLayout;
 import com.icourt.alpha.widget.manager.TimerManager;
 import com.icourt.alpha.widget.popupwindow.BaseListActionItemPop;
@@ -285,8 +291,27 @@ public class MainActivity extends BaseAppUpdateActivity
     @Override
     protected void onResume() {
         super.onResume();
+        checkNotificationisEnable();
         getPermission();
         getTimering();
+    }
+
+    /**
+     * 检查通知是否打开
+     */
+    private void checkNotificationisEnable() {
+        if (!SystemUtils.isEnableNotification(getContext())
+                || !NotificationManagerCompat.from(getContext()).areNotificationsEnabled()) {
+            new AlertDialog.Builder(getContext())
+                    .setTitle("提示")
+                    .setMessage("为了您能收到消息提醒,请打开通知设置开关!")
+                    .setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            SystemUtils.launchPhoneSettings(getContext());
+                        }
+                    }).show();
+        }
     }
 
     /**
