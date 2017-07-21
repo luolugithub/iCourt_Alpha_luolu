@@ -331,7 +331,7 @@ public class CustomerCompanyCreateActivity extends BaseActivity {
                 break;
             case R.id.activity_add_group_contact_add_liaisons_layout://增加联络人
                 String pkid = null;
-                if (!isAddOrEdit) {
+                if (!isAddOrEdit && contactDeatilBean != null) {
                     pkid = contactDeatilBean.getContact().getPkid();
                 }
                 SelectLiaisonActivity.launchForResult(this, Const.SELECT_ENTERPRISE_LIAISONS_TAG_ACTION, pkid, liaisonsList, SELECT_OTHER_REQUEST);

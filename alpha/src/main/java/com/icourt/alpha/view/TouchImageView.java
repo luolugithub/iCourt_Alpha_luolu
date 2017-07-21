@@ -1076,14 +1076,17 @@ public class TouchImageView extends ImageView {
      * @return Coordinates of the point in the view's coordinate system.
      */
     private PointF transformCoordBitmapToTouch(float bx, float by) {
-        matrix.getValues(m);
-        float origW = getDrawable().getIntrinsicWidth();
-        float origH = getDrawable().getIntrinsicHeight();
-        float px = bx / origW;
-        float py = by / origH;
-        float finalX = m[Matrix.MTRANS_X] + getImageWidth() * px;
-        float finalY = m[Matrix.MTRANS_Y] + getImageHeight() * py;
-        return new PointF(finalX, finalY);
+        if (getDrawable() != null) {
+            matrix.getValues(m);
+            float origW = getDrawable().getIntrinsicWidth();
+            float origH = getDrawable().getIntrinsicHeight();
+            float px = bx / origW;
+            float py = by / origH;
+            float finalX = m[Matrix.MTRANS_X] + getImageWidth() * px;
+            float finalY = m[Matrix.MTRANS_Y] + getImageHeight() * py;
+            return new PointF(finalX, finalY);
+        }
+        return null;
     }
 
     /**

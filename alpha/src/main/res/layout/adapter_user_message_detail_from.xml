@@ -23,6 +23,7 @@
         android:layout_height="wrap_content"
         android:ellipsize="end"
         android:maxEms="20"
+        android:gravity="right"
         android:maxLines="1"
         android:text="来自: bug提交asdaskdjaklsjlaasdasdasdasd"
         android:textColor="@color/alpha_font_color_gray"

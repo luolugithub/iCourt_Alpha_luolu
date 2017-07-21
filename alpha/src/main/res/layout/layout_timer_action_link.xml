@@ -33,6 +33,7 @@
                 android:hint="请输入计时标题"
                 android:imeOptions="actionNone"
                 android:maxLines="3"
+                android:maxLength="200"
                 android:paddingBottom="12dp"
                 android:paddingRight="12dp"
                 android:paddingTop="12dp"

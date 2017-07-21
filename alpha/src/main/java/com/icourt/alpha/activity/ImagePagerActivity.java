@@ -736,6 +736,8 @@ public class ImagePagerActivity extends BaseUmengActivity implements BasePagerAd
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        if (grantResults == null) return;
+        if (grantResults.length <= 0) return;
         switch (requestCode) {
             case CODE_PERMISSION_FILE:
                 if (grantResults[0] == PackageManager.PERMISSION_DENIED) {

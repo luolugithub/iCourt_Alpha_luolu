@@ -1321,6 +1321,8 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
                                            @NonNull int[] grantResults) {
+        if (grantResults == null) return;
+        if (grantResults.length <= 0) return;
         switch (requestCode) {
             case REQ_CODE_PERMISSION_CAMERA:
                 if (grantResults[0] == PackageManager.PERMISSION_DENIED) {

@@ -225,6 +225,8 @@ public class ContactDetailActivity extends BaseActivity {
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        if (grantResults == null) return;
+        if (grantResults.length <= 0) return;
         switch (requestCode) {
             case CODE_REQUEST_PERMISSION_CALL_PHONE:
                 if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
