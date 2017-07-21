@@ -308,9 +308,12 @@ public class MainActivity extends BaseAppUpdateActivity
                     .setPositiveButton("确定", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialogInterface, int i) {
+                            bugSync("通知开关设置", "未打开");
                             SystemUtils.launchPhoneSettings(getContext());
                         }
-                    }).show();
+                    })
+                    .setNegativeButton("取消", null)
+                    .show();
         }
     }
 
