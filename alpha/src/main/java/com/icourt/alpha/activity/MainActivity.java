@@ -64,6 +64,7 @@ import com.icourt.alpha.widget.manager.TimerManager;
 import com.icourt.alpha.widget.popupwindow.BaseListActionItemPop;
 import com.icourt.alpha.widget.popupwindow.ListActionItemPop;
 import com.icourt.alpha.service.DaemonService;
+import com.icourt.lib.daemon.IntentWrapper;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -314,6 +315,12 @@ public class MainActivity extends BaseAppUpdateActivity
                     })
                     .setNegativeButton("取消", null)
                     .show();
+        } else {
+            /*try {
+                IntentWrapper.whiteListMatters(this, "轨迹跟踪服务的持续运行");
+            } catch (Throwable e) {
+                e.printStackTrace();
+            }*/
         }
     }
 
@@ -902,6 +909,7 @@ public class MainActivity extends BaseAppUpdateActivity
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_BACK) {
+            IntentWrapper.onBackPressed(this);
             moveTaskToBack(false);
             return true;
         }
