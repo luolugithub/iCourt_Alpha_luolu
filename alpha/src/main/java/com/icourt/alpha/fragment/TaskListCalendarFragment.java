@@ -192,6 +192,13 @@ public class TaskListCalendarFragment extends BaseFragment {
         initGestureDetector();
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        //通知全部任务列表刷新
+        EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION));
+    }
+
     /**
      * 手势解析:处理滚动
      */
