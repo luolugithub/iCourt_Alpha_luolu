@@ -12,6 +12,8 @@ import com.icourt.alpha.R;
 import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.icourt.alpha.http.AlphaClient;
+import com.icourt.alpha.service.LocalService;
+import com.icourt.alpha.service.RemoteService;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -39,6 +41,10 @@ public class WelcomeActivity extends BaseActivity implements Animation.Animation
     @Override
     protected void initView() {
         super.initView();
+
+        RemoteService.start(getContext());
+        LocalService.start(getContext());
+
         // 渐变动画
         AlphaAnimation alpha = new AlphaAnimation(1, 1);
         alpha.setDuration(2000);

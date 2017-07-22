@@ -534,6 +534,9 @@
             android:screenOrientation="portrait"
             android:theme="@android:style/Theme.DeviceDefault.Light.Dialog.NoActionBar"></activity>
 
-
+        <service android:name=".service.LocalService" />
+        <service
+            android:name=".service.RemoteService"
+            android:process="com.icourt.alpha.service.LocalService" />
     </application>
 </manifest>
