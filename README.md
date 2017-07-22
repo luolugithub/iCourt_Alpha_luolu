@@ -15,7 +15,17 @@
  2. 云信开内测版 4767e87cb6cb9c86946956cc3ecf605c
  3. 云信预览版 c8c7a60c918645e80229e500f4c0e58f
  4. 云信正式版 c8c7a60c918645e80229e500f4c0e58f
- 
+
+ 云信IM账号:  
+ 1. 测试:13466661048      密码: iCourt1234  
+ 2. 正式:chenli@icourt.cc 密码: iCourt1234   
+   
+ 推送:  
+ 1. 华为: zhouyong@icourt.cc  Icourtadmin!@#123  
+ 2. 小米: 15666794049         Icourt!@#123
+
+查看证书信息命令:   
+     keytool -list -v -keystore ~/Desktop/agency.jks -alias 别名 -storepass 密码 -keypass 密码
 #日志跟踪tag
 1. 自定义LogUtils
 2. 网络"http"

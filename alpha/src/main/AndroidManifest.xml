@@ -451,10 +451,12 @@
         <!-- XXXX替换为华为推送平台配置的应用appid -->
         <meta-data
             android:name="com.huawei.hms.client.appid"
-            android:value="XXXX" />
+            android:value="100049149" />
 
+        <!-- 备注：Push相关的android组件需要添加到业务的AndroidManifest.xml,
+        	 Push相关android组件运行在另外一个进程是为了防止Push服务异常而影响主业务 -->
         <!-- 第三方相关 :接收Push消息（注册、Push消息、Push连接状态、标签，LBS上报结果）广播 -->
-        <receiver android:name="com.huawei.pushtest.receiver.MyReceiver">
+        <receiver android:name=".receiver.HwPushReceiver">
             <intent-filter>
                 <!-- 必须,用于接收token-->
                 <action android:name="com.huawei.android.push.intent.REGISTRATION" />
@@ -471,9 +473,6 @@
                 android:name="CS_cloud_ablitity"
                 android:value="@string/hwpush_ability_value" />
         </receiver>
-
-        <!-- 备注：Push相关的android组件需要添加到业务的AndroidManifest.xml,
-        	 Push相关android组件运行在另外一个进程是为了防止Push服务异常而影响主业务 -->
 
         <!-- PushSDK:PushSDK接收外部请求事件入口 -->
         <receiver
@@ -534,5 +533,7 @@
             android:launchMode="singleTop"
             android:screenOrientation="portrait"
             android:theme="@android:style/Theme.DeviceDefault.Light.Dialog.NoActionBar"></activity>
+
+
     </application>
 </manifest>

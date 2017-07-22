@@ -10,6 +10,7 @@ import android.support.multidex.MultiDexApplication;
 
 import com.bugtags.library.Bugtags;
 import com.bugtags.library.BugtagsOptions;
+import com.huawei.android.pushagent.api.PushManager;
 import com.icourt.alpha.BuildConfig;
 import com.icourt.alpha.R;
 import com.icourt.alpha.activity.ChatActivity;
@@ -35,6 +36,7 @@ import com.liulishuo.filedownloader.util.FileDownloadLog;
 import com.netease.nimlib.sdk.NIMClient;
 import com.netease.nimlib.sdk.SDKOptions;
 import com.netease.nimlib.sdk.auth.LoginInfo;
+import com.netease.nimlib.sdk.mixpush.NIMPushClient;
 import com.netease.nimlib.sdk.msg.MsgService;
 import com.netease.nimlib.sdk.msg.model.IMMessage;
 import com.netease.nimlib.sdk.team.constant.TeamFieldEnum;
@@ -182,13 +184,15 @@ public class BaseApplication extends MultiDexApplication {
 
 
         if (SystemUtils.isMainProcess(this)) {
-            //TODO 小米证书
+            // 小米证书
             // 此处 certificate 请传入为开发者配置好的小米证书名称
-            // NIMPushClient.registerMiPush(this, certificate, appID, appKey);
+            //NIMPushClient.registerMiPush(this, certificate, appID, appKey);
+            NIMPushClient.registerMiPush(this, "AlphaXiaoMi", "2882303761517599261", "5911759920261");
 
-            //TODO 华为证书
+            // 华为证书
             // 此处 certificate 请传入开发者自身的华为证书名称
-            // NIMPushClient.registerHWPush(context, certificate);
+            NIMPushClient.registerHWPush(this, "AlphaHuaWei");
+            PushManager.requestToken(this);
         }
 
         LoginInfo loginInfo = null;
