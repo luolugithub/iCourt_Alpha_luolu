@@ -256,7 +256,7 @@ public class TaskDetailActivity extends BaseActivity
                     if (taskItemEntity.matter != null) {
                         showTaskAllotSelectDialogFragment(taskItemEntity.matter.id);
                     } else {
-                        showTopSnackBar("请优先选择项目");
+                        showTopSnackBar("请先选择项目");
                     }
                 } else {
                     showTopSnackBar("您没有编辑任务的权限");

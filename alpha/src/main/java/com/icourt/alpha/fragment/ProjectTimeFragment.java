@@ -206,9 +206,10 @@ public class ProjectTimeFragment extends BaseFragment implements BaseRecyclerAda
     @Override
     public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
         if (holder.getItemViewType() == 1) {
-            TimeEntity.ItemEntity itemEntity = (TimeEntity.ItemEntity) adapter.getItem(position);
+            TimeEntity.ItemEntity itemEntity = (TimeEntity.ItemEntity) adapter.getItem(adapter.getRealPos(position));
+            if (itemEntity == null) return;
             if (TextUtils.equals(itemEntity.createUserId, getLoginUserId())) {
-                if (itemEntity != null && StringUtils.equalsIgnoreCase(itemEntity.pkId, TimerManager.getInstance().getTimerId(), false)) {
+                if (StringUtils.equalsIgnoreCase(itemEntity.pkId, TimerManager.getInstance().getTimerId(), false)) {
                     TimerTimingActivity.launch(view.getContext(), itemEntity);
                 } else {
                     TimerDetailActivity.launch(view.getContext(), itemEntity);

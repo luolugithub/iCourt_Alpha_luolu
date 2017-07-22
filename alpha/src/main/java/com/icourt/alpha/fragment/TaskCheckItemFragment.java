@@ -166,7 +166,8 @@ public class TaskCheckItemFragment extends BaseFragment implements BaseRecyclerA
         getApi().taskCheckItemQuery(taskId).enqueue(new SimpleCallBack<TaskCheckItemEntity>() {
             @Override
             public void onSuccess(Call<ResEntity<TaskCheckItemEntity>> call, Response<ResEntity<TaskCheckItemEntity>> response) {
-                dismissLoadingDialog();
+                if (getActivity() != null && !getActivity().isFinishing())
+                    dismissLoadingDialog();
                 if (response.body().result.items != null) {
                     taskCheckItemAdapter.bindData(false, response.body().result.items);
                     if (response.body().result.items.size() <= 0) {

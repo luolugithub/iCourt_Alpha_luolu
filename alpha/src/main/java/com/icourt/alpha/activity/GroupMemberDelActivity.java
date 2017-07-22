@@ -6,6 +6,8 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.AppBarLayout;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
@@ -27,8 +29,10 @@ import com.icourt.alpha.adapter.baseadapter.HeaderFooterAdapter;
 import com.icourt.alpha.adapter.baseadapter.adapterObserver.DataChangeAdapterObserver;
 import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.entity.bean.GroupContactBean;
+import com.icourt.alpha.fragment.dialogfragment.ContactDialogFragment;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
+import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.view.ClearEditText;
 import com.icourt.api.RequestUtils;
@@ -49,7 +53,7 @@ import retrofit2.Response;
  * date createTime：2017/5/2
  * version 1.0.0
  */
-public class GroupMemberDelActivity extends BaseActivity implements BaseRecyclerAdapter.OnItemClickListener {
+public class GroupMemberDelActivity extends BaseActivity implements BaseRecyclerAdapter.OnItemClickListener, BaseRecyclerAdapter.OnItemChildClickListener {
     private static final String KEY_TID = "key_tid";
     private static final String KEY_CONTACTS = "key_contacts";
     private static final String KEY_DEL_FROM_NET = "key_del_from_net";
@@ -124,6 +128,7 @@ public class GroupMemberDelActivity extends BaseActivity implements BaseRecycler
         headerFooterAdapter = new HeaderFooterAdapter<>(imContactAdapter = new GroupMemberActionAdapter());
         imContactAdapter.setSelectable(true);
         imContactAdapter.setOnItemClickListener(this);
+        imContactAdapter.setOnItemChildClickListener(this);
         imContactAdapter.registerAdapterDataObserver(new DataChangeAdapterObserver() {
             @Override
             protected void updateUI() {
@@ -275,6 +280,22 @@ public class GroupMemberDelActivity extends BaseActivity implements BaseRecycler
         }
     }
 
+    /**
+     * 展示联系人对话框
+     *
+     * @param accid
+     * @param hiddenChatBtn
+     */
+    public void showContactDialogFragment(String accid, boolean hiddenChatBtn) {
+        String tag = "ContactDialogFragment";
+        FragmentTransaction mFragTransaction = getSupportFragmentManager().beginTransaction();
+        Fragment fragment = getSupportFragmentManager().findFragmentByTag(tag);
+        if (fragment != null) {
+            mFragTransaction.remove(fragment);
+        }
+        ContactDialogFragment.newInstance(accid, "成员资料", hiddenChatBtn)
+                .show(mFragTransaction, tag);
+    }
 
     @Override
     public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
@@ -292,6 +313,17 @@ public class GroupMemberDelActivity extends BaseActivity implements BaseRecycler
         if (titleActionTextView != null) {
             int selectedSize = currSelectedList.size();
             titleActionTextView.setText(selectedSize > 0 ? String.format("删除(%s)", selectedSize) : "删除");
+        }
+    }
+
+    @Override
+    public void onItemChildClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
+        switch (view.getId()) {
+            case R.id.iv_contact_icon:
+                GroupContactBean item = imContactAdapter.getItem(imContactAdapter.getRealPos(position));
+                if (item == null) return;
+                showContactDialogFragment(item.accid, StringUtils.equalsIgnoreCase(item.accid, getLoginUserId(), false));
+                break;
         }
     }
 }
