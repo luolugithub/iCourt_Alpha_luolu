@@ -1,6 +1,7 @@
 #alpha android客户端  
 #上线打包日志  
- eg. 2017/1/28 v3.3.8  
+ 2017/7/22 v2.0.1 内部包  
+ 
 #打包配置  
  已在gradle与Hconst中配置完成;  
  暂时不混淆代码,采用360加固服务;  
@@ -24,7 +25,7 @@
  1. 华为: zhouyong@icourt.cc  Icourtadmin!@#123  
  2. 小米: 15666794049         Icourt!@#123
 
-查看证书信息命令:   
+ 查看证书信息命令:  
      keytool -list -v -keystore ~/Desktop/agency.jks -alias 别名 -storepass 密码 -keypass 密码
 #日志跟踪tag
 1. 自定义LogUtils
