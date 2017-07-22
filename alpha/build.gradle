@@ -78,11 +78,11 @@ android {
             manifestPlaceholders = [NIM_APPKEY: rootProject.ext.nimAppKey.debugAppKey]
 
             //用正式
-            buildConfigField "String", "API_URL", rootProject.ext.alphaAPIUrl.api_url_release
+           /* buildConfigField "String", "API_URL", rootProject.ext.alphaAPIUrl.api_url_release
             buildConfigField "String", "API_CHAT_URL", rootProject.ext.alphaChatAPIUrl.api_chat_url_release
             buildConfigField "String", "API_SFILE_URL", rootProject.ext.alphaSFileUrl.api_url_release
             buildConfigField "String", "APK_UPDATE_URL", rootProject.ext.alphaApkUpdateUrl.apk_update_url_release
-            manifestPlaceholders = [NIM_APPKEY: rootProject.ext.nimAppKey.releaseAppKey]
+            manifestPlaceholders = [NIM_APPKEY: rootProject.ext.nimAppKey.releaseAppKey]*/
             //测试用
             buildConfigField "String", "API_URL", rootProject.ext.alphaAPIUrl.api_url_test
             buildConfigField "String", "API_CHAT_URL", rootProject.ext.alphaChatAPIUrl.api_chat_url_test
