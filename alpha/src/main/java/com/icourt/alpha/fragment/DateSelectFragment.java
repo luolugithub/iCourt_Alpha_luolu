@@ -439,6 +439,7 @@ public class DateSelectFragment extends BaseFragment {
             public void onSuccess(Call<ResEntity<TaskReminderEntity>> call, Response<ResEntity<TaskReminderEntity>> response) {
                 dismissLoadingDialog();
                 taskReminderEntity = response.body().result;
+
                 if (addReminderLayout == null) return;
                 if (itemEntity.state) {
                     addReminderLayout.setVisibility(View.GONE);
