@@ -10,6 +10,11 @@
  8. 查看app gradle环境与打包,安装好app,试用并测试和熟悉功能与业务;
  9. 让佑炫讲解项目的模块与代码架构;  
  
+#merge requests  
+   不允许提交到主要分支,fork一份代码,建立自己的本地分支(格式:开发分支+mr+名称简称 如:permission_mr_wyx),并提交request;  
+   插件:GitLab Projects
+ 
+ 
 #上线打包日志  
  2017/7/22 v2.0.1 内部包  
  
