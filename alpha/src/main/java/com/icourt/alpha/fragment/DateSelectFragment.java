@@ -221,9 +221,6 @@ public class DateSelectFragment extends BaseFragment {
                 selectedCalendar.set(Calendar.MILLISECOND, 0);
                 if (duetimeTv != null)
                     duetimeTv.setText(DateUtils.getHHmm(selectedCalendar.getTimeInMillis()));
-//                if (taskReminderEntity != null) {
-//                    taskReminderEntity.taskReminderType = TaskReminderEntity.PRECISE;
-//                }
                 taskReminderType = TaskReminderEntity.PRECISE;
             }
         });
@@ -243,21 +240,14 @@ public class DateSelectFragment extends BaseFragment {
         compactcalendarView.setCurrentDate(selectedCalendar.getTime());
         compactcalendarView.invalidate();
 
-        //延迟显示 必须 否则默认值无效
-        deadlineSelectLl.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                if (deadlineSelectLl == null) return;
-                deadlineSelectLl.setVisibility(View.GONE);
-            }
-        }, 200);
+        deadlineSelectLl.setVisibility(View.GONE);
 
     }
 
     /**
      * 具体时间text为'未设置'
      */
-    private void setNullDueTime(){
+    private void setNullDueTime() {
         duetimeTv.setText("");
         duetimeTv.setTextColor(SystemUtils.getColor(getContext(), R.color.alpha_font_color_gray));
         clearDutimeIv.setVisibility(View.INVISIBLE);
@@ -297,7 +287,7 @@ public class DateSelectFragment extends BaseFragment {
             int hour = selectedCalendar.get(Calendar.HOUR_OF_DAY);
             int minute = selectedCalendar.get(Calendar.MINUTE);
             int second = selectedCalendar.get(Calendar.SECOND);
-            return hour == 23 && minute == 59 && second == 59;
+            return (hour == 23 && minute == 59 && second == 59) || (hour == 0 && minute == 0);
         }
         return true;
     }
@@ -426,6 +416,11 @@ public class DateSelectFragment extends BaseFragment {
     private String getCustReminderData(TaskReminderEntity.CustomTimeItemEntity custReminderData) {
         if (custReminderData != null) {
             if (TaskReminderUtils.unitMap.containsKey(custReminderData.unit)) {
+                if (TextUtils.equals(custReminderData.unit, "day")) {
+                    if (TextUtils.equals(custReminderData.unitNumber, "0")) {
+                        return "当" + TaskReminderUtils.unitMap.get(custReminderData.unit) + "前" + custReminderData.point;
+                    }
+                }
                 return custReminderData.unitNumber + TaskReminderUtils.unitMap.get(custReminderData.unit) + "前" + custReminderData.point;
             }
         }
@@ -442,6 +437,7 @@ public class DateSelectFragment extends BaseFragment {
         getApi().taskReminderQuery(itemEntity.id).enqueue(new SimpleCallBack<TaskReminderEntity>() {
             @Override
             public void onSuccess(Call<ResEntity<TaskReminderEntity>> call, Response<ResEntity<TaskReminderEntity>> response) {
+                dismissLoadingDialog();
                 taskReminderEntity = response.body().result;
                 if (addReminderLayout == null) return;
                 if (itemEntity.state) {
@@ -450,6 +446,12 @@ public class DateSelectFragment extends BaseFragment {
                 } else {
                     visibiLayout();
                 }
+            }
+
+            @Override
+            public void onFailure(Call<ResEntity<TaskReminderEntity>> call, Throwable t) {
+                super.onFailure(call, t);
+                dismissLoadingDialog();
             }
         });
     }
@@ -461,10 +463,10 @@ public class DateSelectFragment extends BaseFragment {
      */
     private void getTaskDetail(final String taskId) {
         if (TextUtils.isEmpty(taskId)) return;
+        showLoadingDialog(null);
         getApi().taskQueryDetailWithRight(taskId).enqueue(new SimpleCallBack<TaskEntity.TaskItemEntity>() {
             @Override
             public void onSuccess(Call<ResEntity<TaskEntity.TaskItemEntity>> call, Response<ResEntity<TaskEntity.TaskItemEntity>> response) {
-                dismissLoadingDialog();
                 TaskEntity.TaskItemEntity itemEntity = response.body().result;
                 if (itemEntity != null) {
 
@@ -583,6 +585,7 @@ public class DateSelectFragment extends BaseFragment {
                 if (onFragmentCallBackListener != null) {
                     Bundle bundle = new Bundle();
                     bundle.putLong(KEY_FRAGMENT_RESULT, getSelectedMillis());
+                    convertReminder();
                     bundle.putSerializable("taskReminder", taskReminderEntity);
                     onFragmentCallBackListener.onFragmentCallBack(DateSelectFragment.this, DateSelectDialogFragment.SELECT_DATE_FINISH, bundle);
                 }
@@ -592,6 +595,21 @@ public class DateSelectFragment extends BaseFragment {
                 break;
         }
 
+    }
+
+    /**
+     * 选择'当'天时，转换'当'为0
+     */
+    private void convertReminder() {
+        if (taskReminderEntity.customTime == null) return;
+        if (taskReminderEntity.customTime.size() <= 0) return;
+        for (TaskReminderEntity.CustomTimeItemEntity customTimeItemEntity : taskReminderEntity.customTime) {
+            if (TextUtils.equals(customTimeItemEntity.unit, "day")) {
+                if (TextUtils.equals(customTimeItemEntity.unitNumber, "当")) {
+                    customTimeItemEntity.unitNumber = "0";
+                }
+            }
+        }
     }
 
     private long getSelectedMillis() {
