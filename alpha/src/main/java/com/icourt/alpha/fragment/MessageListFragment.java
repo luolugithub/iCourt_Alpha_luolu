@@ -384,7 +384,7 @@ public class MessageListFragment extends BaseRecentContactFragment
             if (code == StatusCode.NET_BROKEN) {
                 updateLoginStateView(true, getString(R.string.error_please_check_network));
             } else if (code == StatusCode.UNLOGIN) {
-                bugSync("用户登陆状态:", "" + code);
+                //bugSync("用户登陆状态:", "" + code);
                 updateLoginStateView(true, getString(R.string.message_statu_hint_no_login));
             } else if (code == StatusCode.CONNECTING) {
                 updateLoginStateView(true, getString(R.string.message_statu_hint_nim_status_connecting));
