@@ -148,10 +148,27 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
             manifestPlaceholders = [NIM_APPKEY: rootProject.ext.nimAppKey.releaseAppKey]
         }
-
+        //内部版 每天发版本
+        innerrelease_daily {
+            buildConfigField "int", "BUILD_TYPE_INT", "4"
+            buildConfigField "boolean", "IS_DEBUG", "false"
+            buildConfigField "String", "APK_RELEASE_TIME", "\"${releaseTime()}\""
+            buildConfigField "String", "API_URL", rootProject.ext.alphaAPIUrl.api_url_release
+            buildConfigField "String", "API_CHAT_URL", rootProject.ext.alphaChatAPIUrl.api_chat_url_release
+            buildConfigField "String", "API_SFILE_URL", rootProject.ext.alphaSFileUrl.api_url_release
+            buildConfigField "String", "APK_UPDATE_URL", rootProject.ext.alphaApkUpdateUrl.apk_update_url_inner_release_daily
+            versionNameSuffix "_inner_release_daily"
+            shrinkResources false   // 移除无用的resource文件
+            zipAlignEnabled false        //Zipalign优化
+            minifyEnabled false     //混淆
+            signingConfig signingConfigs.release
+            pseudoLocalesEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
+            manifestPlaceholders = [NIM_APPKEY: rootProject.ext.nimAppKey.releaseAppKey]
+        }
         //正式上线版
         release {
-            buildConfigField "int", "BUILD_TYPE_INT", "4"
+            buildConfigField "int", "BUILD_TYPE_INT", "5"
             buildConfigField "boolean", "IS_DEBUG", "false"
             buildConfigField "String", "APK_RELEASE_TIME", "\"${releaseTime()}\""
             buildConfigField "String", "API_URL", rootProject.ext.alphaAPIUrl.api_url_release
