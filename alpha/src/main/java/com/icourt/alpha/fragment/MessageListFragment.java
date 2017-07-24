@@ -41,6 +41,7 @@ import com.icourt.alpha.interfaces.OnTabDoubleClickListener;
 import com.icourt.alpha.utils.IMUtils;
 import com.icourt.alpha.utils.JsonUtils;
 import com.icourt.alpha.utils.LogUtils;
+import com.icourt.alpha.utils.LoginInfoUtils;
 import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.widget.dialog.BottomActionDialog;
 import com.netease.nimlib.sdk.NIMClient;
@@ -50,6 +51,7 @@ import com.netease.nimlib.sdk.ResponseCode;
 import com.netease.nimlib.sdk.StatusCode;
 import com.netease.nimlib.sdk.auth.AuthService;
 import com.netease.nimlib.sdk.auth.ClientType;
+import com.netease.nimlib.sdk.auth.LoginInfo;
 import com.netease.nimlib.sdk.auth.OnlineClient;
 import com.netease.nimlib.sdk.msg.MsgService;
 import com.netease.nimlib.sdk.msg.constant.MsgTypeEnum;
@@ -384,7 +386,7 @@ public class MessageListFragment extends BaseRecentContactFragment
             if (code == StatusCode.NET_BROKEN) {
                 updateLoginStateView(true, getString(R.string.error_please_check_network));
             } else if (code == StatusCode.UNLOGIN) {
-                bugSync("用户登陆状态:", "" + code);
+                //bugSync("用户登陆状态:", "" + code);
                 updateLoginStateView(true, getString(R.string.message_statu_hint_no_login));
             } else if (code == StatusCode.CONNECTING) {
                 updateLoginStateView(true, getString(R.string.message_statu_hint_nim_status_connecting));
@@ -519,6 +521,42 @@ public class MessageListFragment extends BaseRecentContactFragment
         }
     }
 
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        //主动登陆一次
+        StatusCode status = NIMClient.getStatus();
+        if (status == StatusCode.UNLOGIN
+                || status == StatusCode.NET_BROKEN) {
+            AlphaUserInfo loginUserInfo = getLoginUserInfo();
+            if (loginUserInfo != null) {
+                try {
+                    NIMClient.getService(AuthService.class)
+                            .login(new LoginInfo(loginUserInfo.getThirdpartId(), loginUserInfo.getChatToken()))
+                            .setCallback(new RequestCallback() {
+                                @Override
+                                public void onSuccess(Object o) {
+
+                                }
+
+                                @Override
+                                public void onFailed(int i) {
+
+                                }
+
+                                @Override
+                                public void onException(Throwable throwable) {
+
+                                }
+                            });
+                } catch (Throwable e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
 
     /**
      * 获取消息通知列表
