@@ -33,12 +33,13 @@ ext {
     ]
 
     alphaApkUpdateUrl = [
-            apk_update_url_debug        : "\"http://api.fir.im/apps/latest/586650afca87a82c430016a5?api_token=95f7eece0f10dc17f7ae044874bf3bd1\"",//开发 zhaolu
-            apk_update_url_test         : "\"http://api.fir.im/apps/latest/586650afca87a82c430016a5?api_token=95f7eece0f10dc17f7ae044874bf3bd1\"",//内测 zhaolu
-            apk_update_url_preview      : "\"http://api.fir.im/apps/latest/58d08b53548b7a3e4f0000dc?api_token=d92e9e52e3a06bd969696315cc0e3f83\"",//预览 zhaolu
+            apk_update_url_debug                  : "\"http://api.fir.im/apps/latest/586650afca87a82c430016a5?api_token=95f7eece0f10dc17f7ae044874bf3bd1\"",//开发 zhaolu
+            apk_update_url_test                   : "\"http://api.fir.im/apps/latest/586650afca87a82c430016a5?api_token=95f7eece0f10dc17f7ae044874bf3bd1\"",//内测 zhaolu
+            apk_update_url_preview                : "\"http://api.fir.im/apps/latest/58d08b53548b7a3e4f0000dc?api_token=d92e9e52e3a06bd969696315cc0e3f83\"",//预览 zhaolu
             /**apk_update_url_inner_release: "\"http://api.fir.im/apps/latest/58b0f632ca87a82a2d000022?api_token=83c16338713d06c42663b46f831a87dd\"",//内部版 公司*/
-            apk_update_url_inner_release: "\"http://api.fir.im/apps/latest/594ea2bb548b7a2e3b000000?api_token=aa58871b40a05d26d51b3c569c70c4eb\"",//内部版 公司 2017.6.25 更改
-            apk_update_url_release      : "\"http://api.fir.im/apps/latest/58832f74959d694afe000399?api_token=1f8fe78548f943ab69b3c07ec9146295\""//正式 公司
+            apk_update_url_inner_release          : "\"http://api.fir.im/apps/latest/594ea2bb548b7a2e3b000000?api_token=aa58871b40a05d26d51b3c569c70c4eb\"",//内部版 公司 2017.6.25 更改
+            apk_update_url_inner_release_every_day: "\"http://api.fir.im/apps/latest/5975cfc9959d697e04000125?api_token=7a72b58d5b24d901c97236589a525541\"",//内部版每天
+            apk_update_url_release                : "\"http://api.fir.im/apps/latest/58832f74959d694afe000399?api_token=1f8fe78548f943ab69b3c07ec9146295\""//正式 公司
     ]
 
 
