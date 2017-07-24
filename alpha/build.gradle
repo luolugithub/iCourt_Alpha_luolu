@@ -78,11 +78,11 @@ android {
             manifestPlaceholders = [NIM_APPKEY: rootProject.ext.nimAppKey.debugAppKey]
 
             //用正式
-           /* buildConfigField "String", "API_URL", rootProject.ext.alphaAPIUrl.api_url_release
-            buildConfigField "String", "API_CHAT_URL", rootProject.ext.alphaChatAPIUrl.api_chat_url_release
-            buildConfigField "String", "API_SFILE_URL", rootProject.ext.alphaSFileUrl.api_url_release
-            buildConfigField "String", "APK_UPDATE_URL", rootProject.ext.alphaApkUpdateUrl.apk_update_url_release
-            manifestPlaceholders = [NIM_APPKEY: rootProject.ext.nimAppKey.releaseAppKey]*/
+            /* buildConfigField "String", "API_URL", rootProject.ext.alphaAPIUrl.api_url_release
+             buildConfigField "String", "API_CHAT_URL", rootProject.ext.alphaChatAPIUrl.api_chat_url_release
+             buildConfigField "String", "API_SFILE_URL", rootProject.ext.alphaSFileUrl.api_url_release
+             buildConfigField "String", "APK_UPDATE_URL", rootProject.ext.alphaApkUpdateUrl.apk_update_url_release
+             manifestPlaceholders = [NIM_APPKEY: rootProject.ext.nimAppKey.releaseAppKey]*/
             //测试用
             buildConfigField "String", "API_URL", rootProject.ext.alphaAPIUrl.api_url_test
             buildConfigField "String", "API_CHAT_URL", rootProject.ext.alphaChatAPIUrl.api_chat_url_test
@@ -212,6 +212,12 @@ bugtags {
     //网络跟踪功能配置(企业版)
     //trackingNetworkEnabled true
 }
+
+repositories {
+    flatDir {
+        dirs 'aars'
+    }
+}
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     //compile rootProject.ext.dependencies.constraintLayout
@@ -265,6 +271,6 @@ dependencies {
     //compile 'com.getui:sdk:2.10.2.0'
     compile project(path: ':lib_daemon')
     compile files('libs/MiPush_SDK_Client_3_4_3.jar')
-    compile files('libs/HwPush_SDK_V2705.jar')
+    compile(name: 'HMS-SDK-2.4.0.300', ext: 'aar')
 }
 

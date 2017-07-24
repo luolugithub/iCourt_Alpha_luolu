@@ -452,87 +452,29 @@
         <meta-data
             android:name="com.huawei.hms.client.appid"
             android:value="100049149" />
-
-        <!-- 备注：Push相关的android组件需要添加到业务的AndroidManifest.xml,
-        	 Push相关android组件运行在另外一个进程是为了防止Push服务异常而影响主业务 -->
-        <!-- 第三方相关 :接收Push消息（注册、Push消息、Push连接状态、标签，LBS上报结果）广播 -->
-        <receiver android:name=".receiver.HwPushReceiver">
-            <intent-filter>
-                <!-- 必须,用于接收token-->
-                <action android:name="com.huawei.android.push.intent.REGISTRATION" />
-                <!-- 必须，用于接收消息-->
-                <action android:name="com.huawei.android.push.intent.RECEIVE" />
-                <!-- 可选，用于点击通知栏或通知栏上的按钮后触发onEvent回调-->
-                <action android:name="com.huawei.android.push.intent.CLICK" />
-                <!-- 可选，查看push通道是否连接，不查看则不需要-->
-                <action android:name="com.huawei.intent.action.PUSH_STATE" />
-                <!-- 可选，标签、地理位置上报回应，不上报则不需要 -->
-                <action android:name="com.huawei.android.push.plugin.RESPONSE" />
-            </intent-filter>
-            <meta-data
-                android:name="CS_cloud_ablitity"
-                android:value="@string/hwpush_ability_value" />
-        </receiver>
-
-        <!-- PushSDK:PushSDK接收外部请求事件入口 -->
-        <receiver
-            android:name="com.huawei.android.pushagent.PushEventReceiver"
-            android:process=":pushservice">
-            <intent-filter>
-                <action android:name="com.huawei.android.push.intent.REFRESH_PUSH_CHANNEL" />
-                <action android:name="com.huawei.intent.action.PUSH" />
-                <action android:name="com.huawei.intent.action.PUSH_ON" />
-                <action android:name="com.huawei.android.push.PLUGIN" />
-            </intent-filter>
-            <intent-filter>
-                <action android:name="android.intent.action.PACKAGE_ADDED" />
-                <action android:name="android.intent.action.PACKAGE_REMOVED" />
-
-                <data android:scheme="package" />
-            </intent-filter>
-        </receiver>
-        <receiver
-            android:name="com.huawei.android.pushagent.PushBootReceiver"
-            android:process=":pushservice">
-            <intent-filter>
-                <action android:name="com.huawei.android.push.intent.REGISTER" />
-                <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
-            </intent-filter>
-            <meta-data
-                android:name="CS_cloud_version"
-                android:value="\u0032\u0037\u0030\u0035" />
-        </receiver>
-
-        <!-- PushSDK:Push服务 -->
-        <service
-            android:name="com.huawei.android.pushagent.PushService"
-            android:process=":pushservice"></service>
-
-        <!-- PushSDK:富媒体呈现页面，用于呈现服务器下发的富媒体消息 -->
-        <!-- locale|layoutDirection 切换语言后不重新创建activity -->
-        <activity
-            android:name="com.huawei.android.pushselfshow.richpush.RichPushActivity"
-            android:configChanges="orientation|screenSize|locale|layoutDirection"
-            android:process=":pushservice"
-            android:screenOrientation="portrait"
-            android:theme="@style/Theme.Design.NoActionBar">
-            <meta-data
-                android:name="hwc-theme"
-                android:value="androidhwext:style/Theme.Emui" />
-            <intent-filter>
-                <action android:name="com.huawei.android.push.intent.RICHPUSH" />
-
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-        </activity>
-
-        <activity
-            android:name="com.huawei.android.pushselfshow.permission.RequestPermissionsActivity"
-            android:configChanges="orientation|screenSize|locale|layoutDirection"
+        <provider
+            android:name="com.huawei.hms.update.provider.UpdateProvider"
+            android:authorities="com.icourt.alpha.hms.update.provider"
             android:exported="false"
-            android:launchMode="singleTop"
-            android:screenOrientation="portrait"
-            android:theme="@android:style/Theme.DeviceDefault.Light.Dialog.NoActionBar"></activity>
+            android:grantUriPermissions="true"></provider>
+        <!-- 云信华为推送消息广播 -->
+        <receiver android:name="com.netease.nimlib.mixpush.hw.HWPushReceiver">
+            <intent-filter android:priority="0x7fffffff">
+                <action android:name="com.huawei.android.push.intent.REGISTRATION" />
+                <action android:name="com.huawei.android.push.intent.RECEIVE" />
+                <action android:name="com.huawei.android.push.intent.CLICK" />
+                <action android:name="com.huawei.intent.action.PUSH_STATE" />
+            </intent-filter>
+        </receiver>
+
+        <!-- 兼容性广播 -->
+        <receiver android:name="com.huawei.hms.support.api.push.PushEventReceiver">
+            <intent-filter>
+                <!-- 接收通道发来的通知栏消息，兼容老版本Push -->
+                <action android:name="com.huawei.intent.action.PUSH" />
+            </intent-filter>
+        </receiver>
+
 
         <service android:name=".service.LocalService" />
         <service

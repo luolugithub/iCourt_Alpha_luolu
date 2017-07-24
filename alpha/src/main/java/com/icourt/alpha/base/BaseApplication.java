@@ -10,7 +10,6 @@ import android.support.multidex.MultiDexApplication;
 
 import com.bugtags.library.Bugtags;
 import com.bugtags.library.BugtagsOptions;
-import com.huawei.android.pushagent.api.PushManager;
 import com.icourt.alpha.BuildConfig;
 import com.icourt.alpha.R;
 import com.icourt.alpha.activity.ChatActivity;
@@ -192,7 +191,6 @@ public class BaseApplication extends MultiDexApplication {
             // 华为证书
             // 此处 certificate 请传入开发者自身的华为证书名称
             NIMPushClient.registerHWPush(this, "AlphaHuaWei");
-            PushManager.requestToken(this);
         }
 
         LoginInfo loginInfo = null;
