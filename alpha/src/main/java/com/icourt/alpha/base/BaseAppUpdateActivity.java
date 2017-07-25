@@ -27,6 +27,7 @@ import com.liulishuo.filedownloader.exception.FileDownloadHttpException;
 import com.liulishuo.filedownloader.exception.FileDownloadOutOfSpaceException;
 
 import java.io.File;
+import java.util.Random;
 
 import retrofit2.Call;
 import retrofit2.HttpException;
@@ -109,6 +110,7 @@ public class BaseAppUpdateActivity extends BaseUmengActivity implements
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 if (hasFilePermission(context)) {
+                    getUpdateProgressDialog().setMax(appVersionEntity.binary != null ? (int) appVersionEntity.binary.fsize : 1_000);
                     String updateUrl = UrlUtils.appendParam(appVersionEntity.install_url, "versionShort", appVersionEntity.versionShort);
                     showAppDownloadingDialog(getActivity(), updateUrl);
                 } else {
@@ -182,14 +184,19 @@ public class BaseAppUpdateActivity extends BaseUmengActivity implements
 
         @Override
         protected void pending(BaseDownloadTask task, int soFarBytes, int totalBytes) {
-            getUpdateProgressDialog().setMax(totalBytes);
+            if (totalBytes > 0) {
+                getUpdateProgressDialog().setMax(totalBytes);
+            }
             getUpdateProgressDialog().setProgress(soFarBytes);
             getUpdateProgressDialog().show();
         }
 
         @Override
         protected void progress(BaseDownloadTask task, int soFarBytes, int totalBytes) {
-            getUpdateProgressDialog().setMax(totalBytes);
+            if (totalBytes > 0) {
+                getUpdateProgressDialog().setMax(totalBytes);
+            }
+
             getUpdateProgressDialog().setProgress(soFarBytes);
         }
 
