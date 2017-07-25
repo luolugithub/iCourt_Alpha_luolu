@@ -86,7 +86,7 @@ public class Const {
 
     }
 
-    public static final int MSG_STATU_DRAFT = 0;     //草稿
+    public static final int MSG_STATU_DRAFT = -1;     //草稿
     public static final int MSG_STATU_SENDING = 1;   //正在发送中
     public static final int MSG_STATU_SUCCESS = 2;   //发送成功
     public static final int MSG_STATU_FAIL = 3;      //发送失败

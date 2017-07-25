@@ -749,7 +749,7 @@ public abstract class ChatBaseActivity
      * @param content
      */
     @Nullable
-    private IMMessage saveSendNimMsg(@NonNull String content, MsgStatusEnum msgStatusEnum, boolean notify) {
+    protected IMMessage saveSendNimMsg(@NonNull String content, MsgStatusEnum msgStatusEnum, boolean notify) {
         IMMessage mMessage = null;
         switch (getIMChatType()) {
             case CHAT_TYPE_P2P:
