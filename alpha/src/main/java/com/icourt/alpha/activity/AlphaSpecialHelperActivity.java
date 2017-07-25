@@ -138,7 +138,11 @@ public class AlphaSpecialHelperActivity extends ChatBaseActivity {
                 .setCallback(new RequestCallback<List<IMMessage>>() {
                     @Override
                     public void onSuccess(List<IMMessage> param) {
-                        LogUtils.d("----------->query result:" + param);
+                        if (param != null) {
+                            for (IMMessage imMessage : param) {
+                                IMUtils.logIMMessage("----------->query result:", imMessage);
+                            }
+                        }
                         chatAlphaSpecialHelperAdapter.addItems(0, convert2CustomerAlphaMessages(param));
                         stopRefresh();
                         if (isRefresh) {
@@ -217,12 +221,13 @@ public class AlphaSpecialHelperActivity extends ChatBaseActivity {
         List<AlphaSecialHeplerMsgEntity> customerMessageEntities = new ArrayList<>();
         if (param != null) {
             for (IMMessage message : param) {
-                IMUtils.logIMMessage("-------------->chat:", message);
                 if (message != null) {
                     AlphaSecialHeplerMsgEntity imBody = getAlphaBody(message);
                     if (imBody != null) {
-                        imBody.imMessage = message;
-                        customerMessageEntities.add(imBody);
+                        if (imBody.showType == 200) {
+                            imBody.imMessage = message;
+                            customerMessageEntities.add(imBody);
+                        }
                     }
                 }
             }
