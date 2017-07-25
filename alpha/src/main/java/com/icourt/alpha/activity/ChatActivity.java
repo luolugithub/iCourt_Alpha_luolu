@@ -80,6 +80,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 
 import butterknife.BindView;
@@ -921,7 +922,24 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
                 .setCallback(new RequestCallback<List<IMMessage>>() {
                     @Override
                     public void onSuccess(List<IMMessage> param) {
-                        LogUtils.d("----------->query result:" + param);
+                        if (param != null) {
+                            for (IMMessage imMessage : param) {
+                                IMUtils.logIMMessage("----------->query result:", imMessage);
+                            }
+                        }
+
+
+                        //1 恢复草稿 文本消息
+                        if (isRefresh) {
+                            String newlyDraftTxtMsg = getNewlyDraftTxtMsg(param);
+                            if (!TextUtils.isEmpty(newlyDraftTxtMsg) && ekBar != null) {
+                                ekBar.getEtChat().setText(newlyDraftTxtMsg);
+                                ekBar.getEtChat().setSelection(newlyDraftTxtMsg.length());
+                            }
+                        }
+
+
+                        //2 过滤数据
                         param = filterMsgs(param);
                         if (param == null || param.isEmpty()
                                 && getIntent().getBooleanExtra(KEY_LOAD_SERVER_MSG, true)) {
@@ -987,15 +1005,49 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
      */
     private List<IMMessage> filterMsgs(List<IMMessage> imMessages) {
         List<IMMessage> msgs = new ArrayList<>();
+        List<IMMessage> draftMsgs = new ArrayList<>();
         if (imMessages != null) {
             for (IMMessage imMessage : imMessages) {
                 if (imMessage == null) continue;
-                if (!GlobalMessageObserver.isFilterMsg(imMessage.getTime())) {
-                    msgs.add(imMessage);
+                if (!GlobalMessageObserver.isFilterMsg(imMessage.getTime())
+                        ) {
+                    if (!GlobalMessageObserver.isDraftMsg(imMessage)) {
+                        msgs.add(imMessage);
+                    } else {
+                        draftMsgs.add(imMessage);
+                    }
                 }
             }
         }
+        deleteDraftMsgs(draftMsgs);
         return msgs;
+    }
+
+
+    /**
+     * 获取最近的文本草稿消息
+     *
+     * @param imMessages
+     * @return
+     */
+    private String getNewlyDraftTxtMsg(List<IMMessage> imMessages) {
+        if (imMessages == null || imMessages.isEmpty()) return null;
+        for (int i = imMessages.size() - 1; i >= 0; i--) {
+            IMMessage imMessage = imMessages.get(i);
+            if (imMessage == null) continue;
+            if (GlobalMessageObserver.isDraftMsg(imMessage)) {
+                IMMessageCustomBody imBody = getIMBody(imMessage);
+                if (imBody != null) {
+                    return imBody.content;
+                }
+            }
+        }
+        return null;
+    }
+
+    private void deleteDraftMsgs(List<IMMessage> draftMsgs) {
+        if (draftMsgs == null || draftMsgs.isEmpty()) return;
+        deleteMsgFromDb(draftMsgs);
     }
 
 
@@ -1528,16 +1580,18 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
      * @return
      */
     private String getInputText() {
+        String textStr = null;
         if (ekBar != null && ekBar.getEtChat() != null) {
-            if (!TextUtils.isEmpty(ekBar.getEtChat().getText())) {
-                return ekBar.getEtChat().getText().toString();
+            Editable text = ekBar.getEtChat().getText();
+            if (!TextUtils.isEmpty(text)) {
+                textStr = text.toString();
             }
         }
-        return null;
+        return textStr;
     }
 
     /**
-     * //保存草稿
+     * 保存草稿
      */
     private void saveTextDraft() {
         String inputText = getInputText();

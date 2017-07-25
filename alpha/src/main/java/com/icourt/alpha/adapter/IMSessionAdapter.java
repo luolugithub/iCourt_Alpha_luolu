@@ -2,7 +2,11 @@ package com.icourt.alpha.adapter;
 
 import android.support.annotation.CheckResult;
 import android.support.annotation.Nullable;
+import android.text.SpannableString;
+import android.text.SpannableStringBuilder;
+import android.text.Spanned;
 import android.text.TextUtils;
+import android.text.style.ForegroundColorSpan;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -22,6 +26,7 @@ import com.icourt.alpha.utils.SpannableUtils;
 import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.view.bgabadgeview.BGABadgeImageView;
 import com.netease.nimlib.sdk.NIMClient;
+import com.netease.nimlib.sdk.msg.constant.MsgStatusEnum;
 import com.netease.nimlib.sdk.team.model.Team;
 import com.netease.nimlib.sdk.uinfo.UserService;
 import com.netease.nimlib.sdk.uinfo.model.NimUserInfo;
@@ -42,6 +47,7 @@ public class IMSessionAdapter extends BaseArrayRecyclerAdapter<IMSessionEntity> 
 
     AlphaUserInfo alphaUserInfo;
     int foregroundColor = 0xFFed6c00;
+
     /**
      * 获取登陆昵称
      *
@@ -175,6 +181,13 @@ public class IMSessionAdapter extends BaseArrayRecyclerAdapter<IMSessionEntity> 
         if (imSessionEntity == null) return;
         if (imSessionEntity.recentContact == null) return;
         BGABadgeImageView iv_session_icon = holder.obtainView(R.id.iv_session_icon);
+        //草稿
+        if (imSessionEntity.recentContact.getMsgStatus() == MsgStatusEnum.draft) {
+            if (iv_session_icon.isShowBadge()) {
+                iv_session_icon.hiddenBadge();
+            }
+            return;
+        }
         int unreadCount = imSessionEntity.recentContact.getUnreadCount();
         //消息免打扰为小红点
         if (localNoDisturbs.contains(imSessionEntity.recentContact.getContactId()) && unreadCount > 0) {
@@ -303,9 +316,10 @@ public class IMSessionAdapter extends BaseArrayRecyclerAdapter<IMSessionEntity> 
         IMMessageCustomBody customIMBody = imSessionEntity.customIMBody;
         //草稿
         if (customIMBody.msg_statu == Const.MSG_STATU_DRAFT) {
-            String targetText="[草稿]";
-            CharSequence originalText=String.format("%s %s",targetText,customIMBody.content);
-            SpannableUtils.setTextForegroundColorSpan(tvSessionContent,originalText,targetText, foregroundColor);
+            String targetText = "[草稿]";
+            SpannableStringBuilder ssb = new SpannableStringBuilder(String.format("%s %s", targetText, customIMBody.content));
+            ssb.setSpan(new ForegroundColorSpan(foregroundColor), 0, targetText.length(), Spanned.SPAN_INCLUSIVE_INCLUSIVE);
+            tvSessionContent.setText(ssb);
             return;
         }
 
