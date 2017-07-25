@@ -13,6 +13,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.app.NotificationManagerCompat;
 import android.support.v7.app.AlertDialog;
+import android.text.TextUtils;
 import android.util.SparseArray;
 import android.view.Gravity;
 import android.view.KeyEvent;
@@ -38,6 +39,7 @@ import com.icourt.alpha.entity.bean.IMMessageCustomBody;
 import com.icourt.alpha.entity.bean.ItemsEntity;
 import com.icourt.alpha.entity.bean.ItemsEntityImp;
 import com.icourt.alpha.entity.bean.TimeEntity;
+import com.icourt.alpha.entity.event.ServerTimingEvent;
 import com.icourt.alpha.entity.event.TimingEvent;
 import com.icourt.alpha.entity.event.UnReadEvent;
 import com.icourt.alpha.fragment.TabCustomerFragment;
@@ -693,6 +695,29 @@ public class MainActivity extends BaseAppUpdateActivity
         if (event == null) return;
         int unReadNum = event.unReadCount;
         updateBadge(getTabNewsBadge(), unReadNum);
+    }
+
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onServerTimingEvent(ServerTimingEvent event) {
+        if (event == null) return;
+        if (event.isSyncObject() && event.isSyncTimingType()) {
+            if (TextUtils.equals(event.scene, ServerTimingEvent.TIMING_SYNC_START)) {
+                TimerManager.getInstance().addTimer(event);
+            } else if (TextUtils.equals(event.scene, ServerTimingEvent.TIMING_SYNC_DELETE)) {
+                if (TimerManager.getInstance().isTimer(event.pkId)) {
+                    TimerManager.getInstance().clearTimer();
+                }
+            } else if (TextUtils.equals(event.scene, ServerTimingEvent.TIMING_SYNC_EDIT)) {
+                if (TimerManager.getInstance().isTimer(event.pkId)) {
+                    if (event.state == 1) {//已经完成
+                        TimerManager.getInstance().clearTimer();
+                    } else {
+                        TimerManager.getInstance().updateTimer(event);
+                    }
+                }
+            }
+        }
     }
 
 

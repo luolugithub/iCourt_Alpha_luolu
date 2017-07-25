@@ -25,6 +25,7 @@ import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.view.bgabadgeview.BGABadgeTextView;
 import com.icourt.alpha.view.recyclerviewDivider.ChatItemDecoration;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
+import com.icourt.alpha.widget.nim.GlobalMessageObserver;
 import com.netease.nimlib.sdk.NIMClient;
 import com.netease.nimlib.sdk.RequestCallback;
 import com.netease.nimlib.sdk.msg.MessageBuilder;

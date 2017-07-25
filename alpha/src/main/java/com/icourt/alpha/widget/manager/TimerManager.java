@@ -17,6 +17,7 @@ import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.JsonUtils;
 import com.icourt.alpha.utils.LoginInfoUtils;
 import com.icourt.alpha.utils.SpUtils;
+import com.icourt.alpha.utils.StringUtils;
 import com.icourt.api.RequestUtils;
 
 import org.greenrobot.eventbus.EventBus;
@@ -281,6 +282,17 @@ public class TimerManager {
     }
 
     /**
+     * 是否是正在计时
+     *
+     * @param id
+     * @return
+     */
+    public boolean isTimer(String id) {
+        TimeEntity.ItemEntity timer = getTimer();
+        return timer != null && StringUtils.equalsIgnoreCase(id, timer.pkId, false);
+    }
+
+    /**
      * 同步网络计时
      */
     public void timerQuerySync() {
@@ -364,6 +376,25 @@ public class TimerManager {
             return timer.state;
         }
         return -1;
+    }
+
+
+    /**
+     * 清除timer 并发停止的广播
+     */
+    public void clearTimer() {
+        final TimeEntity.ItemEntity timer = getTimer();
+        if (timer != null) {
+            TimingEvent timingSingle = TimingEvent.timingSingle;
+            timingSingle.action = TimingEvent.TIMING_STOP;
+            timingSingle.timingId = timer.pkId;
+
+            stopTimingTask();
+
+            EventBus.getDefault().post(timingSingle);
+
+            SpUtils.getInstance().putData(String.format(KEY_TIMER, getUid()), "");
+        }
     }
 
     /**
