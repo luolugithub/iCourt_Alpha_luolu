@@ -715,6 +715,10 @@ public class MainActivity extends BaseAppUpdateActivity
                     } else {
                         TimerManager.getInstance().updateTimer(event);
                     }
+                } else {
+                    if (event.state == 0) {//计时中...
+                        TimerManager.getInstance().resumeTimer(event);
+                    }
                 }
             }
         }
