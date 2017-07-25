@@ -34,8 +34,8 @@ public class BaseTimerActivity extends BaseActivity {
     protected final void deleteTiming(final String id) {
         new AlertDialog.Builder(getContext())
                 .setTitle("提示")
-                .setMessage("确定要删除此计时")
-                .setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                .setMessage("删除计时不可恢复")
+                .setPositiveButton("删除", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         showLoadingDialog(null);
