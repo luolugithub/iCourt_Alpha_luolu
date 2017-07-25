@@ -41,6 +41,7 @@ public class MyClass {
                 CollationKey c1 = cmp.getCollationKey(s);
                 CollationKey c2 = cmp.getCollationKey(t1);
                 return cmp.compare(c1.getSourceString(),c2.getSourceString());
+//                return s.compareTo(t1);
             }
         });
         log("-------->data:" + data);

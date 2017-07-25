@@ -1,5 +1,7 @@
 package com.icourt;
 
+import java.util.concurrent.TimeUnit;
+
 /**
  * Description
  * Company Beijing icourt
@@ -21,7 +23,9 @@ public class StringFormatTest {
         String name8 = "@分三@你好的阿妹啊等；卢卡斯的8";
 
         String regularcode = "@\\d{2}";
-        System.out.print("");
+
+        System.out.print("" + TimeUnit.DAYS.toMillis(1));
+        System.out.print(" ---  " + 24 * 60 * 60 * 1000);
 
     }
 

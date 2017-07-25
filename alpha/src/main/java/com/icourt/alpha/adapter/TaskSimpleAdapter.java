@@ -26,6 +26,7 @@ import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.LoginInfoUtils;
+import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.widget.dialog.CenterMenuDialog;
 import com.icourt.alpha.widget.manager.TimerManager;
 import com.icourt.api.RequestUtils;
@@ -97,6 +98,14 @@ public class TaskSimpleAdapter extends MultiSelectRecyclerAdapter<TaskEntity.Tas
                         , getProjectTaskGroupInfo(taskItemEntity)));
             } else {
                 task_desc_tv.setText(getProjectTaskGroupInfo(taskItemEntity));
+            }
+        }
+        TimeEntity.ItemEntity timer = TimerManager.getInstance().getTimer();
+        if (timer != null) {
+            if (StringUtils.equalsIgnoreCase(taskItemEntity.id, timer.taskPkId, false)) {
+                taskItemEntity.isTiming = true;
+            } else {
+                taskItemEntity.isTiming = false;
             }
         }
         task_item_timming_iv.setImageResource(taskItemEntity.isTiming ? R.drawable.orange_side_dot_bg : R.mipmap.icon_start_20);
