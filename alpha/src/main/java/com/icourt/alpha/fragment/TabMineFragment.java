@@ -280,7 +280,7 @@ public class TabMineFragment extends BaseFragment {
      */
     private void loginOut() {
         //神策退出
-    /*    SensorsDataAPI.sharedInstance(getContext())
+       /* SensorsDataAPI.sharedInstance(getContext())
                 .logout();*/
 
         //撤销微信授权

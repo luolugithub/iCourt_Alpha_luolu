@@ -42,7 +42,14 @@
  2. 小米: 15666794049         Icourt!@#123
 
  查看证书信息命令:  
-     keytool -list -v -keystore ~/Desktop/agency.jks -alias 别名 -storepass 密码 -keypass 密码
+     keytool -list -v -keystore ~/Desktop/agency.jks -alias 别名 -storepass 密码 -keypass 密码  
+      
+ 神策账号:  
+  地址: https://shenceadmin.alphalawyer.cn  
+  测试: 用户名:admin 密码:ud4maK  
+  正式: 用户名:admin 密码:v^db6(  
+  集成文档:https://github.com/sensorsdata/sa-sdk-android
+
 #日志跟踪tag
 1. 自定义LogUtils
 2. 网络"http"

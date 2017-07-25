@@ -154,9 +154,9 @@ public class LoginBaseActivity extends BaseUmengActivity {
                             saveLoginUserInfo(result);
 
                             //神策统计
-                           /* SensorsDataAPI.sharedInstance(getContext())
-                                    .login(result.getUserId());*/
-                            SyncDataService.startSysnContact(getContext());
+                          /*  SensorsDataAPI.sharedInstance(getContext())
+                                    .login(result.getUserId());
+                            SyncDataService.startSysnContact(getContext());*/
 
                             //登陆云信im
                             loginChatEase(response.body().result);
