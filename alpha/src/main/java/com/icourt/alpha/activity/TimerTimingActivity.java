@@ -1,12 +1,14 @@
 package com.icourt.alpha.activity;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.AppBarLayout;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.AlertDialog;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
@@ -308,6 +310,20 @@ public class TimerTimingActivity extends BaseTimerActivity
             case TimingEvent.TIMING_UPDATE_PROGRESS:
                 if (TextUtils.equals(event.timingId, itemEntity.pkId)) {
                     timingTv.setText(toTime(event.timingSecond));
+                }
+                break;
+            case TimingEvent.TIMING_STOP:
+                if (itemEntity != null) {
+                    new AlertDialog.Builder(getContext())
+                            .setCancelable(false)
+                            .setTitle("提示")
+                            .setMessage("其他端已经将这个计时停止啦,立即关闭页面")
+                            .setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialogInterface, int i) {
+                                    finish();
+                                }
+                            }).show();
                 }
                 break;
         }
