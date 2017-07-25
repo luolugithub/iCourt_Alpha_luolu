@@ -25,6 +25,7 @@ import com.netease.nimlib.sdk.NIMClient;
 import com.netease.nimlib.sdk.RequestCallback;
 import com.netease.nimlib.sdk.auth.AuthService;
 import com.netease.nimlib.sdk.auth.LoginInfo;
+import com.sensorsdata.analytics.android.sdk.SensorsDataAPI;
 import com.umeng.socialize.bean.SHARE_MEDIA;
 
 import java.util.Map;
@@ -154,8 +155,8 @@ public class LoginBaseActivity extends BaseUmengActivity {
                             saveLoginUserInfo(result);
 
                             //神策统计
-                           /* SensorsDataAPI.sharedInstance(getContext())
-                                    .login(result.getUserId());*/
+                            SensorsDataAPI.sharedInstance(getContext())
+                                    .login(result.getUserId());
                             SyncDataService.startSysnContact(getContext());
 
                             //登陆云信im
