@@ -47,7 +47,8 @@
  神策账号:  
   地址: https://shenceadmin.alphalawyer.cn  
   测试: 用户名:admin 密码:ud4maK  
-  正式: 用户名:admin 密码:v^db6(
+  正式: 用户名:admin 密码:v^db6(  
+  集成文档:https://github.com/sensorsdata/sa-sdk-android
 
 #日志跟踪tag
 1. 自定义LogUtils

@@ -41,7 +41,7 @@ import static com.icourt.alpha.constants.Const.CHAT_TYPE_TEAM;
 public class IMSessionAdapter extends BaseArrayRecyclerAdapter<IMSessionEntity> {
 
     AlphaUserInfo alphaUserInfo;
-
+    int foregroundColor = 0xFFed6c00;
     /**
      * 获取登陆昵称
      *
@@ -301,6 +301,15 @@ public class IMSessionAdapter extends BaseArrayRecyclerAdapter<IMSessionEntity> 
         if (imSessionEntity.customIMBody == null) return;
         if (tvSessionContent == null) return;
         IMMessageCustomBody customIMBody = imSessionEntity.customIMBody;
+        //草稿
+        if (customIMBody.msg_statu == Const.MSG_STATU_DRAFT) {
+            String targetText="[草稿]";
+            CharSequence originalText=String.format("%s %s",targetText,customIMBody.content);
+            SpannableUtils.setTextForegroundColorSpan(tvSessionContent,originalText,targetText, foregroundColor);
+            return;
+        }
+
+
         StringBuilder stringBuilder = new StringBuilder();
         if (localNoDisturbs.contains(imSessionEntity.recentContact.getContactId())
                 && imSessionEntity.recentContact.getUnreadCount() > 0) {
@@ -349,18 +358,17 @@ public class IMSessionAdapter extends BaseArrayRecyclerAdapter<IMSessionEntity> 
                     if (imSessionEntity.recentContact.getUnreadCount() <= 0) {
                         tvSessionContent.setText(String.format("%s : %s", customIMBody.name, customIMBody.content));
                     } else {
-                        int color = 0xFFed6c00;
                         if (customIMBody.ext.is_all) {
                             stringBuilder.append("有人@了你");
                             String originalText = stringBuilder.toString();
                             tvSessionContent.setText(originalText);
-                            SpannableUtils.setTextForegroundColorSpan(tvSessionContent, originalText, "有人@了你", color);
+                            SpannableUtils.setTextForegroundColorSpan(tvSessionContent, originalText, "有人@了你", foregroundColor);
                         } else if (customIMBody.ext.users != null
                                 && StringUtils.containsIgnoreCase(customIMBody.ext.users, getLoginUserId())) {
                             stringBuilder.append("有人@了你");
                             String originalText = stringBuilder.toString();
                             tvSessionContent.setText(originalText);
-                            SpannableUtils.setTextForegroundColorSpan(tvSessionContent, originalText, "有人@了你", color);
+                            SpannableUtils.setTextForegroundColorSpan(tvSessionContent, originalText, "有人@了你", foregroundColor);
                         } else {
                             stringBuilder.append(String.format("%s : %s", customIMBody.name, customIMBody.content));
                             tvSessionContent.setText(stringBuilder.toString());

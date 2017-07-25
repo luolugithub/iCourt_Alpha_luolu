@@ -29,6 +29,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.andview.refreshview.XRefreshView;
+import com.google.gson.JsonParseException;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.ChatAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
@@ -46,6 +47,7 @@ import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.callback.SimpleTextWatcher;
 import com.icourt.alpha.utils.IMUtils;
 import com.icourt.alpha.utils.ImageUtils;
+import com.icourt.alpha.utils.JsonUtils;
 import com.icourt.alpha.utils.LogUtils;
 import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.utils.SystemUtils;
@@ -60,6 +62,7 @@ import com.netease.nimlib.sdk.NIMClient;
 import com.netease.nimlib.sdk.RequestCallback;
 import com.netease.nimlib.sdk.msg.MessageBuilder;
 import com.netease.nimlib.sdk.msg.MsgService;
+import com.netease.nimlib.sdk.msg.constant.MsgStatusEnum;
 import com.netease.nimlib.sdk.msg.constant.SessionTypeEnum;
 import com.netease.nimlib.sdk.msg.model.IMMessage;
 import com.netease.nimlib.sdk.msg.model.MessageReceipt;
@@ -1516,5 +1519,50 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
         if (ekBar != null) {
             ekBar.reset();
         }
+    }
+
+
+    /**
+     * 获取输入未发送的文本
+     *
+     * @return
+     */
+    private String getInputText() {
+        if (ekBar != null && ekBar.getEtChat() != null) {
+            if (!TextUtils.isEmpty(ekBar.getEtChat().getText())) {
+                return ekBar.getEtChat().getText().toString();
+            }
+        }
+        return null;
+    }
+
+    /**
+     * //保存草稿
+     */
+    private void saveTextDraft() {
+        String inputText = getInputText();
+        if (!TextUtils.isEmpty(inputText)) {
+            final IMMessageCustomBody textHistoryEntity = IMMessageCustomBody.createTextMsg(getIMChatType(),
+                    getLoadedLoginName(),
+                    getLoadedLoginUserId(),
+                    getIMChatId(),
+                    inputText);
+            textHistoryEntity.msg_statu = Const.MSG_STATU_DRAFT;
+            String jsonBody = null;
+            try {
+                jsonBody = JsonUtils.Gson2String(textHistoryEntity);
+            } catch (JsonParseException e) {
+                e.printStackTrace();
+            }
+            if (!TextUtils.isEmpty(jsonBody)) {
+                saveSendNimMsg(jsonBody, MsgStatusEnum.draft, true);
+            }
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        saveTextDraft();
+        super.onDestroy();
     }
 }

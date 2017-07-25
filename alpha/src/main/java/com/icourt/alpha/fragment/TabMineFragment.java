@@ -35,7 +35,6 @@ import com.icourt.alpha.interfaces.callback.AppUpdateCallBack;
 import com.icourt.alpha.utils.GlideUtils;
 import com.icourt.alpha.utils.transformations.BlurTransformation;
 import com.icourt.alpha.widget.manager.DataCleanManager;
-import com.sensorsdata.analytics.android.sdk.SensorsDataAPI;
 import com.umeng.socialize.UMAuthListener;
 import com.umeng.socialize.UMShareAPI;
 import com.umeng.socialize.bean.SHARE_MEDIA;
@@ -281,8 +280,8 @@ public class TabMineFragment extends BaseFragment {
      */
     private void loginOut() {
         //神策退出
-        SensorsDataAPI.sharedInstance(getContext())
-                .logout();
+       /* SensorsDataAPI.sharedInstance(getContext())
+                .logout();*/
 
         //撤销微信授权
         if (!mShareAPI.isAuthorize(getActivity(), SHARE_MEDIA.WEIXIN)) {

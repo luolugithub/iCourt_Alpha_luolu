@@ -45,7 +45,6 @@ import com.orhanobut.logger.AndroidLogAdapter;
 import com.orhanobut.logger.FormatStrategy;
 import com.orhanobut.logger.Logger;
 import com.orhanobut.logger.PrettyFormatStrategy;
-import com.sensorsdata.analytics.android.sdk.SensorsDataAPI;
 import com.umeng.analytics.MobclickAgent;
 import com.umeng.socialize.Config;
 import com.umeng.socialize.PlatformConfig;
@@ -129,7 +128,7 @@ public class BaseApplication extends MultiDexApplication {
     }
 
     private void initShengCe() {
-        // 数据接收的 URL
+       /* // 数据接收的 URL
         final String SA_SERVER_URL = BuildConfig.API_SENSORS_DATA_SERVER;
         // 配置分发的 URL
         final String SA_CONFIGURE_URL = BuildConfig.API_SENSORS_DATA_CONFIGURE;
@@ -156,7 +155,7 @@ public class BaseApplication extends MultiDexApplication {
         eventTypeList.add(SensorsDataAPI.AutoTrackEventType.APP_VIEW_SCREEN);
         // $AppClick
         eventTypeList.add(SensorsDataAPI.AutoTrackEventType.APP_CLICK);
-        SensorsDataAPI.sharedInstance(this).enableAutoTrack(eventTypeList);
+        SensorsDataAPI.sharedInstance(this).enableAutoTrack(eventTypeList);*/
     }
 
 
