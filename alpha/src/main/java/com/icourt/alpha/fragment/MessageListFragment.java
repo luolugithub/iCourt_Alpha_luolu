@@ -26,6 +26,7 @@ import com.icourt.alpha.adapter.baseadapter.HeaderFooterAdapter;
 import com.icourt.alpha.adapter.baseadapter.adapterObserver.DataChangeAdapterObserver;
 import com.icourt.alpha.db.dbservice.ContactDbService;
 import com.icourt.alpha.entity.bean.AlphaUserInfo;
+import com.icourt.alpha.entity.bean.BaseCustomerMsg;
 import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.icourt.alpha.entity.bean.IMMessageCustomBody;
 import com.icourt.alpha.entity.bean.IMSessionEntity;
@@ -273,13 +274,18 @@ public class MessageListFragment extends BaseRecentContactFragment
     private IMMessageCustomBody getAlphaHelper(RecentContact recentContact) {
         try {
             JSONObject alphaJSONObject = JsonUtils.getJSONObject(recentContact.getAttachment().toJson(false));
-            String contentStr = alphaJSONObject.getString("content");
-            IMMessageCustomBody imMessageCustomBody = new IMMessageCustomBody();
-            imMessageCustomBody.content = contentStr;
-            imMessageCustomBody.show_type = MSG_TYPE_ALPHA_HELPER;
-            imMessageCustomBody.ope = CHAT_TYPE_P2P;
-            imMessageCustomBody.to = recentContact.getContactId();
-            return imMessageCustomBody;
+            if (alphaJSONObject.getInt("showType") == MSG_TYPE_ALPHA_HELPER) {
+                String contentStr = alphaJSONObject.getString("content");
+                IMMessageCustomBody imMessageCustomBody = new IMMessageCustomBody();
+                imMessageCustomBody.content = contentStr;
+                imMessageCustomBody.show_type = MSG_TYPE_ALPHA_HELPER;
+                imMessageCustomBody.ope = CHAT_TYPE_P2P;
+                imMessageCustomBody.to = recentContact.getContactId();
+                return imMessageCustomBody;
+            } else {
+                NIMClient.getService(MsgService.class)
+                        .deleteRecentContact(recentContact);
+            }
         } catch (Exception e) {
             e.printStackTrace();
             LogUtils.d("---------->AlphaHelper 解析异常:" + e);

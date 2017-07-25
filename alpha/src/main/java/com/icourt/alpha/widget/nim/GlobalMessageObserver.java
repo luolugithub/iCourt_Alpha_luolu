@@ -89,7 +89,9 @@ public class GlobalMessageObserver implements Observer<List<IMMessage>> {
                                         //发送给其它页面
                                         EventBus.getDefault().post(imBody);
                                         break;
-                                    case Const.MSG_TYPE_ALPHA_SYNC://同步
+                                    case Const.MSG_TYPE_ALPHA_SYNC://同步(不需要保存)
+                                        NIMClient.getService(MsgService.class)
+                                                .deleteChattingHistory(imMessage);
                                         ServerTimingEvent serverTimingEvent = JsonUtils.Gson2Bean(json, ServerTimingEvent.class);
                                         if (serverTimingEvent != null) {
                                             EventBus.getDefault().post(serverTimingEvent);
