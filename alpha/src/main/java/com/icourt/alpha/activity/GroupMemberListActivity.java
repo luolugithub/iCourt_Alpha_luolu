@@ -183,12 +183,15 @@ public class GroupMemberListActivity
                 }
             }
         });
+        recyclerIndexBar.setVisibility(View.GONE);
         headerFooterAdapter = new HeaderFooterAdapter<>(imContactAdapter = new IMContactAdapter());
         imContactAdapter.registerAdapterDataObserver(new DataChangeAdapterObserver() {
             @Override
             protected void updateUI() {
                 if (contentEmptyText != null) {
                     contentEmptyText.setVisibility(imContactAdapter.getItemCount() > 0 ? View.GONE : View.VISIBLE);
+                    //bug  ANB-521
+                    recyclerIndexBar.setVisibility(imContactAdapter.getItemCount() >= 20 ? View.VISIBLE : View.GONE);
                 }
             }
         });
