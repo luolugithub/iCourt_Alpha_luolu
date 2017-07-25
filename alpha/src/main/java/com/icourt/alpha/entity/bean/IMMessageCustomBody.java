@@ -26,7 +26,7 @@ public class IMMessageCustomBody implements ILongFieldEntity, Serializable {
     public static final String PLATFORM_ANDROID = "ANDROID";
 
     @Expose(serialize = false, deserialize = false)
-    public IMMessage imMessage;
+    public transient IMMessage imMessage;
 
     @Const.MSG_STATU
     public int msg_statu;//消息状态 本地用

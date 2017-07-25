@@ -462,6 +462,32 @@ public abstract class ChatBaseActivity
                 .subscribe();
     }
 
+    /**
+     * 从本地删除消息
+     *
+     * @param messages
+     */
+    protected void deleteMsgFromDb(final List<IMMessage> messages) {
+        if (messages == null || messages.isEmpty()) return;
+        Observable.create(new ObservableOnSubscribe<Boolean>() {
+            @Override
+            public void subscribe(@io.reactivex.annotations.NonNull ObservableEmitter<Boolean> observableEmitter) throws Exception {
+                if (observableEmitter.isDisposed()) return;
+                for (IMMessage imMessage : messages) {
+                    if (imMessage != null) {
+                        try {
+                            NIMClient.getService(MsgService.class)
+                                    .deleteChattingHistory(imMessage);
+                        } catch (Exception e) {
+                        }
+                    }
+                }
+
+            }
+        }).compose(this.<Boolean>bindToLifecycle())
+                .subscribeOn(Schedulers.newThread())
+                .subscribe();
+    }
 
     /**
      * @return 聊天id p2p id或者team id

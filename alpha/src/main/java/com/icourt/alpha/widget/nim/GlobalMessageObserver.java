@@ -10,6 +10,7 @@ import com.icourt.alpha.utils.LogUtils;
 import com.netease.nimlib.sdk.NIMClient;
 import com.netease.nimlib.sdk.Observer;
 import com.netease.nimlib.sdk.msg.MsgService;
+import com.netease.nimlib.sdk.msg.constant.MsgStatusEnum;
 import com.netease.nimlib.sdk.msg.model.IMMessage;
 import com.netease.nimlib.sdk.team.model.MemberChangeAttachment;
 
@@ -88,6 +89,16 @@ public class GlobalMessageObserver implements Observer<List<IMMessage>> {
      */
     public static boolean isFilterMsg(long time) {
         return time < v2time;
+    }
+
+    /**
+     * 是否是草稿消息
+     *
+     * @param imMessage
+     * @return
+     */
+    public static boolean isDraftMsg(IMMessage imMessage) {
+        return imMessage != null && imMessage.getStatus() == MsgStatusEnum.draft;
     }
 
     /**
