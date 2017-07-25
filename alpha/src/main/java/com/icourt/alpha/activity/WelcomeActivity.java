@@ -14,6 +14,10 @@ import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.icourt.alpha.http.AlphaClient;
 import com.icourt.alpha.service.LocalService;
 import com.icourt.alpha.service.RemoteService;
+import com.netease.nimlib.sdk.NimIntent;
+import com.netease.nimlib.sdk.msg.model.IMMessage;
+
+import java.util.ArrayList;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -64,8 +68,22 @@ public class WelcomeActivity extends BaseActivity implements Animation.Animation
             AlphaUserInfo loginUserInfo = getLoginUserInfo();
             AlphaClient.setToken(loginUserInfo.getToken());
             AlphaClient.setOfficeId(loginUserInfo.getOfficeId());
-
-            MainActivity.launch(getContext());
+            Intent intent = getIntent();
+            if (intent.hasExtra(NimIntent.EXTRA_NOTIFY_CONTENT)) {
+                ArrayList<IMMessage> messages = (ArrayList<IMMessage>) intent.getSerializableExtra(NimIntent.EXTRA_NOTIFY_CONTENT);
+                if (messages == null) {
+                    MainActivity.launch(getContext());
+                    this.finish();
+                } else {
+                    MainActivity.launchByNotifaction(WelcomeActivity.this, messages.get(0));
+                    this.finish();
+                }
+                // 最好将intent清掉，以免从堆栈恢复时又打开客服窗口
+                setIntent(new Intent());
+            }else{
+                MainActivity.launch(getContext());
+                this.finish();
+            }
         } else {
             LoginSelectActivity.launch(getContext());
         }

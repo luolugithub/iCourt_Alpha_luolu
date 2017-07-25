@@ -1,8 +1,5 @@
 package com.icourt.alpha.activity;
 
-import android.Manifest;
-import android.app.AlarmManager;
-import android.app.PendingIntent;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -10,7 +7,6 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.provider.Settings;
 import android.support.annotation.IdRes;
 import android.support.annotation.IntDef;
 import android.support.v4.app.Fragment;
@@ -35,8 +31,10 @@ import com.icourt.alpha.BuildConfig;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.base.BaseAppUpdateActivity;
+import com.icourt.alpha.constants.Const;
 import com.icourt.alpha.db.dbservice.ContactDbService;
 import com.icourt.alpha.entity.bean.AlphaUserInfo;
+import com.icourt.alpha.entity.bean.IMMessageCustomBody;
 import com.icourt.alpha.entity.bean.ItemsEntity;
 import com.icourt.alpha.entity.bean.ItemsEntityImp;
 import com.icourt.alpha.entity.bean.TimeEntity;
@@ -55,16 +53,24 @@ import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.interfaces.OnTabDoubleClickListener;
+import com.icourt.alpha.service.DaemonService;
 import com.icourt.alpha.utils.DensityUtil;
 import com.icourt.alpha.utils.SimpleViewGestureListener;
 import com.icourt.alpha.utils.SpUtils;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.view.CheckableLayout;
 import com.icourt.alpha.widget.manager.TimerManager;
+import com.icourt.alpha.widget.nim.GlobalMessageObserver;
 import com.icourt.alpha.widget.popupwindow.BaseListActionItemPop;
 import com.icourt.alpha.widget.popupwindow.ListActionItemPop;
-import com.icourt.alpha.service.DaemonService;
 import com.icourt.lib.daemon.IntentWrapper;
+import com.netease.nimlib.sdk.NIMClient;
+import com.netease.nimlib.sdk.NimIntent;
+import com.netease.nimlib.sdk.msg.MsgService;
+import com.netease.nimlib.sdk.msg.constant.MsgTypeEnum;
+import com.netease.nimlib.sdk.msg.model.IMMessage;
+import com.netease.nimlib.sdk.team.TeamService;
+import com.netease.nimlib.sdk.team.model.Team;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -165,6 +171,14 @@ public class MainActivity extends BaseAppUpdateActivity
         context.startActivity(intent);
     }
 
+    public static void launchByNotifaction(Context context, IMMessage imMessage) {
+        if (context == null) return;
+        Intent intent = new Intent(context, MainActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        intent.putExtra(NimIntent.EXTRA_NOTIFY_CONTENT, imMessage);
+        context.startActivity(intent);
+    }
+
     Fragment currentFragment;
     final SparseArray<Fragment> fragmentSparseArray = new SparseArray<>();
     SimpleViewGestureListener.OnSimpleViewGestureListener onSimpleViewGestureListener = new SimpleViewGestureListener.OnSimpleViewGestureListener() {
@@ -229,7 +243,35 @@ public class MainActivity extends BaseAppUpdateActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
+        gotoChatByNotifaction();
         initView();
+    }
+
+    /**
+     * 点击通知栏跳转到对应的聊天页面
+     */
+    private void gotoChatByNotifaction() {
+        IMMessage imMessage = (IMMessage) getIntent().getSerializableExtra(NimIntent.EXTRA_NOTIFY_CONTENT);
+        if (imMessage != null) {
+            int totalUnReadCount = NIMClient.getService(MsgService.class).getTotalUnreadCount();
+            IMMessageCustomBody customBody = GlobalMessageObserver.getIMBody(imMessage);
+            if (customBody == null) return;
+            if (customBody.imMessage.getMsgType() == MsgTypeEnum.custom) {
+                AlphaSpecialHelperActivity.launch(this, customBody.imMessage.getSessionId(), totalUnReadCount);
+            } else {
+                switch (customBody.ope) {
+                    case Const.CHAT_TYPE_P2P:
+                        ChatActivity.launchP2P(this, customBody.from, customBody.name, 0, totalUnReadCount, true);
+                        break;
+                    case Const.CHAT_TYPE_TEAM:
+                        Team team = NIMClient.getService(TeamService.class)
+                                .queryTeamBlock(customBody.imMessage.getSessionId());
+                        if (team != null)
+                            ChatActivity.launchTEAM(this, customBody.imMessage.getSessionId(), team.getName(), 0, totalUnReadCount, true);
+                        break;
+                }
+            }
+        }
     }
 
     @Override
