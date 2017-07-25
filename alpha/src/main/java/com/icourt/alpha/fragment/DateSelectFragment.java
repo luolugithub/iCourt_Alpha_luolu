@@ -417,8 +417,8 @@ public class DateSelectFragment extends BaseFragment {
         if (custReminderData != null) {
             if (TaskReminderUtils.unitMap.containsKey(custReminderData.unit)) {
                 if (TextUtils.equals(custReminderData.unit, "day")) {
-                    if (TextUtils.equals(custReminderData.unitNumber, "0")) {
-                        return "当" + TaskReminderUtils.unitMap.get(custReminderData.unit) + "前" + custReminderData.point;
+                    if (TextUtils.equals(custReminderData.unitNumber, "当")||TextUtils.equals(custReminderData.unitNumber, "0")) {
+                        return "当" + TaskReminderUtils.unitMap.get(custReminderData.unit) + custReminderData.point;
                     }
                 }
                 return custReminderData.unitNumber + TaskReminderUtils.unitMap.get(custReminderData.unit) + "前" + custReminderData.point;
@@ -439,6 +439,7 @@ public class DateSelectFragment extends BaseFragment {
             public void onSuccess(Call<ResEntity<TaskReminderEntity>> call, Response<ResEntity<TaskReminderEntity>> response) {
                 dismissLoadingDialog();
                 taskReminderEntity = response.body().result;
+
                 if (addReminderLayout == null) return;
                 if (itemEntity.state) {
                     addReminderLayout.setVisibility(View.GONE);

@@ -114,7 +114,11 @@ public class ReminderListAdapter extends MultiSelectRecyclerAdapter<ReminderItem
             if (reminderItemEntity.customTimeItemEntity != null) {
 
                 if (TaskReminderUtils.unitMap.containsKey(reminderItemEntity.customTimeItemEntity.unit)) {
-                    unitTv.setText(TaskReminderUtils.unitMap.get(reminderItemEntity.customTimeItemEntity.unit) + "前");
+                    if ((TextUtils.equals(reminderItemEntity.customTimeItemEntity.unitNumber, "0") || TextUtils.equals(reminderItemEntity.customTimeItemEntity.unitNumber, "当")) && TextUtils.equals(reminderItemEntity.customTimeItemEntity.unit, "day")) {
+                        unitTv.setText(TaskReminderUtils.unitMap.get(reminderItemEntity.customTimeItemEntity.unit));
+                    } else {
+                        unitTv.setText(TaskReminderUtils.unitMap.get(reminderItemEntity.customTimeItemEntity.unit) + "前");
+                    }
                 }
                 pointTv.setText(reminderItemEntity.customTimeItemEntity.point);
                 if (TextUtils.equals(reminderItemEntity.customTimeItemEntity.unit, "day")) {
@@ -130,7 +134,7 @@ public class ReminderListAdapter extends MultiSelectRecyclerAdapter<ReminderItem
                         hourWheelView.setAdapter(new TimeWheelAdapter(getDay365()));
                         minuteWheelView.setAdapter(new TimeWheelAdapter(getUnit("天", null, null)));
                         minuteWheelView.setCurrentItem(0);
-                        hourWheelView.setCurrentItem(Integer.valueOf(reminderItemEntity.customTimeItemEntity.unitNumber));
+                        hourWheelView.setCurrentItem(TextUtils.equals(reminderItemEntity.customTimeItemEntity.unitNumber, "当") ? 0 : Integer.valueOf(reminderItemEntity.customTimeItemEntity.unitNumber));
                     } else if (TextUtils.equals(TaskReminderEntity.PRECISE, taskReminderType)) {
                         minuteWheelView.setAdapter(new TimeWheelAdapter(getUnit("天", "小时", "分钟")));
                         if (TextUtils.equals(reminderItemEntity.customTimeItemEntity.unit, "day")) {
@@ -144,11 +148,11 @@ public class ReminderListAdapter extends MultiSelectRecyclerAdapter<ReminderItem
                         } else if (TextUtils.equals(reminderItemEntity.customTimeItemEntity.unit, "hour")) {
                             hourWheelView.setAdapter(new TimeWheelAdapter(getHourOrMin99()));
                             minuteWheelView.setCurrentItem(1);
-                            hourWheelView.setCurrentItem(Integer.valueOf(reminderItemEntity.customTimeItemEntity.unitNumber) - 1);
+                            hourWheelView.setCurrentItem(TextUtils.equals(reminderItemEntity.customTimeItemEntity.unitNumber, "当") ? 0 : Integer.valueOf(reminderItemEntity.customTimeItemEntity.unitNumber) - 1);
                         } else if (TextUtils.equals(reminderItemEntity.customTimeItemEntity.unit, "minute")) {
                             hourWheelView.setAdapter(new TimeWheelAdapter(getHourOrMin99()));
                             minuteWheelView.setCurrentItem(2);
-                            hourWheelView.setCurrentItem(Integer.valueOf(reminderItemEntity.customTimeItemEntity.unitNumber) - 1);
+                            hourWheelView.setCurrentItem(TextUtils.equals(reminderItemEntity.customTimeItemEntity.unitNumber, "当") ? 0 : Integer.valueOf(reminderItemEntity.customTimeItemEntity.unitNumber) - 1);
                         }
                     }
 
@@ -176,6 +180,23 @@ public class ReminderListAdapter extends MultiSelectRecyclerAdapter<ReminderItem
                         if (select_type == SELECT_UNIT_TYPE) {
                             reminderItemEntity.customTimeItemEntity.unitNumber = (String) hourWheelView.getAdapter().getItem(i);
                             unitNumberTv.setText((String) hourWheelView.getAdapter().getItem(i));
+                            if (TextUtils.equals(TaskReminderEntity.ALL_DAY, taskReminderType)) {
+                                pointTv.setVisibility(View.VISIBLE);
+                                reminderItemEntity.customTimeItemEntity.unit = "day";
+                                if (!TextUtils.isEmpty(pointTv.getText())) {
+                                    reminderItemEntity.customTimeItemEntity.point = pointTv.getText().toString();
+                                } else {
+                                    reminderItemEntity.customTimeItemEntity.point = "09:00";
+                                    pointTv.setText("09:00");
+                                }
+                            }
+
+                            if (i == 0 && TextUtils.equals((String) hourWheelView.getAdapter().getItem(0), "当")) {
+                                unitTv.setText(((String) minuteWheelView.getAdapter().getItem(minuteWheelView.getCurrentItem())));
+                            } else {
+                                unitTv.setText(((String) minuteWheelView.getAdapter().getItem(minuteWheelView.getCurrentItem())) + "前");
+                            }
+
                         } else if (select_type == SELECT_TIME_TYPE) {
                             if (selectedCalendar != null) {
                                 selectedCalendar.set(Calendar.HOUR_OF_DAY, i);
@@ -203,7 +224,6 @@ public class ReminderListAdapter extends MultiSelectRecyclerAdapter<ReminderItem
                                 reminderItemEntity.customTimeItemEntity.unit = "minute";
                             }
 
-                            unitTv.setText(((String) minuteWheelView.getAdapter().getItem(i)) + "前");
 
                             if (TextUtils.equals((String) minuteWheelView.getAdapter().getItem(i), "天")) {
                                 hourWheelView.setAdapter(new TimeWheelAdapter(getDay365()));
@@ -223,6 +243,13 @@ public class ReminderListAdapter extends MultiSelectRecyclerAdapter<ReminderItem
                             unitNumberTv.setText((String) hourWheelView.getAdapter().getItem(0));
                             pointTv.setText(reminderItemEntity.customTimeItemEntity.point);
                             reminderItemEntity.customTimeItemEntity.unitNumber = (String) hourWheelView.getAdapter().getItem(0);
+
+                            if (hourWheelView.getCurrentItem() == 0 && TextUtils.equals((String) hourWheelView.getAdapter().getItem(hourWheelView.getCurrentItem()), "当")) {
+                                unitTv.setText(((String) minuteWheelView.getAdapter().getItem(i)));
+                            } else {
+                                unitTv.setText(((String) minuteWheelView.getAdapter().getItem(i)) + "前");
+                            }
+
                         } else if (select_type == SELECT_TIME_TYPE) {
                             if (selectedCalendar != null) {
                                 selectedCalendar.set(Calendar.HOUR_OF_DAY, hourWheelView.getCurrentItem());
