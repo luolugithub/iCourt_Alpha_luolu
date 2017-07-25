@@ -417,7 +417,7 @@ public class DateSelectFragment extends BaseFragment {
         if (custReminderData != null) {
             if (TaskReminderUtils.unitMap.containsKey(custReminderData.unit)) {
                 if (TextUtils.equals(custReminderData.unit, "day")) {
-                    if (TextUtils.equals(custReminderData.unitNumber, "当")||TextUtils.equals(custReminderData.unitNumber, "0")) {
+                    if (TextUtils.equals(custReminderData.unitNumber, "当") || TextUtils.equals(custReminderData.unitNumber, "0")) {
                         return "当" + TaskReminderUtils.unitMap.get(custReminderData.unit) + custReminderData.point;
                     }
                 }
@@ -602,6 +602,7 @@ public class DateSelectFragment extends BaseFragment {
      * 选择'当'天时，转换'当'为0
      */
     private void convertReminder() {
+        if (taskReminderEntity == null) return;
         if (taskReminderEntity.customTime == null) return;
         if (taskReminderEntity.customTime.size() <= 0) return;
         for (TaskReminderEntity.CustomTimeItemEntity customTimeItemEntity : taskReminderEntity.customTime) {
