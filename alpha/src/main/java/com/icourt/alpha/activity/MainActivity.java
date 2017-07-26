@@ -98,7 +98,7 @@ import retrofit2.Response;
 
 
 /**
- * Description
+ * Description  主页面
  * Company Beijing icourt
  * author  youxuan  E-mail:xuanyouwu@163.com
  * date createTime：2017/3/31
@@ -340,7 +340,7 @@ public class MainActivity extends BaseAppUpdateActivity
         super.onResume();
         checkNotificationisEnable();
         getPermission();
-        getTimering();
+        timerQuerySync();
     }
 
     /**
@@ -692,6 +692,11 @@ public class MainActivity extends BaseAppUpdateActivity
     }
 
 
+    /**
+     * 享聊未读消息
+     *
+     * @param event
+     */
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onUnReadEvent(UnReadEvent event) {
         if (event == null) return;
@@ -713,6 +718,11 @@ public class MainActivity extends BaseAppUpdateActivity
         return null;
     }
 
+    /**
+     * 网络计时同步更新通知
+     *
+     * @param event
+     */
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onServerTimingEvent(ServerTimingEvent event) {
         if (event == null) return;
@@ -773,7 +783,10 @@ public class MainActivity extends BaseAppUpdateActivity
         }
     }
 
-    private void getTimering() {
+    /**
+     * 接口方式同步计时
+     */
+    private void timerQuerySync() {
         TimerManager.getInstance().timerQuerySync();
     }
 
@@ -788,6 +801,11 @@ public class MainActivity extends BaseAppUpdateActivity
     }
 
 
+    /**
+     * 本地计时状态通知
+     *
+     * @param event
+     */
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onTimerEvent(TimingEvent event) {
         if (event == null) return;
@@ -838,6 +856,12 @@ public class MainActivity extends BaseAppUpdateActivity
         return anim;
     }
 
+    /**
+     * 时间格式化 秒--->小时分钟
+     *
+     * @param times
+     * @return
+     */
     public String toTime(long times) {
         long hour = times / 3600;
         long minute = times % 3600 / 60;
@@ -845,6 +869,9 @@ public class MainActivity extends BaseAppUpdateActivity
         return String.format("%02d:%02d:%02d", hour, minute, second);
     }
 
+    /**
+     * 获取权限
+     */
     private void getPermission() {
         //联系人查看的权限
         getApi().permissionQuery(getLoginUserId(), "CON")
@@ -980,6 +1007,9 @@ public class MainActivity extends BaseAppUpdateActivity
         }
     }
 
+    /**
+     * 显示 计时的覆层
+     */
     private void showTimingDialogFragment() {
         if (isDestroyOrFinishing()) return;
         TimeEntity.ItemEntity timer = TimerManager.getInstance().getTimer();
@@ -994,6 +1024,9 @@ public class MainActivity extends BaseAppUpdateActivity
                 .show(mFragTransaction, tag);
     }
 
+    /**
+     * 关闭 计时的覆层
+     */
     private void dismissTimingDialogFragment() {
         String tag = TimingNoticeDialogFragment.class.getSimpleName();
         Fragment fragment = getSupportFragmentManager().findFragmentByTag(tag);
