@@ -9,6 +9,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.IdRes;
 import android.support.annotation.IntDef;
+import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.app.NotificationManagerCompat;
@@ -57,6 +58,7 @@ import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.interfaces.OnTabDoubleClickListener;
 import com.icourt.alpha.service.DaemonService;
 import com.icourt.alpha.utils.DensityUtil;
+import com.icourt.alpha.utils.LoginInfoUtils;
 import com.icourt.alpha.utils.SimpleViewGestureListener;
 import com.icourt.alpha.utils.SpUtils;
 import com.icourt.alpha.utils.SystemUtils;
@@ -698,9 +700,23 @@ public class MainActivity extends BaseAppUpdateActivity
     }
 
 
+    /**
+     * 获取本地唯一id
+     *
+     * @return
+     */
+    private String getlocalUniqueId() {
+        AlphaUserInfo loginUserInfo = LoginInfoUtils.getLoginUserInfo();
+        if (loginUserInfo != null) {
+            return loginUserInfo.localUniqueId;
+        }
+        return null;
+    }
+
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onServerTimingEvent(ServerTimingEvent event) {
         if (event == null) return;
+        if (TextUtils.equals(event.clientId, getlocalUniqueId())) return;
         if (event.isSyncObject() && event.isSyncTimingType()) {
             if (TextUtils.equals(event.scene, ServerTimingEvent.TIMING_SYNC_START)) {
                 TimerManager.getInstance().addTimer(event);
@@ -713,7 +729,7 @@ public class MainActivity extends BaseAppUpdateActivity
                     if (event.state == 1) {//已经完成
                         TimerManager.getInstance().clearTimer();
                     } else {
-                        TimerManager.getInstance().updateTimer(event);
+                        TimerManager.getInstance().resumeTimer(event);
                     }
                 } else {
                     if (event.state == 0) {//计时中...
@@ -794,6 +810,7 @@ public class MainActivity extends BaseAppUpdateActivity
                 tabTimingTv.setText(toTime(event.timingSecond));
                 break;
             case TimingEvent.TIMING_STOP:
+                dismissTimingDialogFragment();
                 tabTimingTv.setText("开始计时");
                 tabTimingIcon.setImageResource(R.mipmap.ic_time_start);
                 tabTimingIcon.clearAnimation();
@@ -975,6 +992,14 @@ public class MainActivity extends BaseAppUpdateActivity
         }
         TimingNoticeDialogFragment.newInstance(timer)
                 .show(mFragTransaction, tag);
+    }
+
+    private void dismissTimingDialogFragment() {
+        String tag = TimingNoticeDialogFragment.class.getSimpleName();
+        Fragment fragment = getSupportFragmentManager().findFragmentByTag(tag);
+        if (fragment instanceof DialogFragment) {
+            ((DialogFragment) fragment).dismissAllowingStateLoss();
+        }
     }
 
     @Override

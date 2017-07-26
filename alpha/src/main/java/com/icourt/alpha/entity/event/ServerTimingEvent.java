@@ -57,6 +57,8 @@ public class ServerTimingEvent extends TimeEntity.ItemEntity {
     @TIMING_SYNC_SCENE
     public String scene;
 
+    public String clientId;
+
     @Override
     public String toString() {
         return "ServerTimingEvent{" +
