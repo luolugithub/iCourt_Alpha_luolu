@@ -53,7 +53,7 @@
         android:id="@+id/project_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="?android:attr/selectableItemBackground"
+        android:background="?attr/selectableItemBackground"
         android:orientation="vertical">
 
         <LinearLayout
@@ -105,7 +105,7 @@
         android:id="@+id/worktype_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="?android:attr/selectableItemBackground"
+        android:background="?attr/selectableItemBackground"
         android:orientation="vertical">
 
         <LinearLayout
@@ -157,7 +157,7 @@
         android:id="@+id/task_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="?android:attr/selectableItemBackground"
+        android:background="?attr/selectableItemBackground"
         android:orientation="vertical">
 
         <LinearLayout
