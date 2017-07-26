@@ -241,6 +241,7 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
      * @param isShow
      */
     public void showOrHiddeTitleAction2(boolean isShow) {
+        if (viewPager == null) return;
         if (viewPager.getCurrentItem() == 1)
             titleAction2.setVisibility(isShow ? View.VISIBLE : View.GONE);
     }

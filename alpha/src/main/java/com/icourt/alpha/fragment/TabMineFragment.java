@@ -156,6 +156,7 @@ public class TabMineFragment extends BaseFragment {
      */
     private void setDataToView(AlphaUserInfo alphaUserInfo) {
         if (userNameTv == null) return;
+        if (myCenterClearCacheTextview == null) return;
         if (alphaUserInfo != null) {
             GlideUtils.loadUser(getContext(), alphaUserInfo.getPic(), photoImage);
             if (GlideUtils.canLoadImage(getContext())) {
