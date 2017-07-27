@@ -146,6 +146,7 @@ public class TaskDetailActivity extends BaseActivity
     final SparseArray<CharSequence> tabTitles = new SparseArray<>();
     @BindView(R.id.task_tieming_image)
     ImageView taskTiemingImage;
+    TaskDetailFragment taskDetailFragment;
 //    boolean isEditTask = false;//编辑任务权限
 //    boolean isDeleteTask = false;//删除任务权限
 //    boolean isAddTime = false;//添加计时权限
@@ -176,16 +177,6 @@ public class TaskDetailActivity extends BaseActivity
     protected void initView() {
         super.initView();
         setTitle("");
-        appbar.addOnOffsetChangedListener(new AppBarLayout.OnOffsetChangedListener() {
-            @Override
-            public void onOffsetChanged(AppBarLayout appBarLayout, int verticalOffset) {
-                log("appBarLayout : " + appBarLayout.getHeight());
-                log("verticalOffset : " + verticalOffset);
-//                if (Math.abs(verticalOffset) > DensityUtil.dip2px(getContext(), 10)) {
-//                    appBarLayout.setExpanded(false, true);
-//                }
-            }
-        });
         EventBus.getDefault().register(this);
         taskId = getIntent().getStringExtra(KEY_TASK_ID);
         baseFragmentAdapter = new BaseFragmentAdapter(getSupportFragmentManager());
@@ -194,7 +185,6 @@ public class TaskDetailActivity extends BaseActivity
         taskTablayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
-                log("----------->onTabSelected:" + tab.getPosition());
                 if (tab == null) return;
                 tab.setText(tabTitles.get(tab.getPosition(), ""));
             }
@@ -244,23 +234,29 @@ public class TaskDetailActivity extends BaseActivity
                 showBottomMeau();
                 break;
             case R.id.task_name:
-                if (hasTaskEditPermission()) {
-                    TaskDescUpdateActivity.launch(getContext(), taskName.getText().toString(), TaskDescUpdateActivity.UPDATE_TASK_NAME);
-                } else {
-                    showTopSnackBar("您没有编辑任务的权限");
-                }
+                if (taskItemEntity != null)
+                    if (!taskItemEntity.state) {
+                        if (hasTaskEditPermission()) {
+                            TaskDescUpdateActivity.launch(getContext(), taskName.getText().toString(), TaskDescUpdateActivity.UPDATE_TASK_NAME);
+                        } else {
+                            showTopSnackBar("您没有编辑任务的权限");
+                        }
+                    }
                 break;
             case R.id.task_user_layout:
             case R.id.task_users_layout:
-                if (hasTaskEditPermission()) {
-                    if (taskItemEntity.matter != null) {
-                        showTaskAllotSelectDialogFragment(taskItemEntity.matter.id);
-                    } else {
-                        showTopSnackBar("请先选择项目");
+                if (taskItemEntity != null)
+                    if (!taskItemEntity.state) {
+                        if (hasTaskEditPermission()) {
+                            if (taskItemEntity.matter != null) {
+                                showTaskAllotSelectDialogFragment(taskItemEntity.matter.id);
+                            } else {
+                                showTopSnackBar("请先选择项目");
+                            }
+                        } else {
+                            showTopSnackBar("您没有编辑任务的权限");
+                        }
                     }
-                } else {
-                    showTopSnackBar("您没有编辑任务的权限");
-                }
                 break;
             case R.id.task_start_iamge://开始计时
                 if (isStrat)
@@ -371,10 +367,6 @@ public class TaskDetailActivity extends BaseActivity
                 itemEntity.matterPkId = taskItemEntity.matter.id;
                 itemEntity.matterName = taskItemEntity.matter.name;
             }
-//            if (taskItemEntity.parentFlow != null) {
-//                itemEntity.workTypeName = taskItemEntity.parentFlow.name;
-//                itemEntity.workTypeId = taskItemEntity.parentFlow.id;
-//            }
         }
         return itemEntity;
     }
@@ -513,22 +505,6 @@ public class TaskDetailActivity extends BaseActivity
 
     @Override
     protected void getData(boolean isRefresh) {
-//        showLoadingDialog(null);
-        //没有返回权限
-//        getApi().taskQueryDetail(taskId).enqueue(new SimpleCallBack<TaskEntity.TaskItemEntity>() {
-//            @Override
-//            public void onSuccess(Call<ResEntity<TaskEntity.TaskItemEntity>> call, Response<ResEntity<TaskEntity.TaskItemEntity>> response) {
-//                dismissLoadingDialog();
-//                taskItemEntity = response.body().result;
-//                setDataToView(response.body().result);
-//            }
-//
-//            @Override
-//            public void onFailure(Call<ResEntity<TaskEntity.TaskItemEntity>> call, Throwable t) {
-//                super.onFailure(call, t);
-//                dismissLoadingDialog();
-//            }
-//        });
         //有返回权限
         getApi().taskQueryDetailWithRight(taskId).enqueue(new SimpleCallBack<TaskEntity.TaskItemEntity>() {
             @Override
@@ -619,9 +595,7 @@ public class TaskDetailActivity extends BaseActivity
      */
     private void setDataToView(TaskEntity.TaskItemEntity taskItemEntity) {
         if (taskItemEntity != null) {
-
             if (taskName == null) return;
-
             if (titleAction2 != null) {
                 titleAction2.setVisibility(hasTaskDeletePermission() ? View.VISIBLE : View.GONE);
             }
@@ -659,10 +633,15 @@ public class TaskDetailActivity extends BaseActivity
                     tabTitles.get(1, ""),
                     tabTitles.get(2, "")));
             baseFragmentAdapter.bindData(true, Arrays.asList(
-                    TaskDetailFragment.newInstance(taskItemEntity),
+                    taskDetailFragment == null ? taskDetailFragment = TaskDetailFragment.newInstance(taskItemEntity) : taskDetailFragment,
                     TaskCheckItemFragment.newInstance(taskItemEntity.id, hasTaskEditPermission()),
                     TaskAttachmentFragment.newInstance(taskItemEntity.id, (hasTaskAddDocument() && hasTaskEditPermission()))
             ));
+
+            Bundle bundle = new Bundle();
+            bundle.putBoolean("isFinish", taskItemEntity.state);
+            taskDetailFragment.notifyFragmentUpdate(taskDetailFragment, 100, bundle);
+
             if (taskItemEntity.attendeeUsers != null) {
                 if (taskItemEntity.attendeeUsers.size() > 0) {
                     if (taskItemEntity.attendeeUsers.size() > 1) {
@@ -843,7 +822,6 @@ public class TaskDetailActivity extends BaseActivity
                     boolean canFastScroll = e1.getRawX() > appbar.getBottom() && e2.getRawX() > appbar.getBottom();
                     if (!canFastScroll) return super.onFling(e1, e2, velocityX, velocityY);
                     int limit = DensityUtil.dip2px(getContext(), 3500);
-                    log("---------->dy:" + velocityY + "  limit:" + limit);
                     if (velocityY > limit) {
                         appbar.setExpanded(true, true);
                     } else if (velocityY < -limit) {
@@ -853,16 +831,11 @@ public class TaskDetailActivity extends BaseActivity
                 }
             });
         }
-
-
         gestureDetector.onTouchEvent(ev);
-
-
         if (ev.getAction() == MotionEvent.ACTION_DOWN) {
             SystemUtils.hideSoftKeyBoard(getActivity());
             return super.dispatchTouchEvent(ev);
         }
-
         return super.dispatchTouchEvent(ev);
     }
 
@@ -937,7 +910,6 @@ public class TaskDetailActivity extends BaseActivity
         if (event.action == TaskActionEvent.TASK_UPDATE_NAME_ACTION) {//修改任务名称
             String desc = event.desc;
             if (!TextUtils.isEmpty(desc)) {
-//                taskName.setText(desc);
                 taskItemEntity.name = desc;
                 updateTask(taskItemEntity, taskItemEntity.state, null);
             }
@@ -970,11 +942,12 @@ public class TaskDetailActivity extends BaseActivity
     public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
         if (adapter instanceof TaskUsersAdapter) {
             if (taskItemEntity != null) {
-                if (taskItemEntity.matter != null) {
-                    showTaskAllotSelectDialogFragment(taskItemEntity.matter.id);
-                } else {
-                    showTopSnackBar("请优先选择项目");
-                }
+                if (!taskItemEntity.state)
+                    if (taskItemEntity.matter != null) {
+                        showTaskAllotSelectDialogFragment(taskItemEntity.matter.id);
+                    } else {
+                        showTopSnackBar("请优先选择项目");
+                    }
             }
         }
     }
@@ -992,14 +965,6 @@ public class TaskDetailActivity extends BaseActivity
 
     @Override
     public void onUpdateCheckItem(String checkItemCount) {
-//        String checkTargetStr = checkItemCount;
-//        String checkOriginStr = "检查项 " + checkTargetStr;
-//        SpannableString checkTextForegroundColorSpan = SpannableUtils.getTextForegroundColorSpan(checkOriginStr, checkTargetStr, 0xFFCACACA);
-//        tabTitles.put(1, checkTextForegroundColorSpan);
-//
-//        baseFragmentAdapter.bindTitle(true, Arrays.asList(tabTitles.get(0, ""),
-//                tabTitles.get(1, ""),
-//                tabTitles.get(2, "")));
         getData(true);
     }
 
@@ -1014,6 +979,4 @@ public class TaskDetailActivity extends BaseActivity
                 tabTitles.get(1, ""),
                 tabTitles.get(2, "")));
     }
-
-
 }

@@ -276,6 +276,9 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
                     @Override
                     public void accept(List<TaskEntity> searchPolymerizationEntities) throws Exception {
                         taskAdapter.bindData(true, allTaskEntities);
+                        if (getParentFragment() instanceof TabTaskFragment) {
+                            ((TabTaskFragment) getParentFragment()).showOrHiddeTitleAction2(newTaskEntities.size() > 0);
+                        }
                         //第一次进入 隐藏搜索框
                         if (isFirstTimeIntoPage) {
                             linearLayoutManager.scrollToPositionWithOffset(headerFooterAdapter.getHeaderCount(), 0);
@@ -374,13 +377,6 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
                 task.groupName = "新任务";
                 task.groupTaskCount = newTaskEntities.size();
                 allTaskEntities.add(task);
-                if (getParentFragment() instanceof TabTaskFragment) {
-                    ((TabTaskFragment) getParentFragment()).showOrHiddeTitleAction2(true);
-                }
-            } else {
-                if (getParentFragment() instanceof TabTaskFragment) {
-                    ((TabTaskFragment) getParentFragment()).showOrHiddeTitleAction2(false);
-                }
             }
         }
     }
