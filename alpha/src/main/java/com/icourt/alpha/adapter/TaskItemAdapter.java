@@ -49,30 +49,24 @@ public class TaskItemAdapter extends BaseArrayRecyclerAdapter<TaskEntity.TaskIte
 
         taskNameView.setText(taskItemEntity.name);
         startTimmingView.setVisibility(isAddTime ? View.VISIBLE : View.GONE);
+        StringBuffer stringBuffer = new StringBuffer();
         if (taskItemEntity.matter != null) {
+            stringBuffer.append(taskItemEntity.matter.name);
             if (taskItemEntity.parentFlow != null) {
                 if (!TextUtils.isEmpty(taskItemEntity.parentFlow.name))
-                    projectNameView.setText(taskItemEntity.matter.name + " - " + taskItemEntity.parentFlow.name);
-                else
-                    projectNameView.setText(taskItemEntity.matter.name);
+                    stringBuffer.append(" － ").append(taskItemEntity.parentFlow.name);
             } else {
                 if (!TextUtils.isEmpty(taskItemEntity.parentName))
-                    projectNameView.setText(taskItemEntity.matter.name + " - " + taskItemEntity.parentName);
-                else
-                    projectNameView.setText(taskItemEntity.matter.name);
+                    stringBuffer.append(" － ").append(taskItemEntity.parentName);
             }
         } else {
-            projectNameView.setText("未指定所属项目");
+            stringBuffer.append("未指定所属项目");
         }
+        projectNameView.setText(stringBuffer.toString());
         if (taskItemEntity.state) {
-            textViewSetData(timeView, DateUtils.get23Hour59MinFormat(taskItemEntity.updateTime), taskItemEntity.updateTime);
-            timeView.setTextColor(BLACK_COLOR);
-            timeView.setCompoundDrawablesWithIntrinsicBounds(R.mipmap.task_time_icon, 0, 0, 0);
+            timeTextSetData(timeView, taskItemEntity.updateTime);
         } else {
-            timeView.setVisibility(taskItemEntity.dueTime > 0 ? View.VISIBLE : View.GONE);
-            timeView.setText(DateUtils.get23Hour59MinFormat(taskItemEntity.dueTime));
-            timeView.setTextColor(taskItemEntity.dueTime < DateUtils.millis() ? RED_COLOR : BLACK_COLOR);
-            timeView.setCompoundDrawablesWithIntrinsicBounds(taskItemEntity.dueTime < DateUtils.millis() ? R.mipmap.ic_fail : R.mipmap.task_time_icon, 0, 0, 0);
+            timeTextSetData(timeView, taskItemEntity.dueTime);
         }
         textViewSetData(checkListView, taskItemEntity.doneItemCount + "/" + taskItemEntity.itemCount, taskItemEntity.itemCount);
         textViewSetData(documentNumView, String.valueOf(taskItemEntity.attachmentCount), taskItemEntity.attachmentCount);
@@ -106,6 +100,19 @@ public class TaskItemAdapter extends BaseArrayRecyclerAdapter<TaskEntity.TaskIte
         checkBox.setChecked(taskItemEntity.state);
         holder.bindChildClick(checkBox);
         holder.bindChildClick(startTimmingView);
+    }
+
+    /**
+     * 设置时间
+     *
+     * @param timeView
+     * @param timeMins
+     */
+    private void timeTextSetData(TextView timeView, long timeMins) {
+        timeView.setVisibility(timeMins > 0 ? View.VISIBLE : View.GONE);
+        timeView.setText(DateUtils.get23Hour59MinFormat(timeMins));
+        timeView.setTextColor(timeMins < DateUtils.millis() ? RED_COLOR : BLACK_COLOR);
+        timeView.setCompoundDrawablesWithIntrinsicBounds(timeMins < DateUtils.millis() ? R.mipmap.ic_fail : R.mipmap.task_time_icon, 0, 0, 0);
     }
 
     /**
