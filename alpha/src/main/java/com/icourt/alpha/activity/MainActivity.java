@@ -729,7 +729,7 @@ public class MainActivity extends BaseAppUpdateActivity
         if (TextUtils.equals(event.clientId, getlocalUniqueId())) return;
         if (event.isSyncObject() && event.isSyncTimingType()) {
             if (TextUtils.equals(event.scene, ServerTimingEvent.TIMING_SYNC_START)) {
-                TimerManager.getInstance().addTimer(event);
+                TimerManager.getInstance().resumeTimer(event);
             } else if (TextUtils.equals(event.scene, ServerTimingEvent.TIMING_SYNC_DELETE)) {
                 if (TimerManager.getInstance().isTimer(event.pkId)) {
                     TimerManager.getInstance().clearTimer();
