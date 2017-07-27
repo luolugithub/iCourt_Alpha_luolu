@@ -99,11 +99,14 @@ public class TaskAdapter extends BaseArrayRecyclerAdapter<TaskEntity>
         RecyclerView recyclerView = holder.obtainView(R.id.parent_item_task_recyclerview);
         TaskItemAdapter taskItemAdapter;
         if (recyclerView.getLayoutManager() == null) {
+            recyclerView.setHasFixedSize(true);
+            recyclerView.setNestedScrollingEnabled(false);
             LinearLayoutManager layoutManager = new LinearLayoutManager(recyclerView.getContext());
+            layoutManager.setInitialPrefetchItemCount(4);
             recyclerView.setLayoutManager(layoutManager);
             taskItemAdapter = new TaskItemAdapter();
             taskItemAdapter.setAddTime(isAddTime);
-            recyclerView.setAdapter(taskItemAdapter);
+            recyclerView.setAdapter(taskItemAdapter = new TaskItemAdapter());
             taskItemAdapter.setOnItemClickListener(super.onItemClickListener);
             taskItemAdapter.setOnItemChildClickListener(super.onItemChildClickListener);
             taskItemAdapter.setOnItemLongClickListener(super.onItemLongClickListener);

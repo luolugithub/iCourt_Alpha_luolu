@@ -53,6 +53,12 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
+import io.reactivex.Observable;
+import io.reactivex.ObservableEmitter;
+import io.reactivex.ObservableOnSubscribe;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.functions.Consumer;
+import io.reactivex.schedulers.Schedulers;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -254,65 +260,94 @@ public class TaskOtherListFragment extends BaseFragment implements BaseRecyclerA
      *
      * @param taskEntity
      */
-    private void getTaskGroupData(TaskEntity taskEntity) {
-        if (taskEntity != null) {
-            if (taskEntity.items != null) {
-                for (TaskEntity.TaskItemEntity taskItemEntity : taskEntity.items) {
-                    if (taskItemEntity.dueTime > 0) {
-                        if (TextUtils.equals(DateUtils.getTimeDateFormatYear(taskItemEntity.dueTime), DateUtils.getTimeDateFormatYear(DateUtils.millis())) || DateUtils.getDayDiff(DateUtils.millis(), taskItemEntity.dueTime) < 0) {
-                            todayTaskEntities.add(taskItemEntity);
-                        } else if (DateUtils.getDayDiff(DateUtils.millis(), taskItemEntity.dueTime) <= 3 && DateUtils.getDayDiff(DateUtils.millis(), taskItemEntity.dueTime) > 0) {
-                            beAboutToTaskEntities.add(taskItemEntity);
-                        } else if (DateUtils.getDayDiff(DateUtils.millis(), taskItemEntity.dueTime) > 3) {
-                            futureTaskEntities.add(taskItemEntity);
-                        } else {
-                            datedTaskEntities.add(taskItemEntity);
-                        }
-                    } else {
-                        noDueTaskEntities.add(taskItemEntity);
-                    }
-                }
-                if (datedTaskEntities.size() > 0) {
-                    TaskEntity task = new TaskEntity();
-                    task.items = datedTaskEntities;
-                    task.groupName = "已到期";
-                    task.groupTaskCount = datedTaskEntities.size();
-                    allTaskEntities.add(task);
-                }
-                if (todayTaskEntities.size() > 0) {
-                    TaskEntity task = new TaskEntity();
-                    task.items = todayTaskEntities;
-                    task.groupName = "今天到期";
-                    task.groupTaskCount = todayTaskEntities.size();
-                    allTaskEntities.add(task);
-                }
-
-                if (beAboutToTaskEntities.size() > 0) {
-                    TaskEntity task = new TaskEntity();
-                    task.items = beAboutToTaskEntities;
-                    task.groupName = "即将到期";
-                    task.groupTaskCount = beAboutToTaskEntities.size();
-                    allTaskEntities.add(task);
-                }
-
-                if (futureTaskEntities.size() > 0) {
-                    TaskEntity task = new TaskEntity();
-                    task.items = futureTaskEntities;
-                    task.groupName = "未来";
-                    task.groupTaskCount = futureTaskEntities.size();
-                    allTaskEntities.add(task);
-                }
-
-                if (noDueTaskEntities.size() > 0) {
-                    TaskEntity task = new TaskEntity();
-                    task.items = noDueTaskEntities;
-                    task.groupName = "未指定到期日";
-                    task.groupTaskCount = noDueTaskEntities.size();
-                    allTaskEntities.add(task);
-                }
-                TimerManager.getInstance().timerQuerySync();
-                taskAdapter.bindData(true, allTaskEntities);
+    private void getTaskGroupData(final TaskEntity taskEntity) {
+        if (taskEntity == null) return;
+        if (taskEntity.items == null) return;
+        Observable.create(new ObservableOnSubscribe<List<TaskEntity>>() {
+            @Override
+            public void subscribe(ObservableEmitter<List<TaskEntity>> e) throws Exception {
+                if (e.isDisposed()) return;
+                groupingByTasks(taskEntity.items);
+                addDataToAllTask();
+                e.onNext(allTaskEntities);
+                e.onComplete();
             }
+        }).compose(this.<List<TaskEntity>>bindToLifecycle())
+                .subscribeOn(Schedulers.newThread())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Consumer<List<TaskEntity>>() {
+                    @Override
+                    public void accept(List<TaskEntity> searchPolymerizationEntities) throws Exception {
+                        taskAdapter.bindData(true, allTaskEntities);
+                        TimerManager.getInstance().timerQuerySync();
+                    }
+                });
+    }
+
+    /**
+     * 分组
+     *
+     * @param taskItemEntities
+     */
+    private void groupingByTasks(List<TaskEntity.TaskItemEntity> taskItemEntities) {
+        for (TaskEntity.TaskItemEntity taskItemEntity : taskItemEntities) {
+            if (taskItemEntity.dueTime > 0) {
+                if (TextUtils.equals(DateUtils.getTimeDateFormatYear(taskItemEntity.dueTime), DateUtils.getTimeDateFormatYear(DateUtils.millis())) || DateUtils.getDayDiff(DateUtils.millis(), taskItemEntity.dueTime) < 0) {
+                    todayTaskEntities.add(taskItemEntity);
+                } else if (DateUtils.getDayDiff(DateUtils.millis(), taskItemEntity.dueTime) <= 3 && DateUtils.getDayDiff(DateUtils.millis(), taskItemEntity.dueTime) > 0) {
+                    beAboutToTaskEntities.add(taskItemEntity);
+                } else if (DateUtils.getDayDiff(DateUtils.millis(), taskItemEntity.dueTime) > 3) {
+                    futureTaskEntities.add(taskItemEntity);
+                } else {
+                    datedTaskEntities.add(taskItemEntity);
+                }
+            } else {
+                noDueTaskEntities.add(taskItemEntity);
+            }
+        }
+    }
+
+    /**
+     * 分组内容添加到allTaskEntities
+     */
+    private void addDataToAllTask() {
+        if (datedTaskEntities.size() > 0) {
+            TaskEntity todayTask = new TaskEntity();
+            todayTask.items = datedTaskEntities;
+            todayTask.groupName = "已到期";
+            todayTask.groupTaskCount = datedTaskEntities.size();
+            allTaskEntities.add(todayTask);
+        }
+        if (todayTaskEntities.size() > 0) {
+            TaskEntity todayTask = new TaskEntity();
+            todayTask.items = todayTaskEntities;
+            todayTask.groupName = "今天到期";
+            todayTask.groupTaskCount = todayTaskEntities.size();
+            allTaskEntities.add(todayTask);
+        }
+
+        if (beAboutToTaskEntities.size() > 0) {
+            TaskEntity task = new TaskEntity();
+            task.items = beAboutToTaskEntities;
+            task.groupName = "即将到期";
+            task.groupTaskCount = beAboutToTaskEntities.size();
+            allTaskEntities.add(task);
+        }
+
+        if (futureTaskEntities.size() > 0) {
+            TaskEntity task = new TaskEntity();
+            task.items = futureTaskEntities;
+            task.groupName = "未来";
+            task.groupTaskCount = futureTaskEntities.size();
+            allTaskEntities.add(task);
+        }
+
+        if (noDueTaskEntities.size() > 0) {
+            TaskEntity task = new TaskEntity();
+            task.items = noDueTaskEntities;
+            task.groupName = "未指定到期日";
+            task.groupTaskCount = noDueTaskEntities.size();
+            allTaskEntities.add(task);
         }
     }
 

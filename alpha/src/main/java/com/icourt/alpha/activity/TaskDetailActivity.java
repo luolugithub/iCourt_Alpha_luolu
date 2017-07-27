@@ -672,7 +672,7 @@ public class TaskDetailActivity extends BaseActivity
                         layoutManager.setOrientation(LinearLayoutManager.HORIZONTAL);
                         layoutManager.setReverseLayout(true);
                         taskUserRecyclerview.setLayoutManager(layoutManager);
-                        taskUserRecyclerview.setAdapter(usersAdapter = new TaskUsersAdapter());
+                        taskUserRecyclerview.setAdapter(usersAdapter = new TaskUsersAdapter(this));
                         usersAdapter.setOnItemClickListener(this);
                         Collections.reverse(taskItemEntity.attendeeUsers);
                         usersAdapter.bindData(true, taskItemEntity.attendeeUsers);
@@ -906,7 +906,7 @@ public class TaskDetailActivity extends BaseActivity
                             layoutManager.setOrientation(LinearLayoutManager.HORIZONTAL);
                             layoutManager.setReverseLayout(true);
                             taskUserRecyclerview.setLayoutManager(layoutManager);
-                            taskUserRecyclerview.setAdapter(usersAdapter = new TaskUsersAdapter());
+                            taskUserRecyclerview.setAdapter(usersAdapter = new TaskUsersAdapter(this));
                             usersAdapter.setOnItemClickListener(this);
                         }
                     }
