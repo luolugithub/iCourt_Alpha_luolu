@@ -74,7 +74,8 @@ import retrofit2.Response;
  * version 2.0.0
  */
 
-public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShowFragmenDialogListener, OnFragmentCallBackListener, ProjectSelectDialogFragment.OnProjectTaskGroupSelectListener {
+public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShowFragmenDialogListener,
+        OnFragmentCallBackListener, ProjectSelectDialogFragment.OnProjectTaskGroupSelectListener {
 
     public static final int TYPE_ALL = 0;//全部
     public static final int TYPE_NEW = 1;//新任务

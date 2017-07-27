@@ -23,8 +23,8 @@ import com.icourt.alpha.utils.DateUtils;
 
 public class TaskItemAdapter extends BaseArrayRecyclerAdapter<TaskEntity.TaskItemEntity> {
     private boolean isAddTime = true;//添加计时权限
-    private static final int BLACK_COLOR = 0xFFFF0000;
-    private static final int RED_COLOR = 0xFF8c8f92;
+    private static final int BLACK_COLOR = 0xFFa6a6a6;
+    private static final int RED_COLOR = 0xFFec1d37;
 
     public void setAddTime(boolean addTime) {
         isAddTime = addTime;
@@ -66,10 +66,12 @@ public class TaskItemAdapter extends BaseArrayRecyclerAdapter<TaskEntity.TaskIte
         }
         if (taskItemEntity.state) {
             textViewSetData(timeView, DateUtils.get23Hour59MinFormat(taskItemEntity.updateTime), taskItemEntity.updateTime);
+            timeView.setTextColor(BLACK_COLOR);
+            timeView.setCompoundDrawablesWithIntrinsicBounds(R.mipmap.task_time_icon, 0, 0, 0);
         } else {
             timeView.setVisibility(taskItemEntity.dueTime > 0 ? View.VISIBLE : View.GONE);
             timeView.setText(DateUtils.get23Hour59MinFormat(taskItemEntity.dueTime));
-            timeView.setTextColor(taskItemEntity.dueTime < DateUtils.millis() ? BLACK_COLOR : RED_COLOR);
+            timeView.setTextColor(taskItemEntity.dueTime < DateUtils.millis() ? RED_COLOR : BLACK_COLOR);
             timeView.setCompoundDrawablesWithIntrinsicBounds(taskItemEntity.dueTime < DateUtils.millis() ? R.mipmap.ic_fail : R.mipmap.task_time_icon, 0, 0, 0);
         }
         textViewSetData(checkListView, taskItemEntity.doneItemCount + "/" + taskItemEntity.itemCount, taskItemEntity.itemCount);
