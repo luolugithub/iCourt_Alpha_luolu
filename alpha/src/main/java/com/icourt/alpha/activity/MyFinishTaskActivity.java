@@ -656,7 +656,7 @@ public class MyFinishTaskActivity extends BaseActivity
     private String getTaskJson(TaskEntity.TaskItemEntity itemEntity, ProjectEntity projectEntity, TaskGroupEntity taskGroupEntity) {
         if (itemEntity == null) return null;
         JsonObject jsonObject = new JsonObject();
-        jsonObectAddPro(jsonObject, itemEntity);
+        jsonObjectAddPro(jsonObject, itemEntity);
         if (projectEntity != null) {
             jsonObject.addProperty("matterId", projectEntity.pkId);
         }
@@ -682,7 +682,7 @@ public class MyFinishTaskActivity extends BaseActivity
     private String getTaskJsonByProject(TaskEntity.TaskItemEntity itemEntity, ProjectEntity projectEntity, TaskGroupEntity taskGroupEntity) {
         if (itemEntity == null) return null;
         JsonObject jsonObject = new JsonObject();
-        jsonObectAddPro(jsonObject, itemEntity);
+        jsonObjectAddPro(jsonObject, itemEntity);
         JsonArray jsonarr = new JsonArray();
         if (projectEntity != null) {
             jsonObject.addProperty("matterId", projectEntity.pkId);
@@ -701,7 +701,7 @@ public class MyFinishTaskActivity extends BaseActivity
         return jsonObject.toString();
     }
 
-    private void jsonObectAddPro(JsonObject jsonObject, TaskEntity.TaskItemEntity itemEntity) {
+    private void jsonObjectAddPro(JsonObject jsonObject, TaskEntity.TaskItemEntity itemEntity) {
         jsonObject.addProperty("id", itemEntity.id);
         jsonObject.addProperty("state", itemEntity.state);
         jsonObject.addProperty("valid", true);
