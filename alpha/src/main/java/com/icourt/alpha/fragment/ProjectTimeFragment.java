@@ -6,11 +6,13 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import com.andview.refreshview.XRefreshView;
+import com.google.gson.JsonElement;
 import com.icourt.alpha.R;
 import com.icourt.alpha.activity.TimerDetailActivity;
 import com.icourt.alpha.activity.TimerTimingActivity;
@@ -105,6 +107,7 @@ public class ProjectTimeFragment extends BaseFragment implements BaseRecyclerAda
             public void onRefresh(boolean isPullDown) {
                 super.onRefresh(isPullDown);
                 getData(true);
+                getSumTimeByMatterId();
             }
 
             @Override
@@ -113,8 +116,14 @@ public class ProjectTimeFragment extends BaseFragment implements BaseRecyclerAda
                 getData(false);
             }
         });
-        refreshLayout.setAutoRefresh(true);
         refreshLayout.startRefresh();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        getData(true);
+        getSumTimeByMatterId();
     }
 
     @Override
@@ -131,7 +140,7 @@ public class ProjectTimeFragment extends BaseFragment implements BaseRecyclerAda
                         if (response.body().result.items.size() > 0) {
                             response.body().result.items.add(0, new TimeEntity.ItemEntity());
                         }
-                        timeAdapter.setSumTime(sumTime);
+
                         timeAdapter.bindData(isRefresh, response.body().result.items);
                         pageIndex += 1;
                         enableLoadMore(response.body().result.items);
@@ -143,6 +152,20 @@ public class ProjectTimeFragment extends BaseFragment implements BaseRecyclerAda
             public void onFailure(Call<ResEntity<TimeEntity>> call, Throwable t) {
                 super.onFailure(call, t);
                 stopRefresh();
+            }
+        });
+    }
+
+    /**
+     * 获取项目总计时
+     */
+    private void getSumTimeByMatterId() {
+        getApi().getSumTimeByMatterId(projectId).enqueue(new SimpleCallBack<JsonElement>() {
+            @Override
+            public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
+                if (response.body().result != null) {
+                    timeAdapter.setSumTime(response.body().result.getAsLong());
+                }
             }
         });
     }
@@ -162,15 +185,12 @@ public class ProjectTimeFragment extends BaseFragment implements BaseRecyclerAda
     }
 
     @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        unbinder.unbind();
-    }
-
-    @Override
     public void onDestroy() {
         super.onDestroy();
         EventBus.getDefault().unregister(this);
+        if (unbinder != null) {
+            unbinder.unbind();
+        }
     }
 
     /**
@@ -186,11 +206,14 @@ public class ProjectTimeFragment extends BaseFragment implements BaseRecyclerAda
     @Override
     public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
         if (holder.getItemViewType() == 1) {
-            TimeEntity.ItemEntity itemEntity = (TimeEntity.ItemEntity) adapter.getItem(position);
-            if (itemEntity != null && StringUtils.equalsIgnoreCase(itemEntity.pkId, TimerManager.getInstance().getTimerId(), false)) {
-                TimerTimingActivity.launch(view.getContext(), itemEntity);
-            } else {
-                TimerDetailActivity.launch(view.getContext(), itemEntity);
+            TimeEntity.ItemEntity itemEntity = (TimeEntity.ItemEntity) adapter.getItem(adapter.getRealPos(position));
+            if (itemEntity == null) return;
+            if (TextUtils.equals(itemEntity.createUserId, getLoginUserId())) {
+                if (StringUtils.equalsIgnoreCase(itemEntity.pkId, TimerManager.getInstance().getTimerId(), false)) {
+                    TimerTimingActivity.launch(view.getContext(), itemEntity);
+                } else {
+                    TimerDetailActivity.launch(view.getContext(), itemEntity);
+                }
             }
         }
     }

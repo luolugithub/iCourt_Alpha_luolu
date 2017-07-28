@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
@@ -39,7 +38,7 @@
                 android:id="@+id/group_name_tv"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="20dp"
+                android:layout_marginLeft="25dp"
                 android:layout_weight="1"
                 android:drawablePadding="5dp"
                 android:drawableRight="@mipmap/arrow_right"
@@ -72,7 +71,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:drawableLeft="@mipmap/icon_task_group_18_copy"
+                android:drawableLeft="@mipmap/project_detail_icon"
                 android:drawablePadding="20dp"
                 android:gravity="center"
                 android:padding="12dp"
@@ -84,7 +83,7 @@
                 android:id="@+id/group_desc_tv"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="20dp"
+                android:layout_marginLeft="25dp"
                 android:layout_weight="1"
                 android:drawablePadding="5dp"
                 android:drawableRight="@mipmap/arrow_right"
@@ -205,7 +204,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:drawableLeft="@mipmap/ic_crown"
+                    android:drawableLeft="@mipmap/ic_history"
                     android:drawablePadding="20dp"
                     android:gravity="center"
                     android:padding="12dp"
@@ -241,7 +240,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:drawableLeft="@mipmap/ic_members"
+            android:drawableLeft="@mipmap/ic_crown"
             android:drawablePadding="20dp"
             android:gravity="center"
             android:padding="12dp"

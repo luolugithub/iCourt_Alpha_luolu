@@ -55,6 +55,7 @@
                             android:layout_weight="1"
                             android:background="@null"
                             android:maxLines="1"
+                            android:singleLine="true"
                             android:padding="10dp"
                             android:textColor="@color/search_history_keyword_color"
                             android:textSize="14dp" />
@@ -201,7 +202,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginLeft="14dp"
-                        android:text="增加曾用名"
+                        android:text="添加曾用名"
                         android:textColor="@color/search_history_keyword_color"
                         android:textSize="14dp" />
                 </LinearLayout>
@@ -241,7 +242,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginLeft="14dp"
-                        android:text="增加电话"
+                        android:text="添加电话"
                         android:textColor="@color/search_history_keyword_color"
                         android:textSize="14dp" />
                 </LinearLayout>
@@ -281,7 +282,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginLeft="14dp"
-                        android:text="增加邮箱"
+                        android:text="添加邮箱"
                         android:textColor="@color/search_history_keyword_color"
                         android:textSize="14dp" />
                 </LinearLayout>
@@ -321,7 +322,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginLeft="14dp"
-                        android:text="增加地址"
+                        android:text="添加地址"
                         android:textColor="@color/search_history_keyword_color"
                         android:textSize="14dp" />
 
@@ -363,7 +364,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginLeft="14dp"
-                        android:text="增加工作单位"
+                        android:text="添加工作单位"
                         android:textColor="@color/search_history_keyword_color"
                         android:textSize="14dp" />
 
@@ -405,7 +406,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginLeft="14dp"
-                        android:text="增加个人证件"
+                        android:text="添加个人证件"
                         android:textColor="@color/search_history_keyword_color"
                         android:textSize="14dp" />
 
@@ -447,7 +448,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginLeft="14dp"
-                        android:text="增加即时通讯号码"
+                        android:text="添加即时通讯"
                         android:textColor="@color/search_history_keyword_color"
                         android:textSize="14dp" />
 
@@ -489,7 +490,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginLeft="14dp"
-                        android:text="增加重要日期"
+                        android:text="添加重要日期"
                         android:textColor="@color/search_history_keyword_color"
                         android:textSize="14dp" />
 
@@ -531,7 +532,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginLeft="14dp"
-                        android:text="增加联络人"
+                        android:text="添加关联人/机构"
                         android:textColor="@color/search_history_keyword_color"
                         android:textSize="14dp" />
                 </LinearLayout>
@@ -546,6 +547,7 @@
                 android:background="@drawable/top_bottom_line_layout_bg"
                 android:gravity="start"
                 android:hint="印象"
+                android:maxLength="2000"
                 android:minHeight="110dp"
                 android:padding="10dp"
                 android:textSize="16dp" />

@@ -42,7 +42,7 @@ public class TimerItemDecoration extends RecyclerView.ItemDecoration {
         this.mPaint.setColor(DEFAULE_COLOR_TEXT);
         this.mPaint.setAntiAlias(true);
         this.mBounds = new Rect();
-        this.lineHeight = dp2px(context, 1);
+        this.lineHeight = 2;
         this.dividerHeight = mTextSize * 3;
         this.iTimeDividerInterface = iTimeDividerInterface;
     }
@@ -76,22 +76,6 @@ public class TimerItemDecoration extends RecyclerView.ItemDecoration {
                     //画底部分割线
                     mPaint.setColor(DEFAULE_COLOR_LINE);
                     c.drawRect(child.getLeft() + child.getPaddingLeft(), child.getTop() - lineHeight , child.getRight(), child.getTop() + lineHeight , mPaint);
-//                    float lineWidth = mTextSize * 2;
-//                    float lineTxtMargin = mTextSize;
-//
-//                    float leftLineStartX = txtStartX - lineWidth - lineTxtMargin;
-//                    float leftLineEndX = leftLineStartX + lineWidth;
-//
-//                    float rightLineStartX = txtEndX + lineTxtMargin;
-//                    float rightLineEndX = rightLineStartX + lineWidth;
-//
-//                    //画两边的线条
-//                    if (leftLineStartX > 0 && rightLineEndX < child.getWidth()) {
-//                        mPaint.setColor(DEFAULE_COLOR_LINE);
-//                        c.drawRect(leftLineStartX, dividerCenterY - lineHeight * 0.5f, leftLineEndX, dividerCenterY + lineHeight * 0.5f, mPaint);
-//                        mPaint.setColor(DEFAULE_COLOR_LINE);
-//                        c.drawRect(rightLineStartX, dividerCenterY - lineHeight * 0.5f, rightLineEndX, dividerCenterY + lineHeight * 0.5f, mPaint);
-//                    }
                 }
             }
         }

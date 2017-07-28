@@ -6,103 +6,110 @@
 
     <include layout="@layout/layout_title_type_0" />
 
-    <RelativeLayout
+    <com.icourt.alpha.view.SoftKeyboardSizeWatchLayout
+        android:id="@+id/softKeyboardSizeWatchLayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <LinearLayout
-            android:id="@+id/bottom_layout"
+        <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            android:orientation="vertical">
-
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="@dimen/dp1"
-                android:background="@color/alpha_divider_color" />
+            android:layout_height="match_parent">
 
             <LinearLayout
-
+                android:id="@+id/bottom_layout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@color/white"
-                android:gravity="center_vertical"
-                android:padding="@dimen/dp10">
-
-                <EditText
-                    android:id="@+id/comment_edit"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:background="@drawable/bg_message_input"
-                    android:gravity="center_vertical"
-                    android:hint="添加评论"
-                    android:imeOptions="actionSend"
-                    android:lineSpacingExtra="4dp"
-                    android:maxLines="4"
-                    android:paddingBottom="8dp"
-                    android:paddingLeft="10dp"
-                    android:paddingRight="10dp"
-                    android:paddingTop="8dp"
-                    android:textColorHint="@color/alpha_font_color_gray"
-                    android:textSize="@dimen/alpha_font_size_mini" />
-
-                <RelativeLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="@dimen/dp15">
-
-                    <TextView
-                        android:id="@+id/comment_tv"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:background="?android:attr/selectableItemBackground"
-                        android:drawableLeft="@mipmap/icon_edit_16"
-                        android:drawablePadding="@dimen/dp5"
-                        android:text="12条动态"
-                        android:textColor="@color/alpha_font_color_black"
-                        android:textSize="14sp" />
-
-                    <TextView
-                        android:id="@+id/send_tv"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:background="@drawable/orange_circle_bg"
-                        android:paddingBottom="8dp"
-                        android:paddingLeft="@dimen/dp15"
-                        android:paddingRight="@dimen/dp15"
-                        android:paddingTop="8dp"
-                        android:text="发送"
-                        android:textColor="@color/white"
-                        android:textSize="16sp"
-                        android:visibility="gone" />
-                </RelativeLayout>
-            </LinearLayout>
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_above="@+id/bottom_layout"
-            android:orientation="vertical">
-
-
-            <com.icourt.alpha.view.xrefreshlayout.RefreshLayout
-                android:id="@+id/refreshLayout"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_alignParentBottom="true"
                 android:orientation="vertical">
 
-                <android.support.v7.widget.RecyclerView
-                    android:id="@+id/recyclerview"
+                <View
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent">
+                    android:layout_height="@dimen/dp1"
+                    android:background="@color/alpha_divider_color" />
 
-                </android.support.v7.widget.RecyclerView>
+                <LinearLayout
 
-            </com.icourt.alpha.view.xrefreshlayout.RefreshLayout>
-        </LinearLayout>
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@color/white"
+                    android:gravity="center_vertical"
+                    android:padding="@dimen/dp10">
 
-    </RelativeLayout>
+                    <EditText
+                        android:id="@+id/comment_edit"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:background="@drawable/bg_message_input"
+                        android:gravity="center_vertical"
+                        android:hint="添加评论"
+                        android:imeOptions="actionSend"
+                        android:lineSpacingExtra="4dp"
+                        android:maxLength="1500"
+                        android:maxLines="4"
+                        android:paddingBottom="8dp"
+                        android:paddingLeft="10dp"
+                        android:paddingRight="10dp"
+                        android:paddingTop="8dp"
+                        android:textColorHint="@color/alpha_font_color_gray"
+                        android:textSize="@dimen/alpha_font_size_mini" />
+
+                    <RelativeLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="@dimen/dp15">
+
+                        <TextView
+                            android:id="@+id/comment_tv"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:background="?attr/selectableItemBackground"
+                            android:drawableLeft="@mipmap/icon_edit_16"
+                            android:drawablePadding="@dimen/dp5"
+                            android:text="0条动态"
+                            android:textColor="@color/alpha_font_color_black"
+                            android:textSize="14sp" />
+
+                        <TextView
+                            android:id="@+id/send_tv"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:background="@drawable/orange_circle_bg"
+                            android:paddingBottom="5dp"
+                            android:paddingLeft="@dimen/dp10"
+                            android:paddingRight="@dimen/dp10"
+                            android:paddingTop="5dp"
+                            android:text="发送"
+                            android:textColor="@color/white"
+                            android:textSize="13sp"
+                            android:visibility="gone" />
+                    </RelativeLayout>
+                </LinearLayout>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_above="@+id/bottom_layout"
+                android:orientation="vertical">
+
+
+                <com.icourt.alpha.view.xrefreshlayout.RefreshLayout
+                    android:id="@+id/refreshLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical">
+
+                    <android.support.v7.widget.RecyclerView
+                        android:id="@+id/recyclerview"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent">
+
+                    </android.support.v7.widget.RecyclerView>
+
+                </com.icourt.alpha.view.xrefreshlayout.RefreshLayout>
+            </LinearLayout>
+
+        </RelativeLayout>
+    </com.icourt.alpha.view.SoftKeyboardSizeWatchLayout>
 </LinearLayout>

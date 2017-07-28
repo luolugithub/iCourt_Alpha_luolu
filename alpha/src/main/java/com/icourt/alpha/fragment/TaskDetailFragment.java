@@ -9,20 +9,24 @@ import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.icourt.alpha.R;
 import com.icourt.alpha.activity.ProjectDetailActivity;
 import com.icourt.alpha.activity.TaskDescUpdateActivity;
+import com.icourt.alpha.activity.TaskDetailActivity;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.entity.bean.ProjectEntity;
 import com.icourt.alpha.entity.bean.TaskEntity;
 import com.icourt.alpha.entity.bean.TaskGroupEntity;
+import com.icourt.alpha.entity.bean.TaskReminderEntity;
 import com.icourt.alpha.entity.event.TaskActionEvent;
 import com.icourt.alpha.fragment.dialogfragment.DateSelectDialogFragment;
 import com.icourt.alpha.fragment.dialogfragment.ProjectSelectDialogFragment;
@@ -38,6 +42,7 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
+import java.net.URLDecoder;
 import java.util.Arrays;
 import java.util.Calendar;
 
@@ -78,6 +83,9 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
     TaskEntity.TaskItemEntity taskItemEntity;
     @BindView(R.id.task_desc_layout)
     LinearLayout taskDescLayout;
+    TaskReminderEntity taskReminderEntity;
+    @BindView(R.id.task_reminder_icon)
+    ImageView taskReminderIcon;
 
     public static TaskDetailFragment newInstance(@NonNull TaskEntity.TaskItemEntity taskItemEntity) {
         TaskDetailFragment taskDetailFragment = new TaskDetailFragment();
@@ -110,18 +118,26 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
             } else {
                 taskProjectLayout.setVisibility(View.VISIBLE);
                 taskGroupLayout.setVisibility(View.GONE);
-                taskProjectTv.setText("添加所属项目");
+                taskProjectTv.setText("选择所属项目");
             }
 
             if (taskItemEntity.dueTime > 0) {
-                taskTimeTv.setText(DateUtils.getTimeDateFormatMm(taskItemEntity.dueTime));
+                taskTimeTv.setText(DateUtils.get23Hour59Min(taskItemEntity.dueTime));
             } else {
-                taskTimeTv.setText("添加到期时间");
+                taskTimeTv.setText("选择到期时间");
             }
 
             if (!TextUtils.isEmpty(taskItemEntity.description)) {
-                taskDescTv.setText(taskItemEntity.description);
+                try {
+                    taskDescTv.setText(URLDecoder.decode(taskItemEntity.description, "utf-8"));
+                } catch (Exception e) {
+                    taskDescTv.setText(taskItemEntity.description);
+                    e.printStackTrace();
+                    taskDescTv.setText(taskItemEntity.description);
+                    bugSync("任务详情转码失败", e);
+                }
             }
+            getTaskReminder(taskItemEntity.id); //获取任务提醒数据
         }
     }
 
@@ -129,30 +145,70 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
     @Override
     public void onClick(View v) {
         super.onClick(v);
-        switch (v.getId()) {
-            case R.id.task_project_layout://选择项目
-                if (taskItemEntity != null) {
-                    if (taskItemEntity.matter == null) {
-                        showProjectSelectDialogFragment();
-                    } else {
-                        showBottomMeau();
+        if (hasTaskEditPermission()) {
+            switch (v.getId()) {
+                case R.id.task_project_layout://选择项目
+                    if (taskItemEntity != null) {
+                        if (taskItemEntity.matter == null) {
+                            showProjectSelectDialogFragment(null);
+                        } else {
+                            showBottomMeau();
+                        }
                     }
-                }
-                break;
-            case R.id.task_group_layout://选择任务组
-                if (taskItemEntity.matter != null) {
-                    if (!TextUtils.isEmpty(taskItemEntity.matter.id)) {
-                        showTaskGroupSelectFragment(taskItemEntity.matter.id);
+                    break;
+                case R.id.task_group_layout://选择任务组
+                    if (taskItemEntity.matter != null) {
+                        if (!TextUtils.isEmpty(taskItemEntity.matter.id)) {
+                            showProjectSelectDialogFragment(taskItemEntity.matter.id);
+                        }
                     }
-                }
-                break;
-            case R.id.task_time_layout://选择到期时间
-                showDateSelectDialogFragment(taskItemEntity.dueTime);
-                break;
-            case R.id.task_desc_tv://添加任务详情
-                TaskDescUpdateActivity.launch(getContext(), taskDescTv.getText().toString(), TaskDescUpdateActivity.UPDATE_TASK_DESC);
-                break;
+                    break;
+                case R.id.task_time_layout://选择到期时间
+                    if (taskItemEntity != null)
+                        showDateSelectDialogFragment(taskItemEntity.dueTime, taskItemEntity.id);
+                    break;
+                case R.id.task_desc_tv://添加任务详情
+                    TaskDescUpdateActivity.launch(getContext(), taskDescTv.getText().toString(), TaskDescUpdateActivity.UPDATE_TASK_DESC);
+                    break;
+            }
+        } else {
+            showTopSnackBar("您没有编辑任务的权限");
         }
+    }
+
+    /**
+     * 查询任务提醒
+     *
+     * @param taskId
+     */
+    private void getTaskReminder(String taskId) {
+
+        getApi().taskReminderQuery(taskId).enqueue(new SimpleCallBack<TaskReminderEntity>() {
+            @Override
+            public void onSuccess(Call<ResEntity<TaskReminderEntity>> call, Response<ResEntity<TaskReminderEntity>> response) {
+                taskReminderEntity = response.body().result;
+                if (taskReminderIcon == null) return;
+                if (taskReminderEntity != null) {
+                    if (taskReminderEntity.ruleTime != null || taskReminderEntity.customTime != null) {
+                        taskReminderIcon.setVisibility(View.VISIBLE);
+                    } else {
+                        taskReminderIcon.setVisibility(View.INVISIBLE);
+                    }
+                } else {
+                    taskReminderIcon.setVisibility(View.INVISIBLE);
+                }
+            }
+        });
+    }
+
+    /**
+     * 是否有任务编辑权限
+     */
+    private boolean hasTaskEditPermission() {
+        if (taskItemEntity != null && taskItemEntity.right != null) {
+            return taskItemEntity.right.contains("MAT:matter.task:edit");
+        }
+        return false;
     }
 
     /**
@@ -168,7 +224,7 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
                         dialog.dismiss();
                         switch (position) {
                             case 0:
-                                showProjectSelectDialogFragment();
+                                showProjectSelectDialogFragment(null);
                                 break;
                             case 1:
                                 if (taskItemEntity != null)
@@ -184,7 +240,7 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
     /**
      * 展示选择项目对话框
      */
-    public void showProjectSelectDialogFragment() {
+    public void showProjectSelectDialogFragment(String projectId) {
         String tag = "ProjectSelectDialogFragment";
         FragmentTransaction mFragTransaction = getChildFragmentManager().beginTransaction();
         Fragment fragment = getChildFragmentManager().findFragmentByTag(tag);
@@ -192,29 +248,30 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
             mFragTransaction.remove(fragment);
         }
 
-        ProjectSelectDialogFragment.newInstance()
+        ProjectSelectDialogFragment.newInstance(projectId)
                 .show(mFragTransaction, tag);
     }
 
     /**
      * 展示选择到期时间对话框
      */
-    private void showDateSelectDialogFragment(long dueTime) {
+    private void showDateSelectDialogFragment(long dueTime, String taskId) {
         String tag = DateSelectDialogFragment.class.getSimpleName();
         FragmentTransaction mFragTransaction = getChildFragmentManager().beginTransaction();
         Fragment fragment = getChildFragmentManager().findFragmentByTag(tag);
         if (fragment != null) {
             mFragTransaction.remove(fragment);
         }
-        Calendar calendar = Calendar.getInstance();
-        if (dueTime <= 0) {
-            calendar.set(Calendar.HOUR_OF_DAY, 23);
-            calendar.set(Calendar.MINUTE, 59);
-        } else {
+        if (dueTime > 0) {
+            Calendar calendar = Calendar.getInstance();
             calendar.setTimeInMillis(dueTime);
+            DateSelectDialogFragment.newInstance(calendar, taskReminderEntity, taskId)
+                    .show(mFragTransaction, tag);
+        } else {
+            DateSelectDialogFragment.newInstance(null, taskReminderEntity, taskId)
+                    .show(mFragTransaction, tag);
         }
-        DateSelectDialogFragment.newInstance(calendar)
-                .show(mFragTransaction, tag);
+
     }
 
     /**
@@ -232,9 +289,11 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
     }
 
     @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        unbinder.unbind();
+    public void onDestroy() {
+        super.onDestroy();
+        if (unbinder != null) {
+            unbinder.unbind();
+        }
     }
 
     /**
@@ -250,9 +309,10 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
                 if (taskItemEntity.attendeeUsers != null) {
                     taskItemEntity.attendeeUsers.clear();
                 }
-                updateTask(taskItemEntity, projectEntity, taskGroupEntity);
             }
         }
+        selectedTaskGroup = taskGroupEntity;
+        updateTask(taskItemEntity, projectEntity, taskGroupEntity);
     }
 
     /**
@@ -262,7 +322,7 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
      * @param projectEntity
      * @param taskGroupEntity
      */
-    private void updateTask(TaskEntity.TaskItemEntity itemEntity, final ProjectEntity projectEntity, final TaskGroupEntity taskGroupEntity) {
+    private void updateTask(final TaskEntity.TaskItemEntity itemEntity, final ProjectEntity projectEntity, final TaskGroupEntity taskGroupEntity) {
         showLoadingDialog(null);
         getApi().taskUpdate(RequestUtils.createJsonBody(getTaskJson(itemEntity, projectEntity, taskGroupEntity))).enqueue(new SimpleCallBack<JsonElement>() {
             @Override
@@ -284,13 +344,20 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
                             taskItemEntity.matter = matterEntity;
                         }
                     }
-                }
-                if (taskGroupEntity != null) {
-                    taskGroupTv.setText(taskGroupEntity.name);
+                    if (taskGroupEntity != null) {
+                        taskGroupTv.setText(taskGroupEntity.name);
+                    } else {
+                        taskGroupTv.setText("");
+                    }
                 } else {
-                    taskGroupTv.setText(taskItemEntity != null ? taskItemEntity.parentFlow != null ? taskItemEntity.parentFlow.name : "" : "");
+                    if (taskGroupEntity != null) {
+                        taskGroupTv.setText(taskGroupEntity.name);
+                    } else {
+                        taskGroupTv.setText(taskItemEntity != null ? taskItemEntity.parentFlow != null ? taskItemEntity.parentFlow.name : "" : "");
+                    }
                 }
-                EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION));
+                addReminders(taskReminderEntity);
+                EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION, itemEntity.id, ""));
             }
 
             @Override
@@ -300,6 +367,7 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
             }
         });
     }
+
 
     /**
      * 获取任务json
@@ -313,28 +381,31 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
             JsonObject jsonObject = new JsonObject();
             jsonObject.addProperty("id", itemEntity.id);
             jsonObject.addProperty("state", itemEntity.state);
+            jsonObject.addProperty("name", itemEntity.name);
             jsonObject.addProperty("dueTime", itemEntity.dueTime);
-            jsonObject.addProperty("parentId", itemEntity.parentId);
             jsonObject.addProperty("description", itemEntity.description);
             jsonObject.addProperty("valid", true);
             jsonObject.addProperty("updateTime", DateUtils.millis());
+            JsonArray jsonarr = new JsonArray();
             if (projectEntity != null) {
                 jsonObject.addProperty("matterId", projectEntity.pkId);
-            }
-            if (taskGroupEntity != null) {
-                jsonObject.addProperty("parentId", taskGroupEntity.id);
-            }
-            JsonArray jsonarr = new JsonArray();
-            if (itemEntity.attendeeUsers != null) {
-                if (itemEntity.attendeeUsers.size() > 0) {
-                    for (TaskEntity.TaskItemEntity.AttendeeUserEntity attendeeUser : itemEntity.attendeeUsers) {
-                        jsonarr.add(attendeeUser.userId);
+                jsonarr.add(getLoginUserId());
+            } else {
+                if (itemEntity.attendeeUsers != null) {
+                    if (itemEntity.attendeeUsers.size() > 0) {
+                        for (TaskEntity.TaskItemEntity.AttendeeUserEntity attendeeUser : itemEntity.attendeeUsers) {
+                            jsonarr.add(attendeeUser.userId);
+                        }
+                    } else {
+                        jsonarr.add(getLoginUserId());
                     }
-                } else {
-                    jsonarr.add(getLoginUserId());
                 }
             }
             jsonObject.add("attendees", jsonarr);
+            if (taskGroupEntity != null) {
+                jsonObject.addProperty("parentId", taskGroupEntity.id);
+            }
+
             return jsonObject.toString();
         } catch (Exception e) {
             e.printStackTrace();
@@ -342,32 +413,99 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
         return null;
     }
 
+    /**
+     * 添加任务提醒
+     *
+     * @param taskReminderEntity
+     */
+    private void addReminders(final TaskReminderEntity taskReminderEntity) {
+        if (taskReminderEntity == null) return;
+        if (taskItemEntity == null) return;
+        if (TextUtils.isEmpty(taskReminderEntity.taskReminderType)) return;
+        String json = getReminderJson(taskReminderEntity);
+        if (TextUtils.isEmpty(json)) return;
+        getApi().taskReminderAdd(taskItemEntity.id, RequestUtils.createJsonBody(json)).enqueue(new SimpleCallBack<TaskReminderEntity>() {
+            @Override
+            public void onSuccess(Call<ResEntity<TaskReminderEntity>> call, Response<ResEntity<TaskReminderEntity>> response) {
+                if ((taskReminderEntity.ruleTime != null && taskReminderEntity.ruleTime.size() > 0) ||
+                        (taskReminderEntity.customTime != null && taskReminderEntity.customTime.size() > 0)) {
+                    taskReminderIcon.setVisibility(View.VISIBLE);
+                } else {
+                    taskReminderIcon.setVisibility(View.INVISIBLE);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResEntity<TaskReminderEntity>> call, Throwable t) {
+                super.onFailure(call, t);
+                taskReminderIcon.setVisibility(View.INVISIBLE);
+            }
+        });
+    }
+
+    /**
+     * 获取提醒json
+     *
+     * @param taskReminderEntity
+     * @return
+     */
+    private String getReminderJson(TaskReminderEntity taskReminderEntity) {
+        try {
+            if (taskReminderEntity == null) return null;
+            Gson gson = new Gson();
+            return gson.toJson(taskReminderEntity);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    TaskGroupEntity selectedTaskGroup;
+
     @Override
     public void onFragmentCallBack(Fragment fragment, int type, Bundle params) {
         if (params != null) {
             if (fragment instanceof DateSelectDialogFragment) {//选择到期时间回调
                 long millis = params.getLong(KEY_FRAGMENT_RESULT);
-                taskTimeTv.setText(DateUtils.getTimeDateFormatMm(millis));
+                Calendar calendar = Calendar.getInstance();
+                calendar.setTimeInMillis(millis);
+                int hour = calendar.get(Calendar.HOUR_OF_DAY);
+                int minute = calendar.get(Calendar.MINUTE);
+                int second = calendar.get(Calendar.SECOND);
+                if (hour == 23 && minute == 59 && second == 59) {
+                    taskTimeTv.setText(DateUtils.getTimeDate(millis));
+                } else {
+                    taskTimeTv.setText(DateUtils.getTimeDateFormatMm(millis));
+                }
+
                 taskItemEntity.dueTime = millis;
-                updateTask(taskItemEntity, null, null);
+                taskReminderEntity = (TaskReminderEntity) params.getSerializable("taskReminder");
+                updateTask(taskItemEntity, null, selectedTaskGroup);
+
             } else if (fragment instanceof TaskGroupSelectFragment) {//选择任务组回调
                 TaskGroupEntity taskGroupEntity = (TaskGroupEntity) params.getSerializable(KEY_FRAGMENT_RESULT);
                 if (taskGroupEntity != null) {
+                    selectedTaskGroup = taskGroupEntity;
                     taskGroupTv.setText(taskGroupEntity.name);
                     taskItemEntity.parentId = taskGroupEntity.id;
                     updateTask(taskItemEntity, null, taskGroupEntity);
                 }
             }
         }
+
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onUpdateTaskDescEvent(TaskActionEvent event) {
         if (event == null) return;
         if (event.action == TaskActionEvent.TASK_UPDATE_DESC_ACTION) {//修改任务描述
+            if (getActivity() instanceof TaskDetailActivity) {
+                taskItemEntity = ((TaskDetailActivity) getActivity()).getTaskItemEntity();
+            }
             taskDescTv.setText(event.desc);
             taskItemEntity.description = event.desc;
             updateTask(taskItemEntity, null, null);
         }
     }
+
 }

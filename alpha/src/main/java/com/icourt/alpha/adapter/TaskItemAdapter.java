@@ -23,6 +23,11 @@ import com.icourt.alpha.utils.DateUtils;
  */
 
 public class TaskItemAdapter extends BaseArrayRecyclerAdapter<TaskEntity.TaskItemEntity> {
+    private boolean isAddTime = true;//添加计时权限
+
+    public void setAddTime(boolean addTime) {
+        isAddTime = addTime;
+    }
 
     @Override
     public int bindView(int viewtype) {
@@ -44,33 +49,46 @@ public class TaskItemAdapter extends BaseArrayRecyclerAdapter<TaskEntity.TaskIte
         if (taskNameView != null) {
             taskNameView.setText(taskItemEntity.name);
         }
+        startTimmingView.setVisibility(isAddTime ? View.VISIBLE : View.GONE);
         if (projectNameView != null) {
             if (taskItemEntity.matter != null) {
                 if (taskItemEntity.parentFlow != null) {
-                    projectNameView.setText(taskItemEntity.matter.name + " - " + taskItemEntity.parentFlow.name);
+                    if (!TextUtils.isEmpty(taskItemEntity.parentFlow.name))
+                        projectNameView.setText(taskItemEntity.matter.name + " - " + taskItemEntity.parentFlow.name);
+                    else
+                        projectNameView.setText(taskItemEntity.matter.name);
                 } else {
                     if (!TextUtils.isEmpty(taskItemEntity.parentName))
                         projectNameView.setText(taskItemEntity.matter.name + " - " + taskItemEntity.parentName);
                     else
                         projectNameView.setText(taskItemEntity.matter.name);
                 }
-            }else{
-                projectNameView.setText("");
+            } else {
+                projectNameView.setText("未指定所属项目");
             }
         }
         if (timeView != null) {
-            if (taskItemEntity.dueTime > 0) {
-                timeView.setVisibility(View.VISIBLE);
-                timeView.setText(DateUtils.getTimeDateFormatMm(taskItemEntity.dueTime));
-                if (taskItemEntity.dueTime < DateUtils.millis()) {
-                    timeView.setTextColor(Color.parseColor("#FF0000"));
-                    timeView.setCompoundDrawablesWithIntrinsicBounds(R.mipmap.ic_fail, 0, 0, 0);
+            if (taskItemEntity.state) {
+                if (taskItemEntity.updateTime > 0) {
+                    timeView.setVisibility(View.VISIBLE);
+                    timeView.setText(DateUtils.get23Hour59MinFormat(taskItemEntity.updateTime));
                 } else {
-                    timeView.setTextColor(Color.parseColor("#FF8c8f92"));
-                    timeView.setCompoundDrawablesWithIntrinsicBounds(R.mipmap.task_time_icon, 0, 0, 0);
+                    timeView.setVisibility(View.GONE);
                 }
             } else {
-                timeView.setVisibility(View.GONE);
+                if (taskItemEntity.dueTime > 0) {
+                    timeView.setVisibility(View.VISIBLE);
+                    timeView.setText(DateUtils.get23Hour59MinFormat(taskItemEntity.dueTime));
+                    if (taskItemEntity.dueTime < DateUtils.millis()) {
+                        timeView.setTextColor(Color.parseColor("#FF0000"));
+                        timeView.setCompoundDrawablesWithIntrinsicBounds(R.mipmap.ic_fail, 0, 0, 0);
+                    } else {
+                        timeView.setTextColor(Color.parseColor("#FF8c8f92"));
+                        timeView.setCompoundDrawablesWithIntrinsicBounds(R.mipmap.task_time_icon, 0, 0, 0);
+                    }
+                } else {
+                    timeView.setVisibility(View.GONE);
+                }
             }
         }
         if (checkListView != null) {
@@ -101,17 +119,26 @@ public class TaskItemAdapter extends BaseArrayRecyclerAdapter<TaskEntity.TaskIte
             if (taskItemEntity.attendeeUsers != null) {
                 TaskUsersAdapter usersAdapter;
                 if (recyclerView.getLayoutManager() == null) {
+                    recyclerView.setHasFixedSize(true);
                     LinearLayoutManager layoutManager = new LinearLayoutManager(recyclerView.getContext());
+                    layoutManager.setAutoMeasureEnabled(true);
                     layoutManager.setOrientation(LinearLayoutManager.HORIZONTAL);
                     layoutManager.setReverseLayout(true);
                     recyclerView.setLayoutManager(layoutManager);
-                    usersAdapter = new TaskUsersAdapter();
-                    recyclerView.setAdapter(usersAdapter);
+                    recyclerView.setAdapter(usersAdapter = new TaskUsersAdapter());
                 }
                 usersAdapter = (TaskUsersAdapter) recyclerView.getAdapter();
                 usersAdapter.bindData(true, taskItemEntity.attendeeUsers);
             } else {
-                recyclerView.setVisibility(View.GONE);
+                recyclerView.setVisibility(View.INVISIBLE);
+            }
+            if (checkListView.getVisibility() == View.VISIBLE &&
+                    documentNumView.getVisibility() == View.VISIBLE &&
+                    commentNumView.getVisibility() == View.VISIBLE &&
+                    timeView.getVisibility() == View.VISIBLE) {
+                recyclerView.setVisibility(View.INVISIBLE);
+            } else {
+                recyclerView.setVisibility(View.VISIBLE);
             }
         }
         if (startTimmingView != null) {

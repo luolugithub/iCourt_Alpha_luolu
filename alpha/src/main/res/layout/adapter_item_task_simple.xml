@@ -6,11 +6,19 @@
     android:orientation="horizontal"
     android:padding="12dp">
 
+    <ImageView
+        android:id="@+id/task_icon_iv"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:src="@mipmap/task_entry_icon_40" />
+
     <TextView
         android:id="@+id/task_title_tv"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginRight="30dp"
+        android:layout_marginLeft="10dp"
+        android:layout_toLeftOf="@+id/task_arrow_iv"
+        android:layout_toRightOf="@+id/task_icon_iv"
         android:layout_weight="1"
         android:ellipsize="end"
         android:maxLines="1"

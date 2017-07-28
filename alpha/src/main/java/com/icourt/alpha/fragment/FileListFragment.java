@@ -12,7 +12,10 @@ import android.view.ViewGroup;
 
 import com.andview.refreshview.XRefreshView;
 import com.icourt.alpha.R;
+import com.icourt.alpha.activity.ChatMsgClassfyActivity;
+import com.icourt.alpha.activity.FileDetailsActivity;
 import com.icourt.alpha.adapter.ImUserMessageAdapter;
+import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.adapterObserver.RefreshViewEmptyObserver;
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.db.convertor.IConvertModel;
@@ -52,10 +55,12 @@ import retrofit2.Response;
  * date createTime：2017/4/17
  * version 1.0.0
  */
-public class FileListFragment extends BaseFragment {
+public class FileListFragment
+        extends BaseFragment implements BaseRecyclerAdapter.OnItemClickListener {
     public static final int TYPE_ALL_FILE = 0;
     public static final int TYPE_MY_FILE = 2;
     private static final String KEY_FILE_TYPE = "key_file_type";
+
 
     @IntDef({TYPE_ALL_FILE,
             TYPE_MY_FILE})
@@ -105,12 +110,13 @@ public class FileListFragment extends BaseFragment {
 
     @Override
     protected void initView() {
-        refreshLayout.setNoticeEmpty(R.mipmap.icon_placeholder_task, R.string.null_files);
+        refreshLayout.setNoticeEmpty(R.mipmap.bg_no_task, R.string.null_files);
         refreshLayout.setMoveForHorizontal(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.addItemDecoration(ItemDecorationUtils.getCommFullDivider(getContext(), false));
         recyclerView.setHasFixedSize(true);
         recyclerView.setAdapter(fileAdapter = new ImUserMessageAdapter(localContactList));
+        fileAdapter.setOnItemClickListener(this);
         fileAdapter.registerAdapterDataObserver(new RefreshViewEmptyObserver(refreshLayout, fileAdapter));
         refreshLayout.setXRefreshViewListener(new XRefreshView.SimpleXRefreshListener() {
             @Override
@@ -129,29 +135,36 @@ public class FileListFragment extends BaseFragment {
         getLocalContacts();
     }
 
+    private long getEndlyId() {
+        long msg_id = fileAdapter.getData().size() > 0
+                ? fileAdapter.getItemId(fileAdapter.getData().size() - 1) : 0;
+        return msg_id;
+    }
+
     @Override
     protected void getData(final boolean isRefresh) {
-        long msgid = 0;
-        if (isRefresh) {
-            msgid = Integer.MAX_VALUE;
-        } else {
-            if (fileAdapter.getData().isEmpty()) {
-                IMMessageCustomBody item = fileAdapter.getItem(fileAdapter.getData().size() - 1);
-                if (item != null) {
-                    msgid = item.id;
-                }
-            }
-        }
         Call<ResEntity<List<IMMessageCustomBody>>> call;
         switch (getQueryFileType()) {
             case TYPE_ALL_FILE:
-                call = getChatApi().getMyAllFiles(msgid);
+                if (isRefresh) {
+                    call = getChatApi().getMyAllFiles();
+                } else {
+                    call = getChatApi().getMyAllFiles(getEndlyId());
+                }
                 break;
             case TYPE_MY_FILE:
-                call = getChatApi().getMyFiles(msgid);
+                if (isRefresh) {
+                    call = getChatApi().getMyFiles();
+                } else {
+                    call = getChatApi().getMyFiles(getEndlyId());
+                }
                 break;
             default:
-                call = getChatApi().getMyFiles(msgid);
+                if (isRefresh) {
+                    call = getChatApi().getMyFiles();
+                } else {
+                    call = getChatApi().getMyFiles(getEndlyId());
+                }
                 break;
         }
         call.enqueue(new SimpleCallBack<List<IMMessageCustomBody>>() {
@@ -231,6 +244,16 @@ public class FileListFragment extends BaseFragment {
                 .subscribeOn(Schedulers.newThread())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(consumer);
+    }
+
+
+    @Override
+    public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
+        IMMessageCustomBody item = fileAdapter.getItem(adapter.getRealPos(position));
+        if (item == null) return;
+        FileDetailsActivity.launch(getContext(),
+                item,
+                ChatMsgClassfyActivity.MSG_CLASSFY_CHAT_FILE);
     }
 
 

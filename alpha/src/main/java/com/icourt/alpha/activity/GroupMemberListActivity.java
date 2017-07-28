@@ -15,6 +15,7 @@ import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.view.View;
+import android.widget.CheckedTextView;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -24,10 +25,9 @@ import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.IMContactAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.HeaderFooterAdapter;
+import com.icourt.alpha.adapter.baseadapter.adapterObserver.DataChangeAdapterObserver;
 import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.constants.Const;
-import com.icourt.alpha.db.convertor.IConvertModel;
-import com.icourt.alpha.db.convertor.ListConvertor;
 import com.icourt.alpha.db.dbmodel.ContactDbModel;
 import com.icourt.alpha.db.dbservice.ContactDbService;
 import com.icourt.alpha.entity.bean.GroupContactBean;
@@ -36,7 +36,7 @@ import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.DensityUtil;
 import com.icourt.alpha.utils.IndexUtils;
-import com.icourt.alpha.utils.PinyinComparator;
+import com.icourt.alpha.widget.comparators.PinyinComparator;
 import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.view.SoftKeyboardSizeWatchLayout;
@@ -55,7 +55,6 @@ import io.reactivex.ObservableOnSubscribe;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
-import io.realm.RealmResults;
 import retrofit2.Call;
 import retrofit2.Response;
 
@@ -76,6 +75,8 @@ public class GroupMemberListActivity
     private static final String KEY_ADD_AT_ALL = "key_add_at_all";
     private static final String KEY_SELECTED_DATA = "key_selected_data";
     private static final String KEY_TID = "key_tid";
+    private static final String KEY_IS_FILTER_ME = "key_is_filter_me";
+    private static final String KEY_ADMIN_ID = "key_admin_id";
     @BindView(R.id.titleBack)
     ImageView titleBack;
     @BindView(R.id.titleContent)
@@ -95,6 +96,11 @@ public class GroupMemberListActivity
     LinearLayoutManager linearLayoutManager;
     HeaderFooterAdapter<IMContactAdapter> headerFooterAdapter;
     EditText header_input_et;
+    final List<GroupContactBean> groupMembers = new ArrayList<>();
+    @BindView(R.id.titleAction)
+    CheckedTextView titleAction;
+    @BindView(R.id.contentEmptyText)
+    TextView contentEmptyText;
 
 
     /**
@@ -110,30 +116,39 @@ public class GroupMemberListActivity
             @NonNull String tid,
             @Const.ChoiceType int type,
             int reqCode, boolean addAtAll,
-            @Nullable ArrayList<String> selectedData) {
+            @Nullable ArrayList<String> selectedData,
+            boolean isFilterMySelf) {
         if (context == null) return;
         if (TextUtils.isEmpty(tid)) return;
         Intent intent = new Intent(context, GroupMemberListActivity.class);
         intent.putExtra(KEY_TID, tid);
         intent.putExtra(KEY_SELCTED_TYPE, type);
         intent.putExtra(KEY_ADD_AT_ALL, addAtAll);
+        intent.putExtra(KEY_IS_FILTER_ME, isFilterMySelf);
         intent.putExtra(KEY_SELECTED_DATA, selectedData);
         context.startActivityForResult(intent, reqCode);
     }
+
 
     /**
      * 浏览模式
      *
      * @param context
      * @param tid
+     * @param isFilterMySelf
+     * @param adminId        管理员id
      */
     public static void launch(
             @NonNull Activity context,
-            @NonNull String tid) {
+            @NonNull String tid,
+            boolean isFilterMySelf,
+            String adminId) {
         if (context == null) return;
         if (TextUtils.isEmpty(tid)) return;
         Intent intent = new Intent(context, GroupMemberListActivity.class);
         intent.putExtra(KEY_TID, tid);
+        intent.putExtra(KEY_IS_FILTER_ME, isFilterMySelf);
+        intent.putExtra(KEY_ADMIN_ID, adminId);
         context.startActivity(intent);
     }
 
@@ -169,6 +184,14 @@ public class GroupMemberListActivity
             }
         });
         headerFooterAdapter = new HeaderFooterAdapter<>(imContactAdapter = new IMContactAdapter());
+        imContactAdapter.registerAdapterDataObserver(new DataChangeAdapterObserver() {
+            @Override
+            protected void updateUI() {
+                if (contentEmptyText != null) {
+                    contentEmptyText.setVisibility(imContactAdapter.getItemCount() > 0 ? View.GONE : View.VISIBLE);
+                }
+            }
+        });
         View headerView = HeaderFooterAdapter.inflaterView(getContext(), R.layout.header_search_input_text, recyclerView);
         headerFooterAdapter.addHeader(headerView);
         header_input_et = (EditText) headerView.findViewById(R.id.header_input_et);
@@ -314,8 +337,23 @@ public class GroupMemberListActivity
                     public void accept(List<GroupContactBean> contactBeanList) throws Exception {
                         try {
                             filterRobot(contactBeanList);
+                            //过滤自己
+                            if (getIntent().getBooleanExtra(KEY_IS_FILTER_ME, false)) {
+                                filterMySelf(contactBeanList);
+                            }
                             IndexUtils.setSuspensions(getContext(), contactBeanList);
-                            Collections.sort(contactBeanList, new PinyinComparator<GroupContactBean>());
+                            if (contactBeanList != null) {
+                                groupMembers.clear();
+                                groupMembers.addAll(contactBeanList);
+                            }
+                            try {
+                                Collections.sort(contactBeanList, new PinyinComparator<GroupContactBean>());
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                                bugSync("排序异常", e);
+                            }
+
+
                             //添加@所有人
                             if (getIntent().getBooleanExtra(KEY_ADD_AT_ALL, false)) {
                                 GroupContactBean atall = new GroupContactBean() {
@@ -327,9 +365,35 @@ public class GroupMemberListActivity
                                 atall.type = GroupContactBean.TYPE_ALL;
                                 atall.name = "所有人";
                                 contactBeanList.add(0, atall);
+                                imContactAdapter.bindData(true, contactBeanList);
+                                updateIndexBar(contactBeanList, contactBeanList);
+                            } else {
+                                //管理员 放到第一个位置
+                                String adminId = getIntent().getStringExtra(KEY_ADMIN_ID);
+                                GroupContactBean adminContact = null;
+                                if (!TextUtils.isEmpty(adminId)) {
+                                    adminContact = new GroupContactBean();
+                                    adminContact.accid = adminId;
+                                    int indexOf = contactBeanList.indexOf(adminContact);
+                                    if (indexOf >= 0) {
+                                        adminContact = contactBeanList.get(indexOf);
+                                        contactBeanList.remove(indexOf);
+                                        adminContact.setSuspensionTag("管理员");
+                                        contactBeanList.add(0, adminContact);
+                                    } else {
+                                        adminContact = null;
+                                    }
+                                }
+                                List<GroupContactBean> indexGroupContactBeen;
+                                if (adminContact != null) {
+                                    indexGroupContactBeen = new ArrayList<>(contactBeanList);
+                                    indexGroupContactBeen.remove(adminContact);
+                                } else {
+                                    indexGroupContactBeen = contactBeanList;
+                                }
+                                imContactAdapter.bindData(true, contactBeanList);
+                                updateIndexBar(indexGroupContactBeen, contactBeanList);
                             }
-                            imContactAdapter.bindData(true, contactBeanList);
-                            updateIndexBar(contactBeanList);
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
@@ -337,23 +401,39 @@ public class GroupMemberListActivity
                 });
     }
 
+    /**
+     * 过滤调自己
+     *
+     * @param data
+     * @return
+     */
+    private List<GroupContactBean> filterMySelf(List<GroupContactBean> data) {
+        GroupContactBean groupContactBean = new GroupContactBean();
+        groupContactBean.accid = StringUtils.toLowerCase(getLoginUserId());
+        new ListFilter<GroupContactBean>().filter(data, groupContactBean);
+        return data;
+    }
 
     /**
-     * 搜索用户
+     * 搜索用户 当前讨论组
      *
      * @param name
      */
     private void serachGroupMember(String name) {
         try {
-            RealmResults<ContactDbModel> result = contactDbService.contains("name", name);
-            if (result == null) {
-                imContactAdapter.clearData();
-                return;
+            List<GroupContactBean> contactBeen = new ArrayList<>();
+            for (GroupContactBean contactBean : groupMembers) {
+                if (contactBean == null) continue;
+                if (StringUtils.equalsIgnoreCase(contactBean.name, name, false)
+                        || StringUtils.containsIgnoreCase(contactBean.name, name)) {
+                    contactBeen.add(contactBean);
+                } else if (StringUtils.containsIgnoreCase(contactBean.nameCharacter, name)) {
+                    contactBeen.add(contactBean);
+                }
             }
-            List<GroupContactBean> contactBeen = ListConvertor.convertList(new ArrayList<IConvertModel<GroupContactBean>>(result));
             filterRobot(contactBeen);
             imContactAdapter.bindData(true, contactBeen);
-            updateIndexBar(contactBeen);
+            updateIndexBar(contactBeen, contactBeen);
         } catch (Throwable e) {
             e.printStackTrace();
         }
@@ -364,9 +444,9 @@ public class GroupMemberListActivity
      *
      * @param data
      */
-    private void updateIndexBar(List<GroupContactBean> data) {
+    private void updateIndexBar(List<GroupContactBean> indexData, List<GroupContactBean> data) {
         try {
-            ArrayList<String> suspensions = IndexUtils.getSuspensions(data);
+            ArrayList<String> suspensions = IndexUtils.getSuspensions(indexData);
             suspensions.add(0, STRING_TOP);
             recyclerIndexBar.setIndexItems(suspensions.toArray(new String[suspensions.size()]));
             mDecoration.setmDatas(data);

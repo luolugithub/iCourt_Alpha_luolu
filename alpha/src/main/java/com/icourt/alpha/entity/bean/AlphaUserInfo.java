@@ -1,5 +1,6 @@
 package com.icourt.alpha.entity.bean;
 
+import com.google.gson.annotations.SerializedName;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 
 import java.io.Serializable;
@@ -33,6 +34,7 @@ public class AlphaUserInfo extends ResEntity<String> implements Serializable {
     private String chatToken;
     private Long loginTime;
     private String phone;
+    @SerializedName(value = "mail", alternate = {"email"})
     private String mail;
     private String calendarPKid;
     private String photo;

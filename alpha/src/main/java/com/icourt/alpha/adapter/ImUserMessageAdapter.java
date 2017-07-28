@@ -7,12 +7,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
-import com.icourt.alpha.BuildConfig;
 import com.icourt.alpha.R;
-import com.icourt.alpha.activity.FileDetailsActivity;
 import com.icourt.alpha.adapter.baseadapter.BaseArrayRecyclerAdapter;
-import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
-import com.icourt.alpha.constants.Const;
 import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.icourt.alpha.entity.bean.IMMessageCustomBody;
@@ -20,7 +16,6 @@ import com.icourt.alpha.utils.ActionConstants;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.FileUtils;
 import com.icourt.alpha.utils.GlideUtils;
-import com.icourt.alpha.utils.IMUtils;
 import com.icourt.alpha.utils.LoginInfoUtils;
 
 import java.util.List;
@@ -42,7 +37,7 @@ import static com.icourt.alpha.constants.Const.MSG_TYPE_VOICE;
  * date createTime：2017/4/17
  * version 1.0.0
  */
-public class ImUserMessageAdapter extends BaseArrayRecyclerAdapter<IMMessageCustomBody> implements BaseRecyclerAdapter.OnItemClickListener {
+public class ImUserMessageAdapter extends BaseArrayRecyclerAdapter<IMMessageCustomBody> {
     private static final int VIEW_TYPE_TEXT = 0;
     private static final int VIEW_TYPE_FILE = 1;
     private static final int VIEW_TYPE_FILE_IMG = 2;
@@ -80,7 +75,6 @@ public class ImUserMessageAdapter extends BaseArrayRecyclerAdapter<IMMessageCust
             this.loginToken = alphaUserInfo.getToken();
         }
         this.contactBeanList = contactBeanList;
-        this.setOnItemClickListener(this);
     }
 
     @Override
@@ -231,7 +225,7 @@ public class ImUserMessageAdapter extends BaseArrayRecyclerAdapter<IMMessageCust
                 getUserIcon(imFileEntity.from),
                 file_from_user_iv);
         file_from_user_tv.setText(imFileEntity.name);
-        file_from_time_tv.setText(DateUtils.getTimeShowString(imFileEntity.send_time, true));
+        file_from_time_tv.setText(DateUtils.getFormatChatTimeSimple(imFileEntity.send_time));
     }
 
     /**
@@ -274,15 +268,6 @@ public class ImUserMessageAdapter extends BaseArrayRecyclerAdapter<IMMessageCust
         }
     }
 
-    /**
-     * 是否是图片
-     *
-     * @param path
-     * @return
-     */
-    public boolean isPic(String path) {
-        return IMUtils.isPIC(path);
-    }
 
     /**
      * 获取文件对应图标
@@ -315,27 +300,4 @@ public class ImUserMessageAdapter extends BaseArrayRecyclerAdapter<IMMessageCust
         super.onViewRecycled(holder);
     }
 
-    /**
-     * 获取组合拼接的图片原地址
-     *
-     * @param path
-     * @return
-     */
-    private String getCombPicUrl(String path) {
-        StringBuilder urlBuilder = new StringBuilder(BuildConfig.HOST_URL);
-        urlBuilder.append(Const.HTTP_DOWNLOAD_FILE);
-        urlBuilder.append("?sFileId=");
-        urlBuilder.append(path);
-        urlBuilder.append("&token=");
-        urlBuilder.append(loginToken);
-        urlBuilder.append("&width=");
-        urlBuilder.append("480");
-        return urlBuilder.toString();
-    }
-
-    @Override
-    public void onItemClick(BaseRecyclerAdapter adapter, ViewHolder holder, View view, int position) {
-        IMMessageCustomBody item = getItem(getRealPos(position));
-        FileDetailsActivity.launch(view.getContext(), item);
-    }
 }

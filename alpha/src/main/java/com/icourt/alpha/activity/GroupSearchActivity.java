@@ -23,6 +23,7 @@ import android.widget.TextView;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.GroupAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
+import com.icourt.alpha.adapter.baseadapter.adapterObserver.DataChangeAdapterObserver;
 import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.entity.bean.GroupEntity;
 import com.icourt.alpha.http.callback.SimpleCallBack;
@@ -64,6 +65,8 @@ public class GroupSearchActivity extends BaseActivity implements BaseRecyclerAda
     RecyclerView recyclerView;
     @BindView(R.id.softKeyboardSizeWatchLayout)
     SoftKeyboardSizeWatchLayout softKeyboardSizeWatchLayout;
+    @BindView(R.id.contentEmptyText)
+    TextView contentEmptyText;
 
     public static void launch(@NonNull Context context,
                               View searchLayout,
@@ -169,6 +172,14 @@ public class GroupSearchActivity extends BaseActivity implements BaseRecyclerAda
         });
         etInputName.setText(getIntent().getStringExtra(KEY_KEYWORD));
         etInputName.setSelection(etInputName.getText().length());
+
+
+        groupAdapter.registerAdapterDataObserver(new DataChangeAdapterObserver() {
+            @Override
+            protected void updateUI() {
+                contentEmptyText.setVisibility(groupAdapter.getItemCount() > 0 ? View.GONE : View.VISIBLE);
+            }
+        });
     }
 
     @Override
@@ -196,6 +207,7 @@ public class GroupSearchActivity extends BaseActivity implements BaseRecyclerAda
                 break;
         }
     }
+
     /**
      * 是否是我加入的群组
      *
@@ -216,7 +228,7 @@ public class GroupSearchActivity extends BaseActivity implements BaseRecyclerAda
     @Override
     public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
         GroupEntity item = groupAdapter.getItem(position);
-        if(item==null) return;
+        if (item == null) return;
         if (isMyJionedGroup(item.tid)) {
             ChatActivity.launchTEAM(getContext(),
                     item.tid,

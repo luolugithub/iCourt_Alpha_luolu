@@ -14,6 +14,7 @@ import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.google.gson.JsonElement;
@@ -23,16 +24,18 @@ import com.icourt.alpha.adapter.TaskAttachmentAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.entity.bean.TaskAttachmentEntity;
+import com.icourt.alpha.entity.event.TaskActionEvent;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.interfaces.OnUpdateTaskListener;
 import com.icourt.alpha.utils.DateUtils;
-import com.icourt.alpha.utils.ItemDecorationUtils;
 import com.icourt.alpha.utils.LogUtils;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.widget.dialog.BottomActionDialog;
 import com.icourt.api.RequestUtils;
+
+import org.greenrobot.eventbus.EventBus;
 
 import java.io.File;
 import java.util.Arrays;
@@ -59,9 +62,9 @@ import retrofit2.Response;
  * version 2.0.0
  */
 
-public class TaskAttachmentFragment extends BaseFragment implements BaseRecyclerAdapter.OnItemClickListener {
+public class TaskAttachmentFragment extends BaseFragment implements BaseRecyclerAdapter.OnItemClickListener, BaseRecyclerAdapter.OnItemLongClickListener {
     private static final String KEY_TASK_ID = "key_task_id";
-
+    private static final String KEY_HAS_PERMISSION = "key_has_permission";
     private static final int REQUEST_CODE_CAMERA = 1000;
     private static final int REQUEST_CODE_GALLERY = 1001;
     private static final int REQUEST_CODE_AT_MEMBER = 1002;
@@ -79,11 +82,19 @@ public class TaskAttachmentFragment extends BaseFragment implements BaseRecycler
     String path;
     TaskAttachmentAdapter taskAttachmentAdapter;
     OnUpdateTaskListener updateTaskListener;
+    boolean hasPermission;
+    @BindView(R.id.empty_layout)
+    LinearLayout emptyLayout;
+    @BindView(R.id.list_layout)
+    LinearLayout listLayout;
+    @BindView(R.id.empty_text)
+    TextView emptyText;
 
-    public static TaskAttachmentFragment newInstance(@NonNull String taskId) {
+    public static TaskAttachmentFragment newInstance(@NonNull String taskId, boolean hasPermission) {
         TaskAttachmentFragment taskAttachmentFragment = new TaskAttachmentFragment();
         Bundle bundle = new Bundle();
         bundle.putString(KEY_TASK_ID, taskId);
+        bundle.putBoolean(KEY_HAS_PERMISSION, hasPermission);
         taskAttachmentFragment.setArguments(bundle);
         return taskAttachmentFragment;
     }
@@ -109,11 +120,22 @@ public class TaskAttachmentFragment extends BaseFragment implements BaseRecycler
     @Override
     protected void initView() {
         taskId = getArguments().getString(KEY_TASK_ID);
+        hasPermission = getArguments().getBoolean(KEY_HAS_PERMISSION);
+        recyclerview.setNestedScrollingEnabled(false);
         recyclerview.setLayoutManager(new LinearLayoutManager(getContext()));
-        recyclerview.addItemDecoration(ItemDecorationUtils.getCommFull05Divider(getContext(), true));
+//        recyclerview.addItemDecoration(ItemDecorationUtils.getCommFull05Divider(getContext(), true, R.color.alpha_divider_color));
         recyclerview.setAdapter(taskAttachmentAdapter = new TaskAttachmentAdapter());
         taskAttachmentAdapter.setOnItemClickListener(this);
-        getData(true);
+        taskAttachmentAdapter.setOnItemLongClickListener(this);
+
+        addAttachmentView.setVisibility(hasPermission ? View.VISIBLE : View.GONE);
+        if (hasPermission) {
+            getData(true);
+            emptyText.setText("暂无附件");
+        } else {
+            emptyLayout.setVisibility(View.VISIBLE);
+            emptyText.setText("暂无权限查看");
+        }
     }
 
     @OnClick({R.id.add_attachment_view})
@@ -122,7 +144,11 @@ public class TaskAttachmentFragment extends BaseFragment implements BaseRecycler
         super.onClick(v);
         switch (v.getId()) {
             case R.id.add_attachment_view://添加附件
-                showBottomMeau();
+                if (hasPermission) {
+                    showBottomAddMeau();
+                } else {
+                    showTopSnackBar("您没有编辑任务的权限");
+                }
                 break;
         }
     }
@@ -175,9 +201,9 @@ public class TaskAttachmentFragment extends BaseFragment implements BaseRecycler
     };
 
     /**
-     * 显示底部菜单
+     * 显示底部添加菜单
      */
-    private void showBottomMeau() {
+    private void showBottomAddMeau() {
         new BottomActionDialog(getContext(),
                 null,
                 Arrays.asList("拍照", "从手机相册选择"),
@@ -197,6 +223,28 @@ public class TaskAttachmentFragment extends BaseFragment implements BaseRecycler
                 }).show();
     }
 
+    /**
+     * 显示底部删除菜单
+     */
+    private void showBottomDeleteMeau(final TaskAttachmentEntity entity) {
+        new BottomActionDialog(getContext(),
+                null,
+                Arrays.asList("删除"),
+                new BottomActionDialog.OnActionItemClickListener() {
+                    @Override
+                    public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
+                        dialog.dismiss();
+                        switch (position) {
+                            case 0:
+                                deleteAttachment(entity);
+                                break;
+                        }
+                    }
+
+
+                }).show();
+    }
+
     private void updateDocument() {
         if (getParentFragment() instanceof OnFragmentCallBackListener) {
             updateTaskListener = (OnUpdateTaskListener) getParentFragment();
@@ -212,8 +260,28 @@ public class TaskAttachmentFragment extends BaseFragment implements BaseRecycler
         getApi().taskAttachMentListQuery(taskId).enqueue(new SimpleCallBack<List<TaskAttachmentEntity>>() {
             @Override
             public void onSuccess(Call<ResEntity<List<TaskAttachmentEntity>>> call, Response<ResEntity<List<TaskAttachmentEntity>>> response) {
-                taskAttachmentAdapter.bindData(true, response.body().result);
-                updateDocument();
+                if (response.body().result != null) {
+                    taskAttachmentAdapter.bindData(true, response.body().result);
+                    if (response.body().result.size() <= 0) {
+                        if (listLayout != null) {
+                            if (!hasPermission) {
+                                listLayout.setVisibility(View.GONE);
+                                emptyLayout.setVisibility(View.VISIBLE);
+                            } else {
+                                listLayout.setVisibility(View.VISIBLE);
+                                emptyLayout.setVisibility(View.GONE);
+                            }
+                        }
+                    } else {
+                        updateDocument();
+                    }
+                } else {
+                    if (listLayout != null) {
+                        listLayout.setVisibility(View.GONE);
+                        emptyLayout.setVisibility(View.VISIBLE);
+                    }
+                }
+
             }
         });
     }
@@ -240,6 +308,7 @@ public class TaskAttachmentFragment extends BaseFragment implements BaseRecycler
             public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
                 dismissLoadingDialog();
                 showTopSnackBar("上传成功");
+                EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION));
                 getData(true);
             }
 
@@ -248,6 +317,34 @@ public class TaskAttachmentFragment extends BaseFragment implements BaseRecycler
                 super.onFailure(call, t);
                 dismissLoadingDialog();
                 showTopSnackBar("上传失败");
+            }
+        });
+    }
+
+    /**
+     * 删除任务附件
+     *
+     * @param entity
+     */
+    private void deleteAttachment(final TaskAttachmentEntity entity) {
+        if (entity.pathInfoVo == null) return;
+        showLoadingDialog(null);
+        getApi().taskDocumentDelete(taskId, entity.pathInfoVo.filePath).enqueue(new SimpleCallBack<JsonElement>() {
+            @Override
+            public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
+                dismissLoadingDialog();
+                if (taskAttachmentAdapter != null) {
+                    taskAttachmentAdapter.removeItem(entity);
+                    updateDocument();
+                    EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION));
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
+                super.onFailure(call, t);
+                dismissLoadingDialog();
+                showTopSnackBar("删除失败");
             }
         });
     }
@@ -267,15 +364,34 @@ public class TaskAttachmentFragment extends BaseFragment implements BaseRecycler
     }
 
     @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        unbinder.unbind();
+    public void onDestroy() {
+        super.onDestroy();
+        if (unbinder != null) {
+            unbinder.unbind();
+        }
     }
 
     @Override
     public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
-        TaskAttachmentEntity entity = (TaskAttachmentEntity) adapter.getItem(position);
-        if (entity.pathInfoVo != null)
-            FileBoxDownloadActivity.launch(getContext(), null, entity.pathInfoVo.repoId, entity.pathInfoVo.filePath, FileBoxDownloadActivity.TASK_DOWNLOAD_FILE_ACTION);
+        if (hasPermission) {
+            TaskAttachmentEntity entity = (TaskAttachmentEntity) adapter.getItem(position);
+            if (entity.pathInfoVo != null)
+                FileBoxDownloadActivity.launch(getContext(), null, entity.pathInfoVo.repoId, entity.pathInfoVo.filePath, FileBoxDownloadActivity.TASK_DOWNLOAD_FILE_ACTION);
+        } else {
+            showTopSnackBar("对不起，您没有查看此文件的权限");
+        }
     }
+
+    @Override
+    public boolean onItemLongClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
+        if (hasPermission) {
+            TaskAttachmentEntity entity = (TaskAttachmentEntity) adapter.getItem(position);
+            if (entity.pathInfoVo != null)
+                showBottomDeleteMeau(entity);
+        } else {
+            showTopSnackBar("对不起，您没有查看此文件的权限");
+        }
+        return false;
+    }
+
 }

@@ -62,6 +62,17 @@ public class BaseFragmentAdapter extends FragmentPagerAdapter {
         return obj;
     }
 
+    private  Fragment primaryItem;
+    @Override
+    public void setPrimaryItem(ViewGroup container, int position, Object object) {
+        super.setPrimaryItem(container, position, object);
+        primaryItem= (Fragment) object;
+    }
+
+    public Fragment getPrimaryItem() {
+        return primaryItem;
+    }
+
     @Override
     public Fragment getItem(int position) {
         return fragmentsList.get(position);

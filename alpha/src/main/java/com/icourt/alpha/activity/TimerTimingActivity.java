@@ -11,6 +11,7 @@ import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.view.KeyEvent;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.CheckedTextView;
 import android.widget.EditText;
@@ -26,7 +27,7 @@ import com.icourt.alpha.entity.bean.TaskEntity;
 import com.icourt.alpha.entity.bean.TimeEntity;
 import com.icourt.alpha.entity.bean.WorkType;
 import com.icourt.alpha.entity.event.TimingEvent;
-import com.icourt.alpha.fragment.dialogfragment.BaseDialogFragment;
+import com.icourt.alpha.base.BaseDialogFragment;
 import com.icourt.alpha.fragment.dialogfragment.ProjectSimpleSelectDialogFragment;
 import com.icourt.alpha.fragment.dialogfragment.TaskSelectDialogFragment;
 import com.icourt.alpha.fragment.dialogfragment.WorkTypeSelectDialogFragment;
@@ -36,6 +37,7 @@ import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.JsonUtils;
 import com.icourt.alpha.utils.StringUtils;
+import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.widget.manager.TimerManager;
 import com.icourt.api.RequestUtils;
 
@@ -128,6 +130,7 @@ public class TimerTimingActivity extends BaseTimerActivity
             timingTv.setText(toTime(itemEntity.useTime / 1000));
             startTimeTv.setText(DateUtils.getHHmm(itemEntity.startTime));
             timeNameTv.setText(itemEntity.name);
+            timeNameTv.setSelection(timeNameTv.getText().length());
             projectNameTv.setText(TextUtils.isEmpty(itemEntity.matterName) ? "未设置" : itemEntity.matterName);
             worktypeNameTv.setText(TextUtils.isEmpty(itemEntity.workTypeName) ? "未设置" : itemEntity.workTypeName);
             taskNameTv.setText(TextUtils.isEmpty(itemEntity.taskName) ? "未关联" : itemEntity.taskName);
@@ -177,17 +180,17 @@ public class TimerTimingActivity extends BaseTimerActivity
                 saveTiming();
                 break;
             case R.id.project_layout://所属项目
-                showProjectSelectDialogFragment();
+                showProjectSelectDialogFragment(itemEntity.matterPkId);
                 break;
             case R.id.worktype_layout://工作类型
                 if (TextUtils.isEmpty(itemEntity.matterPkId)) {
                     showTopSnackBar("请选择项目");
                     return;
                 }
-                showWorkTypeSelectDialogFragment(itemEntity.matterPkId);
+                showWorkTypeSelectDialogFragment(itemEntity.matterPkId, itemEntity.workTypeId);
                 break;
             case R.id.task_layout://关联任务
-                showTaskSelectDialogFragment(itemEntity.matterPkId);
+                showTaskSelectDialogFragment(itemEntity.matterPkId, itemEntity.taskPkId);
                 break;
             case R.id.stop_time_tv:
                 itemEntity.state = TimeEntity.ItemEntity.TIMER_STATE_STOP;
@@ -199,6 +202,15 @@ public class TimerTimingActivity extends BaseTimerActivity
         }
     }
 
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent ev) {
+        switch (ev.getAction()) {
+            case MotionEvent.ACTION_DOWN:
+                SystemUtils.hideSoftKeyBoard(getActivity(), true);
+                break;
+        }
+        return super.dispatchTouchEvent(ev);
+    }
 
     private void saveTiming() {
         //实时保存
@@ -258,7 +270,7 @@ public class TimerTimingActivity extends BaseTimerActivity
                 taskNameTv.setText(itemEntity.taskName);
                 if (item.matter != null) {
                     ProjectEntity projectEntity = item.matter.convert2Model();
-                    if (!StringUtils.equalsIgnoreCase(item.matterId, projectEntity.pkId, false)) {
+                    if (!StringUtils.equalsIgnoreCase(itemEntity.matterPkId, projectEntity.pkId, false)) {
                         itemEntity.workTypeId = null;
                         itemEntity.workTypeName = null;
                         worktypeNameTv.setText("未选择");

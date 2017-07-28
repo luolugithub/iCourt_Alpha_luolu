@@ -7,7 +7,6 @@ import com.icourt.alpha.entity.bean.AppVersionEntity;
 import com.icourt.alpha.entity.bean.CommentEntity;
 import com.icourt.alpha.entity.bean.ContactDeatilBean;
 import com.icourt.alpha.entity.bean.CustomerEntity;
-import com.icourt.alpha.entity.bean.FileBoxBean;
 import com.icourt.alpha.entity.bean.GroupBean;
 import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.icourt.alpha.entity.bean.IMMessageCustomBody;
@@ -25,6 +24,7 @@ import com.icourt.alpha.entity.bean.TaskEntity;
 import com.icourt.alpha.entity.bean.TaskGroupEntity;
 import com.icourt.alpha.entity.bean.TaskMemberWrapEntity;
 import com.icourt.alpha.entity.bean.TaskOwerEntity;
+import com.icourt.alpha.entity.bean.TaskReminderEntity;
 import com.icourt.alpha.entity.bean.TimeEntity;
 import com.icourt.alpha.entity.bean.TimingCountEntity;
 import com.icourt.alpha.entity.bean.UserDataEntity;
@@ -41,7 +41,6 @@ import retrofit2.http.DELETE;
 import retrofit2.http.Field;
 import retrofit2.http.FormUrlEncoded;
 import retrofit2.http.GET;
-import retrofit2.http.Header;
 import retrofit2.http.Multipart;
 import retrofit2.http.POST;
 import retrofit2.http.PUT;
@@ -49,6 +48,8 @@ import retrofit2.http.PartMap;
 import retrofit2.http.Path;
 import retrofit2.http.Query;
 import retrofit2.http.Url;
+
+import static com.umeng.analytics.pro.x.P;
 
 /**
  * @author xuanyouwu
@@ -99,6 +100,8 @@ public interface ApiAlphaService {
      * 微信登陆
      * <p>
      * 将"opneid" "unionid" "uniqueDevice"="device"; "deviceType"="android" 组合成json
+     * <p>
+     * 文档地址：http://testpms.alphalawyer.cn/ilaw/swagger/index.html#!/weixinlogin-api/getTokenByOpenidAndUnionidUsingPOST
      *
      * @return
      */
@@ -107,6 +110,8 @@ public interface ApiAlphaService {
 
     /**
      * 账号密码登陆
+     * <p>
+     * 文档地址：http://testpms.alphalawyer.cn/ilaw/swagger/index.html#!/auth-api/getTokenUsingPOST
      *
      * @param info json请求体
      * @return
@@ -116,16 +121,21 @@ public interface ApiAlphaService {
 
     /**
      * 获取云信登陆的token
+     * <p>
+     * 文档地址：http://testpms.alphalawyer.cn/ilaw/swagger/index.html#!/chat-api/getTokenUsingGET
      *
      * @return
      */
     @GET("api/v2/chat/msg/token")
+    @Deprecated
     Call<ResEntity<LoginIMToken>> getChatToken();
 
     /**
      * 刷新登陆refreshToken过时
      * 注意请求的key是 refreshToekn
      * 注意这个api 不支持post
+     * <p>
+     * 文档地址：http://testpms.alphalawyer.cn/ilaw/swagger/index.html#!/auth-api/refreshTokenUsingGET
      *
      * @param refreshToken 已经登陆的refreshToken
      * @return
@@ -135,6 +145,8 @@ public interface ApiAlphaService {
 
     /**
      * 获取团队联系人列表
+     * <p>
+     * 文档地址：http://testpms.alphalawyer.cn/ilaw/swagger/index.html#!/auth-api/getAllLawyerByOfficeIdUsingGET
      *
      * @param officeId 在登陆信息中有
      * @return
@@ -146,6 +158,8 @@ public interface ApiAlphaService {
 
     /**
      * 根据不同类型获取文件列表
+     * <p>
+     * 文档地址：http://testpms.alphalawyer.cn/ilaw/swagger/index.html#!/chat-api/findFileMsgUsingGET
      *
      * @param type     TYPE_ALL_FILE = 0;  TYPE_MY_FILE = 1;
      * @param pageNum
@@ -163,12 +177,16 @@ public interface ApiAlphaService {
 
     /**
      * 获取搜索引擎列表
+     * <p>
+     * 文档地址：http://testpms.alphalawyer.cn/ilaw/swagger/index.html#!/site-api/getSiteListUsingGET
      */
     @GET("api/v2/site/getSiteList")
     Call<ResEntity<List<SearchEngineEntity>>> getSearchEngines();
 
     /**
      * 获取客户列表
+     * <p>
+     * 文档地址：http://testpms.alphalawyer.cn/ilaw/swagger/index.html#!/contact-api-v2/getContactListUsingGET
      *
      * @param pagesize
      * @return
@@ -178,6 +196,8 @@ public interface ApiAlphaService {
 
     /**
      * 获取客户列表
+     * <p>
+     * 文档地址：http://testpms.alphalawyer.cn/ilaw/swagger/index.html#!/contact-api-v2/getContactListUsingGET
      *
      * @param pageindex
      * @param pagesize
@@ -191,6 +211,8 @@ public interface ApiAlphaService {
 
     /**
      * 获取所有任务
+     * <p>
+     * 文档地址：http://testpms.alphalawyer.cn/ilaw/swagger/index.html#!/taskflow-api/queryTaskByDueUsingGET
      *
      * @return
      */
@@ -199,7 +221,22 @@ public interface ApiAlphaService {
 
 
     /**
+     * 获取所有任务
+     * <p>
+     * 文档地址：http://testpms.alphalawyer.cn/ilaw/swagger/index.html#!/taskflow-api/queryTaskByDueUsingGET
+     *
+     * @return
+     */
+    @GET("api/v2/taskflow/queryTaskByDue")
+    Call<ResEntity<PageEntity<TaskEntity.TaskItemEntity>>> getAllTask(@Query("dueStart") String dueStart,
+                                                                      @Query("dueEnd") String dueEnd,
+                                                                      @Query("assignTos") List<String> assignTos,
+                                                                      @Query("attentionType") int attentionType);
+
+    /**
      * 消息转任务
+     * <p>
+     * 文档地址：http://testpms.alphalawyer.cn/ilaw/swagger/index.html#!/chat-api/addTaskUsingPOST
      *
      * @param content
      * @return
@@ -211,6 +248,8 @@ public interface ApiAlphaService {
 
     /**
      * 群组文件上传
+     * <p>
+     * 文档地址：http://testpms.alphalawyer.cn/ilaw/swagger/index.html#!/file-api/uploadUsingPOST_1
      *
      * @param groupId
      * @param params
@@ -224,6 +263,8 @@ public interface ApiAlphaService {
 
     /**
      * 项目列表
+     * <p>
+     * 文档地址：http://testpms.alphalawyer.cn/ilaw/swagger/index.html#!/matters-api/getMatterListUsingGET
      *
      * @param pageindex
      * @param pagesize
@@ -248,14 +289,75 @@ public interface ApiAlphaService {
 
     /**
      * 获取选择项目列表
-     * @param status  项目状态：[0:预立案 2:进行中 4:已完结 7:已搁置]，多个以英文逗号分隔
+     * <p>
+     * 文档地址：http://testpms.alphalawyer.cn/ilaw/swagger/index.html#!/matters-api/getMatterKeyValueListUsingGET
+     *
+     * @param status 项目状态：[0:预立案 2:进行中 4:已完结 7:已搁置]，多个以英文逗号分隔
      * @return
      */
     @GET("api/v1/matters/keyValue")
     Call<ResEntity<List<ProjectEntity>>> projectSelectListQuery(@Query("status") String status);
 
     /**
+     * 获取选择项目列表
+     * <p>
+     * 文档地址：http://testpms.alphalawyer.cn/ilaw/swagger/index.html#!/matters-api/getMatterListWithRightUsingGET
+     *
+     * @param pmsStr MAT:matter.document:readwrite 文档读写权限
+     * @return
+     */
+    @GET("api/v1/matters/getWithRight")
+    Call<ResEntity<List<ProjectEntity>>> projectPmsSelectListQuery(@Query("pmsStr") String pmsStr);
+
+    /**
+     * 创建／编辑任务 选择项目列表
+     * <p>
+     * 文档地址：http://testpms.alphalawyer.cn/ilaw/swagger/index.html#!/taskflow-api/getMatterListUsingGET_1
+     *
+     * @param status
+     * @param word
+     * @return
+     */
+    @GET("api/v2/taskflow/getMatterList")
+    Call<ResEntity<List<ProjectEntity>>> projectSelectByTask(@Query("status") String status,
+                                                             @Query("word") String word);
+
+    /**
+     * 计时项目列表搜索
+     * <p>
+     * 文档地址：http://testpms.alphalawyer.cn/ilaw/swagger/index.html#!/timing-api/getMatterListUsingGET_2
+     *
+     * @param myStar
+     * @param status
+     * @return
+     */
+    @GET("api/v2/timing/timing/getMatterList")
+    Call<ResEntity<List<ProjectEntity>>> timingProjectQuery(
+            @Query("myStar") int myStar,
+            @Query("status") String status
+    );
+
+    /**
+     * 计时项目列表搜索
+     * pms接口独有
+     * <p>
+     * 文档地址：文档地址：http://testpms.alphalawyer.cn/ilaw/swagger/index.html#!/timing-api/getMatterListUsingGET_2
+     *
+     * @param myStar
+     * @param status
+     * @return
+     */
+    @GET("api/v2/timing/timing/getMatterList")
+    Call<ResEntity<List<ProjectEntity>>> timingProjectQuery(
+            @Query("myStar") int myStar,
+            @Query("status") String status,
+            @Query("word") String word
+    );
+
+    /**
      * 获取项目概览
+     * <p>
+     * 文档地址：http://testpms.alphalawyer.cn/ilaw/swagger/index.html#!/matters-api/getMatterByIdUsingGET
      *
      * @param id
      * @return
@@ -265,6 +367,8 @@ public interface ApiAlphaService {
 
     /**
      * 项目添加关注
+     * <p>
+     * 文档地址：http://testpms.alphalawyer.cn/ilaw/swagger/index.html#!/matters-api/addMatterIsViewUsingPUT
      *
      * @param matterPkid
      * @return
@@ -274,6 +378,8 @@ public interface ApiAlphaService {
 
     /**
      * 项目取消关注
+     * <p>
+     * 文档地址：http://testpms.alphalawyer.cn/ilaw/swagger/index.html#!/matters-api/deleteMatterIsViewUsingDELETE
      *
      * @param matterPkid
      * @return
@@ -283,6 +389,8 @@ public interface ApiAlphaService {
 
     /**
      * 更新用户信息
+     * <p>
+     * 文档地址：http://testpms.alphalawyer.cn/ilaw/swagger/index.html#!/auth-api/updateUsingPOST
      *
      * @param id
      * @param phone
@@ -294,6 +402,8 @@ public interface ApiAlphaService {
 
     /**
      * 项目下计时列表
+     * <p>
+     * 文档地址：http://testpms.alphalawyer.cn/ilaw/swagger/index.html#!/timing-api/findALlTimingByMatterIdUsingGET
      *
      * @param matterId
      * @param pageSize
@@ -304,6 +414,8 @@ public interface ApiAlphaService {
 
     /**
      * 获取项目详情文档列表token
+     * <p>
+     * 文档地址：http://testpms.alphalawyer.cn/ilaw/swagger/index.html#!/documents-api/getAuthTokenUsingGET
      *
      * @return
      */
@@ -312,6 +424,8 @@ public interface ApiAlphaService {
 
     /**
      * 获取项目详情文档id
+     * <p>
+     * 文档地址：http://testpms.alphalawyer.cn/ilaw/swagger/index.html#!/documents-api/getRepoIdUsingGET
      *
      * @param projectId
      * @return
@@ -319,18 +433,11 @@ public interface ApiAlphaService {
     @GET("api/v2/documents/getRepo/{projectId}")
     Call<JsonObject> projectQueryDocumentId(@Path("projectId") String projectId);
 
-    /**
-     * 获取项目详情文档列表
-     *
-     * @param authToken
-     * @param seaFileRepoId
-     * @return
-     */
-    @GET("https://box.alphalawyer.cn/api2/repos/{seaFileRepoId}/dir/")
-    Call<List<FileBoxBean>> projectQueryFileBoxList(@Header("Authorization") String authToken, @Path("seaFileRepoId") String seaFileRepoId);
 
     /**
      * 项目下任务列表
+     * <p>
+     * 文档地址：http://testpms.alphalawyer.cn/ilaw/swagger/index.html#!/taskflow-api/queryMatterTaskFlowsUsingGET
      *
      * @param projectId
      * @param stateType 全部任务:－1    已完成:1     未完成:0
@@ -348,6 +455,8 @@ public interface ApiAlphaService {
 
     /**
      * 项目下任务组列表
+     * <p>
+     * 文档地址：http://testpms.alphalawyer.cn/ilaw/swagger/index.html#!/taskflow-api/queryFlowByMatterIdUsingGET
      *
      * @param projectId
      * @return
@@ -357,6 +466,8 @@ public interface ApiAlphaService {
 
     /**
      * 新建任务组
+     * <p>
+     * 文档地址：http://testpms.alphalawyer.cn/ilaw/swagger/index.html#!/taskflow-api/addTaskFlowUsingPOST
      *
      * @param msg
      * @return
@@ -366,15 +477,32 @@ public interface ApiAlphaService {
 
     /**
      * 修改任务
+     * <p>
+     * 文档地址：http://testpms.alphalawyer.cn/ilaw/swagger/index.html#!/taskflow-api/updateTaskFlowUsingPUT
+     *
+     * @param msg
+     * @return
+     * @see {taskUpdateNew}
+     */
+    @Deprecated
+    @PUT("api/v2/taskflow")
+    Call<ResEntity<JsonElement>> taskUpdate(@Body RequestBody msg);
+
+    /**
+     * 修改任务
+     * <p>
+     * 文档地址：http://testpms.alphalawyer.cn/ilaw/swagger/index.html#!/taskflow-api/updateTaskFlowUsingPUT
      *
      * @param msg
      * @return
      */
     @PUT("api/v2/taskflow")
-    Call<ResEntity<JsonElement>> taskUpdate(@Body RequestBody msg);
+    Call<ResEntity<TaskEntity.TaskItemEntity>> taskUpdateNew(@Body RequestBody msg);
 
     /**
      * 获取任务详情
+     * <p>
+     * 文档地址：http://testpms.alphalawyer.cn/ilaw/swagger/index.html#!/taskflow-api/findTaskFlowUsingGET
      *
      * @param id
      * @return
@@ -384,6 +512,8 @@ public interface ApiAlphaService {
 
     /**
      * 更新计时
+     * <p>
+     * 文档地址：http://testpms.alphalawyer.cn/ilaw/swagger/index.html#!/timing-api/updateTimingUsingPUT
      *
      * @return
      */
@@ -392,6 +522,8 @@ public interface ApiAlphaService {
 
     /**
      * 新建计时
+     * <p>
+     * 文档地址：http://testpms.alphalawyer.cn/ilaw/swagger/index.html#!/timing-api/addTimingUsingPOST
      *
      * @param body
      * @return
@@ -401,6 +533,8 @@ public interface ApiAlphaService {
 
     /**
      * 获取任务下检查项列表
+     * <p>
+     * 文档地址：http://testpms.alphalawyer.cn/ilaw/swagger/index.html#!/taskflow-api/queryTaskFlowsUsingGET
      *
      * @param taskId
      * @return
@@ -410,6 +544,8 @@ public interface ApiAlphaService {
 
     /**
      * 修改任务下检查项
+     * <p>
+     * 文档地址：http://testpms.alphalawyer.cn/ilaw/swagger/index.html#!/taskflow-api/updateTaskItemUsingPUT
      *
      * @param body
      * @return
@@ -419,6 +555,8 @@ public interface ApiAlphaService {
 
     /**
      * 删除任务下检查项
+     * <p>
+     * 文档地址：http://testpms.alphalawyer.cn/ilaw/swagger/index.html#!/taskflow-api/deleteTaskItemUsingDELETE
      *
      * @param id
      * @return
@@ -428,6 +566,8 @@ public interface ApiAlphaService {
 
     /**
      * 添加任务下检查项
+     * <p>
+     * 文档地址：http://testpms.alphalawyer.cn/ilaw/swagger/index.html#!/taskflow-api/addTaskItemUsingPOST
      *
      * @param body
      * @return
@@ -437,6 +577,8 @@ public interface ApiAlphaService {
 
     /**
      * 任务添加关注
+     * <p>
+     * 文档地址：http://testpms.alphalawyer.cn/ilaw/swagger/index.html#!/taskflow-api/addTaskMemberUsingPOST_1
      *
      * @param body
      * @return
@@ -446,6 +588,8 @@ public interface ApiAlphaService {
 
     /**
      * 任务取消关注
+     * <p>
+     * 文档地址：http://testpms.alphalawyer.cn/ilaw/swagger/index.html#!/taskflow-api/deleteTaskFlowUsingDELETE
      *
      * @param id
      * @return
@@ -455,6 +599,8 @@ public interface ApiAlphaService {
 
     /**
      * 删除任务
+     * <p>
+     * 文档地址：http://testpms.alphalawyer.cn/ilaw/swagger/index.html#!/taskflow-api/deleteTaskFlowUsingDELETE_1
      *
      * @param id
      * @return
@@ -464,6 +610,8 @@ public interface ApiAlphaService {
 
     /**
      * 任务添加评论
+     * <p>
+     * 文档地址：http://testpms.alphalawyer.cn/ilaw/swagger/index.html#!/comment-api/addCommentUsingPOST
      *
      * @param hostType 被评论的对象类型:100为任务
      * @param hostId   被评论的对象id
@@ -477,6 +625,8 @@ public interface ApiAlphaService {
 
     /**
      * 获取评论列表
+     * <p>
+     * 文档地址：http://testpms.alphalawyer.cn/ilaw/swagger/index.html#!/comment-api/queryCommentsUsingGET
      *
      * @param hostType  被评论的对象类型:100为任务
      * @param hostId    被评论的对象id
@@ -492,6 +642,8 @@ public interface ApiAlphaService {
 
     /**
      * 任务列表
+     * <p>
+     * 文档地址：http://testpms.alphalawyer.cn/ilaw/swagger/index.html#!/taskflow-api/queryTaskFlowsUsingGET_1
      *
      * @param assignedByMe  0：所有； 1：我分配的
      * @param assignTos     分配给谁的，用户的id序列
@@ -515,6 +667,8 @@ public interface ApiAlphaService {
 
     /**
      * 任务列表
+     * <p>
+     * 文档地址：http://testpms.alphalawyer.cn/ilaw/swagger/index.html#!/taskflow-api/queryTaskFlowsUsingGET_1
      *
      * @param assignedByMe  0：所有； 1：我分配的
      * @param assignTos     分配给谁的，用户的id序列
@@ -527,8 +681,7 @@ public interface ApiAlphaService {
      * @return
      */
     @GET("api/v2/taskflow")
-    Call<ResEntity<TaskEntity>> taskListItemQuery(@Query("assignedByMe") int assignedByMe,
-                                                  @Query("assignTos") String assignTos,
+    Call<ResEntity<TaskEntity>> taskListItemQuery(@Query("assignTos") String assignTos,
                                                   @Query("stateType") int stateType,
                                                   @Query("attentionType") int attentionType,
                                                   @Query("orderBy") String orderBy,
@@ -537,7 +690,28 @@ public interface ApiAlphaService {
                                                   @Query("type") int type);
 
     /**
+     * 项目下任务列表
+     * <p>
+     * 文档地址：http://testpms.alphalawyer.cn/ilaw/swagger/index.html#!/taskflow-api/queryTaskFlowsUsingGET_1
+     *
+     * @param stateType 全部任务:－1    已完成:1     未完成:0
+     * @param matterId
+     * @param type      任务和任务组：-1;    任务：0;    任务组：1;
+     * @return
+     */
+    @GET("api/v2/taskflow")
+    Call<ResEntity<TaskEntity>> taskListQueryByMatterId(
+            @Query("stateType") int stateType,
+            @Query("orderBy") String orderBy,
+            @Query("matterId") String matterId,
+            @Query("type") int type,
+            @Query("pageIndex") int pageIndex,
+            @Query("pageSize") int pageSize);
+
+    /**
      * 获取任务下的附件列表
+     * <p>
+     * 文档地址：http://testpms.alphalawyer.cn/ilaw/swagger/index.html#!/taskflow-api/getAttachmentsUsingGET
      *
      * @param taskId
      * @return
@@ -547,6 +721,8 @@ public interface ApiAlphaService {
 
     /**
      * 任务上传附件
+     * <p>
+     * 文档地址：http://testpms.alphalawyer.cn/ilaw/swagger/index.html#!/taskflow-api/addFromFileUsingPOST
      *
      * @param taskId
      * @param params
@@ -558,6 +734,8 @@ public interface ApiAlphaService {
 
     /**
      * 获取指定时间段的计时
+     * <p>
+     * 文档地址：http://testpms.alphalawyer.cn/ilaw/swagger/index.html#!/timing-api/queryTimingUsingGET
      *
      * @param createUserId
      * @param startTime    017-05-09
@@ -574,17 +752,9 @@ public interface ApiAlphaService {
                                                       @Query("pageSize") int pageSize);
 
     /**
-     * 获取上传文件url
-     *
-     * @param seaFileRepoId
-     * @return
-     */
-    @GET("https://box.alphalawyer.cn/api2/repos/{seaFileRepoId}/upload-link/")
-    Call<JsonElement> projectUploadUrlQuery(@Header("Authorization") String authToken, @Path("seaFileRepoId") String seaFileRepoId);
-
-
-    /**
      * 获取指定时间段的计时统计
+     * <p>
+     * 文档地址：http://testpms.alphalawyer.cn/ilaw/swagger/index.html#!/timing-api/getTimingCountByTimeUsingGET
      *
      * @param workStartDate 2015-05-03
      * @param workEndDate   2015-05-10
@@ -594,53 +764,11 @@ public interface ApiAlphaService {
     Call<ResEntity<ItemPageEntity<TimingCountEntity>>> queryTimingCountByTime(@Query("workStartDate") String workStartDate,
                                                                               @Query("workEndDate") String workEndDate);
 
-    /**
-     * 项目下上传文件
-     *
-     * @param authToken
-     * @param url
-     * @param params
-     * @return
-     */
-    @Multipart
-    @POST()
-    Call<JsonElement> projectUploadFile(@Header("Authorization") String authToken,
-                                        @Url String url,
-                                        @PartMap Map<String, RequestBody> params);
-
-    /**
-     * 获取项目下文档列表
-     *
-     * @param authToken
-     * @param seaFileRepoId
-     * @param rootName
-     * @return
-     */
-    @GET("https://box.alphalawyer.cn/api2/repos/{seaFileRepoId}/dir/")
-    Call<List<FileBoxBean>> projectQueryFileBoxByDir(@Header("Authorization") String authToken, @Path("seaFileRepoId") String seaFileRepoId, @Query("p") String rootName);
-
-    /**
-     * 获取文件下载地址
-     *
-     * @param seaFileRepoId
-     * @param rootName
-     * @return
-     */
-    @GET("https://box.alphalawyer.cn/api2/repos/{seaFileRepoId}/file/")
-    Call<JsonElement> fileboxDownloadUrlQuery(@Header("Authorization") String authToken, @Path("seaFileRepoId") String seaFileRepoId, @Query("p") String rootName);
-
-    /**
-     * 下载文件
-     *
-     * @param authToken
-     * @param url
-     * @return
-     */
-    @GET()
-    Call<JsonElement> fileboxDownload(@Header("Authorization") String authToken, @Url String url);
 
     /**
      * 获取项目下的工作类型
+     * <p>
+     * 文档地址：http://testpms.alphalawyer.cn/ilaw/swagger/index.html#!/timing-api/getTimingWorkTypeUsingGET
      *
      * @param matterId
      * @return
@@ -651,16 +779,21 @@ public interface ApiAlphaService {
 
     /**
      * 获取项目参与人
+     * <p>
+     * 文档地址：http://testpms.alphalawyer.cn/ilaw/swagger/index.html#!/matters-api/getMatterAttorneyListUsingGET
      *
      * @param project
      * @return
      */
     @GET("api/v1/matters/attorney")
-    Call<ResEntity<List<TaskOwerEntity>>> taskOwerListQuery(@Query("id") String project);
+    Call<ResEntity<List<TaskOwerEntity>>> taskOwerListQuery(@Query("id") String project,
+                                                            @Query("name") String name);
 
 
     /**
      * 删除计时
+     * <p>
+     * 文档地址：http://testpms.alphalawyer.cn/ilaw/swagger/index.html#!/timing-api/deleteTimingUsingDELETE
      *
      * @param timerId
      * @return
@@ -670,16 +803,20 @@ public interface ApiAlphaService {
 
     /**
      * 新建任务
+     * <p>
+     * 文档地址：http://testpms.alphalawyer.cn/ilaw/swagger/index.html#!/taskflow-api/addTaskFlowUsingPOST
      *
      * @param body
      * @return
      */
     @POST("api/v2/taskflow")
-    Call<ResEntity<JsonElement>> taskCreate(@Body RequestBody body);
+    Call<ResEntity<TaskEntity.TaskItemEntity>> taskCreate(@Body RequestBody body);
 
 
     /**
      * 计时查询
+     * <p>
+     * 文档地址：http://testpms.alphalawyer.cn/ilaw/swagger/index.html#!/timing-api/queryTimingUsingGET
      *
      * @param pageIndex
      * @param pageSize
@@ -693,6 +830,8 @@ public interface ApiAlphaService {
 
     /**
      * 获得token里律师所属的团队信息
+     * <p>
+     * 文档地址：http://testpms.alphalawyer.cn/ilaw/swagger/index.html#!/auth-api/getGroupByTokenUsingGET
      *
      * @return
      */
@@ -701,6 +840,8 @@ public interface ApiAlphaService {
 
     /**
      * 获取联系人详情
+     * <p>
+     * 文档地址：http://testpms.alphalawyer.cn/ilaw/swagger/index.html#!/contact-api-v2/getContactDetailUsingGET
      *
      * @param id
      * @return
@@ -710,6 +851,8 @@ public interface ApiAlphaService {
 
     /**
      * 获取企业联络人
+     * <p>
+     * 文档地址：http://testpms.alphalawyer.cn/ilaw/swagger/index.html#!/contact-api-v2/getRelatedPersonUsingGET
      *
      * @param id
      * @return
@@ -719,6 +862,8 @@ public interface ApiAlphaService {
 
     /**
      * 联系人添加关注
+     * <p>
+     * 文档地址：http://testpms.alphalawyer.cn/ilaw/swagger/index.html#!/contact-api-v2/addContactStarUsingPUT
      *
      * @param id
      * @return
@@ -728,6 +873,8 @@ public interface ApiAlphaService {
 
     /**
      * 联系人删除关注
+     * <p>
+     * 文档地址：http://testpms.alphalawyer.cn/ilaw/swagger/index.html#!/contact-api-v2/deleteContactStarUsingDELETE
      *
      * @param id
      * @return
@@ -737,15 +884,18 @@ public interface ApiAlphaService {
 
     /**
      * 获取所在律所中的团队列表
+     * <p>
+     * 文档地址：http://testpms.alphalawyer.cn/ilaw/swagger/index.html#!/permission-department-api/getListAllSubDepartmentUsingGET
      *
-     * @param id
      * @return
      */
-    @GET("api/v1/auth/groups/up/q/office/{id}")
-    Call<ResEntity<List<SelectGroupBean>>> officeGroupsQuery(@Path("id") String id);
+    @GET("api/v2/permission/department/allDepartmentList")
+    Call<ResEntity<List<SelectGroupBean>>> officeGroupsQuery();
 
     /**
      * 修改联系人所属团队
+     * <p>
+     * 文档地址：http://testpms.alphalawyer.cn/ilaw/swagger/index.html#!/contact-api-v2/editContactGroupUsingPUT
      *
      * @param body
      * @return
@@ -755,6 +905,8 @@ public interface ApiAlphaService {
 
     /**
      * 获取联系人的联络人
+     * <p>
+     * 文档地址：http://testpms.alphalawyer.cn/ilaw/swagger/index.html#!/contact-api-v2/getRelatedPersonUsingGET
      *
      * @param id
      * @return
@@ -764,6 +916,8 @@ public interface ApiAlphaService {
 
     /**
      * 修改联系人
+     * <p>
+     * 文档地址：http://testpms.alphalawyer.cn/ilaw/swagger/index.html#!/contact-api-v2/updateContactByContactIdForMobleUsingPUT
      *
      * @param body
      * @return
@@ -773,6 +927,8 @@ public interface ApiAlphaService {
 
     /**
      * 添加联系人
+     * <p>
+     * 文档地址：http://testpms.alphalawyer.cn/ilaw/swagger/index.html#!/contact-api-v2/addContactUsingPOST
      *
      * @param body
      * @return
@@ -782,16 +938,20 @@ public interface ApiAlphaService {
 
     /**
      * 检测企业联系人是否重复
+     * <p>
+     * 文档地址：http://testpms.alphalawyer.cn/ilaw/swagger/index.html#!/contact-api-v2/getContactListUsingGET
      *
      * @param accuratename
      * @return
      */
     @GET("api/v2/contact")
-    Call<ResEntity<JsonObject>> companyCheckReName(@Query("accuratename") String accuratename);
+    Call<ResEntity<List<CustomerEntity>>> companyCheckReName(@Query("accuratename") String accuratename);
 
 
     /**
      * 添加企业联系人
+     * <p>
+     * 文档地址：http://testpms.alphalawyer.cn/ilaw/swagger/index.html#!/contact-api-v2/addCompanyContactUsingPOST
      *
      * @param body
      * @return
@@ -802,6 +962,8 @@ public interface ApiAlphaService {
 
     /**
      * 查看任务的成员 对应的成员(有权限)
+     * <p>
+     * 文档地址：http://testpms.alphalawyer.cn/ilaw/swagger/index.html#!/auth-api/getMembersUsingGET
      *
      * @return
      */
@@ -810,6 +972,8 @@ public interface ApiAlphaService {
 
     /**
      * 查看任务的成员 对应的成员(无权限)
+     * <p>
+     * 文档地址：http://testpms.alphalawyer.cn/ilaw/swagger/index.html#!/auth-api/getGroupByTokenUsingGET
      *
      * @return
      */
@@ -819,6 +983,8 @@ public interface ApiAlphaService {
 
     /**
      * 获取某人今日计时、本月计时、本月完成任务、本月总任务
+     * <p>
+     * 文档地址：http://testpms.alphalawyer.cn/ilaw/swagger/index.html#!/taskflow-api/queryTimingAndTaskUsingGET
      *
      * @param userId
      * @return
@@ -829,28 +995,212 @@ public interface ApiAlphaService {
 
     /**
      * 搜索项目列表
+     * <p>
+     * 文档地址：http://testpms.alphalawyer.cn/ilaw/swagger/index.html#!/matters-api/getMatterListUsingGET
      *
      * @param queryString
+     * @param myStar
      * @return
      */
     @GET("api/v1/matters")
-    Call<ResEntity<List<ProjectEntity>>> projectQueryByName(@Query("queryString") String queryString);
+    Call<ResEntity<List<ProjectEntity>>> projectQueryByName(@Query("queryString") String queryString,
+                                                            @Query("myStar") int myStar);
 
 
     /**
      * 搜索任务列表
+     * <p>
+     * 文档地址：http://testpms.alphalawyer.cn/ilaw/swagger/index.html#!/taskflow-api/queryMobileTaskUsingGET
      *
      * @param assignTos
      * @param name
-     * @param stateType  0:未完成；1：已完成；2：已删除
-     * @param queryType  0:全部；1：新任务；2：我关注的；3我部门的
+     * @param stateType 0:未完成；1：已完成；2：已删除
+     * @param queryType 0:全部；1：新任务；2：我关注的；3我部门的
      * @return
      */
     @GET("api/v2/taskflow/queryMobileTask")
     Call<ResEntity<TaskEntity>> taskQueryByName(@Query("assignTos") String assignTos,
-                                                      @Query("name") String name,
-                                                      @Query("stateType") int stateType,
-                                                      @Query("queryType") int queryType);
+                                                @Query("name") String name,
+                                                @Query("stateType") int stateType,
+                                                @Query("queryType") int queryType);
+
+
+    /**
+     * 搜索项目下任务列表
+     * <p>
+     * 文档地址：http://testpms.alphalawyer.cn/ilaw/swagger/index.html#!/taskflow-api/queryMobileTaskUsingGET
+     *
+     * @param assignTos
+     * @param name
+     * @param stateType 0:未完成；1：已完成；2：已删除
+     * @param queryType 0:全部；1：新任务；2：我关注的；3我部门的
+     * @return
+     */
+    @GET("api/v2/taskflow/queryMobileTask")
+    Call<ResEntity<TaskEntity>> taskQueryByName(@Query("assignTos") String assignTos,
+                                                @Query("name") String name,
+                                                @Query("stateType") int stateType,
+                                                @Query("queryType") int queryType,
+                                                @Query("matterId") String matterId);
+
+    /**
+     * 搜索项目下任务列表
+     * <p>
+     * 文档地址：http://testpms.alphalawyer.cn/ilaw/swagger/index.html#!/taskflow-api/queryMobileTaskUsingGET
+     *
+     * @param name
+     * @param stateType 0:未完成；1：已完成；2：已删除
+     * @param queryType 0:全部；1：新任务；2：我关注的；3我部门的
+     * @return
+     */
+    @GET("api/v2/taskflow/queryMobileTask")
+    Call<ResEntity<TaskEntity>> taskQueryByNameFromMatter(@Query("name") String name,
+                                                          @Query("stateType") int stateType,
+                                                          @Query("queryType") int queryType,
+                                                          @Query("matterId") String matterId);
+
+    /**
+     * 搜索已完成任务列表
+     * <p>
+     * 文档地址：http://testpms.alphalawyer.cn/ilaw/swagger/index.html#!/taskflow-api/queryMobileTaskUsingGET
+     *
+     * @param assignTos
+     * @param name
+     * @param stateType 0:未完成；1：已完成；2：已删除
+     * @param queryType 0:全部；1：新任务；2：我关注的；3我部门的
+     * @return
+     */
+    @GET("api/v2/taskflow/queryMobileTask")
+    Call<ResEntity<TaskEntity>> taskQueryByName(@Query("assignTos") String assignTos,
+                                                @Query("name") String name,
+                                                @Query("stateType") int stateType,
+                                                @Query("queryType") int queryType,
+                                                @Query("pageIndex") int pageIndex,
+                                                @Query("pageSize") int pageSize);
+    /**************************权限模块**************************/
+    /**
+     * 获取各个模块是否有权限 接口真烂
+     * <p>
+     * 文档地址：http://testpms.alphalawyer.cn/ilaw/swagger/index.html#!/permission-department-api/getUserViewModuleUsingGET
+     *
+     * @param userId
+     * @param moduleType //MAT,CON,KM,HR,DEP
+     * @return
+     */
+    @GET("api/v2/permission/department/getUserViewModule")
+    Call<ResEntity<Boolean>> permissionQuery(@Query("userId") String userId,
+                                             @Query("moduleType") String moduleType);
+
+    /**
+     * 获取是否有新建任务/联系人查看编辑等权限
+     * 聚合权限
+     * <p>
+     * 文档地址：swagger上暂无
+     *
+     * @param uid
+     * @param type      //MAT,CON,KM,HR,DEP
+     * @param subjectid
+     * @return
+     */
+    @GET("api/v2/permission/engine/{uid}/getPmsStrings")
+    Call<ResEntity<List<String>>> permissionQuery(@Path("uid") String uid,
+                                                  @Query("type") String type,
+                                                  @Query("subjectid") String subjectid);
+
+    /**
+     * 获取任务详情(返回权限)
+     * <p>
+     * 文档地址：http://testpms.alphalawyer.cn/ilaw/swagger/index.html#!/taskflow-api/findTaskFlowWithRightUsingGET
+     *
+     * @param id
+     * @return
+     */
+    @GET("api/v2/taskflow/getWithRight/{id}")
+    Call<ResEntity<TaskEntity.TaskItemEntity>> taskQueryDetailWithRight(@Path("id") String id);
+
+    /**
+     * 删除任务评论
+     * <p>
+     * 文档地址：http://testpms.alphalawyer.cn/ilaw/swagger/index.html#!/comment-api/deleteCommentUsingDELETE
+     *
+     * @param id
+     * @return
+     */
+    @DELETE("api/v2/comment/{id}")
+    Call<ResEntity<JsonElement>> taskDeleteComment(@Path("id") String id);
+
+    /**
+     * 获取项目总计时
+     * <p>
+     * 文档地址：http://testpms.alphalawyer.cn/ilaw/swagger/index.html#!/timing-api/getSumByMatterIdUsingGET
+     *
+     * @param matterId
+     * @return
+     */
+    @GET("api/v2/timing/timing/getSumByMatterId")
+    Call<ResEntity<JsonElement>> getSumTimeByMatterId(@Query("matterId") String matterId);
+
+    /**
+     * 新任务修改为已读任务
+     * <p>
+     * 文档地址：http://testpms.alphalawyer.cn/ilaw/swagger/index.html#!/taskflow-api/newTaskAfterReadingIsUsingPUT
+     *
+     * @param ids
+     * @return
+     */
+    @PUT("api/v2/taskflow/newTaskAfterReadingIs")
+    Call<ResEntity<JsonElement>> checkAllNewTask(@Query("ids") List<String> ids);
+
+    /**
+     * 删除任务附件
+     * <p>
+     * 文档地址：http://testpms.alphalawyer.cn/ilaw/swagger/index.html#!/taskflow-api/unbindUsingPUT
+     *
+     * @param taskId
+     * @param filePath
+     * @return
+     */
+    @PUT("api/v2/task/{taskId}/attachment/unbind")
+    Call<ResEntity<JsonElement>> taskDocumentDelete(@Path("taskId") String taskId,
+                                                    @Query("filePath") String filePath);
+
+
+    /**
+     * 获取联系人
+     * 文档地址：https://dev.alphalawyer.cn/ilaw/swagger/index.html#!/contact-api-v2/getContactListUsingGET
+     *
+     * @param name
+     * @return
+     */
+    @GET("api/v2/contact")
+    Call<ResEntity<JsonElement>> contactSearch(@Query("pinyininitial") String name);
+
+
+    @POST("api/v2/sha256/getUrl")
+    @FormUrlEncoded
+    Call<ResEntity<String>> getSha256Url(@Field("id") int id,
+                                         @Field("value") String value);
+
+    /**
+     * 查询任务提醒
+     * 文档地址：https://test.alphalawyer.cn/ilaw/swagger/index.html#!/taskflow-api/queryTaskRemindersUsingGET
+     *
+     * @param taskId
+     * @return
+     */
+    @GET("api/v2/tasks/{taskId}/reminders")
+    Call<ResEntity<TaskReminderEntity>> taskReminderQuery(@Path("taskId") String taskId);
+
+    /**
+     * 新增任务提醒
+     * 文档地址：https://test.alphalawyer.cn/ilaw/swagger/index.html#!/taskflow-api/addTaskRemindersUsingPOST
+     *
+     * @param taskId
+     * @return
+     */
+    @POST("api/v2/tasks/{taskId}/reminders")
+    Call<ResEntity<TaskReminderEntity>> taskReminderAdd(@Path("taskId") String taskId,
+                                                        @Body RequestBody body);
 }
 
 

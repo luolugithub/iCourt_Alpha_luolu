@@ -4,6 +4,7 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -23,6 +24,7 @@ import com.google.gson.JsonObject;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.TaskItemAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
+import com.icourt.alpha.adapter.baseadapter.HeaderFooterAdapter;
 import com.icourt.alpha.adapter.baseadapter.adapterObserver.RefreshViewEmptyObserver;
 import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.entity.bean.TaskEntity;
@@ -33,6 +35,7 @@ import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.ActionConstants;
 import com.icourt.alpha.utils.DateUtils;
+import com.icourt.alpha.utils.LoginInfoUtils;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 import com.icourt.alpha.widget.manager.TimerManager;
 import com.icourt.api.RequestUtils;
@@ -71,12 +74,7 @@ public class MyFinishTaskActivity extends BaseActivity implements BaseRecyclerAd
     RefreshLayout refreshLayout;
     private int pageIndex = 1;
     TaskItemAdapter taskItemAdapter;
-
-    public static void launch(@NonNull Context context) {
-        if (context == null) return;
-        Intent intent = new Intent(context, MyFinishTaskActivity.class);
-        context.startActivity(intent);
-    }
+    HeaderFooterAdapter<TaskItemAdapter> headerFooterAdapter;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -87,15 +85,36 @@ public class MyFinishTaskActivity extends BaseActivity implements BaseRecyclerAd
     }
 
     @Override
+    public void onDestroy() {
+        super.onDestroy();
+        EventBus.getDefault().unregister(this);
+    }
+
+    public static void launch(@NonNull Context context) {
+        if (context == null) return;
+        Intent intent = new Intent(context, MyFinishTaskActivity.class);
+        context.startActivity(intent);
+    }
+
+    @Override
     protected void initView() {
         super.initView();
-        setTitle("已完成的任务");
+        setTitle("查看已完成的任务");
         EventBus.getDefault().register(this);
-        refreshLayout.setNoticeEmpty(R.mipmap.icon_placeholder_task, "暂无已完成任务");
+        refreshLayout.setNoticeEmpty(R.mipmap.bg_no_task, "暂无已完成任务");
         refreshLayout.setMoveForHorizontal(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        recyclerView.setHasFixedSize(true);
-        recyclerView.setAdapter(taskItemAdapter = new TaskItemAdapter());
+        //recyclerView.setHasFixedSize(true);
+
+        headerFooterAdapter = new HeaderFooterAdapter<>(taskItemAdapter = new TaskItemAdapter());
+        View headerView = HeaderFooterAdapter.inflaterView(getContext(), R.layout.header_search_comm, recyclerView);
+        View rl_comm_search = headerView.findViewById(R.id.rl_comm_search);
+        registerClick(rl_comm_search);
+        headerFooterAdapter.addHeader(headerView);
+        recyclerView.setBackgroundResource(R.color.alpha_background_window);
+        recyclerView.setAdapter(headerFooterAdapter);
+
+
         taskItemAdapter.setOnItemClickListener(this);
         taskItemAdapter.setOnItemChildClickListener(this);
         taskItemAdapter.registerAdapterDataObserver(new RefreshViewEmptyObserver(refreshLayout, taskItemAdapter));
@@ -112,8 +131,20 @@ public class MyFinishTaskActivity extends BaseActivity implements BaseRecyclerAd
                 getData(false);
             }
         });
-        refreshLayout.setAutoRefresh(true);
         refreshLayout.startRefresh();
+    }
+
+    @Override
+    public void onClick(View v) {
+        super.onClick(v);
+        switch (v.getId()) {
+            case R.id.rl_comm_search:
+                SearchProjectActivity.launchFinishTask(getContext(), getLoginUserId(), 0, 1, SearchProjectActivity.SEARCH_TASK, null);
+                break;
+            default:
+                super.onClick(v);
+                break;
+        }
     }
 
     @Override
@@ -121,7 +152,7 @@ public class MyFinishTaskActivity extends BaseActivity implements BaseRecyclerAd
         if (isRefresh) {
             pageIndex = 1;
         }
-        getApi().taskListItemQuery(0, getLoginUserId(), 1, 0, null, pageIndex, ActionConstants.DEFAULT_PAGE_SIZE, 0).enqueue(new SimpleCallBack<TaskEntity>() {
+        getApi().taskListQuery(0, getLoginUserId(), 1, 0, "updateTime", pageIndex, ActionConstants.DEFAULT_PAGE_SIZE, 0).enqueue(new SimpleCallBack<TaskEntity>() {
             @Override
             public void onSuccess(Call<ResEntity<TaskEntity>> call, Response<ResEntity<TaskEntity>> response) {
                 if (response.body().result != null) {
@@ -171,25 +202,29 @@ public class MyFinishTaskActivity extends BaseActivity implements BaseRecyclerAd
     @Override
     public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
         if (adapter instanceof TaskItemAdapter) {
-            TaskEntity.TaskItemEntity taskItemEntity = (TaskEntity.TaskItemEntity) adapter.getItem(position);
-            TaskDetailActivity.launch(view.getContext(), taskItemEntity.id);
+            TaskEntity.TaskItemEntity taskItemEntity = (TaskEntity.TaskItemEntity) adapter.getItem(adapter.getRealPos(position));
+            if (taskItemEntity != null)
+                TaskDetailActivity.launch(view.getContext(), taskItemEntity.id);
         }
     }
 
     @Override
     public void onItemChildClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, final View view, int position) {
         if (adapter instanceof TaskItemAdapter) {
-            TaskEntity.TaskItemEntity itemEntity = (TaskEntity.TaskItemEntity) adapter.getItem(position);
+            TaskEntity.TaskItemEntity itemEntity = (TaskEntity.TaskItemEntity) adapter.getItem(adapter.getRealPos(position));
             switch (view.getId()) {
                 case R.id.task_item_start_timming:
                     if (itemEntity.isTiming) {
                         TimerManager.getInstance().stopTimer();
                         ((ImageView) view).setImageResource(R.mipmap.icon_start_20);
                     } else {
-                        ((ImageView) view).setImageResource(R.drawable.orange_side_dot_bg);
+                        showLoadingDialog(null);
+
                         TimerManager.getInstance().addTimer(getTimer(itemEntity), new Callback<TimeEntity.ItemEntity>() {
                             @Override
                             public void onResponse(Call<TimeEntity.ItemEntity> call, Response<TimeEntity.ItemEntity> response) {
+                                dismissLoadingDialog();
+                                ((ImageView) view).setImageResource(R.drawable.orange_side_dot_bg);
                                 if (response.body() != null) {
                                     TimerTimingActivity.launch(view.getContext(), response.body());
                                 }
@@ -197,7 +232,8 @@ public class MyFinishTaskActivity extends BaseActivity implements BaseRecyclerAd
 
                             @Override
                             public void onFailure(Call<TimeEntity.ItemEntity> call, Throwable throwable) {
-
+                                dismissLoadingDialog();
+                                ((ImageView) view).setImageResource(R.mipmap.icon_start_20);
                             }
                         });
                     }
@@ -232,14 +268,22 @@ public class MyFinishTaskActivity extends BaseActivity implements BaseRecyclerAd
         TimeEntity.ItemEntity itemEntity = new TimeEntity.ItemEntity();
         if (taskItemEntity != null) {
             itemEntity.taskPkId = taskItemEntity.id;
+            itemEntity.taskName = taskItemEntity.name;
             itemEntity.name = taskItemEntity.name;
             itemEntity.workDate = DateUtils.millis();
             itemEntity.createUserId = getLoginUserId();
-            itemEntity.username = getLoginUserInfo().getName();
+            if (LoginInfoUtils.getLoginUserInfo() != null) {
+                itemEntity.username = LoginInfoUtils.getLoginUserInfo().getName();
+            }
             itemEntity.startTime = DateUtils.millis();
             if (taskItemEntity.matter != null) {
                 itemEntity.matterPkId = taskItemEntity.matter.id;
+                itemEntity.matterName = taskItemEntity.matter.name;
             }
+//            if (taskItemEntity.parentFlow != null) {
+//                itemEntity.workTypeName = taskItemEntity.parentFlow.name;
+//                itemEntity.workTypeId = taskItemEntity.parentFlow.id;
+//            }
         }
         return itemEntity;
     }
@@ -284,16 +328,36 @@ public class MyFinishTaskActivity extends BaseActivity implements BaseRecyclerAd
      * @param checkbox
      */
     private void updateTask(final TaskEntity.TaskItemEntity itemEntity, final boolean state, final CheckBox checkbox) {
-        if (state) {
-            showLoadingDialog("完成任务...");
-        } else {
-            showLoadingDialog("取消完成任务...");
-        }
+        showLoadingDialog(null);
         getApi().taskUpdate(RequestUtils.createJsonBody(getTaskJson(itemEntity, state))).enqueue(new SimpleCallBack<JsonElement>() {
             @Override
             public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
                 dismissLoadingDialog();
                 checkbox.setChecked(state);
+                View view = (View) checkbox.getParent();
+                if (view != null) {
+                    TextView timeView = (TextView) view.findViewById(R.id.task_time_tv);
+                    if (state) {
+                        timeView.setTextColor(Color.parseColor("#FF8c8f92"));
+                        timeView.setCompoundDrawablesWithIntrinsicBounds(R.mipmap.task_time_icon, 0, 0, 0);
+                        timeView.setVisibility(View.VISIBLE);
+                        timeView.setText(DateUtils.get23Hour59MinFormat(DateUtils.millis()));
+                    } else {
+                        if (itemEntity.dueTime > 0) {
+                            timeView.setVisibility(View.VISIBLE);
+                            timeView.setText(DateUtils.get23Hour59MinFormat(itemEntity.dueTime));
+                            if (itemEntity.dueTime < DateUtils.millis()) {
+                                timeView.setTextColor(Color.parseColor("#FF0000"));
+                                timeView.setCompoundDrawablesWithIntrinsicBounds(R.mipmap.ic_fail, 0, 0, 0);
+                            } else {
+                                timeView.setTextColor(Color.parseColor("#FF8c8f92"));
+                                timeView.setCompoundDrawablesWithIntrinsicBounds(R.mipmap.task_time_icon, 0, 0, 0);
+                            }
+                        } else {
+                            timeView.setVisibility(View.GONE);
+                        }
+                    }
+                }
             }
 
             @Override
@@ -317,6 +381,7 @@ public class MyFinishTaskActivity extends BaseActivity implements BaseRecyclerAd
             itemEntity.state = state;
             JsonObject jsonObject = new JsonObject();
             jsonObject.addProperty("id", itemEntity.id);
+            jsonObject.addProperty("name", itemEntity.name);
             jsonObject.addProperty("state", itemEntity.state);
             jsonObject.addProperty("valid", true);
             jsonObject.addProperty("updateTime", DateUtils.millis());
@@ -350,7 +415,7 @@ public class MyFinishTaskActivity extends BaseActivity implements BaseRecyclerAd
             case TimingEvent.TIMING_UPDATE_PROGRESS:
                 TimeEntity.ItemEntity updateItem = TimerManager.getInstance().getTimer();
                 if (updateItem != null) {
-                    getChildPositon(updateItem.taskPkId);
+                    //getChildPositon(updateItem.taskPkId);
                     updateChildTimeing(updateItem.taskPkId, true);
                 }
                 break;
@@ -391,28 +456,27 @@ public class MyFinishTaskActivity extends BaseActivity implements BaseRecyclerAd
      * @param taskId
      */
     private void updateChildTimeing(String taskId, boolean isTiming) {
-        int childPos = getChildPositon(taskId);
-        if (childPos >= 0) {
-            TaskEntity.TaskItemEntity entity = taskItemAdapter.getItem(childPos);
-            if (entity != null) {
-                if (lastEntity != null)
-                    if (!TextUtils.equals(entity.id, lastEntity.id)) {
-                        lastEntity.isTiming = false;
+        try {
+            int childPos = getChildPositon(taskId);
+            if (childPos >= 0) {
+                TaskEntity.TaskItemEntity entity = taskItemAdapter.getItem(childPos);
+                if (entity != null) {
+                    if (lastEntity != null)
+                        if (!TextUtils.equals(entity.id, lastEntity.id)) {
+                            lastEntity.isTiming = false;
+                            taskItemAdapter.notifyDataSetChanged();
+                        }
+                    if (entity.isTiming != isTiming) {
+                        entity.isTiming = isTiming;
                         taskItemAdapter.notifyDataSetChanged();
+                        lastEntity = entity;
                     }
-                if (entity.isTiming != isTiming) {
-                    entity.isTiming = isTiming;
-                    taskItemAdapter.updateItem(entity);
-                    lastEntity = entity;
                 }
-            }
 
+            }
+        } catch (Throwable e) {
+            e.printStackTrace();
         }
     }
 
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        EventBus.getDefault().unregister(this);
-    }
 }

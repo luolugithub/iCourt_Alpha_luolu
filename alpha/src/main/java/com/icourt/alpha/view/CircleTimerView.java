@@ -90,7 +90,7 @@ public class CircleTimerView extends View {
     private float mCurrentRadian;
     private float mPreRadian;
     private boolean mInCircleButton;
-    private int mCurrentTime; // seconds
+    private long mCurrentTime; // seconds
     private boolean mStarted;
     private String mHintText;
 
@@ -319,8 +319,8 @@ public class CircleTimerView extends View {
         canvas.restore();
         // TimerNumber
         canvas.save();
-        int minute = mCurrentTime / 60 % 60;
-        int hour = mCurrentTime / (60 * 60);//小时
+        long minute = mCurrentTime / 60 % 60;
+        long hour = mCurrentTime / (60 * 60);//小时
         String text = String.format("%02d:%02d", hour, minute);
         canvas.drawText(text, mCx, mCy + getFontHeight(mTimerNumberPaint) / 2, mTimerNumberPaint);
         //canvas.drawText(":", mCx, mCy + getFontHeight(mTimerNumberPaint) / 2, mTimerColonPaint);
@@ -366,6 +366,7 @@ public class CircleTimerView extends View {
             case MotionEvent.ACTION_DOWN:
                 mInCircleButton = true;
                 mPreRadian = getRadian(event.getX(), event.getY());
+                getParent().requestDisallowInterceptTouchEvent(true);
                 // If the point in the circle button
               /*  if (mInCircleButton(event.getX(), event.getY()) && isEnabled()) {
                     mInCircleButton = true;
@@ -397,6 +398,7 @@ public class CircleTimerView extends View {
                 }
                 break;
             case MotionEvent.ACTION_UP:
+                getParent().requestDisallowInterceptTouchEvent(false);
                 if (mInCircleButton && isEnabled()) {
                     mInCircleButton = false;
                     if (mCircleTimerListener != null)
@@ -522,7 +524,7 @@ public class CircleTimerView extends View {
      *
      * @param time 秒
      */
-    public void setCurrentTime(int time) {
+    public void setCurrentTime(long time) {
         // if (time >= 0 && time <= 3600) {
         if (time > 0) {
 
@@ -575,7 +577,7 @@ public class CircleTimerView extends View {
      *
      * @return
      */
-    public int getCurrentTime() {
+    public long getCurrentTime() {
         return mCurrentTime;
     }
 
@@ -591,14 +593,14 @@ public class CircleTimerView extends View {
          *
          * @param time
          */
-        void onTimerStart(int time);
+        void onTimerStart(long time);
 
         /**
          * launch timer pause event
          *
          * @param time
          */
-        void onTimerPause(int time);
+        void onTimerPause(long time);
 
 
         /**
@@ -606,14 +608,14 @@ public class CircleTimerView extends View {
          *
          * @param time
          */
-        void onTimerTimingValueChanged(int time);
+        void onTimerTimingValueChanged(long time);
 
         /**
          * launch timer set value changed event
          *
          * @param time
          */
-        void onTimerSetValueChanged(int time);
+        void onTimerSetValueChanged(long time);
 
 
         /**
@@ -621,7 +623,7 @@ public class CircleTimerView extends View {
          *
          * @param time
          */
-        void onTimerSetValueChange(int time);
+        void onTimerSetValueChange(long time);
     }
 
 }

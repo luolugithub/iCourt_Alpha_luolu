@@ -5,7 +5,7 @@ import android.support.annotation.NonNull;
 /**
  * 介绍：分类悬停的接口
  */
-public interface ISuspensionInterface {
+public interface ISuspensionInterface  extends ISuspensionAction{
     /**
      * 是否需要显示悬停title
      */

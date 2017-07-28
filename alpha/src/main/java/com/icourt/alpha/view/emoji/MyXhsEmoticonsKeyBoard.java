@@ -135,6 +135,15 @@ public class MyXhsEmoticonsKeyBoard extends sj.keyboard.widget.AutoHeightLayout 
         mLyKvml.setOnFuncChangeListener(this);
     }
 
+    /**
+     * 表情等页面是否打开
+     *
+     * @return
+     */
+    public boolean isShowFunc() {
+        return mLyKvml.getVisibility() == VISIBLE;
+    }
+
     protected void initEditView() {
         mEtChat.setOnTouchListener(new OnTouchListener() {
             @Override

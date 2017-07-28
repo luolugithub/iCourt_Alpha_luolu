@@ -1,5 +1,6 @@
 package com.icourt.alpha.activity;
 
+import android.app.Activity;
 import android.app.DatePickerDialog;
 import android.content.Context;
 import android.content.Intent;
@@ -19,7 +20,6 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 import com.icourt.alpha.R;
 import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.constants.Const;
@@ -41,6 +41,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.Serializable;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
@@ -132,6 +133,53 @@ public class CustomerCompanyCreateActivity extends BaseActivity {
         context.startActivity(intent);
     }
 
+    /**
+     * 选择负责团队
+     *
+     * @param activity
+     * @param groupBeenList
+     */
+    public static void launchSetResultFromGroup(@NonNull Activity activity, @NonNull List<SelectGroupBean> groupBeenList) {
+        if (activity == null) return;
+        Intent intent = new Intent(activity, CustomerCompanyCreateActivity.class);
+        intent.putExtra("groupBeenList", (Serializable) groupBeenList);
+        activity.setResult(RESULT_OK, intent);
+    }
+
+    /**
+     * 选择联络人
+     *
+     * @param activity
+     * @param action
+     * @param customerEntity
+     */
+    public static void launchSetResultFromLiaison(@NonNull Activity activity, @NonNull String action, @NonNull CustomerEntity customerEntity) {
+        if (activity == null) return;
+        Intent intent = new Intent(activity, CustomerCompanyCreateActivity.class);
+        intent.setAction(action);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        intent.putExtra("customerEntity", customerEntity);
+        activity.setResult(RESULT_OK, intent);
+    }
+
+
+    /**
+     * 选择属性tag标签
+     *
+     * @param activity
+     * @param action
+     * @param position
+     * @param tagName
+     */
+    public static void launchSetResultFromTag(@NonNull Activity activity, @NonNull String action, @NonNull int position, @NonNull String tagName) {
+        if (activity == null) return;
+        Intent intent = new Intent(activity, CustomerCompanyCreateActivity.class);
+        intent.setAction(action);
+        intent.putExtra("position", position);
+        intent.putExtra("tag", tagName);
+        activity.setResult(RESULT_OK, intent);
+    }
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -192,6 +240,9 @@ public class CustomerCompanyCreateActivity extends BaseActivity {
                 getLiaisons(contactDeatilBean.getContact().getPkid());
                 activityAddGroupContactEnterpriseNameEdittext.setText(contactDeatilBean.getContact().getName());
             }
+            if (!TextUtils.isEmpty(contactDeatilBean.getContact().getImpression())) {
+                activityAddGroupContactImpressionEdittext.setText(contactDeatilBean.getContact().getImpression());
+            }
             if (contactDeatilBean.getGroups() != null) {
                 if (contactDeatilBean.getGroups().size() > 0) {
                     if (groupBeanList == null) {
@@ -249,6 +300,7 @@ public class CustomerCompanyCreateActivity extends BaseActivity {
             case R.id.titleAction://完成
                 if (isCanAddContact) {
                     String name = activityAddGroupContactEnterpriseNameEdittext.getText().toString().trim();
+
                     if (!TextUtils.isEmpty(name)) {
                         addContact();
                     } else {
@@ -279,7 +331,7 @@ public class CustomerCompanyCreateActivity extends BaseActivity {
                 break;
             case R.id.activity_add_group_contact_add_liaisons_layout://增加联络人
                 String pkid = null;
-                if (!isAddOrEdit) {
+                if (!isAddOrEdit && contactDeatilBean != null) {
                     pkid = contactDeatilBean.getContact().getPkid();
                 }
                 SelectLiaisonActivity.launchForResult(this, Const.SELECT_ENTERPRISE_LIAISONS_TAG_ACTION, pkid, liaisonsList, SELECT_OTHER_REQUEST);
@@ -323,7 +375,7 @@ public class CustomerCompanyCreateActivity extends BaseActivity {
             @Override
             public void onClick(View view) {
 
-                SelectCustomerTagActivity.launchForResult(CustomerCompanyCreateActivity.this, Const.SELECT_ADDRESS_TAG_ACTION, addressTag, keynameText.getText().toString().trim(), SELECT_OTHER_REQUEST);
+                SelectCustomerTagActivity.launchForResult(CustomerCompanyCreateActivity.this, Const.SELECT_ENTERPRISE_ADDRESS_TAG_ACTION, addressTag, keynameText.getText().toString().trim(), SELECT_OTHER_REQUEST, SelectCustomerTagActivity.COMPANY_SELECT_TYPE);
             }
         });
     }
@@ -364,7 +416,7 @@ public class CustomerCompanyCreateActivity extends BaseActivity {
             @Override
             public void onClick(View view) {
 
-                SelectCustomerTagActivity.launchForResult(CustomerCompanyCreateActivity.this, Const.SELECT_EMAIL_TAG_ACTION, emailTag, keynameText.getText().toString().trim(), SELECT_OTHER_REQUEST);
+                SelectCustomerTagActivity.launchForResult(CustomerCompanyCreateActivity.this, Const.SELECT_ENTERPRISE_EMAIL_TAG_ACTION, emailTag, keynameText.getText().toString().trim(), SELECT_OTHER_REQUEST, SelectCustomerTagActivity.COMPANY_SELECT_TYPE);
             }
         });
     }
@@ -405,7 +457,7 @@ public class CustomerCompanyCreateActivity extends BaseActivity {
             public void onClick(View view) {
 
 
-                SelectCustomerTagActivity.launchForResult(CustomerCompanyCreateActivity.this, Const.SELECT_DATE_TAG_ACTION, dateTag, keynameText.getText().toString().trim(), SELECT_OTHER_REQUEST);
+                SelectCustomerTagActivity.launchForResult(CustomerCompanyCreateActivity.this, Const.SELECT_ENTERPRISE_DATE_TAG_ACTION, dateTag, keynameText.getText().toString().trim(), SELECT_OTHER_REQUEST, SelectCustomerTagActivity.COMPANY_SELECT_TYPE);
             }
         });
         valuenameText.setOnClickListener(new View.OnClickListener() {
@@ -454,7 +506,7 @@ public class CustomerCompanyCreateActivity extends BaseActivity {
             @Override
             public void onClick(View view) {
 
-                SelectCustomerTagActivity.launchForResult(CustomerCompanyCreateActivity.this, Const.SELECT_PAPERS_TAG_ACTION, paperTag, keynameText.getText().toString().trim(), SELECT_OTHER_REQUEST);
+                SelectCustomerTagActivity.launchForResult(CustomerCompanyCreateActivity.this, Const.SELECT_ENTERPRISE_PARPER_TAG_ACTION, paperTag, keynameText.getText().toString().trim(), SELECT_OTHER_REQUEST, SelectCustomerTagActivity.COMPANY_SELECT_TYPE);
             }
         });
     }
@@ -511,7 +563,7 @@ public class CustomerCompanyCreateActivity extends BaseActivity {
             setRelationText.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    SelectCustomerTagActivity.launchForResult(CustomerCompanyCreateActivity.this, Const.SELECT_RELATION_TAG_ACTION, liaisonsList.indexOf(customerEntity) + 1, null, SELECT_OTHER_REQUEST);
+                    SelectCustomerTagActivity.launchForResult(CustomerCompanyCreateActivity.this, Const.SELECT_RELATION_TAG_ACTION, liaisonsList.indexOf(customerEntity) + 1, null, SELECT_OTHER_REQUEST, SelectCustomerTagActivity.COMPANY_SELECT_TYPE);
                 }
             });
         }
@@ -652,6 +704,7 @@ public class CustomerCompanyCreateActivity extends BaseActivity {
             }
         } catch (JSONException e) {
             e.printStackTrace();
+            bugSync("获取修改团队json失败", e);
         }
         return null;
     }
@@ -678,16 +731,14 @@ public class CustomerCompanyCreateActivity extends BaseActivity {
      * 检测填写的姓名是否有重名
      */
     private void checkName(String name) {
-        getApi().companyCheckReName(name).enqueue(new SimpleCallBack<JsonObject>() {
+        getApi().companyCheckReName(name).enqueue(new SimpleCallBack<List<CustomerEntity>>() {
             @Override
-            public void onSuccess(Call<ResEntity<JsonObject>> call, Response<ResEntity<JsonObject>> response) {
+            public void onSuccess(Call<ResEntity<List<CustomerEntity>>> call, Response<ResEntity<List<CustomerEntity>>> response) {
                 if (response.body().result != null) {
-                    if (response.body().result.has("count")) {
-                        int count = response.body().result.get("count").getAsInt();
-                        if (count > 0) {
-                            isCanAddContact = false;
-                            showTopSnackBar(R.string.group_contact_warn_top_text);
-                        }
+                    int count = response.body().result.size();
+                    if (count > 0) {
+                        isCanAddContact = false;
+                        showTopSnackBar(R.string.group_contact_warn_top_text);
                     }
                 }
             }
@@ -698,10 +749,13 @@ public class CustomerCompanyCreateActivity extends BaseActivity {
      * 添加企业联系人
      */
     private void addContact() {
+        String json = getAddContactJson();
+        if (TextUtils.isEmpty(json)) return;
         showLoadingDialog(null);
-        getApi().customerCompanyCreate(RequestUtils.createJsonBody(getAddContactJson())).enqueue(new SimpleCallBack<List<ContactDeatilBean>>() {
+        getApi().customerCompanyCreate(RequestUtils.createJsonBody(json)).enqueue(new SimpleCallBack<List<ContactDeatilBean>>() {
             @Override
             public void onSuccess(Call<ResEntity<List<ContactDeatilBean>>> call, Response<ResEntity<List<ContactDeatilBean>>> response) {
+                showToast("添加联系人成功");
                 dismissLoadingDialog();
                 List<ContactDeatilBean> list = response.body().result;
                 if (list != null) {
@@ -724,10 +778,13 @@ public class CustomerCompanyCreateActivity extends BaseActivity {
      * 修改联系人
      */
     private void updateContact() {
+        String json = getUpdateContactJson();
+        if (TextUtils.isEmpty(json)) return;
         showLoadingDialog(null);
-        getApi().customerUpdate(RequestUtils.createJsonBody(getUpdateContactJson())).enqueue(new SimpleCallBack<List<ContactDeatilBean>>() {
+        getApi().customerUpdate(RequestUtils.createJsonBody(json)).enqueue(new SimpleCallBack<List<ContactDeatilBean>>() {
             @Override
             public void onSuccess(Call<ResEntity<List<ContactDeatilBean>>> call, Response<ResEntity<List<ContactDeatilBean>>> response) {
+                dismissLoadingDialog();
                 List<ContactDeatilBean> list = response.body().result;
                 if (list != null) {
                     contactDeatilBean = list.get(0);
@@ -920,6 +977,7 @@ public class CustomerCompanyCreateActivity extends BaseActivity {
             return json;
         } catch (JSONException e) {
             e.printStackTrace();
+            bugSync("获取添加机构联系人json失败", e);
         }
         return json;
     }
@@ -989,6 +1047,7 @@ public class CustomerCompanyCreateActivity extends BaseActivity {
             return json;
         } catch (JSONException e) {
             e.printStackTrace();
+            bugSync("获取修改联系人json失败", e);
         }
         return json;
     }
@@ -1008,6 +1067,7 @@ public class CustomerCompanyCreateActivity extends BaseActivity {
             }
         } catch (JSONException e) {
             e.printStackTrace();
+            bugSync("获取添加联络人Json失败", e);
         }
         return null;
     }
@@ -1039,6 +1099,7 @@ public class CustomerCompanyCreateActivity extends BaseActivity {
             return addreeArr;
         } catch (JSONException e) {
             e.printStackTrace();
+            bugSync("获取每个item的json失败", e);
         }
         return addreeArr;
     }

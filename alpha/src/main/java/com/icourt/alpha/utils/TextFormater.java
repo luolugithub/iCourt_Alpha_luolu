@@ -184,7 +184,7 @@ public class TextFormater {
      * @return
      */
     public static boolean isMobileNO(String mobiles) {
-        String telRegex = "13\\d{9}|14[57]\\d{8}|15[012356789]\\d{8}|18[01256789]\\d{8}|17[03678]\\d{8}";
+        String telRegex = "(010\\d{8})|(0[2-9]\\d{9})|(13\\d{9})|(14[57]\\d{8})|(15\\d{9})|(17\\d{9})|(18\\d{9})";
         if (TextUtils.isEmpty(mobiles)) return false;
         else return mobiles.matches(telRegex);
     }
@@ -318,7 +318,6 @@ public class TextFormater {
         }
         return lists;
     }
-
 
 
     /**

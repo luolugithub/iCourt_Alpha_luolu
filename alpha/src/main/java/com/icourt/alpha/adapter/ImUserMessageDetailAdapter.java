@@ -24,6 +24,9 @@ import com.icourt.alpha.utils.GlideUtils;
 import com.icourt.alpha.utils.SpannableUtils;
 import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.utils.SystemUtils;
+import com.netease.nimlib.sdk.NIMClient;
+import com.netease.nimlib.sdk.RequestCallback;
+import com.netease.nimlib.sdk.team.TeamService;
 import com.netease.nimlib.sdk.team.model.Team;
 
 import java.util.List;
@@ -75,6 +78,25 @@ public class ImUserMessageDetailAdapter extends BaseArrayRecyclerAdapter<IMMessa
                 return team;
             }
         }
+        NIMClient.getService(TeamService.class).queryTeam(id).setCallback(new RequestCallback<Team>() {
+            @Override
+            public void onSuccess(Team team) {
+                if (team != null) {
+                    teams.add(team);
+                    notifyDataSetChanged();
+                }
+            }
+
+            @Override
+            public void onFailed(int i) {
+
+            }
+
+            @Override
+            public void onException(Throwable throwable) {
+
+            }
+        });
         return null;
     }
 
@@ -331,7 +353,7 @@ public class ImUserMessageDetailAdapter extends BaseArrayRecyclerAdapter<IMMessa
                 }
                 break;
         }
-        file_upload_time.setText(DateUtils.getTimeShowString(imMessageCustomBody.send_time, true));
+        file_upload_time.setText(DateUtils.getFormatChatTimeSimple(imMessageCustomBody.send_time));
     }
 
     @Override

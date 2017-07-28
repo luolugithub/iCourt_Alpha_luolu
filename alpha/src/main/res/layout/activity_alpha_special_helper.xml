@@ -1,10 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <include layout="@layout/layout_title_type_1" />
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <include layout="@layout/layout_title_type_1" />
+
+        <com.icourt.alpha.view.bgabadgeview.BGABadgeTextView
+            android:id="@+id/title_Badge_tv"
+            android:layout_width="28dp"
+            android:layout_height="match_parent"
+            android:layout_marginLeft="30dp"
+            android:clickable="false"
+            android:focusableInTouchMode="false"
+            app:badge_dragable="false"
+            app:badge_gravity="rightCenter"
+            app:badge_horizontalMargin="0dp"
+            app:badge_textSize="11.5sp"
+            app:badge_verticalMargin="0dp" />
+    </FrameLayout>
+
 
     <com.icourt.alpha.view.xrefreshlayout.RefreshLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:id="@id/refreshLayout"

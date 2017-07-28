@@ -6,22 +6,32 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.Editable;
+import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.view.Gravity;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
+import android.view.inputmethod.EditorInfo;
+import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.TaskMemberAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
+import com.icourt.alpha.adapter.baseadapter.HeaderFooterAdapter;
+import com.icourt.alpha.base.BaseDialogFragment;
 import com.icourt.alpha.entity.bean.TaskMemberEntity;
 import com.icourt.alpha.entity.bean.TaskMemberWrapEntity;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.utils.DensityUtil;
+import com.icourt.alpha.utils.SystemUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -52,6 +62,15 @@ public class TaskMemberSelectDialogFragment extends BaseDialogFragment {
     TextView btOk;
     Unbinder unbinder;
     TaskMemberAdapter taskMemberAdapter;
+    @BindView(R.id.empty_layout)
+    LinearLayout emptyLayout;
+    HeaderFooterAdapter<TaskMemberAdapter> headerFooterAdapter;
+    @BindView(R.id.header_comm_search_input_et)
+    EditText headerCommSearchInputEt;
+    @BindView(R.id.header_comm_search_cancel_tv)
+    TextView headerCommSearchCancelTv;
+    @BindView(R.id.header_comm_search_input_ll)
+    LinearLayout headerCommSearchInputLl;
 
     public static TaskMemberSelectDialogFragment newInstance() {
         TaskMemberSelectDialogFragment contactSelectDialogFragment = new TaskMemberSelectDialogFragment();
@@ -95,56 +114,149 @@ public class TaskMemberSelectDialogFragment extends BaseDialogFragment {
                 }
             }
         }
+
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getContext());
         recyclerView.setLayoutManager(linearLayoutManager);
-        recyclerView.setAdapter(taskMemberAdapter = new TaskMemberAdapter(true));
+        headerFooterAdapter = new HeaderFooterAdapter<>(taskMemberAdapter = new TaskMemberAdapter(true));
+        View headerView = HeaderFooterAdapter.inflaterView(getContext(), R.layout.header_search_comm, recyclerView);
+        headerFooterAdapter.addHeader(headerView);
+        registerClick(headerView.findViewById(R.id.header_comm_search_ll));
+        recyclerView.setAdapter(headerFooterAdapter);
+
         taskMemberAdapter.setOnItemClickListener(new BaseRecyclerAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
-                taskMemberAdapter.setSelectedPos(position);
+                taskMemberAdapter.setSelectedPos(adapter.getRealPos(position));
             }
         });
+        headerCommSearchInputEt.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                if (TextUtils.isEmpty(s)) {
+                    taskMemberAdapter.clearSelected();
+                    getData(true);
+                } else {
+                    searchUserByName(s.toString());
+                }
+            }
+        });
+        headerCommSearchInputEt.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                switch (actionId) {
+                    case EditorInfo.IME_ACTION_SEARCH: {
+                        SystemUtils.hideSoftKeyBoard(getActivity(), headerCommSearchInputEt);
+                        if (!TextUtils.isEmpty(headerCommSearchInputEt.getText())) {
+                            searchUserByName(headerCommSearchInputEt.getText().toString());
+                        }
+                    }
+                    return true;
+                    default:
+                        return false;
+                }
+            }
+        });
+        headerCommSearchInputLl.setVisibility(View.GONE);
         getData(true);
+    }
+
+    /**
+     * 搜索
+     *
+     * @param name
+     */
+    private void searchUserByName(String name) {
+        if (TextUtils.isEmpty(name)) return;
+        if (taskMemberAdapter != null) {
+            if (taskMemberAdapter.getData() == null) return;
+            List<TaskMemberEntity> memberEntities = new ArrayList<TaskMemberEntity>();
+            for (int i = 0; i < taskMemberAdapter.getData().size(); i++) {
+                if (taskMemberAdapter.getData().get(i).userName.contains(name)) {
+                    memberEntities.add(taskMemberAdapter.getData().get(i));
+                }
+            }
+            taskMemberAdapter.clearSelected();
+            taskMemberAdapter.bindData(true, memberEntities);
+        }
     }
 
     @Override
     protected void getData(final boolean isRefresh) {
         super.getData(isRefresh);
         //有权限
-//        getApi().getPremissionTaskMembers()
-//                .enqueue(new SimpleCallBack<List<TaskMemberWrapEntity>>() {
-//                    @Override
-//                    public void onSuccess(Call<ResEntity<List<TaskMemberWrapEntity>>> call, Response<ResEntity<List<TaskMemberWrapEntity>>> response) {
-//                        if (response.body().result != null && !response.body().result.isEmpty()) {
-//                            TaskMemberWrapEntity taskMemberWrapEntity = response.body().result.get(0);
-//                            if (taskMemberWrapEntity != null) {
-//                                taskMemberAdapter.bindData(isRefresh, taskMemberWrapEntity.members);
-//                            }
+        getApi().getPremissionTaskMembers()
+                .enqueue(new SimpleCallBack<List<TaskMemberWrapEntity>>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<List<TaskMemberWrapEntity>>> call, Response<ResEntity<List<TaskMemberWrapEntity>>> response) {
+                        if (response.body().result != null && !response.body().result.isEmpty()) {
+
+                            List<TaskMemberEntity> members = new ArrayList<TaskMemberEntity>();
+                            for (TaskMemberWrapEntity taskMemberWrapEntity : response.body().result) {
+                                if (taskMemberWrapEntity.members != null) {
+                                    members.addAll(taskMemberWrapEntity.members);
+                                }
+                            }
+                            enableEmptyView(members);
+                            taskMemberAdapter.bindData(isRefresh, members);
+                        }
+                    }
+                });
+        //无权限
+//        getApi().getUnPremissionTaskMembers().enqueue(new SimpleCallBack<List<TaskMemberWrapEntity>>() {
+//            @Override
+//            public void onSuccess(Call<ResEntity<List<TaskMemberWrapEntity>>> call, Response<ResEntity<List<TaskMemberWrapEntity>>> response) {
+//                if (response.body().result != null && !response.body().result.isEmpty()) {
+//                    List<TaskMemberEntity> memberEntities = new ArrayList<TaskMemberEntity>();
+//                    for (TaskMemberWrapEntity taskMemberWrapEntity : response.body().result) {
+//                        if (taskMemberWrapEntity.members != null) {
+//                            memberEntities.addAll(taskMemberWrapEntity.members);
 //                        }
 //                    }
-//                });
-        //无权限
-        getApi().getUnPremissionTaskMembers().enqueue(new SimpleCallBack<List<TaskMemberWrapEntity>>() {
-            @Override
-            public void onSuccess(Call<ResEntity<List<TaskMemberWrapEntity>>> call, Response<ResEntity<List<TaskMemberWrapEntity>>> response) {
-                if (response.body().result != null && !response.body().result.isEmpty()) {
-                    List<TaskMemberEntity> memberEntities = new ArrayList<TaskMemberEntity>();
-                    for (TaskMemberWrapEntity taskMemberWrapEntity : response.body().result) {
-                        memberEntities.addAll(taskMemberWrapEntity.members);
-                    }
-                    taskMemberAdapter.bindData(isRefresh, memberEntities);
-                }
-            }
-        });
+//                    enableEmptyView(memberEntities);
+//                    taskMemberAdapter.bindData(isRefresh, memberEntities);
+//                }
+//            }
+//        });
     }
 
+    private void enableEmptyView(List result) {
+        if (emptyLayout == null) return;
+        if (result != null) {
+            if (result.size() > 0) {
+                emptyLayout.setVisibility(View.GONE);
+            } else {
+                emptyLayout.setVisibility(View.VISIBLE);
+            }
+        } else {
+            emptyLayout.setVisibility(View.VISIBLE);
+        }
+    }
 
-    @OnClick({R.id.bt_cancel, R.id.bt_ok})
+    @OnClick({R.id.bt_cancel, R.id.bt_ok, R.id.header_comm_search_cancel_tv})
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.bt_cancel:
                 dismiss();
+                break;
+            case R.id.header_comm_search_ll:
+                headerCommSearchInputLl.setVisibility(View.VISIBLE);
+                SystemUtils.showSoftKeyBoard(getActivity(), headerCommSearchInputEt);
+                break;
+            case R.id.header_comm_search_cancel_tv:
+                headerCommSearchInputEt.setText("");
+                SystemUtils.hideSoftKeyBoard(getActivity(), headerCommSearchInputEt, true);
+                headerCommSearchInputLl.setVisibility(View.GONE);
                 break;
             case R.id.bt_ok:
                 if (getParentFragment() instanceof OnFragmentCallBackListener) {
@@ -164,8 +276,8 @@ public class TaskMemberSelectDialogFragment extends BaseDialogFragment {
     }
 
     @Override
-    public void onDestroyView() {
-        super.onDestroyView();
+    public void onDestroy() {
+        super.onDestroy();
         unbinder.unbind();
     }
 }

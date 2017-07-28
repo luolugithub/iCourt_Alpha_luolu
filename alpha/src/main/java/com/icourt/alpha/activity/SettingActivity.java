@@ -5,13 +5,10 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.design.widget.AppBarLayout;
 import android.view.View;
-import android.widget.CheckedTextView;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.TextView;
 
 import com.google.gson.JsonElement;
 import com.icourt.alpha.R;
@@ -39,14 +36,6 @@ import retrofit2.Response;
 
 public class SettingActivity extends BaseActivity {
 
-    @BindView(R.id.titleBack)
-    CheckedTextView titleBack;
-    @BindView(R.id.titleContent)
-    TextView titleContent;
-    @BindView(R.id.titleAction)
-    CheckedTextView titleAction;
-    @BindView(R.id.titleView)
-    AppBarLayout titleView;
     @BindView(R.id.photo_image)
     ImageView photoImage;
     @BindView(R.id.photo_layout)
@@ -83,7 +72,7 @@ public class SettingActivity extends BaseActivity {
             phoneEdittext.setText(alphaUserInfo.getPhone());
             emailEdittext.setText(alphaUserInfo.getMail());
             phoneEdittext.setSelection(phoneEdittext.getText().length());
-           // phoneEdittext.setSelection(alphaUserInfo.getPhone().length());
+            // phoneEdittext.setSelection(alphaUserInfo.getPhone().length());
         }
     }
 
@@ -104,15 +93,16 @@ public class SettingActivity extends BaseActivity {
         final String phone = phoneEdittext.getText().toString().trim();
         final String email = emailEdittext.getText().toString().trim();
 
-        if (!TextFormater.isMailNO(email)) {
+        //非必填
+        /*if (!TextFormater.isMailNO(email)) {
             showTopSnackBar("请输入正确的邮箱格式");
             return;
-        }
+        }*/
         if (!TextFormater.isMobileNO(phone)) {
             showTopSnackBar("请输入正确的手机格式");
             return;
         }
-        showLoadingDialog("正在修改...");
+        showLoadingDialog(null);
         getApi().updateUserInfo(alphaUserInfo.getUserId(), phone, email).enqueue(new SimpleCallBack<JsonElement>() {
             @Override
             public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {

@@ -14,6 +14,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.icourt.alpha.R;
+import com.icourt.alpha.base.BaseDialogFragment;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.utils.DensityUtil;
 import com.icourt.alpha.view.audiowave.CustomVisualizer;
@@ -139,14 +140,17 @@ public class AudioWaveDialogFragment extends BaseDialogFragment {
 
         @Override
         public void onVolumeChanged(int i, byte[] bytes) {
-            visualizer.prepare(i);
+            if (visualizer != null)
+                visualizer.prepare(i);
         }
 
         //结束录音
         public void onEndOfSpeech() {
-            titleTv.setText("正在识别...");
-            visualizer.setVisibility(View.GONE);
-            progressbar.setVisibility(View.VISIBLE);
+            if (visualizer != null) {
+                titleTv.setText("正在识别...");
+                visualizer.setVisibility(View.GONE);
+                progressbar.setVisibility(View.VISIBLE);
+            }
         }
 
         //扩展用接口

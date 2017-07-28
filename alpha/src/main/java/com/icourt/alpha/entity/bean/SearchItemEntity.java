@@ -12,6 +12,7 @@ import com.icourt.alpha.constants.Const;
 public class SearchItemEntity implements ISearchItemEntity {
 
     public String id;
+    public long id2;
     public int type;
     @Const.SEARCH_TYPE
     public int classfyType;
@@ -31,6 +32,11 @@ public class SearchItemEntity implements ISearchItemEntity {
     @Override
     public String getId() {
         return id;
+    }
+
+    @Override
+    public long getId2() {
+        return id2;
     }
 
     @Override

@@ -22,6 +22,7 @@ public class ListActionItemPop<T extends ItemsEntityImp> extends BaseListActionI
     public ListActionItemPop(@NonNull Context context, List<T> items) {
         super(context, new ListActionItemAdapter<T>());
         getAdapter().bindData(true, items);
+        setAnimationStyle(R.style.SlideAnimBottom);
     }
 
     public ListActionItemPop(@NonNull Context context, @NonNull BaseArrayRecyclerAdapter<T> adapter) {

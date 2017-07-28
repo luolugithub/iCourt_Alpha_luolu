@@ -25,6 +25,8 @@ import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.adapterObserver.RefreshViewEmptyObserver;
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.entity.bean.FileBoxBean;
+import com.icourt.alpha.http.callback.SimpleCallBack;
+import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.ItemDecorationUtils;
 import com.icourt.alpha.utils.PingYinUtil;
@@ -51,6 +53,7 @@ import cn.finalteam.galleryfinal.model.PhotoInfo;
 import okhttp3.RequestBody;
 import retrofit2.Call;
 import retrofit2.Callback;
+import retrofit2.HttpException;
 import retrofit2.Response;
 
 /**
@@ -64,17 +67,18 @@ import retrofit2.Response;
 public class ProjectFileBoxFragment extends BaseFragment implements BaseRecyclerAdapter.OnItemClickListener {
 
     private static final String KEY_PROJECT_ID = "key_project_id";
+    private static final String KEY_HAS_READWRITE_PMS = "key_has_readwrite_pms";
     private static final int REQUEST_CODE_CAMERA = 1000;
     private static final int REQUEST_CODE_GALLERY = 1001;
     private static final int REQUEST_CODE_AT_MEMBER = 1002;
 
     private static final int REQ_CODE_PERMISSION_CAMERA = 1100;
     private static final int REQ_CODE_PERMISSION_ACCESS_FILE = 1101;
+
+    private static final int NAME_SORT_TYPE = 1;//按名称排序
+    private static final int TIME_SORT_TYPE = 2;//按时间排序
+    private static final int SIZE_SORT_TYPE = 3;//按大小排序
     Unbinder unbinder;
-    @BindView(R.id.recyclerView)
-    RecyclerView recyclerView;
-    @BindView(R.id.refreshLayout)
-    RefreshLayout refreshLayout;
 
     ProjectFileBoxAdapter projectFileBoxAdapter;
     String projectId;
@@ -82,15 +86,15 @@ public class ProjectFileBoxFragment extends BaseFragment implements BaseRecycler
     String seaFileRepoId;//文档根目录id
     String path;
     List<FileBoxBean> fileBoxBeanList;
+    @Nullable
+    @BindView(R.id.recyclerView)
+    RecyclerView recyclerView;
+    @BindView(R.id.refreshLayout)
+    RefreshLayout refreshLayout;
     private List<String> firstlist;
-
-    public static ProjectFileBoxFragment newInstance(@NonNull String projectId) {
-        ProjectFileBoxFragment projectFileBoxFragment = new ProjectFileBoxFragment();
-        Bundle bundle = new Bundle();
-        bundle.putString(KEY_PROJECT_ID, projectId);
-        projectFileBoxFragment.setArguments(bundle);
-        return projectFileBoxFragment;
-    }
+    private boolean hasReadWritePms, hasReadPms;
+    private boolean sortIsUp = false;
+    private int sort_type = 0;//排序方式
 
     @Nullable
     @Override
@@ -101,8 +105,26 @@ public class ProjectFileBoxFragment extends BaseFragment implements BaseRecycler
     }
 
     @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if (unbinder != null) {
+            unbinder.unbind();
+        }
+    }
+
+    public static ProjectFileBoxFragment newInstance(@NonNull String projectId, boolean hasReadWritePms) {
+        ProjectFileBoxFragment projectFileBoxFragment = new ProjectFileBoxFragment();
+        Bundle bundle = new Bundle();
+        bundle.putString(KEY_PROJECT_ID, projectId);
+        bundle.putBoolean(KEY_HAS_READWRITE_PMS, hasReadWritePms);
+        projectFileBoxFragment.setArguments(bundle);
+        return projectFileBoxFragment;
+    }
+
+    @Override
     protected void initView() {
         projectId = getArguments().getString(KEY_PROJECT_ID);
+        hasReadWritePms = getArguments().getBoolean(KEY_HAS_READWRITE_PMS);
         firstlist = TextFormater.firstList();
         firstlist.add(0, "#");
         refreshLayout.setNoticeEmpty(R.mipmap.icon_placeholder_project, "暂无文件");
@@ -119,17 +141,55 @@ public class ProjectFileBoxFragment extends BaseFragment implements BaseRecycler
             @Override
             public void onRefresh(boolean isPullDown) {
                 super.onRefresh(isPullDown);
-                getData(true);
+                if (hasReadWritePms || hasReadPms) {
+                    if (!TextUtils.isEmpty(authToken) && !TextUtils.isEmpty(seaFileRepoId)) {
+                        getData(true);
+                    } else {
+                        getFileBoxToken();
+                    }
+                } else {
+                    stopRefresh();
+                    enableEmptyView(null);
+                }
             }
 
             @Override
             public void onLoadMore(boolean isSilence) {
                 super.onLoadMore(isSilence);
-                getData(false);
+                if (hasReadWritePms || hasReadPms)
+                    getData(false);
             }
         });
-        getFileBoxToken();
+        checkAddTaskAndDocumentPms();
+    }
 
+    /**
+     * 获取项目权限
+     */
+    private void checkAddTaskAndDocumentPms() {
+        getApi().permissionQuery(getLoginUserId(), "MAT", projectId).enqueue(new SimpleCallBack<List<String>>() {
+            @Override
+            public void onSuccess(Call<ResEntity<List<String>>> call, Response<ResEntity<List<String>>> response) {
+
+                if (response.body().result != null) {
+                    if (response.body().result.contains("MAT:matter.document:readwrite")) {
+                        hasReadWritePms = true;
+                    }
+                    if (response.body().result.contains("MAT:matter.document:read")) {
+                        hasReadPms = true;
+                    }
+                    if (refreshLayout != null)
+                        refreshLayout.startRefresh();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResEntity<List<String>>> call, Throwable t) {
+                super.onFailure(call, t);
+                hasReadWritePms = false;
+                enableEmptyView(null);
+            }
+        });
     }
 
     /**
@@ -147,12 +207,12 @@ public class ProjectFileBoxFragment extends BaseFragment implements BaseRecycler
                                 authToken = element.getAsString();
                                 if (!TextUtils.isEmpty(authToken)) getDocumentId();
                             } else {
-                                onFailure(call, new retrofit2.HttpException(response));
+                                onFailure(call, new HttpException(response));
                             }
                         }
                     }
                 } else {
-                    onFailure(call, new retrofit2.HttpException(response));
+                    onFailure(call, new HttpException(response));
                 }
             }
 
@@ -176,20 +236,24 @@ public class ProjectFileBoxFragment extends BaseFragment implements BaseRecycler
                             JsonElement element = response.body().get("seaFileRepoId");
                             if (!TextUtils.isEmpty(element.toString()) && !TextUtils.equals("null", element.toString())) {
                                 seaFileRepoId = element.getAsString();
-                                getData(false);
+                                getData(true);
                             } else {
-                                onFailure(call, new retrofit2.HttpException(response));
+                                onFailure(call, new HttpException(response));
                             }
                         }
                     }
                 } else {
-                    onFailure(call, new retrofit2.HttpException(response));
+                    onFailure(call, new HttpException(response));
                 }
             }
 
             @Override
             public void onFailure(Call<JsonObject> call, Throwable throwable) {
                 showTopSnackBar("获取文档根目录id失败");
+                if (refreshLayout != null) {
+                    refreshLayout.stopRefresh();
+                    enableEmptyView(null);
+                }
             }
         });
     }
@@ -197,19 +261,36 @@ public class ProjectFileBoxFragment extends BaseFragment implements BaseRecycler
     @Override
     protected void getData(final boolean isRefresh) {
         if (!TextUtils.isEmpty(authToken) && !TextUtils.isEmpty(seaFileRepoId)) {
-            getApi().projectQueryFileBoxList("Token " + authToken, seaFileRepoId).enqueue(new Callback<List<FileBoxBean>>() {
+            getSFileApi().projectQueryFileBoxList("Token " + authToken, seaFileRepoId).enqueue(new Callback<List<FileBoxBean>>() {
                 @Override
                 public void onResponse(Call<List<FileBoxBean>> call, Response<List<FileBoxBean>> response) {
                     stopRefresh();
                     if (response.body() != null) {
                         fileBoxBeanList = response.body();
-                        projectFileBoxAdapter.bindData(isRefresh, fileBoxBeanList);
+                        enableEmptyView(fileBoxBeanList);
+                        switch (sort_type) {
+                            case 0:
+                                projectFileBoxAdapter.bindData(isRefresh, fileBoxBeanList);
+                                break;
+                            case NAME_SORT_TYPE:
+                                sortFileByNameList(sortIsUp);
+                                break;
+                            case TIME_SORT_TYPE:
+                                sortFileByTimeList(sortIsUp);
+                                break;
+                            case SIZE_SORT_TYPE:
+                                sortFileBySizeList(sortIsUp);
+                                break;
+                        }
+                    } else {
+                        projectFileBoxAdapter.notifyDataSetChanged();
                     }
                 }
 
                 @Override
                 public void onFailure(Call<List<FileBoxBean>> call, Throwable t) {
                     stopRefresh();
+                    enableEmptyView(null);
                     showTopSnackBar("获取文档列表失败");
                 }
             });
@@ -226,12 +307,30 @@ public class ProjectFileBoxFragment extends BaseFragment implements BaseRecycler
         }
     }
 
+    private void enableEmptyView(List result) {
+        if (refreshLayout != null) {
+            if (result != null) {
+                if (result.size() > 0) {
+                    refreshLayout.enableEmptyView(false);
+                } else {
+                    refreshLayout.enableEmptyView(true);
+                }
+            } else {
+                refreshLayout.enableEmptyView(true);
+            }
+        }
+    }
+
     /**
      * 按名称排序
      *
      * @param isUp
      */
     public void sortFileByNameList(final boolean isUp) {
+        sort_type = NAME_SORT_TYPE;
+        sortIsUp = isUp;
+        if (fileBoxBeanList == null) return;
+        if (fileBoxBeanList.size() <= 0) return;
         Collections.sort(fileBoxBeanList, new Comparator<FileBoxBean>() {
             @Override
             public int compare(FileBoxBean o1, FileBoxBean o2) {
@@ -272,6 +371,10 @@ public class ProjectFileBoxFragment extends BaseFragment implements BaseRecycler
      * @param isUp
      */
     public void sortFileBySizeList(final boolean isUp) {
+        sort_type = SIZE_SORT_TYPE;
+        sortIsUp = isUp;
+        if (fileBoxBeanList == null) return;
+        if (fileBoxBeanList.size() <= 0) return;
         Collections.sort(fileBoxBeanList, new Comparator<FileBoxBean>() {
             @Override
             public int compare(FileBoxBean o1, FileBoxBean o2) {
@@ -303,10 +406,44 @@ public class ProjectFileBoxFragment extends BaseFragment implements BaseRecycler
         projectFileBoxAdapter.bindData(true, fileBoxBeanList);
     }
 
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        unbinder.unbind();
+    /**
+     * 按修改时间排序
+     *
+     * @param isUp
+     */
+    public void sortFileByTimeList(final boolean isUp) {
+        sort_type = TIME_SORT_TYPE;
+        sortIsUp = isUp;
+        if (fileBoxBeanList == null) return;
+        if (fileBoxBeanList.size() <= 0) return;
+        Collections.sort(fileBoxBeanList, new Comparator<FileBoxBean>() {
+            @Override
+            public int compare(FileBoxBean o1, FileBoxBean o2) {
+
+                long o1Time = o1.mtime;
+                long o2Time = o2.mtime;
+                if (isUp) {
+                    //按照修改时间进行降序排列
+                    if (o1Time < o2Time) {
+                        return 1;
+                    }
+                    if (o1Time == o2Time) {
+                        return 0;
+                    }
+                    return -1;
+                } else {
+                    //按照修改时间进行升序排列
+                    if (o1Time > o2Time) {
+                        return 1;
+                    }
+                    if (o1Time == o2Time) {
+                        return 0;
+                    }
+                    return -1;
+                }
+            }
+        });
+        projectFileBoxAdapter.bindData(true, fileBoxBeanList);
     }
 
     @Override
@@ -419,7 +556,7 @@ public class ProjectFileBoxFragment extends BaseFragment implements BaseRecycler
             return;
         }
         showLoadingDialog("正在上传...");
-        getApi().projectUploadUrlQuery("Token " + authToken, seaFileRepoId).enqueue(new Callback<JsonElement>() {
+        getSFileApi().projectUploadUrlQuery("Token " + authToken, seaFileRepoId).enqueue(new Callback<JsonElement>() {
             @Override
             public void onResponse(Call<JsonElement> call, Response<JsonElement> response) {
                 if (response.body() != null) {
@@ -430,6 +567,9 @@ public class ProjectFileBoxFragment extends BaseFragment implements BaseRecycler
                         dismissLoadingDialog();
                         showTopSnackBar("上传失败");
                     }
+                } else {
+                    dismissLoadingDialog();
+                    showTopSnackBar("上传失败");
                 }
             }
 
@@ -453,7 +593,7 @@ public class ProjectFileBoxFragment extends BaseFragment implements BaseRecycler
         Map<String, RequestBody> params = new HashMap<>();
         params.put("parent_dir", RequestUtils.createTextBody("/"));
         params.put(key, RequestUtils.createImgBody(new File(filePath)));
-        getApi().projectUploadFile("Token " + authToken, uploadUrl, params).enqueue(new Callback<JsonElement>() {
+        getSFileApi().projectUploadFile("Token " + authToken, uploadUrl, params).enqueue(new Callback<JsonElement>() {
 
             @Override
             public void onResponse(Call<JsonElement> call, Response<JsonElement> response) {
@@ -469,4 +609,6 @@ public class ProjectFileBoxFragment extends BaseFragment implements BaseRecycler
             }
         });
     }
+
+
 }

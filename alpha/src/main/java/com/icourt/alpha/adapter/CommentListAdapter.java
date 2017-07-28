@@ -8,6 +8,7 @@ import com.icourt.alpha.adapter.baseadapter.BaseArrayRecyclerAdapter;
 import com.icourt.alpha.entity.bean.CommentEntity;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.GlideUtils;
+import com.icourt.alpha.utils.SpannableUtils;
 
 /**
  * Description   评论列表适配器
@@ -35,8 +36,12 @@ public class CommentListAdapter extends BaseArrayRecyclerAdapter<CommentEntity.C
             GlideUtils.loadUser(photoView.getContext(), commentItemEntity.createUser.pic, photoView);
             nameView.setText(commentItemEntity.createUser.userName);
         }
-        timeView.setText(DateUtils.getTimeShowString(commentItemEntity.createTime, true));
-        contentView.setText(commentItemEntity.content);
+        timeView.setText(DateUtils.getFormatChatTime(commentItemEntity.createTime));
         holder.bindChildClick(photoView);
+        SpannableUtils.setCommentUrlView(contentView, commentItemEntity.content);
+
     }
+
+
+
 }

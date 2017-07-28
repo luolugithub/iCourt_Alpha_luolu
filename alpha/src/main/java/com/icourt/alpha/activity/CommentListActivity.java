@@ -1,7 +1,8 @@
 package com.icourt.alpha.activity;
 
 import android.app.Activity;
-import android.content.Context;
+import android.app.Dialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -9,15 +10,14 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.AppBarLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
-import android.view.KeyEvent;
-import android.view.MotionEvent;
 import android.view.View;
-import android.view.inputmethod.InputMethodManager;
+import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -28,7 +28,7 @@ import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.CommentListAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.HeaderFooterAdapter;
-import com.icourt.alpha.adapter.baseadapter.adapterObserver.RefreshViewEmptyObserver;
+import com.icourt.alpha.adapter.baseadapter.adapterObserver.DataChangeAdapterObserver;
 import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.entity.bean.CommentEntity;
 import com.icourt.alpha.entity.bean.TaskEntity;
@@ -39,10 +39,15 @@ import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.ActionConstants;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.ItemDecorationUtils;
+import com.icourt.alpha.utils.StringUtils;
+import com.icourt.alpha.utils.SystemUtils;
+import com.icourt.alpha.view.SoftKeyboardSizeWatchLayout;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
+import com.icourt.alpha.widget.dialog.BottomActionDialog;
 
 import org.greenrobot.eventbus.EventBus;
 
+import java.util.Arrays;
 import java.util.List;
 
 import butterknife.BindView;
@@ -59,9 +64,10 @@ import retrofit2.Response;
  * version 2.0.0
  */
 
-public class CommentListActivity extends BaseActivity implements BaseRecyclerAdapter.OnItemChildClickListener {
+public class CommentListActivity extends BaseActivity implements BaseRecyclerAdapter.OnItemChildClickListener, BaseRecyclerAdapter.OnItemLongClickListener {
 
     private static final String KEY_TASK_ID = "key_task_id";
+    private static final String KEY_OPEN_SOFT_KEYBOARD = "key_open_Soft_Keyboard";
     @BindView(R.id.titleView)
     AppBarLayout titleView;
     @BindView(R.id.recyclerview)
@@ -83,24 +89,47 @@ public class CommentListActivity extends BaseActivity implements BaseRecyclerAda
     @BindView(R.id.titleContent)
     TextView titleContent;
     HeaderFooterAdapter<CommentListAdapter> headerFooterAdapter;
+    @BindView(R.id.softKeyboardSizeWatchLayout)
+    SoftKeyboardSizeWatchLayout softKeyboardSizeWatchLayout;
 
-    public static void launch(@NonNull Context context, @NonNull TaskEntity.TaskItemEntity taskItemEntity) {
+
+    /**
+     * 返回最终评论数
+     *
+     * @param context
+     * @param taskItemEntity
+     * @param requestCode
+     * @param openSoftKeyboard
+     */
+    public static void launchForResult(@NonNull Activity context,
+                                       @NonNull TaskEntity.TaskItemEntity taskItemEntity,
+                                       int requestCode,
+                                       boolean openSoftKeyboard) {
         if (context == null) return;
+        if (taskItemEntity == null) return;
         Intent intent = new Intent(context, CommentListActivity.class);
         intent.putExtra(KEY_TASK_ID, taskItemEntity);
-        context.startActivity(intent);
+        intent.putExtra(KEY_OPEN_SOFT_KEYBOARD, openSoftKeyboard);
+        context.startActivityForResult(intent, requestCode);
     }
 
-    public static void forResultLaunch(@NonNull Activity context, @NonNull TaskEntity.TaskItemEntity taskItemEntity, int requestCode) {
-        if (context == null) return;
-        Intent intent = new Intent(context, CommentListActivity.class);
-        intent.putExtra(KEY_TASK_ID, taskItemEntity);
-        context.startActivityForResult(intent, requestCode);
+    /**
+     * 是否打开软键盘
+     *
+     * @return
+     */
+    private boolean shouldOpenSoftKeyboard() {
+        return getIntent().getBooleanExtra(KEY_OPEN_SOFT_KEYBOARD, true);
     }
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if (shouldOpenSoftKeyboard()) {
+            getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE | WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
+        } else {
+            getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE | WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
+        }
         setContentView(R.layout.activity_comment_list_layout);
         ButterKnife.bind(this);
         initView();
@@ -121,13 +150,25 @@ public class CommentListActivity extends BaseActivity implements BaseRecyclerAda
         }
         headerFooterAdapter.addFooter(footerview);
 
-        refreshLayout.setNoticeEmpty(R.mipmap.icon_placeholder_task, R.string.task_no_comment_text);
+        refreshLayout.setNoticeEmpty(R.mipmap.bg_no_task, R.string.task_no_comment_text);
         refreshLayout.setMoveForHorizontal(true);
 
         recyclerview.addItemDecoration(ItemDecorationUtils.getCommFull05Divider(this, true));
         recyclerview.setHasFixedSize(true);
-        commentListAdapter.registerAdapterDataObserver(new RefreshViewEmptyObserver(refreshLayout, commentListAdapter));
+        commentListAdapter.registerAdapterDataObserver(new DataChangeAdapterObserver() {
+            @Override
+            protected void updateUI() {
+                if (getIntent() != null) {
+                    Intent intent = getIntent();
+                    int count = commentListAdapter.getItemCount();
+                    intent.putExtra(KEY_ACTIVITY_RESULT, count);
+                    setResult(RESULT_OK, intent);
+                }
+            }
+        });
+//        commentListAdapter.registerAdapterDataObserver(new RefreshViewEmptyObserver(refreshLayout, commentListAdapter));
         commentListAdapter.setOnItemChildClickListener(this);
+        commentListAdapter.setOnItemLongClickListener(this);
         recyclerview.setAdapter(headerFooterAdapter);
         refreshLayout.setXRefreshViewListener(new XRefreshView.SimpleXRefreshListener() {
             @Override
@@ -154,16 +195,31 @@ public class CommentListActivity extends BaseActivity implements BaseRecyclerAda
 
             @Override
             public void afterTextChanged(Editable s) {
-                if (s.toString().length() > 0) {
-                    commentTv.setVisibility(View.GONE);
-                    sendTv.setVisibility(View.VISIBLE);
-                } else {
-                    commentTv.setVisibility(View.VISIBLE);
-                    sendTv.setVisibility(View.GONE);
+                if (!TextUtils.isEmpty(s)) {
+                    if (s.toString().length() > 0) {
+                        commentTv.setVisibility(View.GONE);
+                        sendTv.setVisibility(View.VISIBLE);
+                    } else {
+                        commentTv.setVisibility(View.VISIBLE);
+                        sendTv.setVisibility(View.GONE);
+                    }
                 }
             }
         });
         refreshLayout.startRefresh();
+        commentEdit.setMaxEms(1500);
+        recyclerview.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+                super.onScrollStateChanged(recyclerView, newState);
+                switch (newState) {
+                    case RecyclerView.SCROLL_STATE_DRAGGING: {
+                        SystemUtils.hideSoftKeyBoard(CommentListActivity.this);
+                    }
+                    break;
+                }
+            }
+        });
     }
 
     @Override
@@ -179,25 +235,27 @@ public class CommentListActivity extends BaseActivity implements BaseRecyclerAda
                 stopRefresh();
                 commentListAdapter.bindData(isRefresh, response.body().result.items);
                 pageIndex += 1;
-                enableLoadMore(response.body().result.items);
                 commentCount = commentListAdapter.getItemCount();
                 commentTv.setText(commentCount + "条动态");
+            }
+
+            @Override
+            public void onFailure(Call<ResEntity<CommentEntity>> call, Throwable t) {
+                super.onFailure(call, t);
+                stopRefresh();
             }
         });
     }
 
-    @OnClick({R.id.send_tv, R.id.titleBack})
+    @OnClick({R.id.send_tv})
     @Override
     public void onClick(View v) {
-        super.onClick(v);
         switch (v.getId()) {
-            case R.id.titleBack:
-                TaskDetailActivity.setResultLaunch(this, commentListAdapter.getItemCount());
-                break;
             case R.id.send_tv:
                 sendComment();
                 break;
         }
+        super.onClick(v);
     }
 
     private void enableLoadMore(List result) {
@@ -219,12 +277,10 @@ public class CommentListActivity extends BaseActivity implements BaseRecyclerAda
      */
     private void sendComment() {
         if (taskItemEntity == null) return;
+        if (TextUtils.isEmpty(commentEdit.getText())) return;
         String content = commentEdit.getText().toString();
-        if (!TextUtils.isEmpty(content)) {
-            content = content.replace(" ", "");
-            content = content.replace("\n", "");
-        }
-        if (TextUtils.isEmpty(content)) {
+
+        if (StringUtils.isEmpty(content)) {
             showTopSnackBar("请输入评论内容");
             commentEdit.setText("");
             return;
@@ -232,12 +288,11 @@ public class CommentListActivity extends BaseActivity implements BaseRecyclerAda
             showTopSnackBar("评论内容不能超过1500字");
             return;
         }
-        showLoadingDialog("正在发送...");
+        showLoadingDialog(null);
         getApi().commentCreate(100, taskItemEntity.id, content).enqueue(new SimpleCallBack<JsonElement>() {
             @Override
             public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
                 dismissLoadingDialog();
-                showTopSnackBar("添加评论成功");
                 CommentEntity.CommentItemEntity commentItemEntity = getNewComment();
                 commentItemEntity.id = response.body().result.getAsString();
                 commentListAdapter.addItem(0, commentItemEntity);
@@ -307,50 +362,132 @@ public class CommentListActivity extends BaseActivity implements BaseRecyclerAda
     }
 
     @Override
-    public boolean dispatchTouchEvent(MotionEvent ev) {
-        if (ev.getAction() == MotionEvent.ACTION_DOWN) {
-            View v = getCurrentFocus();
-            if (isShouldHideInput(v, ev)) {
+    public boolean onItemLongClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
+        CommentEntity.CommentItemEntity entity = (CommentEntity.CommentItemEntity) adapter.getItem(adapter.getRealPos(position));
+        if (entity != null) {
+            if (entity.createUser == null) {
+                return false;
+            }
+            if (TextUtils.isEmpty(entity.createUser.userId)) return false;
+            if (TextUtils.isEmpty(getLoginUserId())) return false;
+            if (TextUtils.equals(entity.createUser.userId.toLowerCase(), getLoginUserId().toLowerCase())) {
+                showSelfBottomMeau(entity);
+            } else {
+                showOthersBottomMeau(entity);
+            }
+        }
+        return true;
+    }
 
-                InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-                if (imm != null) {
-                    imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
+    /**
+     * 显示我的底部菜单
+     */
+    private void showSelfBottomMeau(final CommentEntity.CommentItemEntity commentItemEntity) {
+        if (commentItemEntity == null) return;
+        new BottomActionDialog(getContext(),
+                null,
+                Arrays.asList("复制", "删除"),
+                new BottomActionDialog.OnActionItemClickListener() {
+                    @Override
+                    public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
+                        dialog.dismiss();
+                        switch (position) {
+                            case 0:
+                                commentActionCopy(commentItemEntity.content);
+                                break;
+                            case 1:
+                                showDeleteDialog("是非成败转头空，确定要删除吗?", commentItemEntity);
+                                break;
+                        }
+                    }
+                }).show();
+    }
+
+    /**
+     * 显示他人底部菜单
+     */
+    private void showOthersBottomMeau(final CommentEntity.CommentItemEntity commentItemEntity) {
+        if (commentItemEntity == null) return;
+        new BottomActionDialog(getContext(),
+                null,
+                Arrays.asList("复制"),
+                new BottomActionDialog.OnActionItemClickListener() {
+                    @Override
+                    public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
+                        dialog.dismiss();
+                        switch (position) {
+                            case 0:
+                                commentActionCopy(commentItemEntity.content);
+                                break;
+                        }
+                    }
+                }).show();
+    }
+
+    /**
+     * 删除评论确定弹框
+     *
+     * @param message
+     * @param commentItemEntity
+     */
+    private void showDeleteDialog(String message, final CommentEntity.CommentItemEntity commentItemEntity) {
+        DialogInterface.OnClickListener dialogOnclicListener = new DialogInterface.OnClickListener() {
+
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                switch (which) {
+                    case Dialog.BUTTON_POSITIVE://确定
+                        deleteComment(commentItemEntity);
+                        break;
+                    case Dialog.BUTTON_NEGATIVE://取消
+                        break;
                 }
             }
-            return super.dispatchTouchEvent(ev);
-        }
-        // 必不可少，否则所有的组件都不会有TouchEvent了
-        if (getWindow().superDispatchTouchEvent(ev)) {
-            return true;
-        }
-        return onTouchEvent(ev);
+        };
+        //dialog参数设置
+        new AlertDialog.Builder(this)
+                .setTitle("提示")//设置标题
+                .setMessage(message) //设置内容
+                .setPositiveButton("确认", dialogOnclicListener)
+                .setNegativeButton("取消", dialogOnclicListener)
+                .show();
     }
 
-    public boolean isShouldHideInput(View v, MotionEvent event) {
-        if (v != null && (v instanceof EditText)) {
-            int[] leftTop = {0, 0};
-            //获取输入框当前的location位置
-            v.getLocationInWindow(leftTop);
-            int left = leftTop[0];
-            int top = leftTop[1];
-            int bottom = top + v.getHeight();
-            int right = left + v.getWidth();
-            if (event.getX() > left && event.getX() < right
-                    && event.getY() > top && event.getY() < bottom) {
-                // 点击的是输入框区域，保留点击EditText的事件
-                return false;
-            } else {
-                return true;
+    /**
+     * 评论复制
+     *
+     * @param charSequence
+     */
+    protected final void commentActionCopy(CharSequence charSequence) {
+        if (TextUtils.isEmpty(charSequence)) return;
+        SystemUtils.copyToClipboard(getContext(), "comment", charSequence);
+        showTopSnackBar("复制成功");
+    }
+
+    /**
+     * 删除评论
+     *
+     * @param commentItemEntity
+     */
+    private void deleteComment(final CommentEntity.CommentItemEntity commentItemEntity) {
+        if (commentItemEntity == null) return;
+        showLoadingDialog(null);
+        getApi().taskDeleteComment(commentItemEntity.id).enqueue(new SimpleCallBack<JsonElement>() {
+            @Override
+            public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
+                dismissLoadingDialog();
+                if (commentListAdapter != null) {
+                    commentListAdapter.removeItem(commentItemEntity);
+                    commentTv.setText(commentListAdapter.getItemCount() + "条动态");
+                    EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION));
+                }
             }
-        }
-        return false;
-    }
 
-    @Override
-    public boolean onKeyUp(int keyCode, KeyEvent event) {
-        if (event.getKeyCode() == KeyEvent.KEYCODE_BACK) {
-            TaskDetailActivity.setResultLaunch(this, commentListAdapter.getItemCount());
-        }
-        return super.onKeyUp(keyCode, event);
+            @Override
+            public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
+                super.onFailure(call, t);
+                dismissLoadingDialog();
+            }
+        });
     }
 }

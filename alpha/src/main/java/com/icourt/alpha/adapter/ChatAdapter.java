@@ -1,5 +1,6 @@
 package com.icourt.alpha.adapter;
 
+import android.support.annotation.CheckResult;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
 import android.text.method.LinkMovementMethod;
@@ -10,6 +11,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.baseadapter.BaseArrayRecyclerAdapter;
 import com.icourt.alpha.constants.Const;
@@ -85,6 +87,19 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMMessageCustomBody> i
 
     private static final int TYPE_CENTER_SYS = 200;
 
+    private boolean isShowMemberUserName;//是否展示发送者昵称
+
+    /**
+     * 设置是否展示发送者昵称
+     *
+     * @param showMemberUserName
+     */
+    public void setShowMemberUserName(boolean showMemberUserName) {
+        if (this.isShowMemberUserName != showMemberUserName) {
+            isShowMemberUserName = showMemberUserName;
+            notifyDataSetChanged();
+        }
+    }
 
     AlphaUserInfo alphaUserInfo;
     private List<GroupContactBean> contactBeanList;//本地联系人
@@ -106,6 +121,26 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMMessageCustomBody> i
             }
         }
         return "";
+    }
+
+    /**
+     * 获取用户名
+     *
+     * @param accid
+     * @return
+     */
+    @CheckResult
+    public GroupContactBean getUser(String accid) {
+        if (contactBeanList != null && !TextUtils.isEmpty(accid)) {
+            GroupContactBean groupContactBean = new GroupContactBean();
+            groupContactBean.accid = accid.toLowerCase();
+            int indexOf = contactBeanList.indexOf(groupContactBean);
+            if (indexOf >= 0) {
+                groupContactBean = contactBeanList.get(indexOf);
+                return groupContactBean;
+            }
+        }
+        return null;
     }
 
     public ChatAdapter(List<GroupContactBean> contactBeanList) {
@@ -469,6 +504,16 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMMessageCustomBody> i
                             chat_user_icon_iv);
             holder.bindChildClick(chat_user_icon_iv);
         }
+        TextView chat_user_name_tv = holder.obtainView(R.id.chat_user_name_tv);
+        if (chat_user_name_tv != null) {
+            if (isShowMemberUserName) {
+                chat_user_name_tv.setVisibility(View.VISIBLE);
+                GroupContactBean user = getUser(imMessageCustomBody.from);
+                chat_user_name_tv.setText(user != null ? user.name : "该联系人未查询到");
+            } else {
+                chat_user_name_tv.setVisibility(View.GONE);
+            }
+        }
     }
 
     /**
@@ -507,11 +552,22 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMMessageCustomBody> i
             if (imMessageCustomBody.ext != null) {
                 picUrl = imMessageCustomBody.ext.thumb;
             }
-            Glide.with(chat_image_iv.getContext())
-                    .load(picUrl)
-                    .asBitmap()
-                    .error(R.mipmap.default_img_failed)
-                    .into(new FitHeightImgViewTarget(chat_image_iv));
+            if (!TextUtils.isEmpty(picUrl)
+                    && picUrl.endsWith(".gif")) {
+                Glide.with(chat_image_iv.getContext())
+                        .load(picUrl)
+                        .diskCacheStrategy(DiskCacheStrategy.SOURCE)
+                        .error(R.mipmap.default_img_failed)
+                        .into(chat_image_iv);
+            } else {
+                Glide.with(chat_image_iv.getContext())
+                        .load(picUrl)
+                        .asBitmap()
+                        .diskCacheStrategy(DiskCacheStrategy.SOURCE)
+                        .error(R.mipmap.default_img_failed)
+                        .into(new FitHeightImgViewTarget(chat_image_iv));
+
+            }
         }
     }
 
@@ -619,6 +675,7 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMMessageCustomBody> i
         }
 
         holder.bindChildClick(chat_ding_content_iamge_iv);
+        holder.bindChildLongClick(chat_ding_content_iamge_iv);
         setTypeDingFromUser(holder, imMessageCustomBody, position);
     }
 
@@ -828,7 +885,7 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMMessageCustomBody> i
     public String getShowTime(int pos) {
         IMMessageCustomBody item = getItem(pos);
         return item != null ?
-                DateUtils.getTimeShowString(item.send_time, true) : "null";
+                DateUtils.getFormatChatTime(item.send_time) : "null";
     }
 
 

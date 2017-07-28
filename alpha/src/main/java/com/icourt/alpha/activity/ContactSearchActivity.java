@@ -23,12 +23,14 @@ import android.widget.TextView;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.IMContactAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
+import com.icourt.alpha.adapter.baseadapter.adapterObserver.DataChangeAdapterObserver;
 import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.db.convertor.IConvertModel;
 import com.icourt.alpha.db.convertor.ListConvertor;
 import com.icourt.alpha.db.dbmodel.ContactDbModel;
 import com.icourt.alpha.db.dbservice.ContactDbService;
 import com.icourt.alpha.entity.bean.GroupContactBean;
+import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.view.SoftKeyboardSizeWatchLayout;
 import com.icourt.alpha.widget.filter.ListFilter;
@@ -39,6 +41,7 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import io.realm.Case;
 import io.realm.RealmResults;
 
 /**
@@ -51,15 +54,17 @@ import io.realm.RealmResults;
 public class ContactSearchActivity extends BaseActivity implements BaseRecyclerAdapter.OnItemClickListener {
     public static final String KEY_KEYWORD = "keyWord";
     IMContactAdapter imContactAdapter;
-    @BindView(R.id.et_contact_name)
-    EditText etContactName;
+    ContactDbService contactDbService;
+    @BindView(R.id.et_input_name)
+    EditText etInputName;
     @BindView(R.id.tv_search_cancel)
     TextView tvSearchCancel;
     @BindView(R.id.recyclerView)
     RecyclerView recyclerView;
+    @BindView(R.id.contentEmptyText)
+    TextView contentEmptyText;
     @BindView(R.id.softKeyboardSizeWatchLayout)
     SoftKeyboardSizeWatchLayout softKeyboardSizeWatchLayout;
-    ContactDbService contactDbService;
 
     public static void launch(@NonNull Context context,
                               @Nullable View searchLayout,
@@ -81,7 +86,7 @@ public class ContactSearchActivity extends BaseActivity implements BaseRecyclerA
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_contact_search);
+        setContentView(R.layout.activity_base_search_reyclerview);
         ButterKnife.bind(this);
         initView();
     }
@@ -101,7 +106,7 @@ public class ContactSearchActivity extends BaseActivity implements BaseRecyclerA
                     case RecyclerView.SCROLL_STATE_DRAGGING: {
                         if (softKeyboardSizeWatchLayout != null
                                 && softKeyboardSizeWatchLayout.isSoftKeyboardPop()) {
-                            SystemUtils.hideSoftKeyBoard(getActivity(), etContactName, true);
+                            SystemUtils.hideSoftKeyBoard(getActivity(), etInputName, true);
                         }
                     }
                     break;
@@ -113,7 +118,7 @@ public class ContactSearchActivity extends BaseActivity implements BaseRecyclerA
                 super.onScrolled(recyclerView, dx, dy);
             }
         });
-        etContactName.addTextChangedListener(new TextWatcher() {
+        etInputName.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
 
@@ -135,13 +140,13 @@ public class ContactSearchActivity extends BaseActivity implements BaseRecyclerA
                 }
             }
         });
-        etContactName.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+        etInputName.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 switch (actionId) {
                     case EditorInfo.IME_ACTION_SEARCH: {
-                        SystemUtils.hideSoftKeyBoard(getActivity(), etContactName);
-                        if (!TextUtils.isEmpty(etContactName.getText())) {
+                        SystemUtils.hideSoftKeyBoard(getActivity(), etInputName);
+                        if (!TextUtils.isEmpty(etInputName.getText())) {
                             getData(true);
                         }
                     }
@@ -151,21 +156,29 @@ public class ContactSearchActivity extends BaseActivity implements BaseRecyclerA
                 }
             }
         });
-        etContactName.setText(getIntent().getStringExtra(KEY_KEYWORD));
-        etContactName.setSelection(etContactName.getText().length());
+        etInputName.setText(getIntent().getStringExtra(KEY_KEYWORD));
+        etInputName.setSelection(etInputName.getText().length());
+
+        imContactAdapter.registerAdapterDataObserver(new DataChangeAdapterObserver() {
+            @Override
+            protected void updateUI() {
+                contentEmptyText.setVisibility(imContactAdapter.getItemCount() > 0 ? View.GONE : View.VISIBLE);
+            }
+        });
     }
 
     @Override
     protected void getData(boolean isRefresh) {
         super.getData(isRefresh);
         try {
-            RealmResults<ContactDbModel> name = contactDbService.contains("name", etContactName.getText().toString());
+            RealmResults<ContactDbModel> name = contactDbService.contains("name", etInputName.getText().toString(), "nameCharacter", etInputName.getText().toString(), Case.INSENSITIVE);
             if (name == null) {
                 imContactAdapter.clearData();
                 return;
             }
             List<GroupContactBean> contactBeen = ListConvertor.convertList(new ArrayList<IConvertModel<GroupContactBean>>(name));
             fiterRobots(contactBeen);
+            filterMySelf(contactBeen);
             imContactAdapter.bindData(true, contactBeen);
         } catch (Throwable e) {
             e.printStackTrace();
@@ -181,13 +194,26 @@ public class ContactSearchActivity extends BaseActivity implements BaseRecyclerA
         return new ListFilter<GroupContactBean>().filter(contactBeen, GroupContactBean.TYPE_ROBOT);
     }
 
+    /**
+     * 过滤调自己
+     *
+     * @param data
+     * @return
+     */
+    private List<GroupContactBean> filterMySelf(List<GroupContactBean> data) {
+        GroupContactBean groupContactBean = new GroupContactBean();
+        groupContactBean.accid = StringUtils.toLowerCase(getLoginUserId());
+        new ListFilter<GroupContactBean>().filter(data, groupContactBean);
+        return data;
+    }
+
     @OnClick({R.id.tv_search_cancel})
     @Override
     public void onClick(View v) {
         super.onClick(v);
         switch (v.getId()) {
             case R.id.tv_search_cancel:
-                SystemUtils.hideSoftKeyBoard(getActivity(), etContactName, true);
+                SystemUtils.hideSoftKeyBoard(getActivity(), etInputName, true);
                 finish();
                 break;
         }

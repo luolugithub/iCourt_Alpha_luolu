@@ -1,6 +1,8 @@
 package com.icourt.alpha.base;
 
 import android.graphics.Color;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
 import android.os.StrictMode;
@@ -13,6 +15,7 @@ import com.icourt.alpha.R;
 import com.icourt.alpha.activity.ChatActivity;
 import com.icourt.alpha.constants.Const;
 import com.icourt.alpha.entity.bean.AlphaUserInfo;
+import com.icourt.alpha.http.AlphaClient;
 import com.icourt.alpha.http.HConst;
 import com.icourt.alpha.utils.ActivityLifecycleTaskCallbacks;
 import com.icourt.alpha.utils.GlideImageLoader;
@@ -20,11 +23,10 @@ import com.icourt.alpha.utils.LogUtils;
 import com.icourt.alpha.utils.LoginInfoUtils;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.utils.UserPreferences;
-import com.icourt.alpha.utils.logger.AndroidLogAdapter;
-import com.icourt.alpha.utils.logger.LogLevel;
-import com.icourt.alpha.utils.logger.Logger;
 import com.icourt.alpha.widget.nim.AlphaMessageNotifierCustomization;
 import com.icourt.alpha.widget.nim.NimAttachParser;
+import com.icourt.lib.daemon.DaemonEnv;
+import com.icourt.alpha.service.DaemonService;
 import com.iflytek.cloud.SpeechConstant;
 import com.iflytek.cloud.SpeechUtility;
 import com.liulishuo.filedownloader.FileDownloader;
@@ -33,12 +35,16 @@ import com.liulishuo.filedownloader.util.FileDownloadLog;
 import com.netease.nimlib.sdk.NIMClient;
 import com.netease.nimlib.sdk.SDKOptions;
 import com.netease.nimlib.sdk.auth.LoginInfo;
+import com.netease.nimlib.sdk.mixpush.NIMPushClient;
 import com.netease.nimlib.sdk.msg.MsgService;
 import com.netease.nimlib.sdk.msg.model.IMMessage;
 import com.netease.nimlib.sdk.team.constant.TeamFieldEnum;
 import com.netease.nimlib.sdk.team.model.IMMessageFilter;
 import com.netease.nimlib.sdk.team.model.UpdateTeamAttachment;
-import com.sensorsdata.analytics.android.sdk.SensorsDataAPI;
+import com.orhanobut.logger.AndroidLogAdapter;
+import com.orhanobut.logger.FormatStrategy;
+import com.orhanobut.logger.Logger;
+import com.orhanobut.logger.PrettyFormatStrategy;
 import com.umeng.analytics.MobclickAgent;
 import com.umeng.socialize.Config;
 import com.umeng.socialize.PlatformConfig;
@@ -46,8 +52,6 @@ import com.umeng.socialize.UMShareAPI;
 import com.umeng.socialize.utils.Log;
 
 import java.net.Proxy;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -58,6 +62,8 @@ import cn.finalteam.galleryfinal.ImageLoader;
 import cn.finalteam.galleryfinal.ThemeConfig;
 import io.realm.Realm;
 import okhttp3.OkHttpClient;
+
+import static com.icourt.alpha.utils.LoginInfoUtils.getLoginUserInfo;
 
 /**
  * Description
@@ -84,6 +90,7 @@ public class BaseApplication extends MultiDexApplication {
     public void onCreate() {
         super.onCreate();
         baseApplication = this;
+        initDaemon();
         SpeechUtility.createUtility(getApplicationContext(), SpeechConstant.APPID + "=" + Const.MSC_XUN_APPID);
         initStrictMode();
         initActivityLifecycleCallbacks();
@@ -95,11 +102,31 @@ public class BaseApplication extends MultiDexApplication {
         initDownloader();
         initBugtags();
         initGalleryFinal();
-//        initShengCe();
+        initShengCe();
+        initApiInfo();
+    }
+
+    /**
+     * 初始化线程守护
+     */
+    private void initDaemon() {
+        DaemonEnv.initialize(this, DaemonService.class, DaemonEnv.DEFAULT_WAKE_UP_INTERVAL);
+        DaemonService.start(this);
+    }
+
+    /**
+     * 设置api token等参数
+     */
+    private void initApiInfo() {
+        if (LoginInfoUtils.isUserLogin()) {
+            AlphaUserInfo loginUserInfo = LoginInfoUtils.getLoginUserInfo();
+            AlphaClient.setToken(loginUserInfo.getToken());
+            AlphaClient.setOfficeId(loginUserInfo.getOfficeId());
+        }
     }
 
     private void initShengCe() {
-        // 数据接收的 URL
+     /*   // 数据接收的 URL
         final String SA_SERVER_URL = "http://10.173.35.151:8006/sa";
         // 配置分发的 URL
         final String SA_CONFIGURE_URL = "http://10.173.35.151:8006/config/";
@@ -125,8 +152,8 @@ public class BaseApplication extends MultiDexApplication {
         // $AppViewScreen
         eventTypeList.add(SensorsDataAPI.AutoTrackEventType.APP_VIEW_SCREEN);
         // $AppClick
-        eventTypeList.add(SensorsDataAPI.AutoTrackEventType.APP_CLICK);
-        SensorsDataAPI.sharedInstance(this).enableAutoTrack(eventTypeList);
+       eventTypeList.add(SensorsDataAPI.AutoTrackEventType.APP_CLICK);
+        SensorsDataAPI.sharedInstance(this).enableAutoTrack(eventTypeList);*/
     }
 
 
@@ -146,10 +173,28 @@ public class BaseApplication extends MultiDexApplication {
         //EmojiManager.install(new EmojiOneProvider());
     }
 
+    @Override
+    public void onTerminate() {
+        super.onTerminate();
+        LogUtils.d("==========>app:onTerminate");
+    }
+
     private void initYunXin() {
 
+
+        if (SystemUtils.isMainProcess(this)) {
+            // 小米证书
+            // 此处 certificate 请传入为开发者配置好的小米证书名称
+            //NIMPushClient.registerMiPush(this, certificate, appID, appKey);
+            NIMPushClient.registerMiPush(this, "AlphaXiaoMi", "2882303761517599261", "5911759920261");
+
+            // 华为证书
+            // 此处 certificate 请传入开发者自身的华为证书名称
+            NIMPushClient.registerHWPush(this, "AlphaHuaWei");
+        }
+
         LoginInfo loginInfo = null;
-        AlphaUserInfo loginUserInfo = LoginInfoUtils.getLoginUserInfo();
+        AlphaUserInfo loginUserInfo = getLoginUserInfo();
         if (loginUserInfo != null) {
             loginInfo = new LoginInfo(loginUserInfo.getThirdpartId(), loginUserInfo.getChatToken());
         }
@@ -162,7 +207,7 @@ public class BaseApplication extends MultiDexApplication {
         }
         // 点击通知需要跳转到的界面
         config.notificationEntrance = ChatActivity.class;//通知栏提醒的响应intent的activity类型
-        config.notificationSmallIconId = R.mipmap.android_app_icon;//状态栏提醒的小图标的资源ID
+        config.notificationSmallIconId = R.mipmap.ic_launcher;//状态栏提醒的小图标的资源ID
 
         // 通知铃声的uri字符串
 //        config.notificationSound = "android.resource://com.netease.nim.demo/raw/msg";
@@ -171,6 +216,24 @@ public class BaseApplication extends MultiDexApplication {
         config.ledARGB = Color.GREEN;//呼吸灯的颜色 The color of the led.
         config.ledOnMs = 1000;//呼吸灯亮时的持续时间（毫秒）
         config.ledOffMs = 1500;//呼吸灯熄灭时的持续时间（毫秒）
+        config.ring = true;
+        Uri actualDefaultRingtoneUri = RingtoneManager.getActualDefaultRingtoneUri(this,
+                RingtoneManager.TYPE_NOTIFICATION);
+        if (actualDefaultRingtoneUri == null) {
+            actualDefaultRingtoneUri = RingtoneManager
+                    .getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+        }
+        if (actualDefaultRingtoneUri == null) {
+            actualDefaultRingtoneUri = RingtoneManager
+                    .getDefaultUri(RingtoneManager.TYPE_ALARM);
+        }
+        if (actualDefaultRingtoneUri == null) {
+            actualDefaultRingtoneUri = RingtoneManager
+                    .getDefaultUri(RingtoneManager.TYPE_ALL);
+        }
+        if (actualDefaultRingtoneUri != null) {
+            config.notificationSound = actualDefaultRingtoneUri.toString();
+        }
 
         options.statusBarNotificationConfig = config;
         UserPreferences.setStatusConfig(config);
@@ -181,6 +244,7 @@ public class BaseApplication extends MultiDexApplication {
 
         // 配置数据库加密秘钥
         options.databaseEncryptKey = "NETEASE";
+        options.sessionReadAck = true;
 
         // 配置是否需要预下载附件缩略图
         options.preloadAttach = true;
@@ -260,12 +324,18 @@ public class BaseApplication extends MultiDexApplication {
      * 初始化比较友好的日志工具
      */
     private void initLogger() {
-        Logger.init("logger")                 // default PRETTYLOGGER or use just init()
-                .methodCount(0)                 // default 2
-                .hideThreadInfo()               // default shown
-                .logLevel(BuildConfig.IS_DEBUG ? LogLevel.FULL : LogLevel.NONE)        // default LogLevel.FULL
-                .methodOffset(0)                // default 0
-                .logAdapter(new AndroidLogAdapter()); //default AndroidLogAdapter
+        FormatStrategy formatStrategy = PrettyFormatStrategy.newBuilder()
+                .showThreadInfo(false)  // (Optional) Whether to show thread info or not. Default true
+                .methodCount(0)         // (Optional) How many method line to show. Default 2
+                .methodOffset(7)        // (Optional) Hides internal method calls up to offset. Default 5
+                .tag("logger")   // (Optional) Global tag for every log. Default PRETTY_LOGGER
+                .build();
+        Logger.addLogAdapter(new AndroidLogAdapter(formatStrategy) {
+            @Override
+            public boolean isLoggable(int priority, String tag) {
+                return BuildConfig.IS_DEBUG;
+            }
+        });
     }
 
     /**
@@ -314,9 +384,11 @@ public class BaseApplication extends MultiDexApplication {
      */
     private void initGalleryFinal() {
         ThemeConfig themeConfig = new ThemeConfig.Builder()
-                .setTitleBarTextColor(getResources().getColor(R.color.alpha_font_color_black))
+                .setCheckSelectedColor(SystemUtils.getColor(this, R.color.alpha_font_color_orange))
+                .setFabNornalColor(SystemUtils.getColor(this, R.color.alpha_font_color_orange))
+                .setTitleBarTextColor(SystemUtils.getColor(this, R.color.alpha_font_color_black))
                 .setTitleBarBgColor(Color.WHITE)
-                .setTitleBarIconColor(getResources().getColor(R.color.alpha_font_color_orange))
+                .setTitleBarIconColor(SystemUtils.getColor(this, R.color.alpha_font_color_orange))
                 .build();
 
         FunctionConfig.Builder functionConfigBuilder = new FunctionConfig.Builder();
@@ -345,6 +417,7 @@ public class BaseApplication extends MultiDexApplication {
                 .startAsync(true)
                 .trackingConsoleLog(true)//是否收集console log
                 .uploadDataOnlyViaWiFi(true)//wifi 上传
+                .trackingAnr(true)              //收集 ANR，默认 false
                 .trackingUserSteps(true)//是否收集用户操作步骤
                 //.trackingNetworkURLFilter("(.*)")//自定义网络请求跟踪的 url 规则，默认 null
                 .versionName(BuildConfig.VERSION_NAME)//自定义版本名称

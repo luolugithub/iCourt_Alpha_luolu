@@ -1,9 +1,11 @@
 package com.icourt.alpha.activity;
 
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
@@ -23,6 +25,7 @@ import com.icourt.alpha.utils.LogUtils;
 import com.icourt.alpha.utils.UriUtils;
 import com.icourt.alpha.view.NoScrollViewPager;
 
+import java.net.URLDecoder;
 import java.util.Arrays;
 
 import butterknife.BindView;
@@ -38,7 +41,7 @@ import butterknife.OnClick;
  */
 public class ImportFile2AlphaActivity extends BaseActivity
         implements OnPageFragmentCallBack {
-
+    private static final String CLOSE_ACTION = "close_action";//关闭当前页面
     BaseFragmentAdapter baseFragmentAdapter;
     @BindView(R.id.titleBack)
     ImageView titleBack;
@@ -51,9 +54,35 @@ public class ImportFile2AlphaActivity extends BaseActivity
     @BindView(R.id.titleAction)
     TextView titleAction;
 
+    public static void lauchClose(@NonNull Context context) {
+        if (context == null) return;
+        Intent intent = new Intent(context, ImportFile2AlphaActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        intent.setAction(CLOSE_ACTION);
+        context.startActivity(intent);
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        if (intent != null) {
+            String action = intent.getAction();
+            if (TextUtils.equals(action, CLOSE_ACTION)) {
+                finish();
+            }
+        }
+    }
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if (getIntent() != null) {
+            if (TextUtils.equals(getIntent().getAction(), CLOSE_ACTION)) {
+                finish();
+                return;
+            }
+        }
         setContentView(R.layout.activity_import_file_to_alpha);
         ButterKnife.bind(this);
         initView();
@@ -65,19 +94,28 @@ public class ImportFile2AlphaActivity extends BaseActivity
         String action = getIntent().getAction();
         String type = getIntent().getType();
         Uri fileUir = null;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-            if (getIntent().getClipData() != null) {
-                if (getIntent().getClipData().getItemCount() > 0) {
-                    fileUir = getIntent().getClipData().getItemAt(0).getUri();
+        if (TextUtils.equals(action, Intent.ACTION_SEND)) {//分享
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                if (getIntent().getClipData() != null) {
+                    if (getIntent().getClipData().getItemCount() > 0) {
+                        fileUir = getIntent().getClipData().getItemAt(0).getUri();
+                    }
                 }
+            } else {
+                fileUir = getIntent().getData();
             }
-        } else {
+        } else {//打开方式
             fileUir = getIntent().getData();
         }
-
         String extraSubject = getIntent().getStringExtra(Intent.EXTRA_SUBJECT);
         String extraText = getIntent().getStringExtra(Intent.EXTRA_TEXT);
         String extraStream = getIntent().getStringExtra(Intent.EXTRA_STREAM);
+        log("-------->share action:" + action);
+        log("-------->share type:" + type);
+        log("-------->share uri:" + fileUir);
+        log("-------->share extraSubject:" + extraSubject);
+        log("-------->share extraText:" + extraText);
+        log("-------->share extraStream:" + extraStream);
 
         LogUtils.logBundle(getIntent().getExtras());
         if (!isUserLogin()) {
@@ -94,13 +132,8 @@ public class ImportFile2AlphaActivity extends BaseActivity
                     titleBack.setVisibility(View.GONE);
                     titleCancel.setVisibility(View.VISIBLE);
                     titleAction.setVisibility(View.GONE);
-                } else if (position == 1) {
-                    titleContent.setText("享聊");
-                    titleBack.setVisibility(View.VISIBLE);
-                    titleCancel.setVisibility(View.GONE);
-                    titleAction.setVisibility(View.VISIBLE);
                 } else {
-                    titleContent.setText("项目");
+                    titleContent.setText("享聊");
                     titleBack.setVisibility(View.VISIBLE);
                     titleCancel.setVisibility(View.GONE);
                     titleAction.setVisibility(View.VISIBLE);
@@ -112,7 +145,19 @@ public class ImportFile2AlphaActivity extends BaseActivity
         String desc = null;
         if (TextUtils.equals(type, "text/plain"))//网页
         {
-            path = extraText;
+            //可能是.txt 带中文路径的
+            if (fileUir != null) {
+                try {
+                    String decodePath = URLDecoder.decode(fileUir.toString(), "utf-8");
+                    Uri parse = Uri.parse(decodePath);
+                    path = UriUtils.getPath(getContext(), parse);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    path = UriUtils.getPath(getContext(), fileUir);
+                }
+            } else {
+                path = extraText;
+            }
             desc = extraSubject;
         } else {//文件
             path = UriUtils.getPath(getContext(), fileUir);
@@ -120,10 +165,18 @@ public class ImportFile2AlphaActivity extends BaseActivity
         //fileProvider
         if (TextUtils.isEmpty(path) && fileUir != null) {
             path = fileUir.toString();
+            try {
+                path = URLDecoder.decode(fileUir.toString(), "utf-8");
+            } catch (Exception e) {
+                e.printStackTrace();
+                path = fileUir.toString();
+            }
         }
+        log("----------->path:" + path);
         viewPager.setAdapter(baseFragmentAdapter = new BaseFragmentAdapter(getSupportFragmentManager()));
         baseFragmentAdapter.bindData(true,
-                Arrays.asList(FileImportNavFragment.newInstance(path, desc),
+                Arrays.asList(
+                        FileImportNavFragment.newInstance(path, desc),
                         FileImportContactFragment.newInstance(path, desc, true),
                         FileImportTeamFragment.newInstance(path, desc)));
     }

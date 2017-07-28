@@ -24,6 +24,9 @@
                 android:layout_height="wrap_content"
                 android:background="@android:color/white" />
 
+            <include layout="@layout/layout_empty_tv"
+                android:visibility="gone"/>
+
             <com.gjiazhe.wavesidebar.WaveSideBar
                 android:id="@+id/recyclerIndexBar"
                 android:layout_width="match_parent"

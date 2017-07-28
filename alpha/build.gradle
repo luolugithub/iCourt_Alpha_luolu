@@ -1,6 +1,7 @@
 apply plugin: 'com.android.application'
 apply plugin: 'com.bugtags.library.plugin'
 apply plugin: 'realm-android'
+apply plugin: 'com.jakewharton.butterknife'
 //apply plugin: 'com.sensorsdata.analytics.android'
 android {
     compileSdkVersion rootProject.ext.android.compileSdkVersion
@@ -11,13 +12,16 @@ android {
         minSdkVersion rootProject.ext.android.minSdkVersion
         targetSdkVersion rootProject.ext.android.targetSdkVersion
         multiDexEnabled true
-        versionCode 6
-        versionName "v2.0.0" //3位版本号
-
+        versionCode 9
+        versionName "v2.0.1" //3位版本号
+        compileOptions {
+            sourceCompatibility JavaVersion.VERSION_1_7
+            targetCompatibility JavaVersion.VERSION_1_7
+        }
         manifestPlaceholders = [UMENG_CHANNEL_VALUE: "Other"]//default_channel
         ndk {
             //请勿轻易修改
-            abiFilters "armeabi", "arm64-v8a", "x86"
+            abiFilters "armeabi-v7a", "arm64-v8a", "x86"
         }
     }
 
@@ -63,7 +67,7 @@ android {
             buildConfigField "String", "APK_RELEASE_TIME", "\"${releaseTime()}\""
             buildConfigField "String", "API_URL", rootProject.ext.alphaAPIUrl.api_url_debug
             buildConfigField "String", "API_CHAT_URL", rootProject.ext.alphaChatAPIUrl.api_chat_url_debug
-            buildConfigField "String", "HOST_URL", rootProject.ext.alphaHostUrl.host_url_debug
+            buildConfigField "String", "API_SFILE_URL", rootProject.ext.alphaSFileUrl.api_url_debug
             buildConfigField "String", "APK_UPDATE_URL", rootProject.ext.alphaApkUpdateUrl.apk_update_url_debug
             versionNameSuffix "_debug"
             minifyEnabled false
@@ -74,23 +78,21 @@ android {
             manifestPlaceholders = [NIM_APPKEY: rootProject.ext.nimAppKey.debugAppKey]
 
             //用正式
-            /* buildConfigField "String", "API_URL", rootProject.ext.alphaAPIUrl.api_url_release
+             /*buildConfigField "String", "API_URL", rootProject.ext.alphaAPIUrl.api_url_release
              buildConfigField "String", "API_CHAT_URL", rootProject.ext.alphaChatAPIUrl.api_chat_url_release
-              buildConfigField "String", "HOST_URL", rootProject.ext.alphaHostUrl.host_url_release
-              buildConfigField "String", "APK_UPDATE_URL", rootProject.ext.alphaApkUpdateUrl.apk_update_url_release
-              manifestPlaceholders = [NIM_APPKEY: rootProject.ext.nimAppKey.releaseAppKey]
- */
+             buildConfigField "String", "API_SFILE_URL", rootProject.ext.alphaSFileUrl.api_url_release
+             buildConfigField "String", "APK_UPDATE_URL", rootProject.ext.alphaApkUpdateUrl.apk_update_url_release
+             manifestPlaceholders = [NIM_APPKEY: rootProject.ext.nimAppKey.releaseAppKey]*/
             //测试用
             buildConfigField "String", "API_URL", rootProject.ext.alphaAPIUrl.api_url_test
             buildConfigField "String", "API_CHAT_URL", rootProject.ext.alphaChatAPIUrl.api_chat_url_test
-            buildConfigField "String", "HOST_URL", rootProject.ext.alphaHostUrl.host_url_test
+            buildConfigField "String", "API_SFILE_URL", rootProject.ext.alphaSFileUrl.api_url_test
             buildConfigField "String", "APK_UPDATE_URL", rootProject.ext.alphaApkUpdateUrl.apk_update_url_test
             manifestPlaceholders = [NIM_APPKEY: rootProject.ext.nimAppKey.testAppKey]
-
-
+            //预览版用
 //            buildConfigField "String", "API_URL", rootProject.ext.alphaAPIUrl.api_url_preview
 //            buildConfigField "String", "API_CHAT_URL", rootProject.ext.alphaChatAPIUrl.api_chat_url_preview
-//            buildConfigField "String", "HOST_URL", rootProject.ext.alphaHostUrl.host_url_preview
+//            buildConfigField "String", "API_SFILE_URL", rootProject.ext.alphaSFileUrl.api_url_preview
 //            buildConfigField "String", "APK_UPDATE_URL", rootProject.ext.alphaApkUpdateUrl.apk_update_url_preview
 //            manifestPlaceholders = [NIM_APPKEY: rootProject.ext.nimAppKey.previewAppKey]
         }
@@ -101,7 +103,7 @@ android {
             buildConfigField "String", "APK_RELEASE_TIME", "\"${releaseTime()}\""
             buildConfigField "String", "API_URL", rootProject.ext.alphaAPIUrl.api_url_test
             buildConfigField "String", "API_CHAT_URL", rootProject.ext.alphaChatAPIUrl.api_chat_url_test
-            buildConfigField "String", "HOST_URL", rootProject.ext.alphaHostUrl.host_url_test
+            buildConfigField "String", "API_SFILE_URL", rootProject.ext.alphaSFileUrl.api_url_test
             buildConfigField "String", "APK_UPDATE_URL", rootProject.ext.alphaApkUpdateUrl.apk_update_url_test
             versionNameSuffix "_test"
             minifyEnabled false
@@ -118,7 +120,7 @@ android {
             buildConfigField "String", "APK_RELEASE_TIME", "\"${releaseTime()}\""
             buildConfigField "String", "API_URL", rootProject.ext.alphaAPIUrl.api_url_preview
             buildConfigField "String", "API_CHAT_URL", rootProject.ext.alphaChatAPIUrl.api_chat_url_preview
-            buildConfigField "String", "HOST_URL", rootProject.ext.alphaHostUrl.host_url_preview
+            buildConfigField "String", "API_SFILE_URL", rootProject.ext.alphaSFileUrl.api_url_preview
             buildConfigField "String", "APK_UPDATE_URL", rootProject.ext.alphaApkUpdateUrl.apk_update_url_preview
             versionNameSuffix "_preview"
             minifyEnabled false
@@ -135,7 +137,7 @@ android {
             buildConfigField "String", "APK_RELEASE_TIME", "\"${releaseTime()}\""
             buildConfigField "String", "API_URL", rootProject.ext.alphaAPIUrl.api_url_release
             buildConfigField "String", "API_CHAT_URL", rootProject.ext.alphaChatAPIUrl.api_chat_url_release
-            buildConfigField "String", "HOST_URL", rootProject.ext.alphaHostUrl.host_url_release
+            buildConfigField "String", "API_SFILE_URL", rootProject.ext.alphaSFileUrl.api_url_release
             buildConfigField "String", "APK_UPDATE_URL", rootProject.ext.alphaApkUpdateUrl.apk_update_url_inner_release
             versionNameSuffix "_inner_release"
             shrinkResources false   // 移除无用的resource文件
@@ -146,15 +148,32 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
             manifestPlaceholders = [NIM_APPKEY: rootProject.ext.nimAppKey.releaseAppKey]
         }
-
-        //正式上线版
-        release {
+        //内部版 每天发版本
+        innerrelease_daily {
             buildConfigField "int", "BUILD_TYPE_INT", "4"
             buildConfigField "boolean", "IS_DEBUG", "false"
             buildConfigField "String", "APK_RELEASE_TIME", "\"${releaseTime()}\""
             buildConfigField "String", "API_URL", rootProject.ext.alphaAPIUrl.api_url_release
             buildConfigField "String", "API_CHAT_URL", rootProject.ext.alphaChatAPIUrl.api_chat_url_release
-            buildConfigField "String", "HOST_URL", rootProject.ext.alphaHostUrl.host_url_release
+            buildConfigField "String", "API_SFILE_URL", rootProject.ext.alphaSFileUrl.api_url_release
+            buildConfigField "String", "APK_UPDATE_URL", rootProject.ext.alphaApkUpdateUrl.apk_update_url_inner_release_daily
+            versionNameSuffix "_inner_release_daily"
+            shrinkResources false   // 移除无用的resource文件
+            zipAlignEnabled false        //Zipalign优化
+            minifyEnabled false     //混淆
+            signingConfig signingConfigs.release
+            pseudoLocalesEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
+            manifestPlaceholders = [NIM_APPKEY: rootProject.ext.nimAppKey.releaseAppKey]
+        }
+        //正式上线版
+        release {
+            buildConfigField "int", "BUILD_TYPE_INT", "5"
+            buildConfigField "boolean", "IS_DEBUG", "false"
+            buildConfigField "String", "APK_RELEASE_TIME", "\"${releaseTime()}\""
+            buildConfigField "String", "API_URL", rootProject.ext.alphaAPIUrl.api_url_release
+            buildConfigField "String", "API_CHAT_URL", rootProject.ext.alphaChatAPIUrl.api_chat_url_release
+            buildConfigField "String", "API_SFILE_URL", rootProject.ext.alphaSFileUrl.api_url_release
             buildConfigField "String", "APK_UPDATE_URL", rootProject.ext.alphaApkUpdateUrl.apk_update_url_release
             shrinkResources false   // 移除无用的resource文件
             zipAlignEnabled false        //Zipalign优化
@@ -210,6 +229,12 @@ bugtags {
     //网络跟踪功能配置(企业版)
     //trackingNetworkEnabled true
 }
+
+repositories {
+    flatDir {
+        dirs 'aars'
+    }
+}
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     //compile rootProject.ext.dependencies.constraintLayout
@@ -235,31 +260,34 @@ dependencies {
     compile rootProject.ext.dependencies.topsnackbar
     compile rootProject.ext.dependencies.glide
     compile rootProject.ext.dependencies.xrefreshview
-    compile 'com.trello.rxlifecycle2:rxlifecycle:2.0.1'
-    compile 'com.trello.rxlifecycle2:rxlifecycle-android:2.0.1'
-
-    compile 'com.jakewharton:butterknife:8.5.1'
-    annotationProcessor 'com.jakewharton:butterknife-compiler:8.5.1'
+    compile rootProject.ext.dependencies.logger
+    compile 'com.trello.rxlifecycle2:rxlifecycle:2.1.0'
+    compile 'com.trello.rxlifecycle2:rxlifecycle-android:2.1.0'
+    compile 'com.jakewharton:butterknife:8.6.0'
+    annotationProcessor 'com.jakewharton:butterknife-compiler:8.6.0'
     compile 'com.kaopiz:kprogresshud:1.0.5'
     compile 'com.liulishuo.filedownloader:library:1.3.0'
     compile 'q.rorbin:badgeview:1.1.0'
     compile 'cn.finalteam:galleryfinal:1.4.8.7'
     compile 'com.gjiazhe:wavesidebar:1.3'
-
     // 基础功能 (必需)
-    compile 'com.netease.nimlib:basesdk:3.3.0'
+    compile 'com.netease.nimlib:basesdk:4.0.0'
     // 音视频需要
-//    compile 'com.netease.nimlib:avchat:3.2.0'
+    //    compile 'com.netease.nimlib:avchat:3.2.0'
     // 聊天室需要
-//    compile 'com.netease.nimlib:chatroom:3.2.0'
+    //    compile 'com.netease.nimlib:chatroom:3.2.0'
     //compile 'com.vanniktech:emoji-one:0.4.0'
     compile 'com.github.w446108264:XhsEmoticonsKeyboard:2.0.4'
     compile 'com.github.w446108264:AndroidEmoji:1.3-withsource'
     compile 'com.contrarywind:Android-PickerView:3.2.4'
-    compile 'com.github.sundeepk:compact-calendar-view:2.0.2'
+    compile 'com.github.sundeepk:compact-calendar-view:2.0.2.1'
     compile 'com.umeng.analytics:analytics:latest.integration'
     compile 'com.github.lecho:hellocharts-library:1.5.8@aar'
-    compile 'com.sensorsdata.analytics.android:SensorsAnalyticsSDK:1.7.4'
+    compile project(':lib_calendar')
+    //compile 'com.sensorsdata.analytics.android:SensorsAnalyticsSDK:1.7.4'
     //compile 'com.getui:sdk:2.10.2.0'
+    compile project(path: ':lib_daemon')
+    compile files('libs/MiPush_SDK_Client_3_4_3.jar')
+    compile(name: 'HMS-SDK-2.4.0.300', ext: 'aar')
 }
 

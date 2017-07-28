@@ -17,6 +17,7 @@ import android.widget.TextView;
 import com.andview.refreshview.XRefreshView;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.ProjectTaskGroupAdapter;
+import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.adapterObserver.RefreshViewEmptyObserver;
 import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.entity.bean.TaskGroupEntity;
@@ -39,9 +40,10 @@ import retrofit2.Response;
  * version 2.0.0
  */
 
-public class ProjectTaskGroupActivity extends BaseActivity {
+public class ProjectTaskGroupActivity extends BaseActivity implements BaseRecyclerAdapter.OnItemClickListener {
     private static final String KEY_PROJECT_ID = "key_project_id";
-    private static final int CREATE_GROUP_REQUEST_CODE = 0;
+    private static final int CREATE_GROUP_REQUEST_CODE = 0;//新建
+    private static final int UPDATE_GROUP_REQUEST_CODE = 1;//编辑
     @BindView(R.id.titleBack)
     ImageView titleBack;
     @BindView(R.id.titleContent)
@@ -57,6 +59,8 @@ public class ProjectTaskGroupActivity extends BaseActivity {
 
     String projectId;
     ProjectTaskGroupAdapter projectTaskGroupAdapter;
+    boolean isCanAddGroup = false;//是否可以添加任务组
+    boolean isCanEditGroup = false;//是否可以编辑任务组
 
     public static void launch(@NonNull Context context, @NonNull String projectId) {
         if (context == null) return;
@@ -86,14 +90,14 @@ public class ProjectTaskGroupActivity extends BaseActivity {
         super.initView();
         projectId = getIntent().getStringExtra(KEY_PROJECT_ID);
         setTitle(R.string.manage_task_group_text);
-        refreshLayout.setNoticeEmpty(R.mipmap.icon_placeholder_task, R.string.task_list_group_null_text);
+        refreshLayout.setNoticeEmpty(R.mipmap.bg_no_task, R.string.task_list_group_null_text);
         refreshLayout.setMoveForHorizontal(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setHasFixedSize(true);
 
         recyclerView.setAdapter(projectTaskGroupAdapter = new ProjectTaskGroupAdapter(false));
         projectTaskGroupAdapter.registerAdapterDataObserver(new RefreshViewEmptyObserver(refreshLayout, projectTaskGroupAdapter));
-
+        projectTaskGroupAdapter.setOnItemClickListener(this);
         refreshLayout.setXRefreshViewListener(new XRefreshView.SimpleXRefreshListener() {
             @Override
             public void onRefresh(boolean isPullDown) {
@@ -107,8 +111,9 @@ public class ProjectTaskGroupActivity extends BaseActivity {
                 getData(false);
             }
         });
-        refreshLayout.setAutoRefresh(true);
         refreshLayout.startRefresh();
+        titleAction.setVisibility(View.INVISIBLE);
+        checkProjectPms();
     }
 
     @Override
@@ -116,20 +121,47 @@ public class ProjectTaskGroupActivity extends BaseActivity {
         super.onClick(v);
         switch (v.getId()) {
             case R.id.titleAction://添加任务组
-                TaskGroupCreateActivity.launchForResult(this, projectId, CREATE_GROUP_REQUEST_CODE);
+                TaskGroupCreateActivity.launchForResult(this, projectId, TaskGroupCreateActivity.CREAT_TASK_GROUP_TYPE, CREATE_GROUP_REQUEST_CODE);
                 break;
         }
+    }
+
+    /**
+     * 获取项目权限
+     */
+    private void checkProjectPms() {
+        getApi().permissionQuery(getLoginUserId(), "MAT", projectId).enqueue(new SimpleCallBack<List<String>>() {
+            @Override
+            public void onSuccess(Call<ResEntity<List<String>>> call, Response<ResEntity<List<String>>> response) {
+
+                if (response.body().result != null) {
+                    if (response.body().result.contains("MAT:matter.task:add")) {
+                        isCanAddGroup = true;
+                        titleAction.setVisibility(View.VISIBLE);
+                    }
+                    if (response.body().result.contains("MAT:matter.task:edit")) {
+                        isCanEditGroup = true;
+                    }
+                    if (projectTaskGroupAdapter != null) {
+                        projectTaskGroupAdapter.setCanEditGroup(isCanEditGroup);
+                        projectTaskGroupAdapter.notifyDataSetChanged();
+                    }
+                }
+            }
+        });
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (data != null) {
+            TaskGroupEntity taskGroupEntity = (TaskGroupEntity) data.getSerializableExtra(KEY_ACTIVITY_RESULT);
             if (requestCode == CREATE_GROUP_REQUEST_CODE) {
-                TaskGroupEntity taskGroupEntity = (TaskGroupEntity) data.getSerializableExtra(KEY_ACTIVITY_RESULT);
                 if (taskGroupEntity != null) {
                     projectTaskGroupAdapter.addItem(0, taskGroupEntity);
                 }
+            } else if (requestCode == UPDATE_GROUP_REQUEST_CODE) {
+                getData(true);
             }
         }
     }
@@ -152,6 +184,14 @@ public class ProjectTaskGroupActivity extends BaseActivity {
         if (refreshLayout != null) {
             refreshLayout.stopRefresh();
             refreshLayout.stopLoadMore();
+        }
+    }
+
+    @Override
+    public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
+        if (isCanEditGroup) {
+            TaskGroupEntity entity = (TaskGroupEntity) adapter.getItem(position);
+            TaskGroupCreateActivity.launchForResult(this, entity, TaskGroupCreateActivity.UPDATE_TASK_GROUP_TYPE, UPDATE_GROUP_REQUEST_CODE);
         }
     }
 }

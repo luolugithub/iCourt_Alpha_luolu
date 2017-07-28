@@ -30,9 +30,9 @@ public class TaskUsersAdapter extends BaseArrayRecyclerAdapter<TaskEntity.TaskIt
 
         if (getItemCount() > 2) {
             if (position == 0) {
-                TextDrawable textDrawable = TextDrawable.builder().buildRound(String.valueOf(getData().size()), 0xFF8c8f92);
+                TextDrawable textDrawable = TextDrawable.builder().beginConfig().textColor(0xFFcacaca).fontSize(DensityUtil.sp2px(imageView.getContext(),13)).endConfig().buildRound(String.valueOf(getData().size()), 0xFFf8f8f9);
                 imageView.setImageDrawable(textDrawable);
-                setFirstParams(holder, DensityUtil.dip2px(imageView.getContext(), -8));
+                setChildViewParams(holder, DensityUtil.dip2px(imageView.getContext(), -8));
             } else {
                 GlideUtils.loadUser(imageView.getContext(), attendeeUserEntity.pic, imageView);
             }
@@ -41,11 +41,13 @@ public class TaskUsersAdapter extends BaseArrayRecyclerAdapter<TaskEntity.TaskIt
         }
 
         if (position == getItemCount() - 1) {
-            setFirstParams(holder, 0);
+            setChildViewParams(holder, 0);
+        }else {
+            setChildViewParams(holder, DensityUtil.dip2px(imageView.getContext(), -8));
         }
     }
 
-    private void setFirstParams(ViewHolder holder, int left) {
+    private void setChildViewParams(ViewHolder holder, int left) {
         RecyclerView.LayoutParams params = (RecyclerView.LayoutParams) holder.itemView.getLayoutParams();
         params.setMargins(left, 0, 0, 0);
         holder.itemView.setLayoutParams(params);
@@ -53,6 +55,6 @@ public class TaskUsersAdapter extends BaseArrayRecyclerAdapter<TaskEntity.TaskIt
 
     @Override
     public int getItemCount() {
-        return getData().size() >= 4 ? 3 : getData().size();
+        return getData().size() >= 5 ? 4 : getData().size();
     }
 }

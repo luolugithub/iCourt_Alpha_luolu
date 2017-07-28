@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="?attr/selectableItemBackground"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:padding="10dp">
+
+
+        <ImageView
+            android:id="@+id/task_item_checkbox"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:src="@drawable/sl_checkbox" />
+
+        <TextView
+            android:id="@+id/task_name_tv"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="8dp"
+            android:layout_marginRight="8dp"
+            android:layout_weight="1"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:text="task name"
+            android:textSize="17sp" />
+
+        <ImageView
+            android:id="@+id/task_item_timming_iv"
+            android:layout_width="25dp"
+            android:layout_height="25dp"
+            android:layout_alignParentRight="true"
+            android:padding="@dimen/dp5"
+            android:src="@mipmap/icon_start_20" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/task_desc_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/task_name_tv"
+        android:layout_marginLeft="38dp"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:text="task name"
+        android:textColor="@color/alpha_font_color_gray"
+        android:textSize="@dimen/alpha_font_size_mini_lowest" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/alpha_height_divider"
+        android:layout_marginLeft="38dp"
+        android:layout_marginTop="8dp"
+        android:background="@color/alpha_divider_color" />
+</LinearLayout>

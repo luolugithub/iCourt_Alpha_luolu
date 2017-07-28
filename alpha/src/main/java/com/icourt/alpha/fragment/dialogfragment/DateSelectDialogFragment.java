@@ -3,39 +3,30 @@ package com.icourt.alpha.fragment.dialogfragment;
 import android.app.Dialog;
 import android.content.Context;
 import android.os.Bundle;
+import android.support.annotation.IdRes;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.TextView;
 
-import com.bigkoo.pickerview.adapter.WheelAdapter;
-import com.bigkoo.pickerview.lib.WheelView;
-import com.bigkoo.pickerview.listener.OnItemSelectedListener;
-import com.github.sundeepk.compactcalendarview.CompactCalendarView;
-import com.github.sundeepk.compactcalendarview.domain.Event;
 import com.icourt.alpha.R;
+import com.icourt.alpha.base.BaseDialogFragment;
+import com.icourt.alpha.entity.bean.TaskReminderEntity;
+import com.icourt.alpha.fragment.DateSelectFragment;
+import com.icourt.alpha.fragment.ReminderFragment;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
-import com.icourt.alpha.utils.DateUtils;
+import com.icourt.alpha.interfaces.OnPageFragmentCallBack;
 import com.icourt.alpha.utils.DensityUtil;
 
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.List;
-import java.util.Locale;
-import java.util.TimeZone;
 
-import butterknife.BindView;
 import butterknife.ButterKnife;
-import butterknife.OnClick;
 import butterknife.Unbinder;
 
 /**
@@ -45,48 +36,28 @@ import butterknife.Unbinder;
  * date createTime：2017/5/12
  * version 1.0.0
  */
-public class DateSelectDialogFragment extends BaseDialogFragment {
+public class DateSelectDialogFragment extends BaseDialogFragment
+        implements OnFragmentCallBackListener, OnPageFragmentCallBack {
+
+    public static final int SELECT_DATE_FINISH = 1;//选择到期日期完成
+    public static final int SELECT_REMINDER = 2;//选择提醒
+    public static final int SELECT_REMINDER_FINISH = 3;//选择提醒完成
+    public static final int SELECT_RETASK = 4;//选择重复任务
+    public static final int SELECT_RETASK_FINISH = 5;//选择重复任务完成
 
     Unbinder unbinder;
-    @BindView(R.id.titleBack)
-    ImageView titleBack;
-    @BindView(R.id.titleContent)
-    TextView titleContent;
-    @BindView(R.id.titleForward)
-    ImageView titleForward;
-    @BindView(R.id.titleAction)
-    TextView titleAction;
-    @BindView(R.id.compactcalendar_view)
-    CompactCalendarView compactcalendarView;
-    @BindView(R.id.deadline_ll)
-    LinearLayout deadlineLl;
-    @BindView(R.id.hour_wheelView)
-    WheelView hourWheelView;
-    @BindView(R.id.minute_wheelView)
-    WheelView minuteWheelView;
-    @BindView(R.id.deadline_select_ll)
-    LinearLayout deadlineSelectLl;
-    @BindView(R.id.notice_ll)
-    LinearLayout noticeLl;
-    @BindView(R.id.repeat_notice_ll)
-    LinearLayout repeatNoticeLl;
-    @BindView(R.id.bt_cancel)
-    TextView btCancel;
-    @BindView(R.id.bt_ok)
-    TextView btOk;
-    @BindView(R.id.duetime_tv)
-    TextView duetimeTv;
-    @BindView(R.id.clear_dutime_iv)
-    ImageView clearDutimeIv;
-    private Calendar currentCalender = Calendar.getInstance(Locale.getDefault());
-    private SimpleDateFormat dateFormatForDisplaying = new SimpleDateFormat("dd-M-yyyy hh:mm:ss a", Locale.getDefault());
-    private SimpleDateFormat dateFormatForMonth = new SimpleDateFormat("yyyy年MMM", Locale.getDefault());
-    Date selectedDate;
+    Fragment currentFragment;
+    Calendar selectedCalendar;
+    TaskReminderEntity taskReminderEntity;
+    String taskId;//任务id
 
-    public static DateSelectDialogFragment newInstance(@Nullable Calendar calendar) {
+
+    public static DateSelectDialogFragment newInstance(@Nullable Calendar calendar, TaskReminderEntity taskReminderEntity, String taskId) {
         DateSelectDialogFragment dateSelectDialogFragment = new DateSelectDialogFragment();
         Bundle args = new Bundle();
+        args.putString("taskId", taskId);
         args.putSerializable("calendar", calendar);
+        args.putSerializable("taskReminder", taskReminderEntity);
         dateSelectDialogFragment.setArguments(args);
         return dateSelectDialogFragment;
     }
@@ -112,30 +83,7 @@ public class DateSelectDialogFragment extends BaseDialogFragment {
         return view;
     }
 
-    private class TimeWheelAdapter implements WheelAdapter<Integer> {
-        List<Integer> timeList = new ArrayList<>();
-
-        public TimeWheelAdapter(int count) {
-            for (int i = 0; i < count; i++) {
-                timeList.add(i);
-            }
-        }
-
-        @Override
-        public int getItemsCount() {
-            return timeList.size();
-        }
-
-        @Override
-        public Integer getItem(int i) {
-            return timeList.get(i);
-        }
-
-        @Override
-        public int indexOf(Integer o) {
-            return timeList.indexOf(o);
-        }
-    }
+    DateSelectFragment dateSelectFragment;
 
     @Override
     protected void initView() {
@@ -151,200 +99,105 @@ public class DateSelectDialogFragment extends BaseDialogFragment {
                 }
             }
         }
+        selectedCalendar = (Calendar) getArguments().getSerializable("calendar");
+        taskReminderEntity = (TaskReminderEntity) getArguments().getSerializable("taskReminder");
+        taskId = getArguments().getString("taskId");
 
-        hourWheelView.setAdapter(new TimeWheelAdapter(24));
-        minuteWheelView.setAdapter(new TimeWheelAdapter(60));
-        hourWheelView.setOnItemSelectedListener(new OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(int i) {
-                log("------------i:" + i);
-            }
-        });
-        initCompactCalendar();
-        Calendar calendar = (Calendar) getArguments().getSerializable("calendar");
-        if (calendar != null) {
-            duetimeTv.setText(DateUtils.getHHmm(calendar.getTimeInMillis()));
-            hourWheelView.setCurrentItem(calendar.get(Calendar.HOUR_OF_DAY));
-            minuteWheelView.setCurrentItem(calendar.get(Calendar.MINUTE));
-
-            titleContent.setText(dateFormatForMonth.format(calendar.getTimeInMillis()));
-            compactcalendarView.setCurrentDate(calendar.getTime());
-            compactcalendarView.invalidate();
-        }
-
-        //延迟显示 必须 否则默认值无效
-        deadlineSelectLl.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                deadlineSelectLl.setVisibility(View.GONE);
-            }
-        }, 200);
+        showFragment(dateSelectFragment = DateSelectFragment.newInstance(selectedCalendar, taskReminderEntity, taskId));
     }
 
-    private void initCompactCalendar() {
-        compactcalendarView.setUseThreeLetterAbbreviation(false);
-        compactcalendarView.setLocale(TimeZone.getDefault(), Locale.CHINESE);
-        compactcalendarView.setUseThreeLetterAbbreviation(true);
-        compactcalendarView.setDayColumnNames(new String[]{"日", "一", "二", "三", "四", "五", "六"});
-        compactcalendarView.setListener(new CompactCalendarView.CompactCalendarViewListener() {
-            @Override
-            public void onDayClick(Date date) {
-                selectedDate = date;
-            }
-
-            @Override
-            public void onMonthScroll(Date date) {
-                titleContent.setText(dateFormatForMonth.format(date));
-            }
-        });
-        titleContent.setText(dateFormatForMonth.format(System.currentTimeMillis()));
-
-        compactcalendarView.removeAllEvents();
-
-        /*loadEvents();
-        compactcalendarView.invalidate();
-        logEventsByMonth(compactcalendarView);*/
+    private void showFragment(Fragment fragment) {
+        currentFragment = addOrShowFragment(fragment, currentFragment, R.id.main_fl_content);
     }
 
-
-    private void scrollToToday() {
-        titleContent.setText(dateFormatForMonth.format(System.currentTimeMillis()));
-        compactcalendarView.setCurrentDate(new Date());
-        compactcalendarView.invalidate();
-    }
-
-    @OnClick({R.id.titleBack,
-            R.id.titleForward,
-            R.id.titleAction,
-            R.id.deadline_ll,
-            R.id.clear_dutime_iv,
-            R.id.notice_ll,
-            R.id.repeat_notice_ll,
-            R.id.bt_cancel,
-            R.id.bt_ok})
     @Override
-    public void onClick(View v) {
-        switch (v.getId()) {
-            case R.id.titleBack:
-                compactcalendarView.showPreviousMonth();
-                break;
-            case R.id.titleForward:
-                compactcalendarView.showNextMonth();
-                break;
-            case R.id.titleAction:
-                scrollToToday();
-                break;
-            case R.id.deadline_ll:
-                if (deadlineSelectLl.getVisibility() == View.VISIBLE) {
-                    deadlineSelectLl.setVisibility(View.GONE);
-                } else {
-                    deadlineSelectLl.setVisibility(View.VISIBLE);
-                }
-                break;
-            case R.id.clear_dutime_iv:
-                duetimeTv.setText("23:59");
-                hourWheelView.setCurrentItem(23);
-                minuteWheelView.setCurrentItem(59);
-                break;
-            case R.id.notice_ll:
-                break;
-            case R.id.repeat_notice_ll:
-                break;
-            case R.id.bt_cancel:
-                dismiss();
-                break;
-            case R.id.bt_ok:
-                if (getParentFragment() instanceof OnFragmentCallBackListener) {
-                    onFragmentCallBackListener = (OnFragmentCallBackListener) getParentFragment();
-                }
-                if (onFragmentCallBackListener != null) {
-                    Bundle bundle = new Bundle();
-                    bundle.putLong(KEY_FRAGMENT_RESULT, getSelectedMillis());
-                    onFragmentCallBackListener.onFragmentCallBack(DateSelectDialogFragment.this, 0, bundle);
-                }
-                dismiss();
-                break;
-            default:
-                super.onClick(v);
-                break;
+    protected Fragment addOrShowFragment(@NonNull Fragment targetFragment, Fragment currentFragment, @IdRes int containerViewId) {
+        if (targetFragment == null) return currentFragment;
+        if (targetFragment == currentFragment) return currentFragment;
+        FragmentManager fm = getChildFragmentManager();
+        FragmentTransaction transaction = fm.beginTransaction();
+        if (fm.getBackStackEntryCount() > 0) {
+            transaction.setCustomAnimations(
+                    R.anim.fragment_slide_right_in, R.anim.fragment_slide_left_out,
+                    R.anim.fragment_slide_left_in, R.anim.fragment_slide_right_out);
         }
+        transaction.replace(containerViewId, targetFragment, String.valueOf(targetFragment.hashCode())).commitAllowingStateLoss();
+        transaction.addToBackStack(String.valueOf(targetFragment.hashCode()));
+        return targetFragment;
     }
 
-    private long getSelectedMillis() {
-        if (selectedDate == null) {
-            selectedDate = new Date();
-        }
-        Calendar instance = Calendar.getInstance();
-        instance.setTime(selectedDate);
-        log("---------->in:" + hourWheelView.getCurrentItem());
-        instance.set(Calendar.HOUR_OF_DAY, hourWheelView.getCurrentItem());
-        instance.set(Calendar.MINUTE, minuteWheelView.getCurrentItem());
-        return instance.getTimeInMillis();
-    }
-
-    private void loadEvents() {
-        addEvents(-1, -1);
-        addEvents(Calendar.DECEMBER, -1);
-        addEvents(Calendar.AUGUST, -1);
-    }
-
-
-    private void logEventsByMonth(CompactCalendarView compactCalendarView) {
-        currentCalender.setTime(new Date());
-        currentCalender.set(Calendar.DAY_OF_MONTH, 1);
-        currentCalender.set(Calendar.MONTH, Calendar.AUGUST);
-        List<String> dates = new ArrayList<>();
-        for (Event e : compactCalendarView.getEventsForMonth(new Date())) {
-            dates.add(dateFormatForDisplaying.format(e.getTimeInMillis()));
-        }
-        log("---------->Events for Aug with simple date formatter: " + dates);
-        log("---------->Events for Aug month using default local and timezone: " + compactCalendarView.getEventsForMonth(currentCalender.getTime()));
-    }
-
-    private void addEvents(int month, int year) {
-        currentCalender.setTime(new Date());
-        currentCalender.set(Calendar.DAY_OF_MONTH, 1);
-        Date firstDayOfMonth = currentCalender.getTime();
-        for (int i = 0; i < 6; i++) {
-            currentCalender.setTime(firstDayOfMonth);
-            if (month > -1) {
-                currentCalender.set(Calendar.MONTH, month);
-            }
-            if (year > -1) {
-                currentCalender.set(Calendar.ERA, GregorianCalendar.AD);
-                currentCalender.set(Calendar.YEAR, year);
-            }
-            currentCalender.add(Calendar.DATE, i);
-            setToMidnight(currentCalender);
-            long timeInMillis = currentCalender.getTimeInMillis();
-
-            List<Event> events = getEvents(timeInMillis, i);
-
-            compactcalendarView.addEvents(events);
-        }
-    }
-
-    /**
-     * 添加记录事件
-     *
-     * @param timeInMillis
-     * @param day
-     * @return
-     */
-    private List<Event> getEvents(long timeInMillis, int day) {
-        return Arrays.asList(new Event(0xFFF6D9C0, timeInMillis, "Event at " + new Date(timeInMillis)));
-    }
-
-    private void setToMidnight(Calendar calendar) {
-        calendar.set(Calendar.HOUR_OF_DAY, 0);
-        calendar.set(Calendar.MINUTE, 0);
-        calendar.set(Calendar.SECOND, 0);
-        calendar.set(Calendar.MILLISECOND, 0);
-    }
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
         unbinder.unbind();
+    }
+
+    @Override
+    public void onFragmentCallBack(Fragment fragment, int type, Bundle params) {
+        if (params == null) return;
+        if (getParentFragment() instanceof OnFragmentCallBackListener) {
+            onFragmentCallBackListener = (OnFragmentCallBackListener) getParentFragment();
+        }
+        if (fragment instanceof DateSelectFragment) {
+            if (type == SELECT_DATE_FINISH) {
+                if (onFragmentCallBackListener != null) {
+                    onFragmentCallBackListener.onFragmentCallBack(DateSelectDialogFragment.this, 0, params);
+                    dismiss();
+                }
+            } else if (type == SELECT_REMINDER) {
+                taskReminderEntity = (TaskReminderEntity) params.getSerializable("taskReminder");
+               String taskReminderType = params.getString("taskReminderType");
+                long millis = params.getLong(KEY_FRAGMENT_RESULT);
+                Calendar calendar = Calendar.getInstance();
+                calendar.setTimeInMillis(millis);
+                int hour = calendar.get(Calendar.HOUR_OF_DAY);
+                int minute = calendar.get(Calendar.MINUTE);
+                int second = calendar.get(Calendar.SECOND);
+                if (hour == 23 && minute == 59 && second == 59) {
+                    showFragment(ReminderFragment.newInstance(taskReminderEntity, null,taskReminderType));
+                } else {
+                    showFragment(ReminderFragment.newInstance(taskReminderEntity, calendar,taskReminderType));
+                }
+            }
+        } else if (fragment instanceof ReminderFragment) {
+            if (type == SELECT_REMINDER_FINISH) {
+                taskReminderEntity = (TaskReminderEntity) params.getSerializable("taskReminder");
+
+                //通知DateSelectFragment刷新设置的自定义通知时间
+                Bundle inBundle = new Bundle();
+                inBundle.putSerializable(KEY_FRAGMENT_RESULT, taskReminderEntity);
+                dateSelectFragment.notifyFragmentUpdate(dateSelectFragment, 100, inBundle);
+            }
+        }
+    }
+
+    @Override
+    public void onRequest2NextPage(Fragment fragment, int type, Bundle bundle) {
+
+    }
+
+    @Override
+    public void onRequest2LastPage(Fragment fragment, int type, Bundle bundle) {
+
+    }
+
+    @Override
+    public void onRequest2Page(Fragment fragment, int type, int pagePos, Bundle bundle) {
+        if (fragment instanceof ReminderFragment) {
+            if (getChildFragmentManager().getBackStackEntryCount() > 1) {
+                getChildFragmentManager().popBackStack();
+            }
+        }
+    }
+
+    @Override
+    public boolean canGoNextFragment(Fragment fragment) {
+        return false;
+    }
+
+    @Override
+    public boolean canGoLastFragment(Fragment fragment) {
+        return false;
     }
 }

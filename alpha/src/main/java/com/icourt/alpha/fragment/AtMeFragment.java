@@ -88,7 +88,7 @@ public class AtMeFragment extends BaseFragment {
 
     @Override
     protected void initView() {
-        refreshLayout.setNoticeEmpty(R.mipmap.icon_placeholder_task, R.string.my_center_null_atme_text);
+        refreshLayout.setNoticeEmpty(R.mipmap.bg_no_task, R.string.my_center_null_atme_text);
         refreshLayout.setMoveForHorizontal(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setHasFixedSize(true);
@@ -116,37 +116,39 @@ public class AtMeFragment extends BaseFragment {
         refreshLayout.startRefresh();
     }
 
+    private long getEndlyId() {
+        long msg_id = myAtedAdapter.getData().size() > 0
+                ? myAtedAdapter.getItemId(myAtedAdapter.getData().size() - 1) : 0;
+        return msg_id;
+    }
+
     @Override
     protected void getData(final boolean isRefresh) {
         super.getData(isRefresh);
-        long msg_id=0;
         if (isRefresh) {
-            msg_id = Integer.MAX_VALUE;
             getTeams();
             getUsers();
-        } else {
-            if (myAtedAdapter.getData().size() > 0) {
-                IMMessageCustomBody item = myAtedAdapter.getItem(myAtedAdapter.getData().size() - 1);
-                if (item != null) {
-                    msg_id = item.id;
-                }
-            }
         }
-        getChatApi().getAtMeMsg(msg_id)
-                .enqueue(new SimpleCallBack<List<IMMessageCustomBody>>() {
-                    @Override
-                    public void onSuccess(Call<ResEntity<List<IMMessageCustomBody>>> call, Response<ResEntity<List<IMMessageCustomBody>>> response) {
-                        myAtedAdapter.bindData(isRefresh, response.body().result);
-                        stopRefresh();
-                        enableLoadMore(response.body().result);
-                    }
+        Call<ResEntity<List<IMMessageCustomBody>>> call = null;
+        if (isRefresh) {
+            call = getChatApi().getAtMeMsg();
+        } else {
+            call=getChatApi().getAtMeMsg(getEndlyId());
+        }
+        call.enqueue(new SimpleCallBack<List<IMMessageCustomBody>>() {
+            @Override
+            public void onSuccess(Call<ResEntity<List<IMMessageCustomBody>>> call, Response<ResEntity<List<IMMessageCustomBody>>> response) {
+                myAtedAdapter.bindData(isRefresh, response.body().result);
+                stopRefresh();
+                enableLoadMore(response.body().result);
+            }
 
-                    @Override
-                    public void onFailure(Call<ResEntity<List<IMMessageCustomBody>>> call, Throwable t) {
-                        super.onFailure(call, t);
-                        stopRefresh();
-                    }
-                });
+            @Override
+            public void onFailure(Call<ResEntity<List<IMMessageCustomBody>>> call, Throwable t) {
+                super.onFailure(call, t);
+                stopRefresh();
+            }
+        });
     }
 
     private void getTeams() {

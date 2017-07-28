@@ -9,6 +9,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.andview.refreshview.XRefreshView;
 import com.gjiazhe.wavesidebar.WaveSideBar;
@@ -22,6 +23,7 @@ import com.icourt.alpha.activity.MyCollectedCustomersActivity;
 import com.icourt.alpha.adapter.CustomerAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.HeaderFooterAdapter;
+import com.icourt.alpha.adapter.baseadapter.adapterObserver.DataChangeAdapterObserver;
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.db.convertor.IConvertModel;
 import com.icourt.alpha.db.convertor.ListConvertor;
@@ -33,7 +35,7 @@ import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.DensityUtil;
 import com.icourt.alpha.utils.IndexUtils;
-import com.icourt.alpha.utils.PinyinComparator;
+import com.icourt.alpha.widget.comparators.PinyinComparator;
 import com.icourt.alpha.view.recyclerviewDivider.SuspensionDecoration;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 import com.icourt.alpha.widget.dialog.BottomActionDialog;
@@ -79,6 +81,8 @@ public class TabCustomerFragment extends BaseFragment implements BaseRecyclerAda
     SuspensionDecoration mDecoration;
     CustomerDbService customerDbService;
     LinearLayoutManager linearLayoutManager;
+    @BindView(R.id.contentEmptyText)
+    TextView contentEmptyText;
 
     public static TabCustomerFragment newInstance() {
         return new TabCustomerFragment();
@@ -95,11 +99,20 @@ public class TabCustomerFragment extends BaseFragment implements BaseRecyclerAda
     @Override
     protected void initView() {
         EventBus.getDefault().register(this);
+        contentEmptyText.setText("暂无联系人");
         customerDbService = new CustomerDbService(getLoginUserId());
         linearLayoutManager = new LinearLayoutManager(getContext());
         recyclerView.setLayoutManager(linearLayoutManager);
 
         headerFooterAdapter = new HeaderFooterAdapter<>(customerAdapter = new CustomerAdapter());
+        customerAdapter.registerAdapterDataObserver(new DataChangeAdapterObserver() {
+            @Override
+            protected void updateUI() {
+                if (contentEmptyText != null) {
+                    contentEmptyText.setVisibility(customerAdapter.getItemCount() > 0 ? View.GONE : View.VISIBLE);
+                }
+            }
+        });
         View headerView = HeaderFooterAdapter.inflaterView(getContext(), R.layout.header_customer_search, recyclerView);
         View header_customer_collected = headerView.findViewById(R.id.header_customer_collected);
         registerClick(header_customer_collected);
@@ -160,8 +173,13 @@ public class TabCustomerFragment extends BaseFragment implements BaseRecyclerAda
                 ArrayList<IConvertModel<CustomerEntity>> iConvertModels = new ArrayList<IConvertModel<CustomerEntity>>(customerDbModels);
                 List<CustomerEntity> customerEntities = ListConvertor.convertList(iConvertModels);
                 IndexUtils.setSuspensions(getContext(), customerEntities);
-                if (customerEntities != null)
-                    Collections.sort(customerEntities, new PinyinComparator<CustomerEntity>());
+                try {
+                    if (customerEntities != null)
+                        Collections.sort(customerEntities, new PinyinComparator<CustomerEntity>());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    bugSync("排序异常", e);
+                }
                 customerAdapter.bindData(true, customerEntities);
                 updateIndexBar(customerEntities);
             }
@@ -178,9 +196,14 @@ public class TabCustomerFragment extends BaseFragment implements BaseRecyclerAda
                         stopRefresh();
                         if (response.body().result != null) {
                             IndexUtils.setSuspensions(getContext(), response.body().result);
-                            Collections.sort(response.body().result, new PinyinComparator<CustomerEntity>());
-                            updateIndexBar(response.body().result);
+                            try {
+                                Collections.sort(response.body().result, new PinyinComparator<CustomerEntity>());
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                                bugSync("排序异常", e);
+                            }
                             customerAdapter.bindData(true, response.body().result);
+                            updateIndexBar(response.body().result);
                             insert2Db(response.body().result);
                         }
                     }
@@ -198,7 +221,7 @@ public class TabCustomerFragment extends BaseFragment implements BaseRecyclerAda
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.rl_comm_search:
-                CustomerSearchActivity.launch(getContext(), v);
+                CustomerSearchActivity.launch(getContext(), v, CustomerSearchActivity.SEARCH_CUSTOMER_TYPE, -1);
                 break;
             case R.id.header_customer_collected:
                 MyCollectedCustomersActivity.launch(getContext());
@@ -288,7 +311,7 @@ public class TabCustomerFragment extends BaseFragment implements BaseRecyclerAda
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void updateCustEvent(UpdateCustomerEvent event) {
         if (event != null) {
-            getLocalCustomers();
+            getData(true);
         }
     }
 }

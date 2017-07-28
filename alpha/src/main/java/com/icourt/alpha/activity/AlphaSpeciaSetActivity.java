@@ -72,26 +72,6 @@ public class AlphaSpeciaSetActivity extends BaseActivity {
         super.initView();
         setTitle("设置");
         getSetTopSessions();
-        getIsSetGroupNoDisturbing();
-    }
-
-    /**
-     * 云信状态码  http://dev.netease.im/docs?doc=nim_status_code
-     * 获取讨论组 是否免打扰
-     */
-    private void getIsSetGroupNoDisturbing() {
-        //先拿网络 保持三端一致
-        getChatApi().sessionQueryAllNoDisturbingIds()
-                .enqueue(new SimpleCallBack<List<String>>() {
-                    @Override
-                    public void onSuccess(Call<ResEntity<List<String>>> call, Response<ResEntity<List<String>>> response) {
-                        if (response.body().result != null) {
-                            setTopSwitch.setChecked(response.body().result.contains(getIMChatId()));
-                        } else {
-                            setTopSwitch.setChecked(false);
-                        }
-                    }
-                });
     }
 
     /**

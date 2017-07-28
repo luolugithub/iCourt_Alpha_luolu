@@ -27,6 +27,7 @@ import com.icourt.alpha.BuildConfig;
 import com.icourt.alpha.R;
 import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.fragment.dialogfragment.ContactShareDialogFragment;
+import com.icourt.alpha.fragment.dialogfragment.ProjectSaveFileDialogFragment;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.ActionConstants;
@@ -163,7 +164,10 @@ public class FileBoxDownloadActivity extends BaseActivity {
         }
     }
 
-    @OnClick({R.id.save_matter_view, R.id.send_im_view, R.id.open_view, R.id.share_view})
+    @OnClick({R.id.save_matter_view,
+            R.id.send_im_view,
+            R.id.open_view,
+            R.id.share_view})
     @Override
     public void onClick(View v) {
         super.onClick(v);
@@ -171,7 +175,8 @@ public class FileBoxDownloadActivity extends BaseActivity {
         LogUtils.e("filePath ---  " + filePath);
         switch (v.getId()) {
             case R.id.save_matter_view://保存到项目
-                ProjectSelectActivity.launch(this, authToken, seaFileRepoId, filePath);
+//                ProjectSelectActivity.launch(this, authToken, seaFileRepoId, filePath);
+                showProjectSaveFileDialogFragment(filePath);
                 break;
             case R.id.send_im_view://发送到享聊
                 showContactShareDialogFragment(filePath);
@@ -185,7 +190,7 @@ public class FileBoxDownloadActivity extends BaseActivity {
                 }
                 break;
             case R.id.share_view://分享
-                openOrShareFile(new File(filePath), Intent.ACTION_SEND);
+                shareFile(new File(filePath));
                 break;
         }
     }
@@ -197,6 +202,15 @@ public class FileBoxDownloadActivity extends BaseActivity {
      */
     private void openOrShareFile(File file, String action) {
         try {
+            if (file == null || !file.exists()) {
+                showTopSnackBar("文件不存在");
+                return;
+            }
+            if (TextUtils.equals(FileUtils.getFileType(file.getName()), ".key")) {
+                showTopSnackBar("此文件类型不支持打开");
+                return;
+            }
+            log("-------------->file path:" + file.getAbsolutePath());
             Intent intent = new Intent();
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             //设置intent的Action属性
@@ -210,10 +224,12 @@ public class FileBoxDownloadActivity extends BaseActivity {
             } else {
                 uri = Uri.fromFile(file);
             }
+            log("-------------->open uri:" + uri);
+            //添加这一句表示对目标应用临时授权该Uri所代表的文件
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION
+                    | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
             if (action.equals(Intent.ACTION_VIEW)) {
                 intent.setDataAndType(uri, type);
-                //添加这一句表示对目标应用临时授权该Uri所代表的文件
-                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
                 startActivity(intent);     //这里最好try一下，有可能会报错。 //比如说你的MIME类型是打开邮箱，但是你手机里面没装邮箱客户端，就会报错。
             } else if (action.equals(Intent.ACTION_SEND)) {
                 intent.putExtra(Intent.EXTRA_STREAM, uri);
@@ -223,6 +239,36 @@ public class FileBoxDownloadActivity extends BaseActivity {
 
         } catch (Exception e) {
             e.printStackTrace();
+            bugSync("外部打开文件失败", e);
+        }
+    }
+
+    /**
+     * 分享文件
+     *
+     * @param file
+     */
+    private void shareFile(File file) {
+        try {
+            if (file == null || !file.exists()) {
+                showTopSnackBar("文件不存在");
+                return;
+            }
+            log("-------------->file path:" + file.getAbsolutePath());
+            Intent intent = new Intent(Intent.ACTION_SEND);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            //设置intent的data和Type属性。
+            Uri uri = Uri.fromFile(file);
+            log("-------------->share uri:" + uri);
+            //添加这一句表示对目标应用临时授权该Uri所代表的文件
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION
+                    | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+            intent.putExtra(Intent.EXTRA_STREAM, uri);
+            intent.setType("*/*");
+            startActivity(Intent.createChooser(intent, "Alpha Share"));
+        } catch (Exception e) {
+            e.printStackTrace();
+            bugSync("外部分享文件失败", e);
         }
     }
 
@@ -238,7 +284,23 @@ public class FileBoxDownloadActivity extends BaseActivity {
         if (fragment != null) {
             mFragTransaction.remove(fragment);
         }
-        ContactShareDialogFragment.newInstanceFile(filePath)
+        ContactShareDialogFragment.newInstanceFile(filePath, true)
+                .show(mFragTransaction, tag);
+    }
+
+    /**
+     * 展示项目转发对话框
+     *
+     * @param filePath
+     */
+    public void showProjectSaveFileDialogFragment(String filePath) {
+        String tag = ProjectSaveFileDialogFragment.class.getSimpleName();
+        FragmentTransaction mFragTransaction = getSupportFragmentManager().beginTransaction();
+        Fragment fragment = getSupportFragmentManager().findFragmentByTag(tag);
+        if (fragment != null) {
+            mFragTransaction.remove(fragment);
+        }
+        ProjectSaveFileDialogFragment.newInstance(filePath, ProjectSaveFileDialogFragment.ALPHA_TYPE)
                 .show(mFragTransaction, tag);
     }
 
@@ -254,8 +316,9 @@ public class FileBoxDownloadActivity extends BaseActivity {
                     getData(true);
                 }
 
-            } else if (!TextUtils.isEmpty(authToken) && !TextUtils.isEmpty(seaFileRepoId))
+            } else if (!TextUtils.isEmpty(authToken) && !TextUtils.isEmpty(seaFileRepoId)) {
                 getData(true);
+            }
 
         } else {
             reqPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, "下载文件需要文件写入权限!", CODE_PERMISSION_FILE);
@@ -295,10 +358,23 @@ public class FileBoxDownloadActivity extends BaseActivity {
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        if (grantResults == null) return;
+        if (grantResults.length <= 0) return;
         switch (requestCode) {
             case CODE_PERMISSION_FILE:
                 if (grantResults[0] == PackageManager.PERMISSION_DENIED) {
-                    showTopSnackBar("文件写入权限被拒绝!");
+                    showToast("文件写入权限被拒绝!");
+                } else {
+                    if (TextUtils.isEmpty(authToken)) {
+                        if (action == PROJECT_DOWNLOAD_FILE_ACTION || action == TASK_DOWNLOAD_FILE_ACTION) {
+                            getFileBoxToken();
+                        } else if (action == IM_DOWNLOAD_FILE_ACTION) {
+                            getData(true);
+                        }
+
+                    } else if (!TextUtils.isEmpty(authToken) && !TextUtils.isEmpty(seaFileRepoId)) {
+                        getData(true);
+                    }
                 }
                 break;
             default:
@@ -328,7 +404,7 @@ public class FileBoxDownloadActivity extends BaseActivity {
         if (p.contains("//")) {
             p = p.replace("//", "/");
         }
-        getApi().fileboxDownloadUrlQuery("Token " + authToken, seaFileRepoId, p).enqueue(new Callback<JsonElement>() {
+        getSFileApi().fileboxDownloadUrlQuery("Token " + authToken, seaFileRepoId, p).enqueue(new Callback<JsonElement>() {
             @Override
             public void onResponse(Call<JsonElement> call, Response<JsonElement> response) {
                 if (response.body() != null) {
@@ -376,7 +452,12 @@ public class FileBoxDownloadActivity extends BaseActivity {
         }
         if (isFileExists(filePath)) {
             loadingLayout.setVisibility(View.GONE);
-            showMeau();
+            if (IMUtils.isPIC(filePath)) {
+                ImagePagerActivity.launch(FileBoxDownloadActivity.this,
+                        Arrays.asList(filePath));
+            }
+//            showMeau();
+            activityDownloadFileMeauLayout.setVisibility(View.VISIBLE);
             return;
         } else {
             activityDownloadFileMeauLayout.setVisibility(View.GONE);
@@ -428,9 +509,15 @@ public class FileBoxDownloadActivity extends BaseActivity {
             if (task != null && !TextUtils.isEmpty(task.getPath())) {
                 try {
                     loadingLayout.setVisibility(View.GONE);
-                    showMeau();
+                    if (IMUtils.isPIC(task.getPath())) {
+                        ImagePagerActivity.launch(FileBoxDownloadActivity.this,
+                                Arrays.asList(task.getPath()));
+                    }
+//                    showMeau();
+                    activityDownloadFileMeauLayout.setVisibility(View.VISIBLE);
                 } catch (NullPointerException e) {
                     e.printStackTrace();
+                    bugSync("下载文件失败", e);
                 }
             }
         }
@@ -442,6 +529,7 @@ public class FileBoxDownloadActivity extends BaseActivity {
         @Override
         protected void error(BaseDownloadTask task, Throwable e) {
             showTopSnackBar(String.format("下载异常!" + StringUtils.throwable2string(e)));
+            bugSync("下载异常", e);
         }
 
         @Override
@@ -450,7 +538,8 @@ public class FileBoxDownloadActivity extends BaseActivity {
         }
     };
 
-    private void showMeau() {
+    @Deprecated
+    private void showMenu() {
         activityDownloadFileMeauLayout.setVisibility(View.VISIBLE);
         switch (action) {
             case TASK_DOWNLOAD_FILE_ACTION:

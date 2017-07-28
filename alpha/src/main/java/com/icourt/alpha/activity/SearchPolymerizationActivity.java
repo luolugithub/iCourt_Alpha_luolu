@@ -11,8 +11,12 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
+import android.text.SpannableString;
+import android.text.SpannableStringBuilder;
+import android.text.Spanned;
 import android.text.TextUtils;
 import android.text.TextWatcher;
+import android.text.style.ForegroundColorSpan;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -28,23 +32,27 @@ import com.icourt.alpha.db.convertor.ListConvertor;
 import com.icourt.alpha.db.dbmodel.ContactDbModel;
 import com.icourt.alpha.db.dbservice.ContactDbService;
 import com.icourt.alpha.entity.bean.GroupContactBean;
+import com.icourt.alpha.entity.bean.GroupEntity;
 import com.icourt.alpha.entity.bean.IMMessageCustomBody;
 import com.icourt.alpha.entity.bean.ISearchItemEntity;
 import com.icourt.alpha.entity.bean.SearchItemEntity;
 import com.icourt.alpha.entity.bean.SearchPolymerizationEntity;
 import com.icourt.alpha.fragment.dialogfragment.ContactDialogFragment;
-import com.icourt.alpha.widget.nim.GlobalMessageObserver;
+import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.IMUtils;
 import com.icourt.alpha.utils.SpannableUtils;
 import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.view.SoftKeyboardSizeWatchLayout;
 import com.icourt.alpha.widget.filter.ListFilter;
+import com.icourt.alpha.widget.nim.GlobalMessageObserver;
 import com.netease.nimlib.sdk.NIMClient;
 import com.netease.nimlib.sdk.msg.MsgService;
 import com.netease.nimlib.sdk.search.model.MsgIndexRecord;
 import com.netease.nimlib.sdk.team.TeamService;
 import com.netease.nimlib.sdk.team.model.Team;
+import com.pinyin4android.PinyinUtil;
 
+import java.io.IOException;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
@@ -59,7 +67,9 @@ import io.reactivex.ObservableOnSubscribe;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
+import io.realm.Case;
 import io.realm.RealmResults;
+import retrofit2.Response;
 
 import static com.icourt.alpha.R.id.search_customer_tv;
 import static com.icourt.alpha.constants.Const.CHAT_TYPE_P2P;
@@ -76,7 +86,6 @@ import static com.icourt.alpha.constants.Const.SEARCH_TYPE_TEAM;
  * version 1.0.0
  */
 public class SearchPolymerizationActivity extends BaseActivity implements BaseRecyclerAdapter.OnItemChildClickListener, BaseRecyclerAdapter.OnItemClickListener {
-    private final List<Team> localTeams = new ArrayList<>();
 
     private static final String KEY_SEARCH_PRIORITY = "search_priority";
     int foregroundColor = 0xFFed6c00;
@@ -96,6 +105,8 @@ public class SearchPolymerizationActivity extends BaseActivity implements BaseRe
     RecyclerView recyclerView;
     @BindView(R.id.softKeyboardSizeWatchLayout)
     SoftKeyboardSizeWatchLayout softKeyboardSizeWatchLayout;
+    @BindView(R.id.contentEmptyText)
+    TextView contentEmptyText;
     SearchPolymerizationAdapter searchPolymerizationAdapter;
     @BindView(R.id.searchLayout)
     LinearLayout searchLayout;
@@ -104,6 +115,7 @@ public class SearchPolymerizationActivity extends BaseActivity implements BaseRe
     public static final int SEARCH_PRIORITY_CONTACT = 1;
     public static final int SEARCH_PRIORITY_CHAT_HISTORTY = 2;
     public static final int SEARCH_PRIORITY_TEAM = 3;
+
 
     @IntDef({SEARCH_PRIORITY_CONTACT,
             SEARCH_PRIORITY_CHAT_HISTORTY,
@@ -153,6 +165,7 @@ public class SearchPolymerizationActivity extends BaseActivity implements BaseRe
                     searchPolymerizationAdapter.clearData();
                     recyclerView.setVisibility(View.GONE);
                     searchClassfyLl.setVisibility(View.VISIBLE);
+                    contentEmptyText.setVisibility(View.GONE);
                 } else {
                     recyclerView.setVisibility(View.VISIBLE);
                     searchClassfyLl.setVisibility(View.GONE);
@@ -174,15 +187,16 @@ public class SearchPolymerizationActivity extends BaseActivity implements BaseRe
 
                 //查询联系人
                 ContactDbService contactDbService = new ContactDbService(getLoginUserId());
-                RealmResults<ContactDbModel> name = contactDbService.contains("name", keyWord);
+                RealmResults<ContactDbModel> name = contactDbService.contains("name", keyWord, "nameCharacter", keyWord, Case.INSENSITIVE);
                 List<GroupContactBean> contactBeen = ListConvertor.convertList(new ArrayList<IConvertModel<GroupContactBean>>(name));
                 fiterRobots(contactBeen);
                 contactDbService.releaseService();
+                log("------------>query联系人:" + contactBeen);
                 List<SearchItemEntity> searchContactItems = convert2SearchItem(contactBeen, keyWord);
 
 
                 //查询讨论组
-                List<Team> teamByKeyWord = getTeamByKeyWord(keyWord);
+                List<GroupEntity> teamByKeyWord = getTeamByKeyWord(keyWord);
                 List<SearchItemEntity> searchTeamItems = convertTeam2SearchItem(teamByKeyWord, keyWord);
 
 
@@ -260,6 +274,9 @@ public class SearchPolymerizationActivity extends BaseActivity implements BaseRe
                     @Override
                     public void accept(List<SearchPolymerizationEntity> searchPolymerizationEntities) throws Exception {
                         searchPolymerizationAdapter.bindData(true, searchPolymerizationEntities);
+                        if (contentEmptyText != null) {
+                            contentEmptyText.setVisibility(searchPolymerizationAdapter.getItemCount() > 0 ? View.GONE : View.VISIBLE);
+                        }
                     }
                 });
     }
@@ -271,18 +288,19 @@ public class SearchPolymerizationActivity extends BaseActivity implements BaseRe
      * @param keyWord
      * @return
      */
-    private List<Team> getTeamByKeyWord(String keyWord) {
-        if (localTeams.isEmpty()) {
-            localTeams.addAll(NIMClient.getService(TeamService.class)
-                    .queryTeamListBlock());
-        }
-        List<Team> teams = new ArrayList<>();
-        for (Team team : localTeams) {
-            if (team != null
-                    && !TextUtils.isEmpty(team.getName())
-                    && team.getName().contains(keyWord)) {
-                teams.add(team);
+    private List<GroupEntity> getTeamByKeyWord(String keyWord) {
+        List<GroupEntity> teams = new ArrayList<>();
+        try {
+            Response<ResEntity<List<GroupEntity>>> execute = getChatApi()
+                    .groupQueryByName(keyWord)
+                    .execute();
+            if (execute != null
+                    && execute.body() != null
+                    && execute.body().result != null) {
+                teams.addAll(execute.body().result);
             }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
         return teams;
     }
@@ -332,6 +350,7 @@ public class SearchPolymerizationActivity extends BaseActivity implements BaseRe
                         }
                         SearchItemEntity searchItemEntity = new SearchItemEntity(title, content, icon, keyWord);
                         searchItemEntity.id = imBody.to;
+                        searchItemEntity.id2 = imBody.id;
                         searchItemEntity.type = imBody.ope;
                         searchItemEntity.classfyType = SEARCH_TYPE_MSG;
                         searchItemEntity.recordTime = item.getTime();
@@ -348,9 +367,42 @@ public class SearchPolymerizationActivity extends BaseActivity implements BaseRe
         List<SearchItemEntity> data = new ArrayList<>();
         if (contactBeen != null) {
             for (GroupContactBean item : contactBeen) {
-                if (item != null) {
-                    CharSequence originalText = item.name;
-                    SearchItemEntity searchItemEntity = new SearchItemEntity(SpannableUtils.getTextForegroundColorSpan(originalText, keyWord, foregroundColor), null, item.pic, keyWord);
+                if (item != null && !TextUtils.isEmpty(item.name)) {
+                    String originalText = item.name;
+                    SpannableString textForegroundColorSpan = null;
+                    if (StringUtils.containsIgnoreCase(originalText, keyWord)) {
+                        textForegroundColorSpan = SpannableUtils.getTextForegroundColorSpan(originalText, keyWord, foregroundColor);
+                    } else {//可能是汉字  首字母搜索
+                        textForegroundColorSpan = new SpannableString(item.name);
+                        try {
+                            //用本地提取的 目前网络不准确
+                            item.nameCharacter = PinyinUtil.toPinyin(getContext(), item.name);
+                            String[] split = null;
+                            if (item.nameCharacter != null) {
+                                split = item.nameCharacter.split(" ");
+                            }
+                            boolean isExist = false;
+                            //阿三哥  a san ge
+                            if (split != null) {
+                                for (int i = 0; i < split.length; i++) {
+                                    String s = split[i];
+                                    if (StringUtils.containsIgnoreCase(s, keyWord)) {
+                                        textForegroundColorSpan.setSpan(new ForegroundColorSpan(foregroundColor),
+                                                i, i + 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                                        isExist = true;
+                                    }
+                                }
+                            }
+                            if (!isExist) {
+                                continue;
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            textForegroundColorSpan = SpannableUtils.getTextForegroundColorSpan(originalText, keyWord, foregroundColor);
+                        }
+                    }
+
+                    SearchItemEntity searchItemEntity = new SearchItemEntity(textForegroundColorSpan, null, item.pic, keyWord);
                     searchItemEntity.classfyType = SEARCH_TYPE_CONTACT;
                     searchItemEntity.type = item.type;
                     searchItemEntity.id = item.accid;
@@ -368,14 +420,14 @@ public class SearchPolymerizationActivity extends BaseActivity implements BaseRe
      * @param keyWord
      * @return
      */
-    private List<SearchItemEntity> convertTeam2SearchItem(List<Team> teams, String keyWord) {
+    private List<SearchItemEntity> convertTeam2SearchItem(List<GroupEntity> teams, String keyWord) {
         List<SearchItemEntity> data = new ArrayList<>();
         if (teams != null) {
-            for (Team item : teams) {
+            for (GroupEntity item : teams) {
                 if (item != null) {
-                    CharSequence originalText = item.getName();
-                    SearchItemEntity searchItemEntity = new SearchItemEntity(SpannableUtils.getTextForegroundColorSpan(originalText, keyWord, foregroundColor), null, item.getIcon(), keyWord);
-                    searchItemEntity.id = item.getId();
+                    CharSequence originalText = item.name;
+                    SearchItemEntity searchItemEntity = new SearchItemEntity(SpannableUtils.getTextForegroundColorSpan(originalText, keyWord, foregroundColor), null, item.pic, keyWord);
+                    searchItemEntity.id = item.tid;
                     searchItemEntity.classfyType = SEARCH_TYPE_TEAM;
                     data.add(searchItemEntity);
                 }
@@ -471,24 +523,28 @@ public class SearchPolymerizationActivity extends BaseActivity implements BaseRe
                                 ChatActivity.launchP2P(getContext(),
                                         StringUtils.toLowerCase(item.getId()),
                                         TextUtils.isEmpty(item.getTitle()) ? "" : item.getTitle().toString(),
-                                        item.getRecordTime(),
+                                        item.getId2(),
                                         0);
                                 break;
                             case CHAT_TYPE_TEAM:
                                 ChatActivity.launchTEAM(getContext(),
                                         item.getId(),
                                         TextUtils.isEmpty(item.getTitle()) ? "" : item.getTitle().toString(),
-                                        item.getRecordTime(),
+                                        item.getId2(),
                                         0);
                                 break;
                         }
                         break;
                     case SEARCH_TYPE_TEAM:
-                        ChatActivity.launchTEAM(getContext(),
-                                item.getId(),
-                                TextUtils.isEmpty(item.getTitle()) ? "" : item.getTitle().toString(),
-                                0,
-                                0);
+                        if (IMUtils.isMyJionedGroup(item.getId())) {
+                            ChatActivity.launchTEAM(getContext(),
+                                    item.getId(),
+                                    TextUtils.isEmpty(item.getTitle()) ? "" : item.getTitle().toString(),
+                                    0,
+                                    0);
+                        } else {
+                            GroupDetailActivity.launchTEAM(getContext(), item.getId());
+                        }
                         break;
                 }
             }

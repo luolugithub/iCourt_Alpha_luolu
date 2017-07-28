@@ -1,5 +1,6 @@
 package com.icourt.alpha.fragment;
 
+import android.Manifest;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -137,7 +138,6 @@ public class TabSearchFragment extends BaseFragment implements OnFragmentCallBac
         RecyclerView.LayoutManager historyLayoutManager = new LinearLayoutManager(getContext());
         historyLayoutManager.setAutoMeasureEnabled(true);
         historyRecyclerView.setLayoutManager(historyLayoutManager);
-        historyRecyclerView.addItemDecoration(ItemDecorationUtils.getCommTrans10Divider(getContext(), true));
         historyRecyclerView.setAdapter(searchHistoryAdapter = new SearchHistoryAdapter());
         searchHistoryAdapter.setOnItemClickListener(new BaseRecyclerAdapter.OnItemClickListener() {
             @Override
@@ -321,6 +321,10 @@ public class TabSearchFragment extends BaseFragment implements OnFragmentCallBac
                 clearSearchHistory();
                 break;
             case R.id.search_audio_btn:
+                if (!checkPermission(Manifest.permission.RECORD_AUDIO)) {
+                    reqPermission(Manifest.permission.RECORD_AUDIO, "我们需要录音权限!", 1001);
+                    return;
+                }
                 showAudioWaveDialogFragment();
                 break;
             default:

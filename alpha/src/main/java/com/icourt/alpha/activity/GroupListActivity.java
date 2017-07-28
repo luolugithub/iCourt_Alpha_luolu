@@ -20,6 +20,7 @@ import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.GroupAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.HeaderFooterAdapter;
+import com.icourt.alpha.adapter.baseadapter.adapterObserver.DataChangeAdapterObserver;
 import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.entity.bean.GroupEntity;
 import com.icourt.alpha.entity.event.GroupActionEvent;
@@ -27,13 +28,11 @@ import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.ActionConstants;
 import com.icourt.alpha.utils.DensityUtil;
+import com.icourt.alpha.utils.IMUtils;
 import com.icourt.alpha.utils.IndexUtils;
-import com.icourt.alpha.utils.PinyinComparator;
+import com.icourt.alpha.widget.comparators.PinyinComparator;
 import com.icourt.alpha.view.recyclerviewDivider.SuspensionDecoration;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
-import com.netease.nimlib.sdk.NIMClient;
-import com.netease.nimlib.sdk.team.TeamService;
-import com.netease.nimlib.sdk.team.model.Team;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -67,6 +66,8 @@ public class GroupListActivity extends BaseActivity implements BaseRecyclerAdapt
     public static final int GROUP_TYPE_TYPE_ALL = 1;
     @BindView(R.id.recyclerIndexBar)
     WaveSideBar recyclerIndexBar;
+    @BindView(R.id.contentEmptyText)
+    TextView contentEmptyText;
 
 
     @IntDef({GROUP_TYPE_MY_JOIN,
@@ -134,6 +135,15 @@ public class GroupListActivity extends BaseActivity implements BaseRecyclerAdapt
         recyclerView.setLayoutManager(linearLayoutManager);
         headerFooterAdapter = new HeaderFooterAdapter<>(groupAdapter = new GroupAdapter());
         groupAdapter.setOnItemClickListener(this);
+        groupAdapter.registerAdapterDataObserver(new DataChangeAdapterObserver() {
+            @Override
+            protected void updateUI() {
+                if (contentEmptyText != null) {
+                    contentEmptyText.setText("暂无讨论组");
+                    contentEmptyText.setVisibility(groupAdapter.getItemCount() > 0 ? View.GONE : View.VISIBLE);
+                }
+            }
+        });
         View headerView = HeaderFooterAdapter.inflaterView(getContext(), R.layout.header_search_comm, recyclerView);
         View rl_comm_search = headerView.findViewById(R.id.rl_comm_search);
         registerClick(rl_comm_search);
@@ -212,7 +222,12 @@ public class GroupListActivity extends BaseActivity implements BaseRecyclerAdapt
                 stopRefresh();
                 if (response.body().result != null) {
                     IndexUtils.setSuspensions(getContext(), response.body().result);
-                    Collections.sort(response.body().result, new PinyinComparator<GroupEntity>());
+                    try {
+                        Collections.sort(response.body().result, new PinyinComparator<GroupEntity>());
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        bugSync("排序异常", e);
+                    }
                     groupAdapter.bindData(true, response.body().result);
                     updateIndexBar(groupAdapter.getData());
                 }
@@ -305,14 +320,7 @@ public class GroupListActivity extends BaseActivity implements BaseRecyclerAdapt
      * @return
      */
     private boolean isMyJionedGroup(String tid) {
-        try {
-            Team team = NIMClient.getService(TeamService.class)
-                    .queryTeamBlock(tid);
-            return team != null && team.isMyTeam();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return false;
+        return IMUtils.isMyJionedGroup(tid);
     }
 
     @Override

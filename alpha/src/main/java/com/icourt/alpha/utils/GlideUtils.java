@@ -9,12 +9,10 @@ import android.os.Build;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.graphics.drawable.DrawableCompat;
-import android.text.TextUtils;
 import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
 import com.icourt.alpha.R;
-import com.icourt.alpha.http.AlphaClient;
 import com.icourt.alpha.utils.transformations.GlideCircleTransform;
 
 /**
@@ -88,10 +86,6 @@ public class GlideUtils {
     public static void loadUser(Context context, String path, ImageView imageView) {
         if (context == null) return;
         if (imageView == null) return;
-        if (!TextUtils.isEmpty(path)
-                && path.startsWith("http")) {
-            path = UrlUtils.appendParam(path, "token", AlphaClient.getToken());
-        }
         if (canLoadImage(context)) {
             Glide.with(context)
                     .load(path)
@@ -113,10 +107,6 @@ public class GlideUtils {
     public static void loadGroup(Context context, String path, ImageView imageView) {
         if (context == null) return;
         if (imageView == null) return;
-        if (!TextUtils.isEmpty(path)
-                && path.startsWith("http")) {
-            path = UrlUtils.appendParam(path, "token", AlphaClient.getToken());
-        }
         if (canLoadImage(context)) {
             Glide.with(context)
                     .load(path)
@@ -136,10 +126,6 @@ public class GlideUtils {
      */
     public static void loadPic(Context context, String path, ImageView imageView) {
         if (imageView == null) return;
-        if (!TextUtils.isEmpty(path)
-                && path.startsWith("http")) {
-            path = UrlUtils.appendParam(path, "token", AlphaClient.getToken());
-        }
         if (canLoadImage(context)) {
             Glide.with(context)
                     .load(path)

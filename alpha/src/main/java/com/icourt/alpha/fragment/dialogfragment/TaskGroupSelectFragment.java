@@ -1,5 +1,6 @@
 package com.icourt.alpha.fragment.dialogfragment;
 
+import android.app.Dialog;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -7,18 +8,24 @@ import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.ProjectTaskGroupAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
+import com.icourt.alpha.adapter.baseadapter.adapterObserver.DataChangeAdapterObserver;
+import com.icourt.alpha.base.BaseDialogFragment;
 import com.icourt.alpha.entity.bean.TaskGroupEntity;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
+import com.icourt.alpha.utils.DensityUtil;
 
 import java.util.List;
 
@@ -44,6 +51,10 @@ public class TaskGroupSelectFragment extends BaseDialogFragment implements BaseR
     TextView btCancel;
     @BindView(R.id.bt_ok)
     TextView btOk;
+    @BindView(R.id.titleContent)
+    TextView titleContent;
+    @BindView(R.id.empty_layout)
+    LinearLayout emptyLayout;
 
     public static TaskGroupSelectFragment newInstance(String projectId) {
         TaskGroupSelectFragment taskGroupListFragment = new TaskGroupSelectFragment();
@@ -92,9 +103,29 @@ public class TaskGroupSelectFragment extends BaseDialogFragment implements BaseR
 
     @Override
     protected void initView() {
+        Dialog dialog = getDialog();
+        if (dialog != null) {
+            Window window = dialog.getWindow();
+            if (window != null) {
+                window.setGravity(Gravity.BOTTOM);
+                View decorView = window.getDecorView();
+                if (decorView != null) {
+                    int dp20 = DensityUtil.dip2px(getContext(), 20);
+                    decorView.setPadding(dp20 / 2, dp20, dp20 / 2, dp20);
+                }
+            }
+        }
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        recyclerView.setHasFixedSize(true);
         recyclerView.setAdapter(projectTaskGroupAdapter = new ProjectTaskGroupAdapter(true));
         projectTaskGroupAdapter.setOnItemClickListener(this);
+        projectTaskGroupAdapter.registerAdapterDataObserver(new DataChangeAdapterObserver() {
+            @Override
+            protected void updateUI() {
+                if (emptyLayout == null) return;
+                emptyLayout.setVisibility(projectTaskGroupAdapter.getItemCount() <= 0 ? View.VISIBLE : View.GONE);
+            }
+        });
         getData(true);
     }
 
@@ -151,8 +182,8 @@ public class TaskGroupSelectFragment extends BaseDialogFragment implements BaseR
     }
 
     @Override
-    public void onDestroyView() {
-        super.onDestroyView();
+    public void onDestroy() {
+        super.onDestroy();
         unbinder.unbind();
     }
 

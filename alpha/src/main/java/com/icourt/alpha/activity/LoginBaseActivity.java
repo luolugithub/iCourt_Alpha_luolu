@@ -4,9 +4,9 @@ import android.os.Bundle;
 import android.support.annotation.CheckResult;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.text.TextUtils;
 import android.view.WindowManager;
 
+import com.bugtags.library.Bugtags;
 import com.google.gson.JsonObject;
 import com.icourt.alpha.base.BaseUmengActivity;
 import com.icourt.alpha.entity.bean.AlphaUserInfo;
@@ -16,7 +16,9 @@ import com.icourt.alpha.http.callback.BaseCallBack;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.exception.ResponseException;
 import com.icourt.alpha.http.httpmodel.ResEntity;
-import com.icourt.alpha.utils.StringUtils;
+import com.icourt.alpha.service.SyncDataService;
+import com.icourt.alpha.utils.BugUtils;
+import com.icourt.alpha.utils.JsonUtils;
 import com.icourt.alpha.utils.UserPreferences;
 import com.icourt.api.RequestUtils;
 import com.netease.nimlib.sdk.NIMClient;
@@ -93,7 +95,7 @@ public class LoginBaseActivity extends BaseUmengActivity {
         jsonObject.addProperty("opneid", openid);
         jsonObject.addProperty("unionid", unionid);
         jsonObject.addProperty("uniqueDevice", "device");
-        jsonObject.addProperty("deviceTyp", "android");
+        jsonObject.addProperty("deviceType", "android");
         return jsonObject;
     }
 
@@ -130,24 +132,31 @@ public class LoginBaseActivity extends BaseUmengActivity {
             * @param result
     */
     private void getChatEaseAccount(@NonNull final AlphaUserInfo result) {
+        log("-------->token:" + result != null ? result.getToken() : "");
         showLoadingDialog(null);
-        getApi().getChatToken()
+        getChatApi().getChatToken()
                 .enqueue(new SimpleCallBack<LoginIMToken>() {
                     @Override
                     public void onSuccess(Call<ResEntity<LoginIMToken>> call, Response<ResEntity<LoginIMToken>> response) {
                         if (response.body().result == null) {
                             dismissLoadingDialog();
                         } else {
-                            result.setThirdpartId(response.body().result.thirdpartId);
-                            result.setChatToken(response.body().result.chatToken);
+                            result.setThirdpartId(response.body().result.accid);
+                            result.setChatToken(response.body().result.imToken);
                             result.setLoginTime(System.currentTimeMillis());
 
+                            //设置bugtags用户数据
+                            try {
+                                Bugtags.setUserData("AlphaUserInfo", JsonUtils.Gson2String(result));
+                            } catch (Throwable e) {
+                            }
                             //保存登陆信息
                             saveLoginUserInfo(result);
 
                             //神策统计
                            /* SensorsDataAPI.sharedInstance(getContext())
                                     .login(result.getUserId());*/
+                            SyncDataService.startSysnContact(getContext());
 
                             //登陆云信im
                             loginChatEase(response.body().result);
@@ -171,9 +180,11 @@ public class LoginBaseActivity extends BaseUmengActivity {
         if (result == null) {
             dismissLoadingDialog();
         } else {
-            String upperThirdpartId = TextUtils.isEmpty(result.thirdpartId) ? result.thirdpartId : result.thirdpartId.toUpperCase();
+            //模拟用户
+       /*     result.accid = "D6A26515644911E7855190E2BACDCE28";
+            result.imToken = "d781a5ee1ccff209b403cc6cf924d6c3";*/
             NIMClient.getService(AuthService.class)
-                    .login(new LoginInfo(upperThirdpartId, result.chatToken))
+                    .login(new LoginInfo(result.accid, result.imToken))
                     .setCallback(new RequestCallback<LoginInfo>() {
 
                         @Override
@@ -185,24 +196,27 @@ public class LoginBaseActivity extends BaseUmengActivity {
 
                             // 进入主界面
                             MainActivity.launch(getContext());
+
                         }
 
                         @Override
                         public void onFailed(int code) {
                             log("------------>云信登陆失败：" + code);
+                            showToast("云信登陆失败:" + code);
                             if (code == 302 || code == 404) {
 
                             } else {
 
                             }
-                            feedBackYunXinLog(result + " code:" + code);
+                            bugSync("云信登陆失败", result + " code:" + code);
                             // 进入主界面
                             MainActivity.launch(getContext());
                         }
 
                         @Override
                         public void onException(Throwable exception) {
-                            feedBackYunXinLog(result + " ex:" + StringUtils.throwable2string(exception));
+                            showToast("云信登陆异常:" + exception);
+                            bugSync("云信登陆异常", exception);
                             // 进入主界面
                             MainActivity.launch(getContext());
                         }
@@ -210,8 +224,6 @@ public class LoginBaseActivity extends BaseUmengActivity {
         }
     }
 
-    public void feedBackYunXinLog(String errorlog) {
-    }
 
     @Nullable
     @CheckResult

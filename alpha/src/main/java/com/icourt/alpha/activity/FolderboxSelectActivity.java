@@ -23,8 +23,8 @@ import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.adapterObserver.RefreshViewEmptyObserver;
 import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.entity.bean.FileBoxBean;
-import com.icourt.alpha.utils.AppManager;
-import com.icourt.alpha.utils.DateUtils;
+import com.icourt.alpha.http.callback.SimpleCallBack;
+import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.ItemDecorationUtils;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 import com.icourt.api.RequestUtils;
@@ -67,8 +67,14 @@ public class FolderboxSelectActivity extends BaseActivity implements BaseRecycle
     RefreshLayout refreshLayout;
     ProjectFileBoxAdapter projectFileBoxAdapter;
     String projectId, authToken, seaFileRepoId, filePath, rootName;
+    boolean isCanlookAddDocument;
 
-    public static void launch(@NonNull Context context, @NonNull String projectId, @NonNull String authToken, @NonNull String seaFileRepoId, @NonNull String filePath, @NonNull String rootName) {
+    public static void launch(@NonNull Context context,
+                              @NonNull String projectId,
+                              @NonNull String authToken,
+                              @NonNull String seaFileRepoId,
+                              @NonNull String filePath,
+                              @NonNull String rootName) {
         if (context == null) return;
         Intent intent = new Intent(context, FolderboxSelectActivity.class);
         intent.putExtra("authToken", authToken);
@@ -96,7 +102,7 @@ public class FolderboxSelectActivity extends BaseActivity implements BaseRecycle
         filePath = getIntent().getStringExtra("filePath");
         authToken = getIntent().getStringExtra("authToken");
         rootName = getIntent().getStringExtra("rootName");
-        refreshLayout.setNoticeEmpty(R.mipmap.icon_placeholder_project, R.string.null_project);
+        refreshLayout.setNoticeEmpty(R.mipmap.icon_placeholder_project, "暂无文件夹");
         refreshLayout.setMoveForHorizontal(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.addItemDecoration(ItemDecorationUtils.getCommFull05Divider(getContext(), true));
@@ -127,8 +133,8 @@ public class FolderboxSelectActivity extends BaseActivity implements BaseRecycle
                 }
             }
         });
-        refreshLayout.setAutoRefresh(true);
-        refreshLayout.startRefresh();
+
+        checkAddTaskAndDocumentPms();
 
     }
 
@@ -143,21 +149,55 @@ public class FolderboxSelectActivity extends BaseActivity implements BaseRecycle
         }
     }
 
+    /**
+     * 获取项目权限
+     */
+    private void checkAddTaskAndDocumentPms() {
+        getApi().permissionQuery(getLoginUserId(), "MAT", projectId).enqueue(new SimpleCallBack<List<String>>() {
+            @Override
+            public void onSuccess(Call<ResEntity<List<String>>> call, Response<ResEntity<List<String>>> response) {
+
+                if (response.body().result != null) {
+                    if (response.body().result.contains("MAT:matter.document:readwrite")) {
+                        isCanlookAddDocument = true;
+                        titleAction.setVisibility(View.VISIBLE);
+                        refreshLayout.startRefresh();
+                    } else {
+                        titleAction.setVisibility(View.INVISIBLE);
+                        enableEmptyView(null);
+                    }
+                } else {
+                    titleAction.setVisibility(View.INVISIBLE);
+                    enableEmptyView(null);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResEntity<List<String>>> call, Throwable t) {
+                super.onFailure(call, t);
+                enableEmptyView(null);
+            }
+        });
+    }
+
     @Override
     protected void getData(final boolean isRefresh) {
         super.getData(isRefresh);
-        getApi().projectQueryFileBoxByDir("Token " + authToken, seaFileRepoId, rootName).enqueue(new Callback<List<FileBoxBean>>() {
+        getSFileApi().projectQueryFileBoxByDir("Token " + authToken, seaFileRepoId, rootName).enqueue(new Callback<List<FileBoxBean>>() {
             @Override
             public void onResponse(Call<List<FileBoxBean>> call, Response<List<FileBoxBean>> response) {
                 stopRefresh();
                 if (response.body() != null) {
                     projectFileBoxAdapter.bindData(isRefresh, getFolders(response.body()));
+                } else {
+                    enableEmptyView(null);
                 }
             }
 
             @Override
             public void onFailure(Call<List<FileBoxBean>> call, Throwable t) {
                 stopRefresh();
+                enableEmptyView(null);
                 showTopSnackBar("获取文档列表失败");
             }
         });
@@ -176,7 +216,7 @@ public class FolderboxSelectActivity extends BaseActivity implements BaseRecycle
                             JsonElement element = response.body().get("seaFileRepoId");
                             if (!TextUtils.isEmpty(element.toString()) && !TextUtils.equals("null", element.toString())) {
                                 seaFileRepoId = element.getAsString();
-                                getData(false);
+                                getData(true);
                             } else {
                                 onFailure(call, new retrofit2.HttpException(response));
                             }
@@ -190,6 +230,7 @@ public class FolderboxSelectActivity extends BaseActivity implements BaseRecycle
             @Override
             public void onFailure(Call<JsonObject> call, Throwable throwable) {
                 showTopSnackBar("获取文档根目录id失败");
+                enableEmptyView(null);
             }
         });
     }
@@ -204,6 +245,20 @@ public class FolderboxSelectActivity extends BaseActivity implements BaseRecycle
         return fileBoxBeens;
     }
 
+    private void enableEmptyView(List result) {
+        if (refreshLayout != null) {
+            if (result != null) {
+                if (result.size() > 0) {
+                    refreshLayout.enableEmptyView(false);
+                } else {
+                    refreshLayout.enableEmptyView(true);
+                }
+            } else {
+                refreshLayout.enableEmptyView(true);
+            }
+        }
+    }
+
     private void stopRefresh() {
         if (refreshLayout != null) {
             refreshLayout.stopRefresh();
@@ -216,7 +271,11 @@ public class FolderboxSelectActivity extends BaseActivity implements BaseRecycle
         FileBoxBean fileBoxBean = (FileBoxBean) adapter.getItem(position);
         if (!TextUtils.isEmpty(fileBoxBean.type)) {
             if (TextUtils.equals("dir", fileBoxBean.type)) {
-                FolderboxSelectActivity.launch(this, projectId, authToken, seaFileRepoId, filePath, rootName + "/" + fileBoxBean.name);
+                if (TextUtils.isEmpty(rootName)) {
+                    FolderboxSelectActivity.launch(this, projectId, authToken, seaFileRepoId, filePath, "/" + fileBoxBean.name);
+                } else {
+                    FolderboxSelectActivity.launch(this, projectId, authToken, seaFileRepoId, filePath, rootName + "/" + fileBoxBean.name);
+                }
             }
         }
     }
@@ -234,12 +293,15 @@ public class FolderboxSelectActivity extends BaseActivity implements BaseRecycle
             return;
         }
         showLoadingDialog("正在上传...");
-        getApi().projectUploadUrlQuery("Token " + authToken, seaFileRepoId).enqueue(new Callback<JsonElement>() {
+        getSFileApi().projectUploadUrlQuery("Token " + authToken, seaFileRepoId).enqueue(new Callback<JsonElement>() {
             @Override
             public void onResponse(Call<JsonElement> call, Response<JsonElement> response) {
                 if (response.body() != null) {
                     String uploadUrl = response.body().getAsString();
                     uploadFile(uploadUrl, filePath);
+                } else {
+                    dismissLoadingDialog();
+                    showTopSnackBar("上传失败");
                 }
             }
 
@@ -252,6 +314,7 @@ public class FolderboxSelectActivity extends BaseActivity implements BaseRecycle
         });
     }
 
+
     /**
      * 上传文件
      *
@@ -259,19 +322,21 @@ public class FolderboxSelectActivity extends BaseActivity implements BaseRecycle
      * @param filePath
      */
     private void uploadFile(String uploadUrl, String filePath) {
-        String key = "file\";filename=\"" + DateUtils.millis() + ".png";
+        if (TextUtils.isEmpty(filePath)) return;
+        File file = new File(filePath);
+        String fileName = file.getName();
+        String key = "file\";filename=\"" + fileName;
         Map<String, RequestBody> params = new HashMap<>();
-        params.put("parent_dir", RequestUtils.createTextBody("/"));
-        params.put(key, RequestUtils.createImgBody(new File(filePath)));
-        getApi().projectUploadFile("Token " + authToken, uploadUrl, params).enqueue(new Callback<JsonElement>() {
+        params.put("parent_dir", TextUtils.isEmpty(rootName) ? RequestUtils.createTextBody("/") : RequestUtils.createTextBody(rootName));
+        params.put(key, RequestUtils.createStreamBody(file));
+        getSFileApi().projectUploadFile("Token " + authToken, uploadUrl, params).enqueue(new Callback<JsonElement>() {
             @Override
             public void onResponse(Call<JsonElement> call, Response<JsonElement> response) {
                 dismissLoadingDialog();
                 showTopSnackBar("上传成功");
-                FileBoxDownloadActivity activity = AppManager.getAppManager().getActivity(FileBoxDownloadActivity.class);
-                if (activity != null) {
-                    FileBoxDownloadActivity.launchClearTop(activity, activity.getIntent());
-                }
+                ProjectSelectActivity.lauchClose(FolderboxSelectActivity.this);
+                ImportFile2AlphaActivity.lauchClose(FolderboxSelectActivity.this);
+                finish();
             }
 
             @Override

@@ -12,6 +12,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.content.res.ColorStateList;
 import android.content.res.Resources;
 import android.database.Cursor;
 import android.graphics.Bitmap;
@@ -26,6 +27,7 @@ import android.os.Looper;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.provider.Settings;
+import android.support.annotation.CheckResult;
 import android.support.annotation.ColorInt;
 import android.support.annotation.ColorRes;
 import android.support.annotation.DrawableRes;
@@ -304,6 +306,7 @@ public class SystemUtils {
      */
     public static void showSoftKeyBoard(Context act, View v) {
         try {
+            if (v != null) v.requestFocus();
             InputMethodManager imm = (InputMethodManager) act.getSystemService(Context.INPUT_METHOD_SERVICE);
             imm.showSoftInput(v, InputMethodManager.SHOW_FORCED);
         } catch (Exception e) {
@@ -606,6 +609,7 @@ public class SystemUtils {
         return true;
     }
 
+
     /**
      * 启动手机设置界面
      *
@@ -668,6 +672,24 @@ public class SystemUtils {
         } catch (android.content.res.Resources.NotFoundException e) {
         }
         return defaultColor;
+    }
+
+    /**
+     * ContextCompat.getColor() 将抛出异常,也没判断contexts是否为空
+     * android.content.res.Resources.NotFoundException
+     *
+     * @param context
+     * @param id      如果不存在返回默认值                                                        does not exist.
+     */
+    @CheckResult
+    @Nullable
+    public static ColorStateList getColorStateList(Context context, @ColorRes int id) {
+        if (context == null) return null;
+        try {
+            return ContextCompat.getColorStateList(context, id);
+        } catch (android.content.res.Resources.NotFoundException e) {
+        }
+        return null;
     }
 
     /**

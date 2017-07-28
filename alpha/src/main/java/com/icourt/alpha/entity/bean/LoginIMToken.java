@@ -8,14 +8,14 @@ package com.icourt.alpha.entity.bean;
  * version 1.0.0
  */
 public class LoginIMToken {
-    public String chatToken;
-    public String thirdpartId;
+    public String imToken;
+    public String accid;
 
     @Override
     public String toString() {
         return "LoginIMToken{" +
-                "chatToken='" + chatToken + '\'' +
-                ", thirdpartId='" + thirdpartId + '\'' +
+                "imToken='" + imToken + '\'' +
+                ", accid='" + accid + '\'' +
                 '}';
     }
 }

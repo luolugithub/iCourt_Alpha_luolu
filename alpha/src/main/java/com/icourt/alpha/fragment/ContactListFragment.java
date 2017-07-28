@@ -33,7 +33,7 @@ import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.DensityUtil;
 import com.icourt.alpha.utils.IndexUtils;
-import com.icourt.alpha.utils.PinyinComparator;
+import com.icourt.alpha.widget.comparators.PinyinComparator;
 import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.view.recyclerviewDivider.SuspensionDecoration;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
@@ -76,16 +76,33 @@ public class ContactListFragment extends BaseFragment implements BaseRecyclerAda
     ContactDbService contactDbService;
     LinearLayoutManager linearLayoutManager;
 
-    public static ContactListFragment newInstance() {
-        return new ContactListFragment();
-    }
-
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = super.onCreateView(R.layout.fragment_contact_list, inflater, container, savedInstanceState);
         unbinder = ButterKnife.bind(this, view);
         return view;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        getContactsFromDb();
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if (unbinder != null) {
+            unbinder.unbind();
+        }
+        if (contactDbService != null) {
+            contactDbService.releaseService();
+        }
+    }
+
+    public static ContactListFragment newInstance() {
+        return new ContactListFragment();
     }
 
 
@@ -113,8 +130,8 @@ public class ContactListFragment extends BaseFragment implements BaseRecyclerAda
 
 
         mDecoration = new SuspensionDecoration(getActivity(), null);
-        mDecoration.setColorTitleBg(0xFFf4f4f4);
-        mDecoration.setColorTitleFont(0xFF4a4a4a);
+        mDecoration.setColorTitleBg(0xFFF3F3F3);
+        mDecoration.setColorTitleFont(0xFFa6a6a6);
         mDecoration.setTitleFontSize(DensityUtil.sp2px(getContext(), 16));
         mDecoration.setHeaderViewCount(headerFooterAdapter.getHeaderCount());
         recyclerView.addItemDecoration(mDecoration);
@@ -148,12 +165,6 @@ public class ContactListFragment extends BaseFragment implements BaseRecyclerAda
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
-        getContactsFromDb();
-    }
-
-    @Override
     public void onClick(View v) {
         super.onClick(v);
         switch (v.getId()) {
@@ -173,8 +184,14 @@ public class ContactListFragment extends BaseFragment implements BaseRecyclerAda
             if (contactDbModels != null) {
                 List<GroupContactBean> contactBeen = ListConvertor.convertList(new ArrayList<IConvertModel<GroupContactBean>>(contactDbModels));
                 filterRobot(contactBeen);
+                filterMySelf(contactBeen);
                 IndexUtils.setSuspensions(getContext(), contactBeen);
-                Collections.sort(contactBeen, new PinyinComparator<GroupContactBean>());
+                try {
+                    Collections.sort(contactBeen, new PinyinComparator<GroupContactBean>());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    bugSync("排序异常", e);
+                }
                 imContactAdapter.bindData(true, contactBeen);
                 updateIndexBar(contactBeen);
             }
@@ -199,8 +216,14 @@ public class ContactListFragment extends BaseFragment implements BaseRecyclerAda
                             //插入数据库
                             insertAsynContact(data);
                             filterRobot(data);
+                            filterMySelf(data);
                             IndexUtils.setSuspensions(getContext(), data);
-                            Collections.sort(data, new PinyinComparator<GroupContactBean>());
+                            try {
+                                Collections.sort(data, new PinyinComparator<GroupContactBean>());
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                                bugSync("排序异常", e);
+                            }
                             imContactAdapter.bindData(true, data);
                             updateIndexBar(data);
                         }
@@ -230,6 +253,19 @@ public class ContactListFragment extends BaseFragment implements BaseRecyclerAda
      */
     private List<GroupContactBean> filterRobot(List<GroupContactBean> data) {
         return new ListFilter<GroupContactBean>().filter(data, GroupContactBean.TYPE_ROBOT);
+    }
+
+    /**
+     * 过滤调自己
+     *
+     * @param data
+     * @return
+     */
+    private List<GroupContactBean> filterMySelf(List<GroupContactBean> data) {
+        GroupContactBean groupContactBean = new GroupContactBean();
+        groupContactBean.accid = StringUtils.toLowerCase(getLoginUserId());
+        new ListFilter<GroupContactBean>().filter(data, groupContactBean);
+        return data;
     }
 
     /**
@@ -264,15 +300,6 @@ public class ContactListFragment extends BaseFragment implements BaseRecyclerAda
         }
     }
 
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        unbinder.unbind();
-        if (contactDbService != null) {
-            contactDbService.releaseService();
-        }
-    }
 
     @Override
     public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {

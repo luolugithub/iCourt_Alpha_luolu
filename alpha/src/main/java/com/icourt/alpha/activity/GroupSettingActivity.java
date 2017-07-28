@@ -25,6 +25,7 @@ import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.icourt.alpha.entity.bean.GroupDetailEntity;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
+import com.icourt.alpha.utils.StringUtils;
 import com.icourt.api.RequestUtils;
 
 import java.io.Serializable;
@@ -112,12 +113,12 @@ public class GroupSettingActivity extends BaseActivity {
             if (groupDetailEntity.is_private)//私密
             {
                 groupSetPrivateSwitch.setChecked(true);
-                groupSetInviteSwitch.setChecked(false);
-                groupSetLookSwitch.setChecked(false);
-                groupSetPrivateChildPerLl.setVisibility(View.GONE);
+                groupSetInviteSwitch.setChecked(groupDetailEntity.member_invite);
+                groupSetLookSwitch.setChecked(groupDetailEntity.chat_history);
+                groupSetPrivateChildPerLl.setVisibility(View.VISIBLE);
             } else {
                 groupSetPrivateSwitch.setChecked(false);
-                groupSetPrivateChildPerLl.setVisibility(View.VISIBLE);
+                groupSetPrivateChildPerLl.setVisibility(View.GONE);
                 groupSetInviteSwitch.setChecked(groupDetailEntity.member_invite);
                 groupSetLookSwitch.setChecked(groupDetailEntity.chat_history);
             }
@@ -140,15 +141,36 @@ public class GroupSettingActivity extends BaseActivity {
                 EditItemActivity.launchForResult(getActivity(),
                         "讨论组名称",
                         getTextString(groupNameTv, ""),
-                        CODE_REQUEST_NAME);
+                        CODE_REQUEST_NAME,
+                        3,
+                        3,
+                        true,
+                        50,
+                        false);
                 break;
             case R.id.group_desc_ll:
                 EditItemActivity.launchForResult(getActivity(),
                         "讨论组目标",
                         getTextString(groupDescTv, ""),
-                        CODE_REQUEST_DESC);
+                        CODE_REQUEST_DESC,
+                        3,
+                        10,
+                        true,
+                        140, true);
                 break;
             case R.id.titleAction:
+                if (StringUtils.isEmpty(getTextString(groupNameTv, ""))) {
+                    showTopSnackBar("讨论组名称为空");
+                    return;
+                }
+                if (getTextString(groupNameTv, "").length() < 1) {
+                    showTopSnackBar("讨论组名称太短");
+                    return;
+                }
+                if (getTextString(groupNameTv, "").length() > 50) {
+                    showTopSnackBar("讨论组名称太长");
+                    return;
+                }
                 updateGroupInfo();
                 break;
             case R.id.group_transfer_admin_ll:
@@ -158,12 +180,14 @@ public class GroupSettingActivity extends BaseActivity {
                         Const.CHOICE_TYPE_SINGLE,
                         CODE_REQUEST_TRANSFER_ADMIN,
                         false,
-                        null);
+                        null, true);
                 break;
             case R.id.group_set_private_switch:
-                groupSetInviteSwitch.setChecked(!groupSetPrivateSwitch.isChecked());
-                groupSetLookSwitch.setChecked(!groupSetPrivateSwitch.isChecked());
-                groupSetPrivateChildPerLl.setVisibility(groupSetPrivateSwitch.isChecked() ? View.GONE : View.VISIBLE);
+                groupSetPrivateChildPerLl.setVisibility(!groupSetPrivateSwitch.isChecked() ? View.GONE : View.VISIBLE);
+                if (groupSetPrivateSwitch.isChecked()) {
+                    groupSetInviteSwitch.setChecked(groupDetailEntity.member_invite);
+                    groupSetLookSwitch.setChecked(groupDetailEntity.chat_history);
+                }
                 break;
             default:
                 super.onClick(v);
@@ -256,13 +280,13 @@ public class GroupSettingActivity extends BaseActivity {
         param.addProperty("name", getTextString(groupNameTv, ""));
         param.addProperty("intro", getTextString(groupDescTv, ""));
         if (groupSetPrivateSwitch.isChecked()) {
-            param.addProperty("is_private", true);
-            param.addProperty("member_invite", false);
-            param.addProperty("chat_history", false);
-        } else {
             param.addProperty("is_private", groupSetPrivateSwitch.isChecked());
             param.addProperty("member_invite", groupSetInviteSwitch.isChecked());
             param.addProperty("chat_history", groupSetLookSwitch.isChecked());
+        } else {
+            param.addProperty("is_private", false);
+            param.addProperty("member_invite", true);
+            param.addProperty("chat_history", true);
         }
         showLoadingDialog(null);
         getChatApi().groupUpdate(groupDetailEntity.tid, RequestUtils.createJsonBody(param.toString()))

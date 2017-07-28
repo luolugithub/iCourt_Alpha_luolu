@@ -17,8 +17,8 @@
 
         <ImageView
             android:id="@+id/iv_customer_icon"
-            android:layout_width="19dp"
-            android:layout_height="19dp"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
             android:src="@mipmap/avatar_default_24" />
 
         <TextView
@@ -31,7 +31,7 @@
             android:maxLines="1"
             android:text="name"
             android:textColor="@color/alpha_font_color_black"
-            android:textSize="@dimen/alpha_font_size_mini_medium" />
+            android:textSize="@dimen/alpha_font_size_comm" />
 
     </LinearLayout>
 

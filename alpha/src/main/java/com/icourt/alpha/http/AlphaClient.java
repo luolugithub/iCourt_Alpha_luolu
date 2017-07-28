@@ -7,8 +7,8 @@ import android.text.TextUtils;
 
 import com.icourt.alpha.BuildConfig;
 import com.icourt.alpha.utils.LogUtils;
-import com.icourt.alpha.utils.logger.Logger;
 import com.icourt.api.SimpleClient;
+import com.orhanobut.logger.Logger;
 
 import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;

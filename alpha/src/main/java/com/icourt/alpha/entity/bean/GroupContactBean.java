@@ -8,7 +8,6 @@ import android.text.TextUtils;
 import com.google.gson.annotations.SerializedName;
 import com.icourt.alpha.db.convertor.IConvertModel;
 import com.icourt.alpha.db.dbmodel.ContactDbModel;
-import com.icourt.alpha.view.recyclerviewDivider.ISuspensionAction;
 import com.icourt.alpha.view.recyclerviewDivider.ISuspensionInterface;
 import com.icourt.alpha.widget.filter.IFilterEntity;
 
@@ -25,7 +24,6 @@ public class GroupContactBean
         implements IConvertModel<ContactDbModel>,
         Serializable,
         ISuspensionInterface,
-        ISuspensionAction,
         IFilterEntity, Parcelable {
 
     public static final int TYPE_ROBOT = 100;
@@ -37,6 +35,8 @@ public class GroupContactBean
     @SerializedName(value = "userId", alternate = "user_id")
     public String userId;
     public String name;
+    @SerializedName(value = "nameCharacter", alternate = "name_character")
+    public String nameCharacter;
     public String title;
     public String phone;
     public String email;
@@ -46,10 +46,11 @@ public class GroupContactBean
     public GroupContactBean() {
     }
 
-    public GroupContactBean(String accid, String userId, String name, String title, String phone, String email, String pic, int type) {
+    public GroupContactBean(String accid, String userId, String name, String nameCharacter, String title, String phone, String email, String pic, int type) {
         this.accid = accid;
         this.userId = userId;
         this.name = name;
+        this.nameCharacter = nameCharacter;
         this.title = title;
         this.phone = phone;
         this.email = email;
@@ -64,6 +65,7 @@ public class GroupContactBean
                 ", accid='" + accid + '\'' +
                 ", userId='" + userId + '\'' +
                 ", name='" + name + '\'' +
+                ", nameCharacter='" + nameCharacter + '\'' +
                 ", title='" + title + '\'' +
                 ", phone='" + phone + '\'' +
                 ", email='" + email + '\'' +
@@ -75,9 +77,11 @@ public class GroupContactBean
     @Override
     public ContactDbModel convert2Model() {
         if (TextUtils.isEmpty(accid)) return null;
-        return new ContactDbModel(accid, userId,
+        return new ContactDbModel(accid,
+                userId,
                 null,
                 name,
+                nameCharacter,
                 title,
                 phone,
                 email,

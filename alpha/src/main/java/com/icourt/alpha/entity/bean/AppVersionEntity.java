@@ -15,4 +15,9 @@ public class AppVersionEntity {
     public String changelog;
     public String install_url;
     public String versionShort;
+    public BinaryEntity binary;
+
+    public static class BinaryEntity {
+        public long fsize;
+    }
 }

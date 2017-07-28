@@ -15,7 +15,8 @@ import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.EditText;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import com.google.gson.JsonParseException;
 import com.icourt.alpha.R;
@@ -33,7 +34,9 @@ import com.icourt.alpha.interfaces.OnPageFragmentCallBack;
 import com.icourt.alpha.utils.FileUtils;
 import com.icourt.alpha.utils.JsonUtils;
 import com.icourt.alpha.utils.StringUtils;
+import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.utils.UriUtils;
+import com.icourt.alpha.view.ClearEditText;
 import com.icourt.api.RequestUtils;
 
 import java.io.File;
@@ -46,6 +49,7 @@ import java.util.UUID;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 import butterknife.Unbinder;
 import okhttp3.RequestBody;
 import retrofit2.Call;
@@ -68,8 +72,13 @@ public class FileImportTeamFragment extends BaseFragment implements BaseRecycler
     Unbinder unbinder;
     GroupAdapter groupAdapter;
     HeaderFooterAdapter<GroupAdapter> headerFooterAdapter;
-    EditText header_input_et;
     private final List<GroupEntity> groupEntities = new ArrayList<>();
+    @BindView(R.id.header_comm_search_input_et)
+    ClearEditText headerCommSearchInputEt;
+    @BindView(R.id.header_comm_search_cancel_tv)
+    TextView headerCommSearchCancelTv;
+    @BindView(R.id.header_comm_search_input_ll)
+    LinearLayout headerCommSearchInputLl;
 
     /**
      * @param path
@@ -108,11 +117,10 @@ public class FileImportTeamFragment extends BaseFragment implements BaseRecycler
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         headerFooterAdapter = new HeaderFooterAdapter<>(groupAdapter = new GroupAdapter());
         groupAdapter.setSelectable(true);
-        View headerView = HeaderFooterAdapter.inflaterView(getContext(), R.layout.header_search_input_text, recyclerView);
+        View headerView = HeaderFooterAdapter.inflaterView(getContext(), R.layout.header_search_comm, recyclerView);
         headerFooterAdapter.addHeader(headerView);
-        header_input_et = (EditText) headerView.findViewById(R.id.header_input_et);
-        header_input_et.clearFocus();
-        header_input_et.addTextChangedListener(new TextWatcher() {
+        registerClick(headerView.findViewById(R.id.header_comm_search_ll));
+        headerCommSearchInputEt.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
 
@@ -136,6 +144,7 @@ public class FileImportTeamFragment extends BaseFragment implements BaseRecycler
         recyclerView.setAdapter(headerFooterAdapter);
         groupAdapter.setOnItemClickListener(this);
         getData(true);
+        headerCommSearchInputLl.setVisibility(View.GONE);
     }
 
     @Override
@@ -315,6 +324,24 @@ public class FileImportTeamFragment extends BaseFragment implements BaseRecycler
                 });
     }
 
+    @OnClick({R.id.header_comm_search_cancel_tv})
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.header_comm_search_ll:
+                headerCommSearchInputLl.setVisibility(View.VISIBLE);
+                SystemUtils.showSoftKeyBoard(getActivity(), headerCommSearchInputEt);
+                break;
+            case R.id.header_comm_search_cancel_tv:
+                headerCommSearchInputEt.setText("");
+                SystemUtils.hideSoftKeyBoard(getActivity(), headerCommSearchInputEt, true);
+                headerCommSearchInputLl.setVisibility(View.GONE);
+                break;
+            default:
+                super.onClick(v);
+                break;
+        }
+    }
 
     @Override
     public void onDestroyView() {

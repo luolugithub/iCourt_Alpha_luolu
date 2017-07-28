@@ -5,23 +5,35 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.Editable;
+import android.text.TextUtils;
+import android.text.TextWatcher;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
+import android.widget.EditText;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.ProjectAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
+import com.icourt.alpha.adapter.baseadapter.HeaderFooterAdapter;
+import com.icourt.alpha.adapter.baseadapter.adapterObserver.DataChangeAdapterObserver;
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.entity.bean.ProjectEntity;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
+import com.icourt.alpha.utils.SystemUtils;
 
 import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 import butterknife.Unbinder;
 import retrofit2.Call;
 import retrofit2.Response;
@@ -38,6 +50,15 @@ public class ProjectListFragment extends BaseFragment implements BaseRecyclerAda
     RecyclerView recyclerView;
     Unbinder unbinder;
     ProjectAdapter projectAdapter;
+    HeaderFooterAdapter<ProjectAdapter> headerFooterAdapter;
+    @BindView(R.id.empty_layout)
+    LinearLayout emptyLayout;
+    @BindView(R.id.header_comm_search_input_et)
+    EditText headerCommSearchInputEt;
+    @BindView(R.id.header_comm_search_cancel_tv)
+    TextView headerCommSearchCancelTv;
+    @BindView(R.id.header_comm_search_input_ll)
+    LinearLayout headerCommSearchInputLl;
 
     public static ProjectListFragment newInstance() {
         return new ProjectListFragment();
@@ -66,16 +87,82 @@ public class ProjectListFragment extends BaseFragment implements BaseRecyclerAda
     @Override
     protected void initView() {
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        recyclerView.setAdapter(projectAdapter = new ProjectAdapter(false));
+        recyclerView.setHasFixedSize(true);
+        headerFooterAdapter = new HeaderFooterAdapter<>(projectAdapter = new ProjectAdapter(true));
+        View headerView = HeaderFooterAdapter.inflaterView(getContext(), R.layout.header_search_comm, recyclerView);
+        headerFooterAdapter.addHeader(headerView);
+        registerClick(headerView.findViewById(R.id.header_comm_search_ll));
+        recyclerView.setAdapter(headerFooterAdapter);
+        projectAdapter.registerAdapterDataObserver(new DataChangeAdapterObserver() {
+            @Override
+            protected void updateUI() {
+                if (emptyLayout == null) return;
+                emptyLayout.setVisibility(projectAdapter.getItemCount() <= 0 ? View.VISIBLE : View.GONE);
+            }
+        });
         projectAdapter.setOnItemClickListener(this);
+        projectAdapter.setSelectable(false);
+        headerCommSearchInputEt.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                if (TextUtils.isEmpty(s)) {
+                    getData(true);
+                } else {
+                    searchProjectByName(s.toString());
+                }
+            }
+        });
+        headerCommSearchInputEt.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                switch (actionId) {
+                    case EditorInfo.IME_ACTION_SEARCH: {
+                        SystemUtils.hideSoftKeyBoard(getActivity(), headerCommSearchInputEt);
+                        if (!TextUtils.isEmpty(headerCommSearchInputEt.getText())) {
+                            searchProjectByName(headerCommSearchInputEt.getText().toString());
+                        }
+                    }
+                    return true;
+                    default:
+                        return false;
+                }
+            }
+        });
+        headerCommSearchInputLl.setVisibility(View.GONE);
         getData(true);
+    }
+
+    @OnClick({R.id.header_comm_search_cancel_tv})
+    @Override
+    public void onClick(View v) {
+        super.onClick(v);
+        switch (v.getId()) {
+            case R.id.header_comm_search_cancel_tv:
+                headerCommSearchInputEt.setText("");
+                SystemUtils.hideSoftKeyBoard(getActivity(), headerCommSearchInputEt, true);
+                headerCommSearchInputLl.setVisibility(View.GONE);
+                break;
+            case R.id.header_comm_search_ll:
+                headerCommSearchInputLl.setVisibility(View.VISIBLE);
+                SystemUtils.showSoftKeyBoard(getActivity(), headerCommSearchInputEt);
+                break;
+        }
     }
 
     @Override
     protected void getData(boolean isRefresh) {
         super.getData(isRefresh);
-        showLoadingDialog(null);
-        getApi().projectSelectListQuery("0,2,7")
+        getApi().projectSelectByTask("0,2,7", null)
                 .enqueue(new SimpleCallBack<List<ProjectEntity>>() {
                     @Override
                     public void onSuccess(Call<ResEntity<List<ProjectEntity>>> call, Response<ResEntity<List<ProjectEntity>>> response) {
@@ -91,23 +178,51 @@ public class ProjectListFragment extends BaseFragment implements BaseRecyclerAda
                 });
     }
 
+    /**
+     * 按名称搜索项目
+     *
+     * @param projectName
+     */
+    private void searchProjectByName(final String projectName) {
+        if (TextUtils.isEmpty(projectName)) return;
+        //pms独有 带权限
+        getApi().projectSelectByTask("0,2,7", projectName)
+                .enqueue(new SimpleCallBack<List<ProjectEntity>>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<List<ProjectEntity>>> call, Response<ResEntity<List<ProjectEntity>>> response) {
+                        projectAdapter.clearData();
+                        projectAdapter.bindData(true, response.body().result);
+                    }
+                });
+        //不带权限的
+      /*  getApi().projectQueryByName(projectName, 1)
+                .enqueue(new SimpleCallBack<List<ProjectEntity>>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<List<ProjectEntity>>> call, Response<ResEntity<List<ProjectEntity>>> response) {
+                        projectAdapter.clearData();
+                        projectAdapter.bindData(true, response.body().result);
+                        setSelectedProject();
+                    }
+                });*/
+    }
+
     @Override
-    public void onDestroyView() {
-        super.onDestroyView();
+    public void onDestroy() {
+        super.onDestroy();
         unbinder.unbind();
     }
 
-
     @Override
     public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
+        SystemUtils.hideSoftKeyBoard(getActivity(), headerCommSearchInputEt, true);
         if (getParentFragment() instanceof OnFragmentCallBackListener) {
             Bundle bundle = new Bundle();
-            bundle.putSerializable(KEY_FRAGMENT_RESULT, projectAdapter.getItem(position));
+            bundle.putSerializable(KEY_FRAGMENT_RESULT, projectAdapter.getItem(adapter.getRealPos(position)));
             ((OnFragmentCallBackListener) getParentFragment()).onFragmentCallBack(ProjectListFragment.this, 1, bundle);
         } else {
             if (onFragmentCallBackListener != null) {
                 Bundle bundle = new Bundle();
-                bundle.putSerializable(KEY_FRAGMENT_RESULT, projectAdapter.getItem(position));
+                bundle.putSerializable(KEY_FRAGMENT_RESULT, projectAdapter.getItem(adapter.getRealPos(position)));
                 onFragmentCallBackListener.onFragmentCallBack(ProjectListFragment.this, 1, bundle);
             }
         }

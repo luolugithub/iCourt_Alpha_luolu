@@ -27,6 +27,7 @@ import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.icourt.alpha.entity.bean.IMMessageCustomBody;
 import com.icourt.alpha.entity.bean.MsgConvert2Task;
+import com.icourt.alpha.entity.event.MessageEvent;
 import com.icourt.alpha.fragment.dialogfragment.ContactShareDialogFragment;
 import com.icourt.alpha.http.RetrofitServiceFactory;
 import com.icourt.alpha.http.callback.SimpleCallBack;
@@ -152,6 +153,53 @@ public abstract class ChatBaseActivity
     private ContactDbService contactDbService;
     private AlphaUserInfo loadedLoginUserInfo;
 
+    @Override
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        EventBus.getDefault().register(this);
+        loadedLoginUserInfo = getLoginUserInfo();
+        contactDbService = new ContactDbService(getLoginUserId());
+        registerObservers(true);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        getMsgCollectedIds();
+        getMsgDingedIds();
+        switch (getIMChatType()) {
+            case CHAT_TYPE_P2P:
+                NIMClient.getService(MsgService.class)
+                        .setChattingAccount(getIMChatId(), SessionTypeEnum.P2P);
+                break;
+            case CHAT_TYPE_TEAM:
+                NIMClient.getService(MsgService.class)
+                        .setChattingAccount(getIMChatId(), SessionTypeEnum.Team);
+                break;
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        NIMClient.getService(MsgService.class)
+                .setChattingAccount(MsgService.MSG_CHATTING_ACCOUNT_NONE, SessionTypeEnum.None);
+    }
+
+    @Override
+    protected void onDestroy() {
+        clearUnReadNum();
+        registerObservers(false);
+        if (contactDbService != null) {
+            contactDbService.releaseService();
+        }
+        EventBus.getDefault().unregister(this);
+        if (mHandler != null) {
+            mHandler.removeCallbacksAndMessages(null);
+        }
+        super.onDestroy();
+    }
+
     /**
      * team更新
      *
@@ -202,15 +250,6 @@ public abstract class ChatBaseActivity
         return loadedLoginUserInfo != null ? loadedLoginUserInfo.getToken() : "";
     }
 
-    @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        EventBus.getDefault().register(this);
-        loadedLoginUserInfo = getLoginUserInfo();
-        contactDbService = new ContactDbService(getLoginUserId());
-        registerObservers(true);
-    }
-
     @Subscribe(threadMode = ThreadMode.MAIN)
     public final void onMessageEvent(IMMessageCustomBody customBody) {
         if (customBody == null) return;
@@ -235,24 +274,6 @@ public abstract class ChatBaseActivity
                         msgDingedIdsList.remove(customBody.ext.id);
                     }
                 }
-                break;
-        }
-    }
-
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        getMsgCollectedIds();
-        getMsgDingedIds();
-        switch (getIMChatType()) {
-            case CHAT_TYPE_P2P:
-                NIMClient.getService(MsgService.class)
-                        .setChattingAccount(getIMChatId(), SessionTypeEnum.P2P);
-                break;
-            case CHAT_TYPE_TEAM:
-                NIMClient.getService(MsgService.class)
-                        .setChattingAccount(getIMChatId(), SessionTypeEnum.Team);
                 break;
         }
     }
@@ -344,20 +365,6 @@ public abstract class ChatBaseActivity
     }
 
 
-    @Override
-    protected void onDestroy() {
-        clearUnReadNum();
-        registerObservers(false);
-        if (contactDbService != null) {
-            contactDbService.releaseService();
-        }
-        EventBus.getDefault().unregister(this);
-        if (mHandler != null) {
-            mHandler.removeCallbacksAndMessages(null);
-        }
-        super.onDestroy();
-    }
-
     private void registerObservers(boolean register) {
         MsgServiceObserve service = NIMClient.getService(MsgServiceObserve.class);
         service.observeMessageReceipt(messageReceiptObserver, register);
@@ -437,21 +444,22 @@ public abstract class ChatBaseActivity
     }
 
 
-    @Override
-    protected void onPause() {
-        super.onPause();
-        NIMClient.getService(MsgService.class)
-                .setChattingAccount(MsgService.MSG_CHATTING_ACCOUNT_NONE, SessionTypeEnum.None);
-    }
-
     /**
      * 从本地删除消息
      *
      * @param message
      */
-    protected void deleteMsgFromDb(IMMessage message) {
+    protected void deleteMsgFromDb(final IMMessage message) {
         if (message == null) return;
-        NIMClient.getService(MsgService.class).deleteChattingHistory(message);
+        Observable.create(new ObservableOnSubscribe<Boolean>() {
+            @Override
+            public void subscribe(@io.reactivex.annotations.NonNull ObservableEmitter<Boolean> observableEmitter) throws Exception {
+                if (observableEmitter.isDisposed()) return;
+                NIMClient.getService(MsgService.class).deleteChattingHistory(message);
+            }
+        }).compose(this.<Boolean>bindToLifecycle())
+                .subscribeOn(Schedulers.newThread())
+                .subscribe();
     }
 
 
@@ -1014,7 +1022,13 @@ public abstract class ChatBaseActivity
                     break;
                 case MSG_TYPE_DING://不能撤回 不能转发 收藏的是钉的消息体,钉的消息[文本]可以转任务
                     menuItems.clear();
+                    boolean isCanCopy = iMMessageCustomBody.ext != null
+                            && (iMMessageCustomBody.ext.show_type == MSG_TYPE_TXT || iMMessageCustomBody.ext.show_type == MSG_TYPE_LINK);
+                    if (isCanCopy) {
+                        menuItems.add("复制");
+                    }
                     menuItems.addAll(Arrays.asList(
+                            isDinged(iMMessageCustomBody.ext != null ? iMMessageCustomBody.ext.id : 0) ? "取消钉" : "钉",
                             isCollected(iMMessageCustomBody.ext != null ? iMMessageCustomBody.ext.id : 0) ? "取消收藏" : "收藏"
                     ));
                     break;
@@ -1022,7 +1036,7 @@ public abstract class ChatBaseActivity
                     break;
                 case MSG_TYPE_LINK:
                     menuItems.clear();
-                    menuItems.addAll(Arrays.asList(
+                    menuItems.addAll(Arrays.asList("复制",
                             isDinged(iMMessageCustomBody.id) ? "取消钉" : "钉",
                             isCollected(iMMessageCustomBody.id) ? "取消收藏" : "收藏"));
                     menuItems.add("转发");
@@ -1087,11 +1101,38 @@ public abstract class ChatBaseActivity
                     public void onClick(DialogInterface dialog, int which) {
                         String actionName = menuItems.get(which);
                         if (TextUtils.equals(actionName, "复制")) {
-                            msgActionCopy(customIMBody.content);
+                            if (customIMBody.show_type == MSG_TYPE_LINK) {
+                                if (customIMBody.ext != null) {
+                                    msgActionCopy(customIMBody.ext.url);
+                                }
+                            } else if (customIMBody.show_type == MSG_TYPE_DING) {
+                                if (customIMBody.ext != null) {
+                                    switch (customIMBody.ext.show_type) {
+                                        case MSG_TYPE_TXT:
+                                            msgActionCopy(customIMBody.ext.content);
+                                            break;
+                                        case MSG_TYPE_LINK:
+                                            if (customIMBody.ext.ext != null) {
+                                                msgActionCopy(customIMBody.ext.ext.url);
+                                            }
+                                            break;
+                                    }
+                                }
+                            } else {
+                                msgActionCopy(customIMBody.content);
+                            }
                         } else if (TextUtils.equals(actionName, "钉")) {
-                            msgActionDing(true, customIMBody.id);
+                            if (customIMBody.show_type == MSG_TYPE_DING) {
+                                msgActionDing(true, customIMBody.ext != null ? customIMBody.ext.id : 0);
+                            } else {
+                                msgActionDing(true, customIMBody.id);
+                            }
                         } else if (TextUtils.equals(actionName, "取消钉")) {
-                            msgActionDing(false, customIMBody.id);
+                            if (customIMBody.show_type == MSG_TYPE_DING) {
+                                msgActionDing(false, customIMBody.ext != null ? customIMBody.ext.id : 0);
+                            } else {
+                                msgActionDing(false, customIMBody.id);
+                            }
                         } else if (TextUtils.equals(actionName, "收藏")) {
                             switch (customIMBody.show_type) {
                                 case MSG_TYPE_DING:
@@ -1165,6 +1206,11 @@ public abstract class ChatBaseActivity
                         dismissLoadingDialog();
                         TaskCreateActivity.launch(getContext(),
                                 textContentFinal, null);
+                    }
+
+                    @Override
+                    public void defNotify(String noticeStr) {
+                        //super.defNotify(noticeStr);
                     }
                 });
     }
@@ -1260,6 +1306,7 @@ public abstract class ChatBaseActivity
                     public void onSuccess(Call<ResEntity<Boolean>> call, Response<ResEntity<Boolean>> response) {
                         if (response.body().result != null && response.body().result.booleanValue()) {
                             showTopSnackBar("取消收藏成功");
+                            EventBus.getDefault().post(new MessageEvent(MessageEvent.ACTION_MSG_CANCEL_COLLECT, msgId));
                             msgCollectedIdsList.remove(msgId);
                         } else {
                             showTopSnackBar("取消收藏失败");
@@ -1276,37 +1323,45 @@ public abstract class ChatBaseActivity
      */
     protected final void msgActionRevoke(@NonNull final long msgId, @Nullable final IMMessage imMessage) {
         if (msgId <= 0) return;
-        if (imMessage == null) return;
-        NIMClient.getService(MsgService.class)
-                .revokeMessage(imMessage)
-                .setCallback(new RequestCallback<Void>() {
-                    @Override
-                    public void onSuccess(Void param) {
-                        //deleteItem(imMessage, true);
-                        //网络
-                        getChatApi().msgRevoke(msgId)
-                                .enqueue(new SimpleCallBack<JsonElement>() {
-                                    @Override
-                                    public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
-                                    }
-                                });
-                    }
-
-                    @Override
-                    public void onFailed(int code) {
-                        if (code == 508) {
-                            showTopSnackBar("消息撤回时间超限");
-                        } else {
-                            showTopSnackBar("消息撤回:" + code);
+        if (imMessage == null) {
+            getChatApi().msgRevoke(msgId)
+                    .enqueue(new SimpleCallBack<JsonElement>() {
+                        @Override
+                        public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
+                            onMessageRevoke(msgId);
                         }
-                    }
+                    });
+        } else {
+            NIMClient.getService(MsgService.class)
+                    .revokeMessage(imMessage)
+                    .setCallback(new RequestCallback<Void>() {
+                        @Override
+                        public void onSuccess(Void param) {
+                            //deleteItem(imMessage, true);
+                            //网络
+                            getChatApi().msgRevoke(msgId)
+                                    .enqueue(new SimpleCallBack<JsonElement>() {
+                                        @Override
+                                        public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
+                                        }
+                                    });
+                        }
 
-                    @Override
-                    public void onException(Throwable exception) {
-                        showTopSnackBar("消息撤回异常:" + exception);
-                    }
-                });
+                        @Override
+                        public void onFailed(int code) {
+                            if (code == 508) {
+                                showTopSnackBar("消息撤回时间超限");
+                            } else {
+                                showTopSnackBar("消息撤回:" + code);
+                            }
+                        }
 
+                        @Override
+                        public void onException(Throwable exception) {
+                            showTopSnackBar("消息撤回异常:" + exception);
+                        }
+                    });
+        }
     }
 
 
@@ -1322,7 +1377,7 @@ public abstract class ChatBaseActivity
         if (fragment != null) {
             mFragTransaction.remove(fragment);
         }
-        ContactShareDialogFragment.newInstance(id)
+        ContactShareDialogFragment.newInstance(id, true)
                 .show(mFragTransaction, tag);
     }
 }

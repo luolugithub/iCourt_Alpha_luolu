@@ -21,7 +21,10 @@ import com.icourt.alpha.utils.LoginInfoUtils;
 import com.icourt.alpha.utils.SpannableUtils;
 import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.view.bgabadgeview.BGABadgeImageView;
+import com.netease.nimlib.sdk.NIMClient;
 import com.netease.nimlib.sdk.team.model.Team;
+import com.netease.nimlib.sdk.uinfo.UserService;
+import com.netease.nimlib.sdk.uinfo.model.NimUserInfo;
 
 import java.util.List;
 
@@ -73,6 +76,23 @@ public class IMSessionAdapter extends BaseArrayRecyclerAdapter<IMSessionEntity> 
             if (indexOf >= 0) {
                 return groupContactBeans.get(indexOf);
             }
+        }
+        return IMUtils.convert2GroupContact(getNimUser(accid));
+    }
+
+
+    /**
+     * @param accid
+     * @return
+     */
+    @CheckResult
+    @Nullable
+    protected NimUserInfo getNimUser(String accid) {
+        try {
+            return NIMClient.getService(UserService.class)
+                    .getUserInfo(accid);
+        } catch (Throwable e) {
+            e.printStackTrace();
         }
         return null;
     }
@@ -164,8 +184,8 @@ public class IMSessionAdapter extends BaseArrayRecyclerAdapter<IMSessionEntity> 
                 //直接显示
                 iv_session_icon.showTextBadge(String.valueOf(unreadCount));
             } else if (unreadCount > 99) {
-                // 显示...
-                iv_session_icon.showTextBadge("...");
+                // 显示99+
+                iv_session_icon.showTextBadge("99+");
             } else if (unreadCount <= 0) {
                 //隐藏
                 iv_session_icon.hiddenBadge();
@@ -206,10 +226,10 @@ public class IMSessionAdapter extends BaseArrayRecyclerAdapter<IMSessionEntity> 
                     GlideUtils.loadUser(ivSessionIcon.getContext(),
                             user.pic,
                             ivSessionIcon);
-                }
-                break;
+                } else
+                    break;
             case CHAT_TYPE_TEAM:
-                Team team = getTeam(imSessionEntity.customIMBody.to);
+                Team team = getTeam(imSessionEntity.recentContact.getContactId());
                 if (team != null) {
                     if (!TextUtils.isEmpty(team.getIcon())) {
                         GlideUtils.loadGroup(ivSessionIcon.getContext(),
@@ -252,7 +272,11 @@ public class IMSessionAdapter extends BaseArrayRecyclerAdapter<IMSessionEntity> 
                 if (user != null) {
                     tvSessionTitle.setText(user.name);
                 } else {
-                    tvSessionTitle.setText("name field null");
+                    if (imSessionEntity.customIMBody.show_type == Const.MSG_TYPE_ALPHA_HELPER) {
+                        tvSessionTitle.setText("Alpha小助手");
+                    } else {
+                        tvSessionTitle.setText("name field null");
+                    }
                 }
                 break;
             case CHAT_TYPE_TEAM:
@@ -289,14 +313,17 @@ public class IMSessionAdapter extends BaseArrayRecyclerAdapter<IMSessionEntity> 
                 tvSessionContent.setText(stringBuilder.toString());
                 break;
             case Const.MSG_TYPE_TXT:    //文本消息
+                stringBuilder.append(getSessionContent(customIMBody));
                 stringBuilder.append(customIMBody.content);
                 tvSessionContent.setText(stringBuilder.toString());
                 break;
             case Const.MSG_TYPE_IMAGE:
+                stringBuilder.append(getSessionContent(customIMBody));
                 stringBuilder.append("[ 图片 ]");
                 tvSessionContent.setText(stringBuilder.toString());
                 break;
             case Const.MSG_TYPE_FILE:     //文件消息
+                stringBuilder.append(getSessionContent(customIMBody));
                 stringBuilder.append("[ 文件 ]");
                 tvSessionContent.setText(stringBuilder.toString());
                 break;
@@ -307,7 +334,6 @@ public class IMSessionAdapter extends BaseArrayRecyclerAdapter<IMSessionEntity> 
                         case CHAT_TYPE_P2P:
                             break;
                         case CHAT_TYPE_TEAM:
-
                             dingStringBuilder.append(customIMBody.name + " : ");
                             break;
                     }
@@ -354,6 +380,7 @@ public class IMSessionAdapter extends BaseArrayRecyclerAdapter<IMSessionEntity> 
                 break;
             case Const.MSG_TYPE_LINK://链接消息
                 if (customIMBody.ext != null) {
+                    stringBuilder.append(getSessionContent(customIMBody));
                     stringBuilder.append(customIMBody.ext.url);
                     tvSessionContent.setText(stringBuilder.toString());
                 } else {
@@ -369,6 +396,24 @@ public class IMSessionAdapter extends BaseArrayRecyclerAdapter<IMSessionEntity> 
         }
     }
 
+    /**
+     * ope ＝＝ team时，content显示发送者名称
+     * <p>
+     * 获取sessioncontent
+     *
+     * @param customIMBody
+     * @return
+     */
+    private String getSessionContent(IMMessageCustomBody customIMBody) {
+        String sessionName = "";
+        if (customIMBody == null) return sessionName;
+        if (customIMBody.ope == Const.CHAT_TYPE_TEAM) {
+            if (!StringUtils.equalsIgnoreCase(customIMBody.from, getLoginUserId(), false)) {
+                sessionName = customIMBody.name + " : ";
+            }
+        }
+        return sessionName;
+    }
 
     /**
      * 设置消息展示的时间
@@ -378,7 +423,7 @@ public class IMSessionAdapter extends BaseArrayRecyclerAdapter<IMSessionEntity> 
      */
     private void setTimeView(TextView tvSessionTime, long time, int pos) {
         if (tvSessionTime == null) return;
-        tvSessionTime.setText(DateUtils.getTimeShowString(time, true));
+        tvSessionTime.setText(DateUtils.getFormatChatTimeSimple(time));
     }
 
 

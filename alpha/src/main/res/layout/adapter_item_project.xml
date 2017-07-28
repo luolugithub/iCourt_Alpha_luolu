@@ -1,20 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:foreground="?android:attr/selectableItemBackgroundBorderless"
+    android:layout_marginLeft="@dimen/dp10"
+    android:layout_marginRight="@dimen/dp10"
+    android:background="?attr/selectableItemBackground"
     app:cardCornerRadius="5dp"
     app:cardElevation="@dimen/dp0_5"
     app:cardPreventCornerOverlap="true"
-    app:cardUseCompatPadding="true"
-    tools:targetApi="lollipop">
+    app:contentPadding="5dp"
+    app:cardUseCompatPadding="true">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
+        android:background="?attr/selectableItemBackground"
         android:padding="@dimen/dp10">
 
         <ImageView
@@ -55,11 +57,12 @@
                 android:layout_height="@dimen/alpha_height_divider"
                 android:layout_marginBottom="@dimen/dp10"
                 android:layout_marginTop="@dimen/dp10"
-                android:background="@color/alpha_divider_color" />
+                android:background="#f6f6f6" />
 
             <LinearLayout
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical">
 
                 <TextView
                     android:id="@+id/project_type"
@@ -74,6 +77,17 @@
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="@dimen/dp10"
                     android:drawableLeft="@mipmap/project_task_entry_icon"
+                    android:drawablePadding="3dp"
+                    android:gravity="center_vertical"
+                    android:textColor="@color/alpha_font_color_gray"
+                    android:textSize="@dimen/alpha_font_size_mini" />
+
+                <TextView
+                    android:id="@+id/project_time_tv"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="@dimen/dp10"
+                    android:drawableLeft="@mipmap/task_time_icon"
                     android:drawablePadding="3dp"
                     android:gravity="center_vertical"
                     android:textColor="@color/alpha_font_color_gray"

@@ -45,6 +45,7 @@ public class IMMessageCustomBody implements ILongFieldEntity, Serializable {
     public String magic_id;
     public String platform;
     public IMMessageExtBody ext;
+    //@JsonAdapter(URLDecoderTypeAdapter.class)
     public String content;
 
     public IMMessageCustomBody() {

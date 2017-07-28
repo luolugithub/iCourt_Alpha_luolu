@@ -14,4 +14,5 @@ public class TaskGroupEntity implements Serializable {
 
     public String id;
     public String name;
+    public int taskCount;
 }

@@ -1,5 +1,7 @@
 package com.icourt.alpha.utils;
 
+import android.text.TextUtils;
+
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -11,7 +13,13 @@ import static cn.finalteam.toolsfinal.DateUtils.date;
 
 public class DateUtils {
 
-    public static String getTimeShowString(long milliseconds, boolean abbreviate) {
+    /**
+     * 获取聊天的时间格式化 简写版
+     *
+     * @param milliseconds
+     * @return
+     */
+    public static String getFormatChatTimeSimple(long milliseconds) {
         String dataString;
         String timeStringBy24;
 
@@ -29,7 +37,45 @@ public class DateUtils {
         SimpleDateFormat timeformatter24 = new SimpleDateFormat("HH:mm", Locale.getDefault());
         timeStringBy24 = timeformatter24.format(currentTime);
         if (!currentTime.before(todaybegin)) {
-            dataString = getTodayTimeBucket(currentTime);
+            dataString = timeStringBy24;
+        } else if (!currentTime.before(yesterdaybegin)) {
+            dataString = "昨天";
+        } else if (!currentTime.before(preyesterday)) {
+            dataString = "前天";
+        } else if (isSameWeekDates(currentTime, today)) {
+            dataString = getWeekOfDate(currentTime);
+        } else {
+            SimpleDateFormat dateformatter = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+            dataString = dateformatter.format(currentTime);
+        }
+        return dataString;
+    }
+
+    /**
+     * 获取聊天的时间格式化
+     *
+     * @param milliseconds
+     * @return
+     */
+    public static String getFormatChatTime(long milliseconds) {
+        String dataString;
+        String timeStringBy24;
+
+        Date currentTime = new Date(milliseconds);
+        Date today = new Date();
+        Calendar todayStart = Calendar.getInstance();
+        todayStart.set(Calendar.HOUR_OF_DAY, 0);
+        todayStart.set(Calendar.MINUTE, 0);
+        todayStart.set(Calendar.SECOND, 0);
+        todayStart.set(Calendar.MILLISECOND, 0);
+        Date todaybegin = todayStart.getTime();
+        Date yesterdaybegin = new Date(todaybegin.getTime() - 3600 * 24 * 1000);
+        Date preyesterday = new Date(yesterdaybegin.getTime() - 3600 * 24 * 1000);
+
+        SimpleDateFormat timeformatter24 = new SimpleDateFormat("HH:mm", Locale.getDefault());
+        timeStringBy24 = timeformatter24.format(currentTime);
+        if (!currentTime.before(todaybegin)) {
+            dataString = timeStringBy24;
         } else if (!currentTime.before(yesterdaybegin)) {
             dataString = "昨天 " + timeStringBy24;
         } else if (!currentTime.before(preyesterday)) {
@@ -76,11 +122,12 @@ public class DateUtils {
      * @param date
      * @return
      */
+    @Deprecated
     public static String getTodayTimeBucket(Date date) {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);
         SimpleDateFormat timeformatter0to11 = new SimpleDateFormat("KK:mm", Locale.getDefault());
-        SimpleDateFormat timeformatter1to12 = new SimpleDateFormat("hh:mm", Locale.getDefault());
+        SimpleDateFormat timeformatter1to12 = new SimpleDateFormat("HH:mm", Locale.getDefault());
         int hour = calendar.get(Calendar.HOUR_OF_DAY);
         if (hour >= 0 && hour < 5) {
             return "凌晨 " + timeformatter0to11.format(date);
@@ -105,6 +152,20 @@ public class DateUtils {
         // String[] weekDaysCode = { "0", "1", "2", "3", "4", "5", "6" };
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);
+        int intWeek = calendar.get(Calendar.DAY_OF_WEEK) - 1;
+        return weekDaysName[intWeek];
+    }
+
+    /**
+     * 根据日期获得星期
+     *
+     * @param millis
+     * @return
+     */
+    public static String getWeekOfDateFromZ(long millis) {
+        String[] weekDaysName = {"周日", "周一", "周二", "周三", "周四", "周五", "周六"};
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(millis);
         int intWeek = calendar.get(Calendar.DAY_OF_WEEK) - 1;
         return weekDaysName[intWeek];
     }
@@ -168,14 +229,34 @@ public class DateUtils {
     }
 
     /**
+     * 获取日期 yyyy.MM.dd
+     *
+     * @param milliseconds
+     * @return
+     */
+    public static String getTimeDateFormatYearDot(long milliseconds) {
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy.MM.dd");
+        return formatter.format(milliseconds);
+    }
+
+    /**
      * 获取日期 MM月dd日
      *
      * @param milliseconds
      * @return
      */
     public static String getTimeDate(long milliseconds) {
-        SimpleDateFormat formatter = new SimpleDateFormat("MM月dd日");
-        return formatter.format(milliseconds);
+        String formatStr = null;
+        if (isThisYear(milliseconds)) {
+            formatStr = "MM月dd日";
+        } else {
+            formatStr = "yyyy年MM月dd日";
+        }
+        if (!TextUtils.isEmpty(formatStr)) {
+            SimpleDateFormat formatter = new SimpleDateFormat(formatStr);
+            return formatter.format(milliseconds);
+        }
+        return "";
     }
 
     /**
@@ -185,8 +266,17 @@ public class DateUtils {
      * @return
      */
     public static String getTimeDateFormatMm(long milliseconds) {
-        SimpleDateFormat formatter = new SimpleDateFormat("MM月dd日 HH:mm");
-        return formatter.format(milliseconds);
+        String formatStr = null;
+        if (isThisYear(milliseconds)) {
+            formatStr = "MM月dd日 HH:mm";
+        } else {
+            formatStr = "yyyy年MM月dd日 HH:mm";
+        }
+        if (!TextUtils.isEmpty(formatStr)) {
+            SimpleDateFormat formatter = new SimpleDateFormat(formatStr);
+            return formatter.format(milliseconds);
+        }
+        return "";
     }
 
     /**
@@ -208,17 +298,80 @@ public class DateUtils {
     }
 
     /**
+     * yyyy年MM月dd日 HH:mm
+     *
+     * @param milliseconds
+     * @return
+     */
+    public static String getyyyy_YEAR_MM_MONTH_dd_DAY_HHmm(long milliseconds) {
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy年MM月dd日 HH:mm");
+        return formatter.format(milliseconds);
+    }
+
+    /**
+     * 获取日期 MM/dd HH:mm
+     *
+     * @param milliseconds
+     * @return
+     */
+    public static String getTimeDateFormatXMm(long milliseconds) {
+        String formatStr = null;
+        if (isThisYear(milliseconds)) {
+            formatStr = "MM/dd HH:mm";
+        } else {
+            formatStr = "yyyy/MM/dd HH:mm";
+        }
+        if (!TextUtils.isEmpty(formatStr)) {
+            SimpleDateFormat formatter = new SimpleDateFormat(formatStr);
+            return formatter.format(milliseconds);
+        }
+        return "";
+    }
+
+    /**
      * @param milliseconds
      * @return
      */
     public static String getMMMdd(long milliseconds) {
-        SimpleDateFormat formatter = new SimpleDateFormat("MM月dd日");
-        try {
-            return formatter.format(milliseconds);
-        } catch (IllegalArgumentException e) {
-            e.printStackTrace();
-        } catch (NullPointerException e) {
-            e.printStackTrace();
+        String formatStr = null;
+        if (isThisYear(milliseconds)) {
+            formatStr = "MM月dd日";
+        } else {
+            formatStr = "yyyy年MM月dd日";
+        }
+        if (!TextUtils.isEmpty(formatStr)) {
+            SimpleDateFormat formatter = new SimpleDateFormat(formatStr, Locale.CHINA);
+            try {
+                return formatter.format(milliseconds);
+            } catch (IllegalArgumentException e) {
+                e.printStackTrace();
+            } catch (NullPointerException e) {
+                e.printStackTrace();
+            }
+        }
+        return String.valueOf(milliseconds);
+    }
+
+    /**
+     * @param milliseconds
+     * @return
+     */
+    public static String getMMXdd(long milliseconds) {
+        String formatStr = null;
+        if (isThisYear(milliseconds)) {
+            formatStr = "MM/dd";
+        } else {
+            formatStr = "yyyy/MM/dd";
+        }
+        if (!TextUtils.isEmpty(formatStr)) {
+            SimpleDateFormat formatter = new SimpleDateFormat(formatStr);
+            try {
+                return formatter.format(milliseconds);
+            } catch (IllegalArgumentException e) {
+                e.printStackTrace();
+            } catch (NullPointerException e) {
+                e.printStackTrace();
+            }
         }
         return String.valueOf(milliseconds);
     }
@@ -230,14 +383,14 @@ public class DateUtils {
      * @param end
      * @return
      */
-    public static long getDayDiff(Date begin, Date end) {
+    public static long getDayDiff(long begin, long end) {
         long day = 1;
-        if (end.getTime() < begin.getTime()) {
+        if (end < begin) {
             day = -1;
-        } else if (end.getTime() == begin.getTime()) {
+        } else if (end == begin) {
             day = 0;
         } else {
-            day += (end.getTime() - begin.getTime()) / (24 * 60 * 60 * 1000);
+            day += (end - begin) / (24 * 60 * 60 * 1000);
         }
         return day;
     }
@@ -274,13 +427,13 @@ public class DateUtils {
      * @return
      */
     public static long getCurrWeekStartTime() {
-        Calendar currentDate = new GregorianCalendar();
+        Calendar currentDate = Calendar.getInstance(TimeZone.getTimeZone("GMT+:08:00"));
         currentDate.setFirstDayOfWeek(Calendar.MONDAY);
         currentDate.set(Calendar.HOUR_OF_DAY, 0);
         currentDate.set(Calendar.MINUTE, 0);
         currentDate.set(Calendar.SECOND, 0);
         currentDate.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY);
-        return currentDate.getTime().getTime();
+        return currentDate.getTimeInMillis();
     }
 
 
@@ -288,12 +441,13 @@ public class DateUtils {
      * @return
      */
     public static long getCurrWeekEndTime() {
-        Calendar currentDate = new GregorianCalendar();
+        Calendar currentDate = Calendar.getInstance(TimeZone.getTimeZone("GMT+:08:00"));
+        // currentDate.setFirstDayOfWeek(Calendar.SUNDAY);
         currentDate.setFirstDayOfWeek(Calendar.MONDAY);
         currentDate.set(Calendar.HOUR_OF_DAY, 23);
         currentDate.set(Calendar.MINUTE, 59);
         currentDate.set(Calendar.SECOND, 59);
-        currentDate.set(Calendar.DAY_OF_WEEK, Calendar.SUNDAY);
+        currentDate.set(Calendar.DAY_OF_WEEK, Calendar.SATURDAY);
         return currentDate.getTime().getTime();
     }
 
@@ -352,5 +506,74 @@ public class DateUtils {
         yesterday.set(Calendar.SECOND, 0);
         return millis / 1000 < today.getTimeInMillis() / 1000
                 && millis / 1000 >= yesterday.getTimeInMillis() / 1000;
+    }
+
+    /**
+     * 判断是否是今年
+     *
+     * @param millis
+     * @return
+     */
+    public static boolean isThisYear(long millis) {
+        Calendar otherYear = Calendar.getInstance();
+        otherYear.setTimeInMillis(millis);
+        Calendar thisYear = Calendar.getInstance();
+        thisYear.setTimeInMillis(millis());
+
+        return otherYear.get(Calendar.YEAR) == thisYear.get(Calendar.YEAR);
+    }
+
+    /**
+     * 23:59:59 不显示  xx月xx日 hh：mm
+     *
+     * @param millis
+     * @return
+     */
+    public static String get23Hour59Min(long millis) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(millis);
+        int hour = calendar.get(Calendar.HOUR_OF_DAY);
+        int minute = calendar.get(Calendar.MINUTE);
+        int second = calendar.get(Calendar.SECOND);
+        if ((hour == 23 && minute == 59 && second == 59) || (hour == 0 && minute == 0)) {
+            return getMMMdd(millis);
+        } else {
+            return getTimeDateFormatMm(millis);
+        }
+    }
+
+    /**
+     * 23:59:59 不显示 xx/xx hh：mm
+     *
+     * @param millis
+     * @return
+     */
+    public static String get23Hour59MinFormat(long millis) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(millis);
+        int hour = calendar.get(Calendar.HOUR_OF_DAY);
+        int minute = calendar.get(Calendar.MINUTE);
+        int second = calendar.get(Calendar.SECOND);
+        if ((hour == 23 && minute == 59 && second == 59) || (hour == 0 && minute == 0)) {
+            return getMMXdd(millis);
+        } else {
+            return getTimeDateFormatXMm(millis);
+        }
+    }
+
+    /**
+     * 根据小时：分钟 获取时间戳
+     *
+     * @param hour
+     * @param min
+     * @return
+     */
+    public static long getMillByHourmin(int hour, int min) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(Calendar.HOUR_OF_DAY, hour);
+        calendar.set(Calendar.MINUTE, min);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+        return calendar.getTimeInMillis();
     }
 }

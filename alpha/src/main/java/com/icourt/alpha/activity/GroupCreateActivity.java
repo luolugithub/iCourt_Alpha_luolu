@@ -22,7 +22,6 @@ import android.widget.Switch;
 import android.widget.TextView;
 
 import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.IMContactAdapter;
@@ -30,15 +29,19 @@ import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.adapterObserver.DataChangeAdapterObserver;
 import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.constants.Const;
+import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.icourt.alpha.entity.bean.GroupContactBean;
-import com.icourt.alpha.fragment.dialogfragment.BaseDialogFragment;
+import com.icourt.alpha.entity.bean.GroupEntity;
+import com.icourt.alpha.base.BaseDialogFragment;
 import com.icourt.alpha.fragment.dialogfragment.ContactSelectDialogFragment;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
+import com.icourt.alpha.utils.StringUtils;
 import com.icourt.api.RequestUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import butterknife.BindView;
@@ -94,18 +97,18 @@ public class GroupCreateActivity extends BaseActivity implements OnFragmentCallB
     @BindView(R.id.member_layout)
     FrameLayout memberLayout;
 
-    public static void launch(Context context) {
-        if (context == null) return;
-        Intent intent = new Intent(context, GroupCreateActivity.class);
-        context.startActivity(intent);
-    }
-
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_group_create);
         ButterKnife.bind(this);
         initView();
+    }
+
+    public static void launch(Context context) {
+        if (context == null) return;
+        Intent intent = new Intent(context, GroupCreateActivity.class);
+        context.startActivity(intent);
     }
 
     @Override
@@ -117,7 +120,6 @@ public class GroupCreateActivity extends BaseActivity implements OnFragmentCallB
             titleActionTextView.setText("完成");
         }
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false);
-        linearLayoutManager.setAutoMeasureEnabled(true);
         groupMemberRecyclerView.setLayoutManager(linearLayoutManager);
         groupMemberRecyclerView.setNestedScrollingEnabled(false);
         groupMemberRecyclerView.setAdapter(imContactAdapter = new IMContactAdapter(Const.VIEW_TYPE_GRID));
@@ -126,13 +128,31 @@ public class GroupCreateActivity extends BaseActivity implements OnFragmentCallB
         imContactAdapter.setOnItemClickListener(new BaseRecyclerAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
+                ArrayList<GroupContactBean> data = new ArrayList<GroupContactBean>(imContactAdapter.getData());
+                if (!data.isEmpty()) {
+                    data.remove(getMyAsContactBean());
+                }
                 GroupMemberDelActivity.launchForResult(getActivity(),
                         null,
-                        (ArrayList<GroupContactBean>) imContactAdapter.getData(),
+                        data,
                         false,
                         REQ_CODE_DEL_USER);
             }
         });
+
+        imContactAdapter.addItem(0, getMyAsContactBean());
+    }
+
+    private GroupContactBean getMyAsContactBean() {
+        AlphaUserInfo loginUserInfo = getLoginUserInfo();
+        if (loginUserInfo != null) {
+            GroupContactBean my = new GroupContactBean();
+            my.name = loginUserInfo.getName();
+            my.pic = loginUserInfo.getPic();
+            my.accid = StringUtils.toLowerCase(loginUserInfo.getUserId());
+            return my;
+        }
+        return null;
     }
 
     @OnClick({R.id.group_member_invite_tv,
@@ -142,12 +162,16 @@ public class GroupCreateActivity extends BaseActivity implements OnFragmentCallB
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.titleAction:
-                if (TextUtils.isEmpty(groupNameEt.getText())) {
+                if (StringUtils.isEmpty(getTextString(groupNameEt, ""))) {
                     showTopSnackBar("请输入讨论组名称!");
                     return;
                 }
-                if (groupNameEt.getText().length() < 2) {
+                if (groupNameEt.getText().length() < 1) {
                     showTopSnackBar("讨论组名称太短!");
+                    return;
+                }
+                if (getTextString(groupNameEt, "").length() > 50) {
+                    showTopSnackBar("讨论组名称太长");
                     return;
                 }
                 groupCreate(groupNameEt.getText().toString(),
@@ -159,9 +183,11 @@ public class GroupCreateActivity extends BaseActivity implements OnFragmentCallB
                 break;
             case R.id.member_layout:
             case R.id.group_member_arrow_iv:
+                ArrayList<GroupContactBean> data = new ArrayList<>(imContactAdapter.getData());
+                data.remove(getMyAsContactBean());
                 GroupMemberDelActivity.launchForResult(getActivity(),
                         null,
-                        (ArrayList<GroupContactBean>) imContactAdapter.getData(),
+                        data,
                         false,
                         REQ_CODE_DEL_USER);
                 break;
@@ -181,7 +207,8 @@ public class GroupCreateActivity extends BaseActivity implements OnFragmentCallB
         if (fragment != null) {
             mFragTransaction.remove(fragment);
         }
-        ContactSelectDialogFragment.newInstance((ArrayList<GroupContactBean>) imContactAdapter.getData())
+        ArrayList<GroupContactBean> data = (ArrayList<GroupContactBean>) imContactAdapter.getData();
+        ContactSelectDialogFragment.newInstance(data)
                 .show(mFragTransaction, tag);
     }
 
@@ -205,24 +232,35 @@ public class GroupCreateActivity extends BaseActivity implements OnFragmentCallB
         groupJsonObject.addProperty("chat_history", true);*/
 
         JsonArray memberArray = new JsonArray();
+        GroupContactBean myAsContactBean = getMyAsContactBean();
         for (GroupContactBean groupContactBean : imContactAdapter.getData()) {
-            if (groupContactBean != null) {
+            if (groupContactBean != null &&
+                    !groupContactBean.equals(myAsContactBean)) {
                 memberArray.add(groupContactBean.accid);
             }
         }
         groupJsonObject.add("members", memberArray);
 
         getChatApi().groupCreate(RequestUtils.createJsonBody(groupJsonObject.toString()))
-                .enqueue(new SimpleCallBack<JsonElement>() {
+                .enqueue(new SimpleCallBack<GroupEntity>() {
                     @Override
-                    public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
+                    public void onSuccess(Call<ResEntity<GroupEntity>> call, Response<ResEntity<GroupEntity>> response) {
                         dismissLoadingDialog();
-                        showToast("创建成功");
+                        if (response.body().result != null) {
+                            ChatActivity.launchTEAM(
+                                    getContext(),
+                                    response.body().result.tid,
+                                    response.body().result.name,
+                                    0,
+                                    0, false);
+                        } else {
+                            showToast("创建成功");
+                        }
                         finish();
                     }
 
                     @Override
-                    public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
+                    public void onFailure(Call<ResEntity<GroupEntity>> call, Throwable t) {
                         super.onFailure(call, t);
                         dismissLoadingDialog();
                     }
@@ -234,10 +272,16 @@ public class GroupCreateActivity extends BaseActivity implements OnFragmentCallB
         switch (requestCode) {
             case REQ_CODE_DEL_USER:
                 if (resultCode == Activity.RESULT_OK && data != null) {
+                    //删除后的数据
                     List<GroupContactBean> result = (List<GroupContactBean>) data.getSerializableExtra(KEY_ACTIVITY_RESULT);
-                    if (result != null) {
-                        imContactAdapter.bindData(true, result);
+                    if (result == null) {
+                        result = Arrays.asList(getMyAsContactBean());
+                    } else {
+                        if (!result.contains(getMyAsContactBean())) {
+                            result.add(0, getMyAsContactBean());
+                        }
                     }
+                    imContactAdapter.bindData(true, result);
                 }
                 break;
             default:
@@ -250,9 +294,9 @@ public class GroupCreateActivity extends BaseActivity implements OnFragmentCallB
     @Override
     public void onFragmentCallBack(Fragment fragment, int type, Bundle params) {
         if (fragment instanceof ContactSelectDialogFragment && params != null) {
+            //选中的成员
             List<GroupContactBean> result = (List<GroupContactBean>) params.getSerializable(BaseDialogFragment.KEY_FRAGMENT_RESULT);
             if (result != null) {
-                imContactAdapter.getData();
                 for (int i = result.size() - 1; i >= 0; i--) {
                     GroupContactBean contactBean = result.get(i);
                     if (imContactAdapter.getData().contains(contactBean)) {

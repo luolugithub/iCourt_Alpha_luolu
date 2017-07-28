@@ -55,6 +55,7 @@ public class MyProjectFragment extends BaseFragment {
     RecyclerView recyclerView;
     @BindView(R.id.refreshLayout)
     RefreshLayout refreshLayout;
+
     @IntDef({TYPE_ALL_PROJECT,
             TYPE_MY_ATTENTION_PROJECT, TYPE_MY_PARTIC_PROJECT})
     @Retention(RetentionPolicy.SOURCE)
@@ -68,6 +69,9 @@ public class MyProjectFragment extends BaseFragment {
     private String attorneyType, myStar;
     HeaderFooterAdapter<ProjectListAdapter> headerFooterAdapter;
     ProjectListAdapter projectListAdapter;
+
+    boolean isFirstTimeIntoPage = true;
+    LinearLayoutManager linearLayoutManager;
 
     public static MyProjectFragment newInstance(@QueryProjectType int projectType) {
         MyProjectFragment myProjectFragment = new MyProjectFragment();
@@ -103,7 +107,7 @@ public class MyProjectFragment extends BaseFragment {
             refreshLayout.setNoticeEmpty(R.mipmap.icon_placeholder_project, "暂无参与项目");
         }
         refreshLayout.setMoveForHorizontal(true);
-        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        recyclerView.setLayoutManager(linearLayoutManager = new LinearLayoutManager(getContext()));
         recyclerView.setHasFixedSize(true);
 
         headerFooterAdapter = new HeaderFooterAdapter<>(projectListAdapter = new ProjectListAdapter());
@@ -136,7 +140,7 @@ public class MyProjectFragment extends BaseFragment {
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.rl_comm_search:
-                SearchProjectActivity.launch(getContext(),SearchProjectActivity.SEARCH_PROJECT);
+                SearchProjectActivity.launchProject(getContext(), projectType, SearchProjectActivity.SEARCH_PROJECT);
                 break;
             default:
                 super.onClick(v);
@@ -149,11 +153,18 @@ public class MyProjectFragment extends BaseFragment {
         if (isRefresh) {
             pageIndex = 1;
         }
-        getApi().projectQueryAll(pageIndex, ActionConstants.DEFAULT_PAGE_SIZE, "", "", "", "", attorneyType, myStar)
+        getApi().projectQueryAll(pageIndex, ActionConstants.DEFAULT_PAGE_SIZE, "name", "", "", "", attorneyType, myStar)
                 .enqueue(new SimpleCallBack<List<ProjectEntity>>() {
                     @Override
                     public void onSuccess(Call<ResEntity<List<ProjectEntity>>> call, Response<ResEntity<List<ProjectEntity>>> response) {
                         projectListAdapter.bindData(isRefresh, response.body().result);
+
+                        //第一次进入 隐藏搜索框
+                        if (isFirstTimeIntoPage) {
+                            linearLayoutManager.scrollToPositionWithOffset(headerFooterAdapter.getHeaderCount(), 0);
+                            isFirstTimeIntoPage = false;
+                        }
+
                         if (isRefresh)
                             enableEmptyView(response.body().result);
                         stopRefresh();
@@ -177,6 +188,8 @@ public class MyProjectFragment extends BaseFragment {
                 } else {
                     refreshLayout.enableEmptyView(true);
                 }
+            } else {
+                refreshLayout.enableEmptyView(true);
             }
         }
     }
@@ -199,9 +212,7 @@ public class MyProjectFragment extends BaseFragment {
     public void onRefrshEvent(ProjectActionEvent event) {
         if (event == null) return;
         if (event.action == ProjectActionEvent.PROJECT_REFRESG_ACTION) {
-            if (projectType == TYPE_MY_ATTENTION_PROJECT) {
-                refreshLayout.startRefresh();
-            }
+            refreshLayout.startRefresh();
         }
     }
 

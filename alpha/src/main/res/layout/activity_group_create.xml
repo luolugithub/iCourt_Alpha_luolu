@@ -19,7 +19,8 @@
             android:layout_height="wrap_content"
             android:background="@null"
             android:hint="讨论组名称"
-            android:singleLine="true"
+            android:maxLength="50"
+            android:maxLines="3"
             android:textColor="@color/alpha_font_color_black"
             android:textSize="22dp" />
 
@@ -30,8 +31,8 @@
             android:layout_marginTop="15dp"
             android:background="@null"
             android:gravity="top"
-            android:hint="讨论目标(可选)"
-            android:maxLength="400"
+            android:hint="讨论目标 (可选)"
+            android:maxLength="140"
             android:maxLines="5"
             android:minLines="3"
             android:textColor="@color/alpha_font_color_black"
@@ -64,7 +65,8 @@
             <Switch
                 android:id="@+id/group_private_switch"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:checked="true" />
         </LinearLayout>
 
         <View
@@ -123,7 +125,7 @@
             <FrameLayout
                 android:id="@+id/member_layout"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="45dp"
                 android:layout_alignLeft="@+id/group_title_divider"
                 android:layout_below="@+id/group_title_divider"
                 android:layout_marginLeft="30dp"
@@ -132,15 +134,16 @@
 
                 <android.support.v7.widget.RecyclerView
                     android:id="@+id/group_member_recyclerView"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
                     android:overScrollMode="never" />
 
 
                 <ImageView
                     android:id="@+id/group_member_arrow_iv"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_height="45dp"
+                    android:background="@android:color/white"
                     android:layout_gravity="right|center_vertical"
                     android:src="@mipmap/arrow_right" />
             </FrameLayout>

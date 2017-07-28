@@ -34,6 +34,7 @@ import com.icourt.alpha.widget.dialog.BottomActionDialog;
 import com.icourt.api.RequestUtils;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
@@ -87,6 +88,12 @@ public class FileBoxListActivity extends BaseActivity implements BaseRecyclerAda
     List<FileBoxBean> fileBoxBeanList;
     private List<String> firstlist;
     private boolean nameIsUp = false, timeIsUp = false, sizeIsUp = false;
+    final List<String> list = new ArrayList<>();
+    private boolean sortIsUp = false;
+    private int sort_type = 0;//排序方式
+    private static final int NAME_SORT_TYPE = 1;//按名称排序
+    private static final int TIME_SORT_TYPE = 2;//按时间排序
+    private static final int SIZE_SORT_TYPE = 3;//按大小排序
 
     public static void launch(@NonNull Context context, @NonNull FileBoxBean fileBoxBean, @NonNull String authToken, @NonNull String seaFileRepoId, @NonNull String rootName) {
         if (context == null) return;
@@ -110,6 +117,9 @@ public class FileBoxListActivity extends BaseActivity implements BaseRecyclerAda
     @Override
     protected void initView() {
         super.initView();
+        list.add("按文件名升序排序");
+        list.add("按文件大小升序排序");
+        list.add("按修改时间升序排序");
         seaFileRepoId = getIntent().getStringExtra("seaFileRepoId");
         rootName = getIntent().getStringExtra("rootName");
         authToken = getIntent().getStringExtra("authToken");
@@ -121,7 +131,7 @@ public class FileBoxListActivity extends BaseActivity implements BaseRecyclerAda
         firstlist.add(0, "#");
         titleAction.setImageResource(R.mipmap.header_icon_add);
         titleAction2.setImageResource(R.mipmap.header_icon_more);
-        refreshLayout.setNoticeEmpty(R.mipmap.icon_placeholder_project, R.string.null_project);
+        refreshLayout.setNoticeEmpty(R.mipmap.icon_placeholder_project, "暂无附件");
         refreshLayout.setMoveForHorizontal(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.addItemDecoration(ItemDecorationUtils.getCommFull05Divider(getContext(), true));
@@ -164,13 +174,27 @@ public class FileBoxListActivity extends BaseActivity implements BaseRecyclerAda
     @Override
     protected void getData(final boolean isRefresh) {
         super.getData(isRefresh);
-        getApi().projectQueryFileBoxByDir("Token " + authToken, seaFileRepoId, rootName).enqueue(new Callback<List<FileBoxBean>>() {
+        getSFileApi().projectQueryFileBoxByDir("Token " + authToken, seaFileRepoId, rootName).enqueue(new Callback<List<FileBoxBean>>() {
             @Override
             public void onResponse(Call<List<FileBoxBean>> call, Response<List<FileBoxBean>> response) {
                 stopRefresh();
                 if (response.body() != null) {
                     fileBoxBeanList = response.body();
-                    projectFileBoxAdapter.bindData(isRefresh, fileBoxBeanList);
+                    enableEmptyView(fileBoxBeanList);
+                    switch (sort_type) {
+                        case 0:
+                            projectFileBoxAdapter.bindData(isRefresh, fileBoxBeanList);
+                            break;
+                        case NAME_SORT_TYPE:
+                            sortFileByNameList(sortIsUp);
+                            break;
+                        case TIME_SORT_TYPE:
+                            sortFileByTimeList(sortIsUp);
+                            break;
+                        case SIZE_SORT_TYPE:
+                            sortFileBySizeList(sortIsUp);
+                            break;
+                    }
                 }
             }
 
@@ -186,6 +210,20 @@ public class FileBoxListActivity extends BaseActivity implements BaseRecyclerAda
         if (refreshLayout != null) {
             refreshLayout.stopRefresh();
             refreshLayout.stopLoadMore();
+        }
+    }
+
+    private void enableEmptyView(List result) {
+        if (refreshLayout != null) {
+            if (result != null) {
+                if (result.size() > 0) {
+                    refreshLayout.enableEmptyView(false);
+                } else {
+                    refreshLayout.enableEmptyView(true);
+                }
+            } else {
+                refreshLayout.enableEmptyView(true);
+            }
         }
     }
 
@@ -208,6 +246,10 @@ public class FileBoxListActivity extends BaseActivity implements BaseRecyclerAda
      * @param isUp
      */
     public void sortFileByNameList(final boolean isUp) {
+        sort_type = NAME_SORT_TYPE;
+        sortIsUp = isUp;
+        if (fileBoxBeanList == null) return;
+        if (fileBoxBeanList.size() <= 0) return;
         Collections.sort(fileBoxBeanList, new Comparator<FileBoxBean>() {
             @Override
             public int compare(FileBoxBean o1, FileBoxBean o2) {
@@ -248,6 +290,10 @@ public class FileBoxListActivity extends BaseActivity implements BaseRecyclerAda
      * @param isUp
      */
     public void sortFileBySizeList(final boolean isUp) {
+        sort_type = SIZE_SORT_TYPE;
+        sortIsUp = isUp;
+        if (fileBoxBeanList == null) return;
+        if (fileBoxBeanList.size() <= 0) return;
         Collections.sort(fileBoxBeanList, new Comparator<FileBoxBean>() {
             @Override
             public int compare(FileBoxBean o1, FileBoxBean o2) {
@@ -276,6 +322,46 @@ public class FileBoxListActivity extends BaseActivity implements BaseRecyclerAda
             }
         });
 
+        projectFileBoxAdapter.bindData(true, fileBoxBeanList);
+    }
+
+    /**
+     * 按修改时间排序
+     *
+     * @param isUp
+     */
+    public void sortFileByTimeList(final boolean isUp) {
+        sort_type = TIME_SORT_TYPE;
+        sortIsUp = isUp;
+        if (fileBoxBeanList == null) return;
+        if (fileBoxBeanList.size() <= 0) return;
+        Collections.sort(fileBoxBeanList, new Comparator<FileBoxBean>() {
+            @Override
+            public int compare(FileBoxBean o1, FileBoxBean o2) {
+
+                long o1Time = o1.mtime;
+                long o2Time = o2.mtime;
+                if (isUp) {
+                    //按照修改时间进行降序排列
+                    if (o1Time < o2Time) {
+                        return 1;
+                    }
+                    if (o1Time == o2Time) {
+                        return 0;
+                    }
+                    return -1;
+                } else {
+                    //按照修改时间进行升序排列
+                    if (o1Time > o2Time) {
+                        return 1;
+                    }
+                    if (o1Time == o2Time) {
+                        return 0;
+                    }
+                    return -1;
+                }
+            }
+        });
         projectFileBoxAdapter.bindData(true, fileBoxBeanList);
     }
 
@@ -355,7 +441,7 @@ public class FileBoxListActivity extends BaseActivity implements BaseRecyclerAda
     private void showDocumentMeau() {
         new BottomActionDialog(getContext(),
                 null,
-                Arrays.asList("按文件名升序排序", "按文件大小升序排序"),
+                list,
                 new BottomActionDialog.OnActionItemClickListener() {
                     @Override
                     public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
@@ -366,13 +452,50 @@ public class FileBoxListActivity extends BaseActivity implements BaseRecyclerAda
                                 nameIsUp = !nameIsUp;
                                 timeIsUp = false;
                                 sizeIsUp = false;
+                                list.clear();
+                                if (nameIsUp) {
+                                    list.add("按文件名降序排序");
+                                    list.add("按文件大小升序排序");
+                                    list.add("按修改时间升序排序");
+                                } else {
+                                    list.add("按文件名升序排序");
+                                    list.add("按文件大小升序排序");
+                                    list.add("按修改时间升序排序");
+                                }
                                 break;
                             case 1:
                                 sortFileBySizeList(sizeIsUp);
                                 sizeIsUp = !sizeIsUp;
                                 nameIsUp = false;
                                 timeIsUp = false;
+                                list.clear();
+                                if (sizeIsUp) {
+                                    list.add("按文件名升序排序");
+                                    list.add("按文件大小降序排序");
+                                    list.add("按修改时间升序排序");
+                                } else {
+                                    list.add("按文件名升序排序");
+                                    list.add("按文件大小升序排序");
+                                    list.add("按修改时间升序排序");
+                                }
 
+                                break;
+
+                            case 2:
+                                sortFileByTimeList(timeIsUp);
+                                timeIsUp = !timeIsUp;
+                                nameIsUp = false;
+                                sizeIsUp = false;
+                                list.clear();
+                                if (timeIsUp) {
+                                    list.add("按文件名升序排序");
+                                    list.add("按文件大小升序排序");
+                                    list.add("按修改时间降序排序");
+                                } else {
+                                    list.add("按文件名升序排序");
+                                    list.add("按文件大小升序排序");
+                                    list.add("按修改时间升序排序");
+                                }
                                 break;
                         }
                     }
@@ -406,7 +529,7 @@ public class FileBoxListActivity extends BaseActivity implements BaseRecyclerAda
             return;
         }
         showLoadingDialog("正在上传...");
-        getApi().projectUploadUrlQuery("Token " + authToken, seaFileRepoId).enqueue(new Callback<JsonElement>() {
+        getSFileApi().projectUploadUrlQuery("Token " + authToken, seaFileRepoId).enqueue(new Callback<JsonElement>() {
             @Override
             public void onResponse(Call<JsonElement> call, Response<JsonElement> response) {
                 if (response.body() != null) {
@@ -433,9 +556,9 @@ public class FileBoxListActivity extends BaseActivity implements BaseRecyclerAda
     private void uploadFile(String uploadUrl, String filePath) {
         String key = "file\";filename=\"" + DateUtils.millis() + ".png";
         Map<String, RequestBody> params = new HashMap<>();
-        params.put("parent_dir", RequestUtils.createTextBody("/"));
+        params.put("parent_dir", RequestUtils.createTextBody("/" + rootName));
         params.put(key, RequestUtils.createImgBody(new File(filePath)));
-        getApi().projectUploadFile("Token " + authToken, uploadUrl, params).enqueue(new Callback<JsonElement>() {
+        getSFileApi().projectUploadFile("Token " + authToken, uploadUrl, params).enqueue(new Callback<JsonElement>() {
             @Override
             public void onResponse(Call<JsonElement> call, Response<JsonElement> response) {
                 dismissLoadingDialog();

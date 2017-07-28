@@ -1,18 +1,25 @@
 package com.icourt.alpha.activity;
 
+import android.Manifest;
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.os.PersistableBundle;
+import android.provider.Settings;
 import android.support.annotation.IdRes;
 import android.support.annotation.IntDef;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.app.NotificationManagerCompat;
+import android.support.v7.app.AlertDialog;
 import android.util.SparseArray;
 import android.view.Gravity;
+import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.Animation;
@@ -51,10 +58,13 @@ import com.icourt.alpha.interfaces.OnTabDoubleClickListener;
 import com.icourt.alpha.utils.DensityUtil;
 import com.icourt.alpha.utils.SimpleViewGestureListener;
 import com.icourt.alpha.utils.SpUtils;
+import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.view.CheckableLayout;
 import com.icourt.alpha.widget.manager.TimerManager;
 import com.icourt.alpha.widget.popupwindow.BaseListActionItemPop;
 import com.icourt.alpha.widget.popupwindow.ListActionItemPop;
+import com.icourt.alpha.service.DaemonService;
+import com.icourt.lib.daemon.IntentWrapper;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -73,6 +83,7 @@ import butterknife.OnLongClick;
 import q.rorbin.badgeview.Badge;
 import q.rorbin.badgeview.QBadgeView;
 import retrofit2.Call;
+import retrofit2.Callback;
 import retrofit2.Response;
 
 
@@ -87,6 +98,9 @@ public class MainActivity extends BaseAppUpdateActivity
         implements OnFragmentCallBackListener {
     public static String KEY_FIND_FRAGMENT = "type_TabFindFragment_fragment";
     public static String KEY_MINE_FRAGMENT = "type_TabMimeFragment_fragment";
+    public static String KEY_PROJECT_PERMISSION = "cache_project_permission";
+    public static String KEY_CUSTOMER_PERMISSION = "cache_customer_permission";
+
 
     public static final int TYPE_FRAGMENT_NEWS = 0;
     public static final int TYPE_FRAGMENT_TASK = 1;
@@ -109,13 +123,16 @@ public class MainActivity extends BaseAppUpdateActivity
 
     }
 
-    //可改变的tab
-    private final List<ItemsEntity> tabChangeableData = Arrays.asList(
+
+    private final List<ItemsEntity> tabData = Arrays.asList(
             new ItemsEntity("项目", TYPE_FRAGMENT_PROJECT, R.drawable.tab_project),
             new ItemsEntity("我的", TYPE_FRAGMENT_MINE, R.drawable.tab_mine),
             new ItemsEntity("计时", TYPE_FRAGMENT_TIMING, R.drawable.tab_timer),
             new ItemsEntity("客户", TYPE_FRAGMENT_CUSTOMER, R.drawable.tab_customer),
             new ItemsEntity("搜索", TYPE_FRAGMENT_SEARCH, R.drawable.tab_search));
+
+    //可改变的tab
+    private final List<ItemsEntity> tabChangeableData = new ArrayList<>();
 
     @BindView(R.id.main_fl_content)
     FrameLayout mainFlContent;
@@ -218,6 +235,7 @@ public class MainActivity extends BaseAppUpdateActivity
     @Override
     protected void initView() {
         super.initView();
+        initChangedTab();
         EventBus.getDefault().register(this);
         loginUserInfo = getLoginUserInfo();
         contactDbService = new ContactDbService(loginUserInfo == null ? "" : loginUserInfo.getUserId());
@@ -230,10 +248,80 @@ public class MainActivity extends BaseAppUpdateActivity
         mHandler.addTokenRefreshTask();
     }
 
+    private void initTabChangeableData() {
+        tabChangeableData.clear();
+        if (hasProjectPermission() && hasCustomerPermission()) {
+            tabChangeableData.addAll(tabData);
+        } else if (hasProjectPermission()) {
+            tabChangeableData.addAll(Arrays.asList(
+                    new ItemsEntity("项目", TYPE_FRAGMENT_PROJECT, R.drawable.tab_project),
+                    new ItemsEntity("我的", TYPE_FRAGMENT_MINE, R.drawable.tab_mine),
+                    new ItemsEntity("计时", TYPE_FRAGMENT_TIMING, R.drawable.tab_timer),
+                    new ItemsEntity("搜索", TYPE_FRAGMENT_SEARCH, R.drawable.tab_search)));
+        } else if (hasCustomerPermission()) {
+            tabChangeableData.addAll(Arrays.asList(
+                    new ItemsEntity("客户", TYPE_FRAGMENT_CUSTOMER, R.drawable.tab_customer),
+                    new ItemsEntity("我的", TYPE_FRAGMENT_MINE, R.drawable.tab_mine),
+                    new ItemsEntity("计时", TYPE_FRAGMENT_TIMING, R.drawable.tab_timer),
+                    new ItemsEntity("搜索", TYPE_FRAGMENT_SEARCH, R.drawable.tab_search)));
+        } else {
+            tabChangeableData.addAll(Arrays.asList(
+                    new ItemsEntity("计时", TYPE_FRAGMENT_TIMING, R.drawable.tab_timer),
+                    new ItemsEntity("搜索", TYPE_FRAGMENT_SEARCH, R.drawable.tab_search),
+                    new ItemsEntity("我的", TYPE_FRAGMENT_MINE, R.drawable.tab_mine)));
+        }
+    }
+
+
+    private boolean hasProjectPermission() {
+        return SpUtils.getInstance().getBooleanData(KEY_PROJECT_PERMISSION, false);
+    }
+
+    private void setProjectPermission(boolean hasPermission) {
+        SpUtils.getInstance().putData(KEY_PROJECT_PERMISSION, hasPermission);
+    }
+
+    private boolean hasCustomerPermission() {
+        return SpUtils.getInstance().getBooleanData(KEY_CUSTOMER_PERMISSION, false);
+    }
+
+    private void setCustomerPermission(boolean hasPermission) {
+        SpUtils.getInstance().putData(KEY_CUSTOMER_PERMISSION, hasPermission);
+    }
+
     @Override
     protected void onResume() {
         super.onResume();
+        checkNotificationisEnable();
+        getPermission();
         getTimering();
+    }
+
+    /**
+     * 检查通知是否打开
+     */
+    private void checkNotificationisEnable() {
+        if (!SystemUtils.isEnableNotification(getContext())
+                || !NotificationManagerCompat.from(getContext()).areNotificationsEnabled()) {
+            new AlertDialog.Builder(getContext())
+                    .setTitle("提示")
+                    .setMessage("为了您能收到消息提醒,请打开通知设置开关!")
+                    .setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            bugSync("通知开关设置", "未打开");
+                            SystemUtils.launchPhoneSettings(getContext());
+                        }
+                    })
+                    .setNegativeButton("取消", null)
+                    .show();
+        } else {
+            /*try {
+                IntentWrapper.whiteListMatters(this, "轨迹跟踪服务的持续运行");
+            } catch (Throwable e) {
+                e.printStackTrace();
+            }*/
+        }
     }
 
     /**
@@ -282,14 +370,14 @@ public class MainActivity extends BaseAppUpdateActivity
 
 
     /**
-     * 获取发现页面
+     * 获取页面对应的tab
      *
      * @return
      */
     private int getFragmentType(@IdRes int id) {
         switch (id) {
             case R.id.tab_find:
-                return convert2ChildFragmentType(SpUtils.getInstance().getIntData(KEY_FIND_FRAGMENT, TYPE_FRAGMENT_PROJECT));
+                return convert2ChildFragmentType(SpUtils.getInstance().getIntData(KEY_FIND_FRAGMENT, TYPE_FRAGMENT_TIMING));
             case R.id.tab_mine:
                 return convert2ChildFragmentType(SpUtils.getInstance().getIntData(KEY_MINE_FRAGMENT, TYPE_FRAGMENT_MINE));
         }
@@ -311,7 +399,7 @@ public class MainActivity extends BaseAppUpdateActivity
      */
     private void setTabInfo(@IdRes int tabId, @ChildFragmentType int type) {
         ItemsEntity itemsEntity = null;
-        for (ItemsEntity item : tabChangeableData) {
+        for (ItemsEntity item : tabData) {
             if (item != null & item.itemType == type) {
                 itemsEntity = item;
                 break;
@@ -369,7 +457,9 @@ public class MainActivity extends BaseAppUpdateActivity
      */
     private void showTabMenu(final View target) {
         if (target == null) return;
-        new ListActionItemPop(getContext(), getShowTabMenuData())
+        List<ItemsEntity> showTabMenuData = getShowTabMenuData();
+        if (showTabMenuData.isEmpty()) return;
+        new ListActionItemPop(getContext(), showTabMenuData)
                 .withOnItemClick(new BaseListActionItemPop.OnItemClickListener() {
                     @Override
                     public void onItemClick(BaseListActionItemPop listActionItemPop, BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
@@ -428,6 +518,7 @@ public class MainActivity extends BaseAppUpdateActivity
 
     public void checkedFragment(@ChildFragmentType int type) {
         currentFragment = addOrShowFragment(getTabFragment(type), currentFragment, R.id.main_fl_content);
+        currentFragment.setUserVisibleHint(true);
     }
 
 
@@ -455,7 +546,20 @@ public class MainActivity extends BaseAppUpdateActivity
                 if (TimerManager.getInstance().hasTimer()) {
                     showTimingDialogFragment();
                 } else {
-                    TimerManager.getInstance().addTimer(new TimeEntity.ItemEntity());
+                    TimerManager.getInstance().addTimer(new TimeEntity.ItemEntity(),
+                            new Callback<TimeEntity.ItemEntity>() {
+                                @Override
+                                public void onResponse(Call<TimeEntity.ItemEntity> call, Response<TimeEntity.ItemEntity> response) {
+                                    if (TimerManager.getInstance().hasTimer()) {
+                                        showTimingDialogFragment();
+                                    }
+                                }
+
+                                @Override
+                                public void onFailure(Call<TimeEntity.ItemEntity> call, Throwable throwable) {
+
+                                }
+                            });
                 }
                 break;
             default:
@@ -516,16 +620,21 @@ public class MainActivity extends BaseAppUpdateActivity
      * 刷新登陆的token
      */
     protected final void refreshToken() {
-        AlphaUserInfo loginUserInfo = getLoginUserInfo();
+        final AlphaUserInfo loginUserInfo = getLoginUserInfo();
         if (loginUserInfo == null) return;
         getApi().refreshToken(loginUserInfo.getRefreshToken())
                 .enqueue(new SimpleCallBack<AlphaUserInfo>() {
                     @Override
                     public void onSuccess(Call<ResEntity<AlphaUserInfo>> call, Response<ResEntity<AlphaUserInfo>> response) {
                         if (response.body().result != null) {
-                            AlphaClient.setOfficeId(response.body().result.getOfficeId());
                             AlphaClient.setToken(response.body().result.getToken());
-                            saveLoginUserInfo(response.body().result);
+
+                            //重新附值两个最新的token
+                            loginUserInfo.setToken(response.body().result.getToken());
+                            loginUserInfo.setRefreshToken(response.body().result.getRefreshToken());
+
+                            //保存
+                            saveLoginUserInfo(loginUserInfo);
                         }
                     }
 
@@ -569,7 +678,8 @@ public class MainActivity extends BaseAppUpdateActivity
     private void updateBadge(Badge badge, int num) {
         if (badge != null && num >= 0) {
             if (num > 99) {
-                badge.setBadgeText("...");
+                //显示99+
+                badge.setBadgeText("99+");
             } else {
                 badge.setBadgeNumber(num);
             }
@@ -586,9 +696,10 @@ public class MainActivity extends BaseAppUpdateActivity
     }
 
     @Override
-    public void onSaveInstanceState(Bundle outState, PersistableBundle outPersistentState) {
-        //super.onSaveInstanceState(outState, outPersistentState); //解决bug 崩溃后出现重影
+    protected void onSaveInstanceState(Bundle outState) {
+        //super.onSaveInstanceState(outState);
     }
+
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onTimerEvent(TimingEvent event) {
@@ -646,8 +757,131 @@ public class MainActivity extends BaseAppUpdateActivity
         return String.format("%02d:%02d:%02d", hour, minute, second);
     }
 
+    private void getPermission() {
+        //联系人查看的权限
+        getApi().permissionQuery(getLoginUserId(), "CON")
+                .enqueue(new SimpleCallBack<Boolean>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<Boolean>> call, Response<ResEntity<Boolean>> response) {
+                        if (response.body().result != null) {
+                            //showToast("客户权限：" + response.body().result.booleanValue());
+                            setCustomerPermission(response.body().result.booleanValue());
+                            int findFragmentType = getFragmentType(R.id.tab_find);
+                            int mineFragmentType = getFragmentType(R.id.tab_mine);
+                            if (findFragmentType == TYPE_FRAGMENT_CUSTOMER
+                                    && !response.body().result.booleanValue()) {
+                                //没有权限
+                                //设置tab信息
+                                if (mineFragmentType != TYPE_FRAGMENT_TIMING) {
+                                    saveChangedTab(R.id.tab_find, TYPE_FRAGMENT_TIMING);
+                                    setTabInfo(R.id.tab_find, TYPE_FRAGMENT_TIMING);
+                                } else if (mineFragmentType != TYPE_FRAGMENT_SEARCH) {
+                                    saveChangedTab(R.id.tab_find, TYPE_FRAGMENT_SEARCH);
+                                    setTabInfo(R.id.tab_find, TYPE_FRAGMENT_SEARCH);
+                                } else {
+                                    saveChangedTab(R.id.tab_find, TYPE_FRAGMENT_MINE);
+                                    setTabInfo(R.id.tab_find, TYPE_FRAGMENT_MINE);
+                                }
+                                onClick(tabFind);
+                            }
+
+                            if (mineFragmentType == TYPE_FRAGMENT_CUSTOMER
+                                    && !response.body().result.booleanValue()) {
+                                //没有权限
+                                //设置tab信息
+                                if (findFragmentType != TYPE_FRAGMENT_MINE) {
+                                    saveChangedTab(R.id.tab_mine, TYPE_FRAGMENT_MINE);
+                                    setTabInfo(R.id.tab_mine, TYPE_FRAGMENT_MINE);
+                                } else if (findFragmentType != TYPE_FRAGMENT_TIMING) {
+                                    saveChangedTab(R.id.tab_mine, TYPE_FRAGMENT_TIMING);
+                                    setTabInfo(R.id.tab_mine, TYPE_FRAGMENT_TIMING);
+                                } else {
+                                    saveChangedTab(R.id.tab_mine, TYPE_FRAGMENT_SEARCH);
+                                    setTabInfo(R.id.tab_mine, TYPE_FRAGMENT_SEARCH);
+                                }
+                                onClick(tabMine);
+                            }
+                            initTabChangeableData();
+                        }
+
+                    }
+
+                    @Override
+                    public void onFailure(Call<ResEntity<Boolean>> call, Throwable t) {
+                        super.onFailure(call, t);
+                        initTabChangeableData();
+                    }
+                });
+
+        //项目查看的权限
+        getApi().permissionQuery(getLoginUserId(), "MAT")
+                .enqueue(new SimpleCallBack<Boolean>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<Boolean>> call, Response<ResEntity<Boolean>> response) {
+                        if (response.body().result != null) {
+                            //showToast("项目权限：" + response.body().result.booleanValue());
+                            setProjectPermission(response.body().result.booleanValue());
+                            int findFragmentType = getFragmentType(R.id.tab_find);
+                            int mineFragmentType = getFragmentType(R.id.tab_mine);
+                            if (findFragmentType == TYPE_FRAGMENT_PROJECT
+                                    && !response.body().result.booleanValue()) {
+                                //没有权限
+                                //设置tab信息
+                                if (mineFragmentType != TYPE_FRAGMENT_TIMING) {
+                                    saveChangedTab(R.id.tab_find, TYPE_FRAGMENT_TIMING);
+                                    setTabInfo(R.id.tab_find, TYPE_FRAGMENT_TIMING);
+                                } else if (mineFragmentType != TYPE_FRAGMENT_SEARCH) {
+                                    saveChangedTab(R.id.tab_find, TYPE_FRAGMENT_SEARCH);
+                                    setTabInfo(R.id.tab_find, TYPE_FRAGMENT_SEARCH);
+                                } else {
+                                    saveChangedTab(R.id.tab_find, TYPE_FRAGMENT_MINE);
+                                    setTabInfo(R.id.tab_find, TYPE_FRAGMENT_MINE);
+                                }
+
+                                onClick(tabFind);
+                            }
+
+                            if (mineFragmentType == TYPE_FRAGMENT_PROJECT
+                                    && !response.body().result.booleanValue()) {
+                                //没有权限
+                                //设置tab信息
+                                if (findFragmentType != TYPE_FRAGMENT_MINE) {
+                                    saveChangedTab(R.id.tab_mine, TYPE_FRAGMENT_MINE);
+                                    setTabInfo(R.id.tab_mine, TYPE_FRAGMENT_MINE);
+                                } else if (findFragmentType != TYPE_FRAGMENT_TIMING) {
+                                    saveChangedTab(R.id.tab_mine, TYPE_FRAGMENT_TIMING);
+                                    setTabInfo(R.id.tab_mine, TYPE_FRAGMENT_TIMING);
+                                } else {
+                                    saveChangedTab(R.id.tab_mine, TYPE_FRAGMENT_SEARCH);
+                                    setTabInfo(R.id.tab_mine, TYPE_FRAGMENT_SEARCH);
+                                }
+
+                                onClick(tabMine);
+                            }
+                            initTabChangeableData();
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<ResEntity<Boolean>> call, Throwable t) {
+                        super.onFailure(call, t);
+                        initTabChangeableData();
+                    }
+                });
+    }
+
+
     @Override
     protected void onDestroy() {
+        DaemonService.start(this);
+
+       /* if (isUserLogin()) {
+            Intent intent = getBaseContext().getPackageManager().getLaunchIntentForPackage(getBaseContext().getPackageName());
+            PendingIntent restartIntent = PendingIntent.getActivity(getApplicationContext(), 0, intent, PendingIntent.FLAG_ONE_SHOT);
+            AlarmManager mgr = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+            mgr.set(AlarmManager.RTC, System.currentTimeMillis() + 50, restartIntent);
+        }*/
+
         super.onDestroy();
         EventBus.getDefault().unregister(this);
         if (mHandler != null) {
@@ -659,6 +893,7 @@ public class MainActivity extends BaseAppUpdateActivity
     }
 
     private void showTimingDialogFragment() {
+        if (isDestroyOrFinishing()) return;
         TimeEntity.ItemEntity timer = TimerManager.getInstance().getTimer();
         if (timer == null) return;
         String tag = TimingNoticeDialogFragment.class.getSimpleName();
@@ -669,5 +904,15 @@ public class MainActivity extends BaseAppUpdateActivity
         }
         TimingNoticeDialogFragment.newInstance(timer)
                 .show(mFragTransaction, tag);
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+            IntentWrapper.onBackPressed(this);
+            moveTaskToBack(false);
+            return true;
+        }
+        return super.onKeyDown(keyCode, event);
     }
 }

@@ -1,5 +1,6 @@
 package com.icourt.alpha.fragment;
 
+import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -12,6 +13,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.icourt.alpha.BuildConfig;
 import com.icourt.alpha.R;
 import com.icourt.alpha.activity.AboutActivity;
 import com.icourt.alpha.activity.ChatMsgClassfyActivity;
@@ -19,18 +21,27 @@ import com.icourt.alpha.activity.LoginSelectActivity;
 import com.icourt.alpha.activity.MyAtedActivity;
 import com.icourt.alpha.activity.MyFileTabActivity;
 import com.icourt.alpha.activity.SettingActivity;
+import com.icourt.alpha.base.BaseAppUpdateActivity;
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.entity.bean.AlphaUserInfo;
+import com.icourt.alpha.entity.bean.AppVersionEntity;
+import com.icourt.alpha.entity.bean.GroupBean;
 import com.icourt.alpha.entity.bean.SelectGroupBean;
 import com.icourt.alpha.entity.bean.UserDataEntity;
+import com.icourt.alpha.entity.event.TimingEvent;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
+import com.icourt.alpha.interfaces.callback.AppUpdateCallBack;
 import com.icourt.alpha.utils.GlideUtils;
 import com.icourt.alpha.utils.transformations.BlurTransformation;
 import com.icourt.alpha.widget.manager.DataCleanManager;
 import com.umeng.socialize.UMAuthListener;
 import com.umeng.socialize.UMShareAPI;
 import com.umeng.socialize.bean.SHARE_MEDIA;
+
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.List;
 import java.util.Locale;
@@ -41,6 +52,7 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 import butterknife.Unbinder;
 import retrofit2.Call;
+import retrofit2.HttpException;
 import retrofit2.Response;
 
 /**
@@ -96,6 +108,18 @@ public class TabMineFragment extends BaseFragment {
 
     private UMShareAPI mShareAPI;
 
+    private BaseAppUpdateActivity baseAppUpdateActivity;
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        try {
+            baseAppUpdateActivity = (BaseAppUpdateActivity) context;
+        } catch (ClassCastException e) {
+            e.printStackTrace();
+        }
+    }
+
     public static TabMineFragment newInstance() {
         return new TabMineFragment();
     }
@@ -111,9 +135,11 @@ public class TabMineFragment extends BaseFragment {
 
     @Override
     protected void initView() {
+        EventBus.getDefault().register(this);
         getData(false);
 //        setDataToView(getLoginUserInfo());
         mShareAPI = UMShareAPI.get(getContext());
+        menuTest.setVisibility(BuildConfig.IS_DEBUG ? View.VISIBLE : View.GONE);
     }
 
     @Override
@@ -129,6 +155,8 @@ public class TabMineFragment extends BaseFragment {
      * @param alphaUserInfo
      */
     private void setDataToView(AlphaUserInfo alphaUserInfo) {
+        if (userNameTv == null) return;
+        if (myCenterClearCacheTextview == null) return;
         if (alphaUserInfo != null) {
             GlideUtils.loadUser(getContext(), alphaUserInfo.getPic(), photoImage);
             if (GlideUtils.canLoadImage(getContext())) {
@@ -138,13 +166,13 @@ public class TabMineFragment extends BaseFragment {
                         .bitmapTransform(new BlurTransformation(getContext(), 50))
                         .crossFade()
                         .into(photoBigImage);
-            }
-            userNameTv.setText(alphaUserInfo.getName());
-            officeNameTv.setText(getUserGroup(alphaUserInfo.getGroups()));
-            try {
-                myCenterClearCacheTextview.setText(DataCleanManager.getTotalCacheSize(getContext()));
-            } catch (Exception e) {
-                e.printStackTrace();
+                userNameTv.setText(alphaUserInfo.getName());
+//                officeNameTv.setText(getUserGroup(alphaUserInfo.getGroups()));
+                try {
+                    myCenterClearCacheTextview.setText(DataCleanManager.getTotalCacheSize(getContext()));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
         }
     }
@@ -162,6 +190,26 @@ public class TabMineFragment extends BaseFragment {
             buffer.append(group.groupName).append(" ");
         }
         return buffer.toString();
+    }
+
+    /**
+     * 计时事件
+     *
+     * @param event
+     */
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onTimerEvent(TimingEvent event) {
+        if (event == null) return;
+        switch (event.action) {
+            case TimingEvent.TIMING_ADD:
+
+                break;
+            case TimingEvent.TIMING_UPDATE_PROGRESS:
+                break;
+            case TimingEvent.TIMING_STOP:
+                getMyDoneTask();
+                break;
+        }
     }
 
     @OnClick({R.id.set_image,
@@ -189,10 +237,17 @@ public class TabMineFragment extends BaseFragment {
                 MyFileTabActivity.launch(getContext());
                 break;
             case R.id.my_center_clear_cache_layout://清除缓存
-                if (DataCleanManager.clearAllCache(getActivity())) {
-                    myCenterClearCacheTextview.setText("0KB");
-                    showTopSnackBar(R.string.my_center_clear_cache_succee_text);
-                }
+                new AlertDialog.Builder(getContext())
+                        .setMessage("确认清除?")
+                        .setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                DataCleanManager.clearAllCache(getActivity());
+                                myCenterClearCacheTextview.setText("0K");
+                                showTopSnackBar(R.string.my_center_clear_cache_succee_text);
+                            }
+                        }).setNegativeButton("取消", null)
+                        .show();
                 break;
             case R.id.my_center_clear_about_layout://关于
                 AboutActivity.launch(getContext());
@@ -272,8 +327,13 @@ public class TabMineFragment extends BaseFragment {
             public void onSuccess(Call<ResEntity<AlphaUserInfo>> call, Response<ResEntity<AlphaUserInfo>> response) {
                 AlphaUserInfo info = response.body().result;
                 AlphaUserInfo alphaUserInfo = getLoginUserInfo();
-                if (alphaUserInfo != null) {
-                    info.setGroups(alphaUserInfo.getGroups());
+                if (alphaUserInfo != null && info != null) {
+//                    info.setGroups(alphaUserInfo.getGroups());
+                    alphaUserInfo.setMail(info.getMail());
+                    alphaUserInfo.setPhone(info.getPhone());
+                    alphaUserInfo.setName(info.getName());
+                    alphaUserInfo.setPic(info.getPic());
+                    saveLoginUserInfo(alphaUserInfo);
                 }
                 setDataToView(info);
             }
@@ -284,14 +344,65 @@ public class TabMineFragment extends BaseFragment {
                 setDataToView(getLoginUserInfo());
             }
         });
+        getMyDoneTask();
+        getGroupList();
+        if (baseAppUpdateActivity != null) {
+            baseAppUpdateActivity.checkAppUpdate(new AppUpdateCallBack() {
+                @Override
+                public void onSuccess(Call<AppVersionEntity> call, Response<AppVersionEntity> response) {
+                    if (myCenterAboutCountView == null) return;
+                    myCenterAboutCountView.setVisibility(baseAppUpdateActivity.shouldUpdate(response.body()) ? View.VISIBLE : View.INVISIBLE);
+                }
+
+                @Override
+                public void onFailure(Call<AppVersionEntity> call, Throwable t) {
+                    if (t instanceof HttpException) {
+                        HttpException hx = (HttpException) t;
+                        if (hx.code() == 401) {
+                            showTopSnackBar("fir token 更改");
+                            return;
+                        }
+                    }
+                    super.onFailure(call, t);
+                }
+            });
+        }
+    }
+
+    /**
+     * 获取我的今日计时、本月计时、本月完成任务
+     */
+    private void getMyDoneTask() {
 
         getApi().getUserData(getLoginUserId()).enqueue(new SimpleCallBack<UserDataEntity>() {
             @Override
             public void onSuccess(Call<ResEntity<UserDataEntity>> call, Response<ResEntity<UserDataEntity>> response) {
                 if (response.body().result != null) {
+                    if (todayDuractionTv == null) return;
                     todayDuractionTv.setText(getHm(response.body().result.timingCountToday));
                     monthDuractionTv.setText(getHm(response.body().result.timingCountMonth));
-                    doneTaskTv.setText(response.body().result.taskMonthConutDone + "/" + response.body().result.taskMonthConut);
+                    doneTaskTv.setText(response.body().result.taskMonthConutDone + "");
+                }
+            }
+        });
+    }
+
+    /**
+     * 获取负责团队列表
+     */
+    private void getGroupList() {
+        getApi().lawyerGroupListQuery().enqueue(new SimpleCallBack<List<GroupBean>>() {
+            @Override
+            public void onSuccess(Call<ResEntity<List<GroupBean>>> call, Response<ResEntity<List<GroupBean>>> response) {
+                List<GroupBean> myGroups = response.body().result;
+                StringBuffer stringBuffer = new StringBuffer();
+                if (myGroups != null) {
+                    if (myGroups.size() > 0) {
+                        for (GroupBean groupBean : myGroups) {
+                            stringBuffer.append(groupBean.getName() + ",");
+                        }
+                        officeNameTv.setText(stringBuffer.toString().substring(0, stringBuffer.toString().length() - 1));
+                    }
                 }
             }
         });
@@ -307,9 +418,15 @@ public class TabMineFragment extends BaseFragment {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        unbinder.unbind();
         if (mShareAPI != null) {
             mShareAPI.release();
         }
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        EventBus.getDefault().unregister(this);
+        unbinder.unbind();
     }
 }

@@ -4,20 +4,17 @@
     android:layout_height="wrap_content"
     android:orientation="vertical">
 
-    <RelativeLayout
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:orientation="horizontal"
         android:padding="@dimen/dp10">
 
         <LinearLayout
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_weight="1"
             android:gravity="center_vertical">
-
-            <View
-                android:layout_width="31dp"
-                android:layout_height="1dp"
-                android:background="@color/alpha_divider_color" />
 
             <TextView
                 android:id="@+id/task_time_group_name"
@@ -25,14 +22,15 @@
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="@dimen/dp10"
                 android:layout_marginRight="@dimen/dp10"
+                android:drawableLeft="@drawable/divider_task"
+                android:drawablePadding="10dp"
+                android:drawableRight="@drawable/divider_task"
+                android:ellipsize="end"
+                android:maxLines="1"
                 android:text="今天"
                 android:textColor="@color/alpha_font_color_gray"
                 android:textSize="15sp" />
 
-            <View
-                android:layout_width="31dp"
-                android:layout_height="1dp"
-                android:background="@color/alpha_divider_color" />
         </LinearLayout>
 
         <TextView
@@ -40,12 +38,13 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentRight="true"
+            android:layout_marginRight="@dimen/dp10"
             android:gravity="center_vertical"
             android:text="0"
             android:textColor="@color/alpha_font_color_gray"
             android:textSize="@dimen/alpha_font_size_mini" />
 
-    </RelativeLayout>
+    </LinearLayout>
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/parent_item_task_recyclerview"

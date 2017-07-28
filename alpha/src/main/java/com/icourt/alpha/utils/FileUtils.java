@@ -290,6 +290,23 @@ public class FileUtils {
     }
 
     /**
+     * 获取文件后缀名
+     *
+     * @param fileName
+     * @return
+     */
+    public static String getFileType(String fileName) {
+        //获取后缀名前的分隔符"."在fName中的位置。
+        int dotIndex = fileName.lastIndexOf(".");
+        if (dotIndex < 0) {
+            return null;
+        }
+    /* 获取文件的后缀名*/
+        String end = fileName.substring(dotIndex, fileName.length()).toLowerCase();
+        return end;
+    }
+
+    /**
      * 文件描述转byte
      *
      * @param pfd

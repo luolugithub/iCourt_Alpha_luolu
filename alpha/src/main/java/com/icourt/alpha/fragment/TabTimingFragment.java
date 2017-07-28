@@ -1,13 +1,17 @@
 package com.icourt.alpha.fragment;
 
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.TabLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.andview.refreshview.XRefreshView;
@@ -17,6 +21,7 @@ import com.icourt.alpha.activity.TimerDetailActivity;
 import com.icourt.alpha.activity.TimerTimingActivity;
 import com.icourt.alpha.adapter.TimeAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
+import com.icourt.alpha.adapter.baseadapter.adapterObserver.DataChangeAdapterObserver;
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.entity.bean.ItemPageEntity;
 import com.icourt.alpha.entity.bean.TimeEntity;
@@ -25,8 +30,11 @@ import com.icourt.alpha.entity.event.TimingEvent;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.DateUtils;
+import com.icourt.alpha.utils.DensityUtil;
 import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.utils.SystemUtils;
+import com.icourt.alpha.view.CustomerXRefreshViewFooter;
+import com.icourt.alpha.view.CustomerXRefreshViewHeader;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 import com.icourt.alpha.widget.manager.TimerManager;
 
@@ -37,7 +45,10 @@ import org.greenrobot.eventbus.ThreadMode;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.List;
+import java.util.Locale;
+import java.util.concurrent.TimeUnit;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -78,6 +89,33 @@ public class TabTimingFragment extends BaseFragment implements BaseRecyclerAdapt
     @BindView(R.id.refreshLayout)
     RefreshLayout refreshLayout;
     Unbinder unbinder;
+    @BindView(R.id.titleAction)
+    ImageView titleAction;
+    @BindView(R.id.empty_layout)
+    LinearLayout emptyLayout;
+
+    @Nullable
+    @Override
+    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        View view = super.onCreateView(R.layout.fragment_tab_find_timing, inflater, container, savedInstanceState);
+        unbinder = ButterKnife.bind(this, view);
+        return view;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        getData(true);
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        EventBus.getDefault().unregister(this);
+        if (unbinder != null) {
+            unbinder.unbind();
+        }
+    }
 
     public static TabTimingFragment newInstance() {
         return new TabTimingFragment();
@@ -97,16 +135,9 @@ public class TabTimingFragment extends BaseFragment implements BaseRecyclerAdapt
     private final long weekMillSecond = 7 * 24 * 60 * 60 * 1000;
     private TimeAdapter timeAdapter;
     private final List<TimingCountEntity> timingCountEntities = new ArrayList<>();
-
-    @Nullable
-    @Override
-    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = super.onCreateView(R.layout.fragment_tab_find_timing, inflater, container, savedInstanceState);
-        unbinder = ButterKnife.bind(this, view);
-        return view;
-    }
-
     int pageIndex = 0;
+    CustomerXRefreshViewFooter customerXRefreshViewFooter;
+    CustomerXRefreshViewHeader customerXRefreshViewHeader;
 
     @Override
     protected void initView() {
@@ -116,13 +147,33 @@ public class TabTimingFragment extends BaseFragment implements BaseRecyclerAdapt
         recyclerView.setAdapter(timeAdapter = new TimeAdapter(true));
         timeAdapter.setOnItemClickListener(this);
 
-        String weekStart = new SimpleDateFormat("MM月dd日").format(DateUtils.getCurrWeekStartTime());
-        String weekEnd = new SimpleDateFormat("MM月dd日").format(DateUtils.getCurrWeekEndTime());
+        String weekStart = DateUtils.getMMMdd(DateUtils.getCurrWeekStartTime());
+        String weekEnd = DateUtils.getMMMdd(DateUtils.getCurrWeekEndTime());
         timingDateTitle.setText(String.format("%s-%s", weekStart, weekEnd));
         generateData();
 
         resetViewport();
 
+        customerXRefreshViewFooter = new CustomerXRefreshViewFooter(getContext());
+        int dp20 = DensityUtil.dip2px(getContext(), 20);
+        customerXRefreshViewFooter.setPadding(0, dp20, 0, dp20);
+        customerXRefreshViewFooter.setFooterLoadmoreTitle("加载前一周");
+        refreshLayout.setCustomFooterView(customerXRefreshViewFooter);
+
+        customerXRefreshViewHeader = new CustomerXRefreshViewHeader(getContext());
+        customerXRefreshViewHeader.setPadding(0, dp20, 0, 0);
+        customerXRefreshViewHeader.setHeaderRefreshTitle("加载后一周");
+        refreshLayout.setCustomHeaderView(customerXRefreshViewHeader);
+
+        //refreshLayout.setNoticeEmpty(R.mipmap.icon_placeholder_timing, "暂无计时");
+        timeAdapter.registerAdapterDataObserver(new DataChangeAdapterObserver() {
+            @Override
+            protected void updateUI() {
+                if (emptyLayout != null) {
+                    emptyLayout.setVisibility(timeAdapter.getItemCount() <= 0 ? View.VISIBLE : View.GONE);
+                }
+            }
+        });
         refreshLayout.setXRefreshViewListener(new XRefreshView.SimpleXRefreshListener() {
             @Override
             public void onRefresh(boolean isPullDown) {
@@ -136,19 +187,17 @@ public class TabTimingFragment extends BaseFragment implements BaseRecyclerAdapt
             @Override
             public void onLoadMore(boolean isSilence) {
                 super.onLoadMore(isSilence);
-                pageIndex++;
-                getData(false);
+                if (RefreshLayout.isLoadMoreMaxDistance(refreshLayout, 1.0f)) {
+                    pageIndex++;
+                    getData(false);
+                } else {
+                    stopRefresh();
+                }
             }
+
         });
         refreshLayout.setPullLoadEnable(true);
-        refreshLayout.setDampingRatio(2.5f);
         refreshLayout.startRefresh();
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        getData(true);
     }
 
     private void stopRefresh() {
@@ -171,13 +220,35 @@ public class TabTimingFragment extends BaseFragment implements BaseRecyclerAdapt
         String weekStartTime = getFromatTime(weekStartTimeMillSecond);
         String weekEndTime = getFromatTime(weekEndTimeMillSecond);
 
-        String weekStart = new SimpleDateFormat("MM月dd日").format(weekStartTimeMillSecond);
-        String weekEnd = new SimpleDateFormat("MM月dd日").format(weekEndTimeMillSecond);
+        String weekStart = DateUtils.getMMMdd(weekStartTimeMillSecond);
+        String weekEnd = DateUtils.getMMMdd(weekEndTimeMillSecond);
         timingDateTitle.setText(String.format("%s-%s", weekStart, weekEnd));
+
+
+        //header 设置
+        String preWeekStart = null;
+        String preWeekEnd = null;
+        if (pageIndex <= 0) {
+            preWeekStart = DateUtils.getMMMdd(weekStartTimeMillSecond);
+            preWeekEnd = DateUtils.getMMMdd(weekEndTimeMillSecond);
+            customerXRefreshViewHeader.setHeaderRefreshTitle("加载本周");
+        } else {
+            preWeekStart = DateUtils.getMMMdd(weekStartTimeMillSecond + weekMillSecond);
+            preWeekEnd = DateUtils.getMMMdd(weekEndTimeMillSecond + weekMillSecond);
+            customerXRefreshViewHeader.setHeaderRefreshTitle("加载后一周");
+        }
+        customerXRefreshViewHeader.setHeaderRefreshDesc(String.format("%s-%s", preWeekStart, preWeekEnd));
+
+
+        //footer设置
+        String lastWeekStart = DateUtils.getMMMdd(weekStartTimeMillSecond - weekMillSecond);
+        String lastWeekEnd = DateUtils.getMMMdd(weekEndTimeMillSecond - weekMillSecond);
+        customerXRefreshViewFooter.setFooterLoadmoreDesc(String.format("%s-%s", lastWeekStart, lastWeekEnd));
 
         getWeekTimingCount(weekStartTime, weekEndTime);
 
         timingListQueryByTime(weekStartTime, weekEndTime);
+
     }
 
 
@@ -219,10 +290,13 @@ public class TabTimingFragment extends BaseFragment implements BaseRecyclerAdapt
                 .enqueue(new SimpleCallBack<ItemPageEntity<TimingCountEntity>>() {
                     @Override
                     public void onSuccess(Call<ResEntity<ItemPageEntity<TimingCountEntity>>> call, Response<ResEntity<ItemPageEntity<TimingCountEntity>>> response) {
-                        if (response.body().result != null) {
+                        if (response.body().result != null && timingTodayTotal != null) {
                             timingCountEntities.clear();
                             timingCountEntities.addAll(response.body().result.items);
                             generateData();
+                            if (pageIndex <= 0) {
+                                timingTodayTotal.setText(getHm(0));
+                            }
                             if (response.body().result.items != null && pageIndex <= 0) {
                                 for (TimingCountEntity timingCountEntity : response.body().result.items) {
                                     if (timingCountEntity != null) {
@@ -241,7 +315,7 @@ public class TabTimingFragment extends BaseFragment implements BaseRecyclerAdapt
     }
 
     private String getFromatTime(long time) {
-        return new SimpleDateFormat("yyyy-MM-dd").format(time);
+        return new SimpleDateFormat("yyyy-MM-dd", Locale.CHINA).format(time);
     }
 
 
@@ -258,41 +332,80 @@ public class TabTimingFragment extends BaseFragment implements BaseRecyclerAdapt
     }
 
     private void generateData() {
+        if (timingChartView == null) return;
         resetViewport();
         List<Line> lines = new ArrayList<Line>();
 
         List<PointValue> values = new ArrayList<PointValue>();
         List<AxisValue> axisXValues = Arrays.asList(
-                new AxisValue(0).setLabel("星期一"),
-                new AxisValue(1).setLabel("星期二"),
-                new AxisValue(2).setLabel("星期三"),
-                new AxisValue(3).setLabel("星期四"),
-                new AxisValue(4).setLabel("星期五"),
-                new AxisValue(5).setLabel("星期六"),
-                new AxisValue(6).setLabel("星期七"));
+                new AxisValue(0).setLabel("周一"),
+                new AxisValue(1).setLabel("周二"),
+                new AxisValue(2).setLabel("周三"),
+                new AxisValue(3).setLabel("周四"),
+                new AxisValue(4).setLabel("周五"),
+                new AxisValue(5).setLabel("周六"),
+                new AxisValue(6).setLabel("周日"));
         List<AxisValue> axisYValues = new ArrayList<>();
         for (int i = 0; i <= 24; i += 4) {
-            axisYValues.add(new AxisValue(i).setLabel(String.format("%sh", i)));
+            axisYValues.add(new AxisValue(i).setLabel(String.format("%sh ", i)));
         }
-        for (int j = 0; j < numberOfPoints; j++) {
-            float hour = 0;
-            if (j < timingCountEntities.size()) {
-                TimingCountEntity itemEntity = timingCountEntities.get(j);
-                if (itemEntity != null) {
-                    long ss = 1000;
-                    long mi = ss * 60;
-                    long hh = mi * 60;
-                    long dd = hh * 24;
 
-                    long day = itemEntity.timingCount / dd;
-                    hour = (itemEntity.timingCount - day * dd) * 1.0f / hh;
+        SparseArray<Long> weekDataArray = new SparseArray<>();
+        for (int i = 0; i < timingCountEntities.size(); i++) {
+            TimingCountEntity itemEntity = timingCountEntities.get(i);
+            if (itemEntity != null) {
+                try {
+                    Calendar calendar = Calendar.getInstance();
+                    calendar.setFirstDayOfWeek(Calendar.MONDAY);
+                    calendar.setTimeInMillis(itemEntity.workDate);
+
+                    log("--------------->>i:" + i + "  day:" + (calendar.get(Calendar.DAY_OF_WEEK) + 5) % 7 + "  count:" + itemEntity.timingCount);
+                    weekDataArray.put((calendar.get(Calendar.DAY_OF_WEEK) + 5) % 7, itemEntity.timingCount);
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
             }
+        }
+
+
+        float maxValue = 0f;
+        for (int j = 0; j < numberOfPoints; j++) {
+            float hour = 0;
+            Long weekDayTime = weekDataArray.get(j);
+            if (weekDayTime != null) {
+                hour = weekDayTime.longValue() * 1.0f / TimeUnit.HOURS.toMillis(1);
+            }
+            //最大24
             if (hour >= 24) {
                 hour = 23.9f;
             }
+            if (hour > maxValue) {
+                maxValue = hour;
+            }
             log("--------j:" + j + "  time:" + hour);
             values.add(new PointValue(j, hour));
+        }
+
+        //用第二条先提高高度
+        if (maxValue < 8.0f) {
+            List<PointValue> values2 = Arrays.asList(
+                    new PointValue(0, 1.0f),
+                    new PointValue(1, 2.0f),
+                    new PointValue(2, 2.0f),
+                    new PointValue(3, 3.0f),
+                    new PointValue(4, 3.0f),
+                    new PointValue(5, 5.0f),
+                    new PointValue(6, 8.0f));
+            Line line2 = new Line(values2);
+            line2.setShape(shape);
+            line2.setCubic(false);
+            line2.setFilled(false);
+            line2.setHasLabels(hasLabels);
+            line2.setHasLabelsOnlyForSelected(hasLabelForSelected);
+            line2.setHasLines(false);
+            line2.setHasPoints(hasPoints);
+            line2.setColor(Color.TRANSPARENT);
+            lines.add(line2);
         }
 
         Line line = new Line(values);
@@ -310,14 +423,13 @@ public class TabTimingFragment extends BaseFragment implements BaseRecyclerAdapt
 
 
         Axis axisX = new Axis().setHasLines(true).setValues(axisXValues);
-        Axis axisY = new Axis().setHasLines(true);
+        Axis axisY = new Axis().setHasLines(true).setValues(axisYValues);
         //.setValues(axisYValues);
         data.setAxisXBottom(axisX);
         data.setAxisYLeft(axisY);
 
-        //data.setBaseValue(Float.NEGATIVE_INFINITY);
+        data.setBaseValue(Float.NEGATIVE_INFINITY);
         timingChartView.setLineChartData(data);
-
     }
 
     @OnClick({R.id.titleAction})
@@ -367,16 +479,9 @@ public class TabTimingFragment extends BaseFragment implements BaseRecyclerAdapt
         milliSecond /= 1000;
         long hour = milliSecond / 3600;
         long minute = milliSecond % 3600 / 60;
-        return String.format("%02d:%02d", hour, minute);
+        return String.format("%d:%02d", hour, minute);
     }
 
-
-    @Override
-    public void onDestroy() {
-        EventBus.getDefault().unregister(this);
-        super.onDestroy();
-        unbinder.unbind();
-    }
 
     @Override
     public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
@@ -387,4 +492,5 @@ public class TabTimingFragment extends BaseFragment implements BaseRecyclerAdapt
             TimerDetailActivity.launch(view.getContext(), itemEntity);
         }
     }
+
 }

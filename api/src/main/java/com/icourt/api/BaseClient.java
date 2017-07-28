@@ -3,6 +3,7 @@ package com.icourt.api;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.icourt.api.impl.IRetrofit;
+import com.icourt.json.StringNullAdapter;
 
 import okhttp3.OkHttpClient;
 import retrofit2.Retrofit;
@@ -29,6 +30,7 @@ public class BaseClient implements IRetrofit {
                 .enableComplexMapKeySerialization()//支持Map的key为复杂对象的形式
                 .setPrettyPrinting()// 调教格式
                 .disableHtmlEscaping() //默认是GSON把HTML 转义的
+                .registerTypeAdapter(String.class, new StringNullAdapter())//将空字符串转换成""
                 .create();
     }
 

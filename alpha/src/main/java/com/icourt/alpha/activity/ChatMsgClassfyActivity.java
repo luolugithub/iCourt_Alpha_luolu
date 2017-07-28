@@ -9,12 +9,14 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.AppBarLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.andview.refreshview.XRefreshView;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.ImUserMessageAdapter;
+import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.adapterObserver.RefreshViewEmptyObserver;
 import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.constants.Const;
@@ -24,11 +26,16 @@ import com.icourt.alpha.db.dbmodel.ContactDbModel;
 import com.icourt.alpha.db.dbservice.ContactDbService;
 import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.icourt.alpha.entity.bean.IMMessageCustomBody;
+import com.icourt.alpha.entity.event.MessageEvent;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.ActionConstants;
 import com.icourt.alpha.utils.ItemDecorationUtils;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
+
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -57,7 +64,7 @@ import static com.icourt.alpha.constants.Const.CHAT_TYPE_TEAM;
  * date createTime：2017/4/19
  * version 1.0.0
  */
-public class ChatMsgClassfyActivity extends BaseActivity {
+public class ChatMsgClassfyActivity extends BaseActivity implements BaseRecyclerAdapter.OnItemClickListener {
     public static final int MSG_CLASSFY_MY_COLLECTEED = 0;  //我收藏的消息
     public static final int MSG_CLASSFY_CHAT_DING = 1;      //讨论组钉的消息
     public static final int MSG_CLASSFY_CHAT_FILE = 2;      //讨论组的文件消息
@@ -65,6 +72,7 @@ public class ChatMsgClassfyActivity extends BaseActivity {
     private static final String KEY_CLASSFY_TYPE = "KEY_CLASSFY_TYPE";
     private static final String KEY_ID = "KEY_ID";
     private static final String KEY_CHAT_TYPE = " KEY_CHAT_TYPE";
+
 
     @IntDef({
             MSG_CLASSFY_MY_COLLECTEED,
@@ -77,6 +85,20 @@ public class ChatMsgClassfyActivity extends BaseActivity {
 
     //本地同步的联系人
     protected final List<GroupContactBean> localContactList = new ArrayList<>();
+
+    @Override
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_my_ated);
+        ButterKnife.bind(this);
+        initView();
+    }
+
+    @Override
+    protected void onDestroy() {
+        EventBus.getDefault().unregister(this);
+        super.onDestroy();
+    }
 
     /**
      * 聊天钉的消息
@@ -153,41 +175,34 @@ public class ChatMsgClassfyActivity extends BaseActivity {
     }
 
     @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_my_ated);
-        ButterKnife.bind(this);
-        initView();
-    }
-
-    @Override
     protected void initView() {
         super.initView();
-
+        EventBus.getDefault().register(this);
         switch (getMsgClassfyType()) {
             case MSG_CLASSFY_CHAT_DING:
                 setTitle("钉的消息");
-                refreshLayout.setNoticeEmpty(R.mipmap.icon_placeholder_task, "暂无钉的消息");
+                refreshLayout.setNoticeEmpty(R.mipmap.bg_no_task, "暂无钉的消息");
                 break;
             case MSG_CLASSFY_CHAT_FILE:
                 setTitle("文件");
-                refreshLayout.setNoticeEmpty(R.mipmap.icon_placeholder_task, "暂无文件");
+                refreshLayout.setNoticeEmpty(R.mipmap.bg_no_task, "暂无文件");
                 break;
             case MSG_CLASSFY_MY_COLLECTEED:
                 setTitle("我收藏的消息");
-                refreshLayout.setNoticeEmpty(R.mipmap.icon_placeholder_task, R.string.my_center_null_collect_text);
+                refreshLayout.setNoticeEmpty(R.mipmap.bg_no_task, R.string.my_center_null_collect_text);
                 break;
             default:
                 setTitle("我收藏的消息");
-                refreshLayout.setNoticeEmpty(R.mipmap.icon_placeholder_task, R.string.my_center_null_collect_text);
+                refreshLayout.setNoticeEmpty(R.mipmap.bg_no_task, R.string.my_center_null_collect_text);
                 break;
         }
         refreshLayout.setMoveForHorizontal(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        recyclerView.addItemDecoration(ItemDecorationUtils.getCommFullDivider(getContext(), false));
+        recyclerView.addItemDecoration(ItemDecorationUtils.getCommFull10Divider(getContext(), false));
         recyclerView.setHasFixedSize(true);
         recyclerView.setAdapter(imUserMessageAdapter = new ImUserMessageAdapter(localContactList));
         imUserMessageAdapter.registerAdapterDataObserver(new RefreshViewEmptyObserver(refreshLayout, imUserMessageAdapter));
+        imUserMessageAdapter.setOnItemClickListener(this);
         refreshLayout.setXRefreshViewListener(new XRefreshView.SimpleXRefreshListener() {
             @Override
             public void onRefresh(boolean isPullDown) {
@@ -205,34 +220,58 @@ public class ChatMsgClassfyActivity extends BaseActivity {
         getLocalContacts();
     }
 
+    private long getEndlyId() {
+        long msg_id = imUserMessageAdapter.getData().size() > 0
+                ? imUserMessageAdapter.getItemId(imUserMessageAdapter.getData().size() - 1) : 0;
+        return msg_id;
+    }
+
     @Override
     protected void getData(final boolean isRefresh) {
         super.getData(isRefresh);
-        long msg_id = imUserMessageAdapter.getData().size() > 0 ? imUserMessageAdapter.getItemId(imUserMessageAdapter.getData().size() - 1) : Integer.MAX_VALUE;
-        if (isRefresh) {
-            msg_id = Integer.MAX_VALUE;
-        }
         Call<ResEntity<List<IMMessageCustomBody>>> call = null;
         switch (getMsgClassfyType()) {
             case MSG_CLASSFY_CHAT_DING:
-                call = getChatApi()
-                        .getDingMessages(getMsgChatType(),
-                                getIntent().getStringExtra(KEY_ID),
-                                msg_id);
+                if (isRefresh) {
+                    call = getChatApi()
+                            .getDingMessages(getMsgChatType(),
+                                    getIntent().getStringExtra(KEY_ID));
+                } else {
+                    call = getChatApi()
+                            .getDingMessages(getMsgChatType(),
+                                    getIntent().getStringExtra(KEY_ID),
+                                    getEndlyId());
+                }
                 break;
             case MSG_CLASSFY_CHAT_FILE:
-                call = getChatApi()
-                        .msgQueryFiles(getMsgChatType(),
-                                getIntent().getStringExtra(KEY_ID),
-                                msg_id);
+                if (isRefresh) {
+                    call = getChatApi()
+                            .msgQueryFiles(getMsgChatType(),
+                                    getIntent().getStringExtra(KEY_ID));
+                } else {
+                    call = getChatApi()
+                            .msgQueryFiles(getMsgChatType(),
+                                    getIntent().getStringExtra(KEY_ID),
+                                    getEndlyId());
+                }
                 break;
             case MSG_CLASSFY_MY_COLLECTEED:
-                call = getChatApi()
-                        .getMyCollectedMessages(msg_id);
+                if (isRefresh) {
+                    call = getChatApi()
+                            .getMyCollectedMessages();
+                } else {
+                    call = getChatApi()
+                            .getMyCollectedMessages(getEndlyId());
+                }
                 break;
             default:
-                call = getChatApi()
-                        .getMyCollectedMessages(msg_id);
+                if (isRefresh) {
+                    call = getChatApi()
+                            .getMyCollectedMessages();
+                } else {
+                    call = getChatApi()
+                            .getMyCollectedMessages(getEndlyId());
+                }
                 break;
         }
         call.enqueue(new SimpleCallBack<List<IMMessageCustomBody>>() {
@@ -313,4 +352,27 @@ public class ChatMsgClassfyActivity extends BaseActivity {
             refreshLayout.stopLoadMore();
         }
     }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onMessageEvent(MessageEvent event) {
+        if (event == null) return;
+        switch (event.action) {
+            case MessageEvent.ACTION_MSG_CANCEL_COLLECT:
+                List<IMMessageCustomBody> data = imUserMessageAdapter.getData();
+                IMMessageCustomBody targetBody = new IMMessageCustomBody();
+                targetBody.id = event.msgId;
+                if (data.contains(targetBody)) {
+                    imUserMessageAdapter.removeItem(targetBody);
+                }
+                break;
+        }
+    }
+
+    @Override
+    public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
+        IMMessageCustomBody item = imUserMessageAdapter.getItem(adapter.getRealPos(position));
+        if (item == null) return;
+        FileDetailsActivity.launch(getContext(), item, getMsgClassfyType());
+    }
+
 }

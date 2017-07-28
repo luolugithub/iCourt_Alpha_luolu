@@ -58,10 +58,10 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center_vertical"
-            android:paddingBottom="20dp"
+            android:paddingBottom="15dp"
             android:paddingLeft="20dp"
             android:paddingRight="20dp"
-            android:paddingTop="10dp">
+            android:paddingTop="15dp">
 
             <TextView
                 android:id="@+id/bt_cancel"

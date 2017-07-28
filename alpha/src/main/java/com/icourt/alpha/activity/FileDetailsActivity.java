@@ -22,6 +22,9 @@ import com.icourt.alpha.db.dbmodel.ContactDbModel;
 import com.icourt.alpha.db.dbservice.ContactDbService;
 import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.icourt.alpha.entity.bean.IMMessageCustomBody;
+import com.icourt.alpha.entity.bean.MsgStatusEntity;
+import com.icourt.alpha.http.callback.SimpleCallBack;
+import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.StringUtils;
 import com.netease.nimlib.sdk.NIMClient;
 import com.netease.nimlib.sdk.RequestCallbackWrapper;
@@ -42,7 +45,12 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
 import io.realm.RealmResults;
+import retrofit2.Call;
+import retrofit2.Response;
 
+import static com.icourt.alpha.activity.ChatMsgClassfyActivity.MSG_CLASSFY_CHAT_DING;
+import static com.icourt.alpha.activity.ChatMsgClassfyActivity.MSG_CLASSFY_CHAT_FILE;
+import static com.icourt.alpha.activity.ChatMsgClassfyActivity.MSG_CLASSFY_MY_COLLECTEED;
 import static com.icourt.alpha.constants.Const.CHAT_TYPE_P2P;
 import static com.icourt.alpha.constants.Const.CHAT_TYPE_TEAM;
 
@@ -56,6 +64,7 @@ import static com.icourt.alpha.constants.Const.CHAT_TYPE_TEAM;
 public class FileDetailsActivity extends BaseActivity {
 
     private static final String KEY_FILE_INFO = "key_file_info";
+    private static final String KEY_CLASSFY_TYPE = "KEY_CLASSFY_TYPE";
     IMMessageCustomBody item;
     @BindView(R.id.titleBack)
     ImageView titleBack;
@@ -72,6 +81,30 @@ public class FileDetailsActivity extends BaseActivity {
     //本地同步的联系人
     protected final List<GroupContactBean> localContactList = new ArrayList<>();
     private final List<Team> localTeams = new ArrayList<>();
+    private boolean isRevoke;//消息是否撤回
+
+    @Override
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_file_details);
+        ButterKnife.bind(this);
+        initView();
+        getData(true);
+    }
+
+    @ChatMsgClassfyActivity.MsgClassfyType
+    public int getMsgClassfyType() {
+        switch (getIntent().getIntExtra(KEY_CLASSFY_TYPE, 0)) {
+            case MSG_CLASSFY_MY_COLLECTEED:
+                return MSG_CLASSFY_MY_COLLECTEED;
+            case MSG_CLASSFY_CHAT_DING:
+                return MSG_CLASSFY_CHAT_DING;
+            case MSG_CLASSFY_CHAT_FILE:
+                return MSG_CLASSFY_CHAT_FILE;
+            default:
+                return MSG_CLASSFY_MY_COLLECTEED;
+        }
+    }
 
     /**
      * 获取本地联系人
@@ -122,21 +155,15 @@ public class FileDetailsActivity extends BaseActivity {
                 .subscribe(consumer);
     }
 
-    public static void launch(@NonNull Context context, IMMessageCustomBody imFileEntity) {
+    public static void launch(@NonNull Context context,
+                              IMMessageCustomBody imFileEntity,
+                              @ChatMsgClassfyActivity.MsgClassfyType int msgClassfyType) {
         if (context == null) return;
         if (imFileEntity == null) return;
         Intent intent = new Intent(context, FileDetailsActivity.class);
         intent.putExtra(KEY_FILE_INFO, imFileEntity);
+        intent.putExtra(KEY_CLASSFY_TYPE, msgClassfyType);
         context.startActivity(intent);
-    }
-
-    @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_file_details);
-        ButterKnife.bind(this);
-        initView();
-        getData(true);
     }
 
     @Override
@@ -146,6 +173,7 @@ public class FileDetailsActivity extends BaseActivity {
         TextView titleActionTextView = getTitleActionTextView();
         if (titleActionTextView != null) {
             titleActionTextView.setText("跳转");
+            titleActionTextView.setVisibility(View.INVISIBLE);
         }
         Serializable serializableExtra = getIntent().getSerializableExtra(KEY_FILE_INFO);
         if (serializableExtra instanceof IMMessageCustomBody) {
@@ -160,30 +188,54 @@ public class FileDetailsActivity extends BaseActivity {
     @Override
     protected void getData(boolean isRefresh) {
         super.getData(isRefresh);
+
+        getChatApi()
+                .msgStatus(item.id)
+                .enqueue(new SimpleCallBack<MsgStatusEntity>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<MsgStatusEntity>> call, Response<ResEntity<MsgStatusEntity>> response) {
+                        if (response.body().result == null) return;
+                        isRevoke = response.body().result.recalled;
+                        titleAction.setVisibility(View.VISIBLE);
+                    }
+                });
         getLocalContacts();
         getTeams();
     }
+
 
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.titleAction:
+                if (isRevoke) {
+                    showTopSnackBar("该消息已被撤回");
+                    return;
+                }
                 if (item != null) {
                     switch (item.ope) {
                         case CHAT_TYPE_P2P:
+                            // 我->cl  from me to:cl;
+                            //cl ——>我  from cl:to:me
+                            boolean isMySend = StringUtils.equalsIgnoreCase(getLoginUserId(), item.from, false);
                             ChatActivity.launchP2P(getContext(),
-                                    item.to,
+                                    isMySend ? item.to : item.from,
                                     item.name,
-                                    item.send_time,0);
+                                    item.id,
+                                    0,
+                                    true);
                             break;
                         case CHAT_TYPE_TEAM:
                             Team team = getTeam(item.to);
                             ChatActivity.launchTEAM(getContext(),
                                     item.to,
                                     team != null ? team.getName() : "",
-                                    item.send_time,0);
+                                    item.id,
+                                    0,
+                                    true);
                             break;
                     }
+                    finish();
                 }
                 break;
             default:

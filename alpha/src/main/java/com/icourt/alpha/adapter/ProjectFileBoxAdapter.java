@@ -18,7 +18,7 @@ import com.icourt.alpha.utils.FileUtils;
  * version 2.0.0
  */
 
-public class ProjectFileBoxAdapter extends BaseArrayRecyclerAdapter<FileBoxBean>{
+public class ProjectFileBoxAdapter extends BaseArrayRecyclerAdapter<FileBoxBean> {
 
     private static final int FILE_TYPE = 0;//文件
     private static final int DIR_TYPE = 1;//文件夹
@@ -75,7 +75,7 @@ public class ProjectFileBoxAdapter extends BaseArrayRecyclerAdapter<FileBoxBean>
         fileName.setText(fileBoxBean.name);
         uploadName.setText(FileUtils.bFormat(fileBoxBean.size));
         if (fileBoxBean.mtime > 0) {
-            uploadHour.setText(DateUtils.getTimeDateFormatMm(fileBoxBean.mtime));
+            uploadHour.setText(DateUtils.getTimeDateFormatMm(fileBoxBean.mtime * 1000));
         }
     }
 

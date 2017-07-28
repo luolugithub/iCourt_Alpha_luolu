@@ -1,5 +1,6 @@
 package com.icourt.alpha.fragment;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -26,6 +27,7 @@ import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.entity.bean.ProjectEntity;
 import com.icourt.alpha.entity.bean.TaskEntity;
 import com.icourt.alpha.entity.bean.TaskGroupEntity;
+import com.icourt.alpha.entity.bean.TaskReminderEntity;
 import com.icourt.alpha.entity.bean.TimeEntity;
 import com.icourt.alpha.entity.event.TaskActionEvent;
 import com.icourt.alpha.entity.event.TimingEvent;
@@ -35,8 +37,10 @@ import com.icourt.alpha.fragment.dialogfragment.TaskAllotSelectDialogFragment;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
+import com.icourt.alpha.interfaces.OnTasksChangeListener;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.ItemDecorationUtils;
+import com.icourt.alpha.utils.JsonUtils;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 import com.icourt.alpha.widget.manager.TimerManager;
 import com.icourt.api.RequestUtils;
@@ -47,8 +51,8 @@ import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -66,17 +70,19 @@ import retrofit2.Response;
 
 public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShowFragmenDialogListener, OnFragmentCallBackListener, ProjectSelectDialogFragment.OnProjectTaskGroupSelectListener {
 
-    private static final int TYPE_ALL = 0;//全部
-    private static final int TYPE_NEW = 1;//新任务
-    private static final int TYPE_MY_ATTENTION = 2;//我关注的
-    private static final int TYPE_MY_BRANCH = 3;//我部门的
+    public static final int TYPE_ALL = 0;//全部
+    public static final int TYPE_NEW = 1;//新任务
+    public static final int TYPE_MY_ATTENTION = 2;//我关注的
+    public static final int TYPE_MY_BRANCH = 3;//我部门的
     Unbinder unbinder;
     @Nullable
     @BindView(R.id.recyclerView)
     RecyclerView recyclerView;
+    @Nullable
     @BindView(R.id.refreshLayout)
     RefreshLayout refreshLayout;
 
+    LinearLayoutManager linearLayoutManager;
     TaskAdapter taskAdapter;
     TaskEntity.TaskItemEntity updateTaskItemEntity;
     List<TaskEntity> allTaskEntities;
@@ -89,6 +95,8 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
 
     int type;
     HeaderFooterAdapter<TaskAdapter> headerFooterAdapter;
+    OnTasksChangeListener onTasksChangeListener;
+    boolean isFirstTimeIntoPage = true;
 
     public static TaskListFragment newInstance(int type) {
         TaskListFragment projectTaskFragment = new TaskListFragment();
@@ -107,12 +115,26 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
     }
 
     @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        if (getParentFragment() instanceof OnTasksChangeListener) {
+            onTasksChangeListener = (OnTasksChangeListener) getParentFragment();
+        } else {
+            try {
+                onTasksChangeListener = (OnTasksChangeListener) context;
+            } catch (ClassCastException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    @Override
     protected void initView() {
         EventBus.getDefault().register(this);
         type = getArguments().getInt("type");
-        refreshLayout.setNoticeEmpty(R.mipmap.icon_placeholder_task, R.string.task_list_null_text);
+        refreshLayout.setNoticeEmpty(R.mipmap.bg_no_task, R.string.task_list_null_text);
         refreshLayout.setMoveForHorizontal(true);
-        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        recyclerView.setLayoutManager(linearLayoutManager = new LinearLayoutManager(getContext()));
         recyclerView.addItemDecoration(ItemDecorationUtils.getCommTrans5Divider(getContext(), true));
         recyclerView.setHasFixedSize(true);
 
@@ -122,9 +144,12 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
         registerClick(rl_comm_search);
         headerFooterAdapter.addHeader(headerView);
 
-        recyclerView.setAdapter(headerFooterAdapter);
-        taskAdapter.setOnShowFragmenDialogListener(this);
         taskAdapter.registerAdapterDataObserver(new RefreshViewEmptyObserver(refreshLayout, taskAdapter));
+        recyclerView.setAdapter(headerFooterAdapter);
+        taskAdapter.setDeleteTask(true);
+        taskAdapter.setEditTask(true);
+        taskAdapter.setAddTime(true);
+        taskAdapter.setOnShowFragmenDialogListener(this);
 
         refreshLayout.setXRefreshViewListener(new XRefreshView.SimpleXRefreshListener() {
             @Override
@@ -147,6 +172,11 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
         noDueTaskEntities = new ArrayList<>();
         newTaskEntities = new ArrayList<>();
         datedTaskEntities = new ArrayList<>();
+//        if (type == TYPE_NEW || type == TYPE_MY_ATTENTION) {
+//            if (getParentFragment() instanceof TabTaskFragment) {
+//                ((TabTaskFragment) getParentFragment()).setOnCheckAllNewTaskListener(this);
+//            }
+//        }
     }
 
     @Override
@@ -154,11 +184,27 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
         super.onClick(v);
         switch (v.getId()) {
             case R.id.rl_comm_search:
-                SearchProjectActivity.launch(getContext(), SearchProjectActivity.SEARCH_TASK);
+                SearchProjectActivity.launchTask(getContext(), getLoginUserId(), type, SearchProjectActivity.SEARCH_TASK);
                 break;
             default:
                 super.onClick(v);
                 break;
+        }
+    }
+
+    @Override
+    public void notifyFragmentUpdate(Fragment targetFrgament, int type, Bundle bundle) {
+        super.notifyFragmentUpdate(targetFrgament, type, bundle);
+        if (targetFrgament != this) return;
+        //刷新
+        if (targetFrgament == this && type == 100
+                && recyclerView != null) {
+            getData(true);
+        }
+        if (type == TYPE_NEW || type == TYPE_MY_ATTENTION) {
+            getData(true);
+        } else if (type == 101) {
+            onCheckAll();
         }
     }
 
@@ -171,11 +217,23 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
         } else if (type == TYPE_MY_ATTENTION) {
             attentionType = 1;
         }
-        getApi().taskListQuery(0, getLoginUserId(), 0, attentionType, "dueTime", 1, -1, 0).enqueue(new SimpleCallBack<TaskEntity>() {
+        getApi().taskListQuery(0,
+                getLoginUserId(),
+                0,
+                attentionType,
+                "dueTime",
+                1,
+                -1,
+                0).enqueue(new SimpleCallBack<TaskEntity>() {
             @Override
             public void onSuccess(Call<ResEntity<TaskEntity>> call, Response<ResEntity<TaskEntity>> response) {
                 stopRefresh();
                 getTaskGroupData(response.body().result);
+                if (response.body().result != null) {
+                    if (type == TYPE_ALL && onTasksChangeListener != null) {
+                        onTasksChangeListener.onTasksChanged(response.body().result.items);
+                    }
+                }
             }
 
             @Override
@@ -184,6 +242,7 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
                 stopRefresh();
             }
         });
+
     }
 
     /**
@@ -196,12 +255,11 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
             if (taskEntity.items != null) {
                 for (TaskEntity.TaskItemEntity taskItemEntity : taskEntity.items) {
                     if (taskItemEntity.dueTime > 0) {
-                        if (TextUtils.equals(DateUtils.getTimeDateFormatYear(taskItemEntity.dueTime), DateUtils.getTimeDateFormatYear(DateUtils.millis())) || DateUtils.getDayDiff(new Date(DateUtils.millis()), new Date(taskItemEntity.dueTime)) < 0) {
+                        if (TextUtils.equals(DateUtils.getTimeDateFormatYear(taskItemEntity.dueTime), DateUtils.getTimeDateFormatYear(DateUtils.millis())) || DateUtils.getDayDiff(DateUtils.millis(), taskItemEntity.dueTime) < 0) {
                             todayTaskEntities.add(taskItemEntity);
-
-                        } else if (DateUtils.getDayDiff(new Date(DateUtils.millis()), new Date(taskItemEntity.dueTime)) <= 3 && DateUtils.getDayDiff(new Date(DateUtils.millis()), new Date(taskItemEntity.dueTime)) > 0) {
+                        } else if (DateUtils.getDayDiff(DateUtils.millis(), taskItemEntity.dueTime) <= 3 && DateUtils.getDayDiff(DateUtils.millis(), taskItemEntity.dueTime) > 0) {
                             beAboutToTaskEntities.add(taskItemEntity);
-                        } else if (DateUtils.getDayDiff(new Date(DateUtils.millis()), new Date(taskItemEntity.dueTime)) > 3) {
+                        } else if (DateUtils.getDayDiff(DateUtils.millis(), taskItemEntity.dueTime) > 3) {
                             futureTaskEntities.add(taskItemEntity);
                         } else {
                             datedTaskEntities.add(taskItemEntity);
@@ -209,11 +267,23 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
                     } else {
                         noDueTaskEntities.add(taskItemEntity);
                     }
-                    if (DateUtils.millis() - taskItemEntity.assignTime <= (24 * 60 * 60 * 1000)) {
-                        newTaskEntities.add(taskItemEntity);
+                    if (type == TYPE_NEW) {
+                        if (DateUtils.millis() - taskItemEntity.assignTime <= TimeUnit.DAYS.toMillis(1) && !TextUtils.isEmpty(getLoginUserId())) {
+                            if (taskItemEntity.createUser != null) {
+                                if (!TextUtils.equals(taskItemEntity.createUser.userId, getLoginUserId())) {
+                                    if (!TextUtils.isEmpty(taskItemEntity.readUserIds)) {
+                                        if (!taskItemEntity.readUserIds.contains(getLoginUserId())) {
+                                            newTaskEntities.add(taskItemEntity);
+                                        }
+                                    } else {
+                                        newTaskEntities.add(taskItemEntity);
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
-                if (type != 1) {
+                if (type != TYPE_NEW) {
                     if (datedTaskEntities.size() > 0) {
                         TaskEntity todayTask = new TaskEntity();
                         todayTask.items = datedTaskEntities;
@@ -259,9 +329,21 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
                         task.groupName = "新任务";
                         task.groupTaskCount = newTaskEntities.size();
                         allTaskEntities.add(task);
+                        if (getParentFragment() instanceof TabTaskFragment) {
+                            ((TabTaskFragment) getParentFragment()).showOrHiddeTitleAction2(true);
+                        }
+                    } else {
+                        if (getParentFragment() instanceof TabTaskFragment) {
+                            ((TabTaskFragment) getParentFragment()).showOrHiddeTitleAction2(false);
+                        }
                     }
                 }
                 taskAdapter.bindData(true, allTaskEntities);
+                //第一次进入 隐藏搜索框
+                if (isFirstTimeIntoPage) {
+                    linearLayoutManager.scrollToPositionWithOffset(headerFooterAdapter.getHeaderCount(), 0);
+                    isFirstTimeIntoPage = false;
+                }
                 TimerManager.getInstance().timerQuerySync();
             }
         }
@@ -411,6 +493,8 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
                     }
                 }
             }
+        } else {
+            taskAdapter.notifyDataSetChanged();
         }
     }
 
@@ -418,7 +502,7 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
      * 展示选择负责人对话框
      */
     public void showTaskAllotSelectDialogFragment(String projectId, List<TaskEntity.TaskItemEntity.AttendeeUserEntity> attendeeUsers) {
-        String tag = "TaskAllotSelectDialogFragment";
+        String tag = TaskAllotSelectDialogFragment.class.getSimpleName();
         FragmentTransaction mFragTransaction = getChildFragmentManager().beginTransaction();
         Fragment fragment = getChildFragmentManager().findFragmentByTag(tag);
         if (fragment != null) {
@@ -433,7 +517,7 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
      * 展示选择项目对话框
      */
     public void showProjectSelectDialogFragment() {
-        String tag = "ProjectSelectDialogFragment";
+        String tag = ProjectSelectDialogFragment.class.getSimpleName();
         FragmentTransaction mFragTransaction = getChildFragmentManager().beginTransaction();
         Fragment fragment = getChildFragmentManager().findFragmentByTag(tag);
         if (fragment != null) {
@@ -447,7 +531,7 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
     /**
      * 展示选择到期时间对话框
      */
-    private void showDateSelectDialogFragment(long dueTime) {
+    private void showDateSelectDialogFragment(long dueTime, String taskId) {
         String tag = DateSelectDialogFragment.class.getSimpleName();
         FragmentTransaction mFragTransaction = getChildFragmentManager().beginTransaction();
         Fragment fragment = getChildFragmentManager().findFragmentByTag(tag);
@@ -461,14 +545,16 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
         } else {
             calendar.setTimeInMillis(dueTime);
         }
-        DateSelectDialogFragment.newInstance(calendar)
+        DateSelectDialogFragment.newInstance(calendar, null, taskId)
                 .show(mFragTransaction, tag);
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
-        unbinder.unbind();
+        if (unbinder != null) {
+            unbinder.unbind();
+        }
         EventBus.getDefault().unregister(this);
     }
 
@@ -482,7 +568,7 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
     public void showDateSelectDialog(TaskEntity.TaskItemEntity taskItemEntity) {
         updateTaskItemEntity = taskItemEntity;
         if (taskItemEntity != null)
-            showDateSelectDialogFragment(taskItemEntity.dueTime);
+            showDateSelectDialogFragment(taskItemEntity.dueTime, taskItemEntity.id);
     }
 
     @Override
@@ -505,14 +591,40 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
                 long millis = params.getLong(KEY_FRAGMENT_RESULT);
                 updateTaskItemEntity.dueTime = millis;
                 updateTask(updateTaskItemEntity, null, null);
+
+                TaskReminderEntity taskReminderEntity = (TaskReminderEntity) params.getSerializable("taskReminder");
+                addReminders(updateTaskItemEntity, taskReminderEntity);
             }
         }
     }
 
+
     @Override
     public void onProjectTaskGroupSelect(ProjectEntity projectEntity, TaskGroupEntity taskGroupEntity) {
 
-        updateTask(updateTaskItemEntity, projectEntity, taskGroupEntity);
+        updateTask2(updateTaskItemEntity, projectEntity, taskGroupEntity);
+    }
+
+    /**
+     * 修改任务
+     *
+     * @param itemEntity
+     */
+    private void updateTask2(TaskEntity.TaskItemEntity itemEntity, ProjectEntity projectEntity, TaskGroupEntity taskGroupEntity) {
+        showLoadingDialog(null);
+        getApi().taskUpdate(RequestUtils.createJsonBody(getTaskJson2(itemEntity, projectEntity, taskGroupEntity))).enqueue(new SimpleCallBack<JsonElement>() {
+            @Override
+            public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
+                dismissLoadingDialog();
+                refreshLayout.startRefresh();
+            }
+
+            @Override
+            public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
+                super.onFailure(call, t);
+                dismissLoadingDialog();
+            }
+        });
     }
 
     /**
@@ -545,31 +657,127 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
      */
     private String getTaskJson(TaskEntity.TaskItemEntity itemEntity, ProjectEntity projectEntity, TaskGroupEntity taskGroupEntity) {
         if (itemEntity == null) return null;
-        try {
-            JsonObject jsonObject = new JsonObject();
-            jsonObject.addProperty("id", itemEntity.id);
-            jsonObject.addProperty("state", itemEntity.state);
-            jsonObject.addProperty("valid", true);
-            jsonObject.addProperty("parentId", itemEntity.parentId);
-            jsonObject.addProperty("dueTime", itemEntity.dueTime);
-            jsonObject.addProperty("updateTime", DateUtils.millis());
-            if (projectEntity != null) {
-                jsonObject.addProperty("matterId", projectEntity.pkId);
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("id", itemEntity.id);
+        jsonObject.addProperty("state", itemEntity.state);
+        jsonObject.addProperty("valid", true);
+        jsonObject.addProperty("name", itemEntity.name);
+        jsonObject.addProperty("parentId", itemEntity.parentId);
+        jsonObject.addProperty("dueTime", itemEntity.dueTime);
+        jsonObject.addProperty("updateTime", DateUtils.millis());
+        if (projectEntity != null) {
+            jsonObject.addProperty("matterId", projectEntity.pkId);
+        }
+        if (taskGroupEntity != null) {
+            jsonObject.addProperty("parentId", taskGroupEntity.id);
+        }
+        JsonArray jsonarr = new JsonArray();
+        if (itemEntity.attendeeUsers != null) {
+            for (TaskEntity.TaskItemEntity.AttendeeUserEntity attendeeUser : itemEntity.attendeeUsers) {
+                jsonarr.add(attendeeUser.userId);
             }
-            if (taskGroupEntity != null) {
-                jsonObject.addProperty("parentId", taskGroupEntity.id);
-            }
-            JsonArray jsonarr = new JsonArray();
+        }
+        jsonObject.add("attendees", jsonarr);
+        return jsonObject.toString();
+    }
+
+    /**
+     * 获取任务json
+     *
+     * @param itemEntity
+     * @return
+     */
+    private String getTaskJson2(TaskEntity.TaskItemEntity itemEntity, ProjectEntity projectEntity, TaskGroupEntity taskGroupEntity) {
+        if (itemEntity == null) return null;
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("id", itemEntity.id);
+        jsonObject.addProperty("state", itemEntity.state);
+        jsonObject.addProperty("valid", true);
+        jsonObject.addProperty("name", itemEntity.name);
+        jsonObject.addProperty("parentId", itemEntity.parentId);
+        jsonObject.addProperty("dueTime", itemEntity.dueTime);
+        jsonObject.addProperty("updateTime", DateUtils.millis());
+        JsonArray jsonarr = new JsonArray();
+        if (projectEntity != null) {
+            jsonObject.addProperty("matterId", projectEntity.pkId);
+            jsonarr.add(getLoginUserId());
+        } else {
             if (itemEntity.attendeeUsers != null) {
                 for (TaskEntity.TaskItemEntity.AttendeeUserEntity attendeeUser : itemEntity.attendeeUsers) {
                     jsonarr.add(attendeeUser.userId);
                 }
             }
-            jsonObject.add("attendees", jsonarr);
-            return jsonObject.toString();
+        }
+        jsonObject.add("attendees", jsonarr);
+        if (taskGroupEntity != null) {
+            jsonObject.addProperty("parentId", taskGroupEntity.id);
+        }
+        return jsonObject.toString();
+    }
+
+    /**
+     * 添加任务提醒
+     *
+     * @param taskItemEntity
+     * @param taskReminderEntity
+     */
+    private void addReminders(TaskEntity.TaskItemEntity taskItemEntity, final TaskReminderEntity taskReminderEntity) {
+        if (taskReminderEntity == null) return;
+        if (taskItemEntity == null) return;
+        String json = getReminderJson(taskReminderEntity);
+        if (TextUtils.isEmpty(json)) return;
+        getApi().taskReminderAdd(taskItemEntity.id, RequestUtils.createJsonBody(json)).enqueue(new SimpleCallBack<TaskReminderEntity>() {
+            @Override
+            public void onSuccess(Call<ResEntity<TaskReminderEntity>> call, Response<ResEntity<TaskReminderEntity>> response) {
+
+            }
+
+            @Override
+            public void onFailure(Call<ResEntity<TaskReminderEntity>> call, Throwable t) {
+                super.onFailure(call, t);
+            }
+        });
+    }
+
+    /**
+     * 获取提醒json
+     *
+     * @param taskReminderEntity
+     * @return
+     */
+    private String getReminderJson(TaskReminderEntity taskReminderEntity) {
+        try {
+            if (taskReminderEntity == null) return null;
+            return JsonUtils.getGson().toJson(taskReminderEntity);
         } catch (Exception e) {
             e.printStackTrace();
         }
         return null;
     }
+
+    /**
+     * 我知道了
+     */
+    public void onCheckAll() {
+        if (newTaskEntities == null) return;
+        if (newTaskEntities.size() <= 0) return;
+        List<String> ids = new ArrayList();
+        for (int i = 0; i < newTaskEntities.size(); i++) {
+            ids.add(newTaskEntities.get(i).id);
+        }
+        showLoadingDialog(null);
+        getApi().checkAllNewTask(ids).enqueue(new SimpleCallBack<JsonElement>() {
+            @Override
+            public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
+                dismissLoadingDialog();
+                if (taskAdapter != null) {
+                    taskAdapter.clearData();
+                    if (getParentFragment() instanceof TabTaskFragment) {
+                        ((TabTaskFragment) getParentFragment()).showOrHiddeTitleAction2(false);
+                    }
+                }
+            }
+        });
+    }
+
 }

@@ -27,6 +27,7 @@ import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.ProjectListAdapter;
 import com.icourt.alpha.adapter.TaskItemAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
+import com.icourt.alpha.adapter.baseadapter.adapterObserver.DataChangeAdapterObserver;
 import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.entity.bean.ProjectEntity;
 import com.icourt.alpha.entity.bean.TaskEntity;
@@ -36,6 +37,7 @@ import com.icourt.alpha.entity.event.TimingEvent;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.DateUtils;
+import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.view.SoftKeyboardSizeWatchLayout;
 import com.icourt.alpha.widget.manager.TimerManager;
 import com.icourt.api.RequestUtils;
@@ -64,6 +66,9 @@ import retrofit2.Response;
 
 public class SearchProjectActivity extends BaseActivity implements BaseRecyclerAdapter.OnItemClickListener, BaseRecyclerAdapter.OnItemChildClickListener {
     private static final String KEY_SEARCH_PRIORITY = "search_priority";
+    private static final String KEY_SEARCH_PROJECT_TYPE = "search_search_project_type";
+    private static final String KEY_SEARCH_TASK_TYPE = "search_search_task_type";
+    private static final String KEY_SEARCH_TASK_STATUS_TYPE = "search_search_task_status_type";
     @BindView(R.id.et_search_name)
     EditText etSearchName;
     @BindView(R.id.tv_search_cancel)
@@ -80,6 +85,8 @@ public class SearchProjectActivity extends BaseActivity implements BaseRecyclerA
 
     public static final int SEARCH_PROJECT = 1;//搜索项目
     public static final int SEARCH_TASK = 2;//搜索任务
+    @BindView(R.id.contentEmptyText)
+    TextView contentEmptyText;
 
     @IntDef({SEARCH_PROJECT,
             SEARCH_TASK
@@ -90,12 +97,53 @@ public class SearchProjectActivity extends BaseActivity implements BaseRecyclerA
     }
 
     int search_priority;
+    int searchProjectType;//搜索项目type
+    int searchTaskType;//搜索任务type
 
+    int taskStatuType;//搜索任务状态type
+    String projectId, assignTos;
 
-    public static void launch(@NonNull Context context, @SEARCH_PRIORITY int search_priority) {
+    /**
+     * 搜索未完成（全部、新任务、我关注的）的任务
+     *
+     * @param context
+     * @param searchTaskType
+     * @param search_priority
+     */
+    public static void launchTask(@NonNull Context context, String assignTos, int searchTaskType, @SEARCH_PRIORITY int search_priority) {
         if (context == null) return;
         Intent intent = new Intent(context, SearchProjectActivity.class);
         intent.putExtra(KEY_SEARCH_PRIORITY, search_priority);
+        intent.putExtra(KEY_SEARCH_TASK_TYPE, searchTaskType);
+        intent.putExtra("assignTos", assignTos);
+        context.startActivity(intent);
+    }
+
+    /**
+     * 搜索已完成的全部任务
+     *
+     * @param context
+     * @param taskStatuType   0:未完成；1：已完成；2：已删除
+     * @param searchTaskType  0:全部；1：新任务；2：我关注的；3我部门的
+     * @param projectId       项目id
+     * @param search_priority
+     */
+    public static void launchFinishTask(@NonNull Context context, String assignTos, int searchTaskType, int taskStatuType, @SEARCH_PRIORITY int search_priority, String projectId) {
+        if (context == null) return;
+        Intent intent = new Intent(context, SearchProjectActivity.class);
+        intent.putExtra(KEY_SEARCH_PRIORITY, search_priority);
+        intent.putExtra(KEY_SEARCH_TASK_TYPE, searchTaskType);
+        intent.putExtra(KEY_SEARCH_TASK_STATUS_TYPE, taskStatuType);
+        intent.putExtra("projectId", projectId);
+        intent.putExtra("assignTos", assignTos);
+        context.startActivity(intent);
+    }
+
+    public static void launchProject(@NonNull Context context, int searchProjectType, @SEARCH_PRIORITY int search_priority) {
+        if (context == null) return;
+        Intent intent = new Intent(context, SearchProjectActivity.class);
+        intent.putExtra(KEY_SEARCH_PRIORITY, search_priority);
+        intent.putExtra(KEY_SEARCH_PROJECT_TYPE, searchProjectType);
         context.startActivity(intent);
     }
 
@@ -112,14 +160,35 @@ public class SearchProjectActivity extends BaseActivity implements BaseRecyclerA
         super.initView();
         EventBus.getDefault().register(this);
         search_priority = getIntent().getIntExtra(KEY_SEARCH_PRIORITY, -1);
+        searchProjectType = getIntent().getIntExtra(KEY_SEARCH_PROJECT_TYPE, -1);
+        searchTaskType = getIntent().getIntExtra(KEY_SEARCH_TASK_TYPE, -1);
+        taskStatuType = getIntent().getIntExtra(KEY_SEARCH_TASK_STATUS_TYPE, -1);
+        projectId = getIntent().getStringExtra("projectId");
+        assignTos = getIntent().getStringExtra("assignTos");
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         if (search_priority == SEARCH_PROJECT) {
             recyclerView.setAdapter(projectListAdapter = new ProjectListAdapter());
             projectListAdapter.setOnItemClickListener(this);
+            projectListAdapter.registerAdapterDataObserver(new DataChangeAdapterObserver() {
+                @Override
+                protected void updateUI() {
+                    if (contentEmptyText != null) {
+                        contentEmptyText.setVisibility(projectListAdapter.getItemCount() > 0 ? View.GONE : View.VISIBLE);
+                    }
+                }
+            });
         } else if (search_priority == SEARCH_TASK) {
             recyclerView.setAdapter(taskItemAdapter = new TaskItemAdapter());
             taskItemAdapter.setOnItemClickListener(this);
             taskItemAdapter.setOnItemChildClickListener(this);
+            taskItemAdapter.registerAdapterDataObserver(new DataChangeAdapterObserver() {
+                @Override
+                protected void updateUI() {
+                    if (contentEmptyText != null) {
+                        contentEmptyText.setVisibility(taskItemAdapter.getItemCount() > 0 ? View.GONE : View.VISIBLE);
+                    }
+                }
+            });
         }
         etSearchName.addTextChangedListener(new TextWatcher() {
             @Override
@@ -143,6 +212,18 @@ public class SearchProjectActivity extends BaseActivity implements BaseRecyclerA
                 } else {
                     getData(true);
                 }
+            }
+        });
+        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+                super.onScrollStateChanged(recyclerView, newState);
+                SystemUtils.hideSoftKeyBoard(SearchProjectActivity.this);
+            }
+
+            @Override
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
             }
         });
     }
@@ -175,7 +256,8 @@ public class SearchProjectActivity extends BaseActivity implements BaseRecyclerA
      * 搜索项目
      */
     private void searchProject(String keyword) {
-        getApi().projectQueryByName(keyword).enqueue(new SimpleCallBack<List<ProjectEntity>>() {
+        searchProjectType = 0;
+        getApi().projectQueryByName(keyword, searchProjectType).enqueue(new SimpleCallBack<List<ProjectEntity>>() {
             @Override
             public void onSuccess(Call<ResEntity<List<ProjectEntity>>> call, Response<ResEntity<List<ProjectEntity>>> response) {
                 projectListAdapter.bindData(true, response.body().result);
@@ -187,14 +269,34 @@ public class SearchProjectActivity extends BaseActivity implements BaseRecyclerA
      * 搜索任务
      */
     private void searchTask(String keyword) {
-        getApi().taskQueryByName(getLoginUserId(), keyword, 0, 0).enqueue(new SimpleCallBack<TaskEntity>() {
-            @Override
-            public void onSuccess(Call<ResEntity<TaskEntity>> call, Response<ResEntity<TaskEntity>> response) {
-                if (response.body().result != null) {
-                    taskItemAdapter.bindData(true, response.body().result.items);
+        int statusType = -1;
+        if (taskStatuType == -1) {
+            statusType = 0;
+        } else if (taskStatuType == 0) {
+            statusType = taskStatuType;
+        } else {
+            statusType = 1;
+        }
+        searchTaskType = 0;//我关注的，新任务，都搜索全部
+        if (!TextUtils.isEmpty(assignTos)) {
+            getApi().taskQueryByName(assignTos, keyword, statusType, searchTaskType, projectId).enqueue(new SimpleCallBack<TaskEntity>() {
+                @Override
+                public void onSuccess(Call<ResEntity<TaskEntity>> call, Response<ResEntity<TaskEntity>> response) {
+                    if (response.body().result != null) {
+                        taskItemAdapter.bindData(true, response.body().result.items);
+                    }
                 }
-            }
-        });
+            });
+        } else {
+            getApi().taskQueryByNameFromMatter(keyword, statusType, searchTaskType, projectId).enqueue(new SimpleCallBack<TaskEntity>() {
+                @Override
+                public void onSuccess(Call<ResEntity<TaskEntity>> call, Response<ResEntity<TaskEntity>> response) {
+                    if (response.body().result != null) {
+                        taskItemAdapter.bindData(true, response.body().result.items);
+                    }
+                }
+            });
+        }
     }
 
     @Override
@@ -304,11 +406,7 @@ public class SearchProjectActivity extends BaseActivity implements BaseRecyclerA
      * @param checkbox
      */
     private void updateTask(final TaskEntity.TaskItemEntity itemEntity, final boolean state, final CheckBox checkbox) {
-        if (state) {
-            showLoadingDialog("完成任务...");
-        } else {
-            showLoadingDialog("取消完成任务...");
-        }
+        showLoadingDialog(null);
         getApi().taskUpdate(RequestUtils.createJsonBody(getTaskJson(itemEntity, state))).enqueue(new SimpleCallBack<JsonElement>() {
             @Override
             public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
@@ -343,6 +441,7 @@ public class SearchProjectActivity extends BaseActivity implements BaseRecyclerA
             return jsonObject.toString();
         } catch (Exception e) {
             e.printStackTrace();
+            bugSync("获取任务json",e);
         }
         return null;
     }

@@ -15,7 +15,9 @@ import android.widget.TextView;
 import com.github.sundeepk.compactcalendarview.CompactCalendarView;
 import com.github.sundeepk.compactcalendarview.domain.Event;
 import com.icourt.alpha.R;
+import com.icourt.alpha.base.BaseDialogFragment;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
+import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.DensityUtil;
 
 import java.text.SimpleDateFormat;
@@ -107,11 +109,12 @@ public class CalendaerSelectDialogFragment extends BaseDialogFragment {
         compactcalendarView.setUseThreeLetterAbbreviation(false);
         compactcalendarView.setLocale(TimeZone.getDefault(), Locale.CHINESE);
         compactcalendarView.setUseThreeLetterAbbreviation(true);
-        compactcalendarView.setDayColumnNames(new String[]{"日", "一", "二", "三", "四", "五", "六"});
+        compactcalendarView.setDayColumnNames(new String[]{"一", "二", "三", "四", "五", "六","日"});
         compactcalendarView.setListener(new CompactCalendarView.CompactCalendarViewListener() {
             @Override
             public void onDayClick(Date date) {
                 selectedDate = date;
+                btOk.setEnabled(selectedDate != null && !DateUtils.isOverToday(selectedDate.getTime()));
             }
 
             @Override
@@ -124,7 +127,7 @@ public class CalendaerSelectDialogFragment extends BaseDialogFragment {
         compactcalendarView.removeAllEvents();
         //loadEvents();
         compactcalendarView.invalidate();
-       // logEventsByMonth(compactcalendarView);
+        // logEventsByMonth(compactcalendarView);
     }
 
 

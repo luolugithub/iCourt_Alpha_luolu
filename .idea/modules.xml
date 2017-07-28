@@ -7,6 +7,8 @@
       <module fileurl="file://$PROJECT_DIR$/alpha_android_2.0.iml" filepath="$PROJECT_DIR$/alpha_android_2.0.iml" />
       <module fileurl="file://$PROJECT_DIR$/api/api.iml" filepath="$PROJECT_DIR$/api/api.iml" />
       <module fileurl="file://$PROJECT_DIR$/javatest/javatest.iml" filepath="$PROJECT_DIR$/javatest/javatest.iml" />
+      <module fileurl="file://$PROJECT_DIR$/lib_calendar/lib_calendar.iml" filepath="$PROJECT_DIR$/lib_calendar/lib_calendar.iml" />
+      <module fileurl="file://$PROJECT_DIR$/lib_daemon/lib_daemon.iml" filepath="$PROJECT_DIR$/lib_daemon/lib_daemon.iml" />
     </modules>
   </component>
 </project>

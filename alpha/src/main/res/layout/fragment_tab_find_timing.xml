@@ -3,7 +3,6 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@android:color/white"
     android:orientation="vertical">
 
     <LinearLayout
@@ -15,7 +14,7 @@
 
         <android.support.design.widget.TabLayout
             android:id="@+id/tabLayout"
-            style="@style/AlphaTabLayout"
+            style="@style/AlphaTitleTabLayout"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_weight="1"
@@ -25,15 +24,18 @@
         <ImageView
             android:id="@id/titleAction"
             android:layout_width="38dp"
-            android:layout_height="38dp"
+            android:layout_height="match_parent"
             android:background="?attr/selectableItemBackground"
             android:padding="10dp"
+            android:scaleType="fitCenter"
             android:src="@mipmap/header_icon_add" />
     </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="@android:color/white"
+        android:elevation="1dp"
         android:orientation="vertical"
         android:padding="15dp">
 
@@ -82,19 +84,52 @@
         <lecho.lib.hellocharts.view.LineChartView
             android:id="@+id/timing_chart_view"
             android:layout_width="match_parent"
-            android:layout_height="150dp" />
+            android:layout_height="150dp"
+            android:paddingRight="10dp"
+            android:paddingLeft="5dp"
+            android:paddingTop="10dp" />
     </LinearLayout>
 
-    <com.icourt.alpha.view.xrefreshlayout.RefreshLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
-        android:id="@+id/refreshLayout"
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <android.support.v7.widget.RecyclerView
-            android:id="@+id/recyclerView"
+        <com.icourt.alpha.view.xrefreshlayout.RefreshLayout xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:app="http://schemas.android.com/apk/res-auto"
+            android:id="@+id/refreshLayout"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:clipToPadding="false" />
-    </com.icourt.alpha.view.xrefreshlayout.RefreshLayout>
+            android:layout_height="match_parent">
+
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/recyclerView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@android:color/white"
+                android:clipToPadding="false" />
+        </com.icourt.alpha.view.xrefreshlayout.RefreshLayout>
+
+        <LinearLayout
+            android:id="@+id/empty_layout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <ImageView
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:src="@mipmap/icon_placeholder_timing" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/dp10"
+                android:text="暂无计时"
+                android:textColor="@color/alpha_font_color_gray"
+                android:textSize="15sp" />
+        </LinearLayout>
+    </FrameLayout>
+
 </LinearLayout>

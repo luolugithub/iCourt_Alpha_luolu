@@ -21,6 +21,9 @@ import com.icourt.alpha.utils.LoginInfoUtils;
 import com.icourt.alpha.utils.SpannableUtils;
 import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.utils.SystemUtils;
+import com.netease.nimlib.sdk.NIMClient;
+import com.netease.nimlib.sdk.RequestCallback;
+import com.netease.nimlib.sdk.team.TeamService;
 import com.netease.nimlib.sdk.team.model.Team;
 
 import java.util.List;
@@ -49,6 +52,25 @@ public class MyAtedAdapter extends BaseArrayRecyclerAdapter<IMMessageCustomBody>
                 return team;
             }
         }
+        NIMClient.getService(TeamService.class).queryTeam(id).setCallback(new RequestCallback<Team>() {
+            @Override
+            public void onSuccess(Team team) {
+                if (team != null) {
+                    teams.add(team);
+                    notifyDataSetChanged();
+                }
+            }
+
+            @Override
+            public void onFailed(int i) {
+
+            }
+
+            @Override
+            public void onException(Throwable throwable) {
+
+            }
+        });
         return null;
     }
 
@@ -79,6 +101,15 @@ public class MyAtedAdapter extends BaseArrayRecyclerAdapter<IMMessageCustomBody>
     }
 
     @Override
+    public long getItemId(int position) {
+        IMMessageCustomBody item = getItem(position);
+        if (item != null) {
+            return item.id;
+        }
+        return super.getItemId(position);
+    }
+
+    @Override
     public int bindView(int viewtype) {
         return R.layout.adapter_my_ated;
     }
@@ -103,6 +134,8 @@ public class MyAtedAdapter extends BaseArrayRecyclerAdapter<IMMessageCustomBody>
             } else {
                 setTeamIcon(team.getName(), at_user_iv);
             }
+        } else {
+            at_from_group_tv.setText("未查询到讨论组");
         }
 
         GroupContactBean user = getUser(imAtEntity.from);
@@ -113,27 +146,10 @@ public class MyAtedAdapter extends BaseArrayRecyclerAdapter<IMMessageCustomBody>
         }
 
         at_user_tv.setText(imAtEntity.name);
-        at_time_tv.setText(DateUtils.getMMMdd(imAtEntity.send_time));
+        at_time_tv.setText(DateUtils.getFormatChatTimeSimple(imAtEntity.send_time));
         if (!TextUtils.isEmpty(imAtEntity.content)) {
             String originalText = imAtEntity.content;
-            String targetText = null;
-            try {
-                targetText = originalText.substring(originalText.trim().indexOf("@"), originalText.trim().indexOf(" "));
-            } catch (Exception e) {
-            }
-            if (TextUtils.isEmpty(targetText)) {
-                if (originalText.startsWith("@")) {
-                    if (originalText.trim().startsWith("@所有人")) {
-                        targetText = "@所有人";
-                    } else {
-                        targetText = originalText;
-                    }
-                } else if (originalText.contains("@所有人")) {
-                    targetText = "@所有人";
-                } else if (originalText.contains("@" + loginName)) {
-                    targetText = "@" + loginName;
-                }
-            }
+            String targetText = "@[\\w\\u4E00-\\u9FA5\\uF900-\\uFA2D]*";
             SpannableUtils.setTextForegroundColorSpan(at_content_tv,
                     originalText,
                     targetText,
@@ -162,14 +178,14 @@ public class MyAtedAdapter extends BaseArrayRecyclerAdapter<IMMessageCustomBody>
                 ChatActivity.launchP2P(view.getContext(),
                         item.to,
                         item.name,
-                        item.send_time,0);
+                        item.id, 0);
                 break;
             case CHAT_TYPE_TEAM:
                 Team team = getTeam(item.to);
                 ChatActivity.launchTEAM(view.getContext(),
                         item.to,
                         team != null ? team.getName() : "",
-                        item.send_time,0);
+                        item.id, 0);
                 break;
         }
     }

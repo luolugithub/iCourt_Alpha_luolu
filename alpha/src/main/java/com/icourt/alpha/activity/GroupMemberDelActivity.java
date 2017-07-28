@@ -6,14 +6,18 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.AppBarLayout;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
+import android.view.KeyEvent;
 import android.view.View;
+import android.view.inputmethod.EditorInfo;
 import android.widget.CheckedTextView;
-import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.google.gson.JsonArray;
@@ -22,10 +26,15 @@ import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.GroupMemberActionAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.HeaderFooterAdapter;
+import com.icourt.alpha.adapter.baseadapter.adapterObserver.DataChangeAdapterObserver;
 import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.entity.bean.GroupContactBean;
+import com.icourt.alpha.fragment.dialogfragment.ContactDialogFragment;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
+import com.icourt.alpha.utils.StringUtils;
+import com.icourt.alpha.utils.SystemUtils;
+import com.icourt.alpha.view.ClearEditText;
 import com.icourt.api.RequestUtils;
 
 import java.util.ArrayList;
@@ -33,6 +42,7 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 import retrofit2.Call;
 import retrofit2.Response;
 
@@ -43,7 +53,7 @@ import retrofit2.Response;
  * date createTime：2017/5/2
  * version 1.0.0
  */
-public class GroupMemberDelActivity extends BaseActivity implements BaseRecyclerAdapter.OnItemClickListener {
+public class GroupMemberDelActivity extends BaseActivity implements BaseRecyclerAdapter.OnItemClickListener, BaseRecyclerAdapter.OnItemChildClickListener {
     private static final String KEY_TID = "key_tid";
     private static final String KEY_CONTACTS = "key_contacts";
     private static final String KEY_DEL_FROM_NET = "key_del_from_net";
@@ -57,6 +67,14 @@ public class GroupMemberDelActivity extends BaseActivity implements BaseRecycler
     AppBarLayout titleView;
     @BindView(R.id.recyclerView)
     RecyclerView recyclerView;
+    @BindView(R.id.header_comm_search_input_et)
+    ClearEditText headerCommSearchInputEt;
+    @BindView(R.id.header_comm_search_cancel_tv)
+    TextView headerCommSearchCancelTv;
+    @BindView(R.id.header_comm_search_input_ll)
+    LinearLayout headerCommSearchInputLl;
+    @BindView(R.id.contentEmptyText)
+    TextView contentEmptyText;
 
 
     /**
@@ -86,6 +104,7 @@ public class GroupMemberDelActivity extends BaseActivity implements BaseRecycler
     GroupMemberActionAdapter imContactAdapter;
     HeaderFooterAdapter<GroupMemberActionAdapter> headerFooterAdapter;
     ArrayList<GroupContactBean> groupContactBeenList;
+    final List<GroupContactBean> currSelectedList = new ArrayList<>();
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -99,7 +118,7 @@ public class GroupMemberDelActivity extends BaseActivity implements BaseRecycler
     protected void initView() {
         super.initView();
         setTitle("讨论组成员");
-        TextView titleActionTextView = getTitleActionTextView();
+        final TextView titleActionTextView = getTitleActionTextView();
         if (titleActionTextView != null) {
             titleActionTextView.setText("删除");
         }
@@ -109,11 +128,18 @@ public class GroupMemberDelActivity extends BaseActivity implements BaseRecycler
         headerFooterAdapter = new HeaderFooterAdapter<>(imContactAdapter = new GroupMemberActionAdapter());
         imContactAdapter.setSelectable(true);
         imContactAdapter.setOnItemClickListener(this);
-        View headerView = HeaderFooterAdapter.inflaterView(getContext(), R.layout.header_search_input_text, recyclerView);
+        imContactAdapter.setOnItemChildClickListener(this);
+        imContactAdapter.registerAdapterDataObserver(new DataChangeAdapterObserver() {
+            @Override
+            protected void updateUI() {
+                if (contentEmptyText == null) return;
+                contentEmptyText.setVisibility(imContactAdapter.getItemCount() <= 0 ? View.VISIBLE : View.GONE);
+            }
+        });
+        View headerView = HeaderFooterAdapter.inflaterView(getContext(), R.layout.header_search_comm, recyclerView);
+        registerClick(headerView.findViewById(R.id.header_comm_search_ll));
         headerFooterAdapter.addHeader(headerView);
-        EditText header_input_et = (EditText) headerView.findViewById(R.id.header_input_et);
-        header_input_et.clearFocus();
-        header_input_et.addTextChangedListener(new TextWatcher() {
+        headerCommSearchInputEt.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
 
@@ -133,7 +159,23 @@ public class GroupMemberDelActivity extends BaseActivity implements BaseRecycler
                 }
             }
         });
-
+        headerCommSearchInputEt.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                switch (actionId) {
+                    case EditorInfo.IME_ACTION_SEARCH: {
+                        SystemUtils.hideSoftKeyBoard(getActivity(), headerCommSearchInputEt);
+                        if (!TextUtils.isEmpty(headerCommSearchInputEt.getText())) {
+                            serachGroupMember(headerCommSearchInputEt.getText().toString());
+                        }
+                    }
+                    return true;
+                    default:
+                        return false;
+                }
+            }
+        });
+        headerCommSearchInputLl.setVisibility(View.GONE);
         recyclerView.setAdapter(headerFooterAdapter);
         getData(true);
     }
@@ -142,6 +184,7 @@ public class GroupMemberDelActivity extends BaseActivity implements BaseRecycler
     protected void getData(boolean isRefresh) {
         super.getData(isRefresh);
         imContactAdapter.bindData(true, groupContactBeenList);
+        setLastSelected();
     }
 
     /**
@@ -159,9 +202,11 @@ public class GroupMemberDelActivity extends BaseActivity implements BaseRecycler
             }
             imContactAdapter.clearSelected();
             imContactAdapter.bindData(true, filterList);
+            setLastSelected();
         }
     }
 
+    @OnClick({R.id.header_comm_search_cancel_tv})
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
@@ -175,6 +220,15 @@ public class GroupMemberDelActivity extends BaseActivity implements BaseRecycler
                     setResult(Activity.RESULT_OK, intent);
                     finish();
                 }
+                break;
+            case R.id.header_comm_search_ll:
+                headerCommSearchInputLl.setVisibility(View.VISIBLE);
+                SystemUtils.showSoftKeyBoard(getActivity(), headerCommSearchInputEt);
+                break;
+            case R.id.header_comm_search_cancel_tv:
+                headerCommSearchInputEt.setText("");
+                SystemUtils.hideSoftKeyBoard(getActivity(), headerCommSearchInputEt, true);
+                headerCommSearchInputLl.setVisibility(View.GONE);
                 break;
             default:
                 super.onClick(v);
@@ -214,8 +268,62 @@ public class GroupMemberDelActivity extends BaseActivity implements BaseRecycler
 
     }
 
+    private void setLastSelected() {
+        imContactAdapter.clearSelected();
+        List<GroupContactBean> contactBeen = imContactAdapter.getData();
+        //设置上次选中的
+        for (int i = 0; i < contactBeen.size(); i++) {
+            GroupContactBean groupContactBean = contactBeen.get(i);
+            if (currSelectedList.contains(groupContactBean)) {
+                imContactAdapter.setSelected(i, true);
+            }
+        }
+    }
+
+    /**
+     * 展示联系人对话框
+     *
+     * @param accid
+     * @param hiddenChatBtn
+     */
+    public void showContactDialogFragment(String accid, boolean hiddenChatBtn) {
+        String tag = "ContactDialogFragment";
+        FragmentTransaction mFragTransaction = getSupportFragmentManager().beginTransaction();
+        Fragment fragment = getSupportFragmentManager().findFragmentByTag(tag);
+        if (fragment != null) {
+            mFragTransaction.remove(fragment);
+        }
+        ContactDialogFragment.newInstance(accid, "成员资料", hiddenChatBtn)
+                .show(mFragTransaction, tag);
+    }
+
     @Override
     public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
         imContactAdapter.toggleSelected(position);
+        GroupContactBean item = imContactAdapter.getItem(adapter.getRealPos(position));
+        if (item == null) return;
+        if (imContactAdapter.isSelected(adapter.getRealPos(position))) {
+            if (!currSelectedList.contains(item)) {
+                currSelectedList.add(item);
+            }
+        } else {
+            currSelectedList.remove(item);
+        }
+        final TextView titleActionTextView = getTitleActionTextView();
+        if (titleActionTextView != null) {
+            int selectedSize = currSelectedList.size();
+            titleActionTextView.setText(selectedSize > 0 ? String.format("删除(%s)", selectedSize) : "删除");
+        }
+    }
+
+    @Override
+    public void onItemChildClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
+        switch (view.getId()) {
+            case R.id.iv_contact_icon:
+                GroupContactBean item = imContactAdapter.getItem(imContactAdapter.getRealPos(position));
+                if (item == null) return;
+                showContactDialogFragment(item.accid, StringUtils.equalsIgnoreCase(item.accid, getLoginUserId(), false));
+                break;
+        }
     }
 }

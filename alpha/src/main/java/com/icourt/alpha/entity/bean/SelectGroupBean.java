@@ -16,8 +16,9 @@ import java.io.Serializable;
 
 public class SelectGroupBean implements Serializable {
 
+    @SerializedName(value = "groupId", alternate = {"id"})
     public String groupId;
-    @SerializedName(value = "groupName", alternate = {"groupname"})
+    @SerializedName(value = "groupName", alternate = {"groupname","name"})
     public String groupName;
 
     @Override

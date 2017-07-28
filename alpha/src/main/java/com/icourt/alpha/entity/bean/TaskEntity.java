@@ -1,5 +1,7 @@
 package com.icourt.alpha.entity.bean;
 
+import android.text.TextUtils;
+
 import com.icourt.alpha.db.convertor.IConvertModel;
 
 import java.io.Serializable;
@@ -31,6 +33,7 @@ public class TaskEntity implements Serializable {
         public String description;//任务描述
         public boolean state;//是否完成
         public long dueTime;//到期时间
+        public long updateTime;//更新时间
         public long timingSum;//总计时
         public long assignTime;//任务分配时间
         public long createTime;//任务创建时间
@@ -41,12 +44,15 @@ public class TaskEntity implements Serializable {
         public int attentioned;//关注   0:未关注  1:关注
         public int type;//类型   0:任务  1:任务组
         public boolean isTiming;
+        public String readUserIds;//查看过此任务的人的id
 
         public ParentFlowEntity parentFlow;//详情任务组信息
         public MatterEntity matter;//项目信息
         public CreateUserEntity createUser;//任务创建人
+        public boolean valid;//是否有效 如果删除 返回false
 
         public List<AttendeeUserEntity> attendeeUsers;//任务相关人
+        public List<String> right;//权限
 
         public static class MatterEntity
                 implements Serializable, IConvertModel<ProjectEntity> {
@@ -87,6 +93,16 @@ public class TaskEntity implements Serializable {
             public String name;
         }
 
+        @Override
+        public boolean equals(Object o) {
+            if (this == o)
+                return true;
+            if (o == null) return false;
+            if (getClass() != o.getClass())
+                return false;
+            final TaskItemEntity other = (TaskItemEntity) o;
+            return TextUtils.equals(this.id, other.id);
+        }
 
     }
 

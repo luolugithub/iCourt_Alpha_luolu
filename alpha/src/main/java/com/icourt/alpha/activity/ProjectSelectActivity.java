@@ -13,15 +13,18 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.andview.refreshview.XRefreshView;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.ProjectAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
+import com.icourt.alpha.adapter.baseadapter.adapterObserver.RefreshViewEmptyObserver;
 import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.entity.bean.ProjectEntity;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
+import com.icourt.alpha.utils.ItemDecorationUtils;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 
 import java.util.List;
@@ -41,7 +44,7 @@ import retrofit2.Response;
  */
 
 public class ProjectSelectActivity extends BaseActivity implements BaseRecyclerAdapter.OnItemClickListener {
-
+    private static final String CLOSE_ACTION = "close_action";//关闭当前页面
     String authToken, seaFileRepoId, filePath;
     @BindView(R.id.titleBack)
     ImageView titleBack;
@@ -55,7 +58,10 @@ public class ProjectSelectActivity extends BaseActivity implements BaseRecyclerA
     RefreshLayout refreshLayout;
     ProjectAdapter projectAdapter;
 
-    public static void launch(@NonNull Context context, @NonNull String authToken, @NonNull String seaFileRepoId, @NonNull String filePath) {
+    public static void launch(@NonNull Context context,
+                              @NonNull String authToken,
+                              @NonNull String seaFileRepoId,
+                              @NonNull String filePath) {
         if (context == null) return;
         Intent intent = new Intent(context, ProjectSelectActivity.class);
         intent.putExtra("authToken", authToken);
@@ -64,9 +70,35 @@ public class ProjectSelectActivity extends BaseActivity implements BaseRecyclerA
         context.startActivity(intent);
     }
 
+    public static void lauchClose(@NonNull Context context) {
+        if (context == null) return;
+        Intent intent = new Intent(context, ProjectSelectActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        intent.setAction(CLOSE_ACTION);
+        context.startActivity(intent);
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        if (intent != null) {
+            String action = intent.getAction();
+            if (TextUtils.equals(action, CLOSE_ACTION)) {
+                finish();
+            }
+        }
+    }
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if (getIntent() != null) {
+            if (TextUtils.equals(getIntent().getAction(), CLOSE_ACTION)) {
+                finish();
+                return;
+            }
+        }
         setContentView(R.layout.activity_project_select_layout);
         ButterKnife.bind(this);
         initView();
@@ -79,31 +111,53 @@ public class ProjectSelectActivity extends BaseActivity implements BaseRecyclerA
         authToken = getIntent().getStringExtra("authToken");
         seaFileRepoId = getIntent().getStringExtra("seaFileRepoId");
         filePath = getIntent().getStringExtra("filePath");
+
+        refreshLayout.setNoticeEmpty(R.mipmap.icon_placeholder_project, "暂无项目");
+        refreshLayout.setMoveForHorizontal(true);
+
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        recyclerView.addItemDecoration(ItemDecorationUtils.getCommFull05Divider(getContext(), true));
+        recyclerView.setHasFixedSize(true);
         recyclerView.setAdapter(projectAdapter = new ProjectAdapter(false));
         projectAdapter.setOnItemClickListener(this);
-        if (TextUtils.isEmpty(authToken)) {
+        projectAdapter.registerAdapterDataObserver(new RefreshViewEmptyObserver(refreshLayout, projectAdapter));
+        //token 分享和保存到项目 token替换了
+       /* if (TextUtils.isEmpty(authToken)) {
             getFileBoxToken();
         } else {
             getData(true);
-        }
+        }*/
+        refreshLayout.setXRefreshViewListener(new XRefreshView.SimpleXRefreshListener() {
+            @Override
+            public void onRefresh(boolean isPullDown) {
+                super.onRefresh(isPullDown);
+                getFileBoxToken();
+            }
+
+            @Override
+            public void onLoadMore(boolean isSilence) {
+                super.onLoadMore(isSilence);
+
+            }
+        });
+        refreshLayout.startRefresh();
     }
 
     @Override
     protected void getData(boolean isRefresh) {
         super.getData(isRefresh);
-        getApi().projectSelectListQuery("0,2,7")
+        getApi().projectPmsSelectListQuery("MAT:matter.document:readwrite")
                 .enqueue(new SimpleCallBack<List<ProjectEntity>>() {
                     @Override
                     public void onSuccess(Call<ResEntity<List<ProjectEntity>>> call, Response<ResEntity<List<ProjectEntity>>> response) {
-                        dismissLoadingDialog();
+                        stopRefresh();
                         projectAdapter.bindData(true, response.body().result);
                     }
 
                     @Override
                     public void onFailure(Call<ResEntity<List<ProjectEntity>>> call, Throwable t) {
                         super.onFailure(call, t);
-                        dismissLoadingDialog();
+                        stopRefresh();
                     }
                 });
     }
@@ -139,12 +193,18 @@ public class ProjectSelectActivity extends BaseActivity implements BaseRecyclerA
         });
     }
 
+    private void stopRefresh() {
+        if (refreshLayout != null) {
+            refreshLayout.stopRefresh();
+            refreshLayout.stopLoadMore();
+        }
+    }
 
     @Override
     public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
         ProjectEntity projectEntity = (ProjectEntity) adapter.getItem(position);
         if (projectEntity != null) {
-            FolderboxSelectActivity.launch(this, projectEntity.pkId, authToken, seaFileRepoId, filePath, null);
+            FolderboxSelectActivity.launch(this, projectEntity.pkId, authToken, null, filePath, null);
         }
     }
 }

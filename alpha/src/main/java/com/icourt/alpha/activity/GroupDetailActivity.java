@@ -35,7 +35,7 @@ import com.icourt.alpha.entity.bean.GroupDetailEntity;
 import com.icourt.alpha.entity.event.GroupActionEvent;
 import com.icourt.alpha.entity.event.NoDisturbingEvent;
 import com.icourt.alpha.entity.event.SetTopEvent;
-import com.icourt.alpha.fragment.dialogfragment.BaseDialogFragment;
+import com.icourt.alpha.base.BaseDialogFragment;
 import com.icourt.alpha.fragment.dialogfragment.ContactDialogFragment;
 import com.icourt.alpha.fragment.dialogfragment.ContactSelectDialogFragment;
 import com.icourt.alpha.http.callback.SimpleCallBack;
@@ -175,11 +175,8 @@ public class GroupDetailActivity extends BaseActivity
                         dismissLoadingDialog();
                         if (response.body().result != null) {
                             groupDetailEntity = response.body().result;
-
                             groupNameTv.setText(response.body().result.name);
                             groupDescTv.setText(response.body().result.intro);
-                            groupJoinOrQuitBtn.setSelected(response.body().result.isJoin == 1);
-                            groupJoinOrQuitBtn.setText(groupJoinOrQuitBtn.isSelected() ? "退出讨论组" : "加入讨论组");
                             ImageView titleActionImage = getTitleActionImage();
 
                             isAdmin = StringUtils.equalsIgnoreCase(getLoginUserId(), response.body().result.admin_id, false);
@@ -191,20 +188,14 @@ public class GroupDetailActivity extends BaseActivity
                                 setViewVisible(groupSessionActionLl, true);
                                 setViewVisible(groupDataLl, true);
                             } else {
-                                //管理员设置按钮隐藏
+                                //非管理员
                                 setViewVisible(titleActionImage, false);
                                 joined = StringUtils.containsIgnoreCase(response.body().result.members, getLoginUserId());
                                 setViewVisible(groupJoinOrQuitBtn, true);
                                 groupJoinOrQuitBtn.setText(joined ? "退出讨论组" : "加入讨论组");
                                 setViewVisible(groupSessionActionLl, joined);
                                 setViewVisible(groupDataLl, joined);
-                                if (response.body().result.is_private) {
-                                    setViewVisible(groupMemberInviteTv, false);
-                                } else if (response.body().result.member_invite) {
-                                    setViewVisible(groupMemberInviteTv, true);
-                                } else {
-                                    setViewVisible(groupMemberInviteTv, false);
-                                }
+                                setViewVisible(groupMemberInviteTv, joined && response.body().result.member_invite);
                             }
                             //查询本地uid对应的头像
                             queryMembersByUids(response.body().result.members);
@@ -233,7 +224,7 @@ public class GroupDetailActivity extends BaseActivity
             groupContactBeens.clear();
             if (contactDbService != null) {
                 //最多展示20个
-                for (int i = 0; i < Math.min(members.size(), 20); i++) {
+                for (int i = 0; i < members.size(); i++) {
                     String uid = members.get(i);
                     if (!TextUtils.isEmpty(uid)) {
                         ContactDbModel contactDbModel = contactDbService.queryFirst("accid", uid);
@@ -274,26 +265,7 @@ public class GroupDetailActivity extends BaseActivity
                 showMemberSelectDialogFragment();
                 break;
             case R.id.group_member_arrow_iv:
-                if (groupDetailEntity == null) return;
-                if (isAdmin) {
-                    ArrayList<GroupContactBean> contactBeanArrayList = new ArrayList<>(contactAdapter.getData());
-
-                    //移除本人
-                    String loginUserId = getLoginUserId();
-                    if (!TextUtils.isEmpty(loginUserId)) {
-                        loginUserId = loginUserId.toLowerCase();
-                    }
-                    GroupContactBean contactBean = new GroupContactBean();
-                    contactBean.accid = loginUserId;
-                    contactBeanArrayList.remove(contactBean);
-                    GroupMemberDelActivity.launchForResult(getActivity(),
-                            getIntent().getStringExtra(KEY_TID),
-                            contactBeanArrayList,
-                            true, 2001);
-                } else {
-                    GroupMemberListActivity.launch(getContext(),
-                            groupDetailEntity.tid);
-                }
+                gotoMembersList();
                 break;
             case R.id.group_setTop_switch:
                 if (!groupSetTopSwitch.isChecked()) {
@@ -332,6 +304,34 @@ public class GroupDetailActivity extends BaseActivity
             default:
                 super.onClick(v);
                 break;
+        }
+    }
+
+    /**
+     * 到成员列表
+     */
+    private void gotoMembersList(){
+        if (groupDetailEntity == null) return;
+        if (isAdmin) {
+            ArrayList<GroupContactBean> contactBeanArrayList = new ArrayList<>(contactAdapter.getData());
+
+            //移除本人
+            String loginUserId = getLoginUserId();
+            if (!TextUtils.isEmpty(loginUserId)) {
+                loginUserId = loginUserId.toLowerCase();
+            }
+            GroupContactBean contactBean = new GroupContactBean();
+            contactBean.accid = loginUserId;
+            contactBeanArrayList.remove(contactBean);
+            GroupMemberDelActivity.launchForResult(getActivity(),
+                    getIntent().getStringExtra(KEY_TID),
+                    contactBeanArrayList,
+                    true, 2001);
+        } else {
+            GroupMemberListActivity.launch(getContext(),
+                    groupDetailEntity.tid,
+                    false,
+                    groupDetailEntity.admin_id);
         }
     }
 
@@ -527,6 +527,7 @@ public class GroupDetailActivity extends BaseActivity
                     @Override
                     public void onSuccess(Call<ResEntity<Boolean>> call, Response<ResEntity<Boolean>> response) {
                         getData(true);
+                        showTopSnackBar("加入成功");
                         EventBus.getDefault().post(
                                 new GroupActionEvent(GroupActionEvent.GROUP_ACTION_JOIN, getIntent().getStringExtra(KEY_TID)));
                     }
@@ -627,7 +628,8 @@ public class GroupDetailActivity extends BaseActivity
     public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
         GroupContactBean item = contactAdapter.getItem(position);
         if (item == null) return;
-        showContactDialogFragment(item.accid, StringUtils.equalsIgnoreCase(item.accid, getLoginUserId(), false));
+//        showContactDialogFragment(item.accid, StringUtils.equalsIgnoreCase(item.accid, getLoginUserId(), false));
+        gotoMembersList();
     }
 
     /**

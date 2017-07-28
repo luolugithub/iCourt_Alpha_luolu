@@ -1,5 +1,6 @@
 package com.icourt.alpha.adapter.baseadapter;
 
+import android.support.annotation.NonNull;
 import android.util.SparseBooleanArray;
 
 import java.util.ArrayList;
@@ -90,11 +91,27 @@ public abstract class MultiSelectRecyclerAdapter<T> extends BaseArrayRecyclerAda
         return selected;
     }
 
+    @Override
+    public boolean removeItem(int position) {
+        selectedArray.delete(position);
+        return super.removeItem(position);
+    }
+
+    @Override
+    public boolean removeItem(T t) {
+        int indexOf = getData().indexOf(t);
+        if (indexOf >= 0) {
+            selectedArray.delete(indexOf);
+        }
+        return super.removeItem(t);
+    }
+
     /**
      * 获取选中的数据
      *
      * @return
      */
+    @NonNull
     public ArrayList<T> getSelectedData() {
         ArrayList<T> selectedArray = new ArrayList<>();
         List<Integer> selectedData = getSelectedPositions();

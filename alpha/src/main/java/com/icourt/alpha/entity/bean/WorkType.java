@@ -1,5 +1,7 @@
 package com.icourt.alpha.entity.bean;
 
+import android.text.TextUtils;
+
 import java.io.Serializable;
 
 /**
@@ -16,4 +18,15 @@ public class WorkType implements Serializable {
     public int matterType;
     public String officeId;
     public int state;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (o == null) return false;
+        if (getClass() != o.getClass())
+            return false;
+        final WorkType other = (WorkType) o;
+        return TextUtils.equals(this.pkId, other.pkId);
+    }
 }

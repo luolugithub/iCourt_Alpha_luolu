@@ -426,6 +426,7 @@ public class TimerManager {
                                 if (callBack != null) {
                                     callBack.onFailure(call, t);
                                 }
+                                SpUtils.getInstance().putData(String.format(KEY_TIMER, getUid()), "");
                             }
                         });
             }

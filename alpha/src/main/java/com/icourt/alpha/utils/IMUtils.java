@@ -3,12 +3,20 @@ package com.icourt.alpha.utils;
 import android.text.TextUtils;
 import android.widget.ImageView;
 
+import com.icourt.alpha.constants.Const;
+import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.icourt.alpha.entity.bean.IMMessageCustomBody;
+import com.icourt.alpha.entity.bean.IMMessageCustomBody_v1;
+import com.icourt.alpha.entity.bean.IMMessageExtBody;
+import com.icourt.alpha.entity.bean.IMSessionEntity;
 import com.icourt.alpha.view.TextDrawable;
+import com.netease.nimlib.sdk.NIMClient;
 import com.netease.nimlib.sdk.msg.model.IMMessage;
 import com.netease.nimlib.sdk.msg.model.RecentContact;
+import com.netease.nimlib.sdk.team.TeamService;
 import com.netease.nimlib.sdk.team.model.MemberChangeAttachment;
 import com.netease.nimlib.sdk.team.model.Team;
+import com.netease.nimlib.sdk.uinfo.model.NimUserInfo;
 
 import java.util.Arrays;
 import java.util.List;
@@ -270,6 +278,9 @@ public class IMUtils {
                 sb.append("\nSessionType:" + recentContact.getSessionType());
                 sb.append("\nRecentMessageId:" + recentContact.getRecentMessageId());
                 sb.append("\nMsgType:" + recentContact.getMsgType());
+                if (recentContact.getMsgType() != null) {
+                    sb.append("\nMsgTypeValue:" + recentContact.getMsgType().getValue());
+                }
                 sb.append("\nMsgStatus:" + recentContact.getMsgStatus());
                 sb.append("\nUnreadCount:" + recentContact.getUnreadCount());
                 sb.append("\nContent:" + recentContact.getContent());
@@ -293,5 +304,87 @@ public class IMUtils {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+
+    /**
+     * 转为自定义的联系人
+     *
+     * @param nimUserInfo
+     * @return
+     */
+    public static final GroupContactBean convert2GroupContact(NimUserInfo nimUserInfo) {
+        if (nimUserInfo == null) return null;
+        GroupContactBean groupContactBean = new GroupContactBean();
+        groupContactBean.accid = nimUserInfo.getAccount();
+        groupContactBean.name = nimUserInfo.getName();
+        groupContactBean.pic = nimUserInfo.getAvatar();
+        return groupContactBean;
+    }
+
+
+    /***
+     * 兼容 1.0的消息
+     * @param imSessionEntity
+     * @param recentContact
+     * @param customIMBody
+     */
+    public static final void wrapV1Message(IMSessionEntity imSessionEntity, RecentContact recentContact, IMMessageCustomBody customIMBody) {
+        if (imSessionEntity == null) return;
+        if (recentContact == null) return;
+        if (customIMBody == null) return;
+        //v1 没有platform
+        if (TextUtils.isEmpty(customIMBody.platform)) {
+            customIMBody.send_time = recentContact.getTime();
+            customIMBody.msg_statu = Const.MSG_STATU_SUCCESS;
+            IMMessageCustomBody_v1 imMessageCustomBody_v1 = null;
+            try {
+                imMessageCustomBody_v1 = JsonUtils.Gson2Bean(recentContact.getContent(), IMMessageCustomBody_v1.class);
+            } catch (Throwable e) {
+                e.printStackTrace();
+            }
+            switch (recentContact.getSessionType()) {
+                case P2P:
+                    customIMBody.ope = Const.CHAT_TYPE_P2P;
+                    customIMBody.from = recentContact.getFromAccount();
+                    customIMBody.to = recentContact.getContactId();
+                    break;
+                case Team:
+                    customIMBody.ope = Const.CHAT_TYPE_TEAM;
+                    customIMBody.from = recentContact.getFromAccount();
+                    customIMBody.to = recentContact.getContactId();
+                    break;
+            }
+            if (imMessageCustomBody_v1 == null) return;
+            customIMBody.name = imMessageCustomBody_v1.name;
+            switch (customIMBody.show_type) {
+                case MSG_TYPE_DING:
+                    customIMBody.ext = IMMessageExtBody.createDingExtBody(imMessageCustomBody_v1.isPining == 1, 0);
+                    customIMBody.content = imMessageCustomBody_v1.isPining == 1 ? "钉了一条消息" : "取消钉了一条消息";
+                    break;
+                case MSG_TYPE_AT:
+                    customIMBody.ext = IMMessageExtBody.createAtExtBody(null, imMessageCustomBody_v1.atAll == 1);
+                    break;
+                case MSG_TYPE_SYS:
+                    break;
+            }
+        }
+    }
+
+    /**
+     * 是否是我加入的群组
+     *
+     * @param tid
+     * @return
+     */
+    public static final boolean isMyJionedGroup(String tid) {
+        try {
+            Team team = NIMClient.getService(TeamService.class)
+                    .queryTeamBlock(tid);
+            return team != null && team.isMyTeam();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 }

@@ -7,6 +7,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,6 +18,7 @@ import android.widget.TextView;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.WorkTypeAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
+import com.icourt.alpha.base.BaseDialogFragment;
 import com.icourt.alpha.entity.bean.WorkType;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
@@ -51,10 +53,11 @@ public class WorkTypeSelectDialogFragment extends BaseDialogFragment implements 
     @BindView(R.id.bt_ok)
     TextView btOk;
 
-    public static WorkTypeSelectDialogFragment newInstance(@NonNull String projectId) {
+    public static WorkTypeSelectDialogFragment newInstance(@NonNull String projectId, String selectedWorkType) {
         WorkTypeSelectDialogFragment workTypeSelectDialogFragment = new WorkTypeSelectDialogFragment();
         Bundle args = new Bundle();
         args.putString("projectId", projectId);
+        args.putString("selectedWorkType", selectedWorkType);
         workTypeSelectDialogFragment.setArguments(args);
         return workTypeSelectDialogFragment;
     }
@@ -108,9 +111,21 @@ public class WorkTypeSelectDialogFragment extends BaseDialogFragment implements 
                     @Override
                     public void onSuccess(Call<ResEntity<List<WorkType>>> call, Response<ResEntity<List<WorkType>>> response) {
                         workTypeAdapter.bindData(isRefresh, response.body().result);
+                        setLastSelected();
                     }
                 });
+    }
 
+    private void setLastSelected() {
+        String selectedWorkType = getArguments().getString("selectedWorkType", null);
+        if (!TextUtils.isEmpty(selectedWorkType)) {
+            WorkType targetWorkType = new WorkType();
+            targetWorkType.pkId = selectedWorkType;
+            int indexOf = workTypeAdapter.getData().indexOf(targetWorkType);
+            if (indexOf >= 0) {
+                workTypeAdapter.setSelectedPos(indexOf);
+            }
+        }
     }
 
     @OnClick({R.id.bt_cancel,

@@ -32,7 +32,7 @@ import com.icourt.alpha.db.dbservice.ContactDbService;
 import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.icourt.alpha.utils.DensityUtil;
 import com.icourt.alpha.utils.IndexUtils;
-import com.icourt.alpha.utils.PinyinComparator;
+import com.icourt.alpha.widget.comparators.PinyinComparator;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.view.SoftKeyboardSizeWatchLayout;
 import com.icourt.alpha.view.recyclerviewDivider.SuspensionDecoration;
@@ -239,7 +239,12 @@ public class ContactListActivity extends BaseActivity implements BaseRecyclerAda
                 List<GroupContactBean> contactBeen = ListConvertor.convertList(new ArrayList<IConvertModel<GroupContactBean>>(contactDbModels));
                 filterRobot(contactBeen);
                 IndexUtils.setSuspensions(getContext(), contactBeen);
-                Collections.sort(contactBeen, new PinyinComparator<GroupContactBean>());
+                try {
+                    Collections.sort(contactBeen, new PinyinComparator<GroupContactBean>());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    bugSync("排序异常", e);
+                }
                 imContactAdapter.bindData(true, contactBeen);
                 updateIndexBar(contactBeen);
             }

@@ -4,7 +4,6 @@ import android.app.Dialog;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v4.app.DialogFragment;
 import android.text.TextUtils;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -17,9 +16,11 @@ import android.widget.TextView;
 
 import com.icourt.alpha.R;
 import com.icourt.alpha.activity.TimerTimingActivity;
+import com.icourt.alpha.base.BaseDialogFragment;
 import com.icourt.alpha.entity.bean.TimeEntity;
 import com.icourt.alpha.entity.event.TimingEvent;
 import com.icourt.alpha.utils.DensityUtil;
+import com.icourt.alpha.view.fittextview.AutofitTextView;
 import com.icourt.alpha.widget.manager.TimerManager;
 
 import org.greenrobot.eventbus.EventBus;
@@ -34,9 +35,8 @@ import butterknife.OnClick;
 import butterknife.Unbinder;
 
 
-
 /**
- * Description
+ * Description  计时悬浮框
  * Company Beijing icourt
  * author  youxuan  E-mail:xuanyouwu@163.com
  * date createTime：2017/5/17
@@ -44,15 +44,16 @@ import butterknife.Unbinder;
  */
 public class TimingNoticeDialogFragment extends BaseDialogFragment {
 
+
     @BindView(R.id.notice_timing_tv)
-    TextView noticeTimingTv;
+    AutofitTextView noticeTimingTv;
     @BindView(R.id.notice_timing_stop_iv)
     ImageView noticeTimingStopIv;
     @BindView(R.id.notice_timing_title_tv)
     TextView noticeTimingTitleTv;
-    Unbinder unbinder;
     @BindView(R.id.timing_empty_view)
     View timingEmptyView;
+    Unbinder unbinder;
 
     public static TimingNoticeDialogFragment newInstance(@NonNull TimeEntity.ItemEntity itemEntity) {
         TimingNoticeDialogFragment fragment = new TimingNoticeDialogFragment();
@@ -63,12 +64,6 @@ public class TimingNoticeDialogFragment extends BaseDialogFragment {
     }
 
     TimeEntity.ItemEntity itemEntity;
-
-    @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setStyle(DialogFragment.STYLE_NO_TITLE, android.R.style.Theme_Holo_Light_Dialog_MinWidth);
-    }
 
     @Nullable
     @Override
@@ -93,15 +88,17 @@ public class TimingNoticeDialogFragment extends BaseDialogFragment {
     protected void initView() {
         Dialog dialog = getDialog();
         if (dialog != null) {
+            dialog.setCanceledOnTouchOutside(true);
             Window window = dialog.getWindow();
             if (window != null) {
                 window.setGravity(Gravity.BOTTOM);
+                window.setWindowAnimations(R.style.AppThemeSlideAnimation);
             }
         }
         Serializable data = getArguments().getSerializable("data");
         if (data instanceof TimeEntity.ItemEntity) {
             itemEntity = (TimeEntity.ItemEntity) data;
-            noticeTimingTitleTv.setText(TextUtils.isEmpty(itemEntity.name) ? "还未录入工作描述" : itemEntity.name);
+            noticeTimingTitleTv.setText(TextUtils.isEmpty(itemEntity.name) ? "未录入工作描述" : itemEntity.name);
         }
         EventBus.getDefault().register(this);
     }

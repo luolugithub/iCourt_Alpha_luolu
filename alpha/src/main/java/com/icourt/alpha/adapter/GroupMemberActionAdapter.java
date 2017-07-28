@@ -41,5 +41,6 @@ public class GroupMemberActionAdapter extends MultiSelectRecyclerAdapter<GroupCo
             }
             ctv_contact.setBackgroundResource(selected ? R.mipmap.checkmark : 0);
         }
+        holder.bindChildClick(iv_contact_icon);
     }
 }

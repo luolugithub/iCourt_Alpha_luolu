@@ -9,6 +9,7 @@ import android.support.design.widget.AppBarLayout;
 import android.support.v4.app.Fragment;
 import android.text.TextUtils;
 import android.view.KeyEvent;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.CheckedTextView;
 import android.widget.EditText;
@@ -24,7 +25,7 @@ import com.icourt.alpha.entity.bean.ProjectEntity;
 import com.icourt.alpha.entity.bean.TaskEntity;
 import com.icourt.alpha.entity.bean.TimeEntity;
 import com.icourt.alpha.entity.bean.WorkType;
-import com.icourt.alpha.fragment.dialogfragment.BaseDialogFragment;
+import com.icourt.alpha.base.BaseDialogFragment;
 import com.icourt.alpha.fragment.dialogfragment.CalendaerSelectDialogFragment;
 import com.icourt.alpha.fragment.dialogfragment.ProjectSimpleSelectDialogFragment;
 import com.icourt.alpha.fragment.dialogfragment.TaskSelectDialogFragment;
@@ -35,6 +36,7 @@ import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.JsonUtils;
 import com.icourt.alpha.utils.StringUtils;
+import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.view.CircleTimerView;
 import com.icourt.api.RequestUtils;
 
@@ -60,6 +62,8 @@ public class TimerAddActivity extends BaseTimerActivity
         implements
         OnFragmentCallBackListener {
 
+    private static final String KEY_PROJECT_ID = "key_project_id";
+    private static final String KEY_PROJECT_NAME = "key_project_name";
 
     @BindView(R.id.titleBack)
     CheckedTextView titleBack;
@@ -99,6 +103,7 @@ public class TimerAddActivity extends BaseTimerActivity
     private WorkType selectedWorkType;
     private TaskEntity.TaskItemEntity selectedTaskItem;
     Calendar selectedStartDate, selectedEndDate;
+    String projectId, projectName;
 
     public static void launch(@NonNull Context context) {
         if (context == null) return;
@@ -106,6 +111,13 @@ public class TimerAddActivity extends BaseTimerActivity
         context.startActivity(intent);
     }
 
+    public static void launch(@NonNull Context context, @NonNull String projectId, @NonNull String projectName) {
+        if (context == null) return;
+        Intent intent = new Intent(context, TimerAddActivity.class);
+        intent.putExtra(KEY_PROJECT_ID, projectId);
+        intent.putExtra(KEY_PROJECT_NAME, projectName);
+        context.startActivity(intent);
+    }
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -124,7 +136,18 @@ public class TimerAddActivity extends BaseTimerActivity
         if (titleActionTextView != null) {
             titleActionTextView.setText("完成");
         }
-
+        projectId = getIntent().getStringExtra(KEY_PROJECT_ID);
+        projectName = getIntent().getStringExtra(KEY_PROJECT_NAME);
+        if (selectedProjectEntity == null) {
+            selectedProjectEntity = new ProjectEntity();
+        }
+        if (!TextUtils.isEmpty(projectName)) {
+            projectNameTv.setText(projectName);
+            selectedProjectEntity.name = projectName;
+        }
+        if (!TextUtils.isEmpty(projectId)) {
+            selectedProjectEntity.pkId = projectId;
+        }
         selectedStartDate = Calendar.getInstance();
         //默认开始时间 早上9点整开始
         selectedStartDate.set(Calendar.HOUR_OF_DAY, 9);
@@ -140,7 +163,7 @@ public class TimerAddActivity extends BaseTimerActivity
 
         useTimeDate.setText(DateUtils.getyyyyMMdd(selectedStartDate.getTimeInMillis()));
         startTimeMinTv.setText(DateUtils.getHHmm(selectedStartDate.getTimeInMillis()));
-        stopTimeMinTv.setText(DateUtils.getHHmm(selectedStartDate.getTimeInMillis()));
+        stopTimeMinTv.setText(DateUtils.getHHmm(selectedEndDate.getTimeInMillis()));
 
         //circleTimerView.setOneCircle(true);
         circleTimerView.setMiniTime(70);
@@ -153,28 +176,39 @@ public class TimerAddActivity extends BaseTimerActivity
             }
 
             @Override
-            public void onTimerStart(int time) {
+            public void onTimerStart(long time) {
 
             }
 
             @Override
-            public void onTimerPause(int time) {
+            public void onTimerPause(long time) {
 
             }
 
             @Override
-            public void onTimerTimingValueChanged(int time) {
+            public void onTimerTimingValueChanged(long time) {
             }
 
             @Override
-            public void onTimerSetValueChanged(int time) {
+            public void onTimerSetValueChanged(long time) {
                 log("---------->onTimerSetValueChanged:" + time);
                 selectedEndDate.setTimeInMillis(selectedStartDate.getTimeInMillis() + time * 1000);
                 stopTimeMinTv.setText(DateUtils.getHHmm(selectedEndDate.getTimeInMillis()));
             }
 
             @Override
-            public void onTimerSetValueChange(int time) {
+            public void onTimerSetValueChange(long time) {
+            }
+        });
+        circleTimerView.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_DOWN:
+                        SystemUtils.hideSoftKeyBoard(getActivity(), true);
+                        break;
+                }
+                return false;
             }
         });
         timeNameTv.setOnEditorActionListener(new TextView.OnEditorActionListener() {
@@ -202,17 +236,15 @@ public class TimerAddActivity extends BaseTimerActivity
             case R.id.titleAction:
                 addTimer();
                 break;
-            case R.id.minus_time_image://－时间 //5分钟
-                if (circleTimerView.getCurrentTime() >= 15 * 60) {
+            case R.id.minus_time_image://－时间
+                if (circleTimerView.getCurrentTime() >= 16 * 60) {
                     circleTimerView.setCurrentTime(circleTimerView.getCurrentTime() - 15 * 60);
+                } else {
+                    circleTimerView.setCurrentTime(60);
                 }
                 break;
             case R.id.add_time_image://＋时间
-                if (circleTimerView.getCurrentTime() < (24 * 60 * 60 - 15 * 60)) {
-                    circleTimerView.setCurrentTime(circleTimerView.getCurrentTime() + 15 * 60);
-                } else {
-                    circleTimerView.setCurrentTime(24 * 60 * 60);
-                }
+                circleTimerView.setCurrentTime(circleTimerView.getCurrentTime() + 15 * 60);
                 break;
             case R.id.use_time_date:
                 showCalendaerSelectDialogFragment();
@@ -224,17 +256,18 @@ public class TimerAddActivity extends BaseTimerActivity
                 showDateSelectEnd(stopTimeMinTv);
                 break;
             case R.id.project_layout://所属项目
-                showProjectSelectDialogFragment();
+                showProjectSelectDialogFragment(selectedProjectEntity != null ? selectedProjectEntity.pkId : null);
                 break;
             case R.id.worktype_layout://工作类型
                 if (selectedProjectEntity == null) {
                     showTopSnackBar("请选择项目");
                     return;
                 }
-                showWorkTypeSelectDialogFragment(selectedProjectEntity.pkId);
+                showWorkTypeSelectDialogFragment(selectedProjectEntity.pkId, selectedWorkType != null ? selectedWorkType.pkId : null);
                 break;
             case R.id.task_layout://关联任务
-                showTaskSelectDialogFragment(selectedProjectEntity != null ? selectedProjectEntity.pkId : null);
+                showTaskSelectDialogFragment(selectedProjectEntity != null ? selectedProjectEntity.pkId : null,
+                        selectedTaskItem != null ? selectedTaskItem.id : null);
                 break;
         }
     }
@@ -257,12 +290,25 @@ public class TimerAddActivity extends BaseTimerActivity
                 selectedStartDate.set(Calendar.MINUTE, calendar.get(Calendar.MINUTE));
                 text.setText(DateUtils.getHHmm(selectedStartDate.getTime().getTime()));
 
-                circleTimerView.setCurrentTime((int) (selectedEndDate.getTimeInMillis() - selectedStartDate.getTimeInMillis()) / 1000);
+                selectedEndDate.setTimeInMillis(circleTimerView.getCurrentTime() * 1_000 + selectedStartDate.getTimeInMillis());
+                stopTimeMinTv.setText(DateUtils.getHHmm(selectedEndDate.getTimeInMillis()));
+
             }
         }).setType(TimePickerView.Type.HOURS_MINS)
                 .build();
-        pvTime.setDate(Calendar.getInstance());
+//        pvTime.setDate(Calendar.getInstance());
+        pvTime.setDate(selectedStartDate);
         pvTime.show();
+    }
+
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent ev) {
+        switch (ev.getAction()) {
+            case MotionEvent.ACTION_DOWN:
+                SystemUtils.hideSoftKeyBoard(getActivity(), true);
+                break;
+        }
+        return super.dispatchTouchEvent(ev);
     }
 
     /**
@@ -289,12 +335,15 @@ public class TimerAddActivity extends BaseTimerActivity
                 }
                 selectedEndDate.set(Calendar.HOUR_OF_DAY, calendar.get(Calendar.HOUR_OF_DAY));
                 selectedEndDate.set(Calendar.MINUTE, calendar.get(Calendar.MINUTE));
-                text.setText(DateUtils.getHHmm(selectedEndDate.getTime().getTime()));
-                circleTimerView.setCurrentTime((int) (selectedEndDate.getTimeInMillis() - selectedStartDate.getTimeInMillis()) / 1000);
+
+                long rangeTime = (selectedEndDate.getTimeInMillis() - selectedStartDate.getTimeInMillis());
+                log("------------>endTime:" + (rangeTime / 1000));
+                circleTimerView.setCurrentTime((int) (rangeTime / 1000));
             }
         }).setType(TimePickerView.Type.HOURS_MINS)
                 .build();
-        pvTime.setDate(Calendar.getInstance());
+//        pvTime.setDate(Calendar.getInstance());
+        pvTime.setDate(selectedEndDate);
         pvTime.show();
     }
 
@@ -335,6 +384,7 @@ public class TimerAddActivity extends BaseTimerActivity
                         @Override
                         public void onSuccess(Call<ResEntity<String>> call, Response<ResEntity<String>> response) {
                             dismissLoadingDialog();
+                            showToast("添加计时成功");
                             finish();
                         }
 

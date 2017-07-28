@@ -94,7 +94,7 @@
                     android:paddingLeft="10dp"
                     android:paddingRight="10dp"
                     android:paddingTop="12dp"
-                    android:text="@string/my_center_phone_text" />
+                    android:text="@string/my_center_mail_text" />
 
                 <TextView
                     android:id="@+id/contact_email_tv"

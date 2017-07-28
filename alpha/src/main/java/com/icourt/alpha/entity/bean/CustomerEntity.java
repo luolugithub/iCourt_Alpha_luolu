@@ -6,7 +6,6 @@ import android.text.TextUtils;
 
 import com.icourt.alpha.db.convertor.IConvertModel;
 import com.icourt.alpha.db.dbmodel.CustomerDbModel;
-import com.icourt.alpha.view.recyclerviewDivider.ISuspensionAction;
 import com.icourt.alpha.view.recyclerviewDivider.ISuspensionInterface;
 
 import java.io.Serializable;
@@ -20,8 +19,7 @@ import java.io.Serializable;
  */
 public class CustomerEntity implements IConvertModel<CustomerDbModel>,
         Serializable,
-        ISuspensionInterface,
-        ISuspensionAction {
+        ISuspensionInterface{
     public String suspensionTag;
 
     public String pkid;
@@ -71,5 +69,16 @@ public class CustomerEntity implements IConvertModel<CustomerDbModel>,
     @Override
     public void setSuspensionTag(@NonNull String suspensionTag) {
         this.suspensionTag = suspensionTag;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (o == null) return false;
+        if (getClass() != o.getClass())
+            return false;
+        final CustomerEntity other = (CustomerEntity) o;
+        return TextUtils.equals(this.pkid, other.pkid);
     }
 }

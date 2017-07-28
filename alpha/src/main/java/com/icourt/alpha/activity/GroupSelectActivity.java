@@ -27,6 +27,7 @@ import com.icourt.alpha.utils.ItemDecorationUtils;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.BindView;
@@ -59,7 +60,7 @@ public class GroupSelectActivity extends BaseActivity implements BaseRecyclerAda
     RefreshLayout refreshLayout;
 
     SelectGroupAdapter selectGroupAdapter;
-    List<SelectGroupBean> groupBeanList;
+    final List<SelectGroupBean> groupBeanList = new ArrayList<>();
     List<SelectGroupBean> userGroups;
 
     public static void launchForResult(@NonNull Activity context, List<SelectGroupBean> groupBeanList, int requestCode) {
@@ -83,7 +84,11 @@ public class GroupSelectActivity extends BaseActivity implements BaseRecyclerAda
         setTitle("负责团队");
         if (getLoginUserInfo() != null)
             userGroups = getLoginUserInfo().getGroups();
-        groupBeanList = (List<SelectGroupBean>) getIntent().getSerializableExtra("groupBeanList");
+        groupBeanList.clear();
+        List<SelectGroupBean> groupList = (List<SelectGroupBean>) getIntent().getSerializableExtra("groupBeanList");
+        if (groupList != null) {
+            groupBeanList.addAll(groupList);
+        }
         refreshLayout.setNoticeEmpty(R.mipmap.icon_placeholder_user, "暂无负责团队");
         refreshLayout.setMoveForHorizontal(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
@@ -126,12 +131,15 @@ public class GroupSelectActivity extends BaseActivity implements BaseRecyclerAda
     protected void getData(boolean isRefresh) {
         super.getData(isRefresh);
         if (getLoginUserInfo() == null) return;
-        getApi().officeGroupsQuery(getLoginUserInfo().getOfficeId()).enqueue(new SimpleCallBack<List<SelectGroupBean>>() {
+        getApi().officeGroupsQuery().enqueue(new SimpleCallBack<List<SelectGroupBean>>() {
             @Override
             public void onSuccess(Call<ResEntity<List<SelectGroupBean>>> call, Response<ResEntity<List<SelectGroupBean>>> response) {
                 stopRefresh();
-
+                if (response.body().result != null && response.body().result.size() <= 0) {
+                    response.body().result.addAll(groupBeanList);
+                }
                 selectGroupAdapter.bindData(true, response.body().result);
+
                 if (response.body().result != null && groupBeanList != null) {
                     for (int i = 0; i < response.body().result.size(); i++) {
                         for (int j = 0; j < groupBeanList.size(); j++) {
@@ -164,10 +172,10 @@ public class GroupSelectActivity extends BaseActivity implements BaseRecyclerAda
     public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
         SelectGroupBean groupBean = (SelectGroupBean) adapter.getItem(position);
         int last = 0;
-        if (userGroups != null) {
-            if (userGroups.contains(groupBean) && selectGroupAdapter.getSelectedData().contains(groupBean)) {
+        if (selectGroupAdapter.getData() != null) {
+            if (selectGroupAdapter.getData().contains(groupBean) && selectGroupAdapter.getSelectedData().contains(groupBean)) {
                 if (selectGroupAdapter.getSelectedData() != null) {
-                    for (SelectGroupBean selectGroupBean : userGroups) {
+                    for (SelectGroupBean selectGroupBean : selectGroupAdapter.getData()) {
                         if (selectGroupAdapter.getSelectedData().contains(selectGroupBean)) {
                             last += 1;
                         }

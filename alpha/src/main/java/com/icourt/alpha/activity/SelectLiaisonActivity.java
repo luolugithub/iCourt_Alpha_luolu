@@ -18,7 +18,9 @@ import com.gjiazhe.wavesidebar.WaveSideBar;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.CustomerAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
+import com.icourt.alpha.adapter.baseadapter.HeaderFooterAdapter;
 import com.icourt.alpha.base.BaseActivity;
+import com.icourt.alpha.constants.Const;
 import com.icourt.alpha.db.convertor.IConvertModel;
 import com.icourt.alpha.db.convertor.ListConvertor;
 import com.icourt.alpha.db.dbmodel.CustomerDbModel;
@@ -28,7 +30,7 @@ import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.DensityUtil;
 import com.icourt.alpha.utils.IndexUtils;
-import com.icourt.alpha.utils.PinyinComparator;
+import com.icourt.alpha.widget.comparators.PinyinComparator;
 import com.icourt.alpha.view.recyclerviewDivider.SuspensionDecoration;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 
@@ -53,6 +55,7 @@ import retrofit2.Response;
  */
 
 public class SelectLiaisonActivity extends BaseActivity implements BaseRecyclerAdapter.OnItemClickListener {
+    private static final int SEARCH_LIAISON_REQUEST_CODE = 1;
     private static final String STRING_TOP = "↑︎";
     @BindView(R.id.titleBack)
     ImageView titleBack;
@@ -70,9 +73,9 @@ public class SelectLiaisonActivity extends BaseActivity implements BaseRecyclerA
     SuspensionDecoration mDecoration;
     CustomerDbService customerDbService;
     LinearLayoutManager linearLayoutManager;
-
+    HeaderFooterAdapter<CustomerAdapter> headerFooterAdapter;
     List<CustomerEntity> liaisonsList;
-    String pkid, action;
+    String pkid = null, action;
 
     public static void launchForResult(@NonNull Activity context, @NonNull String action, @NonNull String pkid, @NonNull List<CustomerEntity> liaisonsList, int requestCode) {
         if (context == null) return;
@@ -81,6 +84,22 @@ public class SelectLiaisonActivity extends BaseActivity implements BaseRecyclerA
         intent.putExtra("liaisonsList", (Serializable) liaisonsList);
         intent.putExtra("pkid", pkid);
         context.startActivityForResult(intent, requestCode);
+    }
+
+    /**
+     * 选择联络人
+     *
+     * @param activity
+     * @param action
+     * @param customerEntity
+     */
+    public static void launchSetResultFromLiaison(@NonNull Activity activity, @NonNull String action, @NonNull CustomerEntity customerEntity) {
+        if (activity == null) return;
+        Intent intent = new Intent(activity, CustomerPersonCreateActivity.class);
+        intent.setAction(action);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        intent.putExtra("customerEntity", customerEntity);
+        activity.setResult(RESULT_OK, intent);
     }
 
     @Override
@@ -94,18 +113,26 @@ public class SelectLiaisonActivity extends BaseActivity implements BaseRecyclerA
     @Override
     protected void initView() {
         super.initView();
-        setTitle("选择联络人");
+        setTitle("添加关联人/机构");
         liaisonsList = (List<CustomerEntity>) getIntent().getSerializableExtra("liaisonsList");
         pkid = getIntent().getStringExtra("pkid");
         action = getIntent().getAction();
         customerDbService = new CustomerDbService(getLoginUserId());
         linearLayoutManager = new LinearLayoutManager(getContext());
         recyclerView.setLayoutManager(linearLayoutManager);
-        recyclerView.setAdapter(customerAdapter = new CustomerAdapter());
+
+        headerFooterAdapter = new HeaderFooterAdapter<>(customerAdapter = new CustomerAdapter());
+        View headerView = HeaderFooterAdapter.inflaterView(getContext(), R.layout.header_search_comm, recyclerView);
+        View rl_comm_search = headerView.findViewById(R.id.rl_comm_search);
+        registerClick(rl_comm_search);
+        headerFooterAdapter.addHeader(headerView);
+
+        recyclerView.setAdapter(headerFooterAdapter);
         mDecoration = new SuspensionDecoration(getActivity(), null);
         mDecoration.setColorTitleBg(0xFFf4f4f4);
         mDecoration.setColorTitleFont(0xFF4a4a4a);
         mDecoration.setTitleFontSize(DensityUtil.sp2px(getContext(), 16));
+        mDecoration.setHeaderViewCount(headerFooterAdapter.getHeaderCount());
         recyclerView.addItemDecoration(mDecoration);
         recyclerIndexBar.setOnSelectIndexItemListener(new WaveSideBar.OnSelectIndexItemListener() {
             @Override
@@ -125,9 +152,6 @@ public class SelectLiaisonActivity extends BaseActivity implements BaseRecyclerA
             }
         });
 
-
-
-
         refreshLayout.setXRefreshViewListener(new XRefreshView.SimpleXRefreshListener() {
             @Override
             public void onRefresh(boolean isPullDown) {
@@ -141,7 +165,20 @@ public class SelectLiaisonActivity extends BaseActivity implements BaseRecyclerA
 
         getLocalCustomers();
 
-        refreshLayout.startRefresh();
+//        refreshLayout.startRefresh();
+    }
+
+    @Override
+    public void onClick(View v) {
+        super.onClick(v);
+        switch (v.getId()) {
+            case R.id.rl_comm_search:
+                if (TextUtils.equals(action, Const.SELECT_LIAISONS_TAG_ACTION))
+                    CustomerSearchActivity.launchResult(this, v, CustomerSearchActivity.SEARCH_LIAISON_TYPE, CustomerSearchActivity.CUSTOMER_PERSON_TYPE, SEARCH_LIAISON_REQUEST_CODE);
+                else if (TextUtils.equals(action, Const.SELECT_ENTERPRISE_LIAISONS_TAG_ACTION))
+                    CustomerSearchActivity.launchResult(this, v, CustomerSearchActivity.SEARCH_LIAISON_TYPE, CustomerSearchActivity.CUSTOMER_COMPANY_TYPE, SEARCH_LIAISON_REQUEST_CODE);
+                break;
+        }
     }
 
     @Override
@@ -155,7 +192,12 @@ public class SelectLiaisonActivity extends BaseActivity implements BaseRecyclerA
                         if (response.body().result != null) {
                             removeSelected(response.body().result);
                             IndexUtils.setSuspensions(getContext(), response.body().result);
-                            Collections.sort(response.body().result, new PinyinComparator<CustomerEntity>());
+                            try {
+                                Collections.sort(response.body().result, new PinyinComparator<CustomerEntity>());
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                                bugSync("排序异常", e);
+                            }
                             updateIndexBar(response.body().result);
                             customerAdapter.bindData(true, response.body().result);
                         }
@@ -170,14 +212,22 @@ public class SelectLiaisonActivity extends BaseActivity implements BaseRecyclerA
     }
 
     private void removeSelected(List<CustomerEntity> list) {
+
         if (list != null && liaisonsList != null) {
-            list.removeAll(liaisonsList);
-        }
-        if (!TextUtils.isEmpty(pkid)) {
             Iterator<CustomerEntity> it = list.iterator();
-            while (it.hasNext()) {
-                if (TextUtils.equals(pkid, it.next().pkid)) {
-                    it.remove();
+            if (!TextUtils.isEmpty(pkid)) {
+                while (it.hasNext()) {
+                    if (TextUtils.equals(pkid, it.next().pkid)) {
+                        it.remove();
+                        break;
+                    }
+                }
+            }
+            for (CustomerEntity customerEntity : liaisonsList) {
+                for (int i = list.size() - 1; i > 0; i--) {
+                    if (TextUtils.equals(list.get(i).pkid, customerEntity.pkid)) {
+                        list.remove(i);
+                    }
                 }
             }
         }
@@ -225,7 +275,26 @@ public class SelectLiaisonActivity extends BaseActivity implements BaseRecyclerA
     @Override
     public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
         CustomerEntity entity = (CustomerEntity) adapter.getItem(adapter.getRealPos(position));
-        CustomerPersonCreateActivity.launchSetResultFromLiaison(this, action, entity);
+        if (TextUtils.equals(action, Const.SELECT_LIAISONS_TAG_ACTION))
+            CustomerPersonCreateActivity.launchSetResultFromLiaison(this, action, entity);
+        else if (TextUtils.equals(action, Const.SELECT_ENTERPRISE_LIAISONS_TAG_ACTION))
+            CustomerCompanyCreateActivity.launchSetResultFromLiaison(this, action, entity);
         finish();
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (data != null) {
+            if (requestCode == SEARCH_LIAISON_REQUEST_CODE) {
+                String action = data.getAction();
+                CustomerEntity entity = (CustomerEntity) data.getSerializableExtra("customerEntity");
+                if (TextUtils.equals(action, Const.SELECT_LIAISONS_TAG_ACTION))
+                    CustomerPersonCreateActivity.launchSetResultFromLiaison(this, action, entity);
+                else if (TextUtils.equals(action, Const.SELECT_ENTERPRISE_LIAISONS_TAG_ACTION))
+                    CustomerCompanyCreateActivity.launchSetResultFromLiaison(this, action, entity);
+                this.finish();
+            }
+        }
+        super.onActivityResult(requestCode, resultCode, data);
     }
 }

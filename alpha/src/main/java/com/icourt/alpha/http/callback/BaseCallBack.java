@@ -6,6 +6,8 @@ import android.text.TextUtils;
 
 import com.bugtags.library.Bugtags;
 import com.google.gson.JsonParseException;
+import com.icourt.alpha.activity.LoginBaseActivity;
+import com.icourt.alpha.activity.LoginSelectActivity;
 import com.icourt.alpha.base.BaseApplication;
 import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.icourt.alpha.http.exception.ResponseException;
@@ -15,6 +17,7 @@ import com.icourt.alpha.utils.LoginInfoUtils;
 import com.icourt.alpha.utils.NetUtils;
 import com.icourt.alpha.utils.SnackbarUtils;
 import com.icourt.alpha.utils.StringUtils;
+import com.icourt.alpha.utils.SystemUtils;
 
 import java.io.EOFException;
 import java.io.FileNotFoundException;
@@ -32,6 +35,8 @@ import okio.Buffer;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
+
+import static com.icourt.alpha.utils.AppManager.getAppManager;
 
 /**
  * @author xuanyouwu
@@ -66,10 +71,22 @@ public abstract class BaseCallBack<T> implements Callback<T> {
 
         } else if (t instanceof retrofit2.HttpException) {
             retrofit2.HttpException httpException = (retrofit2.HttpException) t;
-            String combHttpExceptionStr = String.format("%s:%s", httpException.code(), httpException.message());
-            defNotify(combHttpExceptionStr);
 
+            String combHttpExceptionStr = String.format("%s:%s", httpException.code(), httpException.message());
             sendLimitHttpLog(call, t, "http状态异常:" + combHttpExceptionStr);
+            if (httpException.code() == 401) {
+                //强制登陆  token过期
+                try {
+                    Activity activity = AppManager.getAppManager().currentActivity();
+                    if (!(activity instanceof LoginBaseActivity)
+                            && !SystemUtils.isDestroyOrFinishing(activity)) {
+                        LoginSelectActivity.launch(activity);
+                    }
+                } catch (Exception e) {
+                }
+                return;
+            }
+            defNotify(combHttpExceptionStr);
         } else if (t instanceof JsonParseException) {
             defNotify("服务器Json格式错误");
 
@@ -110,7 +127,7 @@ public abstract class BaseCallBack<T> implements Callback<T> {
         if (TextUtils.isEmpty(noticeStr)) return;
         Activity currentActivity = null;
         try {
-            currentActivity = AppManager.getAppManager().currentActivity();
+            currentActivity = getAppManager().currentActivity();
         } catch (Exception e) {
         }
         if (currentActivity != null && !currentActivity.isFinishing()) {

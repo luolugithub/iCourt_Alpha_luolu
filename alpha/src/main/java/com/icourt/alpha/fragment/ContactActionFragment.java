@@ -12,15 +12,13 @@ import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.GroupMemberActionAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
+import com.icourt.alpha.adapter.baseadapter.HeaderFooterAdapter;
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.db.convertor.IConvertModel;
 import com.icourt.alpha.db.convertor.ListConvertor;
@@ -28,6 +26,10 @@ import com.icourt.alpha.db.dbmodel.ContactDbModel;
 import com.icourt.alpha.db.dbservice.ContactDbService;
 import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
+import com.icourt.alpha.utils.StringUtils;
+import com.icourt.alpha.utils.SystemUtils;
+import com.icourt.alpha.view.ClearEditText;
+import com.icourt.alpha.widget.filter.ListFilter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -53,22 +55,40 @@ import io.realm.RealmResults;
  */
 public class ContactActionFragment extends BaseFragment implements BaseRecyclerAdapter.OnItemClickListener {
     Unbinder unbinder;
-    @BindView(R.id.header_input_et)
-    EditText headerInputEt;
-    @BindView(R.id.rl_comm_search)
-    RelativeLayout rlCommSearch;
-    @BindView(R.id.iv_customer_icon)
-    ImageView ivCustomerIcon;
-    @BindView(R.id.tv_customer_name)
-    TextView tvCustomerName;
-    @BindView(R.id.header_group_item_ll)
-    LinearLayout headerGroupItemLl;
     @BindView(R.id.recyclerView)
     RecyclerView recyclerView;
+    @BindView(R.id.header_comm_search_input_et)
+    ClearEditText headerCommSearchInputEt;
+    @BindView(R.id.header_comm_search_cancel_tv)
+    TextView headerCommSearchCancelTv;
+    @BindView(R.id.header_comm_search_input_ll)
+    LinearLayout headerCommSearchInputLl;
     private GroupMemberActionAdapter groupMemberActionAdapter;
+    HeaderFooterAdapter<GroupMemberActionAdapter> headerFooterAdapter;
 
-    public static ContactActionFragment newInstance() {
-        return new ContactActionFragment();
+    public static ContactActionFragment newInstance(boolean isFilterMySelef) {
+        ContactActionFragment contactActionFragment = new ContactActionFragment();
+        Bundle args = new Bundle();
+        args.putBoolean("isFilterMySelef", isFilterMySelef);
+        contactActionFragment.setArguments(args);
+        return contactActionFragment;
+    }
+
+    /**
+     * 过滤调自己
+     *
+     * @param data
+     * @return
+     */
+    private List<GroupContactBean> filterMySelf(List<GroupContactBean> data) {
+        GroupContactBean groupContactBean = new GroupContactBean();
+        groupContactBean.accid = StringUtils.toLowerCase(getLoginUserId());
+        new ListFilter<GroupContactBean>().filter(data, groupContactBean);
+        return data;
+    }
+
+    private boolean isFilterMySelef() {
+        return getArguments().getBoolean("isFilterMySelef", false);
     }
 
     OnFragmentCallBackListener onFragmentCallBackListener;
@@ -98,6 +118,10 @@ public class ContactActionFragment extends BaseFragment implements BaseRecyclerA
                         RealmResults<ContactDbModel> contactDbModels = threadContactDbService.queryAll();
                         if (contactDbModels != null) {
                             List<GroupContactBean> contactBeen = ListConvertor.convertList(new ArrayList<IConvertModel<GroupContactBean>>(contactDbModels));
+                            if (contactBeen != null && isFilterMySelef()) {
+                                filterMySelf(contactBeen);
+                                filterRobot(contactBeen);
+                            }
                             e.onNext(contactBeen);
                         }
                         e.onComplete();
@@ -116,6 +140,16 @@ public class ContactActionFragment extends BaseFragment implements BaseRecyclerA
                 .subscribe(consumer);
     }
 
+    /**
+     * 过滤掉 机器人（robot == 100）
+     *
+     * @param data
+     * @return
+     */
+    private List<GroupContactBean> filterRobot(List<GroupContactBean> data) {
+        return new ListFilter<GroupContactBean>().filter(data, GroupContactBean.TYPE_ROBOT);
+    }
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -127,11 +161,17 @@ public class ContactActionFragment extends BaseFragment implements BaseRecyclerA
     @Override
     protected void initView() {
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        recyclerView.setAdapter(groupMemberActionAdapter = new GroupMemberActionAdapter());
+        headerFooterAdapter = new HeaderFooterAdapter<>(groupMemberActionAdapter = new GroupMemberActionAdapter());
+        View headerView = HeaderFooterAdapter.inflaterView(getContext(), R.layout.header_contact_share_search, recyclerView);
+        headerFooterAdapter.addHeader(headerView);
+        registerClick(headerView.findViewById(R.id.header_group_item_ll));
+        registerClick(headerView.findViewById(R.id.header_comm_search_ll));
+        recyclerView.setAdapter(headerFooterAdapter);
+
         groupMemberActionAdapter.setSelectable(true);
         groupMemberActionAdapter.setOnItemClickListener(this);
         getData(true);
-        headerInputEt.addTextChangedListener(new TextWatcher() {
+        headerCommSearchInputEt.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
 
@@ -151,7 +191,9 @@ public class ContactActionFragment extends BaseFragment implements BaseRecyclerA
                 }
             }
         });
+        headerCommSearchInputLl.setVisibility(View.GONE);
     }
+
 
     @Override
     protected void getData(boolean isRefresh) {
@@ -175,6 +217,10 @@ public class ContactActionFragment extends BaseFragment implements BaseRecyclerA
                         RealmResults<ContactDbModel> contactDbModels = threadContactDbService.contains("name", name);
                         if (contactDbModels != null) {
                             List<GroupContactBean> contactBeen = ListConvertor.convertList(new ArrayList<IConvertModel<GroupContactBean>>(contactDbModels));
+                            if (contactBeen != null && isFilterMySelef()) {
+                                filterMySelf(contactBeen);
+                                filterRobot(contactBeen);
+                            }
                             e.onNext(contactBeen);
                         }
                         e.onComplete();
@@ -198,10 +244,19 @@ public class ContactActionFragment extends BaseFragment implements BaseRecyclerA
                 });
     }
 
-    @OnClick({R.id.header_group_item_ll})
+    @OnClick({R.id.header_comm_search_cancel_tv})
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
+            case R.id.header_comm_search_ll:
+                headerCommSearchInputLl.setVisibility(View.VISIBLE);
+                SystemUtils.showSoftKeyBoard(getActivity(), headerCommSearchInputEt);
+                break;
+            case R.id.header_comm_search_cancel_tv:
+                headerCommSearchInputEt.setText("");
+                SystemUtils.hideSoftKeyBoard(getActivity(), headerCommSearchInputEt, true);
+                headerCommSearchInputLl.setVisibility(View.GONE);
+                break;
             case R.id.header_group_item_ll:
                 if (getParentFragment() instanceof OnFragmentCallBackListener) {
                     ((OnFragmentCallBackListener) getParentFragment()).onFragmentCallBack(ContactActionFragment.this, 0, null);

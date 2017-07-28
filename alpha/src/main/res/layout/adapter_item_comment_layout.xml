@@ -1,49 +1,57 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="horizontal"
     android:background="@color/white"
-    android:padding="@dimen/dp15">
+    android:orientation="horizontal"
+    >
 
-    <ImageView
-        android:id="@+id/user_photo_image"
-        android:layout_width="32dp"
-        android:layout_height="32dp"
-        android:src="@mipmap/avatar_default_24" />
-
-    <LinearLayout
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="@dimen/dp10"
-        android:orientation="vertical">
+        android:background="?attr/selectableItemBackground"
+        android:orientation="horizontal"
+        android:padding="@dimen/dp15">
 
-        <TextView
-            android:id="@+id/user_name_tv"
+        <ImageView
+            android:id="@+id/user_photo_image"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:src="@mipmap/avatar_default_24" />
+
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:ellipsize="end"
-            android:maxLines="1"
-            android:text="汪欣蕾Lacey"
-            android:textColor="@color/alpha_font_color_black"
-            android:textSize="14sp" />
+            android:layout_marginLeft="@dimen/dp10"
+            android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/create_time_tv"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="前天 8:45"
-            android:textColor="@color/alpha_font_color_gray"
-            android:textSize="12sp" />
+            <TextView
+                android:id="@+id/user_name_tv"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:text="汪欣蕾Lacey"
+                android:textColor="@color/alpha_font_color_black"
+                android:textSize="14sp" />
 
-        <TextView
-            android:id="@+id/content_tv"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/dp10"
-            android:text="我喜欢孔子的入世，入得很清晰，有智慧，含幽默，实实在在不标榜。道家则总有点标榜的味道，从古到今，不断地有人用道家来标榜自己，因为实在是太方便了。"
-            android:textColor="@color/alpha_font_color_black"
-            android:textSize="16sp" />
+            <TextView
+                android:id="@+id/create_time_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="前天 8:45"
+                android:textColor="@color/alpha_font_color_gray"
+                android:textSize="12sp" />
 
+            <TextView
+                android:id="@+id/content_tv"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/dp10"
+                android:text="我喜欢孔子的入世，入得很清晰，有智慧，含幽默，实实在在不标榜。道家则总有点标榜的味道，从古到今，不断地有人用道家来标榜自己，因为实在是太方便了。"
+                android:textColor="@color/alpha_font_color_black"
+                android:textSize="16sp" />
+
+        </LinearLayout>
     </LinearLayout>
-</LinearLayout>
+</FrameLayout>

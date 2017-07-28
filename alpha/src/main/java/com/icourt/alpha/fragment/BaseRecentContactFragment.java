@@ -95,6 +95,28 @@ public abstract class BaseRecentContactFragment extends BaseFragment {
 
 
     @Override
+    public void onResume() {
+        // 进入最近联系人列表界面，建议放在onResume中
+        NIMClient.getService(MsgService.class)
+                .setChattingAccount(MsgService.MSG_CHATTING_ACCOUNT_ALL, SessionTypeEnum.None);
+        super.onResume();
+    }
+
+    @Override
+    public void onPause() {
+        // 退出聊天界面或离开最近联系人列表界面，建议放在onPause中
+        NIMClient.getService(MsgService.class)
+                .setChattingAccount(MsgService.MSG_CHATTING_ACCOUNT_NONE, SessionTypeEnum.None);
+        super.onPause();
+    }
+
+    @Override
+    public void onDestroy() {
+        registerNimObserver(false);
+        super.onDestroy();
+    }
+
+    @Override
     protected void initView() {
         registerNimObserver(true);
     }
@@ -194,25 +216,5 @@ public abstract class BaseRecentContactFragment extends BaseFragment {
      */
     protected abstract void teamUpdates(@NonNull List<Team> teams);
 
-    @Override
-    public void onResume() {
-        // 进入最近联系人列表界面，建议放在onResume中
-        NIMClient.getService(MsgService.class)
-                .setChattingAccount(MsgService.MSG_CHATTING_ACCOUNT_ALL, SessionTypeEnum.None);
-        super.onResume();
-    }
 
-    @Override
-    public void onPause() {
-        // 退出聊天界面或离开最近联系人列表界面，建议放在onPause中
-        NIMClient.getService(MsgService.class)
-                .setChattingAccount(MsgService.MSG_CHATTING_ACCOUNT_NONE, SessionTypeEnum.None);
-        super.onPause();
-    }
-
-    @Override
-    public void onDestroy() {
-        registerNimObserver(false);
-        super.onDestroy();
-    }
 }

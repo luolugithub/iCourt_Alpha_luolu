@@ -1,1 +1,1 @@
-include ':alpha', ':api', ':javatest'
+include ':alpha', ':api', ':javatest', ':lib_calendar', ':lib_daemon'

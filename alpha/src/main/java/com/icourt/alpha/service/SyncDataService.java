@@ -62,9 +62,11 @@ public class SyncDataService extends IntentService {
             Response<ResEntity<List<GroupContactBean>>> execute = RetrofitServiceFactory
                     .getChatApiService()
                     .usersQuery().execute();
-            ContactDbService contactDbService = new ContactDbService(LoginInfoUtils.getLoginUserId());
-            contactDbService.deleteAll();
-            contactDbService.insertOrUpdateAsyn(new ArrayList<IConvertModel<ContactDbModel>>(execute.body().result));
+            if (execute != null && execute.body() != null && execute.body().result != null) {
+                ContactDbService contactDbService = new ContactDbService(LoginInfoUtils.getLoginUserId());
+                contactDbService.deleteAll();
+                contactDbService.insertOrUpdateAsyn(new ArrayList<IConvertModel<ContactDbModel>>(execute.body().result));
+            }
         } catch (Exception e) {
             e.printStackTrace();
             LogUtils.d("----------->SyncDataService syncContacts 失败:" + e);

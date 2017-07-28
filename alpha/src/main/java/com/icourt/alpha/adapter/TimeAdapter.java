@@ -11,6 +11,8 @@ import com.icourt.alpha.adapter.baseadapter.BaseArrayRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.entity.bean.TimeEntity;
 import com.icourt.alpha.utils.DateUtils;
+import com.icourt.alpha.utils.GlideUtils;
+import com.icourt.alpha.utils.LoginInfoUtils;
 import com.icourt.alpha.view.recyclerviewDivider.ITimeDividerInterface;
 import com.icourt.alpha.widget.manager.TimerManager;
 
@@ -56,6 +58,7 @@ public class TimeAdapter extends BaseArrayRecyclerAdapter<TimeEntity.ItemEntity>
 
     public void setSumTime(long sumTime) {
         this.sumTime = sumTime;
+        notifyDataSetChanged();
     }
 
     @Override
@@ -114,7 +117,7 @@ public class TimeAdapter extends BaseArrayRecyclerAdapter<TimeEntity.ItemEntity>
         View divider_ll = holder.obtainView(R.id.divider_ll);
         TextView divider_time = holder.obtainView(R.id.divider_time);
         TextView divider_time_count = holder.obtainView(R.id.divider_time_count);
-        timer_title_tv.setText(TextUtils.isEmpty(timeEntity.name) ? "还未录入工作描述" : timeEntity.name);
+        timer_title_tv.setText(TextUtils.isEmpty(timeEntity.name) ? "未录入工作描述" : timeEntity.name);
         if (timeEntity.state == TimeEntity.ItemEntity.TIMER_STATE_START) {
             long useTime = timeEntity.useTime;
             if (useTime <= 0 && timeEntity.startTime > 0) {
@@ -144,7 +147,7 @@ public class TimeAdapter extends BaseArrayRecyclerAdapter<TimeEntity.ItemEntity>
             } else {
                 divider_time.setText(DateUtils.getMMMdd(timeEntity.workDate));
             }
-            int dayTimingLength = 0;//某天的计时时长
+            long dayTimingLength = 0;//某天的计时时长
             for (int i = position; i < getData().size(); i++) {
                 TimeEntity.ItemEntity item = getItem(i);
                 if (item != null && item.workDate == timeEntity.workDate) {
@@ -172,6 +175,16 @@ public class TimeAdapter extends BaseArrayRecyclerAdapter<TimeEntity.ItemEntity>
         if (minute <= 0) {
             minute = 1;
         }
+        return String.format(Locale.CHINA, "%d:%02d", hour, minute);
+    }
+
+    public String getHHmm(long times) {
+        times /= 1000;
+        long hour = times / 3600;
+        long minute = times % 3600 / 60;
+        if (minute <= 0) {
+            minute = 1;
+        }
         return String.format(Locale.CHINA, "%02d:%02d", hour, minute);
     }
 
@@ -182,7 +195,7 @@ public class TimeAdapter extends BaseArrayRecyclerAdapter<TimeEntity.ItemEntity>
         TextView totalView = holder.obtainView(R.id.time_top_total_tv);
         ImageView addView = holder.obtainView(R.id.time_top_add_img);
         if (sumTime > 0) {
-            totalView.setText(getHm(sumTime));
+            totalView.setText(getHm(sumTime) + "'");
         }
     }
 
@@ -197,10 +210,16 @@ public class TimeAdapter extends BaseArrayRecyclerAdapter<TimeEntity.ItemEntity>
         TextView descView = holder.obtainView(R.id.time_item_desc_tv);
         TextView userNameView = holder.obtainView(R.id.time_item_user_name_tv);
         TextView typeView = holder.obtainView(R.id.time_item_type_tv);
+        ImageView rightArrow = holder.obtainView(R.id.time_item_right_arrow);
+        if (TextUtils.equals(timeEntity.createUserId, LoginInfoUtils.getLoginUserId())) {
+            rightArrow.setVisibility(View.VISIBLE);
+        } else {
+            rightArrow.setVisibility(View.INVISIBLE);
+        }
         durationView.setText(getHm(timeEntity.useTime));
         quantumView.setText(DateUtils.getTimeDurationDate(timeEntity.startTime) + "-" + DateUtils.getTimeDurationDate(timeEntity.endTime));
-//        GlideUtils.loadUser(holder.itemView.getContext(), itemEntity.timeUserPic, photoView);
-        descView.setText(timeEntity.name);
+        GlideUtils.loadUser(holder.itemView.getContext(), timeEntity.userPic, photoView);
+        descView.setText(TextUtils.isEmpty(timeEntity.name) ? "未录入工作描述" : timeEntity.name);
         userNameView.setText(timeEntity.username);
         typeView.setText(timeEntity.workTypeName);
     }
@@ -244,6 +263,19 @@ public class TimeAdapter extends BaseArrayRecyclerAdapter<TimeEntity.ItemEntity>
     public String getShowTime(int pos) {
         if (pos != 0) {
             TimeEntity.ItemEntity item = getItem(pos);
+            if (item != null) {
+                if (DateUtils.isThisYear(item.workDate)) {
+                    if (DateUtils.isToday(item.workDate)) {
+                        return "今天";
+                    } else if (DateUtils.isYesterday(item.workDate)) {
+                        return "昨天";
+                    } else {
+                        DateUtils.getTimeDate(item.workDate);
+                    }
+                } else {
+                    DateUtils.getTimeDateFormatYear(item.workDate);
+                }
+            }
             return item != null ?
                     DateUtils.getTimeDate(item.workDate) : "null";
         }

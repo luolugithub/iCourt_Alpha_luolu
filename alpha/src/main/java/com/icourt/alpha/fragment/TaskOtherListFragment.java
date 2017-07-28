@@ -119,7 +119,7 @@ public class TaskOtherListFragment extends BaseFragment implements BaseRecyclerA
         startType = getArguments().getInt("startType");
         finishType = getArguments().getInt("finishType");
         ids = getArguments().getStringArrayList("ids");
-        refreshLayout.setNoticeEmpty(R.mipmap.icon_placeholder_task, R.string.task_list_null_text);
+        refreshLayout.setNoticeEmpty(R.mipmap.bg_no_task, R.string.task_list_null_text);
         refreshLayout.setMoveForHorizontal(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setHasFixedSize(true);
@@ -176,6 +176,8 @@ public class TaskOtherListFragment extends BaseFragment implements BaseRecyclerA
 
     /**
      * 获取我分配的任务
+     *
+     * assignedByMe：接口有可能会传该参数，该接口已修改无数遍 fuck
      */
     private void getMyAllotTask(final boolean isRefresh) {
         if (isRefresh) {
@@ -183,16 +185,19 @@ public class TaskOtherListFragment extends BaseFragment implements BaseRecyclerA
         }
         int assignedByMe = 0, stateType = 0;
         if (startType == MY_ALLOT_TYPE) {
-            assignedByMe = 1;
-        } else if (startType == SELECT_OTHER_TYPE) {
             assignedByMe = 0;
+        } else if (startType == SELECT_OTHER_TYPE) {
+            assignedByMe = 1;
         }
+        String orderBy = null;
         if (finishType == FINISH_TYPE) {
             stateType = 1;
+            orderBy = "updateTime";
         } else if (finishType == UNFINISH_TYPE) {
             stateType = 0;
+            orderBy = "dueTime";
         }
-        getApi().taskListItemQuery(assignedByMe, getAssignTos(), stateType, 0, null, pageIndex, ActionConstants.DEFAULT_PAGE_SIZE, 0).enqueue(new SimpleCallBack<TaskEntity>() {
+        getApi().taskListItemQuery(getAssignTos(), stateType, 0, orderBy, pageIndex, ActionConstants.DEFAULT_PAGE_SIZE, 0).enqueue(new SimpleCallBack<TaskEntity>() {
             @Override
             public void onSuccess(Call<ResEntity<TaskEntity>> call, Response<ResEntity<TaskEntity>> response) {
                 if (response.body().result != null) {
@@ -365,11 +370,7 @@ public class TaskOtherListFragment extends BaseFragment implements BaseRecyclerA
      * @param checkbox
      */
     private void updateTask(final TaskEntity.TaskItemEntity itemEntity, final boolean state, final CheckBox checkbox) {
-        if (state) {
-            showLoadingDialog("完成任务...");
-        } else {
-            showLoadingDialog("取消完成任务...");
-        }
+        showLoadingDialog(null);
         getApi().taskUpdate(RequestUtils.createJsonBody(getTaskJson(itemEntity, state))).enqueue(new SimpleCallBack<JsonElement>() {
             @Override
             public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
@@ -520,11 +521,9 @@ public class TaskOtherListFragment extends BaseFragment implements BaseRecyclerA
     public void onDestroy() {
         super.onDestroy();
         EventBus.getDefault().unregister(this);
+        if (unbinder != null) {
+            unbinder.unbind();
+        }
     }
 
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        unbinder.unbind();
-    }
 }

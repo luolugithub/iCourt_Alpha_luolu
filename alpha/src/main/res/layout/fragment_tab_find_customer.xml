@@ -28,14 +28,16 @@
                 android:maxLines="1"
                 android:text="客户"
                 android:textColor="@color/alpha_font_color_title"
-                android:textSize="@dimen/alpha_font_size_title" />
+                android:textSize="@dimen/alpha_font_size_title"
+                android:textStyle="bold" />
 
             <ImageView
                 android:id="@id/titleAction"
                 android:layout_width="38dp"
-                android:layout_height="38dp"
+                android:layout_height="match_parent"
                 android:background="?attr/selectableItemBackground"
                 android:padding="10dp"
+                android:scaleType="fitCenter"
                 android:src="@mipmap/header_icon_add" />
         </LinearLayout>
     </android.support.design.widget.AppBarLayout>
@@ -56,6 +58,10 @@
                 android:background="@android:color/white" />
 
         </com.icourt.alpha.view.xrefreshlayout.RefreshLayout>
+
+        <include
+            layout="@layout/layout_empty_tv"
+            android:visibility="gone" />
 
         <com.gjiazhe.wavesidebar.WaveSideBar
             android:id="@+id/recyclerIndexBar"

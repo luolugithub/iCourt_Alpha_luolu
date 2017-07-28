@@ -13,21 +13,25 @@ import android.support.annotation.UiThread;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
 
+import com.bugtags.library.Bugtags;
 import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.icourt.alpha.http.ApiAlphaService;
 import com.icourt.alpha.http.ApiChatService;
 import com.icourt.alpha.http.ApiProjectService;
+import com.icourt.alpha.http.ApiSFileService;
 import com.icourt.alpha.http.RetrofitServiceFactory;
 import com.icourt.alpha.interfaces.INotifyFragment;
 import com.icourt.alpha.interfaces.ProgressHUDImp;
 import com.icourt.alpha.utils.LogUtils;
 import com.icourt.alpha.utils.LoginInfoUtils;
 import com.icourt.alpha.utils.SnackbarUtils;
+import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.utils.ToastUtils;
 import com.kaopiz.kprogresshud.KProgressHUD;
 import com.trello.rxlifecycle2.LifecycleProvider;
@@ -311,6 +315,16 @@ public abstract class BaseFragment
     }
 
     /**
+     * 接口 http通信
+     *
+     * @return
+     */
+    @NonNull
+    protected final ApiSFileService getSFileApi() {
+        return RetrofitServiceFactory.getSFileApiService();
+    }
+
+    /**
      * Toast提示
      * 缺陷 有的rom 会禁用掉taost 比如huawei rom
      *
@@ -382,6 +396,7 @@ public abstract class BaseFragment
     private KProgressHUD getSvProgressHUD() {
         if (progressHUD == null) {
             progressHUD = KProgressHUD.create(getActivity())
+                    .setDimAmount(0.5f)
                     .setStyle(KProgressHUD.Style.SPIN_INDETERMINATE);
         }
         return progressHUD;
@@ -453,7 +468,7 @@ public abstract class BaseFragment
      * @param containerViewId 替换的viewid
      * @return 当前执行显示的fragment
      */
-    protected final Fragment addOrShowFragment(@NonNull Fragment targetFragment, Fragment currentFragment, @IdRes int containerViewId) {
+    protected Fragment addOrShowFragment(@NonNull Fragment targetFragment, Fragment currentFragment, @IdRes int containerViewId) {
         if (targetFragment == null) return currentFragment;
         if (targetFragment == currentFragment) return currentFragment;
         FragmentManager fm = getChildFragmentManager();
@@ -462,17 +477,17 @@ public abstract class BaseFragment
             if (currentFragment == null) {
                 transaction
                         .add(containerViewId, targetFragment)
-                        .commit();
+                        .commitAllowingStateLoss();
             } else {
                 transaction.hide(currentFragment)
                         .add(containerViewId, targetFragment)
-                        .commit();
+                        .commitAllowingStateLoss();
             }
         } else {
             transaction
                     .hide(currentFragment)
                     .show(targetFragment)
-                    .commit();
+                    .commitAllowingStateLoss();
         }
         return targetFragment;
     }
@@ -528,6 +543,41 @@ public abstract class BaseFragment
     @CheckResult
     protected final String getLoginUserId() {
         return LoginInfoUtils.getLoginUserId();
+    }
+
+    /**
+     * 同步bug到bugtags
+     *
+     * @param tag
+     * @param log
+     */
+    protected void bugSync(String tag, String log) {
+        if (!TextUtils.isEmpty(tag) && !TextUtils.isEmpty(log)) {
+            try {
+                StringBuilder stringBuilder = new StringBuilder(tag);
+                stringBuilder.append("\n");
+                stringBuilder.append("page:" + getClass().getSimpleName());
+                stringBuilder.append("\n");
+                stringBuilder.append(log);
+                stringBuilder.append("\n");
+                stringBuilder.append("loginUserInfo:\n" + getLoginUserInfo());
+                Bugtags.sendFeedback(stringBuilder.toString());
+            } catch (Throwable e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    /**
+     * 同步bug到bugtags
+     *
+     * @param tag
+     * @param throwable
+     */
+    protected void bugSync(String tag, Throwable throwable) {
+        if (!TextUtils.isEmpty(tag) && throwable != null) {
+            bugSync(tag, StringUtils.throwable2string(throwable));
+        }
     }
 
 }

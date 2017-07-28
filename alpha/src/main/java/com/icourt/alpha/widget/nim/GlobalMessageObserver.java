@@ -18,6 +18,7 @@ import org.greenrobot.eventbus.EventBus;
 import java.util.List;
 
 import static com.bugtags.library.Bugtags.log;
+import static com.netease.nimlib.sdk.msg.constant.MsgTypeEnum.custom;
 import static com.netease.nimlib.sdk.msg.constant.MsgTypeEnum.notification;
 import static com.netease.nimlib.sdk.msg.constant.MsgTypeEnum.text;
 
@@ -56,23 +57,24 @@ public class GlobalMessageObserver implements Observer<List<IMMessage>> {
                     }
                     NIMClient.getService(MsgService.class)
                             .deleteChattingHistory(imMessage);
-                } else if (imMessage.getMsgType() == text
-                        && imMessage.getAttachment() != null) {//机器人 alpha小助手
-                    IMUtils.logIMMessage("----------->globalMessageObserver message: alpha小助手", imMessage);
-                } else {
-                    if (imMessage.getMsgType() == text) {
-                        //自定义消息体一定是text
-                        IMMessageCustomBody imBody = getIMBody(imMessage);
-                        //从本地数据库删除
-                        if (imBody == null || IMUtils.isFilterChatIMMessage(imBody)) {
-                            IMUtils.logIMMessage("----------->globalMessageObserver del message:", imMessage);
-                            NIMClient.getService(MsgService.class)
-                                    .deleteChattingHistory(imMessage);
-                        } else {
-                            //发送给其它页面
-                            EventBus.getDefault().post(imBody);
-                        }
+                } else if (imMessage.getMsgType() == text) {
+                    //自定义消息体一定是text
+                    IMMessageCustomBody imBody = getIMBody(imMessage);
+                    //从本地数据库删除
+                    if (imBody == null || IMUtils.isFilterChatIMMessage(imBody)) {
+                        IMUtils.logIMMessage("----------->globalMessageObserver del message:", imMessage);
+                        NIMClient.getService(MsgService.class)
+                                .deleteChattingHistory(imMessage);
+                    } else {
+                        //发送给其它页面
+                        EventBus.getDefault().post(imBody);
                     }
+                } else if (imMessage.getMsgType() == custom) {
+                    IMUtils.logIMMessage("----------->globalMessageObserver alpha:", imMessage);
+                    IMMessageCustomBody imBody = new IMMessageCustomBody();
+                    imBody.imMessage = imMessage;
+                    //发送给其它页面
+                    EventBus.getDefault().post(imBody);
                 }
             }
         }

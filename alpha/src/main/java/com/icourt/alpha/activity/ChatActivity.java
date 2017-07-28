@@ -45,6 +45,7 @@ import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.callback.SimpleTextWatcher;
 import com.icourt.alpha.utils.IMUtils;
+import com.icourt.alpha.utils.ImageUtils;
 import com.icourt.alpha.utils.LogUtils;
 import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.utils.SystemUtils;
@@ -102,7 +103,7 @@ import sj.keyboard.widget.FuncLayout;
 
 import static com.icourt.alpha.constants.Const.CHAT_TYPE_P2P;
 import static com.icourt.alpha.constants.Const.CHAT_TYPE_TEAM;
-import static com.netease.nimlib.sdk.msg.model.QueryDirectionEnum.QUERY_NEW;
+import static com.netease.nimlib.sdk.msg.constant.MsgStatusEnum.unread;
 import static com.netease.nimlib.sdk.msg.model.QueryDirectionEnum.QUERY_OLD;
 
 /**
@@ -112,7 +113,7 @@ import static com.netease.nimlib.sdk.msg.model.QueryDirectionEnum.QUERY_OLD;
  * date createTime：2017/4/24
  * version 1.0.0
  */
-public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapter.OnItemChildClickListener, BaseRecyclerAdapter.OnItemChildLongClickListener {
+public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapter.OnItemChildClickListener, BaseRecyclerAdapter.OnItemChildLongClickListener, BaseRecyclerAdapter.OnItemClickListener {
     private static final int REQUEST_CODE_CAMERA = 1000;
     private static final int REQUEST_CODE_GALLERY = 1001;
     private static final int REQUEST_CODE_AT_MEMBER = 1002;
@@ -124,7 +125,9 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
     private static final String KEY_TID = "key_tid";
     private static final String KEY_TITLE = "key_title";
     private static final String KEY_TOTAL_UNREAD_NUM = "key_total_unread_num";
-    private static final String KEY_LOCATION_MSG_TIME = "key_location_msg_time";
+    private static final String KEY_HIDDEN_MORE_BTN = "key_hidden_more_btn";
+    private static final String KEY_LOAD_SERVER_MSG = "key_load_server_msg";
+    private static final String KEY_LOCATION_MSG_ID = "key_location_msg_id";
     private static final String KEY_CHAT_TYPE = "key_chat_type";
 
     //本地同步的联系人
@@ -178,8 +181,12 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
     private RequestCallback<Team> teamCallBack = new RequestCallback<Team>() {
         @Override
         public void onSuccess(Team param) {
-            if (param != null) {
+            if (param == null) return;
+            if (!getIntent().getBooleanExtra(KEY_HIDDEN_MORE_BTN, false)) {
                 setViewInVisible(getTitleActionImage(), param.mute());
+            }
+            if (chatAdapter != null) {
+                chatAdapter.setShowMemberUserName(param.getMemberCount() >= 5);
             }
         }
 
@@ -193,6 +200,46 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
 
         }
     };
+    private Runnable scrollToBottomTask = new Runnable() {
+        @Override
+        public void run() {
+            linearLayoutManager.scrollToPositionWithOffset(linearLayoutManager.getItemCount() - 1, 0);
+        }
+    };
+
+    @Override
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_chat);
+        ButterKnife.bind(this);
+        initView();
+        initEmoticonsKeyBoardBar();
+        getLocalContacts();
+        if (getLocationMsgId() > 0) {
+            getLocationCenterMsgId();
+        } else {
+            getData(true);
+        }
+    }
+
+    public static final void launchP2P(@NonNull Context context,
+                                       @NonNull String uid,
+                                       String title,
+                                       long locationMsgTime,
+                                       int totalUnreadCount,
+                                       boolean hiddenMoreBtn) {
+        if (context == null) return;
+        if (TextUtils.isEmpty(uid)) return;
+        Intent intent = new Intent(context, ChatActivity.class);
+        intent.putExtra(KEY_UID, uid);
+        intent.putExtra(KEY_TITLE, title);
+        intent.putExtra(KEY_CHAT_TYPE, CHAT_TYPE_P2P);
+        intent.putExtra(KEY_LOCATION_MSG_ID, locationMsgTime);
+        intent.putExtra(KEY_TOTAL_UNREAD_NUM, totalUnreadCount);
+        intent.putExtra(KEY_HIDDEN_MORE_BTN, hiddenMoreBtn);
+        intent.putExtra(KEY_LOAD_SERVER_MSG, true);
+        context.startActivity(intent);
+    }
 
 
     /**
@@ -208,15 +255,7 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
                                        String title,
                                        long locationMsgTime,
                                        int totalUnreadCount) {
-        if (context == null) return;
-        if (TextUtils.isEmpty(uid)) return;
-        Intent intent = new Intent(context, ChatActivity.class);
-        intent.putExtra(KEY_UID, uid);
-        intent.putExtra(KEY_TITLE, title);
-        intent.putExtra(KEY_CHAT_TYPE, CHAT_TYPE_P2P);
-        intent.putExtra(KEY_LOCATION_MSG_TIME, locationMsgTime);
-        intent.putExtra(KEY_TOTAL_UNREAD_NUM, totalUnreadCount);
-        context.startActivity(intent);
+        launchP2P(context, uid, title, locationMsgTime, totalUnreadCount, false);
     }
 
 
@@ -224,22 +263,59 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
      * 启动 群聊
      *
      * @param context
-     * @param tid             云信tid
-     * @param locationMsgTime 定位消息的时间 小于0=不定位消息
+     * @param tid           云信tid
+     * @param locationMsgId 定位消息的id 小于0=不定位消息
      */
     public static void launchTEAM(@NonNull Context context,
                                   String tid,
                                   String title,
-                                  long locationMsgTime,
+                                  long locationMsgId,
                                   int totalUnreadCount) {
+        launchTEAM(context, tid, title, locationMsgId, totalUnreadCount, false);
+    }
+
+    /**
+     * 启动 群聊
+     *
+     * @param context
+     * @param tid           云信tid
+     * @param locationMsgId 定位消息的id 小于0=不定位消息
+     */
+    public static void launchTEAM(@NonNull Context context,
+                                  String tid,
+                                  String title,
+                                  long locationMsgId,
+                                  int totalUnreadCount,
+                                  boolean hiddenMoreBtn) {
+        launchTEAM(context, tid, title, locationMsgId, totalUnreadCount, hiddenMoreBtn, true);
+    }
+
+    /**
+     * @param context
+     * @param tid
+     * @param title
+     * @param locationMsgId
+     * @param totalUnreadCount
+     * @param hiddenMoreBtn
+     * @param loadNetMsg       是否加载网络消息
+     */
+    public static void launchTEAM(@NonNull Context context,
+                                  String tid,
+                                  String title,
+                                  long locationMsgId,
+                                  int totalUnreadCount,
+                                  boolean hiddenMoreBtn,
+                                  boolean loadNetMsg) {
         if (context == null) return;
         if (TextUtils.isEmpty(tid)) return;
         Intent intent = new Intent(context, ChatActivity.class);
         intent.putExtra(KEY_TID, tid);
         intent.putExtra(KEY_CHAT_TYPE, CHAT_TYPE_TEAM);
         intent.putExtra(KEY_TITLE, title);
-        intent.putExtra(KEY_LOCATION_MSG_TIME, locationMsgTime);
+        intent.putExtra(KEY_LOCATION_MSG_ID, locationMsgId);
         intent.putExtra(KEY_TOTAL_UNREAD_NUM, totalUnreadCount);
+        intent.putExtra(KEY_HIDDEN_MORE_BTN, hiddenMoreBtn);
+        intent.putExtra(KEY_LOAD_SERVER_MSG, loadNetMsg);
         context.startActivity(intent);
     }
 
@@ -274,8 +350,8 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
      *
      * @return
      */
-    private long getLocationTime() {
-        return getIntent().getLongExtra(KEY_LOCATION_MSG_TIME, 0);
+    private long getLocationMsgId() {
+        return getIntent().getLongExtra(KEY_LOCATION_MSG_ID, 0);
     }
 
     @Override
@@ -288,22 +364,6 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
                     break;
                 }
             }
-        }
-    }
-
-    @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_chat);
-        ButterKnife.bind(this);
-        initView();
-        initEmoticonsKeyBoardBar();
-        getLocalContacts();
-        getTeamINFO(teamCallBack);
-        if (getLocationTime() > 0) {
-            getAfterLocationMsgs();
-        } else {
-            getData(true);
         }
     }
 
@@ -463,6 +523,14 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
         ekBar.setRequestActionListener(new MyXhsEmoticonsKeyBoard.OnRequestActionListener() {
             @Override
             public void onRequestSendText(EmoticonsEditText inputText) {
+                if (StringUtils.isEmpty(inputText.getText())) {
+                    inputText.setText("");
+                    new AlertDialog.Builder(getContext())
+                            .setMessage("不能发送空白消息")
+                            .setPositiveButton("确定", null)
+                            .show();
+                    return;
+                }
                 dispatchEditTextSend(inputText);
             }
 
@@ -484,6 +552,9 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
                 if (pics != null && pics.size() > 0) {
                     for (int i = 0; i < pics.size(); i++) {
                         String path = pics.get(i);
+                        if (ImageUtils.getBitmapDegree(path) > 0) {
+                            ImageUtils.degreeImage(path);
+                        }
                         if (!TextUtils.isEmpty(path)) {
                             sendIMPicMsg(path);
                         }
@@ -562,12 +633,13 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
         ekBar.addOnFuncKeyBoardListener(new FuncLayout.OnFuncKeyBoardListener() {
             @Override
             public void OnFuncPop(int i) {
+                log("----------> OnFuncPop i:" + i);
                 scrollToBottom();
             }
 
             @Override
             public void OnFuncClose() {
-
+                log("---------->OnFuncClose ");
             }
         });
 
@@ -626,16 +698,6 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
 
 
     /**
-     * 发送文件消息
-     *
-     * @param path
-     */
-    private void sendFileMsg(String path) {
-        super.sendIMPicMsg(path);
-    }
-
-
-    /**
      * 发送@消息
      *
      * @param text
@@ -658,7 +720,7 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
                     Const.CHOICE_TYPE_SINGLE,
                     REQUEST_CODE_AT_MEMBER,
                     true,
-                    null);
+                    null, true);
         }
     }
 
@@ -700,6 +762,7 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
         ImageView titleActionImage2 = getTitleActionImage2();
         if (titleActionImage2 != null) {
             titleActionImage2.setImageResource(R.mipmap.header_icon_more);
+            titleActionImage2.setVisibility(getIntent().getBooleanExtra(KEY_HIDDEN_MORE_BTN, false) ? View.INVISIBLE : View.VISIBLE);
         }
         ImageView titleActionImage = getTitleActionImage();
         if (titleActionImage != null) {
@@ -720,6 +783,7 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
         recyclerView.setLayoutManager(linearLayoutManager);
         recyclerView.setHasFixedSize(true);
         recyclerView.setAdapter(chatAdapter = new ChatAdapter(localContactList));
+        chatAdapter.setOnItemClickListener(this);
         chatAdapter.setOnItemLongClickListener(this);
         chatAdapter.setOnItemChildClickListener(this);
         chatAdapter.setOnItemChildLongClickListener(this);
@@ -736,11 +800,6 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
                 super.onLoadMore(isSilence);
             }
 
-            @Override
-            public void onRelease(float direction) {
-                super.onRelease(direction);
-                log("------------->12:" + direction);
-            }
         });
         recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
@@ -748,14 +807,15 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
                 super.onScrollStateChanged(recyclerView, newState);
                 switch (newState) {
                     case RecyclerView.SCROLL_STATE_DRAGGING: {
-                        ekBar.reset();
-                        /*    SystemUtils.hideSoftKeyBoard(getActivity(), etContactName, true);*/
+                        if (ekBar.isSoftKeyboardPop() || ekBar.isShowFunc()) {
+                            ekBar.reset();
+                        }
                     }
                     break;
                 }
             }
         });
-
+        getTeamINFO(teamCallBack);
         updateTotalUnRead(getIntent().getIntExtra(KEY_TOTAL_UNREAD_NUM, 0));
     }
 
@@ -774,7 +834,8 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
     private void updateTotalUnRead(int num) {
         int unReadNum = num;
         if (unReadNum > 99) {
-            titleBadgeTv.showTextBadge("...");
+            //显示99+
+            titleBadgeTv.showTextBadge("99+");
         } else if (unReadNum > 0) {
             titleBadgeTv.showTextBadge(String.valueOf(unReadNum));
         } else {
@@ -782,12 +843,15 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
         }
     }
 
+    private int unReadCount = 0;
+
     /**
      * 0自动隐藏
      *
      * @param num
      */
     private void setUnreadNum(int num) {
+        unReadCount = num;
         setViewVisible(chatUnreadNumTv, num > 20);
         chatUnreadNumTv.setText(String.format("%s条未读", num));
     }
@@ -806,12 +870,38 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
         return false;
     }
 
+
     /**
      * 滚动到底部
      */
     private void scrollToBottom() {
         if (linearLayoutManager != null && linearLayoutManager.getItemCount() > 0) {
-            linearLayoutManager.scrollToPositionWithOffset(linearLayoutManager.getItemCount(), 0);
+            linearLayoutManager.scrollToPositionWithOffset(linearLayoutManager.getItemCount() - 1, 0);
+            if (recyclerView != null) {
+                recyclerView.postDelayed(scrollToBottomTask, 300);
+            }
+        }
+    }
+
+    /**
+     * 滚动到中间
+     */
+    private void scrollToCenter() {
+        if (linearLayoutManager != null && linearLayoutManager.getItemCount() > 1) {
+            final int marginTop = refreshLayout.getHeight() / 2;
+            long locationMsgId = getIntent().getLongExtra(KEY_LOCATION_MSG_ID, 0);
+            IMMessageCustomBody targetImMessageCustomBody = new IMMessageCustomBody();
+            targetImMessageCustomBody.id = locationMsgId;
+            final int indexOf = chatAdapter.getData().indexOf(targetImMessageCustomBody);
+            if (indexOf > 0) {
+                linearLayoutManager.scrollToPositionWithOffset(indexOf, 0);
+                recyclerView.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        linearLayoutManager.scrollToPositionWithOffset(indexOf, marginTop);
+                    }
+                }, 100);
+            }
         }
     }
 
@@ -830,7 +920,8 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
                     public void onSuccess(List<IMMessage> param) {
                         LogUtils.d("----------->query result:" + param);
                         param = filterMsgs(param);
-                        if (param == null || param.isEmpty()) {
+                        if (param == null || param.isEmpty()
+                                && getIntent().getBooleanExtra(KEY_LOAD_SERVER_MSG, true)) {
                             //本地为空从网络获取
                             getMsgFromServer(isRefresh);
                         } else {
@@ -868,9 +959,9 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
     private IMMessage getLocationMessage() {
         switch (getIMChatType()) {
             case CHAT_TYPE_P2P:
-                return MessageBuilder.createEmptyMessage(getIMChatId(), SessionTypeEnum.P2P, getLocationTime());
+                return MessageBuilder.createEmptyMessage(getIMChatId(), SessionTypeEnum.P2P, getLocationMsgId());
             case CHAT_TYPE_TEAM:
-                return MessageBuilder.createEmptyMessage(getIMChatId(), SessionTypeEnum.Team, getLocationTime());
+                return MessageBuilder.createEmptyMessage(getIMChatId(), SessionTypeEnum.Team, getLocationMsgId());
             default: {
                 return null;
             }
@@ -878,40 +969,13 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
     }
 
     /**
-     * 获取定位之后的所有消息
+     * 获取 msgid前后的20条
      */
-    private void getAfterLocationMsgs() {
-        NIMClient.getService(MsgService.class)
-                .queryMessageListEx(getLocationMessage(), QUERY_NEW, 500, true)
-                .setCallback(new RequestCallback<List<IMMessage>>() {
-                    @Override
-                    public void onSuccess(List<IMMessage> param) {
-                        LogUtils.d("----------->query result2:" + param);
-                        param = filterMsgs(param);
-                        if (param == null || param.isEmpty()) {
-                            //本地为空从网络获取
-                            getMsgFromServer(true);
-                        } else {
-                            chatAdapter.bindData(true, convert2CustomerMessages(param));
-                            stopRefresh();
-                            setUnreadNum(0);
-                            clearUnReadNum();
-                        }
-                    }
-
-                    @Override
-                    public void onFailed(int code) {
-                        log("--------->load fail2:" + code);
-                        stopRefresh();
-                    }
-
-                    @Override
-                    public void onException(Throwable exception) {
-                        log("--------->load  exe2:" + exception);
-                        stopRefresh();
-                    }
-                });
+    private void getLocationCenterMsgId() {
+        long locationMsgId = getIntent().getLongExtra(KEY_LOCATION_MSG_ID, 0);
+        getMsgFromServer(locationMsgId);
     }
+
 
     /**
      * 过滤消息
@@ -929,6 +993,37 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
             }
         }
         return msgs;
+    }
+
+
+    /**
+     * 获取定位前后的20条
+     *
+     * @param msgId
+     */
+    private void getMsgFromServer(long msgId) {
+        String type = "around";
+        getChatApi().msgQueryAll(type, 20, msgId, getIMChatType(), getIMChatId())
+                .enqueue(new SimpleCallBack<List<IMMessageCustomBody>>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<List<IMMessageCustomBody>>> call, Response<ResEntity<List<IMMessageCustomBody>>> response) {
+                        if (response.body().result != null) {
+                            Collections.sort(response.body().result, new LongFieldEntityComparator<IMMessageCustomBody>(LongFieldEntityComparator.ORDER.ASC));
+                            chatAdapter.addItems(0, response.body().result);
+                            scrollToCenter();
+                        }
+                        setUnreadNum(0);
+                        clearUnReadNum();
+                        stopRefresh();
+                    }
+
+                    @Override
+                    public void onFailure(Call<ResEntity<List<IMMessageCustomBody>>> call, Throwable t) {
+                        super.onFailure(call, t);
+                        stopRefresh();
+                    }
+                });
+
     }
 
     /**
@@ -1021,9 +1116,7 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
         if (chatAdapter.getData().contains(customBody)) {
             customBody.msg_statu = Const.MSG_STATU_SUCCESS;
             chatAdapter.updateItem(customBody);
-            if (shouldScrollToBottom()) {
-                scrollToBottom();
-            }
+            scrollToBottom();
         } else {//别人发送的消息收到
             if (shouldScrollToBottom()) {
                 chatAdapter.addItem(customBody);
@@ -1050,13 +1143,12 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
     @Override
     public void onMessageRevoke(IMMessage message) {
         log("----------------->chat onMessageRevoke:" + message);
-        deleteMsgFromDb(message);
-        if (isCurrentRoomSession(message.getSessionId())) {
-            IMMessageCustomBody imBody = getIMBody(message);
-            if (imBody != null) {
-                removeFromAdapter(imBody.id);
-            }
-        }
+        //注意 本身原消息 和撤回的那一条消息 macgic_id是一样的;
+    }
+
+    @Override
+    public void onMessageRevoke(long msgId) {
+        removeFromAdapter(msgId);
     }
 
 
@@ -1066,8 +1158,10 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
      * @param msgId
      */
     private synchronized void removeFromAdapter(long msgId) {
-        for (int i = chatAdapter.getData().size() - 1; i >= 0; i++) {
-            IMMessageCustomBody item = chatAdapter.getItem(i);
+        log("----------------->chat onMessageRevoke:msgId" + msgId);
+        List<IMMessageCustomBody> data = chatAdapter.getData();
+        for (int i = data.size() - 1; i >= 0; i--) {
+            IMMessageCustomBody item = data.get(i);
             if (item != null) {
                 if (msgId == item.id) {
                     chatAdapter.removeItem(item);
@@ -1082,8 +1176,7 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.chat_unread_num_tv:
-                clearUnReadNum();
-                setUnreadNum(0);
+                scrollToUnreadMsg();
                 break;
             case R.id.titleAction2:
                 switch (getIMChatType()) {
@@ -1094,9 +1187,11 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
                                 false,
                                 true
                         );
+                        break;
                     case CHAT_TYPE_TEAM:
                         GroupDetailActivity.launchTEAM(getContext(),
                                 getIntent().getStringExtra(KEY_TID));
+                        break;
                 }
                 break;
             default:
@@ -1105,12 +1200,83 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
         }
     }
 
+    /**
+     * 滚动到第一条未读消息
+     */
+    private void scrollToUnreadMsg() {
+        if (unReadCount > chatAdapter.getItemCount()) {
+            final int loadCount = unReadCount - chatAdapter.getItemCount();
+            NIMClient.getService(MsgService.class)
+                    .queryMessageListEx(getLastMessage(), QUERY_OLD, loadCount, true)
+                    .setCallback(new RequestCallback<List<IMMessage>>() {
+                        @Override
+                        public void onSuccess(List<IMMessage> param) {
+                            LogUtils.d("----------->query result3:" + param);
+                            param = filterMsgs(param);
+                            chatAdapter.addItems(0, convert2CustomerMessages(param));
+
+                            //滚动到最近未读的一条
+                            int unreadMsgIndex = getUnReadMsgIndex();
+                           /* if (unreadMsgIndex >= 0) {
+                                linearLayoutManager.scrollToPositionWithOffset(unreadMsgIndex, 0);
+                                clearUnReadNum();
+                                setUnreadNum(0);
+                            }*/
+
+
+                            linearLayoutManager.scrollToPositionWithOffset(0, 0);
+                            clearUnReadNum();
+                            setUnreadNum(0);
+                        }
+
+                        @Override
+                        public void onFailed(int code) {
+                            LogUtils.d("----------->query result3:Failed code" + code);
+                        }
+
+                        @Override
+                        public void onException(Throwable exception) {
+                            LogUtils.d("----------->query result3:Exception" + exception);
+                        }
+                    });
+        } else {
+            clearUnReadNum();
+            setUnreadNum(0);
+        }
+    }
+
+    /**
+     * 获取列表中未读消息index
+     * bug 所有消息都是success
+     *
+     * @return
+     */
+    @Deprecated
+    private int getUnReadMsgIndex() {
+        List<IMMessageCustomBody> data = chatAdapter.getData();
+        if (data == null || data.isEmpty()) return -1;
+        for (int i = 0; i < data.size(); i++) {
+            IMMessageCustomBody imMessageCustomBody = data.get(i);
+            if (imMessageCustomBody != null
+                    && imMessageCustomBody.imMessage != null) {
+                IMUtils.logIMMessage("-------->unReadMsgIndex:" + i + " :", imMessageCustomBody.imMessage);
+                if (imMessageCustomBody.imMessage.getStatus() == unread) {
+                    return i;
+                }
+            }
+        }
+        return -1;
+    }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         switch (requestCode) {
             case REQUEST_CODE_CAMERA:
                 if (resultCode == Activity.RESULT_OK) {
-                    sendFileMsg(path);
+                    if (!TextUtils.isEmpty(path) && ImageUtils.getBitmapDegree(path) > 0) {
+                        ImageUtils.degreeImage(path);
+                    }
+                    sendIMPicMsg(path);
                 }
                 break;
             case REQUEST_CODE_AT_MEMBER:
@@ -1133,6 +1299,7 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
      *
      * @param contactBean
      */
+
     private void appendAtMember(GroupContactBean contactBean) {
         if (contactBean == null) return;
         atContactList.add(contactBean);
@@ -1152,7 +1319,10 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
+        if (grantResults == null) return;
+        if (grantResults.length <= 0) return;
         switch (requestCode) {
             case REQ_CODE_PERMISSION_CAMERA:
                 if (grantResults[0] == PackageManager.PERMISSION_DENIED) {
@@ -1174,7 +1344,8 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
 
 
     @Override
-    public void onItemChildClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
+    public void onItemChildClick(BaseRecyclerAdapter
+                                         adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
         IMMessageCustomBody item = chatAdapter.getItem(position);
         if (item == null) return;
         switch (view.getId()) {
@@ -1304,7 +1475,8 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
     }
 
     @Override
-    public boolean onItemChildLongClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
+    public boolean onItemChildLongClick(BaseRecyclerAdapter
+                                                adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
         switch (view.getId()) {
             case R.id.chat_image_iv:
                 return super.onItemLongClick(adapter, holder, view, position);
@@ -1313,6 +1485,8 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
             case R.id.chat_txt_tv:
                 return super.onItemLongClick(adapter, holder, view, position);
             case R.id.chat_ll_file:
+                return super.onItemLongClick(adapter, holder, view, position);
+            case R.id.chat_ding_content_iamge_iv:
                 return super.onItemLongClick(adapter, holder, view, position);
         }
         return false;
@@ -1336,4 +1510,11 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
     }
 
 
+    @Override
+    public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder
+            holder, View view, int position) {
+        if (ekBar != null) {
+            ekBar.reset();
+        }
+    }
 }

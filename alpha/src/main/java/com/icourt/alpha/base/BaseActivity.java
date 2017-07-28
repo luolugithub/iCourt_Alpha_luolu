@@ -29,12 +29,14 @@ import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.icourt.alpha.http.ApiAlphaService;
 import com.icourt.alpha.http.ApiChatService;
 import com.icourt.alpha.http.ApiProjectService;
+import com.icourt.alpha.http.ApiSFileService;
 import com.icourt.alpha.http.RetrofitServiceFactory;
 import com.icourt.alpha.interfaces.IContextResourcesImp;
 import com.icourt.alpha.interfaces.ProgressHUDImp;
 import com.icourt.alpha.utils.LogUtils;
 import com.icourt.alpha.utils.LoginInfoUtils;
 import com.icourt.alpha.utils.SnackbarUtils;
+import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.utils.ToastUtils;
 import com.kaopiz.kprogresshud.KProgressHUD;
@@ -209,6 +211,7 @@ public class BaseActivity
     private KProgressHUD getSvProgressHUD() {
         if (progressHUD == null) {
             progressHUD = KProgressHUD.create(getContext())
+                    .setDimAmount(0.5f)
                     .setStyle(KProgressHUD.Style.SPIN_INDETERMINATE);
         }
         return progressHUD;
@@ -242,6 +245,17 @@ public class BaseActivity
     @NonNull
     protected final ApiProjectService getProjectApi() {
         return RetrofitServiceFactory.getProjectApiService();
+    }
+
+
+    /**
+     * 接口 http通信
+     *
+     * @return
+     */
+    @NonNull
+    protected final ApiSFileService getSFileApi() {
+        return RetrofitServiceFactory.getSFileApiService();
     }
 
     /**
@@ -477,20 +491,37 @@ public class BaseActivity
     }
 
     /**
-     * 发送日志到bugtags上面去
+     * 同步bug到bugtags
      *
      * @param tag
      * @param log
      */
-    protected void postLog2Bugtags(String tag, String log) {
+    protected void bugSync(String tag, String log) {
         if (!TextUtils.isEmpty(tag) && !TextUtils.isEmpty(log)) {
-            StringBuilder stringBuilder = new StringBuilder(tag);
-            stringBuilder.append("\n");
-            stringBuilder.append(log);
-            stringBuilder.append("\n");
-            stringBuilder.append("uid:");
-            stringBuilder.append(getLoginUserId());
-            Bugtags.sendFeedback(stringBuilder.toString());
+            try {
+                StringBuilder stringBuilder = new StringBuilder(tag);
+                stringBuilder.append("\n");
+                stringBuilder.append("page:" + getClass().getSimpleName());
+                stringBuilder.append("\n");
+                stringBuilder.append(log);
+                stringBuilder.append("\n");
+                stringBuilder.append("loginUserInfo:\n" + getLoginUserInfo());
+                Bugtags.sendFeedback(stringBuilder.toString());
+            } catch (Throwable e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    /**
+     * 同步bug到bugtags
+     *
+     * @param tag
+     * @param throwable
+     */
+    protected void bugSync(String tag, Throwable throwable) {
+        if (!TextUtils.isEmpty(tag) && throwable != null) {
+            bugSync(tag, StringUtils.throwable2string(throwable));
         }
     }
 
@@ -517,21 +548,24 @@ public class BaseActivity
         if (targetFragment == currentFragment) return currentFragment;
         FragmentManager fm = getSupportFragmentManager();
         FragmentTransaction transaction = fm.beginTransaction();
+   /*     transaction.setCustomAnimations(
+                R.anim.fragment_slide_right_in, R.anim.fragment_slide_left_out,
+                R.anim.fragment_slide_left_in, R.anim.fragment_slide_right_out);*/
         if (!targetFragment.isAdded()) { // 如果当前fragment添加，则添加到Fragment管理器中
             if (currentFragment == null) {
                 transaction
                         .add(containerViewId, targetFragment)
-                        .commit();
+                        .commitAllowingStateLoss();
             } else {
                 transaction.hide(currentFragment)
                         .add(containerViewId, targetFragment)
-                        .commit();
+                        .commitAllowingStateLoss();
             }
         } else {
             transaction
                     .hide(currentFragment)
                     .show(targetFragment)
-                    .commit();
+                    .commitAllowingStateLoss();
         }
         return targetFragment;
     }

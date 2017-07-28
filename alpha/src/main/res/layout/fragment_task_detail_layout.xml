@@ -12,13 +12,15 @@
             android:id="@+id/task_project_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="?android:attr/selectableItemBackground"
+            android:background="?attr/selectableItemBackground"
             android:orientation="vertical">
+
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="@dimen/dp5"
+                android:layout_marginTop="@dimen/dp10"
                 android:gravity="center_vertical"
                 android:padding="@dimen/dp15">
 
@@ -34,7 +36,7 @@
                     android:layout_marginLeft="@dimen/dp10"
                     android:layout_weight="1"
                     android:ellipsize="end"
-                    android:hint="添加所属项目"
+                    android:hint="选择所属项目"
                     android:maxLines="1"
                     android:textColor="@color/alpha_font_color_gray"
                     android:textSize="16sp" />
@@ -45,19 +47,19 @@
                     android:layout_marginLeft="@dimen/dp10"
                     android:src="@mipmap/arrow_right" />
             </LinearLayout>
-
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="@dimen/alpha_height_divider"
-                android:layout_marginLeft="60dp"
-                android:background="@color/alpha_divider_color" />
         </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/alpha_height_divider"
+            android:layout_marginLeft="55dp"
+            android:background="#e9e9e9" />
 
         <LinearLayout
             android:id="@+id/task_group_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="?android:attr/selectableItemBackground"
+            android:background="?attr/selectableItemBackground"
             android:orientation="vertical">
 
             <LinearLayout
@@ -78,8 +80,8 @@
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="@dimen/dp10"
                     android:layout_weight="1"
-                    android:hint="添加任务组"
                     android:ellipsize="end"
+                    android:hint="选择任务组"
                     android:maxLines="1"
                     android:textColor="@color/alpha_font_color_gray"
                     android:textSize="16sp" />
@@ -94,15 +96,15 @@
             <View
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/alpha_height_divider"
-                android:layout_marginLeft="60dp"
-                android:background="@color/alpha_divider_color" />
+                android:layout_marginLeft="55dp"
+                android:background="#e9e9e9" />
         </LinearLayout>
 
         <LinearLayout
             android:id="@+id/task_time_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="?android:attr/selectableItemBackground"
+            android:background="?attr/selectableItemBackground"
             android:orientation="vertical">
 
             <LinearLayout
@@ -124,11 +126,17 @@
                     android:layout_marginLeft="@dimen/dp10"
                     android:layout_weight="1"
                     android:ellipsize="end"
+                    android:hint="选择到期时间"
                     android:maxLines="1"
-                    android:hint="添加到期时间"
                     android:textColor="@color/alpha_font_color_gray"
                     android:textSize="16sp" />
-
+                <ImageView
+                    android:id="@+id/task_reminder_icon"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="@dimen/dp10"
+                    android:visibility="invisible"
+                    android:src="@mipmap/alarm_orange" />
                 <ImageView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -139,16 +147,16 @@
             <View
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/alpha_height_divider"
-                android:layout_marginLeft="60dp"
-                android:background="@color/alpha_divider_color" />
+                android:layout_marginLeft="55dp"
+                android:background="#e9e9e9" />
         </LinearLayout>
 
         <LinearLayout
             android:id="@+id/task_desc_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="?android:attr/selectableItemBackground"
             android:layout_marginLeft="@dimen/dp5"
+            android:background="?attr/selectableItemBackground"
             android:padding="@dimen/dp15">
 
             <ImageView

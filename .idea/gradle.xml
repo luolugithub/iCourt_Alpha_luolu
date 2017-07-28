@@ -11,6 +11,8 @@
             <option value="$PROJECT_DIR$/alpha" />
             <option value="$PROJECT_DIR$/api" />
             <option value="$PROJECT_DIR$/javatest" />
+            <option value="$PROJECT_DIR$/lib_calendar" />
+            <option value="$PROJECT_DIR$/lib_daemon" />
           </set>
         </option>
         <option name="resolveModulePerSourceSet" value="false" />

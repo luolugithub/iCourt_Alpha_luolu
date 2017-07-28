@@ -21,18 +21,24 @@
             android:layout_height="24dp"
             android:src="@mipmap/avatar_default_24" />
 
+
         <TextView
             android:id="@+id/tv_name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="20dp"
+            android:layout_marginLeft="17dp"
+            android:layout_marginRight="10dp"
             android:layout_weight="1"
             android:ellipsize="end"
             android:maxLines="1"
             android:text="name"
             android:textColor="@color/alpha_font_color_black"
-            android:textSize="@dimen/alpha_font_size_mini_medium" />
+            android:textSize="@dimen/alpha_font_size_comm_medium" />
 
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@mipmap/arrow_right" />
     </LinearLayout>
 
     <View

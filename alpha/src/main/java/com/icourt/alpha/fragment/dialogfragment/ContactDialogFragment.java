@@ -20,6 +20,7 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.Priority;
 import com.icourt.alpha.R;
 import com.icourt.alpha.activity.ChatActivity;
+import com.icourt.alpha.base.BaseDialogFragment;
 import com.icourt.alpha.db.dbmodel.ContactDbModel;
 import com.icourt.alpha.db.dbservice.ContactDbService;
 import com.icourt.alpha.entity.bean.GroupContactBean;
@@ -95,6 +96,7 @@ public class ContactDialogFragment extends BaseDialogFragment {
         if (dialog != null) {
             Window window = dialog.getWindow();
             if (window != null) {
+                window.setWindowAnimations(R.style.AppThemeSlideAnimation);
                 window.setGravity(Gravity.BOTTOM);
                 View decorView = window.getDecorView();
                 if (decorView != null) {

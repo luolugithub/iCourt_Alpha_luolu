@@ -107,6 +107,7 @@ public class CustomerCompanyDetailActivity extends BaseActivity {
         layoutInflater = LayoutInflater.from(this);
         titleAction.setImageResource(R.mipmap.header_icon_star_line);
         titleAction2.setImageResource(R.mipmap.header_icon_edit);
+        titleAction2.setVisibility(View.INVISIBLE);
         contact_id = getIntent().getStringExtra("contact_id");
         contact_name = getIntent().getStringExtra("contact_name");
         isShowRightView = getIntent().getBooleanExtra("isShowRightView", false);
@@ -115,7 +116,37 @@ public class CustomerCompanyDetailActivity extends BaseActivity {
         if (!TextUtils.isEmpty(contact_name)) {
             setTitle(contact_name);
         }
-        getContact();
+        checkHasCustomerPemissions();
+    }
+
+    /**
+     * 检查ha
+     */
+    private void checkHasCustomerPemissions() {
+        getApi().permissionQuery(
+                getLoginUserId(),
+                "CON",
+                getIntent().getStringExtra("contact_id"))
+                .enqueue(new SimpleCallBack<List<String>>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<List<String>>> call, Response<ResEntity<List<String>>> response) {
+                        if (response.body().result == null) return;
+                        boolean hasLookPermission = false;
+                        for (String permission : response.body().result) {
+                            if (TextUtils.equals("CON:contact.detail:edit", permission)) {
+                                titleAction2.setVisibility(View.VISIBLE);
+                            }
+
+                            if (TextUtils.equals("CON:contact.detail:view", permission)) {
+                                hasLookPermission = true;
+                                getContact();
+                            }
+                        }
+                        if (!hasLookPermission) {
+                            showTopSnackBar("暂无权限查看联系人信息");
+                        }
+                    }
+                });
     }
 
     @OnClick({R.id.titleAction, R.id.titleAction2})
@@ -174,8 +205,10 @@ public class CustomerCompanyDetailActivity extends BaseActivity {
             activityPersonContactDetailOtherParentLayout.removeAllViews();
             activityPersonContactDetailGroupLayout.removeAllViews();
             if (contactDeatilBean.getGroups() != null) {
-                if (contactDeatilBean.getGroups().size() > 0)
+                if (contactDeatilBean.getGroups().size() > 0) {
+                    activityPersonContactDetailGroupLayout.setVisibility(View.VISIBLE);
                     addGroupItemView(contactDeatilBean.getGroups());
+                }
             }
             if (contactDeatilBean.getMails() != null) {
                 if (contactDeatilBean.getMails().size() > 0) {
@@ -465,9 +498,9 @@ public class CustomerCompanyDetailActivity extends BaseActivity {
         getApi().customerDetailQuery(contact_id).enqueue(new SimpleCallBack<List<ContactDeatilBean>>() {
             @Override
             public void onSuccess(Call<ResEntity<List<ContactDeatilBean>>> call, Response<ResEntity<List<ContactDeatilBean>>> response) {
+                dismissLoadingDialog();
                 if (response.body().result != null) {
                     if (response.body().result.size() > 0) {
-                        dismissLoadingDialog();
                         contactDeatilBean = response.body().result.get(0);
                         setDataToView();
                     }
@@ -502,7 +535,7 @@ public class CustomerCompanyDetailActivity extends BaseActivity {
      * @param contact_id
      */
     private void addStarContact(String contact_id) {
-        showLoadingDialog("正在关注...");
+        showLoadingDialog(null);
         getApi().customerAddStar(contact_id).enqueue(new SimpleCallBack<JsonElement>() {
             @Override
             public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
@@ -526,7 +559,7 @@ public class CustomerCompanyDetailActivity extends BaseActivity {
      * @param contact_id
      */
     private void deleteStarContact(String contact_id) {
-        showLoadingDialog("正在取消关注...");
+        showLoadingDialog(null);
         getApi().customerDeleteStar(contact_id).enqueue(new SimpleCallBack<JsonElement>() {
             @Override
             public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {

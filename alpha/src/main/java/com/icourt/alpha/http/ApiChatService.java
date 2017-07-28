@@ -7,6 +7,8 @@ import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.icourt.alpha.entity.bean.GroupDetailEntity;
 import com.icourt.alpha.entity.bean.GroupEntity;
 import com.icourt.alpha.entity.bean.IMMessageCustomBody;
+import com.icourt.alpha.entity.bean.LoginIMToken;
+import com.icourt.alpha.entity.bean.MsgStatusEntity;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 
 import java.util.List;
@@ -42,7 +44,7 @@ public interface ApiChatService {
      * @return
      */
     @POST("im/v1/groups")
-    Call<ResEntity<JsonElement>> groupCreate(@Body RequestBody groupInfo);
+    Call<ResEntity<GroupEntity>> groupCreate(@Body RequestBody groupInfo);
 
 
     /**
@@ -297,6 +299,16 @@ public interface ApiChatService {
 
 
     /**
+     * 消息的状态
+     *
+     * @param id
+     * @return
+     */
+    @GET("im/v1/msgs/{id}/status")
+    Call<ResEntity<MsgStatusEntity>> msgStatus(@Path("id") long id);
+
+
+    /**
      * 获取我的文件
      * 文档地址：https://www.showdoc.cc/1620156?page_id=14909461
      *
@@ -305,6 +317,15 @@ public interface ApiChatService {
      */
     @GET("im/v1/msgs/files/me")
     Call<ResEntity<List<IMMessageCustomBody>>> getMyFiles(@Query("msg_id") long msg_id);
+
+    /**
+     * 获取我的文件
+     * 文档地址：https://www.showdoc.cc/1620156?page_id=14909461
+     *
+     * @return
+     */
+    @GET("im/v1/msgs/files/me")
+    Call<ResEntity<List<IMMessageCustomBody>>> getMyFiles();
 
     /**
      * 获取我的所有文件
@@ -317,14 +338,34 @@ public interface ApiChatService {
     Call<ResEntity<List<IMMessageCustomBody>>> getMyAllFiles(@Query("msg_id") long msg_id);
 
     /**
+     * 获取我的所有文件
+     * 文档地址：https://www.showdoc.cc/1620156?page_id=14909461
+     *
+     * @return
+     */
+    @GET("im/v1/msgs/files/all")
+    Call<ResEntity<List<IMMessageCustomBody>>> getMyAllFiles();
+
+    /**
      * 获取  @我  的消息
      * 【注意 这个接口只能post】
+     * 文档地址:https://www.showdoc.cc/1620156?page_id=14899069
      *
      * @param msg_id
      * @return
      */
     @GET("im/v1/msgs/ats")
     Call<ResEntity<List<IMMessageCustomBody>>> getAtMeMsg(@Query("msg_id") long msg_id);
+
+    /**
+     * 获取  @我  的消息
+     * 【注意 这个接口只能post】
+     * 文档地址:https://www.showdoc.cc/1620156?page_id=14899069
+     *
+     * @return
+     */
+    @GET("im/v1/msgs/ats")
+    Call<ResEntity<List<IMMessageCustomBody>>> getAtMeMsg();
 
     /**
      * 获取我收藏的消息
@@ -335,6 +376,16 @@ public interface ApiChatService {
      */
     @GET("im/v1/msgs/stars")
     Call<ResEntity<List<IMMessageCustomBody>>> getMyCollectedMessages(@Query("msg_id") long msg_id);
+
+
+    /**
+     * 获取我收藏的消息
+     * 文档地址:https://www.showdoc.cc/1620156?page_id=14892528
+     *
+     * @return
+     */
+    @GET("im/v1/msgs/stars")
+    Call<ResEntity<List<IMMessageCustomBody>>> getMyCollectedMessages();
 
     /**
      * 获取钉的消息
@@ -350,6 +401,18 @@ public interface ApiChatService {
                                                                @Query("to") String to,
                                                                @Query("msg_id") long msg_id);
 
+
+    /**
+     * 获取钉的消息
+     * 文档地址 https://www.showdoc.cc/1620156?page_id=14899073
+     *
+     * @param ope
+     * @param to
+     * @return
+     */
+    @GET("im/v1/msgs/pins")
+    Call<ResEntity<List<IMMessageCustomBody>>> getDingMessages(@Query("ope") @Const.CHAT_TYPE int ope,
+                                                               @Query("to") String to);
 
     /**
      * 查询网络消息
@@ -372,6 +435,7 @@ public interface ApiChatService {
 
     /**
      * 获取文件消息列表
+     * 文档地址:https://www.showdoc.cc/1620156?page_id=14909461
      *
      * @param ope
      * @param to
@@ -381,6 +445,39 @@ public interface ApiChatService {
     Call<ResEntity<List<IMMessageCustomBody>>> msgQueryFiles(@Query("ope") @Const.CHAT_TYPE int ope,
                                                              @Query("to") String to,
                                                              @Query("msg_id") long msg_id);
+
+
+    /**
+     * 获取文件消息列表
+     * 文档地址:https://www.showdoc.cc/1620156?page_id=14909461
+     *
+     * @param ope
+     * @param to
+     * @return
+     */
+    @GET("im/v1/msgs/files")
+    Call<ResEntity<List<IMMessageCustomBody>>> msgQueryFiles(@Query("ope") @Const.CHAT_TYPE int ope,
+                                                             @Query("to") String to);
+
+    /**
+     * 获取某条消息是否被搜藏过
+     * 文档地址:https://www.showdoc.cc/1620156?page_id=14899067
+     *
+     * @param msg_id
+     * @return
+     */
+    @GET("im/v1/msgs/stars/{msgId}/starred")
+    Call<ResEntity<Boolean>> msgIsCollected(@Path("msgId") long msg_id);
+
+    /**
+     * 获取某条消息是否被钉过
+     * 文档地址:https://www.showdoc.cc/1620156?page_id=14899073
+     *
+     * @param msg_id
+     * @return
+     */
+    @GET("im/v1/msgs/pins/{msgId}/pined")
+    Call<ResEntity<Boolean>> msgIsDinged(@Path("msgId") long msg_id);
 
     /**
      * 查询所有联系人【客户端理解为联系人】
@@ -402,6 +499,7 @@ public interface ApiChatService {
 
     /**
      * 会话置顶
+     * 文档地址:https://www.showdoc.cc/1620156?page_id=14902507
      *
      * @param ope
      * @param to
@@ -426,6 +524,7 @@ public interface ApiChatService {
 
     /**
      * 获取所有会话免打扰id
+     * 文档地址：https://www.showdoc.cc/1620156?page_id=14902507
      *
      * @return
      */
@@ -459,6 +558,7 @@ public interface ApiChatService {
 
     /**
      * 获取我的最新信息
+     * 文档地址:https://www.showdoc.cc/1620156?page_id=14893727
      *
      * @return
      */
@@ -468,6 +568,7 @@ public interface ApiChatService {
 
     /**
      * 获取文件下载地址
+     * 文档地址:https://www.showdoc.cc/1620156?page_id=14909461
      *
      * @param repo_id
      * @param path
@@ -478,5 +579,16 @@ public interface ApiChatService {
     Call<ResEntity<JsonElement>> fileUrlQuery(@Query("repo_id") String repo_id,
                                               @Query("path") String path,
                                               @Query("name") String name);
+
+
+    /**
+     * 获取聊天的token
+     * 文档地址:https://www.showdoc.cc/1620156?page_id=14892422
+     *
+     * @return
+     */
+    @GET("im/v1/users/imToken")
+    Call<ResEntity<LoginIMToken>> getChatToken();
+
 
 }

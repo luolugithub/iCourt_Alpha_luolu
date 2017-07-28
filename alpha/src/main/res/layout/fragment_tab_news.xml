@@ -20,7 +20,7 @@
 
             <android.support.design.widget.TabLayout
                 android:id="@+id/tabLayout"
-                style="@style/AlphaTabLayout"
+                style="@style/AlphaTitleTabLayout"
                 android:layout_width="wrap_content"
                 android:layout_height="@dimen/alpha_height_title"
                 app:tabMinWidth="70dp"
@@ -28,10 +28,12 @@
 
             <ImageView
                 android:id="@+id/ivActionAdd"
-                android:layout_width="wrap_content"
+                android:layout_width="38dp"
                 android:layout_height="wrap_content"
                 android:layout_alignParentRight="true"
                 android:padding="10dp"
+                android:layout_centerVertical="true"
+                android:scaleType="fitCenter"
                 android:src="@mipmap/header_icon_add" />
 
         </RelativeLayout>
