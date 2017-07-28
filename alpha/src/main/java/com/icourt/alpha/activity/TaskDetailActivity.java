@@ -834,6 +834,10 @@ public class TaskDetailActivity extends BaseActivity
         gestureDetector.onTouchEvent(ev);
         if (ev.getAction() == MotionEvent.ACTION_DOWN) {
             SystemUtils.hideSoftKeyBoard(getActivity());
+            taskTablayout.setFocusable(true);
+            taskTablayout.setFocusableInTouchMode(true);
+            taskTablayout.requestFocus();//请求焦点
+            taskTablayout.findFocus();//获取焦点
             return super.dispatchTouchEvent(ev);
         }
         return super.dispatchTouchEvent(ev);
