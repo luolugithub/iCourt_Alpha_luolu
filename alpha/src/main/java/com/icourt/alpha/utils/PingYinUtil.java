@@ -7,6 +7,8 @@ import android.text.TextUtils;
 
 import com.pinyin4android.PinyinUtil;
 
+import java.util.regex.Pattern;
+
 /**
  * Description
  * 汉字处理工具类 结合pinyin4j.jar
@@ -23,6 +25,19 @@ public class PingYinUtil {
      小写字母：[0x61,0x7a]（或十进制[97, 122]）
      大写字母：[0x41,0x5a]（或十进制[65, 90]）
      */
+
+    /**
+     * 判断是否为数字
+     *
+     * @param str
+     * @return
+     */
+    public static boolean isNumeric(String str) {
+        if (TextUtils.isEmpty(str)) return false;
+        Pattern pattern = Pattern.compile("[0-9]*");
+        return pattern.matcher(str).matches();
+
+    }
 
     /**
      * 汉字转换成拼音
