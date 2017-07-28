@@ -226,41 +226,49 @@ public class FileImportContactFragment extends BaseFragment implements BaseRecyc
 
     private void shareUrl2Contact(String path, String desc) {
         if (TextUtils.isEmpty(path)) return;
-        ArrayList<GroupContactBean> selectedData = imContactAdapter.getSelectedData();
+        final ArrayList<GroupContactBean> selectedData = imContactAdapter.getSelectedData();
         if (selectedData.isEmpty()) return;
         AlphaUserInfo loginUserInfo = getLoginUserInfo();
         String uid = StringUtils.toLowerCase(loginUserInfo != null ? loginUserInfo.getUserId() : "");
-        final IMMessageCustomBody msgPostEntity = IMMessageCustomBody.createLinkMsg(Const.CHAT_TYPE_P2P,
-                loginUserInfo == null ? "" : loginUserInfo.getName(),
-                uid,
-                selectedData.get(0).accid,
-                path,
-                desc,
-                null,
-                null);
-        String jsonBody = null;
-        try {
-            jsonBody = JsonUtils.Gson2String(msgPostEntity);
-        } catch (JsonParseException e) {
-            e.printStackTrace();
-        }
-        showLoadingDialog(null);
-        getChatApi().msgAdd(RequestUtils.createJsonBody(jsonBody))
-                .enqueue(new SimpleCallBack<IMMessageCustomBody>() {
-                    @Override
-                    public void onSuccess(Call<ResEntity<IMMessageCustomBody>> call, Response<ResEntity<IMMessageCustomBody>> response) {
-                        dismissLoadingDialog();
-                        if (getActivity() != null) {
-                            getActivity().finish();
-                        }
-                    }
+        if (selectedData.size() > 0) {
+            showLoadingDialog(null);
+            for (int i = 0; i < selectedData.size(); i++) {
+                final IMMessageCustomBody msgPostEntity = IMMessageCustomBody.createLinkMsg(Const.CHAT_TYPE_P2P,
+                        loginUserInfo == null ? "" : loginUserInfo.getName(),
+                        uid,
+                        selectedData.get(i).accid,
+                        path,
+                        desc,
+                        null,
+                        null);
+                String jsonBody = null;
+                try {
+                    jsonBody = JsonUtils.Gson2String(msgPostEntity);
+                } catch (JsonParseException e) {
+                    e.printStackTrace();
+                }
 
-                    @Override
-                    public void onFailure(Call<ResEntity<IMMessageCustomBody>> call, Throwable t) {
-                        super.onFailure(call, t);
-                        dismissLoadingDialog();
-                    }
-                });
+                final int finalI = i;
+                getChatApi().msgAdd(RequestUtils.createJsonBody(jsonBody))
+                        .enqueue(new SimpleCallBack<IMMessageCustomBody>() {
+                            @Override
+                            public void onSuccess(Call<ResEntity<IMMessageCustomBody>> call, Response<ResEntity<IMMessageCustomBody>> response) {
+                                dismissLoadingDialog();
+                                if (finalI == selectedData.size() - 1) {
+                                    if (getActivity() != null) {
+                                        getActivity().finish();
+                                    }
+                                }
+                            }
+
+                            @Override
+                            public void onFailure(Call<ResEntity<IMMessageCustomBody>> call, Throwable t) {
+                                super.onFailure(call, t);
+                                dismissLoadingDialog();
+                            }
+                        });
+            }
+        }
     }
 
     /**
@@ -294,58 +302,65 @@ public class FileImportContactFragment extends BaseFragment implements BaseRecyc
                 return;
             }
         }
-        ArrayList<GroupContactBean> selectedData = imContactAdapter.getSelectedData();
+        final ArrayList<GroupContactBean> selectedData = imContactAdapter.getSelectedData();
         if (selectedData.isEmpty()) return;
         AlphaUserInfo loginUserInfo = getLoginUserInfo();
         String uid = StringUtils.toLowerCase(loginUserInfo.getUserId());
-        final IMMessageCustomBody msgPostEntity = IMMessageCustomBody.createFileMsg(
-                Const.CHAT_TYPE_P2P,
-                loginUserInfo == null ? "" : loginUserInfo.getName(),
-                uid,
-                selectedData.get(0).accid,
-                path);
-        Map<String, RequestBody> params = new HashMap<>();
-        params.put("platform", RequestUtils.createTextBody(msgPostEntity.platform));
-        params.put("to", RequestUtils.createTextBody(msgPostEntity.to));
-        params.put("from", RequestUtils.createTextBody(msgPostEntity.from));
-        params.put("ope", RequestUtils.createTextBody(String.valueOf(msgPostEntity.ope)));
-        params.put("name", RequestUtils.createTextBody(msgPostEntity.name));
-        params.put("magic_id", RequestUtils.createTextBody(msgPostEntity.magic_id));
-        if (file != null) {
-            params.put(RequestUtils.createStreamKey(file), RequestUtils.createStreamBody(file));
-        } else {
-            String lastPathSegment = fileUri.getLastPathSegment();
-            if (TextUtils.isEmpty(lastPathSegment)) {
-                lastPathSegment = UUID.randomUUID().toString();
-            }
-            byte[] bytes = FileUtils.fileDescriptor2Byte(n_fileDescriptor);
-            if (n_fileDescriptor != null) {
-                try {
-                    n_fileDescriptor.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-            params.put(RequestUtils.createStreamKey(lastPathSegment), RequestUtils.createStreamBody(bytes));
-        }
-
-        showLoadingDialog(null);
-        getChatApi().msgImageAdd(params)
-                .enqueue(new SimpleCallBack<IMMessageCustomBody>() {
-                    @Override
-                    public void onSuccess(Call<ResEntity<IMMessageCustomBody>> call, Response<ResEntity<IMMessageCustomBody>> response) {
-                        dismissLoadingDialog();
-                        if (getActivity() != null) {
-                            getActivity().finish();
+        if (selectedData.size() > 0) {
+            showLoadingDialog(null);
+            for (int i = 0; i < selectedData.size(); i++) {
+                final IMMessageCustomBody msgPostEntity = IMMessageCustomBody.createFileMsg(
+                        Const.CHAT_TYPE_P2P,
+                        loginUserInfo == null ? "" : loginUserInfo.getName(),
+                        uid,
+                        selectedData.get(i).accid,
+                        path);
+                Map<String, RequestBody> params = new HashMap<>();
+                params.put("platform", RequestUtils.createTextBody(msgPostEntity.platform));
+                params.put("to", RequestUtils.createTextBody(msgPostEntity.to));
+                params.put("from", RequestUtils.createTextBody(msgPostEntity.from));
+                params.put("ope", RequestUtils.createTextBody(String.valueOf(msgPostEntity.ope)));
+                params.put("name", RequestUtils.createTextBody(msgPostEntity.name));
+                params.put("magic_id", RequestUtils.createTextBody(msgPostEntity.magic_id));
+                if (file != null) {
+                    params.put(RequestUtils.createStreamKey(file), RequestUtils.createStreamBody(file));
+                } else {
+                    String lastPathSegment = fileUri.getLastPathSegment();
+                    if (TextUtils.isEmpty(lastPathSegment)) {
+                        lastPathSegment = UUID.randomUUID().toString();
+                    }
+                    byte[] bytes = FileUtils.fileDescriptor2Byte(n_fileDescriptor);
+                    if (n_fileDescriptor != null) {
+                        try {
+                            n_fileDescriptor.close();
+                        } catch (IOException e) {
+                            e.printStackTrace();
                         }
                     }
+                    params.put(RequestUtils.createStreamKey(lastPathSegment), RequestUtils.createStreamBody(bytes));
+                }
 
-                    @Override
-                    public void onFailure(Call<ResEntity<IMMessageCustomBody>> call, Throwable t) {
-                        super.onFailure(call, t);
-                        dismissLoadingDialog();
-                    }
-                });
+                final int finalI = i;
+                getChatApi().msgImageAdd(params)
+                        .enqueue(new SimpleCallBack<IMMessageCustomBody>() {
+                            @Override
+                            public void onSuccess(Call<ResEntity<IMMessageCustomBody>> call, Response<ResEntity<IMMessageCustomBody>> response) {
+                                dismissLoadingDialog();
+                                if (finalI == selectedData.size() - 1) {
+                                    if (getActivity() != null) {
+                                        getActivity().finish();
+                                    }
+                                }
+                            }
+
+                            @Override
+                            public void onFailure(Call<ResEntity<IMMessageCustomBody>> call, Throwable t) {
+                                super.onFailure(call, t);
+                                dismissLoadingDialog();
+                            }
+                        });
+            }
+        }
     }
 
     /**
@@ -415,7 +430,6 @@ public class FileImportContactFragment extends BaseFragment implements BaseRecyc
 
     @Override
     public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
-        imContactAdapter.clearSelected();
         imContactAdapter.toggleSelected(position);
     }
 }

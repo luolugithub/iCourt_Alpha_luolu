@@ -86,6 +86,7 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
     TaskReminderEntity taskReminderEntity;
     @BindView(R.id.task_reminder_icon)
     ImageView taskReminderIcon;
+    boolean isFinish;
 
     public static TaskDetailFragment newInstance(@NonNull TaskEntity.TaskItemEntity taskItemEntity) {
         TaskDetailFragment taskDetailFragment = new TaskDetailFragment();
@@ -145,34 +146,44 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
     @Override
     public void onClick(View v) {
         super.onClick(v);
-        if (hasTaskEditPermission()) {
-            switch (v.getId()) {
-                case R.id.task_project_layout://选择项目
-                    if (taskItemEntity != null) {
-                        if (taskItemEntity.matter == null) {
-                            showProjectSelectDialogFragment(null);
-                        } else {
-                            showBottomMeau();
+        if (!isFinish) {
+            if (hasTaskEditPermission()) {
+                switch (v.getId()) {
+                    case R.id.task_project_layout://选择项目
+                        if (taskItemEntity != null) {
+                            if (taskItemEntity.matter == null) {
+                                showProjectSelectDialogFragment(null);
+                            } else {
+                                showBottomMeau();
+                            }
                         }
-                    }
-                    break;
-                case R.id.task_group_layout://选择任务组
-                    if (taskItemEntity.matter != null) {
-                        if (!TextUtils.isEmpty(taskItemEntity.matter.id)) {
-                            showProjectSelectDialogFragment(taskItemEntity.matter.id);
+                        break;
+                    case R.id.task_group_layout://选择任务组
+                        if (taskItemEntity.matter != null) {
+                            if (!TextUtils.isEmpty(taskItemEntity.matter.id)) {
+                                showProjectSelectDialogFragment(taskItemEntity.matter.id);
+                            }
                         }
-                    }
-                    break;
-                case R.id.task_time_layout://选择到期时间
-                    if (taskItemEntity != null)
-                        showDateSelectDialogFragment(taskItemEntity.dueTime, taskItemEntity.id);
-                    break;
-                case R.id.task_desc_tv://添加任务详情
-                    TaskDescUpdateActivity.launch(getContext(), taskDescTv.getText().toString(), TaskDescUpdateActivity.UPDATE_TASK_DESC);
-                    break;
+                        break;
+                    case R.id.task_time_layout://选择到期时间
+                        if (taskItemEntity != null)
+                            showDateSelectDialogFragment(taskItemEntity.dueTime, taskItemEntity.id);
+                        break;
+                    case R.id.task_desc_tv://添加任务详情
+                        TaskDescUpdateActivity.launch(getContext(), taskDescTv.getText().toString(), TaskDescUpdateActivity.UPDATE_TASK_DESC);
+                        break;
+                }
+            } else {
+                showTopSnackBar("您没有编辑任务的权限");
             }
-        } else {
-            showTopSnackBar("您没有编辑任务的权限");
+        }
+    }
+
+    @Override
+    public void notifyFragmentUpdate(Fragment targetFrgament, int type, Bundle bundle) {
+        if (targetFrgament instanceof TaskDetailFragment) {
+            if (bundle == null) return;
+            isFinish = bundle.getBoolean("isFinish");
         }
     }
 

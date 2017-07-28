@@ -99,11 +99,14 @@ public class TaskAdapter extends BaseArrayRecyclerAdapter<TaskEntity>
         RecyclerView recyclerView = holder.obtainView(R.id.parent_item_task_recyclerview);
         TaskItemAdapter taskItemAdapter;
         if (recyclerView.getLayoutManager() == null) {
+            recyclerView.setHasFixedSize(true);
+            recyclerView.setNestedScrollingEnabled(false);
             LinearLayoutManager layoutManager = new LinearLayoutManager(recyclerView.getContext());
+            layoutManager.setInitialPrefetchItemCount(4);
             recyclerView.setLayoutManager(layoutManager);
             taskItemAdapter = new TaskItemAdapter();
             taskItemAdapter.setAddTime(isAddTime);
-            recyclerView.setAdapter(taskItemAdapter);
+            recyclerView.setAdapter(taskItemAdapter = new TaskItemAdapter());
             taskItemAdapter.setOnItemClickListener(super.onItemClickListener);
             taskItemAdapter.setOnItemChildClickListener(super.onItemChildClickListener);
             taskItemAdapter.setOnItemLongClickListener(super.onItemLongClickListener);
@@ -125,6 +128,9 @@ public class TaskAdapter extends BaseArrayRecyclerAdapter<TaskEntity>
     public boolean onItemLongClick(BaseRecyclerAdapter adapter, ViewHolder holder, View view, int position) {
         if (adapter instanceof TaskItemAdapter) {
             TaskEntity.TaskItemEntity taskItemEntity = (TaskEntity.TaskItemEntity) adapter.getItem(adapter.getRealPos(position));
+            if (taskItemEntity.state) {
+                return false;
+            }
             ItemsEntity timeEntity = new ItemsEntity("开始计时", R.mipmap.time_start_orange_task);
             if (taskItemEntity.isTiming) {
                 timeEntity.itemIconRes = R.mipmap.time_stop_orange_task;
@@ -422,6 +428,8 @@ public class TaskAdapter extends BaseArrayRecyclerAdapter<TaskEntity>
                             timeView.setVisibility(View.GONE);
                         }
                     }
+                    itemEntity.state = state;
+
                 }
             }
 

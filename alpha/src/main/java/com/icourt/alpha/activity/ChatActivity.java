@@ -634,6 +634,14 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
                 }
             }
         });
+        ekBar.getEtChat().setOnSizeChangedListener(new EmoticonsEditText.OnSizeChangedListener() {
+            @Override
+            public void onSizeChanged(int w, int h, int oldw, int oldh) {
+                if (h != oldh&&linearLayoutManager.getChildCount()>0) {
+                    linearLayoutManager.scrollToPositionWithOffset(linearLayoutManager.getItemCount()-1,0);
+                }
+            }
+        });
         ekBar.addOnFuncKeyBoardListener(new FuncLayout.OnFuncKeyBoardListener() {
             @Override
             public void OnFuncPop(int i) {

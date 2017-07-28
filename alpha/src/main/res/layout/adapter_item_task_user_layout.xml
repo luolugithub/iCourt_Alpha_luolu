@@ -1,16 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+
+<ImageView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/user_image"
     android:layout_width="26dp"
     android:layout_height="26dp"
     android:layout_marginLeft="-8dp"
-    android:orientation="vertical">
-
-    <ImageView
-        android:id="@+id/user_image"
-        android:layout_width="26dp"
-        android:layout_height="26dp"
-        android:background="@drawable/bg_round_white"
-        android:padding="@dimen/dp2"
-        android:src="@mipmap/avatar_default_24" />
-
-</LinearLayout>
+    android:background="@drawable/bg_round_white"
+    android:padding="@dimen/dp2"
+    android:src="@mipmap/avatar_default_24" />
