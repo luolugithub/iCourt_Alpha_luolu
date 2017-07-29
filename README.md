@@ -14,10 +14,21 @@
    不允许提交到主要分支,fork一份代码,建立自己的本地分支(格式:开发分支+mr+名称简称 如:permission_mr_wyx),并提交request;  
    插件:GitLab Projects
  
- 
+#fir账号
+ 内部：wangchu@icourt.cc   qwer1234
+ 外部：104421133@qq.com    asd123
+ 外部：it@icourt.cc        zzVkn6bKgyWagvu34MhZ （包内的更新token和id都引用的是1044账号的token和id）
+ test：394337795@qq.com    394337795
+ 内部日更新：zhouyong@icourt.cc     Icourtadmin!@#123
+
+
 #上线打包日志  
- 2017/7/22 v2.0.1 内部包  
- 
+ 2017/7/22 v2.0.1 内部包 (fir账号：wangchu@icourt.cc)
+ 2017/7/26 v2.0.3 内部包 (fir账号：wangchu@icourt.cc)
+
+ 2017/7/25 v2.0.0 外部包 (fir账号：104421133@qq.com)
+ 2017/7/26 v2.0.1 外部包 (fir账号：104421133@qq.com)
+
 #打包配置  
  已在gradle与Hconst中配置完成;  
  暂时不混淆代码,采用360加固服务;  

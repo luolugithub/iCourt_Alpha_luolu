@@ -42,6 +42,7 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
+import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -513,7 +514,11 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
             if (getActivity() instanceof TaskDetailActivity) {
                 taskItemEntity = ((TaskDetailActivity) getActivity()).getTaskItemEntity();
             }
-            taskDescTv.setText(event.desc);
+            try {
+                taskDescTv.setText(URLDecoder.decode(event.desc, "utf-8"));
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
             taskItemEntity.description = event.desc;
             updateTask(taskItemEntity, null, null);
         }

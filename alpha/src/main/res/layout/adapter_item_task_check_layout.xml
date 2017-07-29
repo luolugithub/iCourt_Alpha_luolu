@@ -23,6 +23,8 @@
             android:layout_height="wrap_content"
             android:layout_marginLeft="12dp"
             android:layout_weight="1"
+            android:autoLink="web"
+            android:textColorLink="#ed6c00"
             android:background="@null"
             android:text="1111"
             android:textColor="@color/alpha_font_color_black"
