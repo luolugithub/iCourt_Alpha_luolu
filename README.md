@@ -15,11 +15,11 @@
    插件:GitLab Projects
  
 #fir账号
- 内部：wangchu@icourt.cc   qwer1234
- 外部：104421133@qq.com    asd123
- 外部：it@icourt.cc        zzVkn6bKgyWagvu34MhZ （包内的更新token和id都引用的是1044账号的token和id）
- test：394337795@qq.com    394337795
- 内部日更新：zhouyong@icourt.cc     Icourtadmin!@#123
+ 内部：wangchu@icourt.cc   qwer1234  
+ 外部：104421133@qq.com    asd123  
+ 外部：it@icourt.cc        zzVkn6bKgyWagvu34MhZ （包内的更新token和id都引用的是1044账号的token和id）  
+ test：394337795@qq.com    394337795  
+ 内部日更新：zhouyong@icourt.cc     Icourtadmin!@#123  
 
 
 #上线打包日志  
@@ -59,8 +59,8 @@
   地址: https://shenceadmin.alphalawyer.cn  
   测试: 用户名:admin 密码:ud4maK  
   正式: 用户名:admin 密码:v^db6(  
-  集成文档:https://github.com/sensorsdata/sa-sdk-android
-
+  集成文档:https://github.com/sensorsdata/sa-sdk-android  
+   
 #日志跟踪tag
 1. 自定义LogUtils
 2. 网络"http"
