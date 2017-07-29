@@ -270,7 +270,9 @@ public class TaskCheckItemFragment extends BaseFragment
         editText.setFocusableInTouchMode(true);//设置触摸聚焦
         editText.requestFocus();//请求焦点
         editText.findFocus();//获取焦点
+        editText.setSelection(editText.getText().length());
         SystemUtils.showSoftKeyBoard(getActivity());
+
     }
 
     @Override
@@ -336,7 +338,7 @@ public class TaskCheckItemFragment extends BaseFragment
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("id", itemEntity.id);
         jsonObject.addProperty("name", editText.getText().toString());
-        showLoadingDialog(null);
+
         getApi().taskCheckItemUpdate(RequestUtils.createJsonBody(jsonObject.toString())).enqueue(new SimpleCallBack<JsonElement>() {
             @Override
             public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {

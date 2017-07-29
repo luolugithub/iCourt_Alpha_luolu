@@ -253,8 +253,8 @@ public class FileImportContactFragment extends BaseFragment implements BaseRecyc
                         .enqueue(new SimpleCallBack<IMMessageCustomBody>() {
                             @Override
                             public void onSuccess(Call<ResEntity<IMMessageCustomBody>> call, Response<ResEntity<IMMessageCustomBody>> response) {
-                                dismissLoadingDialog();
                                 if (finalI == selectedData.size() - 1) {
+                                    dismissLoadingDialog();
                                     if (getActivity() != null) {
                                         getActivity().finish();
                                     }
@@ -264,7 +264,9 @@ public class FileImportContactFragment extends BaseFragment implements BaseRecyc
                             @Override
                             public void onFailure(Call<ResEntity<IMMessageCustomBody>> call, Throwable t) {
                                 super.onFailure(call, t);
-                                dismissLoadingDialog();
+                                if (finalI == selectedData.size() - 1) {
+                                    dismissLoadingDialog();
+                                }
                             }
                         });
             }
@@ -274,6 +276,7 @@ public class FileImportContactFragment extends BaseFragment implements BaseRecyc
     /**
      * 分享文件到享聊
      */
+
     private void shareFile2Contact(String path) {
         if (!checkPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
             reqPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, "我们需要文件读写权限!", 1001);
@@ -345,8 +348,8 @@ public class FileImportContactFragment extends BaseFragment implements BaseRecyc
                         .enqueue(new SimpleCallBack<IMMessageCustomBody>() {
                             @Override
                             public void onSuccess(Call<ResEntity<IMMessageCustomBody>> call, Response<ResEntity<IMMessageCustomBody>> response) {
-                                dismissLoadingDialog();
                                 if (finalI == selectedData.size() - 1) {
+                                    dismissLoadingDialog();
                                     if (getActivity() != null) {
                                         getActivity().finish();
                                     }
@@ -356,7 +359,9 @@ public class FileImportContactFragment extends BaseFragment implements BaseRecyc
                             @Override
                             public void onFailure(Call<ResEntity<IMMessageCustomBody>> call, Throwable t) {
                                 super.onFailure(call, t);
-                                dismissLoadingDialog();
+                                if (finalI == selectedData.size() - 1) {
+                                    dismissLoadingDialog();
+                                }
                             }
                         });
             }

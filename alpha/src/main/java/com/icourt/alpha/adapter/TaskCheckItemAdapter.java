@@ -1,5 +1,10 @@
 package com.icourt.alpha.adapter;
 
+import android.text.Spannable;
+import android.text.SpannableString;
+import android.text.TextUtils;
+import android.text.method.LinkMovementMethod;
+import android.text.util.Linkify;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -7,7 +12,6 @@ import android.widget.ImageView;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.baseadapter.MultiSelectRecyclerAdapter;
 import com.icourt.alpha.entity.bean.TaskCheckItemEntity;
-import com.icourt.alpha.utils.SpannableUtils;
 
 /**
  * Description
@@ -42,8 +46,12 @@ public class TaskCheckItemAdapter extends MultiSelectRecyclerAdapter<TaskCheckIt
             checkedTextView.setImageResource(R.mipmap.checkbox_square);
             nameView.setTextColor(0xFF4A4A4A);
         }
-        nameView.setText(itemEntity.name);
-//        SpannableUtils.setCommentUrlView(nameView, itemEntity.name);  //检查项支持链接
+        nameView.setMovementMethod(LinkMovementMethod.getInstance());
+        Spannable spannable = new SpannableString(itemEntity.name);
+        Linkify.addLinks(spannable, Linkify.WEB_URLS);
+
+        CharSequence text = TextUtils.concat(spannable, "\u200B");
+        nameView.setText(text);
         holder.bindChildClick(checkedTextView);
         holder.bindChildClick(deleteView);
         nameView.setOnFocusChangeListener(new View.OnFocusChangeListener() {

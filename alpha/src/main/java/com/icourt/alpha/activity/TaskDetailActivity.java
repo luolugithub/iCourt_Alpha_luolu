@@ -187,6 +187,11 @@ public class TaskDetailActivity extends BaseActivity
             public void onTabSelected(TabLayout.Tab tab) {
                 if (tab == null) return;
                 tab.setText(tabTitles.get(tab.getPosition(), ""));
+                SystemUtils.hideSoftKeyBoard(TaskDetailActivity.this);
+                taskTablayout.setFocusable(true);
+                taskTablayout.setFocusableInTouchMode(true);
+                taskTablayout.requestFocus();//请求焦点
+                taskTablayout.findFocus();//获取焦点
             }
 
             @Override
@@ -209,7 +214,8 @@ public class TaskDetailActivity extends BaseActivity
         getData(true);
     }
 
-    @OnClick({R.id.titleAction,
+    @OnClick({R.id.main_content,
+            R.id.titleAction,
             R.id.titleAction2,
             R.id.task_name,
             R.id.task_user_recyclerview,
@@ -222,6 +228,11 @@ public class TaskDetailActivity extends BaseActivity
     @Override
     public void onClick(View v) {
         super.onClick(v);
+        SystemUtils.hideSoftKeyBoard(this);
+        mainContent.setFocusable(true);
+        mainContent.setFocusableInTouchMode(true);
+        mainContent.requestFocus();//请求焦点
+        mainContent.findFocus();//获取焦点
         switch (v.getId()) {
             case R.id.titleAction://关注
                 if (myStar == TaskEntity.UNATTENTIONED) {
@@ -832,14 +843,6 @@ public class TaskDetailActivity extends BaseActivity
             });
         }
         gestureDetector.onTouchEvent(ev);
-        if (ev.getAction() == MotionEvent.ACTION_DOWN) {
-            SystemUtils.hideSoftKeyBoard(getActivity());
-            taskTablayout.setFocusable(true);
-            taskTablayout.setFocusableInTouchMode(true);
-            taskTablayout.requestFocus();//请求焦点
-            taskTablayout.findFocus();//获取焦点
-            return super.dispatchTouchEvent(ev);
-        }
         return super.dispatchTouchEvent(ev);
     }
 

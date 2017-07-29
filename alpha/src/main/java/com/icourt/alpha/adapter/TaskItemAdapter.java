@@ -49,20 +49,8 @@ public class TaskItemAdapter extends BaseArrayRecyclerAdapter<TaskEntity.TaskIte
 
         taskNameView.setText(taskItemEntity.name);
         startTimmingView.setVisibility(isAddTime ? View.VISIBLE : View.GONE);
-        StringBuffer stringBuffer = new StringBuffer();
-        if (taskItemEntity.matter != null) {
-            stringBuffer.append(taskItemEntity.matter.name);
-            if (taskItemEntity.parentFlow != null) {
-                if (!TextUtils.isEmpty(taskItemEntity.parentFlow.name))
-                    stringBuffer.append(" － ").append(taskItemEntity.parentFlow.name);
-            } else {
-                if (!TextUtils.isEmpty(taskItemEntity.parentName))
-                    stringBuffer.append(" － ").append(taskItemEntity.parentName);
-            }
-        } else {
-            stringBuffer.append("未指定所属项目");
-        }
-        projectNameView.setText(stringBuffer.toString());
+
+        projectNameView.setText(getProjectName(taskItemEntity));
         if (taskItemEntity.state) {
             timeTextSetData(timeView, taskItemEntity.updateTime);
         } else {
@@ -100,6 +88,30 @@ public class TaskItemAdapter extends BaseArrayRecyclerAdapter<TaskEntity.TaskIte
         checkBox.setChecked(taskItemEntity.state);
         holder.bindChildClick(checkBox);
         holder.bindChildClick(startTimmingView);
+    }
+
+    /**
+     * 获取项目名称
+     *
+     * @param taskItemEntity
+     * @return
+     */
+    private String getProjectName(TaskEntity.TaskItemEntity taskItemEntity) {
+        if (taskItemEntity == null) return "";
+        StringBuilder stringBuilder = new StringBuilder();
+        if (taskItemEntity.matter != null) {
+            stringBuilder.append(taskItemEntity.matter.name);
+            if (taskItemEntity.parentFlow != null) {
+                if (!TextUtils.isEmpty(taskItemEntity.parentFlow.name))
+                    stringBuilder.append(" － ").append(taskItemEntity.parentFlow.name);
+            } else {
+                if (!TextUtils.isEmpty(taskItemEntity.parentName))
+                    stringBuilder.append(" － ").append(taskItemEntity.parentName);
+            }
+        } else {
+            stringBuilder.append("未指定所属项目");
+        }
+        return stringBuilder.toString();
     }
 
     /**

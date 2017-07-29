@@ -223,8 +223,8 @@ public class FileImportTeamFragment extends BaseFragment implements BaseRecycler
                         .enqueue(new SimpleCallBack<IMMessageCustomBody>() {
                             @Override
                             public void onSuccess(Call<ResEntity<IMMessageCustomBody>> call, Response<ResEntity<IMMessageCustomBody>> response) {
-                                dismissLoadingDialog();
                                 if (finalI == selectedData.size() - 1) {
+                                    dismissLoadingDialog();
                                     if (getActivity() != null) {
                                         getActivity().finish();
                                     }
@@ -234,7 +234,9 @@ public class FileImportTeamFragment extends BaseFragment implements BaseRecycler
                             @Override
                             public void onFailure(Call<ResEntity<IMMessageCustomBody>> call, Throwable t) {
                                 super.onFailure(call, t);
-                                dismissLoadingDialog();
+                                if (finalI == selectedData.size() - 1) {
+                                    dismissLoadingDialog();
+                                }
                             }
                         });
             }
@@ -320,8 +322,8 @@ public class FileImportTeamFragment extends BaseFragment implements BaseRecycler
                         .enqueue(new SimpleCallBack<IMMessageCustomBody>() {
                             @Override
                             public void onSuccess(Call<ResEntity<IMMessageCustomBody>> call, Response<ResEntity<IMMessageCustomBody>> response) {
-                                dismissLoadingDialog();
                                 if (finalI == selectedData.size() - 1) {
+                                    dismissLoadingDialog();
                                     if (getActivity() != null) {
                                         getActivity().finish();
                                     }
@@ -331,7 +333,9 @@ public class FileImportTeamFragment extends BaseFragment implements BaseRecycler
                             @Override
                             public void onFailure(Call<ResEntity<IMMessageCustomBody>> call, Throwable t) {
                                 super.onFailure(call, t);
-                                dismissLoadingDialog();
+                                if (finalI == selectedData.size() - 1) {
+                                    dismissLoadingDialog();
+                                }
                             }
                         });
             }
