@@ -271,7 +271,7 @@ public class BaseApplication extends MultiDexApplication {
             NIMClient.toggleNotification(UserPreferences.getNotificationToggle());
             NIMClient.updateStatusBarNotificationConfig(UserPreferences.getStatusConfig());
             NIMClient.getService(MsgService.class)
-                    .registerCustomAttachmentParser(new NimAttachParser());//new CustomAttachParser()
+                    .registerCustomAttachmentParser(new NimAttachParser());
         }
     }
 
