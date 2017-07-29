@@ -18,6 +18,7 @@ import com.icourt.alpha.interfaces.UpdateAppDialogNoticeImp;
 import com.icourt.alpha.interfaces.callback.AppUpdateCallBack;
 import com.icourt.alpha.utils.ApkUtils;
 import com.icourt.alpha.utils.Md5Utils;
+import com.icourt.alpha.utils.NetUtils;
 import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.utils.UrlUtils;
 import com.liulishuo.filedownloader.BaseDownloadTask;
@@ -214,9 +215,9 @@ public class BaseAppUpdateActivity extends BaseUmengActivity implements
 
         @Override
         protected void error(BaseDownloadTask task, Throwable e) {
-            /*if (NetworkUtils.isConnected(BaseApplication.getApplication())) {
-                uplaodLog(e);
-            }*/
+            if (NetUtils.hasNetwork(BaseApplication.getApplication())) {
+                bugSync("App更新失败", e);
+            }
             if (e instanceof FileDownloadHttpException) {
                 int code = ((FileDownloadHttpException) e).getCode();
                 showTopSnackBar(String.format("%s:%s", code, "下载异常!"));
