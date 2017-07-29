@@ -106,7 +106,7 @@ public class BaseAppUpdateActivity extends BaseUmengActivity implements
         AlertDialog.Builder builder = new AlertDialog.Builder(context)
                 .setTitle("更新提醒")
                 .setMessage(TextUtils.isEmpty(appVersionEntity.changelog) ? "有一个新版本,请立即更新吧" : appVersionEntity.changelog); //设置内容
-        builder.setPositiveButton("前往更新", new DialogInterface.OnClickListener() {
+        builder.setPositiveButton("更新", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 if (hasFilePermission(context)) {
@@ -121,7 +121,7 @@ public class BaseAppUpdateActivity extends BaseUmengActivity implements
         if (shouldForceUpdate(appVersionEntity)) {
             builder.setCancelable(false);
         } else {
-            builder.setNegativeButton("下次更新", new DialogInterface.OnClickListener() {
+            builder.setNegativeButton("取消", new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
                     dialog.dismiss();
