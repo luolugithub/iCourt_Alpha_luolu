@@ -170,7 +170,8 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
                 super.onLoadMore(isSilence);
             }
         });
-        refreshLayout.startRefresh();
+        if (type == TYPE_ALL)
+            refreshLayout.startRefresh();
 
         allTaskEntities = new ArrayList<>();
         todayTaskEntities = new ArrayList<>();
