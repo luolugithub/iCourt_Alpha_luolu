@@ -13,9 +13,12 @@ import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.app.NotificationManagerCompat;
+import android.support.v4.util.ArrayMap;
 import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
 import android.util.SparseArray;
+import android.util.SparseIntArray;
+import android.util.SparseLongArray;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -57,6 +60,7 @@ import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.interfaces.OnTabDoubleClickListener;
 import com.icourt.alpha.service.DaemonService;
+import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.DensityUtil;
 import com.icourt.alpha.utils.LoginInfoUtils;
 import com.icourt.alpha.utils.SimpleViewGestureListener;
@@ -85,6 +89,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -201,6 +206,7 @@ public class MainActivity extends BaseAppUpdateActivity
             return super.onDoubleTap(v, e);
         }
     };
+    final ArrayMap<Long, Integer> serverTimingSyncTimesArray = new ArrayMap<>();
 
     class MyHandler extends Handler {
         public static final int TYPE_TOKEN_REFRESH = 101;//token刷新
@@ -719,6 +725,21 @@ public class MainActivity extends BaseAppUpdateActivity
     }
 
     /**
+     * //每分钟2次有效 避免死循环
+     *
+     * @return
+     */
+    private boolean isInterceptServerTimingEvent() {
+        long currSeconde = DateUtils.millis() / TimeUnit.MINUTES.toMillis(1);
+        Integer eventTimes = serverTimingSyncTimesArray.get(currSeconde);
+        if (eventTimes != null && eventTimes.intValue() > 2) {
+            return true;
+        }
+        serverTimingSyncTimesArray.put(currSeconde, eventTimes != null ? eventTimes.intValue() + 1 : 1);
+        return false;
+    }
+
+    /**
      * 网络计时同步更新通知
      *
      * @param event
@@ -727,6 +748,8 @@ public class MainActivity extends BaseAppUpdateActivity
     public void onServerTimingEvent(ServerTimingEvent event) {
         if (event == null) return;
         if (TextUtils.equals(event.clientId, getlocalUniqueId())) return;
+        if (isInterceptServerTimingEvent()) return;
+
         if (event.isSyncObject() && event.isSyncTimingType()) {
             if (TextUtils.equals(event.scene, ServerTimingEvent.TIMING_SYNC_START)) {
                 TimerManager.getInstance().resumeTimer(event);
