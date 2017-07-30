@@ -203,6 +203,7 @@ public class TabCustomerFragment extends BaseFragment implements BaseRecyclerAda
                                 bugSync("排序异常", e);
                             }
                             customerAdapter.bindData(true, response.body().result);
+                            customerAdapter.setShowCustomerNum(true);
                             updateIndexBar(response.body().result);
                             insert2Db(response.body().result);
                         }

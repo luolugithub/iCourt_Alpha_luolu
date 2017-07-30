@@ -120,7 +120,8 @@ public class GroupSettingActivity extends BaseActivity {
                 groupSetPrivateSwitch.setChecked(false);
                 groupSetPrivateChildPerLl.setVisibility(View.GONE);
                 groupSetInviteSwitch.setChecked(groupDetailEntity.member_invite);
-                groupSetLookSwitch.setChecked(groupDetailEntity.chat_history);
+                //groupSetLookSwitch.setChecked(groupDetailEntity.chat_history);
+                groupSetLookSwitch.setChecked(false);
             }
         }
 
@@ -186,7 +187,8 @@ public class GroupSettingActivity extends BaseActivity {
                 groupSetPrivateChildPerLl.setVisibility(!groupSetPrivateSwitch.isChecked() ? View.GONE : View.VISIBLE);
                 if (groupSetPrivateSwitch.isChecked()) {
                     groupSetInviteSwitch.setChecked(groupDetailEntity.member_invite);
-                    groupSetLookSwitch.setChecked(groupDetailEntity.chat_history);
+                    //groupSetLookSwitch.setChecked(groupDetailEntity.chat_history);
+                    groupSetLookSwitch.setChecked(false);
                 }
                 break;
             default:
@@ -286,7 +288,7 @@ public class GroupSettingActivity extends BaseActivity {
         } else {
             param.addProperty("is_private", false);
             param.addProperty("member_invite", true);
-            param.addProperty("chat_history", true);
+            param.addProperty("chat_history", false);
         }
         showLoadingDialog(null);
         getChatApi().groupUpdate(groupDetailEntity.tid, RequestUtils.createJsonBody(param.toString()))
