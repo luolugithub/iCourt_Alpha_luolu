@@ -108,7 +108,7 @@ public class TimerManager {
         scheduledFuture =
                 scheduledExecutorService.scheduleAtFixedRate(
                         timingRunnable,
-                        0,
+                        1,
                         1,
                         TimeUnit.SECONDS);
     }
