@@ -836,7 +836,8 @@ public interface ApiAlphaService {
      * @return
      */
     @DELETE("api/v2/timing/timing/delete/{timerId}")
-    Call<ResEntity<JsonElement>> timingDelete(@Path("timerId") String timerId);
+    Call<ResEntity<JsonElement>> timingDelete(@Path("timerId") String timerId,
+                                              @Query("clientId") String clientId);
 
     /**
      * 新建任务

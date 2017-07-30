@@ -226,10 +226,17 @@ public class TimerManager {
      */
     public void resumeTimer(TimeEntity.ItemEntity timer) {
         if (timer == null) return;
+        if (timer.useTime < 0) {
+            timer.useTime = 0;
+        }
         SpUtils.getInstance().putData(String.format(KEY_TIMER, getUid()), timer);
         globalTimingId = timer.pkId;
         broadTimingEvent(globalTimingId, TimingEvent.TIMING_ADD);
-        resumeTimer();
+        //resumeTimer();
+
+        globalTimingId = timer.pkId;
+        setBase(timer.useTime / 1_000);
+        startTimingTask();
     }
 
 
@@ -318,7 +325,7 @@ public class TimerManager {
         TimeEntity.ItemEntity timer = getTimer();
         if (timer != null && timer.equals(itemEntity)) {
             SpUtils.getInstance().putData(String.format(KEY_TIMER, getUid()), itemEntity);
-            resumeTimer();
+            resumeTimer(itemEntity);
         }
     }
 

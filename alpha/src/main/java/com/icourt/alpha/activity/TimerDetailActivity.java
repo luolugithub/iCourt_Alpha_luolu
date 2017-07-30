@@ -24,6 +24,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
+import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.icourt.alpha.entity.bean.ProjectEntity;
 import com.icourt.alpha.entity.bean.TaskEntity;
 import com.icourt.alpha.entity.bean.TimeEntity;
@@ -452,6 +453,12 @@ public class TimerDetailActivity extends BaseTimerActivity
             if (jsonBody.has("workTypeName")) {
                 jsonBody.remove("workTypeName");
             }
+            AlphaUserInfo loginUserInfo = getLoginUserInfo();
+            String clientId = "";
+            if (loginUserInfo != null) {
+                clientId = loginUserInfo.localUniqueId;
+            }
+            jsonBody.addProperty("clientId", clientId);
             getApi().timingUpdate(RequestUtils.createJsonBody(jsonBody.toString()))
                     .enqueue(new SimpleCallBack<JsonElement>() {
                         @Override

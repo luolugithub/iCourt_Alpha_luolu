@@ -243,6 +243,12 @@ public class TimerTimingActivity extends BaseTimerActivity
             if (jsonBody.has("endTime")) {
                 jsonBody.remove("endTime");
             }
+            AlphaUserInfo loginUserInfo = getLoginUserInfo();
+            String clientId = "";
+            if (loginUserInfo != null) {
+                clientId = loginUserInfo.localUniqueId;
+            }
+            jsonBody.addProperty("clientId", clientId);
             showLoadingDialog(null);
             getApi().timingUpdate(RequestUtils.createJsonBody(jsonBody.toString()))
                     .enqueue(new SimpleCallBack<JsonElement>() {
