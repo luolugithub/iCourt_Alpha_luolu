@@ -637,8 +637,8 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
         ekBar.getEtChat().setOnSizeChangedListener(new EmoticonsEditText.OnSizeChangedListener() {
             @Override
             public void onSizeChanged(int w, int h, int oldw, int oldh) {
-                if (h != oldh&&linearLayoutManager.getChildCount()>0) {
-                    linearLayoutManager.scrollToPositionWithOffset(linearLayoutManager.getItemCount()-1,0);
+                if (h != oldh && linearLayoutManager.getChildCount() > 0) {
+                    linearLayoutManager.scrollToPositionWithOffset(linearLayoutManager.getItemCount() - 1, 0);
                 }
             }
         });
@@ -985,6 +985,32 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
                 });
     }
 
+    @Override
+    protected List<IMMessageCustomBody> convert2CustomerMessages(List<IMMessage> param) {
+        return filterCustomerMessagesFromAdapter(super.convert2CustomerMessages(param));
+    }
+
+    /**
+     * 过滤适配器中已经存在的东西
+     *
+     * @param param
+     * @return
+     */
+    protected List<IMMessageCustomBody> filterCustomerMessagesFromAdapter(List<IMMessageCustomBody> param) {
+        List<IMMessageCustomBody> imMessageCustomBodies = param;
+        //过滤已经存在的消息
+        List<IMMessageCustomBody> data = chatAdapter.getData();
+        if (imMessageCustomBodies != null && !imMessageCustomBodies.isEmpty()) {
+            for (int i = imMessageCustomBodies.size() - 1; i >= 0; i--) {
+                IMMessageCustomBody body = imMessageCustomBodies.get(i);
+                if (data.contains(body)) {
+                    imMessageCustomBodies.remove(i);
+                }
+            }
+        }
+        return imMessageCustomBodies;
+    }
+
     private IMMessage getLocationMessage() {
         switch (getIMChatType()) {
             case CHAT_TYPE_P2P:
@@ -1109,6 +1135,7 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
                     @Override
                     public void onSuccess(Call<ResEntity<List<IMMessageCustomBody>>> call, Response<ResEntity<List<IMMessageCustomBody>>> response) {
                         if (response.body().result != null) {
+                            filterCustomerMessagesFromAdapter(response.body().result);
                             Collections.sort(response.body().result, new LongFieldEntityComparator<IMMessageCustomBody>(LongFieldEntityComparator.ORDER.ASC));
                             chatAdapter.addItems(0, response.body().result);
                             if (isRefresh) {

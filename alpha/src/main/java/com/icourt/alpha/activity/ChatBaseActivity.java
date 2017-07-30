@@ -966,7 +966,7 @@ public abstract class ChatBaseActivity
      * @param param
      * @return
      */
-    protected final List<IMMessageCustomBody> convert2CustomerMessages(List<IMMessage> param) {
+    protected List<IMMessageCustomBody> convert2CustomerMessages(List<IMMessage> param) {
         List<IMMessageCustomBody> customerMessageEntities = new ArrayList<>();
         if (param != null) {
             for (IMMessage message : param) {

@@ -27,6 +27,7 @@ import com.icourt.alpha.adapter.SearchItemAdapter;
 import com.icourt.alpha.adapter.SearchPolymerizationAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.base.BaseActivity;
+import com.icourt.alpha.constants.Const;
 import com.icourt.alpha.db.convertor.IConvertModel;
 import com.icourt.alpha.db.convertor.ListConvertor;
 import com.icourt.alpha.db.dbmodel.ContactDbModel;
@@ -385,7 +386,9 @@ public class SearchPolymerizationActivity extends BaseActivity implements BaseRe
      * @return
      */
     private boolean isMsgContainKeyWord(IMMessageCustomBody imBody, String keyWord) {
-        if (imBody != null && !TextUtils.isEmpty(keyWord)) {
+        if (imBody != null
+                && imBody.show_type != Const.MSG_TYPE_SYS
+                && !TextUtils.isEmpty(keyWord)) {
             return (StringUtils.containsIgnoreCase(imBody.content, keyWord)
                     || (imBody.ext != null && StringUtils.containsIgnoreCase(imBody.ext.name, keyWord)));
 
@@ -554,14 +557,14 @@ public class SearchPolymerizationActivity extends BaseActivity implements BaseRe
                                         StringUtils.toLowerCase(item.getId()),
                                         TextUtils.isEmpty(item.getTitle()) ? "" : item.getTitle().toString(),
                                         item.getId2(),
-                                        0);
+                                        0, true);
                                 break;
                             case CHAT_TYPE_TEAM:
                                 ChatActivity.launchTEAM(getContext(),
                                         item.getId(),
                                         TextUtils.isEmpty(item.getTitle()) ? "" : item.getTitle().toString(),
                                         item.getId2(),
-                                        0);
+                                        0, true);
                                 break;
                         }
                         break;
