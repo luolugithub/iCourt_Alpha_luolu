@@ -60,6 +60,7 @@ import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.interfaces.OnTabDoubleClickListener;
 import com.icourt.alpha.service.DaemonService;
+import com.icourt.alpha.utils.AppManager;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.DensityUtil;
 import com.icourt.alpha.utils.LoginInfoUtils;
@@ -211,6 +212,7 @@ public class MainActivity extends BaseAppUpdateActivity
     class MyHandler extends Handler {
         public static final int TYPE_TOKEN_REFRESH = 101;//token刷新
         public static final int TYPE_CHECK_APP_UPDATE = 102;//检查更新
+        public static final int TYPE_CHECK_TIMING_UPDATE = 103;//检查计时
 
         /**
          * 刷新登陆token
@@ -228,6 +230,15 @@ public class MainActivity extends BaseAppUpdateActivity
             this.sendEmptyMessageDelayed(TYPE_CHECK_APP_UPDATE, 3_000);
         }
 
+
+        /**
+         * 检查计时
+         */
+        public void addCheckTimingTask() {
+            this.removeMessages(TYPE_CHECK_TIMING_UPDATE);
+            this.sendEmptyMessageDelayed(TYPE_CHECK_TIMING_UPDATE, 1_000);
+        }
+
         @Override
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
@@ -237,6 +248,9 @@ public class MainActivity extends BaseAppUpdateActivity
                     break;
                 case TYPE_CHECK_APP_UPDATE:
                     checkAppUpdate(getContext());
+                    break;
+                case TYPE_CHECK_TIMING_UPDATE:
+                    TimerManager.getInstance().timerQuerySync();
                     break;
             }
         }
@@ -298,6 +312,7 @@ public class MainActivity extends BaseAppUpdateActivity
             mHandler.addCheckAppUpdateTask();
         }
         mHandler.addTokenRefreshTask();
+        mHandler.addCheckTimingTask();
     }
 
     private void initTabChangeableData() {
