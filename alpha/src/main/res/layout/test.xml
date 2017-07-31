@@ -15,25 +15,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:background="#6cf"
-            android:text="12fdj" />
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="2dp"
-            android:background="#ff00" />
-    </LinearLayout>
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical">
-
-        <CheckedTextView
-            android:id="@+id/ctv_2"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="#6cf"
-            android:checked="true"
-            android:text="12fdh" />
+            android:text="11"
+            android:textSize="60sp"/>
 
         <View
             android:layout_width="match_parent"

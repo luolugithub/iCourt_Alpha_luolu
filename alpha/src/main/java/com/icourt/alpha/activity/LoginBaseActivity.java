@@ -19,6 +19,7 @@ import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.service.SyncDataService;
 import com.icourt.alpha.utils.BugUtils;
 import com.icourt.alpha.utils.JsonUtils;
+import com.icourt.alpha.utils.SpUtils;
 import com.icourt.alpha.utils.UserPreferences;
 import com.icourt.api.RequestUtils;
 import com.netease.nimlib.sdk.NIMClient;
@@ -41,6 +42,7 @@ import retrofit2.Response;
  * version 1.0.0
  */
 public class LoginBaseActivity extends BaseUmengActivity {
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -152,7 +154,7 @@ public class LoginBaseActivity extends BaseUmengActivity {
                             } catch (Throwable e) {
                             }
                             //保存登陆信息
-                            result.localUniqueId= UUID.randomUUID().toString();
+                            result.localUniqueId = UUID.randomUUID().toString();
                             saveLoginUserInfo(result);
 
                             //神策统计
@@ -196,8 +198,9 @@ public class LoginBaseActivity extends BaseUmengActivity {
                             NIMClient.toggleNotification(UserPreferences.getNotificationToggle());
                             NIMClient.updateStatusBarNotificationConfig(UserPreferences.getStatusConfig());
 
+
                             // 进入主界面
-                            MainActivity.launch(getContext());
+                            MainActivity.launchFromLogin(getContext());
 
                         }
 
@@ -212,7 +215,7 @@ public class LoginBaseActivity extends BaseUmengActivity {
                             }
                             bugSync("云信登陆失败", result + " code:" + code);
                             // 进入主界面
-                            MainActivity.launch(getContext());
+                            MainActivity.launchFromLogin(getContext());
                         }
 
                         @Override
@@ -220,7 +223,7 @@ public class LoginBaseActivity extends BaseUmengActivity {
                             showToast("云信登陆异常:" + exception);
                             bugSync("云信登陆异常", exception);
                             // 进入主界面
-                            MainActivity.launch(getContext());
+                            MainActivity.launchFromLogin(getContext());
                         }
                     });
         }

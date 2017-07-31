@@ -117,6 +117,8 @@ public class MainActivity extends BaseAppUpdateActivity
     public static String KEY_PROJECT_PERMISSION = "cache_project_permission";
     public static String KEY_CUSTOMER_PERMISSION = "cache_customer_permission";
 
+    public static final String KEY_FROM_LOGIN = "FromLogin";
+
 
     public static final int TYPE_FRAGMENT_NEWS = 0;
     public static final int TYPE_FRAGMENT_TASK = 1;
@@ -177,6 +179,14 @@ public class MainActivity extends BaseAppUpdateActivity
     public static void launch(Context context) {
         if (context == null) return;
         Intent intent = new Intent(context, MainActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        context.startActivity(intent);
+    }
+
+    public static void launchFromLogin(Context context) {
+        if (context == null) return;
+        Intent intent = new Intent(context, MainActivity.class);
+        intent.putExtra(KEY_FROM_LOGIN, true);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         context.startActivity(intent);
     }
