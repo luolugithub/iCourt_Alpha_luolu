@@ -210,9 +210,6 @@ public class TabTimingFragment extends BaseFragment implements BaseRecyclerAdapt
     @Override
     protected void getData(final boolean isRefresh) {
         super.getData(isRefresh);
-        if (isRefresh) {
-            TimerManager.getInstance().timerQuerySync();
-        }
         long dividerTime = (pageIndex * weekMillSecond);
         long weekStartTimeMillSecond = DateUtils.getCurrWeekStartTime() - dividerTime;
         long weekEndTimeMillSecond = DateUtils.getCurrWeekEndTime() - dividerTime;

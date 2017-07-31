@@ -284,7 +284,6 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
                             linearLayoutManager.scrollToPositionWithOffset(headerFooterAdapter.getHeaderCount(), 0);
                             isFirstTimeIntoPage = false;
                         }
-                        TimerManager.getInstance().timerQuerySync();
                     }
                 });
     }

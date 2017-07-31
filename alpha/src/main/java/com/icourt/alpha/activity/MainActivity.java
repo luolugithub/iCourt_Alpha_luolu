@@ -725,14 +725,14 @@ public class MainActivity extends BaseAppUpdateActivity
     }
 
     /**
-     * //每分钟2次有效 避免死循环
+     * //每分钟5次有效 避免死循环
      *
      * @return
      */
     private boolean isInterceptServerTimingEvent() {
         long currSeconde = DateUtils.millis() / TimeUnit.MINUTES.toMillis(1);
         Integer eventTimes = serverTimingSyncTimesArray.get(currSeconde);
-        if (eventTimes != null && eventTimes.intValue() > 2) {
+        if (eventTimes != null && eventTimes.intValue() > 5) {
             return true;
         }
         serverTimingSyncTimesArray.put(currSeconde, eventTimes != null ? eventTimes.intValue() + 1 : 1);

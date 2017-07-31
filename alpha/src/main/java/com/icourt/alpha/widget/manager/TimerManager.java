@@ -3,6 +3,7 @@ package com.icourt.alpha.widget.manager;
 import android.support.annotation.CheckResult;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.text.TextUtils;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -230,6 +231,7 @@ public class TimerManager {
             timer.useTime = 0;
         }
         SpUtils.getInstance().putData(String.format(KEY_TIMER, getUid()), timer);
+
         globalTimingId = timer.pkId;
         broadTimingEvent(globalTimingId, TimingEvent.TIMING_ADD);
         //resumeTimer();
@@ -323,7 +325,7 @@ public class TimerManager {
     public void updateTimer(TimeEntity.ItemEntity itemEntity) {
         if (itemEntity == null) return;
         TimeEntity.ItemEntity timer = getTimer();
-        if (timer != null && timer.equals(itemEntity)) {
+        if (timer != null && StringUtils.equalsIgnoreCase(itemEntity.pkId, timer.pkId, false)) {
             SpUtils.getInstance().putData(String.format(KEY_TIMER, getUid()), itemEntity);
             resumeTimer(itemEntity);
         }
