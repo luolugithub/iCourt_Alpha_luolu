@@ -396,6 +396,9 @@ public class TimerManager {
                     .enqueue(new SimpleCallBack<TimeEntity.ItemEntity>() {
                         @Override
                         public void onSuccess(Call<ResEntity<TimeEntity.ItemEntity>> call, Response<ResEntity<TimeEntity.ItemEntity>> response) {
+                            if (callBack != null) {
+                                callBack.onSuccess(call, response);
+                            }
                             stopTimingTask();
                             SpUtils.getInstance().putData(String.format(KEY_TIMER, getUid()), "");
 
@@ -404,10 +407,6 @@ public class TimerManager {
                             timingSingle.timingId = timer.pkId;
                             timingSingle.timingSecond = base;
                             EventBus.getDefault().post(timingSingle);
-
-                            if (callBack != null) {
-                                callBack.onSuccess(call, response);
-                            }
                         }
 
                         @Override

@@ -203,10 +203,22 @@ public class TimerTimingActivity extends BaseTimerActivity
                 break;
             case R.id.stop_time_tv:
                 itemEntity.state = TimeEntity.ItemEntity.TIMER_STATE_STOP;
-                itemEntity.endTime = DateUtils.millis() + 60_000;
-                TimerManager.getInstance().stopTimer();
-                TimerDetailActivity.launch(getContext(), itemEntity);
-                finish();
+                showLoadingDialog(null);
+                TimerManager.getInstance().stopTimer(new SimpleCallBack<TimeEntity.ItemEntity>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<TimeEntity.ItemEntity>> call, Response<ResEntity<TimeEntity.ItemEntity>> response) {
+                        dismissLoadingDialog();
+                        itemEntity = response.body().result;
+                        //TimerDetailActivity.launch(getContext(), response.body().result);
+                        finish();
+                    }
+
+                    @Override
+                    public void onFailure(Call<ResEntity<TimeEntity.ItemEntity>> call, Throwable t) {
+                        dismissLoadingDialog();
+                        super.onFailure(call, t);
+                    }
+                });
                 break;
         }
     }
