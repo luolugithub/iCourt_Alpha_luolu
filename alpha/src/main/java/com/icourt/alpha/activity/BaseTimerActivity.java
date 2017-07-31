@@ -9,6 +9,7 @@ import android.support.v7.app.AlertDialog;
 
 import com.google.gson.JsonElement;
 import com.icourt.alpha.base.BaseActivity;
+import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.icourt.alpha.fragment.dialogfragment.CalendaerSelectDialogFragment;
 import com.icourt.alpha.fragment.dialogfragment.ProjectSimpleSelectDialogFragment;
 import com.icourt.alpha.fragment.dialogfragment.TaskSelectDialogFragment;
@@ -39,7 +40,12 @@ public class BaseTimerActivity extends BaseActivity {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         showLoadingDialog(null);
-                        getApi().timingDelete(id)
+                        AlphaUserInfo loginUserInfo = getLoginUserInfo();
+                        String clientId = "";
+                        if (loginUserInfo != null) {
+                            clientId = loginUserInfo.localUniqueId;
+                        }
+                        getApi().timingDelete(id, clientId)
                                 .enqueue(new SimpleCallBack<JsonElement>() {
                                     @Override
                                     public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {

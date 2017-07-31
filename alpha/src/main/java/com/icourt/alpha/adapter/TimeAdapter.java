@@ -289,8 +289,10 @@ public class TimeAdapter extends BaseArrayRecyclerAdapter<TimeEntity.ItemEntity>
         switch (view.getId()) {
             case R.id.timer_icon:
                 if (item.state == TimeEntity.TIMER_STATE_END_TYPE) {
+                    item.state = 0;
                     TimerManager.getInstance().addTimer(item);
                 } else {
+                    item.state = 1;
                     TimerManager.getInstance().stopTimer();
                 }
                 break;

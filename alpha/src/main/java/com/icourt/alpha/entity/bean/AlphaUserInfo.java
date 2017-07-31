@@ -46,6 +46,7 @@ public class AlphaUserInfo extends ResEntity<String> implements Serializable {
     private String refreshToken;
     private String name;
     private List<SelectGroupBean> groups;
+    public String localUniqueId;//本地唯一id  mime需要权限 不靠谱
 
     public String getThirdpartId() {
         return thirdpartId;

@@ -235,7 +235,6 @@ public class TaskOtherListFragment extends BaseFragment implements BaseRecyclerA
                 if (response.body().result != null) {
                     if (finishType == FINISH_TYPE) {
                         taskItemAdapter.bindData(isRefresh, response.body().result.items);
-                        TimerManager.getInstance().timerQuerySync();
                         pageIndex += 1;
                         enableLoadMore(response.body().result.items);
                     } else if (finishType == UNFINISH_TYPE) {
@@ -279,7 +278,6 @@ public class TaskOtherListFragment extends BaseFragment implements BaseRecyclerA
                     @Override
                     public void accept(List<TaskEntity> searchPolymerizationEntities) throws Exception {
                         taskAdapter.bindData(true, allTaskEntities);
-                        TimerManager.getInstance().timerQuerySync();
                     }
                 });
     }

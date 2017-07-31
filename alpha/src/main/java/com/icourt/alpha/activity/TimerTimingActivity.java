@@ -24,10 +24,12 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.icourt.alpha.R;
+import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.icourt.alpha.entity.bean.ProjectEntity;
 import com.icourt.alpha.entity.bean.TaskEntity;
 import com.icourt.alpha.entity.bean.TimeEntity;
 import com.icourt.alpha.entity.bean.WorkType;
+import com.icourt.alpha.entity.event.ServerTimingEvent;
 import com.icourt.alpha.entity.event.TimingEvent;
 import com.icourt.alpha.base.BaseDialogFragment;
 import com.icourt.alpha.fragment.dialogfragment.ProjectSimpleSelectDialogFragment;
@@ -38,6 +40,7 @@ import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.JsonUtils;
+import com.icourt.alpha.utils.LoginInfoUtils;
 import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.widget.manager.TimerManager;
@@ -128,6 +131,38 @@ public class TimerTimingActivity extends BaseTimerActivity
         if (titleActionTextView != null) {
             titleActionTextView.setText("完成");
         }
+        initTimingView();
+        timeNameTv.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                if (itemEntity == null) return;
+                if (!TextUtils.isEmpty(s)) {
+                    itemEntity.name = s.toString();
+                } else {
+                    itemEntity.name = "";
+                }
+            }
+        });
+        EventBus.getDefault().register(this);
+        timeNameTv.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                return (event.getKeyCode() == KeyEvent.KEYCODE_ENTER);
+            }
+        });
+    }
+
+    private void initTimingView() {
         if (itemEntity != null) {
             timingTv.setText(toTime(itemEntity.useTime / 1000));
             startTimeTv.setText(DateUtils.getHHmm(itemEntity.startTime));
@@ -136,35 +171,7 @@ public class TimerTimingActivity extends BaseTimerActivity
             projectNameTv.setText(TextUtils.isEmpty(itemEntity.matterName) ? "未设置" : itemEntity.matterName);
             worktypeNameTv.setText(TextUtils.isEmpty(itemEntity.workTypeName) ? "未设置" : itemEntity.workTypeName);
             taskNameTv.setText(TextUtils.isEmpty(itemEntity.taskName) ? "未关联" : itemEntity.taskName);
-
-            timeNameTv.addTextChangedListener(new TextWatcher() {
-                @Override
-                public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-                }
-
-                @Override
-                public void onTextChanged(CharSequence s, int start, int before, int count) {
-
-                }
-
-                @Override
-                public void afterTextChanged(Editable s) {
-                    if (!TextUtils.isEmpty(s)) {
-                        itemEntity.name = s.toString();
-                    } else {
-                        itemEntity.name = "";
-                    }
-                }
-            });
         }
-        EventBus.getDefault().register(this);
-        timeNameTv.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                return (event.getKeyCode() == KeyEvent.KEYCODE_ENTER);
-            }
-        });
     }
 
 
@@ -196,10 +203,22 @@ public class TimerTimingActivity extends BaseTimerActivity
                 break;
             case R.id.stop_time_tv:
                 itemEntity.state = TimeEntity.ItemEntity.TIMER_STATE_STOP;
-                itemEntity.endTime = DateUtils.millis() + 60_000;
-                TimerManager.getInstance().stopTimer();
-                TimerDetailActivity.launch(getContext(), itemEntity);
-                finish();
+                showLoadingDialog(null);
+                TimerManager.getInstance().stopTimer(new SimpleCallBack<TimeEntity.ItemEntity>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<TimeEntity.ItemEntity>> call, Response<ResEntity<TimeEntity.ItemEntity>> response) {
+                        dismissLoadingDialog();
+                        itemEntity = response.body().result;
+                        //TimerDetailActivity.launch(getContext(), response.body().result);
+                        finish();
+                    }
+
+                    @Override
+                    public void onFailure(Call<ResEntity<TimeEntity.ItemEntity>> call, Throwable t) {
+                        dismissLoadingDialog();
+                        super.onFailure(call, t);
+                    }
+                });
                 break;
         }
     }
@@ -236,6 +255,12 @@ public class TimerTimingActivity extends BaseTimerActivity
             if (jsonBody.has("endTime")) {
                 jsonBody.remove("endTime");
             }
+            AlphaUserInfo loginUserInfo = getLoginUserInfo();
+            String clientId = "";
+            if (loginUserInfo != null) {
+                clientId = loginUserInfo.localUniqueId;
+            }
+            jsonBody.addProperty("clientId", clientId);
             showLoadingDialog(null);
             getApi().timingUpdate(RequestUtils.createJsonBody(jsonBody.toString()))
                     .enqueue(new SimpleCallBack<JsonElement>() {
@@ -306,6 +331,7 @@ public class TimerTimingActivity extends BaseTimerActivity
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onTimerEvent(TimingEvent event) {
         if (event == null) return;
+        if (itemEntity == null) return;
         switch (event.action) {
             case TimingEvent.TIMING_UPDATE_PROGRESS:
                 if (TextUtils.equals(event.timingId, itemEntity.pkId)) {
@@ -313,19 +339,38 @@ public class TimerTimingActivity extends BaseTimerActivity
                 }
                 break;
             case TimingEvent.TIMING_STOP:
-                if (itemEntity != null) {
-                    new AlertDialog.Builder(getContext())
-                            .setCancelable(false)
-                            .setTitle("提示")
-                            .setMessage("其他端已经将这个计时停止啦,立即关闭页面")
-                            .setPositiveButton("确定", new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialogInterface, int i) {
-                                    finish();
-                                }
-                            }).show();
-                }
+                TimerDetailActivity.launch(getContext(), itemEntity);
+                finish();
                 break;
+        }
+    }
+
+    /**
+     * 获取本地唯一id
+     *
+     * @return
+     */
+    private String getlocalUniqueId() {
+        AlphaUserInfo loginUserInfo = LoginInfoUtils.getLoginUserInfo();
+        if (loginUserInfo != null) {
+            return loginUserInfo.localUniqueId;
+        }
+        return null;
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onServerTimingEvent(ServerTimingEvent event) {
+        if (event == null) return;
+        if (itemEntity == null) return;
+        if (TextUtils.equals(event.clientId, getlocalUniqueId())) return;
+        if (event.isSyncObject() && event.isSyncTimingType()) {
+            //信息更新发生变化
+            if (TextUtils.equals(event.scene, ServerTimingEvent.TIMING_SYNC_EDIT)) {
+                if (TextUtils.equals(event.pkId, itemEntity.pkId)) {
+                    itemEntity = event;
+                    initTimingView();
+                }
+            }
         }
     }
 

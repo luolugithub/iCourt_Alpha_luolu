@@ -28,6 +28,7 @@ import com.netease.nimlib.sdk.auth.LoginInfo;
 import com.umeng.socialize.bean.SHARE_MEDIA;
 
 import java.util.Map;
+import java.util.UUID;
 
 import retrofit2.Call;
 import retrofit2.Response;
@@ -151,6 +152,7 @@ public class LoginBaseActivity extends BaseUmengActivity {
                             } catch (Throwable e) {
                             }
                             //保存登陆信息
+                            result.localUniqueId= UUID.randomUUID().toString();
                             saveLoginUserInfo(result);
 
                             //神策统计

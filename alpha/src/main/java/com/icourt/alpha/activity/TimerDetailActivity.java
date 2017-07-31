@@ -24,6 +24,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
+import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.icourt.alpha.entity.bean.ProjectEntity;
 import com.icourt.alpha.entity.bean.TaskEntity;
 import com.icourt.alpha.entity.bean.TimeEntity;
@@ -175,17 +176,19 @@ public class TimerDetailActivity extends BaseTimerActivity
 
         if (itemEntity != null) {
             selectedStartDate = Calendar.getInstance();
+            selectedStartDate.clear();
             selectedStartDate.setTimeInMillis(itemEntity.startTime);
-            useTimeDate.setText(DateUtils.getTimeDateFormatYear(selectedStartDate.getTime().getTime()));
-            startTimeMinTv.setText(DateUtils.getHHmm(selectedStartDate.getTime().getTime()));
+            useTimeDate.setText(DateUtils.getTimeDateFormatYear(selectedStartDate.getTimeInMillis()));
+            startTimeMinTv.setText(DateUtils.getHHmm(selectedStartDate.getTimeInMillis()));
 
             //避免服务器小于1分钟
             if (itemEntity.endTime - itemEntity.startTime < TimeUnit.MINUTES.toMillis(1)) {
                 itemEntity.endTime = itemEntity.startTime + TimeUnit.MINUTES.toMillis(1);
             }
             selectedEndDate = Calendar.getInstance();
+            selectedEndDate.clear();
             selectedEndDate.setTimeInMillis(itemEntity.endTime);
-            stopTimeMinTv.setText(DateUtils.getHHmm(selectedEndDate.getTime().getTime()));
+            stopTimeMinTv.setText(DateUtils.getHHmm(selectedEndDate.getTimeInMillis()));
 
             timeNameTv.setText(itemEntity.name);
             if (!TextUtils.isEmpty(timeNameTv.getText())) {
@@ -403,8 +406,10 @@ public class TimerDetailActivity extends BaseTimerActivity
         if (selectedStartDate == null) return;
         if (selectedEndDate == null) return;
         long one_minutes_millis = TimeUnit.MINUTES.toMillis(1);
-        long rangeTime = (selectedEndDate.getTimeInMillis() / one_minutes_millis * one_minutes_millis - selectedStartDate.getTimeInMillis() / one_minutes_millis * one_minutes_millis);
-        circleTimerView.setCurrentTime((int) (rangeTime / 1000));
+        long rangeTime = (selectedEndDate.getTimeInMillis() / one_minutes_millis * one_minutes_millis
+                - selectedStartDate.getTimeInMillis() / one_minutes_millis * one_minutes_millis);
+        int time = (int) (rangeTime / 1000);
+        circleTimerView.setCurrentTime(time);
     }
 
     @Override
@@ -419,8 +424,8 @@ public class TimerDetailActivity extends BaseTimerActivity
 
     @Override
     protected void onPause() {
-        super.onPause();
         saveTiming();
+        super.onPause();
     }
 
     private void saveTiming() {
@@ -452,6 +457,12 @@ public class TimerDetailActivity extends BaseTimerActivity
             if (jsonBody.has("workTypeName")) {
                 jsonBody.remove("workTypeName");
             }
+            AlphaUserInfo loginUserInfo = getLoginUserInfo();
+            String clientId = "";
+            if (loginUserInfo != null) {
+                clientId = loginUserInfo.localUniqueId;
+            }
+            jsonBody.addProperty("clientId", clientId);
             getApi().timingUpdate(RequestUtils.createJsonBody(jsonBody.toString()))
                     .enqueue(new SimpleCallBack<JsonElement>() {
                         @Override

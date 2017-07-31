@@ -3,10 +3,12 @@ package com.icourt.alpha.widget.manager;
 import android.support.annotation.CheckResult;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.text.TextUtils;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
+import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.icourt.alpha.entity.bean.PageEntity;
 import com.icourt.alpha.entity.bean.TimeEntity;
 import com.icourt.alpha.entity.event.TimingEvent;
@@ -107,7 +109,7 @@ public class TimerManager {
         scheduledFuture =
                 scheduledExecutorService.scheduleAtFixedRate(
                         timingRunnable,
-                        0,
+                        1,
                         1,
                         TimeUnit.SECONDS);
     }
@@ -137,6 +139,20 @@ public class TimerManager {
         return LoginInfoUtils.getLoginUserId();
     }
 
+
+    /**
+     * 获取本地唯一id
+     *
+     * @return
+     */
+    private String getlocalUniqueId() {
+        AlphaUserInfo loginUserInfo = LoginInfoUtils.getLoginUserInfo();
+        if (loginUserInfo != null) {
+            return loginUserInfo.localUniqueId;
+        }
+        return null;
+    }
+
     /**
      * 添加计时
      *
@@ -156,65 +172,36 @@ public class TimerManager {
     public void addTimer(@NonNull final TimeEntity.ItemEntity itemEntity,
                          @Nullable final retrofit2.Callback<TimeEntity.ItemEntity> callBack) {
         if (itemEntity == null) return;
-        TimeEntity.ItemEntity itemEntityCopy = new TimeEntity.ItemEntity();
-        try {
-            itemEntityCopy = (TimeEntity.ItemEntity) itemEntity.clone();
-        } catch (CloneNotSupportedException e) {
-            e.printStackTrace();
-        }
-        itemEntityCopy.pkId = "";
-        itemEntityCopy.createUserId = getUid();
-        itemEntityCopy.startTime = System.currentTimeMillis();
-        itemEntityCopy.useTime = 0;
-        itemEntityCopy.workDate = DateUtils.getTodayStartTime();
-        itemEntityCopy.state = 0;
-        JsonObject jsonObject = null;
-        try {
-            jsonObject = JsonUtils.object2JsonObject(itemEntityCopy);
-        } catch (JsonParseException e) {
-            e.printStackTrace();
-        }
-        if (jsonObject != null) {
-            jsonObject.addProperty("workDate", new SimpleDateFormat("yyyy-MM-dd").format(new Date()));
-            if (jsonObject.has("matterName")) {
-                jsonObject.remove("matterName");
-            }
-            if (jsonObject.has("endTime")) {
-                jsonObject.remove("endTime");
-            }
-            if (jsonObject.has("createTime")) {
-                jsonObject.remove("createTime");
-            }
-            if (jsonObject.has("timingCount")) {
-                jsonObject.remove("timingCount");
-            }
-
-            final TimeEntity.ItemEntity finalItemEntityCopy = itemEntityCopy;
-            RetrofitServiceFactory.getAlphaApiService()
-                    .timingAdd(RequestUtils.createJsonBody(jsonObject.toString()))
-                    .enqueue(new SimpleCallBack<String>() {
-                        @Override
-                        public void onSuccess(Call<ResEntity<String>> call, Response<ResEntity<String>> response) {
-                            finalItemEntityCopy.pkId = response.body().result;
-                            globalTimingId = finalItemEntityCopy.pkId;
-                            SpUtils.getInstance().putData(String.format(KEY_TIMER, getUid()), finalItemEntityCopy);
-                            broadTimingEvent(finalItemEntityCopy.pkId, TimingEvent.TIMING_ADD);
-                            setBase(0);
-                            startTimingTask();
-                            if (callBack != null) {
-                                callBack.onResponse(null, Response.success(finalItemEntityCopy));
-                            }
+        RetrofitServiceFactory.getAlphaApiService()
+                .timingStart(itemEntity.name,
+                        itemEntity.matterPkId,
+                        itemEntity.taskPkId,
+                        itemEntity.workTypeId,
+                        getlocalUniqueId(),
+                        0,
+                        0)
+                .enqueue(new SimpleCallBack<TimeEntity.ItemEntity>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<TimeEntity.ItemEntity>> call, Response<ResEntity<TimeEntity.ItemEntity>> response) {
+                        if (response.body().result == null) return;
+                        globalTimingId = response.body().result.pkId;
+                        SpUtils.getInstance().putData(String.format(KEY_TIMER, getUid()), response.body().result);
+                        broadTimingEvent(response.body().result.pkId, TimingEvent.TIMING_ADD);
+                        setBase(0);
+                        startTimingTask();
+                        if (callBack != null) {
+                            callBack.onResponse(null, Response.success(response.body().result));
                         }
+                    }
 
-                        @Override
-                        public void onFailure(Call<ResEntity<String>> call, Throwable t) {
-                            super.onFailure(call, t);
-                            if (callBack != null) {
-                                callBack.onFailure(null, t);
-                            }
+                    @Override
+                    public void onFailure(Call<ResEntity<TimeEntity.ItemEntity>> call, Throwable t) {
+                        super.onFailure(call, t);
+                        if (callBack != null) {
+                            callBack.onFailure(null, t);
                         }
-                    });
-        }
+                    }
+                });
     }
 
     /**
@@ -240,10 +227,18 @@ public class TimerManager {
      */
     public void resumeTimer(TimeEntity.ItemEntity timer) {
         if (timer == null) return;
+        if (timer.useTime < 0) {
+            timer.useTime = 0;
+        }
         SpUtils.getInstance().putData(String.format(KEY_TIMER, getUid()), timer);
+
         globalTimingId = timer.pkId;
         broadTimingEvent(globalTimingId, TimingEvent.TIMING_ADD);
-        resumeTimer();
+        //resumeTimer();
+
+        globalTimingId = timer.pkId;
+        setBase(timer.useTime / 1_000);
+        startTimingTask();
     }
 
 
@@ -292,45 +287,30 @@ public class TimerManager {
         return timer != null && StringUtils.equalsIgnoreCase(id, timer.pkId, false);
     }
 
+
     /**
      * 同步网络计时
      */
     public void timerQuerySync() {
         RetrofitServiceFactory
                 .getAlphaApiService()
-                .timerQuery(0, 20, 0)
-                .enqueue(new SimpleCallBack<PageEntity<TimeEntity.ItemEntity>>() {
+                .timerRunningQuery()
+                .enqueue(new SimpleCallBack<TimeEntity.ItemEntity>() {
                     @Override
-                    public void onSuccess(Call<ResEntity<PageEntity<TimeEntity.ItemEntity>>> call, Response<ResEntity<PageEntity<TimeEntity.ItemEntity>>> response) {
-                        if (response.body().result != null
-                                && response.body().result.items != null
-                                && !response.body().result.items.isEmpty()) {
-
-                            List<TimeEntity.ItemEntity> itemEntities = response.body().result.items;
-
-                            TimeEntity.ItemEntity timer = TimerManager.getInstance().getTimer();
-                            int indexOf = itemEntities.indexOf(timer);
-                            //包含本地计时 更新数据
-                            if (indexOf >= 0) {
-                                TimerManager.getInstance().updateTimer(itemEntities.get(indexOf));
-                            } else {
-                                //找第一个正在计时的项目
-                                for (TimeEntity.ItemEntity itemEntity : response.body().result.items) {
-                                    if (itemEntity == null) continue;
-                                    if (itemEntity.state == TimeEntity.TIMER_STATE_ING_TYPE) {
-                                        TimerManager.getInstance().resumeTimer(itemEntity);
-                                        break;
-                                    }
-                                }
-                            }
+                    public void onSuccess(Call<ResEntity<TimeEntity.ItemEntity>> call, Response<ResEntity<TimeEntity.ItemEntity>> response) {
+                        if (response.body().result == null) {
+                            TimerManager.getInstance().clearTimer();
                         } else {
-                            //关闭本地
-                            TimerManager.getInstance().stopTimer();
+                            if (isTimer(response.body().result.pkId)) {
+                                TimerManager.getInstance().updateTimer(response.body().result);
+                            } else {
+                                TimerManager.getInstance().resumeTimer(response.body().result);
+                            }
                         }
                     }
 
                     @Override
-                    public void onFailure(Call<ResEntity<PageEntity<TimeEntity.ItemEntity>>> call, Throwable t) {
+                    public void onFailure(Call<ResEntity<TimeEntity.ItemEntity>> call, Throwable t) {
                         super.onFailure(call, t);
                         TimerManager.getInstance().resumeTimer();
                     }
@@ -345,9 +325,9 @@ public class TimerManager {
     public void updateTimer(TimeEntity.ItemEntity itemEntity) {
         if (itemEntity == null) return;
         TimeEntity.ItemEntity timer = getTimer();
-        if (timer != null && timer.equals(itemEntity)) {
+        if (timer != null && StringUtils.equalsIgnoreCase(itemEntity.pkId, timer.pkId, false)) {
             SpUtils.getInstance().putData(String.format(KEY_TIMER, getUid()), itemEntity);
-            resumeTimer();
+            resumeTimer(itemEntity);
         }
     }
 
@@ -407,60 +387,37 @@ public class TimerManager {
     /**
      * 停止计时
      */
-    public void stopTimer(@Nullable final SimpleCallBack<JsonElement> callBack) {
+    public void stopTimer(@Nullable final SimpleCallBack<TimeEntity.ItemEntity> callBack) {
         final TimeEntity.ItemEntity timer = getTimer();
         if (timer != null) {
-            //避免小于1分钟
-            timer.endTime = DateUtils.millis() + 60_000;
-            timer.useTime = timer.endTime - timer.startTime;
-            timer.state = TimeEntity.TIMER_STATE_END_TYPE;
-            JsonObject jsonObject = null;
-            try {
-                jsonObject = JsonUtils.object2JsonObject(timer);
-            } catch (JsonParseException e) {
-                e.printStackTrace();
-            }
-            if (jsonObject != null) {
-                if (jsonObject.has("matterName")) {
-                    jsonObject.remove("matterName");
-                }
-                if (jsonObject.has("timingCount")) {
-                    jsonObject.remove("timingCount");
-                }
-                if (jsonObject.has("workTypeName")) {
-                    jsonObject.remove("workTypeName");
-                }
-                RetrofitServiceFactory
-                        .getAlphaApiService()
-                        .timingUpdate(RequestUtils.createJsonBody(jsonObject.toString()))
-                        .enqueue(new SimpleCallBack<JsonElement>() {
-                            @Override
-                            public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
-                                // broadTimingEvent(timer.pkId, TimingEvent.TIMING_STOP);
-                                stopTimingTask();
-                                SpUtils.getInstance().putData(String.format(KEY_TIMER, getUid()), "");
-
-                                TimingEvent timingSingle = TimingEvent.timingSingle;
-                                timingSingle.action = TimingEvent.TIMING_STOP;
-                                timingSingle.timingId = timer.pkId;
-                                timingSingle.timingSecond = base;
-                                EventBus.getDefault().post(timingSingle);
-
-                                if (callBack != null) {
-                                    callBack.onSuccess(call, response);
-                                }
+            RetrofitServiceFactory
+                    .getAlphaApiService()
+                    .timingStop(timer.pkId)
+                    .enqueue(new SimpleCallBack<TimeEntity.ItemEntity>() {
+                        @Override
+                        public void onSuccess(Call<ResEntity<TimeEntity.ItemEntity>> call, Response<ResEntity<TimeEntity.ItemEntity>> response) {
+                            if (callBack != null) {
+                                callBack.onSuccess(call, response);
                             }
+                            stopTimingTask();
+                            SpUtils.getInstance().putData(String.format(KEY_TIMER, getUid()), "");
 
-                            @Override
-                            public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
-                                super.onFailure(call, t);
-                                if (callBack != null) {
-                                    callBack.onFailure(call, t);
-                                }
-                                SpUtils.getInstance().putData(String.format(KEY_TIMER, getUid()), "");
+                            TimingEvent timingSingle = TimingEvent.timingSingle;
+                            timingSingle.action = TimingEvent.TIMING_STOP;
+                            timingSingle.timingId = timer.pkId;
+                            timingSingle.timingSecond = base;
+                            EventBus.getDefault().post(timingSingle);
+                        }
+
+                        @Override
+                        public void onFailure(Call<ResEntity<TimeEntity.ItemEntity>> call, Throwable t) {
+                            super.onFailure(call, t);
+                            if (callBack != null) {
+                                callBack.onFailure(call, t);
                             }
-                        });
-            }
+                            SpUtils.getInstance().putData(String.format(KEY_TIMER, getUid()), "");
+                        }
+                    });
         }
     }
 
