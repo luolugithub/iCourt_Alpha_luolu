@@ -32,6 +32,7 @@ import com.icourt.alpha.fragment.dialogfragment.DateSelectDialogFragment;
 import com.icourt.alpha.fragment.dialogfragment.ProjectSelectDialogFragment;
 import com.icourt.alpha.fragment.dialogfragment.TaskGroupSelectFragment;
 import com.icourt.alpha.http.callback.SimpleCallBack;
+import com.icourt.alpha.http.exception.ResponseException;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.utils.DateUtils;
@@ -368,6 +369,12 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
                         taskGroupTv.setText(taskItemEntity != null ? taskItemEntity.parentFlow != null ? taskItemEntity.parentFlow.name : "" : "");
                     }
                 }
+                try {
+                    if (taskDescTv == null) return;
+                    taskDescTv.setText(URLDecoder.decode(itemEntity.description, "utf-8"));
+                } catch (UnsupportedEncodingException e) {
+                    e.printStackTrace();
+                }
                 addReminders(taskReminderEntity);
                 EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION, itemEntity.id, ""));
             }
@@ -376,6 +383,9 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
             public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
                 super.onFailure(call, t);
                 dismissLoadingDialog();
+                if (t instanceof ResponseException) {
+                    showTopSnackBar(((ResponseException) t).message);
+                }
             }
         });
     }
@@ -514,11 +524,7 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
             if (getActivity() instanceof TaskDetailActivity) {
                 taskItemEntity = ((TaskDetailActivity) getActivity()).getTaskItemEntity();
             }
-            try {
-                taskDescTv.setText(URLDecoder.decode(event.desc, "utf-8"));
-            } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
-            }
+
             taskItemEntity.description = event.desc;
             updateTask(taskItemEntity, null, null);
         }

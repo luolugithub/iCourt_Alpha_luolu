@@ -207,7 +207,10 @@ public class TimerTimingActivity extends BaseTimerActivity
                     @Override
                     public void onSuccess(Call<ResEntity<TimeEntity.ItemEntity>> call, Response<ResEntity<TimeEntity.ItemEntity>> response) {
                         dismissLoadingDialog();
-//                        itemEntity = response.body().result;
+                        if(response.body().result!=null){
+
+                            itemEntity.endTime = response.body().result.endTime;
+                        }
                         //TimerDetailActivity.launch(getContext(), response.body().result);
                         finish();
                     }
