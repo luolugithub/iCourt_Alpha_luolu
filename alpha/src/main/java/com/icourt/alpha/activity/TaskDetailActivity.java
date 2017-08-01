@@ -274,12 +274,13 @@ public class TaskDetailActivity extends BaseActivity
                     TimerManager.getInstance().stopTimer();
                 else {
                     showLoadingDialog(null);
-                    TimerManager.getInstance().addTimer(getTimer(taskItemEntity), new Callback<TimeEntity.ItemEntity>() {
+                    final TimeEntity.ItemEntity itemEntity = getTimer(taskItemEntity);
+                    TimerManager.getInstance().addTimer(itemEntity, new Callback<TimeEntity.ItemEntity>() {
                         @Override
                         public void onResponse(Call<TimeEntity.ItemEntity> call, Response<TimeEntity.ItemEntity> response) {
                             if (response.body() != null) {
                                 dismissLoadingDialog();
-                                TimerTimingActivity.launch(TaskDetailActivity.this, response.body());
+                                TimerTimingActivity.launch(TaskDetailActivity.this, itemEntity);
                             }
                         }
 
