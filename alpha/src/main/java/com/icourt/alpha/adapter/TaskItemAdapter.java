@@ -52,7 +52,10 @@ public class TaskItemAdapter extends BaseArrayRecyclerAdapter<TaskEntity.TaskIte
 
         projectNameView.setText(getProjectName(taskItemEntity));
         if (taskItemEntity.state) {
-            timeTextSetData(timeView, taskItemEntity.updateTime);
+            timeView.setVisibility(taskItemEntity.updateTime > 0 ? View.VISIBLE : View.GONE);
+            timeView.setText(DateUtils.get23Hour59MinFormat(taskItemEntity.updateTime));
+            timeView.setTextColor(BLACK_COLOR);
+            timeView.setCompoundDrawablesWithIntrinsicBounds(R.mipmap.task_time_icon, 0, 0, 0);
         } else {
             timeTextSetData(timeView, taskItemEntity.dueTime);
         }
