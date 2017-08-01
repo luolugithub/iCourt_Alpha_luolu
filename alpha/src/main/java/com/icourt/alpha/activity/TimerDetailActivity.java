@@ -297,6 +297,7 @@ public class TimerDetailActivity extends BaseTimerActivity
                 }
                 break;
             case R.id.worktype_layout://工作类型
+                //计时选择工作类别不需要判断是否选择项目    2017.8.1修改
 //                if (TextUtils.isEmpty(itemEntity.matterPkId)) {
 //                    showTopSnackBar("请选择项目");
 //                    return;

@@ -34,9 +34,7 @@ import com.icourt.alpha.entity.event.TaskActionEvent;
 import com.icourt.alpha.entity.event.TimingEvent;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
-import com.icourt.alpha.utils.ActionConstants;
 import com.icourt.alpha.utils.DateUtils;
-import com.icourt.alpha.utils.LogUtils;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 import com.icourt.alpha.widget.manager.TimerManager;
 import com.icourt.api.RequestUtils;
@@ -100,7 +98,6 @@ public class TaskOtherListFragment extends BaseFragment implements BaseRecyclerA
     int startType, finishType;
     ArrayList<String> ids;
     private int pageIndex = 1;
-    TaskItemAdapter taskItemAdapter;
     TaskAdapter taskAdapter;
 
     @IntDef({UNFINISH_TYPE,
@@ -145,16 +142,8 @@ public class TaskOtherListFragment extends BaseFragment implements BaseRecyclerA
         refreshLayout.setMoveForHorizontal(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setHasFixedSize(true);
-        if (finishType == FINISH_TYPE) {
-            recyclerView.setAdapter(taskItemAdapter = new TaskItemAdapter());
-            taskItemAdapter.setAddTime(false);
-            taskItemAdapter.setOnItemClickListener(this);
-            taskItemAdapter.setOnItemChildClickListener(this);
-            taskItemAdapter.registerAdapterDataObserver(new RefreshViewEmptyObserver(refreshLayout, taskItemAdapter));
-        } else if (finishType == UNFINISH_TYPE) {
-            recyclerView.setAdapter(taskAdapter = new TaskAdapter());
-            taskAdapter.registerAdapterDataObserver(new RefreshViewEmptyObserver(refreshLayout, taskAdapter));
-        }
+        recyclerView.setAdapter(taskAdapter = new TaskAdapter());
+        taskAdapter.registerAdapterDataObserver(new RefreshViewEmptyObserver(refreshLayout, taskAdapter));
 
         refreshLayout.setXRefreshViewListener(new XRefreshView.SimpleXRefreshListener() {
             @Override
@@ -220,26 +209,19 @@ public class TaskOtherListFragment extends BaseFragment implements BaseRecyclerA
         String orderBy = null;
         if (finishType == FINISH_TYPE) {
             stateType = 1;
-            pageSize = ActionConstants.DEFAULT_PAGE_SIZE;
             orderBy = "updateTime";
         } else if (finishType == UNFINISH_TYPE) {
             stateType = 0;
-            pageIndex = -1;
-            pageSize = 10000;
             orderBy = "dueTime";
-            clearLists();
         }
+        pageIndex = -1;
+        pageSize = 10000;
+        clearLists();
         getApi().taskListItemQuery(getAssignTos(), stateType, 0, orderBy, pageIndex, pageSize, 0).enqueue(new SimpleCallBack<TaskEntity>() {
             @Override
             public void onSuccess(Call<ResEntity<TaskEntity>> call, Response<ResEntity<TaskEntity>> response) {
                 if (response.body().result != null) {
-                    if (finishType == FINISH_TYPE) {
-                        taskItemAdapter.bindData(isRefresh, response.body().result.items);
-                        pageIndex += 1;
-                        enableLoadMore(response.body().result.items);
-                    } else if (finishType == UNFINISH_TYPE) {
-                        getTaskGroupData(response.body().result);
-                    }
+                    getTaskGroupData(response.body().result);
                     if (isRefresh)
                         enableEmptyView(response.body().result.items);
                     stopRefresh();
@@ -431,13 +413,6 @@ public class TaskOtherListFragment extends BaseFragment implements BaseRecyclerA
         }
     }
 
-    private void enableLoadMore(List result) {
-        if (refreshLayout != null) {
-            refreshLayout.setPullLoadEnable(result != null
-                    && result.size() >= ActionConstants.DEFAULT_PAGE_SIZE);
-        }
-    }
-
     private void stopRefresh() {
         if (refreshLayout != null) {
             refreshLayout.stopRefresh();
@@ -555,29 +530,6 @@ public class TaskOtherListFragment extends BaseFragment implements BaseRecyclerA
         }
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onUpdateTaskEvent(TaskActionEvent event) {
-        if (event == null) return;
-        if (event.action == TaskActionEvent.TASK_UPDATE_DESC_ACTION) {
-            TaskEntity.TaskItemEntity item = event.entity;
-            LogUtils.e("finishType ---  " + finishType);
-            LogUtils.e("item.state ---  " + item.state);
-            if (finishType == FINISH_TYPE) {
-                if (item.state) {
-                    taskItemAdapter.addItem(item);
-                } else {
-                    taskItemAdapter.removeItem(item);
-                }
-            } else if (finishType == UNFINISH_TYPE) {
-                if (!item.state) {
-                    taskItemAdapter.addItem(item);
-                } else {
-                    taskItemAdapter.removeItem(item);
-                }
-            }
-        }
-    }
-
     /**
      * 计时事件
      *
@@ -593,18 +545,13 @@ public class TaskOtherListFragment extends BaseFragment implements BaseRecyclerA
             case TimingEvent.TIMING_UPDATE_PROGRESS:
                 TimeEntity.ItemEntity updateItem = TimerManager.getInstance().getTimer();
                 if (updateItem != null) {
-                    if (finishType == FINISH_TYPE) {
-                        getChildPositon(updateItem.taskPkId);
-                        updateChildTimeing(updateItem.taskPkId, true);
-                    } else if (finishType == UNFINISH_TYPE) {
-                        updateUnFinishChildTimeing(updateItem.taskPkId, true);
-                    }
+                    updateUnFinishChildTimeing(updateItem.taskPkId, true);
                 }
                 break;
             case TimingEvent.TIMING_STOP:
                 if (lastEntity != null) {
                     lastEntity.isTiming = false;
-                    taskItemAdapter.notifyDataSetChanged();
+                    taskAdapter.notifyDataSetChanged();
                 }
                 break;
         }
@@ -617,12 +564,17 @@ public class TaskOtherListFragment extends BaseFragment implements BaseRecyclerA
      * @return
      */
     private int getChildPositon(String taskId) {
-        if (taskItemAdapter.getData() != null) {
-            for (int i = 0; i < taskItemAdapter.getData().size(); i++) {
-                TaskEntity.TaskItemEntity item = taskItemAdapter.getData().get(i);
-                if (item != null) {
-                    if (TextUtils.equals(item.id, taskId)) {
-                        return i;
+        if (taskAdapter.getData() != null) {
+            for (int i = 0; i < taskAdapter.getData().size(); i++) {
+                TaskEntity task = taskAdapter.getData().get(i);
+                if (task != null && task.items != null) {
+                    for (int j = 0; j < task.items.size(); j++) {
+                        TaskEntity.TaskItemEntity item = task.items.get(j);
+                        if (item != null) {
+                            if (TextUtils.equals(item.id, taskId)) {
+                                return j;
+                            }
+                        }
                     }
                 }
             }
@@ -631,31 +583,6 @@ public class TaskOtherListFragment extends BaseFragment implements BaseRecyclerA
     }
 
     TaskEntity.TaskItemEntity lastEntity;
-
-    /**
-     * 更新item
-     *
-     * @param taskId
-     */
-    private void updateChildTimeing(String taskId, boolean isTiming) {
-        int childPos = getChildPositon(taskId);
-        if (childPos >= 0) {
-            TaskEntity.TaskItemEntity entity = taskItemAdapter.getItem(childPos);
-            if (entity != null) {
-                if (lastEntity != null)
-                    if (!TextUtils.equals(entity.id, lastEntity.id)) {
-                        lastEntity.isTiming = false;
-                        taskItemAdapter.notifyDataSetChanged();
-                    }
-                if (entity.isTiming != isTiming) {
-                    entity.isTiming = isTiming;
-                    taskItemAdapter.updateItem(entity);
-                    lastEntity = entity;
-                }
-            }
-
-        }
-    }
 
     /**
      * 获取item所在父容器position
