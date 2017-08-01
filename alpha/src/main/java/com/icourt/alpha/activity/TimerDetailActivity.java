@@ -297,10 +297,10 @@ public class TimerDetailActivity extends BaseTimerActivity
                 }
                 break;
             case R.id.worktype_layout://工作类型
-                if (TextUtils.isEmpty(itemEntity.matterPkId)) {
-                    showTopSnackBar("请选择项目");
-                    return;
-                }
+//                if (TextUtils.isEmpty(itemEntity.matterPkId)) {
+//                    showTopSnackBar("请选择项目");
+//                    return;
+//                }
                 showWorkTypeSelectDialogFragment(itemEntity.matterPkId, itemEntity.workTypeId);
                 break;
             case R.id.task_layout://关联任务
