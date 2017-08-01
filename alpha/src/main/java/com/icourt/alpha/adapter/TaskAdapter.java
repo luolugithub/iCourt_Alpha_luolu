@@ -273,13 +273,15 @@ public class TaskAdapter extends BaseArrayRecyclerAdapter<TaskEntity>
                         ((ImageView) view).setImageResource(R.mipmap.icon_start_20);
                     } else {
                         showLoadingDialog(view.getContext(), null);
+                        final TimeEntity.ItemEntity timeetity = getTimer(itemEntity);
                         TimerManager.getInstance().addTimer(getTimer(itemEntity), new Callback<TimeEntity.ItemEntity>() {
                             @Override
                             public void onResponse(Call<TimeEntity.ItemEntity> call, Response<TimeEntity.ItemEntity> response) {
                                 dismissLoadingDialog();
                                 ((ImageView) view).setImageResource(R.drawable.orange_side_dot_bg);
                                 if (response.body() != null) {
-                                    TimerTimingActivity.launch(view.getContext(), response.body());
+                                    timeetity.pkId = response.body().pkId;
+                                    TimerTimingActivity.launch(view.getContext(), timeetity);
                                 }
                             }
 

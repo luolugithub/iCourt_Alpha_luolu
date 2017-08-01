@@ -216,8 +216,26 @@ public class TimeAdapter extends BaseArrayRecyclerAdapter<TimeEntity.ItemEntity>
         } else {
             rightArrow.setVisibility(View.INVISIBLE);
         }
-        durationView.setText(getHm(timeEntity.useTime));
-        quantumView.setText(DateUtils.getTimeDurationDate(timeEntity.startTime) + "-" + DateUtils.getTimeDurationDate(timeEntity.endTime));
+
+        if (timeEntity.state == TimeEntity.ItemEntity.TIMER_STATE_START) {
+            long useTime = timeEntity.useTime;
+            if (useTime <= 0 && timeEntity.startTime > 0) {
+                useTime = DateUtils.millis() - timeEntity.startTime;
+            }
+            if (useTime < 0) {
+                useTime = 0;
+            }
+            durationView.setText(toTime(useTime));
+            quantumView.setText(DateUtils.getTimeDurationDate(timeEntity.startTime) + " - 现在");
+        } else {
+            try {
+                durationView.setText(getHm(timeEntity.useTime));
+                quantumView.setText(DateUtils.getTimeDurationDate(timeEntity.startTime) + " - " + DateUtils.getTimeDurationDate(timeEntity.endTime));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
         GlideUtils.loadUser(holder.itemView.getContext(), timeEntity.userPic, photoView);
         descView.setText(TextUtils.isEmpty(timeEntity.name) ? "未录入工作描述" : timeEntity.name);
         userNameView.setText(timeEntity.username);

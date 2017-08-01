@@ -1,14 +1,12 @@
 package com.icourt.alpha.activity;
 
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.AppBarLayout;
 import android.support.v4.app.Fragment;
-import android.support.v7.app.AlertDialog;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
@@ -24,6 +22,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.icourt.alpha.R;
+import com.icourt.alpha.base.BaseDialogFragment;
 import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.icourt.alpha.entity.bean.ProjectEntity;
 import com.icourt.alpha.entity.bean.TaskEntity;
@@ -31,7 +30,6 @@ import com.icourt.alpha.entity.bean.TimeEntity;
 import com.icourt.alpha.entity.bean.WorkType;
 import com.icourt.alpha.entity.event.ServerTimingEvent;
 import com.icourt.alpha.entity.event.TimingEvent;
-import com.icourt.alpha.base.BaseDialogFragment;
 import com.icourt.alpha.fragment.dialogfragment.ProjectSimpleSelectDialogFragment;
 import com.icourt.alpha.fragment.dialogfragment.TaskSelectDialogFragment;
 import com.icourt.alpha.fragment.dialogfragment.WorkTypeSelectDialogFragment;
@@ -71,7 +69,8 @@ public class TimerTimingActivity extends BaseTimerActivity
         OnFragmentCallBackListener {
 
     private static final String KEY_TIME = "key_time";
-
+    private static final int FINISH_TYPE = 1;//点击完成type
+    private static final int SAVE_ONE_TYPE = 2;//选择项目／工作类别／关联任务type
 
     TimeEntity.ItemEntity itemEntity;
     @BindView(R.id.titleBack)
@@ -186,7 +185,7 @@ public class TimerTimingActivity extends BaseTimerActivity
         super.onClick(view);
         switch (view.getId()) {
             case R.id.titleAction:
-                saveTiming();
+                finish();
                 break;
             case R.id.project_layout://所属项目
                 showProjectSelectDialogFragment(itemEntity.matterPkId);
@@ -208,7 +207,7 @@ public class TimerTimingActivity extends BaseTimerActivity
                     @Override
                     public void onSuccess(Call<ResEntity<TimeEntity.ItemEntity>> call, Response<ResEntity<TimeEntity.ItemEntity>> response) {
                         dismissLoadingDialog();
-                        itemEntity = response.body().result;
+//                        itemEntity = response.body().result;
                         //TimerDetailActivity.launch(getContext(), response.body().result);
                         finish();
                     }
@@ -267,7 +266,6 @@ public class TimerTimingActivity extends BaseTimerActivity
                         @Override
                         public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
                             dismissLoadingDialog();
-                            finish();
                         }
 
                         @Override
@@ -322,10 +320,11 @@ public class TimerTimingActivity extends BaseTimerActivity
                     taskNameTv.setText("未关联");
                 }
                 itemEntity.matterPkId = projectEntity.pkId;
+                itemEntity.matterName = projectEntity.name;
                 projectNameTv.setText(projectEntity.name);
             }
-
         }
+        saveTiming();
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
