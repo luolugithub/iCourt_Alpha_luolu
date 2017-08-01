@@ -240,6 +240,7 @@ public class TaskAllotSelectDialogFragment extends BaseDialogFragment implements
                         if (attendeeUserEntities.size() > 0) {
                             for (int i = 0; i < response.body().result.size(); i++) {
                                 for (TaskEntity.TaskItemEntity.AttendeeUserEntity attendeeUserEntity : attendeeUserEntities) {
+                                    if(attendeeUserEntity == null) continue;
                                     if (TextUtils.equals(attendeeUserEntity.userId, response.body().result.get(i).id)) {
                                         taskOwerListAdapter.getSelectedArray().put(i, true);
                                     }

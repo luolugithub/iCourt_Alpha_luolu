@@ -669,22 +669,30 @@ public class TaskDetailActivity extends BaseActivity
                     } else if (taskItemEntity.attendeeUsers.size() == 1) {
                         taskUsersLayout.setVisibility(View.GONE);
                         taskUserLayout.setVisibility(View.VISIBLE);
-                        GlideUtils.loadUser(this, taskItemEntity.attendeeUsers.get(0).pic, taskUserPic);
-                        taskUserName.setText(taskItemEntity.attendeeUsers.get(0).userName);
+                        if (taskItemEntity.attendeeUsers.get(0) != null) {
+                            GlideUtils.loadUser(this, taskItemEntity.attendeeUsers.get(0).pic, taskUserPic);
+                            taskUserName.setText(taskItemEntity.attendeeUsers.get(0).userName);
+                        } else {
+                            setNoAllocation();
+                        }
                     }
                 } else {
-                    taskUsersLayout.setVisibility(View.GONE);
-                    taskUserLayout.setVisibility(View.VISIBLE);
-                    taskUserPic.setVisibility(View.GONE);
-                    taskUserName.setText("未分配");
+                    setNoAllocation();
                 }
             } else {
-                taskUsersLayout.setVisibility(View.GONE);
-                taskUserLayout.setVisibility(View.VISIBLE);
-                taskUserPic.setVisibility(View.GONE);
-                taskUserName.setText("未分配");
+                setNoAllocation();
             }
         }
+    }
+
+    /**
+     * 设置未分配
+     */
+    private void setNoAllocation() {
+        taskUsersLayout.setVisibility(View.GONE);
+        taskUserLayout.setVisibility(View.VISIBLE);
+        taskUserPic.setVisibility(View.GONE);
+        taskUserName.setText("未分配");
     }
 
     /**
