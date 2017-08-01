@@ -15,6 +15,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.CheckedTextView;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -74,7 +75,7 @@ public class TimerTimingActivity extends BaseTimerActivity
 
     TimeEntity.ItemEntity itemEntity;
     @BindView(R.id.titleBack)
-    CheckedTextView titleBack;
+    ImageView titleBack;
     @BindView(R.id.titleContent)
     TextView titleContent;
     @BindView(R.id.titleAction)
@@ -125,6 +126,7 @@ public class TimerTimingActivity extends BaseTimerActivity
     protected void initView() {
         super.initView();
         itemEntity = (TimeEntity.ItemEntity) getIntent().getSerializableExtra(KEY_TIME);
+        titleAction.setVisibility(View.INVISIBLE);
         setTitle("计时详情");
         TextView titleActionTextView = getTitleActionTextView();
         if (titleActionTextView != null) {
@@ -157,6 +159,22 @@ public class TimerTimingActivity extends BaseTimerActivity
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 return (event.getKeyCode() == KeyEvent.KEYCODE_ENTER);
+            }
+        });
+        timeNameTv.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View view, boolean b) {
+                if (view instanceof ImageView) {
+                    if (view.getId() == R.id.titleBack) {
+                        return;
+                    }
+                }
+                if (!b) {
+                    if (itemEntity != null) {
+                        itemEntity.name = timeNameTv.getText().toString();
+                        saveTiming();
+                    }
+                }
             }
         });
     }
@@ -208,7 +226,7 @@ public class TimerTimingActivity extends BaseTimerActivity
                     @Override
                     public void onSuccess(Call<ResEntity<TimeEntity.ItemEntity>> call, Response<ResEntity<TimeEntity.ItemEntity>> response) {
                         dismissLoadingDialog();
-                        if(response.body().result!=null){
+                        if (response.body().result != null) {
 
                             itemEntity.endTime = response.body().result.endTime;
                         }

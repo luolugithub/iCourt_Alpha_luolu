@@ -146,6 +146,9 @@ public class ProjectTaskFragment extends BaseFragment implements TaskAdapter.OnS
     @Override
     public void onResume() {
         super.onResume();
+        if(!EventBus.getDefault().isRegistered(this)){
+            EventBus.getDefault().register(this);
+        }
         refreshLayout.startRefresh();
     }
 
@@ -230,16 +233,22 @@ public class ProjectTaskFragment extends BaseFragment implements TaskAdapter.OnS
                 }
 
                 if (allTaskEntities != null) {
-                    for (TaskEntity allTaskEntity : allTaskEntities) {
-                        if (taskEntities != null) {
-                            List<TaskEntity.TaskItemEntity> items = new ArrayList<>();//有分组
-                            for (TaskEntity.TaskItemEntity entity : taskEntities) {
-                                if (TextUtils.equals(allTaskEntity.groupId, entity.parentId)) {
-                                    items.add(entity);
+                    if (allTaskEntities.size() > 0) {
+                        for (TaskEntity allTaskEntity : allTaskEntities) {
+                            if (taskEntities != null) {
+                                List<TaskEntity.TaskItemEntity> items = new ArrayList<>();//有分组
+                                for (TaskEntity.TaskItemEntity entity : taskEntities) {
+                                    if (TextUtils.equals(allTaskEntity.groupId, entity.parentId)) {
+                                        items.add(entity);
+                                    }
                                 }
+                                allTaskEntity.items = items;
+                                allTaskEntity.groupTaskCount = items.size();
                             }
-                            allTaskEntity.items = items;
-                            allTaskEntity.groupTaskCount = items.size();
+                        }
+                    } else {
+                        if (taskEntities != null && !taskEntities.isEmpty()) {
+                            noitems.addAll(taskEntities);
                         }
                     }
                     if (noitems.size() > 0) {

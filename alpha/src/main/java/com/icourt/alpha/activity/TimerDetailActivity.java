@@ -24,12 +24,12 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
+import com.icourt.alpha.base.BaseDialogFragment;
 import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.icourt.alpha.entity.bean.ProjectEntity;
 import com.icourt.alpha.entity.bean.TaskEntity;
 import com.icourt.alpha.entity.bean.TimeEntity;
 import com.icourt.alpha.entity.bean.WorkType;
-import com.icourt.alpha.base.BaseDialogFragment;
 import com.icourt.alpha.fragment.dialogfragment.CalendaerSelectDialogFragment;
 import com.icourt.alpha.fragment.dialogfragment.ProjectSimpleSelectDialogFragment;
 import com.icourt.alpha.fragment.dialogfragment.TaskSelectDialogFragment;
@@ -108,6 +108,8 @@ public class TimerDetailActivity extends BaseTimerActivity
     @BindView(R.id.task_layout)
     LinearLayout taskLayout;
     Calendar selectedStartDate, selectedEndDate;
+    @BindView(R.id.root_view)
+    LinearLayout rootView;
 
     public static void launch(@NonNull Context context,
                               @NonNull TimeEntity.ItemEntity timeEntity) {
@@ -167,6 +169,11 @@ public class TimerDetailActivity extends BaseTimerActivity
                 log("---------->onTimerSetValueChanged:" + time);
                 selectedEndDate.setTimeInMillis(selectedStartDate.getTimeInMillis() + time * 1000);
                 stopTimeMinTv.setText(DateUtils.getHHmm(selectedEndDate.getTimeInMillis()));
+                if (itemEntity != null) {
+                    itemEntity.name = timeNameTv.getText().toString();
+                    if (!isFastDoubleClick())
+                        saveTiming();
+                }
             }
 
             @Override
@@ -242,6 +249,22 @@ public class TimerDetailActivity extends BaseTimerActivity
         });
     }
 
+    private long lastClickTime;
+
+    /**
+     * 点击频率
+     *
+     * @return
+     */
+    public boolean isFastDoubleClick() {
+        long time = System.currentTimeMillis();
+        long timeD = time - lastClickTime;
+        if (0 < timeD && timeD < 1000) {
+            return true;
+        }
+        lastClickTime = time;
+        return false;
+    }
 
     @OnClick({R.id.minus_time_image,
             R.id.add_time_image,
@@ -251,11 +274,18 @@ public class TimerDetailActivity extends BaseTimerActivity
             R.id.use_time_date,
             R.id.start_time_min_tv,
             R.id.stop_time_min_tv,
-            R.id.titleAction})
+            R.id.titleAction,
+            R.id.root_view})
     @Override
     public void onClick(View view) {
         super.onClick(view);
         switch (view.getId()) {
+            case R.id.root_view:
+                if (itemEntity != null) {
+                    itemEntity.name = timeNameTv.getText().toString();
+                    saveTiming();
+                }
+                break;
             case R.id.titleAction:
                 new BottomActionDialog(getContext(),
                         null,
@@ -308,6 +338,7 @@ public class TimerDetailActivity extends BaseTimerActivity
                 showTaskSelectDialogFragment(itemEntity.matterPkId, itemEntity.taskPkId);
                 break;
         }
+
     }
 
     /**
@@ -425,7 +456,7 @@ public class TimerDetailActivity extends BaseTimerActivity
 
     @Override
     protected void onPause() {
-        saveTiming();
+
         super.onPause();
     }
 
@@ -536,5 +567,6 @@ public class TimerDetailActivity extends BaseTimerActivity
             }
 
         }
+        saveTiming();
     }
 }
