@@ -282,6 +282,8 @@ public class TimerTimingActivity extends BaseTimerActivity
                 clientId = loginUserInfo.localUniqueId;
             }
             jsonBody.addProperty("clientId", clientId);
+            jsonBody.addProperty("taskPkId", itemEntity.taskPkId);
+            jsonBody.addProperty("workTypeId", itemEntity.workTypeId);
             showLoadingDialog(null);
             getApi().timingUpdate(RequestUtils.createJsonBody(jsonBody.toString()))
                     .enqueue(new SimpleCallBack<JsonElement>() {
@@ -318,8 +320,8 @@ public class TimerTimingActivity extends BaseTimerActivity
                 if (item.matter != null) {
                     ProjectEntity projectEntity = item.matter.convert2Model();
                     if (!StringUtils.equalsIgnoreCase(itemEntity.matterPkId, projectEntity.pkId, false)) {
-                        itemEntity.workTypeId = null;
-                        itemEntity.workTypeName = null;
+                        itemEntity.workTypeId = "";
+                        itemEntity.workTypeName = "";
                         worktypeNameTv.setText("未选择");
                     }
                     itemEntity.matterPkId = projectEntity.pkId;
@@ -333,10 +335,10 @@ public class TimerTimingActivity extends BaseTimerActivity
                 ProjectEntity projectEntity = (ProjectEntity) serializable;
                 if (projectEntity == null) return;
                 if (!TextUtils.equals(itemEntity.matterPkId, projectEntity.pkId)) {
-                    itemEntity.taskPkId = null;
-                    itemEntity.taskName = null;
-                    itemEntity.workTypeId = null;
-                    itemEntity.workTypeName = null;
+                    itemEntity.taskPkId = "";
+                    itemEntity.taskName = "";
+                    itemEntity.workTypeId = "";
+                    itemEntity.workTypeName = "";
                     itemEntity.matterPkId = projectEntity.pkId;
                     worktypeNameTv.setText("未选择");
                     taskNameTv.setText("未关联");

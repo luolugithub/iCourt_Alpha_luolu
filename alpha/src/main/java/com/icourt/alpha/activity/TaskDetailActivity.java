@@ -403,42 +403,42 @@ public class TaskDetailActivity extends BaseActivity
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onTimerEvent(TimingEvent event) {
         if (event == null) return;
+        TimeEntity.ItemEntity itemEntity = TimerManager.getInstance().getTimer();
+        if (itemEntity == null) return;
         switch (event.action) {
             case TimingEvent.TIMING_ADD:
-                TimeEntity.ItemEntity addItem = TimerManager.getInstance().getTimer();
-                if (addItem != null) {
-                    isStrat = true;
-                    if (taskItemEntity != null) {
-                        if (TextUtils.equals(addItem.taskPkId, taskItemEntity.id)) {
-                            taskStartIamge.setImageResource(R.drawable.orange_side_dot_bg);
-                            taskTiemingImage.setImageResource(R.mipmap.task_detail_timing);
-                        }
+                if (taskItemEntity != null) {
+                    if (TextUtils.equals(itemEntity.taskPkId, taskItemEntity.id)) {
+                        isStrat = true;
+                        taskStartIamge.setImageResource(R.drawable.orange_side_dot_bg);
+                        taskTiemingImage.setImageResource(R.mipmap.task_detail_timing);
                     }
                 }
                 break;
             case TimingEvent.TIMING_UPDATE_PROGRESS:
-                TimeEntity.ItemEntity updateItem = TimerManager.getInstance().getTimer();
-                if (updateItem != null) {
-                    isStrat = true;
-                    if (taskItemEntity != null) {
-                        if (TextUtils.equals(updateItem.taskPkId, taskItemEntity.id)) {
-                            taskStartIamge.setImageResource(R.drawable.orange_side_dot_bg);
-                            taskTiemingImage.setImageResource(R.mipmap.task_detail_timing);
-                            taskTime.setText(toTime(event.timingSecond));
-                        }
+                if (taskItemEntity != null) {
+                    if (TextUtils.equals(itemEntity.taskPkId, taskItemEntity.id)) {
+                        isStrat = true;
+                        taskStartIamge.setImageResource(R.drawable.orange_side_dot_bg);
+                        taskTiemingImage.setImageResource(R.mipmap.task_detail_timing);
+                        taskTime.setText(toTime(event.timingSecond));
                     }
                 }
                 break;
             case TimingEvent.TIMING_STOP:
-                isStrat = false;
-                taskStartIamge.setImageResource(R.mipmap.time_start_orange);
-                taskTiemingImage.setImageResource(R.mipmap.ic_task_time);
-                long mis = event.timingSecond * 1000;
-                if (mis > 0 && mis / 1000 / 60 <= 0) {
-                    mis = 60000;
+                if (taskItemEntity != null) {
+                    if (TextUtils.equals(itemEntity.taskPkId, taskItemEntity.id)) {
+                        isStrat = false;
+                        taskStartIamge.setImageResource(R.mipmap.time_start_orange);
+                        taskTiemingImage.setImageResource(R.mipmap.ic_task_time);
+                        long mis = event.timingSecond * 1000;
+                        if (mis > 0 && mis / 1000 / 60 <= 0) {
+                            mis = 60000;
+                        }
+                        if (taskItemEntity != null)
+                            taskTime.setText(getHm(taskItemEntity.timingSum + mis));
+                    }
                 }
-                if (taskItemEntity != null)
-                    taskTime.setText(getHm(taskItemEntity.timingSum + mis));
                 break;
         }
     }
@@ -446,6 +446,7 @@ public class TaskDetailActivity extends BaseActivity
     /**
      * 显示底部菜单
      */
+
     private void showBottomMeau() {
         new BottomActionDialog(getContext(),
                 null,

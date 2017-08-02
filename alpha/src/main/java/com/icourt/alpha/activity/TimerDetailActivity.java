@@ -502,6 +502,8 @@ public class TimerDetailActivity extends BaseTimerActivity
                 clientId = loginUserInfo.localUniqueId;
             }
             jsonBody.addProperty("clientId", clientId);
+            jsonBody.addProperty("taskPkId", itemEntity.taskPkId);
+            jsonBody.addProperty("workTypeId", itemEntity.workTypeId);
             getApi().timingUpdate(RequestUtils.createJsonBody(jsonBody.toString()))
                     .enqueue(new SimpleCallBack<JsonElement>() {
                         @Override
@@ -530,8 +532,8 @@ public class TimerDetailActivity extends BaseTimerActivity
                 if (item.matter != null) {
                     ProjectEntity projectEntity = item.matter.convert2Model();
                     if (!StringUtils.equalsIgnoreCase(itemEntity.matterPkId, projectEntity.pkId, false)) {
-                        itemEntity.workTypeId = null;
-                        itemEntity.workTypeName = null;
+                        itemEntity.workTypeId = "";
+                        itemEntity.workTypeName = "";
                         worktypeNameTv.setText("未选择");
                     }
                     itemEntity.matterPkId = projectEntity.pkId;
@@ -563,8 +565,10 @@ public class TimerDetailActivity extends BaseTimerActivity
             if (serializable instanceof ProjectEntity) {
                 ProjectEntity projectEntity = (ProjectEntity) serializable;
                 if (!TextUtils.equals(this.itemEntity.pkId, projectEntity.pkId)) {
-                    this.itemEntity.taskPkId = null;
-                    this.itemEntity.workTypeId = null;
+                    itemEntity.taskPkId = "";
+                    itemEntity.taskName = "";
+                    itemEntity.workTypeId = "";
+                    itemEntity.workTypeName = "";
                     worktypeNameTv.setText("未选择");
                     taskNameTv.setText("未关联");
                 }
