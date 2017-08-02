@@ -280,6 +280,7 @@ public class TaskDetailActivity extends BaseActivity
                         public void onResponse(Call<TimeEntity.ItemEntity> call, Response<TimeEntity.ItemEntity> response) {
                             if (response.body() != null) {
                                 dismissLoadingDialog();
+                                itemEntity.pkId = response.body().pkId;
                                 TimerTimingActivity.launch(TaskDetailActivity.this, itemEntity);
                             }
                         }

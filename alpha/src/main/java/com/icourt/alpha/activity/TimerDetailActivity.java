@@ -39,6 +39,7 @@ import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.JsonUtils;
+import com.icourt.alpha.utils.RAUtils;
 import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.view.CircleTimerView;
@@ -448,6 +449,12 @@ public class TimerDetailActivity extends BaseTimerActivity
     public boolean dispatchTouchEvent(MotionEvent ev) {
         switch (ev.getAction()) {
             case MotionEvent.ACTION_DOWN:
+                if (!RAUtils.inRangeOfView(titleBack, ev)) {
+                    if (itemEntity != null) {
+                        itemEntity.name = timeNameTv.getText().toString();
+                        saveTiming();
+                    }
+                }
                 SystemUtils.hideSoftKeyBoard(getActivity(), true);
                 break;
         }

@@ -40,6 +40,7 @@ import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.JsonUtils;
 import com.icourt.alpha.utils.LoginInfoUtils;
+import com.icourt.alpha.utils.RAUtils;
 import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.widget.manager.TimerManager;
@@ -102,6 +103,8 @@ public class TimerTimingActivity extends BaseTimerActivity
     TextView taskNameTv;
     @BindView(R.id.task_layout)
     LinearLayout taskLayout;
+    @BindView(R.id.root_view)
+    LinearLayout rootView;
 
 
     public static void launch(@NonNull Context context,
@@ -161,22 +164,6 @@ public class TimerTimingActivity extends BaseTimerActivity
                 return (event.getKeyCode() == KeyEvent.KEYCODE_ENTER);
             }
         });
-        timeNameTv.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-            @Override
-            public void onFocusChange(View view, boolean b) {
-                if (view instanceof ImageView) {
-                    if (view.getId() == R.id.titleBack) {
-                        return;
-                    }
-                }
-                if (!b) {
-                    if (itemEntity != null) {
-                        itemEntity.name = timeNameTv.getText().toString();
-                        saveTiming();
-                    }
-                }
-            }
-        });
     }
 
     private void initTimingView() {
@@ -197,11 +184,18 @@ public class TimerTimingActivity extends BaseTimerActivity
             R.id.worktype_layout,
             R.id.task_layout,
             R.id.titleAction,
-            R.id.stop_time_tv})
+            R.id.stop_time_tv,
+            R.id.root_view})
     @Override
     public void onClick(View view) {
         super.onClick(view);
         switch (view.getId()) {
+            case R.id.root_view:
+                if (itemEntity != null) {
+                    itemEntity.name = timeNameTv.getText().toString();
+                    saveTiming();
+                }
+                break;
             case R.id.titleAction:
                 finish();
                 break;
@@ -248,6 +242,12 @@ public class TimerTimingActivity extends BaseTimerActivity
     public boolean dispatchTouchEvent(MotionEvent ev) {
         switch (ev.getAction()) {
             case MotionEvent.ACTION_DOWN:
+                if (!RAUtils.inRangeOfView(titleBack, ev)) {
+                    if (itemEntity != null) {
+                        itemEntity.name = timeNameTv.getText().toString();
+                        saveTiming();
+                    }
+                }
                 SystemUtils.hideSoftKeyBoard(getActivity(), true);
                 break;
         }
@@ -379,7 +379,11 @@ public class TimerTimingActivity extends BaseTimerActivity
         return null;
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
+    /**
+     * 产品确认：这个页面不做同步
+     * @param event
+     */
+//    @Subscribe(threadMode = ThreadMode.MAIN)
     public void onServerTimingEvent(ServerTimingEvent event) {
         if (event == null) return;
         if (itemEntity == null) return;
