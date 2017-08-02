@@ -103,6 +103,9 @@ public class TimingNoticeDialogFragment extends BaseDialogFragment {
             itemEntity = (TimeEntity.ItemEntity) data;
             noticeTimingTitleTv.setText(TextUtils.isEmpty(itemEntity.name) ? "未录入工作描述" : itemEntity.name);
         }
+        if (TimerManager.getInstance().hasTimer()) {
+            noticeTimingTv.setText(toTime(TimerManager.getInstance().getTimingSeconds()));
+        }
         EventBus.getDefault().register(this);
     }
 
