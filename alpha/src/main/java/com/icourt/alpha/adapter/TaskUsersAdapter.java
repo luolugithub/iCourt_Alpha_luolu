@@ -36,7 +36,7 @@ public class TaskUsersAdapter extends BaseArrayRecyclerAdapter<TaskEntity.TaskIt
     @Override
     public void onBindHoder(ViewHolder holder, TaskEntity.TaskItemEntity.AttendeeUserEntity attendeeUserEntity, int position) {
         ImageView imageView = holder.obtainView(R.id.user_image);
-
+        if (attendeeUserEntity == null) return;
         if (getItemCount() > 2) {
             if (position == 0) {
                 TextDrawable textDrawable = TextDrawable.builder()
