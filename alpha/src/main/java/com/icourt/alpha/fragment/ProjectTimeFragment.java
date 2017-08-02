@@ -95,6 +95,7 @@ public class ProjectTimeFragment extends BaseFragment implements BaseRecyclerAda
         refreshLayout.setNoticeEmpty(R.mipmap.icon_placeholder_timing, "暂无计时");
         refreshLayout.setMoveForHorizontal(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        recyclerView.setItemAnimator(null);
 
         recyclerView.setAdapter(timeAdapter = new TimeAdapter());
         timeAdapter.setSumTime(sumTime);

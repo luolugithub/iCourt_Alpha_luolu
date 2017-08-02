@@ -144,6 +144,7 @@ public class TabTimingFragment extends BaseFragment implements BaseRecyclerAdapt
         EventBus.getDefault().register(this);
         tabLayout.addTab(tabLayout.newTab().setText("我的计时"), 0, true);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        recyclerView.setItemAnimator(null);
         recyclerView.setAdapter(timeAdapter = new TimeAdapter(true));
         timeAdapter.setOnItemClickListener(this);
 

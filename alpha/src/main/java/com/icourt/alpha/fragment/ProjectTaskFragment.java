@@ -146,7 +146,7 @@ public class ProjectTaskFragment extends BaseFragment implements TaskAdapter.OnS
     @Override
     public void onResume() {
         super.onResume();
-        if(!EventBus.getDefault().isRegistered(this)){
+        if (!EventBus.getDefault().isRegistered(this)) {
             EventBus.getDefault().register(this);
         }
         refreshLayout.startRefresh();
@@ -214,7 +214,17 @@ public class ProjectTaskFragment extends BaseFragment implements TaskAdapter.OnS
             enableEmptyView(taskEntity.items);
             if (taskEntity.items != null) {
                 List<TaskEntity.TaskItemEntity> noitems = new ArrayList<>();//未分组
+                TimeEntity.ItemEntity timerEntity = TimerManager.getInstance().getTimer();
                 for (TaskEntity.TaskItemEntity taskItemEntity : taskEntity.items) {
+                    if (TimerManager.getInstance().hasTimer()) {
+                        if (timerEntity != null) {
+                            if (!TextUtils.isEmpty(timerEntity.taskPkId)) {
+                                if (TextUtils.equals(timerEntity.taskPkId, taskItemEntity.id)) {
+                                    taskItemEntity.isTiming = true;
+                                }
+                            }
+                        }
+                    }
                     if (taskItemEntity.type == 1) {
                         TaskEntity itemEntity = new TaskEntity();
                         itemEntity.groupName = taskItemEntity.name;
