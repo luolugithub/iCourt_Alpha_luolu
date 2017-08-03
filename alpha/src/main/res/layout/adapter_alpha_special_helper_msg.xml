@@ -55,7 +55,6 @@
                 android:layout_marginTop="7dp"
                 android:ellipsize="end"
                 android:maxLines="5"
-                android:text="内容"
                 android:textColor="@color/alpha_font_color_title" />
 
             <TextView
@@ -69,7 +68,6 @@
                 android:ellipsize="end"
                 android:gravity="center_vertical"
                 android:maxLines="5"
-                android:text="2017年3月"
                 android:textColor="@color/alpha_font_color_title"
                 android:textSize="@dimen/alpha_font_size_mini" />
 
@@ -88,7 +86,6 @@
                 android:drawablePadding="5dp"
                 android:ellipsize="end"
                 android:maxLines="1"
-                android:text="来自"
                 android:textColor="@color/alpha_font_color_black"
                 android:textSize="@dimen/alpha_font_size_mini" />
         </LinearLayout>
