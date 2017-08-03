@@ -591,6 +591,7 @@ public class MyFinishTaskActivity extends BaseActivity
                 itemEntity.state = state;
                 itemEntity.updateTime = DateUtils.millis();
                 taskItemAdapter.notifyDataSetChanged();
+                EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION));
             }
 
             @Override
@@ -606,14 +607,15 @@ public class MyFinishTaskActivity extends BaseActivity
     /**
      * 删除任务
      */
-    private void deleteTask(TaskEntity.TaskItemEntity itemEntity) {
+    private void deleteTask(final TaskEntity.TaskItemEntity itemEntity) {
         showLoadingDialog(null);
         getApi().taskDelete(itemEntity.id).enqueue(new SimpleCallBack<JsonElement>() {
             @Override
             public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
                 dismissLoadingDialog();
-                EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION));
-
+                if(taskItemAdapter.getData().contains(itemEntity)){
+                    taskItemAdapter.removeItem(itemEntity);
+                }
             }
 
             @Override
