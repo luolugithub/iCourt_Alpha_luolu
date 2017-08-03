@@ -212,7 +212,11 @@ public class TimerTimingActivity extends BaseTimerActivity
                     public void onSuccess(Call<ResEntity<TimeEntity.ItemEntity>> call, Response<ResEntity<TimeEntity.ItemEntity>> response) {
                         dismissLoadingDialog();
                         if (response.body().result != null) {
-                            itemEntity = response.body().result;
+                            itemEntity.endTime = response.body().result.endTime;
+                            itemEntity.createTime = response.body().result.createTime;
+                            itemEntity.useTime = response.body().result.useTime;
+                            itemEntity.workTypeId = response.body().result.workTypeId;
+                            itemEntity.taskPkId = response.body().result.taskPkId;
                         }
                         //TimerDetailActivity.launch(getContext(), response.body().result);
                         finish();

@@ -172,21 +172,12 @@ public class TimeAdapter extends BaseArrayRecyclerAdapter<TimeEntity.ItemEntity>
         times /= 1000;
         long hour = times / 3600;
         long minute = times % 3600 / 60;
-        if (minute <= 0) {
-            minute = 1;
+        if (minute < 0) {
+            minute = 0;
         }
         return String.format(Locale.CHINA, "%d:%02d", hour, minute);
     }
 
-    public String getHHmm(long times) {
-        times /= 1000;
-        long hour = times / 3600;
-        long minute = times % 3600 / 60;
-        if (minute <= 0) {
-            minute = 1;
-        }
-        return String.format(Locale.CHINA, "%02d:%02d", hour, minute);
-    }
 
     /**
      * 设置顶部数据

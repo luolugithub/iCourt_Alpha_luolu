@@ -267,7 +267,7 @@ public class MyFinishTaskActivity extends BaseActivity
                     if (checkbox.isChecked()) {//完成任务
                         if (itemEntity.attendeeUsers != null) {
                             if (itemEntity.attendeeUsers.size() > 1) {
-                                showDeleteDialog("该任务由多人负责,确定完成?", itemEntity,SHOW_FINISH_DIALOG, checkbox);
+                                showDeleteDialog("该任务由多人负责,确定完成?", itemEntity, SHOW_FINISH_DIALOG, checkbox);
                             } else {
                                 updateTask(itemEntity, true, checkbox);
                             }
@@ -613,7 +613,7 @@ public class MyFinishTaskActivity extends BaseActivity
             @Override
             public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
                 dismissLoadingDialog();
-                if(taskItemAdapter.getData().contains(itemEntity)){
+                if (taskItemAdapter.getData().contains(itemEntity)) {
                     taskItemAdapter.removeItem(itemEntity);
                 }
             }
