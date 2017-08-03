@@ -12,7 +12,7 @@ android {
         minSdkVersion rootProject.ext.android.minSdkVersion
         targetSdkVersion rootProject.ext.android.targetSdkVersion
         multiDexEnabled true
-        versionCode 10
+        versionCode 11
         versionName "v2.0.4" //3位版本号
         compileOptions {
             sourceCompatibility JavaVersion.VERSION_1_7
@@ -80,7 +80,7 @@ android {
             manifestPlaceholders = [NIM_APPKEY: rootProject.ext.nimAppKey.debugAppKey]
 
             //用正式
-            /* buildConfigField "String", "API_URL", rootProject.ext.alphaAPIUrl.api_url_release
+             /*buildConfigField "String", "API_URL", rootProject.ext.alphaAPIUrl.api_url_release
              buildConfigField "String", "API_CHAT_URL", rootProject.ext.alphaChatAPIUrl.api_chat_url_release
              buildConfigField "String", "API_SFILE_URL", rootProject.ext.alphaSFileUrl.api_url_release
              buildConfigField "String", "APK_UPDATE_URL", rootProject.ext.alphaApkUpdateUrl.apk_update_url_release
@@ -93,16 +93,17 @@ android {
             buildConfigField "String", "API_CHAT_URL", rootProject.ext.alphaChatAPIUrl.api_chat_url_test
             buildConfigField "String", "API_SFILE_URL", rootProject.ext.alphaSFileUrl.api_url_test
             buildConfigField "String", "APK_UPDATE_URL", rootProject.ext.alphaApkUpdateUrl.apk_update_url_test
-            manifestPlaceholders = [NIM_APPKEY: rootProject.ext.nimAppKey.testAppKey]
             buildConfigField "String", "API_SENSORS_DATA_SERVER", rootProject.ext.sensorsDataAPIServer.server_url_test
             buildConfigField "String", "API_SENSORS_DATA_CONFIGURE", rootProject.ext.sensorsDataAPIConfigure.configure_url_test
             manifestPlaceholders = [NIM_APPKEY: rootProject.ext.nimAppKey.testAppKey]
             //预览版用
-//            buildConfigField "String", "API_URL", rootProject.ext.alphaAPIUrl.api_url_preview
-//            buildConfigField "String", "API_CHAT_URL", rootProject.ext.alphaChatAPIUrl.api_chat_url_preview
-//            buildConfigField "String", "API_SFILE_URL", rootProject.ext.alphaSFileUrl.api_url_preview
-//            buildConfigField "String", "APK_UPDATE_URL", rootProject.ext.alphaApkUpdateUrl.apk_update_url_preview
-//            manifestPlaceholders = [NIM_APPKEY: rootProject.ext.nimAppKey.previewAppKey]
+            /*buildConfigField "String", "API_URL", rootProject.ext.alphaAPIUrl.api_url_preview
+            buildConfigField "String", "API_CHAT_URL", rootProject.ext.alphaChatAPIUrl.api_chat_url_preview
+            buildConfigField "String", "API_SFILE_URL", rootProject.ext.alphaSFileUrl.api_url_preview
+            buildConfigField "String", "APK_UPDATE_URL", rootProject.ext.alphaApkUpdateUrl.apk_update_url_preview
+            buildConfigField "String", "API_SENSORS_DATA_SERVER", rootProject.ext.sensorsDataAPIServer.server_url_preview
+            buildConfigField "String", "API_SENSORS_DATA_CONFIGURE", rootProject.ext.sensorsDataAPIConfigure.configure_url_preview
+            manifestPlaceholders = [NIM_APPKEY: rootProject.ext.nimAppKey.previewAppKey]*/
         }
         //内测版
         innertest {
