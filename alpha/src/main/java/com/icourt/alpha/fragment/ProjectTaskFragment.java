@@ -40,6 +40,7 @@ import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.ItemDecorationUtils;
+import com.icourt.alpha.utils.LogUtils;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 import com.icourt.alpha.widget.manager.TimerManager;
 import com.icourt.api.RequestUtils;
@@ -334,6 +335,7 @@ public class ProjectTaskFragment extends BaseFragment implements TaskAdapter.OnS
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onTimerEvent(TimingEvent event) {
         if (event == null) return;
+
         switch (event.action) {
             case TimingEvent.TIMING_ADD:
 
@@ -345,8 +347,15 @@ public class ProjectTaskFragment extends BaseFragment implements TaskAdapter.OnS
                 }
                 break;
             case TimingEvent.TIMING_STOP:
-                if (lastEntity != null) {
-                    lastEntity.isTiming = false;
+                if (taskAdapter != null && lastEntity != null) {
+                    for (TaskEntity entity : taskAdapter.getData()) {
+                        for (TaskEntity.TaskItemEntity item : entity.items) {
+                            if (TextUtils.equals(lastEntity.id, item.id)) {
+                                item.isTiming = false;
+                                LogUtils.e("TimingEvent.TIMING_STOP =========");
+                            }
+                        }
+                    }
                     taskAdapter.notifyDataSetChanged();
                 }
                 break;

@@ -395,6 +395,8 @@ public class TaskDetailActivity extends BaseActivity
         return taskItemEntity;
     }
 
+    String timmingTaskId;
+
     /**
      * 计时事件
      *
@@ -403,11 +405,11 @@ public class TaskDetailActivity extends BaseActivity
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onTimerEvent(TimingEvent event) {
         if (event == null) return;
-        TimeEntity.ItemEntity itemEntity = TimerManager.getInstance().getTimer();
-        if (itemEntity == null) return;
+
         switch (event.action) {
             case TimingEvent.TIMING_ADD:
-                if (taskItemEntity != null) {
+                TimeEntity.ItemEntity itemEntity = TimerManager.getInstance().getTimer();
+                if (taskItemEntity != null && itemEntity != null) {
                     if (TextUtils.equals(itemEntity.taskPkId, taskItemEntity.id)) {
                         isStrat = true;
                         taskStartIamge.setImageResource(R.drawable.orange_side_dot_bg);
@@ -416,8 +418,10 @@ public class TaskDetailActivity extends BaseActivity
                 }
                 break;
             case TimingEvent.TIMING_UPDATE_PROGRESS:
-                if (taskItemEntity != null) {
-                    if (TextUtils.equals(itemEntity.taskPkId, taskItemEntity.id)) {
+                TimeEntity.ItemEntity updateEntity = TimerManager.getInstance().getTimer();
+                if (taskItemEntity != null && updateEntity != null) {
+                    timmingTaskId = updateEntity.taskPkId;
+                    if (TextUtils.equals(updateEntity.taskPkId, taskItemEntity.id)) {
                         isStrat = true;
                         taskStartIamge.setImageResource(R.drawable.orange_side_dot_bg);
                         taskTiemingImage.setImageResource(R.mipmap.task_detail_timing);
@@ -427,7 +431,7 @@ public class TaskDetailActivity extends BaseActivity
                 break;
             case TimingEvent.TIMING_STOP:
                 if (taskItemEntity != null) {
-                    if (TextUtils.equals(itemEntity.taskPkId, taskItemEntity.id)) {
+                    if (TextUtils.equals(timmingTaskId, taskItemEntity.id)) {
                         isStrat = false;
                         taskStartIamge.setImageResource(R.mipmap.time_start_orange);
                         taskTiemingImage.setImageResource(R.mipmap.ic_task_time);

@@ -39,7 +39,6 @@ import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.JsonUtils;
-import com.icourt.alpha.utils.RAUtils;
 import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.view.CircleTimerView;
@@ -109,8 +108,6 @@ public class TimerDetailActivity extends BaseTimerActivity
     @BindView(R.id.task_layout)
     LinearLayout taskLayout;
     Calendar selectedStartDate, selectedEndDate;
-    @BindView(R.id.root_view)
-    LinearLayout rootView;
 
     public static void launch(@NonNull Context context,
                               @NonNull TimeEntity.ItemEntity timeEntity) {
@@ -170,11 +167,6 @@ public class TimerDetailActivity extends BaseTimerActivity
                 log("---------->onTimerSetValueChanged:" + time);
                 selectedEndDate.setTimeInMillis(selectedStartDate.getTimeInMillis() + time * 1000);
                 stopTimeMinTv.setText(DateUtils.getHHmm(selectedEndDate.getTimeInMillis()));
-                if (itemEntity != null) {
-                    itemEntity.name = timeNameTv.getText().toString();
-                    if (!isFastDoubleClick())
-                        saveTiming();
-                }
             }
 
             @Override
@@ -250,22 +242,6 @@ public class TimerDetailActivity extends BaseTimerActivity
         });
     }
 
-    private long lastClickTime;
-
-    /**
-     * 点击频率
-     *
-     * @return
-     */
-    public boolean isFastDoubleClick() {
-        long time = System.currentTimeMillis();
-        long timeD = time - lastClickTime;
-        if (0 < timeD && timeD < 1000) {
-            return true;
-        }
-        lastClickTime = time;
-        return false;
-    }
 
     @OnClick({R.id.minus_time_image,
             R.id.add_time_image,
@@ -275,18 +251,11 @@ public class TimerDetailActivity extends BaseTimerActivity
             R.id.use_time_date,
             R.id.start_time_min_tv,
             R.id.stop_time_min_tv,
-            R.id.titleAction,
-            R.id.root_view})
+            R.id.titleAction})
     @Override
     public void onClick(View view) {
         super.onClick(view);
         switch (view.getId()) {
-            case R.id.root_view:
-                if (itemEntity != null) {
-                    itemEntity.name = timeNameTv.getText().toString();
-                    saveTiming();
-                }
-                break;
             case R.id.titleAction:
                 new BottomActionDialog(getContext(),
                         null,
@@ -449,12 +418,6 @@ public class TimerDetailActivity extends BaseTimerActivity
     public boolean dispatchTouchEvent(MotionEvent ev) {
         switch (ev.getAction()) {
             case MotionEvent.ACTION_DOWN:
-                if (!RAUtils.inRangeOfView(titleBack, ev)) {
-                    if (itemEntity != null) {
-                        itemEntity.name = timeNameTv.getText().toString();
-                        saveTiming();
-                    }
-                }
                 SystemUtils.hideSoftKeyBoard(getActivity(), true);
                 break;
         }
@@ -463,7 +426,7 @@ public class TimerDetailActivity extends BaseTimerActivity
 
     @Override
     protected void onPause() {
-
+        saveTiming();
         super.onPause();
     }
 

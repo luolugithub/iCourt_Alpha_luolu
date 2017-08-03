@@ -40,7 +40,6 @@ import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.JsonUtils;
 import com.icourt.alpha.utils.LoginInfoUtils;
-import com.icourt.alpha.utils.RAUtils;
 import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.widget.manager.TimerManager;
@@ -71,8 +70,7 @@ public class TimerTimingActivity extends BaseTimerActivity
         OnFragmentCallBackListener {
 
     private static final String KEY_TIME = "key_time";
-    private static final int FINISH_TYPE = 1;//点击完成type
-    private static final int SAVE_ONE_TYPE = 2;//选择项目／工作类别／关联任务type
+
 
     TimeEntity.ItemEntity itemEntity;
     @BindView(R.id.titleBack)
@@ -184,18 +182,11 @@ public class TimerTimingActivity extends BaseTimerActivity
             R.id.worktype_layout,
             R.id.task_layout,
             R.id.titleAction,
-            R.id.stop_time_tv,
-            R.id.root_view})
+            R.id.stop_time_tv})
     @Override
     public void onClick(View view) {
         super.onClick(view);
         switch (view.getId()) {
-            case R.id.root_view:
-                if (itemEntity != null) {
-                    itemEntity.name = timeNameTv.getText().toString();
-                    saveTiming();
-                }
-                break;
             case R.id.titleAction:
                 finish();
                 break;
@@ -221,8 +212,7 @@ public class TimerTimingActivity extends BaseTimerActivity
                     public void onSuccess(Call<ResEntity<TimeEntity.ItemEntity>> call, Response<ResEntity<TimeEntity.ItemEntity>> response) {
                         dismissLoadingDialog();
                         if (response.body().result != null) {
-
-                            itemEntity.endTime = response.body().result.endTime;
+                            itemEntity = response.body().result;
                         }
                         //TimerDetailActivity.launch(getContext(), response.body().result);
                         finish();
@@ -239,15 +229,15 @@ public class TimerTimingActivity extends BaseTimerActivity
     }
 
     @Override
+    protected void onPause() {
+        saveTiming();
+        super.onPause();
+    }
+
+    @Override
     public boolean dispatchTouchEvent(MotionEvent ev) {
         switch (ev.getAction()) {
             case MotionEvent.ACTION_DOWN:
-                if (!RAUtils.inRangeOfView(titleBack, ev)) {
-                    if (itemEntity != null) {
-                        itemEntity.name = timeNameTv.getText().toString();
-                        saveTiming();
-                    }
-                }
                 SystemUtils.hideSoftKeyBoard(getActivity(), true);
                 break;
         }
@@ -282,8 +272,8 @@ public class TimerTimingActivity extends BaseTimerActivity
                 clientId = loginUserInfo.localUniqueId;
             }
             jsonBody.addProperty("clientId", clientId);
-            jsonBody.addProperty("taskPkId", itemEntity.taskPkId);
-            jsonBody.addProperty("workTypeId", itemEntity.workTypeId);
+            jsonBody.addProperty("taskPkId", TextUtils.isEmpty(itemEntity.taskPkId) ? "" : itemEntity.taskPkId);
+            jsonBody.addProperty("workTypeId", TextUtils.isEmpty(itemEntity.workTypeId) ? "" : itemEntity.workTypeId);
             showLoadingDialog(null);
             getApi().timingUpdate(RequestUtils.createJsonBody(jsonBody.toString()))
                     .enqueue(new SimpleCallBack<JsonElement>() {
@@ -383,6 +373,7 @@ public class TimerTimingActivity extends BaseTimerActivity
 
     /**
      * 产品确认：这个页面不做同步
+     *
      * @param event
      */
 //    @Subscribe(threadMode = ThreadMode.MAIN)

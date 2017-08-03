@@ -105,7 +105,10 @@ public class TabTimingFragment extends BaseFragment implements BaseRecyclerAdapt
     @Override
     public void onResume() {
         super.onResume();
-        getData(true);
+//        getData(true);
+        if (refreshLayout != null) {
+            refreshLayout.startRefresh();
+        }
     }
 
     @Override
