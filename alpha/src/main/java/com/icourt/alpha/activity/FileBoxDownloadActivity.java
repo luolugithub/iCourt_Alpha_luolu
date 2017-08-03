@@ -190,7 +190,7 @@ public class FileBoxDownloadActivity extends BaseActivity {
                 }
                 break;
             case R.id.share_view://分享
-                shareFile(new File(filePath));
+                openOrShareFile(new File(filePath), Intent.ACTION_SEND);
                 break;
         }
     }
@@ -233,7 +233,7 @@ public class FileBoxDownloadActivity extends BaseActivity {
                 startActivity(intent);     //这里最好try一下，有可能会报错。 //比如说你的MIME类型是打开邮箱，但是你手机里面没装邮箱客户端，就会报错。
             } else if (action.equals(Intent.ACTION_SEND)) {
                 intent.putExtra(Intent.EXTRA_STREAM, uri);
-                intent.setType("*/*");
+                intent.setType(type);
                 startActivity(Intent.createChooser(intent, "Alpha Share"));
             }
 
