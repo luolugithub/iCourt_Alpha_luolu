@@ -52,7 +52,6 @@ import org.greenrobot.eventbus.ThreadMode;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -78,9 +77,7 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
         OnFragmentCallBackListener, ProjectSelectDialogFragment.OnProjectTaskGroupSelectListener {
 
     public static final int TYPE_ALL = 0;//全部
-    public static final int TYPE_NEW = 1;//新任务
-    public static final int TYPE_MY_ATTENTION = 2;//我关注的
-    public static final int TYPE_MY_BRANCH = 3;//我部门的
+    public static final int TYPE_MY_ATTENTION = 1;//我关注的
     Unbinder unbinder;
     @Nullable
     @BindView(R.id.recyclerView)
@@ -97,7 +94,6 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
     List<TaskEntity.TaskItemEntity> beAboutToTaskEntities;//即将到期
     List<TaskEntity.TaskItemEntity> futureTaskEntities;//未来
     List<TaskEntity.TaskItemEntity> noDueTaskEntities;//为指定到期
-    List<TaskEntity.TaskItemEntity> newTaskEntities;//新任务
     List<TaskEntity.TaskItemEntity> datedTaskEntities;//已过期
 
     int type;
@@ -178,13 +174,7 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
         beAboutToTaskEntities = new ArrayList<>();
         futureTaskEntities = new ArrayList<>();
         noDueTaskEntities = new ArrayList<>();
-        newTaskEntities = new ArrayList<>();
         datedTaskEntities = new ArrayList<>();
-//        if (type == TYPE_NEW || type == TYPE_MY_ATTENTION) {
-//            if (getParentFragment() instanceof TabTaskFragment) {
-//                ((TabTaskFragment) getParentFragment()).setOnCheckAllNewTaskListener(this);
-//            }
-//        }
     }
 
     @Override
@@ -209,10 +199,8 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
                 && recyclerView != null) {
             getData(true);
         }
-        if (type == TYPE_NEW || type == TYPE_MY_ATTENTION) {
+        if (type == TYPE_MY_ATTENTION) {
             getData(true);
-        } else if (type == 101) {
-            onCheckAll();
         }
     }
 
@@ -277,9 +265,6 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
                     @Override
                     public void accept(List<TaskEntity> searchPolymerizationEntities) throws Exception {
                         taskAdapter.bindData(true, allTaskEntities);
-                        if (getParentFragment() instanceof TabTaskFragment) {
-                            ((TabTaskFragment) getParentFragment()).showOrHiddeTitleAction2(newTaskEntities.size() > 0);
-                        }
                         //第一次进入 隐藏搜索框
                         if (isFirstTimeIntoPage) {
                             linearLayoutManager.scrollToPositionWithOffset(headerFooterAdapter.getHeaderCount(), 0);
@@ -309,21 +294,21 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
             } else {
                 noDueTaskEntities.add(taskItemEntity);
             }
-            if (type == TYPE_NEW) {
-                if (DateUtils.millis() - taskItemEntity.assignTime <= TimeUnit.DAYS.toMillis(1) && !TextUtils.isEmpty(getLoginUserId())) {
-                    if (taskItemEntity.createUser != null) {
-                        if (!TextUtils.equals(taskItemEntity.createUser.userId, getLoginUserId())) {
-                            if (!TextUtils.isEmpty(taskItemEntity.readUserIds)) {
-                                if (!taskItemEntity.readUserIds.contains(getLoginUserId())) {
-                                    newTaskEntities.add(taskItemEntity);
-                                }
-                            } else {
-                                newTaskEntities.add(taskItemEntity);
-                            }
-                        }
-                    }
-                }
-            }
+//            if (type == TYPE_NEW) {
+//                if (DateUtils.millis() - taskItemEntity.assignTime <= TimeUnit.DAYS.toMillis(1) && !TextUtils.isEmpty(getLoginUserId())) {
+//                    if (taskItemEntity.createUser != null) {
+//                        if (!TextUtils.equals(taskItemEntity.createUser.userId, getLoginUserId())) {
+//                            if (!TextUtils.isEmpty(taskItemEntity.readUserIds)) {
+//                                if (!taskItemEntity.readUserIds.contains(getLoginUserId())) {
+//                                    newTaskEntities.add(taskItemEntity);
+//                                }
+//                            } else {
+//                                newTaskEntities.add(taskItemEntity);
+//                            }
+//                        }
+//                    }
+//                }
+//            }
         }
     }
 
@@ -331,55 +316,46 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
      * 分组内容添加到allTaskEntities
      */
     private void addDataToAllTask() {
-        if (type != TYPE_NEW) {
-            if (datedTaskEntities.size() > 0) {
-                TaskEntity todayTask = new TaskEntity();
-                todayTask.items = datedTaskEntities;
-                todayTask.groupName = "已到期";
-                todayTask.groupTaskCount = datedTaskEntities.size();
-                allTaskEntities.add(todayTask);
-            }
-            if (todayTaskEntities.size() > 0) {
-                TaskEntity todayTask = new TaskEntity();
-                todayTask.items = todayTaskEntities;
-                todayTask.groupName = "今天到期";
-                todayTask.groupTaskCount = todayTaskEntities.size();
-                allTaskEntities.add(todayTask);
-            }
+        if (datedTaskEntities.size() > 0) {
+            TaskEntity todayTask = new TaskEntity();
+            todayTask.items = datedTaskEntities;
+            todayTask.groupName = "已到期";
+            todayTask.groupTaskCount = datedTaskEntities.size();
+            allTaskEntities.add(todayTask);
+        }
+        if (todayTaskEntities.size() > 0) {
+            TaskEntity todayTask = new TaskEntity();
+            todayTask.items = todayTaskEntities;
+            todayTask.groupName = "今天到期";
+            todayTask.groupTaskCount = todayTaskEntities.size();
+            allTaskEntities.add(todayTask);
+        }
 
-            if (beAboutToTaskEntities.size() > 0) {
-                TaskEntity task = new TaskEntity();
-                task.items = beAboutToTaskEntities;
-                task.groupName = "即将到期";
-                task.groupTaskCount = beAboutToTaskEntities.size();
-                allTaskEntities.add(task);
-            }
+        if (beAboutToTaskEntities.size() > 0) {
+            TaskEntity task = new TaskEntity();
+            task.items = beAboutToTaskEntities;
+            task.groupName = "即将到期";
+            task.groupTaskCount = beAboutToTaskEntities.size();
+            allTaskEntities.add(task);
+        }
 
-            if (futureTaskEntities.size() > 0) {
-                TaskEntity task = new TaskEntity();
-                task.items = futureTaskEntities;
-                task.groupName = "未来";
-                task.groupTaskCount = futureTaskEntities.size();
-                allTaskEntities.add(task);
-            }
+        if (futureTaskEntities.size() > 0) {
+            TaskEntity task = new TaskEntity();
+            task.items = futureTaskEntities;
+            task.groupName = "未来";
+            task.groupTaskCount = futureTaskEntities.size();
+            allTaskEntities.add(task);
+        }
 
-            if (noDueTaskEntities.size() > 0) {
-                TaskEntity task = new TaskEntity();
-                task.items = noDueTaskEntities;
-                task.groupName = "未指定到期日";
-                task.groupTaskCount = noDueTaskEntities.size();
-                allTaskEntities.add(task);
-            }
-        } else {
-            if (newTaskEntities.size() > 0) {
-                TaskEntity task = new TaskEntity();
-                task.items = newTaskEntities;
-                task.groupName = "新任务";
-                task.groupTaskCount = newTaskEntities.size();
-                allTaskEntities.add(task);
-            }
+        if (noDueTaskEntities.size() > 0) {
+            TaskEntity task = new TaskEntity();
+            task.items = noDueTaskEntities;
+            task.groupName = "未指定到期日";
+            task.groupTaskCount = noDueTaskEntities.size();
+            allTaskEntities.add(task);
         }
     }
+
 
     private void clearLists() {
         if (allTaskEntities != null)
@@ -394,8 +370,6 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
             futureTaskEntities.clear();
         if (noDueTaskEntities != null)
             noDueTaskEntities.clear();
-        if (newTaskEntities != null)
-            newTaskEntities.clear();
     }
 
     private void stopRefresh() {
@@ -786,30 +760,4 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
         }
         return null;
     }
-
-    /**
-     * 我知道了
-     */
-    public void onCheckAll() {
-        if (newTaskEntities == null) return;
-        if (newTaskEntities.size() <= 0) return;
-        List<String> ids = new ArrayList();
-        for (int i = 0; i < newTaskEntities.size(); i++) {
-            ids.add(newTaskEntities.get(i).id);
-        }
-        showLoadingDialog(null);
-        getApi().checkAllNewTask(ids).enqueue(new SimpleCallBack<JsonElement>() {
-            @Override
-            public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
-                dismissLoadingDialog();
-                if (taskAdapter != null) {
-                    taskAdapter.clearData();
-                    if (getParentFragment() instanceof TabTaskFragment) {
-                        ((TabTaskFragment) getParentFragment()).showOrHiddeTitleAction2(false);
-                    }
-                }
-            }
-        });
-    }
-
 }

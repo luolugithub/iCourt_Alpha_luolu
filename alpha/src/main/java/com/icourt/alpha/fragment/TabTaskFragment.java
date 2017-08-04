@@ -5,30 +5,34 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.ViewPager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.PopupWindow;
+import android.widget.TextView;
 
 import com.icourt.alpha.R;
 import com.icourt.alpha.activity.MyAllotTaskActivity;
-import com.icourt.alpha.activity.MyFinishTaskActivity;
 import com.icourt.alpha.activity.TaskCreateActivity;
+import com.icourt.alpha.adapter.ListDropDownAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseFragmentAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.base.BaseFragment;
+import com.icourt.alpha.entity.bean.FilterDropEntity;
 import com.icourt.alpha.entity.bean.TaskMemberEntity;
 import com.icourt.alpha.fragment.dialogfragment.TaskMemberSelectDialogFragment;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
+import com.icourt.alpha.utils.DensityUtil;
 import com.icourt.alpha.utils.RAUtils;
 import com.icourt.alpha.view.NoScrollViewPager;
-import com.icourt.alpha.widget.dialog.BottomActionDialog;
+import com.icourt.alpha.widget.popupwindow.TopMiddlePopup;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -42,7 +46,7 @@ import butterknife.Unbinder;
  * date createTime：2017/4/8
  * version 1.0.0
  */
-public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackListener {
+public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackListener, TopMiddlePopup.OnItemClickListener {
     @BindView(R.id.tabLayout)
     TabLayout tabLayout;
     @BindView(R.id.titleAction)
@@ -53,12 +57,11 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
     NoScrollViewPager viewPager;
     Unbinder unbinder;
     BaseFragmentAdapter baseFragmentAdapter;
-    @BindView(R.id.titleAction2)
-    ImageView titleAction2;
     @BindView(R.id.titleCalendar)
     ImageView titleCalendar;
-
-    TaskListFragment newTaskFragment, attentionTaskFragment;
+    TaskListFragment attentionTaskFragment;
+    ListDropDownAdapter listDropDownAdapter;
+    TopMiddlePopup topMiddlePopup;
 
     public static TabTaskFragment newInstance() {
         return new TabTaskFragment();
@@ -79,12 +82,30 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
         viewPager.setNoScroll(false);
         viewPager.setAdapter(baseFragmentAdapter);
         tabLayout.setupWithViewPager(viewPager);
-        baseFragmentAdapter.bindTitle(true, Arrays.asList("全部", "新任务", "我关注的"));
+//        baseFragmentAdapter.bindTitle(true, Arrays.asList("全部", "我关注的"));
         baseFragmentAdapter.bindData(true,
                 Arrays.asList(
                         TaskAllFragment.newInstance(),
-                        newTaskFragment = TaskListFragment.newInstance(1),
-                        attentionTaskFragment = TaskListFragment.newInstance(2)));
+                        attentionTaskFragment = TaskListFragment.newInstance(1)));
+        topMiddlePopup = new TopMiddlePopup(getContext(), DensityUtil.getWidthInDp(getContext()), (int) (DensityUtil.getHeightInPx(getContext()) - DensityUtil.dip2px(getContext(), 75)), this);
+
+        for (int i = 0; i < baseFragmentAdapter.getCount(); i++) {
+            TabLayout.Tab tab = tabLayout.getTabAt(i);
+            tab.setCustomView(R.layout.task_unfinish_tab_custom_view);
+            TextView titleTv = tab.getCustomView().findViewById(R.id.tab_custom_title_tv);
+            ImageView downIv = tab.getCustomView().findViewById(R.id.tab_custom_title_iv);
+            switch (i) {
+                case 0:
+                    titleTv.setText("未完成");
+                    downIv.setVisibility(View.VISIBLE);
+                    tab.getCustomView().setOnClickListener(new OnTabClickListener());
+                    break;
+                case 1:
+                    titleTv.setText("我关注的");
+                    downIv.setVisibility(View.GONE);
+                    break;
+            }
+        }
         viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
@@ -93,16 +114,13 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
 
             @Override
             public void onPageSelected(int position) {
-                setTititleActionIcon(position);
                 titleCalendar.setVisibility(View.GONE);
                 switch (position) {
                     case 0:
                         titleCalendar.setVisibility(View.VISIBLE);
                         break;
                     case 1:
-                        newTaskFragment.notifyFragmentUpdate(newTaskFragment, position, null);
-                        break;
-                    case 2:
+                        setFirstTabImage(false);
                         attentionTaskFragment.notifyFragmentUpdate(attentionTaskFragment, position, null);
                         break;
                 }
@@ -113,35 +131,61 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
 
             }
         });
+        topMiddlePopup.setOnDismissListener(new PopupWindow.OnDismissListener() {
+            @Override
+            public void onDismiss() {
+                setFirstTabImage(false);
+            }
+        });
     }
 
-    /**
-     * 设置顶部icon
-     *
-     * @param position
-     */
-    private void setTititleActionIcon(int position) {
-        switch (position) {
-            case 0://全部
-                titleAction.setImageResource(R.mipmap.header_icon_add);
-                titleAction2.setImageResource(R.mipmap.header_icon_more);
-                titleAction2.setVisibility(View.VISIBLE);
-                break;
-            case 1://新任务
-                titleAction.setImageResource(R.mipmap.header_icon_add);
-                titleAction2.setImageResource(R.mipmap.header_icon_checkall);
-                titleAction2.setVisibility(View.GONE);
-                break;
-            case 2://我关注的
-                titleAction.setImageResource(R.mipmap.header_icon_add);
-                titleAction2.setImageResource(R.mipmap.header_icon_more);
-                titleAction2.setVisibility(View.VISIBLE);
-                break;
+    @Override
+    public void onItemClick(TopMiddlePopup topMiddlePopup, BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
+        topMiddlePopup.dismiss();
+        FilterDropEntity filterDropEntity = (FilterDropEntity) adapter.getItem(position);
+        showTopSnackBar("点击: -- " + filterDropEntity.name);
+    }
+
+    private class OnTabClickListener implements View.OnClickListener {
+
+        @Override
+        public void onClick(View view) {
+            if (tabLayout.getTabAt(0) != null) {
+                if (view.isSelected()) {
+                    topMiddlePopup.show(titleView, getItems());
+                    setFirstTabImage(true);
+                } else {
+                    tabLayout.getTabAt(0).select();
+                }
+            }
         }
     }
 
+    private List<FilterDropEntity> getItems() {
+        List<FilterDropEntity> dropEntities = new ArrayList<>();
+        dropEntities.add(new FilterDropEntity("未完成", "22"));
+        dropEntities.add(new FilterDropEntity("已完成", "51"));
+        dropEntities.add(new FilterDropEntity("已删除", "9"));
+        return dropEntities;
+    }
+
+    /**
+     * 设置第一个tab的小图标
+     *
+     * @param isOpen
+     */
+    private void setFirstTabImage(boolean isOpen) {
+        if (tabLayout != null)
+            if (tabLayout.getTabAt(0) != null) {
+                if (tabLayout.getTabAt(0).getCustomView() != null) {
+                    ImageView iv = tabLayout.getTabAt(0).getCustomView().findViewById(R.id.tab_custom_title_iv);
+                    iv.setImageResource(isOpen ? R.mipmap.task_dropup : R.mipmap.task_dropdown);
+                }
+            }
+
+    }
+
     @OnClick({R.id.titleAction,
-            R.id.titleAction2,
             R.id.titleCalendar})
     @Override
     public void onClick(View v) {
@@ -169,50 +213,9 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
             case R.id.titleAction:
                 TaskCreateActivity.launch(getContext(), null, null);
                 break;
-            case R.id.titleAction2:
-                if (viewPager.getCurrentItem() != 1) {
-//                new BottomActionDialog(getContext(), null, Arrays.asList("我分配的任务", "已完成的任务", "选择查看对象"), new BottomActionDialog.OnActionItemClickListener() {
-                    new BottomActionDialog(getContext(),
-                            null,
-                            Arrays.asList("查看他人任务", "查看已完成的"),
-                            new BottomActionDialog.OnActionItemClickListener() {
-                                @Override
-                                public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
-                                    dialog.dismiss();
-                                    switch (position) {
-//                            case 0:
-//                                MyAllotTaskActivity.launch(getContext(), TaskOtherListFragment.MY_ALLOT_TYPE, null);
-//                                break;
-                                        case 0:
-                                            showMemberSelectDialogFragment();
-                                            break;
-                                        case 1:
-                                            MyFinishTaskActivity.launch(getContext());
-                                            break;
-                                    }
-                                }
-                            }).show();
-                } else {
-                    //type＝101，"我知道了"
-                    newTaskFragment.notifyFragmentUpdate(newTaskFragment, 101, null);
-                }
-                break;
         }
     }
 
-    /**
-     * 展示选择成员对话框
-     */
-    public void showMemberSelectDialogFragment() {
-        String tag = TaskMemberSelectDialogFragment.class.getSimpleName();
-        FragmentTransaction mFragTransaction = getChildFragmentManager().beginTransaction();
-        Fragment fragment = getChildFragmentManager().findFragmentByTag(tag);
-        if (fragment != null) {
-            mFragTransaction.remove(fragment);
-        }
-        TaskMemberSelectDialogFragment.newInstance()
-                .show(mFragTransaction, tag);
-    }
 
     @Override
     public void onDestroy() {
@@ -233,16 +236,5 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
                 MyAllotTaskActivity.launch(getContext(), TaskOtherListFragment.SELECT_OTHER_TYPE, ids);
             }
         }
-    }
-
-    /**
-     * 显示隐藏'我知道了'按钮
-     *
-     * @param isShow
-     */
-    public void showOrHiddeTitleAction2(boolean isShow) {
-        if (viewPager == null) return;
-        if (viewPager.getCurrentItem() == 1)
-            titleAction2.setVisibility(isShow ? View.VISIBLE : View.GONE);
     }
 }
