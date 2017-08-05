@@ -1,12 +1,10 @@
 package com.icourt.alpha.fragment;
 
-import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.IdRes;
 import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.annotation.RestrictTo;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
@@ -21,7 +19,6 @@ import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.entity.bean.TaskEntity;
 import com.icourt.alpha.interfaces.INotifyFragment;
 import com.icourt.alpha.interfaces.OnTasksChangeListener;
-import com.jeek.calendar.widget.calendar.CalendarUtils;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -153,7 +150,7 @@ public class TaskAllFragment extends BaseFragment implements OnTasksChangeListen
                 break;
             case TYPE_ALL_TASK:
                 BaseFragment fragment = (BaseFragment) getFragment(TYPE_ALL_TASK);
-                if (fragment != null) fragment.notifyFragmentUpdate(fragment, 100, null);
+                if (fragment != null) fragment.notifyFragmentUpdate(fragment, 100, bundle);
                 break;
         }
     }

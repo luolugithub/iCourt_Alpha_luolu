@@ -45,6 +45,10 @@ public class TopMiddlePopup extends PopupWindow implements BaseRecyclerAdapter.O
     public TopMiddlePopup(Context context) {
     }
 
+    public ListDropDownAdapter getAdapter() {
+        return adapter;
+    }
+
     @Override
     public final void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
         if (listener != null) {
@@ -123,8 +127,9 @@ public class TopMiddlePopup extends PopupWindow implements BaseRecyclerAdapter.O
      *
      * @param view
      */
-    public void show(View view, List<FilterDropEntity> items) {
+    public void show(View view, List<FilterDropEntity> items, int position) {
         adapter.bindData(true, items);
+        adapter.setSelectedPos(position);
         showAsDropDown(view);
     }
 

@@ -47,6 +47,9 @@ import butterknife.Unbinder;
  * version 1.0.0
  */
 public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackListener, TopMiddlePopup.OnItemClickListener {
+
+    public static int select_position = 0;//选择的筛选选项
+
     @BindView(R.id.tabLayout)
     TabLayout tabLayout;
     @BindView(R.id.titleAction)
@@ -60,6 +63,7 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
     @BindView(R.id.titleCalendar)
     ImageView titleCalendar;
     TaskListFragment attentionTaskFragment;
+    TaskAllFragment alltaskFragment;
     ListDropDownAdapter listDropDownAdapter;
     TopMiddlePopup topMiddlePopup;
 
@@ -85,7 +89,7 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
 //        baseFragmentAdapter.bindTitle(true, Arrays.asList("全部", "我关注的"));
         baseFragmentAdapter.bindData(true,
                 Arrays.asList(
-                        TaskAllFragment.newInstance(),
+                        alltaskFragment = TaskAllFragment.newInstance(),
                         attentionTaskFragment = TaskListFragment.newInstance(1)));
         topMiddlePopup = new TopMiddlePopup(getContext(), DensityUtil.getWidthInDp(getContext()), (int) (DensityUtil.getHeightInPx(getContext()) - DensityUtil.dip2px(getContext(), 75)), this);
 
@@ -139,11 +143,29 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
         });
     }
 
+    /**
+     * 设置第一个tab的文本内容
+     *
+     * @param content
+     */
+    public void setFirstTabText(String content, int position) {
+        if (tabLayout == null) return;
+        if (tabLayout.getTabAt(0) == null) return;
+        if (tabLayout.getTabAt(0).getCustomView() == null) return;
+        TextView titleTv = tabLayout.getTabAt(0).getCustomView().findViewById(R.id.tab_custom_title_tv);
+        titleTv.setText(content);
+        select_position = position;
+        topMiddlePopup.getAdapter().setSelectedPos(select_position);
+    }
+
     @Override
     public void onItemClick(TopMiddlePopup topMiddlePopup, BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
         topMiddlePopup.dismiss();
         FilterDropEntity filterDropEntity = (FilterDropEntity) adapter.getItem(position);
-        showTopSnackBar("点击: -- " + filterDropEntity.name);
+        setFirstTabText(filterDropEntity.name, select_position);
+        Bundle bundle = new Bundle();
+        bundle.putInt("stateType", filterDropEntity.stateType);
+        alltaskFragment.notifyFragmentUpdate(alltaskFragment, TaskAllFragment.TYPE_ALL_TASK, bundle);
     }
 
     private class OnTabClickListener implements View.OnClickListener {
@@ -152,7 +174,7 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
         public void onClick(View view) {
             if (tabLayout.getTabAt(0) != null) {
                 if (view.isSelected()) {
-                    topMiddlePopup.show(titleView, getItems());
+                    topMiddlePopup.show(titleView, getItems(), select_position);
                     setFirstTabImage(true);
                 } else {
                     tabLayout.getTabAt(0).select();
@@ -163,9 +185,9 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
 
     private List<FilterDropEntity> getItems() {
         List<FilterDropEntity> dropEntities = new ArrayList<>();
-        dropEntities.add(new FilterDropEntity("未完成", "22"));
-        dropEntities.add(new FilterDropEntity("已完成", "51"));
-        dropEntities.add(new FilterDropEntity("已删除", "9"));
+        dropEntities.add(new FilterDropEntity("未完成", "22", 0));
+        dropEntities.add(new FilterDropEntity("已完成", "51", 1));
+        dropEntities.add(new FilterDropEntity("已删除", "9", 3));
         return dropEntities;
     }
 

@@ -5,12 +5,14 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import com.andview.refreshview.XRefreshView;
 import com.google.gson.JsonArray;
@@ -52,9 +54,11 @@ import org.greenrobot.eventbus.ThreadMode;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 import butterknife.Unbinder;
 import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
@@ -77,7 +81,8 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
         OnFragmentCallBackListener, ProjectSelectDialogFragment.OnProjectTaskGroupSelectListener {
 
     public static final int TYPE_ALL = 0;//全部
-    public static final int TYPE_MY_ATTENTION = 1;//我关注的
+    public static final int TYPE_NEW = 1;//新任务
+    public static final int TYPE_MY_ATTENTION = 2;//我关注的
     Unbinder unbinder;
     @Nullable
     @BindView(R.id.recyclerView)
@@ -94,12 +99,17 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
     List<TaskEntity.TaskItemEntity> beAboutToTaskEntities;//即将到期
     List<TaskEntity.TaskItemEntity> futureTaskEntities;//未来
     List<TaskEntity.TaskItemEntity> noDueTaskEntities;//为指定到期
+    List<TaskEntity.TaskItemEntity> newTaskEntities;//新任务
     List<TaskEntity.TaskItemEntity> datedTaskEntities;//已过期
 
-    int type;
+    int type, stateType = 0;
     HeaderFooterAdapter<TaskAdapter> headerFooterAdapter;
     OnTasksChangeListener onTasksChangeListener;
     boolean isFirstTimeIntoPage = true;
+    @BindView(R.id.new_task_cardview)
+    CardView newTaskCardview;
+    @BindView(R.id.new_task_count_tv)
+    TextView newTaskCountTv;
 
     public static TaskListFragment newInstance(int type) {
         TaskListFragment projectTaskFragment = new TaskListFragment();
@@ -140,6 +150,7 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
         recyclerView.setLayoutManager(linearLayoutManager = new LinearLayoutManager(getContext()));
         recyclerView.addItemDecoration(ItemDecorationUtils.getCommTrans5Divider(getContext(), true));
         recyclerView.setHasFixedSize(true);
+        recyclerView.setNestedScrollingEnabled(false);
 
         headerFooterAdapter = new HeaderFooterAdapter<>(taskAdapter = new TaskAdapter());
         View headerView = HeaderFooterAdapter.inflaterView(getContext(), R.layout.header_search_comm, recyclerView);
@@ -174,9 +185,11 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
         beAboutToTaskEntities = new ArrayList<>();
         futureTaskEntities = new ArrayList<>();
         noDueTaskEntities = new ArrayList<>();
+        newTaskEntities = new ArrayList<>();
         datedTaskEntities = new ArrayList<>();
     }
 
+    @OnClick({R.id.new_task_cardview})
     @Override
     public void onClick(View v) {
         super.onClick(v);
@@ -184,22 +197,100 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
             case R.id.rl_comm_search:
                 SearchProjectActivity.launchTask(getContext(), getLoginUserId(), type, SearchProjectActivity.SEARCH_TASK);
                 break;
+            case R.id.new_task_cardview:
+                if (getParentFragment() instanceof TaskAllFragment) {
+                    if (getParentFragment().getParentFragment() instanceof TabTaskFragment) {
+                        if (TabTaskFragment.select_position != 0) {
+                            ((TabTaskFragment) (getParentFragment().getParentFragment())).setFirstTabText("未完成", 0);
+                            stateType = 0;
+                            getData(true);
+                        } else {
+                            scrollToByPosition(3);
+
+                        }
+                    }
+                }
+                break;
             default:
                 super.onClick(v);
                 break;
         }
     }
 
+    boolean parentMove, childMove;
+
+    private void scrollToByPosition(final int p) {
+        final LinearLayoutManager parentManager = (LinearLayoutManager) recyclerView.getLayoutManager();
+        parentManager.scrollToPositionWithOffset(p, 0);
+
+//        int parentFir = parentManager.findFirstVisibleItemPosition();
+//        int parentEnd = parentManager.findLastVisibleItemPosition();
+//        if (p <= parentFir) {
+//            recyclerView.scrollToPosition(p);
+//        } else if (p <= parentEnd) {
+//            int top = recyclerView.getChildAt(p - parentFir).getTop();
+//            recyclerView.scrollBy(0, top);
+//        } else {
+//            recyclerView.scrollToPosition(p);    //先让当前view滚动到列表内
+//            parentMove = true;
+//        }
+//        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+//            @Override
+//            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+//                super.onScrolled(recyclerView, dx, dy);
+//                if (parentMove) {
+//                    parentMove = false;
+//                    int n = p - parentManager.findFirstVisibleItemPosition();
+//                    if (n >= 0 && n < recyclerView.getChildCount()) {
+//                        recyclerView.scrollBy(0, recyclerView.getChildAt(n).getTop()); //滚动到顶部
+//                    }
+//                }
+//            }
+//        });
+//
+        RecyclerView childRecyclerView = getChildRecyclerView("08D8C5460D3011E7843370106FAECE2E");
+        if (childRecyclerView != null) {
+            final int childPosition = getChildPositon("08D8C5460D3011E7843370106FAECE2E");
+            final LinearLayoutManager childManager = (LinearLayoutManager) childRecyclerView.getLayoutManager();
+            int childFir = childManager.findFirstVisibleItemPosition();
+            int childEnd = childManager.findLastVisibleItemPosition();
+            if (childPosition <= childFir) {
+                childRecyclerView.scrollToPosition(childPosition);
+            } else if (childPosition <= childEnd) {
+                int top = childRecyclerView.getChildAt(childPosition - childFir).getTop();
+                recyclerView.smoothScrollBy(0, top + childRecyclerView.getChildAt(childPosition).getHeight()-135);
+            } else {
+                childRecyclerView.scrollToPosition(childPosition);    //先让当前view滚动到列表内
+                childMove = true;
+            }
+            childRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+                @Override
+                public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                    super.onScrolled(recyclerView, dx, dy);
+                    if (childMove) {
+                        childMove = false;
+                        int n = childPosition - childManager.findFirstVisibleItemPosition();
+                        if (n >= 0 && n < recyclerView.getChildCount()) {
+                            recyclerView.scrollBy(0, recyclerView.getChildAt(n).getTop()); //滚动到顶部
+                        }
+                    }
+                }
+            });
+        }
+//
+
+    }
+
     @Override
     public void notifyFragmentUpdate(Fragment targetFrgament, int type, Bundle bundle) {
         super.notifyFragmentUpdate(targetFrgament, type, bundle);
         if (targetFrgament != this) return;
-        //刷新
-        if (targetFrgament == this && type == 100
-                && recyclerView != null) {
-            getData(true);
+        if (bundle != null) {
+            stateType = bundle.getInt("stateType");
         }
-        if (type == TYPE_MY_ATTENTION) {
+        //刷新
+        if (targetFrgament == this && (type == 100 || type == TYPE_MY_ATTENTION)
+                && recyclerView != null) {
             getData(true);
         }
     }
@@ -215,7 +306,7 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
         }
         getApi().taskListQuery(0,
                 getLoginUserId(),
-                0,
+                stateType,
                 attentionType,
                 "dueTime",
                 1,
@@ -265,6 +356,10 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
                     @Override
                     public void accept(List<TaskEntity> searchPolymerizationEntities) throws Exception {
                         taskAdapter.bindData(true, allTaskEntities);
+                        if (newTaskEntities.size() > 0) {
+                            newTaskCardview.setVisibility(View.VISIBLE);
+                            newTaskCountTv.setText(String.valueOf(newTaskEntities.size()));
+                        }
                         //第一次进入 隐藏搜索框
                         if (isFirstTimeIntoPage) {
                             linearLayoutManager.scrollToPositionWithOffset(headerFooterAdapter.getHeaderCount(), 0);
@@ -294,21 +389,19 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
             } else {
                 noDueTaskEntities.add(taskItemEntity);
             }
-//            if (type == TYPE_NEW) {
-//                if (DateUtils.millis() - taskItemEntity.assignTime <= TimeUnit.DAYS.toMillis(1) && !TextUtils.isEmpty(getLoginUserId())) {
-//                    if (taskItemEntity.createUser != null) {
-//                        if (!TextUtils.equals(taskItemEntity.createUser.userId, getLoginUserId())) {
-//                            if (!TextUtils.isEmpty(taskItemEntity.readUserIds)) {
-//                                if (!taskItemEntity.readUserIds.contains(getLoginUserId())) {
-//                                    newTaskEntities.add(taskItemEntity);
-//                                }
-//                            } else {
-//                                newTaskEntities.add(taskItemEntity);
-//                            }
-//                        }
-//                    }
-//                }
-//            }
+            if (DateUtils.millis() - taskItemEntity.assignTime <= TimeUnit.DAYS.toMillis(1) && !TextUtils.isEmpty(getLoginUserId())) {
+                if (taskItemEntity.createUser != null) {
+                    if (!TextUtils.equals(taskItemEntity.createUser.userId, getLoginUserId())) {
+                        if (!TextUtils.isEmpty(taskItemEntity.readUserIds)) {
+                            if (!taskItemEntity.readUserIds.contains(getLoginUserId())) {
+                                newTaskEntities.add(taskItemEntity);
+                            }
+                        } else {
+                            newTaskEntities.add(taskItemEntity);
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -356,7 +449,6 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
         }
     }
 
-
     private void clearLists() {
         if (allTaskEntities != null)
             allTaskEntities.clear();
@@ -370,6 +462,8 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
             futureTaskEntities.clear();
         if (noDueTaskEntities != null)
             noDueTaskEntities.clear();
+        if (newTaskEntities != null)
+            newTaskEntities.clear();
     }
 
     private void stopRefresh() {
@@ -462,6 +556,27 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
             }
         }
         return -1;
+    }
+
+    /**
+     * 获取子view中的RecyclerView
+     *
+     * @param taskId
+     * @return
+     */
+    private RecyclerView getChildRecyclerView(String taskId) {
+        int parentPos = getParentPositon(taskId) + headerFooterAdapter.getHeaderCount();
+        if (parentPos > 0) {
+            int childPos = getChildPositon(taskId);
+            if (childPos >= 0) {
+                BaseArrayRecyclerAdapter.ViewHolder viewHolderForAdapterPosition = (BaseArrayRecyclerAdapter.ViewHolder) recyclerView.findViewHolderForAdapterPosition(parentPos);
+                if (viewHolderForAdapterPosition != null) {
+                    RecyclerView recyclerview = viewHolderForAdapterPosition.obtainView(R.id.parent_item_task_recyclerview);
+                    return recyclerview;
+                }
+            }
+        }
+        return null;
     }
 
     TaskEntity.TaskItemEntity lastEntity;
