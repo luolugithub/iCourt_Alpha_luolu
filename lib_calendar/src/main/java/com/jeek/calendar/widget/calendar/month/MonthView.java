@@ -8,8 +8,11 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
@@ -215,16 +218,34 @@ public class MonthView extends View {
             lastYear = mSelYear;
             lastMonth = mSelMonth - 1;
         }
-        mPaint.setColor(mLastOrNextMonthTextColor);
+
+        List<Integer> hints = CalendarUtils.getInstance(getContext())
+                .getTaskHints(lastYear, lastMonth);
+
+       // mPaint.setColor(mLastOrNextMonthTextColor);
         int monthDays = CalendarUtils.getMonthDays(lastYear, lastMonth);
         int weekNumber = CalendarUtils.getFirstDayWeek(mSelYear, mSelMonth);
         for (int day = 0; day < weekNumber - 1; day++) {
+            mPaint.setColor(mLastOrNextMonthTextColor);
+
             mDaysText[0][day] = monthDays - weekNumber + day + 2;
             String dayString = String.valueOf(mDaysText[0][day]);
             int startX = (int) (mColumnSize * day + (mColumnSize - mPaint.measureText(dayString)) / 2);
             int startY = (int) (mRowSize / 2 - (mPaint.ascent() + mPaint.descent()) / 2);
             canvas.drawText(dayString, startX, startY, mPaint);
             mHolidayOrLunarText[0][day] = CalendarUtils.getHolidayFromSolar(lastYear, lastMonth, mDaysText[0][day]);
+
+
+            //画圆点
+            if (mIsShowHint && !hints.isEmpty()) {
+                mPaint.setColor(mHintCircleColor);
+                int col = day;
+                int row = 0;
+                if (!hints.contains(mDaysText[0][day])) continue;
+                float circleX = (float) (mColumnSize * col + mColumnSize * 0.5);
+                float circleY = (float) (mRowSize * row + mRowSize * 0.75);
+                canvas.drawCircle(circleX, circleY, mCircleRadius, mPaint);
+            }
         }
     }
 
@@ -269,7 +290,7 @@ public class MonthView extends View {
     }
 
     private void drawNextMonth(Canvas canvas) {
-        mPaint.setColor(mLastOrNextMonthTextColor);
+       // mPaint.setColor(mLastOrNextMonthTextColor);
         int monthDays = CalendarUtils.getMonthDays(mSelYear, mSelMonth);
         int weekNumber = CalendarUtils.getFirstDayWeek(mSelYear, mSelMonth);
         int nextMonthDays = 42 - monthDays - weekNumber + 1;
@@ -279,7 +300,11 @@ public class MonthView extends View {
             nextMonth = 0;
             nextYear += 1;
         }
+        List<Integer> hints = CalendarUtils.getInstance(getContext())
+                .getTaskHints(nextYear, nextMonth);
+       // Log.d("-------->getHints", "y:" + nextYear + "  m:" + nextMonth + "  hinst:" + hints);
         for (int day = 0; day < nextMonthDays; day++) {
+            mPaint.setColor(mLastOrNextMonthTextColor);
             int column = (monthDays + weekNumber - 1 + day) % 7;
             int row = 5 - (nextMonthDays - day - 1) / 7;
             try {
@@ -292,6 +317,18 @@ public class MonthView extends View {
             int startX = (int) (mColumnSize * column + (mColumnSize - mPaint.measureText(dayString)) / 2);
             int startY = (int) (mRowSize * row + mRowSize / 2 - (mPaint.ascent() + mPaint.descent()) / 2);
             canvas.drawText(dayString, startX, startY, mPaint);
+
+            //画圆点
+            if (mIsShowHint && !hints.isEmpty()) {
+                mPaint.setColor(mHintCircleColor);
+                int col = column;
+                //int row = 0;
+                if (!hints.contains(mDaysText[row][column])) continue;
+                float circleX = (float) (mColumnSize * col + mColumnSize * 0.5);
+                float circleY = (float) (mRowSize * row + mRowSize * 0.75);
+                canvas.drawCircle(circleX, circleY, mCircleRadius, mPaint);
+            }
+
         }
     }
 
