@@ -375,7 +375,7 @@ public class ContactShareDialogFragment extends BaseDialogFragment
                     @Override
                     public void onSuccess(Call<ResEntity<IMMessageCustomBody>> call, Response<ResEntity<IMMessageCustomBody>> response) {
                         dismissLoadingDialog();
-                        showTopSnackBar("转发成功");
+                        showTopSnackBar("发送成功");
                         dismiss();
                     }
 
