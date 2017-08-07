@@ -324,6 +324,10 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
                 }
             }
         }
+        if (taskGroupEntity == null) {
+            taskGroupEntity = new TaskGroupEntity();
+            taskGroupEntity.id = "";
+        }
         selectedTaskGroup = taskGroupEntity;
         updateTask(taskItemEntity, projectEntity, taskGroupEntity);
     }
