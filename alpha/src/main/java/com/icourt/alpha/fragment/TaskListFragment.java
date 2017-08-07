@@ -1,5 +1,9 @@
 package com.icourt.alpha.fragment;
 
+import android.animation.Animator;
+import android.animation.ArgbEvaluator;
+import android.animation.ObjectAnimator;
+import android.animation.ValueAnimator;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -12,6 +16,7 @@ import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.andview.refreshview.XRefreshView;
@@ -41,6 +46,7 @@ import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.interfaces.OnTasksChangeListener;
 import com.icourt.alpha.utils.DateUtils;
+import com.icourt.alpha.utils.DensityUtil;
 import com.icourt.alpha.utils.ItemDecorationUtils;
 import com.icourt.alpha.utils.JsonUtils;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
@@ -68,6 +74,8 @@ import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
 import retrofit2.Call;
 import retrofit2.Response;
+
+import static com.icourt.alpha.fragment.TabTaskFragment.select_position;
 
 /**
  * Description 任务列表
@@ -110,6 +118,10 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
     CardView newTaskCardview;
     @BindView(R.id.new_task_count_tv)
     TextView newTaskCountTv;
+    @BindView(R.id.next_task_close_iv)
+    ImageView nextTaskCloseIv;
+    @BindView(R.id.next_task_cardview)
+    CardView nextTaskCardview;
 
     public static TaskListFragment newInstance(int type) {
         TaskListFragment projectTaskFragment = new TaskListFragment();
@@ -189,7 +201,9 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
         datedTaskEntities = new ArrayList<>();
     }
 
-    @OnClick({R.id.new_task_cardview})
+    @OnClick({R.id.new_task_cardview,
+            R.id.next_task_close_iv,
+            R.id.next_task_cardview})
     @Override
     public void onClick(View v) {
         super.onClick(v);
@@ -200,16 +214,43 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
             case R.id.new_task_cardview:
                 if (getParentFragment() instanceof TaskAllFragment) {
                     if (getParentFragment().getParentFragment() instanceof TabTaskFragment) {
-                        if (TabTaskFragment.select_position != 0) {
+                        if (select_position != 0) {
                             ((TabTaskFragment) (getParentFragment().getParentFragment())).setFirstTabText("未完成", 0);
                             stateType = 0;
                             getData(true);
                         } else {
-                            parentMove = true;
-                            scrollToByPosition(3);
-
+                            if (newTaskEntities != null) {
+                                if (newTaskEntities.size() > 1) {
+                                    nextTaskCardview.setVisibility(View.VISIBLE);
+                                } else if (newTaskEntities.size() == 1) {
+                                    if (newTaskEntities.get(0) != null)
+                                        scrollToByPosition(newTaskEntities.get(0).id);
+                                }
+                            }
                         }
                     }
+                }
+                break;
+            case R.id.next_task_cardview://下一个
+                if (newTaskEntities != null) {
+                    if (newTaskEntities.size() > 0) {
+                        if (newTaskEntities.get(0) != null) {
+                            scrollToByPosition(newTaskEntities.get(0).id);
+                            List<String> ids = new ArrayList<>();
+                            ids.add(newTaskEntities.get(0).id);
+                            onCheckNewTask(ids);
+                        }
+                    }
+                }
+                break;
+            case R.id.next_task_close_iv://关闭'下一个'弹框,全部修改为已读
+                if (newTaskEntities != null) {
+                    showLoadingDialog(null);
+                    List<String> ids = new ArrayList<>();
+                    for (TaskEntity.TaskItemEntity newTaskEntity : newTaskEntities) {
+                        ids.add(newTaskEntity.id);
+                    }
+                    onCheckNewTask(ids);
                 }
                 break;
             default:
@@ -218,42 +259,90 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
         }
     }
 
-    boolean parentMove, childMove;
+    RecyclerView.OnChildAttachStateChangeListener onChildAttachStateChangeListener;
+    View childItemView;
+    boolean isUpdate = true;
 
-    private void scrollToByPosition(final int p) {
-        final LinearLayoutManager parentManager = (LinearLayoutManager) recyclerView.getLayoutManager();
-        parentManager.scrollToPositionWithOffset(p, 0);
+    private void scrollToByPosition(final String taskId) {
+        isUpdate = true;
+        int parentPosition = getParentPositon(taskId) + headerFooterAdapter.getHeaderCount();
+        final int childPosition = getChildPositon(taskId);
+        int offset = childPosition * 130 + 46;
+        linearLayoutManager.scrollToPositionWithOffset(parentPosition, DensityUtil.dip2px(getContext(), offset) * -1);
+        linearLayoutManager.setStackFromEnd(true);
 
-        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+        if (onChildAttachStateChangeListener != null)
+            recyclerView.removeOnChildAttachStateChangeListener(onChildAttachStateChangeListener);
+
+        recyclerView.addOnChildAttachStateChangeListener(onChildAttachStateChangeListener = new RecyclerView.OnChildAttachStateChangeListener() {
             @Override
-            public void onScrolled(RecyclerView rv, int dx, int dy) {
-                super.onScrolled(rv, dx, dy);
-                if (parentMove) {
-                    parentMove = false;
-                    RecyclerView childRecyclerView = getChildRecyclerView("08D8C5460D3011E7843370106FAECE2E");
-                    if (childRecyclerView != null) {
-                        final int childPosition = getChildPositon("08D8C5460D3011E7843370106FAECE2E");
-                        final LinearLayoutManager childManager = (LinearLayoutManager) childRecyclerView.getLayoutManager();
-                        int childFir = childManager.findFirstVisibleItemPosition();
-                        int childEnd = childManager.findLastVisibleItemPosition();
+            public void onChildViewAttachedToWindow(View view) {
+                if (isUpdate)
+                    updateItemViewBackgrond(taskId, childPosition);
+            }
 
+            @Override
+            public void onChildViewDetachedFromWindow(View view) {
 
-                        if (childPosition <= childFir) {
-                            childRecyclerView.scrollToPosition(childPosition);
-                        } else if (childPosition <= childEnd) {
-                            int childTop = childRecyclerView.getChildAt(childPosition - childFir).getTop() + 92;
-//                            int parentTop = recyclerView.getChildAt(p).getTop();
-//                            int top = childTop + parentTop;
-                            recyclerView.smoothScrollBy(0, childTop);
-                        } else {
-                            childRecyclerView.scrollToPosition(childPosition);    //先让当前view滚动到列表内
-                            childMove = true;
-                        }
-                    }
-                }
             }
         });
+        if (isUpdate)
+            updateItemViewBackgrond(taskId, childPosition);
     }
+
+    /**
+     * 改变itemview背景颜色
+     *
+     * @param taskId
+     * @param childPosition
+     */
+    private void updateItemViewBackgrond(String taskId, int childPosition) {
+        RecyclerView childRecyclerview = getChildRecyclerView(taskId);
+        if (childRecyclerview != null) {
+            childItemView = childRecyclerview.getChildAt(childPosition);
+        }
+        if (childItemView != null) {
+            startViewAnim(childItemView);
+        }
+        isUpdate = false;
+    }
+
+    /**
+     * itemview渐变动画
+     *
+     * @param view
+     */
+    private void startViewAnim(View view) {
+        ValueAnimator colorAnim = ObjectAnimator.ofInt(view, "backgroundColor", 0xFFED6C00, 0xFFFFFFFF);
+        colorAnim.setDuration(3000);
+        colorAnim.setEvaluator(new ArgbEvaluator());
+        colorAnim.addListener(animatorListener);
+        colorAnim.start();
+    }
+
+    Animator.AnimatorListener animatorListener = new Animator.AnimatorListener() {
+        @Override
+        public void onAnimationStart(Animator animator) {
+
+        }
+
+        @Override
+        public void onAnimationEnd(Animator animator) {
+            if (childItemView != null) {
+                childItemView.setBackgroundColor(0xFFFFFFFF);
+            }
+        }
+
+        @Override
+        public void onAnimationCancel(Animator animator) {
+
+        }
+
+        @Override
+        public void onAnimationRepeat(Animator animator) {
+
+        }
+    };
 
     @Override
     public void notifyFragmentUpdate(Fragment targetFrgament, int type, Bundle bundle) {
@@ -330,6 +419,7 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
                     @Override
                     public void accept(List<TaskEntity> searchPolymerizationEntities) throws Exception {
                         taskAdapter.bindData(true, allTaskEntities);
+                        linearLayoutManager.setStackFromEnd(false);
                         if (newTaskEntities.size() > 0) {
                             newTaskCardview.setVisibility(View.VISIBLE);
                             newTaskCountTv.setText(String.valueOf(newTaskEntities.size()));
@@ -848,5 +938,30 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
             e.printStackTrace();
         }
         return null;
+    }
+
+    /**
+     * 我知道了
+     */
+    public void onCheckNewTask(final List<String> ids) {
+        if (newTaskEntities == null) return;
+        getApi().checkAllNewTask(ids).enqueue(new SimpleCallBack<JsonElement>() {
+            @Override
+            public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
+                dismissLoadingDialog();
+                if (ids != null) {
+                    if (ids.size() == 1) {
+                        newTaskEntities.remove(0);
+                        newTaskCountTv.setText(String.valueOf(newTaskEntities.size()));
+                    } else {
+                        newTaskEntities.clear();
+                    }
+                    if (newTaskEntities.size() == 0) {
+                        newTaskCardview.setVisibility(View.GONE);
+                        nextTaskCardview.setVisibility(View.GONE);
+                    }
+                }
+            }
+        });
     }
 }
