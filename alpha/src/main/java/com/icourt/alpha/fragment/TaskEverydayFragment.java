@@ -543,7 +543,7 @@ public class TaskEverydayFragment extends BaseFragment
             JsonArray jsonarr = new JsonArray();
             if (projectEntity != null) {
                 jsonObject.addProperty("matterId", projectEntity.pkId);
-                jsonarr.add(getLoginUserId());
+                //jsonarr.add(getLoginUserId());
             } else {
                 if (itemEntity.attendeeUsers != null) {
                     for (TaskEntity.TaskItemEntity.AttendeeUserEntity attendeeUser : itemEntity.attendeeUsers) {

@@ -392,7 +392,7 @@ public class TaskCreateActivity extends BaseActivity implements ProjectSelectDia
                 }
             }
         } else {
-            jsonArray.add(getLoginUserId());
+            //jsonArray.add(getLoginUserId());
         }
         jsonObject.add("attendees", jsonArray);
         return jsonObject.toString();

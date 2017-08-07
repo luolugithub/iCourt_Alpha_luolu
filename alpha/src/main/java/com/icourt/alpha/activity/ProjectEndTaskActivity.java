@@ -681,7 +681,7 @@ public class ProjectEndTaskActivity extends BaseActivity
             if (TextUtils.equals(projectEntity.pkId, projectId)) {
                 jsonObjectAddOwers(jsonarr, itemEntity.attendeeUsers);
             } else {
-                jsonarr.add(getLoginUserId());
+               // jsonarr.add(getLoginUserId());
             }
         } else {
             jsonObjectAddOwers(jsonarr, itemEntity.attendeeUsers);

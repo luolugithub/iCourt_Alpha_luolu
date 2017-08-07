@@ -415,7 +415,7 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
             JsonArray jsonarr = new JsonArray();
             if (projectEntity != null) {
                 jsonObject.addProperty("matterId", projectEntity.pkId);
-                jsonarr.add(getLoginUserId());
+                //jsonarr.add(getLoginUserId());
             } else {
                 if (itemEntity.attendeeUsers != null) {
                     if (itemEntity.attendeeUsers.size() > 0) {
@@ -423,7 +423,7 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
                             jsonarr.add(attendeeUser.userId);
                         }
                     } else {
-                        jsonarr.add(getLoginUserId());
+                        //jsonarr.add(getLoginUserId());
                     }
                 }
             }
