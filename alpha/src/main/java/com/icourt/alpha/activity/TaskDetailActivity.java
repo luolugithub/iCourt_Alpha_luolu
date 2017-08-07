@@ -440,7 +440,7 @@ public class TaskDetailActivity extends BaseActivity
                             mis = 60000;
                         }
                         if (taskItemEntity != null)
-                            taskTime.setText(getHm(taskItemEntity.timingSum + mis));
+                            taskTime.setText(getHm(taskItemEntity.timingSum=(taskItemEntity.timingSum + mis)));
                     }
                 }
                 break;
