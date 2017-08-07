@@ -219,6 +219,7 @@ public class FileBoxDownloadActivity extends BaseActivity {
             String type = FileUtils.getMIMEType(file);
             //设置intent的data和Type属性。
             Uri uri = null;
+            LogUtils.e("------->type:" + type);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                 uri = FileProvider.getUriForFile(this, BuildConfig.APPLICATION_ID + ".provider", file);
             } else {
@@ -232,7 +233,8 @@ public class FileBoxDownloadActivity extends BaseActivity {
                 intent.setDataAndType(uri, type);
                 startActivity(intent);     //这里最好try一下，有可能会报错。 //比如说你的MIME类型是打开邮箱，但是你手机里面没装邮箱客户端，就会报错。
             } else if (action.equals(Intent.ACTION_SEND)) {
-                intent.putExtra(Intent.EXTRA_STREAM, uri);
+                //intent.putExtra(Intent.EXTRA_STREAM, uri);  //android 7.0分享无效 华为 三星
+                intent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(file));
                 intent.setType(type);
                 startActivity(Intent.createChooser(intent, "Alpha Share"));
             }
