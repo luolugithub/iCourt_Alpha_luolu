@@ -205,6 +205,7 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
                             stateType = 0;
                             getData(true);
                         } else {
+                            parentMove = true;
                             scrollToByPosition(3);
 
                         }
@@ -223,62 +224,35 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
         final LinearLayoutManager parentManager = (LinearLayoutManager) recyclerView.getLayoutManager();
         parentManager.scrollToPositionWithOffset(p, 0);
 
-//        int parentFir = parentManager.findFirstVisibleItemPosition();
-//        int parentEnd = parentManager.findLastVisibleItemPosition();
-//        if (p <= parentFir) {
-//            recyclerView.scrollToPosition(p);
-//        } else if (p <= parentEnd) {
-//            int top = recyclerView.getChildAt(p - parentFir).getTop();
-//            recyclerView.scrollBy(0, top);
-//        } else {
-//            recyclerView.scrollToPosition(p);    //先让当前view滚动到列表内
-//            parentMove = true;
-//        }
-//        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-//            @Override
-//            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-//                super.onScrolled(recyclerView, dx, dy);
-//                if (parentMove) {
-//                    parentMove = false;
-//                    int n = p - parentManager.findFirstVisibleItemPosition();
-//                    if (n >= 0 && n < recyclerView.getChildCount()) {
-//                        recyclerView.scrollBy(0, recyclerView.getChildAt(n).getTop()); //滚动到顶部
-//                    }
-//                }
-//            }
-//        });
-//
-        RecyclerView childRecyclerView = getChildRecyclerView("08D8C5460D3011E7843370106FAECE2E");
-        if (childRecyclerView != null) {
-            final int childPosition = getChildPositon("08D8C5460D3011E7843370106FAECE2E");
-            final LinearLayoutManager childManager = (LinearLayoutManager) childRecyclerView.getLayoutManager();
-            int childFir = childManager.findFirstVisibleItemPosition();
-            int childEnd = childManager.findLastVisibleItemPosition();
-            if (childPosition <= childFir) {
-                childRecyclerView.scrollToPosition(childPosition);
-            } else if (childPosition <= childEnd) {
-                int top = childRecyclerView.getChildAt(childPosition - childFir).getTop();
-                recyclerView.smoothScrollBy(0, top + childRecyclerView.getChildAt(childPosition).getHeight()-135);
-            } else {
-                childRecyclerView.scrollToPosition(childPosition);    //先让当前view滚动到列表内
-                childMove = true;
-            }
-            childRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-                @Override
-                public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-                    super.onScrolled(recyclerView, dx, dy);
-                    if (childMove) {
-                        childMove = false;
-                        int n = childPosition - childManager.findFirstVisibleItemPosition();
-                        if (n >= 0 && n < recyclerView.getChildCount()) {
-                            recyclerView.scrollBy(0, recyclerView.getChildAt(n).getTop()); //滚动到顶部
+        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(RecyclerView rv, int dx, int dy) {
+                super.onScrolled(rv, dx, dy);
+                if (parentMove) {
+                    parentMove = false;
+                    RecyclerView childRecyclerView = getChildRecyclerView("08D8C5460D3011E7843370106FAECE2E");
+                    if (childRecyclerView != null) {
+                        final int childPosition = getChildPositon("08D8C5460D3011E7843370106FAECE2E");
+                        final LinearLayoutManager childManager = (LinearLayoutManager) childRecyclerView.getLayoutManager();
+                        int childFir = childManager.findFirstVisibleItemPosition();
+                        int childEnd = childManager.findLastVisibleItemPosition();
+
+
+                        if (childPosition <= childFir) {
+                            childRecyclerView.scrollToPosition(childPosition);
+                        } else if (childPosition <= childEnd) {
+                            int childTop = childRecyclerView.getChildAt(childPosition - childFir).getTop() + 92;
+//                            int parentTop = recyclerView.getChildAt(p).getTop();
+//                            int top = childTop + parentTop;
+                            recyclerView.smoothScrollBy(0, childTop);
+                        } else {
+                            childRecyclerView.scrollToPosition(childPosition);    //先让当前view滚动到列表内
+                            childMove = true;
                         }
                     }
                 }
-            });
-        }
-//
-
+            }
+        });
     }
 
     @Override
