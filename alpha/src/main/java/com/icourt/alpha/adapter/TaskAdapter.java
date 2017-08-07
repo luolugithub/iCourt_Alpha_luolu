@@ -211,13 +211,15 @@ public class TaskAdapter extends BaseArrayRecyclerAdapter<TaskEntity>
                             break;
                         case R.mipmap.time_start_orange_task://开始计时
                             if (!taskItemEntity.isTiming) {
+                                final TimeEntity.ItemEntity timeetity = getTimer(taskItemEntity);
                                 TimerManager.getInstance().addTimer(getTimer(taskItemEntity), new Callback<TimeEntity.ItemEntity>() {
                                     @Override
                                     public void onResponse(Call<TimeEntity.ItemEntity> call, Response<TimeEntity.ItemEntity> response) {
                                         dismissLoadingDialog();
                                         if (response.body() != null) {
                                             updateMeauItem(entity, true, menuAdapter);
-                                            TimerTimingActivity.launch(view.getContext(), response.body());
+                                            timeetity.pkId = response.body().pkId;
+                                            TimerTimingActivity.launch(view.getContext(), timeetity);
                                         }
                                     }
 
