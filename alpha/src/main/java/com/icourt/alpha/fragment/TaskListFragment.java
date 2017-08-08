@@ -629,10 +629,20 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
         }
     }
 
-
+    //切换项目之后，任务组id和负责人列表都需要清空
     @Override
     public void onProjectTaskGroupSelect(ProjectEntity projectEntity, TaskGroupEntity taskGroupEntity) {
-
+        if (projectEntity != null) {
+            if (updateTaskItemEntity != null) {
+                if (updateTaskItemEntity.attendeeUsers != null) {
+                    updateTaskItemEntity.attendeeUsers.clear();
+                }
+            }
+        }
+        if (taskGroupEntity == null) {
+            taskGroupEntity = new TaskGroupEntity();
+            taskGroupEntity.id = "";
+        }
         updateTask2(updateTaskItemEntity, projectEntity, taskGroupEntity);
     }
 
@@ -710,8 +720,8 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
             for (TaskEntity.TaskItemEntity.AttendeeUserEntity attendeeUser : itemEntity.attendeeUsers) {
                 jsonarr.add(attendeeUser.userId);
             }
+            jsonObject.add("attendees", jsonarr);
         }
-        jsonObject.add("attendees", jsonarr);
         return jsonObject.toString();
     }
 

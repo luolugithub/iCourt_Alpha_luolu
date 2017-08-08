@@ -413,6 +413,7 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
             jsonObject.addProperty("id", itemEntity.id);
             jsonObject.addProperty("state", itemEntity.state);
             jsonObject.addProperty("name", itemEntity.name);
+            jsonObject.addProperty("parentId", itemEntity.parentId);
             jsonObject.addProperty("dueTime", itemEntity.dueTime);
             jsonObject.addProperty("description", itemEntity.description);
             jsonObject.addProperty("valid", true);
@@ -507,7 +508,7 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
 
                 taskItemEntity.dueTime = millis;
                 taskReminderEntity = (TaskReminderEntity) params.getSerializable("taskReminder");
-                updateTask(taskItemEntity, null, selectedTaskGroup);
+                updateTask(taskItemEntity, null, null);
 
             } else if (fragment instanceof TaskGroupSelectFragment) {//选择任务组回调
                 TaskGroupEntity taskGroupEntity = (TaskGroupEntity) params.getSerializable(KEY_FRAGMENT_RESULT);
