@@ -742,6 +742,7 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
                 }
                 jsonObject.add("attendees", jsonarr);
             }
+
         }
 
         if (taskGroupEntity != null) {

@@ -261,7 +261,7 @@ public class SystemUtils {
      *
      * @param act
      */
-    public static void hideSoftKeyBoard(Activity act, View v) {
+    public static void hideSoftKeyBoard(Context act, View v) {
         try {
             InputMethodManager imm = (InputMethodManager) act.getSystemService(Context.INPUT_METHOD_SERVICE);
             imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
@@ -269,12 +269,13 @@ public class SystemUtils {
         }
     }
 
+
     /**
      * 隐藏软键盘2
      *
      * @param act
      */
-    public static void hideSoftKeyBoard(Activity act, View v, boolean clearFouces) {
+    public static void hideSoftKeyBoard(Context act, View v, boolean clearFouces) {
         try {
             if (v != null && clearFouces) {
                 v.clearFocus();

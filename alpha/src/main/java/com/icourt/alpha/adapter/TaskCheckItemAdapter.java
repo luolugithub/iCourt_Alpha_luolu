@@ -1,5 +1,6 @@
 package com.icourt.alpha.adapter;
 
+import android.app.Activity;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.TextUtils;
@@ -54,7 +55,7 @@ public class TaskCheckItemAdapter extends MultiSelectRecyclerAdapter<TaskCheckIt
         Spannable spannable = new SpannableString(itemEntity.name);
         Linkify.addLinks(spannable, Linkify.WEB_URLS);
 
-        CharSequence text = TextUtils.concat(spannable, "\u200B");
+        final CharSequence text = TextUtils.concat(spannable, "\u200B");
         nameView.setText(text);
         holder.bindChildClick(checkedTextView);
         holder.bindChildClick(deleteView);
@@ -68,10 +69,16 @@ public class TaskCheckItemAdapter extends MultiSelectRecyclerAdapter<TaskCheckIt
                 }
             }
         });
+        //屏蔽回车键 回车键表示完成
         nameView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent) {
-                if (i == EditorInfo.IME_ACTION_DONE) {
+                if (keyEvent.getKeyCode() == KeyEvent.KEYCODE_ENTER) {
+                    holder.itemView.setFocusable(true);
+                    holder.itemView.setFocusableInTouchMode(true);
+                    holder.itemView.requestFocus();//请求焦点
+                    holder.itemView.findFocus();//获取焦点
+                    SystemUtils.hideSoftKeyBoard(textView.getContext(), textView);
                     return true;
                 }
                 return false;
