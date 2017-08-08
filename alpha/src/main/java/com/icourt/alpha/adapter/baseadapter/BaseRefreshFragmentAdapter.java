@@ -19,8 +19,15 @@ public class BaseRefreshFragmentAdapter extends BaseFragmentAdapter {
 
     @Override
     public void notifyDataSetChanged() {
-        TAG = String.valueOf(System.currentTimeMillis());
         super.notifyDataSetChanged();
+    }
+
+    /**
+     * 刷新 重载
+     */
+    public void notifyRefresh() {
+        TAG = String.valueOf(System.currentTimeMillis());
+        this.notifyDataSetChanged();
     }
 
 

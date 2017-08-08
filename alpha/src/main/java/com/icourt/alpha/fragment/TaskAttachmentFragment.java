@@ -8,6 +8,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
@@ -137,7 +138,28 @@ public class TaskAttachmentFragment extends BaseFragment implements BaseRecycler
             emptyText.setText("暂无权限查看");
         }
     }
-
+    /**
+     * type=100 更新 KEY_HAS_PERMISSION
+     *
+     * @param targetFrgament
+     * @param type
+     * @param bundle
+     */
+    @Override
+    public void notifyFragmentUpdate(Fragment targetFrgament, int type, Bundle bundle) {
+        super.notifyFragmentUpdate(targetFrgament, type, bundle);
+        if (type == 100 && bundle != null) {
+            hasPermission = bundle.getBoolean(KEY_HAS_PERMISSION, false);
+            if(listLayout==null) return;
+            if (!hasPermission) {
+                listLayout.setVisibility(View.GONE);
+                emptyLayout.setVisibility(View.VISIBLE);
+            } else {
+                listLayout.setVisibility(View.VISIBLE);
+                emptyLayout.setVisibility(View.GONE);
+            }
+        }
+    }
     @OnClick({R.id.add_attachment_view})
     @Override
     public void onClick(View v) {

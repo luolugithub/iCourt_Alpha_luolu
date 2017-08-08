@@ -111,6 +111,7 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
         EventBus.getDefault().register(this);
         taskItemEntity = (TaskEntity.TaskItemEntity) getArguments().getSerializable(KEY_TASK_DETAIL);
         if (taskItemEntity != null) {
+            isFinish = taskItemEntity.state;
             if (taskItemEntity.matter != null) {
                 taskProjectLayout.setVisibility(View.VISIBLE);
                 taskGroupLayout.setVisibility(View.VISIBLE);

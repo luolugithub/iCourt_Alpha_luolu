@@ -4,6 +4,7 @@ import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
 import android.support.v4.widget.NestedScrollView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -170,14 +171,12 @@ public class TaskCheckItemFragment extends BaseFragment
                     dismissLoadingDialog();
                 if (response.body().result.items != null) {
                     taskCheckItemAdapter.bindData(false, response.body().result.items);
-                    if (response.body().result.items.size() <= 0) {
-                        if (!hasPermission) {
-                            listLayout.setVisibility(View.GONE);
-                            emptyLayout.setVisibility(View.VISIBLE);
-                        } else {
-                            listLayout.setVisibility(View.VISIBLE);
-                            emptyLayout.setVisibility(View.GONE);
-                        }
+                    if (!hasPermission) {
+                        listLayout.setVisibility(View.GONE);
+                        emptyLayout.setVisibility(View.VISIBLE);
+                    } else {
+                        listLayout.setVisibility(View.VISIBLE);
+                        emptyLayout.setVisibility(View.GONE);
                     }
                 } else {
                     if (listLayout != null) {
@@ -208,7 +207,28 @@ public class TaskCheckItemFragment extends BaseFragment
             }
         }
     }
-
+    /**
+     * type=100 更新 KEY_HAS_PERMISSION
+     *
+     * @param targetFrgament
+     * @param type
+     * @param bundle
+     */
+    @Override
+    public void notifyFragmentUpdate(Fragment targetFrgament, int type, Bundle bundle) {
+        super.notifyFragmentUpdate(targetFrgament, type, bundle);
+        if (type == 100 && bundle != null) {
+            hasPermission = bundle.getBoolean(KEY_HAS_PERMISSION, false);
+            if(listLayout==null) return;
+            if (!hasPermission) {
+                listLayout.setVisibility(View.GONE);
+                emptyLayout.setVisibility(View.VISIBLE);
+            } else {
+                listLayout.setVisibility(View.VISIBLE);
+                emptyLayout.setVisibility(View.GONE);
+            }
+        }
+    }
     /**
      * 添加检查项
      */

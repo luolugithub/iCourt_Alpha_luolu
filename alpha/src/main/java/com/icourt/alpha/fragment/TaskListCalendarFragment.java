@@ -81,7 +81,7 @@ public class TaskListCalendarFragment extends BaseFragment {
     @BindView(R.id.slSchedule)
     ScheduleLayout slSchedule;
     ArrayList<TaskEntity.TaskItemEntity> taskItemEntityList;
-    BaseFragmentAdapter fragmentPagerAdapter;
+    BaseRefreshFragmentAdapter fragmentPagerAdapter;
     @BindView(R.id.rl_comm_search)
     RelativeLayout rlCommSearch;
     @BindView(R.id.header_comm_search_ll)
@@ -565,7 +565,7 @@ public class TaskListCalendarFragment extends BaseFragment {
 
 
                 //1.更新子fragment
-                fragmentPagerAdapter.notifyDataSetChanged();
+                fragmentPagerAdapter.notifyRefresh();
 
                 //2.更新本月份的小红点
                 if (slSchedule != null) {
