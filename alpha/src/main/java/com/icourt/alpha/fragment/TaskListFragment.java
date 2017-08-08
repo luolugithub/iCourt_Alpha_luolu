@@ -734,9 +734,9 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
         JsonArray jsonarr = new JsonArray();
         if (projectEntity != null) {
             jsonObject.addProperty("matterId", projectEntity.pkId);
-            //jsonarr.add(getLoginUserId());
-        } else {
-            if (itemEntity.attendeeUsers != null) {
+        }
+        if (itemEntity.attendeeUsers != null) {
+            if (itemEntity.attendeeUsers.size() > 0) {
                 for (TaskEntity.TaskItemEntity.AttendeeUserEntity attendeeUser : itemEntity.attendeeUsers) {
                     jsonarr.add(attendeeUser.userId);
                 }

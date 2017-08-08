@@ -681,14 +681,8 @@ public class ProjectEndTaskActivity extends BaseActivity
         JsonArray jsonarr = new JsonArray();
         if (projectEntity != null) {
             jsonObject.addProperty("matterId", projectEntity.pkId);
-            if (TextUtils.equals(projectEntity.pkId, projectId)) {
-                jsonObjectAddOwers(jsonarr, itemEntity.attendeeUsers);
-            } else {
-               // jsonarr.add(getLoginUserId());
-            }
-        } else {
-            jsonObjectAddOwers(jsonarr, itemEntity.attendeeUsers);
         }
+        jsonObjectAddOwers(jsonarr, itemEntity.attendeeUsers);
         jsonObject.add("attendees", jsonarr);
         if (taskGroupEntity != null) {
             jsonObject.addProperty("parentId", taskGroupEntity.id);
