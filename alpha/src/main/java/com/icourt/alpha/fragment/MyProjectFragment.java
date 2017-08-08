@@ -73,6 +73,7 @@ public class MyProjectFragment extends BaseFragment {
 
     boolean isFirstTimeIntoPage = true;
     int status = 2;//默认为进行中
+    String matterType = "";
     LinearLayoutManager linearLayoutManager;
 
     public static MyProjectFragment newInstance(@QueryProjectType int projectType) {
@@ -154,12 +155,23 @@ public class MyProjectFragment extends BaseFragment {
     public void notifyFragmentUpdate(Fragment targetFrgament, int type, Bundle bundle) {
         super.notifyFragmentUpdate(targetFrgament, type, bundle);
         if (targetFrgament instanceof MyProjectFragment) {
-            if (type == 100) {
+            if (type == 100) {//根据状态筛选
                 if (bundle != null) {
                     status = bundle.getInt("status");
-                    getData(true);
+                }
+            } else if (type == 101) {//根据类型筛选
+                if (bundle != null) {
+                    List<Integer> paramList = bundle.getIntegerArrayList(KEY_FRAGMENT_RESULT);
+                    if (paramList != null && paramList.size() > 0) {
+                        StringBuilder stringBuilder = new StringBuilder();
+                        for (Integer integer : paramList) {
+                            stringBuilder.append(String.valueOf(integer)).append(",");
+                        }
+                        matterType = stringBuilder.substring(0, stringBuilder.length() - 1);
+                    }
                 }
             }
+            getData(true);
         }
     }
 
@@ -168,7 +180,7 @@ public class MyProjectFragment extends BaseFragment {
         if (isRefresh) {
             pageIndex = 1;
         }
-        getApi().projectQueryAll(pageIndex, ActionConstants.DEFAULT_PAGE_SIZE, "name", "", String.valueOf(status), "", attorneyType, myStar)
+        getApi().projectQueryAll(pageIndex, ActionConstants.DEFAULT_PAGE_SIZE, "name", "", String.valueOf(status), matterType, attorneyType, myStar)
                 .enqueue(new SimpleCallBack<List<ProjectEntity>>() {
                     @Override
                     public void onSuccess(Call<ResEntity<List<ProjectEntity>>> call, Response<ResEntity<List<ProjectEntity>>> response) {

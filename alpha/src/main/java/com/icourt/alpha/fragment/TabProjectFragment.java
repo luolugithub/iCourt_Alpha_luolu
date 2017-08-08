@@ -4,6 +4,8 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.TabLayout;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.ViewPager;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,6 +19,8 @@ import com.icourt.alpha.adapter.baseadapter.BaseFragmentAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.entity.bean.FilterDropEntity;
+import com.icourt.alpha.fragment.dialogfragment.ProjectTypeSelectDialogFragment;
+import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.utils.DensityUtil;
 import com.icourt.alpha.widget.popupwindow.TopMiddlePopup;
 
@@ -36,7 +40,7 @@ import butterknife.Unbinder;
  * date createTime：2017/4/17
  * version 1.0.0
  */
-public class TabProjectFragment extends BaseFragment implements TopMiddlePopup.OnItemClickListener {
+public class TabProjectFragment extends BaseFragment implements TopMiddlePopup.OnItemClickListener, OnFragmentCallBackListener {
     public static int select_position = 0;//选择的筛选选项
     @BindView(R.id.tabLayout)
     TabLayout tabLayout;
@@ -52,6 +56,7 @@ public class TabProjectFragment extends BaseFragment implements TopMiddlePopup.O
     ImageView titleAction2;
     TopMiddlePopup topMiddlePopup;
     MyProjectFragment myProjectFragment;
+    List<Integer> selectedList = new ArrayList<>();
 
     public static TabProjectFragment newInstance() {
         return new TabProjectFragment();
@@ -160,11 +165,47 @@ public class TabProjectFragment extends BaseFragment implements TopMiddlePopup.O
     public void onViewClicked(View view) {
         switch (view.getId()) {
             case R.id.titleAction:
-                showTopSnackBar("筛选");
+                showProjectTypeSelectDialogFragment();
                 break;
             case R.id.titleAction2:
 
                 break;
+        }
+    }
+
+    /**
+     * 展示项目类型筛选框
+     */
+    private void showProjectTypeSelectDialogFragment() {
+        String tag = ProjectTypeSelectDialogFragment.class.getSimpleName();
+        FragmentTransaction mFragTransaction = getChildFragmentManager().beginTransaction();
+        Fragment fragment = getChildFragmentManager().findFragmentByTag(tag);
+        if (fragment != null) {
+            mFragTransaction.remove(fragment);
+        }
+        ProjectTypeSelectDialogFragment.newInstance(selectedList)
+                .show(mFragTransaction, tag);
+
+    }
+
+    @Override
+    public void onFragmentCallBack(Fragment fragment, int type, Bundle params) {
+        if (fragment instanceof ProjectTypeSelectDialogFragment) {
+            if (params != null) {
+                selectedList.clear();
+                List<Integer> paramList = params.getIntegerArrayList(KEY_FRAGMENT_RESULT);
+                if (paramList != null) {
+                    selectedList.addAll(paramList);
+                    if (paramList.size() > 0) {
+                        titleAction.setImageResource(R.mipmap.project_filter);
+                    } else {
+                        titleAction.setImageResource(R.mipmap.project_unfilter);
+                    }
+                } else {
+                    titleAction.setImageResource(R.mipmap.project_unfilter);
+                }
+                myProjectFragment.notifyFragmentUpdate(myProjectFragment, 101, params);
+            }
         }
     }
 
