@@ -19,6 +19,7 @@ import android.support.v7.widget.RecyclerView;
 import android.text.SpannableString;
 import android.text.TextUtils;
 import android.util.SparseArray;
+import android.util.SparseIntArray;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
@@ -34,7 +35,6 @@ import com.google.gson.JsonObject;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.TaskUsersAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
-import com.icourt.alpha.adapter.baseadapter.BaseRefreshFragmentAdapter;
 import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.entity.bean.TaskEntity;
 import com.icourt.alpha.entity.bean.TimeEntity;
@@ -96,7 +96,7 @@ public class TaskDetailActivity extends BaseActivity
     private static final int START_COMMENT_FORRESULT_CODE = 0;//跳转评论code
 
     String taskId;
-    BaseRefreshFragmentAdapter baseFragmentAdapter;
+    BaseFragmentAdapter baseFragmentAdapter;
     @BindView(R.id.titleBack)
     ImageView titleBack;
     @BindView(R.id.titleContent)
@@ -179,30 +179,7 @@ public class TaskDetailActivity extends BaseActivity
         setTitle("");
         EventBus.getDefault().register(this);
         taskId = getIntent().getStringExtra(KEY_TASK_ID);
-        baseFragmentAdapter = new BaseRefreshFragmentAdapter(getSupportFragmentManager()) {
-            @Override
-            public Fragment getItem(int position) {
-                switch (position) {
-                    case 0:
-                        return TaskDetailFragment.newInstance(taskItemEntity);
-                    case 1:
-                        return TaskCheckItemFragment.newInstance(taskItemEntity.id, hasTaskEditPermission() && !isFinishedTask());
-                    case 2:
-                        return TaskAttachmentFragment.newInstance(taskItemEntity.id, (hasTaskAddDocument() && hasTaskEditPermission() && !isFinishedTask()));
-                }
-                return super.getItem(position);
-            }
-
-            @Override
-            public int getCount() {
-                return taskItemEntity == null ? 0 : 3;
-            }
-
-            @Override
-            public CharSequence getPageTitle(int position) {
-                return tabTitles.get(position, "");
-            }
-        };
+        baseFragmentAdapter = new BaseFragmentAdapter(getSupportFragmentManager());
         viewpager.setAdapter(baseFragmentAdapter);
         taskTablayout.setupWithViewPager(viewpager);
         taskTablayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
@@ -463,7 +440,7 @@ public class TaskDetailActivity extends BaseActivity
                             mis = 60000;
                         }
                         if (taskItemEntity != null)
-                            taskTime.setText(getHm(taskItemEntity.timingSum = (taskItemEntity.timingSum + mis)));
+                            taskTime.setText(getHm(taskItemEntity.timingSum + mis));
                     }
                 }
                 break;
@@ -584,18 +561,6 @@ public class TaskDetailActivity extends BaseActivity
     }
 
     /**
-     * 是否是已经完成的任务
-     *
-     * @return
-     */
-    private boolean isFinishedTask() {
-        if (taskItemEntity != null) {
-            return taskItemEntity.state;
-        }
-        return false;
-    }
-
-    /**
      * 是否有上传附件权限
      *
      * @return
@@ -682,10 +647,18 @@ public class TaskDetailActivity extends BaseActivity
             tabTitles.put(0, "任务详情");
             tabTitles.put(1, checkTextForegroundColorSpan);
             tabTitles.put(2, attachTextForegroundColorSpan);
+            baseFragmentAdapter.bindTitle(true, Arrays.asList(tabTitles.get(0, ""),
+                    tabTitles.get(1, ""),
+                    tabTitles.get(2, "")));
+            baseFragmentAdapter.bindData(true, Arrays.asList(
+                    taskDetailFragment == null ? taskDetailFragment = TaskDetailFragment.newInstance(taskItemEntity) : taskDetailFragment,
+                    TaskCheckItemFragment.newInstance(taskItemEntity.id, hasTaskEditPermission()),
+                    TaskAttachmentFragment.newInstance(taskItemEntity.id, (hasTaskAddDocument() && hasTaskEditPermission()))
+            ));
 
-
-            baseFragmentAdapter.notifyRefresh();
-
+            Bundle bundle = new Bundle();
+            bundle.putBoolean("isFinish", taskItemEntity.state);
+            taskDetailFragment.notifyFragmentUpdate(taskDetailFragment, 100, bundle);
 
             if (taskItemEntity.attendeeUsers != null) {
                 if (taskItemEntity.attendeeUsers.size() > 0) {
