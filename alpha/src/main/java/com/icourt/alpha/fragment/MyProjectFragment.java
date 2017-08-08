@@ -3,6 +3,7 @@ package com.icourt.alpha.fragment;
 import android.os.Bundle;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -71,6 +72,7 @@ public class MyProjectFragment extends BaseFragment {
     ProjectListAdapter projectListAdapter;
 
     boolean isFirstTimeIntoPage = true;
+    int status = 2;//默认为进行中
     LinearLayoutManager linearLayoutManager;
 
     public static MyProjectFragment newInstance(@QueryProjectType int projectType) {
@@ -149,11 +151,24 @@ public class MyProjectFragment extends BaseFragment {
     }
 
     @Override
+    public void notifyFragmentUpdate(Fragment targetFrgament, int type, Bundle bundle) {
+        super.notifyFragmentUpdate(targetFrgament, type, bundle);
+        if (targetFrgament instanceof MyProjectFragment) {
+            if (type == 100) {
+                if (bundle != null) {
+                    status = bundle.getInt("status");
+                    getData(true);
+                }
+            }
+        }
+    }
+
+    @Override
     protected void getData(final boolean isRefresh) {
         if (isRefresh) {
             pageIndex = 1;
         }
-        getApi().projectQueryAll(pageIndex, ActionConstants.DEFAULT_PAGE_SIZE, "name", "", "", "", attorneyType, myStar)
+        getApi().projectQueryAll(pageIndex, ActionConstants.DEFAULT_PAGE_SIZE, "name", "", String.valueOf(status), "", attorneyType, myStar)
                 .enqueue(new SimpleCallBack<List<ProjectEntity>>() {
                     @Override
                     public void onSuccess(Call<ResEntity<List<ProjectEntity>>> call, Response<ResEntity<List<ProjectEntity>>> response) {

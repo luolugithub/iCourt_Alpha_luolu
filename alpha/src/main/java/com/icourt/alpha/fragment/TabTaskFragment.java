@@ -162,7 +162,7 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
     public void onItemClick(TopMiddlePopup topMiddlePopup, BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
         topMiddlePopup.dismiss();
         FilterDropEntity filterDropEntity = (FilterDropEntity) adapter.getItem(position);
-        setFirstTabText(filterDropEntity.name, select_position);
+        setFirstTabText(filterDropEntity.name, position);
         Bundle bundle = new Bundle();
         bundle.putInt("stateType", filterDropEntity.stateType);
         alltaskFragment.notifyFragmentUpdate(alltaskFragment, TaskAllFragment.TYPE_ALL_TASK, bundle);
