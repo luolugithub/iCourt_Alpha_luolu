@@ -163,7 +163,6 @@ public class TaskCheckItemFragment extends BaseFragment
 
     @Override
     protected void getData(boolean isRefresh) {
-        showLoadingDialog(null);
         getApi().taskCheckItemQuery(taskId).enqueue(new SimpleCallBack<TaskCheckItemEntity>() {
             @Override
             public void onSuccess(Call<ResEntity<TaskCheckItemEntity>> call, Response<ResEntity<TaskCheckItemEntity>> response) {

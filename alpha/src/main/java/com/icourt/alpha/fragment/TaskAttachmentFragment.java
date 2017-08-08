@@ -138,6 +138,7 @@ public class TaskAttachmentFragment extends BaseFragment implements BaseRecycler
             emptyText.setText("暂无权限查看");
         }
     }
+
     /**
      * type=100 更新 KEY_HAS_PERMISSION
      *
@@ -295,6 +296,7 @@ public class TaskAttachmentFragment extends BaseFragment implements BaseRecycler
                             }
                         }
                     } else {
+                        showAttachmentsView();
                         updateDocument();
                     }
                 } else {
@@ -306,6 +308,21 @@ public class TaskAttachmentFragment extends BaseFragment implements BaseRecycler
 
             }
         });
+    }
+
+    /**
+     * 依据条件 动态显示文件列表
+     */
+    private void showAttachmentsView() {
+        if (listLayout != null) {
+            if (!hasPermission) {
+                listLayout.setVisibility(View.GONE);
+                emptyLayout.setVisibility(View.VISIBLE);
+            } else {
+                listLayout.setVisibility(View.VISIBLE);
+                emptyLayout.setVisibility(View.GONE);
+            }
+        }
     }
 
     /**

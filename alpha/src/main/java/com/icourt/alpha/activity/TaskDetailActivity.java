@@ -200,6 +200,11 @@ public class TaskDetailActivity extends BaseActivity
             public int getCount() {
                 return taskItemEntity == null ? 0 : 3;
             }
+
+            @Override
+            public CharSequence getPageTitle(int position) {
+                return tabTitles.get(position, "");
+            }
         };
         viewpager.setAdapter(baseFragmentAdapter);
         taskTablayout.setupWithViewPager(viewpager);
@@ -680,9 +685,8 @@ public class TaskDetailActivity extends BaseActivity
             tabTitles.put(0, "任务详情");
             tabTitles.put(1, checkTextForegroundColorSpan);
             tabTitles.put(2, attachTextForegroundColorSpan);
-            baseFragmentAdapter.bindTitle(true, Arrays.asList(tabTitles.get(0, ""),
-                    tabTitles.get(1, ""),
-                    tabTitles.get(2, "")));
+
+
             baseFragmentAdapter.notifyRefresh();
 
 
