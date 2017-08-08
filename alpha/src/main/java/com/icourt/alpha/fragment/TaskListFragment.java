@@ -740,9 +740,10 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
                 for (TaskEntity.TaskItemEntity.AttendeeUserEntity attendeeUser : itemEntity.attendeeUsers) {
                     jsonarr.add(attendeeUser.userId);
                 }
+                jsonObject.add("attendees", jsonarr);
             }
         }
-        jsonObject.add("attendees", jsonarr);
+
         if (taskGroupEntity != null) {
             jsonObject.addProperty("parentId", taskGroupEntity.id);
         }

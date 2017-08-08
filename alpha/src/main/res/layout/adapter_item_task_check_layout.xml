@@ -27,6 +27,7 @@
             android:textColorLink="#ed6c00"
             android:background="@null"
             android:text="1111"
+            android:imeOptions="actionDone"
             android:textColor="@color/alpha_font_color_black"
             android:textSize="15sp" />
 
