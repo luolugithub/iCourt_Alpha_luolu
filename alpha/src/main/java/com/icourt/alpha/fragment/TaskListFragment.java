@@ -618,15 +618,13 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
                 if (updateTaskItemEntity.attendeeUsers != null) {
                     updateTaskItemEntity.attendeeUsers.clear();
                     updateTaskItemEntity.attendeeUsers.addAll(attusers);
-                    updateTask(updateTaskItemEntity, null, null);
+                    updateTask(updateTaskItemEntity, null, null, null);
                 }
             } else if (fragment instanceof DateSelectDialogFragment) {
                 long millis = params.getLong(KEY_FRAGMENT_RESULT);
                 updateTaskItemEntity.dueTime = millis;
-                updateTask(updateTaskItemEntity, null, null);
-
                 TaskReminderEntity taskReminderEntity = (TaskReminderEntity) params.getSerializable("taskReminder");
-                addReminders(updateTaskItemEntity, taskReminderEntity);
+                updateTask(updateTaskItemEntity, null, null, taskReminderEntity);
             }
         }
     }
@@ -665,12 +663,15 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
      *
      * @param itemEntity
      */
-    private void updateTask(TaskEntity.TaskItemEntity itemEntity, ProjectEntity projectEntity, TaskGroupEntity taskGroupEntity) {
+    private void updateTask(final TaskEntity.TaskItemEntity itemEntity, ProjectEntity projectEntity, TaskGroupEntity taskGroupEntity, final TaskReminderEntity taskReminderEntity) {
         showLoadingDialog(null);
         getApi().taskUpdate(RequestUtils.createJsonBody(getTaskJson(itemEntity, projectEntity, taskGroupEntity))).enqueue(new SimpleCallBack<JsonElement>() {
             @Override
             public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
                 dismissLoadingDialog();
+                if (itemEntity != null && taskReminderEntity != null) {
+                    addReminders(updateTaskItemEntity, taskReminderEntity);
+                }
                 refreshLayout.startRefresh();
             }
 

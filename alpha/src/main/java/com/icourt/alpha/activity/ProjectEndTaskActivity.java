@@ -455,15 +455,14 @@ public class ProjectEndTaskActivity extends BaseActivity
                 if (updateTaskItemEntity.attendeeUsers != null) {
                     updateTaskItemEntity.attendeeUsers.clear();
                     updateTaskItemEntity.attendeeUsers.addAll(attusers);
-                    updateTask(getTaskJson(updateTaskItemEntity, null, null), true);
+                    updateTask(getTaskJson(updateTaskItemEntity, null, null), true,updateTaskItemEntity,null);
                 }
             } else if (fragment instanceof DateSelectDialogFragment) {
                 long millis = params.getLong(KEY_FRAGMENT_RESULT);
                 updateTaskItemEntity.dueTime = millis;
-                updateTask(getTaskJson(updateTaskItemEntity, null, null), true);
-
                 TaskReminderEntity taskReminderEntity = (TaskReminderEntity) params.getSerializable("taskReminder");
-                addReminders(updateTaskItemEntity, taskReminderEntity);
+                updateTask(getTaskJson(updateTaskItemEntity, null, null), true,updateTaskItemEntity,taskReminderEntity);
+
             }
         }
     }
@@ -472,7 +471,7 @@ public class ProjectEndTaskActivity extends BaseActivity
     @Override
     public void onProjectTaskGroupSelect(ProjectEntity projectEntity, TaskGroupEntity taskGroupEntity) {
 
-        updateTask(getTaskJsonByProject(updateTaskItemEntity, projectEntity, taskGroupEntity), TextUtils.equals(projectId, projectEntity.pkId));
+        updateTask(getTaskJsonByProject(updateTaskItemEntity, projectEntity, taskGroupEntity), TextUtils.equals(projectId, projectEntity.pkId),updateTaskItemEntity,null);
     }
 
     /**
@@ -542,7 +541,7 @@ public class ProjectEndTaskActivity extends BaseActivity
         builder.create().show();
     }
 
-    private void updateTask(String requestJson, final boolean isThisProject) {
+    private void updateTask(String requestJson, final boolean isThisProject, final TaskEntity.TaskItemEntity itemEntity, final TaskReminderEntity taskReminderEntity) {
         if (TextUtils.isEmpty(requestJson)) return;
         showLoadingDialog(null);
         getApi().taskUpdateNew(RequestUtils.createJsonBody(requestJson)).enqueue(new SimpleCallBack<TaskEntity.TaskItemEntity>() {
@@ -552,6 +551,9 @@ public class ProjectEndTaskActivity extends BaseActivity
 //                refreshLayout.startRefresh();
                 if (response.body().result != null) {
                     updateTaskItemEntity = response.body().result;
+                    if (itemEntity != null && taskReminderEntity != null) {
+                        addReminders(updateTaskItemEntity, taskReminderEntity);
+                    }
                     int index = taskAdapter.getData().indexOf(response.body().result);
                     if (index >= 0) {
                         if (isThisProject) {

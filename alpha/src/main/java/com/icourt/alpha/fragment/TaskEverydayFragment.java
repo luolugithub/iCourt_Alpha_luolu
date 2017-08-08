@@ -14,7 +14,6 @@ import android.widget.TextView;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.TaskSimpleAdapter;
@@ -379,15 +378,14 @@ public class TaskEverydayFragment extends BaseFragment
                 if (updateTaskItemEntity.attendeeUsers != null) {
                     updateTaskItemEntity.attendeeUsers.clear();
                     updateTaskItemEntity.attendeeUsers.addAll(attusers);
-                    updateTask(updateTaskItemEntity, null, null);
+                    updateTask(updateTaskItemEntity, null, null,null);
                 }
             } else if (fragment instanceof DateSelectDialogFragment) {
                 long millis = params.getLong(KEY_FRAGMENT_RESULT);
                 updateTaskItemEntity.dueTime = millis;
-                updateTask(updateTaskItemEntity, null, null);
-
                 TaskReminderEntity taskReminderEntity = (TaskReminderEntity) params.getSerializable("taskReminder");
-                addReminders(updateTaskItemEntity, taskReminderEntity);
+                updateTask(updateTaskItemEntity, null, null,taskReminderEntity);
+
             }
         }
     }
@@ -438,7 +436,7 @@ public class TaskEverydayFragment extends BaseFragment
      *
      * @param itemEntity
      */
-    private void updateTask(TaskEntity.TaskItemEntity itemEntity, ProjectEntity projectEntity, TaskGroupEntity taskGroupEntity) {
+    private void updateTask(final TaskEntity.TaskItemEntity itemEntity, ProjectEntity projectEntity, TaskGroupEntity taskGroupEntity, final TaskReminderEntity taskReminderEntity) {
         showLoadingDialog(null);
         getApi().taskUpdateNew(RequestUtils.createJsonBody(getTaskJson(itemEntity, projectEntity, taskGroupEntity)))
                 .enqueue(new SimpleCallBack<TaskEntity.TaskItemEntity>() {
@@ -447,6 +445,9 @@ public class TaskEverydayFragment extends BaseFragment
                         dismissLoadingDialog();
                         if (response.body().result != null)
                             EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_UPDATE_ITEM, response.body().result));
+                        if (itemEntity != null && taskReminderEntity != null) {
+                            addReminders(updateTaskItemEntity, taskReminderEntity);
+                        }
                     }
 
                     @Override
