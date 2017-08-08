@@ -34,7 +34,7 @@ public class NetUtils {
                         var0.getSystemService(Context.CONNECTIVITY_SERVICE);
                 NetworkInfo var2 = var1.getActiveNetworkInfo();
                 return var2 != null ? var2.isAvailable() : false;
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 e.printStackTrace();
             }
 

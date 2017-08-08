@@ -67,6 +67,7 @@ public class Const {
     public static final int MSG_TYPE_SET_TOP = 101;       //设置置顶通知
     public static final int MSG_TYPE_LEAVE_GROUP = 102;   //离开讨论组通知
     public static final int MSG_TYPE_ALPHA_HELPER = 200;   //alpha小助手
+    public static final int MSG_TYPE_ALPHA_SYNC = 300;   //alpha 同步命令
 
     @IntDef({MSG_TYPE_TXT,
             MSG_TYPE_FILE,
@@ -80,13 +81,14 @@ public class Const {
             MSG_TYPE_CONTACT_UPDATE,
             MSG_TYPE_SET_TOP,
             MSG_TYPE_LEAVE_GROUP,
-            MSG_TYPE_ALPHA_HELPER})
+            MSG_TYPE_ALPHA_HELPER,
+            MSG_TYPE_ALPHA_SYNC})
     @Retention(RetentionPolicy.SOURCE)
     public @interface MSG_TYPE {
 
     }
 
-    public static final int MSG_STATU_DRAFT = 0;     //草稿
+    public static final int MSG_STATU_DRAFT = -1;     //草稿
     public static final int MSG_STATU_SENDING = 1;   //正在发送中
     public static final int MSG_STATU_SUCCESS = 2;   //发送成功
     public static final int MSG_STATU_FAIL = 3;      //发送失败

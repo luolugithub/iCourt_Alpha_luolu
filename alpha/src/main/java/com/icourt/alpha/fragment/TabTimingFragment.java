@@ -105,7 +105,10 @@ public class TabTimingFragment extends BaseFragment implements BaseRecyclerAdapt
     @Override
     public void onResume() {
         super.onResume();
-        getData(true);
+//        getData(true);
+        if (refreshLayout != null) {
+            refreshLayout.startRefresh();
+        }
     }
 
     @Override
@@ -144,6 +147,7 @@ public class TabTimingFragment extends BaseFragment implements BaseRecyclerAdapt
         EventBus.getDefault().register(this);
         tabLayout.addTab(tabLayout.newTab().setText("我的计时"), 0, true);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        recyclerView.setItemAnimator(null);
         recyclerView.setAdapter(timeAdapter = new TimeAdapter(true));
         timeAdapter.setOnItemClickListener(this);
 
@@ -210,9 +214,6 @@ public class TabTimingFragment extends BaseFragment implements BaseRecyclerAdapt
     @Override
     protected void getData(final boolean isRefresh) {
         super.getData(isRefresh);
-        if (isRefresh) {
-            TimerManager.getInstance().timerQuerySync();
-        }
         long dividerTime = (pageIndex * weekMillSecond);
         long weekStartTimeMillSecond = DateUtils.getCurrWeekStartTime() - dividerTime;
         long weekEndTimeMillSecond = DateUtils.getCurrWeekEndTime() - dividerTime;

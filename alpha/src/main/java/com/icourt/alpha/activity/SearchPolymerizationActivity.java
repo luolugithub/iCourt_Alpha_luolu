@@ -27,6 +27,7 @@ import com.icourt.alpha.adapter.SearchItemAdapter;
 import com.icourt.alpha.adapter.SearchPolymerizationAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.base.BaseActivity;
+import com.icourt.alpha.constants.Const;
 import com.icourt.alpha.db.convertor.IConvertModel;
 import com.icourt.alpha.db.convertor.ListConvertor;
 import com.icourt.alpha.db.dbmodel.ContactDbModel;
@@ -305,6 +306,13 @@ public class SearchPolymerizationActivity extends BaseActivity implements BaseRe
         return teams;
     }
 
+    /**
+     * 将云信消息模型 转换成自定义的结构
+     *
+     * @param msgindexs
+     * @param keyWord
+     * @return
+     */
     private List<SearchItemEntity> convertMsg2SearchItem(List<MsgIndexRecord> msgindexs, String keyWord) {
         List<SearchItemEntity> data = new ArrayList<>();
         if (msgindexs != null && !msgindexs.isEmpty()) {
@@ -315,8 +323,16 @@ public class SearchPolymerizationActivity extends BaseActivity implements BaseRe
                 if (item != null) {
                     IMMessageCustomBody imBody = GlobalMessageObserver.getIMBody(item.getRecord().content);
                     if (imBody != null
-                            && !TextUtils.isEmpty(imBody.content)
-                            && imBody.content.contains(keyWord)) {
+                            && isMsgContainKeyWord(imBody, keyWord)) {
+                        CharSequence originalText = null;
+                        if (StringUtils.containsIgnoreCase(imBody.content, keyWord)) {
+                            originalText = imBody.content;
+                        } else if (imBody.ext != null && StringUtils.containsIgnoreCase(imBody.ext.name, keyWord)) {
+                            originalText = imBody.ext.name;
+                        }
+                        if (TextUtils.isEmpty(originalText)) {
+                            originalText = "";
+                        }
                         String title = null;
                         String icon = null;
                         switch (imBody.ope) {
@@ -345,7 +361,6 @@ public class SearchPolymerizationActivity extends BaseActivity implements BaseRe
                             content = String.format("%s条相关聊天记录", item.getRecord().count);
                         } else {
                             //瞄色
-                            CharSequence originalText = imBody.content;
                             content = SpannableUtils.getTextForegroundColorSpan(originalText, keyWord, foregroundColor);
                         }
                         SearchItemEntity searchItemEntity = new SearchItemEntity(title, content, icon, keyWord);
@@ -361,6 +376,24 @@ public class SearchPolymerizationActivity extends BaseActivity implements BaseRe
             contactDbService.releaseService();
         }
         return data;
+    }
+
+    /**
+     * 文本和文件名来匹配
+     *
+     * @param imBody
+     * @param keyWord
+     * @return
+     */
+    private boolean isMsgContainKeyWord(IMMessageCustomBody imBody, String keyWord) {
+        if (imBody != null
+                && imBody.show_type != Const.MSG_TYPE_SYS
+                && !TextUtils.isEmpty(keyWord)) {
+            return (StringUtils.containsIgnoreCase(imBody.content, keyWord)
+                    || (imBody.ext != null && StringUtils.containsIgnoreCase(imBody.ext.name, keyWord)));
+
+        }
+        return false;
     }
 
     private List<SearchItemEntity> convert2SearchItem(List<GroupContactBean> contactBeen, String keyWord) {
@@ -524,14 +557,14 @@ public class SearchPolymerizationActivity extends BaseActivity implements BaseRe
                                         StringUtils.toLowerCase(item.getId()),
                                         TextUtils.isEmpty(item.getTitle()) ? "" : item.getTitle().toString(),
                                         item.getId2(),
-                                        0);
+                                        0, true);
                                 break;
                             case CHAT_TYPE_TEAM:
                                 ChatActivity.launchTEAM(getContext(),
                                         item.getId(),
                                         TextUtils.isEmpty(item.getTitle()) ? "" : item.getTitle().toString(),
                                         item.getId2(),
-                                        0);
+                                        0, true);
                                 break;
                         }
                         break;

@@ -34,10 +34,14 @@ public class TextFormater {
     static final char[] firstLetters = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i',
             'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x',
             'y', 'z'};
+    static final char[] numberLetters = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
     static final String emojiJson = "";
 
     public static List<String> firstList() {
         List<String> list = new ArrayList<>();
+        for (int i = 0; i < numberLetters.length; i++) {
+            list.add(String.valueOf(numberLetters[i]));
+        }
         for (int i = 0; i < firstLetters.length; i++) {
             list.add(String.valueOf(firstLetters[i]));
         }
@@ -201,6 +205,15 @@ public class TextFormater {
         else return mail.matches(telRegex);
     }
 
+    // 判断是否符合身份证号码的规范
+    public static boolean isIDCard(String IDCard) {
+        if (IDCard != null) {
+            String IDCardRegex = "(^\\d{15}$)|(^\\d{18}$)|(^\\d{17}(\\d|X|x|Y|y)$)";
+            return IDCard.matches(IDCardRegex);
+        }
+        return false;
+    }
+
     /**
      * 复制内容到剪切板
      *
@@ -343,5 +356,12 @@ public class TextFormater {
             return s;
         }
         return null;
+    }
+
+    public static boolean isEmoji(String string) {
+        Pattern p = Pattern.compile("[\ud83c\udc00-\ud83c\udfff]|[\ud83d\udc00-\ud83d\udfff]|[\u2600-\u27ff]",
+                Pattern.UNICODE_CASE | Pattern.CASE_INSENSITIVE);
+        Matcher m = p.matcher(string);
+        return m.find();
     }
 }

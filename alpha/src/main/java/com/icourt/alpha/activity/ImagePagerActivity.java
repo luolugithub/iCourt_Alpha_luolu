@@ -107,6 +107,7 @@ public class ImagePagerActivity extends BaseUmengActivity implements BasePagerAd
     private static final String KEY_POS = "key_pos";
     private static final String KEY_CHAT_TYPE = "key_chat_type";
     private static final String KEY_CHAT_ID = "key_chat_id";
+    private static final String KEY_MSG_ID = "key_msg_id";
     @BindView(R.id.imagePager)
     HackyViewPager imagePager;
     @BindView(R.id.tvPagerTitle)
@@ -177,6 +178,23 @@ public class ImagePagerActivity extends BaseUmengActivity implements BasePagerAd
      */
     public static void launch(Context context, String[] urls) {
         launch(context, urls, 0);
+    }
+
+    /**
+     * @param context
+     * @param urls
+     */
+    public static void launch(Context context, String[] urls, int pos, long chatMsgId) {
+        if (context == null) return;
+        if (urls == null) return;
+        if (urls.length == 0) return;
+        if (pos >= 0 && pos < urls.length) {
+            Intent intent = new Intent(context, ImagePagerActivity.class);
+            intent.putExtra(KEY_URLS, urls);
+            intent.putExtra(KEY_POS, pos);
+            intent.putExtra(KEY_MSG_ID, chatMsgId);
+            context.startActivity(intent);
+        }
     }
 
     /**
@@ -319,6 +337,10 @@ public class ImagePagerActivity extends BaseUmengActivity implements BasePagerAd
         return getIntent().getStringExtra(KEY_CHAT_ID);
     }
 
+    protected Long getIMMsgId() {
+        return getIntent().getLongExtra(KEY_MSG_ID, 0);
+    }
+
     /**
      * 获取被钉的ids列表
      */
@@ -440,7 +462,7 @@ public class ImagePagerActivity extends BaseUmengActivity implements BasePagerAd
                 final boolean isDinged = isDinged(sFileImageInfoEntity.chatMsgId);
                 new BottomActionDialog(getContext(),
                         null,
-                        Arrays.asList("分享", "转发", isCollected ? "取消收藏" : "收藏", isDinged ? "取消钉" : "钉", "保存到项目"),
+                        Arrays.asList("分享", "发送到享聊", isCollected ? "取消收藏" : "收藏", isDinged ? "取消钉" : "钉", "保存到项目"),
                         new BottomActionDialog.OnActionItemClickListener() {
                             @Override
                             public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
@@ -476,7 +498,7 @@ public class ImagePagerActivity extends BaseUmengActivity implements BasePagerAd
             } else {
                 new BottomActionDialog(getContext(),
                         null,
-                        Arrays.asList("分享", "保存到项目"),
+                        Arrays.asList("分享", "发送到享聊", "保存到项目"),
                         new BottomActionDialog.OnActionItemClickListener() {
                             @Override
                             public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
@@ -486,6 +508,13 @@ public class ImagePagerActivity extends BaseUmengActivity implements BasePagerAd
                                         shareImage2WeiXin(drawable);
                                         break;
                                     case 1:
+                                        if (getIMMsgId() <= 0 && urls != null && urls.length > 0) {
+                                            showContactShareDialogFragment(urls[0]);
+                                        } else {
+                                            showContactShareDialogFragment(getIMMsgId());
+                                        }
+                                        break;
+                                    case 2:
                                         if (checkPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
                                             String fileName = getFileName(adapter.getItem(position));
                                             savedImport2Project(drawable, fileName);
@@ -604,6 +633,22 @@ public class ImagePagerActivity extends BaseUmengActivity implements BasePagerAd
             mFragTransaction.remove(fragment);
         }
         ContactShareDialogFragment.newInstance(id, true)
+                .show(mFragTransaction, tag);
+    }
+
+    /**
+     * 展示联系人转发对话框
+     *
+     * @param filePath
+     */
+    public void showContactShareDialogFragment(String filePath) {
+        String tag = ContactShareDialogFragment.class.getSimpleName();
+        FragmentTransaction mFragTransaction = getSupportFragmentManager().beginTransaction();
+        Fragment fragment = getSupportFragmentManager().findFragmentByTag(tag);
+        if (fragment != null) {
+            mFragTransaction.remove(fragment);
+        }
+        ContactShareDialogFragment.newInstanceFile(filePath, true)
                 .show(mFragTransaction, tag);
     }
 

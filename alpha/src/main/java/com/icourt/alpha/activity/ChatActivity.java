@@ -29,6 +29,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.andview.refreshview.XRefreshView;
+import com.google.gson.JsonParseException;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.ChatAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
@@ -46,6 +47,7 @@ import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.callback.SimpleTextWatcher;
 import com.icourt.alpha.utils.IMUtils;
 import com.icourt.alpha.utils.ImageUtils;
+import com.icourt.alpha.utils.JsonUtils;
 import com.icourt.alpha.utils.LogUtils;
 import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.utils.SystemUtils;
@@ -60,6 +62,7 @@ import com.netease.nimlib.sdk.NIMClient;
 import com.netease.nimlib.sdk.RequestCallback;
 import com.netease.nimlib.sdk.msg.MessageBuilder;
 import com.netease.nimlib.sdk.msg.MsgService;
+import com.netease.nimlib.sdk.msg.constant.MsgStatusEnum;
 import com.netease.nimlib.sdk.msg.constant.SessionTypeEnum;
 import com.netease.nimlib.sdk.msg.model.IMMessage;
 import com.netease.nimlib.sdk.msg.model.MessageReceipt;
@@ -77,6 +80,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 
 import butterknife.BindView;
@@ -630,6 +634,14 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
                 }
             }
         });
+        ekBar.getEtChat().setOnSizeChangedListener(new EmoticonsEditText.OnSizeChangedListener() {
+            @Override
+            public void onSizeChanged(int w, int h, int oldw, int oldh) {
+                if (h != oldh && linearLayoutManager.getChildCount() > 0) {
+                    linearLayoutManager.scrollToPositionWithOffset(linearLayoutManager.getItemCount() - 1, 0);
+                }
+            }
+        });
         ekBar.addOnFuncKeyBoardListener(new FuncLayout.OnFuncKeyBoardListener() {
             @Override
             public void OnFuncPop(int i) {
@@ -918,7 +930,24 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
                 .setCallback(new RequestCallback<List<IMMessage>>() {
                     @Override
                     public void onSuccess(List<IMMessage> param) {
-                        LogUtils.d("----------->query result:" + param);
+                        if (param != null) {
+                            for (IMMessage imMessage : param) {
+                                IMUtils.logIMMessage("----------->query result:", imMessage);
+                            }
+                        }
+
+
+                        //1 恢复草稿 文本消息
+                        if (isRefresh) {
+                            String newlyDraftTxtMsg = getNewlyDraftTxtMsg(param);
+                            if (!TextUtils.isEmpty(newlyDraftTxtMsg) && ekBar != null) {
+                                ekBar.getEtChat().setText(newlyDraftTxtMsg);
+                                ekBar.getEtChat().setSelection(newlyDraftTxtMsg.length());
+                            }
+                        }
+
+
+                        //2 过滤数据
                         param = filterMsgs(param);
                         if (param == null || param.isEmpty()
                                 && getIntent().getBooleanExtra(KEY_LOAD_SERVER_MSG, true)) {
@@ -956,6 +985,32 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
                 });
     }
 
+    @Override
+    protected List<IMMessageCustomBody> convert2CustomerMessages(List<IMMessage> param) {
+        return filterCustomerMessagesFromAdapter(super.convert2CustomerMessages(param));
+    }
+
+    /**
+     * 过滤适配器中已经存在的东西
+     *
+     * @param param
+     * @return
+     */
+    protected List<IMMessageCustomBody> filterCustomerMessagesFromAdapter(List<IMMessageCustomBody> param) {
+        List<IMMessageCustomBody> imMessageCustomBodies = param;
+        //过滤已经存在的消息
+        List<IMMessageCustomBody> data = chatAdapter.getData();
+        if (imMessageCustomBodies != null && !imMessageCustomBodies.isEmpty()) {
+            for (int i = imMessageCustomBodies.size() - 1; i >= 0; i--) {
+                IMMessageCustomBody body = imMessageCustomBodies.get(i);
+                if (data.contains(body)) {
+                    imMessageCustomBodies.remove(i);
+                }
+            }
+        }
+        return imMessageCustomBodies;
+    }
+
     private IMMessage getLocationMessage() {
         switch (getIMChatType()) {
             case CHAT_TYPE_P2P:
@@ -984,15 +1039,49 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
      */
     private List<IMMessage> filterMsgs(List<IMMessage> imMessages) {
         List<IMMessage> msgs = new ArrayList<>();
+        List<IMMessage> draftMsgs = new ArrayList<>();
         if (imMessages != null) {
             for (IMMessage imMessage : imMessages) {
                 if (imMessage == null) continue;
-                if (!GlobalMessageObserver.isFilterMsg(imMessage.getTime())) {
-                    msgs.add(imMessage);
+                if (!GlobalMessageObserver.isFilterMsg(imMessage.getTime())
+                        ) {
+                    if (!GlobalMessageObserver.isDraftMsg(imMessage)) {
+                        msgs.add(imMessage);
+                    } else {
+                        draftMsgs.add(imMessage);
+                    }
                 }
             }
         }
+        deleteDraftMsgs(draftMsgs);
         return msgs;
+    }
+
+
+    /**
+     * 获取最近的文本草稿消息
+     *
+     * @param imMessages
+     * @return
+     */
+    private String getNewlyDraftTxtMsg(List<IMMessage> imMessages) {
+        if (imMessages == null || imMessages.isEmpty()) return null;
+        for (int i = imMessages.size() - 1; i >= 0; i--) {
+            IMMessage imMessage = imMessages.get(i);
+            if (imMessage == null) continue;
+            if (GlobalMessageObserver.isDraftMsg(imMessage)) {
+                IMMessageCustomBody imBody = getIMBody(imMessage);
+                if (imBody != null) {
+                    return imBody.content;
+                }
+            }
+        }
+        return null;
+    }
+
+    private void deleteDraftMsgs(List<IMMessage> draftMsgs) {
+        if (draftMsgs == null || draftMsgs.isEmpty()) return;
+        deleteMsgFromDb(draftMsgs);
     }
 
 
@@ -1046,6 +1135,7 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
                     @Override
                     public void onSuccess(Call<ResEntity<List<IMMessageCustomBody>>> call, Response<ResEntity<List<IMMessageCustomBody>>> response) {
                         if (response.body().result != null) {
+                            filterCustomerMessagesFromAdapter(response.body().result);
                             Collections.sort(response.body().result, new LongFieldEntityComparator<IMMessageCustomBody>(LongFieldEntityComparator.ORDER.ASC));
                             chatAdapter.addItems(0, response.body().result);
                             if (isRefresh) {
@@ -1516,5 +1606,52 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
         if (ekBar != null) {
             ekBar.reset();
         }
+    }
+
+
+    /**
+     * 获取输入未发送的文本
+     *
+     * @return
+     */
+    private String getInputText() {
+        String textStr = null;
+        if (ekBar != null && ekBar.getEtChat() != null) {
+            Editable text = ekBar.getEtChat().getText();
+            if (!TextUtils.isEmpty(text)) {
+                textStr = text.toString();
+            }
+        }
+        return textStr;
+    }
+
+    /**
+     * 保存草稿
+     */
+    private void saveTextDraft() {
+        String inputText = getInputText();
+        if (!TextUtils.isEmpty(inputText)) {
+            final IMMessageCustomBody textHistoryEntity = IMMessageCustomBody.createTextMsg(getIMChatType(),
+                    getLoadedLoginName(),
+                    getLoadedLoginUserId(),
+                    getIMChatId(),
+                    inputText);
+            textHistoryEntity.msg_statu = Const.MSG_STATU_DRAFT;
+            String jsonBody = null;
+            try {
+                jsonBody = JsonUtils.Gson2String(textHistoryEntity);
+            } catch (JsonParseException e) {
+                e.printStackTrace();
+            }
+            if (!TextUtils.isEmpty(jsonBody)) {
+                saveSendNimMsg(jsonBody, MsgStatusEnum.draft, true);
+            }
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        saveTextDraft();
+        super.onDestroy();
     }
 }

@@ -14,6 +14,10 @@ import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.icourt.alpha.http.AlphaClient;
 import com.icourt.alpha.service.LocalService;
 import com.icourt.alpha.service.RemoteService;
+import com.netease.nimlib.sdk.NimIntent;
+import com.netease.nimlib.sdk.msg.model.IMMessage;
+
+import java.util.ArrayList;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -31,6 +35,7 @@ public class WelcomeActivity extends BaseActivity implements Animation.Animation
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
+        showMainActivity(true);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);//全屏
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_welcome);
@@ -60,13 +65,37 @@ public class WelcomeActivity extends BaseActivity implements Animation.Animation
 
     @Override
     public void onAnimationEnd(Animation animation) {
+        showMainActivity(false);
+    }
+
+    private void showMainActivity(boolean isNotifaction) {
         if (isUserLogin()) {
             AlphaUserInfo loginUserInfo = getLoginUserInfo();
             AlphaClient.setToken(loginUserInfo.getToken());
             AlphaClient.setOfficeId(loginUserInfo.getOfficeId());
-
-            MainActivity.launch(getContext());
+            if (isNotifaction) {
+                Intent intent = getIntent();
+                if (intent.hasExtra(NimIntent.EXTRA_NOTIFY_CONTENT)) {
+                    ArrayList<IMMessage> messages = (ArrayList<IMMessage>) intent.getSerializableExtra(NimIntent.EXTRA_NOTIFY_CONTENT);
+                    if (messages == null) {
+                        return;
+                    } else {
+                        MainActivity.launchByNotifaction(WelcomeActivity.this, messages.get(0));
+                        this.finish();
+                    }
+                    // 最好将intent清掉，以免从堆栈恢复时又打开客服窗口
+                    setIntent(new Intent());
+                } else {
+                    return;
+                }
+            } else {
+                MainActivity.launch(getContext());
+                this.finish();
+            }
         } else {
+            if (isNotifaction) {
+                return;
+            }
             LoginSelectActivity.launch(getContext());
         }
         finish();

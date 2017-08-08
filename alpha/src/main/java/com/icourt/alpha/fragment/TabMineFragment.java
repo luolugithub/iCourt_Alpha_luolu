@@ -5,6 +5,7 @@ import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AlertDialog;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -28,13 +29,16 @@ import com.icourt.alpha.entity.bean.AppVersionEntity;
 import com.icourt.alpha.entity.bean.GroupBean;
 import com.icourt.alpha.entity.bean.SelectGroupBean;
 import com.icourt.alpha.entity.bean.UserDataEntity;
+import com.icourt.alpha.entity.event.ServerTimingEvent;
 import com.icourt.alpha.entity.event.TimingEvent;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.callback.AppUpdateCallBack;
 import com.icourt.alpha.utils.GlideUtils;
+import com.icourt.alpha.utils.LoginInfoUtils;
 import com.icourt.alpha.utils.transformations.BlurTransformation;
 import com.icourt.alpha.widget.manager.DataCleanManager;
+import com.icourt.alpha.widget.manager.TimerManager;
 import com.umeng.socialize.UMAuthListener;
 import com.umeng.socialize.UMShareAPI;
 import com.umeng.socialize.bean.SHARE_MEDIA;
@@ -212,6 +216,35 @@ public class TabMineFragment extends BaseFragment {
         }
     }
 
+    /**
+     * 获取本地唯一id
+     *
+     * @return
+     */
+    private String getlocalUniqueId() {
+        AlphaUserInfo loginUserInfo = LoginInfoUtils.getLoginUserInfo();
+        if (loginUserInfo != null) {
+            return loginUserInfo.localUniqueId;
+        }
+        return null;
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onServerTimingEvent(ServerTimingEvent event) {
+        if (event == null) return;
+        if (TextUtils.equals(event.clientId, getlocalUniqueId())) return;
+        if (event.isSyncObject() && event.isSyncTimingType()) {
+            if (TextUtils.equals(event.scene, ServerTimingEvent.TIMING_SYNC_START)) {
+
+            } else if (TextUtils.equals(event.scene, ServerTimingEvent.TIMING_SYNC_DELETE)) {
+                getMyDoneTask();
+            } else if (TextUtils.equals(event.scene, ServerTimingEvent.TIMING_SYNC_EDIT)) {
+                getMyDoneTask();
+            }
+        }
+    }
+
+
     @OnClick({R.id.set_image,
             R.id.my_center_collect_layout,
             R.id.my_center_at_layout,
@@ -281,7 +314,7 @@ public class TabMineFragment extends BaseFragment {
      */
     private void loginOut() {
         //神策退出
-    /*    SensorsDataAPI.sharedInstance(getContext())
+       /* SensorsDataAPI.sharedInstance(getContext())
                 .logout();*/
 
         //撤销微信授权

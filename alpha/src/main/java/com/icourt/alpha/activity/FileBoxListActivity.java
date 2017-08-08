@@ -256,8 +256,20 @@ public class FileBoxListActivity extends BaseActivity implements BaseRecyclerAda
                 if (o1 == null || o2 == null) {
                     return 1;
                 }
-                int o1Name = firstlist.indexOf(String.valueOf(PingYinUtil.getFirstUpperLetter(getContext(), PingYinUtil.getPingYin(getContext(), o1.name))).toLowerCase());
-                int o2Name = firstlist.indexOf(String.valueOf(PingYinUtil.getFirstUpperLetter(getContext(), PingYinUtil.getPingYin(getContext(), o2.name))).toLowerCase());
+                if (TextUtils.isEmpty(o1.name) || TextUtils.isEmpty(o2.name)) {
+                    return 1;
+                }
+                int o1Name, o2Name;
+                if (PingYinUtil.isNumeric(String.valueOf(o1.name.charAt(0)))) {
+                    o1Name = firstlist.indexOf(String.valueOf(o1.name.charAt(0)));
+                } else {
+                    o1Name = firstlist.indexOf(String.valueOf(PingYinUtil.getFirstUpperLetter(getContext(), PingYinUtil.getPingYin(getContext(), o1.name))).toLowerCase());
+                }
+                if (PingYinUtil.isNumeric(String.valueOf(o2.name.charAt(0)))) {
+                    o2Name = firstlist.indexOf(String.valueOf(o2.name.charAt(0)));
+                } else {
+                    o2Name = firstlist.indexOf(String.valueOf(PingYinUtil.getFirstUpperLetter(getContext(), PingYinUtil.getPingYin(getContext(), o2.name))).toLowerCase());
+                }
 
                 if (isUp) {
                     //按照名称进行降序排列

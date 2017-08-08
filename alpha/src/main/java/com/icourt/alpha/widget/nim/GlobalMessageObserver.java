@@ -1,15 +1,21 @@
 package com.icourt.alpha.widget.nim;
 
+import android.text.TextUtils;
+
+import com.google.gson.JsonObject;
 import com.icourt.alpha.BuildConfig;
 import com.icourt.alpha.constants.Const;
+import com.icourt.alpha.entity.bean.BaseCustomerMsg;
 import com.icourt.alpha.entity.bean.IMMessageCustomBody;
 import com.icourt.alpha.entity.event.MemberEvent;
+import com.icourt.alpha.entity.event.ServerTimingEvent;
 import com.icourt.alpha.utils.IMUtils;
 import com.icourt.alpha.utils.JsonUtils;
 import com.icourt.alpha.utils.LogUtils;
 import com.netease.nimlib.sdk.NIMClient;
 import com.netease.nimlib.sdk.Observer;
 import com.netease.nimlib.sdk.msg.MsgService;
+import com.netease.nimlib.sdk.msg.constant.MsgStatusEnum;
 import com.netease.nimlib.sdk.msg.model.IMMessage;
 import com.netease.nimlib.sdk.team.model.MemberChangeAttachment;
 
@@ -69,12 +75,34 @@ public class GlobalMessageObserver implements Observer<List<IMMessage>> {
                         //发送给其它页面
                         EventBus.getDefault().post(imBody);
                     }
-                } else if (imMessage.getMsgType() == custom) {
-                    IMUtils.logIMMessage("----------->globalMessageObserver alpha:", imMessage);
-                    IMMessageCustomBody imBody = new IMMessageCustomBody();
-                    imBody.imMessage = imMessage;
-                    //发送给其它页面
-                    EventBus.getDefault().post(imBody);
+                } else if (imMessage.getMsgType() == custom) {//自定义消息 200 alpha小助手； 300 计时同步
+                    if (imMessage.getAttachment() != null) {
+                        try {
+                            String json = imMessage.getAttachment().toJson(false);
+                            BaseCustomerMsg baseCustomerMsg = JsonUtils.Gson2Bean(json, BaseCustomerMsg.class);
+                            if (baseCustomerMsg != null) {
+                                switch (baseCustomerMsg.showType) {
+                                    case Const.MSG_TYPE_ALPHA_HELPER:
+                                        IMUtils.logIMMessage("----------->globalMessageObserver alpha:", imMessage);
+                                        IMMessageCustomBody imBody = new IMMessageCustomBody();
+                                        imBody.imMessage = imMessage;
+                                        //发送给其它页面
+                                        EventBus.getDefault().post(imBody);
+                                        break;
+                                    case Const.MSG_TYPE_ALPHA_SYNC://同步(不需要保存)
+                                        NIMClient.getService(MsgService.class)
+                                                .deleteChattingHistory(imMessage);
+                                        ServerTimingEvent serverTimingEvent = JsonUtils.Gson2Bean(json, ServerTimingEvent.class);
+                                        if (serverTimingEvent != null) {
+                                            EventBus.getDefault().post(serverTimingEvent);
+                                        }
+                                        break;
+                                }
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
                 }
             }
         }
@@ -88,6 +116,16 @@ public class GlobalMessageObserver implements Observer<List<IMMessage>> {
      */
     public static boolean isFilterMsg(long time) {
         return time < v2time;
+    }
+
+    /**
+     * 是否是草稿消息
+     *
+     * @param imMessage
+     * @return
+     */
+    public static boolean isDraftMsg(IMMessage imMessage) {
+        return imMessage != null && imMessage.getStatus() == MsgStatusEnum.draft;
     }
 
     /**

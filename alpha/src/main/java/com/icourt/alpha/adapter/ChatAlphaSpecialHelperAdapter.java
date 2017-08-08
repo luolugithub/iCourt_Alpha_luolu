@@ -1,6 +1,5 @@
 package com.icourt.alpha.adapter;
 
-import android.content.Context;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
 import android.view.View;
@@ -77,6 +76,9 @@ public class ChatAlphaSpecialHelperAdapter
         }
         msg_title_tv.setText(alphaSecialHeplerMsgEntity.content);
         if (TextUtils.equals(alphaSecialHeplerMsgEntity.object, "TASK")) {
+            msg_content_tv.setVisibility(View.VISIBLE);
+            msg_time_tv.setVisibility(View.VISIBLE);
+            msg_from_tv.setVisibility(View.VISIBLE);
             //任务
             msg_content_tv.setText(alphaSecialHeplerMsgEntity.taskName);
             //箭头的显示
@@ -104,6 +106,9 @@ public class ChatAlphaSpecialHelperAdapter
             }
             msg_from_tv.setText(alphaSecialHeplerMsgEntity.matterName);
         } else if (TextUtils.equals(alphaSecialHeplerMsgEntity.object, "MATTER")) {
+            msg_content_tv.setVisibility(View.VISIBLE);
+            msg_time_tv.setVisibility(View.VISIBLE);
+            msg_from_tv.setVisibility(View.VISIBLE);
             msg_content_tv.setText(alphaSecialHeplerMsgEntity.matterName);
             String secondeContent = null;
             if (!TextUtils.isEmpty(alphaSecialHeplerMsgEntity.caseProcess)) {
@@ -131,8 +136,11 @@ public class ChatAlphaSpecialHelperAdapter
             msg_title_tv.setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0);
             boolean showArrow = TextUtils.equals(AlphaSecialHeplerMsgEntity.MATTER_MEMBER_REMOVEU, alphaSecialHeplerMsgEntity.scene);
             msg_title_tv.setCompoundDrawablesWithIntrinsicBounds(0, 0, showArrow ? 0 : R.mipmap.message_arrow_14, 0);
+        } else {
+            msg_content_tv.setVisibility(View.GONE);
+            msg_time_tv.setVisibility(View.GONE);
+            msg_from_tv.setVisibility(View.GONE);
         }
-
         addTimeDividerArray(alphaSecialHeplerMsgEntity, position);
     }
 

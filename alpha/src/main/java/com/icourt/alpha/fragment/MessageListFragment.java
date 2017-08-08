@@ -19,6 +19,7 @@ import com.icourt.alpha.R;
 import com.icourt.alpha.activity.AlphaSpecialHelperActivity;
 import com.icourt.alpha.activity.ChatActivity;
 import com.icourt.alpha.activity.LoginSelectActivity;
+import com.icourt.alpha.activity.MainActivity;
 import com.icourt.alpha.activity.SearchPolymerizationActivity;
 import com.icourt.alpha.adapter.IMSessionAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
@@ -41,7 +42,6 @@ import com.icourt.alpha.interfaces.OnTabDoubleClickListener;
 import com.icourt.alpha.utils.IMUtils;
 import com.icourt.alpha.utils.JsonUtils;
 import com.icourt.alpha.utils.LogUtils;
-import com.icourt.alpha.utils.LoginInfoUtils;
 import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.widget.dialog.BottomActionDialog;
 import com.netease.nimlib.sdk.NIMClient;
@@ -273,13 +273,18 @@ public class MessageListFragment extends BaseRecentContactFragment
     private IMMessageCustomBody getAlphaHelper(RecentContact recentContact) {
         try {
             JSONObject alphaJSONObject = JsonUtils.getJSONObject(recentContact.getAttachment().toJson(false));
-            String contentStr = alphaJSONObject.getString("content");
-            IMMessageCustomBody imMessageCustomBody = new IMMessageCustomBody();
-            imMessageCustomBody.content = contentStr;
-            imMessageCustomBody.show_type = MSG_TYPE_ALPHA_HELPER;
-            imMessageCustomBody.ope = CHAT_TYPE_P2P;
-            imMessageCustomBody.to = recentContact.getContactId();
-            return imMessageCustomBody;
+            if (alphaJSONObject.getInt("showType") == MSG_TYPE_ALPHA_HELPER) {
+                String contentStr = alphaJSONObject.getString("content");
+                IMMessageCustomBody imMessageCustomBody = new IMMessageCustomBody();
+                imMessageCustomBody.content = contentStr;
+                imMessageCustomBody.show_type = MSG_TYPE_ALPHA_HELPER;
+                imMessageCustomBody.ope = CHAT_TYPE_P2P;
+                imMessageCustomBody.to = recentContact.getContactId();
+                return imMessageCustomBody;
+            } else {
+                NIMClient.getService(MsgService.class)
+                        .deleteRecentContact(recentContact);
+            }
         } catch (Exception e) {
             e.printStackTrace();
             LogUtils.d("---------->AlphaHelper 解析异常:" + e);
@@ -307,11 +312,95 @@ public class MessageListFragment extends BaseRecentContactFragment
         }
     }
 
+
+    /**
+     * 只要有Android ios设备 就退出
+     *
+     * @param onlineClients
+     * @return
+     */
+    private OnlineClient getKikoutClient(List<OnlineClient> onlineClients) {
+        if (onlineClients != null && !onlineClients.isEmpty()) {
+            for (OnlineClient client : onlineClients) {
+                if (client.getClientType() == ClientType.Android ||
+                        client.getClientType() == ClientType.iOS) {
+                    return client;
+                }
+            }
+        }
+        return null;
+    }
+
     @Override
     protected void onlineClientEvent(List<OnlineClient> onlineClients) {
         if (onlineClients == null || onlineClients.size() == 0) {
             updateLoginStateView(false, "");
         } else {
+            //被踢啦
+            OnlineClient kikoutClient = getKikoutClient(onlineClients);
+            if (kikoutClient != null) {
+                NIMClient.getService(AuthService.class)
+                        .kickOtherClient(kikoutClient)
+                        .setCallback(new RequestCallback<Void>() {
+
+                            @Override
+                            public void onSuccess(Void param) {
+                                dispatchEvent();
+                            }
+
+                            public void dispatchEvent() {
+                                /**
+                                 * 如果是从登陆页面而来 第一次踢掉对方 重新登陆
+                                 */
+                                if (getActivity() != null
+                                        && getActivity().getIntent() != null
+                                        && getActivity().getIntent().getBooleanExtra(MainActivity.KEY_FROM_LOGIN, false)) {
+                                    AlphaUserInfo loginUserInfo = getLoginUserInfo();
+                                    if (loginUserInfo != null) {
+                                        getActivity().getIntent().putExtra(MainActivity.KEY_FROM_LOGIN, false);
+                                        try {
+                                            NIMClient.getService(AuthService.class)
+                                                    .login(new LoginInfo(loginUserInfo.getThirdpartId(), loginUserInfo.getChatToken()))
+                                                    .setCallback(new RequestCallback() {
+                                                        @Override
+                                                        public void onSuccess(Object o) {
+
+                                                        }
+
+                                                        @Override
+                                                        public void onFailed(int i) {
+
+                                                        }
+
+                                                        @Override
+                                                        public void onException(Throwable throwable) {
+
+                                                        }
+                                                    });
+                                        } catch (Throwable e) {
+                                            e.printStackTrace();
+                                        }
+                                    } else {
+                                        loginout();
+                                    }
+                                } else {
+                                    loginout();
+                                }
+                            }
+
+                            @Override
+                            public void onFailed(int code) {
+                                dispatchEvent();
+                            }
+
+                            @Override
+                            public void onException(Throwable exception) {
+                                dispatchEvent();
+                            }
+                        });
+                return;
+            }
+
             OnlineClient client = onlineClients.get(0);
             log("------------>onlineClientEvent:first:" + client.getOs() + "  gettype:" + client.getClientType() + "  loginTime:" + client.getLoginTime());
             switch (client.getClientType()) {
@@ -353,6 +442,7 @@ public class MessageListFragment extends BaseRecentContactFragment
             }
         }
     }
+
 
     /**
      * 更新登陆状态提示

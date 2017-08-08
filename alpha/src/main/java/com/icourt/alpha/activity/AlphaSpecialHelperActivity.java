@@ -25,6 +25,7 @@ import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.view.bgabadgeview.BGABadgeTextView;
 import com.icourt.alpha.view.recyclerviewDivider.ChatItemDecoration;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
+import com.icourt.alpha.widget.nim.GlobalMessageObserver;
 import com.netease.nimlib.sdk.NIMClient;
 import com.netease.nimlib.sdk.RequestCallback;
 import com.netease.nimlib.sdk.msg.MessageBuilder;
@@ -138,7 +139,11 @@ public class AlphaSpecialHelperActivity extends ChatBaseActivity {
                 .setCallback(new RequestCallback<List<IMMessage>>() {
                     @Override
                     public void onSuccess(List<IMMessage> param) {
-                        LogUtils.d("----------->query result:" + param);
+                        if (param != null) {
+                            for (IMMessage imMessage : param) {
+                                IMUtils.logIMMessage("----------->query result:", imMessage);
+                            }
+                        }
                         chatAlphaSpecialHelperAdapter.addItems(0, convert2CustomerAlphaMessages(param));
                         stopRefresh();
                         if (isRefresh) {
@@ -217,12 +222,13 @@ public class AlphaSpecialHelperActivity extends ChatBaseActivity {
         List<AlphaSecialHeplerMsgEntity> customerMessageEntities = new ArrayList<>();
         if (param != null) {
             for (IMMessage message : param) {
-                IMUtils.logIMMessage("-------------->chat:", message);
                 if (message != null) {
                     AlphaSecialHeplerMsgEntity imBody = getAlphaBody(message);
                     if (imBody != null) {
-                        imBody.imMessage = message;
-                        customerMessageEntities.add(imBody);
+                        if (imBody.showType == 200) {
+                            imBody.imMessage = message;
+                            customerMessageEntities.add(imBody);
+                        }
                     }
                 }
             }

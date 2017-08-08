@@ -52,6 +52,8 @@ import com.umeng.socialize.UMShareAPI;
 import com.umeng.socialize.utils.Log;
 
 import java.net.Proxy;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -126,16 +128,16 @@ public class BaseApplication extends MultiDexApplication {
     }
 
     private void initShengCe() {
-     /*   // 数据接收的 URL
-        final String SA_SERVER_URL = "http://10.173.35.151:8006/sa";
+       /* // 数据接收的 URL
+        final String SA_SERVER_URL = BuildConfig.API_SENSORS_DATA_SERVER;
         // 配置分发的 URL
-        final String SA_CONFIGURE_URL = "http://10.173.35.151:8006/config/";
+        final String SA_CONFIGURE_URL = BuildConfig.API_SENSORS_DATA_CONFIGURE;
         // Debug 模式选项
         //   SensorsDataAPI.DebugMode.DEBUG_OFF - 关闭 Debug 模式
         //   SensorsDataAPI.DebugMode.DEBUG_ONLY - 打开 Debug 模式，校验数据，但不进行数据导入
         //   SensorsDataAPI.DebugMode.DEBUG_AND_TRACK - 打开 Debug 模式，校验数据，并将数据导入到 Sensors Analytics 中
         // 注意！请不要在正式发布的 App 中使用 Debug 模式！
-        final SensorsDataAPI.DebugMode SA_DEBUG_MODE = SensorsDataAPI.DebugMode.DEBUG_OFF;
+        final SensorsDataAPI.DebugMode SA_DEBUG_MODE = SensorsDataAPI.DebugMode.DEBUG_AND_TRACK;
 
         // 初始化 SDK
         SensorsDataAPI.sharedInstance(
@@ -152,7 +154,7 @@ public class BaseApplication extends MultiDexApplication {
         // $AppViewScreen
         eventTypeList.add(SensorsDataAPI.AutoTrackEventType.APP_VIEW_SCREEN);
         // $AppClick
-       eventTypeList.add(SensorsDataAPI.AutoTrackEventType.APP_CLICK);
+        eventTypeList.add(SensorsDataAPI.AutoTrackEventType.APP_CLICK);
         SensorsDataAPI.sharedInstance(this).enableAutoTrack(eventTypeList);*/
     }
 
@@ -269,7 +271,7 @@ public class BaseApplication extends MultiDexApplication {
             NIMClient.toggleNotification(UserPreferences.getNotificationToggle());
             NIMClient.updateStatusBarNotificationConfig(UserPreferences.getStatusConfig());
             NIMClient.getService(MsgService.class)
-                    .registerCustomAttachmentParser(new NimAttachParser());//new CustomAttachParser()
+                    .registerCustomAttachmentParser(new NimAttachParser());
         }
     }
 

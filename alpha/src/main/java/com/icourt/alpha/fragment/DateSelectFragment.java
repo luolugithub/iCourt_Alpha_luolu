@@ -713,29 +713,8 @@ public class DateSelectFragment extends BaseFragment {
                     if (taskReminderEntity.customTime == null) {
                         taskReminderEntity.customTime = new ArrayList<>();
                     }
-                    if (TextUtils.equals(taskReminderType, TaskReminderEntity.ALL_DAY)) {
-                        if (!TaskReminderUtils.alldayMap.containsKey(ruleTimeitem)) {
-                            addCoustomReminder(ruleTimeitem, taskReminderType);
-                            it.remove();
-                        } else {
-                            if (reminderCalendar != null) {
-                                if (!TextUtils.equals(DateUtils.getHHmm(reminderCalendar.getTimeInMillis()), "09:00")) {
-                                    addCoustomReminder(ruleTimeitem, taskReminderType);
-                                    it.remove();
-                                }
-                            }
-                        }
-                    } else if (TextUtils.equals(taskReminderType, TaskReminderEntity.PRECISE)) {
-                        if (!TaskReminderUtils.preciseMap.containsKey(ruleTimeitem)) {
-                            addCoustomReminder(ruleTimeitem, taskReminderType);
-                            it.remove();
-                        } else {
-                            if (!TextUtils.equals(duetimeTv.getText(), "09:00")) {
-                                addCoustomReminder(ruleTimeitem, taskReminderType);
-                                it.remove();
-                            }
-                        }
-                    }
+                    addCoustomReminder(ruleTimeitem, taskReminderType);
+                    it.remove();
                 }
             }
             taskReminderEntity.taskReminderType = taskReminderType;
@@ -751,9 +730,7 @@ public class DateSelectFragment extends BaseFragment {
      */
     private void addCoustomReminder(String ruleTimeitem, String taskReminderType) {
         TaskReminderEntity.CustomTimeItemEntity entity = getCustomTime(ruleTimeitem, taskReminderType);
-        if (!taskReminderEntity.customTime.contains(entity)) {
-            taskReminderEntity.customTime.add(entity);
-        }
+        taskReminderEntity.customTime.add(entity);
     }
 
     /**

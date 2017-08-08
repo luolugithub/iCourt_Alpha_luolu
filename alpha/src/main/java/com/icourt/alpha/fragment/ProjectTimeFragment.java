@@ -22,6 +22,7 @@ import com.icourt.alpha.adapter.baseadapter.adapterObserver.RefreshViewEmptyObse
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.entity.bean.TimeEntity;
 import com.icourt.alpha.entity.event.ProjectActionEvent;
+import com.icourt.alpha.entity.event.TimingEvent;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.ActionConstants;
@@ -94,6 +95,7 @@ public class ProjectTimeFragment extends BaseFragment implements BaseRecyclerAda
         refreshLayout.setNoticeEmpty(R.mipmap.icon_placeholder_timing, "暂无计时");
         refreshLayout.setMoveForHorizontal(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        recyclerView.setItemAnimator(null);
 
         recyclerView.setAdapter(timeAdapter = new TimeAdapter());
         timeAdapter.setSumTime(sumTime);
@@ -181,6 +183,37 @@ public class ProjectTimeFragment extends BaseFragment implements BaseRecyclerAda
         if (refreshLayout != null) {
             refreshLayout.stopRefresh();
             refreshLayout.stopLoadMore();
+        }
+    }
+
+    /**
+     * 计时事件
+     *
+     * @param event
+     */
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onTimerEvent(TimingEvent event) {
+        if (event == null) return;
+        switch (event.action) {
+            case TimingEvent.TIMING_ADD:
+
+                break;
+            case TimingEvent.TIMING_UPDATE_PROGRESS:
+                TimeEntity.ItemEntity updateItem = TimerManager.getInstance().getTimer();
+                if (updateItem != null) {
+                    updateItem.pkId = event.timingId;
+                    int indexOf = timeAdapter.getData().indexOf(updateItem);
+                    if (indexOf >= 0) {
+                        TimeEntity.ItemEntity item = timeAdapter.getItem(indexOf);
+                        item.state = TimeEntity.ItemEntity.TIMER_STATE_START;
+                        item.useTime = event.timingSecond * 1_000;
+
+                        timeAdapter.updateItem(item);
+                    }
+                }
+                break;
+            case TimingEvent.TIMING_STOP:
+                break;
         }
     }
 

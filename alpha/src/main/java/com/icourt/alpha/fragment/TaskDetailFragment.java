@@ -32,6 +32,7 @@ import com.icourt.alpha.fragment.dialogfragment.DateSelectDialogFragment;
 import com.icourt.alpha.fragment.dialogfragment.ProjectSelectDialogFragment;
 import com.icourt.alpha.fragment.dialogfragment.TaskGroupSelectFragment;
 import com.icourt.alpha.http.callback.SimpleCallBack;
+import com.icourt.alpha.http.exception.ResponseException;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.utils.DateUtils;
@@ -42,6 +43,7 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
+import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -86,6 +88,7 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
     TaskReminderEntity taskReminderEntity;
     @BindView(R.id.task_reminder_icon)
     ImageView taskReminderIcon;
+    boolean isFinish;
 
     public static TaskDetailFragment newInstance(@NonNull TaskEntity.TaskItemEntity taskItemEntity) {
         TaskDetailFragment taskDetailFragment = new TaskDetailFragment();
@@ -108,6 +111,7 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
         EventBus.getDefault().register(this);
         taskItemEntity = (TaskEntity.TaskItemEntity) getArguments().getSerializable(KEY_TASK_DETAIL);
         if (taskItemEntity != null) {
+            isFinish = taskItemEntity.state;
             if (taskItemEntity.matter != null) {
                 taskProjectLayout.setVisibility(View.VISIBLE);
                 taskGroupLayout.setVisibility(View.VISIBLE);
@@ -145,34 +149,44 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
     @Override
     public void onClick(View v) {
         super.onClick(v);
-        if (hasTaskEditPermission()) {
-            switch (v.getId()) {
-                case R.id.task_project_layout://选择项目
-                    if (taskItemEntity != null) {
-                        if (taskItemEntity.matter == null) {
-                            showProjectSelectDialogFragment(null);
-                        } else {
-                            showBottomMeau();
+        if (!isFinish) {
+            if (hasTaskEditPermission()) {
+                switch (v.getId()) {
+                    case R.id.task_project_layout://选择项目
+                        if (taskItemEntity != null) {
+                            if (taskItemEntity.matter == null) {
+                                showProjectSelectDialogFragment(null);
+                            } else {
+                                showBottomMeau();
+                            }
                         }
-                    }
-                    break;
-                case R.id.task_group_layout://选择任务组
-                    if (taskItemEntity.matter != null) {
-                        if (!TextUtils.isEmpty(taskItemEntity.matter.id)) {
-                            showProjectSelectDialogFragment(taskItemEntity.matter.id);
+                        break;
+                    case R.id.task_group_layout://选择任务组
+                        if (taskItemEntity.matter != null) {
+                            if (!TextUtils.isEmpty(taskItemEntity.matter.id)) {
+                                showProjectSelectDialogFragment(taskItemEntity.matter.id);
+                            }
                         }
-                    }
-                    break;
-                case R.id.task_time_layout://选择到期时间
-                    if (taskItemEntity != null)
-                        showDateSelectDialogFragment(taskItemEntity.dueTime, taskItemEntity.id);
-                    break;
-                case R.id.task_desc_tv://添加任务详情
-                    TaskDescUpdateActivity.launch(getContext(), taskDescTv.getText().toString(), TaskDescUpdateActivity.UPDATE_TASK_DESC);
-                    break;
+                        break;
+                    case R.id.task_time_layout://选择到期时间
+                        if (taskItemEntity != null)
+                            showDateSelectDialogFragment(taskItemEntity.dueTime, taskItemEntity.id);
+                        break;
+                    case R.id.task_desc_tv://添加任务详情
+                        TaskDescUpdateActivity.launch(getContext(), taskDescTv.getText().toString(), TaskDescUpdateActivity.UPDATE_TASK_DESC);
+                        break;
+                }
+            } else {
+                showTopSnackBar("您没有编辑任务的权限");
             }
-        } else {
-            showTopSnackBar("您没有编辑任务的权限");
+        }
+    }
+
+    @Override
+    public void notifyFragmentUpdate(Fragment targetFrgament, int type, Bundle bundle) {
+        if (targetFrgament instanceof TaskDetailFragment) {
+            if (bundle == null) return;
+            isFinish = bundle.getBoolean("isFinish");
         }
     }
 
@@ -268,7 +282,11 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
             DateSelectDialogFragment.newInstance(calendar, taskReminderEntity, taskId)
                     .show(mFragTransaction, tag);
         } else {
-            DateSelectDialogFragment.newInstance(null, taskReminderEntity, taskId)
+            Calendar calendar = Calendar.getInstance();
+            calendar.set(Calendar.HOUR_OF_DAY, 23);
+            calendar.set(Calendar.MINUTE, 59);
+            calendar.set(Calendar.SECOND, 59);
+            DateSelectDialogFragment.newInstance(calendar, taskReminderEntity, taskId)
                     .show(mFragTransaction, tag);
         }
 
@@ -310,6 +328,10 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
                     taskItemEntity.attendeeUsers.clear();
                 }
             }
+        }
+        if (taskGroupEntity == null) {
+            taskGroupEntity = new TaskGroupEntity();
+            taskGroupEntity.id = "";
         }
         selectedTaskGroup = taskGroupEntity;
         updateTask(taskItemEntity, projectEntity, taskGroupEntity);
@@ -356,6 +378,12 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
                         taskGroupTv.setText(taskItemEntity != null ? taskItemEntity.parentFlow != null ? taskItemEntity.parentFlow.name : "" : "");
                     }
                 }
+                try {
+                    if (taskDescTv == null) return;
+                    taskDescTv.setText(URLDecoder.decode(itemEntity.description, "utf-8"));
+                } catch (UnsupportedEncodingException e) {
+                    e.printStackTrace();
+                }
                 addReminders(taskReminderEntity);
                 EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION, itemEntity.id, ""));
             }
@@ -364,6 +392,9 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
             public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
                 super.onFailure(call, t);
                 dismissLoadingDialog();
+                if (t instanceof ResponseException) {
+                    showTopSnackBar(((ResponseException) t).message);
+                }
             }
         });
     }
@@ -382,6 +413,7 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
             jsonObject.addProperty("id", itemEntity.id);
             jsonObject.addProperty("state", itemEntity.state);
             jsonObject.addProperty("name", itemEntity.name);
+            jsonObject.addProperty("parentId", itemEntity.parentId);
             jsonObject.addProperty("dueTime", itemEntity.dueTime);
             jsonObject.addProperty("description", itemEntity.description);
             jsonObject.addProperty("valid", true);
@@ -389,19 +421,15 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
             JsonArray jsonarr = new JsonArray();
             if (projectEntity != null) {
                 jsonObject.addProperty("matterId", projectEntity.pkId);
-                jsonarr.add(getLoginUserId());
-            } else {
-                if (itemEntity.attendeeUsers != null) {
-                    if (itemEntity.attendeeUsers.size() > 0) {
-                        for (TaskEntity.TaskItemEntity.AttendeeUserEntity attendeeUser : itemEntity.attendeeUsers) {
-                            jsonarr.add(attendeeUser.userId);
-                        }
-                    } else {
-                        jsonarr.add(getLoginUserId());
+            }
+            if (itemEntity.attendeeUsers != null) {
+                if (itemEntity.attendeeUsers.size() > 0) {
+                    for (TaskEntity.TaskItemEntity.AttendeeUserEntity attendeeUser : itemEntity.attendeeUsers) {
+                        jsonarr.add(attendeeUser.userId);
                     }
+                    jsonObject.add("attendees", jsonarr);
                 }
             }
-            jsonObject.add("attendees", jsonarr);
             if (taskGroupEntity != null) {
                 jsonObject.addProperty("parentId", taskGroupEntity.id);
             }
@@ -480,7 +508,7 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
 
                 taskItemEntity.dueTime = millis;
                 taskReminderEntity = (TaskReminderEntity) params.getSerializable("taskReminder");
-                updateTask(taskItemEntity, null, selectedTaskGroup);
+                updateTask(taskItemEntity, null, null);
 
             } else if (fragment instanceof TaskGroupSelectFragment) {//选择任务组回调
                 TaskGroupEntity taskGroupEntity = (TaskGroupEntity) params.getSerializable(KEY_FRAGMENT_RESULT);
@@ -502,7 +530,7 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
             if (getActivity() instanceof TaskDetailActivity) {
                 taskItemEntity = ((TaskDetailActivity) getActivity()).getTaskItemEntity();
             }
-            taskDescTv.setText(event.desc);
+
             taskItemEntity.description = event.desc;
             updateTask(taskItemEntity, null, null);
         }

@@ -1,5 +1,8 @@
 package com.icourt.alpha.utils;
 
+import android.view.MotionEvent;
+import android.view.View;
+
 /**
  * @author xuanyouwu
  * @email xuanyouwu@163.com
@@ -32,5 +35,16 @@ public class RAUtils {
             lastClickTime = current;
             return duration < distance;
         }
+    }
+
+    public static boolean inRangeOfView(View view, MotionEvent ev) {
+        int[] location = new int[2];
+        view.getLocationOnScreen(location);
+        int x = location[0];
+        int y = location[1];
+        if (ev.getX() < x || ev.getX() > (x + view.getWidth()) || ev.getY() < y || ev.getY() > (y + view.getHeight())) {
+            return false;
+        }
+        return true;
     }
 }

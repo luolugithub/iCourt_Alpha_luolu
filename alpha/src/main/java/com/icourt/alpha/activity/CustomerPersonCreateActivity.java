@@ -11,6 +11,8 @@ import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.AppBarLayout;
+import android.text.InputFilter;
+import android.text.Spanned;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -36,6 +38,7 @@ import com.icourt.alpha.entity.bean.SelectGroupBean;
 import com.icourt.alpha.entity.event.UpdateCustomerEvent;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
+import com.icourt.alpha.utils.IDCardValidate;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.utils.TextFormater;
 import com.icourt.api.RequestUtils;
@@ -49,6 +52,7 @@ import java.io.Serializable;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -69,7 +73,9 @@ import retrofit2.Response;
  */
 
 public class CustomerPersonCreateActivity extends BaseActivity {
-
+    // 居民身份证号的组成元素
+    String[] IDCARD = {"1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "x", "X",};
+    final List<String> idCardList = Arrays.asList(IDCARD);
     public static final int CREATE_CUSTOMER_ACTION = 1;//创建联系人
     public static final int UPDATE_CUSTOMER_ACTION = 2;//编辑联系人
 
@@ -654,8 +660,10 @@ public class CustomerPersonCreateActivity extends BaseActivity {
         if (certificate != null) {
             keynameText.setText(certificate.getItemSubType());
             valuenameText.setText(certificate.getItemValue());
+            valuenameText.setSelection(valuenameText.getText().length());
         } else {
             keynameText.setText("身份证");
+            identityCardEditFilter(valuenameText);
         }
         activityAddPersonContactParerLayout.addView(view);
         deleteView.setOnClickListener(new View.OnClickListener() {
@@ -674,6 +682,32 @@ public class CustomerPersonCreateActivity extends BaseActivity {
                 SelectCustomerTagActivity.launchForResult(CustomerPersonCreateActivity.this, Const.SELECT_PAPERS_TAG_ACTION, paperTag, keynameText.getText().toString().trim(), SELECT_OTHER_REQUEST, SelectCustomerTagActivity.PERSON_SELECT_TYPE);
             }
         });
+    }
+
+    /**
+     * 当选择身份证时，EditText做输入限制
+     *
+     * @param editText
+     */
+    private void identityCardEditFilter(final EditText editText) {
+        InputFilter inputFilter = new InputFilter() {
+            @Override
+            public CharSequence filter(CharSequence source, int start, int end, Spanned dest, int dstart, int dend) {
+                // 返回空字符串，就代表匹配不成功，返回null代表匹配成功
+                for (int i = 0; i < source.toString().length(); i++) {
+                    if (!idCardList.contains(String.valueOf(source.charAt(i)))) {
+                        return "";
+                    }
+                    if (editText.getText().toString().length() < 17) {
+                        if ("x".equals(String.valueOf(source.charAt(i))) || "X".equals(String.valueOf(source.charAt(i)))) {
+                            return "";
+                        }
+                    }
+                }
+                return null;
+            }
+        };
+        editText.setFilters(new InputFilter[]{new InputFilter.LengthFilter(18), inputFilter});// 长度的限制和字符的限制
     }
 
     /**
@@ -884,6 +918,9 @@ public class CustomerPersonCreateActivity extends BaseActivity {
                         ((TextView) addressMap.get(position).findViewById(R.id.activity_add_contact_item_keyname_text)).setText(tagName);
                     } else if (action.equals(Const.SELECT_PAPERS_TAG_ACTION)) {//证件标签
                         ((TextView) paperMap.get(position).findViewById(R.id.activity_add_contact_item_keyname_text)).setText(tagName);
+                        if (TextUtils.equals(tagName, "身份证")) {
+                            identityCardEditFilter(((EditText) paperMap.get(position).findViewById(R.id.activity_add_contact_item_valuename_text)));
+                        }
                     } else if (action.equals(Const.SELECT_IM_TAG_ACTION)) {//即时通讯标签
                         ((TextView) imAccountMap.get(position).findViewById(R.id.activity_add_contact_item_keyname_text)).setText(tagName);
                     } else if (action.equals(Const.SELECT_DATE_TAG_ACTION)) {//日期标签
@@ -1292,6 +1329,7 @@ public class CustomerPersonCreateActivity extends BaseActivity {
                 JSONArray paperArr = getItemMapJsonArr(paperMap, "certificates");
                 if (paperArr != null)
                     jsonObject.put("certificates", paperArr);
+                else return "";
             }
             if (enterpriseMap.size() > 0) {
                 JSONArray addreeArr = getItemMapJsonArr(enterpriseMap, "companies");
@@ -1369,15 +1407,23 @@ public class CustomerPersonCreateActivity extends BaseActivity {
                 String key = ((TextView) entry.getValue().findViewById(R.id.activity_add_contact_item_keyname_text)).getText().toString().trim();
                 String value = ((TextView) entry.getValue().findViewById(R.id.activity_add_contact_item_valuename_text)).getText().toString().trim();
                 if (value != null && value.length() > 0) {
-                    if ("tels".equals(type)) {
+                    if (TextUtils.equals("tels", type)) {
                         if (!TextFormater.isMobileNO(value)) {
                             showTopSnackBar("请输入正确的手机号号码");
                             return null;
                         }
-                    } else if ("mails".equals(type)) {
+                    } else if (TextUtils.equals("mails", type)) {
                         if (!TextFormater.isMailNO(value)) {
                             showTopSnackBar("请输入正确的邮箱地址");
                             return null;
+                        }
+                    } else if (TextUtils.equals("certificates", type)) {
+                        if (TextUtils.equals("身份证", key)) {
+                            String cardStr = IDCardValidate.validate_effective(value, true);
+                            if (!TextUtils.equals(cardStr, value) && cardStr.length() != 18) {
+                                showTopSnackBar(cardStr);
+                                return null;
+                            }
                         }
                     }
                     JSONObject itemObject = new JSONObject();

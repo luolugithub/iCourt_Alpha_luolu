@@ -172,21 +172,12 @@ public class TimeAdapter extends BaseArrayRecyclerAdapter<TimeEntity.ItemEntity>
         times /= 1000;
         long hour = times / 3600;
         long minute = times % 3600 / 60;
-        if (minute <= 0) {
-            minute = 1;
+        if (minute < 0) {
+            minute = 0;
         }
         return String.format(Locale.CHINA, "%d:%02d", hour, minute);
     }
 
-    public String getHHmm(long times) {
-        times /= 1000;
-        long hour = times / 3600;
-        long minute = times % 3600 / 60;
-        if (minute <= 0) {
-            minute = 1;
-        }
-        return String.format(Locale.CHINA, "%02d:%02d", hour, minute);
-    }
 
     /**
      * 设置顶部数据
@@ -216,8 +207,26 @@ public class TimeAdapter extends BaseArrayRecyclerAdapter<TimeEntity.ItemEntity>
         } else {
             rightArrow.setVisibility(View.INVISIBLE);
         }
-        durationView.setText(getHm(timeEntity.useTime));
-        quantumView.setText(DateUtils.getTimeDurationDate(timeEntity.startTime) + "-" + DateUtils.getTimeDurationDate(timeEntity.endTime));
+
+        if (timeEntity.state == TimeEntity.ItemEntity.TIMER_STATE_START) {
+            long useTime = timeEntity.useTime;
+            if (useTime <= 0 && timeEntity.startTime > 0) {
+                useTime = DateUtils.millis() - timeEntity.startTime;
+            }
+            if (useTime < 0) {
+                useTime = 0;
+            }
+            durationView.setText(toTime(useTime));
+            quantumView.setText(DateUtils.getTimeDurationDate(timeEntity.startTime) + " - 现在");
+        } else {
+            try {
+                durationView.setText(getHm(timeEntity.useTime));
+                quantumView.setText(DateUtils.getTimeDurationDate(timeEntity.startTime) + " - " + DateUtils.getTimeDurationDate(timeEntity.endTime));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
         GlideUtils.loadUser(holder.itemView.getContext(), timeEntity.userPic, photoView);
         descView.setText(TextUtils.isEmpty(timeEntity.name) ? "未录入工作描述" : timeEntity.name);
         userNameView.setText(timeEntity.username);
@@ -289,8 +298,10 @@ public class TimeAdapter extends BaseArrayRecyclerAdapter<TimeEntity.ItemEntity>
         switch (view.getId()) {
             case R.id.timer_icon:
                 if (item.state == TimeEntity.TIMER_STATE_END_TYPE) {
+                    item.state = 0;
                     TimerManager.getInstance().addTimer(item);
                 } else {
+                    item.state = 1;
                     TimerManager.getInstance().stopTimer();
                 }
                 break;

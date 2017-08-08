@@ -1,8 +1,5 @@
 package com.icourt.alpha.activity;
 
-import android.Manifest;
-import android.app.AlarmManager;
-import android.app.PendingIntent;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -10,14 +7,18 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.provider.Settings;
 import android.support.annotation.IdRes;
 import android.support.annotation.IntDef;
+import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.app.NotificationManagerCompat;
+import android.support.v4.util.ArrayMap;
 import android.support.v7.app.AlertDialog;
+import android.text.TextUtils;
 import android.util.SparseArray;
+import android.util.SparseIntArray;
+import android.util.SparseLongArray;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -35,11 +36,14 @@ import com.icourt.alpha.BuildConfig;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.base.BaseAppUpdateActivity;
+import com.icourt.alpha.constants.Const;
 import com.icourt.alpha.db.dbservice.ContactDbService;
 import com.icourt.alpha.entity.bean.AlphaUserInfo;
+import com.icourt.alpha.entity.bean.IMMessageCustomBody;
 import com.icourt.alpha.entity.bean.ItemsEntity;
 import com.icourt.alpha.entity.bean.ItemsEntityImp;
 import com.icourt.alpha.entity.bean.TimeEntity;
+import com.icourt.alpha.entity.event.ServerTimingEvent;
 import com.icourt.alpha.entity.event.TimingEvent;
 import com.icourt.alpha.entity.event.UnReadEvent;
 import com.icourt.alpha.fragment.TabCustomerFragment;
@@ -55,16 +59,27 @@ import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.interfaces.OnTabDoubleClickListener;
+import com.icourt.alpha.service.DaemonService;
+import com.icourt.alpha.utils.AppManager;
+import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.DensityUtil;
+import com.icourt.alpha.utils.LoginInfoUtils;
 import com.icourt.alpha.utils.SimpleViewGestureListener;
 import com.icourt.alpha.utils.SpUtils;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.view.CheckableLayout;
 import com.icourt.alpha.widget.manager.TimerManager;
+import com.icourt.alpha.widget.nim.GlobalMessageObserver;
 import com.icourt.alpha.widget.popupwindow.BaseListActionItemPop;
 import com.icourt.alpha.widget.popupwindow.ListActionItemPop;
-import com.icourt.alpha.service.DaemonService;
 import com.icourt.lib.daemon.IntentWrapper;
+import com.netease.nimlib.sdk.NIMClient;
+import com.netease.nimlib.sdk.NimIntent;
+import com.netease.nimlib.sdk.msg.MsgService;
+import com.netease.nimlib.sdk.msg.constant.MsgTypeEnum;
+import com.netease.nimlib.sdk.msg.model.IMMessage;
+import com.netease.nimlib.sdk.team.TeamService;
+import com.netease.nimlib.sdk.team.model.Team;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -75,6 +90,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -88,7 +104,7 @@ import retrofit2.Response;
 
 
 /**
- * Description
+ * Description  主页面
  * Company Beijing icourt
  * author  youxuan  E-mail:xuanyouwu@163.com
  * date createTime：2017/3/31
@@ -100,6 +116,8 @@ public class MainActivity extends BaseAppUpdateActivity
     public static String KEY_MINE_FRAGMENT = "type_TabMimeFragment_fragment";
     public static String KEY_PROJECT_PERMISSION = "cache_project_permission";
     public static String KEY_CUSTOMER_PERMISSION = "cache_customer_permission";
+
+    public static final String KEY_FROM_LOGIN = "FromLogin";
 
 
     public static final int TYPE_FRAGMENT_NEWS = 0;
@@ -165,6 +183,22 @@ public class MainActivity extends BaseAppUpdateActivity
         context.startActivity(intent);
     }
 
+    public static void launchFromLogin(Context context) {
+        if (context == null) return;
+        Intent intent = new Intent(context, MainActivity.class);
+        intent.putExtra(KEY_FROM_LOGIN, true);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        context.startActivity(intent);
+    }
+
+    public static void launchByNotifaction(Context context, IMMessage imMessage) {
+        if (context == null) return;
+        Intent intent = new Intent(context, MainActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        intent.putExtra(NimIntent.EXTRA_NOTIFY_CONTENT, imMessage);
+        context.startActivity(intent);
+    }
+
     Fragment currentFragment;
     final SparseArray<Fragment> fragmentSparseArray = new SparseArray<>();
     SimpleViewGestureListener.OnSimpleViewGestureListener onSimpleViewGestureListener = new SimpleViewGestureListener.OnSimpleViewGestureListener() {
@@ -183,10 +217,12 @@ public class MainActivity extends BaseAppUpdateActivity
             return super.onDoubleTap(v, e);
         }
     };
+    final ArrayMap<Long, Integer> serverTimingSyncTimesArray = new ArrayMap<>();
 
     class MyHandler extends Handler {
         public static final int TYPE_TOKEN_REFRESH = 101;//token刷新
         public static final int TYPE_CHECK_APP_UPDATE = 102;//检查更新
+        public static final int TYPE_CHECK_TIMING_UPDATE = 103;//检查计时
 
         /**
          * 刷新登陆token
@@ -204,6 +240,15 @@ public class MainActivity extends BaseAppUpdateActivity
             this.sendEmptyMessageDelayed(TYPE_CHECK_APP_UPDATE, 3_000);
         }
 
+
+        /**
+         * 检查计时
+         */
+        public void addCheckTimingTask() {
+            this.removeMessages(TYPE_CHECK_TIMING_UPDATE);
+            this.sendEmptyMessageDelayed(TYPE_CHECK_TIMING_UPDATE, 1_000);
+        }
+
         @Override
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
@@ -213,6 +258,9 @@ public class MainActivity extends BaseAppUpdateActivity
                     break;
                 case TYPE_CHECK_APP_UPDATE:
                     checkAppUpdate(getContext());
+                    break;
+                case TYPE_CHECK_TIMING_UPDATE:
+                    TimerManager.getInstance().timerQuerySync();
                     break;
             }
         }
@@ -229,7 +277,35 @@ public class MainActivity extends BaseAppUpdateActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
+        gotoChatByNotifaction();
         initView();
+    }
+
+    /**
+     * 点击通知栏跳转到对应的聊天页面
+     */
+    private void gotoChatByNotifaction() {
+        IMMessage imMessage = (IMMessage) getIntent().getSerializableExtra(NimIntent.EXTRA_NOTIFY_CONTENT);
+        if (imMessage != null) {
+            int totalUnReadCount = NIMClient.getService(MsgService.class).getTotalUnreadCount();
+            IMMessageCustomBody customBody = GlobalMessageObserver.getIMBody(imMessage);
+            if (customBody == null) return;
+            if (customBody.imMessage.getMsgType() == MsgTypeEnum.custom) {
+                AlphaSpecialHelperActivity.launch(this, customBody.imMessage.getSessionId(), totalUnReadCount);
+            } else {
+                switch (customBody.ope) {
+                    case Const.CHAT_TYPE_P2P:
+                        ChatActivity.launchP2P(this, customBody.from, customBody.name, 0, totalUnReadCount, true);
+                        break;
+                    case Const.CHAT_TYPE_TEAM:
+                        Team team = NIMClient.getService(TeamService.class)
+                                .queryTeamBlock(customBody.imMessage.getSessionId());
+                        if (team != null)
+                            ChatActivity.launchTEAM(this, customBody.imMessage.getSessionId(), team.getName(), 0, totalUnReadCount, true);
+                        break;
+                }
+            }
+        }
     }
 
     @Override
@@ -246,6 +322,7 @@ public class MainActivity extends BaseAppUpdateActivity
             mHandler.addCheckAppUpdateTask();
         }
         mHandler.addTokenRefreshTask();
+        mHandler.addCheckTimingTask();
     }
 
     private void initTabChangeableData() {
@@ -294,7 +371,7 @@ public class MainActivity extends BaseAppUpdateActivity
         super.onResume();
         checkNotificationisEnable();
         getPermission();
-        getTimering();
+        timerQuerySync();
     }
 
     /**
@@ -646,11 +723,79 @@ public class MainActivity extends BaseAppUpdateActivity
     }
 
 
+    /**
+     * 享聊未读消息
+     *
+     * @param event
+     */
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onUnReadEvent(UnReadEvent event) {
         if (event == null) return;
         int unReadNum = event.unReadCount;
         updateBadge(getTabNewsBadge(), unReadNum);
+    }
+
+
+    /**
+     * 获取本地唯一id
+     *
+     * @return
+     */
+    private String getlocalUniqueId() {
+        AlphaUserInfo loginUserInfo = LoginInfoUtils.getLoginUserInfo();
+        if (loginUserInfo != null) {
+            return loginUserInfo.localUniqueId;
+        }
+        return null;
+    }
+
+    /**
+     * //每分钟5次有效 避免死循环
+     *
+     * @return
+     */
+    private boolean isInterceptServerTimingEvent() {
+        long currSeconde = DateUtils.millis() / TimeUnit.MINUTES.toMillis(1);
+        Integer eventTimes = serverTimingSyncTimesArray.get(currSeconde);
+        if (eventTimes != null && eventTimes.intValue() > 5) {
+            return true;
+        }
+        serverTimingSyncTimesArray.put(currSeconde, eventTimes != null ? eventTimes.intValue() + 1 : 1);
+        return false;
+    }
+
+    /**
+     * 网络计时同步更新通知
+     *
+     * @param event
+     */
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onServerTimingEvent(ServerTimingEvent event) {
+        if (event == null) return;
+        if (TextUtils.equals(event.clientId, getlocalUniqueId())) return;
+        if (isInterceptServerTimingEvent()) return;
+
+        if (event.isSyncObject() && event.isSyncTimingType()) {
+            if (TextUtils.equals(event.scene, ServerTimingEvent.TIMING_SYNC_START)) {
+                TimerManager.getInstance().resumeTimer(event);
+            } else if (TextUtils.equals(event.scene, ServerTimingEvent.TIMING_SYNC_DELETE)) {
+                if (TimerManager.getInstance().isTimer(event.pkId)) {
+                    TimerManager.getInstance().clearTimer();
+                }
+            } else if (TextUtils.equals(event.scene, ServerTimingEvent.TIMING_SYNC_EDIT)) {
+                if (TimerManager.getInstance().isTimer(event.pkId)) {
+                    if (event.state == 1) {//已经完成
+                        TimerManager.getInstance().clearTimer();
+                    } else {
+                        TimerManager.getInstance().resumeTimer(event);
+                    }
+                } else {
+                    if (event.state == 0) {//计时中...
+                        TimerManager.getInstance().resumeTimer(event);
+                    }
+                }
+            }
+        }
     }
 
 
@@ -686,7 +831,10 @@ public class MainActivity extends BaseAppUpdateActivity
         }
     }
 
-    private void getTimering() {
+    /**
+     * 接口方式同步计时
+     */
+    private void timerQuerySync() {
         TimerManager.getInstance().timerQuerySync();
     }
 
@@ -701,6 +849,11 @@ public class MainActivity extends BaseAppUpdateActivity
     }
 
 
+    /**
+     * 本地计时状态通知
+     *
+     * @param event
+     */
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onTimerEvent(TimingEvent event) {
         if (event == null) return;
@@ -723,6 +876,7 @@ public class MainActivity extends BaseAppUpdateActivity
                 tabTimingTv.setText(toTime(event.timingSecond));
                 break;
             case TimingEvent.TIMING_STOP:
+                dismissTimingDialogFragment();
                 tabTimingTv.setText("开始计时");
                 tabTimingIcon.setImageResource(R.mipmap.ic_time_start);
                 tabTimingIcon.clearAnimation();
@@ -750,6 +904,12 @@ public class MainActivity extends BaseAppUpdateActivity
         return anim;
     }
 
+    /**
+     * 时间格式化 秒--->小时分钟
+     *
+     * @param times
+     * @return
+     */
     public String toTime(long times) {
         long hour = times / 3600;
         long minute = times % 3600 / 60;
@@ -757,6 +917,9 @@ public class MainActivity extends BaseAppUpdateActivity
         return String.format("%02d:%02d:%02d", hour, minute, second);
     }
 
+    /**
+     * 获取权限
+     */
     private void getPermission() {
         //联系人查看的权限
         getApi().permissionQuery(getLoginUserId(), "CON")
@@ -892,6 +1055,9 @@ public class MainActivity extends BaseAppUpdateActivity
         }
     }
 
+    /**
+     * 显示 计时的覆层
+     */
     private void showTimingDialogFragment() {
         if (isDestroyOrFinishing()) return;
         TimeEntity.ItemEntity timer = TimerManager.getInstance().getTimer();
@@ -904,6 +1070,17 @@ public class MainActivity extends BaseAppUpdateActivity
         }
         TimingNoticeDialogFragment.newInstance(timer)
                 .show(mFragTransaction, tag);
+    }
+
+    /**
+     * 关闭 计时的覆层
+     */
+    private void dismissTimingDialogFragment() {
+        String tag = TimingNoticeDialogFragment.class.getSimpleName();
+        Fragment fragment = getSupportFragmentManager().findFragmentByTag(tag);
+        if (fragment instanceof DialogFragment) {
+            ((DialogFragment) fragment).dismissAllowingStateLoss();
+        }
     }
 
     @Override

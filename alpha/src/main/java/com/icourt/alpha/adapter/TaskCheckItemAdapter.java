@@ -1,11 +1,22 @@
 package com.icourt.alpha.adapter;
 
+import android.app.Activity;
+import android.text.Spannable;
+import android.text.SpannableString;
+import android.text.TextUtils;
+import android.text.method.LinkMovementMethod;
+import android.text.util.Linkify;
+import android.view.KeyEvent;
+import android.view.View;
+import android.view.inputmethod.EditorInfo;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.baseadapter.MultiSelectRecyclerAdapter;
 import com.icourt.alpha.entity.bean.TaskCheckItemEntity;
+import com.icourt.alpha.utils.SystemUtils;
 
 /**
  * Description
@@ -17,15 +28,21 @@ import com.icourt.alpha.entity.bean.TaskCheckItemEntity;
 
 public class TaskCheckItemAdapter extends MultiSelectRecyclerAdapter<TaskCheckItemEntity.ItemEntity> {
 
+    OnLoseFocusListener onLoseFocusListener;
+
+    public void setOnLoseFocusListener(OnLoseFocusListener onLoseFocusListener) {
+        this.onLoseFocusListener = onLoseFocusListener;
+    }
+
     @Override
     public int bindView(int viewtype) {
         return R.layout.adapter_item_task_check_layout;
     }
 
     @Override
-    public void onBindSelectableHolder(ViewHolder holder, TaskCheckItemEntity.ItemEntity itemEntity, boolean selected, int position) {
+    public void onBindSelectableHolder(final ViewHolder holder, final TaskCheckItemEntity.ItemEntity itemEntity, boolean selected, final int position) {
         ImageView checkedTextView = holder.obtainView(R.id.check_item_checktext_tv);
-        TextView nameView = holder.obtainView(R.id.check_item_name_tv);
+        final EditText nameView = holder.obtainView(R.id.check_item_name_tv);
         ImageView deleteView = holder.obtainView(R.id.check_item_delete_image);
         if (itemEntity.state) {
             checkedTextView.setImageResource(R.mipmap.checkbox_square_checked_highlight);
@@ -34,10 +51,44 @@ public class TaskCheckItemAdapter extends MultiSelectRecyclerAdapter<TaskCheckIt
             checkedTextView.setImageResource(R.mipmap.checkbox_square);
             nameView.setTextColor(0xFF4A4A4A);
         }
+        nameView.setMovementMethod(LinkMovementMethod.getInstance());
+        Spannable spannable = new SpannableString(itemEntity.name);
+        Linkify.addLinks(spannable, Linkify.WEB_URLS);
 
-        nameView.setText(itemEntity.name);
-//        SpannableUtils.setCommentUrlView(nameView,itemEntity.name);  //检查项支持链接
+        final CharSequence text = TextUtils.concat(spannable, "\u200B");
+        nameView.setText(text);
         holder.bindChildClick(checkedTextView);
         holder.bindChildClick(deleteView);
+        nameView.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View view, boolean hasFocus) {
+                if (!hasFocus) {
+                    if (onLoseFocusListener != null) {
+                        onLoseFocusListener.loseFocus(holder, position);
+                    }
+                }
+            }
+        });
+        //屏蔽回车键 回车键表示完成
+        nameView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent) {
+                if (keyEvent.getKeyCode() == KeyEvent.KEYCODE_ENTER) {
+                    holder.itemView.setFocusable(true);
+                    holder.itemView.setFocusableInTouchMode(true);
+                    holder.itemView.requestFocus();//请求焦点
+                    holder.itemView.findFocus();//获取焦点
+                    SystemUtils.hideSoftKeyBoard(textView.getContext(), textView);
+                    return true;
+                }
+                return false;
+            }
+        });
     }
+
+
+    public interface OnLoseFocusListener {
+        void loseFocus(ViewHolder holder, int position);
+    }
+
 }

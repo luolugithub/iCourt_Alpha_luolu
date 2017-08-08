@@ -24,11 +24,12 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
+import com.icourt.alpha.base.BaseDialogFragment;
+import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.icourt.alpha.entity.bean.ProjectEntity;
 import com.icourt.alpha.entity.bean.TaskEntity;
 import com.icourt.alpha.entity.bean.TimeEntity;
 import com.icourt.alpha.entity.bean.WorkType;
-import com.icourt.alpha.base.BaseDialogFragment;
 import com.icourt.alpha.fragment.dialogfragment.CalendaerSelectDialogFragment;
 import com.icourt.alpha.fragment.dialogfragment.ProjectSimpleSelectDialogFragment;
 import com.icourt.alpha.fragment.dialogfragment.TaskSelectDialogFragment;
@@ -175,17 +176,19 @@ public class TimerDetailActivity extends BaseTimerActivity
 
         if (itemEntity != null) {
             selectedStartDate = Calendar.getInstance();
+            selectedStartDate.clear();
             selectedStartDate.setTimeInMillis(itemEntity.startTime);
-            useTimeDate.setText(DateUtils.getTimeDateFormatYear(selectedStartDate.getTime().getTime()));
-            startTimeMinTv.setText(DateUtils.getHHmm(selectedStartDate.getTime().getTime()));
+            useTimeDate.setText(DateUtils.getTimeDateFormatYear(selectedStartDate.getTimeInMillis()));
+            startTimeMinTv.setText(DateUtils.getHHmm(selectedStartDate.getTimeInMillis()));
 
             //避免服务器小于1分钟
             if (itemEntity.endTime - itemEntity.startTime < TimeUnit.MINUTES.toMillis(1)) {
                 itemEntity.endTime = itemEntity.startTime + TimeUnit.MINUTES.toMillis(1);
             }
             selectedEndDate = Calendar.getInstance();
+            selectedEndDate.clear();
             selectedEndDate.setTimeInMillis(itemEntity.endTime);
-            stopTimeMinTv.setText(DateUtils.getHHmm(selectedEndDate.getTime().getTime()));
+            stopTimeMinTv.setText(DateUtils.getHHmm(selectedEndDate.getTimeInMillis()));
 
             timeNameTv.setText(itemEntity.name);
             if (!TextUtils.isEmpty(timeNameTv.getText())) {
@@ -294,16 +297,18 @@ public class TimerDetailActivity extends BaseTimerActivity
                 }
                 break;
             case R.id.worktype_layout://工作类型
-                if (TextUtils.isEmpty(itemEntity.matterPkId)) {
-                    showTopSnackBar("请选择项目");
-                    return;
-                }
+                //计时选择工作类别不需要判断是否选择项目    2017.8.1修改
+//                if (TextUtils.isEmpty(itemEntity.matterPkId)) {
+//                    showTopSnackBar("请选择项目");
+//                    return;
+//                }
                 showWorkTypeSelectDialogFragment(itemEntity.matterPkId, itemEntity.workTypeId);
                 break;
             case R.id.task_layout://关联任务
                 showTaskSelectDialogFragment(itemEntity.matterPkId, itemEntity.taskPkId);
                 break;
         }
+
     }
 
     /**
@@ -403,8 +408,10 @@ public class TimerDetailActivity extends BaseTimerActivity
         if (selectedStartDate == null) return;
         if (selectedEndDate == null) return;
         long one_minutes_millis = TimeUnit.MINUTES.toMillis(1);
-        long rangeTime = (selectedEndDate.getTimeInMillis() / one_minutes_millis * one_minutes_millis - selectedStartDate.getTimeInMillis() / one_minutes_millis * one_minutes_millis);
-        circleTimerView.setCurrentTime((int) (rangeTime / 1000));
+        long rangeTime = (selectedEndDate.getTimeInMillis() / one_minutes_millis * one_minutes_millis
+                - selectedStartDate.getTimeInMillis() / one_minutes_millis * one_minutes_millis);
+        int time = (int) (rangeTime / 1000);
+        circleTimerView.setCurrentTime(time);
     }
 
     @Override
@@ -419,8 +426,8 @@ public class TimerDetailActivity extends BaseTimerActivity
 
     @Override
     protected void onPause() {
-        super.onPause();
         saveTiming();
+        super.onPause();
     }
 
     private void saveTiming() {
@@ -452,6 +459,14 @@ public class TimerDetailActivity extends BaseTimerActivity
             if (jsonBody.has("workTypeName")) {
                 jsonBody.remove("workTypeName");
             }
+            AlphaUserInfo loginUserInfo = getLoginUserInfo();
+            String clientId = "";
+            if (loginUserInfo != null) {
+                clientId = loginUserInfo.localUniqueId;
+            }
+            jsonBody.addProperty("clientId", clientId);
+            jsonBody.addProperty("taskPkId", itemEntity.taskPkId);
+            jsonBody.addProperty("workTypeId", itemEntity.workTypeId);
             getApi().timingUpdate(RequestUtils.createJsonBody(jsonBody.toString()))
                     .enqueue(new SimpleCallBack<JsonElement>() {
                         @Override
@@ -480,8 +495,8 @@ public class TimerDetailActivity extends BaseTimerActivity
                 if (item.matter != null) {
                     ProjectEntity projectEntity = item.matter.convert2Model();
                     if (!StringUtils.equalsIgnoreCase(itemEntity.matterPkId, projectEntity.pkId, false)) {
-                        itemEntity.workTypeId = null;
-                        itemEntity.workTypeName = null;
+                        itemEntity.workTypeId = "";
+                        itemEntity.workTypeName = "";
                         worktypeNameTv.setText("未选择");
                     }
                     itemEntity.matterPkId = projectEntity.pkId;
@@ -513,8 +528,10 @@ public class TimerDetailActivity extends BaseTimerActivity
             if (serializable instanceof ProjectEntity) {
                 ProjectEntity projectEntity = (ProjectEntity) serializable;
                 if (!TextUtils.equals(this.itemEntity.pkId, projectEntity.pkId)) {
-                    this.itemEntity.taskPkId = null;
-                    this.itemEntity.workTypeId = null;
+                    itemEntity.taskPkId = "";
+                    itemEntity.taskName = "";
+                    itemEntity.workTypeId = "";
+                    itemEntity.workTypeName = "";
                     worktypeNameTv.setText("未选择");
                     taskNameTv.setText("未关联");
                 }
@@ -524,5 +541,6 @@ public class TimerDetailActivity extends BaseTimerActivity
             }
 
         }
+        saveTiming();
     }
 }

@@ -38,7 +38,7 @@ public class TimeEntity implements Serializable {
         public String pkId;
         public String name;
         public String matterPkId;
-        public String taskPkId;
+        public String taskPkId = "";
         public long startTime;//计时的起始点
         public long endTime;
         public long useTime;
@@ -47,7 +47,7 @@ public class TimeEntity implements Serializable {
         public long createTime;
         public long workDate;
         public int state;//计时的状态 0 正在计时  1 暂停就是结束状态
-        public String workTypeId;
+        public String workTypeId = "";
         public String officeId;
         public String matterName;
         public int timingCount;

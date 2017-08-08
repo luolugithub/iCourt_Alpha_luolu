@@ -40,6 +40,7 @@ import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.ItemDecorationUtils;
+import com.icourt.alpha.utils.LogUtils;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 import com.icourt.alpha.widget.manager.TimerManager;
 import com.icourt.api.RequestUtils;
@@ -146,6 +147,9 @@ public class ProjectTaskFragment extends BaseFragment implements TaskAdapter.OnS
     @Override
     public void onResume() {
         super.onResume();
+        if (!EventBus.getDefault().isRegistered(this)) {
+            EventBus.getDefault().register(this);
+        }
         refreshLayout.startRefresh();
     }
 
@@ -211,7 +215,17 @@ public class ProjectTaskFragment extends BaseFragment implements TaskAdapter.OnS
             enableEmptyView(taskEntity.items);
             if (taskEntity.items != null) {
                 List<TaskEntity.TaskItemEntity> noitems = new ArrayList<>();//未分组
+                TimeEntity.ItemEntity timerEntity = TimerManager.getInstance().getTimer();
                 for (TaskEntity.TaskItemEntity taskItemEntity : taskEntity.items) {
+                    if (TimerManager.getInstance().hasTimer()) {
+                        if (timerEntity != null) {
+                            if (!TextUtils.isEmpty(timerEntity.taskPkId)) {
+                                if (TextUtils.equals(timerEntity.taskPkId, taskItemEntity.id)) {
+                                    taskItemEntity.isTiming = true;
+                                }
+                            }
+                        }
+                    }
                     if (taskItemEntity.type == 1) {
                         TaskEntity itemEntity = new TaskEntity();
                         itemEntity.groupName = taskItemEntity.name;
@@ -230,16 +244,22 @@ public class ProjectTaskFragment extends BaseFragment implements TaskAdapter.OnS
                 }
 
                 if (allTaskEntities != null) {
-                    for (TaskEntity allTaskEntity : allTaskEntities) {
-                        if (taskEntities != null) {
-                            List<TaskEntity.TaskItemEntity> items = new ArrayList<>();//有分组
-                            for (TaskEntity.TaskItemEntity entity : taskEntities) {
-                                if (TextUtils.equals(allTaskEntity.groupId, entity.parentId)) {
-                                    items.add(entity);
+                    if (allTaskEntities.size() > 0) {
+                        for (TaskEntity allTaskEntity : allTaskEntities) {
+                            if (taskEntities != null) {
+                                List<TaskEntity.TaskItemEntity> items = new ArrayList<>();//有分组
+                                for (TaskEntity.TaskItemEntity entity : taskEntities) {
+                                    if (TextUtils.equals(allTaskEntity.groupId, entity.parentId)) {
+                                        items.add(entity);
+                                    }
                                 }
+                                allTaskEntity.items = items;
+                                allTaskEntity.groupTaskCount = items.size();
                             }
-                            allTaskEntity.items = items;
-                            allTaskEntity.groupTaskCount = items.size();
+                        }
+                    } else {
+                        if (taskEntities != null && !taskEntities.isEmpty()) {
+                            noitems.addAll(taskEntities);
                         }
                     }
                     if (noitems.size() > 0) {
@@ -315,6 +335,7 @@ public class ProjectTaskFragment extends BaseFragment implements TaskAdapter.OnS
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onTimerEvent(TimingEvent event) {
         if (event == null) return;
+
         switch (event.action) {
             case TimingEvent.TIMING_ADD:
 
@@ -322,12 +343,19 @@ public class ProjectTaskFragment extends BaseFragment implements TaskAdapter.OnS
             case TimingEvent.TIMING_UPDATE_PROGRESS:
                 TimeEntity.ItemEntity updateItem = TimerManager.getInstance().getTimer();
                 if (updateItem != null) {
-                    updateChildTimeing(updateItem.taskPkId, false);
+                    updateChildTimeing(updateItem.taskPkId, true);
                 }
                 break;
             case TimingEvent.TIMING_STOP:
-                if (lastEntity != null) {
-                    lastEntity.isTiming = false;
+                if (taskAdapter != null && lastEntity != null) {
+                    for (TaskEntity entity : taskAdapter.getData()) {
+                        for (TaskEntity.TaskItemEntity item : entity.items) {
+                            if (TextUtils.equals(lastEntity.id, item.id)) {
+                                item.isTiming = false;
+                                LogUtils.e("TimingEvent.TIMING_STOP =========");
+                            }
+                        }
+                    }
                     taskAdapter.notifyDataSetChanged();
                 }
                 break;
@@ -466,6 +494,7 @@ public class ProjectTaskFragment extends BaseFragment implements TaskAdapter.OnS
         if (dueTime <= 0) {
             calendar.set(Calendar.HOUR_OF_DAY, 23);
             calendar.set(Calendar.MINUTE, 59);
+            calendar.set(Calendar.SECOND, 59);
         } else {
             calendar.setTimeInMillis(dueTime);
         }
@@ -507,23 +536,33 @@ public class ProjectTaskFragment extends BaseFragment implements TaskAdapter.OnS
                 if (updateTaskItemEntity.attendeeUsers != null) {
                     updateTaskItemEntity.attendeeUsers.clear();
                     updateTaskItemEntity.attendeeUsers.addAll(attusers);
-                    updateTask(updateTaskItemEntity, null, null);
+                    updateTask(updateTaskItemEntity, null, null, null);
                 }
             } else if (fragment instanceof DateSelectDialogFragment) {
                 long millis = params.getLong(KEY_FRAGMENT_RESULT);
                 updateTaskItemEntity.dueTime = millis;
-                updateTask(updateTaskItemEntity, null, null);
-
                 TaskReminderEntity taskReminderEntity = (TaskReminderEntity) params.getSerializable("taskReminder");
-                addReminders(updateTaskItemEntity, taskReminderEntity);
+                updateTask(updateTaskItemEntity, null, null, taskReminderEntity);
+
             }
         }
     }
 
+    //切换项目之后，任务组id和负责人列表都需要清空
     @Override
     public void onProjectTaskGroupSelect(ProjectEntity projectEntity, TaskGroupEntity taskGroupEntity) {
-
-        updateTask(updateTaskItemEntity, projectEntity, taskGroupEntity);
+        if (projectEntity != null) {
+            if (updateTaskItemEntity != null) {
+                if (updateTaskItemEntity.attendeeUsers != null) {
+                    updateTaskItemEntity.attendeeUsers.clear();
+                }
+            }
+        }
+        if (taskGroupEntity == null) {
+            taskGroupEntity = new TaskGroupEntity();
+            taskGroupEntity.id = "";
+        }
+        updateTask(updateTaskItemEntity, projectEntity, taskGroupEntity, null);
     }
 
     /**
@@ -531,12 +570,15 @@ public class ProjectTaskFragment extends BaseFragment implements TaskAdapter.OnS
      *
      * @param itemEntity
      */
-    private void updateTask(TaskEntity.TaskItemEntity itemEntity, ProjectEntity projectEntity, TaskGroupEntity taskGroupEntity) {
+    private void updateTask(final TaskEntity.TaskItemEntity itemEntity, ProjectEntity projectEntity, TaskGroupEntity taskGroupEntity, final TaskReminderEntity taskReminderEntity) {
         showLoadingDialog(null);
         getApi().taskUpdate(RequestUtils.createJsonBody(getTaskJson(itemEntity, projectEntity, taskGroupEntity))).enqueue(new SimpleCallBack<JsonElement>() {
             @Override
             public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
                 dismissLoadingDialog();
+                if (itemEntity != null && taskReminderEntity != null) {
+                    addReminders(updateTaskItemEntity, taskReminderEntity);
+                }
                 refreshLayout.startRefresh();
             }
 
@@ -569,6 +611,8 @@ public class ProjectTaskFragment extends BaseFragment implements TaskAdapter.OnS
             }
             if (taskGroupEntity != null) {
                 jsonObject.addProperty("parentId", taskGroupEntity.id);
+            } else {
+                jsonObject.addProperty("parentId", itemEntity.parentId);
             }
             JsonArray jsonarr = new JsonArray();
             if (itemEntity.attendeeUsers != null) {

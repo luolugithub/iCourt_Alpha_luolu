@@ -315,7 +315,7 @@ public class TaskCreateActivity extends BaseActivity implements ProjectSelectDia
                         layoutManager.setOrientation(LinearLayoutManager.HORIZONTAL);
                         layoutManager.setReverseLayout(true);
                         taskOwerRecyclerview.setLayoutManager(layoutManager);
-                        taskOwerRecyclerview.setAdapter(usersAdapter = new TaskUsersAdapter());
+                        taskOwerRecyclerview.setAdapter(usersAdapter = new TaskUsersAdapter(this));
                         usersAdapter.setOnItemClickListener(this);
                         usersAdapter.bindData(false, attendeeUserEntities);
                     }

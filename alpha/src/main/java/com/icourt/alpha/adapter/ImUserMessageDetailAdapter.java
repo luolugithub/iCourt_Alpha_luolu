@@ -246,7 +246,7 @@ public class ImUserMessageDetailAdapter extends BaseArrayRecyclerAdapter<IMMessa
                 IMMessageCustomBody item = getItem(getRealPos(position));
                 if (item != null && item.ext != null) {
                     ImagePagerActivity.launch(view.getContext(),
-                            new String[]{item.ext.thumb});
+                            new String[]{item.ext.thumb}, 0, item.id);
                 }
                 break;
         }

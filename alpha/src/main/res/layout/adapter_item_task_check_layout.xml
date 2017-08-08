@@ -8,6 +8,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
+        android:gravity="center_vertical"
         android:padding="@dimen/dp15">
 
         <ImageView
@@ -16,13 +17,17 @@
             android:layout_height="20dp"
             android:background="@mipmap/checkbox_square" />
 
-        <TextView
+        <EditText
             android:id="@+id/check_item_name_tv"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginLeft="12dp"
             android:layout_weight="1"
+            android:autoLink="web"
+            android:textColorLink="#ed6c00"
+            android:background="@null"
             android:text="1111"
+            android:imeOptions="actionNone"
             android:textColor="@color/alpha_font_color_black"
             android:textSize="15sp" />
 

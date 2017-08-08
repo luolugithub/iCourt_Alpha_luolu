@@ -17,9 +17,12 @@ import android.widget.TextView;
 import com.icourt.alpha.R;
 import com.icourt.alpha.activity.TimerTimingActivity;
 import com.icourt.alpha.base.BaseDialogFragment;
+import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.icourt.alpha.entity.bean.TimeEntity;
+import com.icourt.alpha.entity.event.ServerTimingEvent;
 import com.icourt.alpha.entity.event.TimingEvent;
 import com.icourt.alpha.utils.DensityUtil;
+import com.icourt.alpha.utils.LoginInfoUtils;
 import com.icourt.alpha.view.fittextview.AutofitTextView;
 import com.icourt.alpha.widget.manager.TimerManager;
 
@@ -100,6 +103,9 @@ public class TimingNoticeDialogFragment extends BaseDialogFragment {
             itemEntity = (TimeEntity.ItemEntity) data;
             noticeTimingTitleTv.setText(TextUtils.isEmpty(itemEntity.name) ? "未录入工作描述" : itemEntity.name);
         }
+        if (TimerManager.getInstance().hasTimer()) {
+            noticeTimingTv.setText(toTime(TimerManager.getInstance().getTimingSeconds()));
+        }
         EventBus.getDefault().register(this);
     }
 
@@ -112,6 +118,35 @@ public class TimingNoticeDialogFragment extends BaseDialogFragment {
             case TimingEvent.TIMING_UPDATE_PROGRESS:
                 noticeTimingTv.setText(toTime(event.timingSecond));
                 break;
+        }
+    }
+
+    /**
+     * 获取本地唯一id
+     *
+     * @return
+     */
+    private String getlocalUniqueId() {
+        AlphaUserInfo loginUserInfo = LoginInfoUtils.getLoginUserInfo();
+        if (loginUserInfo != null) {
+            return loginUserInfo.localUniqueId;
+        }
+        return null;
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onServerTimingEvent(ServerTimingEvent event) {
+        if (event == null) return;
+        if (TextUtils.equals(event.clientId, getlocalUniqueId())) return;
+        if (event.isSyncObject() && event.isSyncTimingType()) {
+            //信息更新发生变化
+            if (TextUtils.equals(event.scene, ServerTimingEvent.TIMING_SYNC_EDIT)) {
+                if (TimerManager.getInstance().isTimer(event.pkId)) {
+                    if (noticeTimingTitleTv != null) {
+                        noticeTimingTitleTv.setText(TextUtils.isEmpty(event.name) ? "未录入工作描述" : event.name);
+                    }
+                }
+            }
         }
     }
 

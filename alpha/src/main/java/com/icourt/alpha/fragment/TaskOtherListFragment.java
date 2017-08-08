@@ -22,7 +22,9 @@ import com.google.gson.JsonObject;
 import com.icourt.alpha.R;
 import com.icourt.alpha.activity.TaskDetailActivity;
 import com.icourt.alpha.activity.TimerTimingActivity;
+import com.icourt.alpha.adapter.TaskAdapter;
 import com.icourt.alpha.adapter.TaskItemAdapter;
+import com.icourt.alpha.adapter.baseadapter.BaseArrayRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.adapterObserver.RefreshViewEmptyObserver;
 import com.icourt.alpha.base.BaseFragment;
@@ -32,9 +34,7 @@ import com.icourt.alpha.entity.event.TaskActionEvent;
 import com.icourt.alpha.entity.event.TimingEvent;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
-import com.icourt.alpha.utils.ActionConstants;
 import com.icourt.alpha.utils.DateUtils;
-import com.icourt.alpha.utils.LogUtils;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 import com.icourt.alpha.widget.manager.TimerManager;
 import com.icourt.api.RequestUtils;
@@ -51,6 +51,12 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
+import io.reactivex.Observable;
+import io.reactivex.ObservableEmitter;
+import io.reactivex.ObservableOnSubscribe;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.functions.Consumer;
+import io.reactivex.schedulers.Schedulers;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -70,16 +76,29 @@ public class TaskOtherListFragment extends BaseFragment implements BaseRecyclerA
 
     public static final int UNFINISH_TYPE = 1;//未完成
     public static final int FINISH_TYPE = 2;//已完成
+
+    public static final int TASK_TODAY_TYPE = 1;//今天任务
+    public static final int TASK_BEABOUT_TYPE = 2;//即将到期任务
+    public static final int TASK_FUTURE_TYPE = 3;//未来任务
+    public static final int TASK_NODUE_TYPE = 4;//未指定到期任务
+    public static final int TASK_DATED_TYPE = 5;//已过期任务
+
     Unbinder unbinder;
     @BindView(R.id.recyclerView)
     RecyclerView recyclerView;
     @BindView(R.id.refreshLayout)
     RefreshLayout refreshLayout;
 
+    List<TaskEntity> allTaskEntities = new ArrayList<>();
+    List<TaskEntity.TaskItemEntity> todayTaskEntities = new ArrayList<>();//今天到期
+    List<TaskEntity.TaskItemEntity> beAboutToTaskEntities = new ArrayList<>();//即将到期
+    List<TaskEntity.TaskItemEntity> futureTaskEntities = new ArrayList<>();//未来
+    List<TaskEntity.TaskItemEntity> noDueTaskEntities = new ArrayList<>();//为指定到期
+    List<TaskEntity.TaskItemEntity> datedTaskEntities = new ArrayList<>();//已过期
     int startType, finishType;
     ArrayList<String> ids;
     private int pageIndex = 1;
-    TaskItemAdapter taskItemAdapter;
+    TaskAdapter taskAdapter;
 
     @IntDef({UNFINISH_TYPE,
             FINISH_TYPE})
@@ -123,10 +142,9 @@ public class TaskOtherListFragment extends BaseFragment implements BaseRecyclerA
         refreshLayout.setMoveForHorizontal(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setHasFixedSize(true);
-        recyclerView.setAdapter(taskItemAdapter = new TaskItemAdapter());
-        taskItemAdapter.setOnItemClickListener(this);
-        taskItemAdapter.setOnItemChildClickListener(this);
-        taskItemAdapter.registerAdapterDataObserver(new RefreshViewEmptyObserver(refreshLayout, taskItemAdapter));
+        recyclerView.setAdapter(taskAdapter = new TaskAdapter());
+        taskAdapter.registerAdapterDataObserver(new RefreshViewEmptyObserver(refreshLayout, taskAdapter));
+
         refreshLayout.setXRefreshViewListener(new XRefreshView.SimpleXRefreshListener() {
             @Override
             public void onRefresh(boolean isPullDown) {
@@ -152,7 +170,6 @@ public class TaskOtherListFragment extends BaseFragment implements BaseRecyclerA
                 getMyAllotTask(isRefresh);
                 break;
             case SELECT_OTHER_TYPE:
-//                getSelectOtherTask(isRefresh);
                 getMyAllotTask(isRefresh);
                 break;
         }
@@ -176,14 +193,14 @@ public class TaskOtherListFragment extends BaseFragment implements BaseRecyclerA
 
     /**
      * 获取我分配的任务
-     *
+     * <p>
      * assignedByMe：接口有可能会传该参数，该接口已修改无数遍 fuck
      */
     private void getMyAllotTask(final boolean isRefresh) {
         if (isRefresh) {
             pageIndex = 1;
         }
-        int assignedByMe = 0, stateType = 0;
+        int assignedByMe = 0, stateType = 0, pageSize = 0;
         if (startType == MY_ALLOT_TYPE) {
             assignedByMe = 0;
         } else if (startType == SELECT_OTHER_TYPE) {
@@ -197,17 +214,17 @@ public class TaskOtherListFragment extends BaseFragment implements BaseRecyclerA
             stateType = 0;
             orderBy = "dueTime";
         }
-        getApi().taskListItemQuery(getAssignTos(), stateType, 0, orderBy, pageIndex, ActionConstants.DEFAULT_PAGE_SIZE, 0).enqueue(new SimpleCallBack<TaskEntity>() {
+        pageIndex = -1;
+        pageSize = 10000;
+        clearLists();
+        getApi().taskListItemQuery(getAssignTos(), stateType, 0, orderBy, pageIndex, pageSize, 0).enqueue(new SimpleCallBack<TaskEntity>() {
             @Override
             public void onSuccess(Call<ResEntity<TaskEntity>> call, Response<ResEntity<TaskEntity>> response) {
                 if (response.body().result != null) {
-                    taskItemAdapter.bindData(isRefresh, response.body().result.items);
-                    TimerManager.getInstance().timerQuerySync();
+                    getTaskGroupData(response.body().result);
                     if (isRefresh)
                         enableEmptyView(response.body().result.items);
                     stopRefresh();
-                    pageIndex += 1;
-                    enableLoadMore(response.body().result.items);
                 }
             }
 
@@ -220,12 +237,113 @@ public class TaskOtherListFragment extends BaseFragment implements BaseRecyclerA
     }
 
     /**
-     * 获取其他人的任务
+     * 对接口返回数据进行分组(今天、即将到期、未来、未指定日期)
+     *
+     * @param taskEntity
      */
-    private void getSelectOtherTask(boolean isRefresh) {
-        if (isRefresh) {
-            pageIndex = 1;
+    private void getTaskGroupData(final TaskEntity taskEntity) {
+        if (taskEntity == null) return;
+        if (taskEntity.items == null) return;
+        Observable.create(new ObservableOnSubscribe<List<TaskEntity>>() {
+            @Override
+            public void subscribe(ObservableEmitter<List<TaskEntity>> e) throws Exception {
+                if (e.isDisposed()) return;
+                groupingByTasks(taskEntity.items);
+                addDataToAllTask();
+                e.onNext(allTaskEntities);
+                e.onComplete();
+            }
+        }).compose(this.<List<TaskEntity>>bindToLifecycle())
+                .subscribeOn(Schedulers.newThread())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Consumer<List<TaskEntity>>() {
+                    @Override
+                    public void accept(List<TaskEntity> searchPolymerizationEntities) throws Exception {
+                        taskAdapter.bindData(true, allTaskEntities);
+                    }
+                });
+    }
+
+    /**
+     * 分组
+     *
+     * @param taskItemEntities
+     */
+    private void groupingByTasks(List<TaskEntity.TaskItemEntity> taskItemEntities) {
+        for (TaskEntity.TaskItemEntity taskItemEntity : taskItemEntities) {
+            if (taskItemEntity.dueTime > 0) {
+                if (TextUtils.equals(DateUtils.getTimeDateFormatYear(taskItemEntity.dueTime), DateUtils.getTimeDateFormatYear(DateUtils.millis())) || DateUtils.getDayDiff(DateUtils.millis(), taskItemEntity.dueTime) < 0) {
+                    todayTaskEntities.add(taskItemEntity);
+                } else if (DateUtils.getDayDiff(DateUtils.millis(), taskItemEntity.dueTime) <= 3 && DateUtils.getDayDiff(DateUtils.millis(), taskItemEntity.dueTime) > 0) {
+                    beAboutToTaskEntities.add(taskItemEntity);
+                } else if (DateUtils.getDayDiff(DateUtils.millis(), taskItemEntity.dueTime) > 3) {
+                    futureTaskEntities.add(taskItemEntity);
+                } else {
+                    datedTaskEntities.add(taskItemEntity);
+                }
+            } else {
+                noDueTaskEntities.add(taskItemEntity);
+            }
         }
+    }
+
+    /**
+     * 分组内容添加到allTaskEntities
+     */
+    private void addDataToAllTask() {
+        if (datedTaskEntities.size() > 0) {
+            TaskEntity todayTask = new TaskEntity();
+            todayTask.items = datedTaskEntities;
+            todayTask.groupName = "已到期";
+            todayTask.groupTaskCount = datedTaskEntities.size();
+            allTaskEntities.add(todayTask);
+        }
+        if (todayTaskEntities.size() > 0) {
+            TaskEntity todayTask = new TaskEntity();
+            todayTask.items = todayTaskEntities;
+            todayTask.groupName = "今天到期";
+            todayTask.groupTaskCount = todayTaskEntities.size();
+            allTaskEntities.add(todayTask);
+        }
+
+        if (beAboutToTaskEntities.size() > 0) {
+            TaskEntity task = new TaskEntity();
+            task.items = beAboutToTaskEntities;
+            task.groupName = "即将到期";
+            task.groupTaskCount = beAboutToTaskEntities.size();
+            allTaskEntities.add(task);
+        }
+
+        if (futureTaskEntities.size() > 0) {
+            TaskEntity task = new TaskEntity();
+            task.items = futureTaskEntities;
+            task.groupName = "未来";
+            task.groupTaskCount = futureTaskEntities.size();
+            allTaskEntities.add(task);
+        }
+
+        if (noDueTaskEntities.size() > 0) {
+            TaskEntity task = new TaskEntity();
+            task.items = noDueTaskEntities;
+            task.groupName = "未指定到期日";
+            task.groupTaskCount = noDueTaskEntities.size();
+            allTaskEntities.add(task);
+        }
+    }
+
+    private void clearLists() {
+        if (allTaskEntities != null)
+            allTaskEntities.clear();
+        if (datedTaskEntities != null)
+            datedTaskEntities.clear();
+        if (todayTaskEntities != null)
+            todayTaskEntities.clear();
+        if (beAboutToTaskEntities != null)
+            beAboutToTaskEntities.clear();
+        if (futureTaskEntities != null)
+            futureTaskEntities.clear();
+        if (noDueTaskEntities != null)
+            noDueTaskEntities.clear();
     }
 
     @Override
@@ -292,13 +410,6 @@ public class TaskOtherListFragment extends BaseFragment implements BaseRecyclerA
                     refreshLayout.enableEmptyView(true);
                 }
             }
-        }
-    }
-
-    private void enableLoadMore(List result) {
-        if (refreshLayout != null) {
-            refreshLayout.setPullLoadEnable(result != null
-                    && result.size() >= ActionConstants.DEFAULT_PAGE_SIZE);
         }
     }
 
@@ -419,29 +530,6 @@ public class TaskOtherListFragment extends BaseFragment implements BaseRecyclerA
         }
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onUpdateTaskEvent(TaskActionEvent event) {
-        if (event == null) return;
-        if (event.action == TaskActionEvent.TASK_UPDATE_DESC_ACTION) {
-            TaskEntity.TaskItemEntity item = event.entity;
-            LogUtils.e("finishType ---  " + finishType);
-            LogUtils.e("item.state ---  " + item.state);
-            if (finishType == FINISH_TYPE) {
-                if (item.state) {
-                    taskItemAdapter.addItem(item);
-                } else {
-                    taskItemAdapter.removeItem(item);
-                }
-            } else if (finishType == UNFINISH_TYPE) {
-                if (!item.state) {
-                    taskItemAdapter.addItem(item);
-                } else {
-                    taskItemAdapter.removeItem(item);
-                }
-            }
-        }
-    }
-
     /**
      * 计时事件
      *
@@ -457,14 +545,13 @@ public class TaskOtherListFragment extends BaseFragment implements BaseRecyclerA
             case TimingEvent.TIMING_UPDATE_PROGRESS:
                 TimeEntity.ItemEntity updateItem = TimerManager.getInstance().getTimer();
                 if (updateItem != null) {
-                    getChildPositon(updateItem.taskPkId);
-                    updateChildTimeing(updateItem.taskPkId, true);
+                    updateUnFinishChildTimeing(updateItem.taskPkId, true);
                 }
                 break;
             case TimingEvent.TIMING_STOP:
                 if (lastEntity != null) {
                     lastEntity.isTiming = false;
-                    taskItemAdapter.notifyDataSetChanged();
+                    taskAdapter.notifyDataSetChanged();
                 }
                 break;
         }
@@ -477,12 +564,17 @@ public class TaskOtherListFragment extends BaseFragment implements BaseRecyclerA
      * @return
      */
     private int getChildPositon(String taskId) {
-        if (taskItemAdapter.getData() != null) {
-            for (int i = 0; i < taskItemAdapter.getData().size(); i++) {
-                TaskEntity.TaskItemEntity item = taskItemAdapter.getData().get(i);
-                if (item != null) {
-                    if (TextUtils.equals(item.id, taskId)) {
-                        return i;
+        if (taskAdapter.getData() != null) {
+            for (int i = 0; i < taskAdapter.getData().size(); i++) {
+                TaskEntity task = taskAdapter.getData().get(i);
+                if (task != null && task.items != null) {
+                    for (int j = 0; j < task.items.size(); j++) {
+                        TaskEntity.TaskItemEntity item = task.items.get(j);
+                        if (item != null) {
+                            if (TextUtils.equals(item.id, taskId)) {
+                                return j;
+                            }
+                        }
                     }
                 }
             }
@@ -493,27 +585,65 @@ public class TaskOtherListFragment extends BaseFragment implements BaseRecyclerA
     TaskEntity.TaskItemEntity lastEntity;
 
     /**
+     * 获取item所在父容器position
+     *
+     * @param taskId
+     * @return
+     */
+    private int getParentPositon(String taskId) {
+        if (taskAdapter.getData() != null) {
+            for (int i = 0; i < taskAdapter.getData().size(); i++) {
+                TaskEntity task = taskAdapter.getData().get(i);
+                if (task != null && task.items != null) {
+                    for (int j = 0; j < task.items.size(); j++) {
+                        TaskEntity.TaskItemEntity item = task.items.get(j);
+                        if (item != null) {
+                            if (TextUtils.equals(item.id, taskId)) {
+                                return i;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return -1;
+    }
+
+    /**
      * 更新item
      *
      * @param taskId
      */
-    private void updateChildTimeing(String taskId, boolean isTiming) {
-        int childPos = getChildPositon(taskId);
-        if (childPos >= 0) {
-            TaskEntity.TaskItemEntity entity = taskItemAdapter.getItem(childPos);
-            if (entity != null) {
-                if (lastEntity != null)
-                    if (!TextUtils.equals(entity.id, lastEntity.id)) {
-                        lastEntity.isTiming = false;
-                        taskItemAdapter.notifyDataSetChanged();
+    private void updateUnFinishChildTimeing(String taskId, boolean isTiming) {
+        int parentPos = getParentPositon(taskId);
+        if (parentPos > 0) {
+            int childPos = getChildPositon(taskId);
+            if (childPos >= 0) {
+                BaseArrayRecyclerAdapter.ViewHolder viewHolderForAdapterPosition = (BaseArrayRecyclerAdapter.ViewHolder) recyclerView.findViewHolderForAdapterPosition(parentPos);
+                if (viewHolderForAdapterPosition != null) {
+                    RecyclerView recyclerview = viewHolderForAdapterPosition.obtainView(R.id.parent_item_task_recyclerview);
+                    if (recyclerview != null) {
+                        TaskItemAdapter itemAdapter = (TaskItemAdapter) recyclerview.getAdapter();
+                        if (itemAdapter != null) {
+                            TaskEntity.TaskItemEntity entity = itemAdapter.getItem(childPos);
+                            if (entity != null) {
+                                if (lastEntity != null)
+                                    if (!TextUtils.equals(entity.id, lastEntity.id)) {
+                                        lastEntity.isTiming = false;
+                                        taskAdapter.notifyDataSetChanged();
+                                    }
+                                if (entity.isTiming != isTiming) {
+                                    entity.isTiming = isTiming;
+                                    itemAdapter.updateItem(entity);
+                                    lastEntity = entity;
+                                }
+                            }
+                        }
                     }
-                if (entity.isTiming != isTiming) {
-                    entity.isTiming = isTiming;
-                    taskItemAdapter.updateItem(entity);
-                    lastEntity = entity;
                 }
             }
-
+        } else {
+            taskAdapter.notifyDataSetChanged();
         }
     }
 

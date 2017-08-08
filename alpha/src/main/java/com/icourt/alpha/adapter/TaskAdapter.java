@@ -99,11 +99,14 @@ public class TaskAdapter extends BaseArrayRecyclerAdapter<TaskEntity>
         RecyclerView recyclerView = holder.obtainView(R.id.parent_item_task_recyclerview);
         TaskItemAdapter taskItemAdapter;
         if (recyclerView.getLayoutManager() == null) {
+            recyclerView.setHasFixedSize(true);
+            recyclerView.setNestedScrollingEnabled(false);
             LinearLayoutManager layoutManager = new LinearLayoutManager(recyclerView.getContext());
+            layoutManager.setInitialPrefetchItemCount(4);
             recyclerView.setLayoutManager(layoutManager);
             taskItemAdapter = new TaskItemAdapter();
             taskItemAdapter.setAddTime(isAddTime);
-            recyclerView.setAdapter(taskItemAdapter);
+            recyclerView.setAdapter(taskItemAdapter = new TaskItemAdapter());
             taskItemAdapter.setOnItemClickListener(super.onItemClickListener);
             taskItemAdapter.setOnItemChildClickListener(super.onItemChildClickListener);
             taskItemAdapter.setOnItemLongClickListener(super.onItemLongClickListener);
@@ -125,6 +128,9 @@ public class TaskAdapter extends BaseArrayRecyclerAdapter<TaskEntity>
     public boolean onItemLongClick(BaseRecyclerAdapter adapter, ViewHolder holder, View view, int position) {
         if (adapter instanceof TaskItemAdapter) {
             TaskEntity.TaskItemEntity taskItemEntity = (TaskEntity.TaskItemEntity) adapter.getItem(adapter.getRealPos(position));
+            if (taskItemEntity.state) {
+                return false;
+            }
             ItemsEntity timeEntity = new ItemsEntity("开始计时", R.mipmap.time_start_orange_task);
             if (taskItemEntity.isTiming) {
                 timeEntity.itemIconRes = R.mipmap.time_stop_orange_task;
@@ -205,13 +211,15 @@ public class TaskAdapter extends BaseArrayRecyclerAdapter<TaskEntity>
                             break;
                         case R.mipmap.time_start_orange_task://开始计时
                             if (!taskItemEntity.isTiming) {
+                                final TimeEntity.ItemEntity timeetity = getTimer(taskItemEntity);
                                 TimerManager.getInstance().addTimer(getTimer(taskItemEntity), new Callback<TimeEntity.ItemEntity>() {
                                     @Override
                                     public void onResponse(Call<TimeEntity.ItemEntity> call, Response<TimeEntity.ItemEntity> response) {
                                         dismissLoadingDialog();
                                         if (response.body() != null) {
                                             updateMeauItem(entity, true, menuAdapter);
-                                            TimerTimingActivity.launch(view.getContext(), response.body());
+                                            timeetity.pkId = response.body().pkId;
+                                            TimerTimingActivity.launch(view.getContext(), timeetity);
                                         }
                                     }
 
@@ -267,13 +275,15 @@ public class TaskAdapter extends BaseArrayRecyclerAdapter<TaskEntity>
                         ((ImageView) view).setImageResource(R.mipmap.icon_start_20);
                     } else {
                         showLoadingDialog(view.getContext(), null);
+                        final TimeEntity.ItemEntity timeetity = getTimer(itemEntity);
                         TimerManager.getInstance().addTimer(getTimer(itemEntity), new Callback<TimeEntity.ItemEntity>() {
                             @Override
                             public void onResponse(Call<TimeEntity.ItemEntity> call, Response<TimeEntity.ItemEntity> response) {
                                 dismissLoadingDialog();
                                 ((ImageView) view).setImageResource(R.drawable.orange_side_dot_bg);
                                 if (response.body() != null) {
-                                    TimerTimingActivity.launch(view.getContext(), response.body());
+                                    timeetity.pkId = response.body().pkId;
+                                    TimerTimingActivity.launch(view.getContext(), timeetity);
                                 }
                             }
 
@@ -422,6 +432,8 @@ public class TaskAdapter extends BaseArrayRecyclerAdapter<TaskEntity>
                             timeView.setVisibility(View.GONE);
                         }
                     }
+                    itemEntity.state = state;
+
                 }
             }
 

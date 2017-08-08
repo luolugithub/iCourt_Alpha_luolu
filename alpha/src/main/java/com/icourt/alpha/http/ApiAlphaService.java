@@ -529,7 +529,44 @@ public interface ApiAlphaService {
      * @return
      */
     @POST("api/v2/timing/timing/add")
+    @Deprecated
     Call<ResEntity<String>> timingAdd(@Body RequestBody body);
+
+
+    /**
+     * 开始计时
+     * 文档地址: https://dev.alphalawyer.cn/ilaw/swagger/index.html#!/timing-api/startTimingUsingPOST
+     *
+     * @param name
+     * @param matterPkId
+     * @param taskPkId
+     * @param workTypeId
+     * @param clientId
+     * @param manual     如果手动指定参数开始，请将manual置为1
+     * @param startTime  手动指定的开始时间，只能小于当前系统时间
+     * @return
+     */
+    @POST("api/v2/timing/timing/startTiming")
+    @FormUrlEncoded
+    Call<ResEntity<TimeEntity.ItemEntity>> timingStart(
+            @Field("name") String name,
+            @Field("matterPkId") String matterPkId,
+            @Field("taskPkId") String taskPkId,
+            @Field("workTypeId") String workTypeId,
+            @Field("clientId") String clientId,
+            @Field("manual") int manual,
+            @Field("startTime") long startTime);
+
+
+    /**
+     * 停止计时
+     * 文档地址:https://dev.alphalawyer.cn/ilaw/swagger/index.html#!/timing-api/stopTimingUsingPOST
+     *
+     * @return
+     */
+    @POST("api/v2/timing/timing/stopTiming")
+    @FormUrlEncoded
+    Call<ResEntity<TimeEntity.ItemEntity>> timingStop(@Field("pkId") String pkId);
 
     /**
      * 获取任务下检查项列表
@@ -799,7 +836,8 @@ public interface ApiAlphaService {
      * @return
      */
     @DELETE("api/v2/timing/timing/delete/{timerId}")
-    Call<ResEntity<JsonElement>> timingDelete(@Path("timerId") String timerId);
+    Call<ResEntity<JsonElement>> timingDelete(@Path("timerId") String timerId,
+                                              @Query("clientId") String clientId);
 
     /**
      * 新建任务
@@ -827,6 +865,16 @@ public interface ApiAlphaService {
     Call<ResEntity<PageEntity<TimeEntity.ItemEntity>>> timerQuery(@Query("pageIndex") int pageIndex,
                                                                   @Query("pageSize") int pageSize,
                                                                   @Query("state") int state);
+
+
+    /**
+     * 获取正在计时
+     * 文档地址:https://dev.alphalawyer.cn/ilaw/swagger/index.html#!/timing-api/getRunningTimingUsingGET
+     *
+     * @return
+     */
+    @GET("api/v2/timing/timing/getRunningTiming")
+    Call<ResEntity<TimeEntity.ItemEntity>> timerRunningQuery();
 
     /**
      * 获得token里律师所属的团队信息

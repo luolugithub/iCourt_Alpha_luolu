@@ -1,8 +1,8 @@
 apply plugin: 'com.android.application'
 apply plugin: 'com.bugtags.library.plugin'
 apply plugin: 'realm-android'
-apply plugin: 'com.jakewharton.butterknife'
 //apply plugin: 'com.sensorsdata.analytics.android'
+apply plugin: 'com.jakewharton.butterknife'
 android {
     compileSdkVersion rootProject.ext.android.compileSdkVersion
     buildToolsVersion rootProject.ext.android.buildToolsVersion
@@ -12,8 +12,8 @@ android {
         minSdkVersion rootProject.ext.android.minSdkVersion
         targetSdkVersion rootProject.ext.android.targetSdkVersion
         multiDexEnabled true
-        versionCode 9
-        versionName "v2.0.1" //3位版本号
+        versionCode 11
+        versionName "v2.0.2" //3位版本号
         compileOptions {
             sourceCompatibility JavaVersion.VERSION_1_7
             targetCompatibility JavaVersion.VERSION_1_7
@@ -69,6 +69,8 @@ android {
             buildConfigField "String", "API_CHAT_URL", rootProject.ext.alphaChatAPIUrl.api_chat_url_debug
             buildConfigField "String", "API_SFILE_URL", rootProject.ext.alphaSFileUrl.api_url_debug
             buildConfigField "String", "APK_UPDATE_URL", rootProject.ext.alphaApkUpdateUrl.apk_update_url_debug
+            buildConfigField "String", "API_SENSORS_DATA_SERVER", rootProject.ext.sensorsDataAPIServer.server_url_debug
+            buildConfigField "String", "API_SENSORS_DATA_CONFIGURE", rootProject.ext.sensorsDataAPIConfigure.configure_url_debug
             versionNameSuffix "_debug"
             minifyEnabled false
             zipAlignEnabled false
@@ -78,23 +80,30 @@ android {
             manifestPlaceholders = [NIM_APPKEY: rootProject.ext.nimAppKey.debugAppKey]
 
             //用正式
-             /*buildConfigField "String", "API_URL", rootProject.ext.alphaAPIUrl.api_url_release
-             buildConfigField "String", "API_CHAT_URL", rootProject.ext.alphaChatAPIUrl.api_chat_url_release
-             buildConfigField "String", "API_SFILE_URL", rootProject.ext.alphaSFileUrl.api_url_release
-             buildConfigField "String", "APK_UPDATE_URL", rootProject.ext.alphaApkUpdateUrl.apk_update_url_release
-             manifestPlaceholders = [NIM_APPKEY: rootProject.ext.nimAppKey.releaseAppKey]*/
+            /*buildConfigField "String", "API_URL", rootProject.ext.alphaAPIUrl.api_url_release
+            buildConfigField "String", "API_CHAT_URL", rootProject.ext.alphaChatAPIUrl.api_chat_url_release
+            buildConfigField "String", "API_SFILE_URL", rootProject.ext.alphaSFileUrl.api_url_release
+            buildConfigField "String", "APK_UPDATE_URL", rootProject.ext.alphaApkUpdateUrl.apk_update_url_release
+            manifestPlaceholders = [NIM_APPKEY: rootProject.ext.nimAppKey.releaseAppKey]
+            buildConfigField "String", "API_SENSORS_DATA_SERVER", rootProject.ext.sensorsDataAPIServer.server_url_release
+            buildConfigField "String", "API_SENSORS_DATA_CONFIGURE", rootProject.ext.sensorsDataAPIConfigure.configure_url_release*/
+
             //测试用
             buildConfigField "String", "API_URL", rootProject.ext.alphaAPIUrl.api_url_test
             buildConfigField "String", "API_CHAT_URL", rootProject.ext.alphaChatAPIUrl.api_chat_url_test
             buildConfigField "String", "API_SFILE_URL", rootProject.ext.alphaSFileUrl.api_url_test
             buildConfigField "String", "APK_UPDATE_URL", rootProject.ext.alphaApkUpdateUrl.apk_update_url_test
+            buildConfigField "String", "API_SENSORS_DATA_SERVER", rootProject.ext.sensorsDataAPIServer.server_url_test
+            buildConfigField "String", "API_SENSORS_DATA_CONFIGURE", rootProject.ext.sensorsDataAPIConfigure.configure_url_test
             manifestPlaceholders = [NIM_APPKEY: rootProject.ext.nimAppKey.testAppKey]
             //预览版用
-//            buildConfigField "String", "API_URL", rootProject.ext.alphaAPIUrl.api_url_preview
-//            buildConfigField "String", "API_CHAT_URL", rootProject.ext.alphaChatAPIUrl.api_chat_url_preview
-//            buildConfigField "String", "API_SFILE_URL", rootProject.ext.alphaSFileUrl.api_url_preview
-//            buildConfigField "String", "APK_UPDATE_URL", rootProject.ext.alphaApkUpdateUrl.apk_update_url_preview
-//            manifestPlaceholders = [NIM_APPKEY: rootProject.ext.nimAppKey.previewAppKey]
+            /*buildConfigField "String", "API_URL", rootProject.ext.alphaAPIUrl.api_url_preview
+            buildConfigField "String", "API_CHAT_URL", rootProject.ext.alphaChatAPIUrl.api_chat_url_preview
+            buildConfigField "String", "API_SFILE_URL", rootProject.ext.alphaSFileUrl.api_url_preview
+            buildConfigField "String", "APK_UPDATE_URL", rootProject.ext.alphaApkUpdateUrl.apk_update_url_preview
+            buildConfigField "String", "API_SENSORS_DATA_SERVER", rootProject.ext.sensorsDataAPIServer.server_url_preview
+            buildConfigField "String", "API_SENSORS_DATA_CONFIGURE", rootProject.ext.sensorsDataAPIConfigure.configure_url_preview
+            manifestPlaceholders = [NIM_APPKEY: rootProject.ext.nimAppKey.previewAppKey]*/
         }
         //内测版
         innertest {
@@ -112,6 +121,8 @@ android {
             signingConfig signingConfigs.release
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
             manifestPlaceholders = [NIM_APPKEY: rootProject.ext.nimAppKey.testAppKey]
+            buildConfigField "String", "API_SENSORS_DATA_SERVER", rootProject.ext.sensorsDataAPIServer.server_url_test
+            buildConfigField "String", "API_SENSORS_DATA_CONFIGURE", rootProject.ext.sensorsDataAPIConfigure.configure_url_test
         }
         //预览版
         preview {
@@ -129,6 +140,8 @@ android {
             signingConfig signingConfigs.release
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
             manifestPlaceholders = [NIM_APPKEY: rootProject.ext.nimAppKey.previewAppKey]
+            buildConfigField "String", "API_SENSORS_DATA_SERVER", rootProject.ext.sensorsDataAPIServer.server_url_preview
+            buildConfigField "String", "API_SENSORS_DATA_CONFIGURE", rootProject.ext.sensorsDataAPIConfigure.configure_url_preview
         }
         //内部版
         innerrelease {
@@ -147,6 +160,8 @@ android {
             pseudoLocalesEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
             manifestPlaceholders = [NIM_APPKEY: rootProject.ext.nimAppKey.releaseAppKey]
+            buildConfigField "String", "API_SENSORS_DATA_SERVER", rootProject.ext.sensorsDataAPIServer.server_url_release
+            buildConfigField "String", "API_SENSORS_DATA_CONFIGURE", rootProject.ext.sensorsDataAPIConfigure.configure_url_release
         }
         //内部版 每天发版本
         innerrelease_daily {
@@ -165,6 +180,8 @@ android {
             pseudoLocalesEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
             manifestPlaceholders = [NIM_APPKEY: rootProject.ext.nimAppKey.releaseAppKey]
+            buildConfigField "String", "API_SENSORS_DATA_SERVER", rootProject.ext.sensorsDataAPIServer.server_url_release
+            buildConfigField "String", "API_SENSORS_DATA_CONFIGURE", rootProject.ext.sensorsDataAPIConfigure.configure_url_release
         }
         //正式上线版
         release {
@@ -182,6 +199,8 @@ android {
             pseudoLocalesEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
             manifestPlaceholders = [NIM_APPKEY: rootProject.ext.nimAppKey.releaseAppKey]
+            buildConfigField "String", "API_SENSORS_DATA_SERVER", rootProject.ext.sensorsDataAPIServer.server_url_release
+            buildConfigField "String", "API_SENSORS_DATA_CONFIGURE", rootProject.ext.sensorsDataAPIConfigure.configure_url_release
         }
     }
     packagingOptions {
@@ -203,7 +222,7 @@ android {
 
     dexOptions {
         jumboMode = true  //支持最大工程模式
-        javaMaxHeapSize "8g"
+        javaMaxHeapSize "10g"
         //incremental false//使用增量模式
 
         preDexLibraries = false //预编译
@@ -263,8 +282,8 @@ dependencies {
     compile rootProject.ext.dependencies.logger
     compile 'com.trello.rxlifecycle2:rxlifecycle:2.1.0'
     compile 'com.trello.rxlifecycle2:rxlifecycle-android:2.1.0'
-    compile 'com.jakewharton:butterknife:8.6.0'
-    annotationProcessor 'com.jakewharton:butterknife-compiler:8.6.0'
+    compile 'com.jakewharton:butterknife:8.7.0'
+    annotationProcessor 'com.jakewharton:butterknife-compiler:8.7.0'
     compile 'com.kaopiz:kprogresshud:1.0.5'
     compile 'com.liulishuo.filedownloader:library:1.3.0'
     compile 'q.rorbin:badgeview:1.1.0'
@@ -284,8 +303,7 @@ dependencies {
     compile 'com.umeng.analytics:analytics:latest.integration'
     compile 'com.github.lecho:hellocharts-library:1.5.8@aar'
     compile project(':lib_calendar')
-    //compile 'com.sensorsdata.analytics.android:SensorsAnalyticsSDK:1.7.4'
-    //compile 'com.getui:sdk:2.10.2.0'
+    //compile 'com.sensorsdata.analytics.android:SensorsAnalyticsSDK:1.7.12'
     compile project(path: ':lib_daemon')
     compile files('libs/MiPush_SDK_Client_3_4_3.jar')
     compile(name: 'HMS-SDK-2.4.0.300', ext: 'aar')

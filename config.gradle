@@ -32,6 +32,22 @@ ext {
             api_url_release: "\"https://box.alphalawyer.cn/\""//正式
     ]
 
+    //神策数据接收的 URL
+    sensorsDataAPIServer = [
+            server_url_debug  : "\"https://shenceadmin.alphalawyer.cn:8006/sa?project=default\"",//开发
+            server_url_test   : "\"https://shenceadmin.alphalawyer.cn:8006/sa?project=default\"",//内测
+            server_url_preview: "\"https://shenceadmin.alphalawyer.cn:8006/sa?project=default\"",//预览
+            server_url_release: "\"https://shenceadmin.alphalawyer.cn:8006/sa?project=production\""//正式
+    ]
+
+    //神策配置分发的 URL
+    sensorsDataAPIConfigure = [
+            configure_url_debug  : "\"https://shenceadmin.alphalawyer.cn:8006/config/?project=default\"",//开发
+            configure_url_test   : "\"https://shenceadmin.alphalawyer.cn:8006/config/?project=default\"",//内测
+            configure_url_preview: "\"https://shenceadmin.alphalawyer.cn:8006/config/?project=default\"",//预览
+            configure_url_release: "\"https://shenceadmin.alphalawyer.cn:8006/config/?project=production\""//正式
+    ]
+
     alphaApkUpdateUrl = [
             apk_update_url_debug              : "\"http://api.fir.im/apps/latest/586650afca87a82c430016a5?api_token=95f7eece0f10dc17f7ae044874bf3bd1\"",//开发 zhaolu
             apk_update_url_test               : "\"http://api.fir.im/apps/latest/586650afca87a82c430016a5?api_token=95f7eece0f10dc17f7ae044874bf3bd1\"",//内测 zhaolu
