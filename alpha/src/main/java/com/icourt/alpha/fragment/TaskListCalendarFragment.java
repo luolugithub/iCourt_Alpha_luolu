@@ -22,6 +22,8 @@ import com.icourt.alpha.adapter.baseadapter.BaseRefreshFragmentAdapter;
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.entity.bean.TaskEntity;
 import com.icourt.alpha.entity.event.TaskActionEvent;
+import com.icourt.alpha.http.callback.SimpleCallBack;
+import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.DensityUtil;
 import com.icourt.alpha.view.GestureDetectorLayout;
@@ -47,6 +49,8 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import butterknife.Unbinder;
+import retrofit2.Call;
+import retrofit2.Response;
 
 /**
  * Description  任务周视图
@@ -195,8 +199,23 @@ public class TaskListCalendarFragment extends BaseFragment {
     @Override
     public void onResume() {
         super.onResume();
-        //通知全部任务列表刷新
-        EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION));
+
+        //重新获取一遍数据
+        getApi().taskListQuery(0,
+                getLoginUserId(),
+                0,
+                0,
+                "dueTime",
+                1,
+                -1,
+                0).enqueue(new SimpleCallBack<TaskEntity>() {
+            @Override
+            public void onSuccess(Call<ResEntity<TaskEntity>> call, Response<ResEntity<TaskEntity>> response) {
+                if (response.body().result != null) {
+                    updateClendarTasks(response.body().result.items);
+                }
+            }
+        });
     }
 
     /**
@@ -560,27 +579,47 @@ public class TaskListCalendarFragment extends BaseFragment {
         if (targetFrgament != this) return;
         if (bundle != null) {
             ArrayList<TaskEntity.TaskItemEntity> tasks = (ArrayList<TaskEntity.TaskItemEntity>) bundle.getSerializable(KEY_FRAGMENT_RESULT);
-            if (tasks != null && taskItemEntityList != null) {
-                taskItemEntityList = tasks;
+            updateClendarTasks(tasks);
+        }
+    }
+
+    /**
+     * 批量更新任务
+     *
+     * @param tasks
+     */
+    private void updateClendarTasks(List<TaskEntity.TaskItemEntity> tasks) {
+        if (tasks != null && !tasks.isEmpty()) {
+            updateClendarTasks(new ArrayList<TaskEntity.TaskItemEntity>(tasks));
+        }
+    }
+
+    /**
+     * 批量更新任务
+     *
+     * @param tasks
+     */
+    private void updateClendarTasks(ArrayList<TaskEntity.TaskItemEntity> tasks) {
+        if (tasks != null && taskItemEntityList != null) {
+            taskItemEntityList = tasks;
 
 
-                //1.更新子fragment
-                fragmentPagerAdapter.notifyRefresh();
+            //1.更新子fragment
+            fragmentPagerAdapter.notifyRefresh();
 
-                //2.更新本月份的小红点
-                if (slSchedule != null) {
-                    List<Integer> taskHint = slSchedule.getTaskHint();
-                    if (taskHint != null && !taskHint.isEmpty()) {
-                        slSchedule.removeTaskHints(taskHint);
-                    }
-                    slSchedule.addTaskHints(getMonthTaskHint(slSchedule.getCurrentSelectYear(), slSchedule.getCurrentSelectMonth()));
+            //2.更新本月份的小红点
+            if (slSchedule != null) {
+                List<Integer> taskHint = slSchedule.getTaskHint();
+                if (taskHint != null && !taskHint.isEmpty()) {
+                    slSchedule.removeTaskHints(taskHint);
                 }
-                //3.将容器中的小红点再更新一次
-                addTaskHints();
+                slSchedule.addTaskHints(getMonthTaskHint(slSchedule.getCurrentSelectYear(), slSchedule.getCurrentSelectMonth()));
+            }
+            //3.将容器中的小红点再更新一次
+            addTaskHints();
 
-                if (slSchedule != null) {
-                    slSchedule.invalidate();
-                }
+            if (slSchedule != null) {
+                slSchedule.invalidate();
             }
         }
     }
