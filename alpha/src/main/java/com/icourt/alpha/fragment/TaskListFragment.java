@@ -17,6 +17,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.andview.refreshview.XRefreshView;
@@ -49,6 +50,7 @@ import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.DensityUtil;
 import com.icourt.alpha.utils.ItemDecorationUtils;
 import com.icourt.alpha.utils.JsonUtils;
+import com.icourt.alpha.utils.LogUtils;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 import com.icourt.alpha.widget.manager.TimerManager;
 import com.icourt.api.RequestUtils;
@@ -101,6 +103,7 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
 
     LinearLayoutManager linearLayoutManager;
     TaskAdapter taskAdapter;
+    TaskItemAdapter taskItemAdapter;
     TaskEntity.TaskItemEntity updateTaskItemEntity;
     List<TaskEntity> allTaskEntities;
     List<TaskEntity.TaskItemEntity> todayTaskEntities;//今天到期
@@ -110,8 +113,9 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
     List<TaskEntity.TaskItemEntity> newTaskEntities;//新任务
     List<TaskEntity.TaskItemEntity> datedTaskEntities;//已过期
 
-    int type, stateType = 0;
+    int type, stateType = 0;//全部任务：－1；已完成：1；未完成：0；已删除：3；
     HeaderFooterAdapter<TaskAdapter> headerFooterAdapter;
+    HeaderFooterAdapter<TaskItemAdapter> headerFooterItemAdapter;
     OnTasksChangeListener onTasksChangeListener;
     boolean isFirstTimeIntoPage = true;
     @BindView(R.id.new_task_cardview)
@@ -120,8 +124,10 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
     TextView newTaskCountTv;
     @BindView(R.id.next_task_close_iv)
     ImageView nextTaskCloseIv;
-    @BindView(R.id.next_task_cardview)
-    CardView nextTaskCardview;
+    @BindView(R.id.next_task_tv)
+    TextView nextTaskTv;
+    @BindView(R.id.next_task_layout)
+    LinearLayout nextTaskLayout;
 
     public static TaskListFragment newInstance(int type) {
         TaskListFragment projectTaskFragment = new TaskListFragment();
@@ -163,19 +169,29 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
         recyclerView.addItemDecoration(ItemDecorationUtils.getCommTrans5Divider(getContext(), true));
         recyclerView.setHasFixedSize(true);
         recyclerView.setNestedScrollingEnabled(false);
+        if (stateType == 0) {
+            headerFooterAdapter = new HeaderFooterAdapter<>(taskAdapter = new TaskAdapter());
+            View headerView = HeaderFooterAdapter.inflaterView(getContext(), R.layout.header_search_comm, recyclerView);
+            View rl_comm_search = headerView.findViewById(R.id.rl_comm_search);
+            registerClick(rl_comm_search);
+            headerFooterAdapter.addHeader(headerView);
+            taskAdapter.registerAdapterDataObserver(new RefreshViewEmptyObserver(refreshLayout, taskAdapter));
+            recyclerView.setAdapter(headerFooterAdapter);
+            taskAdapter.setDeleteTask(true);
+            taskAdapter.setEditTask(true);
+            taskAdapter.setAddTime(true);
+            taskAdapter.setOnShowFragmenDialogListener(this);
+        } else if (stateType == 1 || stateType == 3) {
+            headerFooterItemAdapter = new HeaderFooterAdapter<>(taskItemAdapter = new TaskItemAdapter());
 
-        headerFooterAdapter = new HeaderFooterAdapter<>(taskAdapter = new TaskAdapter());
-        View headerView = HeaderFooterAdapter.inflaterView(getContext(), R.layout.header_search_comm, recyclerView);
-        View rl_comm_search = headerView.findViewById(R.id.rl_comm_search);
-        registerClick(rl_comm_search);
-        headerFooterAdapter.addHeader(headerView);
+            View headerView = HeaderFooterAdapter.inflaterView(getContext(), R.layout.header_search_comm, recyclerView);
+            View rl_comm_search = headerView.findViewById(R.id.rl_comm_search);
+            registerClick(rl_comm_search);
+            headerFooterItemAdapter.addHeader(headerView);
+            taskItemAdapter.registerAdapterDataObserver(new RefreshViewEmptyObserver(refreshLayout, taskItemAdapter));
+            recyclerView.setAdapter(headerFooterItemAdapter);
+        }
 
-        taskAdapter.registerAdapterDataObserver(new RefreshViewEmptyObserver(refreshLayout, taskAdapter));
-        recyclerView.setAdapter(headerFooterAdapter);
-        taskAdapter.setDeleteTask(true);
-        taskAdapter.setEditTask(true);
-        taskAdapter.setAddTime(true);
-        taskAdapter.setOnShowFragmenDialogListener(this);
 
         refreshLayout.setXRefreshViewListener(new XRefreshView.SimpleXRefreshListener() {
             @Override
@@ -203,7 +219,7 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
 
     @OnClick({R.id.new_task_cardview,
             R.id.next_task_close_iv,
-            R.id.next_task_cardview})
+            R.id.next_task_layout})
     @Override
     public void onClick(View v) {
         super.onClick(v);
@@ -221,27 +237,21 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
                         } else {
                             if (newTaskEntities != null) {
                                 if (newTaskEntities.size() > 1) {
-                                    nextTaskCardview.setVisibility(View.VISIBLE);
+                                    nextTaskLayout.setVisibility(View.VISIBLE);
+                                    updateNextTaskState();
                                 } else if (newTaskEntities.size() == 1) {
-                                    if (newTaskEntities.get(0) != null)
+                                    if (newTaskEntities.get(0) != null) {
+//                                        updateNextTaskState();
                                         scrollToByPosition(newTaskEntities.get(0).id);
+                                    }
                                 }
                             }
                         }
                     }
                 }
                 break;
-            case R.id.next_task_cardview://下一个
-                if (newTaskEntities != null) {
-                    if (newTaskEntities.size() > 0) {
-                        if (newTaskEntities.get(0) != null) {
-                            scrollToByPosition(newTaskEntities.get(0).id);
-                            List<String> ids = new ArrayList<>();
-                            ids.add(newTaskEntities.get(0).id);
-                            onCheckNewTask(ids);
-                        }
-                    }
-                }
+            case R.id.next_task_layout://下一个
+                updateNextTaskState();
                 break;
             case R.id.next_task_close_iv://关闭'下一个'弹框,全部修改为已读
                 if (newTaskEntities != null) {
@@ -259,11 +269,32 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
         }
     }
 
+    /**
+     * 下一个
+     */
+    private void updateNextTaskState() {
+        if (newTaskEntities != null) {
+            if (newTaskEntities.size() > 0) {
+                if (newTaskEntities.get(0) != null) {
+                    scrollToByPosition(newTaskEntities.get(0).id);
+                    List<String> ids = new ArrayList<>();
+                    ids.add(newTaskEntities.get(0).id);
+                    onCheckNewTask(ids);
+                }
+            }
+        }
+    }
+
     RecyclerView.OnChildAttachStateChangeListener onChildAttachStateChangeListener;
     View childItemView;
     boolean isUpdate = true;
 
+    /**
+     * 滚动到指定位置
+     * @param taskId
+     */
     private void scrollToByPosition(final String taskId) {
+        LogUtils.e("滚动到指定位置 －－－－－－－－ ");
         isUpdate = true;
         int parentPosition = getParentPositon(taskId) + headerFooterAdapter.getHeaderCount();
         final int childPosition = getChildPositon(taskId);
@@ -313,11 +344,17 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
      * @param view
      */
     private void startViewAnim(View view) {
-        ValueAnimator colorAnim = ObjectAnimator.ofInt(view, "backgroundColor", 0xFFED6C00, 0xFFFFFFFF);
-        colorAnim.setDuration(3000);
-        colorAnim.setEvaluator(new ArgbEvaluator());
-        colorAnim.addListener(animatorListener);
-        colorAnim.start();
+        CardView cardView = null;
+        if (view instanceof CardView) {
+            cardView = (CardView) view;
+        }
+        if (cardView != null) {
+            ValueAnimator colorAnim = ObjectAnimator.ofInt(cardView, "CardBackgroundColor", 0xFFFCCEA7, 0xFFFFF6E9, 0xFFFFFFFF);
+            colorAnim.setDuration(3000);
+            colorAnim.setEvaluator(new ArgbEvaluator());
+            colorAnim.addListener(animatorListener);
+            colorAnim.start();
+        }
     }
 
     Animator.AnimatorListener animatorListener = new Animator.AnimatorListener() {
@@ -329,7 +366,10 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
         @Override
         public void onAnimationEnd(Animator animator) {
             if (childItemView != null) {
-                childItemView.setBackgroundColor(0xFFFFFFFF);
+                if (childItemView instanceof CardView) {
+                    CardView cardView = (CardView) childItemView;
+                    cardView.setCardBackgroundColor(0xFFFFFFFF);
+                }
             }
         }
 
@@ -403,34 +443,55 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
     private void getTaskGroupData(final TaskEntity taskEntity) {
         if (taskEntity == null) return;
         if (taskEntity.items == null) return;
-        Observable.create(new ObservableOnSubscribe<List<TaskEntity>>() {
-            @Override
-            public void subscribe(ObservableEmitter<List<TaskEntity>> e) throws Exception {
-                if (e.isDisposed()) return;
-                groupingByTasks(taskEntity.items);
-                addDataToAllTask();
-                e.onNext(allTaskEntities);
-                e.onComplete();
+        if (stateType == 0) {
+            Observable.create(new ObservableOnSubscribe<List<TaskEntity>>() {
+                @Override
+                public void subscribe(ObservableEmitter<List<TaskEntity>> e) throws Exception {
+                    if (e.isDisposed()) return;
+                    groupingByTasks(taskEntity.items);
+                    addDataToAllTask();
+                    e.onNext(allTaskEntities);
+                    e.onComplete();
+                }
+            }).compose(this.<List<TaskEntity>>bindToLifecycle())
+                    .subscribeOn(Schedulers.newThread())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(new Consumer<List<TaskEntity>>() {
+                        @Override
+                        public void accept(List<TaskEntity> searchPolymerizationEntities) throws Exception {
+                            if (taskAdapter != null) {
+                                recyclerView.setAdapter(taskAdapter);
+                            }
+                            taskAdapter.bindData(true, allTaskEntities);
+                            if (linearLayoutManager.getStackFromEnd())
+                                linearLayoutManager.setStackFromEnd(false);
+                            if (newTaskEntities.size() > 0) {
+                                newTaskCardview.setVisibility(View.VISIBLE);
+                                newTaskCountTv.setText(String.valueOf(newTaskEntities.size()));
+                            }
+                            //第一次进入 隐藏搜索框
+                            if (isFirstTimeIntoPage) {
+                                linearLayoutManager.scrollToPositionWithOffset(headerFooterAdapter.getHeaderCount(), 0);
+                                isFirstTimeIntoPage = false;
+                            }
+                        }
+                    });
+        } else if (stateType == 1 || stateType == 3) {
+            if (taskItemAdapter == null) {
+                headerFooterItemAdapter = new HeaderFooterAdapter<>(taskItemAdapter = new TaskItemAdapter());
+
+                View headerView = HeaderFooterAdapter.inflaterView(getContext(), R.layout.header_search_comm, recyclerView);
+                View rl_comm_search = headerView.findViewById(R.id.rl_comm_search);
+                registerClick(rl_comm_search);
+                headerFooterItemAdapter.addHeader(headerView);
+                taskItemAdapter.registerAdapterDataObserver(new RefreshViewEmptyObserver(refreshLayout, taskItemAdapter));
+                recyclerView.setAdapter(headerFooterItemAdapter);
             }
-        }).compose(this.<List<TaskEntity>>bindToLifecycle())
-                .subscribeOn(Schedulers.newThread())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Consumer<List<TaskEntity>>() {
-                    @Override
-                    public void accept(List<TaskEntity> searchPolymerizationEntities) throws Exception {
-                        taskAdapter.bindData(true, allTaskEntities);
-                        linearLayoutManager.setStackFromEnd(false);
-                        if (newTaskEntities.size() > 0) {
-                            newTaskCardview.setVisibility(View.VISIBLE);
-                            newTaskCountTv.setText(String.valueOf(newTaskEntities.size()));
-                        }
-                        //第一次进入 隐藏搜索框
-                        if (isFirstTimeIntoPage) {
-                            linearLayoutManager.scrollToPositionWithOffset(headerFooterAdapter.getHeaderCount(), 0);
-                            isFirstTimeIntoPage = false;
-                        }
-                    }
-                });
+            taskItemAdapter.bindData(true, taskEntity.items);
+            newTaskCardview.setVisibility(View.GONE);
+            if (linearLayoutManager.getStackFromEnd())
+                linearLayoutManager.setStackFromEnd(false);
+        }
     }
 
     /**
@@ -953,15 +1014,17 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
                     if (ids.size() == 1) {
                         newTaskEntities.remove(0);
                         newTaskCountTv.setText(String.valueOf(newTaskEntities.size()));
+                        nextTaskTv.setText("下一个 (" + String.valueOf(newTaskEntities.size()) + ")");
                     } else {
                         newTaskEntities.clear();
                     }
                     if (newTaskEntities.size() == 0) {
                         newTaskCardview.setVisibility(View.GONE);
-                        nextTaskCardview.setVisibility(View.GONE);
+                        nextTaskLayout.setVisibility(View.GONE);
                     }
                 }
             }
         });
     }
+
 }

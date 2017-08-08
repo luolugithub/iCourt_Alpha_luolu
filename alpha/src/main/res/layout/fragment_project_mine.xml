@@ -48,45 +48,47 @@
         </LinearLayout>
     </android.support.v7.widget.CardView>
 
-    <android.support.v7.widget.CardView
-        android:id="@+id/next_task_cardview"
-        android:layout_width="130dp"
-        android:layout_height="38dp"
+    <LinearLayout
+        android:id="@+id/next_task_layout"
+        android:layout_width="wrap_content"
+        android:layout_height="45dp"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
-        android:layout_marginBottom="@dimen/dp15"
-        android:clickable="true"
         android:visibility="gone"
-        android:foreground="?attr/selectableItemBackground"
-        app:cardBackgroundColor="@color/alpha_font_color_orange"
-        app:cardCornerRadius="20dp"
-        app:cardElevation="4dp">
+        android:layout_marginBottom="@dimen/dp15"
+        android:gravity="center">
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:gravity="center_vertical">
+        <android.support.v7.widget.CardView
+            android:layout_width="130dp"
+            android:layout_height="38dp"
+            android:layout_marginLeft="@dimen/dp50"
+            android:clickable="true"
+            android:foreground="?attr/selectableItemBackground"
+            app:cardBackgroundColor="@color/alpha_font_color_orange"
+            app:cardCornerRadius="20dp"
+            app:cardElevation="4dp">
 
             <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:layout_weight="1"
+                android:id="@+id/next_task_tv"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
                 android:background="@null"
-                android:text="下一个"
-                android:layout_marginLeft="@dimen/dp30"
+                android:gravity="center"
+                android:text="下一个 (1)"
                 android:textColor="@color/white"
                 android:textSize="13sp" />
 
-            <ImageView
-                android:id="@+id/next_task_close_iv"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:padding="5dp"
-                android:layout_marginRight="@dimen/dp10"
-                android:src="@mipmap/icon_close" />
-        </LinearLayout>
-    </android.support.v7.widget.CardView>
+        </android.support.v7.widget.CardView>
+
+        <ImageView
+            android:id="@+id/next_task_close_iv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="@dimen/dp10"
+            android:padding="5dp"
+            android:src="@mipmap/close_white" />
+    </LinearLayout>
+
 
     <com.icourt.alpha.view.xrefreshlayout.RefreshLayout
         android:id="@+id/refreshLayout"
