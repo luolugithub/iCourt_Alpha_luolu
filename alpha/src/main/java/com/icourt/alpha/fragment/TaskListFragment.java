@@ -131,6 +131,8 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
     @BindView(R.id.next_task_cardview)
     CardView nextTaskCardview;
 
+    boolean isAwayScroll = false; //切换时是否滚动，在'已完成和已删除'状态下，点击新任务提醒。
+
     public static TaskListFragment newInstance(int type) {
         TaskListFragment projectTaskFragment = new TaskListFragment();
         Bundle bundle = new Bundle();
@@ -235,6 +237,7 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
                         if (select_position != 0) {
                             ((TabTaskFragment) (getParentFragment().getParentFragment())).setFirstTabText("未完成", 0);
                             stateType = 0;
+                            isAwayScroll = true;
                             getData(true);
                         } else {
                             if (newTaskEntities != null) {
@@ -263,7 +266,7 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
                     for (TaskEntity.TaskItemEntity newTaskEntity : newTaskEntities) {
                         ids.add(newTaskEntity.id);
                     }
-                    onCheckNewTask(ids);
+//                    onCheckNewTask(ids);
                 }
                 break;
             default:
@@ -282,7 +285,8 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
                     scrollToByPosition(newTaskEntities.get(0).id);
                     List<String> ids = new ArrayList<>();
                     ids.add(newTaskEntities.get(0).id);
-                    onCheckNewTask(ids);
+//                    onCheckNewTask(ids);
+                    isAwayScroll = false;
                 }
             }
         }
@@ -467,6 +471,9 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
                                 recyclerView.setAdapter(headerFooterAdapter);
                             }
                             taskAdapter.bindData(true, allTaskEntities);
+                            if (isAwayScroll) {
+                                updateNextTaskState();
+                            }
                             if (linearLayoutManager.getStackFromEnd())
                                 linearLayoutManager.setStackFromEnd(false);
                             if (newTaskEntities.size() > 0) {
