@@ -494,6 +494,7 @@ public class ProjectTaskFragment extends BaseFragment implements TaskAdapter.OnS
         if (dueTime <= 0) {
             calendar.set(Calendar.HOUR_OF_DAY, 23);
             calendar.set(Calendar.MINUTE, 59);
+            calendar.set(Calendar.SECOND, 59);
         } else {
             calendar.setTimeInMillis(dueTime);
         }
