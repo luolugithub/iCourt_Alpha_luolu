@@ -128,6 +128,8 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
     TextView nextTaskTv;
     @BindView(R.id.next_task_layout)
     LinearLayout nextTaskLayout;
+    @BindView(R.id.next_task_cardview)
+    CardView nextTaskCardview;
 
     public static TaskListFragment newInstance(int type) {
         TaskListFragment projectTaskFragment = new TaskListFragment();
@@ -219,7 +221,7 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
 
     @OnClick({R.id.new_task_cardview,
             R.id.next_task_close_iv,
-            R.id.next_task_layout})
+            R.id.next_task_cardview})
     @Override
     public void onClick(View v) {
         super.onClick(v);
@@ -239,9 +241,10 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
                                 if (newTaskEntities.size() > 1) {
                                     nextTaskLayout.setVisibility(View.VISIBLE);
                                     updateNextTaskState();
+                                    v.setClickable(false);
                                 } else if (newTaskEntities.size() == 1) {
                                     if (newTaskEntities.get(0) != null) {
-//                                        updateNextTaskState();
+                                        updateNextTaskState();
                                         scrollToByPosition(newTaskEntities.get(0).id);
                                     }
                                 }
@@ -250,7 +253,7 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
                     }
                 }
                 break;
-            case R.id.next_task_layout://下一个
+            case R.id.next_task_cardview://下一个
                 updateNextTaskState();
                 break;
             case R.id.next_task_close_iv://关闭'下一个'弹框,全部修改为已读
@@ -291,6 +294,7 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
 
     /**
      * 滚动到指定位置
+     *
      * @param taskId
      */
     private void scrollToByPosition(final String taskId) {
@@ -459,8 +463,8 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
                     .subscribe(new Consumer<List<TaskEntity>>() {
                         @Override
                         public void accept(List<TaskEntity> searchPolymerizationEntities) throws Exception {
-                            if (taskAdapter != null) {
-                                recyclerView.setAdapter(taskAdapter);
+                            if (headerFooterAdapter != null) {
+                                recyclerView.setAdapter(headerFooterAdapter);
                             }
                             taskAdapter.bindData(true, allTaskEntities);
                             if (linearLayoutManager.getStackFromEnd())
@@ -1026,5 +1030,4 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
             }
         });
     }
-
 }

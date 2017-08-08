@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
@@ -8,11 +8,11 @@
         android:id="@+id/new_task_cardview"
         android:layout_width="200dp"
         android:layout_height="38dp"
-        android:layout_centerHorizontal="true"
+        android:layout_gravity="center_horizontal"
         android:layout_marginTop="@dimen/dp15"
+        android:visibility="gone"
         android:clickable="true"
         android:foreground="?attr/selectableItemBackground"
-        android:visibility="gone"
         app:cardCornerRadius="20dp"
         app:cardElevation="4dp">
 
@@ -48,17 +48,33 @@
         </LinearLayout>
     </android.support.v7.widget.CardView>
 
+    <com.icourt.alpha.view.xrefreshlayout.RefreshLayout
+        android:id="@+id/refreshLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+        app:isHeightMatchParent="false">
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/recyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipToPadding="false" />
+
+    </com.icourt.alpha.view.xrefreshlayout.RefreshLayout>
+
     <LinearLayout
         android:id="@+id/next_task_layout"
         android:layout_width="wrap_content"
-        android:layout_height="45dp"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
+        android:layout_height="42dp"
         android:visibility="gone"
+        android:layout_gravity="bottom|center_horizontal"
         android:layout_marginBottom="@dimen/dp15"
         android:gravity="center">
 
         <android.support.v7.widget.CardView
+            android:id="@+id/next_task_cardview"
             android:layout_width="130dp"
             android:layout_height="38dp"
             android:layout_marginLeft="@dimen/dp50"
@@ -88,23 +104,4 @@
             android:padding="5dp"
             android:src="@mipmap/close_white" />
     </LinearLayout>
-
-
-    <com.icourt.alpha.view.xrefreshlayout.RefreshLayout
-        android:id="@+id/refreshLayout"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:focusable="true"
-        android:focusableInTouchMode="true"
-        app:isHeightMatchParent="false">
-
-
-        <android.support.v7.widget.RecyclerView
-            android:id="@+id/recyclerView"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:clipToPadding="false" />
-
-
-    </com.icourt.alpha.view.xrefreshlayout.RefreshLayout>
-</RelativeLayout>
+</FrameLayout>
