@@ -185,6 +185,26 @@ public class TimerManager {
                     public void onSuccess(Call<ResEntity<TimeEntity.ItemEntity>> call, Response<ResEntity<TimeEntity.ItemEntity>> response) {
                         if (response.body().result == null) return;
                         globalTimingId = response.body().result.pkId;
+
+                        //网络没返回
+                        if (!TextUtils.isEmpty(response.body().result.taskPkId)) {
+                            if (TextUtils.isEmpty(response.body().result.taskName)) {
+                                response.body().result.taskName = itemEntity.taskName;
+                            }
+                        }
+
+                        if (!TextUtils.isEmpty(response.body().result.matterPkId)) {
+                            if (TextUtils.isEmpty(response.body().result.matterName)) {
+                                response.body().result.matterName = itemEntity.matterName;
+                            }
+                        }
+
+                        if (!TextUtils.isEmpty(response.body().result.workTypeId)) {
+                            if (TextUtils.isEmpty(response.body().result.workTypeName)) {
+                                response.body().result.workTypeName = itemEntity.workTypeName;
+                            }
+                        }
+
                         SpUtils.getInstance().putData(String.format(KEY_TIMER, getUid()), response.body().result);
                         broadTimingEvent(response.body().result.pkId, TimingEvent.TIMING_ADD);
                         setBase(0);
@@ -217,6 +237,19 @@ public class TimerManager {
             }
             setBase(timedLength);
             startTimingTask();
+        }
+    }
+
+
+    /**
+     * 只是重置数据
+     *
+     * @param timer
+     */
+    public void resetData(TimeEntity.ItemEntity timer) {
+        if (timer == null) return;
+        if (isTimer(timer.pkId)) {
+            SpUtils.getInstance().putData(String.format(KEY_TIMER, getUid()), timer);
         }
     }
 
