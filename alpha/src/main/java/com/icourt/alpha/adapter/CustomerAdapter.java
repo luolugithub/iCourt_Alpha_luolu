@@ -58,7 +58,7 @@ public class CustomerAdapter extends BaseArrayRecyclerAdapter<CustomerEntity> {
         customer_num_tv.setVisibility(showCustomerNumTv
                 ? View.VISIBLE : View.GONE);
         if (showCustomerNumTv) {
-            customer_num_tv.setText(String.format("%s 位成员", getItemCount() - 1));
+            customer_num_tv.setText(String.format("%s 位成员", getItemCount()));
         }
     }
 }

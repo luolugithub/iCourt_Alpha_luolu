@@ -34,6 +34,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.TaskUsersAdapter;
+import com.icourt.alpha.adapter.baseadapter.BaseFragmentAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.entity.bean.TaskEntity;
