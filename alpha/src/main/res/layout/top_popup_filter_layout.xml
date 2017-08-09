@@ -15,7 +15,10 @@
         <android.support.v7.widget.RecyclerView
             android:id="@+id/popup_recyclerview"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"></android.support.v7.widget.RecyclerView>
+            android:layout_height="wrap_content"
+            android:layoutAnimation="@anim/layout_animation_slide_left">
+
+        </android.support.v7.widget.RecyclerView>
     </LinearLayout>
 
 </RelativeLayout>

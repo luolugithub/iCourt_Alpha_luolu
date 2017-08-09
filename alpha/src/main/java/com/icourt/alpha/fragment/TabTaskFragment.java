@@ -13,6 +13,8 @@ import android.widget.ImageView;
 import android.widget.PopupWindow;
 import android.widget.TextView;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.icourt.alpha.R;
 import com.icourt.alpha.activity.MyAllotTaskActivity;
 import com.icourt.alpha.activity.TaskCreateActivity;
@@ -23,6 +25,8 @@ import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.entity.bean.FilterDropEntity;
 import com.icourt.alpha.entity.bean.TaskMemberEntity;
 import com.icourt.alpha.fragment.dialogfragment.TaskMemberSelectDialogFragment;
+import com.icourt.alpha.http.callback.SimpleCallBack;
+import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.utils.DensityUtil;
 import com.icourt.alpha.utils.RAUtils;
@@ -38,6 +42,8 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import butterknife.Unbinder;
+import retrofit2.Call;
+import retrofit2.Response;
 
 /**
  * Description  任务tab页面
@@ -66,6 +72,10 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
     TaskAllFragment alltaskFragment;
     ListDropDownAdapter listDropDownAdapter;
     TopMiddlePopup topMiddlePopup;
+    List<FilterDropEntity> dropEntities = new ArrayList<>();
+    FilterDropEntity doingEntity = new FilterDropEntity("未完成", "0", 0);//未完成
+    FilterDropEntity doneEntity = new FilterDropEntity("已完成", "0", 1);//已完成
+    FilterDropEntity deleteEntity = new FilterDropEntity("已删除", "0", 3);//已删除
 
     public static TabTaskFragment newInstance() {
         return new TabTaskFragment();
@@ -91,8 +101,12 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
                 Arrays.asList(
                         alltaskFragment = TaskAllFragment.newInstance(),
                         attentionTaskFragment = TaskListFragment.newInstance(1)));
-        topMiddlePopup = new TopMiddlePopup(getContext(), DensityUtil.getWidthInDp(getContext()), (int) (DensityUtil.getHeightInPx(getContext()) - DensityUtil.dip2px(getContext(), 75)), this);
 
+        topMiddlePopup = new TopMiddlePopup(getContext(), DensityUtil.getWidthInDp(getContext()), (int) (DensityUtil.getHeightInPx(getContext()) - DensityUtil.dip2px(getContext(), 75)), this);
+        dropEntities.add(doingEntity);
+        dropEntities.add(doneEntity);
+        dropEntities.add(deleteEntity);
+        getTasksStateCount();
         for (int i = 0; i < baseFragmentAdapter.getCount(); i++) {
             TabLayout.Tab tab = tabLayout.getTabAt(i);
             tab.setCustomView(R.layout.task_unfinish_tab_custom_view);
@@ -161,11 +175,13 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
     @Override
     public void onItemClick(TopMiddlePopup topMiddlePopup, BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
         topMiddlePopup.dismiss();
-        FilterDropEntity filterDropEntity = (FilterDropEntity) adapter.getItem(position);
-        setFirstTabText(filterDropEntity.name, position);
-        Bundle bundle = new Bundle();
-        bundle.putInt("stateType", filterDropEntity.stateType);
-        alltaskFragment.notifyFragmentUpdate(alltaskFragment, TaskAllFragment.TYPE_ALL_TASK, bundle);
+        if (select_position != position) {
+            FilterDropEntity filterDropEntity = (FilterDropEntity) adapter.getItem(position);
+            setFirstTabText(filterDropEntity.name, position);
+            Bundle bundle = new Bundle();
+            bundle.putInt("stateType", filterDropEntity.stateType);
+            alltaskFragment.notifyFragmentUpdate(alltaskFragment, TaskAllFragment.TYPE_ALL_TASK, bundle);
+        }
     }
 
     private class OnTabClickListener implements View.OnClickListener {
@@ -174,8 +190,11 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
         public void onClick(View view) {
             if (tabLayout.getTabAt(0) != null) {
                 if (view.isSelected()) {
-                    topMiddlePopup.show(titleView, getItems(), select_position);
+                    topMiddlePopup.show(titleView, dropEntities, select_position);
                     setFirstTabImage(true);
+                    if (topMiddlePopup.isShowing()) {
+                        getTasksStateCount();
+                    }
                 } else {
                     tabLayout.getTabAt(0).select();
                 }
@@ -183,12 +202,38 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
         }
     }
 
-    private List<FilterDropEntity> getItems() {
-        List<FilterDropEntity> dropEntities = new ArrayList<>();
-        dropEntities.add(new FilterDropEntity("未完成", "22", 0));
-        dropEntities.add(new FilterDropEntity("已完成", "51", 1));
-        dropEntities.add(new FilterDropEntity("已删除", "9", 3));
-        return dropEntities;
+    /**
+     * 获取各个状态的任务数量
+     */
+    private void getTasksStateCount() {
+        getApi().taskStateCountQuery().enqueue(new SimpleCallBack<JsonElement>() {
+            @Override
+            public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
+                JsonElement jsonElement = response.body().result;
+                if (jsonElement != null) {
+                    JsonObject jsonObject = jsonElement.getAsJsonObject();
+                    if (jsonObject != null) {
+                        doingEntity.count = jsonObject.get("doingCount").getAsString();
+                        doneEntity.count = jsonObject.get("doneCount").getAsString();
+                        deleteEntity.count = jsonObject.get("deletedCount").getAsString();
+                        dropEntities.clear();
+                        dropEntities.add(doingEntity);
+                        dropEntities.add(doneEntity);
+                        dropEntities.add(deleteEntity);
+                        if (topMiddlePopup != null && topMiddlePopup.isShowing()) {
+                            if (topMiddlePopup.getAdapter() != null) {
+                                topMiddlePopup.getAdapter().bindData(true, dropEntities);
+                            }
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
+                super.onFailure(call, t);
+            }
+        });
     }
 
     /**
@@ -258,5 +303,24 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
                 MyAllotTaskActivity.launch(getContext(), TaskOtherListFragment.SELECT_OTHER_TYPE, ids);
             }
         }
+    }
+
+    /**
+     * 判断'下一个'view是否显示
+     *
+     * @return
+     */
+    public boolean isShowingNextTaskView() {
+        Fragment currFragment = alltaskFragment.currFragment;
+        if (currFragment instanceof TaskListFragment) {
+            TaskListFragment taskListFragment = (TaskListFragment) currFragment;
+            int visibility = taskListFragment.nextTaskCardview.getVisibility();
+            if (visibility == View.GONE || visibility == View.INVISIBLE) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+        return false;
     }
 }

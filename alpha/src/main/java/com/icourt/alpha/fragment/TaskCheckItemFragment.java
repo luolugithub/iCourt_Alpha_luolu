@@ -171,13 +171,14 @@ public class TaskCheckItemFragment extends BaseFragment
                 if (response.body().result.items != null) {
                     taskCheckItemAdapter.bindData(false, response.body().result.items);
                     if (response.body().result.items.size() <= 0) {
-                        if (!hasPermission) {
-                            listLayout.setVisibility(View.GONE);
-                            emptyLayout.setVisibility(View.VISIBLE);
-                        } else {
-                            listLayout.setVisibility(View.VISIBLE);
-                            emptyLayout.setVisibility(View.GONE);
-                        }
+                        if (listLayout != null)
+                            if (!hasPermission) {
+                                listLayout.setVisibility(View.GONE);
+                                emptyLayout.setVisibility(View.VISIBLE);
+                            } else {
+                                listLayout.setVisibility(View.VISIBLE);
+                                emptyLayout.setVisibility(View.GONE);
+                            }
                     }
                 } else {
                     if (listLayout != null) {

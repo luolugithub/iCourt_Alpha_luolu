@@ -8,6 +8,8 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.AnimationUtils;
+import android.view.animation.LayoutAnimationController;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 
@@ -123,6 +125,19 @@ public class TopMiddlePopup extends PopupWindow implements BaseRecyclerAdapter.O
     }
 
     /**
+     * item显示动画
+     */
+    private void runLayoutAnimation() {
+        Context context = recyclerView.getContext();
+        LayoutAnimationController controller =
+                AnimationUtils.loadLayoutAnimation(context, R.anim.layout_animation_slide_left);
+
+        recyclerView.setLayoutAnimation(controller);
+        recyclerView.getAdapter().notifyDataSetChanged();
+        recyclerView.scheduleLayoutAnimation();
+    }
+
+    /**
      * 显示弹窗界面
      *
      * @param view
@@ -130,6 +145,7 @@ public class TopMiddlePopup extends PopupWindow implements BaseRecyclerAdapter.O
     public void show(View view, List<FilterDropEntity> items, int position) {
         adapter.bindData(true, items);
         adapter.setSelectedPos(position);
+        runLayoutAnimation();
         showAsDropDown(view);
     }
 

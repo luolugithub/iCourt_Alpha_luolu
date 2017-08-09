@@ -1249,6 +1249,14 @@ public interface ApiAlphaService {
     @POST("api/v2/tasks/{taskId}/reminders")
     Call<ResEntity<TaskReminderEntity>> taskReminderAdd(@Path("taskId") String taskId,
                                                         @Body RequestBody body);
+
+    /**
+     * 获取各个状态的任务数量
+     * 文档地址：https://dev.alphalawyer.cn/ilaw/swagger/index.html#!/taskflow-api/queryTaskStateCountUsingGET
+     * @return
+     */
+    @GET("api/v2/taskflow/state/count")
+    Call<ResEntity<JsonElement>> taskStateCountQuery();
 }
 
 

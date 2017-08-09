@@ -6,6 +6,7 @@ import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
 import android.content.Context;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
@@ -29,6 +30,7 @@ import com.icourt.alpha.activity.SearchProjectActivity;
 import com.icourt.alpha.adapter.TaskAdapter;
 import com.icourt.alpha.adapter.TaskItemAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseArrayRecyclerAdapter;
+import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.HeaderFooterAdapter;
 import com.icourt.alpha.adapter.baseadapter.adapterObserver.RefreshViewEmptyObserver;
 import com.icourt.alpha.base.BaseFragment;
@@ -50,7 +52,6 @@ import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.DensityUtil;
 import com.icourt.alpha.utils.ItemDecorationUtils;
 import com.icourt.alpha.utils.JsonUtils;
-import com.icourt.alpha.utils.LogUtils;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 import com.icourt.alpha.widget.manager.TimerManager;
 import com.icourt.api.RequestUtils;
@@ -131,6 +132,7 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
     @BindView(R.id.next_task_cardview)
     CardView nextTaskCardview;
 
+    Handler handler = new Handler();
     boolean isAwayScroll = false; //切换时是否滚动，在'已完成和已删除'状态下，点击新任务提醒。
 
     public static TaskListFragment newInstance(int type) {
@@ -292,7 +294,6 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
         }
     }
 
-    RecyclerView.OnChildAttachStateChangeListener onChildAttachStateChangeListener;
     View childItemView;
     boolean isUpdate = true;
 
@@ -302,7 +303,6 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
      * @param taskId
      */
     private void scrollToByPosition(final String taskId) {
-        LogUtils.e("滚动到指定位置 －－－－－－－－ ");
         isUpdate = true;
         int parentPosition = getParentPositon(taskId) + headerFooterAdapter.getHeaderCount();
         final int childPosition = getChildPositon(taskId);
@@ -310,23 +310,14 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
         linearLayoutManager.scrollToPositionWithOffset(parentPosition, DensityUtil.dip2px(getContext(), offset) * -1);
         linearLayoutManager.setStackFromEnd(true);
 
-        if (onChildAttachStateChangeListener != null)
-            recyclerView.removeOnChildAttachStateChangeListener(onChildAttachStateChangeListener);
-
-        recyclerView.addOnChildAttachStateChangeListener(onChildAttachStateChangeListener = new RecyclerView.OnChildAttachStateChangeListener() {
+        handler.removeCallbacksAndMessages(null);
+        handler.postDelayed(new Runnable() {
             @Override
-            public void onChildViewAttachedToWindow(View view) {
+            public void run() {
                 if (isUpdate)
                     updateItemViewBackgrond(taskId, childPosition);
             }
-
-            @Override
-            public void onChildViewDetachedFromWindow(View view) {
-
-            }
-        });
-        if (isUpdate)
-            updateItemViewBackgrond(taskId, childPosition);
+        }, 300);
     }
 
     /**
@@ -338,12 +329,19 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
     private void updateItemViewBackgrond(String taskId, int childPosition) {
         RecyclerView childRecyclerview = getChildRecyclerView(taskId);
         if (childRecyclerview != null) {
-            childItemView = childRecyclerview.getChildAt(childPosition);
+            LinearLayoutManager layoutManager = (LinearLayoutManager) childRecyclerview.getLayoutManager();
+            if (layoutManager != null) {
+                BaseRecyclerAdapter.ViewHolder viewHolder = (BaseRecyclerAdapter.ViewHolder) childRecyclerview.findViewHolderForAdapterPosition(childPosition);
+                if (viewHolder != null) {
+                    childItemView = viewHolder.itemView;
+                    if (childItemView != null) {
+                        isUpdate = false;
+                        startViewAnim(childItemView);
+                    }
+                }
+            }
+
         }
-        if (childItemView != null) {
-            startViewAnim(childItemView);
-        }
-        isUpdate = false;
     }
 
     /**
@@ -488,7 +486,7 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
                         }
                     });
         } else if (stateType == 1 || stateType == 3) {
-            if (taskItemAdapter == null) {
+            if (headerFooterItemAdapter == null) {
                 headerFooterItemAdapter = new HeaderFooterAdapter<>(taskItemAdapter = new TaskItemAdapter());
 
                 View headerView = HeaderFooterAdapter.inflaterView(getContext(), R.layout.header_search_comm, recyclerView);
@@ -496,10 +494,9 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
                 registerClick(rl_comm_search);
                 headerFooterItemAdapter.addHeader(headerView);
                 taskItemAdapter.registerAdapterDataObserver(new RefreshViewEmptyObserver(refreshLayout, taskItemAdapter));
-                recyclerView.setAdapter(headerFooterItemAdapter);
             }
+            recyclerView.setAdapter(headerFooterItemAdapter);
             taskItemAdapter.bindData(true, taskEntity.items);
-            newTaskCardview.setVisibility(View.GONE);
             if (linearLayoutManager.getStackFromEnd())
                 linearLayoutManager.setStackFromEnd(false);
         }
@@ -809,6 +806,7 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
     @Override
     public void onDestroy() {
         super.onDestroy();
+        handler.removeCallbacksAndMessages(null);
         if (unbinder != null) {
             unbinder.unbind();
         }
