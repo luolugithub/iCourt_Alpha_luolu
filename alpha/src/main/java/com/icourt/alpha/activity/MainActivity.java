@@ -17,8 +17,6 @@ import android.support.v4.util.ArrayMap;
 import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
 import android.util.SparseArray;
-import android.util.SparseIntArray;
-import android.util.SparseLongArray;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -43,6 +41,7 @@ import com.icourt.alpha.entity.bean.IMMessageCustomBody;
 import com.icourt.alpha.entity.bean.ItemsEntity;
 import com.icourt.alpha.entity.bean.ItemsEntityImp;
 import com.icourt.alpha.entity.bean.TimeEntity;
+import com.icourt.alpha.entity.event.OverTimingRemindEvent;
 import com.icourt.alpha.entity.event.ServerTimingEvent;
 import com.icourt.alpha.entity.event.TimingEvent;
 import com.icourt.alpha.entity.event.UnReadEvent;
@@ -53,14 +52,15 @@ import com.icourt.alpha.fragment.TabProjectFragment;
 import com.icourt.alpha.fragment.TabSearchFragment;
 import com.icourt.alpha.fragment.TabTaskFragment;
 import com.icourt.alpha.fragment.TabTimingFragment;
+import com.icourt.alpha.fragment.dialogfragment.OverTimingRemindDialogFragment;
 import com.icourt.alpha.fragment.dialogfragment.TimingNoticeDialogFragment;
 import com.icourt.alpha.http.AlphaClient;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
+import com.icourt.alpha.interfaces.callback.IOverTimingRemindCallBack;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.interfaces.OnTabDoubleClickListener;
 import com.icourt.alpha.service.DaemonService;
-import com.icourt.alpha.utils.AppManager;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.DensityUtil;
 import com.icourt.alpha.utils.LoginInfoUtils;
@@ -111,14 +111,13 @@ import retrofit2.Response;
  * version 1.0.0
  */
 public class MainActivity extends BaseAppUpdateActivity
-        implements OnFragmentCallBackListener {
+        implements OnFragmentCallBackListener, IOverTimingRemindCallBack {
     public static String KEY_FIND_FRAGMENT = "type_TabFindFragment_fragment";
     public static String KEY_MINE_FRAGMENT = "type_TabMimeFragment_fragment";
     public static String KEY_PROJECT_PERMISSION = "cache_project_permission";
     public static String KEY_CUSTOMER_PERMISSION = "cache_customer_permission";
 
     public static final String KEY_FROM_LOGIN = "FromLogin";
-
 
     public static final int TYPE_FRAGMENT_NEWS = 0;
     public static final int TYPE_FRAGMENT_TASK = 1;
@@ -223,6 +222,7 @@ public class MainActivity extends BaseAppUpdateActivity
         public static final int TYPE_TOKEN_REFRESH = 101;//token刷新
         public static final int TYPE_CHECK_APP_UPDATE = 102;//检查更新
         public static final int TYPE_CHECK_TIMING_UPDATE = 103;//检查计时
+        public static final int TYPE_OVER_TIMING_REMIND_AUTO_CLOSE = 104;//持续计时过久时的提醒覆层关闭
 
         /**
          * 刷新登陆token
@@ -260,12 +260,13 @@ public class MainActivity extends BaseAppUpdateActivity
                     checkAppUpdate(getContext());
                     break;
                 case TYPE_CHECK_TIMING_UPDATE:
-                    TimerManager.getInstance().timerQuerySync();
+                    TimerManager.getInstance().timerQuerySync(null);
+                    break;
+                case TYPE_OVER_TIMING_REMIND_AUTO_CLOSE:
+                    overTimeingRemindDissmiss();
                     break;
             }
         }
-
-
     }
 
     MyHandler mHandler = new MyHandler();
@@ -372,6 +373,7 @@ public class MainActivity extends BaseAppUpdateActivity
         checkNotificationisEnable();
         getPermission();
         timerQuerySync();
+        overTimeingRemindAutoDissmiss();
     }
 
     /**
@@ -620,6 +622,9 @@ public class MainActivity extends BaseAppUpdateActivity
                 checkedTab(R.id.tab_mine, getFragmentType(R.id.tab_mine));
                 break;
             case R.id.tab_timing:
+                if (overTimeingRemindDissmiss()) {
+                    return;
+                }
                 if (TimerManager.getInstance().hasTimer()) {
                     showTimingDialogFragment();
                 } else {
@@ -788,13 +793,27 @@ public class MainActivity extends BaseAppUpdateActivity
                         TimerManager.getInstance().clearTimer();
                     } else {
                         TimerManager.getInstance().resumeTimer(event);
+
+                        // TODO:网络让显示 偶数小时更新覆层 resumeTimer中会通过网络标记位设置本地标记位
+//                        if (TimeUnit.MILLISECONDS.toHours(entity.useTime) >= 2) {
+//                        showOverTimingRemindDialogFragment();
+//                        }
                     }
                 } else {
                     if (event.state == 0) {//计时中...
                         TimerManager.getInstance().resumeTimer(event);
+
+                        // TODO:网络让显示 偶数小时更新覆层 resumeTimer中会通过网络标记位设置本地标记位
+//                        if (TimeUnit.MILLISECONDS.toHours(entity.useTime) >= 2) {
+//                        showOverTimingRemindDialogFragment();
+//                        }
                     }
                 }
             }
+//            else if (TextUtils.equals(event.scene, ServerTimingEvent.)) {
+//             其他端关闭覆层
+//            dismissOverTimingRemindDialogFragment();
+//            }
         }
     }
 
@@ -835,7 +854,7 @@ public class MainActivity extends BaseAppUpdateActivity
      * 接口方式同步计时
      */
     private void timerQuerySync() {
-        TimerManager.getInstance().timerQuerySync();
+        TimerManager.getInstance().timerQuerySync(this);
     }
 
 
@@ -848,6 +867,25 @@ public class MainActivity extends BaseAppUpdateActivity
         //super.onSaveInstanceState(outState);
     }
 
+    /**
+     * 显示或隐藏 持续计时过久时的提醒覆层
+     *
+     * @param event
+     */
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onOverTimingRemindEvent(OverTimingRemindEvent event) {
+        if (event == null) return;
+
+        switch (event.status) {
+            case OverTimingRemindEvent.STATUS_TIMING_REMIND_CLOSE:
+                // APP主动关闭 持续计时过久时的提醒覆层
+                overTimeingRemindDissmiss();
+                break;
+            case OverTimingRemindEvent.STATUS_TIMING_REMIND_HIDE:
+                dismissOverTimingRemindDialogFragment();
+            break;
+        }
+    }
 
     /**
      * 本地计时状态通知
@@ -874,6 +912,11 @@ public class MainActivity extends BaseAppUpdateActivity
                     tabTimingIcon.startAnimation(timingAnim);
                 }
                 tabTimingTv.setText(toTime(event.timingSecond));
+
+                if (judgeEvenTime(event.timingSecond)) {
+                    // >=2的奇数小时更新时间
+                    showOverTimingRemindDialogFragment();
+                }
                 break;
             case TimingEvent.TIMING_STOP:
                 dismissTimingDialogFragment();
@@ -881,6 +924,8 @@ public class MainActivity extends BaseAppUpdateActivity
                 tabTimingIcon.setImageResource(R.mipmap.ic_time_start);
                 tabTimingIcon.clearAnimation();
                 timingAnim = null;
+
+                overTimeingRemindDissmiss();
                 break;
         }
     }
@@ -915,6 +960,18 @@ public class MainActivity extends BaseAppUpdateActivity
         long minute = times % 3600 / 60;
         long second = times % 60;
         return String.format("%02d:%02d:%02d", hour, minute, second);
+    }
+
+    /**
+     * 判断>=2的奇数小时
+     *
+     * @param times 单位Second
+     * @return
+     */
+    private boolean judgeEvenTime(long times) {
+        return true;
+//        long hour = TimeUnit.SECONDS.toHours(times);
+//        return (hour >= 2) && (times % 3600 == 0) && (hour % 2 == 1);
     }
 
     /**
@@ -1070,6 +1127,81 @@ public class MainActivity extends BaseAppUpdateActivity
         }
         TimingNoticeDialogFragment.newInstance(timer)
                 .show(mFragTransaction, tag);
+    }
+
+    /**
+     * 显示 持续计时过久时的提醒覆层
+     *
+     */
+    @Override
+    public void showOverTimingRemindDialogFragment() {
+        if (isDestroyOrFinishing()) return;
+//        if (!TimerManager.getInstance().getTimer().allowOverTimingRemindShow) return;
+
+        String tag = OverTimingRemindDialogFragment.class.getSimpleName();
+        FragmentTransaction mFragTransaction = getSupportFragmentManager().beginTransaction();
+        OverTimingRemindDialogFragment fragment = (OverTimingRemindDialogFragment)
+                getSupportFragmentManager().findFragmentByTag(tag);
+        if (fragment == null) {
+            OverTimingRemindDialogFragment.newInstance(TimerManager.getInstance().getTimer().useTime)
+                    .show(mFragTransaction, tag);
+        } else {
+            fragment.show(TimerManager.getInstance().getTimer().useTime);
+        }
+    }
+
+    /**
+     * 界面移除 持续计时过久时的提醒覆层
+     */
+    public boolean dismissOverTimingRemindDialogFragment() {
+        if (isDestroyOrFinishing()) return false;
+
+        String tag = OverTimingRemindDialogFragment.class.getSimpleName();
+        OverTimingRemindDialogFragment fragment = (OverTimingRemindDialogFragment)
+                getSupportFragmentManager().findFragmentByTag(tag);
+        if (fragment != null) {
+            // TODO:成功后设置本地标记为为不显示
+
+            FragmentTransaction mFragTransaction = getSupportFragmentManager().beginTransaction();
+            mFragTransaction.remove(fragment);
+            mFragTransaction.commitAllowingStateLoss();
+
+            fragment.dismissAllowingStateLoss();
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * 移除网络状态 持续计时过久时的提醒覆层
+     */
+    public void setOverTimingRemindHide() {
+        // TODO:网络请求关闭覆层
+    }
+
+    public boolean overTimeingRemindDissmiss() {
+        if (dismissOverTimingRemindDialogFragment()) {
+            setOverTimingRemindHide();
+            return true;
+        }
+        return false;
+    }
+
+    private void overTimeingRemindAutoDissmiss() {
+        if (mHandler != null) {
+            Message msg = Message.obtain();
+            msg.what = MyHandler.TYPE_OVER_TIMING_REMIND_AUTO_CLOSE;
+            mHandler.sendMessageDelayed(msg, 30_000);
+        }
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+
+        if (mHandler != null) {
+            mHandler.removeMessages(MyHandler.TYPE_OVER_TIMING_REMIND_AUTO_CLOSE);
+        }
     }
 
     /**

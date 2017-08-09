@@ -1,7 +1,10 @@
 package com.icourt.alpha.activity;
 
+import android.animation.Animator;
+import android.animation.ValueAnimator;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -10,9 +13,12 @@ import android.support.v4.app.Fragment;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
+import android.util.Log;
+import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.CheckedTextView;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -29,6 +35,7 @@ import com.icourt.alpha.entity.bean.ProjectEntity;
 import com.icourt.alpha.entity.bean.TaskEntity;
 import com.icourt.alpha.entity.bean.TimeEntity;
 import com.icourt.alpha.entity.bean.WorkType;
+import com.icourt.alpha.entity.event.OverTimingRemindEvent;
 import com.icourt.alpha.entity.event.ServerTimingEvent;
 import com.icourt.alpha.entity.event.TimingEvent;
 import com.icourt.alpha.fragment.dialogfragment.ProjectSimpleSelectDialogFragment;
@@ -38,8 +45,10 @@ import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.utils.DateUtils;
+import com.icourt.alpha.utils.DensityUtil;
 import com.icourt.alpha.utils.JsonUtils;
 import com.icourt.alpha.utils.LoginInfoUtils;
+import com.icourt.alpha.utils.SpUtils;
 import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.widget.manager.TimerManager;
@@ -50,6 +59,7 @@ import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
 import java.io.Serializable;
+import java.util.concurrent.TimeUnit;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -103,7 +113,12 @@ public class TimerTimingActivity extends BaseTimerActivity
     LinearLayout taskLayout;
     @BindView(R.id.root_view)
     LinearLayout rootView;
-
+    @BindView(R.id.over_timing_remind_layout)
+    ViewGroup overTimingRemind;
+    @BindView(R.id.over_timing_title_tv)
+    TextView overTimingTitleTv;
+    @BindView(R.id.over_timing_close_tv)
+    TextView overTimingCloseTv;
 
     public static void launch(@NonNull Context context,
                               @NonNull TimeEntity.ItemEntity timeEntity) {
@@ -134,6 +149,7 @@ public class TimerTimingActivity extends BaseTimerActivity
             titleActionTextView.setText("完成");
         }
         initTimingView();
+
         timeNameTv.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -173,22 +189,40 @@ public class TimerTimingActivity extends BaseTimerActivity
             projectNameTv.setText(TextUtils.isEmpty(itemEntity.matterName) ? "未设置" : itemEntity.matterName);
             worktypeNameTv.setText(TextUtils.isEmpty(itemEntity.workTypeName) ? "未设置" : itemEntity.workTypeName);
             taskNameTv.setText(TextUtils.isEmpty(itemEntity.taskName) ? "未关联" : itemEntity.taskName);
+
+            Drawable[] drawables = overTimingCloseTv.getCompoundDrawables();
+            if (drawables[0] != null) {
+                int px = DensityUtil.dip2px(getContext(), 12);
+                drawables[0].setBounds(0, 0, px, px);
+            }
         }
     }
 
+    private void overTimingRemindClose(boolean accordClose) {
+        SpUtils.getInstance().putData(createOverTimingRemindKey(itemEntity.pkId), false);
+        EventBus.getDefault().post(new OverTimingRemindEvent(OverTimingRemindEvent.STATUS_TIMING_REMIND_HIDE));
+
+        if (accordClose) {
+            // TODO:网络请求
+        }
+    }
 
     @OnClick({
             R.id.project_layout,
             R.id.worktype_layout,
             R.id.task_layout,
             R.id.titleAction,
-            R.id.stop_time_tv})
+            R.id.stop_time_tv,
+            R.id.over_timing_close_tv})
     @Override
     public void onClick(View view) {
         super.onClick(view);
         switch (view.getId()) {
             case R.id.titleAction:
                 finish();
+                break;
+            case R.id.over_timing_close_tv:
+                overTimingRemindClose(true);
                 break;
             case R.id.project_layout://所属项目
                 showProjectSelectDialogFragment(itemEntity.matterPkId);
@@ -353,6 +387,20 @@ public class TimerTimingActivity extends BaseTimerActivity
             case TimingEvent.TIMING_UPDATE_PROGRESS:
                 if (TextUtils.equals(event.timingId, itemEntity.pkId)) {
                     timingTv.setText(toTime(event.timingSecond));
+
+//                    if (SpUtils.getInstance().getBooleanData(createOverTimingRemindKey(itemEntity.pkId), true)) {
+//                        if (TimeUnit.SECONDS.toHours(event.timingSecond) >= 2) {
+                            overTimingRemind.setVisibility(View.VISIBLE);
+
+//                            viewMoveAnimation(true);
+//
+                            String overTimingString = String.format(getContext().getResources()
+                                    .getString(R.string.timer_over_timing_remind_text), TimeUnit.SECONDS.toHours(event.timingSecond));
+                            overTimingTitleTv.setText(overTimingString);
+//                        }
+//                    } else {
+//                        viewMoveAnimation(false);
+//                    }
                 }
                 break;
             case TimingEvent.TIMING_STOP:
@@ -360,6 +408,51 @@ public class TimerTimingActivity extends BaseTimerActivity
                 finish();
                 break;
         }
+    }
+
+    private void viewMoveAnimation(final boolean isShow) {
+        final int durationTime = 300;
+
+        ValueAnimator animator = null;
+        if (isShow) {
+            animator = ValueAnimator.ofInt(0, DensityUtil.dip2px(getContext(), 42));
+        } else if (overTimingRemind.getVisibility() != View.GONE) {
+            animator = ValueAnimator.ofInt(DensityUtil.dip2px(getContext(), 42), 0);
+        }
+        if (animator == null) return;
+        animator.setDuration(durationTime).start();
+        animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                int height = (Integer) animation.getAnimatedValue();
+
+                LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) overTimingRemind.getLayoutParams();
+                params.height = height;
+                overTimingRemind.setLayoutParams(params);
+            }
+        });
+        animator.addListener(new Animator.AnimatorListener() {
+            @Override
+            public void onAnimationStart(Animator animator) {
+            }
+
+            @Override
+            public void onAnimationEnd(Animator animator) {
+                if (!isShow) {
+                    overTimingRemind.setVisibility(View.GONE);
+                }
+            }
+
+            @Override
+            public void onAnimationCancel(Animator animator) {
+
+            }
+
+            @Override
+            public void onAnimationRepeat(Animator animator) {
+
+            }
+        });
     }
 
     /**
@@ -375,23 +468,25 @@ public class TimerTimingActivity extends BaseTimerActivity
         return null;
     }
 
+    public String createOverTimingRemindKey(String pkId) {
+        return TimerTimingActivity.class.getSimpleName() + pkId;
+    }
+
     /**
      * 产品确认：这个页面不做同步
      *
      * @param event
      */
-//    @Subscribe(threadMode = ThreadMode.MAIN)
     public void onServerTimingEvent(ServerTimingEvent event) {
         if (event == null) return;
         if (itemEntity == null) return;
         if (TextUtils.equals(event.clientId, getlocalUniqueId())) return;
         if (event.isSyncObject() && event.isSyncTimingType()) {
-            //信息更新发生变化
-            if (TextUtils.equals(event.scene, ServerTimingEvent.TIMING_SYNC_EDIT)) {
-                if (TextUtils.equals(event.pkId, itemEntity.pkId)) {
-                    itemEntity = event;
-                    initTimingView();
-                }
+            if (TextUtils.equals(event.pkId, itemEntity.pkId)) {
+//             if (TextUtils.equals(event.scene, ServerTimingEvent.)) {
+//             接收推送其他端关闭不再显示
+//                overTimingRemindClose(false);
+//            }
             }
         }
     }

@@ -3,30 +3,21 @@ package com.icourt.alpha.widget.manager;
 import android.support.annotation.CheckResult;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.text.TextUtils;
+import android.support.v4.util.TimeUtils;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParseException;
 import com.icourt.alpha.entity.bean.AlphaUserInfo;
-import com.icourt.alpha.entity.bean.PageEntity;
 import com.icourt.alpha.entity.bean.TimeEntity;
 import com.icourt.alpha.entity.event.TimingEvent;
 import com.icourt.alpha.http.RetrofitServiceFactory;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
-import com.icourt.alpha.utils.DateUtils;
-import com.icourt.alpha.utils.JsonUtils;
+import com.icourt.alpha.interfaces.callback.IOverTimingRemindCallBack;
 import com.icourt.alpha.utils.LoginInfoUtils;
 import com.icourt.alpha.utils.SpUtils;
 import com.icourt.alpha.utils.StringUtils;
-import com.icourt.api.RequestUtils;
 
 import org.greenrobot.eventbus.EventBus;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -274,7 +265,6 @@ public class TimerManager {
         startTimingTask();
     }
 
-
     /**
      * 获取计时对象
      *
@@ -324,7 +314,7 @@ public class TimerManager {
     /**
      * 同步网络计时
      */
-    public void timerQuerySync() {
+    public void timerQuerySync(final IOverTimingRemindCallBack callback) {
         RetrofitServiceFactory
                 .getAlphaApiService()
                 .timerRunningQuery()
@@ -338,6 +328,12 @@ public class TimerManager {
                                 TimerManager.getInstance().updateTimer(response.body().result);
                             } else {
                                 TimerManager.getInstance().resumeTimer(response.body().result);
+                            }
+
+                            TimeEntity.ItemEntity entity = (TimeEntity.ItemEntity) response.body().result;
+                            long hour = TimeUnit.MILLISECONDS.toHours(entity.useTime);
+                            if (callback != null && entity.bubbleOff == TimeEntity.ItemEntity.STATE_BUBBLE_ON &&  hour >= 2) {
+                                callback.showOverTimingRemindDialogFragment();
                             }
                         }
                     }
