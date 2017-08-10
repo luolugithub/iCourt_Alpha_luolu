@@ -5,6 +5,7 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.ViewPager;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -31,6 +32,7 @@ import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.utils.DensityUtil;
 import com.icourt.alpha.utils.RAUtils;
 import com.icourt.alpha.view.NoScrollViewPager;
+import com.icourt.alpha.widget.dialog.BottomActionDialog;
 import com.icourt.alpha.widget.popupwindow.TopMiddlePopup;
 
 import java.io.Serializable;
@@ -66,6 +68,8 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
     NoScrollViewPager viewPager;
     Unbinder unbinder;
     BaseFragmentAdapter baseFragmentAdapter;
+    @BindView(R.id.titleAction2)
+    ImageView titleAction2;
     @BindView(R.id.titleCalendar)
     ImageView titleCalendar;
     TaskListFragment attentionTaskFragment;
@@ -76,7 +80,7 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
     FilterDropEntity doingEntity = new FilterDropEntity("未完成", "0", 0);//未完成
     FilterDropEntity doneEntity = new FilterDropEntity("已完成", "0", 1);//已完成
     FilterDropEntity deleteEntity = new FilterDropEntity("已删除", "0", 3);//已删除
-
+    public static boolean isAwayScroll = false; //切换时是否滚动，在'已完成和已删除'状态下，点击新任务提醒。
     public static TabTaskFragment newInstance() {
         return new TabTaskFragment();
     }
@@ -100,7 +104,7 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
         baseFragmentAdapter.bindData(true,
                 Arrays.asList(
                         alltaskFragment = TaskAllFragment.newInstance(),
-                        attentionTaskFragment = TaskListFragment.newInstance(1, 0)));
+                        attentionTaskFragment = TaskListFragment.newInstance(TaskListFragment.TYPE_MY_ATTENTION, 0)));
 
         topMiddlePopup = new TopMiddlePopup(getContext(), DensityUtil.getWidthInDp(getContext()), (int) (DensityUtil.getHeightInPx(getContext()) - DensityUtil.dip2px(getContext(), 75)), this);
         dropEntities.add(doingEntity);
@@ -139,7 +143,9 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
                         break;
                     case 1:
                         setFirstTabImage(false);
-                        attentionTaskFragment.notifyFragmentUpdate(attentionTaskFragment, position, null);
+                        Bundle bundle = new Bundle();
+                        bundle.putInt("stateType", 0);
+                        attentionTaskFragment.notifyFragmentUpdate(attentionTaskFragment, TaskListFragment.TYPE_MY_ATTENTION, bundle);
                         break;
                 }
             }
@@ -178,13 +184,17 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
         if (select_position != position) {
             FilterDropEntity filterDropEntity = (FilterDropEntity) adapter.getItem(position);
             setFirstTabText(filterDropEntity.name, position);
-            Bundle bundle = new Bundle();
-            bundle.putInt("stateType", filterDropEntity.stateType);
-            alltaskFragment.notifyFragmentUpdate(alltaskFragment, TaskAllFragment.TYPE_ALL_TASK, bundle);
-            viewPager.setNoScroll(false);
-            titleCalendar.setImageResource(R.mipmap.ic_calendar);
+            updateListData(filterDropEntity.stateType);
         }
         titleCalendar.setVisibility(position == 0 ? View.VISIBLE : View.GONE);
+    }
+
+    public void updateListData(int stateType) {
+        Bundle bundle = new Bundle();
+        bundle.putInt("stateType", stateType);
+        alltaskFragment.notifyFragmentUpdate(alltaskFragment, TaskAllFragment.TYPE_ALL_TASK, bundle);
+        viewPager.setNoScroll(false);
+        titleCalendar.setImageResource(R.mipmap.ic_calendar);
     }
 
     private class OnTabClickListener implements View.OnClickListener {
@@ -256,6 +266,7 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
     }
 
     @OnClick({R.id.titleAction,
+            R.id.titleAction2,
             R.id.titleCalendar})
     @Override
     public void onClick(View v) {
@@ -290,9 +301,38 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
             case R.id.titleAction:
                 TaskCreateActivity.launch(getContext(), null, null);
                 break;
+            case R.id.titleAction2:
+                new BottomActionDialog(getContext(),
+                        null,
+                        Arrays.asList("查看他人任务"),
+                        new BottomActionDialog.OnActionItemClickListener() {
+                            @Override
+                            public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
+                                dialog.dismiss();
+                                switch (position) {
+                                    case 0:
+                                        showMemberSelectDialogFragment();
+                                        break;
+                                }
+                            }
+                        }).show();
+                break;
         }
     }
 
+    /**
+     * 展示选择成员对话框
+     */
+    public void showMemberSelectDialogFragment() {
+        String tag = TaskMemberSelectDialogFragment.class.getSimpleName();
+        FragmentTransaction mFragTransaction = getChildFragmentManager().beginTransaction();
+        Fragment fragment = getChildFragmentManager().findFragmentByTag(tag);
+        if (fragment != null) {
+            mFragTransaction.remove(fragment);
+        }
+        TaskMemberSelectDialogFragment.newInstance()
+                .show(mFragTransaction, tag);
+    }
 
     @Override
     public void onDestroy() {

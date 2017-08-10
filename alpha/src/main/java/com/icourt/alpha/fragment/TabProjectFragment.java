@@ -167,9 +167,9 @@ public class TabProjectFragment extends BaseFragment implements TopMiddlePopup.O
                 if (jsonElement != null) {
                     JsonObject jsonObject = jsonElement.getAsJsonObject();
                     if (jsonObject != null) {
-                        doingEntity.count = jsonObject.get("doingCount").getAsString();
-                        doneEntity.count = jsonObject.get("doneCount").getAsString();
-                        pendingEntity.count = jsonObject.get("pendingCount").getAsString();
+                        doingEntity.count = jsonObject.get("openCount").getAsString();
+                        doneEntity.count = jsonObject.get("closeCount").getAsString();
+                        pendingEntity.count = jsonObject.get("terminationCount").getAsString();
                         dropEntities.clear();
                         dropEntities.add(doingEntity);
                         dropEntities.add(doneEntity);

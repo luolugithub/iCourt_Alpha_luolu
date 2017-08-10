@@ -133,9 +133,9 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
     CardView nextTaskCardview;
 
     Handler handler = new Handler();
-    boolean isAwayScroll = false; //切换时是否滚动，在'已完成和已删除'状态下，点击新任务提醒。
+//    boolean isAwayScroll = false; //切换时是否滚动，在'已完成和已删除'状态下，点击新任务提醒。
 
-    public static TaskListFragment newInstance(int type,int stateType) {
+    public static TaskListFragment newInstance(int type, int stateType) {
         TaskListFragment projectTaskFragment = new TaskListFragment();
         Bundle bundle = new Bundle();
         bundle.putInt("type", type);
@@ -213,8 +213,7 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
                 super.onLoadMore(isSilence);
             }
         });
-        if (type == TYPE_ALL)
-            refreshLayout.startRefresh();
+        getData(true);
 
         allTaskEntities = new ArrayList<>();
         todayTaskEntities = new ArrayList<>();
@@ -240,9 +239,10 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
                     if (getParentFragment().getParentFragment() instanceof TabTaskFragment) {
                         if (select_position != 0) {
                             ((TabTaskFragment) (getParentFragment().getParentFragment())).setFirstTabText("未完成", 0);
-                            stateType = 0;
-                            isAwayScroll = true;
-                            getData(true);
+                            ((TabTaskFragment) (getParentFragment().getParentFragment())).updateListData(0);
+//                            stateType = 0;
+                            TabTaskFragment.isAwayScroll = true;
+//                            getData(true);
                         } else {
                             if (newTaskEntities != null) {
                                 if (newTaskEntities.size() > 1) {
@@ -257,6 +257,7 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
                                 }
                             }
                         }
+                        newTaskCardview.setVisibility(View.GONE);
                     }
                 }
                 break;
@@ -287,10 +288,6 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
             if (newTaskEntities.size() > 0) {
                 if (newTaskEntities.get(0) != null) {
                     scrollToByPosition(newTaskEntities.get(0).id);
-                    List<String> ids = new ArrayList<>();
-                    ids.add(newTaskEntities.get(0).id);
-                    onCheckNewTask(ids);
-                    isAwayScroll = false;
                 }
             }
         }
@@ -306,20 +303,45 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
      */
     private void scrollToByPosition(final String taskId) {
         isUpdate = true;
-        int parentPosition = getParentPositon(taskId) + headerFooterAdapter.getHeaderCount();
+        final int parentPosition = getParentPositon(taskId) + headerFooterAdapter.getHeaderCount();
         final int childPosition = getChildPositon(taskId);
-        int offset = childPosition * 130 + 46;
-        linearLayoutManager.scrollToPositionWithOffset(parentPosition, DensityUtil.dip2px(getContext(), offset) * -1);
-        linearLayoutManager.setStackFromEnd(true);
+        final int offset = childPosition * 130 + 46;
 
         handler.removeCallbacksAndMessages(null);
+
+        if (TabTaskFragment.isAwayScroll) {
+            handler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    linearLayoutManager.scrollToPositionWithOffset(parentPosition, DensityUtil.dip2px(getContext(), offset) * -1);
+                    postUpdateItem(taskId, childPosition);
+                }
+            }, 100);
+        } else {
+            linearLayoutManager.scrollToPositionWithOffset(parentPosition, DensityUtil.dip2px(getContext(), offset) * -1);
+            postUpdateItem(taskId, childPosition);
+        }
+        List<String> ids = new ArrayList<>();
+        ids.add(taskId);
+        onCheckNewTask(ids);
+        TabTaskFragment.isAwayScroll = false;
+    }
+
+    /**
+     * item延迟高亮
+     *
+     * @param taskId
+     * @param childPosition
+     */
+    private void postUpdateItem(final String taskId, final int childPosition) {
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
-                if (isUpdate)
+                if (isUpdate) {
                     updateItemViewBackgrond(taskId, childPosition);
+                }
             }
-        }, 300);
+        }, 50);
     }
 
     /**
@@ -399,6 +421,7 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
         if (bundle != null) {
             stateType = bundle.getInt("stateType");
         }
+        this.type = type;
         //刷新
         if (targetFrgament == this && (type == 100 || type == TYPE_MY_ATTENTION)
                 && recyclerView != null) {
@@ -429,7 +452,7 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
                 getTaskGroupData(response.body().result);
                 if (response.body().result != null) {
                     if (type == TYPE_ALL && onTasksChangeListener != null) {
-                        onTasksChangeListener.onTasksChanged(response.body().result.items);
+//                        onTasksChangeListener.onTasksChanged(response.body().result.items);
                     }
                 }
             }
@@ -468,14 +491,17 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
                         @Override
                         public void accept(List<TaskEntity> searchPolymerizationEntities) throws Exception {
                             taskAdapter.bindData(true, allTaskEntities);
-                            if (isAwayScroll) {
+                            if (TabTaskFragment.isAwayScroll) {
+                                if (newTaskEntities.size() > 1) {
+                                    nextTaskLayout.setVisibility(View.VISIBLE);
+                                }
+                                nextTaskTv.setText("下一个 (" + String.valueOf(newTaskEntities.size()) + ")");
                                 updateNextTaskState();
-                            }
-                            if (linearLayoutManager.getStackFromEnd())
-                                linearLayoutManager.setStackFromEnd(false);
-                            if (newTaskEntities.size() > 0) {
-                                newTaskCardview.setVisibility(View.VISIBLE);
-                                newTaskCountTv.setText(String.valueOf(newTaskEntities.size()));
+                            } else {
+                                if (newTaskEntities.size() > 0) {
+                                    newTaskCardview.setVisibility(View.VISIBLE);
+                                    newTaskCountTv.setText(String.valueOf(newTaskEntities.size()));
+                                }
                             }
                             //第一次进入 隐藏搜索框
                             if (isFirstTimeIntoPage) {
@@ -1044,7 +1070,8 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
                 dismissLoadingDialog();
                 if (ids != null) {
                     if (ids.size() == 1) {
-                        newTaskEntities.remove(0);
+                        if (newTaskEntities.size() > 0)
+                            newTaskEntities.remove(0);
                         if (newTaskEntities.size() > 1) {
                             nextTaskLayout.setVisibility(View.VISIBLE);
                         }
