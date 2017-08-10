@@ -90,15 +90,19 @@ public class TaskAllFragment extends BaseFragment implements OnTasksChangeListen
     Fragment currFragment;
     final SparseArray<Fragment> fragmentSparseArray = new SparseArray<>();
 
-    private Fragment getFragment(int type) {
+    private Fragment getFragment(int type, int stateType) {
+        if (type == TYPE_ALL_TASK) {
+            return TaskListFragment.newInstance(0, stateType);
+        }
         Fragment fragment = fragmentSparseArray.get(type);
         if (fragment == null) {
             switch (type) {
                 case TYPE_ALL_TASK:
-                    putFragment(type, TaskListFragment.newInstance(0));
+                    putFragment(type, TaskListFragment.newInstance(0, stateType));
                     break;
                 case TYPE_ALL_TASK_CALENDAR:
-                    putFragment(type, TaskListCalendarFragment.newInstance(taskItemEntityList));
+                    // putFragment(type, TaskListCalendarFragment.newInstance(taskItemEntityList));
+                    putFragment(type, TaskListCalendarFragment.newInstance(null));
                     break;
             }
         }
@@ -111,7 +115,7 @@ public class TaskAllFragment extends BaseFragment implements OnTasksChangeListen
 
     @Override
     protected void initView() {
-        currFragment = addOrShowFragment(getFragment(TYPE_ALL_TASK), currFragment, R.id.main_fl_content);
+        currFragment = addOrShowFragment(getFragment(TYPE_ALL_TASK, 0), currFragment, R.id.main_fl_content);
     }
 
 
@@ -142,15 +146,19 @@ public class TaskAllFragment extends BaseFragment implements OnTasksChangeListen
     public void notifyFragmentUpdate(Fragment targetFrgament, @ChildFragmentType int type, Bundle bundle) {
         super.notifyFragmentUpdate(targetFrgament, type, bundle);
         getArguments().putInt("childFragment", type);
-        currFragment = addOrShowFragment(getFragment(type), currFragment, R.id.main_fl_content);
+        int stateType = 0;
+        if (bundle != null) {
+            stateType = bundle.getInt("stateType");
+        }
+        currFragment = addOrShowFragmentAnim(getFragment(type, stateType), currFragment, R.id.main_fl_content, type == TYPE_ALL_TASK_CALENDAR);
 
         switch (type) {
             case TYPE_ALL_TASK_CALENDAR:
                 updateCalendarRefresh();
                 break;
             case TYPE_ALL_TASK:
-                BaseFragment fragment = (BaseFragment) getFragment(TYPE_ALL_TASK);
-                if (fragment != null) fragment.notifyFragmentUpdate(fragment, 100, bundle);
+//                BaseFragment fragment = (BaseFragment) getFragment(TYPE_ALL_TASK);
+//                if (fragment != null) fragment.notifyFragmentUpdate(fragment, 100, bundle);
                 break;
         }
     }
@@ -161,7 +169,7 @@ public class TaskAllFragment extends BaseFragment implements OnTasksChangeListen
     private void updateCalendarRefresh() {
         Bundle args = new Bundle();
         args.putSerializable(KEY_FRAGMENT_RESULT, taskItemEntityList);
-        Fragment fragment = getFragment(TYPE_ALL_TASK_CALENDAR);
+        Fragment fragment = getFragment(TYPE_ALL_TASK_CALENDAR, 0);
         ((INotifyFragment) fragment).notifyFragmentUpdate(fragment, 0, args);
     }
 

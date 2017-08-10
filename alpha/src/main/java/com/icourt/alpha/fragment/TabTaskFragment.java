@@ -100,7 +100,7 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
         baseFragmentAdapter.bindData(true,
                 Arrays.asList(
                         alltaskFragment = TaskAllFragment.newInstance(),
-                        attentionTaskFragment = TaskListFragment.newInstance(1)));
+                        attentionTaskFragment = TaskListFragment.newInstance(1, 0)));
 
         topMiddlePopup = new TopMiddlePopup(getContext(), DensityUtil.getWidthInDp(getContext()), (int) (DensityUtil.getHeightInPx(getContext()) - DensityUtil.dip2px(getContext(), 75)), this);
         dropEntities.add(doingEntity);
@@ -181,6 +181,8 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
             Bundle bundle = new Bundle();
             bundle.putInt("stateType", filterDropEntity.stateType);
             alltaskFragment.notifyFragmentUpdate(alltaskFragment, TaskAllFragment.TYPE_ALL_TASK, bundle);
+            viewPager.setNoScroll(false);
+            titleCalendar.setImageResource(R.mipmap.ic_calendar);
         }
     }
 
@@ -272,7 +274,14 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
                         case TaskAllFragment.TYPE_ALL_TASK_CALENDAR:
                             viewPager.setNoScroll(false);
                             titleCalendar.setImageResource(R.mipmap.ic_calendar);
-                            taskAllFragment.notifyFragmentUpdate(taskAllFragment, TaskAllFragment.TYPE_ALL_TASK, null);
+                            if (topMiddlePopup.getAdapter() != null) {
+                                FilterDropEntity filterDropEntity = topMiddlePopup.getAdapter().getItem(select_position);
+                                if (filterDropEntity != null) {
+                                    Bundle bundle = new Bundle();
+                                    bundle.putInt("stateType", filterDropEntity.stateType);
+                                    taskAllFragment.notifyFragmentUpdate(taskAllFragment, TaskAllFragment.TYPE_ALL_TASK, bundle);
+                                }
+                            }
                             break;
                     }
                 }
