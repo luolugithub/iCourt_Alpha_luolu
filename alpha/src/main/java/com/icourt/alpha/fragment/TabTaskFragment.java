@@ -184,6 +184,7 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
             viewPager.setNoScroll(false);
             titleCalendar.setImageResource(R.mipmap.ic_calendar);
         }
+        titleCalendar.setVisibility(position == 0 ? View.VISIBLE : View.GONE);
     }
 
     private class OnTabClickListener implements View.OnClickListener {

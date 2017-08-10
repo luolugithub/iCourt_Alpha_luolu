@@ -135,10 +135,11 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
     Handler handler = new Handler();
     boolean isAwayScroll = false; //切换时是否滚动，在'已完成和已删除'状态下，点击新任务提醒。
 
-    public static TaskListFragment newInstance(int type) {
+    public static TaskListFragment newInstance(int type,int stateType) {
         TaskListFragment projectTaskFragment = new TaskListFragment();
         Bundle bundle = new Bundle();
         bundle.putInt("type", type);
+        bundle.putInt("stateType", stateType);
         projectTaskFragment.setArguments(bundle);
         return projectTaskFragment;
     }
@@ -169,6 +170,7 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
     protected void initView() {
         EventBus.getDefault().register(this);
         type = getArguments().getInt("type");
+        stateType = getArguments().getInt("stateType");
         refreshLayout.setNoticeEmpty(R.mipmap.bg_no_task, R.string.task_list_null_text);
         refreshLayout.setMoveForHorizontal(true);
         recyclerView.setLayoutManager(linearLayoutManager = new LinearLayoutManager(getContext()));
@@ -465,13 +467,9 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
                     .subscribe(new Consumer<List<TaskEntity>>() {
                         @Override
                         public void accept(List<TaskEntity> searchPolymerizationEntities) throws Exception {
-                            if (headerFooterAdapter != null) {
-                                recyclerView.setAdapter(headerFooterAdapter);
-                            }
                             taskAdapter.bindData(true, allTaskEntities);
                             if (isAwayScroll) {
                                 updateNextTaskState();
-
                             }
                             if (linearLayoutManager.getStackFromEnd())
                                 linearLayoutManager.setStackFromEnd(false);
@@ -487,15 +485,6 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
                         }
                     });
         } else if (stateType == 1 || stateType == 3) {
-            if (headerFooterItemAdapter == null) {
-                headerFooterItemAdapter = new HeaderFooterAdapter<>(taskItemAdapter = new TaskItemAdapter());
-
-                View headerView = HeaderFooterAdapter.inflaterView(getContext(), R.layout.header_search_comm, recyclerView);
-                View rl_comm_search = headerView.findViewById(R.id.rl_comm_search);
-                registerClick(rl_comm_search);
-                headerFooterItemAdapter.addHeader(headerView);
-                taskItemAdapter.registerAdapterDataObserver(new RefreshViewEmptyObserver(refreshLayout, taskItemAdapter));
-            }
             recyclerView.setAdapter(headerFooterItemAdapter);
             taskItemAdapter.bindData(true, taskEntity.items);
             getNewTasksCount();
