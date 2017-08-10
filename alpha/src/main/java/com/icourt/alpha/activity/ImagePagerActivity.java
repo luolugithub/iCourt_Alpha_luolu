@@ -462,7 +462,7 @@ public class ImagePagerActivity extends BaseUmengActivity implements BasePagerAd
                 final boolean isDinged = isDinged(sFileImageInfoEntity.chatMsgId);
                 new BottomActionDialog(getContext(),
                         null,
-                        Arrays.asList("分享", "转发", isCollected ? "取消收藏" : "收藏", isDinged ? "取消钉" : "钉", "保存到项目"),
+                        Arrays.asList("分享", "发送到享聊", isCollected ? "取消收藏" : "收藏", isDinged ? "取消钉" : "钉", "保存到项目"),
                         new BottomActionDialog.OnActionItemClickListener() {
                             @Override
                             public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
@@ -498,7 +498,7 @@ public class ImagePagerActivity extends BaseUmengActivity implements BasePagerAd
             } else {
                 new BottomActionDialog(getContext(),
                         null,
-                        Arrays.asList("分享", "转发", "保存到项目"),
+                        Arrays.asList("分享", "发送到享聊", "保存到项目"),
                         new BottomActionDialog.OnActionItemClickListener() {
                             @Override
                             public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {

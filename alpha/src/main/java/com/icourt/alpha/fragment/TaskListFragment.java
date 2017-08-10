@@ -798,6 +798,7 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
         if (dueTime <= 0) {
             calendar.set(Calendar.HOUR_OF_DAY, 23);
             calendar.set(Calendar.MINUTE, 59);
+            calendar.set(Calendar.SECOND, 59);
         } else {
             calendar.setTimeInMillis(dueTime);
         }
@@ -842,23 +843,31 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
                 if (updateTaskItemEntity.attendeeUsers != null) {
                     updateTaskItemEntity.attendeeUsers.clear();
                     updateTaskItemEntity.attendeeUsers.addAll(attusers);
-                    updateTask(updateTaskItemEntity, null, null);
+                    updateTask(updateTaskItemEntity, null, null, null);
                 }
             } else if (fragment instanceof DateSelectDialogFragment) {
                 long millis = params.getLong(KEY_FRAGMENT_RESULT);
                 updateTaskItemEntity.dueTime = millis;
-                updateTask(updateTaskItemEntity, null, null);
-
                 TaskReminderEntity taskReminderEntity = (TaskReminderEntity) params.getSerializable("taskReminder");
-                addReminders(updateTaskItemEntity, taskReminderEntity);
+                updateTask(updateTaskItemEntity, null, null, taskReminderEntity);
             }
         }
     }
 
-
+    //切换项目之后，任务组id和负责人列表都需要清空
     @Override
     public void onProjectTaskGroupSelect(ProjectEntity projectEntity, TaskGroupEntity taskGroupEntity) {
-
+        if (projectEntity != null) {
+            if (updateTaskItemEntity != null) {
+                if (updateTaskItemEntity.attendeeUsers != null) {
+                    updateTaskItemEntity.attendeeUsers.clear();
+                }
+            }
+        }
+        if (taskGroupEntity == null) {
+            taskGroupEntity = new TaskGroupEntity();
+            taskGroupEntity.id = "";
+        }
         updateTask2(updateTaskItemEntity, projectEntity, taskGroupEntity);
     }
 
@@ -907,12 +916,15 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
      *
      * @param itemEntity
      */
-    private void updateTask(TaskEntity.TaskItemEntity itemEntity, ProjectEntity projectEntity, TaskGroupEntity taskGroupEntity) {
+    private void updateTask(final TaskEntity.TaskItemEntity itemEntity, ProjectEntity projectEntity, TaskGroupEntity taskGroupEntity, final TaskReminderEntity taskReminderEntity) {
         showLoadingDialog(null);
         getApi().taskUpdate(RequestUtils.createJsonBody(getTaskJson(itemEntity, projectEntity, taskGroupEntity))).enqueue(new SimpleCallBack<JsonElement>() {
             @Override
             public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
                 dismissLoadingDialog();
+                if (itemEntity != null && taskReminderEntity != null) {
+                    addReminders(updateTaskItemEntity, taskReminderEntity);
+                }
                 refreshLayout.startRefresh();
             }
 
@@ -951,8 +963,8 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
             for (TaskEntity.TaskItemEntity.AttendeeUserEntity attendeeUser : itemEntity.attendeeUsers) {
                 jsonarr.add(attendeeUser.userId);
             }
+            jsonObject.add("attendees", jsonarr);
         }
-        jsonObject.add("attendees", jsonarr);
         return jsonObject.toString();
     }
 
@@ -975,15 +987,17 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
         JsonArray jsonarr = new JsonArray();
         if (projectEntity != null) {
             jsonObject.addProperty("matterId", projectEntity.pkId);
-            jsonarr.add(getLoginUserId());
-        } else {
-            if (itemEntity.attendeeUsers != null) {
+        }
+        if (itemEntity.attendeeUsers != null) {
+            if (itemEntity.attendeeUsers.size() > 0) {
                 for (TaskEntity.TaskItemEntity.AttendeeUserEntity attendeeUser : itemEntity.attendeeUsers) {
                     jsonarr.add(attendeeUser.userId);
                 }
+                jsonObject.add("attendees", jsonarr);
             }
+
         }
-        jsonObject.add("attendees", jsonarr);
+
         if (taskGroupEntity != null) {
             jsonObject.addProperty("parentId", taskGroupEntity.id);
         }

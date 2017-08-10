@@ -19,6 +19,7 @@ import android.support.v7.widget.RecyclerView;
 import android.text.SpannableString;
 import android.text.TextUtils;
 import android.util.SparseArray;
+import android.util.SparseIntArray;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
@@ -33,7 +34,6 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.TaskUsersAdapter;
-import com.icourt.alpha.adapter.baseadapter.BaseFragmentAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.entity.bean.TaskEntity;
@@ -818,6 +818,7 @@ public class TaskDetailActivity extends BaseActivity
             jsonObject.addProperty("id", itemEntity.id);
             jsonObject.addProperty("state", itemEntity.state);
             jsonObject.addProperty("name", itemEntity.name);
+            jsonObject.addProperty("parentId", itemEntity.parentId);
             jsonObject.addProperty("valid", true);
             jsonObject.addProperty("updateTime", DateUtils.millis());
             JsonArray jsonarr = new JsonArray();
@@ -826,9 +827,9 @@ public class TaskDetailActivity extends BaseActivity
                     for (TaskEntity.TaskItemEntity.AttendeeUserEntity attendeeUser : itemEntity.attendeeUsers) {
                         jsonarr.add(attendeeUser.userId);
                     }
+                    jsonObject.add("attendees", jsonarr);
                 }
             }
-            jsonObject.add("attendees", jsonarr);
             return jsonObject.toString();
         } catch (Exception e) {
             e.printStackTrace();

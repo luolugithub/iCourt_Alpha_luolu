@@ -1,17 +1,22 @@
 package com.icourt.alpha.adapter;
 
+import android.app.Activity;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.TextUtils;
 import android.text.method.LinkMovementMethod;
 import android.text.util.Linkify;
+import android.view.KeyEvent;
 import android.view.View;
+import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.baseadapter.MultiSelectRecyclerAdapter;
 import com.icourt.alpha.entity.bean.TaskCheckItemEntity;
+import com.icourt.alpha.utils.SystemUtils;
 
 /**
  * Description
@@ -50,7 +55,7 @@ public class TaskCheckItemAdapter extends MultiSelectRecyclerAdapter<TaskCheckIt
         Spannable spannable = new SpannableString(itemEntity.name);
         Linkify.addLinks(spannable, Linkify.WEB_URLS);
 
-        CharSequence text = TextUtils.concat(spannable, "\u200B");
+        final CharSequence text = TextUtils.concat(spannable, "\u200B");
         nameView.setText(text);
         holder.bindChildClick(checkedTextView);
         holder.bindChildClick(deleteView);
@@ -62,6 +67,21 @@ public class TaskCheckItemAdapter extends MultiSelectRecyclerAdapter<TaskCheckIt
                         onLoseFocusListener.loseFocus(holder, position);
                     }
                 }
+            }
+        });
+        //屏蔽回车键 回车键表示完成
+        nameView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent) {
+                if (keyEvent.getKeyCode() == KeyEvent.KEYCODE_ENTER) {
+                    holder.itemView.setFocusable(true);
+                    holder.itemView.setFocusableInTouchMode(true);
+                    holder.itemView.requestFocus();//请求焦点
+                    holder.itemView.findFocus();//获取焦点
+                    SystemUtils.hideSoftKeyBoard(textView.getContext(), textView);
+                    return true;
+                }
+                return false;
             }
         });
     }

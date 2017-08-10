@@ -111,6 +111,7 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
         EventBus.getDefault().register(this);
         taskItemEntity = (TaskEntity.TaskItemEntity) getArguments().getSerializable(KEY_TASK_DETAIL);
         if (taskItemEntity != null) {
+            isFinish = taskItemEntity.state;
             if (taskItemEntity.matter != null) {
                 taskProjectLayout.setVisibility(View.VISIBLE);
                 taskGroupLayout.setVisibility(View.VISIBLE);
@@ -281,7 +282,11 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
             DateSelectDialogFragment.newInstance(calendar, taskReminderEntity, taskId)
                     .show(mFragTransaction, tag);
         } else {
-            DateSelectDialogFragment.newInstance(null, taskReminderEntity, taskId)
+            Calendar calendar = Calendar.getInstance();
+            calendar.set(Calendar.HOUR_OF_DAY, 23);
+            calendar.set(Calendar.MINUTE, 59);
+            calendar.set(Calendar.SECOND, 59);
+            DateSelectDialogFragment.newInstance(calendar, taskReminderEntity, taskId)
                     .show(mFragTransaction, tag);
         }
 
@@ -323,6 +328,10 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
                     taskItemEntity.attendeeUsers.clear();
                 }
             }
+        }
+        if (taskGroupEntity == null) {
+            taskGroupEntity = new TaskGroupEntity();
+            taskGroupEntity.id = "";
         }
         selectedTaskGroup = taskGroupEntity;
         updateTask(taskItemEntity, projectEntity, taskGroupEntity);
@@ -404,6 +413,7 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
             jsonObject.addProperty("id", itemEntity.id);
             jsonObject.addProperty("state", itemEntity.state);
             jsonObject.addProperty("name", itemEntity.name);
+            jsonObject.addProperty("parentId", itemEntity.parentId);
             jsonObject.addProperty("dueTime", itemEntity.dueTime);
             jsonObject.addProperty("description", itemEntity.description);
             jsonObject.addProperty("valid", true);
@@ -411,19 +421,15 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
             JsonArray jsonarr = new JsonArray();
             if (projectEntity != null) {
                 jsonObject.addProperty("matterId", projectEntity.pkId);
-                jsonarr.add(getLoginUserId());
-            } else {
-                if (itemEntity.attendeeUsers != null) {
-                    if (itemEntity.attendeeUsers.size() > 0) {
-                        for (TaskEntity.TaskItemEntity.AttendeeUserEntity attendeeUser : itemEntity.attendeeUsers) {
-                            jsonarr.add(attendeeUser.userId);
-                        }
-                    } else {
-                        jsonarr.add(getLoginUserId());
+            }
+            if (itemEntity.attendeeUsers != null) {
+                if (itemEntity.attendeeUsers.size() > 0) {
+                    for (TaskEntity.TaskItemEntity.AttendeeUserEntity attendeeUser : itemEntity.attendeeUsers) {
+                        jsonarr.add(attendeeUser.userId);
                     }
+                    jsonObject.add("attendees", jsonarr);
                 }
             }
-            jsonObject.add("attendees", jsonarr);
             if (taskGroupEntity != null) {
                 jsonObject.addProperty("parentId", taskGroupEntity.id);
             }
@@ -502,7 +508,7 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
 
                 taskItemEntity.dueTime = millis;
                 taskReminderEntity = (TaskReminderEntity) params.getSerializable("taskReminder");
-                updateTask(taskItemEntity, null, selectedTaskGroup);
+                updateTask(taskItemEntity, null, null);
 
             } else if (fragment instanceof TaskGroupSelectFragment) {//选择任务组回调
                 TaskGroupEntity taskGroupEntity = (TaskGroupEntity) params.getSerializable(KEY_FRAGMENT_RESULT);

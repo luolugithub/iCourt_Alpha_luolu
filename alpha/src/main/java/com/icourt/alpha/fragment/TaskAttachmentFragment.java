@@ -8,6 +8,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
@@ -22,6 +23,7 @@ import com.icourt.alpha.R;
 import com.icourt.alpha.activity.FileBoxDownloadActivity;
 import com.icourt.alpha.adapter.TaskAttachmentAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
+import com.icourt.alpha.adapter.baseadapter.adapterObserver.DataChangeAdapterObserver;
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.entity.bean.TaskAttachmentEntity;
 import com.icourt.alpha.entity.event.TaskActionEvent;
@@ -379,6 +381,28 @@ public class TaskAttachmentFragment extends BaseFragment implements BaseRecycler
                 FileBoxDownloadActivity.launch(getContext(), null, entity.pathInfoVo.repoId, entity.pathInfoVo.filePath, FileBoxDownloadActivity.TASK_DOWNLOAD_FILE_ACTION);
         } else {
             showTopSnackBar("对不起，您没有查看此文件的权限");
+        }
+    }
+    /**
+     * type=100 更新 KEY_HAS_PERMISSION
+     *
+     * @param targetFrgament
+     * @param type
+     * @param bundle
+     */
+    @Override
+    public void notifyFragmentUpdate(Fragment targetFrgament, int type, Bundle bundle) {
+        super.notifyFragmentUpdate(targetFrgament, type, bundle);
+        if (type == 100 && bundle != null) {
+            hasPermission = bundle.getBoolean(KEY_HAS_PERMISSION, false);
+            if (listLayout == null) return;
+            if (!hasPermission) {
+                listLayout.setVisibility(View.GONE);
+                emptyLayout.setVisibility(View.VISIBLE);
+            } else {
+                listLayout.setVisibility(View.VISIBLE);
+                emptyLayout.setVisibility(View.GONE);
+            }
         }
     }
 

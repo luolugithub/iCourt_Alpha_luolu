@@ -494,6 +494,7 @@ public class ProjectTaskFragment extends BaseFragment implements TaskAdapter.OnS
         if (dueTime <= 0) {
             calendar.set(Calendar.HOUR_OF_DAY, 23);
             calendar.set(Calendar.MINUTE, 59);
+            calendar.set(Calendar.SECOND, 59);
         } else {
             calendar.setTimeInMillis(dueTime);
         }
@@ -535,23 +536,33 @@ public class ProjectTaskFragment extends BaseFragment implements TaskAdapter.OnS
                 if (updateTaskItemEntity.attendeeUsers != null) {
                     updateTaskItemEntity.attendeeUsers.clear();
                     updateTaskItemEntity.attendeeUsers.addAll(attusers);
-                    updateTask(updateTaskItemEntity, null, null);
+                    updateTask(updateTaskItemEntity, null, null, null);
                 }
             } else if (fragment instanceof DateSelectDialogFragment) {
                 long millis = params.getLong(KEY_FRAGMENT_RESULT);
                 updateTaskItemEntity.dueTime = millis;
-                updateTask(updateTaskItemEntity, null, null);
-
                 TaskReminderEntity taskReminderEntity = (TaskReminderEntity) params.getSerializable("taskReminder");
-                addReminders(updateTaskItemEntity, taskReminderEntity);
+                updateTask(updateTaskItemEntity, null, null, taskReminderEntity);
+
             }
         }
     }
 
+    //切换项目之后，任务组id和负责人列表都需要清空
     @Override
     public void onProjectTaskGroupSelect(ProjectEntity projectEntity, TaskGroupEntity taskGroupEntity) {
-
-        updateTask(updateTaskItemEntity, projectEntity, taskGroupEntity);
+        if (projectEntity != null) {
+            if (updateTaskItemEntity != null) {
+                if (updateTaskItemEntity.attendeeUsers != null) {
+                    updateTaskItemEntity.attendeeUsers.clear();
+                }
+            }
+        }
+        if (taskGroupEntity == null) {
+            taskGroupEntity = new TaskGroupEntity();
+            taskGroupEntity.id = "";
+        }
+        updateTask(updateTaskItemEntity, projectEntity, taskGroupEntity, null);
     }
 
     /**
@@ -559,12 +570,15 @@ public class ProjectTaskFragment extends BaseFragment implements TaskAdapter.OnS
      *
      * @param itemEntity
      */
-    private void updateTask(TaskEntity.TaskItemEntity itemEntity, ProjectEntity projectEntity, TaskGroupEntity taskGroupEntity) {
+    private void updateTask(final TaskEntity.TaskItemEntity itemEntity, ProjectEntity projectEntity, TaskGroupEntity taskGroupEntity, final TaskReminderEntity taskReminderEntity) {
         showLoadingDialog(null);
         getApi().taskUpdate(RequestUtils.createJsonBody(getTaskJson(itemEntity, projectEntity, taskGroupEntity))).enqueue(new SimpleCallBack<JsonElement>() {
             @Override
             public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
                 dismissLoadingDialog();
+                if (itemEntity != null && taskReminderEntity != null) {
+                    addReminders(updateTaskItemEntity, taskReminderEntity);
+                }
                 refreshLayout.startRefresh();
             }
 
@@ -597,6 +611,8 @@ public class ProjectTaskFragment extends BaseFragment implements TaskAdapter.OnS
             }
             if (taskGroupEntity != null) {
                 jsonObject.addProperty("parentId", taskGroupEntity.id);
+            } else {
+                jsonObject.addProperty("parentId", itemEntity.parentId);
             }
             JsonArray jsonarr = new JsonArray();
             if (itemEntity.attendeeUsers != null) {

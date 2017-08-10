@@ -447,6 +447,7 @@ public class MyFinishTaskActivity extends BaseActivity
         if (dueTime <= 0) {
             calendar.set(Calendar.HOUR_OF_DAY, 23);
             calendar.set(Calendar.MINUTE, 59);
+            calendar.set(Calendar.SECOND, 59);
         } else {
             calendar.setTimeInMillis(dueTime);
         }
@@ -462,15 +463,13 @@ public class MyFinishTaskActivity extends BaseActivity
                 if (updateTaskItemEntity.attendeeUsers != null) {
                     updateTaskItemEntity.attendeeUsers.clear();
                     updateTaskItemEntity.attendeeUsers.addAll(attusers);
-                    updateTask(getTaskJson(updateTaskItemEntity, null, null));
+                    updateTask(getTaskJson(updateTaskItemEntity, null, null), updateTaskItemEntity, null);
                 }
             } else if (fragment instanceof DateSelectDialogFragment) {
                 long millis = params.getLong(KEY_FRAGMENT_RESULT);
                 updateTaskItemEntity.dueTime = millis;
-                updateTask(getTaskJson(updateTaskItemEntity, null, null));
-
                 TaskReminderEntity taskReminderEntity = (TaskReminderEntity) params.getSerializable("taskReminder");
-                addReminders(updateTaskItemEntity, taskReminderEntity);
+                updateTask(getTaskJson(updateTaskItemEntity, null, null), updateTaskItemEntity, taskReminderEntity);
             }
         }
     }
@@ -479,7 +478,7 @@ public class MyFinishTaskActivity extends BaseActivity
     @Override
     public void onProjectTaskGroupSelect(ProjectEntity projectEntity, TaskGroupEntity taskGroupEntity) {
 
-        updateTask(getTaskJsonByProject(updateTaskItemEntity, projectEntity, taskGroupEntity));
+        updateTask(getTaskJsonByProject(updateTaskItemEntity, projectEntity, taskGroupEntity), updateTaskItemEntity, null);
     }
 
     /**
@@ -549,7 +548,7 @@ public class MyFinishTaskActivity extends BaseActivity
         builder.create().show();
     }
 
-    private void updateTask(String requestJson) {
+    private void updateTask(String requestJson, final TaskEntity.TaskItemEntity itemEntity, final TaskReminderEntity taskReminderEntity) {
         if (TextUtils.isEmpty(requestJson)) return;
         showLoadingDialog(null);
         getApi().taskUpdateNew(RequestUtils.createJsonBody(requestJson)).enqueue(new SimpleCallBack<TaskEntity.TaskItemEntity>() {
@@ -558,6 +557,9 @@ public class MyFinishTaskActivity extends BaseActivity
                 dismissLoadingDialog();
 //                refreshLayout.startRefresh();
                 if (response.body().result != null) {
+                    if (itemEntity != null && taskReminderEntity != null) {
+                        addReminders(updateTaskItemEntity, taskReminderEntity);
+                    }
                     int index = taskItemAdapter.getData().indexOf(response.body().result);
                     if (index >= 0) {
                         taskItemAdapter.getData().set(index, response.body().result);
@@ -688,7 +690,7 @@ public class MyFinishTaskActivity extends BaseActivity
         JsonArray jsonarr = new JsonArray();
         if (projectEntity != null) {
             jsonObject.addProperty("matterId", projectEntity.pkId);
-            jsonarr.add(getLoginUserId());
+            // jsonarr.add(getLoginUserId());
         } else {
             if (itemEntity.attendeeUsers != null) {
                 for (TaskEntity.TaskItemEntity.AttendeeUserEntity attendeeUser : itemEntity.attendeeUsers) {
