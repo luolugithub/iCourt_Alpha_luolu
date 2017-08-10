@@ -288,11 +288,13 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
                             titleCalendar.setImageResource(R.mipmap.ic_calendar);
                             if (topMiddlePopup.getAdapter() != null) {
                                 FilterDropEntity filterDropEntity = topMiddlePopup.getAdapter().getItem(select_position);
+                                int stateType = 0;
                                 if (filterDropEntity != null) {
-                                    Bundle bundle = new Bundle();
-                                    bundle.putInt("stateType", filterDropEntity.stateType);
-                                    taskAllFragment.notifyFragmentUpdate(taskAllFragment, TaskAllFragment.TYPE_ALL_TASK, bundle);
+                                    stateType = filterDropEntity.stateType;
                                 }
+                                Bundle bundle = new Bundle();
+                                bundle.putInt("stateType", stateType);
+                                taskAllFragment.notifyFragmentUpdate(taskAllFragment, TaskAllFragment.TYPE_ALL_TASK, bundle);
                             }
                             break;
                     }

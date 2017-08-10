@@ -27,6 +27,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.icourt.alpha.R;
 import com.icourt.alpha.activity.SearchProjectActivity;
+import com.icourt.alpha.activity.TaskDetailActivity;
 import com.icourt.alpha.adapter.TaskAdapter;
 import com.icourt.alpha.adapter.TaskItemAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseArrayRecyclerAdapter;
@@ -89,7 +90,7 @@ import static com.icourt.alpha.fragment.TabTaskFragment.select_position;
  */
 
 public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShowFragmenDialogListener,
-        OnFragmentCallBackListener, ProjectSelectDialogFragment.OnProjectTaskGroupSelectListener {
+        OnFragmentCallBackListener, ProjectSelectDialogFragment.OnProjectTaskGroupSelectListener, BaseRecyclerAdapter.OnItemClickListener {
 
     public static final int TYPE_ALL = 0;//全部
     public static final int TYPE_NEW = 1;//新任务
@@ -196,6 +197,7 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
             View rl_comm_search = headerView.findViewById(R.id.rl_comm_search);
             registerClick(rl_comm_search);
             headerFooterItemAdapter.addHeader(headerView);
+            taskItemAdapter.setOnItemClickListener(this);
             taskItemAdapter.registerAdapterDataObserver(new RefreshViewEmptyObserver(refreshLayout, taskItemAdapter));
             recyclerView.setAdapter(headerFooterItemAdapter);
         }
@@ -240,9 +242,7 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
                         if (select_position != 0) {
                             ((TabTaskFragment) (getParentFragment().getParentFragment())).setFirstTabText("未完成", 0);
                             ((TabTaskFragment) (getParentFragment().getParentFragment())).updateListData(0);
-//                            stateType = 0;
                             TabTaskFragment.isAwayScroll = true;
-//                            getData(true);
                         } else {
                             if (newTaskEntities != null) {
                                 if (newTaskEntities.size() > 1) {
@@ -641,13 +641,13 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
         if (event == null) return;
         switch (event.action) {
             case TimingEvent.TIMING_ADD:
+
+                break;
+            case TimingEvent.TIMING_UPDATE_PROGRESS:
                 TimeEntity.ItemEntity updateItem = TimerManager.getInstance().getTimer();
                 if (updateItem != null) {
                     updateChildTimeing(updateItem.taskPkId, true);
                 }
-                break;
-            case TimingEvent.TIMING_UPDATE_PROGRESS:
-
                 break;
             case TimingEvent.TIMING_STOP:
                 if (lastEntity != null) {
@@ -766,6 +766,15 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
             }
         } else {
             taskAdapter.notifyDataSetChanged();
+        }
+    }
+
+    @Override
+    public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
+        if (adapter instanceof TaskItemAdapter) {
+            TaskEntity.TaskItemEntity taskItemEntity = (TaskEntity.TaskItemEntity) adapter.getItem(adapter.getRealPos(position));
+            if (taskItemEntity != null)
+                TaskDetailActivity.launch(view.getContext(), taskItemEntity.id);
         }
     }
 

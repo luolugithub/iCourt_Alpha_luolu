@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
+import android.support.v7.widget.CardView;
 import android.view.GestureDetector;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -92,6 +93,10 @@ public class TaskListCalendarFragment extends BaseFragment {
     Unbinder unbinder;
     @BindView(R.id.gestureDetectorLayout)
     GestureDetectorLayout gestureDetectorLayout;
+    @BindView(R.id.new_task_count_tv)
+    TextView newTaskCountTv;
+    @BindView(R.id.new_task_cardview)
+    CardView newTaskCardview;
     private int MAXDAILYPAGE = 5000;
     private int dailyTaskPagePOS;
 
@@ -210,6 +215,27 @@ public class TaskListCalendarFragment extends BaseFragment {
             public void onSuccess(Call<ResEntity<TaskEntity>> call, Response<ResEntity<TaskEntity>> response) {
                 if (response.body().result != null) {
                     updateClendarTasks(response.body().result.items);
+                    getNewTasksCount();
+                }
+            }
+        });
+    }
+
+    /**
+     * 获取新任务数量
+     */
+    private void getNewTasksCount() {
+        getApi().newTasksCountQuery().enqueue(new SimpleCallBack<List<String>>() {
+            @Override
+            public void onSuccess(Call<ResEntity<List<String>>> call, Response<ResEntity<List<String>>> response) {
+                if (response.body().result != null) {
+                    int totalCount = response.body().result.size();
+                    if (totalCount > 0) {
+                        newTaskCardview.setVisibility(View.VISIBLE);
+                        newTaskCountTv.setText(String.valueOf(totalCount));
+                    } else {
+                        newTaskCardview.setVisibility(View.GONE);
+                    }
                 }
             }
         });
@@ -489,7 +515,8 @@ public class TaskListCalendarFragment extends BaseFragment {
     @OnClick({R.id.titleBack,
             R.id.titleForward,
             R.id.titleAction,
-            R.id.header_comm_search_ll})
+            R.id.header_comm_search_ll,
+            R.id.new_task_cardview})
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
@@ -523,6 +550,11 @@ public class TaskListCalendarFragment extends BaseFragment {
                         getLoginUserId(),
                         0,
                         SearchProjectActivity.SEARCH_TASK);
+                break;
+            case R.id.new_task_cardview:
+                ((TabTaskFragment) (getParentFragment().getParentFragment())).setFirstTabText("未完成", 0);
+                ((TabTaskFragment) (getParentFragment().getParentFragment())).updateListData(0);
+                TabTaskFragment.isAwayScroll = true;
                 break;
         }
     }
