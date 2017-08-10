@@ -2,10 +2,12 @@ package com.icourt.alpha.activity;
 
 import android.animation.Animator;
 import android.animation.ValueAnimator;
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.os.PersistableBundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.AppBarLayout;
@@ -44,6 +46,7 @@ import com.icourt.alpha.fragment.dialogfragment.WorkTypeSelectDialogFragment;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
+import com.icourt.alpha.interfaces.callback.IOverTimingRemindCallBack;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.DensityUtil;
 import com.icourt.alpha.utils.JsonUtils;
@@ -79,7 +82,7 @@ public class TimerTimingActivity extends BaseTimerActivity
         implements
         OnFragmentCallBackListener {
 
-    private static final String KEY_TIME = "key_time";
+    public static final String KEY_TIME = "key_time";
 
 
     TimeEntity.ItemEntity itemEntity;
@@ -198,12 +201,12 @@ public class TimerTimingActivity extends BaseTimerActivity
         }
     }
 
-    private void overTimingRemindClose(boolean accordClose) {
+    private void overTimingRemindClose(boolean demandClose) {
         SpUtils.getInstance().putData(createOverTimingRemindKey(itemEntity.pkId), false);
         EventBus.getDefault().post(new OverTimingRemindEvent(OverTimingRemindEvent.STATUS_TIMING_REMIND_HIDE));
 
-        if (accordClose) {
-            // TODO:网络请求
+        if (demandClose) {
+            TimerManager.getInstance().setOverTimingRemindClose(TimerManager.OVER_TIME_REMIND_NO_REMIND);
         }
     }
 
@@ -388,19 +391,23 @@ public class TimerTimingActivity extends BaseTimerActivity
                 if (TextUtils.equals(event.timingId, itemEntity.pkId)) {
                     timingTv.setText(toTime(event.timingSecond));
 
-//                    if (SpUtils.getInstance().getBooleanData(createOverTimingRemindKey(itemEntity.pkId), true)) {
-//                        if (TimeUnit.SECONDS.toHours(event.timingSecond) >= 2) {
-                            overTimingRemind.setVisibility(View.VISIBLE);
+                    if (SpUtils.getInstance().getBooleanData(createOverTimingRemindKey(itemEntity.pkId), true)) {
+                        if (TimeUnit.SECONDS.toHours(event.timingSecond) >= 2) {
 
-//                            viewMoveAnimation(true);
-//
-                            String overTimingString = String.format(getContext().getResources()
-                                    .getString(R.string.timer_over_timing_remind_text), TimeUnit.SECONDS.toHours(event.timingSecond));
-                            overTimingTitleTv.setText(overTimingString);
-//                        }
-//                    } else {
-//                        viewMoveAnimation(false);
-//                    }
+                            if (overTimingRemind.getVisibility() != View.VISIBLE) {
+                                overTimingRemind.setVisibility(View.VISIBLE);
+                                viewMoveAnimation(true);
+                            }
+
+                            if (event.timingSecond % 3600 == 0) {
+                                String overTimingString = String.format(getContext().getResources()
+                                        .getString(R.string.timer_over_timing_remind_text), TimeUnit.SECONDS.toHours(event.timingSecond));
+                                overTimingTitleTv.setText(overTimingString);
+                            }
+                        }
+                    } else if (overTimingRemind.getVisibility() != View.GONE) {
+                        viewMoveAnimation(false);
+                    }
                 }
                 break;
             case TimingEvent.TIMING_STOP:
@@ -483,10 +490,9 @@ public class TimerTimingActivity extends BaseTimerActivity
         if (TextUtils.equals(event.clientId, getlocalUniqueId())) return;
         if (event.isSyncObject() && event.isSyncTimingType()) {
             if (TextUtils.equals(event.pkId, itemEntity.pkId)) {
-//             if (TextUtils.equals(event.scene, ServerTimingEvent.)) {
-//             接收推送其他端关闭不再显示
-//                overTimingRemindClose(false);
-//            }
+                if (TextUtils.equals(event.scene, ServerTimingEvent.TIMING_SYNC_NO_REMIND)) {
+                    overTimingRemindClose(false);
+                }
             }
         }
     }

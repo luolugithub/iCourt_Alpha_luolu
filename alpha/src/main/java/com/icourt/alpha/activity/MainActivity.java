@@ -111,7 +111,7 @@ import retrofit2.Response;
  * version 1.0.0
  */
 public class MainActivity extends BaseAppUpdateActivity
-        implements OnFragmentCallBackListener, IOverTimingRemindCallBack {
+        implements OnFragmentCallBackListener, IOverTimingRemindCallBack.IOverTimingRemindBubbleOnCallBack {
     public static String KEY_FIND_FRAGMENT = "type_TabFindFragment_fragment";
     public static String KEY_MINE_FRAGMENT = "type_TabMimeFragment_fragment";
     public static String KEY_PROJECT_PERMISSION = "cache_project_permission";
@@ -793,27 +793,22 @@ public class MainActivity extends BaseAppUpdateActivity
                         TimerManager.getInstance().clearTimer();
                     } else {
                         TimerManager.getInstance().resumeTimer(event);
-
-                        // TODO:网络让显示 偶数小时更新覆层 resumeTimer中会通过网络标记位设置本地标记位
-//                        if (TimeUnit.MILLISECONDS.toHours(entity.useTime) >= 2) {
-//                        showOverTimingRemindDialogFragment();
-//                        }
                     }
                 } else {
                     if (event.state == 0) {//计时中...
                         TimerManager.getInstance().resumeTimer(event);
-
-                        // TODO:网络让显示 偶数小时更新覆层 resumeTimer中会通过网络标记位设置本地标记位
-//                        if (TimeUnit.MILLISECONDS.toHours(entity.useTime) >= 2) {
-//                        showOverTimingRemindDialogFragment();
-//                        }
                     }
                 }
+            } else if (TextUtils.equals(event.scene, ServerTimingEvent.TIMING_SYNC_CLOSE_BUBBLE)) {
+                dismissOverTimingRemindDialogFragment();
+            } else if (TextUtils.equals(event.scene, ServerTimingEvent.TIMING_SYNC_TOO_LONG)) {
+                // 持续计时过久时的提醒覆层关闭 设置本地标记
+                TimeEntity.ItemEntity itemEntity = TimerManager.getInstance().getTimer();
+                itemEntity.bubbleOff = TimeEntity.ItemEntity.STATE_BUBBLE_ON;
+                SpUtils.getInstance().putData(String.format(TimerManager.KEY_TIMER, getlocalUniqueId()), itemEntity);
+
+                showOverTimingRemindDialogFragment();
             }
-//            else if (TextUtils.equals(event.scene, ServerTimingEvent.)) {
-//             其他端关闭覆层
-//            dismissOverTimingRemindDialogFragment();
-//            }
         }
     }
 
@@ -1136,7 +1131,7 @@ public class MainActivity extends BaseAppUpdateActivity
     @Override
     public void showOverTimingRemindDialogFragment() {
         if (isDestroyOrFinishing()) return;
-//        if (!TimerManager.getInstance().getTimer().allowOverTimingRemindShow) return;
+        if (TimerManager.getInstance().getTimer().bubbleOff == TimeEntity.ItemEntity.STATE_BUBBLE_OFF) return;
 
         String tag = OverTimingRemindDialogFragment.class.getSimpleName();
         FragmentTransaction mFragTransaction = getSupportFragmentManager().beginTransaction();
@@ -1160,28 +1155,24 @@ public class MainActivity extends BaseAppUpdateActivity
         OverTimingRemindDialogFragment fragment = (OverTimingRemindDialogFragment)
                 getSupportFragmentManager().findFragmentByTag(tag);
         if (fragment != null) {
-            // TODO:成功后设置本地标记为为不显示
-
             FragmentTransaction mFragTransaction = getSupportFragmentManager().beginTransaction();
             mFragTransaction.remove(fragment);
             mFragTransaction.commitAllowingStateLoss();
 
             fragment.dismissAllowingStateLoss();
+
+            // 持续计时过久时的提醒覆层关闭 设置本地标记
+            TimeEntity.ItemEntity itemEntity = TimerManager.getInstance().getTimer();
+            itemEntity.bubbleOff = TimeEntity.ItemEntity.STATE_BUBBLE_OFF;
+            SpUtils.getInstance().putData(String.format(TimerManager.KEY_TIMER, getlocalUniqueId()), itemEntity);
             return true;
         }
         return false;
     }
 
-    /**
-     * 移除网络状态 持续计时过久时的提醒覆层
-     */
-    public void setOverTimingRemindHide() {
-        // TODO:网络请求关闭覆层
-    }
-
     public boolean overTimeingRemindDissmiss() {
         if (dismissOverTimingRemindDialogFragment()) {
-            setOverTimingRemindHide();
+            TimerManager.getInstance().setOverTimingRemindClose(TimerManager.OVER_TIME_REMIND_BUBBLE_OFF);
             return true;
         }
         return false;

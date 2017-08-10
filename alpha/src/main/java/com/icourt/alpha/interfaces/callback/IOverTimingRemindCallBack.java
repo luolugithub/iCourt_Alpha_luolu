@@ -10,6 +10,7 @@ import android.webkit.WebView;
  * version 1.0.0
  */
 public interface IOverTimingRemindCallBack {
-
-    void showOverTimingRemindDialogFragment();
+    public interface IOverTimingRemindBubbleOnCallBack {
+        void showOverTimingRemindDialogFragment();
+    }
 }

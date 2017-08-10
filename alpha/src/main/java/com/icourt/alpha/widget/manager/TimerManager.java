@@ -3,7 +3,6 @@ package com.icourt.alpha.widget.manager;
 import android.support.annotation.CheckResult;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v4.util.TimeUtils;
 
 import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.icourt.alpha.entity.bean.TimeEntity;
@@ -35,7 +34,9 @@ import retrofit2.Response;
  */
 public class TimerManager {
 
-    private static final String KEY_TIMER = "key_timer_entity_%s";
+    public static final String KEY_TIMER = "key_timer_entity_%s";
+    public static final int OVER_TIME_REMIND_NO_REMIND = 1;
+    public static final int OVER_TIME_REMIND_BUBBLE_OFF = 2;
 
     private TimerManager() {
 
@@ -310,11 +311,10 @@ public class TimerManager {
         return timer != null && StringUtils.equalsIgnoreCase(id, timer.pkId, false);
     }
 
-
     /**
      * 同步网络计时
      */
-    public void timerQuerySync(final IOverTimingRemindCallBack callback) {
+    public void timerQuerySync(final IOverTimingRemindCallBack.IOverTimingRemindBubbleOnCallBack callback) {
         RetrofitServiceFactory
                 .getAlphaApiService()
                 .timerRunningQuery()
@@ -342,6 +342,27 @@ public class TimerManager {
                     public void onFailure(Call<ResEntity<TimeEntity.ItemEntity>> call, Throwable t) {
                         super.onFailure(call, t);
                         TimerManager.getInstance().resumeTimer();
+                    }
+                });
+    }
+
+    /**
+     * 请求网络 关闭持续计时过久时的提醒覆层 或者 不再提醒标记
+     */
+    public void setOverTimingRemindClose(int operType) {
+        RetrofitServiceFactory
+                .getAlphaApiService()
+                .timerOverTimingRemindClose(getTimerId(), operType)
+                .enqueue(new SimpleCallBack<String>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<String>> call, Response<ResEntity<String>> response) {
+                        if (response.body().succeed) {
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<ResEntity<String>> call, Throwable t) {
+                        super.onFailure(call, t);
                     }
                 });
     }

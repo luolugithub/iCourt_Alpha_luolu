@@ -21,6 +21,9 @@ public class ServerTimingEvent extends TimeEntity.ItemEntity {
     public static final String TIMING_SYNC_START = "TIMING_SYNC_START";
     public static final String TIMING_SYNC_EDIT = "TIMING_SYNC_EDIT";
     public static final String TIMING_SYNC_DELETE = "TIMING_SYNC_DELETE";
+    public static final String TIMING_SYNC_CLOSE_BUBBLE = "TIMING_CLOSE_BUBBLE";
+    public static final String TIMING_SYNC_NO_REMIND = "TIMING_NO_REMIND";
+    public static final String TIMING_SYNC_TOO_LONG = "TIMING_TOO_LONG";
 
     @StringDef({TIMING_SYNC,
             TIMING_SYNC_START,

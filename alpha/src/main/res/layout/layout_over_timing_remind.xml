@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/over_timing_remind_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#fff9f4">
+    android:background="#fff9f4"
+    android:visibility="gone">
 
     <com.icourt.alpha.view.fittextview.AutofitTextView
         android:id="@+id/over_timing_title_tv"

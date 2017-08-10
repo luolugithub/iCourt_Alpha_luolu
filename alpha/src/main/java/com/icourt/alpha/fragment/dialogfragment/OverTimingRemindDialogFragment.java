@@ -1,10 +1,14 @@
 package com.icourt.alpha.fragment.dialogfragment;
 
+import android.app.Activity;
 import android.app.Dialog;
+import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -18,6 +22,7 @@ import com.icourt.alpha.R;
 import com.icourt.alpha.activity.TimerTimingActivity;
 import com.icourt.alpha.base.BaseDialogFragment;
 import com.icourt.alpha.entity.event.OverTimingRemindEvent;
+import com.icourt.alpha.interfaces.callback.IOverTimingRemindCallBack;
 import com.icourt.alpha.utils.DensityUtil;
 import com.icourt.alpha.widget.manager.TimerManager;
 
@@ -54,7 +59,9 @@ public class OverTimingRemindDialogFragment extends BaseDialogFragment {
      */
     public static OverTimingRemindDialogFragment newInstance(@NonNull long useTime) {
         OverTimingRemindDialogFragment fragment = new OverTimingRemindDialogFragment();
-        putArgumentsData(fragment, useTime);
+        Bundle args = new Bundle();
+        args.putLong(USE_TIME, useTime);
+        fragment.setArguments(args);
         return fragment;
     }
 
@@ -64,19 +71,11 @@ public class OverTimingRemindDialogFragment extends BaseDialogFragment {
      * @return
      */
     public void show(@NonNull long useTime) {
-        putArgumentsData(this, useTime);
-
         if (overTimingTitleTv != null && useTime != 0) {
             String overTimingString = String.format(getContext().getResources()
                     .getString(R.string.timer_over_timing_remind_text), TimeUnit.MILLISECONDS.toHours(useTime));
             overTimingTitleTv.setText(overTimingString);
         }
-    }
-
-    private static void putArgumentsData(@NonNull Fragment fragment, @NonNull long useTime) {
-        Bundle args = new Bundle();
-        args.putLong(USE_TIME, useTime);
-        fragment.setArguments(args);
     }
 
     @Nullable

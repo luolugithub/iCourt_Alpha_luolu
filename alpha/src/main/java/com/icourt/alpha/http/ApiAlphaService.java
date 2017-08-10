@@ -44,6 +44,7 @@ import retrofit2.http.GET;
 import retrofit2.http.Multipart;
 import retrofit2.http.POST;
 import retrofit2.http.PUT;
+import retrofit2.http.Part;
 import retrofit2.http.PartMap;
 import retrofit2.http.Path;
 import retrofit2.http.Query;
@@ -1249,6 +1250,14 @@ public interface ApiAlphaService {
     @POST("api/v2/tasks/{taskId}/reminders")
     Call<ResEntity<TaskReminderEntity>> taskReminderAdd(@Path("taskId") String taskId,
                                                         @Body RequestBody body);
+
+    /**
+     * 设置 持续计时过久提醒 关闭
+     * @return
+     */
+    @FormUrlEncoded
+    @PUT("api/v2/timing/timing/{id}/bubble")
+    Call<ResEntity<String>> timerOverTimingRemindClose(@Path("id") String id, @Field("operType") int operType);
 }
 
 
