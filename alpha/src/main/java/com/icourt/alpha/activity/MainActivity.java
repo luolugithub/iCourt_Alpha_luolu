@@ -47,6 +47,7 @@ import com.icourt.alpha.entity.event.ServerTimingEvent;
 import com.icourt.alpha.entity.event.TimingEvent;
 import com.icourt.alpha.entity.event.UnReadEvent;
 import com.icourt.alpha.fragment.TabCustomerFragment;
+import com.icourt.alpha.fragment.TabDocumentsFragment;
 import com.icourt.alpha.fragment.TabMineFragment;
 import com.icourt.alpha.fragment.TabNewsFragment;
 import com.icourt.alpha.fragment.TabProjectFragment;
@@ -127,6 +128,7 @@ public class MainActivity extends BaseAppUpdateActivity
     public static final int TYPE_FRAGMENT_TIMING = 4;
     public static final int TYPE_FRAGMENT_CUSTOMER = 5;
     public static final int TYPE_FRAGMENT_SEARCH = 6;
+    public static final int TYPE_FRAGMENT_DOCUMENTS = 7;
 
     @IntDef({
             TYPE_FRAGMENT_NEWS,
@@ -135,7 +137,8 @@ public class MainActivity extends BaseAppUpdateActivity
             TYPE_FRAGMENT_MINE,
             TYPE_FRAGMENT_TIMING,
             TYPE_FRAGMENT_CUSTOMER,
-            TYPE_FRAGMENT_SEARCH})
+            TYPE_FRAGMENT_SEARCH,
+            TYPE_FRAGMENT_DOCUMENTS})
     @Retention(RetentionPolicy.SOURCE)
     public @interface ChildFragmentType {
 
@@ -147,7 +150,8 @@ public class MainActivity extends BaseAppUpdateActivity
             new ItemsEntity("我的", TYPE_FRAGMENT_MINE, R.drawable.tab_mine),
             new ItemsEntity("计时", TYPE_FRAGMENT_TIMING, R.drawable.tab_timer),
             new ItemsEntity("客户", TYPE_FRAGMENT_CUSTOMER, R.drawable.tab_customer),
-            new ItemsEntity("搜索", TYPE_FRAGMENT_SEARCH, R.drawable.tab_search));
+            new ItemsEntity("搜索", TYPE_FRAGMENT_SEARCH, R.drawable.tab_search),
+            new ItemsEntity("文档", TYPE_FRAGMENT_DOCUMENTS, R.drawable.tab_news));
 
     //可改变的tab
     private final List<ItemsEntity> tabChangeableData = new ArrayList<>();
@@ -347,6 +351,9 @@ public class MainActivity extends BaseAppUpdateActivity
                     new ItemsEntity("搜索", TYPE_FRAGMENT_SEARCH, R.drawable.tab_search),
                     new ItemsEntity("我的", TYPE_FRAGMENT_MINE, R.drawable.tab_mine)));
         }
+
+        //增加文档
+        tabChangeableData.add(new ItemsEntity("文档", TYPE_FRAGMENT_DOCUMENTS, R.drawable.tab_news));
     }
 
 
@@ -441,6 +448,8 @@ public class MainActivity extends BaseAppUpdateActivity
                 return TYPE_FRAGMENT_TIMING;
             case TYPE_FRAGMENT_MINE:
                 return TYPE_FRAGMENT_MINE;
+            case TYPE_FRAGMENT_DOCUMENTS:
+                return TYPE_FRAGMENT_DOCUMENTS;
         }
         return TYPE_FRAGMENT_PROJECT;
     }
@@ -676,6 +685,9 @@ public class MainActivity extends BaseAppUpdateActivity
                     break;
                 case TYPE_FRAGMENT_MINE:
                     fragment = TabMineFragment.newInstance();
+                    break;
+                case TYPE_FRAGMENT_DOCUMENTS:
+                    fragment = TabDocumentsFragment.newInstance();
                     break;
             }
         }

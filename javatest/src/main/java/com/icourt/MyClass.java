@@ -2,13 +2,16 @@ package com.icourt;
 
 import java.text.CollationKey;
 import java.text.Collator;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class MyClass {
 
@@ -33,14 +36,33 @@ public class MyClass {
     };
 
     public static void main(String[] args) throws Exception {
-        List<String> data = Arrays.asList("测试二","测5","测试三", "aa");
+
+        String s = "2017-04-20T01:43:45+08:00";
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+        Date parse = simpleDateFormat.parse(s);
+        log("------->" + simpleDateFormat.format(parse));
+
+
+        // * 特殊字符不能作为资料库名称：'\\', '/', ':', '*', '?', '"', '<', '>', '|', '\b', '\t'
+        Pattern pattern = Pattern.compile("[\\|/|:|*|?|''|<|>|\\||\\\\b|\t]", Pattern.CASE_INSENSITIVE);
+        String text = "xx\b";
+        Matcher matcher = pattern.matcher(text);
+        while (matcher.find()) {
+            log("保护字符 " + text.substring(matcher.start(), matcher.end()));
+            return;
+        }
+
+        log("-------->" + matcher.find());
+
+
+        List<String> data = Arrays.asList("测试二", "测5", "测试三", "aa");
         Collections.sort(data, new Comparator<String>() {
             @Override
             public int compare(String s, String t1) {
                 Collator cmp = Collator.getInstance(java.util.Locale.CHINA);
                 CollationKey c1 = cmp.getCollationKey(s);
                 CollationKey c2 = cmp.getCollationKey(t1);
-                return cmp.compare(c1.getSourceString(),c2.getSourceString());
+                return cmp.compare(c1.getSourceString(), c2.getSourceString());
 //                return s.compareTo(t1);
             }
         });

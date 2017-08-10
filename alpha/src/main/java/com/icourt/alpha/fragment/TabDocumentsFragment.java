@@ -2,12 +2,25 @@ package com.icourt.alpha.fragment;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.design.widget.AppBarLayout;
+import android.support.design.widget.TabLayout;
+import android.support.v4.view.ViewPager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 
 import com.icourt.alpha.R;
+import com.icourt.alpha.activity.FolderActionActivity;
+import com.icourt.alpha.adapter.baseadapter.BaseFragmentAdapter;
 import com.icourt.alpha.base.BaseFragment;
+
+import java.util.Arrays;
+
+import butterknife.BindView;
+import butterknife.ButterKnife;
+import butterknife.OnClick;
+import butterknife.Unbinder;
 
 /**
  * Description  文档模块tab页面
@@ -18,14 +31,60 @@ import com.icourt.alpha.base.BaseFragment;
  */
 public class TabDocumentsFragment extends BaseFragment {
 
+    Unbinder unbinder;
+    BaseFragmentAdapter baseFragmentAdapter;
+    @BindView(R.id.tabLayout)
+    TabLayout tabLayout;
+    @BindView(R.id.titleAction)
+    ImageView titleAction;
+    @BindView(R.id.titleView)
+    AppBarLayout titleView;
+    @BindView(R.id.viewPager)
+    ViewPager viewPager;
+
+    public static TabDocumentsFragment newInstance() {
+        return new TabDocumentsFragment();
+    }
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        return super.onCreateView(R.layout.fragment_tab_documents, inflater, container, savedInstanceState);
+        View view = super.onCreateView(R.layout.fragment_tab_documents, inflater, container, savedInstanceState);
+        unbinder = ButterKnife.bind(this, view);
+        return view;
     }
 
     @Override
     protected void initView() {
+        viewPager.setAdapter(baseFragmentAdapter = new BaseFragmentAdapter(getChildFragmentManager()));
+        tabLayout.setupWithViewPager(viewPager);
+        baseFragmentAdapter.bindTitle(true,
+                Arrays.asList(
+                        "我的资料库",
+                        "共享给我的",
+                        "律所资料库",
+                        "项目资料库"));
+        baseFragmentAdapter.bindData(true,
+                Arrays.asList(
+                        DocumentsListFragment.newInstance(0),
+                        DocumentsListFragment.newInstance(1),
+                        DocumentsListFragment.newInstance(2),
+                        DocumentsListFragment.newInstance(3)));
+    }
 
+    @OnClick({R.id.titleAction})
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.titleAction:
+                FolderActionActivity.launchCreate(getContext());
+                break;
+        }
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        unbinder.unbind();
     }
 }

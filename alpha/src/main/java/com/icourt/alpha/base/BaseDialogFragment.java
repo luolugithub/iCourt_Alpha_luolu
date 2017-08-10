@@ -110,6 +110,18 @@ public abstract class BaseDialogFragment extends DialogFragment
         window.setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.WRAP_CONTENT);
     }
 
+    public static void show(DialogFragment fragment,
+                            String tag,
+                            FragmentTransaction fragmentTransaction) {
+        fragment.show(fragmentTransaction, tag);
+    }
+
+    public static void show(DialogFragment fragment,
+                            String tag,
+                            FragmentManager fragmentManager) {
+        fragment.show(fragmentManager, tag);
+    }
+
     @Override
     @CallSuper
     public void onResume() {

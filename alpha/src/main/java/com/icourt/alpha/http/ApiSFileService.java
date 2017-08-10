@@ -1,13 +1,18 @@
 package com.icourt.alpha.http;
 
 import com.google.gson.JsonElement;
+import com.icourt.alpha.entity.bean.DocumentRootEntity;
 import com.icourt.alpha.entity.bean.FileBoxBean;
+import com.icourt.alpha.entity.bean.FolderDocumentEntity;
 
 import java.util.List;
 import java.util.Map;
 
 import okhttp3.RequestBody;
 import retrofit2.Call;
+import retrofit2.http.DELETE;
+import retrofit2.http.Field;
+import retrofit2.http.FormUrlEncoded;
 import retrofit2.http.GET;
 import retrofit2.http.Header;
 import retrofit2.http.Multipart;
@@ -52,7 +57,6 @@ public interface ApiSFileService {
 
     /**
      * 获取上传文件url
-     *
      */
     @GET("api2/repos/{seaFileRepoId}/upload-link/")
     Call<JsonElement> projectUploadUrlQuery(@Header("Authorization") String authToken, @Path("seaFileRepoId") String seaFileRepoId);
@@ -79,4 +83,73 @@ public interface ApiSFileService {
      */
     @GET("api2/repos/{seaFileRepoId}/file/")
     Call<JsonElement> fileboxDownloadUrlQuery(@Header("Authorization") String authToken, @Path("seaFileRepoId") String seaFileRepoId, @Query("p") String rootName);
+
+    /**
+     * 获取资料库
+     *
+     * @param page
+     * @param per_page
+     * @return
+     */
+    @GET("api/v2.1/alpha-box-repos/")
+    Call<List<DocumentRootEntity>> documentRootQuery(
+            @Header("Authorization") String authToken,
+            @Query("page") int page,
+            @Query("per_page") int per_page);
+
+
+    /**
+     * 创建资料库
+     *
+     * @param authToken
+     * @param name
+     * @return
+     */
+    @POST("api2/repos/")
+    @FormUrlEncoded
+    Call<DocumentRootEntity> documentRootCreate(@Header("Authorization") String authToken,
+                                                @Field("name") String name);
+
+    /**
+     * 资料库更改名字
+     *
+     * @param authToken
+     * @param name
+     * @param op        op=rename
+     * @return
+     */
+    @POST("api2/repos/{documentRootId}/")
+    @FormUrlEncoded
+    Call<String> documentRootUpdateName(@Header("Authorization") String authToken,
+                                        @Path("documentRootId") String documentRootId,
+                                        @Query("op") String op,
+                                        @Field("repo_name") String name);
+
+
+    /**
+     * 删除资料库
+     *
+     * @param authToken
+     * @param documentRootId
+     * @return
+     */
+    @DELETE("api2/repos/{documentRootId}/")
+    Call<String> documentRootDelete(@Header("Authorization") String authToken,
+                                    @Path("documentRootId") String documentRootId);
+
+
+    /**
+     * 文档目录查询
+     *
+     * @param authToken
+     * @param documentRootId
+     * @param p              p=/代表资料库根目录   p=/+目录1 代表资料库一级目录
+     * @return
+     */
+    @GET("api2/repos/{documentRootId}/dir/")
+    Call<List<FolderDocumentEntity>> documentDirQuery(@Header("Authorization") String authToken,
+                                                      @Path("documentRootId") String documentRootId,
+                                                      @Query("p") String p);
+
+
 }

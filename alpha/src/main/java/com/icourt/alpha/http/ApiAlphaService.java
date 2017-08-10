@@ -7,6 +7,7 @@ import com.icourt.alpha.entity.bean.AppVersionEntity;
 import com.icourt.alpha.entity.bean.CommentEntity;
 import com.icourt.alpha.entity.bean.ContactDeatilBean;
 import com.icourt.alpha.entity.bean.CustomerEntity;
+import com.icourt.alpha.entity.bean.DocumentRootEntity;
 import com.icourt.alpha.entity.bean.GroupBean;
 import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.icourt.alpha.entity.bean.IMMessageCustomBody;
@@ -16,6 +17,7 @@ import com.icourt.alpha.entity.bean.MsgConvert2Task;
 import com.icourt.alpha.entity.bean.PageEntity;
 import com.icourt.alpha.entity.bean.ProjectDetailEntity;
 import com.icourt.alpha.entity.bean.ProjectEntity;
+import com.icourt.alpha.entity.bean.SFileTokenEntity;
 import com.icourt.alpha.entity.bean.SearchEngineEntity;
 import com.icourt.alpha.entity.bean.SelectGroupBean;
 import com.icourt.alpha.entity.bean.TaskAttachmentEntity;
@@ -48,8 +50,6 @@ import retrofit2.http.PartMap;
 import retrofit2.http.Path;
 import retrofit2.http.Query;
 import retrofit2.http.Url;
-
-import static com.umeng.analytics.pro.x.P;
 
 /**
  * @author xuanyouwu
@@ -421,6 +421,7 @@ public interface ApiAlphaService {
      */
     @GET("api/v2/documents/getToken")
     Call<JsonObject> projectQueryFileBoxToken();
+
 
     /**
      * 获取项目详情文档id
@@ -1249,6 +1250,21 @@ public interface ApiAlphaService {
     @POST("api/v2/tasks/{taskId}/reminders")
     Call<ResEntity<TaskReminderEntity>> taskReminderAdd(@Path("taskId") String taskId,
                                                         @Body RequestBody body);
+
+
+    /**************资料库*****************/
+
+    /**
+     * sfile 资料库 文档token
+     * <p>
+     * 文档地址：http://testpms.alphalawyer.cn/ilaw/swagger/index.html#!/documents-api/getAuthTokenUsingGET
+     *
+     * @return
+     */
+    @GET("api/v2/documents/getToken")
+    Call<SFileTokenEntity<String>> documentTokenQuery();
+
+
 }
 
 

@@ -8,7 +8,7 @@
  6. 需求文档(wiki http://wiki.alphalawyer.cn) 找吕东东开一个账户;  
  7. app bug监控系统 bugtags,请自行注册,然后让吴佑炫邀请加入;  
  8. 查看app gradle环境与打包,安装好app,试用并测试和熟悉功能与业务;
- 9. 让佑炫讲解项目的模块与代码架构;  
+ 9. 接口文档地址:https://dev.alphalawyer.cn/ilaw/swagger/index.html#/ 
  
 #merge requests  
    不允许提交到主要分支,fork一份代码,建立自己的本地分支(格式:开发分支+mr+名称简称 如:permission_mr_wyx),并提交request;  

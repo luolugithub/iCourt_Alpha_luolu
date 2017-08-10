@@ -105,6 +105,7 @@ public class FileUtils {
             {"", "*/*"}
     };
 
+
     /**
      * 获取跟目录
      *
@@ -296,6 +297,7 @@ public class FileUtils {
      * @return
      */
     public static String getFileType(String fileName) {
+        if (TextUtils.isEmpty(fileName)) return null;
         //获取后缀名前的分隔符"."在fName中的位置。
         int dotIndex = fileName.lastIndexOf(".");
         if (dotIndex < 0) {

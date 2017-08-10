@@ -305,6 +305,16 @@
             android:name=".activity.AlphaSpeciaSetActivity"
             android:screenOrientation="portrait" />
 
+        <activity
+            android:name=".activity.FolderActionActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="stateVisible" />
+        <activity
+            android:name=".activity.FolderListActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:screenOrientation="portrait" />
+
         <meta-data
             android:name="com.icourt.alpha.utils.glide.MyGlideModule"
             android:value="GlideModule" />

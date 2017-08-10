@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <include layout="@layout/layout_title_type_3" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:background="@android:color/white"
+        android:orientation="horizontal"
+        android:paddingLeft="14dp"
+        android:paddingRight="14dp">
+
+        <ImageView
+            android:layout_width="32dp"
+            android:layout_height="34dp"
+            android:layout_marginBottom="11dp"
+            android:layout_marginTop="11dp"
+            android:src="@mipmap/ic_document" />
+
+        <EditText
+            android:id="@+id/document_name_et"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:background="@null"
+            android:gravity="center_vertical"
+            android:hint="资料库名称"
+            android:imeOptions="actionNone"
+            android:maxLength="256"
+            android:maxLines="10"
+            android:paddingBottom="11dp"
+            android:paddingLeft="14dp"
+            android:paddingTop="11dp"
+            android:textColor="@color/alpha_font_color_black"
+            android:textSize="16sp" />
+    </LinearLayout>
+
+</LinearLayout>
