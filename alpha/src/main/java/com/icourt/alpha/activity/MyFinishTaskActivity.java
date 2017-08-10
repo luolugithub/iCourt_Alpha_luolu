@@ -770,11 +770,14 @@ public class MyFinishTaskActivity extends BaseActivity
     public void onTimerEvent(TimingEvent event) {
         if (event == null) return;
         switch (event.action) {
-            case TimingEvent.TIMING_UPDATE_PROGRESS:
+            case TimingEvent.TIMING_ADD:
                 TimeEntity.ItemEntity updateItem = TimerManager.getInstance().getTimer();
                 if (updateItem != null) {
                     updateChildTimeing(updateItem.taskPkId, true);
                 }
+                break;
+            case TimingEvent.TIMING_UPDATE_PROGRESS:
+
                 break;
             case TimingEvent.TIMING_STOP:
                 if (lastEntity != null) {

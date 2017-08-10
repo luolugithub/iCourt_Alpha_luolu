@@ -14,12 +14,16 @@ import android.widget.ImageView;
 import android.widget.PopupWindow;
 import android.widget.TextView;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.baseadapter.BaseFragmentAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.entity.bean.FilterDropEntity;
 import com.icourt.alpha.fragment.dialogfragment.ProjectTypeSelectDialogFragment;
+import com.icourt.alpha.http.callback.SimpleCallBack;
+import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.utils.DensityUtil;
 import com.icourt.alpha.widget.popupwindow.TopMiddlePopup;
@@ -32,6 +36,8 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import butterknife.Unbinder;
+import retrofit2.Call;
+import retrofit2.Response;
 
 /**
  * Description
@@ -58,6 +64,11 @@ public class TabProjectFragment extends BaseFragment implements TopMiddlePopup.O
     MyProjectFragment myProjectFragment;
     List<Integer> selectedList = new ArrayList<>();
 
+    List<FilterDropEntity> dropEntities = new ArrayList<>();
+    FilterDropEntity doingEntity = new FilterDropEntity("进行中", "0", 2);//进行中
+    FilterDropEntity doneEntity = new FilterDropEntity("已完结", "0", 4);//已完结
+    FilterDropEntity pendingEntity = new FilterDropEntity("已搁置", "0", 7);//已搁置
+
     public static TabProjectFragment newInstance() {
         return new TabProjectFragment();
     }
@@ -75,13 +86,17 @@ public class TabProjectFragment extends BaseFragment implements TopMiddlePopup.O
         baseFragmentAdapter = new BaseFragmentAdapter(getChildFragmentManager());
         viewPager.setAdapter(baseFragmentAdapter);
         tabLayout.setupWithViewPager(viewPager);
-        baseFragmentAdapter.bindTitle(true, Arrays.asList("全部", "我关注的"));
+//        baseFragmentAdapter.bindTitle(true, Arrays.asList("全部", "我关注的"));
         baseFragmentAdapter.bindData(true,
                 Arrays.asList(myProjectFragment = MyProjectFragment.newInstance(MyProjectFragment.TYPE_ALL_PROJECT),
                         MyProjectFragment.newInstance(MyProjectFragment.TYPE_MY_ATTENTION_PROJECT)
 //                        MyProjectFragment.newInstance(MyProjectFragment.TYPE_MY_PARTIC_PROJECT)
                 ));
         topMiddlePopup = new TopMiddlePopup(getContext(), DensityUtil.getWidthInDp(getContext()), (int) (DensityUtil.getHeightInPx(getContext()) - DensityUtil.dip2px(getContext(), 75)), this);
+        dropEntities.add(doingEntity);
+        dropEntities.add(doneEntity);
+        dropEntities.add(pendingEntity);
+        getMatterStateCount(null);//默认获取所有类型的项目数量
         for (int i = 0; i < baseFragmentAdapter.getCount(); i++) {
             TabLayout.Tab tab = tabLayout.getTabAt(i);
             tab.setCustomView(R.layout.task_unfinish_tab_custom_view);
@@ -113,13 +128,66 @@ public class TabProjectFragment extends BaseFragment implements TopMiddlePopup.O
         public void onClick(View view) {
             if (tabLayout.getTabAt(0) != null) {
                 if (view.isSelected()) {
-                    topMiddlePopup.show(titleView, getItems(), select_position);
+                    topMiddlePopup.show(titleView, dropEntities, select_position);
                     setFirstTabImage(true);
+                    if (topMiddlePopup.isShowing()) {
+                        getMatterStateCount(getMatterTypes());
+                    }
                 } else {
                     tabLayout.getTabAt(0).select();
                 }
             }
         }
+    }
+
+    /**
+     * 获取选中的项目类型字符串
+     *
+     * @return
+     */
+    private String getMatterTypes() {
+        if (selectedList != null && selectedList.size() > 0) {
+            StringBuilder stringBuilder = new StringBuilder();
+            for (Integer integer : selectedList) {
+                stringBuilder.append(String.valueOf(integer)).append(",");
+            }
+            return stringBuilder.substring(0, stringBuilder.length() - 1);
+        }
+        return null;
+    }
+
+    /**
+     * 获取各个状态的任务数量
+     */
+    private void getMatterStateCount(String matterTypes) {
+        getApi().matterStateCountQuery(matterTypes).enqueue(new SimpleCallBack<JsonElement>() {
+            @Override
+            public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
+                JsonElement jsonElement = response.body().result;
+                if (jsonElement != null) {
+                    JsonObject jsonObject = jsonElement.getAsJsonObject();
+                    if (jsonObject != null) {
+                        doingEntity.count = jsonObject.get("doingCount").getAsString();
+                        doneEntity.count = jsonObject.get("doneCount").getAsString();
+                        pendingEntity.count = jsonObject.get("pendingCount").getAsString();
+                        dropEntities.clear();
+                        dropEntities.add(doingEntity);
+                        dropEntities.add(doneEntity);
+                        dropEntities.add(pendingEntity);
+                        if (topMiddlePopup != null && topMiddlePopup.isShowing()) {
+                            if (topMiddlePopup.getAdapter() != null) {
+                                topMiddlePopup.getAdapter().bindData(true, dropEntities);
+                            }
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
+                super.onFailure(call, t);
+            }
+        });
     }
 
     /**
@@ -151,14 +219,6 @@ public class TabProjectFragment extends BaseFragment implements TopMiddlePopup.O
         titleTv.setText(content);
         select_position = position;
         topMiddlePopup.getAdapter().setSelectedPos(select_position);
-    }
-
-    private List<FilterDropEntity> getItems() {
-        List<FilterDropEntity> dropEntities = new ArrayList<>();
-        dropEntities.add(new FilterDropEntity("进行中", "22", 2));
-        dropEntities.add(new FilterDropEntity("已完结", "51", 4));
-        dropEntities.add(new FilterDropEntity("已搁置", "9", 7));
-        return dropEntities;
     }
 
     @OnClick({R.id.titleAction, R.id.titleAction2})

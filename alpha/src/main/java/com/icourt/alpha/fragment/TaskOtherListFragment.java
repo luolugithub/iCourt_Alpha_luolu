@@ -540,13 +540,13 @@ public class TaskOtherListFragment extends BaseFragment implements BaseRecyclerA
         if (event == null) return;
         switch (event.action) {
             case TimingEvent.TIMING_ADD:
-
-                break;
-            case TimingEvent.TIMING_UPDATE_PROGRESS:
                 TimeEntity.ItemEntity updateItem = TimerManager.getInstance().getTimer();
                 if (updateItem != null) {
                     updateUnFinishChildTimeing(updateItem.taskPkId, true);
                 }
+                break;
+            case TimingEvent.TIMING_UPDATE_PROGRESS:
+
                 break;
             case TimingEvent.TIMING_STOP:
                 if (lastEntity != null) {

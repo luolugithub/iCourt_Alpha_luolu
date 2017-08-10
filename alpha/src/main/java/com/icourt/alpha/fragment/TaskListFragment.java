@@ -268,7 +268,7 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
                     for (TaskEntity.TaskItemEntity newTaskEntity : newTaskEntities) {
                         ids.add(newTaskEntity.id);
                     }
-//                    onCheckNewTask(ids);
+                    onCheckNewTask(ids);
                 }
                 break;
             default:
@@ -287,7 +287,7 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
                     scrollToByPosition(newTaskEntities.get(0).id);
                     List<String> ids = new ArrayList<>();
                     ids.add(newTaskEntities.get(0).id);
-//                    onCheckNewTask(ids);
+                    onCheckNewTask(ids);
                     isAwayScroll = false;
                 }
             }
@@ -471,6 +471,7 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
                             taskAdapter.bindData(true, allTaskEntities);
                             if (isAwayScroll) {
                                 updateNextTaskState();
+
                             }
                             if (linearLayoutManager.getStackFromEnd())
                                 linearLayoutManager.setStackFromEnd(false);
@@ -497,6 +498,7 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
             }
             recyclerView.setAdapter(headerFooterItemAdapter);
             taskItemAdapter.bindData(true, taskEntity.items);
+            getNewTasksCount();
             if (linearLayoutManager.getStackFromEnd())
                 linearLayoutManager.setStackFromEnd(false);
         }
@@ -624,13 +626,13 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
         if (event == null) return;
         switch (event.action) {
             case TimingEvent.TIMING_ADD:
-
-                break;
-            case TimingEvent.TIMING_UPDATE_PROGRESS:
                 TimeEntity.ItemEntity updateItem = TimerManager.getInstance().getTimer();
                 if (updateItem != null) {
                     updateChildTimeing(updateItem.taskPkId, true);
                 }
+                break;
+            case TimingEvent.TIMING_UPDATE_PROGRESS:
+
                 break;
             case TimingEvent.TIMING_STOP:
                 if (lastEntity != null) {
@@ -861,6 +863,24 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
     }
 
     /**
+     * 获取新任务数量
+     */
+    private void getNewTasksCount() {
+        getApi().newTasksCountQuery().enqueue(new SimpleCallBack<List<String>>() {
+            @Override
+            public void onSuccess(Call<ResEntity<List<String>>> call, Response<ResEntity<List<String>>> response) {
+                if (response.body().result != null) {
+                    int totalCount = response.body().result.size();
+                    if (totalCount > 0) {
+                        newTaskCardview.setVisibility(View.VISIBLE);
+                        newTaskCountTv.setText(String.valueOf(totalCount));
+                    }
+                }
+            }
+        });
+    }
+
+    /**
      * 修改任务
      *
      * @param itemEntity
@@ -1022,6 +1042,9 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
                 if (ids != null) {
                     if (ids.size() == 1) {
                         newTaskEntities.remove(0);
+                        if (newTaskEntities.size() > 1) {
+                            nextTaskLayout.setVisibility(View.VISIBLE);
+                        }
                         newTaskCountTv.setText(String.valueOf(newTaskEntities.size()));
                         nextTaskTv.setText("下一个 (" + String.valueOf(newTaskEntities.size()) + ")");
                     } else {

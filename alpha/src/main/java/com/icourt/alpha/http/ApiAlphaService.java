@@ -1253,10 +1253,30 @@ public interface ApiAlphaService {
     /**
      * 获取各个状态的任务数量
      * 文档地址：https://dev.alphalawyer.cn/ilaw/swagger/index.html#!/taskflow-api/queryTaskStateCountUsingGET
+     *
      * @return
      */
     @GET("api/v2/taskflow/state/count")
     Call<ResEntity<JsonElement>> taskStateCountQuery();
+
+    /**
+     * 获取各个状态、类型的项目数量
+     * 文档地址:"https://dev.alphalawyer.cn/ilaw/swagger/index.html#!/matters-api/queryMatterStateCountUsingGET
+     *
+     * @param matterTypes 项目类型: [0:争议解决 1:非诉专项 2:常年顾问 3:内部事务], 多个以英文逗号分隔
+     * @return
+     */
+    @GET("api/v1/matters/state/count")
+    Call<ResEntity<JsonElement>> matterStateCountQuery(@Query("matterTypes") String matterTypes);
+
+    /**
+     * 获取新任务数量
+     * 文档地址：https://dev.alphalawyer.cn/ilaw/swagger/index.html#!/taskflow-api/queryNewTasksUsingGET
+     *
+     * @return
+     */
+    @GET("api/v2/taskflow/newtasks")
+    Call<ResEntity<List<String>>> newTasksCountQuery();
 }
 
 

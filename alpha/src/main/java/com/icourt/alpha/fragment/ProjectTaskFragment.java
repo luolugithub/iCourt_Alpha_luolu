@@ -338,13 +338,13 @@ public class ProjectTaskFragment extends BaseFragment implements TaskAdapter.OnS
 
         switch (event.action) {
             case TimingEvent.TIMING_ADD:
-
-                break;
-            case TimingEvent.TIMING_UPDATE_PROGRESS:
                 TimeEntity.ItemEntity updateItem = TimerManager.getInstance().getTimer();
                 if (updateItem != null) {
                     updateChildTimeing(updateItem.taskPkId, true);
                 }
+                break;
+            case TimingEvent.TIMING_UPDATE_PROGRESS:
+
                 break;
             case TimingEvent.TIMING_STOP:
                 if (taskAdapter != null && lastEntity != null) {

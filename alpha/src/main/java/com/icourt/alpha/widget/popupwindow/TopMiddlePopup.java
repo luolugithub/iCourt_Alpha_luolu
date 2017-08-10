@@ -8,8 +8,8 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
-import android.view.animation.LayoutAnimationController;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 
@@ -100,7 +100,7 @@ public class TopMiddlePopup extends PopupWindow implements BaseRecyclerAdapter.O
         this.setWidth(ViewGroup.LayoutParams.MATCH_PARENT);
         this.setHeight(myHeight);
         this.setFocusable(true);
-        this.setAnimationStyle(R.style.AnimTop);
+//        this.setAnimationStyle(R.style.AnimTop);
         ColorDrawable dw = new ColorDrawable(0x33000000);
         this.setBackgroundDrawable(dw);
 
@@ -117,6 +117,7 @@ public class TopMiddlePopup extends PopupWindow implements BaseRecyclerAdapter.O
                 if (event.getAction() == MotionEvent.ACTION_UP) {
                     if (y > height || x < left || x > right) {
                         dismiss();
+                        startLayoutAnimatorout();
                     }
                 }
                 return true;
@@ -124,17 +125,16 @@ public class TopMiddlePopup extends PopupWindow implements BaseRecyclerAdapter.O
         });
     }
 
-    /**
-     * item显示动画
-     */
-    private void runLayoutAnimation() {
-        Context context = recyclerView.getContext();
-        LayoutAnimationController controller =
-                AnimationUtils.loadLayoutAnimation(context, R.anim.layout_animation_slide_left);
+    private void startLayoutAnimatorin() {
+        Animation animation = AnimationUtils.loadAnimation(myContext, R.anim.toppop_animation_in);
+        popupLL.setAnimation(animation);
+        animation.start();
+    }
 
-        recyclerView.setLayoutAnimation(controller);
-        recyclerView.getAdapter().notifyDataSetChanged();
-        recyclerView.scheduleLayoutAnimation();
+    private void startLayoutAnimatorout() {
+        Animation animation = AnimationUtils.loadAnimation(myContext, R.anim.toppop_animation_out);
+        popupLL.setAnimation(animation);
+        animation.start();
     }
 
     /**
@@ -145,7 +145,7 @@ public class TopMiddlePopup extends PopupWindow implements BaseRecyclerAdapter.O
     public void show(View view, List<FilterDropEntity> items, int position) {
         adapter.bindData(true, items);
         adapter.setSelectedPos(position);
-        runLayoutAnimation();
+        startLayoutAnimatorin();
         showAsDropDown(view);
     }
 
