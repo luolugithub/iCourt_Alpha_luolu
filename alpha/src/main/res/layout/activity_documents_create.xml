@@ -31,7 +31,6 @@
             android:gravity="center_vertical"
             android:hint="资料库名称"
             android:imeOptions="actionNone"
-            android:maxLength="256"
             android:maxLines="10"
             android:paddingBottom="11dp"
             android:paddingLeft="14dp"

@@ -390,7 +390,7 @@ public class ProjectSaveFileDialogFragment extends BaseDialogFragment
         Map<String, RequestBody> params = new HashMap<>();
         params.put("parent_dir", TextUtils.isEmpty(rootName) ? RequestUtils.createTextBody("/") : RequestUtils.createTextBody(rootName));
         params.put(key, RequestUtils.createStreamBody(file));
-        getSFileApi().projectUploadFile("Token " + authToken, uploadUrl, params).enqueue(new Callback<JsonElement>() {
+        getSFileApi().sfileUploadFile("Token " + authToken, uploadUrl, params).enqueue(new Callback<JsonElement>() {
             @Override
             public void onResponse(Call<JsonElement> call, Response<JsonElement> response) {
                 dismissLoadingDialog();

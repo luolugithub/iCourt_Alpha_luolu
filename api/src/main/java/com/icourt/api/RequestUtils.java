@@ -72,7 +72,7 @@ public class RequestUtils {
      */
     public static String createStreamKey(File file) {
         if (file != null && file.exists()) {
-            return "file\"; filename=\"" + file.getName() + "\"";
+            return "file\"; filename=\"" + file.getName();
         }
         return "file\"; filename=\"";
     }

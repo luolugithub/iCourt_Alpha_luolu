@@ -570,7 +570,7 @@ public class FileBoxListActivity extends BaseActivity implements BaseRecyclerAda
         Map<String, RequestBody> params = new HashMap<>();
         params.put("parent_dir", RequestUtils.createTextBody("/" + rootName));
         params.put(key, RequestUtils.createImgBody(new File(filePath)));
-        getSFileApi().projectUploadFile("Token " + authToken, uploadUrl, params).enqueue(new Callback<JsonElement>() {
+        getSFileApi().sfileUploadFile("Token " + authToken, uploadUrl, params).enqueue(new Callback<JsonElement>() {
             @Override
             public void onResponse(Call<JsonElement> call, Response<JsonElement> response) {
                 dismissLoadingDialog();

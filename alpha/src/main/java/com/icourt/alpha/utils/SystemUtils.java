@@ -776,4 +776,21 @@ public class SystemUtils {
         context.startActivity(Intent.createChooser(i, "Send mail"));
     }
 
+    /**
+     * 打开文件管理器
+     * @param context
+     * @param reqCode
+     */
+    public static final void chooseFile(Activity context, int reqCode) {
+        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+        intent.setType("*/*");
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        try {
+            context.startActivityForResult(Intent.createChooser(intent, "选择文件"), reqCode);
+        } catch (android.content.ActivityNotFoundException ex) {
+            SnackbarUtils.showTopSnackBar(context, "亲，木有文件管理器啊-_-!!");
+        }
+    }
+
+
 }

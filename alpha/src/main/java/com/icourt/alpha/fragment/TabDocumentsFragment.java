@@ -11,7 +11,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 
 import com.icourt.alpha.R;
-import com.icourt.alpha.activity.FolderActionActivity;
+import com.icourt.alpha.activity.DiskActionActivity;
 import com.icourt.alpha.adapter.baseadapter.BaseFragmentAdapter;
 import com.icourt.alpha.base.BaseFragment;
 
@@ -66,10 +66,10 @@ public class TabDocumentsFragment extends BaseFragment {
                         "项目资料库"));
         baseFragmentAdapter.bindData(true,
                 Arrays.asList(
-                        DocumentsListFragment.newInstance(0),
-                        DocumentsListFragment.newInstance(1),
-                        DocumentsListFragment.newInstance(2),
-                        DocumentsListFragment.newInstance(3)));
+                        DiskListFragment.newInstance(0),
+                        DiskListFragment.newInstance(1),
+                        DiskListFragment.newInstance(2),
+                        DiskListFragment.newInstance(3)));
     }
 
     @OnClick({R.id.titleAction})
@@ -77,7 +77,7 @@ public class TabDocumentsFragment extends BaseFragment {
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.titleAction:
-                FolderActionActivity.launchCreate(getContext());
+                DiskActionActivity.launchCreate(getContext());
                 break;
         }
     }

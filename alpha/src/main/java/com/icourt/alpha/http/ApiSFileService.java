@@ -51,15 +51,16 @@ public interface ApiSFileService {
      */
     @Multipart
     @POST()
-    Call<JsonElement> projectUploadFile(@Header("Authorization") String authToken,
-                                        @Url String url,
-                                        @PartMap Map<String, RequestBody> params);
+    Call<JsonElement> sfileUploadFile(@Header("Authorization") String authToken,
+                                      @Url String url,
+                                      @PartMap Map<String, RequestBody> params);
 
     /**
      * 获取上传文件url
      */
     @GET("api2/repos/{seaFileRepoId}/upload-link/")
-    Call<JsonElement> projectUploadUrlQuery(@Header("Authorization") String authToken, @Path("seaFileRepoId") String seaFileRepoId);
+    Call<JsonElement> projectUploadUrlQuery(@Header("Authorization") String authToken,
+                                            @Path("seaFileRepoId") String seaFileRepoId);
 
     /**
      * 获取项目下文档列表
@@ -162,6 +163,21 @@ public interface ApiSFileService {
     Call<List<FolderDocumentEntity>> documentDirQuery(@Header("Authorization") String authToken,
                                                       @Path("documentRootId") String documentRootId,
                                                       @Query("p") String p);
+
+    /**
+     * 获取sfile 上传文件url
+     * op_type=upload 上传
+     *
+     * @param authToken
+     * @param op_type
+     * @param path
+     * @return
+     */
+    @GET("api2/repos/{seaFileRepoId}/upload-link/")
+    Call<String> sfileUploadUrlQuery(@Header("Authorization") String authToken,
+                                     @Path("seaFileRepoId") String seaFileRepoId,
+                                     @Query("op_type") String op_type,
+                                     @Query("path") String path);
 
 
 }

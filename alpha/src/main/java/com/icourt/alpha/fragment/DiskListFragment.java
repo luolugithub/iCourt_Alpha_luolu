@@ -13,7 +13,7 @@ import android.view.ViewGroup;
 
 import com.andview.refreshview.XRefreshView;
 import com.icourt.alpha.R;
-import com.icourt.alpha.activity.FolderActionActivity;
+import com.icourt.alpha.activity.DiskActionActivity;
 import com.icourt.alpha.activity.FolderListActivity;
 import com.icourt.alpha.adapter.DocumentAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
@@ -47,7 +47,7 @@ import retrofit2.Response;
  * date createTime：2017/8/9
  * version 2.1.0
  */
-public class DocumentsListFragment extends BaseFragment implements BaseRecyclerAdapter.OnItemClickListener, BaseRecyclerAdapter.OnItemLongClickListener, BaseRecyclerAdapter.OnItemChildClickListener {
+public class DiskListFragment extends BaseFragment implements BaseRecyclerAdapter.OnItemClickListener, BaseRecyclerAdapter.OnItemLongClickListener, BaseRecyclerAdapter.OnItemChildClickListener {
 
     @BindView(R.id.recyclerView)
     RecyclerView recyclerView;
@@ -66,8 +66,8 @@ public class DocumentsListFragment extends BaseFragment implements BaseRecyclerA
      * @param type
      * @return
      */
-    public static DocumentsListFragment newInstance(int type) {
-        DocumentsListFragment documentsListFragment = new DocumentsListFragment();
+    public static DiskListFragment newInstance(int type) {
+        DiskListFragment documentsListFragment = new DiskListFragment();
         Bundle args = new Bundle();
         args.putInt("type", type);
         documentsListFragment.setArguments(args);
@@ -300,6 +300,8 @@ public class DocumentsListFragment extends BaseFragment implements BaseRecyclerA
         documentAdapter.notifyDataSetChanged();
     }
 
+
+
     @Override
     public void onDestroyView() {
         super.onDestroyView();
@@ -400,7 +402,7 @@ public class DocumentsListFragment extends BaseFragment implements BaseRecyclerA
     private void renameDocument(int pos) {
         final DocumentRootEntity item = documentAdapter.getItem(pos);
         if (item == null) return;
-        FolderActionActivity.launchUpdateTitle(getContext(), item);
+        DiskActionActivity.launchUpdateTitle(getContext(), item);
     }
 
     /**

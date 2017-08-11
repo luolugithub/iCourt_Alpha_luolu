@@ -29,13 +29,13 @@ import retrofit2.Call;
 import retrofit2.Response;
 
 /**
- * Description  文件夹创建/更新标题/页面
+ * Description  资料库库创建/更新标题/页面
  * Company Beijing icourt
  * author  youxuan  E-mail:xuanyouwu@163.com
  * date createTime：2017/8/9
  * version 2.1.0
  */
-public class FolderActionActivity extends BaseActivity {
+public class DiskActionActivity extends BaseActivity {
 
     public static final String ACTION_CREATE = "action_create";//创建资料库
     public static final String ACTION_UPDATE_TITLE = "action_update_title";//更新资料库标题
@@ -58,7 +58,7 @@ public class FolderActionActivity extends BaseActivity {
      */
     public static void launchCreate(@NonNull Context context) {
         if (context == null) return;
-        Intent intent = new Intent(context, FolderActionActivity.class);
+        Intent intent = new Intent(context, DiskActionActivity.class);
         intent.setAction(ACTION_CREATE);
         context.startActivity(intent);
     }
@@ -71,7 +71,7 @@ public class FolderActionActivity extends BaseActivity {
     public static void launchUpdateTitle(@NonNull Context context, DocumentRootEntity documentRootEntity) {
         if (context == null) return;
         if (documentRootEntity == null) return;
-        Intent intent = new Intent(context, FolderActionActivity.class);
+        Intent intent = new Intent(context, DiskActionActivity.class);
         intent.setAction(ACTION_UPDATE_TITLE);
         intent.putExtra("data", documentRootEntity);
         context.startActivity(intent);
@@ -88,7 +88,7 @@ public class FolderActionActivity extends BaseActivity {
     @Override
     protected void initView() {
         super.initView();
-        setTitle("创建文件夹");
+        setTitle("创建资料库");
         documentNameEt.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent) {
@@ -96,7 +96,7 @@ public class FolderActionActivity extends BaseActivity {
             }
         });
         if (TextUtils.equals(getIntent().getAction(), ACTION_UPDATE_TITLE)) {
-            setTitle("更新文件夹");
+            setTitle("更新资料库");
             paramDocumentRootEntity = (DocumentRootEntity) getIntent().getSerializableExtra("data");
             documentNameEt.setText(paramDocumentRootEntity.repo_name);
             documentNameEt.setSelection(documentNameEt.getText().length());
@@ -117,19 +117,19 @@ public class FolderActionActivity extends BaseActivity {
                  * 超过一行的，输入框变高，折行显示
                  */
                 if (StringUtils.isEmpty(documentNameEt.getText())) {
-                    showTopSnackBar("文件名称不能为空");
+                    showTopSnackBar("资料库名称不能为空");
                     return;
                 }
 
                 if (documentNameEt.getText().toString().endsWith(" ")) {
-                    showTopSnackBar("文件名末尾不得有空格");
+                    showTopSnackBar("资料库名称末尾不得有空格");
+                    return;
+                }
+                if (documentNameEt.getText().toString().getBytes().length > 256) {
+                    showTopSnackBar("资料库名称过长");
                     return;
                 }
 
-                if (documentNameEt.getText().toString().getBytes().length > 256) {
-                    showTopSnackBar("文件名称过长");
-                    return;
-                }
                 /* Pattern pattern = Pattern.compile(targetText, Pattern.CASE_INSENSITIVE);
         Matcher matcher = pattern.matcher(originalText);
         SpannableUtils.setTextForegroundColorSpan();*/

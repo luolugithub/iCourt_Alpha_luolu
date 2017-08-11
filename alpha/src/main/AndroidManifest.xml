@@ -310,6 +310,12 @@
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:screenOrientation="portrait"
             android:windowSoftInputMode="stateVisible" />
+
+        <activity
+            android:name=".activity.DiskActionActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="stateVisible" />
         <activity
             android:name=".activity.FolderListActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
