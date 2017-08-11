@@ -79,6 +79,17 @@ public class FolderListActivity extends BaseActivity implements BaseRecyclerAdap
     protected void initView() {
         super.initView();
         setTitle(getIntent().getStringExtra("title"));
+        ImageView titleActionImage = getTitleActionImage();
+        if (titleActionImage != null) {
+            titleActionImage.setImageResource(R.mipmap.header_icon_add);
+        }
+
+        ImageView titleActionImage2 = getTitleActionImage2();
+        if (titleActionImage2 != null) {
+            titleActionImage2.setImageResource(R.mipmap.header_icon_more);
+        }
+
+
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setAdapter(folderDocumentAdapter = new FolderDocumentAdapter());
         folderDocumentAdapter.setOnItemClickListener(this);

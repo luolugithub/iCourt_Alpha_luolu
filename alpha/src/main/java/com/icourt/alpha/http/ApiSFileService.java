@@ -95,8 +95,20 @@ public interface ApiSFileService {
     Call<List<DocumentRootEntity>> documentRootQuery(
             @Header("Authorization") String authToken,
             @Query("page") int page,
-            @Query("per_page") int per_page);
+            @Query("per_page") int per_page,
+            @Query("not_shared_from") String not_shared_from,
+            @Query("shared_from") String shared_from,
+            @Query("type") String type);
 
+
+    /**
+     * 获取律所律所资料库
+     *
+     * @param authToken
+     * @return
+     */
+    @GET("api2/repos/public/")
+    Call<List<DocumentRootEntity>> documentRootQuery(@Header("Authorization") String authToken);
 
     /**
      * 创建资料库

@@ -1265,6 +1265,16 @@ public interface ApiAlphaService {
     Call<SFileTokenEntity<String>> documentTokenQuery();
 
 
+    /**
+     * 获取律所 管理员
+     * 文档地址: https://dev.alphalawyer.cn/ilaw/swagger/index.html#!/documents-api/getOfficeAdminUsingGET
+     *
+     * @param userId
+     * @return
+     */
+    @GET("api/v2/documents/getOfficeAdmin")
+    Call<String> getOfficeAdmin(@Query("userId") String userId);
+
 }
 
 

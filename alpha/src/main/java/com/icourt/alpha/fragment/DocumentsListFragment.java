@@ -21,6 +21,7 @@ import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.entity.bean.DocumentRootEntity;
 import com.icourt.alpha.entity.bean.SFileTokenEntity;
 import com.icourt.alpha.http.callback.SimpleCallBack2;
+import com.icourt.alpha.utils.ActionConstants;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 import com.icourt.alpha.widget.comparators.ILongFieldEntity;
 import com.icourt.alpha.widget.comparators.LongFieldEntityComparator;
@@ -54,6 +55,7 @@ public class DocumentsListFragment extends BaseFragment implements BaseRecyclerA
     DocumentAdapter documentAdapter;
     @BindView(R.id.refreshLayout)
     RefreshLayout refreshLayout;
+    int pageIndex = 1;
 
     /**
      * 0： "我的资料库",
@@ -104,9 +106,110 @@ public class DocumentsListFragment extends BaseFragment implements BaseRecyclerA
         refreshLayout.startRefresh();
     }
 
+    private void enableLoadMore(List result) {
+        if (refreshLayout != null) {
+            refreshLayout.setPullLoadEnable(result != null
+                    && result.size() >= ActionConstants.DEFAULT_PAGE_SIZE);
+        }
+    }
+
+    /**
+     * 0： "我的资料库",
+     * 1： "共享给我的",
+     * 2： "律所资料库",
+     * 3： "项目资料库"
+     *
+     * @param isRefresh 是否刷新
+     */
     @Override
     protected void getData(final boolean isRefresh) {
         super.getData(isRefresh);
+        switch (getArguments().getInt("type")) {
+            case 0: {
+                getApi().documentTokenQuery()
+                        .enqueue(new SimpleCallBack2<SFileTokenEntity<String>>() {
+                            @Override
+                            public void onSuccess(Call<SFileTokenEntity<String>> call, Response<SFileTokenEntity<String>> response) {
+                                if (TextUtils.isEmpty(response.body().authToken)) {
+                                    showTopSnackBar("sfile authToken返回为null");
+                                    stopRefresh();
+                                    return;
+                                }
+                                getDocumentRoot(isRefresh, response.body().authToken, null);
+                            }
+
+                            @Override
+                            public void onFailure(Call<SFileTokenEntity<String>> call, Throwable t) {
+                                super.onFailure(call, t);
+                                stopRefresh();
+                            }
+                        });
+            }
+            break;
+            case 1: {
+                //获取管理员账号
+                getApi().getOfficeAdmin(getLoginUserId())
+                        .enqueue(new SimpleCallBack2<String>() {
+                            @Override
+                            public void onSuccess(Call<String> call, Response<String> response) {
+                                getSfileTokenAndgetDocument(isRefresh, response.body());
+                            }
+
+                            @Override
+                            public void onFailure(Call<String> call, Throwable t) {
+                                super.onFailure(call, t);
+                                stopRefresh();
+                            }
+                        });
+            }
+            break;
+            case 2: {
+                getApi().documentTokenQuery()
+                        .enqueue(new SimpleCallBack2<SFileTokenEntity<String>>() {
+                            @Override
+                            public void onSuccess(Call<SFileTokenEntity<String>> call, Response<SFileTokenEntity<String>> response) {
+                                if (TextUtils.isEmpty(response.body().authToken)) {
+                                    showTopSnackBar("sfile authToken返回为null");
+                                    stopRefresh();
+                                    return;
+                                }
+                                getDocumentRoot(isRefresh, response.body().authToken, null);
+                            }
+
+                            @Override
+                            public void onFailure(Call<SFileTokenEntity<String>> call, Throwable t) {
+                                super.onFailure(call, t);
+                                stopRefresh();
+                            }
+                        });
+            }
+            break;
+            case 3: {
+                //获取管理员账号
+                getApi().getOfficeAdmin(getLoginUserId())
+                        .enqueue(new SimpleCallBack2<String>() {
+                            @Override
+                            public void onSuccess(Call<String> call, Response<String> response) {
+                                getSfileTokenAndgetDocument(isRefresh, response.body());
+                            }
+
+                            @Override
+                            public void onFailure(Call<String> call, Throwable t) {
+                                super.onFailure(call, t);
+                                stopRefresh();
+                            }
+                        });
+            }
+            break;
+        }
+    }
+
+    /**
+     * 获取token 并且 获取文档列表
+     *
+     * @param isRefresh
+     */
+    private void getSfileTokenAndgetDocument(final boolean isRefresh, final String adminId) {
         getApi().documentTokenQuery()
                 .enqueue(new SimpleCallBack2<SFileTokenEntity<String>>() {
                     @Override
@@ -116,7 +219,13 @@ public class DocumentsListFragment extends BaseFragment implements BaseRecyclerA
                             stopRefresh();
                             return;
                         }
-                        getDocumentRoot(isRefresh, response.body().authToken);
+                        getDocumentRoot(isRefresh, response.body().authToken, adminId);
+                    }
+
+                    @Override
+                    public void onFailure(Call<SFileTokenEntity<String>> call, Throwable t) {
+                        super.onFailure(call, t);
+                        stopRefresh();
                     }
                 });
     }
@@ -126,22 +235,46 @@ public class DocumentsListFragment extends BaseFragment implements BaseRecyclerA
      *
      * @param isRefresh
      * @param sfileToken
+     * @param officeAdminId 律所管理员id
      */
-    private void getDocumentRoot(final boolean isRefresh, String sfileToken) {
-        getSFileApi().documentRootQuery(String.format("Token %s", sfileToken), 1, 20)
-                .enqueue(new SimpleCallBack2<List<DocumentRootEntity>>() {
-                    @Override
-                    public void onSuccess(Call<List<DocumentRootEntity>> call, Response<List<DocumentRootEntity>> response) {
-                        stopRefresh();
-                        documentAdapter.bindData(isRefresh, response.body());
-                    }
+    private void getDocumentRoot(final boolean isRefresh, @NonNull String sfileToken, @Nullable String officeAdminId) {
+        if (isRefresh) {
+            pageIndex = 1;
+        }
+        String headerToken = String.format("Token %s", sfileToken);
+        Call<List<DocumentRootEntity>> listCall = null;
+        final int pageSize = ActionConstants.DEFAULT_PAGE_SIZE;
+        switch (getArguments().getInt("type")) {
+            case 0:
+                listCall = getSFileApi().documentRootQuery(headerToken, pageIndex, pageSize, null, null, null);
+                break;
+            case 1:
+                listCall = getSFileApi().documentRootQuery(headerToken, pageIndex, pageSize, officeAdminId, null, "shared");
+                break;
+            case 2:
+                listCall = getSFileApi().documentRootQuery(headerToken);
+                break;
+            case 3:
+                listCall = getSFileApi().documentRootQuery(headerToken, pageIndex, pageSize, null, officeAdminId, "shared");
+                break;
+        }
+        if (listCall != null) {
+            listCall.enqueue(new SimpleCallBack2<List<DocumentRootEntity>>() {
+                @Override
+                public void onSuccess(Call<List<DocumentRootEntity>> call, Response<List<DocumentRootEntity>> response) {
+                    stopRefresh();
+                    documentAdapter.bindData(isRefresh, response.body());
+                    pageIndex += 1;
+                    enableLoadMore(response.body());
+                }
 
-                    @Override
-                    public void onFailure(Call<List<DocumentRootEntity>> call, Throwable t) {
-                        super.onFailure(call, t);
-                        stopRefresh();
-                    }
-                });
+                @Override
+                public void onFailure(Call<List<DocumentRootEntity>> call, Throwable t) {
+                    super.onFailure(call, t);
+                    stopRefresh();
+                }
+            });
+        }
     }
 
 
