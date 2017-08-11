@@ -1286,6 +1286,15 @@ public interface ApiAlphaService {
      */
     @PUT("api/v2/taskflow/revivalTaskFlowById")
     Call<ResEntity<JsonElement>> taskRecoverById(@Query("id") String taskId);
+
+    /**
+     * 清空所有已删除的任务
+     * 文档地址：https://dev.alphalawyer.cn/ilaw/swagger/index.html#!/taskflow-api/deleteTaskFlowByIdsUsingDELETE
+     * @param ids
+     * @return
+     */
+    @DELETE("api/v2/taskflow/clearTaskFlowByIds")
+    Call<ResEntity<JsonElement>> clearDeletedTask(@Query("ids") List<String> ids);
 }
 
 

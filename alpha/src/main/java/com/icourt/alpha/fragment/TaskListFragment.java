@@ -1021,6 +1021,37 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
     }
 
     /**
+     * 清空所有已删除的任务
+     */
+    public void clearAllDeletedTask() {
+        if (stateType == 3) {
+            if (taskItemAdapter == null) return;
+            if (taskItemAdapter.getData() == null) return;
+            if (taskItemAdapter.getData().size() <= 0) return;
+            List<String> ids = new ArrayList<>();
+            for (TaskEntity.TaskItemEntity taskItemEntity : taskItemAdapter.getData()) {
+                ids.add(taskItemEntity.id);
+            }
+            if (ids.size() > 0) {
+                showLoadingDialog(null);
+                getApi().clearDeletedTask(ids).enqueue(new SimpleCallBack<JsonElement>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
+                        dismissLoadingDialog();
+                        taskItemAdapter.clearData();
+                    }
+
+                    @Override
+                    public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
+                        super.onFailure(call, t);
+                        dismissLoadingDialog();
+                    }
+                });
+            }
+        }
+    }
+
+    /**
      * 恢复已删除任务
      *
      * @param itemEntity
@@ -1035,6 +1066,12 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
                 if (taskItemAdapter != null) {
                     taskItemAdapter.removeItem(itemEntity);
                 }
+            }
+
+            @Override
+            public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
+                super.onFailure(call, t);
+                dismissLoadingDialog();
             }
         });
     }

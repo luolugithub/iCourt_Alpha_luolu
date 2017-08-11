@@ -81,6 +81,7 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
     FilterDropEntity doneEntity = new FilterDropEntity("已完成", "0", 1);//已完成
     FilterDropEntity deleteEntity = new FilterDropEntity("已删除", "0", 3);//已删除
     public static boolean isAwayScroll = false; //切换时是否滚动，在'已完成和已删除'状态下，点击新任务提醒。
+
     public static TabTaskFragment newInstance() {
         return new TabTaskFragment();
     }
@@ -304,9 +305,15 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
                 TaskCreateActivity.launch(getContext(), null, null);
                 break;
             case R.id.titleAction2:
+                List<String> titles = null;
+                if (select_position != 2 || tabLayout.getSelectedTabPosition() == 1) {
+                    titles = Arrays.asList("查看他人任务");
+                } else {
+                    titles = Arrays.asList("查看他人任务", "清空所有已删除任务");
+                }
                 new BottomActionDialog(getContext(),
                         null,
-                        Arrays.asList("查看他人任务"),
+                        titles,
                         new BottomActionDialog.OnActionItemClickListener() {
                             @Override
                             public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
@@ -315,11 +322,34 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
                                     case 0:
                                         showMemberSelectDialogFragment();
                                         break;
+                                    case 1:
+                                        showTwiceSureDialog();
+                                        break;
                                 }
                             }
                         }).show();
                 break;
         }
+    }
+
+    /**
+     * 显示二次确认对话框
+     */
+    private void showTwiceSureDialog() {
+        new BottomActionDialog(getContext(),
+                "该操作不可恢复，确定清空？",
+                Arrays.asList("确定"),
+                new BottomActionDialog.OnActionItemClickListener() {
+                    @Override
+                    public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
+                        dialog.dismiss();
+                        switch (position) {
+                            case 0:
+                                clearAllDeletedTask();
+                                break;
+                        }
+                    }
+                }).show();
     }
 
     /**
@@ -353,6 +383,18 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
                 ArrayList<String> ids = new ArrayList<>();
                 ids.add(taskMemberEntity.userId);
                 MyAllotTaskActivity.launch(getContext(), TaskOtherListFragment.SELECT_OTHER_TYPE, ids);
+            }
+        }
+    }
+
+    /**
+     * 清空所有已删除的任务
+     */
+    private void clearAllDeletedTask() {
+        if (select_position == 2) {
+            if (alltaskFragment.currFragment instanceof TaskListFragment) {
+                TaskListFragment fragment = (TaskListFragment) alltaskFragment.currFragment;
+                fragment.clearAllDeletedTask();
             }
         }
     }
