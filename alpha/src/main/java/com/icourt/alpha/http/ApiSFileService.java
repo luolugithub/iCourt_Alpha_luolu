@@ -10,6 +10,7 @@ import java.util.Map;
 
 import okhttp3.RequestBody;
 import retrofit2.Call;
+import retrofit2.http.Body;
 import retrofit2.http.DELETE;
 import retrofit2.http.Field;
 import retrofit2.http.FormUrlEncoded;
@@ -180,4 +181,16 @@ public interface ApiSFileService {
                                      @Query("path") String path);
 
 
+    /**
+     * 创建文件夹
+     *
+     * @param authToken
+     * @param p
+     * @return https://testbox.alphalawyer.cn/api/v2.1/repos/d4f82446-a37f-478c-b6b5-ed0e779e1768/dir/?p=%2F22222
+     */
+    @POST("api/v2.1/repos/{seaFileRepoId}/dir/")
+    Call<DocumentRootEntity> folderCreate(@Header("Authorization") String authToken,
+                                          @Path("seaFileRepoId") String seaFileRepoId,
+                                          @Query("p") String p,
+                                          @Body RequestBody body);
 }

@@ -13,15 +13,14 @@ import android.widget.CheckedTextView;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.google.gson.JsonObject;
 import com.icourt.alpha.R;
-import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.entity.bean.DocumentRootEntity;
+import com.icourt.alpha.entity.bean.FolderDocumentEntity;
 import com.icourt.alpha.entity.bean.SFileTokenEntity;
 import com.icourt.alpha.http.callback.SimpleCallBack2;
-import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.StringUtils;
-
-import org.greenrobot.eventbus.EventBus;
+import com.icourt.api.RequestUtils;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -35,7 +34,7 @@ import retrofit2.Response;
  * date createTime：2017/8/9
  * version 2.1.0
  */
-public class FolderActionActivity extends BaseActivity {
+public class FolderActionActivity extends FolderBaseActivity {
 
     public static final String ACTION_CREATE = "action_create";//创建资料库
     public static final String ACTION_UPDATE_TITLE = "action_update_title";//更新资料库标题
@@ -49,16 +48,23 @@ public class FolderActionActivity extends BaseActivity {
     AppBarLayout titleView;
     @BindView(R.id.document_name_et)
     EditText documentNameEt;
-    DocumentRootEntity paramDocumentRootEntity;
+    FolderDocumentEntity paramDocumentRootEntity;
 
     /**
-     * 创建资料库
+     * 创建文件夹
      *
      * @param context
+     * @param seaFileRepoId
+     * @param seaFileParentDirPath
      */
-    public static void launchCreate(@NonNull Context context) {
+    public static void launchCreate(
+            @NonNull Context context,
+            String seaFileRepoId,
+            String seaFileParentDirPath) {
         if (context == null) return;
         Intent intent = new Intent(context, FolderActionActivity.class);
+        intent.putExtra(KEY_SEA_FILE_REPO_ID, seaFileRepoId);
+        intent.putExtra(KEY_SEA_FILE_PARENT_DIR_PATH, seaFileParentDirPath);
         intent.setAction(ACTION_CREATE);
         context.startActivity(intent);
     }
@@ -68,12 +74,12 @@ public class FolderActionActivity extends BaseActivity {
      *
      * @param context
      */
-    public static void launchUpdateTitle(@NonNull Context context, DocumentRootEntity documentRootEntity) {
+    public static void launchUpdateTitle(@NonNull Context context, FolderDocumentEntity folderDocumentEntity) {
         if (context == null) return;
-        if (documentRootEntity == null) return;
+        if (folderDocumentEntity == null) return;
         Intent intent = new Intent(context, FolderActionActivity.class);
         intent.setAction(ACTION_UPDATE_TITLE);
-        intent.putExtra("data", documentRootEntity);
+        intent.putExtra("data", folderDocumentEntity);
         context.startActivity(intent);
     }
 
@@ -97,8 +103,8 @@ public class FolderActionActivity extends BaseActivity {
         });
         if (TextUtils.equals(getIntent().getAction(), ACTION_UPDATE_TITLE)) {
             setTitle("更新文件夹");
-            paramDocumentRootEntity = (DocumentRootEntity) getIntent().getSerializableExtra("data");
-            documentNameEt.setText(paramDocumentRootEntity.repo_name);
+            paramDocumentRootEntity = (FolderDocumentEntity) getIntent().getSerializableExtra("data");
+            documentNameEt.setText(paramDocumentRootEntity.name);
             documentNameEt.setSelection(documentNameEt.getText().length());
         }
     }
@@ -142,7 +148,7 @@ public class FolderActionActivity extends BaseActivity {
                                 showTopSnackBar("sfile authToken返回为null");
                                 return;
                             }
-                            createRootDocument(response.body().authToken);
+                            createFolder(response.body().authToken);
                         }
 
                         @Override
@@ -160,7 +166,7 @@ public class FolderActionActivity extends BaseActivity {
                                 showTopSnackBar("sfile authToken返回为null");
                                 return;
                             }
-                            updateRootDocumentTitle(response.body().authToken);
+                            updateFolderTitle(response.body().authToken);
                         }
 
                         @Override
@@ -186,19 +192,24 @@ public class FolderActionActivity extends BaseActivity {
     }
 
     /**
-     * 创建资料库
+     * 创建文件夹
      *
      * @param sfileToken
      */
-    private void createRootDocument(String sfileToken) {
+    private void createFolder(String sfileToken) {
         showLoadingDialog("创建中...");
-        getSFileApi().documentRootCreate(String.format("Token %s", sfileToken), documentNameEt.getText().toString())
+        JsonObject operationJsonObject = new JsonObject();
+        operationJsonObject.addProperty("operation", "mkdir");
+        getSFileApi().folderCreate(
+                String.format("Token %s", sfileToken),
+                getSeaFileRepoId(),
+                String.format("%s%s", getSeaFileParentDirPath(), documentNameEt.getText().toString()),
+                RequestUtils.createJsonBody(operationJsonObject.toString()))
                 .enqueue(new SimpleCallBack2<DocumentRootEntity>() {
                     @Override
                     public void onSuccess(Call<DocumentRootEntity> call, Response<DocumentRootEntity> response) {
                         dismissLoadingDialog();
-                        showToast("创建资料库成功");
-                        EventBus.getDefault().post(response.body());
+                        showToast("创建文件夹成功");
                         finish();
                     }
 
@@ -211,13 +222,13 @@ public class FolderActionActivity extends BaseActivity {
     }
 
     /**
-     * 更新资料库标题
+     * 更新文件夹标题
      *
      * @param sfileToken
      */
-    private void updateRootDocumentTitle(String sfileToken) {
+    private void updateFolderTitle(String sfileToken) {
         if (paramDocumentRootEntity == null) return;
-        showLoadingDialog("更改中...");
+       /* showLoadingDialog("更改中...");
         paramDocumentRootEntity.repo_name = documentNameEt.getText().toString();
         paramDocumentRootEntity.last_modified = DateUtils.millis();
         getSFileApi().documentRootUpdateName(String.format("Token %s", sfileToken),
@@ -242,6 +253,6 @@ public class FolderActionActivity extends BaseActivity {
                         dismissLoadingDialog();
                         super.onFailure(call, t);
                     }
-                });
+                });*/
     }
 }

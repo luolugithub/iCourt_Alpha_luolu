@@ -2,6 +2,8 @@ package com.icourt.alpha.entity.bean;
 
 import android.text.TextUtils;
 
+import java.io.Serializable;
+
 /**
  * Description  文件或者文件夹实体
  * Company Beijing icourt
@@ -9,7 +11,7 @@ import android.text.TextUtils;
  * date createTime：2017/8/10
  * version 2.1.0
  */
-public class FolderDocumentEntity {
+public class FolderDocumentEntity implements Serializable {
     /**
      * "lock_time": 0,
      * "modifier_email": "ba5cbf1a21b111e7843370106faece2e@ifile.com",

@@ -22,7 +22,6 @@ import com.google.gson.JsonElement;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.FolderDocumentAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
-import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.entity.bean.FolderDocumentEntity;
 import com.icourt.alpha.entity.bean.SFileTokenEntity;
 import com.icourt.alpha.fragment.dialogfragment.DocumentDetailDialogFragment;
@@ -58,7 +57,8 @@ import retrofit2.Response;
  * date createTime：2017/8/10
  * version 2.1.0
  */
-public class FolderListActivity extends BaseActivity implements BaseRecyclerAdapter.OnItemClickListener {
+public class FolderListActivity extends FolderBaseActivity
+        implements BaseRecyclerAdapter.OnItemClickListener {
     @BindView(R.id.titleBack)
     ImageView titleBack;
     @BindView(R.id.titleContent)
@@ -84,14 +84,14 @@ public class FolderListActivity extends BaseActivity implements BaseRecyclerAdap
     private static final int REQ_CODE_PERMISSION_ACCESS_FILE = 1101;
 
     public static void launch(@NonNull Context context,
-                              String documentRootId,
+                              String seaFileRepoId,
                               String title,
-                              String dirPath) {
+                              String seaFileParentDirPath) {
         if (context == null) return;
         Intent intent = new Intent(context, FolderListActivity.class);
-        intent.putExtra("documentRootId", documentRootId);
         intent.putExtra("title", title);
-        intent.putExtra("dirPath", dirPath);
+        intent.putExtra(KEY_SEA_FILE_REPO_ID, seaFileRepoId);
+        intent.putExtra(KEY_SEA_FILE_PARENT_DIR_PATH, seaFileParentDirPath);
         context.startActivity(intent);
     }
 
@@ -129,15 +129,13 @@ public class FolderListActivity extends BaseActivity implements BaseRecyclerAdap
                 getData(true);
             }
         });
+
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
         refreshLayout.startRefresh();
-    }
-
-    private String getDocumentRootId() {
-        return getIntent().getStringExtra("documentRootId");
-    }
-
-    private String getDocumentDirPath() {
-        return getIntent().getStringExtra("dirPath");
     }
 
     @Override
@@ -160,8 +158,8 @@ public class FolderListActivity extends BaseActivity implements BaseRecyclerAdap
     private void getFolder(final boolean isRefresh, String sfileToken) {
         getSFileApi().documentDirQuery(
                 String.format("Token %s", sfileToken),
-                getDocumentRootId(),
-                getDocumentDirPath())
+                getSeaFileRepoId(),
+                getSeaFileParentDirPath())
                 .enqueue(new SimpleCallBack2<List<FolderDocumentEntity>>() {
                     @Override
                     public void onSuccess(Call<List<FolderDocumentEntity>> call, Response<List<FolderDocumentEntity>> response) {
@@ -209,6 +207,10 @@ public class FolderListActivity extends BaseActivity implements BaseRecyclerAdap
                                 dialog.dismiss();
                                 switch (position) {
                                     case 0:
+                                        FolderActionActivity.launchCreate(
+                                                getContext(),
+                                                getSeaFileRepoId(),
+                                                getSeaFileParentDirPath());
                                         break;
                                     case 1:
                                         if (checkPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
@@ -342,9 +344,9 @@ public class FolderListActivity extends BaseActivity implements BaseRecyclerAdap
                     showLoadingDialog("sfile 上传地址获取中...");
                     getSFileApi().sfileUploadUrlQuery(
                             String.format("Token %s", sfileToken),
-                            getDocumentRootId(),
+                            getSeaFileRepoId(),
                             "upload",
-                            getDocumentDirPath())
+                            getSeaFileParentDirPath())
                             .enqueue(new SimpleCallBack2<String>() {
                                 @Override
                                 public void onSuccess(Call<String> call, Response<String> response) {
@@ -397,7 +399,7 @@ public class FolderListActivity extends BaseActivity implements BaseRecyclerAdap
                 showLoadingDialog("上传中...");
                 Map<String, RequestBody> params = new HashMap<>();
                 params.put(RequestUtils.createStreamKey(file), RequestUtils.createStreamBody(file));
-                params.put("parent_dir", RequestUtils.createTextBody(getDocumentDirPath()));
+                params.put("parent_dir", RequestUtils.createTextBody(getSeaFileParentDirPath()));
                 // params.put("relative_path",RequestUtils.createTextBody(""));
                 getSFileApi().sfileUploadFile(sfileToken, serverUrl, params)
                         .enqueue(new SimpleCallBack2<JsonElement>() {
@@ -472,9 +474,9 @@ public class FolderListActivity extends BaseActivity implements BaseRecyclerAdap
         if (item == null) return;
         if (item.isDir()) {
             FolderListActivity.launch(getContext(),
-                    getDocumentRootId(),
+                    getSeaFileRepoId(),
                     item.name,
-                    String.format("%s%s/", getDocumentDirPath(), item.name));
+                    String.format("%s%s/", getSeaFileParentDirPath(), item.name));
         } else {
             DocumentDetailDialogFragment.show("",
                     getSupportFragmentManager());
