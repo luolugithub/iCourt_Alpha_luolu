@@ -4,12 +4,15 @@ import android.animation.Animator;
 import android.animation.ArgbEvaluator;
 import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
+import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -17,6 +20,7 @@ import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -28,6 +32,7 @@ import com.google.gson.JsonObject;
 import com.icourt.alpha.R;
 import com.icourt.alpha.activity.SearchProjectActivity;
 import com.icourt.alpha.activity.TaskDetailActivity;
+import com.icourt.alpha.activity.TimerTimingActivity;
 import com.icourt.alpha.adapter.TaskAdapter;
 import com.icourt.alpha.adapter.TaskItemAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseArrayRecyclerAdapter;
@@ -53,6 +58,7 @@ import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.DensityUtil;
 import com.icourt.alpha.utils.ItemDecorationUtils;
 import com.icourt.alpha.utils.JsonUtils;
+import com.icourt.alpha.utils.LoginInfoUtils;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 import com.icourt.alpha.widget.manager.TimerManager;
 import com.icourt.api.RequestUtils;
@@ -77,6 +83,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
 import retrofit2.Call;
+import retrofit2.Callback;
 import retrofit2.Response;
 
 import static com.icourt.alpha.fragment.TabTaskFragment.select_position;
@@ -90,11 +97,14 @@ import static com.icourt.alpha.fragment.TabTaskFragment.select_position;
  */
 
 public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShowFragmenDialogListener,
-        OnFragmentCallBackListener, ProjectSelectDialogFragment.OnProjectTaskGroupSelectListener, BaseRecyclerAdapter.OnItemClickListener {
+        OnFragmentCallBackListener, ProjectSelectDialogFragment.OnProjectTaskGroupSelectListener, BaseRecyclerAdapter.OnItemClickListener, BaseRecyclerAdapter.OnItemChildClickListener {
 
     public static final int TYPE_ALL = 0;//全部
     public static final int TYPE_NEW = 1;//新任务
     public static final int TYPE_MY_ATTENTION = 2;//我关注的
+
+    private static final int SHOW_DELETE_DIALOG = 0;//删除提示对话框
+    private static final int SHOW_FINISH_DIALOG = 1;//完成任务提示对话框
     Unbinder unbinder;
     @Nullable
     @BindView(R.id.recyclerView)
@@ -197,9 +207,10 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
             View rl_comm_search = headerView.findViewById(R.id.rl_comm_search);
             registerClick(rl_comm_search);
             headerFooterItemAdapter.addHeader(headerView);
-            taskItemAdapter.setOnItemClickListener(this);
             taskItemAdapter.registerAdapterDataObserver(new RefreshViewEmptyObserver(refreshLayout, taskItemAdapter));
             recyclerView.setAdapter(headerFooterItemAdapter);
+            taskItemAdapter.setOnItemClickListener(this);
+            taskItemAdapter.setOnItemChildClickListener(this);
         }
 
 
@@ -501,6 +512,7 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
                                 if (newTaskEntities.size() > 0) {
                                     newTaskCardview.setVisibility(View.VISIBLE);
                                     newTaskCountTv.setText(String.valueOf(newTaskEntities.size()));
+                                    nextTaskLayout.setVisibility(View.GONE);
                                 }
                             }
                             //第一次进入 隐藏搜索框
@@ -778,6 +790,101 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
         }
     }
 
+    @Override
+    public void onItemChildClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, final View view, int position) {
+        if (adapter instanceof TaskItemAdapter) {
+            TaskEntity.TaskItemEntity itemEntity = (TaskEntity.TaskItemEntity) adapter.getItem(adapter.getRealPos(position));
+            switch (view.getId()) {
+                case R.id.task_item_start_timming:
+                    if (itemEntity.isTiming) {
+                        TimerManager.getInstance().stopTimer();
+                        ((ImageView) view).setImageResource(R.mipmap.icon_start_20);
+                    } else {
+                        showLoadingDialog(null);
+
+                        TimerManager.getInstance().addTimer(getTimer(itemEntity), new Callback<TimeEntity.ItemEntity>() {
+                            @Override
+                            public void onResponse(Call<TimeEntity.ItemEntity> call, Response<TimeEntity.ItemEntity> response) {
+                                dismissLoadingDialog();
+                                ((ImageView) view).setImageResource(R.drawable.orange_side_dot_bg);
+                                if (response.body() != null) {
+                                    TimerTimingActivity.launch(view.getContext(), response.body());
+                                }
+                            }
+
+                            @Override
+                            public void onFailure(Call<TimeEntity.ItemEntity> call, Throwable throwable) {
+                                dismissLoadingDialog();
+                                ((ImageView) view).setImageResource(R.mipmap.icon_start_20);
+                            }
+                        });
+                    }
+                    break;
+                case R.id.task_item_checkbox:
+                    if (stateType == 0 || stateType == 1) {
+                        CheckBox checkbox = (CheckBox) view;
+                        if (checkbox.isChecked()) {//完成任务
+                            if (itemEntity.attendeeUsers != null) {
+                                if (itemEntity.attendeeUsers.size() > 1) {
+                                    showDeleteDialog("该任务由多人负责,确定完成?", itemEntity, SHOW_FINISH_DIALOG, checkbox);
+                                } else {
+                                    updateTask(itemEntity, true, checkbox);
+                                }
+                            } else {
+                                updateTask(itemEntity, true, checkbox);
+                            }
+                        } else {
+                            updateTask(itemEntity, false, checkbox);
+                        }
+                    } else {
+                        recoverTaskById(itemEntity);
+                    }
+                    break;
+
+            }
+        }
+    }
+
+    /**
+     * 删除多人任务对话框
+     *
+     * @param message
+     * @param itemEntity
+     * @param checkbox
+     */
+    private void showDeleteDialog(String message, final TaskEntity.TaskItemEntity itemEntity, final int type, final CheckBox checkbox) {
+        DialogInterface.OnClickListener dialogOnclicListener = new DialogInterface.OnClickListener() {
+
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                switch (which) {
+                    case Dialog.BUTTON_POSITIVE://确定
+                        if (type == SHOW_FINISH_DIALOG) {
+                            if (itemEntity.state) {
+                                updateTask(itemEntity, false, checkbox);
+                            } else {
+                                updateTask(itemEntity, true, checkbox);
+                            }
+                        }
+                        break;
+                    case Dialog.BUTTON_NEGATIVE://取消
+                        if (type == SHOW_FINISH_DIALOG) {
+                            if (checkbox != null)
+                                checkbox.setChecked(itemEntity.state);
+                        }
+                        break;
+                }
+            }
+        };
+        //dialog参数设置
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());  //先得到构造器
+        builder.setTitle("提示"); //设置标题
+        builder.setMessage(message); //设置内容
+        builder.setPositiveButton("确认", dialogOnclicListener);
+        builder.setNegativeButton("取消", dialogOnclicListener);
+        builder.create().show();
+    }
+
     /**
      * 展示选择负责人对话框
      */
@@ -914,6 +1021,54 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
     }
 
     /**
+     * 恢复已删除任务
+     *
+     * @param itemEntity
+     */
+    private void recoverTaskById(final TaskEntity.TaskItemEntity itemEntity) {
+        if (itemEntity == null) return;
+        showLoadingDialog(null);
+        getApi().taskRecoverById(itemEntity.id).enqueue(new SimpleCallBack<JsonElement>() {
+            @Override
+            public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
+                dismissLoadingDialog();
+                if (taskItemAdapter != null) {
+                    taskItemAdapter.removeItem(itemEntity);
+                }
+            }
+        });
+    }
+
+    /**
+     * 修改任务
+     *
+     * @param itemEntity
+     * @param state
+     * @param checkbox
+     */
+    private void updateTask(final TaskEntity.TaskItemEntity itemEntity, final boolean state, final CheckBox checkbox) {
+        showLoadingDialog(null);
+        getApi().taskUpdate(RequestUtils.createJsonBody(getTaskJson(itemEntity, state))).enqueue(new SimpleCallBack<JsonElement>() {
+            @Override
+            public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
+                dismissLoadingDialog();
+                checkbox.setChecked(state);
+                itemEntity.state = state;
+                itemEntity.updateTime = DateUtils.millis();
+                taskItemAdapter.notifyDataSetChanged();
+                EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION));
+            }
+
+            @Override
+            public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
+                super.onFailure(call, t);
+                dismissLoadingDialog();
+                checkbox.setChecked(!state);
+            }
+        });
+    }
+
+    /**
      * 修改任务
      *
      * @param itemEntity
@@ -958,6 +1113,29 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
                 dismissLoadingDialog();
             }
         });
+    }
+
+    /**
+     * 获取任务json
+     *
+     * @param itemEntity
+     * @param state
+     * @return
+     */
+    private String getTaskJson(TaskEntity.TaskItemEntity itemEntity, boolean state) {
+        try {
+            itemEntity.state = state;
+            JsonObject jsonObject = new JsonObject();
+            jsonObject.addProperty("id", itemEntity.id);
+            jsonObject.addProperty("name", itemEntity.name);
+            jsonObject.addProperty("state", itemEntity.state);
+            jsonObject.addProperty("valid", true);
+            jsonObject.addProperty("updateTime", DateUtils.millis());
+            return jsonObject.toString();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     /**
@@ -1066,6 +1244,31 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
             e.printStackTrace();
         }
         return null;
+    }
+
+    /**
+     * 获取添加计时实体
+     *
+     * @return
+     */
+    private TimeEntity.ItemEntity getTimer(TaskEntity.TaskItemEntity taskItemEntity) {
+        TimeEntity.ItemEntity itemEntity = new TimeEntity.ItemEntity();
+        if (taskItemEntity != null) {
+            itemEntity.taskPkId = taskItemEntity.id;
+            itemEntity.taskName = taskItemEntity.name;
+            itemEntity.name = taskItemEntity.name;
+            itemEntity.workDate = DateUtils.millis();
+            itemEntity.createUserId = getLoginUserId();
+            if (LoginInfoUtils.getLoginUserInfo() != null) {
+                itemEntity.username = LoginInfoUtils.getLoginUserInfo().getName();
+            }
+            itemEntity.startTime = DateUtils.millis();
+            if (taskItemEntity.matter != null) {
+                itemEntity.matterPkId = taskItemEntity.matter.id;
+                itemEntity.matterName = taskItemEntity.matter.name;
+            }
+        }
+        return itemEntity;
     }
 
     /**

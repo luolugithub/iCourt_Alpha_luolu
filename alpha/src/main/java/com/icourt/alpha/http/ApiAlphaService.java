@@ -1277,6 +1277,15 @@ public interface ApiAlphaService {
      */
     @GET("api/v2/taskflow/newtasks")
     Call<ResEntity<List<String>>> newTasksCountQuery();
+
+    /**
+     * 恢复已删除的任务
+     * 文档地址：https://dev.alphalawyer.cn/ilaw/swagger/index.html#!/taskflow-api/returnTaskFlowUsingPUT
+     * @param taskId
+     * @return
+     */
+    @PUT("api/v2/taskflow/revivalTaskFlowById")
+    Call<ResEntity<JsonElement>> taskRecoverById(@Query("id") String taskId);
 }
 
 

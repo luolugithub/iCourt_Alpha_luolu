@@ -51,7 +51,7 @@ public class TaskItemAdapter extends BaseArrayRecyclerAdapter<TaskEntity.TaskIte
         startTimmingView.setVisibility(isAddTime ? View.VISIBLE : View.GONE);
 
         projectNameView.setText(getProjectName(taskItemEntity));
-        if (taskItemEntity.state) {
+        if (taskItemEntity.state || !taskItemEntity.valid) {
             timeView.setVisibility(taskItemEntity.updateTime > 0 ? View.VISIBLE : View.GONE);
             timeView.setText(DateUtils.get23Hour59MinFormat(taskItemEntity.updateTime));
             timeView.setTextColor(BLACK_COLOR);
@@ -59,6 +59,7 @@ public class TaskItemAdapter extends BaseArrayRecyclerAdapter<TaskEntity.TaskIte
         } else {
             timeTextSetData(timeView, taskItemEntity.dueTime);
         }
+
         textViewSetData(checkListView, taskItemEntity.doneItemCount + "/" + taskItemEntity.itemCount, taskItemEntity.itemCount);
         textViewSetData(documentNumView, String.valueOf(taskItemEntity.attachmentCount), taskItemEntity.attachmentCount);
         textViewSetData(commentNumView, String.valueOf(taskItemEntity.commentCount), taskItemEntity.commentCount);
@@ -89,6 +90,10 @@ public class TaskItemAdapter extends BaseArrayRecyclerAdapter<TaskEntity.TaskIte
 
         startTimmingViewSelect(startTimmingView, taskItemEntity.isTiming);
         checkBox.setChecked(taskItemEntity.state);
+        if (!taskItemEntity.valid) {
+            startTimmingView.setVisibility(View.GONE);
+            checkBox.setCompoundDrawablesWithIntrinsicBounds(R.mipmap.icon_back_14, 0, 0, 0);
+        }
         holder.bindChildClick(checkBox);
         holder.bindChildClick(startTimmingView);
     }
