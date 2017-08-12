@@ -1,17 +1,51 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical">
+    android:layout_margin="@dimen/alpha_height_divider"
+    android:background="@android:color/white"
+    android:gravity="center">
 
-    <include layout="@layout/adapter_item_document" />
-
-    <TextView
-        android:id="@+id/folder_document_num_tv"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:padding="15dp"
-        android:text="1个文件夹, 9个文件"
-        android:textSize="@dimen/alpha_font_size_mini" />
-</LinearLayout>
+        android:gravity="center"
+        android:orientation="vertical"
+        android:padding="15dp">
+
+        <ImageView
+            android:id="@+id/document_type_iv"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:src="@mipmap/ic_document" />
+
+        <TextView
+            android:id="@+id/document_title_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:text="文档标题"
+            android:textColor="@color/alpha_font_color_black"
+            android:textSize="@dimen/alpha_font_size_mini_lowest" />
+
+    </LinearLayout>
+
+    <ImageView
+        android:id="@+id/document_pic_iv"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@android:color/white"
+        android:scaleType="centerCrop"
+        android:visibility="gone" />
+
+    <CheckedTextView
+        android:id="@+id/folder_document_ctv"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_gravity="right|bottom"
+        android:layout_margin="5dp"
+        android:background="@drawable/sl_checkbox" />
+
+</FrameLayout>

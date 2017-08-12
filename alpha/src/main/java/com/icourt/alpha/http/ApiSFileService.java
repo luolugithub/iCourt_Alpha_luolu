@@ -1,6 +1,7 @@
 package com.icourt.alpha.http;
 
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.icourt.alpha.entity.bean.DocumentRootEntity;
 import com.icourt.alpha.entity.bean.FileBoxBean;
 import com.icourt.alpha.entity.bean.FolderDocumentEntity;
@@ -193,4 +194,28 @@ public interface ApiSFileService {
                                           @Path("seaFileRepoId") String seaFileRepoId,
                                           @Query("p") String p,
                                           @Body RequestBody body);
+
+    /**
+     * 删除文件夹
+     *
+     * @param authToken
+     * @param p
+     * @return
+     */
+    @DELETE("api/v2.1/repos/{seaFileRepoId}/dir/")
+    Call<JsonObject> folderDelete(@Header("Authorization") String authToken,
+                                  @Path("seaFileRepoId") String seaFileRepoId,
+                                  @Query("p") String p);
+
+    /**
+     * 删除文件夹
+     *
+     * @param authToken
+     * @param p
+     * @return
+     */
+    @DELETE("api/v2.1/repos/{seaFileRepoId}/file/")
+    Call<JsonObject> documentDelete(@Header("Authorization") String authToken,
+                                    @Path("seaFileRepoId") String seaFileRepoId,
+                                    @Query("p") String p);
 }
