@@ -140,7 +140,7 @@ public class FolderActionActivity extends FolderBaseActivity {
         Matcher matcher = pattern.matcher(originalText);
         SpannableUtils.setTextForegroundColorSpan();*/
                 if (TextUtils.equals(getIntent().getAction(), ACTION_CREATE)) {
-                    getSfileToken(new SimpleCallBack2<SFileTokenEntity<String>>() {
+                    getSFileToken(new SimpleCallBack2<SFileTokenEntity<String>>() {
                         @Override
                         public void onSuccess(Call<SFileTokenEntity<String>> call, Response<SFileTokenEntity<String>> response) {
                             dismissLoadingDialog();
@@ -158,7 +158,7 @@ public class FolderActionActivity extends FolderBaseActivity {
                         }
                     });
                 } else if (TextUtils.equals(getIntent().getAction(), ACTION_UPDATE_TITLE)) {
-                    getSfileToken(new SimpleCallBack2<SFileTokenEntity<String>>() {
+                    getSFileToken(new SimpleCallBack2<SFileTokenEntity<String>>() {
                         @Override
                         public void onSuccess(Call<SFileTokenEntity<String>> call, Response<SFileTokenEntity<String>> response) {
                             dismissLoadingDialog();
@@ -182,13 +182,6 @@ public class FolderActionActivity extends FolderBaseActivity {
                 super.onClick(v);
                 break;
         }
-    }
-
-
-    private void getSfileToken(SimpleCallBack2<SFileTokenEntity<String>> callBack2) {
-        showLoadingDialog("sfileToken获取中...");
-        getApi().documentTokenQuery()
-                .enqueue(callBack2);
     }
 
     /**

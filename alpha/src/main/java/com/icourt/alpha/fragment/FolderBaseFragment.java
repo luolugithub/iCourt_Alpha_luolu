@@ -1,8 +1,8 @@
-package com.icourt.alpha.activity;
+package com.icourt.alpha.fragment;
 
 import android.support.annotation.NonNull;
 
-import com.icourt.alpha.base.BaseActivity;
+import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.entity.bean.FolderDocumentEntity;
 import com.icourt.alpha.entity.bean.SFileTokenEntity;
 import com.icourt.alpha.http.callback.SimpleCallBack2;
@@ -11,26 +11,23 @@ import java.util.List;
 
 import retrofit2.Call;
 
-import static com.icourt.api.RequestUtils.callEnqueue;
-
 /**
  * Description
  * Company Beijing icourt
  * author  youxuan  E-mail:xuanyouwu@163.com
- * date createTime：2017/8/11
+ * date createTime：2017/8/12
  * version 2.1.0
  */
-public class FolderBaseActivity extends BaseActivity {
-
+public abstract class FolderBaseFragment extends BaseFragment {
     protected static final String KEY_SEA_FILE_REPO_ID = "seaFileRepoId";//仓库id
     protected static final String KEY_SEA_FILE_PARENT_DIR_PATH = "seaFileParentDirPath";//父目录路径
 
     protected String getSeaFileRepoId() {
-        return getIntent().getStringExtra(KEY_SEA_FILE_REPO_ID);
+        return getArguments().getString(KEY_SEA_FILE_REPO_ID, "");
     }
 
     protected String getSeaFileParentDirPath() {
-        return getIntent().getStringExtra(KEY_SEA_FILE_PARENT_DIR_PATH);
+        return getArguments().getString(KEY_SEA_FILE_PARENT_DIR_PATH, "");
     }
 
     /**
@@ -38,10 +35,10 @@ public class FolderBaseActivity extends BaseActivity {
      *
      * @param callBack2
      */
-    protected Call<SFileTokenEntity<String>> getSFileToken(@NonNull SimpleCallBack2<SFileTokenEntity<String>> callBack2) {
+    protected Call<SFileTokenEntity<String>> getSFileToken(
+            @NonNull SimpleCallBack2<SFileTokenEntity<String>> callBack2) {
         return callEnqueue(getApi().documentTokenQuery(), callBack2);
     }
-
 
     /**
      * 获取文件夹下面的文件夹与文件列表

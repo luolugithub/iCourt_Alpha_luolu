@@ -63,50 +63,84 @@
         android:background="@android:color/white"
         android:divider="@drawable/divider_comm"
         android:elevation="6dp"
-        android:visibility="gone"
-        android:orientation="horizontal"
-        android:padding="15dp"
-        android:showDividers="beginning">
-
-        <CheckBox
-            android:id="@+id/bottom_bar_all_select_cb"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:button="@null"
-            android:drawableLeft="@drawable/sl_checkbox"
-            android:drawablePadding="10dp"
-            android:text="全选" />
-
-        <android.support.v4.widget.Space
-            android:layout_width="wrap_content"
-            android:layout_height="2dp"
-            android:layout_weight="1" />
+        android:orientation="vertical"
+        android:showDividers="beginning"
+        android:visibility="gone">
 
         <TextView
-            android:id="@+id/bottom_bar_copy_tv"
+            android:id="@+id/bottom_bar_select_num_tv"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:padding="10dp"
-            android:text="复制"
-            android:textColor="@color/alpha_font_color_black"
-            android:textSize="@dimen/alpha_font_size_mini_medium" />
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="10dp"
+            android:text="已选择: 0"
+            android:textSize="@dimen/alpha_font_size_mini_lowest" />
 
-        <TextView
-            android:id="@+id/bottom_bar_move_tv"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:orientation="horizontal"
             android:padding="10dp"
-            android:text="移动"
-            android:textColor="@color/alpha_font_color_black"
-            android:textSize="@dimen/alpha_font_size_mini_medium" />
+            android:paddingBottom="15dp"
+            android:paddingLeft="15dp"
+            android:paddingRight="15dp">
 
-        <TextView
-            android:id="@+id/bottom_bar_delete_tv"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:padding="10dp"
-            android:text="删除"
-            android:textColor="@color/alpha_font_color_black"
-            android:textSize="@dimen/alpha_font_size_mini_medium" />
+            <CheckBox
+                android:id="@+id/bottom_bar_all_select_cb"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:button="@null"
+                android:drawableLeft="@drawable/sl_checkbox"
+                android:drawablePadding="10dp"
+                android:text="全选"
+                android:textColor="@color/alpha_font_color_black" />
+
+            <android.support.v4.widget.Space
+                android:layout_width="wrap_content"
+                android:layout_height="2dp"
+                android:layout_weight="1" />
+
+            <TextView
+                android:id="@+id/bottom_bar_copy_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_round_rect_white_orange_line"
+                android:paddingBottom="7dp"
+                android:paddingLeft="18dp"
+                android:paddingRight="18dp"
+                android:paddingTop="7dp"
+                android:text="复制"
+                android:textColor="@color/alpha_font_color_black"
+                android:textSize="@dimen/alpha_font_size_mini_medium" />
+
+            <TextView
+                android:id="@+id/bottom_bar_move_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="5dp"
+                android:background="@drawable/bg_round_rect_white_orange_line"
+                android:paddingBottom="7dp"
+                android:paddingLeft="18dp"
+                android:paddingRight="18dp"
+                android:paddingTop="7dp"
+                android:text="移动"
+                android:textColor="@color/alpha_font_color_black"
+                android:textSize="@dimen/alpha_font_size_mini_medium" />
+
+            <TextView
+                android:id="@+id/bottom_bar_delete_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="5dp"
+                android:background="@drawable/bg_round_rect_white_orange_line"
+                android:paddingBottom="7dp"
+                android:paddingLeft="18dp"
+                android:paddingRight="18dp"
+                android:paddingTop="7dp"
+                android:text="删除"
+                android:textColor="@color/alpha_font_color_black"
+                android:textSize="@dimen/alpha_font_size_mini_medium" />
+
+        </LinearLayout>
     </LinearLayout>
 </LinearLayout>

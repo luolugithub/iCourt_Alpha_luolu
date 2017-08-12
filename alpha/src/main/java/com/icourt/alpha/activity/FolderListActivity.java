@@ -10,6 +10,8 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.AppBarLayout;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.util.ArraySet;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -39,6 +41,7 @@ import com.icourt.alpha.entity.bean.ItemsEntity;
 import com.icourt.alpha.entity.bean.SFileTokenEntity;
 import com.icourt.alpha.fragment.dialogfragment.DocumentDetailDialogFragment;
 import com.icourt.alpha.fragment.dialogfragment.FolderDetailDialogFragment;
+import com.icourt.alpha.fragment.dialogfragment.FolderTargetListDialogFragment;
 import com.icourt.alpha.http.callback.SimpleCallBack2;
 import com.icourt.alpha.interfaces.ISeaFileImageLoader;
 import com.icourt.alpha.utils.GlideUtils;
@@ -56,6 +59,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -95,6 +99,8 @@ public class FolderListActivity extends FolderBaseActivity
     RefreshLayout refreshLayout;
     FolderDocumentWrapAdapter folderDocumentAdapter;
     HeaderFooterAdapter<FolderDocumentWrapAdapter> headerFooterAdapter;
+    @BindView(R.id.bottom_bar_select_num_tv)
+    TextView bottomBarSelectNumTv;
     private ArraySet<FolderDocumentEntity> selectedFolderDocuments = new ArraySet<>();
     View headerView;
     TextView footerView;
@@ -131,11 +137,13 @@ public class FolderListActivity extends FolderBaseActivity
                     selectedFolderDocuments.addAll(documentEntities);
                 }
                 folderDocumentAdapter.notifyDataSetChanged();
+                bottomBarSelectNumTv.setText(String.format("已选择: %s", selectedFolderDocuments.size()));
             } else {
                 if (!selectedFolderDocuments.isEmpty()) {
                     selectedFolderDocuments.clear();
                     folderDocumentAdapter.notifyDataSetChanged();
                 }
+                bottomBarSelectNumTv.setText(String.format("已选择: %s", selectedFolderDocuments.size()));
             }
         }
     };
@@ -282,7 +290,7 @@ public class FolderListActivity extends FolderBaseActivity
     @Override
     protected void getData(final boolean isRefresh) {
         super.getData(isRefresh);
-        getSfileToken(new SimpleCallBack2<SFileTokenEntity<String>>() {
+        getSFileToken(new SimpleCallBack2<SFileTokenEntity<String>>() {
             @Override
             public void onSuccess(Call<SFileTokenEntity<String>> call, Response<SFileTokenEntity<String>> response) {
                 if (TextUtils.isEmpty(response.body().authToken)) {
@@ -343,20 +351,13 @@ public class FolderListActivity extends FolderBaseActivity
         }
     }
 
-    /**
-     * 获取sfile token
-     *
-     * @param callBack2
-     */
-    public void getSfileToken(@NonNull SimpleCallBack2<SFileTokenEntity<String>> callBack2) {
-        getApi().documentTokenQuery()
-                .enqueue(callBack2);
-    }
-
 
     @OnClick({R.id.titleAction,
             R.id.titleAction2,
-            R.id.titleEditCancelView})
+            R.id.titleEditCancelView,
+            R.id.bottom_bar_copy_tv,
+            R.id.bottom_bar_move_tv,
+            R.id.bottom_bar_delete_tv})
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
@@ -402,7 +403,8 @@ public class FolderListActivity extends FolderBaseActivity
                                 dialog.dismiss();
                                 switch (position) {
                                     case 0:
-                                        folderDocumentAdapter.setSelectable(!folderDocumentAdapter.isSelectable());
+                                        folderDocumentAdapter.setSelectable(true);
+                                        folderDocumentAdapter.notifyDataSetChanged();
                                         updateSelectableModeSatue(folderDocumentAdapter.isSelectable());
                                         break;
                                     case 1:
@@ -428,8 +430,17 @@ public class FolderListActivity extends FolderBaseActivity
             case R.id.header_search_sort_iv:
                 break;
             case R.id.titleEditCancelView:
+                selectedFolderDocuments.clear();
                 folderDocumentAdapter.setSelectable(false);
+                folderDocumentAdapter.notifyDataSetChanged();
                 updateSelectableModeSatue(folderDocumentAdapter.isSelectable());
+                break;
+            case R.id.bottom_bar_copy_tv:
+                break;
+            case R.id.bottom_bar_move_tv:
+                break;
+            case R.id.bottom_bar_delete_tv:
+                deleteFolderOrDocuments(selectedFolderDocuments);
                 break;
             default:
                 super.onClick(v);
@@ -448,6 +459,7 @@ public class FolderListActivity extends FolderBaseActivity
         titleView.setVisibility(!isSelectable ? View.VISIBLE : View.GONE);
         bottomBarLayout.setVisibility(isSelectable ? View.VISIBLE : View.GONE);
         bottomBarAllSelectCb.setChecked(false);
+        bottomBarSelectNumTv.setText(String.format("已选择: %s", selectedFolderDocuments.size()));
     }
 
 
@@ -524,7 +536,7 @@ public class FolderListActivity extends FolderBaseActivity
                 && !filePaths.isEmpty()) {
             //1.获取token
             showLoadingDialog("sfile token获取中...");
-            getSfileToken(new SimpleCallBack2<SFileTokenEntity<String>>() {
+            getSFileToken(new SimpleCallBack2<SFileTokenEntity<String>>() {
                 @Override
                 public void onSuccess(Call<SFileTokenEntity<String>> call, Response<SFileTokenEntity<String>> response) {
                     dismissLoadingDialog();
@@ -666,7 +678,6 @@ public class FolderListActivity extends FolderBaseActivity
     }
 
     private void toggleSelect(FolderDocumentAdapter folderDocumentAdapter, int position) {
-
         FolderDocumentEntity item = folderDocumentAdapter.getItem(position);
         if (selectedFolderDocuments.contains(item)) {
             selectedFolderDocuments.remove(item);
@@ -677,6 +688,7 @@ public class FolderListActivity extends FolderBaseActivity
         bottomBarAllSelectCb.setChecked(isAllSelected());
         bottomBarAllSelectCb.setOnCheckedChangeListener(onCheckedChangeListener);
         folderDocumentAdapter.notifyDataSetChanged();
+        bottomBarSelectNumTv.setText(String.format("已选择: %s", selectedFolderDocuments.size()));
     }
 
     @Override
@@ -759,6 +771,7 @@ public class FolderListActivity extends FolderBaseActivity
                     case 1:
                         break;
                     case 2:
+                        showFolderTargetListDialogFragment();
                         break;
                     case 3:
                         break;
@@ -773,6 +786,83 @@ public class FolderListActivity extends FolderBaseActivity
         centerMenuDialog.show();
     }
 
+    protected final void showFolderTargetListDialogFragment() {
+        String tag = FolderTargetListDialogFragment.class.getSimpleName();
+        FragmentTransaction mFragTransaction = getSupportFragmentManager().beginTransaction();
+        Fragment fragment = getSupportFragmentManager().findFragmentByTag(tag);
+        if (fragment != null) {
+            mFragTransaction.remove(fragment);
+        }
+        FolderTargetListDialogFragment.newInstance(getSeaFileRepoId(),
+                getIntent().getStringExtra("title"),
+                getSeaFileParentDirPath())
+                .show(mFragTransaction, tag);
+    }
+
+    /**
+     * 批量删除文件或者删除文件夹
+     *
+     * @param items
+     */
+    private void deleteFolderOrDocuments(final Set<FolderDocumentEntity> items) {
+        if (items == null || items.isEmpty()) return;
+        showLoadingDialog("sfile token获取中...");
+        getSFileToken(new SimpleCallBack2<SFileTokenEntity<String>>() {
+            @Override
+            public void onSuccess(Call<SFileTokenEntity<String>> call, Response<SFileTokenEntity<String>> response) {
+                if (TextUtils.isEmpty(response.body().authToken)) {
+                    stopRefresh();
+                    dismissLoadingDialog();
+                    showTopSnackBar("sfile authToken返回为null");
+                    return;
+                }
+                sFileToken = response.body().authToken;
+
+
+                //循环删除
+                for (FolderDocumentEntity item : items) {
+                    Call<JsonObject> delCall = null;
+                    if (item.isDir()) {
+                        delCall = getSFileApi()
+                                .folderDelete(
+                                        String.format("Token %s", response.body().authToken),
+                                        getSeaFileRepoId(),
+                                        String.format("%s%s", getSeaFileParentDirPath(), item.name));
+                    } else {
+                        delCall = getSFileApi()
+                                .documentDelete(
+                                        String.format("Token %s", response.body().authToken),
+                                        getSeaFileRepoId(),
+                                        String.format("%s%s", getSeaFileParentDirPath(), item.name));
+                    }
+                    showLoadingDialog("删除中...");
+                    delCall.enqueue(new SimpleCallBack2<JsonObject>() {
+                        @Override
+                        public void onSuccess(Call<JsonObject> call, Response<JsonObject> response) {
+                            dismissLoadingDialog();
+                            if (response.body().has("success")
+                                    && response.body().get("success").getAsBoolean()) {
+                                getData(true);
+                            }
+                        }
+
+                        @Override
+                        public void onFailure(Call<JsonObject> call, Throwable t) {
+                            super.onFailure(call, t);
+                            dismissLoadingDialog();
+                        }
+                    });
+                }
+            }
+
+            @Override
+            public void onFailure(Call<SFileTokenEntity<String>> call, Throwable t) {
+                super.onFailure(call, t);
+                dismissLoadingDialog();
+            }
+        });
+    }
+
     /**
      * 删除文件或者删除文件夹
      *
@@ -781,7 +871,7 @@ public class FolderListActivity extends FolderBaseActivity
     private void deleteFolderOrDocument(final FolderDocumentEntity item) {
         if (item == null) return;
         showLoadingDialog("sfile token获取中...");
-        getSfileToken(new SimpleCallBack2<SFileTokenEntity<String>>() {
+        getSFileToken(new SimpleCallBack2<SFileTokenEntity<String>>() {
             @Override
             public void onSuccess(Call<SFileTokenEntity<String>> call, Response<SFileTokenEntity<String>> response) {
                 if (TextUtils.isEmpty(response.body().authToken)) {

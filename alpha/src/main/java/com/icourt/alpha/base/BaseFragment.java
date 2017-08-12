@@ -33,6 +33,7 @@ import com.icourt.alpha.utils.LoginInfoUtils;
 import com.icourt.alpha.utils.SnackbarUtils;
 import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.utils.ToastUtils;
+import com.icourt.api.RequestUtils;
 import com.kaopiz.kprogresshud.KProgressHUD;
 import com.trello.rxlifecycle2.LifecycleProvider;
 import com.trello.rxlifecycle2.LifecycleTransformer;
@@ -42,6 +43,8 @@ import com.trello.rxlifecycle2.android.RxLifecycleAndroid;
 
 import io.reactivex.Observable;
 import io.reactivex.subjects.BehaviorSubject;
+import retrofit2.Call;
+import retrofit2.Callback;
 
 /**
  * Description fragment基类封装
@@ -578,6 +581,19 @@ public abstract class BaseFragment
         if (!TextUtils.isEmpty(tag) && throwable != null) {
             bugSync(tag, StringUtils.throwable2string(throwable));
         }
+    }
+
+
+    /**
+     * 执行call请求
+     *
+     * @param call
+     * @param callback
+     * @param <T>
+     * @return
+     */
+    protected <T> Call<T> callEnqueue(Call<T> call, Callback<T> callback) {
+        return RequestUtils.callEnqueue(call, callback);
     }
 
 }

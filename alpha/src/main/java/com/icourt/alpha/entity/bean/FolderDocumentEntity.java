@@ -2,6 +2,8 @@ package com.icourt.alpha.entity.bean;
 
 import android.text.TextUtils;
 
+import com.icourt.alpha.widget.filter.IFilterEntity;
+
 import java.io.Serializable;
 
 /**
@@ -11,7 +13,8 @@ import java.io.Serializable;
  * date createTime：2017/8/10
  * version 2.1.0
  */
-public class FolderDocumentEntity implements Serializable {
+public class FolderDocumentEntity implements Serializable, IFilterEntity {
+    public static final int TYPE_FILE = 1;
     /**
      * "lock_time": 0,
      * "modifier_email": "ba5cbf1a21b111e7843370106faece2e@ifile.com",
@@ -38,5 +41,13 @@ public class FolderDocumentEntity implements Serializable {
 
     public boolean isDir() {
         return TextUtils.equals(type, "dir");
+    }
+
+    @Override
+    public boolean isFilter(int type) {
+        if (type == TYPE_FILE) {//过滤文件
+            return !isDir();
+        }
+        return false;
     }
 }
