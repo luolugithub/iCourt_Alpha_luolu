@@ -638,8 +638,98 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onDeleteTaskEvent(TaskActionEvent event) {
         if (event == null) return;
-        if (event.action == TaskActionEvent.TASK_REFRESG_ACTION) {
-            refreshLayout.startRefresh();
+
+        switch (event.action) {
+            case TaskActionEvent.TASK_REFRESG_ACTION:
+                refreshLayout.startRefresh();
+                break;
+            case TaskActionEvent.TASK_DELETE_ACTION:
+                if (event.entity == null) return;
+                if (type == TYPE_ALL) {
+                    if (stateType == 0) {
+                        removeChildItem(event.entity);
+                    } else if (stateType == 1) {
+                        if (taskItemAdapter != null) {
+                            taskItemAdapter.removeItem(event.entity);
+                            taskItemAdapter.notifyDataSetChanged();
+                        }
+                    } else if (stateType == 3) {
+                        if (taskItemAdapter != null) {
+                            if (event.entity.valid) {
+                                taskItemAdapter.removeItem(event.entity);
+                            } else {
+                                taskItemAdapter.addItem(event.entity);
+                            }
+                            taskItemAdapter.notifyDataSetChanged();
+                        }
+                    }
+                } else if (type == TYPE_MY_ATTENTION) {
+                    removeChildItem(event.entity);
+                    if (taskAdapter != null)
+                        taskAdapter.notifyDataSetChanged();
+                }
+                break;
+            case TaskActionEvent.TASK_ADD_ITEM_ACITON:
+                if (event.entity == null) return;
+                if (type == TYPE_ALL) {
+                    if (stateType == 1 || stateType == 3) {
+                        if (taskItemAdapter != null) {
+                            taskItemAdapter.addItem(event.entity);
+                        }
+                    }
+                } else if (type == TYPE_MY_ATTENTION) {
+                    refreshLayout.startRefresh();
+                }
+                break;
+            case TaskActionEvent.TASK_UPDATE_ITEM:
+                if (event.entity == null) return;
+                if (type == TYPE_ALL) {
+                    if (stateType == 0) {
+                        updateChildItem(event.entity);
+                    } else if (stateType == 1 || stateType == 3) {
+                        if (taskItemAdapter != null) {
+                            taskItemAdapter.updateItem(event.entity);
+                        }
+                    }
+                } else if (type == TYPE_MY_ATTENTION) {
+                    updateChildItem(event.entity);
+                }
+                break;
+        }
+
+    }
+
+    /**
+     * 删除子item
+     *
+     * @param itemEntity
+     */
+    private void removeChildItem(TaskEntity.TaskItemEntity itemEntity) {
+        if (itemEntity == null) return;
+        RecyclerView recyclerView = getChildRecyclerView(itemEntity.id);
+        if (recyclerView == null) return;
+        if (recyclerView.getAdapter() != null) {
+            if (recyclerView.getAdapter() instanceof TaskItemAdapter) {
+                TaskItemAdapter adapter = (TaskItemAdapter) recyclerView.getAdapter();
+                adapter.removeItem(itemEntity);
+            }
+        }
+    }
+
+    /**
+     * 更新子item
+     *
+     * @param itemEntity
+     */
+    private void updateChildItem(TaskEntity.TaskItemEntity itemEntity) {
+        if (itemEntity == null) return;
+        RecyclerView recyclerView = getChildRecyclerView(itemEntity.id);
+        if (recyclerView == null) return;
+        if (recyclerView.getAdapter() != null) {
+            if (recyclerView.getAdapter() instanceof TaskItemAdapter) {
+                TaskItemAdapter adapter = (TaskItemAdapter) recyclerView.getAdapter();
+                adapter.updateItem(itemEntity);
+            }
         }
     }
 
@@ -656,10 +746,7 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
 
                 break;
             case TimingEvent.TIMING_UPDATE_PROGRESS:
-                TimeEntity.ItemEntity updateItem = TimerManager.getInstance().getTimer();
-                if (updateItem != null) {
-                    updateChildTimeing(updateItem.taskPkId, true);
-                }
+                updateTimming();
                 break;
             case TimingEvent.TIMING_STOP:
                 if (lastEntity != null) {
@@ -670,6 +757,17 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
         }
     }
 
+    private void updateTimming(){
+        TimeEntity.ItemEntity updateItem = TimerManager.getInstance().getTimer();
+        if (updateItem != null) {
+            if (taskAdapter != null) {
+                updateChildTimeing(updateItem.taskPkId, true);
+            } else {
+                updateChildTimeingBy(updateItem.taskPkId, true);
+            }
+        }
+    }
+
     /**
      * 获取item所在父容器position
      *
@@ -677,6 +775,7 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
      * @return
      */
     private int getParentPositon(String taskId) {
+        if (taskAdapter == null) return -1;
         if (taskAdapter.getData() != null) {
             for (int i = 0; i < taskAdapter.getData().size(); i++) {
                 TaskEntity task = taskAdapter.getData().get(i);
@@ -727,6 +826,8 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
      * @return
      */
     private RecyclerView getChildRecyclerView(String taskId) {
+        if (taskAdapter == null) return null;
+        if (headerFooterAdapter == null) return null;
         int parentPos = getParentPositon(taskId) + headerFooterAdapter.getHeaderCount();
         if (parentPos > 0) {
             int childPos = getChildPositon(taskId);
@@ -779,6 +880,54 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
         } else {
             taskAdapter.notifyDataSetChanged();
         }
+    }
+
+    /**
+     * 更新item
+     *
+     * @param taskId
+     */
+    private void updateChildTimeingBy(String taskId, boolean isTiming) {
+        try {
+            int childPos = getChildPositonBy(taskId);
+            if (childPos >= 0) {
+                TaskEntity.TaskItemEntity entity = taskItemAdapter.getItem(childPos);
+                if (entity != null) {
+                    if (lastEntity != null)
+                        if (!TextUtils.equals(entity.id, lastEntity.id)) {
+                            lastEntity.isTiming = false;
+                            taskItemAdapter.notifyDataSetChanged();
+                        }
+                    if (entity.isTiming != isTiming) {
+                        entity.isTiming = isTiming;
+                        taskItemAdapter.notifyDataSetChanged();
+                        lastEntity = entity;
+                    }
+                }
+            }
+        } catch (Throwable e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * 获取item所在子容器position
+     *
+     * @param taskId
+     * @return
+     */
+    private int getChildPositonBy(String taskId) {
+        if (taskItemAdapter.getData() != null) {
+            for (int i = 0; i < taskItemAdapter.getData().size(); i++) {
+                TaskEntity.TaskItemEntity item = taskItemAdapter.getData().get(i);
+                if (item != null) {
+                    if (TextUtils.equals(item.id, taskId)) {
+                        return i;
+                    }
+                }
+            }
+        }
+        return -1;
     }
 
     @Override
@@ -1065,6 +1214,7 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
                 dismissLoadingDialog();
                 if (taskItemAdapter != null) {
                     taskItemAdapter.removeItem(itemEntity);
+                    taskItemAdapter.notifyDataSetChanged();
                 }
             }
 
@@ -1093,7 +1243,7 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
                 itemEntity.state = state;
                 itemEntity.updateTime = DateUtils.millis();
                 taskItemAdapter.notifyDataSetChanged();
-                EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION));
+//                EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION));
             }
 
             @Override

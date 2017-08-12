@@ -758,8 +758,30 @@ public class MyFinishTaskActivity extends BaseActivity
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onDeleteTaskEvent(TaskActionEvent event) {
         if (event == null) return;
-        if (event.action == TaskActionEvent.TASK_REFRESG_ACTION) {
-            refreshLayout.startRefresh();
+        switch (event.action) {
+            case TaskActionEvent.TASK_REFRESG_ACTION:
+                refreshLayout.startRefresh();
+                break;
+            case TaskActionEvent.TASK_DELETE_ACTION:
+                if (event.entity == null) return;
+                if (taskItemAdapter != null) {
+                    taskItemAdapter.removeItem(event.entity);
+                    taskItemAdapter.notifyDataSetChanged();
+                }
+                break;
+            case TaskActionEvent.TASK_ADD_ITEM_ACITON:
+                if (event.entity == null) return;
+                if (taskItemAdapter != null) {
+                    taskItemAdapter.addItem(event.entity);
+                    taskItemAdapter.notifyDataSetChanged();
+                }
+                break;
+            case TaskActionEvent.TASK_UPDATE_ITEM:
+                if (event.entity == null) return;
+                if (taskItemAdapter != null) {
+                    taskItemAdapter.updateItem(event.entity);
+                }
+                break;
         }
     }
 

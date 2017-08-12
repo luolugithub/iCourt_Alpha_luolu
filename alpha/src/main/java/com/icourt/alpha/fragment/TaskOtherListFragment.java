@@ -525,8 +525,80 @@ public class TaskOtherListFragment extends BaseFragment implements BaseRecyclerA
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onDeleteTaskEvent(TaskActionEvent event) {
         if (event == null) return;
-        if (event.action == TaskActionEvent.TASK_REFRESG_ACTION) {
-            refreshLayout.startRefresh();
+
+        switch (event.action) {
+            case TaskActionEvent.TASK_REFRESG_ACTION:
+                refreshLayout.startRefresh();
+                break;
+            case TaskActionEvent.TASK_DELETE_ACTION:
+                if (event.entity == null) return;
+                removeChildItem(event.entity);
+                if (taskAdapter != null)
+                    taskAdapter.notifyDataSetChanged();
+                break;
+            case TaskActionEvent.TASK_ADD_ITEM_ACITON:
+                refreshLayout.startRefresh();
+                break;
+            case TaskActionEvent.TASK_UPDATE_ITEM:
+                if (event.entity == null) return;
+                updateChildItem(event.entity);
+                break;
+        }
+    }
+
+    /**
+     * 获取子view中的RecyclerView
+     *
+     * @param taskId
+     * @return
+     */
+    private RecyclerView getChildRecyclerView(String taskId) {
+        if (taskAdapter == null) return null;
+        int parentPos = getParentPositon(taskId);
+        if (parentPos > 0) {
+            int childPos = getChildPositon(taskId);
+            if (childPos >= 0) {
+                BaseArrayRecyclerAdapter.ViewHolder viewHolderForAdapterPosition = (BaseArrayRecyclerAdapter.ViewHolder) recyclerView.findViewHolderForAdapterPosition(parentPos);
+                if (viewHolderForAdapterPosition != null) {
+                    RecyclerView recyclerview = viewHolderForAdapterPosition.obtainView(R.id.parent_item_task_recyclerview);
+                    return recyclerview;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * 删除子item
+     *
+     * @param itemEntity
+     */
+    private void removeChildItem(TaskEntity.TaskItemEntity itemEntity) {
+        if (itemEntity == null) return;
+        RecyclerView recyclerView = getChildRecyclerView(itemEntity.id);
+        if (recyclerView == null) return;
+        if (recyclerView.getAdapter() != null) {
+            if (recyclerView.getAdapter() instanceof TaskItemAdapter) {
+                TaskItemAdapter adapter = (TaskItemAdapter) recyclerView.getAdapter();
+                adapter.removeItem(itemEntity);
+            }
+        }
+    }
+
+    /**
+     * 更新子item
+     *
+     * @param itemEntity
+     */
+    private void updateChildItem(TaskEntity.TaskItemEntity itemEntity) {
+        if (itemEntity == null) return;
+        RecyclerView recyclerView = getChildRecyclerView(itemEntity.id);
+        if (recyclerView == null) return;
+        if (recyclerView.getAdapter() != null) {
+            if (recyclerView.getAdapter() instanceof TaskItemAdapter) {
+                TaskItemAdapter adapter = (TaskItemAdapter) recyclerView.getAdapter();
+                adapter.updateItem(itemEntity);
+            }
         }
     }
 

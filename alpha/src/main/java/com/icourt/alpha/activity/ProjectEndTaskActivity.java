@@ -751,8 +751,30 @@ public class ProjectEndTaskActivity extends BaseActivity
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onDeleteTaskEvent(TaskActionEvent event) {
         if (event == null) return;
-        if (event.action == TaskActionEvent.TASK_REFRESG_ACTION) {
-            refreshLayout.startRefresh();
+        switch (event.action) {
+            case TaskActionEvent.TASK_REFRESG_ACTION:
+                refreshLayout.startRefresh();
+                break;
+            case TaskActionEvent.TASK_DELETE_ACTION:
+                if (event.entity == null) return;
+                if (taskAdapter != null) {
+                    taskAdapter.removeItem(event.entity);
+                    taskAdapter.notifyDataSetChanged();
+                }
+                break;
+            case TaskActionEvent.TASK_ADD_ITEM_ACITON:
+                if (event.entity == null) return;
+                if (taskAdapter != null) {
+                    taskAdapter.addItem(event.entity);
+                    taskAdapter.notifyDataSetChanged();
+                }
+                break;
+            case TaskActionEvent.TASK_UPDATE_ITEM:
+                if (event.entity == null) return;
+                if (taskAdapter != null) {
+                    taskAdapter.updateItem(event.entity);
+                }
+                break;
         }
     }
 

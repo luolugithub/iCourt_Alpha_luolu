@@ -1,6 +1,5 @@
 package com.icourt.alpha.adapter;
 
-import android.app.Activity;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.TextUtils;
@@ -8,7 +7,6 @@ import android.text.method.LinkMovementMethod;
 import android.text.util.Linkify;
 import android.view.KeyEvent;
 import android.view.View;
-import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -29,9 +27,14 @@ import com.icourt.alpha.utils.SystemUtils;
 public class TaskCheckItemAdapter extends MultiSelectRecyclerAdapter<TaskCheckItemEntity.ItemEntity> {
 
     OnLoseFocusListener onLoseFocusListener;
+    boolean valid;
 
     public void setOnLoseFocusListener(OnLoseFocusListener onLoseFocusListener) {
         this.onLoseFocusListener = onLoseFocusListener;
+    }
+
+    public void setValid(boolean valid) {
+        this.valid = valid;
     }
 
     @Override
@@ -51,6 +54,8 @@ public class TaskCheckItemAdapter extends MultiSelectRecyclerAdapter<TaskCheckIt
             checkedTextView.setImageResource(R.mipmap.checkbox_square);
             nameView.setTextColor(0xFF4A4A4A);
         }
+        checkedTextView.setClickable(valid);
+        deleteView.setVisibility(valid ? View.VISIBLE : View.GONE);
         nameView.setMovementMethod(LinkMovementMethod.getInstance());
         Spannable spannable = new SpannableString(itemEntity.name);
         Linkify.addLinks(spannable, Linkify.WEB_URLS);

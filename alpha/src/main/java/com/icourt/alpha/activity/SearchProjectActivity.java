@@ -449,8 +449,30 @@ public class SearchProjectActivity extends BaseActivity implements BaseRecyclerA
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onDeleteTaskEvent(TaskActionEvent event) {
         if (event == null) return;
-        if (event.action == TaskActionEvent.TASK_REFRESG_ACTION) {
-            getData(true);
+        switch (event.action) {
+            case TaskActionEvent.TASK_REFRESG_ACTION:
+                getData(true);
+                break;
+            case TaskActionEvent.TASK_DELETE_ACTION:
+                if (event.entity == null) return;
+                if (taskItemAdapter != null) {
+                    taskItemAdapter.removeItem(event.entity);
+                    taskItemAdapter.notifyDataSetChanged();
+                }
+                break;
+            case TaskActionEvent.TASK_ADD_ITEM_ACITON:
+                if (event.entity == null) return;
+                if (taskItemAdapter != null) {
+                    taskItemAdapter.addItem(event.entity);
+                    taskItemAdapter.notifyDataSetChanged();
+                }
+                break;
+            case TaskActionEvent.TASK_UPDATE_ITEM:
+                if (event.entity == null) return;
+                if (taskItemAdapter != null) {
+                    taskItemAdapter.updateItem(event.entity);
+                }
+                break;
         }
     }
 

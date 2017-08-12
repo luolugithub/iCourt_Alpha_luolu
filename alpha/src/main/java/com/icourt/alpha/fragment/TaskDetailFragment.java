@@ -15,7 +15,6 @@ import android.widget.TextView;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.icourt.alpha.R;
 import com.icourt.alpha.activity.ProjectDetailActivity;
@@ -88,7 +87,14 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
     TaskReminderEntity taskReminderEntity;
     @BindView(R.id.task_reminder_icon)
     ImageView taskReminderIcon;
-    boolean isFinish;
+    boolean isFinish;//是否完成
+    boolean valid;//是否有效   true：未删除   fale：已删除
+    @BindView(R.id.task_project_arrow_iv)
+    ImageView taskProjectArrowIv;
+    @BindView(R.id.task_group_arrow_iv)
+    ImageView taskGroupArrowIv;
+    @BindView(R.id.task_time_arrow_iv)
+    ImageView taskTimeArrowIv;
 
     public static TaskDetailFragment newInstance(@NonNull TaskEntity.TaskItemEntity taskItemEntity) {
         TaskDetailFragment taskDetailFragment = new TaskDetailFragment();
@@ -111,45 +117,59 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
         EventBus.getDefault().register(this);
         taskItemEntity = (TaskEntity.TaskItemEntity) getArguments().getSerializable(KEY_TASK_DETAIL);
         if (taskItemEntity != null) {
-            isFinish = taskItemEntity.state;
-            if (taskItemEntity.matter != null) {
-                taskProjectLayout.setVisibility(View.VISIBLE);
-                taskGroupLayout.setVisibility(View.VISIBLE);
-                taskProjectTv.setText(taskItemEntity.matter.name);
-                if (taskItemEntity.parentFlow != null) {
-                    taskGroupTv.setText(taskItemEntity.parentFlow.name);
-                }
-            } else {
-                taskProjectLayout.setVisibility(View.VISIBLE);
-                taskGroupLayout.setVisibility(View.GONE);
-                taskProjectTv.setText("选择所属项目");
-            }
-
-            if (taskItemEntity.dueTime > 0) {
-                taskTimeTv.setText(DateUtils.get23Hour59Min(taskItemEntity.dueTime));
-            } else {
-                taskTimeTv.setText("选择到期时间");
-            }
-
-            if (!TextUtils.isEmpty(taskItemEntity.description)) {
-                try {
-                    taskDescTv.setText(URLDecoder.decode(taskItemEntity.description, "utf-8"));
-                } catch (Exception e) {
-                    taskDescTv.setText(taskItemEntity.description);
-                    e.printStackTrace();
-                    taskDescTv.setText(taskItemEntity.description);
-                    bugSync("任务详情转码失败", e);
-                }
-            }
+            setDataToView();
             getTaskReminder(taskItemEntity.id); //获取任务提醒数据
         }
+    }
+
+    private void setDataToView() {
+        if (taskItemEntity == null) return;
+        if (taskProjectLayout == null) return;
+        isFinish = taskItemEntity.state;
+        valid = taskItemEntity.valid;
+        if (taskItemEntity.matter != null) {
+            taskProjectLayout.setVisibility(View.VISIBLE);
+            taskGroupLayout.setVisibility(View.VISIBLE);
+            taskProjectTv.setText(taskItemEntity.matter.name);
+            if (taskItemEntity.parentFlow != null) {
+                taskGroupTv.setText(taskItemEntity.parentFlow.name);
+            } else {
+                taskGroupTv.setHint(valid ? "选择任务组" : "未指定任务组");
+            }
+        } else {
+            taskProjectLayout.setVisibility(View.VISIBLE);
+            taskGroupLayout.setVisibility(View.GONE);
+            taskProjectTv.setHint(valid ? "选择所属项目" : "未指定所属项目");
+        }
+
+        if (taskItemEntity.dueTime > 0) {
+            taskTimeTv.setHint(DateUtils.get23Hour59Min(taskItemEntity.dueTime));
+        } else {
+            taskTimeTv.setHint(valid ? "选择到期时间" : "未选择到期时间");
+        }
+
+        if (!TextUtils.isEmpty(taskItemEntity.description)) {
+            try {
+                taskDescTv.setText(URLDecoder.decode(taskItemEntity.description, "utf-8"));
+            } catch (Exception e) {
+                taskDescTv.setText(taskItemEntity.description);
+                e.printStackTrace();
+                taskDescTv.setText(taskItemEntity.description);
+                bugSync("任务详情转码失败", e);
+            }
+        } else {
+            taskDescTv.setHint(valid ? "添加任务详情" : "未录入任务详情");
+        }
+        taskProjectArrowIv.setVisibility(valid ? View.VISIBLE : View.GONE);
+        taskGroupArrowIv.setVisibility(valid ? View.VISIBLE : View.GONE);
+        taskTimeArrowIv.setVisibility(valid ? View.VISIBLE : View.GONE);
     }
 
     @OnClick({R.id.task_project_layout, R.id.task_group_layout, R.id.task_time_layout, R.id.task_desc_tv})
     @Override
     public void onClick(View v) {
         super.onClick(v);
-        if (!isFinish) {
+        if (!isFinish && valid) {
             if (hasTaskEditPermission()) {
                 switch (v.getId()) {
                     case R.id.task_project_layout://选择项目
@@ -187,6 +207,9 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
         if (targetFrgament instanceof TaskDetailFragment) {
             if (bundle == null) return;
             isFinish = bundle.getBoolean("isFinish");
+            valid = bundle.getBoolean("valid");
+            taskItemEntity = (TaskEntity.TaskItemEntity) bundle.getSerializable("taskItemEntity");
+            setDataToView();
         }
     }
 
@@ -346,9 +369,9 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
      */
     private void updateTask(final TaskEntity.TaskItemEntity itemEntity, final ProjectEntity projectEntity, final TaskGroupEntity taskGroupEntity) {
         showLoadingDialog(null);
-        getApi().taskUpdate(RequestUtils.createJsonBody(getTaskJson(itemEntity, projectEntity, taskGroupEntity))).enqueue(new SimpleCallBack<JsonElement>() {
+        getApi().taskUpdateNew(RequestUtils.createJsonBody(getTaskJson(itemEntity, projectEntity, taskGroupEntity))).enqueue(new SimpleCallBack<TaskEntity.TaskItemEntity>() {
             @Override
-            public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
+            public void onSuccess(Call<ResEntity<TaskEntity.TaskItemEntity>> call, Response<ResEntity<TaskEntity.TaskItemEntity>> response) {
                 dismissLoadingDialog();
 
                 if (projectEntity != null) {
@@ -389,7 +412,7 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
             }
 
             @Override
-            public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
+            public void onFailure(Call<ResEntity<TaskEntity.TaskItemEntity>> call, Throwable t) {
                 super.onFailure(call, t);
                 dismissLoadingDialog();
                 if (t instanceof ResponseException) {

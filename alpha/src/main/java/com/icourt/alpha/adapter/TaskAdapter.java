@@ -449,14 +449,13 @@ public class TaskAdapter extends BaseArrayRecyclerAdapter<TaskEntity>
     /**
      * 删除任务
      */
-    private void deleteTask(Context context, TaskEntity.TaskItemEntity itemEntity) {
+    private void deleteTask(Context context, final TaskEntity.TaskItemEntity itemEntity) {
         showLoadingDialog(context, null);
         getApi().taskDelete(itemEntity.id).enqueue(new SimpleCallBack<JsonElement>() {
             @Override
             public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
                 dismissLoadingDialog();
-                EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION));
-
+                EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_DELETE_ACTION,itemEntity));
             }
 
             @Override

@@ -23,7 +23,6 @@ import com.icourt.alpha.R;
 import com.icourt.alpha.activity.FileBoxDownloadActivity;
 import com.icourt.alpha.adapter.TaskAttachmentAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
-import com.icourt.alpha.adapter.baseadapter.adapterObserver.DataChangeAdapterObserver;
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.entity.bean.TaskAttachmentEntity;
 import com.icourt.alpha.entity.event.TaskActionEvent;
@@ -67,6 +66,7 @@ import retrofit2.Response;
 public class TaskAttachmentFragment extends BaseFragment implements BaseRecyclerAdapter.OnItemClickListener, BaseRecyclerAdapter.OnItemLongClickListener {
     private static final String KEY_TASK_ID = "key_task_id";
     private static final String KEY_HAS_PERMISSION = "key_has_permission";
+    private static final String KEY_VALID = "key_valid";
     private static final int REQUEST_CODE_CAMERA = 1000;
     private static final int REQUEST_CODE_GALLERY = 1001;
     private static final int REQUEST_CODE_AT_MEMBER = 1002;
@@ -84,7 +84,7 @@ public class TaskAttachmentFragment extends BaseFragment implements BaseRecycler
     String path;
     TaskAttachmentAdapter taskAttachmentAdapter;
     OnUpdateTaskListener updateTaskListener;
-    boolean hasPermission;
+    boolean hasPermission, valid;
     @BindView(R.id.empty_layout)
     LinearLayout emptyLayout;
     @BindView(R.id.list_layout)
@@ -92,11 +92,12 @@ public class TaskAttachmentFragment extends BaseFragment implements BaseRecycler
     @BindView(R.id.empty_text)
     TextView emptyText;
 
-    public static TaskAttachmentFragment newInstance(@NonNull String taskId, boolean hasPermission) {
+    public static TaskAttachmentFragment newInstance(@NonNull String taskId, boolean hasPermission, boolean valid) {
         TaskAttachmentFragment taskAttachmentFragment = new TaskAttachmentFragment();
         Bundle bundle = new Bundle();
         bundle.putString(KEY_TASK_ID, taskId);
         bundle.putBoolean(KEY_HAS_PERMISSION, hasPermission);
+        bundle.putBoolean(KEY_VALID, valid);
         taskAttachmentFragment.setArguments(bundle);
         return taskAttachmentFragment;
     }
@@ -123,14 +124,14 @@ public class TaskAttachmentFragment extends BaseFragment implements BaseRecycler
     protected void initView() {
         taskId = getArguments().getString(KEY_TASK_ID);
         hasPermission = getArguments().getBoolean(KEY_HAS_PERMISSION);
+        valid = getArguments().getBoolean(KEY_VALID);
         recyclerview.setNestedScrollingEnabled(false);
         recyclerview.setLayoutManager(new LinearLayoutManager(getContext()));
-//        recyclerview.addItemDecoration(ItemDecorationUtils.getCommFull05Divider(getContext(), true, R.color.alpha_divider_color));
         recyclerview.setAdapter(taskAttachmentAdapter = new TaskAttachmentAdapter());
         taskAttachmentAdapter.setOnItemClickListener(this);
         taskAttachmentAdapter.setOnItemLongClickListener(this);
 
-        addAttachmentView.setVisibility(hasPermission ? View.VISIBLE : View.GONE);
+        addAttachmentView.setVisibility(hasPermission && valid ? View.VISIBLE : View.GONE);
         if (hasPermission) {
             getData(true);
             emptyText.setText("暂无附件");
@@ -383,6 +384,7 @@ public class TaskAttachmentFragment extends BaseFragment implements BaseRecycler
             showTopSnackBar("对不起，您没有查看此文件的权限");
         }
     }
+
     /**
      * type=100 更新 KEY_HAS_PERMISSION
      *
