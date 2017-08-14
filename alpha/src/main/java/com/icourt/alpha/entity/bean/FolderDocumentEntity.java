@@ -2,7 +2,10 @@ package com.icourt.alpha.entity.bean;
 
 import android.text.TextUtils;
 
+import com.google.gson.annotations.JsonAdapter;
+import com.google.gson.annotations.SerializedName;
 import com.icourt.alpha.widget.filter.IFilterEntity;
+import com.icourt.alpha.widget.json.SeaFileTimeJsonAdapter;
 
 import java.io.Serializable;
 
@@ -32,9 +35,12 @@ public class FolderDocumentEntity implements Serializable, IFilterEntity {
      */
     public String id;
     public long lock_time;
+
+    @SerializedName(value = "name",alternate = {"obj_name"})
     public String name;
     public String permission;
     public boolean is_locked;
+    @JsonAdapter(SeaFileTimeJsonAdapter.class)
     public long mtime;//文档上传时间
     public String type;
     public long size;

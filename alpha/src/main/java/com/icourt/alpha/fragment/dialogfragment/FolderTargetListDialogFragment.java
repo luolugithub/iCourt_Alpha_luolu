@@ -12,6 +12,7 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.CheckedTextView;
 import android.widget.FrameLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.icourt.alpha.R;
@@ -59,6 +60,8 @@ public class FolderTargetListDialogFragment
     protected static final String KEY_SEA_FILE_DST_REPO_ID = "seaFileDstRepoId";//目标仓库id
     protected static final String KEY_SEA_FILE_DST_DIR_PATH = "seaFileDstDirPath";//目标仓库路径
     protected static final String KEY_FOLDER_ACTION_TYPE = "folderActionType";//文件操作类型
+    @BindView(R.id.dir_path_title_layout)
+    RelativeLayout dirPathTitleLayout;
 
     public static FolderTargetListDialogFragment newInstance(
             @Const.FILE_ACTION_TYPE int folderActionType,
@@ -206,6 +209,21 @@ public class FolderTargetListDialogFragment
     }
 
     /**
+     * 获取sfile父目录名字
+     *
+     * @return
+     */
+    private String getDstParentDirName() {
+        String dirPath = getSeaFileDstDirPath();
+        String spilteStr = "/";
+        String[] split = dirPath.split(spilteStr);
+        if (split != null && split.length > 0) {
+            return split[split.length - 1];
+        }
+        return null;
+    }
+
+    /**
      * 返回到sfile父目录
      */
     private void back2ParentDir() {
@@ -259,6 +277,11 @@ public class FolderTargetListDialogFragment
                         (ArrayList<FolderDocumentEntity>) getArguments().getSerializable(KEY_SEA_FILE_SELCTED_FILES)),
                 currFragment,
                 R.id.main_fl_content);
-        foldrParentTv.setText(getSeaFileDstDirPath());
+        if (canBack2ParentDir()) {
+            dirPathTitleLayout.setVisibility(View.VISIBLE);
+            foldrParentTv.setText(getDstParentDirName());
+        } else {
+            dirPathTitleLayout.setVisibility(View.GONE);
+        }
     }
 }

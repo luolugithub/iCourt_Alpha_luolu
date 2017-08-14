@@ -2,19 +2,13 @@ package com.icourt.alpha.entity.bean;
 
 import android.text.TextUtils;
 
-import com.google.gson.TypeAdapter;
 import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonToken;
-import com.google.gson.stream.JsonWriter;
 import com.icourt.alpha.widget.comparators.ILongFieldEntity;
 import com.icourt.alpha.widget.json.BooleanTypeAdapter;
+import com.icourt.alpha.widget.json.SeaFileTimeJsonAdapter;
 
-import java.io.IOException;
 import java.io.Serializable;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
 /**
  * Description  文档资料库
@@ -30,55 +24,13 @@ public class DocumentRootEntity implements Serializable, ILongFieldEntity {
         return last_modified;
     }
 
-    private static class TimeJsonAdapter extends TypeAdapter<Long> {
-
-        @Override
-        public void write(JsonWriter jsonWriter, Long s) throws IOException {
-            if (null == s) {
-                jsonWriter.nullValue();
-            } else {
-                jsonWriter.value(s);
-            }
-        }
-
-        @Override
-        public Long read(JsonReader jsonReader) throws IOException {
-            JsonToken peek = jsonReader.peek();
-            switch (peek) {
-                case STRING:
-                    return new Long(formaterTime(jsonReader.nextString()));
-            }
-            return new Long(0);
-        }
-
-        /**
-         * @param time 2017-04-20T01:43:45+08:00
-         * @return 时间戳
-         */
-        private long formaterTime(String time) {
-            if (!TextUtils.isEmpty(time)) {
-                try {
-                    time = time.replaceAll("T", " ");
-                    time = time.replaceAll("\\+08:00", "");
-                    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-                    Date parse = simpleDateFormat.parse(time);
-                    return parse.getTime();
-                } catch (Throwable e) {
-                    e.printStackTrace();
-                }
-            }
-            return 0;
-        }
-
-    }
-
     @JsonAdapter(BooleanTypeAdapter.class)
     public boolean encrypted;
     public String repo_id;
     @SerializedName(value = "repo_name", alternate = {"name"})
     public String repo_name;
 
-    @JsonAdapter(TimeJsonAdapter.class)
+    @JsonAdapter(SeaFileTimeJsonAdapter.class)
     public long last_modified;
     public long size;
 

@@ -259,4 +259,38 @@ public interface ApiSFileService {
                                @Field("file_names") String fileNames,
                                @Field("dst_repo") String dstRepoId,
                                @Field("dst_dir") String dstDir);
+
+    /**
+     * 文件重命名
+     *
+     * @param authToken
+     * @param p
+     * @param operation rename
+     * @param newname
+     * @return
+     */
+    @POST("api/v2.1/repos/{seaFileRepoId}/file/")
+    @FormUrlEncoded
+    Call<FolderDocumentEntity> fileRename(@Header("Authorization") String authToken,
+                                          @Path("seaFileRepoId") String fromRepoId,
+                                          @Query("p") String p,
+                                          @Field("operation") String operation,
+                                          @Field("newname") String newname);
+
+    /**
+     * 文件夹重命名
+     *
+     * @param authToken
+     * @param p
+     * @param operation rename
+     * @param newname
+     * @return
+     */
+    @POST("api2/repos/{seaFileRepoId}/dir/")
+    @FormUrlEncoded
+    Call<String> folderRename(@Header("Authorization") String authToken,
+                                            @Path("seaFileRepoId") String fromRepoId,
+                                            @Query("p") String p,
+                                            @Field("operation") String operation,
+                                            @Field("newname") String newname);
 }

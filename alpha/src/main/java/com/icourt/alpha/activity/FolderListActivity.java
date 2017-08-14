@@ -802,6 +802,10 @@ public class FolderListActivity extends FolderBaseActivity
                         showFolderTargetListDialogFragment(Const.FILE_ACTION_MOVE, folderDocumentEntities1);
                         break;
                     case 3:
+                        FolderActionActivity.launchUpdateTitle(getContext(),
+                                item,
+                                getSeaFileRepoId(),
+                                getSeaFileDirPath());
                         break;
                     case 4:
                         break;

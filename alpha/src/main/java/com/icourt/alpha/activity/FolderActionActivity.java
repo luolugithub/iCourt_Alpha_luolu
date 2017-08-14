@@ -48,7 +48,7 @@ public class FolderActionActivity extends FolderBaseActivity {
     AppBarLayout titleView;
     @BindView(R.id.document_name_et)
     EditText documentNameEt;
-    FolderDocumentEntity paramDocumentRootEntity;
+    FolderDocumentEntity folderDocumentEntity;
 
     /**
      * 创建文件夹
@@ -70,15 +70,20 @@ public class FolderActionActivity extends FolderBaseActivity {
     }
 
     /**
-     * 更新资料库标题
+     * 更新文件／文件夹标题
      *
      * @param context
      */
-    public static void launchUpdateTitle(@NonNull Context context, FolderDocumentEntity folderDocumentEntity) {
+    public static void launchUpdateTitle(@NonNull Context context,
+                                         FolderDocumentEntity folderDocumentEntity,
+                                         String seaFileRepoId,
+                                         String seaFileDirPath) {
         if (context == null) return;
         if (folderDocumentEntity == null) return;
         Intent intent = new Intent(context, FolderActionActivity.class);
         intent.setAction(ACTION_UPDATE_TITLE);
+        intent.putExtra(KEY_SEA_FILE_REPO_ID, seaFileRepoId);
+        intent.putExtra(KEY_SEA_FILE_DIR_PATH, seaFileDirPath);
         intent.putExtra("data", folderDocumentEntity);
         context.startActivity(intent);
     }
@@ -103,8 +108,8 @@ public class FolderActionActivity extends FolderBaseActivity {
         });
         if (TextUtils.equals(getIntent().getAction(), ACTION_UPDATE_TITLE)) {
             setTitle("更新文件夹");
-            paramDocumentRootEntity = (FolderDocumentEntity) getIntent().getSerializableExtra("data");
-            documentNameEt.setText(paramDocumentRootEntity.name);
+            folderDocumentEntity = (FolderDocumentEntity) getIntent().getSerializableExtra("data");
+            documentNameEt.setText(folderDocumentEntity.name);
             documentNameEt.setSelection(documentNameEt.getText().length());
         }
     }
@@ -220,32 +225,55 @@ public class FolderActionActivity extends FolderBaseActivity {
      * @param sfileToken
      */
     private void updateFolderTitle(String sfileToken) {
-        if (paramDocumentRootEntity == null) return;
-       /* showLoadingDialog("更改中...");
-        paramDocumentRootEntity.repo_name = documentNameEt.getText().toString();
-        paramDocumentRootEntity.last_modified = DateUtils.millis();
-        getSFileApi().documentRootUpdateName(String.format("Token %s", sfileToken),
-                paramDocumentRootEntity.repo_id,
-                "rename",
-                documentNameEt.getText().toString())
-                .enqueue(new SimpleCallBack2<String>() {
-                    @Override
-                    public void onSuccess(Call<String> call, Response<String> response) {
-                        dismissLoadingDialog();
-                        if (TextUtils.equals("success", response.body())) {
-                            showToast("更改资料库标题成功");
-                            EventBus.getDefault().post(paramDocumentRootEntity);
-                            finish();
-                        } else {
-                            showToast("更改资料库标题失败");
+        if (folderDocumentEntity == null) return;
+        showLoadingDialog("更改中...");
+        if (folderDocumentEntity.isDir()) {
+            getSFileApi()
+                    .folderRename(String.format("Token %s", sfileToken),
+                            getSeaFileRepoId(),
+                            String.format("%s%s", getSeaFileDirPath(), folderDocumentEntity.name),
+                            "rename",
+                            documentNameEt.getText().toString())
+                    .enqueue(new SimpleCallBack2<String>() {
+                        @Override
+                        public void onSuccess(Call<String> call, Response<String> response) {
+                            dismissLoadingDialog();
+                            if (TextUtils.equals("success", response.body())) {
+                                showToast("更改标题成功");
+                                finish();
+                            } else {
+                                showTopSnackBar("更改标题失败");
+                            }
                         }
-                    }
 
-                    @Override
-                    public void onFailure(Call<String> call, Throwable t) {
-                        dismissLoadingDialog();
-                        super.onFailure(call, t);
-                    }
-                });*/
+                        @Override
+                        public void onFailure(Call<String> call, Throwable t) {
+                            super.onFailure(call, t);
+                            dismissLoadingDialog();
+                        }
+                    });
+        } else {
+            getSFileApi()
+                    .fileRename(String.format("Token %s", sfileToken),
+                            getSeaFileRepoId(),
+                            String.format("%s%s", getSeaFileDirPath(), folderDocumentEntity.name),
+                            "rename",
+                            documentNameEt.getText().toString())
+                    .enqueue(new SimpleCallBack2<FolderDocumentEntity>() {
+                        @Override
+                        public void onSuccess(Call<FolderDocumentEntity> call, Response<FolderDocumentEntity> response) {
+                            dismissLoadingDialog();
+                            showToast("更改标题成功");
+                            // EventBus.getDefault().post(paramDocumentRootEntity);
+                            finish();
+                        }
+
+                        @Override
+                        public void onFailure(Call<FolderDocumentEntity> call, Throwable t) {
+                            super.onFailure(call, t);
+                            dismissLoadingDialog();
+                        }
+                    });
+        }
     }
 }
