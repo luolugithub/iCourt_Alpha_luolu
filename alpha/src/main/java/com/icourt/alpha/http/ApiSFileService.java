@@ -5,6 +5,7 @@ import com.google.gson.JsonObject;
 import com.icourt.alpha.entity.bean.DocumentRootEntity;
 import com.icourt.alpha.entity.bean.FileBoxBean;
 import com.icourt.alpha.entity.bean.FolderDocumentEntity;
+import com.icourt.alpha.entity.bean.SeaFileTrashPageEntity;
 
 import java.util.List;
 import java.util.Map;
@@ -289,8 +290,17 @@ public interface ApiSFileService {
     @POST("api2/repos/{seaFileRepoId}/dir/")
     @FormUrlEncoded
     Call<String> folderRename(@Header("Authorization") String authToken,
-                                            @Path("seaFileRepoId") String fromRepoId,
-                                            @Query("p") String p,
-                                            @Field("operation") String operation,
-                                            @Field("newname") String newname);
+                              @Path("seaFileRepoId") String fromRepoId,
+                              @Query("p") String p,
+                              @Field("operation") String operation,
+                              @Field("newname") String newname);
+
+    /**
+     * 垃圾回收站
+     */
+    @GET("api/v2.1/repos/{seaFileRepoId}/trash/")
+    Call<SeaFileTrashPageEntity<FolderDocumentEntity>> folderTrashQuery(@Header("Authorization") String authToken,
+                                                                        @Path("seaFileRepoId") String fromRepoId,
+                                                                        @Query("path") String p,
+                                                                        @Query("per_page") int per_page);
 }

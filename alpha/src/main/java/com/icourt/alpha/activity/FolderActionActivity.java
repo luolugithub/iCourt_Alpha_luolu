@@ -253,6 +253,11 @@ public class FolderActionActivity extends FolderBaseActivity {
                         }
                     });
         } else {
+            //修改文件标题 "error_msg": "The new name is the same to the old"
+            if (TextUtils.equals(documentNameEt.getText().toString(), folderDocumentEntity.name)) {
+                finish();
+                return;
+            }
             getSFileApi()
                     .fileRename(String.format("Token %s", sfileToken),
                             getSeaFileRepoId(),

@@ -1,4 +1,4 @@
-package com.icourt.alpha.widget.json;
+package com.icourt.json;
 
 import android.text.TextUtils;
 
@@ -17,7 +17,7 @@ import java.io.IOException;
  * date createTime：2017/4/8
  * version 1.0.0
  */
-public class BooleanTypeAdapter extends TypeAdapter<Boolean> {
+public class BooleanTypeAdapter extends TypeAdapter<Boolean> implements IStringConverter<Boolean> {
     @Override
     public void write(JsonWriter out, Boolean value) throws IOException {
         if (value == null) {
@@ -39,22 +39,17 @@ public class BooleanTypeAdapter extends TypeAdapter<Boolean> {
             case NUMBER:
                 return in.nextInt() != 0;
             case STRING:
-                return toBoolean(in.nextString());
+                return conver2Object(in.nextString());
             default:
                 throw new JsonParseException("Expected BOOLEAN or NUMBER but was " + peek);
         }
     }
 
-    /**
-     * true  TURE 都为true
-     * "0" 为 false
-     *
-     * @param name
-     * @return
-     */
-    public static boolean toBoolean(String name) {
-        return (!TextUtils.isEmpty(name))
+
+    @Override
+    public Boolean conver2Object(String value) {
+        return (!TextUtils.isEmpty(value))
                 &&
-                (name.equalsIgnoreCase("true") || !name.equals("0"));
+                (value.equalsIgnoreCase("true") || !value.equals("0"));
     }
 }

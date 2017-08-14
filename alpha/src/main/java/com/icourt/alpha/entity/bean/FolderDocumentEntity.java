@@ -6,6 +6,8 @@ import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
 import com.icourt.alpha.widget.filter.IFilterEntity;
 import com.icourt.alpha.widget.json.SeaFileTimeJsonAdapter;
+import com.icourt.json.BooleanTypeAdapter;
+import com.icourt.json.LongTypeAdapter;
 
 import java.io.Serializable;
 
@@ -33,20 +35,31 @@ public class FolderDocumentEntity implements Serializable, IFilterEntity {
      * "modifier_name": "吴佑炫",
      * "size": 131252
      */
+    @SerializedName(value = "id", alternate = {"obj_id"})
     public String id;
     public long lock_time;
 
-    @SerializedName(value = "name",alternate = {"obj_name"})
+    @SerializedName(value = "name", alternate = {"obj_name"})
     public String name;
+
+
     public String permission;
     public boolean is_locked;
+
     @JsonAdapter(SeaFileTimeJsonAdapter.class)
+    @SerializedName(value = "mtime", alternate = {"deleted_time"})
     public long mtime;//文档上传时间
-    public String type;
+
+
+    @SerializedName(value = "type", alternate = {"is_dir"})
+    @JsonAdapter(DirBooleanTypeAdapter.class)
+    public boolean isDir;
+
+    @JsonAdapter(LongTypeAdapter.class)
     public long size;
 
     public boolean isDir() {
-        return TextUtils.equals(type, "dir");
+        return isDir;
     }
 
     @Override
@@ -56,4 +69,14 @@ public class FolderDocumentEntity implements Serializable, IFilterEntity {
         }
         return false;
     }
+
+
+    public class DirBooleanTypeAdapter extends BooleanTypeAdapter {
+
+        @Override
+        public Boolean conver2Object(String value) {
+            return TextUtils.equals(value, "dir");
+        }
+    }
 }
+

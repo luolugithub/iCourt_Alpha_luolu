@@ -5,7 +5,7 @@ import android.text.TextUtils;
 import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
 import com.icourt.alpha.widget.comparators.ILongFieldEntity;
-import com.icourt.alpha.widget.json.BooleanTypeAdapter;
+import com.icourt.json.BooleanTypeAdapter;
 import com.icourt.alpha.widget.json.SeaFileTimeJsonAdapter;
 
 import java.io.Serializable;

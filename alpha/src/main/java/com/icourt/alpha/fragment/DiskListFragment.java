@@ -301,7 +301,6 @@ public class DiskListFragment extends BaseFragment implements BaseRecyclerAdapte
     }
 
 
-
     @Override
     public void onDestroyView() {
         super.onDestroyView();
@@ -391,7 +390,7 @@ public class DiskListFragment extends BaseFragment implements BaseRecyclerAdapte
         FolderListActivity.launch(getContext(),
                 item.repo_id,
                 item.repo_name,
-                "/");
+                "/", false);
     }
 
     /**
