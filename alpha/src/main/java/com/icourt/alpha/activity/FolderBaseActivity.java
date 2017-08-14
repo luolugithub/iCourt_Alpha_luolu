@@ -23,14 +23,14 @@ import static com.icourt.api.RequestUtils.callEnqueue;
 public class FolderBaseActivity extends BaseActivity {
 
     protected static final String KEY_SEA_FILE_REPO_ID = "seaFileRepoId";//仓库id
-    protected static final String KEY_SEA_FILE_PARENT_DIR_PATH = "seaFileParentDirPath";//父目录路径
+    protected static final String KEY_SEA_FILE_DIR_PATH = "seaFileDirPath";//目录路径
 
     protected String getSeaFileRepoId() {
         return getIntent().getStringExtra(KEY_SEA_FILE_REPO_ID);
     }
 
-    protected String getSeaFileParentDirPath() {
-        return getIntent().getStringExtra(KEY_SEA_FILE_PARENT_DIR_PATH);
+    protected String getSeaFileDirPath() {
+        return getIntent().getStringExtra(KEY_SEA_FILE_DIR_PATH);
     }
 
     /**
@@ -55,6 +55,6 @@ public class FolderBaseActivity extends BaseActivity {
         return callEnqueue(getSFileApi().documentDirQuery(
                 String.format("Token %s", sfileToken),
                 getSeaFileRepoId(),
-                getSeaFileParentDirPath()), callBack2);
+                getSeaFileDirPath()), callBack2);
     }
 }

@@ -143,6 +143,19 @@ public class Const {
 
     }
 
+    public static final int FILE_ACTION_COPY = 0;
+    public static final int FILE_ACTION_MOVE = 1;
+    public static final int FILE_ACTION_DELETE = 2;
+    public static final int FILE_ACTION_RENAME = 3;
+
+    @IntDef({FILE_ACTION_COPY,
+            FILE_ACTION_MOVE,
+            FILE_ACTION_DELETE,
+            FILE_ACTION_RENAME})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface FILE_ACTION_TYPE {
+
+    }
 
     //个人联系人
     public static final String SELECT_PHONE_TAG_ACTION = "select_phone_tag_action";//选择电话标签action

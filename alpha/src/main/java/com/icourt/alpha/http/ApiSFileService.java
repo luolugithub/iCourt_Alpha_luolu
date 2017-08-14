@@ -218,4 +218,45 @@ public interface ApiSFileService {
     Call<JsonObject> documentDelete(@Header("Authorization") String authToken,
                                     @Path("seaFileRepoId") String seaFileRepoId,
                                     @Query("p") String p);
+
+
+    /**
+     * 文件夹/文件移动
+     *
+     * @param authToken
+     * @param fromRepoId 文件源仓库id
+     * @param fromDir    文件源仓库路径
+     * @param fileNames  文件名字 多个名字以":"分割
+     * @param dstRepoId  目标仓库id
+     * @param dstDir     目标仓库路径
+     * @return
+     */
+    @POST("api2/repos/{seaFileRepoId}/fileops/move/")
+    @FormUrlEncoded
+    Call<JsonElement> fileMove(@Header("Authorization") String authToken,
+                               @Path("seaFileRepoId") String fromRepoId,
+                               @Query("p") String fromDir,
+                               @Field("file_names") String fileNames,
+                               @Field("dst_repo") String dstRepoId,
+                               @Field("dst_dir") String dstDir);
+
+    /**
+     * 文件夹/文件复制
+     *
+     * @param authToken
+     * @param fromRepoId 文件源仓库id
+     * @param fromDir    文件源仓库路径
+     * @param fileNames  文件名字 多个名字以":"分割
+     * @param dstRepoId  目标仓库id
+     * @param dstDir     目标仓库路径
+     * @return
+     */
+    @POST("api2/repos/{seaFileRepoId}/fileops/copy/")
+    @FormUrlEncoded
+    Call<JsonElement> fileCopy(@Header("Authorization") String authToken,
+                               @Path("seaFileRepoId") String fromRepoId,
+                               @Query("p") String fromDir,
+                               @Field("file_names") String fileNames,
+                               @Field("dst_repo") String dstRepoId,
+                               @Field("dst_dir") String dstDir);
 }

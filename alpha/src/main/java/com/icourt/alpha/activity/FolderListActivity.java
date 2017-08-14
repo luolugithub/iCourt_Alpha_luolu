@@ -36,9 +36,11 @@ import com.icourt.alpha.adapter.FolderDocumentWrapAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.HeaderFooterAdapter;
 import com.icourt.alpha.adapter.baseadapter.adapterObserver.DataChangeAdapterObserver;
+import com.icourt.alpha.constants.Const;
 import com.icourt.alpha.entity.bean.FolderDocumentEntity;
 import com.icourt.alpha.entity.bean.ItemsEntity;
 import com.icourt.alpha.entity.bean.SFileTokenEntity;
+import com.icourt.alpha.entity.event.SeaFolderEvent;
 import com.icourt.alpha.fragment.dialogfragment.DocumentDetailDialogFragment;
 import com.icourt.alpha.fragment.dialogfragment.FolderDetailDialogFragment;
 import com.icourt.alpha.fragment.dialogfragment.FolderTargetListDialogFragment;
@@ -52,6 +54,10 @@ import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 import com.icourt.alpha.widget.dialog.BottomActionDialog;
 import com.icourt.alpha.widget.dialog.CenterMenuDialog;
 import com.icourt.api.RequestUtils;
+
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -71,6 +77,8 @@ import okhttp3.RequestBody;
 import retrofit2.Call;
 import retrofit2.Response;
 
+import static com.icourt.alpha.constants.Const.FILE_ACTION_COPY;
+import static com.icourt.alpha.constants.Const.FILE_ACTION_MOVE;
 import static com.icourt.alpha.constants.Const.VIEW_TYPE_GRID;
 import static com.icourt.alpha.constants.Const.VIEW_TYPE_ITEM;
 
@@ -151,14 +159,15 @@ public class FolderListActivity extends FolderBaseActivity
     public static void launch(@NonNull Context context,
                               String seaFileRepoId,
                               String title,
-                              String seaFileParentDirPath) {
+                              String seaFileDirPath) {
         if (context == null) return;
         Intent intent = new Intent(context, FolderListActivity.class);
         intent.putExtra("title", title);
         intent.putExtra(KEY_SEA_FILE_REPO_ID, seaFileRepoId);
-        intent.putExtra(KEY_SEA_FILE_PARENT_DIR_PATH, seaFileParentDirPath);
+        intent.putExtra(KEY_SEA_FILE_DIR_PATH, seaFileDirPath);
         context.startActivity(intent);
     }
+
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -171,6 +180,7 @@ public class FolderListActivity extends FolderBaseActivity
     @Override
     protected void initView() {
         super.initView();
+        EventBus.getDefault().register(this);
         setTitle(getIntent().getStringExtra("title"));
         ImageView titleActionImage = getTitleActionImage();
         if (titleActionImage != null) {
@@ -203,26 +213,22 @@ public class FolderListActivity extends FolderBaseActivity
         folderDocumentAdapter.registerAdapterDataObserver(new DataChangeAdapterObserver() {
             @Override
             protected void updateUI() {
-                if (folderDocumentAdapter.getItemCount() == 0) {
-
-                } else {
-                    if (footerView != null) {
-                        int dirNum = 0, fileNum = 0;
-                        for (int i = 0; i < folderDocumentAdapter.getItemCount(); i++) {
-                            List<FolderDocumentEntity> items = folderDocumentAdapter.getItem(i);
-                            for (int j = 0; j < items.size(); j++) {
-                                FolderDocumentEntity folderDocumentEntity = items.get(j);
-                                if (folderDocumentEntity != null) {
-                                    if (folderDocumentEntity.isDir()) {
-                                        dirNum += 1;
-                                    } else {
-                                        fileNum += 1;
-                                    }
+                if (footerView != null) {
+                    int dirNum = 0, fileNum = 0;
+                    for (int i = 0; i < folderDocumentAdapter.getItemCount(); i++) {
+                        List<FolderDocumentEntity> items = folderDocumentAdapter.getItem(i);
+                        for (int j = 0; j < items.size(); j++) {
+                            FolderDocumentEntity folderDocumentEntity = items.get(j);
+                            if (folderDocumentEntity != null) {
+                                if (folderDocumentEntity.isDir()) {
+                                    dirNum += 1;
+                                } else {
+                                    fileNum += 1;
                                 }
                             }
                         }
-                        footerView.setText(String.format("%s个文件夹, %s个文件", dirNum, fileNum));
                     }
+                    footerView.setText(String.format("%s个文件夹, %s个文件", dirNum, fileNum));
                 }
             }
         });
@@ -265,7 +271,7 @@ public class FolderListActivity extends FolderBaseActivity
                 BuildConfig.API_URL,
                 getSeaFileRepoId(),
                 sFileToken,
-                String.format("%s%s", getSeaFileParentDirPath(), name),
+                String.format("%s%s", getSeaFileDirPath(), name),
                 150);
     }
 
@@ -328,7 +334,7 @@ public class FolderListActivity extends FolderBaseActivity
         getSFileApi().documentDirQuery(
                 String.format("Token %s", sfileToken),
                 getSeaFileRepoId(),
-                getSeaFileParentDirPath())
+                getSeaFileDirPath())
                 .enqueue(new SimpleCallBack2<List<FolderDocumentEntity>>() {
                     @Override
                     public void onSuccess(Call<List<FolderDocumentEntity>> call, Response<List<FolderDocumentEntity>> response) {
@@ -351,6 +357,21 @@ public class FolderListActivity extends FolderBaseActivity
         }
     }
 
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onSeaFolderEvent(SeaFolderEvent event) {
+        if (event == null) return;
+        if (TextUtils.equals(event.from_repo_id, getSeaFileRepoId()) &&
+                TextUtils.equals(event.from_parent_dir, getSeaFileDirPath())) {
+            switch (event.action_type) {
+                case FILE_ACTION_MOVE:
+                    getData(true);
+                    break;
+                case FILE_ACTION_COPY:
+                    getData(true);
+                    break;
+            }
+        }
+    }
 
     @OnClick({R.id.titleAction,
             R.id.titleAction2,
@@ -374,7 +395,7 @@ public class FolderListActivity extends FolderBaseActivity
                                         FolderActionActivity.launchCreate(
                                                 getContext(),
                                                 getSeaFileRepoId(),
-                                                getSeaFileParentDirPath());
+                                                getSeaFileDirPath());
                                         break;
                                     case 1:
                                         if (checkPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
@@ -436,8 +457,10 @@ public class FolderListActivity extends FolderBaseActivity
                 updateSelectableModeSatue(folderDocumentAdapter.isSelectable());
                 break;
             case R.id.bottom_bar_copy_tv:
+                showFolderTargetListDialogFragment(Const.FILE_ACTION_COPY, new ArrayList<FolderDocumentEntity>(selectedFolderDocuments));
                 break;
             case R.id.bottom_bar_move_tv:
+                showFolderTargetListDialogFragment(Const.FILE_ACTION_MOVE, new ArrayList<FolderDocumentEntity>(selectedFolderDocuments));
                 break;
             case R.id.bottom_bar_delete_tv:
                 deleteFolderOrDocuments(selectedFolderDocuments);
@@ -555,7 +578,7 @@ public class FolderListActivity extends FolderBaseActivity
                             String.format("Token %s", sfileToken),
                             getSeaFileRepoId(),
                             "upload",
-                            getSeaFileParentDirPath())
+                            getSeaFileDirPath())
                             .enqueue(new SimpleCallBack2<String>() {
                                 @Override
                                 public void onSuccess(Call<String> call, Response<String> response) {
@@ -608,7 +631,7 @@ public class FolderListActivity extends FolderBaseActivity
                 showLoadingDialog("上传中...");
                 Map<String, RequestBody> params = new HashMap<>();
                 params.put(RequestUtils.createStreamKey(file), RequestUtils.createStreamBody(file));
-                params.put("parent_dir", RequestUtils.createTextBody(getSeaFileParentDirPath()));
+                params.put("parent_dir", RequestUtils.createTextBody(getSeaFileDirPath()));
                 // params.put("relative_path",RequestUtils.createTextBody(""));
                 getSFileApi().sfileUploadFile(sfileToken, serverUrl, params)
                         .enqueue(new SimpleCallBack2<JsonElement>() {
@@ -704,7 +727,7 @@ public class FolderListActivity extends FolderBaseActivity
                     FolderListActivity.launch(getContext(),
                             getSeaFileRepoId(),
                             item.name,
-                            String.format("%s%s/", getSeaFileParentDirPath(), item.name));
+                            String.format("%s%s/", getSeaFileDirPath(), item.name));
                 } else {
                     DocumentDetailDialogFragment.show("",
                             getSupportFragmentManager());
@@ -769,9 +792,14 @@ public class FolderListActivity extends FolderBaseActivity
                         }
                         break;
                     case 1:
+                        ArrayList<FolderDocumentEntity> folderDocumentEntities = new ArrayList<>();
+                        folderDocumentEntities.add(item);
+                        showFolderTargetListDialogFragment(Const.FILE_ACTION_COPY, folderDocumentEntities);
                         break;
                     case 2:
-                        showFolderTargetListDialogFragment();
+                        ArrayList<FolderDocumentEntity> folderDocumentEntities1 = new ArrayList<>();
+                        folderDocumentEntities1.add(item);
+                        showFolderTargetListDialogFragment(Const.FILE_ACTION_MOVE, folderDocumentEntities1);
                         break;
                     case 3:
                         break;
@@ -786,16 +814,22 @@ public class FolderListActivity extends FolderBaseActivity
         centerMenuDialog.show();
     }
 
-    protected final void showFolderTargetListDialogFragment() {
+    protected final void showFolderTargetListDialogFragment(@Const.FILE_ACTION_TYPE int folderActionType,
+                                                            ArrayList<FolderDocumentEntity> folderDocumentEntities) {
+        if (folderDocumentEntities == null || folderDocumentEntities.isEmpty()) return;
         String tag = FolderTargetListDialogFragment.class.getSimpleName();
         FragmentTransaction mFragTransaction = getSupportFragmentManager().beginTransaction();
         Fragment fragment = getSupportFragmentManager().findFragmentByTag(tag);
         if (fragment != null) {
             mFragTransaction.remove(fragment);
         }
-        FolderTargetListDialogFragment.newInstance(getSeaFileRepoId(),
-                getIntent().getStringExtra("title"),
-                getSeaFileParentDirPath())
+        FolderTargetListDialogFragment.newInstance(
+                folderActionType,
+                getSeaFileRepoId(),
+                getSeaFileDirPath(),
+                getSeaFileRepoId(),
+                getSeaFileDirPath(),
+                folderDocumentEntities)
                 .show(mFragTransaction, tag);
     }
 
@@ -827,13 +861,13 @@ public class FolderListActivity extends FolderBaseActivity
                                 .folderDelete(
                                         String.format("Token %s", response.body().authToken),
                                         getSeaFileRepoId(),
-                                        String.format("%s%s", getSeaFileParentDirPath(), item.name));
+                                        String.format("%s%s", getSeaFileDirPath(), item.name));
                     } else {
                         delCall = getSFileApi()
                                 .documentDelete(
                                         String.format("Token %s", response.body().authToken),
                                         getSeaFileRepoId(),
-                                        String.format("%s%s", getSeaFileParentDirPath(), item.name));
+                                        String.format("%s%s", getSeaFileDirPath(), item.name));
                     }
                     showLoadingDialog("删除中...");
                     delCall.enqueue(new SimpleCallBack2<JsonObject>() {
@@ -888,13 +922,13 @@ public class FolderListActivity extends FolderBaseActivity
                             .folderDelete(
                                     String.format("Token %s", response.body().authToken),
                                     getSeaFileRepoId(),
-                                    String.format("%s%s", getSeaFileParentDirPath(), item.name));
+                                    String.format("%s%s", getSeaFileDirPath(), item.name));
                 } else {
                     delCall = getSFileApi()
                             .documentDelete(
                                     String.format("Token %s", response.body().authToken),
                                     getSeaFileRepoId(),
-                                    String.format("%s%s", getSeaFileParentDirPath(), item.name));
+                                    String.format("%s%s", getSeaFileDirPath(), item.name));
                 }
                 showLoadingDialog("删除中...");
                 delCall.enqueue(new SimpleCallBack2<JsonObject>() {
@@ -923,5 +957,9 @@ public class FolderListActivity extends FolderBaseActivity
         });
     }
 
-
+    @Override
+    protected void onDestroy() {
+        EventBus.getDefault().unregister(this);
+        super.onDestroy();
+    }
 }

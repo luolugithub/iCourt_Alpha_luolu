@@ -4,9 +4,40 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <android.support.v7.widget.RecyclerView
-        android:id="@+id/recyclerView"
+    <com.icourt.alpha.view.xrefreshlayout.RefreshLayout
+        android:id="@+id/refreshLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@android:color/white" />
+        android:layout_weight="1">
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/recyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+
+            android:background="@android:color/white" />
+    </com.icourt.alpha.view.xrefreshlayout.RefreshLayout>
+
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@android:color/white"
+        android:elevation="6dp"
+        android:padding="16dp">
+
+        <TextView
+            android:id="@+id/copy_or_move_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:background="@drawable/bg_round_orange"
+            android:ems="8"
+            android:gravity="center"
+            android:padding="8dp"
+            android:text="移动/复制"
+            android:textColor="@android:color/white"
+            android:textSize="@dimen/alpha_font_size_mini" />
+
+    </FrameLayout>
 </LinearLayout>

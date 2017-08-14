@@ -55,16 +55,16 @@ public class FolderActionActivity extends FolderBaseActivity {
      *
      * @param context
      * @param seaFileRepoId
-     * @param seaFileParentDirPath
+     * @param seaFileDirPath
      */
     public static void launchCreate(
             @NonNull Context context,
             String seaFileRepoId,
-            String seaFileParentDirPath) {
+            String seaFileDirPath) {
         if (context == null) return;
         Intent intent = new Intent(context, FolderActionActivity.class);
         intent.putExtra(KEY_SEA_FILE_REPO_ID, seaFileRepoId);
-        intent.putExtra(KEY_SEA_FILE_PARENT_DIR_PATH, seaFileParentDirPath);
+        intent.putExtra(KEY_SEA_FILE_DIR_PATH, seaFileDirPath);
         intent.setAction(ACTION_CREATE);
         context.startActivity(intent);
     }
@@ -196,7 +196,7 @@ public class FolderActionActivity extends FolderBaseActivity {
         getSFileApi().folderCreate(
                 String.format("Token %s", sfileToken),
                 getSeaFileRepoId(),
-                String.format("%s%s", getSeaFileParentDirPath(), documentNameEt.getText().toString()),
+                String.format("%s%s", getSeaFileDirPath(), documentNameEt.getText().toString()),
                 RequestUtils.createJsonBody(operationJsonObject.toString()))
                 .enqueue(new SimpleCallBack2<DocumentRootEntity>() {
                     @Override
