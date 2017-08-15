@@ -42,4 +42,6 @@ public class UMMobClickAgent {
     public static final String creat_client_click_id = "creat_client_click";//新建客户
 
     public static final String search_content_click_id = "search_content_click";//搜索
+
+    public static final String login_out_click_id = "login_out_click";//退出登录
 }

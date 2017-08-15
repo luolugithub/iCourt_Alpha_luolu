@@ -857,6 +857,7 @@ public class TaskDetailActivity extends BaseActivity
                 @Override
                 public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
                     dismissLoadingDialog();
+                    EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION));
                     finish();
                 }
 

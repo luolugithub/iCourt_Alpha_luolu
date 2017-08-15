@@ -36,9 +36,10 @@ import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.callback.AppUpdateCallBack;
 import com.icourt.alpha.utils.GlideUtils;
 import com.icourt.alpha.utils.LoginInfoUtils;
+import com.icourt.alpha.utils.UMMobClickAgent;
 import com.icourt.alpha.utils.transformations.BlurTransformation;
 import com.icourt.alpha.widget.manager.DataCleanManager;
-import com.icourt.alpha.widget.manager.TimerManager;
+import com.umeng.analytics.MobclickAgent;
 import com.umeng.socialize.UMAuthListener;
 import com.umeng.socialize.UMShareAPI;
 import com.umeng.socialize.bean.SHARE_MEDIA;
@@ -316,7 +317,7 @@ public class TabMineFragment extends BaseFragment {
         //神策退出
        /* SensorsDataAPI.sharedInstance(getContext())
                 .logout();*/
-
+        MobclickAgent.onEvent(getContext(), UMMobClickAgent.login_out_click_id);
         //撤销微信授权
         if (!mShareAPI.isAuthorize(getActivity(), SHARE_MEDIA.WEIXIN)) {
             dismissLoadingDialog();
