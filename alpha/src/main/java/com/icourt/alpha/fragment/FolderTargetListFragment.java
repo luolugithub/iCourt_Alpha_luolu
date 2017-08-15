@@ -5,7 +5,6 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,9 +17,8 @@ import com.icourt.alpha.adapter.FolderAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.constants.Const;
 import com.icourt.alpha.entity.bean.FolderDocumentEntity;
-import com.icourt.alpha.entity.bean.SFileTokenEntity;
 import com.icourt.alpha.entity.event.SeaFolderEvent;
-import com.icourt.alpha.http.callback.SimpleCallBack2;
+import com.icourt.alpha.http.callback.SFileCallBack;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 import com.icourt.alpha.widget.filter.ListFilter;
@@ -47,7 +45,7 @@ import static com.icourt.alpha.constants.Const.FILE_ACTION_MOVE;
  * date createTime：2017/8/12
  * version 2.1.0
  */
-public class FolderTargetListFragment extends FolderBaseFragment
+public class FolderTargetListFragment extends SeaFileBaseFragment
         implements BaseRecyclerAdapter.OnItemClickListener {
 
     protected static final String KEY_SEA_FILE_SELCTED_FILES = "seaFileSelctedFiles";
@@ -189,43 +187,26 @@ public class FolderTargetListFragment extends FolderBaseFragment
     @Override
     protected void getData(final boolean isRefresh) {
         super.getData(isRefresh);
-        getSFileToken(new SimpleCallBack2<SFileTokenEntity<String>>() {
-            @Override
-            public void onSuccess(Call<SFileTokenEntity<String>> call, Response<SFileTokenEntity<String>> response) {
-                if (TextUtils.isEmpty(response.body().authToken)) {
-                    showTopSnackBar("sfile authToken返回为null");
-                    stopRefresh();
-                    return;
-                }
-                getSFileApi().documentDirQuery(
-                        String.format("Token %s", response.body().authToken),
-                        getSeaFileDstRepoId(),
-                        getSeaFileDstDirPath())
-                        .enqueue(new SimpleCallBack2<List<FolderDocumentEntity>>() {
-                            @Override
-                            public void onSuccess(Call<List<FolderDocumentEntity>> call, Response<List<FolderDocumentEntity>> response) {
-                                stopRefresh();
-                                //过滤 非文件夹的文件
-                                if (response.body() != null) {
-                                    new ListFilter<FolderDocumentEntity>().filter(response.body(), FolderDocumentEntity.TYPE_FILE);
-                                }
-                                folderAdapter.bindData(isRefresh, response.body());
-                            }
+        getSFileApi().documentDirQuery(
+                getSeaFileDstRepoId(),
+                getSeaFileDstDirPath())
+                .enqueue(new SFileCallBack<List<FolderDocumentEntity>>() {
+                    @Override
+                    public void onSuccess(Call<List<FolderDocumentEntity>> call, Response<List<FolderDocumentEntity>> response) {
+                        stopRefresh();
+                        //过滤 非文件夹的文件
+                        if (response.body() != null) {
+                            new ListFilter<FolderDocumentEntity>().filter(response.body(), FolderDocumentEntity.TYPE_FILE);
+                        }
+                        folderAdapter.bindData(isRefresh, response.body());
+                    }
 
-                            @Override
-                            public void onFailure(Call<List<FolderDocumentEntity>> call, Throwable t) {
-                                super.onFailure(call, t);
-                                stopRefresh();
-                            }
-                        });
-            }
-
-            @Override
-            public void onFailure(Call<SFileTokenEntity<String>> call, Throwable t) {
-                super.onFailure(call, t);
-                stopRefresh();
-            }
-        });
+                    @Override
+                    public void onFailure(Call<List<FolderDocumentEntity>> call, Throwable t) {
+                        super.onFailure(call, t);
+                        stopRefresh();
+                    }
+                });
     }
 
     private void stopRefresh() {
@@ -253,88 +234,74 @@ public class FolderTargetListFragment extends FolderBaseFragment
      */
     private void copyOrMove() {
 
-        getSFileToken(new SimpleCallBack2<SFileTokenEntity<String>>() {
+        final ArrayList<FolderDocumentEntity> selectedFolderDocumentEntities = (ArrayList<FolderDocumentEntity>) getArguments().getSerializable(KEY_SEA_FILE_SELCTED_FILES);
+        if (selectedFolderDocumentEntities == null || selectedFolderDocumentEntities.isEmpty())
+            return;
+
+        StringBuilder fileNameSb = new StringBuilder();
+        String spliteStr = ":";
+        for (int i = 0; i < selectedFolderDocumentEntities.size(); i++) {
+            FolderDocumentEntity folderDocumentEntity = selectedFolderDocumentEntities.get(i);
+            if (folderDocumentEntity == null) continue;
+            fileNameSb.append(spliteStr);
+            fileNameSb.append(folderDocumentEntity.name);
+        }
+        fileNameSb.replace(0, spliteStr.length(), "");
+
+        showLoadingDialog(null);
+        Call<JsonElement> jsonElementCall;
+        String actionSucessNoticeStr = null;
+        switch (getFileActionType()) {
+            case FILE_ACTION_COPY:
+                actionSucessNoticeStr = "复制成功";
+                jsonElementCall = getSFileApi().fileCopy(
+                        getSeaFileFromRepoId(),
+                        getSeaFileFromDirPath(),
+                        fileNameSb.toString(),
+                        getSeaFileDstRepoId(),
+                        getSeaFileDstDirPath());
+                break;
+            case FILE_ACTION_MOVE:
+                actionSucessNoticeStr = "移动成功";
+                jsonElementCall = getSFileApi().fileMove(
+                        getSeaFileFromRepoId(),
+                        getSeaFileFromDirPath(),
+                        fileNameSb.toString(),
+                        getSeaFileDstRepoId(),
+                        getSeaFileDstDirPath());
+                break;
+            default:
+                actionSucessNoticeStr = "操作成功";
+                jsonElementCall = getSFileApi().fileCopy(
+                        getSeaFileFromRepoId(),
+                        getSeaFileFromDirPath(),
+                        fileNameSb.toString(),
+                        getSeaFileDstRepoId(),
+                        getSeaFileDstDirPath());
+                break;
+        }
+        final String finalActionSucessNoticeStr = actionSucessNoticeStr;
+        jsonElementCall.enqueue(new SFileCallBack<JsonElement>() {
             @Override
-            public void onSuccess(Call<SFileTokenEntity<String>> call, Response<SFileTokenEntity<String>> response) {
-                if (TextUtils.isEmpty(response.body().authToken)) {
-                    showTopSnackBar("sfile authToken返回为null");
-                    return;
+            public void onSuccess(Call<JsonElement> call, Response<JsonElement> response) {
+                dismissLoadingDialog();
+                //发送广播
+                EventBus.getDefault().post(new SeaFolderEvent(getFileActionType(), getSeaFileFromRepoId(), getSeaFileFromDirPath()));
+                showToast(finalActionSucessNoticeStr);
+
+                //回调 关闭页面
+                if (onFragmentCallBackListener != null) {
+                    onFragmentCallBackListener.onFragmentCallBack(FolderTargetListFragment.this, -1, null);
                 }
+            }
 
-
-                final ArrayList<FolderDocumentEntity> selectedFolderDocumentEntities = (ArrayList<FolderDocumentEntity>) getArguments().getSerializable(KEY_SEA_FILE_SELCTED_FILES);
-                if (selectedFolderDocumentEntities == null || selectedFolderDocumentEntities.isEmpty())
-                    return;
-
-                StringBuilder fileNameSb = new StringBuilder();
-                String spliteStr = ":";
-                for (int i = 0; i < selectedFolderDocumentEntities.size(); i++) {
-                    FolderDocumentEntity folderDocumentEntity = selectedFolderDocumentEntities.get(i);
-                    if (folderDocumentEntity == null) continue;
-                    fileNameSb.append(spliteStr);
-                    fileNameSb.append(folderDocumentEntity.name);
-                }
-                fileNameSb.replace(0, spliteStr.length(), "");
-
-                showLoadingDialog(null);
-                Call<JsonElement> jsonElementCall;
-                String actionSucessNoticeStr = null;
-                switch (getFileActionType()) {
-                    case FILE_ACTION_COPY:
-                        actionSucessNoticeStr = "复制成功";
-                        jsonElementCall = getSFileApi().fileCopy(
-                                String.format("Token %s", response.body().authToken),
-                                getSeaFileFromRepoId(),
-                                getSeaFileFromDirPath(),
-                                fileNameSb.toString(),
-                                getSeaFileDstRepoId(),
-                                getSeaFileDstDirPath());
-                        break;
-                    case FILE_ACTION_MOVE:
-                        actionSucessNoticeStr = "移动成功";
-                        jsonElementCall = getSFileApi().fileMove(
-                                String.format("Token %s", response.body().authToken),
-                                getSeaFileFromRepoId(),
-                                getSeaFileFromDirPath(),
-                                fileNameSb.toString(),
-                                getSeaFileDstRepoId(),
-                                getSeaFileDstDirPath());
-                        break;
-                    default:
-                        actionSucessNoticeStr = "操作成功";
-                        jsonElementCall = getSFileApi().fileCopy(
-                                String.format("Token %s", response.body().authToken),
-                                getSeaFileFromRepoId(),
-                                getSeaFileFromDirPath(),
-                                fileNameSb.toString(),
-                                getSeaFileDstRepoId(),
-                                getSeaFileDstDirPath());
-                        break;
-                }
-                final String finalActionSucessNoticeStr = actionSucessNoticeStr;
-                jsonElementCall.enqueue(new SimpleCallBack2<JsonElement>() {
-                    @Override
-                    public void onSuccess(Call<JsonElement> call, Response<JsonElement> response) {
-                        dismissLoadingDialog();
-                        //发送广播
-                        EventBus.getDefault().post(new SeaFolderEvent(getFileActionType(), getSeaFileFromRepoId(), getSeaFileFromDirPath()));
-                        showToast(finalActionSucessNoticeStr);
-
-                        //回调 关闭页面
-                        if (onFragmentCallBackListener != null) {
-                            onFragmentCallBackListener.onFragmentCallBack(FolderTargetListFragment.this, -1, null);
-                        }
-                    }
-
-                    @Override
-                    public void onFailure(Call<JsonElement> call, Throwable t) {
-                        dismissLoadingDialog();
-                        super.onFailure(call, t);
-                    }
-                });
-
+            @Override
+            public void onFailure(Call<JsonElement> call, Throwable t) {
+                dismissLoadingDialog();
+                super.onFailure(call, t);
             }
         });
+
     }
 
     @Override

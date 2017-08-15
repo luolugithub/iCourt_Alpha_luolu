@@ -39,17 +39,18 @@ import com.icourt.alpha.adapter.baseadapter.adapterObserver.DataChangeAdapterObs
 import com.icourt.alpha.constants.Const;
 import com.icourt.alpha.entity.bean.FolderDocumentEntity;
 import com.icourt.alpha.entity.bean.ItemsEntity;
-import com.icourt.alpha.entity.bean.SFileTokenEntity;
 import com.icourt.alpha.entity.bean.SeaFileTrashPageEntity;
 import com.icourt.alpha.entity.event.SeaFolderEvent;
 import com.icourt.alpha.fragment.dialogfragment.DocumentDetailDialogFragment;
 import com.icourt.alpha.fragment.dialogfragment.FolderDetailDialogFragment;
 import com.icourt.alpha.fragment.dialogfragment.FolderTargetListDialogFragment;
+import com.icourt.alpha.http.callback.SFileCallBack;
 import com.icourt.alpha.http.callback.SimpleCallBack2;
 import com.icourt.alpha.interfaces.ISeaFileImageLoader;
 import com.icourt.alpha.utils.ActionConstants;
 import com.icourt.alpha.utils.GlideUtils;
 import com.icourt.alpha.utils.ImageUtils;
+import com.icourt.alpha.utils.SFileTokenUtils;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.utils.UriUtils;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
@@ -130,7 +131,6 @@ public class FolderListActivity extends FolderBaseActivity
     LinearLayout bottomBarLayout;
     @BindView(R.id.bottom_bar_all_select_cb)
     CheckBox bottomBarAllSelectCb;
-    private String sFileToken;
 
     int pageIndex = 1;
 
@@ -270,6 +270,12 @@ public class FolderListActivity extends FolderBaseActivity
                 super.onRefresh(isPullDown);
                 getData(true);
             }
+
+            @Override
+            public void onLoadMore(boolean isSilence) {
+                super.onLoadMore(isSilence);
+                getData(false);
+            }
         });
 
         bottomBarAllSelectCb.setOnCheckedChangeListener(onCheckedChangeListener);
@@ -295,7 +301,7 @@ public class FolderListActivity extends FolderBaseActivity
         return String.format("%sapi/v2/documents/thumbnailImage?repoId=%s&seafileToken=%s&p=%s&size=%s",
                 BuildConfig.API_URL,
                 getSeaFileRepoId(),
-                sFileToken,
+                SFileTokenUtils.getSFileToken(),
                 String.format("%s%s", getSeaFileDirPath(), name),
                 150);
     }
@@ -321,17 +327,7 @@ public class FolderListActivity extends FolderBaseActivity
     @Override
     protected void getData(final boolean isRefresh) {
         super.getData(isRefresh);
-        getSFileToken(new SimpleCallBack2<SFileTokenEntity<String>>() {
-            @Override
-            public void onSuccess(Call<SFileTokenEntity<String>> call, Response<SFileTokenEntity<String>> response) {
-                if (TextUtils.isEmpty(response.body().authToken)) {
-                    stopRefresh();
-                    showTopSnackBar("sfile authToken返回为null");
-                    return;
-                }
-                getFolder(isRefresh, response.body().authToken);
-            }
-        });
+        getFolder(isRefresh);
     }
 
     private List<List<FolderDocumentEntity>> wrapGridData(List<FolderDocumentEntity> datas) {
@@ -353,17 +349,15 @@ public class FolderListActivity extends FolderBaseActivity
         return result;
     }
 
-    private void getFolder(final boolean isRefresh, String sfileToken) {
+    private void getFolder(final boolean isRefresh) {
         if (isRefresh) {
             pageIndex = 1;
         }
-        this.sFileToken = sfileToken;
         if (isFromTrash()) {
             getSFileApi().folderTrashQuery(
-                    String.format("Token %s", sfileToken),
                     getSeaFileRepoId(),
                     getSeaFileDirPath(),
-                    ActionConstants.DEFAULT_PAGE_SIZE).enqueue(new SimpleCallBack2<SeaFileTrashPageEntity<FolderDocumentEntity>>() {
+                    ActionConstants.DEFAULT_PAGE_SIZE).enqueue(new SFileCallBack<SeaFileTrashPageEntity<FolderDocumentEntity>>() {
                 @Override
                 public void onSuccess(Call<SeaFileTrashPageEntity<FolderDocumentEntity>> call, Response<SeaFileTrashPageEntity<FolderDocumentEntity>> response) {
                     folderDocumentAdapter.bindData(isRefresh, wrapGridData(response.body().data));
@@ -382,10 +376,9 @@ public class FolderListActivity extends FolderBaseActivity
             });
         } else {
             getSFileApi().documentDirQuery(
-                    String.format("Token %s", sfileToken),
                     getSeaFileRepoId(),
                     getSeaFileDirPath())
-                    .enqueue(new SimpleCallBack2<List<FolderDocumentEntity>>() {
+                    .enqueue(new SFileCallBack<List<FolderDocumentEntity>>() {
                         @Override
                         public void onSuccess(Call<List<FolderDocumentEntity>> call, Response<List<FolderDocumentEntity>> response) {
                             folderDocumentAdapter.bindData(isRefresh, wrapGridData(response.body()));
@@ -613,50 +606,27 @@ public class FolderListActivity extends FolderBaseActivity
     private void uploadFiles(final List<String> filePaths) {
         if (filePaths != null
                 && !filePaths.isEmpty()) {
-            //1.获取token
-            showLoadingDialog("sfile token获取中...");
-            getSFileToken(new SimpleCallBack2<SFileTokenEntity<String>>() {
-                @Override
-                public void onSuccess(Call<SFileTokenEntity<String>> call, Response<SFileTokenEntity<String>> response) {
-                    dismissLoadingDialog();
-                    if (TextUtils.isEmpty(response.body().authToken)) {
-                        stopRefresh();
-                        showTopSnackBar("sfile authToken返回为null");
-                        return;
-                    }
-                    sFileToken = response.body().authToken;
-                    if (isDestroyOrFinishing()) return;
+            if (isDestroyOrFinishing()) return;
+            //2.获取上传地址
+            showLoadingDialog("sfile 上传地址获取中...");
+            getSFileApi().sfileUploadUrlQuery(
+                    getSeaFileRepoId(),
+                    "upload",
+                    getSeaFileDirPath())
+                    .enqueue(new SFileCallBack<String>() {
+                        @Override
+                        public void onSuccess(Call<String> call, Response<String> response) {
+                            if (isDestroyOrFinishing()) return;
+                            dismissLoadingDialog();
+                            uploadFiles(filePaths);
+                        }
 
-                    final String sfileToken = response.body().authToken;
-                    //2.获取上传地址
-                    showLoadingDialog("sfile 上传地址获取中...");
-                    getSFileApi().sfileUploadUrlQuery(
-                            String.format("Token %s", sfileToken),
-                            getSeaFileRepoId(),
-                            "upload",
-                            getSeaFileDirPath())
-                            .enqueue(new SimpleCallBack2<String>() {
-                                @Override
-                                public void onSuccess(Call<String> call, Response<String> response) {
-                                    if (isDestroyOrFinishing()) return;
-                                    dismissLoadingDialog();
-                                    uploadFiles(filePaths, response.body(), sfileToken);
-                                }
-
-                                @Override
-                                public void onFailure(Call<String> call, Throwable t) {
-                                    super.onFailure(call, t);
-                                    dismissLoadingDialog();
-                                }
-                            });
-                }
-
-                @Override
-                public void onFailure(Call<SFileTokenEntity<String>> call, Throwable t) {
-                    dismissLoadingDialog();
-                    super.onFailure(call, t);
-                }
-            });
+                        @Override
+                        public void onFailure(Call<String> call, Throwable t) {
+                            super.onFailure(call, t);
+                            dismissLoadingDialog();
+                        }
+                    });
         }
     }
 
@@ -830,51 +800,37 @@ public class FolderListActivity extends FolderBaseActivity
     private void fileRevert(FolderDocumentAdapter adapter, int position) {
         final FolderDocumentEntity item = adapter.getItem(position);
         if (item == null) return;
-        showLoadingDialog("sfile token获取中...");
-        getSFileToken(new SimpleCallBack2<SFileTokenEntity<String>>() {
+        Call<JsonObject> jsonObjectCall;
+        if (item.isDir()) {
+            jsonObjectCall = getSFileApi().folderRevert(
+                    getSeaFileRepoId(),
+                    String.format("%s%s", item.parent_dir, item.name),
+                    item.commit_id);
+        } else {
+            jsonObjectCall = getSFileApi().fileRevert(
+                    getSeaFileRepoId(),
+                    String.format("%s%s", item.parent_dir, item.name),
+                    item.commit_id);
+        }
+        jsonObjectCall.enqueue(new SFileCallBack<JsonObject>() {
             @Override
-            public void onSuccess(Call<SFileTokenEntity<String>> call, Response<SFileTokenEntity<String>> response) {
-                if (TextUtils.isEmpty(response.body().authToken)) {
-                    dismissLoadingDialog();
-                    showTopSnackBar("sfile authToken返回为null");
-                    return;
-                }
-                Call<JsonObject> jsonObjectCall;
-                if (item.isDir()) {
-                    jsonObjectCall = getSFileApi().folderRevert(
-                            String.format("Token %s", response.body().authToken),
-                            getSeaFileRepoId(),
-                            String.format("%s%s", item.parent_dir, item.name),
-                            item.commit_id);
+            public void onSuccess(Call<JsonObject> call, Response<JsonObject> response) {
+                dismissLoadingDialog();
+                if (response.body().has("success")
+                        && response.body().get("success").getAsBoolean()) {
+                    getData(true);
+                    showTopSnackBar("文件恢复成功");
                 } else {
-                    jsonObjectCall = getSFileApi().fileRevert(
-                            String.format("Token %s", response.body().authToken),
-                            getSeaFileRepoId(),
-                            String.format("%s%s", item.parent_dir, item.name),
-                            item.commit_id);
+                    showTopSnackBar("文件恢复失败");
                 }
-                jsonObjectCall.enqueue(new SimpleCallBack2<JsonObject>() {
-                    @Override
-                    public void onSuccess(Call<JsonObject> call, Response<JsonObject> response) {
-                        dismissLoadingDialog();
-                        if (response.body().has("success")
-                                && response.body().get("success").getAsBoolean()) {
-                            getData(true);
-                            showTopSnackBar("文件恢复成功");
-                        } else {
-                            showTopSnackBar("文件恢复失败");
-                        }
-                    }
+            }
 
-                    @Override
-                    public void onFailure(Call<JsonObject> call, Throwable t) {
-                        dismissLoadingDialog();
-                        super.onFailure(call, t);
-                    }
-                });
+            @Override
+            public void onFailure(Call<JsonObject> call, Throwable t) {
+                dismissLoadingDialog();
+                super.onFailure(call, t);
             }
         });
-
     }
 
     /**
@@ -963,61 +919,39 @@ public class FolderListActivity extends FolderBaseActivity
      */
     private void deleteFolderOrDocuments(final Set<FolderDocumentEntity> items) {
         if (items == null || items.isEmpty()) return;
-        showLoadingDialog("sfile token获取中...");
-        getSFileToken(new SimpleCallBack2<SFileTokenEntity<String>>() {
-            @Override
-            public void onSuccess(Call<SFileTokenEntity<String>> call, Response<SFileTokenEntity<String>> response) {
-                if (TextUtils.isEmpty(response.body().authToken)) {
-                    stopRefresh();
+        showLoadingDialog(null);
+        //循环删除
+        for (FolderDocumentEntity item : items) {
+            Call<JsonObject> delCall = null;
+            if (item.isDir()) {
+                delCall = getSFileApi()
+                        .folderDelete(
+                                getSeaFileRepoId(),
+                                String.format("%s%s", getSeaFileDirPath(), item.name));
+            } else {
+                delCall = getSFileApi()
+                        .documentDelete(
+                                getSeaFileRepoId(),
+                                String.format("%s%s", getSeaFileDirPath(), item.name));
+            }
+            showLoadingDialog("删除中...");
+            delCall.enqueue(new SFileCallBack<JsonObject>() {
+                @Override
+                public void onSuccess(Call<JsonObject> call, Response<JsonObject> response) {
                     dismissLoadingDialog();
-                    showTopSnackBar("sfile authToken返回为null");
-                    return;
-                }
-                sFileToken = response.body().authToken;
-
-
-                //循环删除
-                for (FolderDocumentEntity item : items) {
-                    Call<JsonObject> delCall = null;
-                    if (item.isDir()) {
-                        delCall = getSFileApi()
-                                .folderDelete(
-                                        String.format("Token %s", response.body().authToken),
-                                        getSeaFileRepoId(),
-                                        String.format("%s%s", getSeaFileDirPath(), item.name));
-                    } else {
-                        delCall = getSFileApi()
-                                .documentDelete(
-                                        String.format("Token %s", response.body().authToken),
-                                        getSeaFileRepoId(),
-                                        String.format("%s%s", getSeaFileDirPath(), item.name));
+                    if (response.body().has("success")
+                            && response.body().get("success").getAsBoolean()) {
+                        getData(true);
                     }
-                    showLoadingDialog("删除中...");
-                    delCall.enqueue(new SimpleCallBack2<JsonObject>() {
-                        @Override
-                        public void onSuccess(Call<JsonObject> call, Response<JsonObject> response) {
-                            dismissLoadingDialog();
-                            if (response.body().has("success")
-                                    && response.body().get("success").getAsBoolean()) {
-                                getData(true);
-                            }
-                        }
-
-                        @Override
-                        public void onFailure(Call<JsonObject> call, Throwable t) {
-                            super.onFailure(call, t);
-                            dismissLoadingDialog();
-                        }
-                    });
                 }
-            }
 
-            @Override
-            public void onFailure(Call<SFileTokenEntity<String>> call, Throwable t) {
-                super.onFailure(call, t);
-                dismissLoadingDialog();
-            }
-        });
+                @Override
+                public void onFailure(Call<JsonObject> call, Throwable t) {
+                    super.onFailure(call, t);
+                    dismissLoadingDialog();
+                }
+            });
+        }
     }
 
     /**
@@ -1027,53 +961,32 @@ public class FolderListActivity extends FolderBaseActivity
      */
     private void deleteFolderOrDocument(final FolderDocumentEntity item) {
         if (item == null) return;
-        showLoadingDialog("sfile token获取中...");
-        getSFileToken(new SimpleCallBack2<SFileTokenEntity<String>>() {
+        //删除
+        Call<JsonObject> delCall = null;
+        if (item.isDir()) {
+            delCall = getSFileApi()
+                    .folderDelete(
+                            getSeaFileRepoId(),
+                            String.format("%s%s", getSeaFileDirPath(), item.name));
+        } else {
+            delCall = getSFileApi()
+                    .documentDelete(
+                            getSeaFileRepoId(),
+                            String.format("%s%s", getSeaFileDirPath(), item.name));
+        }
+        showLoadingDialog("删除中...");
+        delCall.enqueue(new SFileCallBack<JsonObject>() {
             @Override
-            public void onSuccess(Call<SFileTokenEntity<String>> call, Response<SFileTokenEntity<String>> response) {
-                if (TextUtils.isEmpty(response.body().authToken)) {
-                    stopRefresh();
-                    dismissLoadingDialog();
-                    showTopSnackBar("sfile authToken返回为null");
-                    return;
+            public void onSuccess(Call<JsonObject> call, Response<JsonObject> response) {
+                dismissLoadingDialog();
+                if (response.body().has("success") && response.body().get("success").getAsBoolean()) {
+                    showTopSnackBar("删除成功");
+                    getData(true);
                 }
-                sFileToken = response.body().authToken;
-                //删除
-                Call<JsonObject> delCall = null;
-                if (item.isDir()) {
-                    delCall = getSFileApi()
-                            .folderDelete(
-                                    String.format("Token %s", response.body().authToken),
-                                    getSeaFileRepoId(),
-                                    String.format("%s%s", getSeaFileDirPath(), item.name));
-                } else {
-                    delCall = getSFileApi()
-                            .documentDelete(
-                                    String.format("Token %s", response.body().authToken),
-                                    getSeaFileRepoId(),
-                                    String.format("%s%s", getSeaFileDirPath(), item.name));
-                }
-                showLoadingDialog("删除中...");
-                delCall.enqueue(new SimpleCallBack2<JsonObject>() {
-                    @Override
-                    public void onSuccess(Call<JsonObject> call, Response<JsonObject> response) {
-                        dismissLoadingDialog();
-                        if (response.body().has("success") && response.body().get("success").getAsBoolean()) {
-                            showTopSnackBar("删除成功");
-                            getData(true);
-                        }
-                    }
-
-                    @Override
-                    public void onFailure(Call<JsonObject> call, Throwable t) {
-                        super.onFailure(call, t);
-                        dismissLoadingDialog();
-                    }
-                });
             }
 
             @Override
-            public void onFailure(Call<SFileTokenEntity<String>> call, Throwable t) {
+            public void onFailure(Call<JsonObject> call, Throwable t) {
                 super.onFailure(call, t);
                 dismissLoadingDialog();
             }

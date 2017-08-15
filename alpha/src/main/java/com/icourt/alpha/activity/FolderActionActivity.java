@@ -17,8 +17,7 @@ import com.google.gson.JsonObject;
 import com.icourt.alpha.R;
 import com.icourt.alpha.entity.bean.DocumentRootEntity;
 import com.icourt.alpha.entity.bean.FolderDocumentEntity;
-import com.icourt.alpha.entity.bean.SFileTokenEntity;
-import com.icourt.alpha.http.callback.SimpleCallBack2;
+import com.icourt.alpha.http.callback.SFileCallBack;
 import com.icourt.alpha.utils.StringUtils;
 import com.icourt.api.RequestUtils;
 
@@ -145,41 +144,9 @@ public class FolderActionActivity extends FolderBaseActivity {
         Matcher matcher = pattern.matcher(originalText);
         SpannableUtils.setTextForegroundColorSpan();*/
                 if (TextUtils.equals(getIntent().getAction(), ACTION_CREATE)) {
-                    getSFileToken(new SimpleCallBack2<SFileTokenEntity<String>>() {
-                        @Override
-                        public void onSuccess(Call<SFileTokenEntity<String>> call, Response<SFileTokenEntity<String>> response) {
-                            dismissLoadingDialog();
-                            if (TextUtils.isEmpty(response.body().authToken)) {
-                                showTopSnackBar("sfile authToken返回为null");
-                                return;
-                            }
-                            createFolder(response.body().authToken);
-                        }
-
-                        @Override
-                        public void onFailure(Call<SFileTokenEntity<String>> call, Throwable t) {
-                            dismissLoadingDialog();
-                            super.onFailure(call, t);
-                        }
-                    });
+                    createFolder();
                 } else if (TextUtils.equals(getIntent().getAction(), ACTION_UPDATE_TITLE)) {
-                    getSFileToken(new SimpleCallBack2<SFileTokenEntity<String>>() {
-                        @Override
-                        public void onSuccess(Call<SFileTokenEntity<String>> call, Response<SFileTokenEntity<String>> response) {
-                            dismissLoadingDialog();
-                            if (TextUtils.isEmpty(response.body().authToken)) {
-                                showTopSnackBar("sfile authToken返回为null");
-                                return;
-                            }
-                            updateFolderTitle(response.body().authToken);
-                        }
-
-                        @Override
-                        public void onFailure(Call<SFileTokenEntity<String>> call, Throwable t) {
-                            dismissLoadingDialog();
-                            super.onFailure(call, t);
-                        }
-                    });
+                    updateFolderTitle();
                 }
             }
             break;
@@ -192,18 +159,16 @@ public class FolderActionActivity extends FolderBaseActivity {
     /**
      * 创建文件夹
      *
-     * @param sfileToken
      */
-    private void createFolder(String sfileToken) {
+    private void createFolder() {
         showLoadingDialog("创建中...");
         JsonObject operationJsonObject = new JsonObject();
         operationJsonObject.addProperty("operation", "mkdir");
         getSFileApi().folderCreate(
-                String.format("Token %s", sfileToken),
                 getSeaFileRepoId(),
                 String.format("%s%s", getSeaFileDirPath(), documentNameEt.getText().toString()),
                 RequestUtils.createJsonBody(operationJsonObject.toString()))
-                .enqueue(new SimpleCallBack2<DocumentRootEntity>() {
+                .enqueue(new SFileCallBack<DocumentRootEntity>() {
                     @Override
                     public void onSuccess(Call<DocumentRootEntity> call, Response<DocumentRootEntity> response) {
                         dismissLoadingDialog();
@@ -222,19 +187,18 @@ public class FolderActionActivity extends FolderBaseActivity {
     /**
      * 更新文件夹标题
      *
-     * @param sfileToken
      */
-    private void updateFolderTitle(String sfileToken) {
+    private void updateFolderTitle() {
         if (folderDocumentEntity == null) return;
         showLoadingDialog("更改中...");
         if (folderDocumentEntity.isDir()) {
             getSFileApi()
-                    .folderRename(String.format("Token %s", sfileToken),
+                    .folderRename(
                             getSeaFileRepoId(),
                             String.format("%s%s", getSeaFileDirPath(), folderDocumentEntity.name),
                             "rename",
                             documentNameEt.getText().toString())
-                    .enqueue(new SimpleCallBack2<String>() {
+                    .enqueue(new SFileCallBack<String>() {
                         @Override
                         public void onSuccess(Call<String> call, Response<String> response) {
                             dismissLoadingDialog();
@@ -259,12 +223,12 @@ public class FolderActionActivity extends FolderBaseActivity {
                 return;
             }
             getSFileApi()
-                    .fileRename(String.format("Token %s", sfileToken),
+                    .fileRename(
                             getSeaFileRepoId(),
                             String.format("%s%s", getSeaFileDirPath(), folderDocumentEntity.name),
                             "rename",
                             documentNameEt.getText().toString())
-                    .enqueue(new SimpleCallBack2<FolderDocumentEntity>() {
+                    .enqueue(new SFileCallBack<FolderDocumentEntity>() {
                         @Override
                         public void onSuccess(Call<FolderDocumentEntity> call, Response<FolderDocumentEntity> response) {
                             dismissLoadingDialog();

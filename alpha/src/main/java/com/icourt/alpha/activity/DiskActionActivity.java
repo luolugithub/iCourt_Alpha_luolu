@@ -16,8 +16,7 @@ import android.widget.TextView;
 import com.icourt.alpha.R;
 import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.entity.bean.DocumentRootEntity;
-import com.icourt.alpha.entity.bean.SFileTokenEntity;
-import com.icourt.alpha.http.callback.SimpleCallBack2;
+import com.icourt.alpha.http.callback.SFileCallBack;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.StringUtils;
 
@@ -134,41 +133,9 @@ public class DiskActionActivity extends BaseActivity {
         Matcher matcher = pattern.matcher(originalText);
         SpannableUtils.setTextForegroundColorSpan();*/
                 if (TextUtils.equals(getIntent().getAction(), ACTION_CREATE)) {
-                    getSfileToken(new SimpleCallBack2<SFileTokenEntity<String>>() {
-                        @Override
-                        public void onSuccess(Call<SFileTokenEntity<String>> call, Response<SFileTokenEntity<String>> response) {
-                            dismissLoadingDialog();
-                            if (TextUtils.isEmpty(response.body().authToken)) {
-                                showTopSnackBar("sfile authToken返回为null");
-                                return;
-                            }
-                            createRootDocument(response.body().authToken);
-                        }
-
-                        @Override
-                        public void onFailure(Call<SFileTokenEntity<String>> call, Throwable t) {
-                            dismissLoadingDialog();
-                            super.onFailure(call, t);
-                        }
-                    });
+                    createRootDocument();
                 } else if (TextUtils.equals(getIntent().getAction(), ACTION_UPDATE_TITLE)) {
-                    getSfileToken(new SimpleCallBack2<SFileTokenEntity<String>>() {
-                        @Override
-                        public void onSuccess(Call<SFileTokenEntity<String>> call, Response<SFileTokenEntity<String>> response) {
-                            dismissLoadingDialog();
-                            if (TextUtils.isEmpty(response.body().authToken)) {
-                                showTopSnackBar("sfile authToken返回为null");
-                                return;
-                            }
-                            updateRootDocumentTitle(response.body().authToken);
-                        }
-
-                        @Override
-                        public void onFailure(Call<SFileTokenEntity<String>> call, Throwable t) {
-                            dismissLoadingDialog();
-                            super.onFailure(call, t);
-                        }
-                    });
+                    updateRootDocumentTitle();
                 }
             }
             break;
@@ -179,21 +146,13 @@ public class DiskActionActivity extends BaseActivity {
     }
 
 
-    private void getSfileToken(SimpleCallBack2<SFileTokenEntity<String>> callBack2) {
-        showLoadingDialog("sfileToken获取中...");
-        getApi().documentTokenQuery()
-                .enqueue(callBack2);
-    }
-
     /**
      * 创建资料库
-     *
-     * @param sfileToken
      */
-    private void createRootDocument(String sfileToken) {
+    private void createRootDocument() {
         showLoadingDialog("创建中...");
-        getSFileApi().documentRootCreate(String.format("Token %s", sfileToken), documentNameEt.getText().toString())
-                .enqueue(new SimpleCallBack2<DocumentRootEntity>() {
+        getSFileApi().documentRootCreate(documentNameEt.getText().toString())
+                .enqueue(new SFileCallBack<DocumentRootEntity>() {
                     @Override
                     public void onSuccess(Call<DocumentRootEntity> call, Response<DocumentRootEntity> response) {
                         dismissLoadingDialog();
@@ -213,18 +172,17 @@ public class DiskActionActivity extends BaseActivity {
     /**
      * 更新资料库标题
      *
-     * @param sfileToken
      */
-    private void updateRootDocumentTitle(String sfileToken) {
+    private void updateRootDocumentTitle() {
         if (paramDocumentRootEntity == null) return;
         showLoadingDialog("更改中...");
         paramDocumentRootEntity.repo_name = documentNameEt.getText().toString();
         paramDocumentRootEntity.last_modified = DateUtils.millis();
-        getSFileApi().documentRootUpdateName(String.format("Token %s", sfileToken),
+        getSFileApi().documentRootUpdateName(
                 paramDocumentRootEntity.repo_id,
                 "rename",
                 documentNameEt.getText().toString())
-                .enqueue(new SimpleCallBack2<String>() {
+                .enqueue(new SFileCallBack<String>() {
                     @Override
                     public void onSuccess(Call<String> call, Response<String> response) {
                         dismissLoadingDialog();

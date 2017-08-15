@@ -20,6 +20,7 @@ import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.entity.bean.DocumentRootEntity;
 import com.icourt.alpha.entity.bean.SFileTokenEntity;
+import com.icourt.alpha.http.callback.SFileCallBack;
 import com.icourt.alpha.http.callback.SimpleCallBack2;
 import com.icourt.alpha.utils.ActionConstants;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
@@ -126,24 +127,7 @@ public class DiskListFragment extends BaseFragment implements BaseRecyclerAdapte
         super.getData(isRefresh);
         switch (getArguments().getInt("type")) {
             case 0: {
-                getApi().documentTokenQuery()
-                        .enqueue(new SimpleCallBack2<SFileTokenEntity<String>>() {
-                            @Override
-                            public void onSuccess(Call<SFileTokenEntity<String>> call, Response<SFileTokenEntity<String>> response) {
-                                if (TextUtils.isEmpty(response.body().authToken)) {
-                                    showTopSnackBar("sfile authToken返回为null");
-                                    stopRefresh();
-                                    return;
-                                }
-                                getDocumentRoot(isRefresh, response.body().authToken, null);
-                            }
-
-                            @Override
-                            public void onFailure(Call<SFileTokenEntity<String>> call, Throwable t) {
-                                super.onFailure(call, t);
-                                stopRefresh();
-                            }
-                        });
+                getDocumentRoot(isRefresh, null);
             }
             break;
             case 1: {
@@ -164,24 +148,7 @@ public class DiskListFragment extends BaseFragment implements BaseRecyclerAdapte
             }
             break;
             case 2: {
-                getApi().documentTokenQuery()
-                        .enqueue(new SimpleCallBack2<SFileTokenEntity<String>>() {
-                            @Override
-                            public void onSuccess(Call<SFileTokenEntity<String>> call, Response<SFileTokenEntity<String>> response) {
-                                if (TextUtils.isEmpty(response.body().authToken)) {
-                                    showTopSnackBar("sfile authToken返回为null");
-                                    stopRefresh();
-                                    return;
-                                }
-                                getDocumentRoot(isRefresh, response.body().authToken, null);
-                            }
-
-                            @Override
-                            public void onFailure(Call<SFileTokenEntity<String>> call, Throwable t) {
-                                super.onFailure(call, t);
-                                stopRefresh();
-                            }
-                        });
+                getDocumentRoot(isRefresh, null);
             }
             break;
             case 3: {
@@ -219,7 +186,7 @@ public class DiskListFragment extends BaseFragment implements BaseRecyclerAdapte
                             stopRefresh();
                             return;
                         }
-                        getDocumentRoot(isRefresh, response.body().authToken, adminId);
+                        getDocumentRoot(isRefresh,adminId);
                     }
 
                     @Override
@@ -234,32 +201,30 @@ public class DiskListFragment extends BaseFragment implements BaseRecyclerAdapte
      * 获取资料库
      *
      * @param isRefresh
-     * @param sfileToken
      * @param officeAdminId 律所管理员id
      */
-    private void getDocumentRoot(final boolean isRefresh, @NonNull String sfileToken, @Nullable String officeAdminId) {
+    private void getDocumentRoot(final boolean isRefresh, @Nullable String officeAdminId) {
         if (isRefresh) {
             pageIndex = 1;
         }
-        String headerToken = String.format("Token %s", sfileToken);
         Call<List<DocumentRootEntity>> listCall = null;
         final int pageSize = ActionConstants.DEFAULT_PAGE_SIZE;
         switch (getArguments().getInt("type")) {
             case 0:
-                listCall = getSFileApi().documentRootQuery(headerToken, pageIndex, pageSize, null, null, null);
+                listCall = getSFileApi().documentRootQuery(pageIndex, pageSize, null, null, null);
                 break;
             case 1:
-                listCall = getSFileApi().documentRootQuery(headerToken, pageIndex, pageSize, officeAdminId, null, "shared");
+                listCall = getSFileApi().documentRootQuery(pageIndex, pageSize, officeAdminId, null, "shared");
                 break;
             case 2:
-                listCall = getSFileApi().documentRootQuery(headerToken);
+                listCall = getSFileApi().documentRootQuery();
                 break;
             case 3:
-                listCall = getSFileApi().documentRootQuery(headerToken, pageIndex, pageSize, null, officeAdminId, "shared");
+                listCall = getSFileApi().documentRootQuery(pageIndex, pageSize, null, officeAdminId, "shared");
                 break;
         }
         if (listCall != null) {
-            listCall.enqueue(new SimpleCallBack2<List<DocumentRootEntity>>() {
+            listCall.enqueue(new SFileCallBack<List<DocumentRootEntity>>() {
                 @Override
                 public void onSuccess(Call<List<DocumentRootEntity>> call, Response<List<DocumentRootEntity>> response) {
                     stopRefresh();
@@ -435,7 +400,7 @@ public class DiskListFragment extends BaseFragment implements BaseRecyclerAdapte
         if (item == null) return;
         showLoadingDialog("资料库删除中...");
         getSFileApi().documentRootDelete(String.format("Token %s", sfileToken), item.repo_id)
-                .enqueue(new SimpleCallBack2<String>() {
+                .enqueue(new SFileCallBack<String>() {
                     @Override
                     public void onSuccess(Call<String> call, Response<String> response) {
                         dismissLoadingDialog();

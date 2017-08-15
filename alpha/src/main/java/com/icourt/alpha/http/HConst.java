@@ -1,10 +1,7 @@
 package com.icourt.alpha.http;
 
 
-import android.text.TextUtils;
-
 import com.icourt.alpha.BuildConfig;
-import com.icourt.alpha.utils.SpUtils;
 
 /**
  * @author xuanyouwu
@@ -12,8 +9,6 @@ import com.icourt.alpha.utils.SpUtils;
  * @time 2016-04-15 14:14
  */
 public class HConst {
-
-    public static String cookie = "";
 
     /**
      * 网络缓存最大值

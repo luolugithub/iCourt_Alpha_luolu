@@ -97,9 +97,7 @@ public interface ApiSFileService {
      * @return
      */
     @GET("api/v2.1/alpha-box-repos/")
-    Call<List<DocumentRootEntity>> documentRootQuery(
-            @Header("Authorization") String authToken,
-            @Query("page") int page,
+    Call<List<DocumentRootEntity>> documentRootQuery(@Query("page") int page,
             @Query("per_page") int per_page,
             @Query("not_shared_from") String not_shared_from,
             @Query("shared_from") String shared_from,
@@ -109,36 +107,31 @@ public interface ApiSFileService {
     /**
      * 获取律所律所资料库
      *
-     * @param authToken
      * @return
      */
     @GET("api2/repos/public/")
-    Call<List<DocumentRootEntity>> documentRootQuery(@Header("Authorization") String authToken);
+    Call<List<DocumentRootEntity>> documentRootQuery();
 
     /**
      * 创建资料库
      *
-     * @param authToken
      * @param name
      * @return
      */
     @POST("api2/repos/")
     @FormUrlEncoded
-    Call<DocumentRootEntity> documentRootCreate(@Header("Authorization") String authToken,
-                                                @Field("name") String name);
+    Call<DocumentRootEntity> documentRootCreate(@Field("name") String name);
 
     /**
      * 资料库更改名字
      *
-     * @param authToken
      * @param name
      * @param op        op=rename
      * @return
      */
     @POST("api2/repos/{documentRootId}/")
     @FormUrlEncoded
-    Call<String> documentRootUpdateName(@Header("Authorization") String authToken,
-                                        @Path("documentRootId") String documentRootId,
+    Call<String> documentRootUpdateName(@Path("documentRootId") String documentRootId,
                                         @Query("op") String op,
                                         @Field("repo_name") String name);
 
@@ -158,28 +151,24 @@ public interface ApiSFileService {
     /**
      * 文档目录查询
      *
-     * @param authToken
      * @param documentRootId
      * @param p              p=/代表资料库根目录   p=/+目录1 代表资料库一级目录
      * @return
      */
     @GET("api2/repos/{documentRootId}/dir/")
-    Call<List<FolderDocumentEntity>> documentDirQuery(@Header("Authorization") String authToken,
-                                                      @Path("documentRootId") String documentRootId,
+    Call<List<FolderDocumentEntity>> documentDirQuery(@Path("documentRootId") String documentRootId,
                                                       @Query("p") String p);
 
     /**
      * 获取sfile 上传文件url
      * op_type=upload 上传
      *
-     * @param authToken
      * @param op_type
      * @param path
      * @return
      */
     @GET("api2/repos/{seaFileRepoId}/upload-link/")
-    Call<String> sfileUploadUrlQuery(@Header("Authorization") String authToken,
-                                     @Path("seaFileRepoId") String seaFileRepoId,
+    Call<String> sfileUploadUrlQuery(@Path("seaFileRepoId") String seaFileRepoId,
                                      @Query("op_type") String op_type,
                                      @Query("path") String path);
 
@@ -187,45 +176,38 @@ public interface ApiSFileService {
     /**
      * 创建文件夹
      *
-     * @param authToken
      * @param p
      * @return https://testbox.alphalawyer.cn/api/v2.1/repos/d4f82446-a37f-478c-b6b5-ed0e779e1768/dir/?p=%2F22222
      */
     @POST("api/v2.1/repos/{seaFileRepoId}/dir/")
-    Call<DocumentRootEntity> folderCreate(@Header("Authorization") String authToken,
-                                          @Path("seaFileRepoId") String seaFileRepoId,
+    Call<DocumentRootEntity> folderCreate(@Path("seaFileRepoId") String seaFileRepoId,
                                           @Query("p") String p,
                                           @Body RequestBody body);
 
     /**
      * 删除文件夹
      *
-     * @param authToken
      * @param p
      * @return
      */
     @DELETE("api/v2.1/repos/{seaFileRepoId}/dir/")
-    Call<JsonObject> folderDelete(@Header("Authorization") String authToken,
-                                  @Path("seaFileRepoId") String seaFileRepoId,
+    Call<JsonObject> folderDelete(@Path("seaFileRepoId") String seaFileRepoId,
                                   @Query("p") String p);
 
     /**
      * 删除文件夹
      *
-     * @param authToken
      * @param p
      * @return
      */
     @DELETE("api/v2.1/repos/{seaFileRepoId}/file/")
-    Call<JsonObject> documentDelete(@Header("Authorization") String authToken,
-                                    @Path("seaFileRepoId") String seaFileRepoId,
+    Call<JsonObject> documentDelete(@Path("seaFileRepoId") String seaFileRepoId,
                                     @Query("p") String p);
 
 
     /**
      * 文件夹/文件移动
      *
-     * @param authToken
      * @param fromRepoId 文件源仓库id
      * @param fromDir    文件源仓库路径
      * @param fileNames  文件名字 多个名字以":"分割
@@ -235,8 +217,7 @@ public interface ApiSFileService {
      */
     @POST("api2/repos/{seaFileRepoId}/fileops/move/")
     @FormUrlEncoded
-    Call<JsonElement> fileMove(@Header("Authorization") String authToken,
-                               @Path("seaFileRepoId") String fromRepoId,
+    Call<JsonElement> fileMove(@Path("seaFileRepoId") String fromRepoId,
                                @Query("p") String fromDir,
                                @Field("file_names") String fileNames,
                                @Field("dst_repo") String dstRepoId,
@@ -245,7 +226,6 @@ public interface ApiSFileService {
     /**
      * 文件夹/文件复制
      *
-     * @param authToken
      * @param fromRepoId 文件源仓库id
      * @param fromDir    文件源仓库路径
      * @param fileNames  文件名字 多个名字以":"分割
@@ -255,8 +235,7 @@ public interface ApiSFileService {
      */
     @POST("api2/repos/{seaFileRepoId}/fileops/copy/")
     @FormUrlEncoded
-    Call<JsonElement> fileCopy(@Header("Authorization") String authToken,
-                               @Path("seaFileRepoId") String fromRepoId,
+    Call<JsonElement> fileCopy(@Path("seaFileRepoId") String fromRepoId,
                                @Query("p") String fromDir,
                                @Field("file_names") String fileNames,
                                @Field("dst_repo") String dstRepoId,
@@ -265,7 +244,6 @@ public interface ApiSFileService {
     /**
      * 文件重命名
      *
-     * @param authToken
      * @param p
      * @param operation rename
      * @param newname
@@ -273,8 +251,7 @@ public interface ApiSFileService {
      */
     @POST("api/v2.1/repos/{seaFileRepoId}/file/")
     @FormUrlEncoded
-    Call<FolderDocumentEntity> fileRename(@Header("Authorization") String authToken,
-                                          @Path("seaFileRepoId") String fromRepoId,
+    Call<FolderDocumentEntity> fileRename(@Path("seaFileRepoId") String fromRepoId,
                                           @Query("p") String p,
                                           @Field("operation") String operation,
                                           @Field("newname") String newname);
@@ -282,7 +259,6 @@ public interface ApiSFileService {
     /**
      * 文件夹重命名
      *
-     * @param authToken
      * @param p
      * @param operation rename
      * @param newname
@@ -290,8 +266,7 @@ public interface ApiSFileService {
      */
     @POST("api2/repos/{seaFileRepoId}/dir/")
     @FormUrlEncoded
-    Call<String> folderRename(@Header("Authorization") String authToken,
-                              @Path("seaFileRepoId") String fromRepoId,
+    Call<String> folderRename(@Path("seaFileRepoId") String fromRepoId,
                               @Query("p") String p,
                               @Field("operation") String operation,
                               @Field("newname") String newname);
@@ -300,15 +275,13 @@ public interface ApiSFileService {
      * 垃圾回收站
      */
     @GET("api/v2.1/repos/{seaFileRepoId}/trash/")
-    Call<SeaFileTrashPageEntity<FolderDocumentEntity>> folderTrashQuery(@Header("Authorization") String authToken,
-                                                                        @Path("seaFileRepoId") String fromRepoId,
+    Call<SeaFileTrashPageEntity<FolderDocumentEntity>> folderTrashQuery(@Path("seaFileRepoId") String fromRepoId,
                                                                         @Query("path") String p,
                                                                         @Query("per_page") int per_page);
 
     /**
      * 文件恢复
      *
-     * @param authToken
      * @param fromRepoId
      * @param p
      * @param commit_id
@@ -316,15 +289,13 @@ public interface ApiSFileService {
      */
     @PUT("api2/repos/{seaFileRepoId}/file/revert/")
     @FormUrlEncoded
-    Call<JsonObject> fileRevert(@Header("Authorization") String authToken,
-                                @Path("seaFileRepoId") String fromRepoId,
+    Call<JsonObject> fileRevert(@Path("seaFileRepoId") String fromRepoId,
                                 @Field("p") String p,
                                 @Field("commit_id") String commit_id);
 
     /**
      * 文件夹恢复
      *
-     * @param authToken
      * @param fromRepoId
      * @param p
      * @param commit_id
@@ -332,8 +303,18 @@ public interface ApiSFileService {
      */
     @PUT("api2/repos/{seaFileRepoId}/dir/revert/")
     @FormUrlEncoded
-    Call<JsonObject> folderRevert(@Header("Authorization") String authToken,
-                                  @Path("seaFileRepoId") String fromRepoId,
+    Call<JsonObject> folderRevert(@Path("seaFileRepoId") String fromRepoId,
                                   @Field("p") String p,
                                   @Field("commit_id") String commit_id);
+
+    /**
+     * 文件版本查询
+     *
+     * @param fromRepoId
+     * @param p
+     * @return
+     */
+    @GET("api2/repos/{seaFileRepoId}/file/history/")
+    Call<JsonElement> fileVersionQuery(@Path("seaFileRepoId") String fromRepoId,
+                                       @Field("p") String p);
 }

@@ -17,16 +17,17 @@ import com.icourt.alpha.constants.Const;
 import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.icourt.alpha.http.AlphaClient;
 import com.icourt.alpha.http.HConst;
+import com.icourt.alpha.service.DaemonService;
 import com.icourt.alpha.utils.ActivityLifecycleTaskCallbacks;
 import com.icourt.alpha.utils.GlideImageLoader;
 import com.icourt.alpha.utils.LogUtils;
 import com.icourt.alpha.utils.LoginInfoUtils;
+import com.icourt.alpha.utils.SFileTokenUtils;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.utils.UserPreferences;
 import com.icourt.alpha.widget.nim.AlphaMessageNotifierCustomization;
 import com.icourt.alpha.widget.nim.NimAttachParser;
 import com.icourt.lib.daemon.DaemonEnv;
-import com.icourt.alpha.service.DaemonService;
 import com.iflytek.cloud.SpeechConstant;
 import com.iflytek.cloud.SpeechUtility;
 import com.liulishuo.filedownloader.FileDownloader;
@@ -52,8 +53,6 @@ import com.umeng.socialize.UMShareAPI;
 import com.umeng.socialize.utils.Log;
 
 import java.net.Proxy;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -124,6 +123,7 @@ public class BaseApplication extends MultiDexApplication {
             AlphaUserInfo loginUserInfo = LoginInfoUtils.getLoginUserInfo();
             AlphaClient.setToken(loginUserInfo.getToken());
             AlphaClient.setOfficeId(loginUserInfo.getOfficeId());
+            AlphaClient.setSFileToken(SFileTokenUtils.getSFileToken());
         }
     }
 
