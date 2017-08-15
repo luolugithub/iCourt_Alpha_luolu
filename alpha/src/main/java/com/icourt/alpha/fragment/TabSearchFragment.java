@@ -42,11 +42,12 @@ import com.icourt.alpha.fragment.dialogfragment.AudioWaveDialogFragment;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
-import com.icourt.alpha.utils.ItemDecorationUtils;
 import com.icourt.alpha.utils.JsonUtils;
 import com.icourt.alpha.utils.SpUtils;
 import com.icourt.alpha.utils.SystemUtils;
+import com.icourt.alpha.utils.UMMobClickAgent;
 import com.icourt.alpha.view.recyclerviewDivider.DividerItemDecoration;
+import com.umeng.analytics.MobclickAgent;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -228,6 +229,7 @@ public class TabSearchFragment extends BaseFragment implements OnFragmentCallBac
         if (searchEngineEntities.isEmpty() && searchEngineAdapter.getItemCount() > 0) {
             searchEngineEntities.add(searchEngineAdapter.getItem(0));
         }
+        MobclickAgent.onEvent(getContext(), UMMobClickAgent.search_content_click_id);
         SearchTabActivity.launch(getContext(),
                 keyWord,
                 searchEngineEntities);

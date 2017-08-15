@@ -41,7 +41,9 @@ import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.SystemUtils;
+import com.icourt.alpha.utils.UMMobClickAgent;
 import com.icourt.api.RequestUtils;
+import com.umeng.analytics.MobclickAgent;
 
 import org.greenrobot.eventbus.EventBus;
 
@@ -331,6 +333,7 @@ public class TaskCreateActivity extends BaseActivity implements ProjectSelectDia
 
         String bodyStr = getNewTaskJson();
         if (!TextUtils.isEmpty(bodyStr)) {
+            MobclickAgent.onEvent(this, UMMobClickAgent.creat_task_click_id);
             showLoadingDialog(null);
             getApi().taskCreate(RequestUtils.createJsonBody(getNewTaskJson())).enqueue(new SimpleCallBack<TaskEntity.TaskItemEntity>() {
                 @Override

@@ -56,9 +56,11 @@ import com.icourt.alpha.utils.LoginInfoUtils;
 import com.icourt.alpha.utils.SpannableUtils;
 import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.utils.SystemUtils;
+import com.icourt.alpha.utils.UMMobClickAgent;
 import com.icourt.alpha.widget.dialog.BottomActionDialog;
 import com.icourt.alpha.widget.manager.TimerManager;
 import com.icourt.api.RequestUtils;
+import com.umeng.analytics.MobclickAgent;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -188,6 +190,7 @@ public class TaskDetailActivity extends BaseActivity
         super.initView();
         setTitle("");
         EventBus.getDefault().register(this);
+        MobclickAgent.onEvent(this,UMMobClickAgent.look_task_click_id);
         taskId = getIntent().getStringExtra(KEY_TASK_ID);
         baseFragmentAdapter = new BaseFragmentAdapter(getSupportFragmentManager());
         viewpager.setAdapter(baseFragmentAdapter);
@@ -283,11 +286,14 @@ public class TaskDetailActivity extends BaseActivity
                     }
                 break;
             case R.id.task_start_iamge://开始计时
-                if (isStrat)
+                if (isStrat){
+                    MobclickAgent.onEvent(getContext(), UMMobClickAgent.stop_timer_click_id);
                     TimerManager.getInstance().stopTimer();
+                }
                 else {
                     showLoadingDialog(null);
                     final TimeEntity.ItemEntity itemEntity = getTimer(taskItemEntity);
+                    MobclickAgent.onEvent(getContext(), UMMobClickAgent.start_timer_click_id);
                     TimerManager.getInstance().addTimer(itemEntity, new Callback<TimeEntity.ItemEntity>() {
                         @Override
                         public void onResponse(Call<TimeEntity.ItemEntity> call, Response<TimeEntity.ItemEntity> response) {
@@ -917,6 +923,7 @@ public class TaskDetailActivity extends BaseActivity
      */
     private void deleteTask() {
         showLoadingDialog(null);
+        MobclickAgent.onEvent(this, UMMobClickAgent.delete_task_click_id);
         getApi().taskDelete(taskId).enqueue(new SimpleCallBack<JsonElement>() {
             @Override
             public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {

@@ -35,9 +35,11 @@ import com.icourt.alpha.entity.event.TimingEvent;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.DateUtils;
+import com.icourt.alpha.utils.UMMobClickAgent;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 import com.icourt.alpha.widget.manager.TimerManager;
 import com.icourt.api.RequestUtils;
+import com.umeng.analytics.MobclickAgent;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -361,10 +363,12 @@ public class TaskOtherListFragment extends BaseFragment implements BaseRecyclerA
             switch (view.getId()) {
                 case R.id.task_item_start_timming:
                     if (itemEntity.isTiming) {
+                        MobclickAgent.onEvent(getContext(), UMMobClickAgent.stop_timer_click_id);
                         TimerManager.getInstance().stopTimer();
                         ((ImageView) view).setImageResource(R.mipmap.icon_start_20);
                     } else {
                         ((ImageView) view).setImageResource(R.drawable.orange_side_dot_bg);
+                        MobclickAgent.onEvent(getContext(), UMMobClickAgent.start_timer_click_id);
                         TimerManager.getInstance().addTimer(getTimer(itemEntity), new Callback<TimeEntity.ItemEntity>() {
                             @Override
                             public void onResponse(Call<TimeEntity.ItemEntity> call, Response<TimeEntity.ItemEntity> response) {

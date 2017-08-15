@@ -38,9 +38,11 @@ import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.SystemUtils;
+import com.icourt.alpha.utils.UMMobClickAgent;
 import com.icourt.alpha.view.SoftKeyboardSizeWatchLayout;
 import com.icourt.alpha.widget.manager.TimerManager;
 import com.icourt.api.RequestUtils;
+import com.umeng.analytics.MobclickAgent;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -318,8 +320,10 @@ public class SearchProjectActivity extends BaseActivity implements BaseRecyclerA
                 case R.id.task_item_start_timming:
                     if (itemEntity.isTiming) {
                         TimerManager.getInstance().stopTimer();
+                        MobclickAgent.onEvent(getContext(), UMMobClickAgent.stop_timer_click_id);
                         ((ImageView) view).setImageResource(R.mipmap.icon_start_20);
                     } else {
+                        MobclickAgent.onEvent(getContext(), UMMobClickAgent.start_timer_click_id);
                         TimerManager.getInstance().addTimer(getTimer(itemEntity));
                         ((ImageView) view).setImageResource(R.drawable.orange_side_dot_bg);
                     }

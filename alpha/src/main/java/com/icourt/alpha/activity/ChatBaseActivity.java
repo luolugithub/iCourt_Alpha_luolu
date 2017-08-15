@@ -37,6 +37,7 @@ import com.icourt.alpha.utils.IMUtils;
 import com.icourt.alpha.utils.JsonUtils;
 import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.utils.SystemUtils;
+import com.icourt.alpha.utils.UMMobClickAgent;
 import com.icourt.alpha.utils.UrlUtils;
 import com.icourt.alpha.widget.dialog.AlertListDialog;
 import com.icourt.alpha.widget.nim.GlobalMessageObserver;
@@ -55,6 +56,7 @@ import com.netease.nimlib.sdk.msg.model.RecentContact;
 import com.netease.nimlib.sdk.team.TeamService;
 import com.netease.nimlib.sdk.team.TeamServiceObserver;
 import com.netease.nimlib.sdk.team.model.Team;
+import com.umeng.analytics.MobclickAgent;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -586,6 +588,7 @@ public abstract class ChatBaseActivity
         } catch (JsonParseException e) {
             e.printStackTrace();
         }
+        MobclickAgent.onEvent(this, UMMobClickAgent.resend_im_message_click_id);
         msgPostEntity.msg_statu = Const.MSG_STATU_SENDING;
         updateCustomBody(msgPostEntity);
         getChatApi().msgAdd(RequestUtils.createJsonBody(jsonBody))
@@ -731,6 +734,7 @@ public abstract class ChatBaseActivity
                 } catch (JsonParseException e) {
                     e.printStackTrace();
                 }
+                MobclickAgent.onEvent(this, UMMobClickAgent.resend_im_message_click_id);
                 final String finalJsonBody = jsonBody;
                 Map<String, RequestBody> params = new HashMap<>();
                 params.put("platform", RequestUtils.createTextBody(msgPostEntity.platform));
@@ -1187,6 +1191,7 @@ public abstract class ChatBaseActivity
                             msgActionRevoke(customIMBody.id, customIMBody.imMessage);
                         } else if (TextUtils.equals(actionName, "转发")) {
                             showContactShareDialogFragment(customIMBody.id);
+                            MobclickAgent.onEvent(ChatBaseActivity.this, UMMobClickAgent.transpond_im_message_click_id);
                         }
                     }
                 }).show();
@@ -1210,6 +1215,7 @@ public abstract class ChatBaseActivity
         }
         if (TextUtils.isEmpty(textContent)) return;
         final String textContentFinal = textContent;
+        MobclickAgent.onEvent(ChatBaseActivity.this, UMMobClickAgent.turn_task_im_message_click_id);
         showLoadingDialog(null);
         getApi().msgConvert2Task(textContentFinal)
                 .enqueue(new SimpleCallBack<MsgConvert2Task>() {
@@ -1273,6 +1279,7 @@ public abstract class ChatBaseActivity
         } catch (JsonParseException e) {
             e.printStackTrace();
         }
+        MobclickAgent.onEvent(ChatBaseActivity.this, UMMobClickAgent.pin_im_message_click_id);
         final String finalJsonBody = jsonBody;
         getChatApi().msgAdd(RequestUtils.createJsonBody(jsonBody))
                 .enqueue(new SimpleCallBack<IMMessageCustomBody>() {
@@ -1326,6 +1333,7 @@ public abstract class ChatBaseActivity
      * @param msgId
      */
     protected final void msgActionCollectCancel(final long msgId) {
+        MobclickAgent.onEvent(ChatBaseActivity.this, UMMobClickAgent.collect_im_message_click_id);
         getChatApi().msgCollectCancel(msgId, getIMChatType(), getIMChatId())
                 .enqueue(new SimpleCallBack<Boolean>() {
                     @Override

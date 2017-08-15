@@ -35,10 +35,12 @@ import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.DensityUtil;
 import com.icourt.alpha.utils.IndexUtils;
-import com.icourt.alpha.widget.comparators.PinyinComparator;
+import com.icourt.alpha.utils.UMMobClickAgent;
 import com.icourt.alpha.view.recyclerviewDivider.SuspensionDecoration;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
+import com.icourt.alpha.widget.comparators.PinyinComparator;
 import com.icourt.alpha.widget.dialog.BottomActionDialog;
+import com.umeng.analytics.MobclickAgent;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -300,6 +302,7 @@ public class TabCustomerFragment extends BaseFragment implements BaseRecyclerAda
     public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
         CustomerEntity customerEntity = (CustomerEntity) adapter.getItem(adapter.getRealPos(position));
         if (!TextUtils.isEmpty(customerEntity.contactType)) {
+            MobclickAgent.onEvent(getContext(), UMMobClickAgent.look_client_click_id);
             //公司
             if (TextUtils.equals(customerEntity.contactType.toUpperCase(), "C")) {
                 CustomerCompanyDetailActivity.launch(getContext(), customerEntity.pkid, customerEntity.name, true);

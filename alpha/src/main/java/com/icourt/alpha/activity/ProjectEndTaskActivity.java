@@ -47,10 +47,12 @@ import com.icourt.alpha.utils.ActionConstants;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.JsonUtils;
 import com.icourt.alpha.utils.LoginInfoUtils;
+import com.icourt.alpha.utils.UMMobClickAgent;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 import com.icourt.alpha.widget.dialog.CenterMenuDialog;
 import com.icourt.alpha.widget.manager.TimerManager;
 import com.icourt.api.RequestUtils;
+import com.umeng.analytics.MobclickAgent;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -231,11 +233,12 @@ public class ProjectEndTaskActivity extends BaseActivity
             switch (view.getId()) {
                 case R.id.task_item_start_timming:
                     if (itemEntity.isTiming) {
+                        MobclickAgent.onEvent(getContext(), UMMobClickAgent.stop_timer_click_id);
                         TimerManager.getInstance().stopTimer();
                         ((ImageView) view).setImageResource(R.mipmap.icon_start_20);
                     } else {
                         showLoadingDialog(null);
-
+                        MobclickAgent.onEvent(getContext(), UMMobClickAgent.start_timer_click_id);
                         TimerManager.getInstance().addTimer(getTimer(itemEntity), new Callback<TimeEntity.ItemEntity>() {
                             @Override
                             public void onResponse(Call<TimeEntity.ItemEntity> call, Response<TimeEntity.ItemEntity> response) {
@@ -344,6 +347,7 @@ public class ProjectEndTaskActivity extends BaseActivity
                             break;
                         case R.mipmap.time_start_orange_task://开始计时
                             if (!taskItemEntity.isTiming) {
+                                MobclickAgent.onEvent(getContext(), UMMobClickAgent.start_timer_click_id);
                                 TimerManager.getInstance().addTimer(getTimer(taskItemEntity), new Callback<TimeEntity.ItemEntity>() {
                                     @Override
                                     public void onResponse(Call<TimeEntity.ItemEntity> call, Response<TimeEntity.ItemEntity> response) {
@@ -365,6 +369,7 @@ public class ProjectEndTaskActivity extends BaseActivity
                             break;
                         case R.mipmap.time_stop_orange_task://停止计时
                             if (taskItemEntity.isTiming) {
+                                MobclickAgent.onEvent(getContext(), UMMobClickAgent.stop_timer_click_id);
                                 TimerManager.getInstance().stopTimer();
                                 updateMeauItem(entity, true, menuAdapter);
                             }
@@ -607,6 +612,7 @@ public class ProjectEndTaskActivity extends BaseActivity
      */
     private void deleteTask(TaskEntity.TaskItemEntity itemEntity) {
         showLoadingDialog(null);
+        MobclickAgent.onEvent(this, UMMobClickAgent.delete_task_click_id);
         getApi().taskDelete(itemEntity.id).enqueue(new SimpleCallBack<JsonElement>() {
             @Override
             public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {

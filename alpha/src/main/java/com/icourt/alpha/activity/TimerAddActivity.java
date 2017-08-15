@@ -37,8 +37,10 @@ import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.JsonUtils;
 import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.utils.SystemUtils;
+import com.icourt.alpha.utils.UMMobClickAgent;
 import com.icourt.alpha.view.CircleTimerView;
 import com.icourt.api.RequestUtils;
+import com.umeng.analytics.MobclickAgent;
 
 import java.io.Serializable;
 import java.util.Calendar;
@@ -399,6 +401,7 @@ public class TimerAddActivity extends BaseTimerActivity
                 jsonObject.remove("timingCount");
             }
             showLoadingDialog(null);
+            MobclickAgent.onEvent(getContext(), UMMobClickAgent.creat_timer_click_id);
             getApi().timingAdd(RequestUtils.createJsonBody(jsonObject.toString()))
                     .enqueue(new SimpleCallBack<String>() {
                         @Override

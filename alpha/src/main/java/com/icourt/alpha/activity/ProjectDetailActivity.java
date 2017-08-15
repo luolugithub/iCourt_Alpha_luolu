@@ -27,7 +27,9 @@ import com.icourt.alpha.fragment.ProjectTimeFragment;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
+import com.icourt.alpha.utils.UMMobClickAgent;
 import com.icourt.alpha.widget.dialog.BottomActionDialog;
+import com.umeng.analytics.MobclickAgent;
 
 import org.greenrobot.eventbus.EventBus;
 
@@ -95,6 +97,7 @@ public class ProjectDetailActivity extends BaseActivity implements OnFragmentCal
     @Override
     protected void initView() {
         super.initView();
+        MobclickAgent.onEvent(this, UMMobClickAgent.look_project_click_id);
         projectId = getIntent().getStringExtra("projectId");
         projectName = getIntent().getStringExtra("projectName");
         myStar = getIntent().getIntExtra("myStar", -1);
@@ -209,6 +212,7 @@ public class ProjectDetailActivity extends BaseActivity implements OnFragmentCal
                 titleAction.setVisibility(View.INVISIBLE);
                 break;
             case 3:
+                MobclickAgent.onEvent(this, UMMobClickAgent.look_document_click_id);
                 if (isCanlookAddDocument) {
                     titleAction.setImageResource(R.mipmap.header_icon_add);
                     titleAction.setVisibility(View.VISIBLE);

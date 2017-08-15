@@ -27,12 +27,13 @@ import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.LoginInfoUtils;
 import com.icourt.alpha.utils.StringUtils;
+import com.icourt.alpha.utils.UMMobClickAgent;
 import com.icourt.alpha.widget.dialog.CenterMenuDialog;
 import com.icourt.alpha.widget.manager.TimerManager;
 import com.icourt.api.RequestUtils;
+import com.umeng.analytics.MobclickAgent;
 
 import org.greenrobot.eventbus.EventBus;
-import org.w3c.dom.Text;
 
 import java.util.Arrays;
 import java.util.Calendar;
@@ -41,6 +42,8 @@ import java.util.List;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
+
+import static com.umeng.socialize.utils.ContextUtil.getContext;
 
 /**
  * Description
@@ -182,9 +185,11 @@ public class TaskSimpleAdapter extends MultiSelectRecyclerAdapter<TaskEntity.Tas
                 break;
             case R.id.task_item_timming_iv:
                 if (itemEntity.isTiming) {
+                    MobclickAgent.onEvent(getContext(), UMMobClickAgent.stop_timer_click_id);
                     TimerManager.getInstance().stopTimer();
                 } else {
                     showLoadingDialog(view.getContext(), null);
+                    MobclickAgent.onEvent(getContext(), UMMobClickAgent.start_timer_click_id);
                     TimerManager.getInstance().addTimer(getTimer(itemEntity), new Callback<TimeEntity.ItemEntity>() {
                         @Override
                         public void onResponse(Call<TimeEntity.ItemEntity> call, Response<TimeEntity.ItemEntity> response) {
@@ -438,6 +443,7 @@ public class TaskSimpleAdapter extends MultiSelectRecyclerAdapter<TaskEntity.Tas
                             break;
                         case R.mipmap.time_stop_orange_task://停止计时
                             if (taskItemEntity.isTiming) {
+                                MobclickAgent.onEvent(getContext(), UMMobClickAgent.stop_timer_click_id);
                                 TimerManager.getInstance().stopTimer();
                                 entity.itemIconRes = R.mipmap.time_start_orange_task;
                                 entity.itemTitle = "开始计时";
@@ -510,6 +516,7 @@ public class TaskSimpleAdapter extends MultiSelectRecyclerAdapter<TaskEntity.Tas
      */
     private void deleteTask(Context context, TaskEntity.TaskItemEntity itemEntity) {
         showLoadingDialog(context, null);
+        MobclickAgent.onEvent(context, UMMobClickAgent.delete_task_click_id);
         getApi().taskDelete(itemEntity.id).enqueue(new SimpleCallBack<JsonElement>() {
             @Override
             public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
