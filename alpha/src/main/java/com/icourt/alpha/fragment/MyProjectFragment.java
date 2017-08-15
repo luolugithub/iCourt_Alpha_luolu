@@ -168,6 +168,8 @@ public class MyProjectFragment extends BaseFragment {
                             stringBuilder.append(String.valueOf(integer)).append(",");
                         }
                         matterType = stringBuilder.substring(0, stringBuilder.length() - 1);
+                    }else{
+                        matterType = "";
                     }
                 }
             }

@@ -1295,6 +1295,15 @@ public interface ApiAlphaService {
      */
     @DELETE("api/v2/taskflow/clearTaskFlowByIds")
     Call<ResEntity<JsonElement>> clearDeletedTask(@Query("ids") List<String> ids);
+
+    /**
+     * 获取任务下计时列表
+     * 文档地址：https://dev.alphalawyer.cn/ilaw/swagger/index.html#!/timing-api/findTimingByTaskIdUsingGET
+     * @param taskId
+     * @return
+     */
+    @GET("api/v2/timing/timing/findByTaskId")
+    Call<ResEntity<TimeEntity>> taskTimesByIdQuery(@Query("taskId") String taskId);
 }
 
 

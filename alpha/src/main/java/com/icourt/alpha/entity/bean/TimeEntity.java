@@ -2,6 +2,7 @@ package com.icourt.alpha.entity.bean;
 
 import android.text.TextUtils;
 
+import com.google.gson.annotations.SerializedName;
 import com.icourt.alpha.widget.comparators.ILongFieldEntity;
 
 import java.io.Serializable;
@@ -20,7 +21,9 @@ public class TimeEntity implements Serializable {
     public static final int TIMER_STATE_END_TYPE = 1;//未计时type
 
     public String totalDate;
+    @SerializedName(value = "items", alternate = {"timing_list"})
     public List<ItemEntity> items;
+    @SerializedName(value = "timingSum", alternate = {"timing_sum"})
     public long timingSum;
 
 

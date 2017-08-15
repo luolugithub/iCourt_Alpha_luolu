@@ -114,6 +114,7 @@
             android:orientation="horizontal">
 
             <LinearLayout
+                android:id="@+id/task_time_sum_layout"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:background="@drawable/gray_circle_bg"

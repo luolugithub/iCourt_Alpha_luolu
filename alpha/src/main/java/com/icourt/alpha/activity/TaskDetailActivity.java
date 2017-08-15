@@ -44,6 +44,7 @@ import com.icourt.alpha.fragment.TaskAttachmentFragment;
 import com.icourt.alpha.fragment.TaskCheckItemFragment;
 import com.icourt.alpha.fragment.TaskDetailFragment;
 import com.icourt.alpha.fragment.dialogfragment.TaskAllotSelectDialogFragment;
+import com.icourt.alpha.fragment.dialogfragment.TaskTimersDialogFragment;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
@@ -154,6 +155,8 @@ public class TaskDetailActivity extends BaseActivity
     ImageView taskUserArrowIv;
     @BindView(R.id.comment_edit_tv)
     TextView commentEditTv;
+    @BindView(R.id.task_time_sum_layout)
+    LinearLayout taskTimeSumLayout;
 //    boolean isEditTask = false;//编辑任务权限
 //    boolean isDeleteTask = false;//删除任务权限
 //    boolean isAddTime = false;//添加计时权限
@@ -231,7 +234,8 @@ public class TaskDetailActivity extends BaseActivity
             R.id.task_checkbox,
             R.id.task_user_layout,
             R.id.task_users_layout,
-            R.id.task_start_iamge})
+            R.id.task_start_iamge,
+            R.id.task_time_sum_layout})
     @Override
     public void onClick(View v) {
         super.onClick(v);
@@ -347,6 +351,11 @@ public class TaskDetailActivity extends BaseActivity
                         START_COMMENT_FORRESULT_CODE,
                         taskItemEntity.valid);
                 break;
+            case R.id.task_time_sum_layout:
+                if (!isStrat && !taskItemEntity.state && taskItemEntity.valid && taskItemEntity.timingSum > 0) {
+                    showTimersDialogFragment();
+                }
+                break;
         }
     }
 
@@ -452,8 +461,10 @@ public class TaskDetailActivity extends BaseActivity
                         if (mis > 0 && mis / 1000 / 60 <= 0) {
                             mis = 60000;
                         }
-                        if (taskItemEntity != null)
+                        if (taskItemEntity != null) {
                             taskTime.setText(getHm(taskItemEntity.timingSum + mis));
+                            taskItemEntity.timingSum += mis ;
+                        }
                     }
                 }
                 break;
@@ -652,6 +663,21 @@ public class TaskDetailActivity extends BaseActivity
         }
         if (taskItemEntity != null)
             TaskAllotSelectDialogFragment.newInstance(projectId, taskItemEntity.attendeeUsers)
+                    .show(mFragTransaction, tag);
+    }
+
+    /**
+     * 展示计时列表对话框
+     */
+    public void showTimersDialogFragment() {
+        String tag = TaskTimersDialogFragment.class.getSimpleName();
+        FragmentTransaction mFragTransaction = getSupportFragmentManager().beginTransaction();
+        Fragment fragment = getSupportFragmentManager().findFragmentByTag(tag);
+        if (fragment != null) {
+            mFragTransaction.remove(fragment);
+        }
+        if (taskItemEntity != null)
+            TaskTimersDialogFragment.newInstance(taskItemEntity)
                     .show(mFragTransaction, tag);
     }
 
