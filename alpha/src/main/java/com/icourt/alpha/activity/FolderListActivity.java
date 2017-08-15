@@ -181,6 +181,10 @@ public class FolderListActivity extends FolderBaseActivity
         context.startActivity(intent);
     }
 
+    private boolean isFromTrash() {
+        return getIntent().getBooleanExtra("isFromTrash", false);
+    }
+
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -197,13 +201,20 @@ public class FolderListActivity extends FolderBaseActivity
         setTitle(getIntent().getStringExtra("title"));
         ImageView titleActionImage = getTitleActionImage();
         if (titleActionImage != null) {
+            if (isFromTrash()) {
+                titleActionImage.setVisibility(View.INVISIBLE);
+            }
             titleActionImage.setImageResource(R.mipmap.header_icon_add);
         }
 
         ImageView titleActionImage2 = getTitleActionImage2();
         if (titleActionImage2 != null) {
+            if (isFromTrash()) {
+                titleActionImage2.setVisibility(View.INVISIBLE);
+            }
             titleActionImage2.setImageResource(R.mipmap.header_icon_more);
         }
+
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getContext());
         linearLayoutManager.setAutoMeasureEnabled(true);
         recyclerView.setLayoutManager(linearLayoutManager);
@@ -217,7 +228,8 @@ public class FolderListActivity extends FolderBaseActivity
                             }
                         },
                         false,
-                        selectedFolderDocuments));
+                        selectedFolderDocuments,
+                        isFromTrash()));
         addHeadView();
 
         addFooterView();
@@ -346,7 +358,7 @@ public class FolderListActivity extends FolderBaseActivity
             pageIndex = 1;
         }
         this.sFileToken = sfileToken;
-        if (getIntent().getBooleanExtra("isFromTrash", false)) {
+        if (isFromTrash()) {
             getSFileApi().folderTrashQuery(
                     String.format("Token %s", sfileToken),
                     getSeaFileRepoId(),
@@ -761,6 +773,9 @@ public class FolderListActivity extends FolderBaseActivity
     @Override
     public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
         if (adapter instanceof FolderDocumentAdapter) {
+
+            if (isFromTrash()) return;//回收站的文件不让点击
+
             FolderDocumentAdapter folderDocumentAdapter = (FolderDocumentAdapter) adapter;
             if (folderDocumentAdapter.isSelectable()) {
                 toggleSelect(folderDocumentAdapter, position);
@@ -772,7 +787,7 @@ public class FolderListActivity extends FolderBaseActivity
                             getSeaFileRepoId(),
                             item.name,
                             String.format("%s%s/", getSeaFileDirPath(), item.name),
-                            getIntent().getBooleanExtra("isFromTrash", false));
+                            isFromTrash());
                 } else {
                     DocumentDetailDialogFragment.show("",
                             getSupportFragmentManager());
@@ -797,10 +812,69 @@ public class FolderListActivity extends FolderBaseActivity
         if (adapter instanceof FolderDocumentAdapter) {
             switch (view.getId()) {
                 case R.id.document_expand_iv:
-                    showFolderActionMenu(adapter, position);
+                    if (isFromTrash()) {
+                        fileRevert((FolderDocumentAdapter) adapter, position);
+                    } else {
+                        showFolderActionMenu(adapter, position);
+                    }
                     break;
             }
         }
+    }
+
+    /**
+     * 文件恢复
+     *
+     * @param position
+     */
+    private void fileRevert(FolderDocumentAdapter adapter, int position) {
+        final FolderDocumentEntity item = adapter.getItem(position);
+        if (item == null) return;
+        showLoadingDialog("sfile token获取中...");
+        getSFileToken(new SimpleCallBack2<SFileTokenEntity<String>>() {
+            @Override
+            public void onSuccess(Call<SFileTokenEntity<String>> call, Response<SFileTokenEntity<String>> response) {
+                if (TextUtils.isEmpty(response.body().authToken)) {
+                    dismissLoadingDialog();
+                    showTopSnackBar("sfile authToken返回为null");
+                    return;
+                }
+                Call<JsonObject> jsonObjectCall;
+                if (item.isDir()) {
+                    jsonObjectCall = getSFileApi().folderRevert(
+                            String.format("Token %s", response.body().authToken),
+                            getSeaFileRepoId(),
+                            String.format("%s%s", item.parent_dir, item.name),
+                            item.commit_id);
+                } else {
+                    jsonObjectCall = getSFileApi().fileRevert(
+                            String.format("Token %s", response.body().authToken),
+                            getSeaFileRepoId(),
+                            String.format("%s%s", item.parent_dir, item.name),
+                            item.commit_id);
+                }
+                jsonObjectCall.enqueue(new SimpleCallBack2<JsonObject>() {
+                    @Override
+                    public void onSuccess(Call<JsonObject> call, Response<JsonObject> response) {
+                        dismissLoadingDialog();
+                        if (response.body().has("success")
+                                && response.body().get("success").getAsBoolean()) {
+                            getData(true);
+                            showTopSnackBar("文件恢复成功");
+                        } else {
+                            showTopSnackBar("文件恢复失败");
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<JsonObject> call, Throwable t) {
+                        dismissLoadingDialog();
+                        super.onFailure(call, t);
+                    }
+                });
+            }
+        });
+
     }
 
     /**

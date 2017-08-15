@@ -37,6 +37,7 @@ public class FolderDocumentEntity implements Serializable, IFilterEntity {
      */
     @SerializedName(value = "id", alternate = {"obj_id"})
     public String id;
+    public String commit_id;
     public long lock_time;
 
     @SerializedName(value = "name", alternate = {"obj_name"})
@@ -57,6 +58,8 @@ public class FolderDocumentEntity implements Serializable, IFilterEntity {
 
     @JsonAdapter(LongTypeAdapter.class)
     public long size;
+
+    public String parent_dir;
 
     public boolean isDir() {
         return isDir;

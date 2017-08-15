@@ -20,6 +20,7 @@ import retrofit2.http.GET;
 import retrofit2.http.Header;
 import retrofit2.http.Multipart;
 import retrofit2.http.POST;
+import retrofit2.http.PUT;
 import retrofit2.http.PartMap;
 import retrofit2.http.Path;
 import retrofit2.http.Query;
@@ -303,4 +304,36 @@ public interface ApiSFileService {
                                                                         @Path("seaFileRepoId") String fromRepoId,
                                                                         @Query("path") String p,
                                                                         @Query("per_page") int per_page);
+
+    /**
+     * 文件恢复
+     *
+     * @param authToken
+     * @param fromRepoId
+     * @param p
+     * @param commit_id
+     * @return
+     */
+    @PUT("api2/repos/{seaFileRepoId}/file/revert/")
+    @FormUrlEncoded
+    Call<JsonObject> fileRevert(@Header("Authorization") String authToken,
+                                @Path("seaFileRepoId") String fromRepoId,
+                                @Field("p") String p,
+                                @Field("commit_id") String commit_id);
+
+    /**
+     * 文件夹恢复
+     *
+     * @param authToken
+     * @param fromRepoId
+     * @param p
+     * @param commit_id
+     * @return
+     */
+    @PUT("api2/repos/{seaFileRepoId}/dir/revert/")
+    @FormUrlEncoded
+    Call<JsonObject> folderRevert(@Header("Authorization") String authToken,
+                                  @Path("seaFileRepoId") String fromRepoId,
+                                  @Field("p") String p,
+                                  @Field("commit_id") String commit_id);
 }

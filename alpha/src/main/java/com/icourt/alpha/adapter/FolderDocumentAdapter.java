@@ -32,14 +32,17 @@ public class FolderDocumentAdapter extends SFileImgBaseAdapter<FolderDocumentEnt
     private Set<FolderDocumentEntity> selectedFolderDocuments;
     @Const.AdapterViewType
     int adapterViewType;
+    boolean isFromTrash;
 
     public FolderDocumentAdapter(@Const.AdapterViewType int adapterViewType,
                                  ISeaFileImageLoader seaFileImageLoader,
                                  boolean selectable,
-                                 Set<FolderDocumentEntity> selectedFolderDocuments) {
+                                 Set<FolderDocumentEntity> selectedFolderDocuments,
+                                 boolean isFromTrash) {
         super(seaFileImageLoader, selectable);
         this.adapterViewType = adapterViewType;
         this.selectedFolderDocuments = selectedFolderDocuments;
+        this.isFromTrash=isFromTrash;
     }
 
 
@@ -143,6 +146,7 @@ public class FolderDocumentAdapter extends SFileImgBaseAdapter<FolderDocumentEnt
                         setFileTypeIcon(document_type_iv, folderDocumentEntity.name);
                     }
                 }
+                document_expand_iv.setImageResource(isFromTrash ? R.mipmap.restore : R.mipmap.ic_open_menu);
                 document_expand_iv.setVisibility(isSelectable() ? View.GONE : View.VISIBLE);
             }
             break;

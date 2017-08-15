@@ -27,14 +27,17 @@ public class FolderDocumentWrapAdapter
     int adapterViewType;
 
     private Set<FolderDocumentEntity> selectedFolderDocuments;
+    boolean isFromTrash;
 
     public FolderDocumentWrapAdapter(@Const.AdapterViewType int adapterViewType,
                                      ISeaFileImageLoader seaFileImageLoader,
                                      boolean selectable,
-                                     Set<FolderDocumentEntity> selectedFolderDocuments) {
+                                     Set<FolderDocumentEntity> selectedFolderDocuments,
+                                     boolean isFromTrash) {
         super(seaFileImageLoader, selectable);
         this.adapterViewType = adapterViewType;
         this.selectedFolderDocuments = selectedFolderDocuments;
+        this.isFromTrash = isFromTrash;
     }
 
 
@@ -83,7 +86,8 @@ public class FolderDocumentWrapAdapter
                     folderDocumentAdapter = new FolderDocumentAdapter(adapterViewType,
                             seaFileImageLoader,
                             isSelectable(),
-                            selectedFolderDocuments));
+                            selectedFolderDocuments,
+                            isFromTrash));
         } else {
             folderDocumentAdapter.setAdapterViewType(adapterViewType);
             folderDocumentAdapter.setSelectable(isSelectable());
