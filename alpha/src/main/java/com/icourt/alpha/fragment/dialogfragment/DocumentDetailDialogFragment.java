@@ -21,8 +21,8 @@ import android.widget.TextView;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.baseadapter.BaseFragmentAdapter;
 import com.icourt.alpha.base.BaseDialogFragment;
-import com.icourt.alpha.fragment.AtMeFragment;
-import com.icourt.alpha.fragment.ContactListFragment;
+import com.icourt.alpha.fragment.FileLinkFragment;
+import com.icourt.alpha.fragment.FileVersionListFragment;
 
 import java.util.Arrays;
 
@@ -63,7 +63,8 @@ public class DocumentDetailDialogFragment extends BaseDialogFragment {
     Unbinder unbinder;
     BaseFragmentAdapter baseFragmentAdapter;
 
-    public static void show(@NonNull String documentId,
+    public static void show(@NonNull String fromRepoId,
+                            String fromRepoFilePath,
                             @NonNull FragmentManager fragmentManager) {
         if (fragmentManager == null) return;
         String tag = DocumentDetailDialogFragment.class.getSimpleName();
@@ -72,14 +73,17 @@ public class DocumentDetailDialogFragment extends BaseDialogFragment {
         if (fragment != null) {
             mFragTransaction.remove(fragment);
         }
-        show(newInstance(documentId), tag, mFragTransaction);
+        show(newInstance(fromRepoId, fromRepoFilePath), tag, mFragTransaction);
     }
 
 
-    public static DocumentDetailDialogFragment newInstance(@NonNull String documentId) {
+    public static DocumentDetailDialogFragment newInstance(
+            String fromRepoId,
+            String fromRepoFilePath) {
         DocumentDetailDialogFragment fragment = new DocumentDetailDialogFragment();
         Bundle args = new Bundle();
-        args.putString("documentId", documentId);
+        args.putString("fromRepoId", fromRepoId);
+        args.putString("fromRepoFilePath", fromRepoFilePath);
         fragment.setArguments(args);
         return fragment;
     }
@@ -108,8 +112,8 @@ public class DocumentDetailDialogFragment extends BaseDialogFragment {
         tabLayout.setupWithViewPager(viewPager);
         baseFragmentAdapter.bindTitle(true, Arrays.asList("历史版本", "下载链接"));
         baseFragmentAdapter.bindData(true,
-                Arrays.asList(AtMeFragment.newInstance(),
-                        ContactListFragment.newInstance()));
+                Arrays.asList(FileVersionListFragment.newInstance(getArguments().getString("fromRepoId", ""), getArguments().getString("fromRepoFilePath", "")),
+                        FileLinkFragment.newInstance(getArguments().getString("fromRepoId", ""), getArguments().getString("fromRepoFilePath", ""))));
     }
 
     @OnClick({R.id.titleAction})

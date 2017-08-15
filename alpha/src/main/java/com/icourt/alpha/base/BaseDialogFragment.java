@@ -106,8 +106,10 @@ public abstract class BaseDialogFragment extends DialogFragment
     public void onStart() {
         super.onStart();
         lifecycleSubject.onNext(FragmentEvent.START);
-        Window window = getDialog().getWindow();
-        window.setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.WRAP_CONTENT);
+        if (getDialog() != null) {
+            Window window = getDialog().getWindow();
+            window.setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.WRAP_CONTENT);
+        }
     }
 
     public static void show(DialogFragment fragment,

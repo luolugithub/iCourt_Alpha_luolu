@@ -8,6 +8,7 @@ import com.icourt.alpha.entity.bean.CommentEntity;
 import com.icourt.alpha.entity.bean.ContactDeatilBean;
 import com.icourt.alpha.entity.bean.CustomerEntity;
 import com.icourt.alpha.entity.bean.DocumentRootEntity;
+import com.icourt.alpha.entity.bean.FileVersionEntity;
 import com.icourt.alpha.entity.bean.GroupBean;
 import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.icourt.alpha.entity.bean.IMMessageCustomBody;
@@ -17,6 +18,7 @@ import com.icourt.alpha.entity.bean.MsgConvert2Task;
 import com.icourt.alpha.entity.bean.PageEntity;
 import com.icourt.alpha.entity.bean.ProjectDetailEntity;
 import com.icourt.alpha.entity.bean.ProjectEntity;
+import com.icourt.alpha.entity.bean.SFileLinkInfoEntity;
 import com.icourt.alpha.entity.bean.SFileTokenEntity;
 import com.icourt.alpha.entity.bean.SearchEngineEntity;
 import com.icourt.alpha.entity.bean.SelectGroupBean;
@@ -1274,6 +1276,22 @@ public interface ApiAlphaService {
      */
     @GET("api/v2/documents/getOfficeAdmin")
     Call<String> getOfficeAdmin(@Query("userId") String userId);
+
+
+    /**
+     * 获取sfile分享链接
+     * 文档地址:https://dev.alphalawyer.cn/ilaw/swagger/index.html#!/documents-api/listPathShareLinkInfoUsingGET
+     *
+     * @param path
+     * @param repoId
+     * @param type   共享链接类型 0下载 1上传
+     * @return
+     */
+    @GET("/api/v2/documents/shareLinks")
+    Call<SFileLinkInfoEntity> fileLinkQuery(
+            @Query("repoId") String repoId,
+            @Query("path") String path,
+            @Query("type") int type);
 
 }
 

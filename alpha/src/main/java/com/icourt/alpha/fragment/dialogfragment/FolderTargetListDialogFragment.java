@@ -144,9 +144,11 @@ public class FolderTargetListDialogFragment
     @Override
     public void onStart() {
         super.onStart();
-        getDialog()
-                .getWindow()
-                .setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.MATCH_PARENT);
+        if (getDialog() != null) {
+            getDialog()
+                    .getWindow()
+                    .setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.MATCH_PARENT);
+        }
     }
 
     @Override

@@ -759,7 +759,9 @@ public class FolderListActivity extends FolderBaseActivity
                             String.format("%s%s/", getSeaFileDirPath(), item.name),
                             isFromTrash());
                 } else {
-                    DocumentDetailDialogFragment.show("",
+                    DocumentDetailDialogFragment.show(
+                            getSeaFileRepoId(),
+                            String.format("%s%s", getSeaFileDirPath(), item.name),
                             getSupportFragmentManager());
                 }
             }
@@ -862,7 +864,8 @@ public class FolderListActivity extends FolderBaseActivity
                                     getSupportFragmentManager());
                         } else {
                             DocumentDetailDialogFragment.show(
-                                    item.id,
+                                    getSeaFileRepoId(),
+                                    String.format("%s%s", getSeaFileDirPath(), item.name),
                                     getSupportFragmentManager());
                         }
                         break;

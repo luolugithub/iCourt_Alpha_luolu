@@ -4,6 +4,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.icourt.alpha.entity.bean.DocumentRootEntity;
 import com.icourt.alpha.entity.bean.FileBoxBean;
+import com.icourt.alpha.entity.bean.FileVersionCommits;
 import com.icourt.alpha.entity.bean.FolderDocumentEntity;
 import com.icourt.alpha.entity.bean.SeaFileTrashPageEntity;
 
@@ -98,10 +99,10 @@ public interface ApiSFileService {
      */
     @GET("api/v2.1/alpha-box-repos/")
     Call<List<DocumentRootEntity>> documentRootQuery(@Query("page") int page,
-            @Query("per_page") int per_page,
-            @Query("not_shared_from") String not_shared_from,
-            @Query("shared_from") String shared_from,
-            @Query("type") String type);
+                                                     @Query("per_page") int per_page,
+                                                     @Query("not_shared_from") String not_shared_from,
+                                                     @Query("shared_from") String shared_from,
+                                                     @Query("type") String type);
 
 
     /**
@@ -126,7 +127,7 @@ public interface ApiSFileService {
      * 资料库更改名字
      *
      * @param name
-     * @param op        op=rename
+     * @param op   op=rename
      * @return
      */
     @POST("api2/repos/{documentRootId}/")
@@ -315,6 +316,7 @@ public interface ApiSFileService {
      * @return
      */
     @GET("api2/repos/{seaFileRepoId}/file/history/")
-    Call<JsonElement> fileVersionQuery(@Path("seaFileRepoId") String fromRepoId,
-                                       @Field("p") String p);
+    Call<FileVersionCommits> fileVersionQuery(@Path("seaFileRepoId") String fromRepoId,
+                                              @Query("p") String p);
+
 }
