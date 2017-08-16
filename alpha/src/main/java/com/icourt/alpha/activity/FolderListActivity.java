@@ -484,6 +484,7 @@ public class FolderListActivity extends FolderBaseActivity
                                         DocumentDetailDialogFragment.show(
                                                 getSeaFileRepoId(),
                                                 getSeaFileDirPath(),
+                                                null,
                                                 getSupportFragmentManager());
                                         break;
                                 }
@@ -621,7 +622,7 @@ public class FolderListActivity extends FolderBaseActivity
                         public void onSuccess(Call<String> call, Response<String> response) {
                             if (isDestroyOrFinishing()) return;
                             dismissLoadingDialog();
-                            uploadFiles(filePaths);
+                            uploadFiles(filePaths,response.body());
                         }
 
                         @Override
@@ -639,7 +640,7 @@ public class FolderListActivity extends FolderBaseActivity
      * @param filePaths 文件路径
      * @param serverUrl 服务器路径
      */
-    private void uploadFiles(List<String> filePaths, @NonNull String serverUrl, @NonNull String sfileToken) {
+    private void uploadFiles(List<String> filePaths, @NonNull String serverUrl) {
         if (filePaths != null
                 && !filePaths.isEmpty()
                 && !TextUtils.isEmpty(serverUrl)) {
@@ -662,7 +663,7 @@ public class FolderListActivity extends FolderBaseActivity
                 params.put(RequestUtils.createStreamKey(file), RequestUtils.createStreamBody(file));
                 params.put("parent_dir", RequestUtils.createTextBody(getSeaFileDirPath()));
                 // params.put("relative_path",RequestUtils.createTextBody(""));
-                getSFileApi().sfileUploadFile(sfileToken, serverUrl, params)
+                getSFileApi().sfileUploadFile(serverUrl, params)
                         .enqueue(new SimpleCallBack2<JsonElement>() {
                             @Override
                             public void onSuccess(Call<JsonElement> call, Response<JsonElement> response) {
@@ -765,6 +766,7 @@ public class FolderListActivity extends FolderBaseActivity
                     DocumentDetailDialogFragment.show(
                             getSeaFileRepoId(),
                             String.format("%s%s", getSeaFileDirPath(), item.name),
+                            item,
                             getSupportFragmentManager());
                 }
             }
@@ -864,6 +866,7 @@ public class FolderListActivity extends FolderBaseActivity
                         DocumentDetailDialogFragment.show(
                                 getSeaFileRepoId(),
                                 String.format("%s%s", getSeaFileDirPath(), item.name),
+                                item,
                                 getSupportFragmentManager());
                         break;
                     case 1:

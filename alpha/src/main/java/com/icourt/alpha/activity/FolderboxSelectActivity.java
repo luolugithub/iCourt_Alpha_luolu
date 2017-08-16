@@ -66,18 +66,16 @@ public class FolderboxSelectActivity extends BaseActivity implements BaseRecycle
     @BindView(R.id.refreshLayout)
     RefreshLayout refreshLayout;
     ProjectFileBoxAdapter projectFileBoxAdapter;
-    String projectId, authToken, seaFileRepoId, filePath, rootName;
+    String projectId, seaFileRepoId, filePath, rootName;
     boolean isCanlookAddDocument;
 
     public static void launch(@NonNull Context context,
                               @NonNull String projectId,
-                              @NonNull String authToken,
                               @NonNull String seaFileRepoId,
                               @NonNull String filePath,
                               @NonNull String rootName) {
         if (context == null) return;
         Intent intent = new Intent(context, FolderboxSelectActivity.class);
-        intent.putExtra("authToken", authToken);
         intent.putExtra("projectId", projectId);
         intent.putExtra("seaFileRepoId", seaFileRepoId);
         intent.putExtra("filePath", filePath);
@@ -100,7 +98,6 @@ public class FolderboxSelectActivity extends BaseActivity implements BaseRecycle
         projectId = getIntent().getStringExtra("projectId");
         seaFileRepoId = getIntent().getStringExtra("seaFileRepoId");
         filePath = getIntent().getStringExtra("filePath");
-        authToken = getIntent().getStringExtra("authToken");
         rootName = getIntent().getStringExtra("rootName");
         refreshLayout.setNoticeEmpty(R.mipmap.icon_placeholder_project, "暂无文件夹");
         refreshLayout.setMoveForHorizontal(true);
@@ -183,7 +180,7 @@ public class FolderboxSelectActivity extends BaseActivity implements BaseRecycle
     @Override
     protected void getData(final boolean isRefresh) {
         super.getData(isRefresh);
-        getSFileApi().projectQueryFileBoxByDir("Token " + authToken, seaFileRepoId, rootName).enqueue(new Callback<List<FileBoxBean>>() {
+        getSFileApi().projectQueryFileBoxByDir(seaFileRepoId, rootName).enqueue(new Callback<List<FileBoxBean>>() {
             @Override
             public void onResponse(Call<List<FileBoxBean>> call, Response<List<FileBoxBean>> response) {
                 stopRefresh();
@@ -272,9 +269,17 @@ public class FolderboxSelectActivity extends BaseActivity implements BaseRecycle
         if (!TextUtils.isEmpty(fileBoxBean.type)) {
             if (TextUtils.equals("dir", fileBoxBean.type)) {
                 if (TextUtils.isEmpty(rootName)) {
-                    FolderboxSelectActivity.launch(this, projectId, authToken, seaFileRepoId, filePath, "/" + fileBoxBean.name);
+                    FolderboxSelectActivity.launch(this,
+                            projectId,
+                            seaFileRepoId,
+                            filePath,
+                            "/" + fileBoxBean.name);
                 } else {
-                    FolderboxSelectActivity.launch(this, projectId, authToken, seaFileRepoId, filePath, rootName + "/" + fileBoxBean.name);
+                    FolderboxSelectActivity.launch(this,
+                            projectId,
+                            seaFileRepoId,
+                            filePath,
+                            rootName + "/" + fileBoxBean.name);
                 }
             }
         }
@@ -293,7 +298,7 @@ public class FolderboxSelectActivity extends BaseActivity implements BaseRecycle
             return;
         }
         showLoadingDialog("正在上传...");
-        getSFileApi().projectUploadUrlQuery("Token " + authToken, seaFileRepoId).enqueue(new Callback<JsonElement>() {
+        getSFileApi().projectUploadUrlQuery(seaFileRepoId).enqueue(new Callback<JsonElement>() {
             @Override
             public void onResponse(Call<JsonElement> call, Response<JsonElement> response) {
                 if (response.body() != null) {
@@ -329,7 +334,7 @@ public class FolderboxSelectActivity extends BaseActivity implements BaseRecycle
         Map<String, RequestBody> params = new HashMap<>();
         params.put("parent_dir", TextUtils.isEmpty(rootName) ? RequestUtils.createTextBody("/") : RequestUtils.createTextBody(rootName));
         params.put(key, RequestUtils.createStreamBody(file));
-        getSFileApi().sfileUploadFile("Token " + authToken, uploadUrl, params).enqueue(new Callback<JsonElement>() {
+        getSFileApi().sfileUploadFile(uploadUrl, params).enqueue(new Callback<JsonElement>() {
             @Override
             public void onResponse(Call<JsonElement> call, Response<JsonElement> response) {
                 dismissLoadingDialog();

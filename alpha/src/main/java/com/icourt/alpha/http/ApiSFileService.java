@@ -39,45 +39,39 @@ public interface ApiSFileService {
     /**
      * 获取项目详情文档列表
      *
-     * @param authToken
      * @param seaFileRepoId
      * @return
      */
     @GET("api2/repos/{seaFileRepoId}/dir/")
-    Call<List<FileBoxBean>> projectQueryFileBoxList(@Header("Authorization") String authToken, @Path("seaFileRepoId") String seaFileRepoId);
+    Call<List<FileBoxBean>> projectQueryFileBoxList(@Path("seaFileRepoId") String seaFileRepoId);
 
     /**
      * 项目下上传文件
      *
-     * @param authToken
      * @param url
      * @param params
      * @return
      */
     @Multipart
     @POST()
-    Call<JsonElement> sfileUploadFile(@Header("Authorization") String authToken,
-                                      @Url String url,
+    Call<JsonElement> sfileUploadFile(@Url String url,
                                       @PartMap Map<String, RequestBody> params);
 
     /**
      * 获取上传文件url
      */
     @GET("api2/repos/{seaFileRepoId}/upload-link/")
-    Call<JsonElement> projectUploadUrlQuery(@Header("Authorization") String authToken,
-                                            @Path("seaFileRepoId") String seaFileRepoId);
+    Call<JsonElement> projectUploadUrlQuery(@Path("seaFileRepoId") String seaFileRepoId);
 
     /**
      * 获取项目下文档列表
      *
-     * @param authToken
      * @param seaFileRepoId
      * @param rootName
      * @return
      */
     @GET("api2/repos/{seaFileRepoId}/dir/")
-    Call<List<FileBoxBean>> projectQueryFileBoxByDir(@Header("Authorization") String authToken,
-                                                     @Path("seaFileRepoId") String seaFileRepoId,
+    Call<List<FileBoxBean>> projectQueryFileBoxByDir(@Path("seaFileRepoId") String seaFileRepoId,
                                                      @Query("p") String rootName);
 
     /**
@@ -88,7 +82,7 @@ public interface ApiSFileService {
      * @return
      */
     @GET("api2/repos/{seaFileRepoId}/file/")
-    Call<JsonElement> fileboxDownloadUrlQuery(@Header("Authorization") String authToken, @Path("seaFileRepoId") String seaFileRepoId, @Query("p") String rootName);
+    Call<JsonElement> fileboxDownloadUrlQuery(@Path("seaFileRepoId") String seaFileRepoId, @Query("p") String rootName);
 
     /**
      * 获取资料库

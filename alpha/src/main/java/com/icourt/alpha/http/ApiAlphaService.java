@@ -414,15 +414,6 @@ public interface ApiAlphaService {
     @GET("api/v2/timing/timing/findByMatterId")
     Call<ResEntity<TimeEntity>> projectQueryTimerList(@Query("matterId") String matterId, @Query("pageIndex") int pageIndex, @Query("pageSize") int pageSize);
 
-    /**
-     * 获取项目详情文档列表token
-     * <p>
-     * 文档地址：http://testpms.alphalawyer.cn/ilaw/swagger/index.html#!/documents-api/getAuthTokenUsingGET
-     *
-     * @return
-     */
-    @GET("api/v2/documents/getToken")
-    Call<JsonObject> projectQueryFileBoxToken();
 
 
     /**
@@ -1257,14 +1248,14 @@ public interface ApiAlphaService {
     /**************资料库*****************/
 
     /**
-     * sfile 资料库 文档token
+     * sfile 文档token
      * <p>
      * 文档地址：http://testpms.alphalawyer.cn/ilaw/swagger/index.html#!/documents-api/getAuthTokenUsingGET
      *
      * @return
      */
     @GET("api/v2/documents/getToken")
-    Call<SFileTokenEntity<String>> documentTokenQuery();
+    Call<SFileTokenEntity<String>> sFileTokenQuery();
 
 
     /**

@@ -83,7 +83,7 @@ public class FileBoxListActivity extends BaseActivity implements BaseRecyclerAda
     RefreshLayout refreshLayout;
 
     FileBoxBean fileBoxBean;
-    String authToken, seaFileRepoId, rootName, path;
+    String seaFileRepoId, rootName, path;
     ProjectFileBoxAdapter projectFileBoxAdapter;
     List<FileBoxBean> fileBoxBeanList;
     private List<String> firstlist;
@@ -95,11 +95,13 @@ public class FileBoxListActivity extends BaseActivity implements BaseRecyclerAda
     private static final int TIME_SORT_TYPE = 2;//按时间排序
     private static final int SIZE_SORT_TYPE = 3;//按大小排序
 
-    public static void launch(@NonNull Context context, @NonNull FileBoxBean fileBoxBean, @NonNull String authToken, @NonNull String seaFileRepoId, @NonNull String rootName) {
+    public static void launch(@NonNull Context context,
+                              @NonNull FileBoxBean fileBoxBean,
+                              @NonNull String seaFileRepoId,
+                              @NonNull String rootName) {
         if (context == null) return;
         Intent intent = new Intent(context, FileBoxListActivity.class);
         intent.putExtra("file", fileBoxBean);
-        intent.putExtra("authToken", authToken);
         intent.putExtra("seaFileRepoId", seaFileRepoId);
         intent.putExtra("rootName", rootName);
         context.startActivity(intent);
@@ -122,7 +124,6 @@ public class FileBoxListActivity extends BaseActivity implements BaseRecyclerAda
         list.add("按修改时间升序排序");
         seaFileRepoId = getIntent().getStringExtra("seaFileRepoId");
         rootName = getIntent().getStringExtra("rootName");
-        authToken = getIntent().getStringExtra("authToken");
         fileBoxBean = (FileBoxBean) getIntent().getSerializableExtra("file");
         if (fileBoxBean != null) {
             setTitle(fileBoxBean.name);
@@ -174,7 +175,7 @@ public class FileBoxListActivity extends BaseActivity implements BaseRecyclerAda
     @Override
     protected void getData(final boolean isRefresh) {
         super.getData(isRefresh);
-        getSFileApi().projectQueryFileBoxByDir("Token " + authToken, seaFileRepoId, rootName).enqueue(new Callback<List<FileBoxBean>>() {
+        getSFileApi().projectQueryFileBoxByDir(seaFileRepoId, rootName).enqueue(new Callback<List<FileBoxBean>>() {
             @Override
             public void onResponse(Call<List<FileBoxBean>> call, Response<List<FileBoxBean>> response) {
                 stopRefresh();
@@ -232,10 +233,16 @@ public class FileBoxListActivity extends BaseActivity implements BaseRecyclerAda
         FileBoxBean fileBoxBean = (FileBoxBean) adapter.getItem(position);
         if (!TextUtils.isEmpty(fileBoxBean.type)) {
             if (TextUtils.equals("file", fileBoxBean.type)) {
-                FileBoxDownloadActivity.launch(getContext(), authToken, seaFileRepoId, rootName + "/" + fileBoxBean.name, FileBoxDownloadActivity.PROJECT_DOWNLOAD_FILE_ACTION);
+                FileBoxDownloadActivity.launch(getContext(),
+                        seaFileRepoId,
+                        rootName + "/" + fileBoxBean.name,
+                        FileBoxDownloadActivity.PROJECT_DOWNLOAD_FILE_ACTION);
             }
             if (TextUtils.equals("dir", fileBoxBean.type)) {
-                FileBoxListActivity.launch(this, fileBoxBean, authToken, seaFileRepoId, rootName + "/" + fileBoxBean.name);
+                FileBoxListActivity.launch(this,
+                        fileBoxBean,
+                        seaFileRepoId,
+                        rootName + "/" + fileBoxBean.name);
             }
         }
     }
@@ -541,7 +548,7 @@ public class FileBoxListActivity extends BaseActivity implements BaseRecyclerAda
             return;
         }
         showLoadingDialog("正在上传...");
-        getSFileApi().projectUploadUrlQuery("Token " + authToken, seaFileRepoId).enqueue(new Callback<JsonElement>() {
+        getSFileApi().projectUploadUrlQuery(seaFileRepoId).enqueue(new Callback<JsonElement>() {
             @Override
             public void onResponse(Call<JsonElement> call, Response<JsonElement> response) {
                 if (response.body() != null) {
@@ -570,7 +577,7 @@ public class FileBoxListActivity extends BaseActivity implements BaseRecyclerAda
         Map<String, RequestBody> params = new HashMap<>();
         params.put("parent_dir", RequestUtils.createTextBody("/" + rootName));
         params.put(key, RequestUtils.createImgBody(new File(filePath)));
-        getSFileApi().sfileUploadFile("Token " + authToken, uploadUrl, params).enqueue(new Callback<JsonElement>() {
+        getSFileApi().sfileUploadFile(uploadUrl, params).enqueue(new Callback<JsonElement>() {
             @Override
             public void onResponse(Call<JsonElement> call, Response<JsonElement> response) {
                 dismissLoadingDialog();

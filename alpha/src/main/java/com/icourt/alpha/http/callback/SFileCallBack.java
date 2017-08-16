@@ -22,12 +22,16 @@ public abstract class SFileCallBack<T> extends SimpleCallBack2<T> {
     @CallSuper
     @Override
     public void onFailure(Call<T> call, Throwable t) {
-        if (t instanceof HttpException
-                && ((HttpException) t).code() == 403) {
-            if (LoginInfoUtils.isUserLogin()
-                    && retryCount < MAX_RETRY_COUNT) {
-                SFileTokenUtils.syncServerSFileToken();
-                retryCount++;
+        if (t instanceof HttpException) {
+            HttpException httpException = (HttpException) t;
+            if (httpException.code() == 403 || httpException.code() == 401) {
+                if (LoginInfoUtils.isUserLogin()
+                        && retryCount < MAX_RETRY_COUNT) {
+                    SFileTokenUtils.syncServerSFileToken();
+                    retryCount++;
+                }
+            } else {
+                super.onFailure(call, t);
             }
         } else {
             super.onFailure(call, t);

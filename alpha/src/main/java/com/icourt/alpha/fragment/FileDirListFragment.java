@@ -49,7 +49,7 @@ public class FileDirListFragment extends BaseFragment implements BaseRecyclerAda
     @BindView(R.id.refreshLayout)
     RefreshLayout refreshLayout;
     ProjectFileBoxAdapter projectFileBoxAdapter;
-    String projectId, authToken, seaFileRepoId, filePath, rootName;
+    String projectId, seaFileRepoId, filePath, rootName;
 
     OnFragmentCallBackListener onFragmentCallBackListener;
 
@@ -63,11 +63,10 @@ public class FileDirListFragment extends BaseFragment implements BaseRecyclerAda
         }
     }
 
-    public static FileDirListFragment newInstance(@NonNull String projectId, @NonNull String authToken, @NonNull String filePath, @NonNull String rootName, String seaFileRepoId) {
+    public static FileDirListFragment newInstance(@NonNull String projectId,  @NonNull String filePath, @NonNull String rootName, String seaFileRepoId) {
         FileDirListFragment fileDirListFragment = new FileDirListFragment();
         Bundle args = new Bundle();
         args.putString("projectId", projectId);
-        args.putString("authToken", authToken);
         args.putString("filePath", filePath);
         args.putString("rootName", rootName);
         args.putString("seaFileRepoId", seaFileRepoId);
@@ -88,7 +87,6 @@ public class FileDirListFragment extends BaseFragment implements BaseRecyclerAda
         projectId = getArguments().getString("projectId");
         seaFileRepoId = getArguments().getString("seaFileRepoId");
         filePath = getArguments().getString("filePath");
-        authToken = getArguments().getString("authToken");
         rootName = getArguments().getString("rootName");
         refreshLayout.setNoticeEmpty(R.mipmap.icon_placeholder_project, "暂无文件夹");
         refreshLayout.setMoveForHorizontal(true);
@@ -143,7 +141,7 @@ public class FileDirListFragment extends BaseFragment implements BaseRecyclerAda
     @Override
     protected void getData(final boolean isRefresh) {
         super.getData(isRefresh);
-        getSFileApi().projectQueryFileBoxByDir("Token " + authToken, seaFileRepoId, rootName).enqueue(new Callback<List<FileBoxBean>>() {
+        getSFileApi().projectQueryFileBoxByDir(seaFileRepoId, rootName).enqueue(new Callback<List<FileBoxBean>>() {
             @Override
             public void onResponse(Call<List<FileBoxBean>> call, Response<List<FileBoxBean>> response) {
                 stopRefresh();
@@ -243,7 +241,6 @@ public class FileDirListFragment extends BaseFragment implements BaseRecyclerAda
                 bundle.putString("rootName", rootName + "/" + projectFileBoxAdapter.getItem(adapter.getRealPos(position)).name);
             }
             bundle.putString("dirName", projectFileBoxAdapter.getItem(adapter.getRealPos(position)).name);
-            bundle.putString("authToken", authToken);
             bundle.putString("seaFileRepoId", seaFileRepoId);
 
             onFragmentCallBackListener.onFragmentCallBack(FileDirListFragment.this, 1, bundle);

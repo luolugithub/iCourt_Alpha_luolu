@@ -64,7 +64,7 @@ public class SFileTokenUtils {
     public static final void syncServerSFileToken() {
         RetrofitServiceFactory
                 .getAlphaApiService()
-                .documentTokenQuery()
+                .sFileTokenQuery()
                 .enqueue(new SimpleCallBack2<SFileTokenEntity<String>>() {
                     @Override
                     public void onSuccess(Call<SFileTokenEntity<String>> call, Response<SFileTokenEntity<String>> response) {

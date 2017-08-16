@@ -177,7 +177,7 @@ public class DiskListFragment extends BaseFragment implements BaseRecyclerAdapte
      * @param isRefresh
      */
     private void getSfileTokenAndgetDocument(final boolean isRefresh, final String adminId) {
-        getApi().documentTokenQuery()
+        getApi().sFileTokenQuery()
                 .enqueue(new SimpleCallBack2<SFileTokenEntity<String>>() {
                     @Override
                     public void onSuccess(Call<SFileTokenEntity<String>> call, Response<SFileTokenEntity<String>> response) {
@@ -386,7 +386,7 @@ public class DiskListFragment extends BaseFragment implements BaseRecyclerAdapte
      */
     public void getSfileToken(@NonNull SimpleCallBack2<SFileTokenEntity<String>> callBack2) {
         showLoadingDialog("sfileToken获取中...");
-        getApi().documentTokenQuery()
+        getApi().sFileTokenQuery()
                 .enqueue(callBack2);
     }
 

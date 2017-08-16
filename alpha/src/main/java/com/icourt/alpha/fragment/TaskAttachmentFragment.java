@@ -23,7 +23,6 @@ import com.icourt.alpha.R;
 import com.icourt.alpha.activity.FileBoxDownloadActivity;
 import com.icourt.alpha.adapter.TaskAttachmentAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
-import com.icourt.alpha.adapter.baseadapter.adapterObserver.DataChangeAdapterObserver;
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.entity.bean.TaskAttachmentEntity;
 import com.icourt.alpha.entity.event.TaskActionEvent;
@@ -378,7 +377,10 @@ public class TaskAttachmentFragment extends BaseFragment implements BaseRecycler
         if (hasPermission) {
             TaskAttachmentEntity entity = (TaskAttachmentEntity) adapter.getItem(position);
             if (entity.pathInfoVo != null)
-                FileBoxDownloadActivity.launch(getContext(), null, entity.pathInfoVo.repoId, entity.pathInfoVo.filePath, FileBoxDownloadActivity.TASK_DOWNLOAD_FILE_ACTION);
+                FileBoxDownloadActivity.launch(getContext(),
+                        entity.pathInfoVo.repoId,
+                        entity.pathInfoVo.filePath,
+                        FileBoxDownloadActivity.TASK_DOWNLOAD_FILE_ACTION);
         } else {
             showTopSnackBar("对不起，您没有查看此文件的权限");
         }

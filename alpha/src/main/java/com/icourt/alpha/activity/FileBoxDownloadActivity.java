@@ -22,7 +22,6 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 import com.icourt.alpha.BuildConfig;
 import com.icourt.alpha.R;
 import com.icourt.alpha.base.BaseActivity;
@@ -68,7 +67,7 @@ public class FileBoxDownloadActivity extends BaseActivity {
     public static final int IM_DOWNLOAD_FILE_ACTION = 2;//享聊下载附件
     public static final int PROJECT_DOWNLOAD_FILE_ACTION = 3;//项目下载附件
 
-    String authToken, seaFileRepoId, rootName, fileName, filePath, imPath;
+    String seaFileRepoId, rootName, fileName, filePath, imPath;
     int action;
     @BindView(R.id.titleBack)
     ImageView titleBack;
@@ -104,18 +103,24 @@ public class FileBoxDownloadActivity extends BaseActivity {
 
     }
 
-    public static void launch(@NonNull Context context, @NonNull String authToken, @NonNull String seaFileRepoId, @NonNull String rootName, @DOWNLOAD_ACTION int action) {
+    public static void launch(@NonNull Context context,
+                              @NonNull String seaFileRepoId,
+                              @NonNull String rootName,
+                              @DOWNLOAD_ACTION int action) {
         if (context == null) return;
         if (TextUtils.isEmpty(seaFileRepoId)) return;
         Intent intent = new Intent(context, FileBoxDownloadActivity.class);
         intent.putExtra("action", action);
-        intent.putExtra("authToken", authToken);
         intent.putExtra("seaFileRepoId", seaFileRepoId);
         intent.putExtra("rootName", rootName);
         context.startActivity(intent);
     }
 
-    public static void launchIMFile(@NonNull Context context, @NonNull String path, @NonNull String seaFileRepoId, @NonNull String rootName, @DOWNLOAD_ACTION int action) {
+    public static void launchIMFile(@NonNull Context context,
+                                    @NonNull String path,
+                                    @NonNull String seaFileRepoId,
+                                    @NonNull String rootName,
+                                    @DOWNLOAD_ACTION int action) {
         if (context == null) return;
         if (TextUtils.isEmpty(seaFileRepoId)) return;
         Intent intent = new Intent(context, FileBoxDownloadActivity.class);
@@ -146,7 +151,6 @@ public class FileBoxDownloadActivity extends BaseActivity {
     protected void initView() {
         super.initView();
         action = getIntent().getIntExtra("action", -1);
-        authToken = getIntent().getStringExtra("authToken");
         imPath = getIntent().getStringExtra("path");
         seaFileRepoId = getIntent().getStringExtra("seaFileRepoId");
         rootName = getIntent().getStringExtra("rootName");
@@ -311,52 +315,12 @@ public class FileBoxDownloadActivity extends BaseActivity {
      */
     private void checkPermissionOrDownload() {
         if (checkPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-            if (TextUtils.isEmpty(authToken)) {
-                if (action == PROJECT_DOWNLOAD_FILE_ACTION || action == TASK_DOWNLOAD_FILE_ACTION) {
-                    getFileBoxToken();
-                } else if (action == IM_DOWNLOAD_FILE_ACTION) {
-                    getData(true);
-                }
-
-            } else if (!TextUtils.isEmpty(authToken) && !TextUtils.isEmpty(seaFileRepoId)) {
-                getData(true);
-            }
-
+            getData(true);
         } else {
             reqPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, "下载文件需要文件写入权限!", CODE_PERMISSION_FILE);
         }
     }
 
-    /**
-     * 获取文档token
-     */
-    private void getFileBoxToken() {
-        getApi().projectQueryFileBoxToken().enqueue(new Callback<JsonObject>() {
-            @Override
-            public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
-                if (response.code() == 200) {
-                    if (response.body() != null) {
-                        if (response.body().has("authToken")) {
-                            JsonElement element = response.body().get("authToken");
-                            if (!TextUtils.isEmpty(element.toString()) && !TextUtils.equals("null", element.toString())) {
-                                authToken = element.getAsString();
-                                getData(true);
-                            } else {
-                                onFailure(call, new retrofit2.HttpException(response));
-                            }
-                        }
-                    }
-                } else {
-                    onFailure(call, new retrofit2.HttpException(response));
-                }
-            }
-
-            @Override
-            public void onFailure(Call<JsonObject> call, Throwable throwable) {
-                showTopSnackBar("获取文档token失败");
-            }
-        });
-    }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -367,16 +331,7 @@ public class FileBoxDownloadActivity extends BaseActivity {
                 if (grantResults[0] == PackageManager.PERMISSION_DENIED) {
                     showToast("文件写入权限被拒绝!");
                 } else {
-                    if (TextUtils.isEmpty(authToken)) {
-                        if (action == PROJECT_DOWNLOAD_FILE_ACTION || action == TASK_DOWNLOAD_FILE_ACTION) {
-                            getFileBoxToken();
-                        } else if (action == IM_DOWNLOAD_FILE_ACTION) {
-                            getData(true);
-                        }
-
-                    } else if (!TextUtils.isEmpty(authToken) && !TextUtils.isEmpty(seaFileRepoId)) {
-                        getData(true);
-                    }
+                    getData(true);
                 }
                 break;
             default:
@@ -406,7 +361,7 @@ public class FileBoxDownloadActivity extends BaseActivity {
         if (p.contains("//")) {
             p = p.replace("//", "/");
         }
-        getSFileApi().fileboxDownloadUrlQuery("Token " + authToken, seaFileRepoId, p).enqueue(new Callback<JsonElement>() {
+        getSFileApi().fileboxDownloadUrlQuery(seaFileRepoId, p).enqueue(new Callback<JsonElement>() {
             @Override
             public void onResponse(Call<JsonElement> call, Response<JsonElement> response) {
                 if (response.body() != null) {

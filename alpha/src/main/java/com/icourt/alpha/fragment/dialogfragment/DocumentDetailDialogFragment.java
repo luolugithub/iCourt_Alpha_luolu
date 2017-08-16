@@ -73,10 +73,13 @@ public class DocumentDetailDialogFragment extends BaseDialogFragment {
     TabLayout tabLayout;
     @BindView(R.id.viewPager)
     ViewPager viewPager;
+    FolderDocumentEntity folderDocumentEntity;
 
     public static void show(@NonNull String fromRepoId,
                             String fromRepoFilePath,
+                            FolderDocumentEntity folderDocumentEntity,
                             @NonNull FragmentManager fragmentManager) {
+        if (folderDocumentEntity == null) return;
         if (fragmentManager == null) return;
         String tag = DocumentDetailDialogFragment.class.getSimpleName();
         FragmentTransaction mFragTransaction = fragmentManager.beginTransaction();
@@ -84,17 +87,19 @@ public class DocumentDetailDialogFragment extends BaseDialogFragment {
         if (fragment != null) {
             mFragTransaction.remove(fragment);
         }
-        show(newInstance(fromRepoId, fromRepoFilePath), tag, mFragTransaction);
+        show(newInstance(fromRepoId, fromRepoFilePath, folderDocumentEntity), tag, mFragTransaction);
     }
 
 
     public static DocumentDetailDialogFragment newInstance(
             String fromRepoId,
-            String fromRepoFilePath) {
+            String fromRepoFilePath,
+            FolderDocumentEntity folderDocumentEntity) {
         DocumentDetailDialogFragment fragment = new DocumentDetailDialogFragment();
         Bundle args = new Bundle();
         args.putString(KEY_SEA_FILE_FROM_REPO_ID, fromRepoId);
         args.putString(KEY_SEA_FILE_FROM_FILE_PATH, fromRepoFilePath);
+        args.putSerializable("data", folderDocumentEntity);
         fragment.setArguments(args);
         return fragment;
     }
@@ -109,6 +114,17 @@ public class DocumentDetailDialogFragment extends BaseDialogFragment {
 
     @Override
     protected void initView() {
+        folderDocumentEntity = (FolderDocumentEntity) getArguments().getSerializable("data");
+        if (folderDocumentEntity != null) {
+            fileTitleTv.setText(folderDocumentEntity.name);
+            fileSizeTv.setText(FileUtils.bFormat(folderDocumentEntity.size));
+            fileTypeIv.setImageResource(getFileIcon(folderDocumentEntity.name));
+            if (folderDocumentEntity.isDir()) {
+                titleContent.setText("文件夹详情");
+            } else {
+                titleContent.setText("文件详情");
+            }
+        }
         fromRepoId = getArguments().getString(KEY_SEA_FILE_FROM_REPO_ID, "");
         fromRepoFilePath = getArguments().getString(KEY_SEA_FILE_FROM_FILE_PATH, "");
         Dialog dialog = getDialog();
@@ -151,27 +167,6 @@ public class DocumentDetailDialogFragment extends BaseDialogFragment {
     @Override
     protected void getData(boolean isRefresh) {
         super.getData(isRefresh);
-        String dirPath = null;
-        if (!TextUtils.isEmpty(fromRepoFilePath)
-                && fromRepoFilePath.endsWith("/")) {
-            dirPath = fromRepoFilePath.substring(0, fromRepoFilePath.length() - 1);
-        } else {
-            dirPath = fromRepoFilePath;
-        }
-        getSFileApi().fileDetailsQuery(fromRepoId, dirPath)
-                .enqueue(new SFileCallBack<FolderDocumentEntity>() {
-                    @Override
-                    public void onSuccess(Call<FolderDocumentEntity> call, Response<FolderDocumentEntity> response) {
-                        fileTitleTv.setText(response.body().name);
-                        fileSizeTv.setText(FileUtils.bFormat(response.body().size));
-                        fileTypeIv.setImageResource(getFileIcon(response.body().name));
-                        if (response.body().isDir()) {
-                            titleContent.setText("文件夹详情");
-                        } else {
-                            titleContent.setText("文件详情");
-                        }
-                    }
-                });
         getSFileApi().fileVersionQuery(fromRepoId, fromRepoFilePath)
                 .enqueue(new SFileCallBack<FileVersionCommits>() {
                     @Override

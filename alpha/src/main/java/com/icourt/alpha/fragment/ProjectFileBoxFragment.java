@@ -82,7 +82,6 @@ public class ProjectFileBoxFragment extends BaseFragment implements BaseRecycler
 
     ProjectFileBoxAdapter projectFileBoxAdapter;
     String projectId;
-    String authToken;//文档仓库token
     String seaFileRepoId;//文档根目录id
     String path;
     List<FileBoxBean> fileBoxBeanList;
@@ -142,10 +141,10 @@ public class ProjectFileBoxFragment extends BaseFragment implements BaseRecycler
             public void onRefresh(boolean isPullDown) {
                 super.onRefresh(isPullDown);
                 if (hasReadWritePms || hasReadPms) {
-                    if (!TextUtils.isEmpty(authToken) && !TextUtils.isEmpty(seaFileRepoId)) {
+                    if (!TextUtils.isEmpty(seaFileRepoId)) {
                         getData(true);
                     } else {
-                        getFileBoxToken();
+                        getDocumentId();
                     }
                 } else {
                     stopRefresh();
@@ -193,37 +192,6 @@ public class ProjectFileBoxFragment extends BaseFragment implements BaseRecycler
     }
 
     /**
-     * 获取文档token
-     */
-    private void getFileBoxToken() {
-        getApi().projectQueryFileBoxToken().enqueue(new Callback<JsonObject>() {
-            @Override
-            public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
-                if (response.code() == 200) {
-                    if (response.body() != null) {
-                        if (response.body().has("authToken")) {
-                            JsonElement element = response.body().get("authToken");
-                            if (!TextUtils.isEmpty(element.toString()) && !TextUtils.equals("null", element.toString())) {
-                                authToken = element.getAsString();
-                                if (!TextUtils.isEmpty(authToken)) getDocumentId();
-                            } else {
-                                onFailure(call, new HttpException(response));
-                            }
-                        }
-                    }
-                } else {
-                    onFailure(call, new HttpException(response));
-                }
-            }
-
-            @Override
-            public void onFailure(Call<JsonObject> call, Throwable throwable) {
-                showTopSnackBar("获取文档token失败");
-            }
-        });
-    }
-
-    /**
      * 获取根目录id
      */
     private void getDocumentId() {
@@ -260,8 +228,8 @@ public class ProjectFileBoxFragment extends BaseFragment implements BaseRecycler
 
     @Override
     protected void getData(final boolean isRefresh) {
-        if (!TextUtils.isEmpty(authToken) && !TextUtils.isEmpty(seaFileRepoId)) {
-            getSFileApi().projectQueryFileBoxList("Token " + authToken, seaFileRepoId).enqueue(new Callback<List<FileBoxBean>>() {
+        if (!TextUtils.isEmpty(seaFileRepoId)) {
+            getSFileApi().projectQueryFileBoxList(seaFileRepoId).enqueue(new Callback<List<FileBoxBean>>() {
                 @Override
                 public void onResponse(Call<List<FileBoxBean>> call, Response<List<FileBoxBean>> response) {
                     stopRefresh();
@@ -462,10 +430,16 @@ public class ProjectFileBoxFragment extends BaseFragment implements BaseRecycler
         FileBoxBean fileBoxBean = (FileBoxBean) adapter.getItem(position);
         if (!TextUtils.isEmpty(fileBoxBean.type)) {
             if (TextUtils.equals("file", fileBoxBean.type)) {
-                FileBoxDownloadActivity.launch(getContext(), authToken, seaFileRepoId, fileBoxBean.name, FileBoxDownloadActivity.PROJECT_DOWNLOAD_FILE_ACTION);
+                FileBoxDownloadActivity.launch(getContext(),
+                        seaFileRepoId,
+                        fileBoxBean.name,
+                        FileBoxDownloadActivity.PROJECT_DOWNLOAD_FILE_ACTION);
             }
             if (TextUtils.equals("dir", fileBoxBean.type)) {
-                FileBoxListActivity.launch(getContext(), fileBoxBean, authToken, seaFileRepoId, fileBoxBean.name);
+                FileBoxListActivity.launch(getContext(),
+                        fileBoxBean,
+                        seaFileRepoId,
+                        fileBoxBean.name);
             }
         }
     }
@@ -567,7 +541,7 @@ public class ProjectFileBoxFragment extends BaseFragment implements BaseRecycler
             return;
         }
         showLoadingDialog("正在上传...");
-        getSFileApi().projectUploadUrlQuery("Token " + authToken, seaFileRepoId).enqueue(new Callback<JsonElement>() {
+        getSFileApi().projectUploadUrlQuery(seaFileRepoId).enqueue(new Callback<JsonElement>() {
             @Override
             public void onResponse(Call<JsonElement> call, Response<JsonElement> response) {
                 if (response.body() != null) {
@@ -604,7 +578,7 @@ public class ProjectFileBoxFragment extends BaseFragment implements BaseRecycler
         Map<String, RequestBody> params = new HashMap<>();
         params.put("parent_dir", RequestUtils.createTextBody("/"));
         params.put(key, RequestUtils.createImgBody(new File(filePath)));
-        getSFileApi().sfileUploadFile("Token " + authToken, uploadUrl, params).enqueue(new Callback<JsonElement>() {
+        getSFileApi().sfileUploadFile(uploadUrl, params).enqueue(new Callback<JsonElement>() {
 
             @Override
             public void onResponse(Call<JsonElement> call, Response<JsonElement> response) {
