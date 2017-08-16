@@ -1,5 +1,9 @@
 package com.icourt.alpha.entity.bean;
 
+import android.text.TextUtils;
+
+import com.icourt.alpha.BuildConfig;
+
 /**
  * Description  注意:优先officeShareLink 如果officeShareLink==null 拼接:shareLinkId
  * Company Beijing icourt
@@ -31,4 +35,24 @@ public class SFileLinkInfoEntity {
     public int useNum;
     public long expireTime;
     public String officeShareLink;
+
+    public boolean isNoLink() {
+        return TextUtils.isEmpty(officeShareLink)
+                && TextUtils.isEmpty(shareLinkId);
+    }
+
+    /**
+     * 真正的外链
+     *
+     * @return
+     */
+    public String getRealShareLink() {
+        if (!TextUtils.isEmpty(officeShareLink)) {
+            return officeShareLink;
+        } else {
+            return BuildConfig.API_URL
+                    .replace("ilaw/", "").concat("#withoutlo/sharelink/")
+                    .concat(shareLinkId);
+        }
+    }
 }

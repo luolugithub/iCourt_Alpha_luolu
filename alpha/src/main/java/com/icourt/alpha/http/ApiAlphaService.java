@@ -1287,7 +1287,7 @@ public interface ApiAlphaService {
      * @param type   共享链接类型 0下载 1上传
      * @return
      */
-    @GET("/api/v2/documents/shareLinks")
+    @GET("api/v2/documents/shareLinks")
     Call<SFileLinkInfoEntity> fileLinkQuery(
             @Query("repoId") String repoId,
             @Query("path") String path,
