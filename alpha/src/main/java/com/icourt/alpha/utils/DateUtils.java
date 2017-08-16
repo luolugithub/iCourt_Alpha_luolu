@@ -292,6 +292,15 @@ public class DateUtils {
      * @param milliseconds
      * @return
      */
+    public static String getyyyy_MM_dd(long milliseconds) {
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy_MM_dd");
+        return formatter.format(milliseconds);
+    }
+
+    /**
+     * @param milliseconds
+     * @return
+     */
     public static String getyyyyMMddHHmm(long milliseconds) {
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm");
         return formatter.format(milliseconds);

@@ -93,7 +93,6 @@ public class DocumentDetailDialogFragment extends BaseDialogFragment {
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = super.onCreateView(R.layout.dialog_fragment_folder_document_detail, inflater, container, savedInstanceState);
         unbinder = ButterKnife.bind(this, view);
-
         return view;
     }
 
@@ -112,8 +111,11 @@ public class DocumentDetailDialogFragment extends BaseDialogFragment {
         tabLayout.setupWithViewPager(viewPager);
         baseFragmentAdapter.bindTitle(true, Arrays.asList("历史版本", "下载链接"));
         baseFragmentAdapter.bindData(true,
-                Arrays.asList(FileVersionListFragment.newInstance(getArguments().getString("fromRepoId", ""), getArguments().getString("fromRepoFilePath", "")),
-                        FileLinkFragment.newInstance(getArguments().getString("fromRepoId", ""), getArguments().getString("fromRepoFilePath", ""))));
+                Arrays.asList(FileVersionListFragment.newInstance(getArguments().getString("fromRepoId", ""),
+                        getArguments().getString("fromRepoFilePath", "")),
+                        FileLinkFragment.newInstance(getArguments().getString("fromRepoId", ""),
+                                getArguments().getString("fromRepoFilePath", ""),
+                                0)));
     }
 
     @OnClick({R.id.titleAction})

@@ -1288,10 +1288,29 @@ public interface ApiAlphaService {
      * @return
      */
     @GET("api/v2/documents/shareLinks")
-    Call<SFileLinkInfoEntity> fileLinkQuery(
+    Call<SFileLinkInfoEntity> fileShareLinkQuery(
             @Query("repoId") String repoId,
             @Query("path") String path,
             @Query("type") int type);
+
+    /**
+     * 文档地址:https://dev.alphalawyer.cn/ilaw/swagger/index.html#!/documents-api/createShareLinkUsingPOST
+     *
+     * @param body
+     * @return
+     */
+    @POST("api/v2/documents/shareLinks")
+    Call<SFileLinkInfoEntity> fileShareLinkCreate(@Body RequestBody body);
+
+    /**
+     * 删除文件链接
+     * 文档地址:https://dev.alphalawyer.cn/ilaw/swagger/index.html#!/documents-api/deleteShareLinkUsingDELETE
+     *
+     * @param shareLinkId
+     * @return
+     */
+    @DELETE("api/v2/documents/shareLinks/{shareLinkId}")
+    Call<ResEntity<JsonElement>> fileShareLinkDelete(@Path("shareLinkId") String shareLinkId);
 
 }
 

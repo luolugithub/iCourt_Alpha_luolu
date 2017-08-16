@@ -41,6 +41,16 @@ public class SFileLinkInfoEntity {
                 && TextUtils.isEmpty(shareLinkId);
     }
 
+
+    /**
+     * 是否需要访问密码
+     *
+     * @return
+     */
+    public boolean isNeedAccessPwd() {
+        return !TextUtils.isEmpty(password);
+    }
+
     /**
      * 真正的外链
      *
