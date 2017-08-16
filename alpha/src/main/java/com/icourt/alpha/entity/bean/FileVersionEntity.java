@@ -1,5 +1,7 @@
 package com.icourt.alpha.entity.bean;
 
+import com.icourt.alpha.widget.comparators.ILongFieldEntity;
+
 /**
  * Description
  * Company Beijing icourt
@@ -7,7 +9,7 @@ package com.icourt.alpha.entity.bean;
  * date createTime：2017/8/15
  * version 2.1.0
  */
-public class FileVersionEntity {
+public class FileVersionEntity implements ILongFieldEntity {
     /**
      * "rev_file_size": 61003,
      * "rev_file_id": "aaf6ab1ea3de4c6e225acb632a4648394583cf7d",
@@ -40,6 +42,11 @@ public class FileVersionEntity {
     public long rev_file_size;
     public String rev_file_id;
     public SFileUserInfo user_info;
+
+    @Override
+    public Long getCompareLongField() {
+        return ctime;
+    }
 
     public static class SFileUserInfo {
         public String name;

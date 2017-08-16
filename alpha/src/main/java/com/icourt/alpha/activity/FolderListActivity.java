@@ -42,7 +42,6 @@ import com.icourt.alpha.entity.bean.ItemsEntity;
 import com.icourt.alpha.entity.bean.SeaFileTrashPageEntity;
 import com.icourt.alpha.entity.event.SeaFolderEvent;
 import com.icourt.alpha.fragment.dialogfragment.DocumentDetailDialogFragment;
-import com.icourt.alpha.fragment.dialogfragment.FolderDetailDialogFragment;
 import com.icourt.alpha.fragment.dialogfragment.FolderTargetListDialogFragment;
 import com.icourt.alpha.http.callback.SFileCallBack;
 import com.icourt.alpha.http.callback.SimpleCallBack2;
@@ -482,6 +481,10 @@ public class FolderListActivity extends FolderBaseActivity
                                     case 2:
                                         break;
                                     case 3:
+                                        DocumentDetailDialogFragment.show(
+                                                getSeaFileRepoId(),
+                                                getSeaFileDirPath(),
+                                                getSupportFragmentManager());
                                         break;
                                 }
                             }
@@ -858,16 +861,10 @@ public class FolderListActivity extends FolderBaseActivity
                 }
                 switch (position) {
                     case 0:
-                        if (item.isDir()) {
-                            FolderDetailDialogFragment.show(
-                                    item.id,
-                                    getSupportFragmentManager());
-                        } else {
-                            DocumentDetailDialogFragment.show(
-                                    getSeaFileRepoId(),
-                                    String.format("%s%s", getSeaFileDirPath(), item.name),
-                                    getSupportFragmentManager());
-                        }
+                        DocumentDetailDialogFragment.show(
+                                getSeaFileRepoId(),
+                                String.format("%s%s", getSeaFileDirPath(), item.name),
+                                getSupportFragmentManager());
                         break;
                     case 1:
                         ArrayList<FolderDocumentEntity> folderDocumentEntities = new ArrayList<>();

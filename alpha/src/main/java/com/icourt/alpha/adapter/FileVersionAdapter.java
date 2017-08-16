@@ -29,8 +29,8 @@ public class FileVersionAdapter extends BaseArrayRecyclerAdapter<FileVersionEnti
         TextView file_desc_tv = holder.obtainView(R.id.file_desc_tv);
         ImageView file_restore_iv = holder.obtainView(R.id.file_restore_iv);
 
-        file_version_tv.setText(String.valueOf(fileVersionEntity.version));
-        file_title_tv.setText(DateUtils.getyyyyMMddHHmm(fileVersionEntity.ctime));
+        file_version_tv.setText(String.format("v%s", fileVersionEntity.version));
+        file_title_tv.setText(DateUtils.getyyyyMMddHHmm(fileVersionEntity.ctime * 1_000));
         file_desc_tv.setText(fileVersionEntity.user_info != null ? fileVersionEntity.user_info.name : "");
         holder.bindChildClick(file_restore_iv);
     }

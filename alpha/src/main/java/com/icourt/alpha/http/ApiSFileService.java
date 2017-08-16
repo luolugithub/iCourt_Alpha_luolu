@@ -319,5 +319,33 @@ public interface ApiSFileService {
     Call<FileVersionCommits> fileVersionQuery(@Path("seaFileRepoId") String fromRepoId,
                                               @Query("p") String p);
 
+    /**
+     * 文件版本回退
+     *
+     * @param fromRepoId
+     * @param p
+     * @param commit_id
+     * @param operation  revert
+     * @return
+     */
+    @POST("api/v2.1/repos/{seaFileRepoId}/file/")
+    @FormUrlEncoded
+    Call<JsonObject> fileRetroversion(@Path("seaFileRepoId") String fromRepoId,
+                                      @Query("p") String p,
+                                      @Field("commit_id") String commit_id,
+                                      @Field("operation") String operation);
+
+
+    /**
+     * 获取文件／文件夹详情
+     *
+     * @param fromRepoId
+     * @param p
+     * @return
+     */
+    @GET("api2/repos/{seaFileRepoId}/file/detail/")
+    Call<FolderDocumentEntity> fileDetailsQuery(@Path("seaFileRepoId") String fromRepoId,
+                                       @Query("p") String p);
+
 
 }

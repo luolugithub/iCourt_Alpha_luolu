@@ -9,12 +9,17 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.andview.refreshview.XRefreshView;
+import com.google.gson.JsonObject;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.FileVersionAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.entity.bean.FileVersionCommits;
+import com.icourt.alpha.entity.bean.FileVersionEntity;
 import com.icourt.alpha.http.callback.SFileCallBack;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
+import com.icourt.alpha.widget.comparators.LongFieldEntityComparator;
+
+import java.util.Collections;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -29,7 +34,7 @@ import retrofit2.Response;
  * date createTime：2017/8/15
  * version 2.1.0
  */
-public class FileVersionListFragment extends SeaFileBaseFragment implements BaseRecyclerAdapter.OnItemClickListener {
+public class FileVersionListFragment extends SeaFileBaseFragment implements BaseRecyclerAdapter.OnItemClickListener, BaseRecyclerAdapter.OnItemChildClickListener {
 
     protected static final String KEY_SEA_FILE_FROM_REPO_ID = "seaFileFromRepoId";//原仓库id
     protected static final String KEY_SEA_FILE_FROM_FILE_PATH = "seaFileFromFilePath";//原文件路径
@@ -73,12 +78,8 @@ public class FileVersionListFragment extends SeaFileBaseFragment implements Base
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setAdapter(fileVersionAdapter = new FileVersionAdapter());
         fileVersionAdapter.setOnItemClickListener(this);
+        fileVersionAdapter.setOnItemChildClickListener(this);
         refreshLayout.setXRefreshViewListener(new XRefreshView.SimpleXRefreshListener() {
-            @Override
-            public void onLoadMore(boolean isSilence) {
-                super.onLoadMore(isSilence);
-                getData(false);
-            }
 
             @Override
             public void onRefresh(boolean isPullDown) {
@@ -96,6 +97,21 @@ public class FileVersionListFragment extends SeaFileBaseFragment implements Base
                 .enqueue(new SFileCallBack<FileVersionCommits>() {
                     @Override
                     public void onSuccess(Call<FileVersionCommits> call, Response<FileVersionCommits> response) {
+                        if (response.body().commits != null) {
+                            try {
+                                Collections.sort(response.body().commits, new LongFieldEntityComparator<FileVersionEntity>(LongFieldEntityComparator.ORDER.DESC));
+                            } catch (Throwable e) {
+                                bugSync("排序异常", e);
+                                e.printStackTrace();
+                            }
+                            //服务器返回的version 不靠谱
+                            int size = response.body().commits.size();
+                            for (int i = 0; i < size; i++) {
+                                FileVersionEntity fileVersionEntity = response.body().commits.get(i);
+                                if (fileVersionEntity == null) continue;
+                                fileVersionEntity.version = size - i;
+                            }
+                        }
                         fileVersionAdapter.bindData(isRefresh, response.body().commits);
                         stopRefresh();
                     }
@@ -107,6 +123,7 @@ public class FileVersionListFragment extends SeaFileBaseFragment implements Base
                     }
                 });
     }
+
 
     private void stopRefresh() {
         if (refreshLayout != null) {
@@ -124,5 +141,40 @@ public class FileVersionListFragment extends SeaFileBaseFragment implements Base
 
     @Override
     public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
+    }
+
+    @Override
+    public void onItemChildClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
+        FileVersionEntity item = fileVersionAdapter.getItem(position);
+        if (item == null) return;
+        switch (view.getId()) {
+            case R.id.file_restore_iv:
+                showLoadingDialog("回退中...");
+                getSFileApi().fileRetroversion(
+                        getArguments().getString(KEY_SEA_FILE_FROM_REPO_ID),
+                        getArguments().getString(KEY_SEA_FILE_FROM_FILE_PATH),
+                        item.id,
+                        "revert")
+                        .enqueue(new SFileCallBack<JsonObject>() {
+                            @Override
+                            public void onSuccess(Call<JsonObject> call, Response<JsonObject> response) {
+                                dismissLoadingDialog();
+                                if (response.body().has("success")
+                                        && response.body().get("success").getAsBoolean()) {
+                                    showToast("回退成功");
+                                    getData(true);
+                                } else {
+                                    showToast("回退失败");
+                                }
+                            }
+
+                            @Override
+                            public void onFailure(Call<JsonObject> call, Throwable t) {
+                                dismissLoadingDialog();
+                                super.onFailure(call, t);
+                            }
+                        });
+                break;
+        }
     }
 }
