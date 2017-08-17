@@ -232,7 +232,7 @@ public class FileLinkFragment extends BaseFragment {
     private void createFileShareLink() {
         JsonObject paramJsonObject = new JsonObject();
         paramJsonObject.addProperty("createPassword", isCreatePassword());
-        paramJsonObject.addProperty("dir", getArguments().getString(KEY_SEA_FILE_FROM_REPO_ID, "").endsWith("/"));
+        paramJsonObject.addProperty("dir", getArguments().getString(KEY_SEA_FILE_FROM_FILE_PATH, "").endsWith("/"));
         paramJsonObject.addProperty("expireDays", getSelectedExpireDays());
         paramJsonObject.addProperty("path", getArguments().getString(KEY_SEA_FILE_FROM_FILE_PATH, ""));
         paramJsonObject.addProperty("repoId", getArguments().getString(KEY_SEA_FILE_FROM_REPO_ID, ""));

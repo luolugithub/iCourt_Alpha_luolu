@@ -69,6 +69,12 @@ public class BaseActivity
     private final BehaviorSubject<ActivityEvent> lifecycleSubject = BehaviorSubject.create();
     public static final String KEY_ACTIVITY_RESULT = "ActivityResult";
 
+    private Fragment currAttachFragment;
+
+    public Fragment getCurrAttachFragment() {
+        return currAttachFragment;
+    }
+
     /**
      * @return 上下文
      */
@@ -82,6 +88,13 @@ public class BaseActivity
      */
     protected final BaseActivity getContext() {
         return this;
+    }
+
+
+    @Override
+    public void onAttachFragment(Fragment fragment) {
+        currAttachFragment = fragment;
+        super.onAttachFragment(fragment);
     }
 
 

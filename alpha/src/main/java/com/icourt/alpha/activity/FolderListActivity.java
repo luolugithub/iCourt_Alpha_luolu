@@ -622,7 +622,7 @@ public class FolderListActivity extends FolderBaseActivity
                         public void onSuccess(Call<String> call, Response<String> response) {
                             if (isDestroyOrFinishing()) return;
                             dismissLoadingDialog();
-                            uploadFiles(filePaths,response.body());
+                            uploadFiles(filePaths, response.body());
                         }
 
                         @Override
@@ -863,11 +863,19 @@ public class FolderListActivity extends FolderBaseActivity
                 }
                 switch (position) {
                     case 0:
-                        DocumentDetailDialogFragment.show(
-                                getSeaFileRepoId(),
-                                String.format("%s%s", getSeaFileDirPath(), item.name),
-                                item,
-                                getSupportFragmentManager());
+                        if (item.isDir()) {
+                            DocumentDetailDialogFragment.show(
+                                    getSeaFileRepoId(),
+                                    String.format("%s%s/", getSeaFileDirPath(), item.name),
+                                    item,
+                                    getSupportFragmentManager());
+                        } else {
+                            DocumentDetailDialogFragment.show(
+                                    getSeaFileRepoId(),
+                                    String.format("%s%s", getSeaFileDirPath(), item.name),
+                                    item,
+                                    getSupportFragmentManager());
+                        }
                         break;
                     case 1:
                         ArrayList<FolderDocumentEntity> folderDocumentEntities = new ArrayList<>();

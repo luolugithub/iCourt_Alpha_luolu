@@ -182,6 +182,7 @@ public class DocumentDetailDialogFragment extends BaseDialogFragment {
                     public void onSuccess(Call<FileVersionCommits> call, Response<FileVersionCommits> response) {
                         if (response.body().commits != null) {
                             int maxVersion = response.body().commits.size();
+                            if (fileVersionTv == null) return;
                             fileVersionTv.setText(String.format("v%s", maxVersion));
                         }
                     }

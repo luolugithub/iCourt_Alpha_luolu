@@ -9,6 +9,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import com.andview.refreshview.XRefreshView;
 import com.google.gson.JsonObject;
@@ -86,7 +87,11 @@ public class FileInnerShareFragment extends BaseFragment
         headerFooterAdapter = new HeaderFooterAdapter<>(fileInnerShareAdapter = new FileInnerShareAdapter());
         fileInnerShareAdapter.setOnItemChildClickListener(this);
         View headerView = HeaderFooterAdapter.inflaterView(getContext(), R.layout.footer_add_attachment, recyclerView);
-        registerClick(headerView.findViewById(R.id.add_attachment_view));
+        TextView attachmentTv = headerView.findViewById(R.id.add_attachment_view);
+        if (attachmentTv != null) {
+            attachmentTv.setText("添加共享成员");
+        }
+        registerClick(attachmentTv);
         headerFooterAdapter.addFooter(headerView);
         recyclerView.setAdapter(headerFooterAdapter);
         refreshLayout.setXRefreshViewListener(new XRefreshView.SimpleXRefreshListener() {
@@ -137,7 +142,7 @@ public class FileInnerShareFragment extends BaseFragment
         if (fragment != null) {
             mFragTransaction.remove(fragment);
         }
-        ContactSelectDialogFragment.newInstance(null,true)
+        ContactSelectDialogFragment.newInstance(null, true)
                 .show(mFragTransaction, tag);
     }
 
