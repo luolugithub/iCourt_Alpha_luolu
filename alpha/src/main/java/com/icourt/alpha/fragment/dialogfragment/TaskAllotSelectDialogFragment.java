@@ -26,7 +26,6 @@ import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.HeaderFooterAdapter;
 import com.icourt.alpha.base.BaseDialogFragment;
 import com.icourt.alpha.entity.bean.TaskEntity;
-import com.icourt.alpha.entity.bean.TaskOwerEntity;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
@@ -37,9 +36,7 @@ import com.icourt.alpha.view.ClearEditText;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -76,7 +73,7 @@ public class TaskAllotSelectDialogFragment extends BaseDialogFragment implements
     TextView headerCommSearchCancelTv;
     @BindView(R.id.header_comm_search_input_ll)
     LinearLayout headerCommSearchInputLl;
-    List<TaskOwerEntity> searchEntites = new ArrayList<>();//搜索结果集
+    List<TaskEntity.TaskItemEntity.AttendeeUserEntity> searchEntites = new ArrayList<>();//搜索结果集
 
     public static TaskAllotSelectDialogFragment newInstance(@NonNull String projectId, List<TaskEntity.TaskItemEntity.AttendeeUserEntity> attendeeUserEntities) {
         TaskAllotSelectDialogFragment taskAllotSelectDialogFragment = new TaskAllotSelectDialogFragment();
@@ -186,15 +183,8 @@ public class TaskAllotSelectDialogFragment extends BaseDialogFragment implements
                     onFragmentCallBackListener = (OnFragmentCallBackListener) getParentFragment();
                 }
                 if (onFragmentCallBackListener != null) {
-                    List<TaskEntity.TaskItemEntity.AttendeeUserEntity> attusers = getSelectUsers();
-                    if (attusers == null) {
-                        attusers = new ArrayList<>();
-                    }
+                    List<TaskEntity.TaskItemEntity.AttendeeUserEntity> attusers = new ArrayList<>();
                     attusers.addAll(attendeeUserEntities);
-                    Set<TaskEntity.TaskItemEntity.AttendeeUserEntity> set = new LinkedHashSet();
-                    set.addAll(attusers);
-                    attusers.clear();
-                    attusers.addAll(set);
                     Bundle bunble = new Bundle();
                     bunble.putSerializable("list", (Serializable) attusers);
                     onFragmentCallBackListener.onFragmentCallBack(TaskAllotSelectDialogFragment.this, 0, bunble);
@@ -216,32 +206,14 @@ public class TaskAllotSelectDialogFragment extends BaseDialogFragment implements
         }
     }
 
-    private List<TaskEntity.TaskItemEntity.AttendeeUserEntity> getSelectUsers() {
-        List<TaskOwerEntity> owers = taskOwerListAdapter.getSelectedData();
-        if (owers != null) {
-            if (owers.size() > 0) {
-                List<TaskEntity.TaskItemEntity.AttendeeUserEntity> attusers = new ArrayList<>();
-                for (TaskOwerEntity ower : owers) {
-                    TaskEntity.TaskItemEntity.AttendeeUserEntity att = new TaskEntity.TaskItemEntity.AttendeeUserEntity();
-                    att.userId = ower.id;
-                    att.userName = ower.name;
-                    att.pic = ower.pic;
-                    attusers.add(att);
-                }
-                return attusers;
-            }
-        }
-        return null;
-    }
-
     @Override
     protected void getData(boolean isRefresh) {
         super.getData(isRefresh);
         taskOwerListAdapter.clearData();
         taskOwerListAdapter.getSelectedArray().clear();
-        getApi().taskOwerListQuery(projectId, "").enqueue(new SimpleCallBack<List<TaskOwerEntity>>() {
+        getApi().taskOwerListQuery(projectId, "").enqueue(new SimpleCallBack<List<TaskEntity.TaskItemEntity.AttendeeUserEntity>>() {
             @Override
-            public void onSuccess(Call<ResEntity<List<TaskOwerEntity>>> call, Response<ResEntity<List<TaskOwerEntity>>> response) {
+            public void onSuccess(Call<ResEntity<List<TaskEntity.TaskItemEntity.AttendeeUserEntity>>> call, Response<ResEntity<List<TaskEntity.TaskItemEntity.AttendeeUserEntity>>> response) {
                 if (response.body().result != null) {
                     taskOwerListAdapter.bindData(true, response.body().result);
                     if (attendeeUserEntities != null) {
@@ -249,7 +221,7 @@ public class TaskAllotSelectDialogFragment extends BaseDialogFragment implements
                             for (int i = 0; i < response.body().result.size(); i++) {
                                 for (TaskEntity.TaskItemEntity.AttendeeUserEntity attendeeUserEntity : attendeeUserEntities) {
                                     if (attendeeUserEntity == null) continue;
-                                    if (TextUtils.equals(attendeeUserEntity.userId, response.body().result.get(i).id)) {
+                                    if (TextUtils.equals(attendeeUserEntity.userId, response.body().result.get(i).userId)) {
                                         taskOwerListAdapter.setSelected(i, true);
                                     }
                                 }
@@ -273,22 +245,19 @@ public class TaskAllotSelectDialogFragment extends BaseDialogFragment implements
         if (taskOwerListAdapter.getData().size() <= 0) return;
 
         searchEntites.clear();
-        for (TaskOwerEntity taskOwerEntity : taskOwerListAdapter.getData()) {
-            if (taskOwerEntity.name.contains(name)) {
+        for (TaskEntity.TaskItemEntity.AttendeeUserEntity taskOwerEntity : taskOwerListAdapter.getData()) {
+            if (taskOwerEntity.userName.contains(name)) {
                 searchEntites.add(taskOwerEntity);
             }
         }
         if (searchEntites != null) {
+            taskOwerListAdapter.clearSelected();
+            taskOwerListAdapter.bindData(true, searchEntites);
             if (attendeeUserEntities != null) {
-                taskOwerListAdapter.bindData(true, searchEntites);
-                if (attendeeUserEntities.size() > 0) {
-                    for (int i = 0; i < searchEntites.size(); i++) {
-                        for (TaskEntity.TaskItemEntity.AttendeeUserEntity attendeeUserEntity : attendeeUserEntities) {
-                            if (TextUtils.equals(attendeeUserEntity.userId, searchEntites.get(i).id)) {
-                                taskOwerListAdapter.setSelected(i, true);
-                            } else {
-                                taskOwerListAdapter.setSelected(i, false);
-                            }
+                for (int i = 0; i < searchEntites.size(); i++) {
+                    for (TaskEntity.TaskItemEntity.AttendeeUserEntity taskOwerEntity : attendeeUserEntities) {
+                        if (TextUtils.equals(taskOwerEntity.userId, searchEntites.get(i).userId)) {
+                            taskOwerListAdapter.setSelected(i, true);
                         }
                     }
                 }
@@ -304,6 +273,14 @@ public class TaskAllotSelectDialogFragment extends BaseDialogFragment implements
 
     @Override
     public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
+        TaskEntity.TaskItemEntity.AttendeeUserEntity entity = taskOwerListAdapter.getItem(taskOwerListAdapter.getRealPos(position));
         taskOwerListAdapter.toggleSelected(position);
+        if (taskOwerListAdapter.isSelected(taskOwerListAdapter.getRealPos(position))) {
+            if (!attendeeUserEntities.contains(entity))
+                attendeeUserEntities.add(entity);
+        } else {
+            if (attendeeUserEntities.contains(entity))
+                attendeeUserEntities.remove(entity);
+        }
     }
 }

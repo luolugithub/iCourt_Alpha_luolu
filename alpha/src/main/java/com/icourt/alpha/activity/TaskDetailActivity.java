@@ -190,7 +190,7 @@ public class TaskDetailActivity extends BaseActivity
         super.initView();
         setTitle("");
         EventBus.getDefault().register(this);
-        MobclickAgent.onEvent(this,UMMobClickAgent.look_task_click_id);
+        MobclickAgent.onEvent(this, UMMobClickAgent.look_task_click_id);
         taskId = getIntent().getStringExtra(KEY_TASK_ID);
         baseFragmentAdapter = new BaseFragmentAdapter(getSupportFragmentManager());
         viewpager.setAdapter(baseFragmentAdapter);
@@ -286,11 +286,10 @@ public class TaskDetailActivity extends BaseActivity
                     }
                 break;
             case R.id.task_start_iamge://开始计时
-                if (isStrat){
+                if (isStrat) {
                     MobclickAgent.onEvent(getContext(), UMMobClickAgent.stop_timer_click_id);
                     TimerManager.getInstance().stopTimer();
-                }
-                else {
+                } else {
                     showLoadingDialog(null);
                     final TimeEntity.ItemEntity itemEntity = getTimer(taskItemEntity);
                     MobclickAgent.onEvent(getContext(), UMMobClickAgent.start_timer_click_id);
@@ -358,7 +357,7 @@ public class TaskDetailActivity extends BaseActivity
                         taskItemEntity.valid);
                 break;
             case R.id.task_time_sum_layout:
-                if (!isStrat && !taskItemEntity.state && taskItemEntity.valid && taskItemEntity.timingSum > 0) {
+                if (!isStrat && taskItemEntity.timingSum > 0) {
                     showTimersDialogFragment();
                 }
                 break;
@@ -469,7 +468,7 @@ public class TaskDetailActivity extends BaseActivity
                         }
                         if (taskItemEntity != null) {
                             taskTime.setText(getHm(taskItemEntity.timingSum + mis));
-                            taskItemEntity.timingSum += mis ;
+                            taskItemEntity.timingSum += mis;
                         }
                     }
                 }
@@ -717,9 +716,8 @@ public class TaskDetailActivity extends BaseActivity
                 taskCheckbox.setChecked(false);
             }
             if (!taskItemEntity.valid) {
-                taskCheckbox.setCompoundDrawablesWithIntrinsicBounds(R.mipmap.icon_back_14, 0, 0, 0);
+                taskCheckbox.setCompoundDrawablesWithIntrinsicBounds(R.mipmap.restore, 0, 0, 0);
             }
-
 
             if (myStar == TaskEntity.ATTENTIONED) {
                 titleAction.setImageResource(R.mipmap.header_icon_star_solid);

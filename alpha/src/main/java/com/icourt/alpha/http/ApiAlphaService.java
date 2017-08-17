@@ -823,8 +823,8 @@ public interface ApiAlphaService {
      * @return
      */
     @GET("api/v1/matters/attorney")
-    Call<ResEntity<List<TaskOwerEntity>>> taskOwerListQuery(@Query("id") String project,
-                                                            @Query("name") String name);
+    Call<ResEntity<List<TaskEntity.TaskItemEntity.AttendeeUserEntity>>> taskOwerListQuery(@Query("id") String project,
+                                                                       @Query("name") String name);
 
 
     /**

@@ -92,7 +92,7 @@ public class TaskItemAdapter extends BaseArrayRecyclerAdapter<TaskEntity.TaskIte
         checkBox.setChecked(taskItemEntity.state);
         if (!taskItemEntity.valid) {
             startTimmingView.setVisibility(View.GONE);
-            checkBox.setCompoundDrawablesWithIntrinsicBounds(R.mipmap.icon_back_14, 0, 0, 0);
+            checkBox.setCompoundDrawablesWithIntrinsicBounds(R.mipmap.restore, 0, 0, 0);
         }
         holder.bindChildClick(checkBox);
         holder.bindChildClick(startTimmingView);

@@ -13,4 +13,6 @@ public class BaseCustomerMsg {
 
     @Const.MSG_TYPE
     public int showType;
+
+    public String type;
 }
