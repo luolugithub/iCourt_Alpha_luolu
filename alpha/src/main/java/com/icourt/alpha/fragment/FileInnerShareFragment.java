@@ -137,7 +137,7 @@ public class FileInnerShareFragment extends BaseFragment
         if (fragment != null) {
             mFragTransaction.remove(fragment);
         }
-        ContactSelectDialogFragment.newInstance(null)
+        ContactSelectDialogFragment.newInstance(null,true)
                 .show(mFragTransaction, tag);
     }
 

@@ -65,7 +65,8 @@
                     android:id="@+id/share_permission_rw_rb"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="可读写" />
+                    android:text="可读写"
+                    android:checked="true"/>
 
                 <RadioButton
                     android:id="@+id/share_permission_r_rb"
