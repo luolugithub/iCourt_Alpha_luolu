@@ -19,6 +19,7 @@ import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.RadioButton;
 import android.widget.TextView;
 
 import com.icourt.alpha.R;
@@ -35,9 +36,9 @@ import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.utils.DensityUtil;
 import com.icourt.alpha.utils.IndexUtils;
-import com.icourt.alpha.widget.comparators.PinyinComparator;
 import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.utils.SystemUtils;
+import com.icourt.alpha.widget.comparators.PinyinComparator;
 import com.icourt.alpha.widget.filter.ListFilter;
 
 import java.util.ArrayList;
@@ -84,13 +85,27 @@ public class ContactSelectDialogFragment extends BaseDialogFragment {
     LinearLayout headerCommSearchInputLl;
     @BindView(R.id.empty_layout)
     LinearLayout emptyLayout;
+    @BindView(R.id.share_permission_rw_rb)
+    RadioButton sharePermissionRwRb;
+    @BindView(R.id.title_share_permission)
+    LinearLayout titleSharePermission;
+    @BindView(R.id.share_permission_r_rb)
+    RadioButton sharePermissionRRb;
 
-    public static ContactSelectDialogFragment newInstance(@Nullable ArrayList<GroupContactBean> selectedList) {
+    public static ContactSelectDialogFragment newInstance(
+            @Nullable ArrayList<GroupContactBean> selectedList,
+            boolean isSelectPermission) {
         ContactSelectDialogFragment contactSelectDialogFragment = new ContactSelectDialogFragment();
         Bundle args = new Bundle();
         args.putSerializable("data", selectedList);
+        args.putSerializable("isSelectPermission", isSelectPermission);
         contactSelectDialogFragment.setArguments(args);
         return contactSelectDialogFragment;
+    }
+
+    public static ContactSelectDialogFragment newInstance(
+            @Nullable ArrayList<GroupContactBean> selectedList) {
+        return newInstance(selectedList, false);
     }
 
     OnFragmentCallBackListener onFragmentCallBackListener;
@@ -208,6 +223,7 @@ public class ContactSelectDialogFragment extends BaseDialogFragment {
             }
         });
         headerCommSearchInputLl.setVisibility(View.GONE);
+        titleSharePermission.setVisibility(getArguments().getBoolean("isSelectPermission", false) ? View.VISIBLE : View.GONE);
         getData(true);
     }
 
@@ -353,6 +369,7 @@ public class ContactSelectDialogFragment extends BaseDialogFragment {
                 }
                 if (onFragmentCallBackListener != null) {
                     Bundle params = new Bundle();
+                    params.putString("permission", sharePermissionRwRb.isChecked() ? "rw" : "r");
                     params.putSerializable(KEY_FRAGMENT_RESULT, imContactAdapter.getSelectedData());
                     onFragmentCallBackListener.onFragmentCallBack(this, 0, params);
                 }

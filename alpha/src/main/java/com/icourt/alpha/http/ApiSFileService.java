@@ -6,6 +6,7 @@ import com.icourt.alpha.entity.bean.DocumentRootEntity;
 import com.icourt.alpha.entity.bean.FileBoxBean;
 import com.icourt.alpha.entity.bean.FileVersionCommits;
 import com.icourt.alpha.entity.bean.FolderDocumentEntity;
+import com.icourt.alpha.entity.bean.SFileShareUserInfo;
 import com.icourt.alpha.entity.bean.SeaFileTrashPageEntity;
 
 import java.util.List;
@@ -339,7 +340,67 @@ public interface ApiSFileService {
      */
     @GET("api2/repos/{seaFileRepoId}/file/detail/")
     Call<FolderDocumentEntity> fileDetailsQuery(@Path("seaFileRepoId") String fromRepoId,
-                                       @Query("p") String p);
+                                                @Query("p") String p);
+
+
+    /**
+     * 获取文件夹 分享的用户列表
+     *
+     * @param fromRepoId
+     * @param p
+     * @param share_type "user"
+     * @return
+     */
+    @GET("api2/repos/{seaFileRepoId}/dir/shared_items/")
+    Call<List<SFileShareUserInfo>> folderSharedUserQuery(@Path("seaFileRepoId") String fromRepoId,
+                                                         @Query("p") String p,
+                                                         @Query("share_type") String share_type);
+
+    /**
+     * 分享的用户文件夹权限
+     *
+     * @param fromRepoId
+     * @param p
+     * @param share_type "user"
+     * @return
+     */
+    @PUT("api2/repos/{seaFileRepoId}/dir/shared_items/")
+    @FormUrlEncoded
+    Call<JsonObject> folderShareUserPermission(@Path("seaFileRepoId") String fromRepoId,
+                                               @Query("p") String p,
+                                               @Field("permission") String permission,
+                                               @Field("share_type") String share_type,
+                                               @Field("username") String username);
+
+    /**
+     * 改变分享的用户文件夹权限
+     *
+     * @param fromRepoId
+     * @param p
+     * @param share_type "user"
+     * @return
+     */
+    @POST("api2/repos/{seaFileRepoId}/dir/shared_items/")
+    @FormUrlEncoded
+    Call<JsonObject> folderShareUserChangePermission(@Path("seaFileRepoId") String fromRepoId,
+                                                     @Query("p") String p,
+                                                     @Field("permission") String permission,
+                                                     @Query("share_type") String share_type,
+                                                     @Query("username") String username);
+
+    /**
+     * 删除分享的用户文件夹
+     *
+     * @param fromRepoId
+     * @param p
+     * @param share_type "user"
+     * @return
+     */
+    @DELETE("api2/repos/{seaFileRepoId}/dir/shared_items/")
+    Call<JsonObject> folderShareUserDelete(@Path("seaFileRepoId") String fromRepoId,
+                                           @Query("p") String p,
+                                           @Query("share_type") String share_type,
+                                           @Query("username") String username);
 
 
 }

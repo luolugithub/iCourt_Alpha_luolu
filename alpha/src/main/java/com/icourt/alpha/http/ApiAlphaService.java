@@ -415,7 +415,6 @@ public interface ApiAlphaService {
     Call<ResEntity<TimeEntity>> projectQueryTimerList(@Query("matterId") String matterId, @Query("pageIndex") int pageIndex, @Query("pageSize") int pageSize);
 
 
-
     /**
      * 获取项目详情文档id
      * <p>
@@ -1302,6 +1301,16 @@ public interface ApiAlphaService {
      */
     @DELETE("api/v2/documents/shareLinks/{shareLinkId}")
     Call<ResEntity<JsonElement>> fileShareLinkDelete(@Path("shareLinkId") String shareLinkId);
+
+
+    /**
+     * 获取sfile 用户账号
+     *
+     * @param path uid 或者uid,uid2,uid3 组合字符串
+     * @return
+     */
+    @GET("api/v2/documents/getUserList")
+    Call<List<String>> sfileUserInfosQuery(@Query("path") String path);
 
 }
 

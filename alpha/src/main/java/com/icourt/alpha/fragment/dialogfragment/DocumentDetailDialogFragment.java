@@ -24,6 +24,7 @@ import com.icourt.alpha.adapter.baseadapter.BaseFragmentAdapter;
 import com.icourt.alpha.base.BaseDialogFragment;
 import com.icourt.alpha.entity.bean.FileVersionCommits;
 import com.icourt.alpha.entity.bean.FolderDocumentEntity;
+import com.icourt.alpha.fragment.FileInnerShareFragment;
 import com.icourt.alpha.fragment.FileLinkFragment;
 import com.icourt.alpha.fragment.FileVersionListFragment;
 import com.icourt.alpha.http.callback.SFileCallBack;
@@ -52,7 +53,6 @@ public class DocumentDetailDialogFragment extends BaseDialogFragment {
 
     Unbinder unbinder;
     BaseFragmentAdapter baseFragmentAdapter;
-    String fromRepoId, fromRepoFilePath;
     @BindView(R.id.titleContent)
     TextView titleContent;
     @BindView(R.id.titleAction)
@@ -74,6 +74,7 @@ public class DocumentDetailDialogFragment extends BaseDialogFragment {
     @BindView(R.id.viewPager)
     ViewPager viewPager;
     FolderDocumentEntity folderDocumentEntity;
+    String fromRepoId, fromRepoFilePath;
 
     public static void show(@NonNull String fromRepoId,
                             String fromRepoFilePath,
@@ -114,19 +115,18 @@ public class DocumentDetailDialogFragment extends BaseDialogFragment {
 
     @Override
     protected void initView() {
-        folderDocumentEntity = (FolderDocumentEntity) getArguments().getSerializable("data");
-        if (folderDocumentEntity != null) {
-            fileTitleTv.setText(folderDocumentEntity.name);
-            fileSizeTv.setText(FileUtils.bFormat(folderDocumentEntity.size));
-            fileTypeIv.setImageResource(getFileIcon(folderDocumentEntity.name));
-            if (folderDocumentEntity.isDir()) {
-                titleContent.setText("文件夹详情");
-            } else {
-                titleContent.setText("文件详情");
-            }
-        }
         fromRepoId = getArguments().getString(KEY_SEA_FILE_FROM_REPO_ID, "");
         fromRepoFilePath = getArguments().getString(KEY_SEA_FILE_FROM_FILE_PATH, "");
+        folderDocumentEntity = (FolderDocumentEntity) getArguments().getSerializable("data");
+        if (folderDocumentEntity == null) return;
+        fileTitleTv.setText(folderDocumentEntity.name);
+        fileSizeTv.setText(FileUtils.bFormat(folderDocumentEntity.size));
+        fileTypeIv.setImageResource(getFileIcon(folderDocumentEntity.name));
+        if (folderDocumentEntity.isDir()) {
+            titleContent.setText("文件夹详情");
+        } else {
+            titleContent.setText("文件详情");
+        }
         Dialog dialog = getDialog();
         if (dialog != null) {
             Window window = dialog.getWindow();
@@ -138,13 +138,22 @@ public class DocumentDetailDialogFragment extends BaseDialogFragment {
         }
         viewPager.setAdapter(baseFragmentAdapter = new BaseFragmentAdapter(getChildFragmentManager()));
         tabLayout.setupWithViewPager(viewPager);
-        baseFragmentAdapter.bindTitle(true, Arrays.asList("历史版本", "下载链接"));
-        baseFragmentAdapter.bindData(true,
-                Arrays.asList(FileVersionListFragment.newInstance(getArguments().getString(KEY_SEA_FILE_FROM_REPO_ID, ""),
-                        getArguments().getString(KEY_SEA_FILE_FROM_FILE_PATH, "")),
-                        FileLinkFragment.newInstance(getArguments().getString(KEY_SEA_FILE_FROM_REPO_ID, ""),
-                                getArguments().getString(KEY_SEA_FILE_FROM_FILE_PATH, ""),
-                                0)));
+        if (folderDocumentEntity.isDir()) {
+            baseFragmentAdapter.bindTitle(true, Arrays.asList("历史版本", "内部共享", "下载链接"));
+            baseFragmentAdapter.bindData(true,
+                    Arrays.asList(FileVersionListFragment.newInstance(fromRepoId, fromRepoFilePath),
+                            FileInnerShareFragment.newInstance(fromRepoId, fromRepoFilePath),
+                            FileLinkFragment.newInstance(fromRepoId,
+                                    fromRepoFilePath,
+                                    0)));
+        } else {
+            baseFragmentAdapter.bindTitle(true, Arrays.asList("历史版本", "下载链接"));
+            baseFragmentAdapter.bindData(true,
+                    Arrays.asList(FileVersionListFragment.newInstance(fromRepoId, fromRepoFilePath),
+                            FileLinkFragment.newInstance(fromRepoId,
+                                    fromRepoFilePath,
+                                    0)));
+        }
         getData(true);
     }
 
