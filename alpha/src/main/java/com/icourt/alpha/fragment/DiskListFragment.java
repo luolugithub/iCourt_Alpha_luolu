@@ -18,10 +18,13 @@ import com.icourt.alpha.activity.FolderListActivity;
 import com.icourt.alpha.adapter.DocumentAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.base.BaseFragment;
+import com.icourt.alpha.entity.bean.DefaultRepoEntity;
 import com.icourt.alpha.entity.bean.DocumentRootEntity;
 import com.icourt.alpha.entity.bean.SFileTokenEntity;
 import com.icourt.alpha.http.callback.SFileCallBack;
+import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.callback.SimpleCallBack2;
+import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.ActionConstants;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 import com.icourt.alpha.widget.comparators.ILongFieldEntity;
@@ -57,6 +60,7 @@ public class DiskListFragment extends BaseFragment implements BaseRecyclerAdapte
     @BindView(R.id.refreshLayout)
     RefreshLayout refreshLayout;
     int pageIndex = 1;
+    String defaultRopoId;
 
     /**
      * 0： "我的资料库",
@@ -125,6 +129,17 @@ public class DiskListFragment extends BaseFragment implements BaseRecyclerAdapte
     @Override
     protected void getData(final boolean isRefresh) {
         super.getData(isRefresh);
+        getApi().repoDefaultQuery()
+                .enqueue(new SimpleCallBack<DefaultRepoEntity>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<DefaultRepoEntity>> call, Response<ResEntity<DefaultRepoEntity>> response) {
+                        if (response.body().result != null) {
+                            defaultRopoId = response.body().result.repoId;
+
+                            //TODO 我的默认资料库 不允许删除
+                        }
+                    }
+                });
         switch (getArguments().getInt("type")) {
             case 0: {
                 getDocumentRoot(isRefresh, null);
@@ -186,7 +201,7 @@ public class DiskListFragment extends BaseFragment implements BaseRecyclerAdapte
                             stopRefresh();
                             return;
                         }
-                        getDocumentRoot(isRefresh,adminId);
+                        getDocumentRoot(isRefresh, adminId);
                     }
 
                     @Override

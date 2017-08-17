@@ -24,6 +24,7 @@ import com.icourt.alpha.adapter.baseadapter.BaseFragmentAdapter;
 import com.icourt.alpha.base.BaseDialogFragment;
 import com.icourt.alpha.entity.bean.FileVersionCommits;
 import com.icourt.alpha.entity.bean.FolderDocumentEntity;
+import com.icourt.alpha.fragment.FileChangeHistoryFragment;
 import com.icourt.alpha.fragment.FileInnerShareFragment;
 import com.icourt.alpha.fragment.FileLinkFragment;
 import com.icourt.alpha.fragment.FileVersionListFragment;
@@ -139,13 +140,12 @@ public class DocumentDetailDialogFragment extends BaseDialogFragment {
         viewPager.setAdapter(baseFragmentAdapter = new BaseFragmentAdapter(getChildFragmentManager()));
         tabLayout.setupWithViewPager(viewPager);
         if (folderDocumentEntity.isDir()) {
-            baseFragmentAdapter.bindTitle(true, Arrays.asList("历史版本", "内部共享", "下载链接"));
+            baseFragmentAdapter.bindTitle(true, Arrays.asList("修改历史", "内部共享", "下载链接", "上传链接"));
             baseFragmentAdapter.bindData(true,
-                    Arrays.asList(FileVersionListFragment.newInstance(fromRepoId, fromRepoFilePath),
+                    Arrays.asList(FileChangeHistoryFragment.newInstance(fromRepoId, fromRepoFilePath),
                             FileInnerShareFragment.newInstance(fromRepoId, fromRepoFilePath),
-                            FileLinkFragment.newInstance(fromRepoId,
-                                    fromRepoFilePath,
-                                    0)));
+                            FileLinkFragment.newInstance(fromRepoId, fromRepoFilePath, 0),
+                            FileLinkFragment.newInstance(fromRepoId, fromRepoFilePath, 1)));
         } else {
             baseFragmentAdapter.bindTitle(true, Arrays.asList("历史版本", "下载链接"));
             baseFragmentAdapter.bindData(true,

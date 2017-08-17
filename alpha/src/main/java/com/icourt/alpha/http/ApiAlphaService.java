@@ -7,7 +7,9 @@ import com.icourt.alpha.entity.bean.AppVersionEntity;
 import com.icourt.alpha.entity.bean.CommentEntity;
 import com.icourt.alpha.entity.bean.ContactDeatilBean;
 import com.icourt.alpha.entity.bean.CustomerEntity;
+import com.icourt.alpha.entity.bean.DefaultRepoEntity;
 import com.icourt.alpha.entity.bean.DocumentRootEntity;
+import com.icourt.alpha.entity.bean.FileChangedHistoryEntity;
 import com.icourt.alpha.entity.bean.FileVersionEntity;
 import com.icourt.alpha.entity.bean.GroupBean;
 import com.icourt.alpha.entity.bean.GroupContactBean;
@@ -18,6 +20,7 @@ import com.icourt.alpha.entity.bean.MsgConvert2Task;
 import com.icourt.alpha.entity.bean.PageEntity;
 import com.icourt.alpha.entity.bean.ProjectDetailEntity;
 import com.icourt.alpha.entity.bean.ProjectEntity;
+import com.icourt.alpha.entity.bean.RepoMatterEntity;
 import com.icourt.alpha.entity.bean.SFileLinkInfoEntity;
 import com.icourt.alpha.entity.bean.SFileTokenEntity;
 import com.icourt.alpha.entity.bean.SearchEngineEntity;
@@ -1311,6 +1314,35 @@ public interface ApiAlphaService {
      */
     @GET("api/v2/documents/getUserList")
     Call<List<String>> sfileUserInfosQuery(@Query("path") String path);
+
+
+    /**
+     * 文件夹修改动态
+     *
+     * @return
+     */
+    @GET()
+    Call<ResEntity<List<FileChangedHistoryEntity>>> folderChangeHistory(@Url String url,
+                                                                        @Query("matterId") String matterId,
+                                                                        @Query("page") int page);
+
+
+    /**
+     * 获取seafile matteid
+     *
+     * @param seaFileRepoId
+     * @return
+     */
+    @GET("api/v2/documents/getmatter/{seaFileRepoId}")
+    Call<RepoMatterEntity> repoMatterIdQuery(@Path("seaFileRepoId") String seaFileRepoId);
+
+    /**
+     * 我的默认资料库
+     *
+     * @return
+     */
+    @GET("api/v2/library/mime/default")
+    Call<ResEntity<DefaultRepoEntity>> repoDefaultQuery();
 
 }
 
