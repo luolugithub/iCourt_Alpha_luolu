@@ -275,12 +275,18 @@ public class MessageListFragment extends BaseRecentContactFragment
             JSONObject alphaJSONObject = JsonUtils.getJSONObject(recentContact.getAttachment().toJson(false));
             if (alphaJSONObject.getInt("showType") == MSG_TYPE_ALPHA_HELPER) {
                 String contentStr = alphaJSONObject.getString("content");
-                IMMessageCustomBody imMessageCustomBody = new IMMessageCustomBody();
-                imMessageCustomBody.content = contentStr;
-                imMessageCustomBody.show_type = MSG_TYPE_ALPHA_HELPER;
-                imMessageCustomBody.ope = CHAT_TYPE_P2P;
-                imMessageCustomBody.to = recentContact.getContactId();
-                return imMessageCustomBody;
+                String type = alphaJSONObject.getString("type");
+                if (!TextUtils.isEmpty(type) && type.contains("APPRO_")) {
+                    NIMClient.getService(MsgService.class)
+                            .deleteRecentContact(recentContact);
+                } else {
+                    IMMessageCustomBody imMessageCustomBody = new IMMessageCustomBody();
+                    imMessageCustomBody.content = contentStr;
+                    imMessageCustomBody.show_type = MSG_TYPE_ALPHA_HELPER;
+                    imMessageCustomBody.ope = CHAT_TYPE_P2P;
+                    imMessageCustomBody.to = recentContact.getContactId();
+                    return imMessageCustomBody;
+                }
             } else {
                 NIMClient.getService(MsgService.class)
                         .deleteRecentContact(recentContact);

@@ -446,16 +446,22 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
     protected void getData(boolean isRefresh) {
         clearLists();
         int attentionType = 0;
+        String orderBy;
         if (type == TYPE_ALL) {
             attentionType = 0;
         } else if (type == TYPE_MY_ATTENTION) {
             attentionType = 1;
         }
+        if (stateType == 0) {
+            orderBy = "dueTime";
+        } else {
+            orderBy = "updateTime";
+        }
         getApi().taskListQuery(0,
                 getLoginUserId(),
                 stateType,
                 attentionType,
-                "dueTime",
+                orderBy,
                 1,
                 -1,
                 0).enqueue(new SimpleCallBack<TaskEntity>() {
@@ -759,7 +765,7 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
         }
     }
 
-    private void updateTimming(){
+    private void updateTimming() {
         TimeEntity.ItemEntity updateItem = TimerManager.getInstance().getTimer();
         if (updateItem != null) {
             if (taskAdapter != null) {

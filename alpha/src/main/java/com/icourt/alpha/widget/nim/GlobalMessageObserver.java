@@ -1,5 +1,7 @@
 package com.icourt.alpha.widget.nim;
 
+import android.text.TextUtils;
+
 import com.icourt.alpha.constants.Const;
 import com.icourt.alpha.entity.bean.BaseCustomerMsg;
 import com.icourt.alpha.entity.bean.IMMessageCustomBody;
@@ -81,14 +83,14 @@ public class GlobalMessageObserver implements Observer<List<IMMessage>> {
                                 switch (baseCustomerMsg.showType) {
                                     case Const.MSG_TYPE_ALPHA_HELPER:
                                         IMUtils.logIMMessage("----------->globalMessageObserver alpha:", imMessage);
-                                        if (!baseCustomerMsg.type.contains("APPRO_")) {//过滤掉审批消息
+                                        if (!TextUtils.isEmpty(baseCustomerMsg.type) && baseCustomerMsg.type.contains("APPRO_")) {//过滤掉审批消息
+                                            NIMClient.getService(MsgService.class)
+                                                    .deleteChattingHistory(imMessage);
+                                        } else {
                                             IMMessageCustomBody imBody = new IMMessageCustomBody();
                                             imBody.imMessage = imMessage;
                                             //发送给其它页面
                                             EventBus.getDefault().post(imBody);
-                                        } else {
-                                            NIMClient.getService(MsgService.class)
-                                                    .deleteChattingHistory(imMessage);
                                         }
                                         break;
                                     case Const.MSG_TYPE_ALPHA_SYNC://同步(不需要保存)
@@ -99,6 +101,11 @@ public class GlobalMessageObserver implements Observer<List<IMMessage>> {
                                             EventBus.getDefault().post(serverTimingEvent);
                                         }
                                         break;
+                                    default:
+                                        NIMClient.getService(MsgService.class)
+                                                .deleteChattingHistory(imMessage);
+                                        break;
+
                                 }
                             }
                         } catch (Exception e) {
