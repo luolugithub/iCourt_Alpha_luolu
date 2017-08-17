@@ -79,6 +79,7 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
                 getData(true);
             }
         });
+        refreshLayout.startRefresh();
     }
 
     @Override
@@ -89,6 +90,7 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
         }
         getApi().repoMatterIdQuery(getArguments().getString(KEY_SEA_FILE_FROM_REPO_ID, ""))
                 .enqueue(new SimpleCallBack2<RepoMatterEntity>() {
+
                     @Override
                     public void onSuccess(Call<RepoMatterEntity> call, Response<RepoMatterEntity> response) {
                         getApi().folderChangeHistory(
@@ -96,6 +98,16 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
                                 response.body().matterId,
                                 page)
                                 .enqueue(new SimpleCallBack<List<FileChangedHistoryEntity>>() {
+
+                                    @Override
+                                    protected void dispatchHttpSuccess(Call<ResEntity<List<FileChangedHistoryEntity>>> call, Response<ResEntity<List<FileChangedHistoryEntity>>> response) {
+                                        if (response.body() != null) {
+                                            onSuccess(call, response);
+                                        } else {
+                                            super.dispatchHttpSuccess(call, response);
+                                        }
+                                    }
+
                                     @Override
                                     public void onSuccess(Call<ResEntity<List<FileChangedHistoryEntity>>> call, Response<ResEntity<List<FileChangedHistoryEntity>>> response) {
                                         page += 1;
