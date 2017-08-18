@@ -271,14 +271,15 @@ public class MessageListFragment extends BaseRecentContactFragment
      * @return
      */
     private IMMessageCustomBody getAlphaHelper(RecentContact recentContact) {
+        JSONObject alphaJSONObject = null;
         try {
-            JSONObject alphaJSONObject = JsonUtils.getJSONObject(recentContact.getAttachment().toJson(false));
+            alphaJSONObject = JsonUtils.getJSONObject(recentContact.getAttachment().toJson(false));
             if (alphaJSONObject.getInt("showType") == MSG_TYPE_ALPHA_HELPER) {
                 String contentStr = alphaJSONObject.getString("content");
                 String type = alphaJSONObject.getString("type");
                 IMMessageCustomBody imMessageCustomBody = new IMMessageCustomBody();
-                if (!TextUtils.isEmpty(type) && type.contains("APPRO_")) {
-                    imMessageCustomBody.content = "审批什么审批？不批！！！";
+                if (StringUtils.containsIgnoreCase(type, "APPRO_")) {
+                    imMessageCustomBody.content = "审批消息不支持,请到web端查看!";
                 } else {
                     imMessageCustomBody.content = contentStr;
                 }
@@ -292,6 +293,8 @@ public class MessageListFragment extends BaseRecentContactFragment
             }
         } catch (Exception e) {
             e.printStackTrace();
+            bugSync("AlphaHelper 解析异常", StringUtils.throwable2string(e)
+                    + "\nalphaJSONObject:" + alphaJSONObject);
             LogUtils.d("---------->AlphaHelper 解析异常:" + e);
         }
         return null;
