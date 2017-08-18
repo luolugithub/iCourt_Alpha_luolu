@@ -66,10 +66,10 @@ public class TabDocumentsFragment extends BaseFragment {
                         "项目资料库"));
         baseFragmentAdapter.bindData(true,
                 Arrays.asList(
-                        DiskListFragment.newInstance(0),
-                        DiskListFragment.newInstance(1),
-                        DiskListFragment.newInstance(2),
-                        DiskListFragment.newInstance(3)));
+                        RepoListFragment.newInstance(0),
+                        RepoListFragment.newInstance(1),
+                        RepoListFragment.newInstance(2),
+                        RepoListFragment.newInstance(3)));
     }
 
     @OnClick({R.id.titleAction})
@@ -78,7 +78,6 @@ public class TabDocumentsFragment extends BaseFragment {
         switch (v.getId()) {
             case R.id.titleAction:
                 RepoCreateActivity.launch(getContext());
-                //DiskActionActivity.launchCreate(getContext());
                 break;
         }
     }

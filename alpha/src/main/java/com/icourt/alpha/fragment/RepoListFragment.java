@@ -2,7 +2,6 @@ package com.icourt.alpha.fragment;
 
 import android.content.DialogInterface;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -26,6 +25,7 @@ import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.callback.SimpleCallBack2;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.ActionConstants;
+import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 import com.icourt.alpha.widget.comparators.ILongFieldEntity;
 import com.icourt.alpha.widget.comparators.LongFieldEntityComparator;
@@ -35,6 +35,7 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -45,13 +46,13 @@ import retrofit2.Call;
 import retrofit2.Response;
 
 /**
- * Description
+ * Description  资料库列表
  * Company Beijing icourt
  * author  youxuan  E-mail:xuanyouwu@163.com
  * date createTime：2017/8/9
  * version 2.1.0
  */
-public class DiskListFragment extends BaseFragment implements BaseRecyclerAdapter.OnItemClickListener, BaseRecyclerAdapter.OnItemLongClickListener, BaseRecyclerAdapter.OnItemChildClickListener {
+public class RepoListFragment extends BaseFragment implements BaseRecyclerAdapter.OnItemClickListener, BaseRecyclerAdapter.OnItemLongClickListener, BaseRecyclerAdapter.OnItemChildClickListener {
 
     @BindView(R.id.recyclerView)
     RecyclerView recyclerView;
@@ -71,8 +72,8 @@ public class DiskListFragment extends BaseFragment implements BaseRecyclerAdapte
      * @param type
      * @return
      */
-    public static DiskListFragment newInstance(int type) {
-        DiskListFragment documentsListFragment = new DiskListFragment();
+    public static RepoListFragment newInstance(int type) {
+        RepoListFragment documentsListFragment = new RepoListFragment();
         Bundle args = new Bundle();
         args.putInt("type", type);
         documentsListFragment.setArguments(args);
@@ -135,11 +136,15 @@ public class DiskListFragment extends BaseFragment implements BaseRecyclerAdapte
                     public void onSuccess(Call<ResEntity<DefaultRepoEntity>> call, Response<ResEntity<DefaultRepoEntity>> response) {
                         if (response.body().result != null) {
                             defaultRopoId = response.body().result.repoId;
-
+                            getRepoList(isRefresh);
                             //TODO 我的默认资料库 不允许删除
                         }
                     }
                 });
+
+    }
+
+    private void getRepoList(final boolean isRefresh) {
         switch (getArguments().getInt("type")) {
             case 0: {
                 getDocumentRoot(isRefresh, null);
@@ -304,49 +309,39 @@ public class DiskListFragment extends BaseFragment implements BaseRecyclerAdapte
         return true;
     }
 
+    private boolean isDefaultReop(String repo_id) {
+        return StringUtils.equalsIgnoreCase(repo_id, defaultRopoId, false);
+    }
+
     /**
      * 展示资料库 操作菜单
      *
      * @param position
      */
     private void showDocumentActionDialog(final int position) {
+        DocumentRootEntity item = documentAdapter.getItem(position);
+        if (item == null) return;
+        List<String> menus = Arrays.asList("详细信息", "重命名", "共享", "删除");
+        if (isDefaultReop(item.repo_id)) {
+            menus = Arrays.asList("详细信息", "重命名", "共享");
+        }
+        final List<String> finalMenus = menus;
         new AlertListDialog.ListBuilder(getContext())
                 .setDividerColorRes(R.color.alpha_divider_color)
                 .setDividerHeightRes(R.dimen.alpha_height_divider)
-                .setItems(new String[]{"详细信息", "重命名", "共享", "删除"},
+                .setItems(finalMenus.toArray(new String[finalMenus.size()]),
                         new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialogInterface, int i) {
-                                switch (i) {
-                                    case 0:
-                                        lookDetail(position);
-                                        break;
-                                    case 1:
-                                        renameDocument(position);
-                                        break;
-                                    case 2:
-                                        sahreDocument(position);
-                                        break;
-                                    case 3:
-                                        getSfileToken(new SimpleCallBack2<SFileTokenEntity<String>>() {
-                                            @Override
-                                            public void onSuccess(Call<SFileTokenEntity<String>> call, Response<SFileTokenEntity<String>> response) {
-                                                dismissLoadingDialog();
-                                                if (TextUtils.isEmpty(response.body().authToken)) {
-                                                    showTopSnackBar("sfile authToken返回为null");
-                                                    return;
-                                                }
-
-                                                delDocument(position, response.body().authToken);
-                                            }
-
-                                            @Override
-                                            public void onFailure(Call<SFileTokenEntity<String>> call, Throwable t) {
-                                                dismissLoadingDialog();
-                                                super.onFailure(call, t);
-                                            }
-                                        });
-                                        break;
+                                String s = finalMenus.get(i);
+                                if (TextUtils.equals(s, "详细信息")) {
+                                    lookDetail(position);
+                                } else if (TextUtils.equals(s, "重命名")) {
+                                    renameDocument(position);
+                                } else if (TextUtils.equals(s, "共享")) {
+                                    shareDocument(position);
+                                } else if (TextUtils.equals(s, "删除")) {
+                                    delDocument(position);
                                 }
                             }
                         }).show();
@@ -381,7 +376,7 @@ public class DiskListFragment extends BaseFragment implements BaseRecyclerAdapte
     private void renameDocument(int pos) {
         final DocumentRootEntity item = documentAdapter.getItem(pos);
         if (item == null) return;
-        RepoRenameActivity.launch(getContext(),item);
+        RepoRenameActivity.launch(getContext(), item);
     }
 
     /**
@@ -389,32 +384,21 @@ public class DiskListFragment extends BaseFragment implements BaseRecyclerAdapte
      *
      * @param pos
      */
-    private void sahreDocument(int pos) {
+    private void shareDocument(int pos) {
 
     }
 
-
-    /**
-     * 获取sfile token
-     *
-     * @param callBack2
-     */
-    public void getSfileToken(@NonNull SimpleCallBack2<SFileTokenEntity<String>> callBack2) {
-        showLoadingDialog("sfileToken获取中...");
-        getApi().sFileTokenQuery()
-                .enqueue(callBack2);
-    }
 
     /**
      * 删除
      *
      * @param pos
      */
-    private void delDocument(int pos, String sfileToken) {
+    private void delDocument(int pos) {
         final DocumentRootEntity item = documentAdapter.getItem(pos);
         if (item == null) return;
         showLoadingDialog("资料库删除中...");
-        getSFileApi().documentRootDelete(String.format("Token %s", sfileToken), item.repo_id)
+        getSFileApi().documentRootDelete(item.repo_id)
                 .enqueue(new SFileCallBack<String>() {
                     @Override
                     public void onSuccess(Call<String> call, Response<String> response) {

@@ -19,7 +19,6 @@ import retrofit2.http.DELETE;
 import retrofit2.http.Field;
 import retrofit2.http.FormUrlEncoded;
 import retrofit2.http.GET;
-import retrofit2.http.Header;
 import retrofit2.http.Multipart;
 import retrofit2.http.POST;
 import retrofit2.http.PUT;
@@ -135,13 +134,11 @@ public interface ApiSFileService {
     /**
      * 删除资料库
      *
-     * @param authToken
      * @param documentRootId
      * @return
      */
     @DELETE("api2/repos/{documentRootId}/")
-    Call<String> documentRootDelete(@Header("Authorization") String authToken,
-                                    @Path("documentRootId") String documentRootId);
+    Call<String> documentRootDelete(@Path("documentRootId") String documentRootId);
 
 
     /**
