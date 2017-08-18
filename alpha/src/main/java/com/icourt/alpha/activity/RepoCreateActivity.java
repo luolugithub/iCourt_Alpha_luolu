@@ -5,16 +5,26 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
+import android.text.InputFilter;
 import android.text.TextUtils;
 import android.widget.EditText;
 
 import com.icourt.alpha.entity.bean.DocumentRootEntity;
 import com.icourt.alpha.http.callback.SFileCallBack;
+import com.icourt.alpha.widget.filter.SFileNameFilter;
 
 import org.greenrobot.eventbus.EventBus;
 
 import retrofit2.Call;
 import retrofit2.Response;
+/**
+ * 创建资料库
+ * 资料库名称限制：
+ * 文件名长度不得超过256个字节
+ * 文件名末尾不得有空格
+ * 特殊字符不能作为资料库名称：'\\', '/', ':', '*', '?', '"', '<', '>', '|', '\b', '\t'
+ * 超过一行的，输入框变高，折行显示
+ */
 
 /**
  * Description  资料库创建
@@ -40,6 +50,9 @@ public class RepoCreateActivity extends SFileEditBaseActivity {
         super.initView();
         setTitle("新建资料库");
         inputNameEt.setHint("资料库名称");
+        inputNameEt.setFilters(new InputFilter[]{
+                new InputFilter.LengthFilter(getMaxInputLimitNum()),
+                new SFileNameFilter()});
     }
 
     @Override
@@ -97,23 +110,10 @@ public class RepoCreateActivity extends SFileEditBaseActivity {
 
 
     protected boolean checkInput(EditText et) {
-        /**
-         * 创建资料库
-         * 资料库名称限制：
-         * 文件名长度不得超过256个字节
-         * 文件名末尾不得有空格
-         * 特殊字符不能作为资料库名称：'\\', '/', ':', '*', '?', '"', '<', '>', '|', '\b', '\t'
-         * 超过一行的，输入框变高，折行显示
-         */
-
         if (et.getText().toString().endsWith(" ")) {
             showTopSnackBar("资料库名称末尾不得有空格");
             return false;
         }
-       /* Pattern pattern = Pattern.compile(targetText, Pattern.CASE_INSENSITIVE);
-        Matcher matcher = pattern.matcher(originalText);
-        SpannableUtils.setTextForegroundColorSpan();*/
-
         return true;
     }
 }

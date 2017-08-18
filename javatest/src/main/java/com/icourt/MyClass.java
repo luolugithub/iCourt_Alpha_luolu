@@ -2,13 +2,11 @@ package com.icourt;
 
 import java.text.CollationKey;
 import java.text.Collator;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -37,22 +35,16 @@ public class MyClass {
 
     public static void main(String[] args) throws Exception {
 
-        String s = "2017-04-20T01:43:45+08:00";
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-        Date parse = simpleDateFormat.parse(s);
-        log("------->" + simpleDateFormat.format(parse));
-
 
         // * 特殊字符不能作为资料库名称：'\\', '/', ':', '*', '?', '"', '<', '>', '|', '\b', '\t'
-        Pattern pattern = Pattern.compile("[\\|/|:|*|?|''|<|>|\\||\\\\b|\t]", Pattern.CASE_INSENSITIVE);
-        String text = "xx\b";
+        Pattern pattern = Pattern.compile("[\\|/|:|*|?|\"|<|>|\\||\\\\b|\t]", Pattern.CASE_INSENSITIVE);
+        String text = "xx\\/:*?\"<>|\b\tdfggsf";
+        log("-----替换前:" + text);
         Matcher matcher = pattern.matcher(text);
         while (matcher.find()) {
             log("保护字符 " + text.substring(matcher.start(), matcher.end()));
-            return;
         }
-
-        log("-------->" + matcher.find());
+        log("-----替换后:" + matcher.replaceAll(""));
 
 
         List<String> data = Arrays.asList("测试二", "测5", "测试三", "aa");

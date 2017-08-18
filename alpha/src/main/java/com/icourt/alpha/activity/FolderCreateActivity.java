@@ -83,5 +83,14 @@ public class FolderCreateActivity extends RepoCreateActivity {
                     });
         }
     }
+
+    @Override
+    protected boolean checkInput(EditText et) {
+        if (et.getText().toString().endsWith(" ")) {
+            showTopSnackBar("文件夹名称末尾不得有空格");
+            return false;
+        }
+        return super.checkInput(et);
+    }
 }
 

@@ -144,7 +144,7 @@ public class FolderRenameActivity extends FolderCreateActivity {
 
     @Override
     protected boolean onCancelSubmitInput(EditText et) {
-        if (TextUtils.isEmpty(et.getText())) {
+        if (!TextUtils.isEmpty(et.getText())) {
             String fileName = et.getText().toString().concat(fileSuffix);
             //无需提交
             if (TextUtils.equals(fileName, folderDocumentEntity.name)) {
@@ -153,5 +153,18 @@ public class FolderRenameActivity extends FolderCreateActivity {
             }
         }
         return super.onCancelSubmitInput(et);
+    }
+
+    @Override
+    protected boolean checkInput(EditText et) {
+        if (et.getText().toString().endsWith(" ")) {
+            if (folderDocumentEntity.isDir()) {
+                showTopSnackBar("文件夹名称末尾不得有空格");
+            } else {
+                showTopSnackBar("文件名称末尾不得有空格");
+            }
+            return false;
+        }
+        return super.checkInput(et);
     }
 }
