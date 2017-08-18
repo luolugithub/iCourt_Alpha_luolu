@@ -9,7 +9,6 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.ViewPager;
-import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -29,7 +28,6 @@ import com.icourt.alpha.fragment.FileInnerShareFragment;
 import com.icourt.alpha.fragment.FileLinkFragment;
 import com.icourt.alpha.fragment.FileVersionListFragment;
 import com.icourt.alpha.http.callback.SFileCallBack;
-import com.icourt.alpha.utils.ActionConstants;
 import com.icourt.alpha.utils.FileUtils;
 
 import java.util.Arrays;
@@ -164,13 +162,7 @@ public class DocumentDetailDialogFragment extends BaseDialogFragment {
      * @return
      */
     public static int getFileIcon(String fileName) {
-        if (!TextUtils.isEmpty(fileName) && fileName.length() > 0) {
-            String type = fileName.substring(fileName.lastIndexOf(".") + 1);
-            if (ActionConstants.resourcesDocumentIcon.containsKey(type)) {
-                return ActionConstants.resourcesDocumentIcon.get(type);
-            }
-        }
-        return R.mipmap.filetype_default;
+        return FileUtils.getSFileIcon(fileName);
     }
 
     @Override

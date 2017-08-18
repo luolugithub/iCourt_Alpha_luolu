@@ -11,7 +11,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 
 import com.icourt.alpha.R;
-import com.icourt.alpha.activity.DiskActionActivity;
+import com.icourt.alpha.activity.RepoCreateActivity;
 import com.icourt.alpha.adapter.baseadapter.BaseFragmentAdapter;
 import com.icourt.alpha.base.BaseFragment;
 
@@ -77,7 +77,8 @@ public class TabDocumentsFragment extends BaseFragment {
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.titleAction:
-                DiskActionActivity.launchCreate(getContext());
+                RepoCreateActivity.launch(getContext());
+                //DiskActionActivity.launchCreate(getContext());
                 break;
         }
     }

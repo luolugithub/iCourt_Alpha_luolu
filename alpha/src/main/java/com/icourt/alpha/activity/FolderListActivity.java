@@ -435,7 +435,7 @@ public class FolderListActivity extends FolderBaseActivity
                                 dialog.dismiss();
                                 switch (position) {
                                     case 0:
-                                        FolderActionActivity.launchCreate(
+                                        FolderCreateActivity.launch(
                                                 getContext(),
                                                 getSeaFileRepoId(),
                                                 getSeaFileDirPath());
@@ -888,7 +888,7 @@ public class FolderListActivity extends FolderBaseActivity
                         showFolderTargetListDialogFragment(Const.FILE_ACTION_MOVE, folderDocumentEntities1);
                         break;
                     case 3:
-                        FolderActionActivity.launchUpdateTitle(getContext(),
+                        FolderRenameActivity.launch(getContext(),
                                 item,
                                 getSeaFileRepoId(),
                                 getSeaFileDirPath());

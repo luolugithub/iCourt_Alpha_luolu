@@ -13,8 +13,8 @@ import android.view.ViewGroup;
 
 import com.andview.refreshview.XRefreshView;
 import com.icourt.alpha.R;
-import com.icourt.alpha.activity.DiskActionActivity;
 import com.icourt.alpha.activity.FolderListActivity;
+import com.icourt.alpha.activity.RepoRenameActivity;
 import com.icourt.alpha.adapter.DocumentAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.base.BaseFragment;
@@ -381,7 +381,7 @@ public class DiskListFragment extends BaseFragment implements BaseRecyclerAdapte
     private void renameDocument(int pos) {
         final DocumentRootEntity item = documentAdapter.getItem(pos);
         if (item == null) return;
-        DiskActionActivity.launchUpdateTitle(getContext(), item);
+        RepoRenameActivity.launch(getContext(),item);
     }
 
     /**

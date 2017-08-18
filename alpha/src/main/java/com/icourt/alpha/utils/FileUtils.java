@@ -7,6 +7,7 @@ import android.graphics.PixelFormat;
 import android.graphics.drawable.Drawable;
 import android.os.Environment;
 import android.os.ParcelFileDescriptor;
+import android.support.annotation.DrawableRes;
 import android.text.TextUtils;
 
 import com.icourt.alpha.R;
@@ -203,6 +204,23 @@ public class FileUtils {
     }
 
     /**
+     * 获取sfile文件的图标
+     *
+     * @param fileName
+     * @return
+     */
+    @DrawableRes
+    public static int getSFileIcon(String fileName) {
+        if (!TextUtils.isEmpty(fileName) && fileName.length() > 0) {
+            String type = fileName.substring(fileName.lastIndexOf(".") + 1);
+            if (ActionConstants.resourcesDocumentIcon.containsKey(type)) {
+                return ActionConstants.resourcesDocumentIcon.get(type);
+            }
+        }
+        return R.mipmap.filetype_default;
+    }
+
+    /**
      * 获取文件对应图标 20
      *
      * @param fileName
@@ -290,8 +308,42 @@ public class FileUtils {
         return type;
     }
 
+
+    /**
+     * 获取文件名 并且没有后缀
+     *
+     * @return
+     */
+    public static String getFileNameWithoutSuffix(String fileName) {
+        if (!TextUtils.isEmpty(fileName)) {
+            int dotIndex = fileName.lastIndexOf(".");
+            if (dotIndex > 0
+                    && dotIndex < fileName.length() - 1) {
+                return fileName.substring(0, dotIndex);
+            }
+        }
+        return fileName;
+    }
+
     /**
      * 获取文件后缀名
+     *
+     * @param fileName
+     * @return
+     */
+    public static String getFileSuffix(String fileName) {
+        if (!TextUtils.isEmpty(fileName)) {
+            int dotIndex = fileName.lastIndexOf(".");
+            if (dotIndex > 0
+                    && dotIndex < fileName.length() - 1) {
+                return fileName.substring(dotIndex, fileName.length());
+            }
+        }
+        return "";
+    }
+
+    /**
+     * 获取文件类型
      *
      * @param fileName
      * @return

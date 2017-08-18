@@ -306,20 +306,32 @@
             android:screenOrientation="portrait" />
 
         <activity
-            android:name=".activity.FolderActionActivity"
+            android:name=".activity.FolderListActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:screenOrientation="portrait" />
+
+        <activity
+            android:name=".activity.RepoCreateActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:screenOrientation="portrait"
             android:windowSoftInputMode="stateVisible" />
 
         <activity
-            android:name=".activity.DiskActionActivity"
+            android:name=".activity.RepoRenameActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:screenOrientation="portrait"
             android:windowSoftInputMode="stateVisible" />
         <activity
-            android:name=".activity.FolderListActivity"
+            android:name=".activity.FolderCreateActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
-            android:screenOrientation="portrait" />
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="stateVisible" />
+
+        <activity
+            android:name=".activity.FolderRenameActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="stateVisible" />
 
         <meta-data
             android:name="com.icourt.alpha.utils.glide.MyGlideModule"

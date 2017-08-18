@@ -1,6 +1,5 @@
 package com.icourt.alpha.adapter;
 
-import android.text.TextUtils;
 import android.view.View;
 import android.widget.CheckedTextView;
 import android.widget.ImageView;
@@ -10,7 +9,6 @@ import com.icourt.alpha.R;
 import com.icourt.alpha.constants.Const;
 import com.icourt.alpha.entity.bean.FolderDocumentEntity;
 import com.icourt.alpha.interfaces.ISeaFileImageLoader;
-import com.icourt.alpha.utils.ActionConstants;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.FileUtils;
 import com.icourt.alpha.utils.IMUtils;
@@ -94,13 +92,7 @@ public class FolderDocumentAdapter extends SFileImgBaseAdapter<FolderDocumentEnt
      * @return
      */
     public static int getFileIcon(String fileName) {
-        if (!TextUtils.isEmpty(fileName) && fileName.length() > 0) {
-            String type = fileName.substring(fileName.lastIndexOf(".") + 1);
-            if (ActionConstants.resourcesDocumentIcon.containsKey(type)) {
-                return ActionConstants.resourcesDocumentIcon.get(type);
-            }
-        }
-        return R.mipmap.filetype_default;
+        return FileUtils.getSFileIcon(fileName);
     }
 
     @Override
