@@ -103,6 +103,8 @@ public class MyProjectFragment extends BaseFragment {
         } else if (projectType == TYPE_MY_ATTENTION_PROJECT) {
             attorneyType = "";
             myStar = "1";
+            status = -1;
+            matterType = "";
             refreshLayout.setNoticeEmpty(R.mipmap.icon_placeholder_project, "暂无关注项目");
         } else if (projectType == TYPE_MY_PARTIC_PROJECT) {
             attorneyType = "O";
@@ -168,10 +170,15 @@ public class MyProjectFragment extends BaseFragment {
                             stringBuilder.append(String.valueOf(integer)).append(",");
                         }
                         matterType = stringBuilder.substring(0, stringBuilder.length() - 1);
-                    }else{
+                    } else {
                         matterType = "";
                     }
                 }
+            }
+            if (projectType == TYPE_MY_ATTENTION_PROJECT) {
+                status = -1;
+                matterType = "";
+                attorneyType = "";
             }
             getData(true);
         }
@@ -182,7 +189,11 @@ public class MyProjectFragment extends BaseFragment {
         if (isRefresh) {
             pageIndex = 1;
         }
-        getApi().projectQueryAll(pageIndex, ActionConstants.DEFAULT_PAGE_SIZE, "name", "", String.valueOf(status), matterType, attorneyType, myStar)
+        String sta = "";
+        if (status >= 0) {
+            sta = String.valueOf(status);
+        }
+        getApi().projectQueryAll(pageIndex, ActionConstants.DEFAULT_PAGE_SIZE, "name", "", sta, matterType, attorneyType, myStar)
                 .enqueue(new SimpleCallBack<List<ProjectEntity>>() {
                     @Override
                     public void onSuccess(Call<ResEntity<List<ProjectEntity>>> call, Response<ResEntity<List<ProjectEntity>>> response) {

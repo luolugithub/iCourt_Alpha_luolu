@@ -276,17 +276,16 @@ public class MessageListFragment extends BaseRecentContactFragment
             if (alphaJSONObject.getInt("showType") == MSG_TYPE_ALPHA_HELPER) {
                 String contentStr = alphaJSONObject.getString("content");
                 String type = alphaJSONObject.getString("type");
+                IMMessageCustomBody imMessageCustomBody = new IMMessageCustomBody();
                 if (!TextUtils.isEmpty(type) && type.contains("APPRO_")) {
-                    NIMClient.getService(MsgService.class)
-                            .deleteRecentContact(recentContact);
+                    imMessageCustomBody.content = "审批什么审批？不批！！！";
                 } else {
-                    IMMessageCustomBody imMessageCustomBody = new IMMessageCustomBody();
                     imMessageCustomBody.content = contentStr;
-                    imMessageCustomBody.show_type = MSG_TYPE_ALPHA_HELPER;
-                    imMessageCustomBody.ope = CHAT_TYPE_P2P;
-                    imMessageCustomBody.to = recentContact.getContactId();
-                    return imMessageCustomBody;
                 }
+                imMessageCustomBody.show_type = MSG_TYPE_ALPHA_HELPER;
+                imMessageCustomBody.ope = CHAT_TYPE_P2P;
+                imMessageCustomBody.to = recentContact.getContactId();
+                return imMessageCustomBody;
             } else {
                 NIMClient.getService(MsgService.class)
                         .deleteRecentContact(recentContact);
