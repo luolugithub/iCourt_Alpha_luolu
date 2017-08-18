@@ -1,9 +1,12 @@
 package com.icourt.alpha.entity.bean;
 
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.text.TextUtils;
 
 import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
+import com.icourt.alpha.view.recyclerviewDivider.ISuspensionInterface;
 import com.icourt.alpha.widget.filter.IFilterEntity;
 import com.icourt.alpha.widget.json.SeaFileTimeJsonAdapter;
 import com.icourt.json.BooleanTypeAdapter;
@@ -18,7 +21,8 @@ import java.io.Serializable;
  * date createTime：2017/8/10
  * version 2.1.0
  */
-public class FolderDocumentEntity implements Serializable, IFilterEntity {
+public class FolderDocumentEntity
+        implements Serializable, IFilterEntity, ISuspensionInterface {
     public static final int TYPE_FILE = 1;
     /**
      * "lock_time": 0,
@@ -60,6 +64,7 @@ public class FolderDocumentEntity implements Serializable, IFilterEntity {
     public long size;
 
     public String parent_dir;
+    public String suspensionTag;
 
     public boolean isDir() {
         return isDir;
@@ -71,6 +76,28 @@ public class FolderDocumentEntity implements Serializable, IFilterEntity {
             return !isDir();
         }
         return false;
+    }
+
+    @Nullable
+    @Override
+    public String getTargetField() {
+        return name;
+    }
+
+    @Override
+    public void setSuspensionTag(String suspensionTag) {
+        this.suspensionTag = suspensionTag;
+    }
+
+    @Override
+    public boolean isShowSuspension() {
+        return false;
+    }
+
+    @NonNull
+    @Override
+    public String getSuspensionTag() {
+        return suspensionTag;
     }
 
 

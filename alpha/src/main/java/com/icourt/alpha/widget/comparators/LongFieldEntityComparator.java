@@ -27,10 +27,6 @@ public class LongFieldEntityComparator<T extends ILongFieldEntity> implements Co
         return 0;
     }
 
-    public enum ORDER {
-        ASC, DESC;
-    }
-
     public ORDER order;
 
     public LongFieldEntityComparator(ORDER order) {

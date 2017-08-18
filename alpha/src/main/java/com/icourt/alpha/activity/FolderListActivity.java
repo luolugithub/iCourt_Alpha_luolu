@@ -49,12 +49,15 @@ import com.icourt.alpha.interfaces.ISeaFileImageLoader;
 import com.icourt.alpha.utils.ActionConstants;
 import com.icourt.alpha.utils.GlideUtils;
 import com.icourt.alpha.utils.ImageUtils;
+import com.icourt.alpha.utils.IndexUtils;
 import com.icourt.alpha.utils.SFileTokenUtils;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.utils.UriUtils;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
+import com.icourt.alpha.widget.comparators.FileSortComparator;
 import com.icourt.alpha.widget.dialog.BottomActionDialog;
 import com.icourt.alpha.widget.dialog.CenterMenuDialog;
+import com.icourt.alpha.widget.dialog.SortTypeSelectDialog;
 import com.icourt.api.RequestUtils;
 
 import org.greenrobot.eventbus.EventBus;
@@ -64,6 +67,7 @@ import org.greenrobot.eventbus.ThreadMode;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -83,6 +87,7 @@ import static com.icourt.alpha.constants.Const.FILE_ACTION_COPY;
 import static com.icourt.alpha.constants.Const.FILE_ACTION_MOVE;
 import static com.icourt.alpha.constants.Const.VIEW_TYPE_GRID;
 import static com.icourt.alpha.constants.Const.VIEW_TYPE_ITEM;
+import static com.icourt.alpha.widget.comparators.FileSortComparator.FILE_SORT_TYPE_DEFAULT;
 
 /**
  * Description
@@ -132,6 +137,7 @@ public class FolderListActivity extends FolderBaseActivity
     CheckBox bottomBarAllSelectCb;
 
     int pageIndex = 1;
+    int fileSortType = FILE_SORT_TYPE_DEFAULT;
 
     private static final int REQUEST_CODE_CAMERA = 1000;
     private static final int REQUEST_CODE_GALLERY = 1001;
@@ -359,6 +365,15 @@ public class FolderListActivity extends FolderBaseActivity
                     ActionConstants.DEFAULT_PAGE_SIZE).enqueue(new SFileCallBack<SeaFileTrashPageEntity<FolderDocumentEntity>>() {
                 @Override
                 public void onSuccess(Call<SeaFileTrashPageEntity<FolderDocumentEntity>> call, Response<SeaFileTrashPageEntity<FolderDocumentEntity>> response) {
+                    if (response.body().data != null) {
+                        IndexUtils.setSuspensions(getContext(), response.body().data);
+                        try {
+                            Collections.sort(response.body().data, new FileSortComparator(fileSortType));
+                        } catch (Throwable e) {
+                            e.printStackTrace();
+                            bugSync("排序异常", e);
+                        }
+                    }
                     folderDocumentAdapter.bindData(isRefresh, wrapGridData(response.body().data));
                     stopRefresh();
                     pageIndex += 1;
@@ -380,6 +395,15 @@ public class FolderListActivity extends FolderBaseActivity
                     .enqueue(new SFileCallBack<List<FolderDocumentEntity>>() {
                         @Override
                         public void onSuccess(Call<List<FolderDocumentEntity>> call, Response<List<FolderDocumentEntity>> response) {
+                            if (response.body() != null) {
+                                IndexUtils.setSuspensions(getContext(), response.body());
+                                try {
+                                    Collections.sort(response.body(), new FileSortComparator(fileSortType));
+                                } catch (Throwable e) {
+                                    e.printStackTrace();
+                                    bugSync("排序异常", e);
+                                }
+                            }
                             folderDocumentAdapter.bindData(isRefresh, wrapGridData(response.body()));
                             stopRefresh();
                         }
@@ -502,6 +526,7 @@ public class FolderListActivity extends FolderBaseActivity
                 }
                 break;
             case R.id.header_search_sort_iv:
+                showSortDialog();
                 break;
             case R.id.titleEditCancelView:
                 selectedFolderDocuments.clear();
@@ -522,6 +547,34 @@ public class FolderListActivity extends FolderBaseActivity
                 super.onClick(v);
                 break;
         }
+    }
+
+    /**
+     * 展示排序对话框
+     */
+    private void showSortDialog() {
+        new SortTypeSelectDialog(getContext(),
+                fileSortType,
+                new SortTypeSelectDialog.OnSortTypeChangeListener() {
+                    @Override
+                    public void onSortTypeSelected(@FileSortComparator.FileSortType int sortType) {
+                        if (fileSortType != sortType) {
+                            fileSortType = sortType;
+                            List<FolderDocumentEntity> totals = new ArrayList<>();
+                            List<List<FolderDocumentEntity>> data = folderDocumentAdapter.getData();
+                            for (List<FolderDocumentEntity> documentEntities : data) {
+                                totals.addAll(documentEntities);
+                            }
+                            try {
+                                Collections.sort(totals, new FileSortComparator(fileSortType));
+                                folderDocumentAdapter.bindData(true, wrapGridData(totals));
+                            } catch (Throwable e) {
+                                e.printStackTrace();
+                                bugSync("排序异常", e);
+                            }
+                        }
+                    }
+                }).show();
     }
 
     /**

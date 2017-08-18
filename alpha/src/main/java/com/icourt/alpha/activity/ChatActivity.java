@@ -57,6 +57,7 @@ import com.icourt.alpha.view.emoji.MyXhsEmoticonsKeyBoard;
 import com.icourt.alpha.view.recyclerviewDivider.ChatItemDecoration;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 import com.icourt.alpha.widget.comparators.LongFieldEntityComparator;
+import com.icourt.alpha.widget.comparators.ORDER;
 import com.icourt.alpha.widget.nim.GlobalMessageObserver;
 import com.netease.nimlib.sdk.NIMClient;
 import com.netease.nimlib.sdk.RequestCallback;
@@ -80,7 +81,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 
 import butterknife.BindView;
@@ -1097,7 +1097,7 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
                     @Override
                     public void onSuccess(Call<ResEntity<List<IMMessageCustomBody>>> call, Response<ResEntity<List<IMMessageCustomBody>>> response) {
                         if (response.body().result != null) {
-                            Collections.sort(response.body().result, new LongFieldEntityComparator<IMMessageCustomBody>(LongFieldEntityComparator.ORDER.ASC));
+                            Collections.sort(response.body().result, new LongFieldEntityComparator<IMMessageCustomBody>(ORDER.ASC));
                             chatAdapter.addItems(0, response.body().result);
                             scrollToCenter();
                         }
@@ -1136,7 +1136,7 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
                     public void onSuccess(Call<ResEntity<List<IMMessageCustomBody>>> call, Response<ResEntity<List<IMMessageCustomBody>>> response) {
                         if (response.body().result != null) {
                             filterCustomerMessagesFromAdapter(response.body().result);
-                            Collections.sort(response.body().result, new LongFieldEntityComparator<IMMessageCustomBody>(LongFieldEntityComparator.ORDER.ASC));
+                            Collections.sort(response.body().result, new LongFieldEntityComparator<IMMessageCustomBody>(ORDER.ASC));
                             chatAdapter.addItems(0, response.body().result);
                             if (isRefresh) {
                                 scrollToBottom();

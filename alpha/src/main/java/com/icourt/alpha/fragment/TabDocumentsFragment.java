@@ -60,16 +60,23 @@ public class TabDocumentsFragment extends BaseFragment {
         tabLayout.setupWithViewPager(viewPager);
         baseFragmentAdapter.bindTitle(true,
                 Arrays.asList(
-                        "我的资料库",
+                        "我的",
                         "共享给我的",
-                        "律所资料库",
-                        "项目资料库"));
+                        "律所",
+                        "项目"));
         baseFragmentAdapter.bindData(true,
                 Arrays.asList(
                         RepoListFragment.newInstance(0),
                         RepoListFragment.newInstance(1),
                         RepoListFragment.newInstance(2),
                         RepoListFragment.newInstance(3)));
+        viewPager.addOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
+            @Override
+            public void onPageSelected(int position) {
+                super.onPageSelected(position);
+                titleAction.setVisibility(position > 0 ? View.GONE : View.VISIBLE);
+            }
+        });
     }
 
     @OnClick({R.id.titleAction})

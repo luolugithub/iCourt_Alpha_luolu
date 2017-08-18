@@ -1,6 +1,5 @@
 package com.icourt.alpha.fragment;
 
-import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
@@ -29,7 +28,8 @@ import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 import com.icourt.alpha.widget.comparators.ILongFieldEntity;
 import com.icourt.alpha.widget.comparators.LongFieldEntityComparator;
-import com.icourt.alpha.widget.dialog.AlertListDialog;
+import com.icourt.alpha.widget.comparators.ORDER;
+import com.icourt.alpha.widget.dialog.BottomActionDialog;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -278,7 +278,7 @@ public class RepoListFragment extends BaseFragment implements BaseRecyclerAdapte
         }
         List<DocumentRootEntity> data = documentAdapter.getData();
         try {
-            Collections.sort(data, new LongFieldEntityComparator<ILongFieldEntity>(LongFieldEntityComparator.ORDER.DESC));
+            Collections.sort(data, new LongFieldEntityComparator<ILongFieldEntity>(ORDER.DESC));
         } catch (Throwable e) {
             e.printStackTrace();
         }
@@ -325,26 +325,25 @@ public class RepoListFragment extends BaseFragment implements BaseRecyclerAdapte
         if (isDefaultReop(item.repo_id)) {
             menus = Arrays.asList("详细信息", "重命名", "共享");
         }
-        final List<String> finalMenus = menus;
-        new AlertListDialog.ListBuilder(getContext())
-                .setDividerColorRes(R.color.alpha_divider_color)
-                .setDividerHeightRes(R.dimen.alpha_height_divider)
-                .setItems(finalMenus.toArray(new String[finalMenus.size()]),
-                        new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int i) {
-                                String s = finalMenus.get(i);
-                                if (TextUtils.equals(s, "详细信息")) {
-                                    lookDetail(position);
-                                } else if (TextUtils.equals(s, "重命名")) {
-                                    renameDocument(position);
-                                } else if (TextUtils.equals(s, "共享")) {
-                                    shareDocument(position);
-                                } else if (TextUtils.equals(s, "删除")) {
-                                    delDocument(position);
-                                }
-                            }
-                        }).show();
+        new BottomActionDialog(getContext(),
+                null,
+                menus,
+                new BottomActionDialog.OnActionItemClickListener() {
+                    @Override
+                    public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
+                        dialog.dismiss();
+                        String s = adapter.getItem(position);
+                        if (TextUtils.equals(s, "详细信息")) {
+                            lookDetail(position);
+                        } else if (TextUtils.equals(s, "重命名")) {
+                            renameDocument(position);
+                        } else if (TextUtils.equals(s, "共享")) {
+                            shareDocument(position);
+                        } else if (TextUtils.equals(s, "删除")) {
+                            showDelDialog(position);
+                        }
+                    }
+                }).show();
     }
 
     /**
@@ -388,6 +387,17 @@ public class RepoListFragment extends BaseFragment implements BaseRecyclerAdapte
 
     }
 
+
+    private void showDelDialog(final int pos) {
+        new BottomActionDialog(getContext(),
+                "删除后不可恢复,确定要删除吗?",
+                Arrays.asList("删除"), new BottomActionDialog.OnActionItemClickListener() {
+            @Override
+            public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
+                delDocument(pos);
+            }
+        }).show();
+    }
 
     /**
      * 删除

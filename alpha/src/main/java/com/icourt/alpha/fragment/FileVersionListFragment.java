@@ -18,6 +18,7 @@ import com.icourt.alpha.entity.bean.FileVersionEntity;
 import com.icourt.alpha.http.callback.SFileCallBack;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 import com.icourt.alpha.widget.comparators.LongFieldEntityComparator;
+import com.icourt.alpha.widget.comparators.ORDER;
 
 import java.util.Collections;
 
@@ -99,7 +100,7 @@ public class FileVersionListFragment extends SeaFileBaseFragment implements Base
                     public void onSuccess(Call<FileVersionCommits> call, Response<FileVersionCommits> response) {
                         if (response.body().commits != null) {
                             try {
-                                Collections.sort(response.body().commits, new LongFieldEntityComparator<FileVersionEntity>(LongFieldEntityComparator.ORDER.DESC));
+                                Collections.sort(response.body().commits, new LongFieldEntityComparator<FileVersionEntity>(ORDER.DESC));
                             } catch (Throwable e) {
                                 bugSync("排序异常", e);
                                 e.printStackTrace();
