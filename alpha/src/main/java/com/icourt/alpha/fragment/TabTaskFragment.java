@@ -82,6 +82,8 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
     FilterDropEntity deleteEntity = new FilterDropEntity("已删除", "0", 3);//已删除
     public static boolean isAwayScroll = false; //切换时是否滚动，在'已完成和已删除'状态下，点击新任务提醒。
 
+    boolean isShowCalendar;//是否显示日历页面
+
     public static TabTaskFragment newInstance() {
         return new TabTaskFragment();
     }
@@ -193,9 +195,19 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
     public void updateListData(int stateType) {
         Bundle bundle = new Bundle();
         bundle.putInt("stateType", stateType);
-        alltaskFragment.notifyFragmentUpdate(alltaskFragment, TaskAllFragment.TYPE_ALL_TASK, bundle);
-        viewPager.setNoScroll(false);
-        titleCalendar.setImageResource(R.mipmap.ic_calendar);
+        int type = TaskAllFragment.TYPE_ALL_TASK;
+        if (stateType == 0) {
+            if (isShowCalendar) {
+                type = TaskAllFragment.TYPE_ALL_TASK_CALENDAR;
+                viewPager.setNoScroll(true);
+                titleCalendar.setImageResource(R.mipmap.icon_calendar_selected);
+            }else{
+                viewPager.setNoScroll(false);
+                titleCalendar.setImageResource(R.mipmap.ic_calendar);
+            }
+        }
+        alltaskFragment.notifyFragmentUpdate(alltaskFragment, type, bundle);
+
     }
 
     private class OnTabClickListener implements View.OnClickListener {
@@ -280,11 +292,13 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
                     TaskAllFragment taskAllFragment = (TaskAllFragment) item;
                     switch (taskAllFragment.getChildFragmentType()) {
                         case TaskAllFragment.TYPE_ALL_TASK:
+                            isShowCalendar = true;
                             viewPager.setNoScroll(true);
                             titleCalendar.setImageResource(R.mipmap.icon_calendar_selected);
                             taskAllFragment.notifyFragmentUpdate(taskAllFragment, TaskAllFragment.TYPE_ALL_TASK_CALENDAR, null);
                             break;
                         case TaskAllFragment.TYPE_ALL_TASK_CALENDAR:
+                            isShowCalendar = false;
                             viewPager.setNoScroll(false);
                             titleCalendar.setImageResource(R.mipmap.ic_calendar);
                             if (topMiddlePopup.getAdapter() != null) {

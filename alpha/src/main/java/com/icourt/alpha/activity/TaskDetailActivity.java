@@ -238,7 +238,8 @@ public class TaskDetailActivity extends BaseActivity
             R.id.task_user_layout,
             R.id.task_users_layout,
             R.id.task_start_iamge,
-            R.id.task_time_sum_layout})
+            R.id.task_time_sum_layout,
+            R.id.task_time})
     @Override
     public void onClick(View v) {
         super.onClick(v);
@@ -357,7 +358,12 @@ public class TaskDetailActivity extends BaseActivity
                         taskItemEntity.valid);
                 break;
             case R.id.task_time_sum_layout:
-                if (!isStrat && taskItemEntity.timingSum > 0) {
+                if (taskItemEntity.timingSum > 0) {
+                    showTimersDialogFragment();
+                }
+                break;
+            case R.id.task_time:
+                if (taskItemEntity.timingSum > 0) {
                     showTimersDialogFragment();
                 }
                 break;
@@ -487,7 +493,7 @@ public class TaskDetailActivity extends BaseActivity
             if (taskItemEntity.state) {
                 titles = Arrays.asList("标记为未完成", "删除");
             } else {
-                titles = Arrays.asList("完成任务", "删除");
+                titles = Arrays.asList("标记为已完成", "删除");
             }
         } else {
             titles = Arrays.asList("恢复", "彻底删除");
