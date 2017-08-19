@@ -39,6 +39,7 @@
             android:textSize="16sp" />
 
         <ImageView
+            android:id="@+id/arrow_right_iv"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="@dimen/dp5"

@@ -80,7 +80,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 
 import butterknife.BindView;
@@ -108,6 +107,7 @@ import sj.keyboard.widget.FuncLayout;
 import static com.icourt.alpha.constants.Const.CHAT_TYPE_P2P;
 import static com.icourt.alpha.constants.Const.CHAT_TYPE_TEAM;
 import static com.netease.nimlib.sdk.msg.constant.MsgStatusEnum.unread;
+import static com.netease.nimlib.sdk.msg.constant.SessionTypeEnum.P2P;
 import static com.netease.nimlib.sdk.msg.model.QueryDirectionEnum.QUERY_OLD;
 
 /**
@@ -674,7 +674,8 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
         if (isIMLinkText(txt)) {
             sendIMLinkMsg(txt);
         } else {
-            if (txt.contains("@")) {
+            if (getIMChatType() == Const.CHAT_TYPE_TEAM
+                    && txt.contains("@")) {
                 if (txt.contains("@所有人")) {
                     sendAtMsg(txt, true, null);
                 } else {
@@ -1014,7 +1015,7 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
     private IMMessage getLocationMessage() {
         switch (getIMChatType()) {
             case CHAT_TYPE_P2P:
-                return MessageBuilder.createEmptyMessage(getIMChatId(), SessionTypeEnum.P2P, getLocationMsgId());
+                return MessageBuilder.createEmptyMessage(getIMChatId(), P2P, getLocationMsgId());
             case CHAT_TYPE_TEAM:
                 return MessageBuilder.createEmptyMessage(getIMChatId(), SessionTypeEnum.Team, getLocationMsgId());
             default: {
@@ -1165,10 +1166,10 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
                 if (chatAdapter.getItemCount() > 0) {
                     IMMessageCustomBody item = chatAdapter.getItem(0);
                     if (item != null) {
-                        return MessageBuilder.createEmptyMessage(getIMChatId(), SessionTypeEnum.P2P, item.send_time);
+                        return MessageBuilder.createEmptyMessage(getIMChatId(), P2P, item.send_time);
                     }
                 }
-                return MessageBuilder.createEmptyMessage(getIMChatId(), SessionTypeEnum.P2P, 0);
+                return MessageBuilder.createEmptyMessage(getIMChatId(), P2P, 0);
             case CHAT_TYPE_TEAM:
                 if (chatAdapter.getItemCount() > 0) {
                     IMMessageCustomBody item = chatAdapter.getItem(0);

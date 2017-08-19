@@ -70,6 +70,8 @@ public class ProjectBasicInfoAdapter extends BaseArrayRecyclerAdapter<ProjectBas
         keyView.setText(projectBasicItemEntity.key);
         if (getItemViewType(position) == CLIENT_TYPE) {
             RecyclerView recyclerView = holder.obtainView(R.id.client_recyclerview);
+            ImageView rightView = holder.obtainView(R.id.arrow_right_iv);
+            rightView.setVisibility(View.GONE);
             ProjectClientAdapter projectClientAdapter = null;
             if (recyclerView.getLayoutManager() == null) {
                 LinearLayoutManager layoutManager = new LinearLayoutManager(recyclerView.getContext());
@@ -80,8 +82,25 @@ public class ProjectBasicInfoAdapter extends BaseArrayRecyclerAdapter<ProjectBas
             projectClientAdapter.bindData(true, clientsBeens);
         } else {
             TextView valueView = holder.obtainView(R.id.value_name_tv);
+            ImageView rightView = holder.obtainView(R.id.arrow_right_iv);
+            rightView.setVisibility(isShowRightView(projectBasicItemEntity.type) ? View.VISIBLE : View.INVISIBLE);
             valueView.setText(projectBasicItemEntity.value);
         }
+    }
+
+    /**
+     * 是否显示右边箭头
+     *
+     * @return
+     */
+    private boolean isShowRightView(int type) {
+        switch (type) {
+            case Const.PROJECT_CLIENT_TYPE:
+            case Const.PROJECT_TIME_TYPE:
+                return false;
+
+        }
+        return true;
     }
 
     private int getImageByType(int type) {
@@ -100,6 +119,8 @@ public class ProjectBasicInfoAdapter extends BaseArrayRecyclerAdapter<ProjectBas
                 return R.mipmap.lawyer;
             case Const.PROJECT_NUMBER_TYPE://项目编号
                 return R.mipmap.number;
+            case Const.PROJECT_OTHER_PERSON_TYPE://其他当事人
+                return R.mipmap.project_user_icon;
         }
         return -1;
     }
