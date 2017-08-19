@@ -19,7 +19,10 @@ import com.icourt.alpha.R;
 import com.icourt.alpha.base.BaseDialogFragment;
 import com.icourt.alpha.constants.Const;
 import com.icourt.alpha.entity.bean.FolderDocumentEntity;
+import com.icourt.alpha.entity.bean.RepoEntity;
 import com.icourt.alpha.fragment.FolderTargetListFragment;
+import com.icourt.alpha.fragment.RepoSelectListFragment;
+import com.icourt.alpha.http.callback.SFileCallBack;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 
 import java.util.ArrayList;
@@ -28,6 +31,8 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import butterknife.Unbinder;
+import retrofit2.Call;
+import retrofit2.Response;
 
 import static com.icourt.alpha.constants.Const.FILE_ACTION_COPY;
 import static com.icourt.alpha.constants.Const.FILE_ACTION_MOVE;
@@ -62,6 +67,9 @@ public class FolderTargetListDialogFragment
     protected static final String KEY_FOLDER_ACTION_TYPE = "folderActionType";//文件操作类型
     @BindView(R.id.dir_path_title_layout)
     RelativeLayout dirPathTitleLayout;
+
+    Fragment currFragment;
+    RepoEntity repoEntity;
 
     public static FolderTargetListDialogFragment newInstance(
             @Const.FILE_ACTION_TYPE int folderActionType,
@@ -139,7 +147,6 @@ public class FolderTargetListDialogFragment
         return view;
     }
 
-    private Fragment currFragment;
 
     @Override
     public void onStart() {
@@ -176,6 +183,19 @@ public class FolderTargetListDialogFragment
         replaceFolderFragmemt(
                 getSeaFileDstRepoId(),
                 getSeaFileDstDirPath());
+        getData(true);
+    }
+
+    @Override
+    protected void getData(boolean isRefresh) {
+        super.getData(isRefresh);
+        getSFileApi().repoDetailsQuery(getSeaFileFromRepoId())
+                .enqueue(new SFileCallBack<RepoEntity>() {
+                    @Override
+                    public void onSuccess(Call<RepoEntity> call, Response<RepoEntity> response) {
+                        repoEntity = response.body();
+                    }
+                });
     }
 
     @OnClick({R.id.titleBack,
@@ -189,6 +209,8 @@ public class FolderTargetListDialogFragment
             case R.id.foldr_go_parent_tv:
                 if (canBack2ParentDir()) {
                     back2ParentDir();
+                } else {
+                    replaceRepoFragmemt();
                 }
                 break;
             default:
@@ -265,8 +287,20 @@ public class FolderTargetListDialogFragment
         }
     }
 
+    /**
+     * 替换资料库选择页面
+     */
+    private void replaceRepoFragmemt() {
+        currFragment = addOrShowFragment(
+                RepoSelectListFragment.newInstance(),
+                currFragment,
+                R.id.main_fl_content);
+        dirPathTitleLayout.setVisibility(View.GONE);
+    }
+
     private void replaceFolderFragmemt(String seaFileRepoId,
                                        String seaFileParentDirPath) {
+        dirPathTitleLayout.setVisibility(View.VISIBLE);
         getArguments().putString(KEY_SEA_FILE_DST_REPO_ID, seaFileRepoId);
         getArguments().putString(KEY_SEA_FILE_DST_DIR_PATH, seaFileParentDirPath);
         currFragment = addOrShowFragment(
@@ -280,10 +314,9 @@ public class FolderTargetListDialogFragment
                 currFragment,
                 R.id.main_fl_content);
         if (canBack2ParentDir()) {
-            dirPathTitleLayout.setVisibility(View.VISIBLE);
             foldrParentTv.setText(getDstParentDirName());
         } else {
-            dirPathTitleLayout.setVisibility(View.GONE);
+            foldrParentTv.setText(repoEntity != null ? repoEntity.repo_name : "");
         }
     }
 }

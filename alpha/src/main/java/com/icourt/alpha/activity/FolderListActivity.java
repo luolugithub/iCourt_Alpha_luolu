@@ -38,7 +38,6 @@ import com.icourt.alpha.adapter.baseadapter.HeaderFooterAdapter;
 import com.icourt.alpha.adapter.baseadapter.adapterObserver.DataChangeAdapterObserver;
 import com.icourt.alpha.constants.Const;
 import com.icourt.alpha.entity.bean.FolderDocumentEntity;
-import com.icourt.alpha.entity.bean.ItemsEntity;
 import com.icourt.alpha.entity.event.SeaFolderEvent;
 import com.icourt.alpha.fragment.dialogfragment.DocumentDetailDialogFragment;
 import com.icourt.alpha.fragment.dialogfragment.FolderTargetListDialogFragment;
@@ -55,7 +54,6 @@ import com.icourt.alpha.utils.UriUtils;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 import com.icourt.alpha.widget.comparators.FileSortComparator;
 import com.icourt.alpha.widget.dialog.BottomActionDialog;
-import com.icourt.alpha.widget.dialog.CenterMenuDialog;
 import com.icourt.alpha.widget.dialog.SortTypeSelectDialog;
 import com.icourt.api.RequestUtils;
 
@@ -461,7 +459,7 @@ public class FolderListActivity extends FolderBaseActivity
                 showFolderTargetListDialogFragment(Const.FILE_ACTION_MOVE, new ArrayList<FolderDocumentEntity>(selectedFolderDocuments));
                 break;
             case R.id.bottom_bar_delete_tv:
-                deleteFolderOrDocuments(selectedFolderDocuments);
+                showDeleteComfirmDialog(selectedFolderDocuments);
                 break;
             default:
                 super.onClick(v);
@@ -801,60 +799,50 @@ public class FolderListActivity extends FolderBaseActivity
     private void showFolderActionMenu(BaseRecyclerAdapter adapter, int position) {
         final FolderDocumentEntity item = (FolderDocumentEntity) adapter.getItem(position);
         if (item == null) return;
-        final CenterMenuDialog centerMenuDialog = new CenterMenuDialog(getContext(), null, Arrays.asList(
-                new ItemsEntity("详细信息", R.mipmap.info_orange),
-                new ItemsEntity("复制", R.mipmap.copy_orange),
-                new ItemsEntity("移动", R.mipmap.move_orange),
-                new ItemsEntity("重命名", R.mipmap.rename_orange),
-                new ItemsEntity("共享", R.mipmap.share_orange),
-                new ItemsEntity("删除", R.mipmap.trash_orange)));
-        centerMenuDialog.setOnItemClickListener(new BaseRecyclerAdapter.OnItemClickListener() {
-            @Override
-            public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
-                if (centerMenuDialog != null) {
-                    centerMenuDialog.dismiss();
-                }
-                switch (position) {
-                    case 0:
-                        if (item.isDir()) {
-                            DocumentDetailDialogFragment.show(
-                                    getSeaFileRepoId(),
-                                    String.format("%s%s/", getSeaFileDirPath(), item.name),
+        new BottomActionDialog(
+                getContext(),
+                null,
+                Arrays.asList("查看文件详情", "重命名", "共享", "复制", "移动", "删除"),
+                new BottomActionDialog.OnActionItemClickListener() {
+                    @Override
+                    public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
+                        dialog.dismiss();
+                        String action = adapter.getItem(position);
+                        if (TextUtils.equals(action, "查看文件详情")) {
+                            if (item.isDir()) {
+                                DocumentDetailDialogFragment.show(
+                                        getSeaFileRepoId(),
+                                        String.format("%s%s/", getSeaFileDirPath(), item.name),
+                                        item,
+                                        getSupportFragmentManager());
+                            } else {
+                                DocumentDetailDialogFragment.show(
+                                        getSeaFileRepoId(),
+                                        String.format("%s%s", getSeaFileDirPath(), item.name),
+                                        item,
+                                        getSupportFragmentManager());
+                            }
+                        } else if (TextUtils.equals(action, "重命名")) {
+                            FolderRenameActivity.launch(
+                                    getContext(),
                                     item,
-                                    getSupportFragmentManager());
-                        } else {
-                            DocumentDetailDialogFragment.show(
                                     getSeaFileRepoId(),
-                                    String.format("%s%s", getSeaFileDirPath(), item.name),
-                                    item,
-                                    getSupportFragmentManager());
+                                    getSeaFileDirPath());
+                        } else if (TextUtils.equals(action, "共享")) {
+
+                        } else if (TextUtils.equals(action, "复制")) {
+                            ArrayList<FolderDocumentEntity> folderDocumentEntities = new ArrayList<>();
+                            folderDocumentEntities.add(item);
+                            showFolderTargetListDialogFragment(Const.FILE_ACTION_COPY, folderDocumentEntities);
+                        } else if (TextUtils.equals(action, "移动")) {
+                            ArrayList<FolderDocumentEntity> folderDocumentEntities1 = new ArrayList<>();
+                            folderDocumentEntities1.add(item);
+                            showFolderTargetListDialogFragment(Const.FILE_ACTION_MOVE, folderDocumentEntities1);
+                        } else if (TextUtils.equals(action, "删除")) {
+                            showDeleteComfirmDialog(item);
                         }
-                        break;
-                    case 1:
-                        ArrayList<FolderDocumentEntity> folderDocumentEntities = new ArrayList<>();
-                        folderDocumentEntities.add(item);
-                        showFolderTargetListDialogFragment(Const.FILE_ACTION_COPY, folderDocumentEntities);
-                        break;
-                    case 2:
-                        ArrayList<FolderDocumentEntity> folderDocumentEntities1 = new ArrayList<>();
-                        folderDocumentEntities1.add(item);
-                        showFolderTargetListDialogFragment(Const.FILE_ACTION_MOVE, folderDocumentEntities1);
-                        break;
-                    case 3:
-                        FolderRenameActivity.launch(getContext(),
-                                item,
-                                getSeaFileRepoId(),
-                                getSeaFileDirPath());
-                        break;
-                    case 4:
-                        break;
-                    case 5:
-                        deleteFolderOrDocument(item);
-                        break;
-                }
-            }
-        });
-        centerMenuDialog.show();
+                    }
+                }).show();
     }
 
     protected final void showFolderTargetListDialogFragment(@Const.FILE_ACTION_TYPE int folderActionType,
@@ -916,6 +904,47 @@ public class FolderListActivity extends FolderBaseActivity
                 }
             });
         }
+    }
+
+
+    /**
+     * 展示删除确认对话框
+     *
+     * @param item
+     */
+    private void showDeleteComfirmDialog(final FolderDocumentEntity item) {
+        if (item == null) return;
+        showDeleteComfirmDialog(new BottomActionDialog.OnActionItemClickListener() {
+            @Override
+            public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
+                dialog.dismiss();
+                deleteFolderOrDocument(item);
+            }
+        });
+    }
+
+    /**
+     * 展示删除确认对话框
+     *
+     * @param items
+     */
+    private void showDeleteComfirmDialog(final Set<FolderDocumentEntity> items) {
+        if (items == null || items.isEmpty()) return;
+        showDeleteComfirmDialog(new BottomActionDialog.OnActionItemClickListener() {
+            @Override
+            public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
+                dialog.dismiss();
+                deleteFolderOrDocuments(items);
+            }
+        });
+    }
+
+    private void showDeleteComfirmDialog(BottomActionDialog.OnActionItemClickListener l) {
+        new BottomActionDialog(
+                getContext(),
+                "删除后可以从回收站找回,确定删除?",
+                Arrays.asList("删除"),
+                l).show();
     }
 
     /**
