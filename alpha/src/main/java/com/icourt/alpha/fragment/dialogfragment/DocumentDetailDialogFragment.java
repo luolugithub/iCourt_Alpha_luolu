@@ -114,6 +114,15 @@ public class DocumentDetailDialogFragment extends BaseDialogFragment {
 
     @Override
     protected void initView() {
+        Dialog dialog = getDialog();
+        if (dialog != null) {
+            Window window = dialog.getWindow();
+            if (window != null) {
+                WindowManager.LayoutParams attributes = window.getAttributes();
+                attributes.windowAnimations = R.style.SlideAnimBottom;
+                window.setAttributes(attributes);
+            }
+        }
         fromRepoId = getArguments().getString(KEY_SEA_FILE_FROM_REPO_ID, "");
         fromRepoFilePath = getArguments().getString(KEY_SEA_FILE_FROM_FILE_PATH, "");
         folderDocumentEntity = (FolderDocumentEntity) getArguments().getSerializable("data");
@@ -125,15 +134,6 @@ public class DocumentDetailDialogFragment extends BaseDialogFragment {
             titleContent.setText("文件夹详情");
         } else {
             titleContent.setText("文件详情");
-        }
-        Dialog dialog = getDialog();
-        if (dialog != null) {
-            Window window = dialog.getWindow();
-            if (window != null) {
-                WindowManager.LayoutParams attributes = window.getAttributes();
-                attributes.windowAnimations = R.style.SlideAnimBottom;
-                window.setAttributes(attributes);
-            }
         }
         viewPager.setAdapter(baseFragmentAdapter = new BaseFragmentAdapter(getChildFragmentManager()));
         tabLayout.setupWithViewPager(viewPager);

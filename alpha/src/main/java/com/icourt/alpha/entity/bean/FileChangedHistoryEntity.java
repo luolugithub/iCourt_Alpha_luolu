@@ -1,5 +1,7 @@
 package com.icourt.alpha.entity.bean;
 
+import com.icourt.alpha.widget.comparators.ILongFieldEntity;
+
 /**
  * Description  文件修改历史
  * Company Beijing icourt
@@ -7,7 +9,7 @@ package com.icourt.alpha.entity.bean;
  * date createTime：2017/8/17
  * version 2.1.0
  */
-public class FileChangedHistoryEntity {
+public class FileChangedHistoryEntity implements ILongFieldEntity {
     /**
      * {
      * "id": 2628144,
@@ -42,4 +44,9 @@ public class FileChangedHistoryEntity {
     public String new_path;
     public String pic;
     public String file_name;
+
+    @Override
+    public Long getCompareLongField() {
+        return date;
+    }
 }

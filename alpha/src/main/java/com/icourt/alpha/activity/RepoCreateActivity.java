@@ -9,7 +9,7 @@ import android.text.InputFilter;
 import android.text.TextUtils;
 import android.widget.EditText;
 
-import com.icourt.alpha.entity.bean.DocumentRootEntity;
+import com.icourt.alpha.entity.bean.RepoEntity;
 import com.icourt.alpha.http.callback.SFileCallBack;
 import com.icourt.alpha.widget.filter.SFileNameFilter;
 
@@ -65,9 +65,9 @@ public class RepoCreateActivity extends SFileEditBaseActivity {
         if (checkInput(et)) {
             showLoadingDialog("创建中...");
             getSFileApi().documentRootCreate(et.getText().toString())
-                    .enqueue(new SFileCallBack<DocumentRootEntity>() {
+                    .enqueue(new SFileCallBack<RepoEntity>() {
                         @Override
-                        public void onSuccess(Call<DocumentRootEntity> call, Response<DocumentRootEntity> response) {
+                        public void onSuccess(Call<RepoEntity> call, Response<RepoEntity> response) {
                             dismissLoadingDialog();
                             showToast("创建资料库成功");
                             EventBus.getDefault().post(response.body());
@@ -75,7 +75,7 @@ public class RepoCreateActivity extends SFileEditBaseActivity {
                         }
 
                         @Override
-                        public void onFailure(Call<DocumentRootEntity> call, Throwable t) {
+                        public void onFailure(Call<RepoEntity> call, Throwable t) {
                             dismissLoadingDialog();
                             super.onFailure(call, t);
                         }

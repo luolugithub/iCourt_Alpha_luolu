@@ -2,7 +2,7 @@ package com.icourt.alpha.http;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.icourt.alpha.entity.bean.DocumentRootEntity;
+import com.icourt.alpha.entity.bean.RepoEntity;
 import com.icourt.alpha.entity.bean.FileBoxBean;
 import com.icourt.alpha.entity.bean.FileVersionCommits;
 import com.icourt.alpha.entity.bean.FolderDocumentEntity;
@@ -92,11 +92,11 @@ public interface ApiSFileService {
      * @return
      */
     @GET("api/v2.1/alpha-box-repos/")
-    Call<List<DocumentRootEntity>> documentRootQuery(@Query("page") int page,
-                                                     @Query("per_page") int per_page,
-                                                     @Query("not_shared_from") String not_shared_from,
-                                                     @Query("shared_from") String shared_from,
-                                                     @Query("type") String type);
+    Call<List<RepoEntity>> documentRootQuery(@Query("page") int page,
+                                             @Query("per_page") int per_page,
+                                             @Query("not_shared_from") String not_shared_from,
+                                             @Query("shared_from") String shared_from,
+                                             @Query("type") String type);
 
 
     /**
@@ -105,7 +105,7 @@ public interface ApiSFileService {
      * @return
      */
     @GET("api2/repos/public/")
-    Call<List<DocumentRootEntity>> documentRootQuery();
+    Call<List<RepoEntity>> documentRootQuery();
 
     /**
      * 创建资料库
@@ -115,7 +115,7 @@ public interface ApiSFileService {
      */
     @POST("api2/repos/")
     @FormUrlEncoded
-    Call<DocumentRootEntity> documentRootCreate(@Field("name") String name);
+    Call<RepoEntity> documentRootCreate(@Field("name") String name);
 
     /**
      * 资料库更改名字
@@ -173,9 +173,9 @@ public interface ApiSFileService {
      * @return https://testbox.alphalawyer.cn/api/v2.1/repos/d4f82446-a37f-478c-b6b5-ed0e779e1768/dir/?p=%2F22222
      */
     @POST("api/v2.1/repos/{seaFileRepoId}/dir/")
-    Call<DocumentRootEntity> folderCreate(@Path("seaFileRepoId") String seaFileRepoId,
-                                          @Query("p") String p,
-                                          @Body RequestBody body);
+    Call<RepoEntity> folderCreate(@Path("seaFileRepoId") String seaFileRepoId,
+                                  @Query("p") String p,
+                                  @Body RequestBody body);
 
     /**
      * 删除文件夹
@@ -398,6 +398,16 @@ public interface ApiSFileService {
                                            @Query("p") String p,
                                            @Query("share_type") String share_type,
                                            @Query("username") String username);
+
+
+    /**
+     * 资料库查询
+     *
+     * @param fromRepoId
+     * @return
+     */
+    @GET("api2/repos/{seaFileRepoId}/")
+    Call<RepoEntity> repoDetailsQuery(@Path("seaFileRepoId") String fromRepoId);
 
 
 }

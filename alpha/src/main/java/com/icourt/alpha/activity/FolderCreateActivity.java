@@ -6,7 +6,7 @@ import android.support.annotation.NonNull;
 import android.widget.EditText;
 
 import com.google.gson.JsonObject;
-import com.icourt.alpha.entity.bean.DocumentRootEntity;
+import com.icourt.alpha.entity.bean.RepoEntity;
 import com.icourt.alpha.http.callback.SFileCallBack;
 import com.icourt.api.RequestUtils;
 
@@ -67,16 +67,16 @@ public class FolderCreateActivity extends RepoCreateActivity {
                     getSeaFileRepoId(),
                     String.format("%s%s", getSeaFileDirPath(), et.getText().toString()),
                     RequestUtils.createJsonBody(operationJsonObject.toString()))
-                    .enqueue(new SFileCallBack<DocumentRootEntity>() {
+                    .enqueue(new SFileCallBack<RepoEntity>() {
                         @Override
-                        public void onSuccess(Call<DocumentRootEntity> call, Response<DocumentRootEntity> response) {
+                        public void onSuccess(Call<RepoEntity> call, Response<RepoEntity> response) {
                             dismissLoadingDialog();
                             showToast("创建文件夹成功");
                             finish();
                         }
 
                         @Override
-                        public void onFailure(Call<DocumentRootEntity> call, Throwable t) {
+                        public void onFailure(Call<RepoEntity> call, Throwable t) {
                             dismissLoadingDialog();
                             super.onFailure(call, t);
                         }

@@ -6,7 +6,7 @@ import android.support.annotation.NonNull;
 import android.text.TextUtils;
 import android.widget.EditText;
 
-import com.icourt.alpha.entity.bean.DocumentRootEntity;
+import com.icourt.alpha.entity.bean.RepoEntity;
 import com.icourt.alpha.http.callback.SFileCallBack;
 import com.icourt.alpha.utils.DateUtils;
 
@@ -29,32 +29,32 @@ public class RepoRenameActivity extends RepoCreateActivity {
      * @param context
      */
     public static void launch(@NonNull Context context,
-                              DocumentRootEntity documentRootEntity) {
+                              RepoEntity repoEntity) {
         if (context == null) return;
-        if (documentRootEntity == null) return;
+        if (repoEntity == null) return;
         Intent intent = new Intent(context, RepoRenameActivity.class);
-        intent.putExtra("data", documentRootEntity);
+        intent.putExtra("data", repoEntity);
         context.startActivity(intent);
     }
 
-    DocumentRootEntity paramDocumentRootEntity;
+    RepoEntity paramRepoEntity;
 
     @Override
     protected void initView() {
         super.initView();
         setTitle("重命名资料库");
         inputNameEt.setHint("资料库名称");
-        paramDocumentRootEntity = (DocumentRootEntity) getIntent().getSerializableExtra("data");
-        if (paramDocumentRootEntity == null) {
+        paramRepoEntity = (RepoEntity) getIntent().getSerializableExtra("data");
+        if (paramRepoEntity == null) {
             finish();
         }
-        inputNameEt.setText(paramDocumentRootEntity.repo_name);
+        inputNameEt.setText(paramRepoEntity.repo_name);
         inputNameEt.setSelection(inputNameEt.getText().length());
     }
 
     @Override
     protected boolean onCancelSubmitInput(final EditText et) {
-        if (TextUtils.equals(paramDocumentRootEntity.repo_name, et.getText())) {
+        if (TextUtils.equals(paramRepoEntity.repo_name, et.getText())) {
             finish();
             return false;
         }
@@ -64,21 +64,21 @@ public class RepoRenameActivity extends RepoCreateActivity {
     @Override
     protected void onSubmitInput(EditText et) {
         if (checkInput(et)) {
-            if (paramDocumentRootEntity == null) return;
+            if (paramRepoEntity == null) return;
             showLoadingDialog("更改中...");
-            paramDocumentRootEntity.repo_name = et.getText().toString();
-            paramDocumentRootEntity.last_modified = DateUtils.millis();
+            paramRepoEntity.repo_name = et.getText().toString();
+            paramRepoEntity.last_modified = DateUtils.millis();
             getSFileApi().documentRootUpdateName(
-                    paramDocumentRootEntity.repo_id,
+                    paramRepoEntity.repo_id,
                     "rename",
-                    paramDocumentRootEntity.repo_name)
+                    paramRepoEntity.repo_name)
                     .enqueue(new SFileCallBack<String>() {
                         @Override
                         public void onSuccess(Call<String> call, Response<String> response) {
                             dismissLoadingDialog();
                             if (TextUtils.equals("success", response.body())) {
                                 showToast("更改资料库标题成功");
-                                EventBus.getDefault().post(paramDocumentRootEntity);
+                                EventBus.getDefault().post(paramRepoEntity);
                                 finish();
                             } else {
                                 showToast("更改资料库标题失败");

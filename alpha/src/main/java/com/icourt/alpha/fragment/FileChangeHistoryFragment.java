@@ -1,5 +1,6 @@
 package com.icourt.alpha.fragment;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
@@ -13,12 +14,14 @@ import com.icourt.alpha.BuildConfig;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.FileChangedHistoryAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
+import com.icourt.alpha.adapter.baseadapter.adapterObserver.DataChangeAdapterObserver;
 import com.icourt.alpha.base.BaseDialogFragment;
 import com.icourt.alpha.entity.bean.FileChangedHistoryEntity;
 import com.icourt.alpha.entity.bean.RepoMatterEntity;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.callback.SimpleCallBack2;
 import com.icourt.alpha.http.httpmodel.ResEntity;
+import com.icourt.alpha.interfaces.OnFragmentDataChangeListener;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 
 import java.util.List;
@@ -47,6 +50,7 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
 
     protected static final String KEY_SEA_FILE_FROM_REPO_ID = "seaFileFromRepoId";//原仓库id
     protected static final String KEY_SEA_FILE_FROM_DIR_PATH = "seaFileFromDirPath";//原仓库路径
+    OnFragmentDataChangeListener onFragmentDataChangeListener;
 
     public static FileChangeHistoryFragment newInstance(
             String fromRepoId,
@@ -57,6 +61,20 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
         args.putString(KEY_SEA_FILE_FROM_DIR_PATH, fromRepoDirPath);
         fragment.setArguments(args);
         return fragment;
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        if (getParentFragment() instanceof OnFragmentDataChangeListener) {
+            onFragmentDataChangeListener = (OnFragmentDataChangeListener) getParentFragment();
+        } else {
+            try {
+                onFragmentDataChangeListener = (OnFragmentDataChangeListener) context;
+            } catch (ClassCastException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     @Nullable
@@ -71,6 +89,17 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
     protected void initView() {
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setAdapter(fileChangedHistoryAdapter = new FileChangedHistoryAdapter());
+        fileChangedHistoryAdapter.registerAdapterDataObserver(new DataChangeAdapterObserver() {
+            @Override
+            protected void updateUI() {
+                if (onFragmentDataChangeListener != null) {
+                    onFragmentDataChangeListener.onFragmentDataChanged(
+                            FileChangeHistoryFragment.this,
+                            0,
+                            fileChangedHistoryAdapter.getData());
+                }
+            }
+        });
         fileChangedHistoryAdapter.setOnItemChildClickListener(this);
         refreshLayout.setXRefreshViewListener(new XRefreshView.SimpleXRefreshListener() {
             @Override

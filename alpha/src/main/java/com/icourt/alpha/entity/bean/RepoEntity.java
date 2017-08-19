@@ -17,7 +17,7 @@ import java.io.Serializable;
  * date createTime：2017/8/10
  * version 2.1.0
  */
-public class DocumentRootEntity implements Serializable, ILongFieldEntity {
+public class RepoEntity implements Serializable, ILongFieldEntity {
 
     @Override
     public Long getCompareLongField() {
@@ -42,7 +42,7 @@ public class DocumentRootEntity implements Serializable, ILongFieldEntity {
         if (o == null) return false;
         if (getClass() != o.getClass())
             return false;
-        final DocumentRootEntity other = (DocumentRootEntity) o;
+        final RepoEntity other = (RepoEntity) o;
         return TextUtils.equals(this.repo_id, other.repo_id);
     }
 

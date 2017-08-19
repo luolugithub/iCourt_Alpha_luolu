@@ -14,14 +14,15 @@ import com.andview.refreshview.XRefreshView;
 import com.icourt.alpha.R;
 import com.icourt.alpha.activity.FolderListActivity;
 import com.icourt.alpha.activity.RepoRenameActivity;
-import com.icourt.alpha.adapter.DocumentAdapter;
+import com.icourt.alpha.adapter.RepoAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.HeaderFooterAdapter;
 import com.icourt.alpha.adapter.baseadapter.adapterObserver.RefreshViewEmptyObserver;
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.entity.bean.DefaultRepoEntity;
-import com.icourt.alpha.entity.bean.DocumentRootEntity;
+import com.icourt.alpha.entity.bean.RepoEntity;
 import com.icourt.alpha.entity.bean.SFileTokenEntity;
+import com.icourt.alpha.fragment.dialogfragment.RepoDetailsDialogFragment;
 import com.icourt.alpha.http.callback.SFileCallBack;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.callback.SimpleCallBack2;
@@ -46,12 +47,16 @@ import retrofit2.Response;
 
 /**
  * Description  资料库列表
+ * 只有我的资料库 长按才有效
  * Company Beijing icourt
  * author  youxuan  E-mail:xuanyouwu@163.com
  * date createTime：2017/8/9
  * version 2.1.0
  */
-public class RepoListFragment extends BaseFragment implements BaseRecyclerAdapter.OnItemClickListener, BaseRecyclerAdapter.OnItemLongClickListener, BaseRecyclerAdapter.OnItemChildClickListener {
+public class RepoListFragment extends BaseFragment
+        implements BaseRecyclerAdapter.OnItemClickListener,
+        BaseRecyclerAdapter.OnItemLongClickListener,
+        BaseRecyclerAdapter.OnItemChildClickListener {
 
     @BindView(R.id.recyclerView)
     @Nullable
@@ -61,9 +66,10 @@ public class RepoListFragment extends BaseFragment implements BaseRecyclerAdapte
     RefreshLayout refreshLayout;
     int pageIndex = 1;
     String defaultRopoId;
+    int repoType;
 
-    DocumentAdapter documentAdapter;
-    HeaderFooterAdapter<DocumentAdapter> headerFooterAdapter;
+    RepoAdapter repoAdapter;
+    HeaderFooterAdapter<RepoAdapter> headerFooterAdapter;
     TextView footer_textview;
 
     /**
@@ -83,6 +89,7 @@ public class RepoListFragment extends BaseFragment implements BaseRecyclerAdapte
         return documentsListFragment;
     }
 
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -93,26 +100,27 @@ public class RepoListFragment extends BaseFragment implements BaseRecyclerAdapte
 
     @Override
     protected void initView() {
+        repoType = getArguments().getInt("type");
         EventBus.getDefault().register(this);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
-        headerFooterAdapter = new HeaderFooterAdapter<>(documentAdapter = new DocumentAdapter());
+        headerFooterAdapter = new HeaderFooterAdapter<>(repoAdapter = new RepoAdapter(repoType));
         footer_textview = (TextView) HeaderFooterAdapter.inflaterView(getContext(), R.layout.footer_textview, recyclerView);
         headerFooterAdapter.addFooter(footer_textview);
-        documentAdapter.registerAdapterDataObserver(new RefreshViewEmptyObserver(refreshLayout, documentAdapter) {
+        repoAdapter.registerAdapterDataObserver(new RefreshViewEmptyObserver(refreshLayout, repoAdapter) {
             @Override
             protected void updateUI() {
                 super.updateUI();
                 if (footer_textview != null) {
-                    footer_textview.setText(String.format("%s个资料库", documentAdapter.getItemCount()));
+                    footer_textview.setText(String.format("%s个资料库", repoAdapter.getItemCount()));
                 }
             }
         });
         recyclerView.setAdapter(headerFooterAdapter);
 
-        documentAdapter.setOnItemClickListener(this);
-        documentAdapter.setOnItemChildClickListener(this);
-        documentAdapter.setOnItemLongClickListener(this);
+        repoAdapter.setOnItemClickListener(this);
+        repoAdapter.setOnItemChildClickListener(this);
+        repoAdapter.setOnItemLongClickListener(this);
         refreshLayout.setXRefreshViewListener(new XRefreshView.SimpleXRefreshListener() {
             @Override
             public void onLoadMore(boolean isSilence) {
@@ -175,7 +183,7 @@ public class RepoListFragment extends BaseFragment implements BaseRecyclerAdapte
     }
 
     private void getRepoList(final boolean isRefresh) {
-        switch (getArguments().getInt("type")) {
+        switch (repoType) {
             case 0: {
                 getDocumentRoot(isRefresh, null);
             }
@@ -257,9 +265,9 @@ public class RepoListFragment extends BaseFragment implements BaseRecyclerAdapte
         if (isRefresh) {
             pageIndex = 1;
         }
-        Call<List<DocumentRootEntity>> listCall = null;
+        Call<List<RepoEntity>> listCall = null;
         final int pageSize = ActionConstants.DEFAULT_PAGE_SIZE;
-        switch (getArguments().getInt("type")) {
+        switch (repoType) {
             case 0:
                 listCall = getSFileApi().documentRootQuery(pageIndex, pageSize, null, null, null);
                 break;
@@ -274,17 +282,17 @@ public class RepoListFragment extends BaseFragment implements BaseRecyclerAdapte
                 break;
         }
         if (listCall != null) {
-            listCall.enqueue(new SFileCallBack<List<DocumentRootEntity>>() {
+            listCall.enqueue(new SFileCallBack<List<RepoEntity>>() {
                 @Override
-                public void onSuccess(Call<List<DocumentRootEntity>> call, Response<List<DocumentRootEntity>> response) {
+                public void onSuccess(Call<List<RepoEntity>> call, Response<List<RepoEntity>> response) {
                     stopRefresh();
-                    documentAdapter.bindData(isRefresh, response.body());
+                    repoAdapter.bindData(isRefresh, response.body());
                     pageIndex += 1;
                     enableLoadMore(response.body());
                 }
 
                 @Override
-                public void onFailure(Call<List<DocumentRootEntity>> call, Throwable t) {
+                public void onFailure(Call<List<RepoEntity>> call, Throwable t) {
                     super.onFailure(call, t);
                     stopRefresh();
                 }
@@ -301,8 +309,8 @@ public class RepoListFragment extends BaseFragment implements BaseRecyclerAdapte
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onDocumentRootEvent(DocumentRootEntity documentRootEntity) {
-        if (documentRootEntity == null) return;
+    public void onDocumentRootEvent(RepoEntity repoEntity) {
+        if (repoEntity == null) return;
     }
 
 
@@ -320,12 +328,19 @@ public class RepoListFragment extends BaseFragment implements BaseRecyclerAdapte
 
     @Override
     public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
-        lookDetail(position);
+        RepoEntity item = repoAdapter.getItem(position);
+        if (item == null) return;
+        FolderListActivity.launch(getContext(),
+                item.repo_id,
+                item.repo_name,
+                "/");
     }
 
     @Override
     public boolean onItemLongClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, final View view, final int position) {
-        showDocumentActionDialog(position);
+        if (repoType == 0) {
+            showDocumentActionDialog(position);
+        }
         return true;
     }
 
@@ -339,7 +354,7 @@ public class RepoListFragment extends BaseFragment implements BaseRecyclerAdapte
      * @param pos
      */
     private void showDocumentActionDialog(final int pos) {
-        DocumentRootEntity item = documentAdapter.getItem(pos);
+        RepoEntity item = repoAdapter.getItem(pos);
         if (item == null) return;
         List<String> menus = Arrays.asList("详细信息", "重命名", "共享", "删除");
         if (isDefaultReop(item.repo_id)) {
@@ -372,19 +387,10 @@ public class RepoListFragment extends BaseFragment implements BaseRecyclerAdapte
      * @param pos
      */
     private void lookDetail(int pos) {
-       /* if (pos % 2 == 0) {
-            FolderDetailDialogFragment.show("",
-                    getChildFragmentManager());
-        } else {
-            DocumentDetailDialogFragment.show("",
-                    getChildFragmentManager());
-        }*/
-        DocumentRootEntity item = documentAdapter.getItem(pos);
+        RepoEntity item = repoAdapter.getItem(pos);
         if (item == null) return;
-        FolderListActivity.launch(getContext(),
-                item.repo_id,
-                item.repo_name,
-                "/", false);
+        RepoDetailsDialogFragment.show(item.repo_id,
+                getChildFragmentManager());
     }
 
     /**
@@ -393,7 +399,7 @@ public class RepoListFragment extends BaseFragment implements BaseRecyclerAdapte
      * @param pos
      */
     private void renameDocument(int pos) {
-        final DocumentRootEntity item = documentAdapter.getItem(pos);
+        final RepoEntity item = repoAdapter.getItem(pos);
         if (item == null) return;
         RepoRenameActivity.launch(getContext(), item);
     }
@@ -414,6 +420,7 @@ public class RepoListFragment extends BaseFragment implements BaseRecyclerAdapte
                 Arrays.asList("删除"), new BottomActionDialog.OnActionItemClickListener() {
             @Override
             public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
+                dialog.dismiss();
                 delDocument(pos);
             }
         }).show();
@@ -425,7 +432,7 @@ public class RepoListFragment extends BaseFragment implements BaseRecyclerAdapte
      * @param pos
      */
     private void delDocument(int pos) {
-        final DocumentRootEntity item = documentAdapter.getItem(pos);
+        final RepoEntity item = repoAdapter.getItem(pos);
         if (item == null) return;
         showLoadingDialog("资料库删除中...");
         getSFileApi().documentRootDelete(item.repo_id)
@@ -435,7 +442,7 @@ public class RepoListFragment extends BaseFragment implements BaseRecyclerAdapte
                         dismissLoadingDialog();
                         if (TextUtils.equals("success", response.body())) {
                             showTopSnackBar("资料库删除成功");
-                            documentAdapter.removeItem(item);
+                            repoAdapter.removeItem(item);
                         } else {
                             showTopSnackBar("资料库删除失败");
                         }
@@ -453,7 +460,11 @@ public class RepoListFragment extends BaseFragment implements BaseRecyclerAdapte
     public void onItemChildClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
         switch (view.getId()) {
             case R.id.document_expand_iv:
-                showDocumentActionDialog(position);
+                if (repoType == 0) {
+                    showDocumentActionDialog(position);
+                } else {
+                    lookDetail(position);
+                }
                 break;
         }
     }

@@ -39,14 +39,12 @@ import com.icourt.alpha.adapter.baseadapter.adapterObserver.DataChangeAdapterObs
 import com.icourt.alpha.constants.Const;
 import com.icourt.alpha.entity.bean.FolderDocumentEntity;
 import com.icourt.alpha.entity.bean.ItemsEntity;
-import com.icourt.alpha.entity.bean.SeaFileTrashPageEntity;
 import com.icourt.alpha.entity.event.SeaFolderEvent;
 import com.icourt.alpha.fragment.dialogfragment.DocumentDetailDialogFragment;
 import com.icourt.alpha.fragment.dialogfragment.FolderTargetListDialogFragment;
 import com.icourt.alpha.http.callback.SFileCallBack;
 import com.icourt.alpha.http.callback.SimpleCallBack2;
 import com.icourt.alpha.interfaces.ISeaFileImageLoader;
-import com.icourt.alpha.utils.ActionConstants;
 import com.icourt.alpha.utils.GlideUtils;
 import com.icourt.alpha.utils.ImageUtils;
 import com.icourt.alpha.utils.IndexUtils;
@@ -136,7 +134,6 @@ public class FolderListActivity extends FolderBaseActivity
     @BindView(R.id.bottom_bar_all_select_cb)
     CheckBox bottomBarAllSelectCb;
 
-    int pageIndex = 1;
     int fileSortType = FILE_SORT_TYPE_DEFAULT;
 
     private static final int REQUEST_CODE_CAMERA = 1000;
@@ -170,24 +167,17 @@ public class FolderListActivity extends FolderBaseActivity
      * @param seaFileRepoId
      * @param title
      * @param seaFileDirPath
-     * @param isFromTrash    是否是垃圾回收站
      */
     public static void launch(@NonNull Context context,
                               String seaFileRepoId,
                               String title,
-                              String seaFileDirPath,
-                              boolean isFromTrash) {
+                              String seaFileDirPath) {
         if (context == null) return;
         Intent intent = new Intent(context, FolderListActivity.class);
         intent.putExtra("title", title);
         intent.putExtra(KEY_SEA_FILE_REPO_ID, seaFileRepoId);
         intent.putExtra(KEY_SEA_FILE_DIR_PATH, seaFileDirPath);
-        intent.putExtra("isFromTrash", isFromTrash);
         context.startActivity(intent);
-    }
-
-    private boolean isFromTrash() {
-        return getIntent().getBooleanExtra("isFromTrash", false);
     }
 
 
@@ -206,17 +196,11 @@ public class FolderListActivity extends FolderBaseActivity
         setTitle(getIntent().getStringExtra("title"));
         ImageView titleActionImage = getTitleActionImage();
         if (titleActionImage != null) {
-            if (isFromTrash()) {
-                titleActionImage.setVisibility(View.INVISIBLE);
-            }
             titleActionImage.setImageResource(R.mipmap.header_icon_add);
         }
 
         ImageView titleActionImage2 = getTitleActionImage2();
         if (titleActionImage2 != null) {
-            if (isFromTrash()) {
-                titleActionImage2.setVisibility(View.INVISIBLE);
-            }
             titleActionImage2.setImageResource(R.mipmap.header_icon_more);
         }
 
@@ -234,7 +218,7 @@ public class FolderListActivity extends FolderBaseActivity
                         },
                         false,
                         selectedFolderDocuments,
-                        isFromTrash()));
+                        false));
         addHeadView();
 
         addFooterView();
@@ -355,66 +339,32 @@ public class FolderListActivity extends FolderBaseActivity
     }
 
     private void getFolder(final boolean isRefresh) {
-        if (isRefresh) {
-            pageIndex = 1;
-        }
-        if (isFromTrash()) {
-            getSFileApi().folderTrashQuery(
-                    getSeaFileRepoId(),
-                    getSeaFileDirPath(),
-                    ActionConstants.DEFAULT_PAGE_SIZE).enqueue(new SFileCallBack<SeaFileTrashPageEntity<FolderDocumentEntity>>() {
-                @Override
-                public void onSuccess(Call<SeaFileTrashPageEntity<FolderDocumentEntity>> call, Response<SeaFileTrashPageEntity<FolderDocumentEntity>> response) {
-                    if (response.body().data != null) {
-                        IndexUtils.setSuspensions(getContext(), response.body().data);
-                        try {
-                            Collections.sort(response.body().data, new FileSortComparator(fileSortType));
-                        } catch (Throwable e) {
-                            e.printStackTrace();
-                            bugSync("排序异常", e);
-                        }
-                    }
-                    folderDocumentAdapter.bindData(isRefresh, wrapGridData(response.body().data));
-                    stopRefresh();
-                    pageIndex += 1;
-                    if (refreshLayout != null) {
-                        refreshLayout.setPullLoadEnable(response.body().more);
-                    }
-                }
 
-                @Override
-                public void onFailure(Call<SeaFileTrashPageEntity<FolderDocumentEntity>> call, Throwable t) {
-                    super.onFailure(call, t);
-                    stopRefresh();
-                }
-            });
-        } else {
-            getSFileApi().documentDirQuery(
-                    getSeaFileRepoId(),
-                    getSeaFileDirPath())
-                    .enqueue(new SFileCallBack<List<FolderDocumentEntity>>() {
-                        @Override
-                        public void onSuccess(Call<List<FolderDocumentEntity>> call, Response<List<FolderDocumentEntity>> response) {
-                            if (response.body() != null) {
-                                IndexUtils.setSuspensions(getContext(), response.body());
-                                try {
-                                    Collections.sort(response.body(), new FileSortComparator(fileSortType));
-                                } catch (Throwable e) {
-                                    e.printStackTrace();
-                                    bugSync("排序异常", e);
-                                }
+        getSFileApi().documentDirQuery(
+                getSeaFileRepoId(),
+                getSeaFileDirPath())
+                .enqueue(new SFileCallBack<List<FolderDocumentEntity>>() {
+                    @Override
+                    public void onSuccess(Call<List<FolderDocumentEntity>> call, Response<List<FolderDocumentEntity>> response) {
+                        if (response.body() != null) {
+                            IndexUtils.setSuspensions(getContext(), response.body());
+                            try {
+                                Collections.sort(response.body(), new FileSortComparator(fileSortType));
+                            } catch (Throwable e) {
+                                e.printStackTrace();
+                                bugSync("排序异常", e);
                             }
-                            folderDocumentAdapter.bindData(isRefresh, wrapGridData(response.body()));
-                            stopRefresh();
                         }
+                        folderDocumentAdapter.bindData(isRefresh, wrapGridData(response.body()));
+                        stopRefresh();
+                    }
 
-                        @Override
-                        public void onFailure(Call<List<FolderDocumentEntity>> call, Throwable t) {
-                            super.onFailure(call, t);
-                            stopRefresh();
-                        }
-                    });
-        }
+                    @Override
+                    public void onFailure(Call<List<FolderDocumentEntity>> call, Throwable t) {
+                        super.onFailure(call, t);
+                        stopRefresh();
+                    }
+                });
     }
 
     private void stopRefresh() {
@@ -496,11 +446,7 @@ public class FolderListActivity extends FolderBaseActivity
                                         updateSelectableModeSatue(folderDocumentAdapter.isSelectable());
                                         break;
                                     case 1:
-                                        FolderListActivity.launch(getContext(),
-                                                getSeaFileRepoId(),
-                                                "回收站",
-                                                getSeaFileDirPath(),
-                                                true);
+                                        //TODO
                                         break;
                                     case 2:
                                         break;
@@ -800,9 +746,6 @@ public class FolderListActivity extends FolderBaseActivity
     @Override
     public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
         if (adapter instanceof FolderDocumentAdapter) {
-
-            if (isFromTrash()) return;//回收站的文件不让点击
-
             FolderDocumentAdapter folderDocumentAdapter = (FolderDocumentAdapter) adapter;
             if (folderDocumentAdapter.isSelectable()) {
                 toggleSelect(folderDocumentAdapter, position);
@@ -813,8 +756,7 @@ public class FolderListActivity extends FolderBaseActivity
                     FolderListActivity.launch(getContext(),
                             getSeaFileRepoId(),
                             item.name,
-                            String.format("%s%s/", getSeaFileDirPath(), item.name),
-                            isFromTrash());
+                            String.format("%s%s/", getSeaFileDirPath(), item.name));
                 } else {
                     DocumentDetailDialogFragment.show(
                             getSeaFileRepoId(),
@@ -842,55 +784,10 @@ public class FolderListActivity extends FolderBaseActivity
         if (adapter instanceof FolderDocumentAdapter) {
             switch (view.getId()) {
                 case R.id.document_expand_iv:
-                    if (isFromTrash()) {
-                        fileRevert((FolderDocumentAdapter) adapter, position);
-                    } else {
-                        showFolderActionMenu(adapter, position);
-                    }
+                    showFolderActionMenu(adapter, position);
                     break;
             }
         }
-    }
-
-    /**
-     * 文件恢复
-     *
-     * @param position
-     */
-    private void fileRevert(FolderDocumentAdapter adapter, int position) {
-        final FolderDocumentEntity item = adapter.getItem(position);
-        if (item == null) return;
-        Call<JsonObject> jsonObjectCall;
-        if (item.isDir()) {
-            jsonObjectCall = getSFileApi().folderRevert(
-                    getSeaFileRepoId(),
-                    String.format("%s%s", item.parent_dir, item.name),
-                    item.commit_id);
-        } else {
-            jsonObjectCall = getSFileApi().fileRevert(
-                    getSeaFileRepoId(),
-                    String.format("%s%s", item.parent_dir, item.name),
-                    item.commit_id);
-        }
-        jsonObjectCall.enqueue(new SFileCallBack<JsonObject>() {
-            @Override
-            public void onSuccess(Call<JsonObject> call, Response<JsonObject> response) {
-                dismissLoadingDialog();
-                if (response.body().has("success")
-                        && response.body().get("success").getAsBoolean()) {
-                    getData(true);
-                    showTopSnackBar("文件恢复成功");
-                } else {
-                    showTopSnackBar("文件恢复失败");
-                }
-            }
-
-            @Override
-            public void onFailure(Call<JsonObject> call, Throwable t) {
-                dismissLoadingDialog();
-                super.onFailure(call, t);
-            }
-        });
     }
 
     /**

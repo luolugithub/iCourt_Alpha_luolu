@@ -5,7 +5,7 @@ import android.widget.TextView;
 
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.baseadapter.BaseArrayRecyclerAdapter;
-import com.icourt.alpha.entity.bean.DocumentRootEntity;
+import com.icourt.alpha.entity.bean.RepoEntity;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.FileUtils;
 
@@ -16,7 +16,22 @@ import com.icourt.alpha.utils.FileUtils;
  * date createTime：2017/8/9
  * version 2.1.0
  */
-public class DocumentAdapter extends BaseArrayRecyclerAdapter<DocumentRootEntity> {
+public class RepoAdapter extends BaseArrayRecyclerAdapter<RepoEntity> {
+
+    int type;
+
+    /**
+     * 0： "我的资料库",
+     * 1： "共享给我的",
+     * 2： "律所资料库",
+     * 3： "项目资料库"
+     *
+     * @param type
+     * @return
+     */
+    public RepoAdapter(int type) {
+        this.type = type;
+    }
 
     @Override
     public int bindView(int viewtype) {
@@ -24,16 +39,15 @@ public class DocumentAdapter extends BaseArrayRecyclerAdapter<DocumentRootEntity
     }
 
     @Override
-    public void onBindHoder(ViewHolder holder, DocumentRootEntity documentRootEntity, int position) {
-        if (documentRootEntity == null) return;
+    public void onBindHoder(ViewHolder holder, RepoEntity repoEntity, int position) {
+        if (repoEntity == null) return;
         TextView document_title_tv = holder.obtainView(R.id.document_title_tv);
         TextView document_desc_tv = holder.obtainView(R.id.document_desc_tv);
         ImageView document_expand_iv = holder.obtainView(R.id.document_expand_iv);
         holder.bindChildClick(document_expand_iv);
 
-        document_title_tv.setText(documentRootEntity.repo_name);
-        document_desc_tv.setText(String.format("%s, %s", FileUtils.bFormat(documentRootEntity.size), DateUtils.getFormatChatTimeSimple(documentRootEntity.last_modified)));
+        document_expand_iv.setImageResource(type == 0 ? R.mipmap.ic_open_menu : R.mipmap.icon_about_16);
+        document_title_tv.setText(repoEntity.repo_name);
+        document_desc_tv.setText(String.format("%s, %s", FileUtils.bFormat(repoEntity.size), DateUtils.getFormatChatTimeSimple(repoEntity.last_modified)));
     }
-
-
 }
