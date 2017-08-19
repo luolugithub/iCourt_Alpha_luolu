@@ -65,7 +65,7 @@ public class TaskAllotSelectDialogFragment extends BaseDialogFragment implements
     String projectId;
     HeaderFooterAdapter<TaskOwerListAdapter> headerFooterAdapter;
     TaskOwerListAdapter taskOwerListAdapter;
-    List<TaskEntity.TaskItemEntity.AttendeeUserEntity> attendeeUserEntities;
+    final ArrayList<TaskEntity.TaskItemEntity.AttendeeUserEntity> attendeeUserEntities = new ArrayList<>();
     OnFragmentCallBackListener onFragmentCallBackListener;
     @BindView(R.id.header_comm_search_input_et)
     ClearEditText headerCommSearchInputEt;
@@ -118,7 +118,10 @@ public class TaskAllotSelectDialogFragment extends BaseDialogFragment implements
             }
         }
         projectId = getArguments().getString("projectId");
-        attendeeUserEntities = (List<TaskEntity.TaskItemEntity.AttendeeUserEntity>) getArguments().getSerializable("list");
+        attendeeUserEntities.clear();
+        ArrayList<TaskEntity.TaskItemEntity.AttendeeUserEntity> list = (ArrayList<TaskEntity.TaskItemEntity.AttendeeUserEntity>)getArguments().getSerializable("list");
+        if(list!=null)
+        attendeeUserEntities.addAll(list);
 
         recyclerview.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerview.setHasFixedSize(true);

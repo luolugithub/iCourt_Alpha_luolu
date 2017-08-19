@@ -768,6 +768,7 @@ public class TaskDetailActivity extends BaseActivity
                     } else if (taskItemEntity.attendeeUsers.size() == 1) {
                         taskUsersLayout.setVisibility(View.GONE);
                         taskUserLayout.setVisibility(View.VISIBLE);
+                        taskUserPic.setVisibility(View.VISIBLE);
                         if (taskItemEntity.attendeeUsers.get(0) != null) {
                             GlideUtils.loadUser(this, taskItemEntity.attendeeUsers.get(0).pic, taskUserPic);
                             taskUserName.setText(taskItemEntity.attendeeUsers.get(0).userName);
@@ -999,8 +1000,8 @@ public class TaskDetailActivity extends BaseActivity
                     for (TaskEntity.TaskItemEntity.AttendeeUserEntity attendeeUser : itemEntity.attendeeUsers) {
                         jsonarr.add(attendeeUser.userId);
                     }
-                    jsonObject.add("attendees", jsonarr);
                 }
+                jsonObject.add("attendees", jsonarr);
             }
             return jsonObject.toString();
         } catch (Exception e) {

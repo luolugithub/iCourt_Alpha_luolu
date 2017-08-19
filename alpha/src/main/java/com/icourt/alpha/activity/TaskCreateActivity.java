@@ -47,6 +47,7 @@ import com.umeng.analytics.MobclickAgent;
 
 import org.greenrobot.eventbus.EventBus;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
@@ -95,7 +96,7 @@ public class TaskCreateActivity extends BaseActivity implements ProjectSelectDia
     @BindView(R.id.ower_layout)
     LinearLayout owerLayout;
 
-    List<TaskEntity.TaskItemEntity.AttendeeUserEntity> attendeeUserEntities;
+    List<TaskEntity.TaskItemEntity.AttendeeUserEntity> attendeeUserEntities = new ArrayList<>();
     String projectId, taskGroupId;
     long dueTime;
     TaskUsersAdapter usersAdapter;
