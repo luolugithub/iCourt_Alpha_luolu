@@ -501,9 +501,23 @@ public class TaskDetailActivity extends BaseActivity
                         dialog.dismiss();
                         switch (position) {
                             case 0:
-                                if (taskItemEntity.valid)
-                                    updateTask(taskItemEntity, !taskItemEntity.state, taskCheckbox);
-                                else
+                                if (taskItemEntity.valid) {
+                                    if (taskItemEntity != null) {
+                                        if (!taskItemEntity.state) {
+                                            if (taskItemEntity.attendeeUsers != null) {
+                                                if (taskItemEntity.attendeeUsers.size() > 1) {
+                                                    showDeleteDialog("该任务为多人任务，确定要完成吗?", SHOW_FINISH_DIALOG);
+                                                } else {
+                                                    updateTask(taskItemEntity, true, taskCheckbox);
+                                                }
+                                            } else {
+                                                updateTask(taskItemEntity, true, taskCheckbox);
+                                            }
+                                        } else {
+                                            updateTask(taskItemEntity, false, taskCheckbox);
+                                        }
+                                    }
+                                } else
                                     recoverTaskById(taskId);
                                 break;
                             case 1:
