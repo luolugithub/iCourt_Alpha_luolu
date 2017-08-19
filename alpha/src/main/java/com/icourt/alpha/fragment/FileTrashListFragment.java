@@ -24,6 +24,9 @@ import com.icourt.alpha.utils.ActionConstants;
 import com.icourt.alpha.utils.GlideUtils;
 import com.icourt.alpha.utils.SFileTokenUtils;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
+import com.icourt.alpha.widget.dialog.BottomActionDialog;
+
+import java.util.Arrays;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -216,9 +219,28 @@ public class FileTrashListFragment extends SeaFileBaseFragment implements BaseRe
         if (adapter instanceof FolderDocumentAdapter) {
             switch (view.getId()) {
                 case R.id.document_expand_iv:
-                    fileRevert((FolderDocumentAdapter) adapter, position);
+                    showFileRevertConfirmDialog((FolderDocumentAdapter) adapter, position);
                     break;
             }
         }
+    }
+
+    /**
+     * 展示文件恢复确认对话框
+     *
+     * @param folderDocumentAdapter
+     * @param position
+     */
+    private void showFileRevertConfirmDialog(final FolderDocumentAdapter folderDocumentAdapter, int position) {
+        new BottomActionDialog(getContext(),
+                null,
+                Arrays.asList("恢复"),
+                new BottomActionDialog.OnActionItemClickListener() {
+                    @Override
+                    public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
+                        dialog.dismiss();
+                        fileRevert(folderDocumentAdapter, position);
+                    }
+                }).show();
     }
 }

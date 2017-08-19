@@ -93,7 +93,7 @@ public class RepoListFragment extends BaseFragment
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = super.onCreateView(R.layout.fragment_documents_list, inflater, container, savedInstanceState);
+        View view = super.onCreateView(R.layout.layout_refresh_recyclerview, inflater, container, savedInstanceState);
         unbinder = ButterKnife.bind(this, view);
         return view;
     }
@@ -390,6 +390,7 @@ public class RepoListFragment extends BaseFragment
         RepoEntity item = repoAdapter.getItem(pos);
         if (item == null) return;
         RepoDetailsDialogFragment.show(item.repo_id,
+                0,
                 getChildFragmentManager());
     }
 
@@ -410,7 +411,12 @@ public class RepoListFragment extends BaseFragment
      * @param pos
      */
     private void shareDocument(int pos) {
-
+        final RepoEntity item = repoAdapter.getItem(pos);
+        if (item == null) return;
+        RepoDetailsDialogFragment.show(
+                item.repo_id,
+                1,
+                getChildFragmentManager());
     }
 
 

@@ -5,13 +5,13 @@
     android:layout_height="match_parent"
     android:background="@android:color/white"
     android:orientation="vertical">
-
     <!-- 【标题布局 请勿轻易修改】 -->
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="@dimen/alpha_height_title"
         android:background="@color/alpha_background_title"
         android:gravity="center_vertical"
+
         android:orientation="horizontal">
 
 

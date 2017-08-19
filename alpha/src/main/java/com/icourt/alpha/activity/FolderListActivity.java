@@ -42,6 +42,7 @@ import com.icourt.alpha.entity.bean.ItemsEntity;
 import com.icourt.alpha.entity.event.SeaFolderEvent;
 import com.icourt.alpha.fragment.dialogfragment.DocumentDetailDialogFragment;
 import com.icourt.alpha.fragment.dialogfragment.FolderTargetListDialogFragment;
+import com.icourt.alpha.fragment.dialogfragment.RepoDetailsDialogFragment;
 import com.icourt.alpha.http.callback.SFileCallBack;
 import com.icourt.alpha.http.callback.SimpleCallBack2;
 import com.icourt.alpha.interfaces.ISeaFileImageLoader;
@@ -432,34 +433,7 @@ public class FolderListActivity extends FolderBaseActivity
                         }).show();
                 break;
             case R.id.titleAction2:
-                new BottomActionDialog(getContext(),
-                        null,
-                        Arrays.asList("批量操作", "回收站", "修改历史", "文件夹详情"),
-                        new BottomActionDialog.OnActionItemClickListener() {
-                            @Override
-                            public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
-                                dialog.dismiss();
-                                switch (position) {
-                                    case 0:
-                                        folderDocumentAdapter.setSelectable(true);
-                                        folderDocumentAdapter.notifyDataSetChanged();
-                                        updateSelectableModeSatue(folderDocumentAdapter.isSelectable());
-                                        break;
-                                    case 1:
-                                        //TODO
-                                        break;
-                                    case 2:
-                                        break;
-                                    case 3:
-                                        DocumentDetailDialogFragment.show(
-                                                getSeaFileRepoId(),
-                                                getSeaFileDirPath(),
-                                                null,
-                                                getSupportFragmentManager());
-                                        break;
-                                }
-                            }
-                        }).show();
+                showActionMoreDialog();
                 break;
             case R.id.header_search_direction_iv:
                 switch (folderDocumentAdapter.getAdapterViewType()) {
@@ -493,6 +467,35 @@ public class FolderListActivity extends FolderBaseActivity
                 super.onClick(v);
                 break;
         }
+    }
+
+    private void showActionMoreDialog() {
+        List<String> strings = Arrays.asList("批量操作", "查看资料库详情", "回收站");
+        new BottomActionDialog(getContext(),
+                null,
+                strings,
+                new BottomActionDialog.OnActionItemClickListener() {
+                    @Override
+                    public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
+                        dialog.dismiss();
+                        String action = adapter.getItem(position);
+                        if (TextUtils.equals(action, "批量操作")) {
+                            folderDocumentAdapter.setSelectable(true);
+                            folderDocumentAdapter.notifyDataSetChanged();
+                            updateSelectableModeSatue(folderDocumentAdapter.isSelectable());
+                        } else if (TextUtils.equals(action, "查看资料库详情")) {
+                            RepoDetailsDialogFragment.show(
+                                    getSeaFileRepoId(),
+                                    0,
+                                    getSupportFragmentManager());
+                        } else if (TextUtils.equals(action, "回收站")) {
+                            RepoDetailsDialogFragment.show(
+                                    getSeaFileRepoId(),
+                                    2,
+                                    getSupportFragmentManager());
+                        }
+                    }
+                }).show();
     }
 
     /**

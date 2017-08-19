@@ -2,6 +2,7 @@ package com.icourt.alpha.fragment.dialogfragment;
 
 import android.app.Dialog;
 import android.os.Bundle;
+import android.support.annotation.IntRange;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.TabLayout;
@@ -78,8 +79,10 @@ public class RepoDetailsDialogFragment extends BaseDialogFragment
     BaseFragmentAdapter baseFragmentAdapter;
     String fromRepoId;
     protected static final String KEY_SEA_FILE_FROM_REPO_ID = "seaFileFromRepoId";//原仓库id
+    protected static final String KEY_LOCATION_TAB_INDEX = "locationPage";//定位的tab
 
     public static void show(String fromRepoId,
+                            @IntRange(from = 0, to = 2) int locationTabIndex,
                             @NonNull FragmentManager fragmentManager) {
         if (fragmentManager == null) return;
         String tag = DocumentDetailDialogFragment.class.getSimpleName();
@@ -88,14 +91,16 @@ public class RepoDetailsDialogFragment extends BaseDialogFragment
         if (fragment != null) {
             mFragTransaction.remove(fragment);
         }
-        show(newInstance(fromRepoId), tag, mFragTransaction);
+        show(newInstance(fromRepoId, locationTabIndex), tag, mFragTransaction);
     }
 
 
-    public static RepoDetailsDialogFragment newInstance(String fromRepoId) {
+    public static RepoDetailsDialogFragment newInstance(String fromRepoId,
+                                                        @IntRange(from = 0, to = 2) int locationTabIndex) {
         RepoDetailsDialogFragment fragment = new RepoDetailsDialogFragment();
         Bundle args = new Bundle();
         args.putString(KEY_SEA_FILE_FROM_REPO_ID, fromRepoId);
+        args.putInt(KEY_LOCATION_TAB_INDEX, locationTabIndex);
         fragment.setArguments(args);
         return fragment;
     }
@@ -132,6 +137,9 @@ public class RepoDetailsDialogFragment extends BaseDialogFragment
                 Arrays.asList(FileChangeHistoryFragment.newInstance(fromRepoId, "/"),
                         FileInnerShareFragment.newInstance(fromRepoId, "/"),
                         FileTrashListFragment.newInstance(fromRepoId, "/")));
+
+        int tabIndex = getArguments().getInt(KEY_LOCATION_TAB_INDEX);
+        viewPager.setCurrentItem(tabIndex);
         getData(true);
     }
 
@@ -178,7 +186,8 @@ public class RepoDetailsDialogFragment extends BaseDialogFragment
                 Collections.sort(fileVersionEntities, new LongFieldEntityComparator<FileChangedHistoryEntity>(ORDER.DESC));
             } catch (Exception e) {
             }
-            if (!fileVersionEntities.isEmpty()
+            if (fileUpdateInfoTv != null
+                    && !fileVersionEntities.isEmpty()
                     && fileVersionEntities.get(0) != null) {
                 FileChangedHistoryEntity fileVersionEntity = fileVersionEntities.get(0);
                 fileUpdateInfoTv.setText(String.format("%s 更新于 %s", fileVersionEntity.operator_name, DateUtils.getyyyyMMddHHmm(fileVersionEntity.date)));
