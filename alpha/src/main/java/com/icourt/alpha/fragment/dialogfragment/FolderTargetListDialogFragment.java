@@ -25,6 +25,7 @@ import com.icourt.alpha.fragment.RepoSelectListFragment;
 import com.icourt.alpha.http.callback.SFileCallBack;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
 import butterknife.BindView;
@@ -194,6 +195,9 @@ public class FolderTargetListDialogFragment
                     @Override
                     public void onSuccess(Call<RepoEntity> call, Response<RepoEntity> response) {
                         repoEntity = response.body();
+                        if (!canBack2ParentDir() && foldrParentTv != null) {
+                            foldrParentTv.setText(repoEntity != null ? repoEntity.repo_name : "");
+                        }
                     }
                 });
     }
@@ -278,12 +282,22 @@ public class FolderTargetListDialogFragment
      */
     @Override
     public void onFragmentCallBack(Fragment fragment, int type, Bundle params) {
-        if (type == 1 && params != null) {
-            replaceFolderFragmemt(
-                    params.getString(KEY_SEA_FILE_DST_REPO_ID),
-                    params.getString(KEY_SEA_FILE_DST_DIR_PATH));
-        } else if (type == -1) {
-            dismiss();
+        if (fragment instanceof RepoSelectListFragment && params != null) {
+            Serializable serializable = params.getSerializable(KEY_FRAGMENT_RESULT);
+            if (serializable instanceof RepoEntity) {
+                this.repoEntity = (RepoEntity) serializable;
+                replaceFolderFragmemt(
+                        repoEntity.repo_id,
+                        "/");
+            }
+        } else {
+            if (type == 1 && params != null) {
+                replaceFolderFragmemt(
+                        params.getString(KEY_SEA_FILE_DST_REPO_ID),
+                        params.getString(KEY_SEA_FILE_DST_DIR_PATH));
+            } else if (type == -1) {
+                dismiss();
+            }
         }
     }
 

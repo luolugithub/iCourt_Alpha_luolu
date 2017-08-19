@@ -28,9 +28,6 @@ import butterknife.Unbinder;
 import retrofit2.Call;
 import retrofit2.Response;
 
-import static com.icourt.alpha.fragment.FolderTargetListFragment.KEY_SEA_FILE_DST_DIR_PATH;
-import static com.icourt.alpha.fragment.FolderTargetListFragment.KEY_SEA_FILE_DST_REPO_ID;
-
 /**
  * Description
  * Company Beijing icourt
@@ -147,8 +144,7 @@ public class RepoSelectListFragment extends BaseFragment
         if (item == null) return;
         if (onFragmentCallBackListener != null) {
             Bundle bundle = new Bundle();
-            bundle.putString(KEY_SEA_FILE_DST_REPO_ID, item.repo_id);
-            bundle.putString(KEY_SEA_FILE_DST_DIR_PATH, "/");
+            bundle.putSerializable(KEY_FRAGMENT_RESULT,item);
             onFragmentCallBackListener.onFragmentCallBack(this, 1, bundle);
         }
     }
