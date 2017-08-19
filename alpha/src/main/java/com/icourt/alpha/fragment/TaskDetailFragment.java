@@ -134,18 +134,18 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
             if (taskItemEntity.parentFlow != null) {
                 taskGroupTv.setText(taskItemEntity.parentFlow.name);
             } else {
-                taskGroupTv.setHint(valid ? "选择任务组" : "未指定任务组");
+                taskGroupTv.setHint((valid && !isFinish) ? "选择任务组" : "未指定任务组");
             }
         } else {
             taskProjectLayout.setVisibility(View.VISIBLE);
             taskGroupLayout.setVisibility(View.GONE);
-            taskProjectTv.setHint(valid ? "选择所属项目" : "未指定所属项目");
+            taskProjectTv.setHint((valid && !isFinish) ? "选择所属项目" : "未指定所属项目");
         }
 
         if (taskItemEntity.dueTime > 0) {
             taskTimeTv.setHint(DateUtils.get23Hour59Min(taskItemEntity.dueTime));
         } else {
-            taskTimeTv.setHint(valid ? "选择到期时间" : "未选择到期时间");
+            taskTimeTv.setHint((valid && !isFinish) ? "选择到期时间" : "未选择到期时间");
         }
 
         if (!TextUtils.isEmpty(taskItemEntity.description)) {
@@ -158,11 +158,11 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
                 bugSync("任务详情转码失败", e);
             }
         } else {
-            taskDescTv.setHint(valid ? "添加任务详情" : "未录入任务详情");
+            taskDescTv.setHint((valid && !isFinish) ? "添加任务详情" : "未录入任务详情");
         }
-        taskProjectArrowIv.setVisibility(valid ? View.VISIBLE : View.GONE);
-        taskGroupArrowIv.setVisibility(valid ? View.VISIBLE : View.GONE);
-        taskTimeArrowIv.setVisibility(valid ? View.VISIBLE : View.GONE);
+        taskProjectArrowIv.setVisibility((valid && !isFinish) ? View.VISIBLE : View.GONE);
+        taskGroupArrowIv.setVisibility((valid && !isFinish) ? View.VISIBLE : View.GONE);
+        taskTimeArrowIv.setVisibility((valid && !isFinish) ? View.VISIBLE : View.GONE);
     }
 
     @OnClick({R.id.task_project_layout, R.id.task_group_layout, R.id.task_time_layout, R.id.task_desc_tv})
