@@ -8,6 +8,7 @@ import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import com.andview.refreshview.XRefreshView;
 import com.icourt.alpha.R;
@@ -15,6 +16,8 @@ import com.icourt.alpha.activity.FolderListActivity;
 import com.icourt.alpha.activity.RepoRenameActivity;
 import com.icourt.alpha.adapter.DocumentAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
+import com.icourt.alpha.adapter.baseadapter.HeaderFooterAdapter;
+import com.icourt.alpha.adapter.baseadapter.adapterObserver.RefreshViewEmptyObserver;
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.entity.bean.DefaultRepoEntity;
 import com.icourt.alpha.entity.bean.DocumentRootEntity;
@@ -26,9 +29,6 @@ import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.ActionConstants;
 import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
-import com.icourt.alpha.widget.comparators.ILongFieldEntity;
-import com.icourt.alpha.widget.comparators.LongFieldEntityComparator;
-import com.icourt.alpha.widget.comparators.ORDER;
 import com.icourt.alpha.widget.dialog.BottomActionDialog;
 
 import org.greenrobot.eventbus.EventBus;
@@ -36,7 +36,6 @@ import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 import butterknife.BindView;
@@ -55,13 +54,17 @@ import retrofit2.Response;
 public class RepoListFragment extends BaseFragment implements BaseRecyclerAdapter.OnItemClickListener, BaseRecyclerAdapter.OnItemLongClickListener, BaseRecyclerAdapter.OnItemChildClickListener {
 
     @BindView(R.id.recyclerView)
+    @Nullable
     RecyclerView recyclerView;
     Unbinder unbinder;
-    DocumentAdapter documentAdapter;
     @BindView(R.id.refreshLayout)
     RefreshLayout refreshLayout;
     int pageIndex = 1;
     String defaultRopoId;
+
+    DocumentAdapter documentAdapter;
+    HeaderFooterAdapter<DocumentAdapter> headerFooterAdapter;
+    TextView footer_textview;
 
     /**
      * 0： "我的资料库",
@@ -92,7 +95,21 @@ public class RepoListFragment extends BaseFragment implements BaseRecyclerAdapte
     protected void initView() {
         EventBus.getDefault().register(this);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        recyclerView.setAdapter(documentAdapter = new DocumentAdapter());
+
+        headerFooterAdapter = new HeaderFooterAdapter<>(documentAdapter = new DocumentAdapter());
+        footer_textview = (TextView) HeaderFooterAdapter.inflaterView(getContext(), R.layout.footer_textview, recyclerView);
+        headerFooterAdapter.addFooter(footer_textview);
+        documentAdapter.registerAdapterDataObserver(new RefreshViewEmptyObserver(refreshLayout, documentAdapter) {
+            @Override
+            protected void updateUI() {
+                super.updateUI();
+                if (footer_textview != null) {
+                    footer_textview.setText(String.format("%s个资料库", documentAdapter.getItemCount()));
+                }
+            }
+        });
+        recyclerView.setAdapter(headerFooterAdapter);
+
         documentAdapter.setOnItemClickListener(this);
         documentAdapter.setOnItemChildClickListener(this);
         documentAdapter.setOnItemLongClickListener(this);
@@ -119,6 +136,12 @@ public class RepoListFragment extends BaseFragment implements BaseRecyclerAdapte
         }
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        getData(true);
+    }
+
     /**
      * 0： "我的资料库",
      * 1： "共享给我的",
@@ -137,8 +160,15 @@ public class RepoListFragment extends BaseFragment implements BaseRecyclerAdapte
                         if (response.body().result != null) {
                             defaultRopoId = response.body().result.repoId;
                             getRepoList(isRefresh);
-                            //TODO 我的默认资料库 不允许删除
+                        } else {
+                            stopRefresh();
                         }
+                    }
+
+                    @Override
+                    public void onFailure(Call<ResEntity<DefaultRepoEntity>> call, Throwable t) {
+                        super.onFailure(call, t);
+                        stopRefresh();
                     }
                 });
 
@@ -273,16 +303,6 @@ public class RepoListFragment extends BaseFragment implements BaseRecyclerAdapte
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onDocumentRootEvent(DocumentRootEntity documentRootEntity) {
         if (documentRootEntity == null) return;
-        if (!documentAdapter.addItem(documentRootEntity)) {
-            documentAdapter.updateItem(documentRootEntity);
-        }
-        List<DocumentRootEntity> data = documentAdapter.getData();
-        try {
-            Collections.sort(data, new LongFieldEntityComparator<ILongFieldEntity>(ORDER.DESC));
-        } catch (Throwable e) {
-            e.printStackTrace();
-        }
-        documentAdapter.notifyDataSetChanged();
     }
 
 
@@ -316,10 +336,10 @@ public class RepoListFragment extends BaseFragment implements BaseRecyclerAdapte
     /**
      * 展示资料库 操作菜单
      *
-     * @param position
+     * @param pos
      */
-    private void showDocumentActionDialog(final int position) {
-        DocumentRootEntity item = documentAdapter.getItem(position);
+    private void showDocumentActionDialog(final int pos) {
+        DocumentRootEntity item = documentAdapter.getItem(pos);
         if (item == null) return;
         List<String> menus = Arrays.asList("详细信息", "重命名", "共享", "删除");
         if (isDefaultReop(item.repo_id)) {
@@ -334,13 +354,13 @@ public class RepoListFragment extends BaseFragment implements BaseRecyclerAdapte
                         dialog.dismiss();
                         String s = adapter.getItem(position);
                         if (TextUtils.equals(s, "详细信息")) {
-                            lookDetail(position);
+                            lookDetail(pos);
                         } else if (TextUtils.equals(s, "重命名")) {
-                            renameDocument(position);
+                            renameDocument(pos);
                         } else if (TextUtils.equals(s, "共享")) {
-                            shareDocument(position);
+                            shareDocument(pos);
                         } else if (TextUtils.equals(s, "删除")) {
-                            showDelDialog(position);
+                            showDelDialog(pos);
                         }
                     }
                 }).show();
