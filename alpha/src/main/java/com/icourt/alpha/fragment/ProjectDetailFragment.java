@@ -16,11 +16,15 @@ import android.widget.TextView;
 
 import com.andview.refreshview.XRefreshView;
 import com.icourt.alpha.R;
+import com.icourt.alpha.activity.ProjectBasicTextInfoActivity;
+import com.icourt.alpha.activity.ProjectMembersActivity;
 import com.icourt.alpha.adapter.ProjectBasicInfoAdapter;
 import com.icourt.alpha.adapter.ProjectMembersAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseFragmentAdapter;
+import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.adapterObserver.RefreshViewEmptyObserver;
 import com.icourt.alpha.base.BaseFragment;
+import com.icourt.alpha.constants.Const;
 import com.icourt.alpha.entity.bean.ProjectBasicItemEntity;
 import com.icourt.alpha.entity.bean.ProjectDetailEntity;
 import com.icourt.alpha.entity.event.ProjectActionEvent;
@@ -53,7 +57,7 @@ import retrofit2.Response;
  * version 2.0.0
  */
 
-public class ProjectDetailFragment extends BaseFragment {
+public class ProjectDetailFragment extends BaseFragment implements BaseRecyclerAdapter.OnItemClickListener {
 
     private static final String KEY_PROJECT_ID = "key_project_id";
     Unbinder unbinder;
@@ -83,6 +87,7 @@ public class ProjectDetailFragment extends BaseFragment {
     ProjectBasicInfoAdapter projectBasicInfoAdapter;
     BaseFragmentAdapter baseFragmentAdapter;
     OnFragmentCallBackListener onFragmentCallBackListener;
+    ProjectDetailEntity projectDetailBean;
 
     public static ProjectDetailFragment newInstance(@NonNull String projectId) {
         ProjectDetailFragment projectDetailFragment = new ProjectDetailFragment();
@@ -148,6 +153,7 @@ public class ProjectDetailFragment extends BaseFragment {
     private void setDataToView(ProjectDetailEntity projectDetailBean) {
         if (projectMemberLayout == null) return;
         if (projectDetailBean != null) {
+            this.projectDetailBean = projectDetailBean;
             EventBus.getDefault().post(new ProjectActionEvent(ProjectActionEvent.PROJECT_TIMER_ACTION, projectDetailBean.sumTime));
             if (onFragmentCallBackListener != null) {
                 Bundle bundle = new Bundle();
@@ -160,40 +166,28 @@ public class ProjectDetailFragment extends BaseFragment {
             }
 
             List<ProjectBasicItemEntity> basicItemEntities = new ArrayList<>();
-            if (!TextUtils.isEmpty(projectDetailBean.name)) {//项目名称
-                ProjectBasicItemEntity itemEntity = new ProjectBasicItemEntity();
-                itemEntity.key = "项目名称";
-                itemEntity.value = projectDetailBean.name;
-                itemEntity.type = ProjectBasicItemEntity.PROJECT_NAME_TYPE;
-                basicItemEntities.add(itemEntity);
-            }
             if (!TextUtils.isEmpty(projectDetailBean.matterTypeName)) {//项目类型
                 ProjectBasicItemEntity itemEntity = new ProjectBasicItemEntity();
                 itemEntity.key = "项目类型";
                 itemEntity.value = projectDetailBean.matterTypeName;
-                itemEntity.type = ProjectBasicItemEntity.PROJECT_TYPE_TYPE;
+                itemEntity.type = Const.PROJECT_TYPE_TYPE;
                 basicItemEntities.add(itemEntity);
             }
-            if (projectDetailBean.groups != null) {//负责部门
-                if (projectDetailBean.groups.size() > 0) {
-                    ProjectBasicItemEntity itemEntity = new ProjectBasicItemEntity();
-                    if (projectDetailBean.groups.size() > 1) {
-                        itemEntity.key = "负责部门 (" + projectDetailBean.groups.size() + ")";
-                    } else {
-                        itemEntity.key = "负责部门";
-                    }
-                    StringBuffer buffer = new StringBuffer();
-                    for (ProjectDetailEntity.GroupsBean group : projectDetailBean.groups) {
-                        buffer.append(group.name).append(",");
-                    }
-                    itemEntity.value = buffer.toString();
-                    if (itemEntity.value.length() > 0) {
-                        itemEntity.value = itemEntity.value.substring(0, itemEntity.value.length() - 1);
-                    }
-                    itemEntity.type = ProjectBasicItemEntity.PROJECT_DEPARTMENT_TYPE;
-                    basicItemEntities.add(itemEntity);
-                }
+            if (!TextUtils.isEmpty(projectDetailBean.name)) {//项目名称
+                ProjectBasicItemEntity itemEntity = new ProjectBasicItemEntity();
+                itemEntity.key = "项目名称";
+                itemEntity.value = projectDetailBean.name;
+                itemEntity.type = Const.PROJECT_NAME_TYPE;
+                basicItemEntities.add(itemEntity);
             }
+            if (!TextUtils.isEmpty(projectDetailBean.matterNo)) {//项目编号
+                ProjectBasicItemEntity itemEntity = new ProjectBasicItemEntity();
+                itemEntity.key = "项目编号";
+                itemEntity.value = projectDetailBean.matterNo;
+                itemEntity.type = Const.PROJECT_NUMBER_TYPE;
+                basicItemEntities.add(itemEntity);
+            }
+
             if (projectDetailBean.clients != null) {//客户
                 if (projectDetailBean.clients.size() > 0) {
                     ProjectBasicItemEntity itemEntity = new ProjectBasicItemEntity();
@@ -210,76 +204,98 @@ public class ProjectDetailFragment extends BaseFragment {
                     if (itemEntity.value.length() > 0) {
                         itemEntity.value = itemEntity.value.substring(0, itemEntity.value.length() - 1);
                     }
-                    itemEntity.type = ProjectBasicItemEntity.PROJECT_CLIENT_TYPE;
+                    itemEntity.type = Const.PROJECT_CLIENT_TYPE;
                     basicItemEntities.add(itemEntity);
                 }
             }
 
-            if (projectDetailBean.litigants != null) {//其他当事人
-                if (projectDetailBean.litigants.size() > 0) {
+            if (projectDetailBean.groups != null) {//负责部门
+                if (projectDetailBean.groups.size() > 0) {
                     ProjectBasicItemEntity itemEntity = new ProjectBasicItemEntity();
-                    if (projectDetailBean.litigants.size() > 1) {
-                        itemEntity.key = "其他当事人 (" + projectDetailBean.litigants.size() + ")";
+                    if (projectDetailBean.groups.size() > 1) {
+                        itemEntity.key = "负责部门 (" + projectDetailBean.groups.size() + ")";
                     } else {
-                        itemEntity.key = "其他当事人";
+                        itemEntity.key = "负责部门";
                     }
                     StringBuffer buffer = new StringBuffer();
-                    for (ProjectDetailEntity.LitigantsBean litigant : projectDetailBean.litigants) {
-                        buffer.append(litigant.contactName).append(",");
+                    for (ProjectDetailEntity.GroupsBean group : projectDetailBean.groups) {
+                        buffer.append(group.name).append(",");
                     }
                     itemEntity.value = buffer.toString();
                     if (itemEntity.value.length() > 0) {
                         itemEntity.value = itemEntity.value.substring(0, itemEntity.value.length() - 1);
                     }
-                    itemEntity.type = ProjectBasicItemEntity.PROJECT_OTHER_PERSON_TYPE;
+                    itemEntity.type = Const.PROJECT_DEPARTMENT_TYPE;
                     basicItemEntities.add(itemEntity);
                 }
             }
+
+
+//            if (projectDetailBean.litigants != null) {//其他当事人
+//                if (projectDetailBean.litigants.size() > 0) {
+//                    ProjectBasicItemEntity itemEntity = new ProjectBasicItemEntity();
+//                    if (projectDetailBean.litigants.size() > 1) {
+//                        itemEntity.key = "其他当事人 (" + projectDetailBean.litigants.size() + ")";
+//                    } else {
+//                        itemEntity.key = "其他当事人";
+//                    }
+//                    StringBuffer buffer = new StringBuffer();
+//                    for (ProjectDetailEntity.LitigantsBean litigant : projectDetailBean.litigants) {
+//                        buffer.append(litigant.contactName).append(",");
+//                    }
+//                    itemEntity.value = buffer.toString();
+//                    if (itemEntity.value.length() > 0) {
+//                        itemEntity.value = itemEntity.value.substring(0, itemEntity.value.length() - 1);
+//                    }
+//                    itemEntity.type = ProjectBasicItemEntity.PROJECT_OTHER_PERSON_TYPE;
+//                    basicItemEntities.add(itemEntity);
+//                }
+//            }
 
             if (projectDetailBean.beginDate > 0 && projectDetailBean.endDate > 0) {//项目时间
                 ProjectBasicItemEntity itemEntity = new ProjectBasicItemEntity();
                 itemEntity.key = "项目时间";
                 itemEntity.value = DateUtils.getTimeDateFormatYearDot(projectDetailBean.beginDate) + " - " + DateUtils.getTimeDateFormatYearDot(projectDetailBean.endDate);
-                itemEntity.type = ProjectBasicItemEntity.PROJECT_TIME_TYPE;
+                itemEntity.type = Const.PROJECT_TIME_TYPE;
                 basicItemEntities.add(itemEntity);
             }
 
-            if (projectDetailBean.originatingAttorneys != null) {//案源律师
-                if (projectDetailBean.originatingAttorneys.size() > 0) {
+            if (projectDetailBean.attorneys != null) {//案源律师
+                if (projectDetailBean.attorneys.size() > 0) {
                     ProjectBasicItemEntity itemEntity = new ProjectBasicItemEntity();
-                    if (projectDetailBean.originatingAttorneys.size() > 1) {
-                        itemEntity.key = "案源律师 (" + projectDetailBean.originatingAttorneys.size() + ")";
+                    if (projectDetailBean.attorneys.size() > 1) {
+                        itemEntity.key = "案源律师 (" + projectDetailBean.attorneys.size() + ")";
                     } else {
                         itemEntity.key = "案源律师";
                     }
                     StringBuffer buffer = new StringBuffer();
-                    for (ProjectDetailEntity.OriginatingAttorneyBean originat : projectDetailBean.originatingAttorneys) {
-                        buffer.append(originat.attorneyName).append(",");
+                    for (ProjectDetailEntity.AttorneysBean attorneysBean : projectDetailBean.attorneys) {
+                        buffer.append(attorneysBean.attorneyName).append(",");
                     }
                     itemEntity.value = buffer.toString();
                     if (itemEntity.value.length() > 0) {
                         itemEntity.value = itemEntity.value.substring(0, itemEntity.value.length() - 1);
                     }
-                    itemEntity.type = ProjectBasicItemEntity.PROJECT_ANYUAN_LAWYER_TYPE;
+                    itemEntity.type = Const.PROJECT_ANYUAN_LAWYER_TYPE;
                     basicItemEntities.add(itemEntity);
                 }
             }
-
+            projectBasicInfoAdapter.setClientsBeens(projectDetailBean.clients);
             projectBasicInfoAdapter.bindData(true, basicItemEntities);
 
-            if (projectDetailBean.participants != null) {//项目成员
-                if (projectDetailBean.participants.size() > 0) {
+            if (projectDetailBean.members != null) {//项目成员
+                if (projectDetailBean.members.size() > 0) {
                     projectMemberLayout.setVisibility(View.VISIBLE);
-                    projectMemberCount.setText("项目成员（" + projectDetailBean.participants.size() + "）");
-                    projectMemberAdapter.bindData(false, projectDetailBean.participants);
+                    projectMemberCount.setText("项目成员（" + projectDetailBean.members.size() + "）");
+                    projectMemberAdapter.bindData(true, projectDetailBean.members);
                 }
             } else {
                 projectMemberLayout.setVisibility(View.GONE);
             }
-
-            if (!TextUtils.isEmpty(projectDetailBean.logDescription)) {//服务内容
+            projectMemberAdapter.setOnItemClickListener(this);
+            if (!TextUtils.isEmpty(projectDetailBean.remark)) {//服务内容
                 serviceContentLayout.setVisibility(View.VISIBLE);
-                projectServiceContent.setText(projectDetailBean.logDescription);
+                projectServiceContent.setText(projectDetailBean.remark);
             } else {
                 serviceContentLayout.setVisibility(View.GONE);
             }
@@ -310,7 +326,6 @@ public class ProjectDetailFragment extends BaseFragment {
                 if (response.body().result != null) {
                     if (response.body().result.size() > 0) {
                         setDataToView(response.body().result.get(0));
-
                     }
                 }
             }
@@ -330,13 +345,26 @@ public class ProjectDetailFragment extends BaseFragment {
         unbinder.unbind();
     }
 
-    @OnClick({R.id.project_add_routine})
+    @OnClick({R.id.project_add_routine,
+            R.id.service_content_layout})
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.project_add_routine:
                 showTopSnackBar("添加程序信息");
                 break;
+            case R.id.service_content_layout://项目备注
+                if (!TextUtils.isEmpty(projectServiceContent.getText())) {
+                    String remark = projectServiceContent.getText().toString();
+                    ProjectBasicTextInfoActivity.launch(getContext(), remark, Const.PROJECT_REMARK_TYPE);
+                }
+                break;
         }
+    }
+
+    @Override
+    public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
+        if (projectDetailBean == null) return;
+        ProjectMembersActivity.launch(getContext(), projectDetailBean.members);
     }
 }

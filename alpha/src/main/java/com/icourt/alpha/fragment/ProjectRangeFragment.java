@@ -13,10 +13,11 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.icourt.alpha.R;
-import com.icourt.alpha.adapter.ProjectRangeListAdapter;
+import com.icourt.alpha.adapter.ProjectBasicInfoAdapter;
 import com.icourt.alpha.base.BaseFragment;
+import com.icourt.alpha.constants.Const;
+import com.icourt.alpha.entity.bean.ProjectBasicItemEntity;
 import com.icourt.alpha.entity.bean.ProjectDetailEntity;
-import com.icourt.alpha.entity.bean.RangeItemEntity;
 import com.icourt.alpha.utils.ItemDecorationUtils;
 
 import java.util.ArrayList;
@@ -37,6 +38,7 @@ import butterknife.Unbinder;
 public class ProjectRangeFragment extends BaseFragment {
 
     private static final String KEY_PROJECT = "key_project";
+
     @BindView(R.id.range_name_tv)
     TextView rangeNameTv;
     @BindView(R.id.range_now_tv)
@@ -47,7 +49,7 @@ public class ProjectRangeFragment extends BaseFragment {
     LinearLayout caseProcessLayout;
     private ProjectDetailEntity projectDetailEntity;
     Unbinder unbinder;
-    ProjectRangeListAdapter projectRangeListAdapter;
+    ProjectBasicInfoAdapter projectBasicInfoAdapter;
 
     public static ProjectRangeFragment newInstance(@NonNull ProjectDetailEntity projectDetailEntity) {
         ProjectRangeFragment projectRangeFragment = new ProjectRangeFragment();
@@ -69,45 +71,64 @@ public class ProjectRangeFragment extends BaseFragment {
     protected void initView() {
         projectDetailEntity = (ProjectDetailEntity) getArguments().getSerializable(KEY_PROJECT);
         if (projectDetailEntity != null) {
-            List<RangeItemEntity> rangeItemEntities = new ArrayList<>();
-            if (!TextUtils.isEmpty(projectDetailEntity.caseProcessName) && !"null".equals(projectDetailEntity.caseProcessName)) {
-                caseProcessLayout.setVisibility(View.VISIBLE);
-                rangeNowTv.setText(projectDetailEntity.caseProcessName);
-            } else {
-                caseProcessLayout.setVisibility(View.GONE);
+            List<ProjectBasicItemEntity> projectBasicItemEntities = new ArrayList<>();
+            if (!TextUtils.isEmpty(projectDetailEntity.caseProcessName) && !TextUtils.equals("null", projectDetailEntity.caseProcessName)) {
+                projectBasicItemEntities.add(new ProjectBasicItemEntity("程序", projectDetailEntity.caseProcessName, Const.PROJECT_CASEPROCESS_TYPE));
             }
-            if (!TextUtils.isEmpty(projectDetailEntity.matterCaseName)) {
-                rangeItemEntities.add(new RangeItemEntity("案由", projectDetailEntity.matterCaseName));
+            if (!TextUtils.isEmpty(projectDetailEntity.matterCaseName) && !TextUtils.equals("null", projectDetailEntity.matterCaseName)) {
+                projectBasicItemEntities.add(new ProjectBasicItemEntity("案由", projectDetailEntity.matterCaseName, Const.PROJECT_CASE_TYPE));
             }
-            if (!TextUtils.isEmpty(projectDetailEntity.competentCourt)) {
-                rangeItemEntities.add(new RangeItemEntity("法院", projectDetailEntity.competentCourt));
+            if (!TextUtils.isEmpty(projectDetailEntity.matterNumber) && !TextUtils.equals("null", projectDetailEntity.matterNumber)) {
+                projectBasicItemEntities.add(new ProjectBasicItemEntity("案号", projectDetailEntity.matterNumber, Const.PROJECT_CASENUMBER_TYPE));
+            }
+            if (!TextUtils.isEmpty(projectDetailEntity.competentCourt) && !TextUtils.equals("null", projectDetailEntity.competentCourt)) {
+                String key = null;
+                if (TextUtils.equals("4", projectDetailEntity.caseProcess) || TextUtils.equals("5", projectDetailEntity.caseProcess)) {
+                    key = "仲裁庭";
+                } else {
+                    key = "法院";
+                }
+                projectBasicItemEntities.add(new ProjectBasicItemEntity(key, projectDetailEntity.competentCourt, Const.PROJECT_COMPETENT_TYPE));
             }
             if (projectDetailEntity.judges != null && projectDetailEntity.judges.size() > 0) {
-                rangeItemEntities.add(new RangeItemEntity("法官", getJudgeName(projectDetailEntity.judges)));
+                String name = getJudgeName(projectDetailEntity.judges);
+                if (!TextUtils.isEmpty(name)) {
+                    String key = null;
+                    if (TextUtils.equals("4", projectDetailEntity.caseProcess) || TextUtils.equals("5", projectDetailEntity.caseProcess)) {
+                        key = "仲裁员";
+                    } else {
+                        key = "法官";
+                    }
+                    projectBasicItemEntities.add(new ProjectBasicItemEntity(key, getJudgeName(projectDetailEntity.judges), Const.PROJECT_JUDGE_TYPE));
+                }
             }
-//            if (projectDetailEntity.clients != null) {
-//                for (ProjectDetailEntity.ClientsBean client : projectDetailEntity.clients) {
-//                    if (!TextUtils.isEmpty(client.customerPositionName)) {
-//                        rangeItemEntities.add(new RangeItemEntity(client.customerPositionName + "(客户)", client.contactName));
-//                    } else {
-//                        rangeItemEntities.add(new RangeItemEntity("客户", client.contactName));
-//                    }
-//                }
-//            }
-//            if (projectDetailEntity.litigants != null) {
-//                for (ProjectDetailEntity.LitigantsBean litigant : projectDetailEntity.litigants) {
-//                    if (!TextUtils.isEmpty(litigant.customerPositionName)) {
-//                        rangeItemEntities.add(new RangeItemEntity(litigant.customerPositionName, litigant.contactName));
-//                    } else {
-//                        rangeItemEntities.add(new RangeItemEntity("当事人", litigant.contactName));
-//                    }
-//                }
-//            }
+            if (projectDetailEntity.clerks != null && projectDetailEntity.clerks.size() > 0) {
+                String name = getClerkName(projectDetailEntity.clerks);
+                if (!TextUtils.isEmpty(name)) {
+                    String key = null;
+                    if (TextUtils.equals("4", projectDetailEntity.caseProcess) || TextUtils.equals("5", projectDetailEntity.caseProcess)) {
+                        key = "仲裁秘书";
+                    } else {
+                        key = "书记员";
+                    }
+                    projectBasicItemEntities.add(new ProjectBasicItemEntity(key, getClerkName(projectDetailEntity.clerks), Const.PROJECT_CLERK_TYPE));
+                }
+            }
+            if (projectDetailEntity.litigants != null) {
+                for (ProjectDetailEntity.LitigantsBean litigant : projectDetailEntity.litigants) {
+                    if (!TextUtils.isEmpty(litigant.contactName))
+                        if (!TextUtils.isEmpty(litigant.customerPositionName)) {
+                            projectBasicItemEntities.add(new ProjectBasicItemEntity(litigant.customerPositionName, litigant.contactName, Const.PROJECT_OTHER_PERSON_TYPE));
+                        } else {
+                            projectBasicItemEntities.add(new ProjectBasicItemEntity("当事人", litigant.contactName, Const.PROJECT_OTHER_PERSON_TYPE));
+                        }
+                }
+            }
             rangeRecyclerview.setLayoutManager(new LinearLayoutManager(getContext()));
             rangeRecyclerview.addItemDecoration(ItemDecorationUtils.getCommMagin5Divider(getContext(), false));
             rangeRecyclerview.setHasFixedSize(true);
-            rangeRecyclerview.setAdapter(projectRangeListAdapter = new ProjectRangeListAdapter());
-            projectRangeListAdapter.bindData(false, rangeItemEntities);
+            rangeRecyclerview.setAdapter(projectBasicInfoAdapter = new ProjectBasicInfoAdapter());
+            projectBasicInfoAdapter.bindData(false, projectBasicItemEntities);
         }
     }
 
@@ -128,6 +149,27 @@ public class ProjectRangeFragment extends BaseFragment {
         } catch (Exception e) {
             e.printStackTrace();
             bugSync("获取法官名称失败", e);
+        }
+        return "";
+    }
+
+    /**
+     * 获取书记员名字
+     *
+     * @param clerkBeanList
+     * @return
+     */
+    private String getClerkName(List<ProjectDetailEntity.ClerkBean> clerkBeanList) {
+        if (clerkBeanList.size() <= 0) return "";
+        try {
+            StringBuilder stringBuilder = new StringBuilder();
+            for (ProjectDetailEntity.ClerkBean clerkBean : clerkBeanList) {
+                stringBuilder.append(clerkBean.name).append(",");
+            }
+            return stringBuilder.toString().substring(0, stringBuilder.toString().length() - 1);
+        } catch (Exception e) {
+            e.printStackTrace();
+            bugSync("获取书记员名称失败", e);
         }
         return "";
     }
