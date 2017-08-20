@@ -30,6 +30,7 @@ import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.view.SoftKeyboardSizeWatchLayout;
+import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 import com.netease.nimlib.sdk.NIMClient;
 import com.netease.nimlib.sdk.team.TeamService;
 import com.netease.nimlib.sdk.team.model.Team;
@@ -67,6 +68,8 @@ public class GroupSearchActivity extends BaseActivity implements BaseRecyclerAda
     SoftKeyboardSizeWatchLayout softKeyboardSizeWatchLayout;
     @BindView(R.id.contentEmptyText)
     TextView contentEmptyText;
+    @BindView(R.id.refreshLayout)
+    RefreshLayout refreshLayout;
 
     public static void launch(@NonNull Context context,
                               View searchLayout,
@@ -109,6 +112,7 @@ public class GroupSearchActivity extends BaseActivity implements BaseRecyclerAda
     @Override
     protected void initView() {
         super.initView();
+        refreshLayout.setPullRefreshEnable(false);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setAdapter(groupAdapter = new GroupAdapter());
         groupAdapter.setOnItemClickListener(this);

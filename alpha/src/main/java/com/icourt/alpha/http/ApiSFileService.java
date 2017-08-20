@@ -6,6 +6,7 @@ import com.icourt.alpha.entity.bean.RepoEntity;
 import com.icourt.alpha.entity.bean.FileBoxBean;
 import com.icourt.alpha.entity.bean.FileVersionCommits;
 import com.icourt.alpha.entity.bean.FolderDocumentEntity;
+import com.icourt.alpha.entity.bean.SFileSearchPage;
 import com.icourt.alpha.entity.bean.SFileShareUserInfo;
 import com.icourt.alpha.entity.bean.SeaFileTrashPageEntity;
 
@@ -408,6 +409,12 @@ public interface ApiSFileService {
      */
     @GET("api2/repos/{seaFileRepoId}/")
     Call<RepoEntity> repoDetailsQuery(@Path("seaFileRepoId") String fromRepoId);
+
+    @GET("api2/search/")
+    Call<SFileSearchPage> fileSearch(@Query("page") int page,
+                                     @Query("q") String q,
+                                     @Query("search_ftypes") String search_ftypes,
+                                     @Query("search_repo") String search_repo);
 
 
 }

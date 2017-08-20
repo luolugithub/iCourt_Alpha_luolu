@@ -298,6 +298,7 @@ public class FolderListActivity extends FolderBaseActivity
         headerView = HeaderFooterAdapter.inflaterView(getContext(), R.layout.header_search_folder_document, recyclerView);
         registerClick(headerView.findViewById(R.id.header_search_direction_iv));
         registerClick(headerView.findViewById(R.id.header_search_sort_iv));
+        registerClick(headerView.findViewById(R.id.header_comm_search_ll));
         headerFooterAdapter.addHeader(headerView);
     }
 
@@ -309,7 +310,7 @@ public class FolderListActivity extends FolderBaseActivity
     @Override
     protected void onResume() {
         super.onResume();
-        refreshLayout.startRefresh();
+        getData(true);
     }
 
     @Override
@@ -460,6 +461,9 @@ public class FolderListActivity extends FolderBaseActivity
                 break;
             case R.id.bottom_bar_delete_tv:
                 showDeleteComfirmDialog(selectedFolderDocuments);
+                break;
+            case R.id.header_comm_search_ll:
+                SFileSearchActivity.launch(getActivity(), v);
                 break;
             default:
                 super.onClick(v);

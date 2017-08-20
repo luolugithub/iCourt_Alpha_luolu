@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -221,6 +222,21 @@ public class FolderTargetListFragment extends SeaFileBaseFragment
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.copy_or_move_tv:
+                if (TextUtils.equals(getSeaFileFromRepoId(), getSeaFileDstRepoId())
+                        && TextUtils.equals(getSeaFileFromDirPath(), getSeaFileDstDirPath())) {
+                    switch (getFileActionType()) {
+                        case FILE_ACTION_COPY:
+                            showToast("不能复制到当前目录");
+                            break;
+                        case FILE_ACTION_MOVE:
+                            showToast("不能移动到当前目录");
+                            break;
+                        default:
+                            showToast("不能选择当前目录");
+                            break;
+                    }
+                    return;
+                }
                 copyOrMove();
                 break;
             default:
@@ -231,6 +247,7 @@ public class FolderTargetListFragment extends SeaFileBaseFragment
 
     /**
      * 移动或复制
+     * 注意:不能复制或者移动到当前文件所在目录
      */
     private void copyOrMove() {
 
@@ -314,10 +331,27 @@ public class FolderTargetListFragment extends SeaFileBaseFragment
     public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
         FolderDocumentEntity item = folderAdapter.getItem(position);
         if (item == null) return;
+        //注意:不能复制或者移动到当前文件所在目录
+        String dstDirPath = String.format("%s%s/", getSeaFileDstDirPath(), item.name);
+        if (TextUtils.equals(getSeaFileFromRepoId(), getSeaFileDstRepoId())
+                && TextUtils.equals(getSeaFileFromDirPath(), dstDirPath)) {
+            switch (getFileActionType()) {
+                case FILE_ACTION_COPY:
+                    showToast("不能复制到当前目录");
+                    break;
+                case FILE_ACTION_MOVE:
+                    showToast("不能移动到当前目录");
+                    break;
+                default:
+                    showToast("不能选择当前目录");
+                    break;
+            }
+            return;
+        }
         if (onFragmentCallBackListener != null) {
             Bundle bundle = new Bundle();
             bundle.putString(KEY_SEA_FILE_DST_REPO_ID, getSeaFileDstRepoId());
-            bundle.putString(KEY_SEA_FILE_DST_DIR_PATH, String.format("%s%s/", getSeaFileDstDirPath(), item.name));
+            bundle.putString(KEY_SEA_FILE_DST_DIR_PATH, dstDirPath);
             onFragmentCallBackListener.onFragmentCallBack(this, 1, bundle);
         }
     }

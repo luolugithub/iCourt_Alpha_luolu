@@ -33,6 +33,7 @@ import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.view.SoftKeyboardSizeWatchLayout;
+import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 import com.icourt.alpha.widget.filter.ListFilter;
 
 import java.util.ArrayList;
@@ -65,6 +66,8 @@ public class ContactSearchActivity extends BaseActivity implements BaseRecyclerA
     TextView contentEmptyText;
     @BindView(R.id.softKeyboardSizeWatchLayout)
     SoftKeyboardSizeWatchLayout softKeyboardSizeWatchLayout;
+    @BindView(R.id.refreshLayout)
+    RefreshLayout refreshLayout;
 
     public static void launch(@NonNull Context context,
                               @Nullable View searchLayout,
@@ -94,6 +97,7 @@ public class ContactSearchActivity extends BaseActivity implements BaseRecyclerA
     @Override
     protected void initView() {
         super.initView();
+        refreshLayout.setPullRefreshEnable(false);
         contactDbService = new ContactDbService(getLoginUserId());
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setAdapter(imContactAdapter = new IMContactAdapter());

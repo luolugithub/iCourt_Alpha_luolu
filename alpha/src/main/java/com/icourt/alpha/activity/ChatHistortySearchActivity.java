@@ -37,6 +37,7 @@ import com.icourt.alpha.utils.SpannableUtils;
 import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.view.SoftKeyboardSizeWatchLayout;
+import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 import com.icourt.alpha.widget.nim.GlobalMessageObserver;
 import com.netease.nimlib.sdk.NIMClient;
 import com.netease.nimlib.sdk.msg.MsgService;
@@ -83,6 +84,8 @@ public class ChatHistortySearchActivity extends BaseActivity implements BaseRecy
     TextView contentEmptyText;
     @BindView(R.id.softKeyboardSizeWatchLayout)
     SoftKeyboardSizeWatchLayout softKeyboardSizeWatchLayout;
+    @BindView(R.id.refreshLayout)
+    RefreshLayout refreshLayout;
 
     public static void launch(@NonNull Context context,
                               @Nullable View searchLayout,
@@ -112,6 +115,7 @@ public class ChatHistortySearchActivity extends BaseActivity implements BaseRecy
     @Override
     protected void initView() {
         super.initView();
+        refreshLayout.setPullRefreshEnable(false);
         AlphaUserInfo loginUserInfo = getLoginUserInfo();
         contactDbService = new ContactDbService(loginUserInfo == null ? "" : loginUserInfo.getUserId());
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
