@@ -3,14 +3,15 @@ package com.icourt.alpha.widget.manager;
 import android.support.annotation.CheckResult;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.text.TextUtils;
 
 import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.icourt.alpha.entity.bean.TimeEntity;
+import com.icourt.alpha.entity.event.OverTimingRemindEvent;
 import com.icourt.alpha.entity.event.TimingEvent;
 import com.icourt.alpha.http.RetrofitServiceFactory;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
-import com.icourt.alpha.interfaces.callback.IOverTimingRemindCallBack;
 import com.icourt.alpha.utils.LoginInfoUtils;
 import com.icourt.alpha.utils.SpUtils;
 import com.icourt.alpha.utils.StringUtils;
@@ -314,7 +315,7 @@ public class TimerManager {
     /**
      * 同步网络计时
      */
-    public void timerQuerySync(final IOverTimingRemindCallBack.IOverTimingRemindBubbleOnCallBack callback) {
+    public void timerQuerySync() {
         RetrofitServiceFactory
                 .getAlphaApiService()
                 .timerRunningQuery()
@@ -330,10 +331,10 @@ public class TimerManager {
                                 TimerManager.getInstance().resumeTimer(response.body().result);
                             }
 
-                            TimeEntity.ItemEntity entity = (TimeEntity.ItemEntity) response.body().result;
+                            TimeEntity.ItemEntity entity = response.body().result;
                             long hour = TimeUnit.MILLISECONDS.toHours(entity.useTime);
-                            if (callback != null && entity.bubbleOff == TimeEntity.ItemEntity.STATE_BUBBLE_ON &&  hour >= 2) {
-                                callback.showOverTimingRemindDialogFragment();
+                            if (hour > 1 && entity.noRemind == TimeEntity.ItemEntity.STATE_NO_REMIND_OFF && entity.bubbleOff == TimeEntity.ItemEntity.STATE_BUBBLE_ON) {
+                                EventBus.getDefault().post(new OverTimingRemindEvent(OverTimingRemindEvent.ACTION_SHOW_TIMING_REMIND, TimeUnit.MILLISECONDS.toSeconds(entity.useTime)));
                             }
                         }
                     }
@@ -350,9 +351,11 @@ public class TimerManager {
      * 请求网络 关闭持续计时过久时的提醒覆层 或者 不再提醒标记
      */
     public void setOverTimingRemindClose(int operType) {
+        AlphaUserInfo loginUserInfo = LoginInfoUtils.getLoginUserInfo();
+        String clientId = loginUserInfo == null ? "" : loginUserInfo.localUniqueId;
         RetrofitServiceFactory
                 .getAlphaApiService()
-                .timerOverTimingRemindClose(getTimerId(), operType)
+                .timerOverTimingRemindClose(getTimerId(), operType, clientId)
                 .enqueue(new SimpleCallBack<String>() {
                     @Override
                     public void onSuccess(Call<ResEntity<String>> call, Response<ResEntity<String>> response) {

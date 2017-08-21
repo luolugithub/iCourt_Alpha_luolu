@@ -57,12 +57,12 @@ import com.icourt.alpha.fragment.dialogfragment.TimingNoticeDialogFragment;
 import com.icourt.alpha.http.AlphaClient;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
-import com.icourt.alpha.interfaces.callback.IOverTimingRemindCallBack;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.interfaces.OnTabDoubleClickListener;
 import com.icourt.alpha.service.DaemonService;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.DensityUtil;
+import com.icourt.alpha.utils.JsonUtils;
 import com.icourt.alpha.utils.LoginInfoUtils;
 import com.icourt.alpha.utils.SimpleViewGestureListener;
 import com.icourt.alpha.utils.SpUtils;
@@ -84,6 +84,8 @@ import com.netease.nimlib.sdk.team.model.Team;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -102,6 +104,8 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
+import static com.icourt.alpha.constants.Const.MSG_TYPE_ALPHA_SYNC;
+
 
 /**
  * Description  主页面
@@ -110,8 +114,7 @@ import retrofit2.Response;
  * date createTime：2017/3/31
  * version 1.0.0
  */
-public class MainActivity extends BaseAppUpdateActivity
-        implements OnFragmentCallBackListener, IOverTimingRemindCallBack.IOverTimingRemindBubbleOnCallBack {
+public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCallBackListener {
     public static String KEY_FIND_FRAGMENT = "type_TabFindFragment_fragment";
     public static String KEY_MINE_FRAGMENT = "type_TabMimeFragment_fragment";
     public static String KEY_PROJECT_PERMISSION = "cache_project_permission";
@@ -260,10 +263,10 @@ public class MainActivity extends BaseAppUpdateActivity
                     checkAppUpdate(getContext());
                     break;
                 case TYPE_CHECK_TIMING_UPDATE:
-                    TimerManager.getInstance().timerQuerySync(null);
+                    TimerManager.getInstance().timerQuerySync();
                     break;
                 case TYPE_OVER_TIMING_REMIND_AUTO_CLOSE:
-                    overTimeingRemindDissmiss();
+                    dismissOverTimingRemindDialogFragment(true);
                     break;
             }
         }
@@ -289,11 +292,23 @@ public class MainActivity extends BaseAppUpdateActivity
         IMMessage imMessage = (IMMessage) getIntent().getSerializableExtra(NimIntent.EXTRA_NOTIFY_CONTENT);
         if (imMessage != null) {
             int totalUnReadCount = NIMClient.getService(MsgService.class).getTotalUnreadCount();
-            IMMessageCustomBody customBody = GlobalMessageObserver.getIMBody(imMessage);
-            if (customBody == null) return;
-            if (customBody.imMessage.getMsgType() == MsgTypeEnum.custom) {
-                AlphaSpecialHelperActivity.launch(this, customBody.imMessage.getSessionId(), totalUnReadCount);
+            if (imMessage.getMsgType() == MsgTypeEnum.custom) {
+                if (imMessage.getAttachment() != null) {
+                    try {
+                        String s = imMessage.getAttachment().toJson(false);
+                        JSONObject jsonObject = JsonUtils.getJSONObject(s);
+                        if (jsonObject.getInt("showType") == MSG_TYPE_ALPHA_SYNC && "BUBBLE_SYNC".equalsIgnoreCase(jsonObject.getString("type")) && "TIMING_TOO_LONG".equalsIgnoreCase(jsonObject.getString("scene"))) {
+                            TimerTimingActivity.launch(this, TimerManager.getInstance().getTimer());
+                        }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                } else {
+                    AlphaSpecialHelperActivity.launch(this, imMessage.getSessionId(), totalUnReadCount);
+                }
             } else {
+                IMMessageCustomBody customBody = GlobalMessageObserver.getIMBody(imMessage);
+                if (customBody == null) return;
                 switch (customBody.ope) {
                     case Const.CHAT_TYPE_P2P:
                         ChatActivity.launchP2P(this, customBody.from, customBody.name, 0, totalUnReadCount, true);
@@ -373,7 +388,6 @@ public class MainActivity extends BaseAppUpdateActivity
         checkNotificationisEnable();
         getPermission();
         timerQuerySync();
-        overTimeingRemindAutoDissmiss();
     }
 
     /**
@@ -622,9 +636,7 @@ public class MainActivity extends BaseAppUpdateActivity
                 checkedTab(R.id.tab_mine, getFragmentType(R.id.tab_mine));
                 break;
             case R.id.tab_timing:
-                if (overTimeingRemindDissmiss()) {
-                    return;
-                }
+                dismissOverTimingRemindDialogFragment(true);
                 if (TimerManager.getInstance().hasTimer()) {
                     showTimingDialogFragment();
                 } else {
@@ -780,34 +792,41 @@ public class MainActivity extends BaseAppUpdateActivity
         if (TextUtils.equals(event.clientId, getlocalUniqueId())) return;
         if (isInterceptServerTimingEvent()) return;
 
-        if (event.isSyncObject() && event.isSyncTimingType()) {
-            if (TextUtils.equals(event.scene, ServerTimingEvent.TIMING_SYNC_START)) {
-                TimerManager.getInstance().resumeTimer(event);
-            } else if (TextUtils.equals(event.scene, ServerTimingEvent.TIMING_SYNC_DELETE)) {
-                if (TimerManager.getInstance().isTimer(event.pkId)) {
-                    TimerManager.getInstance().clearTimer();
-                }
-            } else if (TextUtils.equals(event.scene, ServerTimingEvent.TIMING_SYNC_EDIT)) {
-                if (TimerManager.getInstance().isTimer(event.pkId)) {
-                    if (event.state == 1) {//已经完成
+        if (event.isSyncObject()) {
+            if (event.isSyncTimingType()) {
+                if (TextUtils.equals(event.scene, ServerTimingEvent.TIMING_SYNC_START)) {
+                    TimerManager.getInstance().resumeTimer(event);
+                } else if (TextUtils.equals(event.scene, ServerTimingEvent.TIMING_SYNC_DELETE)) {
+                    if (TimerManager.getInstance().isTimer(event.pkId)) {
                         TimerManager.getInstance().clearTimer();
-                    } else {
-                        TimerManager.getInstance().resumeTimer(event);
                     }
-                } else {
-                    if (event.state == 0) {//计时中...
-                        TimerManager.getInstance().resumeTimer(event);
+                } else if (TextUtils.equals(event.scene, ServerTimingEvent.TIMING_SYNC_EDIT)) {
+                    if (TimerManager.getInstance().isTimer(event.pkId)) {
+                        if (event.state == 1) {//已经完成
+                            TimerManager.getInstance().clearTimer();
+                        } else {
+                            TimerManager.getInstance().resumeTimer(event);
+                        }
+                    } else {
+                        if (event.state == 0) {//计时中...
+                            TimerManager.getInstance().resumeTimer(event);
+                        }
                     }
                 }
-            } else if (TextUtils.equals(event.scene, ServerTimingEvent.TIMING_SYNC_CLOSE_BUBBLE)) {
-                dismissOverTimingRemindDialogFragment();
-            } else if (TextUtils.equals(event.scene, ServerTimingEvent.TIMING_SYNC_TOO_LONG)) {
-                // 持续计时过久时的提醒覆层关闭 设置本地标记
-                TimeEntity.ItemEntity itemEntity = TimerManager.getInstance().getTimer();
-                itemEntity.bubbleOff = TimeEntity.ItemEntity.STATE_BUBBLE_ON;
-                SpUtils.getInstance().putData(String.format(TimerManager.KEY_TIMER, getlocalUniqueId()), itemEntity);
-
-                showOverTimingRemindDialogFragment();
+            } else if (event.isBubbleSync()) {
+                if (event.scene != null) {
+                    switch (event.scene) {
+                        case ServerTimingEvent.TIMING_SYNC_TOO_LONG:
+                            showOrUpdateOverTimingRemindDialogFragment(false, TimerManager.getInstance().getTimingSeconds());
+                            break;
+                        case ServerTimingEvent.TIMING_SYNC_CLOSE_BUBBLE:
+                            dismissOverTimingRemindDialogFragment(false);
+                            break;
+                        case ServerTimingEvent.TIMING_SYNC_NO_REMIND:
+                            dismissOverTimingRemindDialogFragment(false);
+                            break;
+                    }
+                }
             }
         }
     }
@@ -849,7 +868,7 @@ public class MainActivity extends BaseAppUpdateActivity
      * 接口方式同步计时
      */
     private void timerQuerySync() {
-        TimerManager.getInstance().timerQuerySync(this);
+        TimerManager.getInstance().timerQuerySync();
     }
 
 
@@ -871,14 +890,16 @@ public class MainActivity extends BaseAppUpdateActivity
     public void onOverTimingRemindEvent(OverTimingRemindEvent event) {
         if (event == null) return;
 
-        switch (event.status) {
-            case OverTimingRemindEvent.STATUS_TIMING_REMIND_CLOSE:
-                // APP主动关闭 持续计时过久时的提醒覆层
-                overTimeingRemindDissmiss();
+        switch (event.action) {
+            case OverTimingRemindEvent.ACTION_TIMING_REMIND_NO_REMIND:
+                dismissOverTimingRemindDialogFragment(false);
                 break;
-            case OverTimingRemindEvent.STATUS_TIMING_REMIND_HIDE:
-                dismissOverTimingRemindDialogFragment();
-            break;
+            case OverTimingRemindEvent.ACTION_SHOW_TIMING_REMIND:
+                showOrUpdateOverTimingRemindDialogFragment(false, event.timeSec);
+                break;
+            case OverTimingRemindEvent.ACTION_SYNC_BUBBLE_CLOSE_TO_SERVER:
+                TimerManager.getInstance().setOverTimingRemindClose(TimerManager.OVER_TIME_REMIND_BUBBLE_OFF);
+                break;
         }
     }
 
@@ -910,7 +931,7 @@ public class MainActivity extends BaseAppUpdateActivity
 
                 if (judgeEvenTime(event.timingSecond)) {
                     // >=2的奇数小时更新时间
-                    showOverTimingRemindDialogFragment();
+                    showOrUpdateOverTimingRemindDialogFragment(true, event.timingSecond);
                 }
                 break;
             case TimingEvent.TIMING_STOP:
@@ -919,8 +940,7 @@ public class MainActivity extends BaseAppUpdateActivity
                 tabTimingIcon.setImageResource(R.mipmap.ic_time_start);
                 tabTimingIcon.clearAnimation();
                 timingAnim = null;
-
-                overTimeingRemindDissmiss();
+                dismissOverTimingRemindDialogFragment(true);
                 break;
         }
     }
@@ -964,9 +984,8 @@ public class MainActivity extends BaseAppUpdateActivity
      * @return
      */
     private boolean judgeEvenTime(long times) {
-        return true;
-//        long hour = TimeUnit.SECONDS.toHours(times);
-//        return (hour >= 2) && (times % 3600 == 0) && (hour % 2 == 1);
+        long hour = TimeUnit.SECONDS.toHours(times);
+        return (hour >= 2) && (times % 3600 == 0) && (hour % 2 == 1);
     }
 
     /**
@@ -1126,73 +1145,47 @@ public class MainActivity extends BaseAppUpdateActivity
 
     /**
      * 显示 持续计时过久时的提醒覆层
-     *
      */
-    @Override
-    public void showOverTimingRemindDialogFragment() {
-        if (isDestroyOrFinishing()) return;
-        if (TimerManager.getInstance().getTimer().bubbleOff == TimeEntity.ItemEntity.STATE_BUBBLE_OFF) return;
-
+    public void showOrUpdateOverTimingRemindDialogFragment(boolean isUpdate, long useTime) {
+        if (isDestroyOrFinishing()) {
+            return;
+        }
         String tag = OverTimingRemindDialogFragment.class.getSimpleName();
         FragmentTransaction mFragTransaction = getSupportFragmentManager().beginTransaction();
         OverTimingRemindDialogFragment fragment = (OverTimingRemindDialogFragment)
                 getSupportFragmentManager().findFragmentByTag(tag);
-        if (fragment == null) {
-            OverTimingRemindDialogFragment.newInstance(TimerManager.getInstance().getTimer().useTime)
-                    .show(mFragTransaction, tag);
+        if (isUpdate) {
+            if (fragment != null) {
+                fragment.updateTimeText(useTime);
+            }
         } else {
-            fragment.show(TimerManager.getInstance().getTimer().useTime);
+            if (fragment == null) {
+                fragment = OverTimingRemindDialogFragment.newInstance(useTime);
+                fragment.show(mFragTransaction, tag);
+                dismissTimingDialogFragment();
+                tabTimingIcon.setImageResource(R.mipmap.timing_fill);
+            }
         }
     }
 
     /**
      * 界面移除 持续计时过久时的提醒覆层
      */
-    public boolean dismissOverTimingRemindDialogFragment() {
-        if (isDestroyOrFinishing()) return false;
-
+    public void dismissOverTimingRemindDialogFragment(boolean isSyncServer) {
+        if (isDestroyOrFinishing()) {
+            return;
+        }
         String tag = OverTimingRemindDialogFragment.class.getSimpleName();
-        OverTimingRemindDialogFragment fragment = (OverTimingRemindDialogFragment)
-                getSupportFragmentManager().findFragmentByTag(tag);
+        OverTimingRemindDialogFragment fragment = (OverTimingRemindDialogFragment) getSupportFragmentManager().findFragmentByTag(tag);
         if (fragment != null) {
-            FragmentTransaction mFragTransaction = getSupportFragmentManager().beginTransaction();
-            mFragTransaction.remove(fragment);
-            mFragTransaction.commitAllowingStateLoss();
-
-            fragment.dismissAllowingStateLoss();
-
-            // 持续计时过久时的提醒覆层关闭 设置本地标记
-            TimeEntity.ItemEntity itemEntity = TimerManager.getInstance().getTimer();
-            itemEntity.bubbleOff = TimeEntity.ItemEntity.STATE_BUBBLE_OFF;
-            SpUtils.getInstance().putData(String.format(TimerManager.KEY_TIMER, getlocalUniqueId()), itemEntity);
-            return true;
-        }
-        return false;
-    }
-
-    public boolean overTimeingRemindDissmiss() {
-        if (dismissOverTimingRemindDialogFragment()) {
-            TimerManager.getInstance().setOverTimingRemindClose(TimerManager.OVER_TIME_REMIND_BUBBLE_OFF);
-            return true;
-        }
-        return false;
-    }
-
-    private void overTimeingRemindAutoDissmiss() {
-        if (mHandler != null) {
-            Message msg = Message.obtain();
-            msg.what = MyHandler.TYPE_OVER_TIMING_REMIND_AUTO_CLOSE;
-            mHandler.sendMessageDelayed(msg, 30_000);
+            fragment.dismissAllowingStateLoss(isSyncServer);
+            tabTimingIcon.setImageResource(R.mipmap.ic_tab_timing);
         }
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-
-        if (mHandler != null) {
-            mHandler.removeMessages(MyHandler.TYPE_OVER_TIMING_REMIND_AUTO_CLOSE);
-        }
     }
 
     /**

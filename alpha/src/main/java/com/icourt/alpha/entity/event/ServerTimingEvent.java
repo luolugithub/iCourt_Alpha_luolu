@@ -55,6 +55,10 @@ public class ServerTimingEvent extends TimeEntity.ItemEntity {
         return StringUtils.equalsIgnoreCase(type, "TIMING_SYNC", false);
     }
 
+    public boolean isBubbleSync() {
+        return StringUtils.equals(type, "BUBBLE_SYNC", false);
+    }
+
     public String type;
 
     @TIMING_SYNC_SCENE

@@ -1255,9 +1255,8 @@ public interface ApiAlphaService {
      * 设置 持续计时过久提醒 关闭
      * @return
      */
-    @FormUrlEncoded
     @PUT("api/v2/timing/timing/{id}/bubble")
-    Call<ResEntity<String>> timerOverTimingRemindClose(@Path("id") String id, @Field("operType") int operType);
+    Call<ResEntity<String>> timerOverTimingRemindClose(@Path("id") String id, @Query("operType") int operType, @Query("clientId") String clientId);
 }
 
 

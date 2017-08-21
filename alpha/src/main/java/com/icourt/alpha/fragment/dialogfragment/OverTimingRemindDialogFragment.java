@@ -1,14 +1,11 @@
 package com.icourt.alpha.fragment.dialogfragment;
 
-import android.app.Activity;
 import android.app.Dialog;
-import android.content.Context;
-import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -22,7 +19,6 @@ import com.icourt.alpha.R;
 import com.icourt.alpha.activity.TimerTimingActivity;
 import com.icourt.alpha.base.BaseDialogFragment;
 import com.icourt.alpha.entity.event.OverTimingRemindEvent;
-import com.icourt.alpha.interfaces.callback.IOverTimingRemindCallBack;
 import com.icourt.alpha.utils.DensityUtil;
 import com.icourt.alpha.widget.manager.TimerManager;
 
@@ -43,17 +39,19 @@ import butterknife.Unbinder;
  * version 2.1.0
  */
 
-public class OverTimingRemindDialogFragment extends BaseDialogFragment {
+public class OverTimingRemindDialogFragment extends BaseDialogFragment implements Handler.Callback {
     public static final String USE_TIME = "useTime";
+    private static final int H_MSG_DISMISS = 1;
 
     @BindView(R.id.over_timing_title_tv)
     TextView overTimingTitleTv;
     @BindView(R.id.over_timing_close_iv)
     ImageView overTimingCloseIv;
     Unbinder unbinder;
+    private boolean isSyncServer = true;
+    private Handler handler = new Handler(this);
 
     /**
-     *
      * @param useTime 单位Second
      * @return
      */
@@ -66,11 +64,10 @@ public class OverTimingRemindDialogFragment extends BaseDialogFragment {
     }
 
     /**
-     *
      * @param useTime 单位Second
      * @return
      */
-    public void show(@NonNull long useTime) {
+    public void updateTimeText(@NonNull long useTime) {
         if (overTimingTitleTv != null && useTime != 0) {
             String overTimingString = String.format(getContext().getResources()
                     .getString(R.string.timer_over_timing_remind_text), TimeUnit.MILLISECONDS.toHours(useTime));
@@ -84,6 +81,20 @@ public class OverTimingRemindDialogFragment extends BaseDialogFragment {
         View view = super.onCreateView(R.layout.dialog_fragment_over_timing_remind, inflater, container, savedInstanceState);
         unbinder = ButterKnife.bind(this, view);
         return view;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        handler.sendEmptyMessageDelayed(H_MSG_DISMISS, 30 * 1000);
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        if (handler.hasMessages(H_MSG_DISMISS)) {
+            handler.removeMessages(H_MSG_DISMISS);
+        }
     }
 
     @Override
@@ -114,7 +125,7 @@ public class OverTimingRemindDialogFragment extends BaseDialogFragment {
         long useTime = getArguments().getLong(USE_TIME);
         if (useTime != 0) {
             String overTimingString = String.format(getContext().getResources()
-                    .getString(R.string.timer_over_timing_remind_text), TimeUnit.MILLISECONDS.toHours(useTime));
+                    .getString(R.string.timer_over_timing_remind_text), TimeUnit.SECONDS.toHours(useTime));
             overTimingTitleTv.setText(overTimingString);
         }
     }
@@ -126,10 +137,10 @@ public class OverTimingRemindDialogFragment extends BaseDialogFragment {
         switch (v.getId()) {
             case R.id.over_timing_title_tv:
                 TimerTimingActivity.launch(getContext(), TimerManager.getInstance().getTimer());
-                dismiss();
+                dismiss(true);
                 break;
             case R.id.over_timing_close_iv:
-                dismiss();
+                dismiss(true);
                 break;
             default:
                 super.onClick(v);
@@ -137,11 +148,36 @@ public class OverTimingRemindDialogFragment extends BaseDialogFragment {
         }
     }
 
+    public void dismiss(boolean isSyncServer) {
+        this.isSyncServer = isSyncServer;
+        dismiss();
+    }
+
+    public void dismissAllowingStateLoss(boolean isSyncServer) {
+        this.isSyncServer = isSyncServer;
+        dismissAllowingStateLoss();
+    }
+
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-
-        EventBus.getDefault().post(new OverTimingRemindEvent(OverTimingRemindEvent.STATUS_TIMING_REMIND_CLOSE));
         unbinder.unbind();
+        if (isSyncServer) {
+            EventBus.getDefault().post(new OverTimingRemindEvent(OverTimingRemindEvent.ACTION_SYNC_BUBBLE_CLOSE_TO_SERVER));
+        }
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+    }
+
+    @Override
+    public boolean handleMessage(Message msg) {
+        if (msg.what == H_MSG_DISMISS) {
+            dismiss(true);
+            return true;
+        }
+        return false;
     }
 }

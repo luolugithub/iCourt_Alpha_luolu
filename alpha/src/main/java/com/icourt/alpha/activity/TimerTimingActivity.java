@@ -2,12 +2,10 @@ package com.icourt.alpha.activity;
 
 import android.animation.Animator;
 import android.animation.ValueAnimator;
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.os.PersistableBundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.AppBarLayout;
@@ -15,8 +13,6 @@ import android.support.v4.app.Fragment;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
-import android.util.Log;
-import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
@@ -38,7 +34,6 @@ import com.icourt.alpha.entity.bean.TaskEntity;
 import com.icourt.alpha.entity.bean.TimeEntity;
 import com.icourt.alpha.entity.bean.WorkType;
 import com.icourt.alpha.entity.event.OverTimingRemindEvent;
-import com.icourt.alpha.entity.event.ServerTimingEvent;
 import com.icourt.alpha.entity.event.TimingEvent;
 import com.icourt.alpha.fragment.dialogfragment.ProjectSimpleSelectDialogFragment;
 import com.icourt.alpha.fragment.dialogfragment.TaskSelectDialogFragment;
@@ -46,12 +41,10 @@ import com.icourt.alpha.fragment.dialogfragment.WorkTypeSelectDialogFragment;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
-import com.icourt.alpha.interfaces.callback.IOverTimingRemindCallBack;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.DensityUtil;
 import com.icourt.alpha.utils.JsonUtils;
 import com.icourt.alpha.utils.LoginInfoUtils;
-import com.icourt.alpha.utils.SpUtils;
 import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.widget.manager.TimerManager;
@@ -201,11 +194,11 @@ public class TimerTimingActivity extends BaseTimerActivity
         }
     }
 
-    private void overTimingRemindClose(boolean demandClose) {
-        SpUtils.getInstance().putData(createOverTimingRemindKey(itemEntity.pkId), false);
-        EventBus.getDefault().post(new OverTimingRemindEvent(OverTimingRemindEvent.STATUS_TIMING_REMIND_HIDE));
-
-        if (demandClose) {
+    private void closeOverTimingRemind(boolean isSyncServer) {
+        viewMoveAnimation(false);
+        itemEntity.noRemind = TimeEntity.ItemEntity.STATE_NO_REMIND_ON;
+        EventBus.getDefault().post(new OverTimingRemindEvent(OverTimingRemindEvent.ACTION_TIMING_REMIND_NO_REMIND));
+        if (isSyncServer) {
             TimerManager.getInstance().setOverTimingRemindClose(TimerManager.OVER_TIME_REMIND_NO_REMIND);
         }
     }
@@ -225,7 +218,7 @@ public class TimerTimingActivity extends BaseTimerActivity
                 finish();
                 break;
             case R.id.over_timing_close_tv:
-                overTimingRemindClose(true);
+                closeOverTimingRemind(true);
                 break;
             case R.id.project_layout://所属项目
                 showProjectSelectDialogFragment(itemEntity.matterPkId);
@@ -391,18 +384,17 @@ public class TimerTimingActivity extends BaseTimerActivity
                 if (TextUtils.equals(event.timingId, itemEntity.pkId)) {
                     timingTv.setText(toTime(event.timingSecond));
 
-                    if (SpUtils.getInstance().getBooleanData(createOverTimingRemindKey(itemEntity.pkId), true)) {
+                    if (itemEntity.noRemind == TimeEntity.ItemEntity.STATE_NO_REMIND_OFF) {
                         if (TimeUnit.SECONDS.toHours(event.timingSecond) >= 2) {
 
                             if (overTimingRemind.getVisibility() != View.VISIBLE) {
+                                updateOverTimingRemindText(event.timingSecond);
                                 overTimingRemind.setVisibility(View.VISIBLE);
                                 viewMoveAnimation(true);
                             }
 
                             if (event.timingSecond % 3600 == 0) {
-                                String overTimingString = String.format(getContext().getResources()
-                                        .getString(R.string.timer_over_timing_remind_text), TimeUnit.SECONDS.toHours(event.timingSecond));
-                                overTimingTitleTv.setText(overTimingString);
+                                updateOverTimingRemindText(event.timingSecond);
                             }
                         }
                     } else if (overTimingRemind.getVisibility() != View.GONE) {
@@ -415,6 +407,11 @@ public class TimerTimingActivity extends BaseTimerActivity
                 finish();
                 break;
         }
+    }
+
+    private void updateOverTimingRemindText(long timingSecond) {
+        String overTimingString = String.format(getContext().getResources().getString(R.string.timer_over_timing_remind_text), TimeUnit.SECONDS.toHours(timingSecond));
+        overTimingTitleTv.setText(overTimingString);
     }
 
     private void viewMoveAnimation(final boolean isShow) {
@@ -433,7 +430,7 @@ public class TimerTimingActivity extends BaseTimerActivity
             public void onAnimationUpdate(ValueAnimator animation) {
                 int height = (Integer) animation.getAnimatedValue();
 
-                LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) overTimingRemind.getLayoutParams();
+                ViewGroup.LayoutParams params = overTimingRemind.getLayoutParams();
                 params.height = height;
                 overTimingRemind.setLayoutParams(params);
             }
@@ -477,24 +474,6 @@ public class TimerTimingActivity extends BaseTimerActivity
 
     public String createOverTimingRemindKey(String pkId) {
         return TimerTimingActivity.class.getSimpleName() + pkId;
-    }
-
-    /**
-     * 产品确认：这个页面不做同步
-     *
-     * @param event
-     */
-    public void onServerTimingEvent(ServerTimingEvent event) {
-        if (event == null) return;
-        if (itemEntity == null) return;
-        if (TextUtils.equals(event.clientId, getlocalUniqueId())) return;
-        if (event.isSyncObject() && event.isSyncTimingType()) {
-            if (TextUtils.equals(event.pkId, itemEntity.pkId)) {
-                if (TextUtils.equals(event.scene, ServerTimingEvent.TIMING_SYNC_NO_REMIND)) {
-                    overTimingRemindClose(false);
-                }
-            }
-        }
     }
 
     public String toTime(long timesSecond) {

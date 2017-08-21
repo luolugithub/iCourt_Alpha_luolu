@@ -280,7 +280,7 @@ public class ProjectTaskFragment extends BaseFragment implements TaskAdapter.OnS
                     taskAdapter.setEditTask(isEditTask);
                     taskAdapter.setAddTime(isAddTime);
                     taskAdapter.bindData(true, allTaskEntities);
-                    TimerManager.getInstance().timerQuerySync(null);
+                    TimerManager.getInstance().timerQuerySync();
                 }
             }
         } else {

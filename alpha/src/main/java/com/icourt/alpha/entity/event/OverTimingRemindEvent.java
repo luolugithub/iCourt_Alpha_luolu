@@ -8,13 +8,19 @@ package com.icourt.alpha.entity.event;
  * version 1.0.0
  */
 public class OverTimingRemindEvent {
-    public static final int STATUS_TIMING_REMIND_CLOSE = 2;
-    public static final int STATUS_TIMING_REMIND_HIDE = 3;
+    public static final int ACTION_TIMING_REMIND_NO_REMIND = 100;
+    public static final int ACTION_SHOW_TIMING_REMIND = 101;
+    public static final int ACTION_SYNC_BUBBLE_CLOSE_TO_SERVER = 102;
 
     public int action;
-    public int status;
+    public long timeSec;
 
-    public OverTimingRemindEvent(int status) {
-        this.status = status;
+    public OverTimingRemindEvent(int action) {
+        this.action = action;
+    }
+
+    public OverTimingRemindEvent(int action, long timeSec) {
+        this(action);
+        this.timeSec = timeSec;
     }
 }

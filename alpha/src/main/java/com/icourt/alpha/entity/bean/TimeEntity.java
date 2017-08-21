@@ -36,8 +36,8 @@ public class TimeEntity implements Serializable {
         public static final int STATE_BUBBLE_ON = 0;
         public static final int STATE_BUBBLE_OFF = 1;
 
-        public static final int STATE_NO_REMING_ON = 0;
-        public static final int STATE_NO_REMING_OFF = 1;
+        public static final int STATE_NO_REMIND_ON = 1;
+        public static final int STATE_NO_REMIND_OFF = 0;
 
 
         public String suspensionTag;
@@ -64,7 +64,7 @@ public class TimeEntity implements Serializable {
         public boolean timingValid;
         public String taskName;
 
-        public int noReming;
+        public int noRemind;
         public int bubbleOff;
 
         @Override
@@ -113,7 +113,7 @@ public class TimeEntity implements Serializable {
                     ", highLightName='" + highLightName + '\'' +
                     ", timingValid=" + timingValid +
                     ", taskName='" + taskName + '\'' +
-                    ", noReming=" + noReming +
+                    ", noReming=" + noRemind +
                     ", bubbleOff=" + bubbleOff +
                     '}';
         }

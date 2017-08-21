@@ -319,7 +319,7 @@ public class TaskCheckItemFragment extends BaseFragment
     @Override
     public void loseFocus(BaseRecyclerAdapter.ViewHolder holder, int position) {
         TaskCheckItemEntity.ItemEntity itemEntity = taskCheckItemAdapter.getItem(taskCheckItemAdapter.getRealPos(position));
-        EditText editText = holder.itemView.findViewById(R.id.check_item_name_tv);
+        EditText editText = (EditText) holder.itemView.findViewById(R.id.check_item_name_tv);
         updateCheckItem(itemEntity, editText);
     }
 
