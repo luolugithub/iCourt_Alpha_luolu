@@ -1,5 +1,6 @@
 package com.icourt.alpha.fragment;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
@@ -13,9 +14,11 @@ import com.google.gson.JsonObject;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.FileVersionAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
+import com.icourt.alpha.adapter.baseadapter.adapterObserver.DataChangeAdapterObserver;
 import com.icourt.alpha.entity.bean.FileVersionCommits;
 import com.icourt.alpha.entity.bean.FileVersionEntity;
 import com.icourt.alpha.http.callback.SFileCallBack;
+import com.icourt.alpha.interfaces.OnFragmentDataChangeListener;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 import com.icourt.alpha.widget.comparators.LongFieldEntityComparator;
 import com.icourt.alpha.widget.comparators.ORDER;
@@ -46,6 +49,7 @@ public class FileVersionListFragment extends SeaFileBaseFragment implements Base
     Unbinder unbinder;
     String fromRepoId, fromRepoFilePath;
     FileVersionAdapter fileVersionAdapter;
+    OnFragmentDataChangeListener onFragmentDataChangeListener;
 
     /**
      * @param fromRepoId
@@ -63,6 +67,19 @@ public class FileVersionListFragment extends SeaFileBaseFragment implements Base
         return fragment;
     }
 
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        if (getParentFragment() instanceof OnFragmentDataChangeListener) {
+            onFragmentDataChangeListener = (OnFragmentDataChangeListener) getParentFragment();
+        } else {
+            try {
+                onFragmentDataChangeListener = (OnFragmentDataChangeListener) context;
+            } catch (ClassCastException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 
     @Nullable
     @Override
@@ -78,6 +95,17 @@ public class FileVersionListFragment extends SeaFileBaseFragment implements Base
         fromRepoFilePath = getArguments().getString(KEY_SEA_FILE_FROM_FILE_PATH, "");
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setAdapter(fileVersionAdapter = new FileVersionAdapter());
+        fileVersionAdapter.registerAdapterDataObserver(new DataChangeAdapterObserver() {
+            @Override
+            protected void updateUI() {
+                if (onFragmentDataChangeListener != null) {
+                    onFragmentDataChangeListener.onFragmentDataChanged(
+                            FileVersionListFragment.this,
+                            0,
+                            fileVersionAdapter.getData());
+                }
+            }
+        });
         fileVersionAdapter.setOnItemClickListener(this);
         fileVersionAdapter.setOnItemChildClickListener(this);
         refreshLayout.setXRefreshViewListener(new XRefreshView.SimpleXRefreshListener() {

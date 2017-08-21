@@ -85,7 +85,7 @@ public class RepoDetailsDialogFragment extends BaseDialogFragment
                             @IntRange(from = 0, to = 2) int locationTabIndex,
                             @NonNull FragmentManager fragmentManager) {
         if (fragmentManager == null) return;
-        String tag = DocumentDetailDialogFragment.class.getSimpleName();
+        String tag = FileDetailDialogFragment.class.getSimpleName();
         FragmentTransaction mFragTransaction = fragmentManager.beginTransaction();
         Fragment fragment = fragmentManager.findFragmentByTag(tag);
         if (fragment != null) {

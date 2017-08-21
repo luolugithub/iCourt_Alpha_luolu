@@ -39,7 +39,8 @@ import com.icourt.alpha.adapter.baseadapter.adapterObserver.DataChangeAdapterObs
 import com.icourt.alpha.constants.Const;
 import com.icourt.alpha.entity.bean.FolderDocumentEntity;
 import com.icourt.alpha.entity.event.SeaFolderEvent;
-import com.icourt.alpha.fragment.dialogfragment.DocumentDetailDialogFragment;
+import com.icourt.alpha.fragment.dialogfragment.FileDetailDialogFragment;
+import com.icourt.alpha.fragment.dialogfragment.FolderDetailDialogFragment;
 import com.icourt.alpha.fragment.dialogfragment.FolderTargetListDialogFragment;
 import com.icourt.alpha.fragment.dialogfragment.RepoDetailsDialogFragment;
 import com.icourt.alpha.http.callback.SFileCallBack;
@@ -763,9 +764,9 @@ public class FolderListActivity extends FolderBaseActivity
                             item.name,
                             String.format("%s%s/", getSeaFileDirPath(), item.name));
                 } else {
-                    DocumentDetailDialogFragment.show(
+                    FileDetailDialogFragment.show(
                             getSeaFileRepoId(),
-                            String.format("%s%s", getSeaFileDirPath(), item.name),
+                            getSeaFileDirPath(),
                             item,
                             getSupportFragmentManager());
                 }
@@ -814,15 +815,15 @@ public class FolderListActivity extends FolderBaseActivity
                         String action = adapter.getItem(position);
                         if (TextUtils.equals(action, "查看文件详情")) {
                             if (item.isDir()) {
-                                DocumentDetailDialogFragment.show(
+                                FolderDetailDialogFragment.show(
                                         getSeaFileRepoId(),
-                                        String.format("%s%s/", getSeaFileDirPath(), item.name),
+                                        getSeaFileDirPath(),
                                         item,
                                         getSupportFragmentManager());
                             } else {
-                                DocumentDetailDialogFragment.show(
+                                FileDetailDialogFragment.show(
                                         getSeaFileRepoId(),
-                                        String.format("%s%s", getSeaFileDirPath(), item.name),
+                                        getSeaFileDirPath(),
                                         item,
                                         getSupportFragmentManager());
                             }

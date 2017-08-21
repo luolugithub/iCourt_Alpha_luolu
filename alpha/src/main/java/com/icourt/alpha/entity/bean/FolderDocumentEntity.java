@@ -65,6 +65,8 @@ public class FolderDocumentEntity
 
     public String parent_dir;
     public String suspensionTag;
+    public String modifier_name;
+
 
     public boolean isDir() {
         return isDir;
