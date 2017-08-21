@@ -216,6 +216,7 @@ public interface ApiAlphaService {
      *
      * @return
      */
+    @Deprecated
     @GET("api/v2/taskflow/queryTaskByDue")
     Call<ResEntity<PageEntity<TaskEntity>>> getAllTask();
 
@@ -227,6 +228,7 @@ public interface ApiAlphaService {
      *
      * @return
      */
+    @Deprecated
     @GET("api/v2/taskflow/queryTaskByDue")
     Call<ResEntity<PageEntity<TaskEntity.TaskItemEntity>>> getAllTask(@Query("dueStart") String dueStart,
                                                                       @Query("dueEnd") String dueEnd,
