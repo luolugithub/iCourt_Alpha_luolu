@@ -113,7 +113,7 @@ public class FileTrashListFragment extends SeaFileBaseFragment implements BaseRe
      */
     private String getSfileThumbnailImage(String name) {
         //https://test.alphalawyer.cn/ilaw/api/v2/documents/thumbnailImage?repoId=d4f82446-a37f-478c-b6b5-ed0e779e1768&seafileToken=%20d6c69d6f4fc208483c243246c6973d8eb141501c&p=//1502507774237.png&size=250
-        return String.format("%sapi/v2/documents/thumbnailImage?repoId=%s&seafileToken=%s&p=%s&size=%s",
+        return String.format("%silaw/api/v2/documents/thumbnailImage?repoId=%s&seafileToken=%s&p=%s&size=%s",
                 BuildConfig.API_URL,
                 getSeaFileRepoId(),
                 SFileTokenUtils.getSFileToken(),

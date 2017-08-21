@@ -42,7 +42,6 @@ public class SortTypeSelectDialog extends Dialog implements View.OnClickListener
     }
 
 
-
     RecyclerView dialogRecyclerView;
     TextView btCancel;
     TextView btOk;
@@ -77,6 +76,7 @@ public class SortTypeSelectDialog extends Dialog implements View.OnClickListener
         win.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
         win.setGravity(Gravity.CENTER);
         win.getAttributes().dimAmount = 0.5f;
+        win.getAttributes().windowAnimations = R.style.SlideAnimBottom;
         setCanceledOnTouchOutside(true);
         win.addFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
 

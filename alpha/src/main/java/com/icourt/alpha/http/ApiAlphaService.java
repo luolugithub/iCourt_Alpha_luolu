@@ -84,7 +84,7 @@ public interface ApiAlphaService {
      * @return
      */
     @Deprecated
-    @POST("api/v1/auth/update")
+    @POST("ilaw/api/v1/auth/update")
     @FormUrlEncoded
     Call<ResEntity<String>> updateUserPhone(@Field("phone") String phone);
 
@@ -95,7 +95,7 @@ public interface ApiAlphaService {
      * @return
      */
     @Deprecated
-    @POST("api/v1/auth/update")
+    @POST("ilaw/api/v1/auth/update")
     @FormUrlEncoded
     Call<ResEntity<String>> updateUserEmail(@Field("email") String email);
 
@@ -108,7 +108,7 @@ public interface ApiAlphaService {
      *
      * @return
      */
-    @POST("v2/weixinlogin/getTokenByOpenidAndUnionid")
+    @POST("ilaw/v2/weixinlogin/getTokenByOpenidAndUnionid")
     Call<ResEntity<AlphaUserInfo>> loginWithWeiXin(@Body RequestBody info);
 
     /**
@@ -119,7 +119,7 @@ public interface ApiAlphaService {
      * @param info json请求体
      * @return
      */
-    @POST("api/v1/auth/login")
+    @POST("ilaw/api/v1/auth/login")
     Call<AlphaUserInfo> loginWithPwd(@Body RequestBody info);
 
     /**
@@ -129,7 +129,7 @@ public interface ApiAlphaService {
      *
      * @return
      */
-    @GET("api/v2/chat/msg/token")
+    @GET("ilaw/api/v2/chat/msg/token")
     @Deprecated
     Call<ResEntity<LoginIMToken>> getChatToken();
 
@@ -143,7 +143,7 @@ public interface ApiAlphaService {
      * @param refreshToken 已经登陆的refreshToken
      * @return
      */
-    @GET("api/v1/auth/refresh")
+    @GET("ilaw/api/v1/auth/refresh")
     Call<ResEntity<AlphaUserInfo>> refreshToken(@Query("refreshToekn") String refreshToken);
 
     /**
@@ -155,7 +155,7 @@ public interface ApiAlphaService {
      * @return
      */
     @Deprecated
-    @GET("api/v1/auth/q/allByOfficeId/{officeId}")
+    @GET("ilaw/api/v1/auth/q/allByOfficeId/{officeId}")
     Call<ResEntity<List<GroupContactBean>>> getGroupContacts(@Path("officeId") String officeId);
 
 
@@ -169,7 +169,7 @@ public interface ApiAlphaService {
      * @param pageSize
      * @return
      */
-    @GET("api/v2/chat/msg/findFileMsg")
+    @GET("ilaw/api/v2/chat/msg/findFileMsg")
     @Deprecated
     Call<ResEntity<List<IMMessageCustomBody>>> getFilesByType(
             @Query("type") int type,
@@ -183,7 +183,7 @@ public interface ApiAlphaService {
      * <p>
      * 文档地址：http://testpms.alphalawyer.cn/ilaw/swagger/index.html#!/site-api/getSiteListUsingGET
      */
-    @GET("api/v2/site/getSiteList")
+    @GET("ilaw/api/v2/site/getSiteList")
     Call<ResEntity<List<SearchEngineEntity>>> getSearchEngines();
 
     /**
@@ -194,7 +194,7 @@ public interface ApiAlphaService {
      * @param pagesize
      * @return
      */
-    @GET("api/v2/contact")
+    @GET("ilaw/api/v2/contact")
     Call<ResEntity<List<CustomerEntity>>> getCustomers(@Query("pagesize") int pagesize);
 
     /**
@@ -207,7 +207,7 @@ public interface ApiAlphaService {
      * @param isView    是否关注的 关注==1
      * @return
      */
-    @GET("api/v2/contact")
+    @GET("ilaw/api/v2/contact")
     Call<ResEntity<List<CustomerEntity>>> getCustomers(@Query("pageindex") int pageindex,
                                                        @Query("pagesize") int pagesize,
                                                        @Query("isView") int isView);
@@ -219,7 +219,7 @@ public interface ApiAlphaService {
      *
      * @return
      */
-    @GET("api/v2/taskflow/queryTaskByDue")
+    @GET("ilaw/api/v2/taskflow/queryTaskByDue")
     Call<ResEntity<PageEntity<TaskEntity>>> getAllTask();
 
 
@@ -230,7 +230,7 @@ public interface ApiAlphaService {
      *
      * @return
      */
-    @GET("api/v2/taskflow/queryTaskByDue")
+    @GET("ilaw/api/v2/taskflow/queryTaskByDue")
     Call<ResEntity<PageEntity<TaskEntity.TaskItemEntity>>> getAllTask(@Query("dueStart") String dueStart,
                                                                       @Query("dueEnd") String dueEnd,
                                                                       @Query("assignTos") List<String> assignTos,
@@ -244,7 +244,7 @@ public interface ApiAlphaService {
      * @param content
      * @return
      */
-    @POST("api/v2/chat/msg/analysisTask")
+    @POST("ilaw/api/v2/chat/msg/analysisTask")
     @FormUrlEncoded
     Call<ResEntity<MsgConvert2Task>> msgConvert2Task(@Field("content") String content);
 
@@ -258,7 +258,7 @@ public interface ApiAlphaService {
      * @param params
      * @return
      */
-    @POST("api/v2/file/upload")
+    @POST("ilaw/api/v2/file/upload")
     @Multipart
     Call<ResEntity<JsonElement>> groupUploadFile(@Query("groupId") String groupId,
                                                  @PartMap Map<String, RequestBody> params
@@ -279,7 +279,7 @@ public interface ApiAlphaService {
      * @param myStar
      * @return
      */
-    @GET("api/v1/matters")
+    @GET("ilaw/api/v1/matters")
     Call<ResEntity<List<ProjectEntity>>> projectQueryAll(@Query("pageindex") int pageindex,
                                                          @Query("pagesize") int pagesize,
                                                          @Query("orderby") String orderby,
@@ -298,7 +298,7 @@ public interface ApiAlphaService {
      * @param status 项目状态：[0:预立案 2:进行中 4:已完结 7:已搁置]，多个以英文逗号分隔
      * @return
      */
-    @GET("api/v1/matters/keyValue")
+    @GET("ilaw/api/v1/matters/keyValue")
     Call<ResEntity<List<ProjectEntity>>> projectSelectListQuery(@Query("status") String status);
 
     /**
@@ -309,7 +309,7 @@ public interface ApiAlphaService {
      * @param pmsStr MAT:matter.document:readwrite 文档读写权限
      * @return
      */
-    @GET("api/v1/matters/getWithRight")
+    @GET("ilaw/api/v1/matters/getWithRight")
     Call<ResEntity<List<ProjectEntity>>> projectPmsSelectListQuery(@Query("pmsStr") String pmsStr);
 
     /**
@@ -321,7 +321,7 @@ public interface ApiAlphaService {
      * @param word
      * @return
      */
-    @GET("api/v2/taskflow/getMatterList")
+    @GET("ilaw/api/v2/taskflow/getMatterList")
     Call<ResEntity<List<ProjectEntity>>> projectSelectByTask(@Query("status") String status,
                                                              @Query("word") String word);
 
@@ -334,7 +334,7 @@ public interface ApiAlphaService {
      * @param status
      * @return
      */
-    @GET("api/v2/timing/timing/getMatterList")
+    @GET("ilaw/api/v2/timing/timing/getMatterList")
     Call<ResEntity<List<ProjectEntity>>> timingProjectQuery(
             @Query("myStar") int myStar,
             @Query("status") String status
@@ -350,7 +350,7 @@ public interface ApiAlphaService {
      * @param status
      * @return
      */
-    @GET("api/v2/timing/timing/getMatterList")
+    @GET("ilaw/api/v2/timing/timing/getMatterList")
     Call<ResEntity<List<ProjectEntity>>> timingProjectQuery(
             @Query("myStar") int myStar,
             @Query("status") String status,
@@ -365,7 +365,7 @@ public interface ApiAlphaService {
      * @param id
      * @return
      */
-    @GET("api/v1/matters/{id}")
+    @GET("ilaw/api/v1/matters/{id}")
     Call<ResEntity<List<ProjectDetailEntity>>> projectDetail(@Path("id") String id);
 
     /**
@@ -376,7 +376,7 @@ public interface ApiAlphaService {
      * @param matterPkid
      * @return
      */
-    @PUT("api/v1/matters/addStar")
+    @PUT("ilaw/api/v1/matters/addStar")
     Call<ResEntity<JsonElement>> projectAddStar(@Query("matterPkid") String matterPkid);
 
     /**
@@ -387,7 +387,7 @@ public interface ApiAlphaService {
      * @param matterPkid
      * @return
      */
-    @DELETE("api/v1/matters/deleteStar")
+    @DELETE("ilaw/api/v1/matters/deleteStar")
     Call<ResEntity<JsonElement>> projectDeleteStar(@Query("matterPkid") String matterPkid);
 
     /**
@@ -400,7 +400,7 @@ public interface ApiAlphaService {
      * @param email
      * @return
      */
-    @POST("api/v1/auth/update")
+    @POST("ilaw/api/v1/auth/update")
     Call<ResEntity<JsonElement>> updateUserInfo(@Query("id") String id, @Query("phone") String phone, @Query("email") String email);
 
     /**
@@ -412,7 +412,7 @@ public interface ApiAlphaService {
      * @param pageSize
      * @return
      */
-    @GET("api/v2/timing/timing/findByMatterId")
+    @GET("ilaw/api/v2/timing/timing/findByMatterId")
     Call<ResEntity<TimeEntity>> projectQueryTimerList(@Query("matterId") String matterId, @Query("pageIndex") int pageIndex, @Query("pageSize") int pageSize);
 
 
@@ -424,7 +424,7 @@ public interface ApiAlphaService {
      * @param projectId
      * @return
      */
-    @GET("api/v2/documents/getRepo/{projectId}")
+    @GET("ilaw/api/v2/documents/getRepo/{projectId}")
     Call<JsonObject> projectQueryDocumentId(@Path("projectId") String projectId);
 
 
@@ -440,7 +440,7 @@ public interface ApiAlphaService {
      * @param pageSize
      * @return
      */
-    @GET("api/v2/taskflow/queryMatterTask")
+    @GET("ilaw/api/v2/taskflow/queryMatterTask")
     Call<ResEntity<TaskEntity>> projectQueryTaskList(@Query("matterId") String projectId,
                                                      @Query("stateType") int stateType,
                                                      @Query("type") int type,
@@ -455,7 +455,7 @@ public interface ApiAlphaService {
      * @param projectId
      * @return
      */
-    @GET("api/v2/flowmatter/flowbyMatterId")
+    @GET("ilaw/api/v2/flowmatter/flowbyMatterId")
     Call<ResEntity<List<TaskGroupEntity>>> projectQueryTaskGroupList(@Query("matterId") String projectId);
 
     /**
@@ -466,7 +466,7 @@ public interface ApiAlphaService {
      * @param msg
      * @return
      */
-    @POST("api/v2/taskflow")
+    @POST("ilaw/api/v2/taskflow")
     Call<ResEntity<TaskGroupEntity>> taskGroupCreate(@Body RequestBody msg);
 
     /**
@@ -479,7 +479,7 @@ public interface ApiAlphaService {
      * @see {taskUpdateNew}
      */
     @Deprecated
-    @PUT("api/v2/taskflow")
+    @PUT("ilaw/api/v2/taskflow")
     Call<ResEntity<JsonElement>> taskUpdate(@Body RequestBody msg);
 
     /**
@@ -490,7 +490,7 @@ public interface ApiAlphaService {
      * @param msg
      * @return
      */
-    @PUT("api/v2/taskflow")
+    @PUT("ilaw/api/v2/taskflow")
     Call<ResEntity<TaskEntity.TaskItemEntity>> taskUpdateNew(@Body RequestBody msg);
 
     /**
@@ -501,7 +501,7 @@ public interface ApiAlphaService {
      * @param id
      * @return
      */
-    @GET("api/v2/taskflow/{id}")
+    @GET("ilaw/api/v2/taskflow/{id}")
     Call<ResEntity<TaskEntity.TaskItemEntity>> taskQueryDetail(@Path("id") String id);
 
     /**
@@ -511,7 +511,7 @@ public interface ApiAlphaService {
      *
      * @return
      */
-    @PUT("api/v2/timing/timing/update")
+    @PUT("ilaw/api/v2/timing/timing/update")
     Call<ResEntity<JsonElement>> timingUpdate(@Body RequestBody body);
 
     /**
@@ -522,7 +522,7 @@ public interface ApiAlphaService {
      * @param body
      * @return
      */
-    @POST("api/v2/timing/timing/add")
+    @POST("ilaw/api/v2/timing/timing/add")
     @Deprecated
     Call<ResEntity<String>> timingAdd(@Body RequestBody body);
 
@@ -540,7 +540,7 @@ public interface ApiAlphaService {
      * @param startTime  手动指定的开始时间，只能小于当前系统时间
      * @return
      */
-    @POST("api/v2/timing/timing/startTiming")
+    @POST("ilaw/api/v2/timing/timing/startTiming")
     @FormUrlEncoded
     Call<ResEntity<TimeEntity.ItemEntity>> timingStart(
             @Field("name") String name,
@@ -558,7 +558,7 @@ public interface ApiAlphaService {
      *
      * @return
      */
-    @POST("api/v2/timing/timing/stopTiming")
+    @POST("ilaw/api/v2/timing/timing/stopTiming")
     @FormUrlEncoded
     Call<ResEntity<TimeEntity.ItemEntity>> timingStop(@Field("pkId") String pkId);
 
@@ -570,7 +570,7 @@ public interface ApiAlphaService {
      * @param taskId
      * @return
      */
-    @GET("api/v2/taskflow/taskitem")
+    @GET("ilaw/api/v2/taskflow/taskitem")
     Call<ResEntity<TaskCheckItemEntity>> taskCheckItemQuery(@Query("taskId") String taskId);
 
     /**
@@ -581,7 +581,7 @@ public interface ApiAlphaService {
      * @param body
      * @return
      */
-    @PUT("api/v2/taskflow/taskitem")
+    @PUT("ilaw/api/v2/taskflow/taskitem")
     Call<ResEntity<JsonElement>> taskCheckItemUpdate(@Body RequestBody body);
 
     /**
@@ -592,7 +592,7 @@ public interface ApiAlphaService {
      * @param id
      * @return
      */
-    @DELETE("api/v2/taskflow/taskitem/{id}")
+    @DELETE("ilaw/api/v2/taskflow/taskitem/{id}")
     Call<ResEntity<JsonElement>> taskCheckItemDelete(@Path("id") String id);
 
     /**
@@ -603,7 +603,7 @@ public interface ApiAlphaService {
      * @param body
      * @return
      */
-    @POST("api/v2/taskflow/taskitem")
+    @POST("ilaw/api/v2/taskflow/taskitem")
     Call<ResEntity<JsonElement>> taskCheckItemCreate(@Body RequestBody body);
 
     /**
@@ -614,7 +614,7 @@ public interface ApiAlphaService {
      * @param body
      * @return
      */
-    @POST("api/v2/taskflow/attention")
+    @POST("ilaw/api/v2/taskflow/attention")
     Call<ResEntity<JsonElement>> taskAddStar(@Body RequestBody body);
 
     /**
@@ -625,7 +625,7 @@ public interface ApiAlphaService {
      * @param id
      * @return
      */
-    @DELETE("api/v2/taskflow/attention/{id}")
+    @DELETE("ilaw/api/v2/taskflow/attention/{id}")
     Call<ResEntity<JsonElement>> taskDeleteStar(@Path("id") String id);
 
     /**
@@ -636,7 +636,7 @@ public interface ApiAlphaService {
      * @param id
      * @return
      */
-    @DELETE("api/v2/taskflow/{id}")
+    @DELETE("ilaw/api/v2/taskflow/{id}")
     Call<ResEntity<JsonElement>> taskDelete(@Path("id") String id);
 
     /**
@@ -649,7 +649,7 @@ public interface ApiAlphaService {
      * @param content  评论的内容
      * @return
      */
-    @POST("api/v2/comment")
+    @POST("ilaw/api/v2/comment")
     Call<ResEntity<JsonElement>> commentCreate(@Query("hostType") int hostType,
                                                @Query("hostId") String hostId,
                                                @Query("content") String content);
@@ -665,7 +665,7 @@ public interface ApiAlphaService {
      * @param pageSize
      * @return
      */
-    @GET("api/v2/comment")
+    @GET("ilaw/api/v2/comment")
     Call<ResEntity<CommentEntity>> commentListQuery(@Query("hostType") int hostType,
                                                     @Query("hostId") String hostId,
                                                     @Query("pageIndex") int pageIndex,
@@ -686,7 +686,7 @@ public interface ApiAlphaService {
      * @param pageSize
      * @return
      */
-    @GET("api/v2/taskflow")
+    @GET("ilaw/api/v2/taskflow")
     Call<ResEntity<TaskEntity>> taskListQuery(@Query("assignedByMe") int assignedByMe,
                                               @Query("assignTos") String assignTos,
                                               @Query("stateType") int stateType,
@@ -711,7 +711,7 @@ public interface ApiAlphaService {
      * @param pageSize
      * @return
      */
-    @GET("api/v2/taskflow")
+    @GET("ilaw/api/v2/taskflow")
     Call<ResEntity<TaskEntity>> taskListItemQuery(@Query("assignTos") String assignTos,
                                                   @Query("stateType") int stateType,
                                                   @Query("attentionType") int attentionType,
@@ -730,7 +730,7 @@ public interface ApiAlphaService {
      * @param type      任务和任务组：-1;    任务：0;    任务组：1;
      * @return
      */
-    @GET("api/v2/taskflow")
+    @GET("ilaw/api/v2/taskflow")
     Call<ResEntity<TaskEntity>> taskListQueryByMatterId(
             @Query("stateType") int stateType,
             @Query("orderBy") String orderBy,
@@ -747,7 +747,7 @@ public interface ApiAlphaService {
      * @param taskId
      * @return
      */
-    @GET("api/v2/task/{taskId}/attachments")
+    @GET("ilaw/api/v2/task/{taskId}/attachments")
     Call<ResEntity<List<TaskAttachmentEntity>>> taskAttachMentListQuery(@Path("taskId") String taskId);
 
     /**
@@ -760,7 +760,7 @@ public interface ApiAlphaService {
      * @return
      */
     @Multipart
-    @POST("api/v2/task/{taskId}/attachment/addFromFile")
+    @POST("ilaw/api/v2/task/{taskId}/attachment/addFromFile")
     Call<ResEntity<JsonElement>> taskAttachmentUpload(@Path("taskId") String taskId, @PartMap Map<String, RequestBody> params);
 
     /**
@@ -775,7 +775,7 @@ public interface ApiAlphaService {
      * @param pageSize
      * @return
      */
-    @GET("api/v2/timing/timing/search")
+    @GET("ilaw/api/v2/timing/timing/search")
     Call<ResEntity<TimeEntity>> timingListQueryByTime(@Query("createUserId") String createUserId,
                                                       @Query("startTime") String startTime,
                                                       @Query("endTime") String endTime,
@@ -791,7 +791,7 @@ public interface ApiAlphaService {
      * @param workEndDate   2015-05-10
      * @return
      */
-    @GET("api/v2/timing/timing/timingCountByTime")
+    @GET("ilaw/api/v2/timing/timing/timingCountByTime")
     Call<ResEntity<ItemPageEntity<TimingCountEntity>>> queryTimingCountByTime(@Query("workStartDate") String workStartDate,
                                                                               @Query("workEndDate") String workEndDate);
 
@@ -804,7 +804,7 @@ public interface ApiAlphaService {
      * @param matterId
      * @return
      */
-    @GET("api/v2/timing/workTypes")
+    @GET("ilaw/api/v2/timing/workTypes")
     Call<ResEntity<List<WorkType>>> queryWorkTypes(@Query("matterId") String matterId);
 
 
@@ -816,7 +816,7 @@ public interface ApiAlphaService {
      * @param project
      * @return
      */
-    @GET("api/v1/matters/attorney")
+    @GET("ilaw/api/v1/matters/attorney")
     Call<ResEntity<List<TaskOwerEntity>>> taskOwerListQuery(@Query("id") String project,
                                                             @Query("name") String name);
 
@@ -829,7 +829,7 @@ public interface ApiAlphaService {
      * @param timerId
      * @return
      */
-    @DELETE("api/v2/timing/timing/delete/{timerId}")
+    @DELETE("ilaw/api/v2/timing/timing/delete/{timerId}")
     Call<ResEntity<JsonElement>> timingDelete(@Path("timerId") String timerId,
                                               @Query("clientId") String clientId);
 
@@ -841,7 +841,7 @@ public interface ApiAlphaService {
      * @param body
      * @return
      */
-    @POST("api/v2/taskflow")
+    @POST("ilaw/api/v2/taskflow")
     Call<ResEntity<TaskEntity.TaskItemEntity>> taskCreate(@Body RequestBody body);
 
 
@@ -855,7 +855,7 @@ public interface ApiAlphaService {
      * @param state
      * @return
      */
-    @GET("api/v2/timing/timing/search")
+    @GET("ilaw/api/v2/timing/timing/search")
     Call<ResEntity<PageEntity<TimeEntity.ItemEntity>>> timerQuery(@Query("pageIndex") int pageIndex,
                                                                   @Query("pageSize") int pageSize,
                                                                   @Query("state") int state);
@@ -867,7 +867,7 @@ public interface ApiAlphaService {
      *
      * @return
      */
-    @GET("api/v2/timing/timing/getRunningTiming")
+    @GET("ilaw/api/v2/timing/timing/getRunningTiming")
     Call<ResEntity<TimeEntity.ItemEntity>> timerRunningQuery();
 
     /**
@@ -877,7 +877,7 @@ public interface ApiAlphaService {
      *
      * @return
      */
-    @GET("api/v1/auth/groups/q/groupByToken")
+    @GET("ilaw/api/v1/auth/groups/q/groupByToken")
     Call<ResEntity<List<GroupBean>>> lawyerGroupListQuery();
 
     /**
@@ -888,7 +888,7 @@ public interface ApiAlphaService {
      * @param id
      * @return
      */
-    @GET("api/v2/contact/detail/{id}")
+    @GET("ilaw/api/v2/contact/detail/{id}")
     Call<ResEntity<List<ContactDeatilBean>>> customerDetailQuery(@Path("id") String id);
 
     /**
@@ -899,7 +899,7 @@ public interface ApiAlphaService {
      * @param id
      * @return
      */
-    @GET("api/v2/contact/relatedperson/{id}")
+    @GET("ilaw/api/v2/contact/relatedperson/{id}")
     Call<ResEntity<List<ContactDeatilBean>>> customerLiaisonsQuery(@Path("id") String id);
 
     /**
@@ -910,7 +910,7 @@ public interface ApiAlphaService {
      * @param id
      * @return
      */
-    @PUT("api/v2/contact/addStar/{id}")
+    @PUT("ilaw/api/v2/contact/addStar/{id}")
     Call<ResEntity<JsonElement>> customerAddStar(@Path("id") String id);
 
     /**
@@ -921,7 +921,7 @@ public interface ApiAlphaService {
      * @param id
      * @return
      */
-    @DELETE("api/v2/contact/deleteStar/{id}")
+    @DELETE("ilaw/api/v2/contact/deleteStar/{id}")
     Call<ResEntity<JsonElement>> customerDeleteStar(@Path("id") String id);
 
     /**
@@ -931,7 +931,7 @@ public interface ApiAlphaService {
      *
      * @return
      */
-    @GET("api/v2/permission/department/allDepartmentList")
+    @GET("ilaw/api/v2/permission/department/allDepartmentList")
     Call<ResEntity<List<SelectGroupBean>>> officeGroupsQuery();
 
     /**
@@ -942,7 +942,7 @@ public interface ApiAlphaService {
      * @param body
      * @return
      */
-    @PUT("api/v2/contact/group")
+    @PUT("ilaw/api/v2/contact/group")
     Call<ResEntity<JsonElement>> customerGroupInfoUpdate(@Body RequestBody body);
 
     /**
@@ -953,7 +953,7 @@ public interface ApiAlphaService {
      * @param id
      * @return
      */
-    @GET("api/v2/contact/relatedperson/{id}")
+    @GET("ilaw/api/v2/contact/relatedperson/{id}")
     Call<ResEntity<List<ContactDeatilBean>>> liaisonsQuery(@Path("id") String id);
 
     /**
@@ -964,7 +964,7 @@ public interface ApiAlphaService {
      * @param body
      * @return
      */
-    @PUT("api/v2/contact/mobile")
+    @PUT("ilaw/api/v2/contact/mobile")
     Call<ResEntity<List<ContactDeatilBean>>> customerUpdate(@Body RequestBody body);
 
     /**
@@ -975,7 +975,7 @@ public interface ApiAlphaService {
      * @param body
      * @return
      */
-    @POST("api/v2/contact")
+    @POST("ilaw/api/v2/contact")
     Call<ResEntity<List<ContactDeatilBean>>> customerCreate(@Body RequestBody body);
 
     /**
@@ -986,7 +986,7 @@ public interface ApiAlphaService {
      * @param accuratename
      * @return
      */
-    @GET("api/v2/contact")
+    @GET("ilaw/api/v2/contact")
     Call<ResEntity<List<CustomerEntity>>> companyCheckReName(@Query("accuratename") String accuratename);
 
 
@@ -998,7 +998,7 @@ public interface ApiAlphaService {
      * @param body
      * @return
      */
-    @POST("api/v2/contact/company")
+    @POST("ilaw/api/v2/contact/company")
     Call<ResEntity<List<ContactDeatilBean>>> customerCompanyCreate(@Body RequestBody body);
 
 
@@ -1009,7 +1009,7 @@ public interface ApiAlphaService {
      *
      * @return
      */
-    @GET("api/v1/auth/get/members")
+    @GET("ilaw/api/v1/auth/get/members")
     Call<ResEntity<List<TaskMemberWrapEntity>>> getPremissionTaskMembers();
 
     /**
@@ -1019,7 +1019,7 @@ public interface ApiAlphaService {
      *
      * @return
      */
-    @GET("api/v1/auth/groups/q/groupByToken")
+    @GET("ilaw/api/v1/auth/groups/q/groupByToken")
     Call<ResEntity<List<TaskMemberWrapEntity>>> getUnPremissionTaskMembers();
 
 
@@ -1031,7 +1031,7 @@ public interface ApiAlphaService {
      * @param userId
      * @return
      */
-    @GET("api/v2/taskflow/getTimingAndTask")
+    @GET("ilaw/api/v2/taskflow/getTimingAndTask")
     Call<ResEntity<UserDataEntity>> getUserData(@Query("userId") String userId);
 
 
@@ -1044,7 +1044,7 @@ public interface ApiAlphaService {
      * @param myStar
      * @return
      */
-    @GET("api/v1/matters")
+    @GET("ilaw/api/v1/matters")
     Call<ResEntity<List<ProjectEntity>>> projectQueryByName(@Query("queryString") String queryString,
                                                             @Query("myStar") int myStar);
 
@@ -1060,7 +1060,7 @@ public interface ApiAlphaService {
      * @param queryType 0:全部；1：新任务；2：我关注的；3我部门的
      * @return
      */
-    @GET("api/v2/taskflow/queryMobileTask")
+    @GET("ilaw/api/v2/taskflow/queryMobileTask")
     Call<ResEntity<TaskEntity>> taskQueryByName(@Query("assignTos") String assignTos,
                                                 @Query("name") String name,
                                                 @Query("stateType") int stateType,
@@ -1078,7 +1078,7 @@ public interface ApiAlphaService {
      * @param queryType 0:全部；1：新任务；2：我关注的；3我部门的
      * @return
      */
-    @GET("api/v2/taskflow/queryMobileTask")
+    @GET("ilaw/api/v2/taskflow/queryMobileTask")
     Call<ResEntity<TaskEntity>> taskQueryByName(@Query("assignTos") String assignTos,
                                                 @Query("name") String name,
                                                 @Query("stateType") int stateType,
@@ -1095,7 +1095,7 @@ public interface ApiAlphaService {
      * @param queryType 0:全部；1：新任务；2：我关注的；3我部门的
      * @return
      */
-    @GET("api/v2/taskflow/queryMobileTask")
+    @GET("ilaw/api/v2/taskflow/queryMobileTask")
     Call<ResEntity<TaskEntity>> taskQueryByNameFromMatter(@Query("name") String name,
                                                           @Query("stateType") int stateType,
                                                           @Query("queryType") int queryType,
@@ -1112,7 +1112,7 @@ public interface ApiAlphaService {
      * @param queryType 0:全部；1：新任务；2：我关注的；3我部门的
      * @return
      */
-    @GET("api/v2/taskflow/queryMobileTask")
+    @GET("ilaw/api/v2/taskflow/queryMobileTask")
     Call<ResEntity<TaskEntity>> taskQueryByName(@Query("assignTos") String assignTos,
                                                 @Query("name") String name,
                                                 @Query("stateType") int stateType,
@@ -1129,7 +1129,7 @@ public interface ApiAlphaService {
      * @param moduleType //MAT,CON,KM,HR,DEP
      * @return
      */
-    @GET("api/v2/permission/department/getUserViewModule")
+    @GET("ilaw/api/v2/permission/department/getUserViewModule")
     Call<ResEntity<Boolean>> permissionQuery(@Query("userId") String userId,
                                              @Query("moduleType") String moduleType);
 
@@ -1144,7 +1144,7 @@ public interface ApiAlphaService {
      * @param subjectid
      * @return
      */
-    @GET("api/v2/permission/engine/{uid}/getPmsStrings")
+    @GET("ilaw/api/v2/permission/engine/{uid}/getPmsStrings")
     Call<ResEntity<List<String>>> permissionQuery(@Path("uid") String uid,
                                                   @Query("type") String type,
                                                   @Query("subjectid") String subjectid);
@@ -1157,7 +1157,7 @@ public interface ApiAlphaService {
      * @param id
      * @return
      */
-    @GET("api/v2/taskflow/getWithRight/{id}")
+    @GET("ilaw/api/v2/taskflow/getWithRight/{id}")
     Call<ResEntity<TaskEntity.TaskItemEntity>> taskQueryDetailWithRight(@Path("id") String id);
 
     /**
@@ -1168,7 +1168,7 @@ public interface ApiAlphaService {
      * @param id
      * @return
      */
-    @DELETE("api/v2/comment/{id}")
+    @DELETE("ilaw/api/v2/comment/{id}")
     Call<ResEntity<JsonElement>> taskDeleteComment(@Path("id") String id);
 
     /**
@@ -1179,7 +1179,7 @@ public interface ApiAlphaService {
      * @param matterId
      * @return
      */
-    @GET("api/v2/timing/timing/getSumByMatterId")
+    @GET("ilaw/api/v2/timing/timing/getSumByMatterId")
     Call<ResEntity<JsonElement>> getSumTimeByMatterId(@Query("matterId") String matterId);
 
     /**
@@ -1190,7 +1190,7 @@ public interface ApiAlphaService {
      * @param ids
      * @return
      */
-    @PUT("api/v2/taskflow/newTaskAfterReadingIs")
+    @PUT("ilaw/api/v2/taskflow/newTaskAfterReadingIs")
     Call<ResEntity<JsonElement>> checkAllNewTask(@Query("ids") List<String> ids);
 
     /**
@@ -1202,7 +1202,7 @@ public interface ApiAlphaService {
      * @param filePath
      * @return
      */
-    @PUT("api/v2/task/{taskId}/attachment/unbind")
+    @PUT("ilaw/api/v2/task/{taskId}/attachment/unbind")
     Call<ResEntity<JsonElement>> taskDocumentDelete(@Path("taskId") String taskId,
                                                     @Query("filePath") String filePath);
 
@@ -1214,11 +1214,11 @@ public interface ApiAlphaService {
      * @param name
      * @return
      */
-    @GET("api/v2/contact")
+    @GET("ilaw/api/v2/contact")
     Call<ResEntity<JsonElement>> contactSearch(@Query("pinyininitial") String name);
 
 
-    @POST("api/v2/sha256/getUrl")
+    @POST("ilaw/api/v2/sha256/getUrl")
     @FormUrlEncoded
     Call<ResEntity<String>> getSha256Url(@Field("id") int id,
                                          @Field("value") String value);
@@ -1230,7 +1230,7 @@ public interface ApiAlphaService {
      * @param taskId
      * @return
      */
-    @GET("api/v2/tasks/{taskId}/reminders")
+    @GET("ilaw/api/v2/tasks/{taskId}/reminders")
     Call<ResEntity<TaskReminderEntity>> taskReminderQuery(@Path("taskId") String taskId);
 
     /**
@@ -1240,7 +1240,7 @@ public interface ApiAlphaService {
      * @param taskId
      * @return
      */
-    @POST("api/v2/tasks/{taskId}/reminders")
+    @POST("ilaw/api/v2/tasks/{taskId}/reminders")
     Call<ResEntity<TaskReminderEntity>> taskReminderAdd(@Path("taskId") String taskId,
                                                         @Body RequestBody body);
 
@@ -1254,7 +1254,7 @@ public interface ApiAlphaService {
      *
      * @return
      */
-    @GET("api/v2/documents/getToken")
+    @GET("ilaw/api/v2/documents/getToken")
     Call<SFileTokenEntity<String>> sFileTokenQuery();
 
 
@@ -1265,7 +1265,7 @@ public interface ApiAlphaService {
      * @param userId
      * @return
      */
-    @GET("api/v2/documents/getOfficeAdmin")
+    @GET("ilaw/api/v2/documents/getOfficeAdmin")
     Call<String> getOfficeAdmin(@Query("userId") String userId);
 
 
@@ -1278,7 +1278,7 @@ public interface ApiAlphaService {
      * @param type   共享链接类型 0下载 1上传
      * @return
      */
-    @GET("api/v2/documents/shareLinks")
+    @GET("ilaw/api/v2/documents/shareLinks")
     Call<SFileLinkInfoEntity> fileShareLinkQuery(
             @Query("repoId") String repoId,
             @Query("path") String path,
@@ -1290,7 +1290,7 @@ public interface ApiAlphaService {
      * @param body
      * @return
      */
-    @POST("api/v2/documents/shareLinks")
+    @POST("ilaw/api/v2/documents/shareLinks")
     Call<SFileLinkInfoEntity> fileShareLinkCreate(@Body RequestBody body);
 
     /**
@@ -1300,7 +1300,7 @@ public interface ApiAlphaService {
      * @param shareLinkId
      * @return
      */
-    @DELETE("api/v2/documents/shareLinks/{shareLinkId}")
+    @DELETE("ilaw/api/v2/documents/shareLinks/{shareLinkId}")
     Call<ResEntity<JsonElement>> fileShareLinkDelete(@Path("shareLinkId") String shareLinkId);
 
 
@@ -1310,7 +1310,7 @@ public interface ApiAlphaService {
      * @param path uid 或者uid,uid2,uid3 组合字符串
      * @return
      */
-    @GET("api/v2/documents/getUserList")
+    @GET("ilaw/api/v2/documents/getUserList")
     Call<List<String>> sfileUserInfosQuery(@Query("path") String path);
 
 
@@ -1332,7 +1332,7 @@ public interface ApiAlphaService {
      * @param seaFileRepoId
      * @return
      */
-    @GET("api/v2/documents/getmatter/{seaFileRepoId}")
+    @GET("ilaw/api/v2/documents/getmatter/{seaFileRepoId}")
     Call<RepoMatterEntity> repoMatterIdQuery(@Path("seaFileRepoId") String seaFileRepoId);
 
     /**
@@ -1340,7 +1340,7 @@ public interface ApiAlphaService {
      *
      * @return
      */
-    @GET("api/v2/library/mime/default")
+    @GET("ilaw/api/v2/library/mime/default")
     Call<ResEntity<DefaultRepoEntity>> repoDefaultQuery();
 
 }

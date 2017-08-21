@@ -133,7 +133,7 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
                     @Override
                     public void onSuccess(Call<RepoMatterEntity> call, Response<RepoMatterEntity> response) {
                         getApi().folderChangeHistory(
-                                BuildConfig.API_URL.replace("ilaw/", "").concat("docnotice/api/notices/docs/labs/me"),
+                                BuildConfig.API_URL.concat("docnotice/api/notices/docs/labs/me"),
                                 response.body().matterId,
                                 page,
                                 getSeaFileRepoId())

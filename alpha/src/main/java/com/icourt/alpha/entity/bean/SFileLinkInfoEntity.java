@@ -60,8 +60,7 @@ public class SFileLinkInfoEntity {
         if (!TextUtils.isEmpty(officeShareLink)) {
             return officeShareLink;
         } else {
-            return BuildConfig.API_URL
-                    .replace("ilaw/", "").concat("#withoutlo/sharelink/")
+            return BuildConfig.API_URL.concat("#withoutlo/sharelink/")
                     .concat(shareLinkId);
         }
     }
