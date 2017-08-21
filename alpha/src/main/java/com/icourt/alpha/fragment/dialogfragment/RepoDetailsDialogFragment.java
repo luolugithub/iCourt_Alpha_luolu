@@ -22,6 +22,7 @@ import android.widget.TextView;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.baseadapter.BaseFragmentAdapter;
 import com.icourt.alpha.base.BaseDialogFragment;
+import com.icourt.alpha.constants.SFileConfig;
 import com.icourt.alpha.entity.bean.FileChangedHistoryEntity;
 import com.icourt.alpha.entity.bean.RepoEntity;
 import com.icourt.alpha.fragment.FileChangeHistoryFragment;
@@ -81,7 +82,8 @@ public class RepoDetailsDialogFragment extends BaseDialogFragment
     protected static final String KEY_SEA_FILE_FROM_REPO_ID = "seaFileFromRepoId";//原仓库id
     protected static final String KEY_LOCATION_TAB_INDEX = "locationPage";//定位的tab
 
-    public static void show(String fromRepoId,
+    public static void show(@SFileConfig.REPO_TYPE int repoType,
+                            String fromRepoId,
                             @IntRange(from = 0, to = 2) int locationTabIndex,
                             @NonNull FragmentManager fragmentManager) {
         if (fragmentManager == null) return;
@@ -91,16 +93,18 @@ public class RepoDetailsDialogFragment extends BaseDialogFragment
         if (fragment != null) {
             mFragTransaction.remove(fragment);
         }
-        show(newInstance(fromRepoId, locationTabIndex), tag, mFragTransaction);
+        show(newInstance(repoType, fromRepoId, locationTabIndex), tag, mFragTransaction);
     }
 
 
-    public static RepoDetailsDialogFragment newInstance(String fromRepoId,
+    public static RepoDetailsDialogFragment newInstance(@SFileConfig.REPO_TYPE int repoType,
+                                                        String fromRepoId,
                                                         @IntRange(from = 0, to = 2) int locationTabIndex) {
         RepoDetailsDialogFragment fragment = new RepoDetailsDialogFragment();
         Bundle args = new Bundle();
         args.putString(KEY_SEA_FILE_FROM_REPO_ID, fromRepoId);
         args.putInt(KEY_LOCATION_TAB_INDEX, locationTabIndex);
+        args.putInt("repoType", repoType);
         fragment.setArguments(args);
         return fragment;
     }
@@ -134,7 +138,9 @@ public class RepoDetailsDialogFragment extends BaseDialogFragment
         tabLayout.setupWithViewPager(viewPager);
         baseFragmentAdapter.bindTitle(true, Arrays.asList("修改历史", "内部共享", "回收站"));
         baseFragmentAdapter.bindData(true,
-                Arrays.asList(FileChangeHistoryFragment.newInstance(fromRepoId),
+                Arrays.asList(FileChangeHistoryFragment.newInstance(
+                        SFileConfig.convert2RepoType(getArguments().getInt("repoType")),
+                        fromRepoId),
                         FileInnerShareFragment.newInstance(fromRepoId, "/"),
                         FileTrashListFragment.newInstance(fromRepoId, "/")));
 

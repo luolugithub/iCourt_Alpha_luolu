@@ -13,12 +13,12 @@ import android.view.ViewGroup;
 import com.andview.refreshview.XRefreshView;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.icourt.alpha.BuildConfig;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.FileChangedHistoryAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.adapterObserver.DataChangeAdapterObserver;
 import com.icourt.alpha.base.BaseDialogFragment;
+import com.icourt.alpha.constants.SFileConfig;
 import com.icourt.alpha.entity.bean.FileChangedHistoryEntity;
 import com.icourt.alpha.entity.bean.FolderDocumentEntity;
 import com.icourt.alpha.entity.bean.RepoMatterEntity;
@@ -60,12 +60,19 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
     OnFragmentDataChangeListener onFragmentDataChangeListener;
 
     public static FileChangeHistoryFragment newInstance(
+            @SFileConfig.REPO_TYPE int repoType,
             String fromRepoId) {
         FileChangeHistoryFragment fragment = new FileChangeHistoryFragment();
         Bundle args = new Bundle();
         args.putString(KEY_SEA_FILE_FROM_REPO_ID, fromRepoId);
+        args.putInt("repoType", repoType);
         fragment.setArguments(args);
         return fragment;
+    }
+
+    @SFileConfig.REPO_TYPE
+    private int getRepoType() {
+        return SFileConfig.convert2RepoType(getArguments().getInt("repoType"));
     }
 
     @Override
@@ -127,50 +134,86 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
         if (isRefresh) {
             page = 0;
         }
-        getApi().repoMatterIdQuery(getSeaFileRepoId())
-                .enqueue(new SimpleCallBack2<RepoMatterEntity>() {
+        switch (getRepoType()) {
+            case SFileConfig.REPO_MINE:
+                getChangeHistory(isRefresh, null);
+                break;
+            case SFileConfig.REPO_SHARED_ME:
+                getChangeHistory(isRefresh, null);
+                break;
+            case SFileConfig.REPO_LAWFIRM:
+                getChangeHistory(isRefresh, null);
+                break;
+            case SFileConfig.REPO_PROJECT:
+                getApi().repoMatterIdQuery(getSeaFileRepoId())
+                        .enqueue(new SimpleCallBack2<RepoMatterEntity>() {
+                            @Override
+                            public void onSuccess(Call<RepoMatterEntity> call, Response<RepoMatterEntity> response) {
+                                getChangeHistory(isRefresh, response.body().matterId);
+                            }
 
-                    @Override
-                    public void onSuccess(Call<RepoMatterEntity> call, Response<RepoMatterEntity> response) {
-                        getApi().folderChangeHistory(
-                                BuildConfig.API_URL.concat("docnotice/api/notices/docs/labs/me"),
-                                response.body().matterId,
-                                page,
-                                getSeaFileRepoId())
-                                .enqueue(new SimpleCallBack<List<FileChangedHistoryEntity>>() {
-
-                                    @Override
-                                    protected void dispatchHttpSuccess(Call<ResEntity<List<FileChangedHistoryEntity>>> call, Response<ResEntity<List<FileChangedHistoryEntity>>> response) {
-                                        if (response.body() != null) {
-                                            onSuccess(call, response);
-                                        } else {
-                                            super.dispatchHttpSuccess(call, response);
-                                        }
-                                    }
-
-                                    @Override
-                                    public void onSuccess(Call<ResEntity<List<FileChangedHistoryEntity>>> call, Response<ResEntity<List<FileChangedHistoryEntity>>> response) {
-                                        page += 1;
-                                        fileChangedHistoryAdapter.bindData(isRefresh, response.body().result);
-                                        stopRefresh();
-                                    }
-
-                                    @Override
-                                    public void onFailure(Call<ResEntity<List<FileChangedHistoryEntity>>> call, Throwable t) {
-                                        super.onFailure(call, t);
-                                        stopRefresh();
-                                    }
-                                });
-                    }
-
-                    @Override
-                    public void onFailure(Call<RepoMatterEntity> call, Throwable t) {
-                        super.onFailure(call, t);
-                        stopRefresh();
-                    }
-                });
-
+                            @Override
+                            public void onFailure(Call<RepoMatterEntity> call, Throwable t) {
+                                super.onFailure(call, t);
+                                stopRefresh();
+                            }
+                        });
+                break;
+        }
     }
+
+    private void getChangeHistory(final boolean isRefresh, String matterId) {
+        Call<ResEntity<List<FileChangedHistoryEntity>>> resEntityCall = null;
+        switch (getRepoType()) {
+            case SFileConfig.REPO_MINE:
+                resEntityCall = getApi().repoMineChangeHistory(
+                        page,
+                        getSeaFileRepoId());
+                break;
+            case SFileConfig.REPO_SHARED_ME:
+                resEntityCall = getApi().repoSharedChangeHistory(
+                        page,
+                        getSeaFileRepoId());
+                break;
+            case SFileConfig.REPO_LAWFIRM:
+
+                break;
+            case SFileConfig.REPO_PROJECT:
+                resEntityCall = getApi().repoProjectChangeHistory(
+                        page,
+                        matterId);
+                break;
+        }
+        if (resEntityCall == null) {
+            stopRefresh();
+            return;
+        }
+        resEntityCall.enqueue(new SimpleCallBack<List<FileChangedHistoryEntity>>() {
+
+            @Override
+            protected void dispatchHttpSuccess(Call<ResEntity<List<FileChangedHistoryEntity>>> call, Response<ResEntity<List<FileChangedHistoryEntity>>> response) {
+                if (response.body() != null) {
+                    onSuccess(call, response);
+                } else {
+                    super.dispatchHttpSuccess(call, response);
+                }
+            }
+
+            @Override
+            public void onSuccess(Call<ResEntity<List<FileChangedHistoryEntity>>> call, Response<ResEntity<List<FileChangedHistoryEntity>>> response) {
+                page += 1;
+                fileChangedHistoryAdapter.bindData(isRefresh, response.body().result);
+                stopRefresh();
+            }
+
+            @Override
+            public void onFailure(Call<ResEntity<List<FileChangedHistoryEntity>>> call, Throwable t) {
+                super.onFailure(call, t);
+                stopRefresh();
+            }
+        });
+    }
+
 
     private void stopRefresh() {
         if (refreshLayout != null) {

@@ -1315,15 +1315,31 @@ public interface ApiAlphaService {
 
 
     /**
-     * 文件夹修改动态
+     * 我的资料库 修改历史
      *
      * @return
      */
-    @GET()
-    Call<ResEntity<List<FileChangedHistoryEntity>>> folderChangeHistory(@Url String url,
-                                                                        @Query("matterId") String matterId,
-                                                                        @Query("page") int page,
-                                                                        @Query("repoId") String repoId);
+    @GET("docnotice/api/notices/docs/labs/me")
+    Call<ResEntity<List<FileChangedHistoryEntity>>> repoMineChangeHistory(@Query("page") int page,
+                                                                          @Query("repoId") String repoId);
+
+    /**
+     * 共享给我的资料库修改历史
+     *
+     * @return
+     */
+    @GET("docnotice/api/notices/docs/labs/shared")
+    Call<ResEntity<List<FileChangedHistoryEntity>>> repoSharedChangeHistory(@Query("page") int page,
+                                                                            @Query("repoId") String repoId);
+
+    /**
+     * 项目资料库修改历史
+     *
+     * @return
+     */
+    @GET("docnotice/api/notices/docs/matters")
+    Call<ResEntity<List<FileChangedHistoryEntity>>> repoProjectChangeHistory(@Query("page") int page,
+                                                                             @Query("matterId") String matterId);
 
 
     /**

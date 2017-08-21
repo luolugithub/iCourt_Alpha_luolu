@@ -19,6 +19,7 @@ import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.HeaderFooterAdapter;
 import com.icourt.alpha.adapter.baseadapter.adapterObserver.RefreshViewEmptyObserver;
 import com.icourt.alpha.base.BaseFragment;
+import com.icourt.alpha.constants.SFileConfig;
 import com.icourt.alpha.entity.bean.DefaultRepoEntity;
 import com.icourt.alpha.entity.bean.RepoEntity;
 import com.icourt.alpha.entity.bean.SFileTokenEntity;
@@ -73,18 +74,13 @@ public class RepoListFragment extends BaseFragment
     TextView footer_textview;
 
     /**
-     * 0： "我的资料库",
-     * 1： "共享给我的",
-     * 2： "律所资料库",
-     * 3： "项目资料库"
-     *
      * @param type
      * @return
      */
-    public static RepoListFragment newInstance(int type) {
+    public static RepoListFragment newInstance(@SFileConfig.REPO_TYPE int type) {
         RepoListFragment documentsListFragment = new RepoListFragment();
         Bundle args = new Bundle();
-        args.putInt("type", type);
+        args.putInt("repoType", type);
         documentsListFragment.setArguments(args);
         return documentsListFragment;
     }
@@ -100,7 +96,7 @@ public class RepoListFragment extends BaseFragment
 
     @Override
     protected void initView() {
-        repoType = getArguments().getInt("type");
+        repoType = getArguments().getInt("repoType");
         EventBus.getDefault().register(this);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
@@ -331,6 +327,7 @@ public class RepoListFragment extends BaseFragment
         RepoEntity item = repoAdapter.getItem(position);
         if (item == null) return;
         FolderListActivity.launch(getContext(),
+                SFileConfig.convert2RepoType(getArguments().getInt("repoType", 0)),
                 item.repo_id,
                 item.repo_name,
                 "/");
@@ -389,7 +386,9 @@ public class RepoListFragment extends BaseFragment
     private void lookDetail(int pos) {
         RepoEntity item = repoAdapter.getItem(pos);
         if (item == null) return;
-        RepoDetailsDialogFragment.show(item.repo_id,
+        RepoDetailsDialogFragment.show(
+                SFileConfig.convert2RepoType(repoType),
+                item.repo_id,
                 0,
                 getChildFragmentManager());
     }
@@ -414,6 +413,7 @@ public class RepoListFragment extends BaseFragment
         final RepoEntity item = repoAdapter.getItem(pos);
         if (item == null) return;
         RepoDetailsDialogFragment.show(
+                SFileConfig.convert2RepoType(repoType),
                 item.repo_id,
                 1,
                 getChildFragmentManager());

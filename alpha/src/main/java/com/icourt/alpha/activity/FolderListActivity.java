@@ -37,6 +37,7 @@ import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.HeaderFooterAdapter;
 import com.icourt.alpha.adapter.baseadapter.adapterObserver.DataChangeAdapterObserver;
 import com.icourt.alpha.constants.Const;
+import com.icourt.alpha.constants.SFileConfig;
 import com.icourt.alpha.entity.bean.FolderDocumentEntity;
 import com.icourt.alpha.entity.event.SeaFolderEvent;
 import com.icourt.alpha.fragment.dialogfragment.FileDetailDialogFragment;
@@ -169,11 +170,13 @@ public class FolderListActivity extends FolderBaseActivity
      * @param seaFileDirPath
      */
     public static void launch(@NonNull Context context,
+                              @SFileConfig.REPO_TYPE int repoType,
                               String seaFileRepoId,
                               String title,
                               String seaFileDirPath) {
         if (context == null) return;
         Intent intent = new Intent(context, FolderListActivity.class);
+        intent.putExtra("repoType", repoType);
         intent.putExtra("title", title);
         intent.putExtra(KEY_SEA_FILE_REPO_ID, seaFileRepoId);
         intent.putExtra(KEY_SEA_FILE_DIR_PATH, seaFileDirPath);
@@ -488,11 +491,13 @@ public class FolderListActivity extends FolderBaseActivity
                             updateSelectableModeSatue(folderDocumentAdapter.isSelectable());
                         } else if (TextUtils.equals(action, "查看资料库详情")) {
                             RepoDetailsDialogFragment.show(
+                                    SFileConfig.convert2RepoType(getIntent().getIntExtra("repoType", 0)),
                                     getSeaFileRepoId(),
                                     0,
                                     getSupportFragmentManager());
                         } else if (TextUtils.equals(action, "回收站")) {
                             RepoDetailsDialogFragment.show(
+                                    SFileConfig.convert2RepoType(getIntent().getIntExtra("repoType", 0)),
                                     getSeaFileRepoId(),
                                     2,
                                     getSupportFragmentManager());
@@ -760,6 +765,7 @@ public class FolderListActivity extends FolderBaseActivity
                 if (item == null) return;
                 if (item.isDir()) {
                     FolderListActivity.launch(getContext(),
+                            SFileConfig.convert2RepoType(getIntent().getIntExtra("repoType", 0)),
                             getSeaFileRepoId(),
                             item.name,
                             String.format("%s%s/", getSeaFileDirPath(), item.name));

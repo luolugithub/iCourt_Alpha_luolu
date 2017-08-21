@@ -14,6 +14,7 @@ import com.icourt.alpha.R;
 import com.icourt.alpha.activity.RepoCreateActivity;
 import com.icourt.alpha.adapter.baseadapter.BaseFragmentAdapter;
 import com.icourt.alpha.base.BaseFragment;
+import com.icourt.alpha.constants.SFileConfig;
 
 import java.util.Arrays;
 
@@ -66,10 +67,10 @@ public class TabDocumentsFragment extends BaseFragment {
                         "项目"));
         baseFragmentAdapter.bindData(true,
                 Arrays.asList(
-                        RepoListFragment.newInstance(0),
-                        RepoListFragment.newInstance(1),
-                        RepoListFragment.newInstance(2),
-                        RepoListFragment.newInstance(3)));
+                        RepoListFragment.newInstance(SFileConfig.REPO_MINE),
+                        RepoListFragment.newInstance(SFileConfig.REPO_SHARED_ME),
+                        RepoListFragment.newInstance(SFileConfig.REPO_LAWFIRM),
+                        RepoListFragment.newInstance(SFileConfig.REPO_PROJECT)));
         viewPager.addOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
             @Override
             public void onPageSelected(int position) {
