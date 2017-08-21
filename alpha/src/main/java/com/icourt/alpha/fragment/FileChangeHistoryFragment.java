@@ -57,16 +57,13 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
     int page = 0;
 
     protected static final String KEY_SEA_FILE_FROM_REPO_ID = "seaFileFromRepoId";//原仓库id
-    protected static final String KEY_SEA_FILE_FROM_DIR_PATH = "seaFileFromDirPath";//原仓库路径
     OnFragmentDataChangeListener onFragmentDataChangeListener;
 
     public static FileChangeHistoryFragment newInstance(
-            String fromRepoId,
-            String fromRepoDirPath) {
+            String fromRepoId) {
         FileChangeHistoryFragment fragment = new FileChangeHistoryFragment();
         Bundle args = new Bundle();
         args.putString(KEY_SEA_FILE_FROM_REPO_ID, fromRepoId);
-        args.putString(KEY_SEA_FILE_FROM_DIR_PATH, fromRepoDirPath);
         fragment.setArguments(args);
         return fragment;
     }
@@ -123,9 +120,6 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
         return getArguments().getString(KEY_SEA_FILE_FROM_REPO_ID, "");
     }
 
-    private String getSeaFileDirPath() {
-        return getArguments().getString(KEY_SEA_FILE_FROM_REPO_ID, "");
-    }
 
     @Override
     protected void getData(final boolean isRefresh) {
@@ -141,7 +135,8 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
                         getApi().folderChangeHistory(
                                 BuildConfig.API_URL.replace("ilaw/", "").concat("docnotice/api/notices/docs/labs/me"),
                                 response.body().matterId,
-                                page)
+                                page,
+                                getSeaFileRepoId())
                                 .enqueue(new SimpleCallBack<List<FileChangedHistoryEntity>>() {
 
                                     @Override
@@ -166,6 +161,12 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
                                         stopRefresh();
                                     }
                                 });
+                    }
+
+                    @Override
+                    public void onFailure(Call<RepoMatterEntity> call, Throwable t) {
+                        super.onFailure(call, t);
+                        stopRefresh();
                     }
                 });
 
@@ -248,7 +249,7 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
 
     private void renameFileRevoke(FileChangedHistoryEntity item) {
         if (item == null) return;
-        String path = String.format("%s%s", getArguments().getString(KEY_SEA_FILE_FROM_DIR_PATH, ""), item.file_name);
+        //"/aaaa/Android手机推送设置.docx"---->"Android手机推送设置.docx",
         String orginName = item.path;
         if (!TextUtils.isEmpty(item.path)) {
             String[] split = item.path.split("/");
@@ -257,8 +258,9 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
             }
         }
         showLoadingDialog(null);
-        getSFileApi().fileRename(getSeaFileRepoId(),
-                path,
+        getSFileApi().fileRename(
+                item.repo_id,
+                TextUtils.isEmpty(item.new_path) ? item.path : item.new_path,
                 "rename",
                 orginName)
                 .enqueue(new SFileCallBack<FolderDocumentEntity>() {
@@ -278,7 +280,7 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
 
     private void renameFolderRevoke(FileChangedHistoryEntity item) {
         if (item == null) return;
-        String path = String.format("%s%s", getArguments().getString(KEY_SEA_FILE_FROM_DIR_PATH, ""), item.file_name);
+        //"/aaaa/bbbb"---->"bbbb",
         String orginName = item.path;
         if (!TextUtils.isEmpty(item.path)) {
             String[] split = item.path.split("/");
@@ -287,8 +289,9 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
             }
         }
         showLoadingDialog(null);
-        getSFileApi().folderRename(getSeaFileRepoId(),
-                path,
+        getSFileApi().folderRename(
+                item.repo_id,
+                TextUtils.isEmpty(item.new_path) ? item.path : item.new_path,
                 "rename",
                 orginName)
                 .enqueue(new SFileCallBack<String>() {
@@ -306,15 +309,39 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
                 });
     }
 
+    /**
+     * 反向移动回去
+     *
+     * @param item
+     */
     private void fileRevokeMove(FileChangedHistoryEntity item) {
         if (item == null) return;
         showLoadingDialog(null);
+        //eg.   "/hshh"---->"/" "/hshh/xx1"---> "/hshh"
+        String orginPath = item.path;
+        if (!TextUtils.isEmpty(item.path)) {
+            int indexOf = item.path.lastIndexOf("/");
+            if (indexOf >= 1) {
+                orginPath = item.path.substring(0, indexOf);
+            } else {
+                orginPath = "/";
+            }
+        }
+        String fromDir = item.new_path;
+        if (!TextUtils.isEmpty(item.new_path)) {
+            int indexOf = item.new_path.lastIndexOf("/");
+            if (indexOf >= 1) {
+                fromDir = item.path.substring(0, indexOf);
+            } else {
+                fromDir = "/";
+            }
+        }
         getSFileApi().fileMove(
                 getSeaFileRepoId(),
-                getSeaFileDirPath(),
+                fromDir,
                 item.file_name,
                 item.repo_id,
-                item.path)
+                orginPath)
                 .enqueue(new SFileCallBack<JsonElement>() {
                     @Override
                     public void onSuccess(Call<JsonElement> call, Response<JsonElement> response) {
@@ -337,11 +364,10 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
      */
     private void revokeFolder(FileChangedHistoryEntity item) {
         if (item == null) return;
-        String path = String.format("%s%s", getArguments().getString(KEY_SEA_FILE_FROM_DIR_PATH, ""), item.file_name);
         showLoadingDialog(null);
         getSFileApi().folderRevert(
-                getSeaFileRepoId(),
-                path,
+                item.repo_id,
+                item.path,
                 item.pre_commit_id)
                 .enqueue(new SFileCallBack<JsonObject>() {
                     @Override
@@ -368,11 +394,10 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
      * @param item
      */
     private void deleteFile(FileChangedHistoryEntity item) {
-        String path = String.format("%s%s", getArguments().getString(KEY_SEA_FILE_FROM_DIR_PATH, ""), item.file_name);
         showLoadingDialog(null);
         getSFileApi().fileDelete(
-                getSeaFileRepoId(),
-                path)
+                item.repo_id,
+                item.path)
                 .enqueue(new SFileCallBack<JsonObject>() {
                     @Override
                     public void onSuccess(Call<JsonObject> call, Response<JsonObject> response) {
@@ -398,10 +423,10 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
      * @param item
      */
     private void deleteFolder(FileChangedHistoryEntity item) {
-        String path = String.format("%s%s", getArguments().getString(KEY_SEA_FILE_FROM_DIR_PATH, ""), item.file_name);
         showLoadingDialog(null);
-        getSFileApi().folderDelete(getSeaFileRepoId(),
-                path)
+        getSFileApi().folderDelete(
+                item.repo_id,
+                item.path)
                 .enqueue(new SFileCallBack<JsonObject>() {
                     @Override
                     public void onSuccess(Call<JsonObject> call, Response<JsonObject> response) {
@@ -428,11 +453,10 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
      */
     private void revokeFile(FileChangedHistoryEntity item) {
         if (item == null) return;
-        String path = String.format("%s%s", getArguments().getString(KEY_SEA_FILE_FROM_DIR_PATH, ""), item.file_name);
         showLoadingDialog(null);
         getSFileApi().fileRevert(
-                getArguments().getString(KEY_SEA_FILE_FROM_REPO_ID, ""),
-                path,
+                item.repo_id,
+                item.path,
                 item.pre_commit_id)
                 .enqueue(new SFileCallBack<JsonObject>() {
                     @Override

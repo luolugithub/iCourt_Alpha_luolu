@@ -39,7 +39,7 @@ public class FileChangedHistoryEntity implements ILongFieldEntity {
     public long date;
     public String repo_id;
     public String repo_name;
-    public String path;
+    public String path;//原来的路径
     public long size;
     public String commit_id;
     public String pre_commit_id;

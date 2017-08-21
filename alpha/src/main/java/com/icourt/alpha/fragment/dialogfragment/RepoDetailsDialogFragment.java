@@ -134,7 +134,7 @@ public class RepoDetailsDialogFragment extends BaseDialogFragment
         tabLayout.setupWithViewPager(viewPager);
         baseFragmentAdapter.bindTitle(true, Arrays.asList("修改历史", "内部共享", "回收站"));
         baseFragmentAdapter.bindData(true,
-                Arrays.asList(FileChangeHistoryFragment.newInstance(fromRepoId, "/"),
+                Arrays.asList(FileChangeHistoryFragment.newInstance(fromRepoId),
                         FileInnerShareFragment.newInstance(fromRepoId, "/"),
                         FileTrashListFragment.newInstance(fromRepoId, "/")));
 

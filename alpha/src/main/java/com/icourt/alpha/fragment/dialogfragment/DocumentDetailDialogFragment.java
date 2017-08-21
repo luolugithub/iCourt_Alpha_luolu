@@ -140,7 +140,7 @@ public class DocumentDetailDialogFragment extends BaseDialogFragment {
         if (folderDocumentEntity.isDir()) {
             baseFragmentAdapter.bindTitle(true, Arrays.asList("修改历史", "内部共享", "下载链接", "上传链接"));
             baseFragmentAdapter.bindData(true,
-                    Arrays.asList(FileChangeHistoryFragment.newInstance(fromRepoId, fromRepoFilePath),
+                    Arrays.asList(FileChangeHistoryFragment.newInstance(fromRepoId),
                             FileInnerShareFragment.newInstance(fromRepoId, fromRepoFilePath),
                             FileLinkFragment.newInstance(fromRepoId, fromRepoFilePath, 0),
                             FileLinkFragment.newInstance(fromRepoId, fromRepoFilePath, 1)));

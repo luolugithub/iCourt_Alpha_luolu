@@ -1322,7 +1322,8 @@ public interface ApiAlphaService {
     @GET()
     Call<ResEntity<List<FileChangedHistoryEntity>>> folderChangeHistory(@Url String url,
                                                                         @Query("matterId") String matterId,
-                                                                        @Query("page") int page);
+                                                                        @Query("page") int page,
+                                                                        @Query("repoId") String repoId);
 
 
     /**
