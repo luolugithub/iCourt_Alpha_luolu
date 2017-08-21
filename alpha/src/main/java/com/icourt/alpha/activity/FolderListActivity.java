@@ -886,7 +886,7 @@ public class FolderListActivity extends FolderBaseActivity
                                 String.format("%s%s", getSeaFileDirPath(), item.name));
             } else {
                 delCall = getSFileApi()
-                        .documentDelete(
+                        .fileDelete(
                                 getSeaFileRepoId(),
                                 String.format("%s%s", getSeaFileDirPath(), item.name));
             }
@@ -967,7 +967,7 @@ public class FolderListActivity extends FolderBaseActivity
                             String.format("%s%s", getSeaFileDirPath(), item.name));
         } else {
             delCall = getSFileApi()
-                    .documentDelete(
+                    .fileDelete(
                             getSeaFileRepoId(),
                             String.format("%s%s", getSeaFileDirPath(), item.name));
         }

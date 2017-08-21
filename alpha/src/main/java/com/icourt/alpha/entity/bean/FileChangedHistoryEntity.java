@@ -1,5 +1,7 @@
 package com.icourt.alpha.entity.bean;
 
+import android.text.TextUtils;
+
 import com.icourt.alpha.widget.comparators.ILongFieldEntity;
 
 /**
@@ -44,6 +46,10 @@ public class FileChangedHistoryEntity implements ILongFieldEntity {
     public String new_path;
     public String pic;
     public String file_name;
+
+    public boolean isDir() {
+        return TextUtils.equals(obj_type, "dir");
+    }
 
     @Override
     public Long getCompareLongField() {
