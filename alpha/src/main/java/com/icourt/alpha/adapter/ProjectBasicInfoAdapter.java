@@ -29,6 +29,7 @@ public class ProjectBasicInfoAdapter extends BaseArrayRecyclerAdapter<ProjectBas
     private static final int OTHER_TYPE = 1;//其他type
     private List<ProjectDetailEntity.ClientsBean> clientsBeens = new ArrayList<>();
 
+
     public void setClientsBeens(List<ProjectDetailEntity.ClientsBean> clientsBeens) {
         this.clientsBeens = clientsBeens;
     }
@@ -71,6 +72,7 @@ public class ProjectBasicInfoAdapter extends BaseArrayRecyclerAdapter<ProjectBas
                 LinearLayoutManager layoutManager = new LinearLayoutManager(recyclerView.getContext());
                 recyclerView.setLayoutManager(layoutManager);
                 recyclerView.setAdapter(projectClientAdapter = new ProjectClientAdapter());
+                projectClientAdapter.setOnItemClickListener(super.onItemClickListener);
             }
             projectClientAdapter = (ProjectClientAdapter) recyclerView.getAdapter();
             projectClientAdapter.bindData(true, clientsBeens);

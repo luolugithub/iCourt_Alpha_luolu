@@ -10,16 +10,28 @@
         android:layout_marginLeft="16dp"
         android:background="@color/alpha_divider_color" />
 
-    <TextView
-        android:id="@+id/client_name_tv"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:drawableRight="@mipmap/arrow_right"
-        android:ellipsize="end"
-        android:maxLines="1"
-        android:orientation="vertical"
-        android:padding="@dimen/dp15"
-        android:textColor="#959595"
-        android:textSize="16sp" />
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:padding="@dimen/dp15">
 
+        <TextView
+            android:id="@+id/client_name_tv"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:orientation="vertical"
+            android:textColor="#959595"
+            android:textSize="16sp" />
+
+        <ImageView
+            android:id="@+id/right_arrow_iv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@mipmap/arrow_right" />
+    </LinearLayout>
 </LinearLayout>

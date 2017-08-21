@@ -16,15 +16,21 @@ import android.widget.TextView;
 
 import com.andview.refreshview.XRefreshView;
 import com.icourt.alpha.R;
+import com.icourt.alpha.activity.CustomerCompanyDetailActivity;
+import com.icourt.alpha.activity.CustomerPersonDetailActivity;
 import com.icourt.alpha.activity.ProjectBasicTextInfoActivity;
 import com.icourt.alpha.activity.ProjectMembersActivity;
 import com.icourt.alpha.adapter.ProjectBasicInfoAdapter;
+import com.icourt.alpha.adapter.ProjectClientAdapter;
 import com.icourt.alpha.adapter.ProjectMembersAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseFragmentAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.adapterObserver.RefreshViewEmptyObserver;
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.constants.Const;
+import com.icourt.alpha.db.dbmodel.CustomerDbModel;
+import com.icourt.alpha.db.dbservice.CustomerDbService;
+import com.icourt.alpha.entity.bean.CustomerEntity;
 import com.icourt.alpha.entity.bean.ProjectBasicItemEntity;
 import com.icourt.alpha.entity.bean.ProjectDetailEntity;
 import com.icourt.alpha.entity.event.ProjectActionEvent;
@@ -33,8 +39,12 @@ import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.ItemDecorationUtils;
+import com.icourt.alpha.utils.LoginInfoUtils;
+import com.icourt.alpha.utils.SpUtils;
+import com.icourt.alpha.utils.UMMobClickAgent;
 import com.icourt.alpha.view.WrapContentHeightViewPager;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
+import com.umeng.analytics.MobclickAgent;
 
 import org.greenrobot.eventbus.EventBus;
 
@@ -48,6 +58,8 @@ import butterknife.OnClick;
 import butterknife.Unbinder;
 import retrofit2.Call;
 import retrofit2.Response;
+
+import static com.icourt.alpha.activity.MainActivity.KEY_CUSTOMER_PERMISSION;
 
 /**
  * Description 项目概览
@@ -88,6 +100,7 @@ public class ProjectDetailFragment extends BaseFragment implements BaseRecyclerA
     BaseFragmentAdapter baseFragmentAdapter;
     OnFragmentCallBackListener onFragmentCallBackListener;
     ProjectDetailEntity projectDetailBean;
+    private CustomerDbService customerDbService = null;
 
     public static ProjectDetailFragment newInstance(@NonNull String projectId) {
         ProjectDetailFragment projectDetailFragment = new ProjectDetailFragment();
@@ -114,7 +127,7 @@ public class ProjectDetailFragment extends BaseFragment implements BaseRecyclerA
     @Override
     protected void initView() {
         projectId = getArguments().getString(KEY_PROJECT_ID);
-
+        customerDbService = new CustomerDbService(LoginInfoUtils.getLoginUserId());
         refreshLayout.setMoveForHorizontal(true);
 
         basicTopRecyclerview.setLayoutManager(new LinearLayoutManager(getContext()));
@@ -381,6 +394,29 @@ public class ProjectDetailFragment extends BaseFragment implements BaseRecyclerA
                     ProjectMembersActivity.launch(view.getContext(), projectDetailBean.attorneys, Const.PROJECT_ANYUAN_LAWYER_TYPE);
                     break;
             }
+        } else if (adapter instanceof ProjectClientAdapter) {
+            if (!hasCustomerPermission()) return;
+            if (customerDbService == null) return;
+            ProjectDetailEntity.ClientsBean clientsBean = (ProjectDetailEntity.ClientsBean) adapter.getItem(position);
+            CustomerEntity customerEntity = null;
+            CustomerDbModel customerDbModel = customerDbService.queryFirst("pkid", clientsBean.contactPkid);
+            if (customerDbModel == null) return;
+            customerEntity = customerDbModel.convert2Model();
+            if (customerEntity == null) return;
+            if (!TextUtils.isEmpty(customerEntity.contactType)) {
+                MobclickAgent.onEvent(getContext(), UMMobClickAgent.look_client_click_id);
+                //公司
+                if (TextUtils.equals(customerEntity.contactType.toUpperCase(), "C")) {
+                    CustomerCompanyDetailActivity.launch(getContext(), customerEntity.pkid, customerEntity.name, true);
+                } else if (TextUtils.equals(customerEntity.contactType.toUpperCase(), "P")) {
+                    CustomerPersonDetailActivity.launch(getContext(), customerEntity.pkid, customerEntity.name, true);
+                }
+            }
         }
+    }
+
+
+    private boolean hasCustomerPermission() {
+        return SpUtils.getInstance().getBooleanData(KEY_CUSTOMER_PERMISSION, false);
     }
 }

@@ -9,7 +9,10 @@ import android.text.TextUtils;
 
 import com.icourt.alpha.db.convertor.IConvertModel;
 import com.icourt.alpha.db.dbmodel.ContactDbModel;
+import com.icourt.alpha.db.dbmodel.CustomerDbModel;
 import com.icourt.alpha.db.dbservice.ContactDbService;
+import com.icourt.alpha.db.dbservice.CustomerDbService;
+import com.icourt.alpha.entity.bean.CustomerEntity;
 import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.icourt.alpha.http.RetrofitServiceFactory;
 import com.icourt.alpha.http.httpmodel.ResEntity;
@@ -30,7 +33,8 @@ import retrofit2.Response;
  */
 
 public class SyncDataService extends IntentService {
-    private static final String ACTION_SYNC_CONTACT = " action_sync_contact";
+    private static final String ACTION_SYNC_CONTACT = " action_sync_contact";//同步通讯录
+    private static final String ACTION_SYNC_CLIENT = " action_sync_client";//同步客户
 
     public SyncDataService() {
         super(SyncDataService.class.getName());
@@ -48,15 +52,32 @@ public class SyncDataService extends IntentService {
         context.startService(intent);
     }
 
+    /**
+     * 客户同步服务
+     *
+     * @param context
+     */
+    public static void startSysnClient(@NonNull Context context) {
+        if (context == null) return;
+        Intent intent = new Intent(context, SyncDataService.class);
+        intent.setAction(ACTION_SYNC_CLIENT);
+        context.startService(intent);
+    }
+
     @Override
     protected void onHandleIntent(@Nullable Intent intent) {
         if (intent != null) {
             if (TextUtils.equals(intent.getAction(), ACTION_SYNC_CONTACT)) {
                 syncContacts();
+            } else if (TextUtils.equals(intent.getAction(), ACTION_SYNC_CLIENT)) {
+                syncClients();
             }
         }
     }
 
+    /**
+     * 同步通讯录
+     */
     private void syncContacts() {
         try {
             Response<ResEntity<List<GroupContactBean>>> execute = RetrofitServiceFactory
@@ -70,6 +91,25 @@ public class SyncDataService extends IntentService {
         } catch (Exception e) {
             e.printStackTrace();
             LogUtils.d("----------->SyncDataService syncContacts 失败:" + e);
+        }
+    }
+
+    /**
+     * 同步客户
+     */
+    private void syncClients() {
+        try {
+            Response<ResEntity<List<CustomerEntity>>> execute = RetrofitServiceFactory
+                    .getAlphaApiService()
+                    .getCustomers(100000).execute();
+            if (execute != null && execute.body() != null && execute.body().result != null) {
+                CustomerDbService customerDbService = new CustomerDbService(LoginInfoUtils.getLoginUserId());
+                customerDbService.deleteAll();
+                customerDbService.insertOrUpdateAsyn(new ArrayList<IConvertModel<CustomerDbModel>>(execute.body().result));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            LogUtils.d("----------->SyncDataService syncClients 失败:" + e);
         }
     }
 }
