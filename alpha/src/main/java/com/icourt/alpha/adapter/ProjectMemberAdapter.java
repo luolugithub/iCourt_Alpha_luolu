@@ -11,7 +11,7 @@ import com.icourt.alpha.entity.bean.ProjectDetailEntity;
 import com.icourt.alpha.utils.GlideUtils;
 
 /**
- * Description 项目成员列表
+ * Description 项目成员列表（纵向）
  * Company Beijing icourt
  * author  youxuan  E-mail:zhaolu@icourt.cc
  * date createTime：2017/8/19

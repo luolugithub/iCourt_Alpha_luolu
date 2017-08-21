@@ -180,6 +180,8 @@ public class Const {
     public static final int PROJECT_JUDGE_TYPE = 14;//法官
     public static final int PROJECT_CLERK_TYPE = 15;//书记员
     public static final int PROJECT_OTHER_PERSON_TYPE = 16;//其他当事人
+    public static final int PROJECT_ARBITRATORS_TYPE = 17;//仲裁员
+    public static final int PROJECT_SECRETARIES_TYPE = 18;//仲裁秘书
 
     @IntDef({PROJECT_NAME_TYPE,
             PROJECT_TYPE_TYPE,

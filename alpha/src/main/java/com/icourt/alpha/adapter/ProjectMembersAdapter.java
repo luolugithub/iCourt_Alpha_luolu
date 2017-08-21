@@ -8,7 +8,7 @@ import com.icourt.alpha.entity.bean.ProjectDetailEntity;
 import com.icourt.alpha.utils.GlideUtils;
 
 /**
- * Description  项目下成员列表
+ * Description  项目下成员列表(横向)
  * Company Beijing icourt
  * author  lu.zhao  E-mail:zhaolu@icourt.cc
  * date createTime：17/5/3

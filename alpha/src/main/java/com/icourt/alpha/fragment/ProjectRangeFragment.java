@@ -13,7 +13,9 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.icourt.alpha.R;
+import com.icourt.alpha.activity.ProjectJudgeActivity;
 import com.icourt.alpha.adapter.ProjectBasicInfoAdapter;
+import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.constants.Const;
 import com.icourt.alpha.entity.bean.ProjectBasicItemEntity;
@@ -35,7 +37,7 @@ import butterknife.Unbinder;
  * version 2.0.0
  */
 
-public class ProjectRangeFragment extends BaseFragment {
+public class ProjectRangeFragment extends BaseFragment implements BaseRecyclerAdapter.OnItemClickListener {
 
     private static final String KEY_PROJECT = "key_project";
 
@@ -90,30 +92,35 @@ public class ProjectRangeFragment extends BaseFragment {
                 }
                 projectBasicItemEntities.add(new ProjectBasicItemEntity(key, projectDetailEntity.competentCourt, Const.PROJECT_COMPETENT_TYPE));
             }
-            if (projectDetailEntity.judges != null && projectDetailEntity.judges.size() > 0) {
-                String name = getJudgeName(projectDetailEntity.judges);
-                if (!TextUtils.isEmpty(name)) {
-                    String key = null;
-                    if (TextUtils.equals("4", projectDetailEntity.caseProcess) || TextUtils.equals("5", projectDetailEntity.caseProcess)) {
-                        key = "仲裁员";
-                    } else {
-                        key = "法官";
+            if (TextUtils.equals("4", projectDetailEntity.caseProcess) || TextUtils.equals("5", projectDetailEntity.caseProcess)) {
+                if (projectDetailEntity.arbitrators != null && projectDetailEntity.arbitrators.size() > 0) {
+                    String name = getArbitratorName(projectDetailEntity.arbitrators);
+                    if (!TextUtils.isEmpty(name)) {
+                        projectBasicItemEntities.add(new ProjectBasicItemEntity("仲裁员", getArbitratorName(projectDetailEntity.arbitrators), Const.PROJECT_ARBITRATORS_TYPE));
                     }
-                    projectBasicItemEntities.add(new ProjectBasicItemEntity(key, getJudgeName(projectDetailEntity.judges), Const.PROJECT_JUDGE_TYPE));
+                }
+                if (projectDetailEntity.secretaries != null && projectDetailEntity.secretaries.size() > 0) {
+                    String name = getSecretarieName(projectDetailEntity.secretaries);
+                    if (!TextUtils.isEmpty(name)) {
+                        projectBasicItemEntities.add(new ProjectBasicItemEntity("仲裁秘书", getSecretarieName(projectDetailEntity.secretaries), Const.PROJECT_SECRETARIES_TYPE));
+                    }
+                }
+            } else {
+                if (projectDetailEntity.judges != null && projectDetailEntity.judges.size() > 0) {
+                    String name = getJudgeName(projectDetailEntity.judges);
+                    if (!TextUtils.isEmpty(name)) {
+                        projectBasicItemEntities.add(new ProjectBasicItemEntity("法官", getJudgeName(projectDetailEntity.judges), Const.PROJECT_JUDGE_TYPE));
+                    }
+                }
+                if (projectDetailEntity.clerks != null && projectDetailEntity.clerks.size() > 0) {
+                    String name = getClerkName(projectDetailEntity.clerks);
+                    if (!TextUtils.isEmpty(name)) {
+                        projectBasicItemEntities.add(new ProjectBasicItemEntity("书记员", getClerkName(projectDetailEntity.clerks), Const.PROJECT_CLERK_TYPE));
+                    }
                 }
             }
-            if (projectDetailEntity.clerks != null && projectDetailEntity.clerks.size() > 0) {
-                String name = getClerkName(projectDetailEntity.clerks);
-                if (!TextUtils.isEmpty(name)) {
-                    String key = null;
-                    if (TextUtils.equals("4", projectDetailEntity.caseProcess) || TextUtils.equals("5", projectDetailEntity.caseProcess)) {
-                        key = "仲裁秘书";
-                    } else {
-                        key = "书记员";
-                    }
-                    projectBasicItemEntities.add(new ProjectBasicItemEntity(key, getClerkName(projectDetailEntity.clerks), Const.PROJECT_CLERK_TYPE));
-                }
-            }
+
+
             if (projectDetailEntity.litigants != null) {
                 for (ProjectDetailEntity.LitigantsBean litigant : projectDetailEntity.litigants) {
                     if (!TextUtils.isEmpty(litigant.contactName))
@@ -128,6 +135,7 @@ public class ProjectRangeFragment extends BaseFragment {
             rangeRecyclerview.addItemDecoration(ItemDecorationUtils.getCommMagin5Divider(getContext(), false));
             rangeRecyclerview.setHasFixedSize(true);
             rangeRecyclerview.setAdapter(projectBasicInfoAdapter = new ProjectBasicInfoAdapter());
+            projectBasicInfoAdapter.setOnItemClickListener(this);
             projectBasicInfoAdapter.bindData(false, projectBasicItemEntities);
         }
     }
@@ -174,9 +182,66 @@ public class ProjectRangeFragment extends BaseFragment {
         return "";
     }
 
+    /**
+     * 获取仲裁员名字
+     *
+     * @param arbitratorBeens
+     * @return
+     */
+    private String getArbitratorName(List<ProjectDetailEntity.ArbitratorBean> arbitratorBeens) {
+        if (arbitratorBeens.size() <= 0) return "";
+        try {
+            StringBuilder stringBuilder = new StringBuilder();
+            for (ProjectDetailEntity.ArbitratorBean arbitratorBean : arbitratorBeens) {
+                stringBuilder.append(arbitratorBean.name).append(",");
+            }
+            return stringBuilder.toString().substring(0, stringBuilder.toString().length() - 1);
+        } catch (Exception e) {
+            e.printStackTrace();
+            bugSync("获取仲裁员名称失败", e);
+        }
+        return "";
+    }
+
+    /**
+     * 获取仲裁秘书名字
+     *
+     * @param secretarieBeens
+     * @return
+     */
+    private String getSecretarieName(List<ProjectDetailEntity.SecretarieBean> secretarieBeens) {
+        if (secretarieBeens.size() <= 0) return "";
+        try {
+            StringBuilder stringBuilder = new StringBuilder();
+            for (ProjectDetailEntity.SecretarieBean secretarieBean : secretarieBeens) {
+                stringBuilder.append(secretarieBean.name).append(",");
+            }
+            return stringBuilder.toString().substring(0, stringBuilder.toString().length() - 1);
+        } catch (Exception e) {
+            e.printStackTrace();
+            bugSync("获取仲裁秘书名称失败", e);
+        }
+        return "";
+    }
+
     @Override
     public void onDestroyView() {
         super.onDestroyView();
         unbinder.unbind();
+    }
+
+    @Override
+    public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
+        if (projectDetailEntity == null) return;
+        ProjectBasicItemEntity itemEntity = (ProjectBasicItemEntity) adapter.getItem(position);
+        if (itemEntity.type == Const.PROJECT_JUDGE_TYPE) {//法官
+            ProjectJudgeActivity.launch(getContext(), projectDetailEntity.judges, itemEntity.type);
+        } else if (itemEntity.type == Const.PROJECT_CLERK_TYPE) {//书记员
+            ProjectJudgeActivity.launch(getContext(), projectDetailEntity.clerks, itemEntity.type);
+        } else if (itemEntity.type == Const.PROJECT_ARBITRATORS_TYPE) {//仲裁员
+            ProjectJudgeActivity.launch(getContext(), projectDetailEntity.arbitrators, itemEntity.type);
+        } else if (itemEntity.type == Const.PROJECT_SECRETARIES_TYPE) {//仲裁秘书
+            ProjectJudgeActivity.launch(getContext(), projectDetailEntity.secretaries, itemEntity.type);
+        }
     }
 }
