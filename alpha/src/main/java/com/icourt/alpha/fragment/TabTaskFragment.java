@@ -150,7 +150,7 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
                         if (topMiddlePopup != null && topMiddlePopup.getAdapter() != null) {
                             FilterDropEntity filterDropEntity = topMiddlePopup.getAdapter().getItem(select_position);
                             if (filterDropEntity != null) {
-                                setFirstTabText(filterDropEntity.name, position);
+                                setFirstTabText(filterDropEntity.name, select_position);
                                 updateListData(filterDropEntity.stateType);
                             }
                         }

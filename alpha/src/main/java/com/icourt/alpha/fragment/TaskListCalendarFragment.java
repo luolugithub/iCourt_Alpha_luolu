@@ -230,11 +230,13 @@ public class TaskListCalendarFragment extends BaseFragment {
             public void onSuccess(Call<ResEntity<List<String>>> call, Response<ResEntity<List<String>>> response) {
                 if (response.body().result != null) {
                     int totalCount = response.body().result.size();
-                    if (totalCount > 0) {
-                        newTaskCardview.setVisibility(View.VISIBLE);
-                        newTaskCountTv.setText(String.valueOf(totalCount));
-                    } else {
-                        newTaskCardview.setVisibility(View.GONE);
+                    if (newTaskCardview != null) {
+                        if (totalCount > 0) {
+                            newTaskCardview.setVisibility(View.VISIBLE);
+                            newTaskCountTv.setText(String.valueOf(totalCount));
+                        } else {
+                            newTaskCardview.setVisibility(View.GONE);
+                        }
                     }
                 }
             }
