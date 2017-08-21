@@ -1,6 +1,7 @@
 package com.icourt.alpha.fragment;
 
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.TabLayout;
@@ -83,7 +84,7 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
     public static boolean isAwayScroll = false; //切换时是否滚动，在'已完成和已删除'状态下，点击新任务提醒。
 
     boolean isShowCalendar;//是否显示日历页面
-
+    private Handler handler = new Handler();
     public static TabTaskFragment newInstance() {
         return new TabTaskFragment();
     }
@@ -217,6 +218,7 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
         public void onClick(View view) {
             if (tabLayout.getTabAt(0) != null) {
                 if (view.isSelected()) {
+                    postDiyDissPop();
                     topMiddlePopup.show(titleView, dropEntities, select_position);
                     setFirstTabImage(true);
                     if (topMiddlePopup.isShowing()) {
@@ -229,6 +231,21 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
         }
     }
 
+    private void postDiyDissPop() {
+        handler.removeCallbacksAndMessages(null);
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if (topMiddlePopup != null) {
+                    if (topMiddlePopup.isShowing()) {
+                        if (!isVisible()) {
+                            topMiddlePopup.dismiss();
+                        }
+                    }
+                }
+            }
+        }, 100);
+    }
     /**
      * 获取各个状态的任务数量
      */

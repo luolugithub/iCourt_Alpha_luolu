@@ -1,6 +1,7 @@
 package com.icourt.alpha.fragment;
 
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.TabLayout;
@@ -69,6 +70,8 @@ public class TabProjectFragment extends BaseFragment implements TopMiddlePopup.O
     FilterDropEntity doneEntity = new FilterDropEntity("已完结", "0", 4);//已完结
     FilterDropEntity pendingEntity = new FilterDropEntity("已搁置", "0", 7);//已搁置
 
+    private Handler handler = new Handler();
+
     public static TabProjectFragment newInstance() {
         return new TabProjectFragment();
     }
@@ -121,6 +124,22 @@ public class TabProjectFragment extends BaseFragment implements TopMiddlePopup.O
                 setFirstTabImage(false);
             }
         });
+        viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+
+            }
+
+            @Override
+            public void onPageSelected(int position) {
+                titleAction.setVisibility(position == 0 ? View.VISIBLE : View.GONE);
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+
+            }
+        });
     }
 
     private class OnTabClickListener implements View.OnClickListener {
@@ -129,6 +148,7 @@ public class TabProjectFragment extends BaseFragment implements TopMiddlePopup.O
         public void onClick(View view) {
             if (tabLayout.getTabAt(0) != null) {
                 if (view.isSelected()) {
+                    postDiyDissPop();
                     topMiddlePopup.show(titleView, dropEntities, select_position);
                     setFirstTabImage(true);
                     if (topMiddlePopup.isShowing()) {
@@ -139,6 +159,22 @@ public class TabProjectFragment extends BaseFragment implements TopMiddlePopup.O
                 }
             }
         }
+    }
+
+    private void postDiyDissPop() {
+        handler.removeCallbacksAndMessages(null);
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if (topMiddlePopup != null) {
+                    if (topMiddlePopup.isShowing()) {
+                        if (!isVisible()) {
+                            topMiddlePopup.dismiss();
+                        }
+                    }
+                }
+            }
+        }, 100);
     }
 
     /**
@@ -274,6 +310,7 @@ public class TabProjectFragment extends BaseFragment implements TopMiddlePopup.O
     public void onDestroyView() {
         super.onDestroyView();
         unbinder.unbind();
+        handler.removeCallbacksAndMessages(null);
     }
 
     @Override
