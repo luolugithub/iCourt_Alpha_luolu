@@ -99,6 +99,7 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
 
     @Override
     protected void initView() {
+        select_position = 0;
         baseFragmentAdapter = new BaseFragmentAdapter(getChildFragmentManager());
         viewPager.setNoScroll(false);
         viewPager.setAdapter(baseFragmentAdapter);
@@ -201,7 +202,7 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
                 type = TaskAllFragment.TYPE_ALL_TASK_CALENDAR;
                 viewPager.setNoScroll(true);
                 titleCalendar.setImageResource(R.mipmap.icon_calendar_selected);
-            }else{
+            } else {
                 viewPager.setNoScroll(false);
                 titleCalendar.setImageResource(R.mipmap.ic_calendar);
             }

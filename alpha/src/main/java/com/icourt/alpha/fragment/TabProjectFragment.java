@@ -83,6 +83,7 @@ public class TabProjectFragment extends BaseFragment implements TopMiddlePopup.O
 
     @Override
     protected void initView() {
+        select_position = 0;
         baseFragmentAdapter = new BaseFragmentAdapter(getChildFragmentManager());
         viewPager.setAdapter(baseFragmentAdapter);
         tabLayout.setupWithViewPager(viewPager);

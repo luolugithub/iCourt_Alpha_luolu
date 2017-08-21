@@ -394,6 +394,8 @@ public class TaskCreateActivity extends BaseActivity implements ProjectSelectDia
                 for (TaskEntity.TaskItemEntity.AttendeeUserEntity attendeeUserEntity : attendeeUserEntities) {
                     jsonArray.add(attendeeUserEntity.userId);
                 }
+            } else {
+                jsonArray.add(getLoginUserId());
             }
         } else {
             jsonArray.add(getLoginUserId());
