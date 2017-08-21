@@ -61,8 +61,12 @@ import com.netease.nimlib.sdk.team.model.Team;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -295,9 +299,65 @@ public class MessageListFragment extends BaseRecentContactFragment
             e.printStackTrace();
             bugSync("AlphaHelper 解析异常", StringUtils.throwable2string(e)
                     + "\nalphaJSONObject:" + alphaJSONObject);
+            bugSync("AlphaHelper 解析异常json:", "" + alphaJSONObject);
             LogUtils.d("---------->AlphaHelper 解析异常:" + e);
         }
         return null;
+    }
+
+    /**
+     * 获取alpha小 助手
+     *
+     * @return
+     */
+    private IMMessageCustomBody getAlphaHelper(String s) {
+        JSONObject alphaJSONObject = null;
+        try {
+            alphaJSONObject = JsonUtils.getJSONObject(s);
+            if (alphaJSONObject.getInt("showType") == MSG_TYPE_ALPHA_HELPER) {
+                String contentStr = alphaJSONObject.getString("content");
+                String type = alphaJSONObject.getString("type");
+                IMMessageCustomBody imMessageCustomBody = new IMMessageCustomBody();
+                if (StringUtils.containsIgnoreCase(type, "APPRO_")) {
+                    imMessageCustomBody.content = "审批消息不支持,请到web端查看!";
+                } else {
+                    imMessageCustomBody.content = contentStr;
+                }
+                imMessageCustomBody.show_type = MSG_TYPE_ALPHA_HELPER;
+                imMessageCustomBody.ope = CHAT_TYPE_P2P;
+                imMessageCustomBody.to = s;
+                return imMessageCustomBody;
+            } else {
+                LogUtils.d("---------->AlphaHelper 删除:" + s);
+         /*       NIMClient.getService(MsgService.class)
+                        .deleteRecentContact(recentContact);*/
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            LogUtils.d("---------->AlphaHelper 解析异常:" + e + " json:" + s);
+        }
+        return null;
+    }
+
+    private void test() {
+        try {
+            InputStream is = getContext().getAssets().open("test.json");
+            BufferedReader br = new BufferedReader(new InputStreamReader(is));
+            StringBuffer stringBuffer = new StringBuffer();
+            String str = null;
+            while ((str = br.readLine()) != null) {
+                stringBuffer.append(str);
+            }
+            JSONArray jsonArray = new JSONArray(stringBuffer.toString());
+            for (int i = 0; i < jsonArray.length(); i++) {
+                JSONObject jsonObject = jsonArray.getJSONObject(i);
+                IMMessageCustomBody alphaHelper = getAlphaHelper(jsonObject.toString());
+                log("--------->解析i:" + i + " data:" + alphaHelper);
+            }
+        } catch (Exception e) {
+            log("--------->解析异常xx");
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -624,6 +684,8 @@ public class MessageListFragment extends BaseRecentContactFragment
     public void onResume() {
         super.onResume();
 
+        //test();
+
         //主动登陆一次
         StatusCode status = NIMClient.getStatus();
         if (status == StatusCode.UNLOGIN
@@ -733,6 +795,7 @@ public class MessageListFragment extends BaseRecentContactFragment
                             customIMBody = JsonUtils.Gson2Bean(recentContact.getContent(), IMMessageCustomBody.class);
                         } catch (Exception ex) {
                             ex.printStackTrace();
+                            bugSync("回话解析异常", StringUtils.throwable2string(ex) + "\n json:" + recentContact.getContent());
                             log("------------->解析异常:" + ex + "\n" + recentContact.getContactId() + " \n" + recentContact.getContent());
                         }
                         if (customIMBody == null) continue;
