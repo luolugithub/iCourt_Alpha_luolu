@@ -416,5 +416,16 @@ public interface ApiSFileService {
                                      @Query("search_ftypes") String search_ftypes,
                                      @Query("search_repo") String search_repo);
 
+    /**
+     * 文件修改历史 回退
+     *
+     * @param fromRepoId
+     * @param p
+     * @return
+     */
+    @GET("api/v2.1/repos/{seaFileRepoId}/file/")
+    Call<JsonObject> fileChangeRevoke(@Path("seaFileRepoId") String fromRepoId,
+                                       @Query("p") String p);
+
 
 }

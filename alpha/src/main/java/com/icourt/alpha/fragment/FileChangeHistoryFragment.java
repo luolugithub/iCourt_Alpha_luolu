@@ -10,6 +10,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.andview.refreshview.XRefreshView;
+import com.google.gson.JsonObject;
 import com.icourt.alpha.BuildConfig;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.FileChangedHistoryAdapter;
@@ -18,12 +19,16 @@ import com.icourt.alpha.adapter.baseadapter.adapterObserver.DataChangeAdapterObs
 import com.icourt.alpha.base.BaseDialogFragment;
 import com.icourt.alpha.entity.bean.FileChangedHistoryEntity;
 import com.icourt.alpha.entity.bean.RepoMatterEntity;
+import com.icourt.alpha.http.callback.SFileCallBack;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.callback.SimpleCallBack2;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.OnFragmentDataChangeListener;
+import com.icourt.alpha.utils.JsonUtils;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
+import com.icourt.alpha.widget.dialog.BottomActionDialog;
 
+import java.util.Arrays;
 import java.util.List;
 
 import butterknife.BindView;
@@ -172,7 +177,61 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
     public void onItemChildClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
         switch (view.getId()) {
             case R.id.file_restore_iv:
+                showRevokeConfirmDialog(position);
                 break;
         }
+    }
+
+    /**
+     * 展示撤销对话框
+     *
+     * @param position
+     */
+    private void showRevokeConfirmDialog(int position) {
+        final FileChangedHistoryEntity item = fileChangedHistoryAdapter.getItem(position);
+        if (item == null) return;
+        new BottomActionDialog(
+                getContext(),
+                "将资料库恢复到该次修改前到状态",
+                Arrays.asList("撤销修改"),
+                new BottomActionDialog.OnActionItemClickListener() {
+                    @Override
+                    public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
+                        dialog.dismiss();
+                        revokeFileChange(item);
+                    }
+                })
+                .show();
+    }
+
+    /**
+     * 撤销文件的修改
+     *
+     * @param item
+     */
+    private void revokeFileChange(FileChangedHistoryEntity item) {
+        if (item == null) return;
+        String path = String.format("%s%s", getArguments().getString(KEY_SEA_FILE_FROM_DIR_PATH, ""), item.file_name);
+        showLoadingDialog(null);
+        getSFileApi().fileChangeRevoke(
+                getArguments().getString(KEY_SEA_FILE_FROM_REPO_ID, ""),
+                path)
+                .enqueue(new SFileCallBack<JsonObject>() {
+                    @Override
+                    public void onSuccess(Call<JsonObject> call, Response<JsonObject> response) {
+                        dismissLoadingDialog();
+                        if (JsonUtils.getBoolValue(response.body(), "success")) {
+                            getData(true);
+                        } else {
+                            showToast("撤销失败");
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<JsonObject> call, Throwable t) {
+                        dismissLoadingDialog();
+                        super.onFailure(call, t);
+                    }
+                });
     }
 }

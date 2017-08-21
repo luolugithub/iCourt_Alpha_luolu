@@ -179,6 +179,15 @@ public class SFileSearchActivity extends BaseActivity {
                         pageIndex += 1;
                         stopRefresh();
                         enableLoadMore(response.body().has_more);
+                        if (contentEmptyText != null) {
+                            contentEmptyText.setVisibility(isRefresh && sFileSearchAdapter.getItemCount() <= 0 ? View.VISIBLE : View.GONE);
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<SFileSearchPage> call, Throwable t) {
+                        super.onFailure(call, t);
+                        stopRefresh();
                     }
                 });
     }
