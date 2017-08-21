@@ -38,6 +38,9 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
+import static com.icourt.alpha.constants.Const.PROJECT_ANYUAN_LAWYER_TYPE;
+import static com.icourt.alpha.constants.Const.PROJECT_MEMBER_TYPE;
+
 /**
  * Description  项目成员列表
  * Company Beijing icourt
@@ -61,14 +64,16 @@ public class ProjectMembersActivity extends BaseAppUpdateActivity {
     TextView headerCommSearchCancelTv;
     @BindView(R.id.header_comm_search_input_ll)
     LinearLayout headerCommSearchInputLl;
-    private List<ProjectDetailEntity.MembersBean> membersBeens = new ArrayList<>();
+    private List list = new ArrayList<>();
     ProjectMemberAdapter projectMemberAdapter;
     HeaderFooterAdapter<ProjectMemberAdapter> headerFooterAdapter;
+    int type;
 
-    public static void launch(@NonNull Context context, List<ProjectDetailEntity.MembersBean> membersBeens) {
+    public static void launch(@NonNull Context context, List list, int type) {
         if (context == null) return;
         Intent intent = new Intent(context, ProjectMembersActivity.class);
-        intent.putExtra("membersBeens", (Serializable) membersBeens);
+        intent.putExtra("list", (Serializable) list);
+        intent.putExtra("type", type);
         context.startActivity(intent);
     }
 
@@ -82,11 +87,22 @@ public class ProjectMembersActivity extends BaseAppUpdateActivity {
         getData(true);
     }
 
+    private String getTitleText() {
+        switch (type) {
+            case PROJECT_ANYUAN_LAWYER_TYPE:
+                return "案源律师";
+            case PROJECT_MEMBER_TYPE:
+                return "项目成员";
+        }
+        return "";
+    }
+
     @Override
     protected void initView() {
         super.initView();
-        setTitle("项目成员");
-        membersBeens = (List<ProjectDetailEntity.MembersBean>) getIntent().getSerializableExtra("membersBeens");
+        list = (List) getIntent().getSerializableExtra("list");
+        type = getIntent().getIntExtra("type", -1);
+        setTitle(getTitleText());
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getContext());
         recyclerView.setLayoutManager(linearLayoutManager);
         headerFooterAdapter = new HeaderFooterAdapter<>(projectMemberAdapter = new ProjectMemberAdapter());
@@ -99,9 +115,16 @@ public class ProjectMembersActivity extends BaseAppUpdateActivity {
             @Override
             public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
                 if (adapter instanceof ProjectMemberAdapter) {
-                    ProjectDetailEntity.MembersBean member = (ProjectDetailEntity.MembersBean) adapter.getItem(adapter.getRealPos(position));
-                    if (!TextUtils.isEmpty(member.userId))
-                        showContactDialogFragment(member.userId.toLowerCase(), true);
+                    Object object = adapter.getItem(adapter.getRealPos(position));
+                    if (object instanceof ProjectDetailEntity.MembersBean) {
+                        ProjectDetailEntity.MembersBean membersBean = (ProjectDetailEntity.MembersBean) object;
+                        if (!TextUtils.isEmpty(membersBean.userId))
+                            showContactDialogFragment(membersBean.userId.toLowerCase(), true);
+                    } else if (object instanceof ProjectDetailEntity.AttorneysBean) {
+                        ProjectDetailEntity.AttorneysBean attorneysBean = (ProjectDetailEntity.AttorneysBean) object;
+                        if (!TextUtils.isEmpty(attorneysBean.attorneyPkid))
+                            showContactDialogFragment(attorneysBean.attorneyPkid.toLowerCase(), true);
+                    }
                 }
             }
         });
@@ -119,7 +142,7 @@ public class ProjectMembersActivity extends BaseAppUpdateActivity {
             @Override
             public void afterTextChanged(Editable s) {
                 if (TextUtils.isEmpty(s)) {
-                    projectMemberAdapter.bindData(true, membersBeens);
+                    projectMemberAdapter.bindData(true, list);
                 } else {
                     searchUserByName(s.toString());
                 }
@@ -142,8 +165,8 @@ public class ProjectMembersActivity extends BaseAppUpdateActivity {
             }
         });
         headerCommSearchInputLl.setVisibility(View.GONE);
-        if (membersBeens != null)
-            projectMemberAdapter.bindData(true, membersBeens);
+        if (list != null)
+            projectMemberAdapter.bindData(true, list);
     }
 
     /**
@@ -153,11 +176,19 @@ public class ProjectMembersActivity extends BaseAppUpdateActivity {
      */
     private void searchUserByName(String name) {
         if (TextUtils.isEmpty(name)) return;
-        if (membersBeens != null) {
-            List<ProjectDetailEntity.MembersBean> memberEntities = new ArrayList();
-            for (int i = 0; i < membersBeens.size(); i++) {
-                if (membersBeens.get(i).userName.contains(name)) {
-                    memberEntities.add(membersBeens.get(i));
+        if (list != null) {
+            List memberEntities = new ArrayList();
+            for (int i = 0; i < list.size(); i++) {
+                if (list.get(i) instanceof ProjectDetailEntity.MembersBean) {
+                    ProjectDetailEntity.MembersBean membersBean = (ProjectDetailEntity.MembersBean) list.get(i);
+                    if (membersBean.userName.contains(name)) {
+                        memberEntities.add(membersBean);
+                    }
+                } else if (list.get(i) instanceof ProjectDetailEntity.AttorneysBean) {
+                    ProjectDetailEntity.AttorneysBean attorneysBean = (ProjectDetailEntity.AttorneysBean) list.get(i);
+                    if (attorneysBean.attorneyName.contains(name)) {
+                        memberEntities.add(attorneysBean);
+                    }
                 }
             }
             projectMemberAdapter.bindData(true, memberEntities);

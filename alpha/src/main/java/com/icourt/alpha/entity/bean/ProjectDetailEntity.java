@@ -116,7 +116,7 @@ public class ProjectDetailEntity implements Serializable {
         public String attorneyPkid;
         public String attorneyName;
         public String attorneyPic;
-        public String attorneyType;
+        public String attorneyType;//律师类型[R:主办律师A：协办律师S:案源律师O:参与人C:负责人] ,
 
     }
 

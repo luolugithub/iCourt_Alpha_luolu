@@ -283,6 +283,7 @@ public class ProjectDetailFragment extends BaseFragment implements BaseRecyclerA
             }
             projectBasicInfoAdapter.setClientsBeens(projectDetailBean.clients);
             projectBasicInfoAdapter.bindData(true, basicItemEntities);
+            projectBasicInfoAdapter.setOnItemClickListener(this);
 
             if (projectDetailBean.members != null) {//项目成员
                 if (projectDetailBean.members.size() > 0) {
@@ -366,6 +367,20 @@ public class ProjectDetailFragment extends BaseFragment implements BaseRecyclerA
     @Override
     public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
         if (projectDetailBean == null) return;
-        ProjectMembersActivity.launch(getContext(), projectDetailBean.members);
+        if (adapter instanceof ProjectMembersAdapter) {
+            ProjectMembersActivity.launch(getContext(), projectDetailBean.members, Const.PROJECT_MEMBER_TYPE);
+        } else if (adapter instanceof ProjectBasicInfoAdapter) {
+            ProjectBasicItemEntity entity = (ProjectBasicItemEntity) adapter.getItem(position);
+            switch (entity.type) {
+                case Const.PROJECT_NAME_TYPE:
+                case Const.PROJECT_TYPE_TYPE:
+                case Const.PROJECT_NUMBER_TYPE:
+                    ProjectBasicTextInfoActivity.launch(view.getContext(), entity.value, entity.type);
+                    break;
+                case Const.PROJECT_ANYUAN_LAWYER_TYPE://案源律师
+                    ProjectMembersActivity.launch(view.getContext(), projectDetailBean.attorneys, Const.PROJECT_ANYUAN_LAWYER_TYPE);
+                    break;
+            }
+        }
     }
 }

@@ -7,9 +7,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.icourt.alpha.R;
-import com.icourt.alpha.activity.ProjectBasicTextInfoActivity;
 import com.icourt.alpha.adapter.baseadapter.BaseArrayRecyclerAdapter;
-import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.constants.Const;
 import com.icourt.alpha.entity.bean.ProjectBasicItemEntity;
 import com.icourt.alpha.entity.bean.ProjectDetailEntity;
@@ -25,7 +23,7 @@ import java.util.List;
  * version 2.0.0
  */
 
-public class ProjectBasicInfoAdapter extends BaseArrayRecyclerAdapter<ProjectBasicItemEntity> implements BaseRecyclerAdapter.OnItemClickListener {
+public class ProjectBasicInfoAdapter extends BaseArrayRecyclerAdapter<ProjectBasicItemEntity> {
 
     private static final int CLIENT_TYPE = 0;//客户type
     private static final int OTHER_TYPE = 1;//其他type
@@ -42,10 +40,6 @@ public class ProjectBasicInfoAdapter extends BaseArrayRecyclerAdapter<ProjectBas
             return CLIENT_TYPE;
         }
         return OTHER_TYPE;
-    }
-
-    public ProjectBasicInfoAdapter() {
-        this.setOnItemClickListener(this);
     }
 
     @Override
@@ -123,21 +117,5 @@ public class ProjectBasicInfoAdapter extends BaseArrayRecyclerAdapter<ProjectBas
                 return R.mipmap.project_user_icon;
         }
         return -1;
-    }
-
-
-    @Override
-    public void onItemClick(BaseRecyclerAdapter adapter, ViewHolder holder, View view, int position) {
-        ProjectBasicItemEntity entity = getItem(position);
-        switch (entity.type) {
-            case Const.PROJECT_NAME_TYPE:
-            case Const.PROJECT_TYPE_TYPE:
-            case Const.PROJECT_NUMBER_TYPE:
-            case Const.PROJECT_CASE_TYPE:
-            case Const.PROJECT_CASENUMBER_TYPE:
-            case Const.PROJECT_COMPETENT_TYPE:
-                ProjectBasicTextInfoActivity.launch(view.getContext(), entity.value, entity.type);
-                break;
-        }
     }
 }
