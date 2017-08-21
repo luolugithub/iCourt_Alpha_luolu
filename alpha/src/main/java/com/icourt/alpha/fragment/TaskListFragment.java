@@ -510,7 +510,7 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
                         @Override
                         public void accept(List<TaskEntity> searchPolymerizationEntities) throws Exception {
                             taskAdapter.bindData(true, allTaskEntities);
-                            if (TabTaskFragment.isAwayScroll) {
+                            if (TabTaskFragment.isAwayScroll && stateType == 0) {
                                 if (newTaskEntities.size() > 1) {
                                     nextTaskLayout.setVisibility(View.VISIBLE);
                                 }
@@ -519,8 +519,11 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
                             } else {
                                 if (newTaskEntities.size() > 0) {
                                     newTaskCardview.setVisibility(View.VISIBLE);
+                                    newTaskCardview.setClickable(true);
                                     newTaskCountTv.setText(String.valueOf(newTaskEntities.size()));
                                     nextTaskLayout.setVisibility(View.GONE);
+                                } else {
+                                    newTaskCardview.setVisibility(View.GONE);
                                 }
                             }
                             //第一次进入 隐藏搜索框

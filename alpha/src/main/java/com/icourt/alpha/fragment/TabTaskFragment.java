@@ -83,8 +83,9 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
     FilterDropEntity deleteEntity = new FilterDropEntity("已删除", "0", 3);//已删除
     public static boolean isAwayScroll = false; //切换时是否滚动，在'已完成和已删除'状态下，点击新任务提醒。
 
-    boolean isShowCalendar;//是否显示日历页面
+    public static boolean isShowCalendar;//是否显示日历页面
     private Handler handler = new Handler();
+
     public static TabTaskFragment newInstance() {
         return new TabTaskFragment();
     }
@@ -115,6 +116,7 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
         dropEntities.add(doingEntity);
         dropEntities.add(doneEntity);
         dropEntities.add(deleteEntity);
+        topMiddlePopup.setMyItems(dropEntities);
         getTasksStateCount();
         for (int i = 0; i < baseFragmentAdapter.getCount(); i++) {
             TabLayout.Tab tab = tabLayout.getTabAt(i);
@@ -145,6 +147,13 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
                 switch (position) {
                     case 0:
                         titleCalendar.setVisibility(View.VISIBLE);
+                        if (topMiddlePopup != null && topMiddlePopup.getAdapter() != null) {
+                            FilterDropEntity filterDropEntity = topMiddlePopup.getAdapter().getItem(select_position);
+                            if (filterDropEntity != null) {
+                                setFirstTabText(filterDropEntity.name, position);
+                                updateListData(filterDropEntity.stateType);
+                            }
+                        }
                         break;
                     case 1:
                         setFirstTabImage(false);
@@ -199,6 +208,7 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
         bundle.putInt("stateType", stateType);
         int type = TaskAllFragment.TYPE_ALL_TASK;
         if (stateType == 0) {
+            titleCalendar.setVisibility(View.VISIBLE);
             if (isShowCalendar) {
                 type = TaskAllFragment.TYPE_ALL_TASK_CALENDAR;
                 viewPager.setNoScroll(true);
@@ -209,7 +219,6 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
             }
         }
         alltaskFragment.notifyFragmentUpdate(alltaskFragment, type, bundle);
-
     }
 
     private class OnTabClickListener implements View.OnClickListener {
@@ -246,6 +255,7 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
             }
         }, 100);
     }
+
     /**
      * 获取各个状态的任务数量
      */

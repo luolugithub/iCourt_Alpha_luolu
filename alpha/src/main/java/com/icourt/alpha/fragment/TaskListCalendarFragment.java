@@ -552,9 +552,10 @@ public class TaskListCalendarFragment extends BaseFragment {
                         SearchProjectActivity.SEARCH_TASK);
                 break;
             case R.id.new_task_cardview:
+                TabTaskFragment.isShowCalendar = false;
+                TabTaskFragment.isAwayScroll = true;
                 ((TabTaskFragment) (getParentFragment().getParentFragment())).setFirstTabText("未完成", 0);
                 ((TabTaskFragment) (getParentFragment().getParentFragment())).updateListData(0);
-                TabTaskFragment.isAwayScroll = true;
                 break;
         }
     }
