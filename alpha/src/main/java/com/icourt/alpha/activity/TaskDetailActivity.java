@@ -1039,6 +1039,8 @@ public class TaskDetailActivity extends BaseActivity
             gestureDetector = new GestureDetector(getContext(), new GestureDetector.SimpleOnGestureListener() {
                 @Override
                 public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
+                    if (e1 == null || e2 == null)
+                        return super.onFling(e1, e2, velocityX, velocityY);
                     boolean canFastScroll = e1.getRawX() > appbar.getBottom() && e2.getRawX() > appbar.getBottom();
                     if (!canFastScroll) return super.onFling(e1, e2, velocityX, velocityY);
                     int limit = DensityUtil.dip2px(getContext(), 3500);
