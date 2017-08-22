@@ -1,6 +1,7 @@
 package com.icourt.alpha.fragment.dialogfragment;
 
 import android.os.Bundle;
+import android.support.annotation.IntRange;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -42,10 +43,12 @@ public class FileDetailDialogFragment extends FileDetailsBaseDialogFragment impl
     BaseFragmentAdapter baseFragmentAdapter;
     FolderDocumentEntity folderDocumentEntity;
     String fromRepoId, fromRepoDirPath;
+    protected static final String KEY_LOCATION_TAB_INDEX = "locationPage";//定位的tab
 
     public static void show(@NonNull String fromRepoId,
                             String fromRepoFilePath,
                             FolderDocumentEntity folderDocumentEntity,
+                            @IntRange(from = 0, to = 1) int locationTabIndex,
                             @NonNull FragmentManager fragmentManager) {
         if (folderDocumentEntity == null) return;
         if (fragmentManager == null) return;
@@ -55,18 +58,20 @@ public class FileDetailDialogFragment extends FileDetailsBaseDialogFragment impl
         if (fragment != null) {
             mFragTransaction.remove(fragment);
         }
-        show(newInstance(fromRepoId, fromRepoFilePath, folderDocumentEntity), tag, mFragTransaction);
+        show(newInstance(fromRepoId, fromRepoFilePath, folderDocumentEntity, locationTabIndex), tag, mFragTransaction);
     }
 
 
     public static FileDetailDialogFragment newInstance(
             String fromRepoId,
             String fromRepoFilePath,
-            FolderDocumentEntity folderDocumentEntity) {
+            FolderDocumentEntity folderDocumentEntity,
+            @IntRange(from = 0, to = 1) int locationTabIndex) {
         FileDetailDialogFragment fragment = new FileDetailDialogFragment();
         Bundle args = new Bundle();
         args.putString(KEY_SEA_FILE_FROM_REPO_ID, fromRepoId);
         args.putString(KEY_SEA_FILE_DIR_PATH, fromRepoFilePath);
+        args.putInt(KEY_LOCATION_TAB_INDEX, locationTabIndex);
         args.putSerializable("data", folderDocumentEntity);
         fragment.setArguments(args);
         return fragment;
@@ -102,6 +107,8 @@ public class FileDetailDialogFragment extends FileDetailsBaseDialogFragment impl
                         FileLinkFragment.newInstance(fromRepoId,
                                 filePath,
                                 0)));
+        int tabIndex = getArguments().getInt(KEY_LOCATION_TAB_INDEX);
+        viewPager.setCurrentItem(tabIndex);
         getData(true);
     }
 

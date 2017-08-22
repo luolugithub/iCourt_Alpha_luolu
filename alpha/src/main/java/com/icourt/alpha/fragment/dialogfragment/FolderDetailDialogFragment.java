@@ -1,6 +1,7 @@
 package com.icourt.alpha.fragment.dialogfragment;
 
 import android.os.Bundle;
+import android.support.annotation.IntRange;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -32,10 +33,12 @@ import retrofit2.Response;
  * version 2.1.0
  */
 public class FolderDetailDialogFragment extends FileDetailsBaseDialogFragment {
+    protected static final String KEY_LOCATION_TAB_INDEX = "locationPage";//定位的tab
 
     public static void show(@NonNull String fromRepoId,
                             String fromRepoFilePath,
                             FolderDocumentEntity folderDocumentEntity,
+                            @IntRange(from = 0, to = 2) int locationTabIndex,
                             @NonNull FragmentManager fragmentManager) {
         if (folderDocumentEntity == null) return;
         if (fragmentManager == null) return;
@@ -45,17 +48,19 @@ public class FolderDetailDialogFragment extends FileDetailsBaseDialogFragment {
         if (fragment != null) {
             mFragTransaction.remove(fragment);
         }
-        show(newInstance(fromRepoId, fromRepoFilePath, folderDocumentEntity), tag, mFragTransaction);
+        show(newInstance(fromRepoId, fromRepoFilePath, folderDocumentEntity, locationTabIndex), tag, mFragTransaction);
     }
 
     public static FolderDetailDialogFragment newInstance(
             String fromRepoId,
             String fromRepoFilePath,
-            FolderDocumentEntity folderDocumentEntity) {
+            FolderDocumentEntity folderDocumentEntity,
+            @IntRange(from = 0, to = 2) int locationTabIndex) {
         FolderDetailDialogFragment fragment = new FolderDetailDialogFragment();
         Bundle args = new Bundle();
         args.putString(KEY_SEA_FILE_FROM_REPO_ID, fromRepoId);
         args.putString(KEY_SEA_FILE_DIR_PATH, fromRepoFilePath);
+        args.putInt(KEY_LOCATION_TAB_INDEX, locationTabIndex);
         args.putSerializable("data", folderDocumentEntity);
         fragment.setArguments(args);
         return fragment;
@@ -88,6 +93,8 @@ public class FolderDetailDialogFragment extends FileDetailsBaseDialogFragment {
                 Arrays.asList(FileInnerShareFragment.newInstance(fromRepoId, folderPath),
                         FileLinkFragment.newInstance(fromRepoId, folderPath, 0),
                         FileLinkFragment.newInstance(fromRepoId, folderPath, 1)));
+        int tabIndex = getArguments().getInt(KEY_LOCATION_TAB_INDEX);
+        viewPager.setCurrentItem(tabIndex);
         getData(true);
     }
 
@@ -129,9 +136,9 @@ public class FolderDetailDialogFragment extends FileDetailsBaseDialogFragment {
                                 fileUpdateInfoTv.setText("");
                                 fileCreateInfoTv.setText("");
                             }
-                            updateFolderSize(dirNum,fileNum);
+                            updateFolderSize(dirNum, fileNum);
                         } else {
-                            updateFolderSize(0,0);
+                            updateFolderSize(0, 0);
                             fileUpdateInfoTv.setText("");
                             fileCreateInfoTv.setText("");
                         }

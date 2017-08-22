@@ -1,9 +1,7 @@
 package com.icourt.alpha.fragment;
 
-import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -135,7 +133,7 @@ public class FileLinkFragment extends BaseFragment {
                 if (isNoFileShareLink()) {
                     createFileShareLink();
                 } else {
-                    deleteFileShareLink();
+                    showDeleteFileConfirmDialog();
                 }
                 break;
             case R.id.file_access_pwd_tv:
@@ -152,6 +150,20 @@ public class FileLinkFragment extends BaseFragment {
                 super.onClick(v);
                 break;
         }
+    }
+
+    private void showDeleteFileConfirmDialog() {
+        if (sFileLinkInfoEntity == null) return;
+        new BottomActionDialog(getContext(),
+                "删除链接会导致已分享的链接失效",
+                Arrays.asList("删除"),
+                new BottomActionDialog.OnActionItemClickListener() {
+                    @Override
+                    public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
+                        deleteFileShareLink();
+                    }
+                })
+                .show();
     }
 
     /**
@@ -261,32 +273,22 @@ public class FileLinkFragment extends BaseFragment {
      */
     private void deleteFileShareLink() {
         if (sFileLinkInfoEntity == null) return;
-        new AlertDialog.Builder(getContext())
-                .setTitle("提示")
-                .setMessage("关闭后不可恢复,请谨慎操作.")
-                .setPositiveButton("关闭", new DialogInterface.OnClickListener() {
+        showLoadingDialog("删除中...");
+        getApi().fileShareLinkDelete(sFileLinkInfoEntity.shareLinkId)
+                .enqueue(new SFileCallBack<ResEntity<JsonElement>>() {
                     @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        showLoadingDialog("删除中...");
-                        getApi().fileShareLinkDelete(sFileLinkInfoEntity.shareLinkId)
-                                .enqueue(new SFileCallBack<ResEntity<JsonElement>>() {
-                                    @Override
-                                    public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
-                                        dismissLoadingDialog();
-                                        showToast("删除成功");
-                                        getData(true);
-                                    }
-
-                                    @Override
-                                    public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
-                                        dismissLoadingDialog();
-                                        super.onFailure(call, t);
-                                    }
-                                });
+                    public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
+                        dismissLoadingDialog();
+                        showToast("删除成功");
+                        getData(true);
                     }
-                })
-                .setNegativeButton("取消", null)
-                .show();
+
+                    @Override
+                    public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
+                        dismissLoadingDialog();
+                        super.onFailure(call, t);
+                    }
+                });
     }
 
     /**

@@ -766,6 +766,7 @@ public class FolderListActivity extends FolderBaseActivity
                             getSeaFileRepoId(),
                             getSeaFileDirPath(),
                             item,
+                            0,
                             getSupportFragmentManager());
                 }
             }
@@ -829,7 +830,21 @@ public class FolderListActivity extends FolderBaseActivity
                                     getSeaFileRepoId(),
                                     getSeaFileDirPath());
                         } else if (TextUtils.equals(action, "共享")) {
-
+                            if (item.isDir()) {
+                                FolderDetailDialogFragment.show(
+                                        getSeaFileRepoId(),
+                                        getSeaFileDirPath(),
+                                        item,
+                                        0,
+                                        getSupportFragmentManager());
+                            } else {
+                                FileDetailDialogFragment.show(
+                                        getSeaFileRepoId(),
+                                        getSeaFileDirPath(),
+                                        item,
+                                        1,
+                                        getSupportFragmentManager());
+                            }
                         } else if (TextUtils.equals(action, "复制")) {
                             ArrayList<FolderDocumentEntity> folderDocumentEntities = new ArrayList<>();
                             folderDocumentEntities.add(item);
@@ -852,12 +867,14 @@ public class FolderListActivity extends FolderBaseActivity
                     getSeaFileRepoId(),
                     getSeaFileDirPath(),
                     item,
+                    0,
                     getSupportFragmentManager());
         } else {
             FileDetailDialogFragment.show(
                     getSeaFileRepoId(),
                     getSeaFileDirPath(),
                     item,
+                    0,
                     getSupportFragmentManager());
         }
     }
