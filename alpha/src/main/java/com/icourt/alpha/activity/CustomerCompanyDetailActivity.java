@@ -109,12 +109,11 @@ public class CustomerCompanyDetailActivity extends BaseActivity {
         layoutInflater = LayoutInflater.from(this);
         titleAction.setImageResource(R.mipmap.header_icon_star_line);
         titleAction2.setImageResource(R.mipmap.header_icon_edit);
-        titleAction2.setVisibility(View.INVISIBLE);
         contact_id = getIntent().getStringExtra("contact_id");
         contact_name = getIntent().getStringExtra("contact_name");
         isShowRightView = getIntent().getBooleanExtra("isShowRightView", false);
-        titleAction.setVisibility(isShowRightView ? View.VISIBLE : View.GONE);
-        titleAction2.setVisibility(isShowRightView ? View.VISIBLE : View.GONE);
+        titleAction.setVisibility(isShowRightView ? View.VISIBLE : View.INVISIBLE);
+        titleAction2.setVisibility(isShowRightView ? View.VISIBLE : View.INVISIBLE);
         if (!TextUtils.isEmpty(contact_name)) {
             setTitle(contact_name);
         }
@@ -136,7 +135,7 @@ public class CustomerCompanyDetailActivity extends BaseActivity {
                         boolean hasLookPermission = false;
                         for (String permission : response.body().result) {
                             if (TextUtils.equals("CON:contact.detail:edit", permission)) {
-                                titleAction2.setVisibility(View.VISIBLE);
+                                titleAction2.setVisibility(isShowRightView ? View.VISIBLE : View.INVISIBLE);
                             }
 
                             if (TextUtils.equals("CON:contact.detail:view", permission)) {

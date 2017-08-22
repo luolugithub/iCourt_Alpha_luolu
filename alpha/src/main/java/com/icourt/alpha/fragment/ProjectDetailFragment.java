@@ -212,7 +212,7 @@ public class ProjectDetailFragment extends BaseFragment implements BaseRecyclerA
                     }
                     StringBuffer buffer = new StringBuffer();
                     for (ProjectDetailEntity.ClientsBean client : projectDetailBean.clients) {
-                        buffer.append(client.contactName).append(",");
+                        buffer.append(client.contactName).append("、");
                     }
                     itemEntity.value = buffer.toString();
                     if (itemEntity.value.length() > 0) {
@@ -233,7 +233,7 @@ public class ProjectDetailFragment extends BaseFragment implements BaseRecyclerA
                     }
                     StringBuffer buffer = new StringBuffer();
                     for (ProjectDetailEntity.GroupsBean group : projectDetailBean.groups) {
-                        buffer.append(group.name).append(",");
+                        buffer.append(group.name).append("、");
                     }
                     itemEntity.value = buffer.toString();
                     if (itemEntity.value.length() > 0) {
@@ -244,36 +244,28 @@ public class ProjectDetailFragment extends BaseFragment implements BaseRecyclerA
                 }
             }
 
-            if (projectDetailBean.matterType == 1) {//非诉专项
-                if (projectDetailBean.litigants != null) {//其他当事人
-                    if (projectDetailBean.litigants.size() > 0) {
-                        ProjectBasicItemEntity itemEntity = new ProjectBasicItemEntity();
-                        if (projectDetailBean.litigants.size() > 1) {
-                            itemEntity.key = "当事人 (" + projectDetailBean.litigants.size() + ")";
-                        } else {
-                            itemEntity.key = "当事人";
-                        }
-                        StringBuffer buffer = new StringBuffer();
-                        for (ProjectDetailEntity.LitigantsBean litigant : projectDetailBean.litigants) {
-                            buffer.append(litigant.contactName).append(",");
-                        }
-                        itemEntity.value = buffer.toString();
-                        if (itemEntity.value.length() > 0) {
-                            itemEntity.value = itemEntity.value.substring(0, itemEntity.value.length() - 1);
-                        }
-                        itemEntity.type = Const.PROJECT_OTHER_PERSON_TYPE;
-                        basicItemEntities.add(itemEntity);
-                    }
-                }
-            }
-
-            if (projectDetailBean.beginDate > 0 && projectDetailBean.endDate > 0) {//项目时间
-                ProjectBasicItemEntity itemEntity = new ProjectBasicItemEntity();
-                itemEntity.key = "项目时间";
-                itemEntity.value = DateUtils.getTimeDateFormatYearDot(projectDetailBean.beginDate) + " - " + DateUtils.getTimeDateFormatYearDot(projectDetailBean.endDate);
-                itemEntity.type = Const.PROJECT_TIME_TYPE;
-                basicItemEntities.add(itemEntity);
-            }
+//            if (projectDetailBean.matterType == 1) {//非诉专项
+//                if (projectDetailBean.litigants != null) {//其他当事人
+//                    if (projectDetailBean.litigants.size() > 0) {
+//                        ProjectBasicItemEntity itemEntity = new ProjectBasicItemEntity();
+//                        if (projectDetailBean.litigants.size() > 1) {
+//                            itemEntity.key = "当事人 (" + projectDetailBean.litigants.size() + ")";
+//                        } else {
+//                            itemEntity.key = "当事人";
+//                        }
+//                        StringBuffer buffer = new StringBuffer();
+//                        for (ProjectDetailEntity.LitigantsBean litigant : projectDetailBean.litigants) {
+//                            buffer.append(litigant.contactName).append("、");
+//                        }
+//                        itemEntity.value = buffer.toString();
+//                        if (itemEntity.value.length() > 0) {
+//                            itemEntity.value = itemEntity.value.substring(0, itemEntity.value.length() - 1);
+//                        }
+//                        itemEntity.type = Const.PROJECT_OTHER_PERSON_TYPE;
+//                        basicItemEntities.add(itemEntity);
+//                    }
+//                }
+//            }
 
             if (projectDetailBean.attorneys != null) {//案源律师
                 if (projectDetailBean.attorneys.size() > 0) {
@@ -285,7 +277,7 @@ public class ProjectDetailFragment extends BaseFragment implements BaseRecyclerA
                     }
                     StringBuffer buffer = new StringBuffer();
                     for (ProjectDetailEntity.AttorneysBean attorneysBean : projectDetailBean.attorneys) {
-                        buffer.append(attorneysBean.attorneyName).append(",");
+                        buffer.append(attorneysBean.attorneyName).append("、");
                     }
                     itemEntity.value = buffer.toString();
                     if (itemEntity.value.length() > 0) {
@@ -295,6 +287,15 @@ public class ProjectDetailFragment extends BaseFragment implements BaseRecyclerA
                     basicItemEntities.add(itemEntity);
                 }
             }
+
+            if (projectDetailBean.beginDate > 0 && projectDetailBean.endDate > 0) {//项目时间
+                ProjectBasicItemEntity itemEntity = new ProjectBasicItemEntity();
+                itemEntity.key = "项目时间";
+                itemEntity.value = DateUtils.getTimeDateFormatYearDot(projectDetailBean.beginDate) + " - " + DateUtils.getTimeDateFormatYearDot(projectDetailBean.endDate);
+                itemEntity.type = Const.PROJECT_TIME_TYPE;
+                basicItemEntities.add(itemEntity);
+            }
+
             projectBasicInfoAdapter.setClientsBeens(projectDetailBean.clients);
             projectBasicInfoAdapter.bindData(true, basicItemEntities);
             projectBasicInfoAdapter.setOnItemClickListener(this);
@@ -419,9 +420,9 @@ public class ProjectDetailFragment extends BaseFragment implements BaseRecyclerA
                 MobclickAgent.onEvent(getContext(), UMMobClickAgent.look_client_click_id);
                 //公司
                 if (TextUtils.equals(customerEntity.contactType.toUpperCase(), "C")) {
-                    CustomerCompanyDetailActivity.launch(getContext(), customerEntity.pkid, customerEntity.name, true);
+                    CustomerCompanyDetailActivity.launch(getContext(), customerEntity.pkid, customerEntity.name, false);
                 } else if (TextUtils.equals(customerEntity.contactType.toUpperCase(), "P")) {
-                    CustomerPersonDetailActivity.launch(getContext(), customerEntity.pkid, customerEntity.name, true);
+                    CustomerPersonDetailActivity.launch(getContext(), customerEntity.pkid, customerEntity.name, false);
                 }
             }
         }

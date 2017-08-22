@@ -15,6 +15,7 @@ public class ProjectBasicItemEntity implements Serializable{
     public String key;
     public String value;
     public int type;
+    public String personId;
 
     public ProjectBasicItemEntity() {
     }
@@ -23,5 +24,12 @@ public class ProjectBasicItemEntity implements Serializable{
         this.key = key;
         this.value = value;
         this.type = type;
+    }
+
+    public ProjectBasicItemEntity(String key, String value, int type, String personId) {
+        this.key = key;
+        this.value = value;
+        this.type = type;
+        this.personId = personId;
     }
 }

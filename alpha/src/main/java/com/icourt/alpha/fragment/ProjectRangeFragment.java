@@ -13,15 +13,24 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.icourt.alpha.R;
+import com.icourt.alpha.activity.CustomerCompanyDetailActivity;
+import com.icourt.alpha.activity.CustomerPersonDetailActivity;
 import com.icourt.alpha.activity.ProjectBasicTextInfoActivity;
 import com.icourt.alpha.activity.ProjectJudgeActivity;
 import com.icourt.alpha.adapter.ProjectBasicInfoAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.constants.Const;
+import com.icourt.alpha.db.dbmodel.CustomerDbModel;
+import com.icourt.alpha.db.dbservice.CustomerDbService;
+import com.icourt.alpha.entity.bean.CustomerEntity;
 import com.icourt.alpha.entity.bean.ProjectBasicItemEntity;
 import com.icourt.alpha.entity.bean.ProjectDetailEntity;
 import com.icourt.alpha.utils.ItemDecorationUtils;
+import com.icourt.alpha.utils.LoginInfoUtils;
+import com.icourt.alpha.utils.SpUtils;
+import com.icourt.alpha.utils.UMMobClickAgent;
+import com.umeng.analytics.MobclickAgent;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,6 +38,8 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
+
+import static com.icourt.alpha.activity.MainActivity.KEY_CUSTOMER_PERMISSION;
 
 /**
  * Description  项目概览：程序信息
@@ -53,6 +64,7 @@ public class ProjectRangeFragment extends BaseFragment implements BaseRecyclerAd
     private ProjectDetailEntity projectDetailEntity;
     Unbinder unbinder;
     ProjectBasicInfoAdapter projectBasicInfoAdapter;
+    private CustomerDbService customerDbService = null;
 
     public static ProjectRangeFragment newInstance(@NonNull ProjectDetailEntity projectDetailEntity) {
         ProjectRangeFragment projectRangeFragment = new ProjectRangeFragment();
@@ -72,6 +84,7 @@ public class ProjectRangeFragment extends BaseFragment implements BaseRecyclerAd
 
     @Override
     protected void initView() {
+        customerDbService = new CustomerDbService(LoginInfoUtils.getLoginUserId());
         projectDetailEntity = (ProjectDetailEntity) getArguments().getSerializable(KEY_PROJECT);
         if (projectDetailEntity != null) {
             List<ProjectBasicItemEntity> projectBasicItemEntities = new ArrayList<>();
@@ -125,9 +138,9 @@ public class ProjectRangeFragment extends BaseFragment implements BaseRecyclerAd
                 for (ProjectDetailEntity.LitigantsBean litigant : projectDetailEntity.litigants) {
                     if (!TextUtils.isEmpty(litigant.contactName))
                         if (!TextUtils.isEmpty(litigant.customerPositionName)) {
-                            projectBasicItemEntities.add(new ProjectBasicItemEntity(litigant.customerPositionName, litigant.contactName, Const.PROJECT_PERSON_TYPE));
+                            projectBasicItemEntities.add(new ProjectBasicItemEntity(litigant.customerPositionName, litigant.contactName, Const.PROJECT_PERSON_TYPE, litigant.contactPkid));
                         } else {
-                            projectBasicItemEntities.add(new ProjectBasicItemEntity("当事人", litigant.contactName, Const.PROJECT_PERSON_TYPE));
+                            projectBasicItemEntities.add(new ProjectBasicItemEntity("当事人", litigant.contactName, Const.PROJECT_PERSON_TYPE, litigant.contactPkid));
                         }
                 }
             }
@@ -252,6 +265,29 @@ public class ProjectRangeFragment extends BaseFragment implements BaseRecyclerAd
             case Const.PROJECT_SECRETARIES_TYPE://仲裁秘书
                 ProjectJudgeActivity.launch(getContext(), projectDetailEntity.secretaries, itemEntity.type);
                 break;
+            case Const.PROJECT_PERSON_TYPE:
+                if (!hasCustomerPermission()) return;
+                if (customerDbService == null) return;
+                ProjectBasicItemEntity item = (ProjectBasicItemEntity) adapter.getItem(position);
+                CustomerEntity customerEntity = null;
+                CustomerDbModel customerDbModel = customerDbService.queryFirst("pkid", item.personId);
+                if (customerDbModel == null) return;
+                customerEntity = customerDbModel.convert2Model();
+                if (customerEntity == null) return;
+                if (!TextUtils.isEmpty(customerEntity.contactType)) {
+                    MobclickAgent.onEvent(getContext(), UMMobClickAgent.look_client_click_id);
+                    //公司
+                    if (TextUtils.equals(customerEntity.contactType.toUpperCase(), "C")) {
+                        CustomerCompanyDetailActivity.launch(getContext(), customerEntity.pkid, customerEntity.name, false);
+                    } else if (TextUtils.equals(customerEntity.contactType.toUpperCase(), "P")) {
+                        CustomerPersonDetailActivity.launch(getContext(), customerEntity.pkid, customerEntity.name, false);
+                    }
+                }
+                break;
         }
+    }
+
+    private boolean hasCustomerPermission() {
+        return SpUtils.getInstance().getBooleanData(KEY_CUSTOMER_PERMISSION, false);
     }
 }

@@ -79,7 +79,7 @@ public class ProjectBasicInfoAdapter extends BaseArrayRecyclerAdapter<ProjectBas
         } else {
             TextView valueView = holder.obtainView(R.id.value_name_tv);
             ImageView rightView = holder.obtainView(R.id.arrow_right_iv);
-            rightView.setVisibility(isShowRightView(projectBasicItemEntity.type) ? View.VISIBLE : View.INVISIBLE);
+            rightView.setVisibility(isShowRightView(projectBasicItemEntity.type) ? View.VISIBLE : View.GONE);
             valueView.setText(projectBasicItemEntity.value);
         }
     }
