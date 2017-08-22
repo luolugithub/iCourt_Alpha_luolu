@@ -51,6 +51,12 @@ public class TopMiddlePopup extends PopupWindow implements BaseRecyclerAdapter.O
         return adapter;
     }
 
+    public void setMyItems(List<FilterDropEntity> myItems) {
+        this.myItems = myItems;
+        if (adapter != null)
+            adapter.bindData(true, myItems);
+    }
+
     @Override
     public final void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
         if (listener != null) {

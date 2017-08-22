@@ -1,6 +1,7 @@
 package com.icourt.alpha.fragment;
 
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.TabLayout;
@@ -82,6 +83,9 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
     FilterDropEntity deleteEntity = new FilterDropEntity("已删除", "0", 3);//已删除
     public static boolean isAwayScroll = false; //切换时是否滚动，在'已完成和已删除'状态下，点击新任务提醒。
 
+    public static boolean isShowCalendar;//是否显示日历页面
+    private Handler handler = new Handler();
+
     public static TabTaskFragment newInstance() {
         return new TabTaskFragment();
     }
@@ -97,6 +101,7 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
 
     @Override
     protected void initView() {
+        select_position = 0;
         baseFragmentAdapter = new BaseFragmentAdapter(getChildFragmentManager());
         viewPager.setNoScroll(false);
         viewPager.setAdapter(baseFragmentAdapter);
@@ -111,6 +116,7 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
         dropEntities.add(doingEntity);
         dropEntities.add(doneEntity);
         dropEntities.add(deleteEntity);
+        topMiddlePopup.setMyItems(dropEntities);
         getTasksStateCount();
         for (int i = 0; i < baseFragmentAdapter.getCount(); i++) {
             TabLayout.Tab tab = tabLayout.getTabAt(i);
@@ -141,6 +147,13 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
                 switch (position) {
                     case 0:
                         titleCalendar.setVisibility(View.VISIBLE);
+                        if (topMiddlePopup != null && topMiddlePopup.getAdapter() != null) {
+                            FilterDropEntity filterDropEntity = topMiddlePopup.getAdapter().getItem(select_position);
+                            if (filterDropEntity != null) {
+                                setFirstTabText(filterDropEntity.name, select_position);
+                                updateListData(filterDropEntity.stateType);
+                            }
+                        }
                         break;
                     case 1:
                         setFirstTabImage(false);
@@ -193,9 +206,19 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
     public void updateListData(int stateType) {
         Bundle bundle = new Bundle();
         bundle.putInt("stateType", stateType);
-        alltaskFragment.notifyFragmentUpdate(alltaskFragment, TaskAllFragment.TYPE_ALL_TASK, bundle);
-        viewPager.setNoScroll(false);
-        titleCalendar.setImageResource(R.mipmap.ic_calendar);
+        int type = TaskAllFragment.TYPE_ALL_TASK;
+        if (stateType == 0) {
+            titleCalendar.setVisibility(View.VISIBLE);
+            if (isShowCalendar) {
+                type = TaskAllFragment.TYPE_ALL_TASK_CALENDAR;
+                viewPager.setNoScroll(true);
+                titleCalendar.setImageResource(R.mipmap.icon_calendar_selected);
+            } else {
+                viewPager.setNoScroll(false);
+                titleCalendar.setImageResource(R.mipmap.ic_calendar);
+            }
+        }
+        alltaskFragment.notifyFragmentUpdate(alltaskFragment, type, bundle);
     }
 
     private class OnTabClickListener implements View.OnClickListener {
@@ -204,6 +227,7 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
         public void onClick(View view) {
             if (tabLayout.getTabAt(0) != null) {
                 if (view.isSelected()) {
+                    postDiyDissPop();
                     topMiddlePopup.show(titleView, dropEntities, select_position);
                     setFirstTabImage(true);
                     if (topMiddlePopup.isShowing()) {
@@ -214,6 +238,22 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
                 }
             }
         }
+    }
+
+    private void postDiyDissPop() {
+        handler.removeCallbacksAndMessages(null);
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if (topMiddlePopup != null) {
+                    if (topMiddlePopup.isShowing()) {
+                        if (!isVisible()) {
+                            topMiddlePopup.dismiss();
+                        }
+                    }
+                }
+            }
+        }, 100);
     }
 
     /**
@@ -280,11 +320,13 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
                     TaskAllFragment taskAllFragment = (TaskAllFragment) item;
                     switch (taskAllFragment.getChildFragmentType()) {
                         case TaskAllFragment.TYPE_ALL_TASK:
+                            isShowCalendar = true;
                             viewPager.setNoScroll(true);
                             titleCalendar.setImageResource(R.mipmap.icon_calendar_selected);
                             taskAllFragment.notifyFragmentUpdate(taskAllFragment, TaskAllFragment.TYPE_ALL_TASK_CALENDAR, null);
                             break;
                         case TaskAllFragment.TYPE_ALL_TASK_CALENDAR:
+                            isShowCalendar = false;
                             viewPager.setNoScroll(false);
                             titleCalendar.setImageResource(R.mipmap.ic_calendar);
                             if (topMiddlePopup.getAdapter() != null) {
@@ -314,6 +356,8 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
                 new BottomActionDialog(getContext(),
                         null,
                         titles,
+                        1,
+                        0xFFFF0000,
                         new BottomActionDialog.OnActionItemClickListener() {
                             @Override
                             public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
@@ -339,6 +383,8 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
         new BottomActionDialog(getContext(),
                 "该操作不可恢复，确定清空？",
                 Arrays.asList("确定"),
+                0,
+                0xFFFF0000,
                 new BottomActionDialog.OnActionItemClickListener() {
                     @Override
                     public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {

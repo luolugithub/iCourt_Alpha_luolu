@@ -150,7 +150,11 @@ public class TaskAllFragment extends BaseFragment implements OnTasksChangeListen
         if (bundle != null) {
             stateType = bundle.getInt("stateType");
         }
-        currFragment = addOrShowFragmentAnim(getFragment(type, stateType), currFragment, R.id.main_fl_content, type == TYPE_ALL_TASK_CALENDAR);
+        currFragment = addOrShowFragmentAnim(
+                getFragment(type, stateType),
+                currFragment,
+                R.id.main_fl_content,
+                type == TYPE_ALL_TASK_CALENDAR);
 
         switch (type) {
             case TYPE_ALL_TASK_CALENDAR:

@@ -65,7 +65,7 @@ public class TaskAllotSelectDialogFragment extends BaseDialogFragment implements
     String projectId;
     HeaderFooterAdapter<TaskOwerListAdapter> headerFooterAdapter;
     TaskOwerListAdapter taskOwerListAdapter;
-    List<TaskEntity.TaskItemEntity.AttendeeUserEntity> attendeeUserEntities;
+    final ArrayList<TaskEntity.TaskItemEntity.AttendeeUserEntity> attendeeUserEntities = new ArrayList<>();
     OnFragmentCallBackListener onFragmentCallBackListener;
     @BindView(R.id.header_comm_search_input_et)
     ClearEditText headerCommSearchInputEt;
@@ -74,6 +74,7 @@ public class TaskAllotSelectDialogFragment extends BaseDialogFragment implements
     @BindView(R.id.header_comm_search_input_ll)
     LinearLayout headerCommSearchInputLl;
     List<TaskEntity.TaskItemEntity.AttendeeUserEntity> searchEntites = new ArrayList<>();//搜索结果集
+    List<TaskEntity.TaskItemEntity.AttendeeUserEntity> attendeeUserEntitys = new ArrayList<>();
 
     public static TaskAllotSelectDialogFragment newInstance(@NonNull String projectId, List<TaskEntity.TaskItemEntity.AttendeeUserEntity> attendeeUserEntities) {
         TaskAllotSelectDialogFragment taskAllotSelectDialogFragment = new TaskAllotSelectDialogFragment();
@@ -117,7 +118,10 @@ public class TaskAllotSelectDialogFragment extends BaseDialogFragment implements
             }
         }
         projectId = getArguments().getString("projectId");
-        attendeeUserEntities = (List<TaskEntity.TaskItemEntity.AttendeeUserEntity>) getArguments().getSerializable("list");
+        attendeeUserEntities.clear();
+        ArrayList<TaskEntity.TaskItemEntity.AttendeeUserEntity> list = (ArrayList<TaskEntity.TaskItemEntity.AttendeeUserEntity>)getArguments().getSerializable("list");
+        if(list!=null)
+        attendeeUserEntities.addAll(list);
 
         recyclerview.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerview.setHasFixedSize(true);
@@ -216,6 +220,7 @@ public class TaskAllotSelectDialogFragment extends BaseDialogFragment implements
             public void onSuccess(Call<ResEntity<List<TaskEntity.TaskItemEntity.AttendeeUserEntity>>> call, Response<ResEntity<List<TaskEntity.TaskItemEntity.AttendeeUserEntity>>> response) {
                 if (response.body().result != null) {
                     taskOwerListAdapter.bindData(true, response.body().result);
+                    attendeeUserEntitys = response.body().result;
                     if (attendeeUserEntities != null) {
                         if (attendeeUserEntities.size() > 0) {
                             for (int i = 0; i < response.body().result.size(); i++) {
@@ -241,11 +246,11 @@ public class TaskAllotSelectDialogFragment extends BaseDialogFragment implements
     private void searchOwerByName(String name) {
         if (TextUtils.isEmpty(name)) return;
         if (taskOwerListAdapter == null) return;
-        if (taskOwerListAdapter.getData() == null) return;
-        if (taskOwerListAdapter.getData().size() <= 0) return;
+        if (attendeeUserEntitys == null) return;
+        if (attendeeUserEntitys.size() <= 0) return;
 
         searchEntites.clear();
-        for (TaskEntity.TaskItemEntity.AttendeeUserEntity taskOwerEntity : taskOwerListAdapter.getData()) {
+        for (TaskEntity.TaskItemEntity.AttendeeUserEntity taskOwerEntity : attendeeUserEntitys) {
             if (taskOwerEntity.userName.contains(name)) {
                 searchEntites.add(taskOwerEntity);
             }

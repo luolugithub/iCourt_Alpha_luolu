@@ -1088,8 +1088,10 @@ public class MainActivity extends BaseAppUpdateActivity
         if (fragment != null) {
             mFragTransaction.remove(fragment);
         }
-        TimingNoticeDialogFragment.newInstance(timer)
-                .show(mFragTransaction, tag);
+        //show方法源码是commit提交，会产生：Can not perform this action after onSaveInstanceState 异常
+//      TimingNoticeDialogFragment.newInstance(timer).show(mFragTransaction, tag);
+        mFragTransaction.add(TimingNoticeDialogFragment.newInstance(timer), tag);
+        mFragTransaction.commitAllowingStateLoss();
     }
 
     /**

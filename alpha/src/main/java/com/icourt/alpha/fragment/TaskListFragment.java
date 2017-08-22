@@ -510,7 +510,7 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
                         @Override
                         public void accept(List<TaskEntity> searchPolymerizationEntities) throws Exception {
                             taskAdapter.bindData(true, allTaskEntities);
-                            if (TabTaskFragment.isAwayScroll) {
+                            if (TabTaskFragment.isAwayScroll && stateType == 0) {
                                 if (newTaskEntities.size() > 1) {
                                     nextTaskLayout.setVisibility(View.VISIBLE);
                                 }
@@ -519,8 +519,11 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
                             } else {
                                 if (newTaskEntities.size() > 0) {
                                     newTaskCardview.setVisibility(View.VISIBLE);
+                                    newTaskCardview.setClickable(true);
                                     newTaskCountTv.setText(String.valueOf(newTaskEntities.size()));
                                     nextTaskLayout.setVisibility(View.GONE);
+                                } else {
+                                    newTaskCardview.setVisibility(View.GONE);
                                 }
                             }
                             //第一次进入 隐藏搜索框
@@ -751,10 +754,10 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
         if (event == null) return;
         switch (event.action) {
             case TimingEvent.TIMING_ADD:
-
+                updateTimming();
                 break;
             case TimingEvent.TIMING_UPDATE_PROGRESS:
-                updateTimming();
+
                 break;
             case TimingEvent.TIMING_STOP:
                 if (lastEntity != null) {
@@ -858,8 +861,8 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
      * @param taskId
      */
     private void updateChildTimeing(String taskId, boolean isTiming) {
-        int parentPos = getParentPositon(taskId) + headerFooterAdapter.getHeaderCount();
-        if (parentPos > 0) {
+        int parentPos = getParentPositon(taskId) ;
+        if (parentPos >=0) {
             int childPos = getChildPositon(taskId);
             if (childPos >= 0) {
                 BaseArrayRecyclerAdapter.ViewHolder viewHolderForAdapterPosition = (BaseArrayRecyclerAdapter.ViewHolder) recyclerView.findViewHolderForAdapterPosition(parentPos);

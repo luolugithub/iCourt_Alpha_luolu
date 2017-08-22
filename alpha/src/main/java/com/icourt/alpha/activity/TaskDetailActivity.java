@@ -238,7 +238,8 @@ public class TaskDetailActivity extends BaseActivity
             R.id.task_user_layout,
             R.id.task_users_layout,
             R.id.task_start_iamge,
-            R.id.task_time_sum_layout})
+            R.id.task_time_sum_layout,
+            R.id.task_time})
     @Override
     public void onClick(View v) {
         super.onClick(v);
@@ -357,7 +358,12 @@ public class TaskDetailActivity extends BaseActivity
                         taskItemEntity.valid);
                 break;
             case R.id.task_time_sum_layout:
-                if (!isStrat && taskItemEntity.timingSum > 0) {
+                if (taskItemEntity.timingSum > 0) {
+                    showTimersDialogFragment();
+                }
+                break;
+            case R.id.task_time:
+                if (taskItemEntity.timingSum > 0) {
                     showTimersDialogFragment();
                 }
                 break;
@@ -479,7 +485,6 @@ public class TaskDetailActivity extends BaseActivity
     /**
      * 显示底部菜单
      */
-
     private void showBottomMeau() {
         if (taskItemEntity == null) return;
         List<String> titles = null;
@@ -487,7 +492,7 @@ public class TaskDetailActivity extends BaseActivity
             if (taskItemEntity.state) {
                 titles = Arrays.asList("标记为未完成", "删除");
             } else {
-                titles = Arrays.asList("完成任务", "删除");
+                titles = Arrays.asList("标记为已完成", "删除");
             }
         } else {
             titles = Arrays.asList("恢复", "彻底删除");
@@ -495,15 +500,31 @@ public class TaskDetailActivity extends BaseActivity
         new BottomActionDialog(getContext(),
                 null,
                 titles,
+                1,
+                0xFFFF0000,
                 new BottomActionDialog.OnActionItemClickListener() {
                     @Override
                     public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
                         dialog.dismiss();
                         switch (position) {
                             case 0:
-                                if (taskItemEntity.valid)
-                                    updateTask(taskItemEntity, !taskItemEntity.state, taskCheckbox);
-                                else
+                                if (taskItemEntity.valid) {
+                                    if (taskItemEntity != null) {
+                                        if (!taskItemEntity.state) {
+                                            if (taskItemEntity.attendeeUsers != null) {
+                                                if (taskItemEntity.attendeeUsers.size() > 1) {
+                                                    showDeleteDialog("该任务为多人任务，确定要完成吗?", SHOW_FINISH_DIALOG);
+                                                } else {
+                                                    updateTask(taskItemEntity, true, taskCheckbox);
+                                                }
+                                            } else {
+                                                updateTask(taskItemEntity, true, taskCheckbox);
+                                            }
+                                        } else {
+                                            updateTask(taskItemEntity, false, taskCheckbox);
+                                        }
+                                    }
+                                } else
                                     recoverTaskById(taskId);
                                 break;
                             case 1:
@@ -535,6 +556,8 @@ public class TaskDetailActivity extends BaseActivity
         new BottomActionDialog(getContext(),
                 title,
                 Arrays.asList("确定"),
+                0,
+                0xFFFF0000,
                 new BottomActionDialog.OnActionItemClickListener() {
                     @Override
                     public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
@@ -768,6 +791,7 @@ public class TaskDetailActivity extends BaseActivity
                     } else if (taskItemEntity.attendeeUsers.size() == 1) {
                         taskUsersLayout.setVisibility(View.GONE);
                         taskUserLayout.setVisibility(View.VISIBLE);
+                        taskUserPic.setVisibility(View.VISIBLE);
                         if (taskItemEntity.attendeeUsers.get(0) != null) {
                             GlideUtils.loadUser(this, taskItemEntity.attendeeUsers.get(0).pic, taskUserPic);
                             taskUserName.setText(taskItemEntity.attendeeUsers.get(0).userName);
@@ -999,8 +1023,8 @@ public class TaskDetailActivity extends BaseActivity
                     for (TaskEntity.TaskItemEntity.AttendeeUserEntity attendeeUser : itemEntity.attendeeUsers) {
                         jsonarr.add(attendeeUser.userId);
                     }
-                    jsonObject.add("attendees", jsonarr);
                 }
+                jsonObject.add("attendees", jsonarr);
             }
             return jsonObject.toString();
         } catch (Exception e) {
@@ -1018,6 +1042,8 @@ public class TaskDetailActivity extends BaseActivity
             gestureDetector = new GestureDetector(getContext(), new GestureDetector.SimpleOnGestureListener() {
                 @Override
                 public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
+                    if (e1 == null || e2 == null)
+                        return super.onFling(e1, e2, velocityX, velocityY);
                     boolean canFastScroll = e1.getRawX() > appbar.getBottom() && e2.getRawX() > appbar.getBottom();
                     if (!canFastScroll) return super.onFling(e1, e2, velocityX, velocityY);
                     int limit = DensityUtil.dip2px(getContext(), 3500);
