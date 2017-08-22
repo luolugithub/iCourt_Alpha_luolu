@@ -192,15 +192,11 @@ public class FileUtils {
      *
      * @param fileName
      * @return
+     * @link{ getSFileIcon}
      */
+    @Deprecated
     public static int getFileIcon40(String fileName) {
-        if (!TextUtils.isEmpty(fileName) && fileName.length() > 0) {
-            String type = fileName.substring(fileName.lastIndexOf(".") + 1);
-            if (ActionConstants.resourcesMap40.containsKey(type)) {
-                return ActionConstants.resourcesMap40.get(type);
-            }
-        }
-        return R.mipmap.filetype_default_40;
+        return getSFileIcon(fileName);
     }
 
     /**
@@ -220,21 +216,6 @@ public class FileUtils {
         return R.mipmap.filetype_default;
     }
 
-    /**
-     * 获取文件对应图标 20
-     *
-     * @param fileName
-     * @return
-     */
-    public static int getFileIcon20(String fileName) {
-        if (!TextUtils.isEmpty(fileName) && fileName.length() > 0) {
-            String type = fileName.substring(fileName.lastIndexOf(".") + 1);
-            if (ActionConstants.resourcesMap.containsKey(type)) {
-                return ActionConstants.resourcesMap.get(type);
-            }
-        }
-        return R.mipmap.filetype_default_20;
-    }
 
     /**
      * @data 创建时间:16/12/7

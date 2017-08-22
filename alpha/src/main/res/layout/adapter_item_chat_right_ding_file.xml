@@ -95,7 +95,7 @@
                                 android:layout_toRightOf="@+id/chat_file_name_tv"
                                 android:background="#FFF3F3F3"
                                 android:padding="10dp"
-                                android:src="@mipmap/filetype_default_20" />
+                                android:src="@mipmap/filetype_default" />
                         </LinearLayout>
 
 
