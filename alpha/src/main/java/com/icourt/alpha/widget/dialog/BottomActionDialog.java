@@ -52,12 +52,22 @@ public class BottomActionDialog extends Dialog {
         this.title = title;
     }
 
+    public BottomActionDialog(@NonNull Context context, @Nullable String title, @NonNull List<String> actionItems, int position, int color, OnActionItemClickListener onItemClickListener) {
+        super(context, R.style.AnimBottomDialog);
+        this.onItemClickListener = onItemClickListener;
+        this.actionItems = actionItems;
+        this.title = title;
+        this.position = position;
+        this.color = color;
+    }
+
     TextView dialog_title, dialog_cancel;
     RecyclerView dialog_recyclerView;
     ActionItemAdapter actionItemAdapter;
     OnActionItemClickListener onItemClickListener;
     List<String> actionItems;
     String title;
+    int position = -1, color = 0xFF2A79F6;
 
 
     @Override
@@ -84,7 +94,10 @@ public class BottomActionDialog extends Dialog {
         dialog_recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         dialog_recyclerView.setAdapter(actionItemAdapter = new ActionItemAdapter());
         dialog_recyclerView.addItemDecoration(ItemDecorationUtils.getCommFull05Divider(getContext(), false));
+        actionItemAdapter.setColor(color);
+        actionItemAdapter.setPosition(position);
         actionItemAdapter.bindData(true, actionItems);
+
         actionItemAdapter.setOnItemClickListener(new BaseRecyclerAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
@@ -107,6 +120,7 @@ public class BottomActionDialog extends Dialog {
     @Override
     public void show() {
         closeKeyboard();
+
         super.show();
     }
 
@@ -138,10 +152,23 @@ public class BottomActionDialog extends Dialog {
 
     public static class ActionItemAdapter extends BaseArrayRecyclerAdapter<String> {
 
+        int position, color;
+
+        public void setPosition(int position) {
+            this.position = position;
+        }
+
+        public void setColor(int color) {
+            this.color = color;
+        }
+
         @Override
         public void onBindHoder(ViewHolder holder, String s, int position) {
             TextView tv_action_bottom_dialog = holder.obtainView(R.id.tv_action_bottom_dialog);
             tv_action_bottom_dialog.setText(s);
+            if (this.position >= 0 && this.position == position) {
+                tv_action_bottom_dialog.setTextColor(color);
+            }
         }
 
         @Override
