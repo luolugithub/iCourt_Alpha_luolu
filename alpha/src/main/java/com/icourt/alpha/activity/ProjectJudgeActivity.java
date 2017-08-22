@@ -23,7 +23,7 @@ import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.ProjectJudgeAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.HeaderFooterAdapter;
-import com.icourt.alpha.base.BaseAppUpdateActivity;
+import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.constants.Const;
 import com.icourt.alpha.entity.bean.ProjectDetailEntity;
 import com.icourt.alpha.utils.ItemDecorationUtils;
@@ -45,7 +45,7 @@ import butterknife.OnClick;
  * date createTime：2017/3/31
  * version 1.0.0
  */
-public class ProjectJudgeActivity extends BaseAppUpdateActivity {
+public class ProjectJudgeActivity extends BaseActivity {
 
     @BindView(R.id.titleBack)
     ImageView titleBack;
@@ -85,6 +85,8 @@ public class ProjectJudgeActivity extends BaseAppUpdateActivity {
 
     private String getTitleText() {
         switch (type) {
+            case Const.PROJECT_DEPARTMENT_TYPE://负责部门
+                return "负责部门";
             case Const.PROJECT_JUDGE_TYPE://法官
                 return "法官";
             case Const.PROJECT_CLERK_TYPE://书记员
@@ -118,8 +120,13 @@ public class ProjectJudgeActivity extends BaseAppUpdateActivity {
             @Override
             public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
                 if (adapter instanceof ProjectJudgeAdapter) {
-                    TextView phoneview = holder.obtainView(R.id.judge_phone_tv);
-                    callPhone(phoneview.getText());
+                    if (type == Const.PROJECT_JUDGE_TYPE ||//法官
+                            type == Const.PROJECT_CLERK_TYPE ||//书记员
+                            type == Const.PROJECT_ARBITRATORS_TYPE ||//仲裁员
+                            type == Const.PROJECT_SECRETARIES_TYPE) {//仲裁秘书
+                        TextView phoneview = holder.obtainView(R.id.judge_phone_tv);
+                        callPhone(phoneview.getText());
+                    }
                 }
             }
         });
@@ -198,6 +205,11 @@ public class ProjectJudgeActivity extends BaseAppUpdateActivity {
                     ProjectDetailEntity.SecretarieBean secretar = (ProjectDetailEntity.SecretarieBean) list.get(i);
                     if (secretar.name.contains(name)) {
                         entities.add(secretar);
+                    }
+                } else if (list.get(i) instanceof ProjectDetailEntity.GroupsBean) {
+                    ProjectDetailEntity.GroupsBean groupsBean = (ProjectDetailEntity.GroupsBean) list.get(i);
+                    if (groupsBean.name.contains(name)) {
+                        entities.add(groupsBean);
                     }
                 }
             }

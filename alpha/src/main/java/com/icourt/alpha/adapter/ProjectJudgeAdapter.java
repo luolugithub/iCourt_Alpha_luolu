@@ -1,5 +1,6 @@
 package com.icourt.alpha.adapter;
 
+import android.view.View;
 import android.widget.TextView;
 
 import com.icourt.alpha.R;
@@ -42,6 +43,10 @@ public class ProjectJudgeAdapter<T> extends BaseArrayRecyclerAdapter<T> {
             ProjectDetailEntity.SecretarieBean secretarieBean = (ProjectDetailEntity.SecretarieBean) t;
             nameview.setText(secretarieBean.name);
             phoneview.setText(secretarieBean.phone);
+        } else if (t instanceof ProjectDetailEntity.GroupsBean) {
+            ProjectDetailEntity.GroupsBean groupsBean = (ProjectDetailEntity.GroupsBean) t;
+            nameview.setText(groupsBean.name);
+            phoneview.setVisibility(View.GONE);
         }
     }
 }

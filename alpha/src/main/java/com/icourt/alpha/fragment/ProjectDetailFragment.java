@@ -19,6 +19,7 @@ import com.icourt.alpha.R;
 import com.icourt.alpha.activity.CustomerCompanyDetailActivity;
 import com.icourt.alpha.activity.CustomerPersonDetailActivity;
 import com.icourt.alpha.activity.ProjectBasicTextInfoActivity;
+import com.icourt.alpha.activity.ProjectJudgeActivity;
 import com.icourt.alpha.activity.ProjectMembersActivity;
 import com.icourt.alpha.adapter.ProjectBasicInfoAdapter;
 import com.icourt.alpha.adapter.ProjectClientAdapter;
@@ -361,7 +362,10 @@ public class ProjectDetailFragment extends BaseFragment implements BaseRecyclerA
     }
 
     @OnClick({R.id.project_add_routine,
-            R.id.service_content_layout})
+            R.id.service_content_layout,
+            R.id.project_member_layout,
+            R.id.project_member_recyclerview,
+            R.id.project_member_childlayout})
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
@@ -373,6 +377,11 @@ public class ProjectDetailFragment extends BaseFragment implements BaseRecyclerA
                     String remark = projectServiceContent.getText().toString();
                     ProjectBasicTextInfoActivity.launch(getContext(), remark, Const.PROJECT_REMARK_TYPE);
                 }
+                break;
+            case R.id.project_member_layout:
+            case R.id.project_member_childlayout:
+                if (projectDetailBean != null)
+                    ProjectMembersActivity.launch(getContext(), projectDetailBean.members, Const.PROJECT_MEMBER_TYPE);
                 break;
         }
     }
@@ -392,6 +401,9 @@ public class ProjectDetailFragment extends BaseFragment implements BaseRecyclerA
                     break;
                 case Const.PROJECT_ANYUAN_LAWYER_TYPE://案源律师
                     ProjectMembersActivity.launch(view.getContext(), projectDetailBean.attorneys, Const.PROJECT_ANYUAN_LAWYER_TYPE);
+                    break;
+                case Const.PROJECT_DEPARTMENT_TYPE://负责部门
+                    ProjectJudgeActivity.launch(getContext(), projectDetailBean.groups, entity.type);
                     break;
             }
         } else if (adapter instanceof ProjectClientAdapter) {

@@ -91,8 +91,9 @@ public class ProjectBasicInfoAdapter extends BaseArrayRecyclerAdapter<ProjectBas
      */
     private boolean isShowRightView(int type) {
         switch (type) {
-            case Const.PROJECT_CLIENT_TYPE:
-            case Const.PROJECT_TIME_TYPE:
+            case Const.PROJECT_CLIENT_TYPE://客户
+            case Const.PROJECT_TIME_TYPE://时间
+            case Const.PROJECT_CASEPROCESS_TYPE://程序
                 return false;
 
         }

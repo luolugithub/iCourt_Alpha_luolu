@@ -62,6 +62,7 @@
             android:background="@color/alpha_divider_color" />
 
         <LinearLayout
+            android:id="@+id/project_member_childlayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginLeft="35dp"
