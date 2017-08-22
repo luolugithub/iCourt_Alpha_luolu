@@ -29,7 +29,6 @@ import android.widget.TextView;
 import com.andview.refreshview.XRefreshView;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.icourt.alpha.BuildConfig;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.FolderDocumentAdapter;
 import com.icourt.alpha.adapter.FolderDocumentWrapAdapter;
@@ -46,11 +45,8 @@ import com.icourt.alpha.fragment.dialogfragment.FolderTargetListDialogFragment;
 import com.icourt.alpha.fragment.dialogfragment.RepoDetailsDialogFragment;
 import com.icourt.alpha.http.callback.SFileCallBack;
 import com.icourt.alpha.http.callback.SimpleCallBack2;
-import com.icourt.alpha.interfaces.ISeaFileImageLoader;
-import com.icourt.alpha.utils.GlideUtils;
 import com.icourt.alpha.utils.ImageUtils;
 import com.icourt.alpha.utils.IndexUtils;
-import com.icourt.alpha.utils.SFileTokenUtils;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.utils.UriUtils;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
@@ -86,6 +82,7 @@ import static com.icourt.alpha.constants.Const.FILE_ACTION_COPY;
 import static com.icourt.alpha.constants.Const.FILE_ACTION_MOVE;
 import static com.icourt.alpha.constants.Const.VIEW_TYPE_GRID;
 import static com.icourt.alpha.constants.Const.VIEW_TYPE_ITEM;
+import static com.icourt.alpha.constants.SFileConfig.PERMISSION_RW;
 import static com.icourt.alpha.widget.comparators.FileSortComparator.FILE_SORT_TYPE_DEFAULT;
 
 /**
@@ -165,19 +162,23 @@ public class FolderListActivity extends FolderBaseActivity
 
     /**
      * @param context
-     * @param seaFileRepoId
-     * @param title
-     * @param seaFileDirPath
+     * @param repoType       repo类型
+     * @param repoPermission repo权限 "rw" "r"
+     * @param seaFileRepoId  repoid
+     * @param repoTitle      repo 标题
+     * @param seaFileDirPath repo目录路径
      */
     public static void launch(@NonNull Context context,
                               @SFileConfig.REPO_TYPE int repoType,
+                              @SFileConfig.FILE_PERMISSION String repoPermission,
                               String seaFileRepoId,
-                              String title,
+                              String repoTitle,
                               String seaFileDirPath) {
         if (context == null) return;
         Intent intent = new Intent(context, FolderListActivity.class);
-        intent.putExtra("repoType", repoType);
-        intent.putExtra("title", title);
+        intent.putExtra(KEY_SEA_FILE_REPO_TYPE, repoType);
+        intent.putExtra(KEY_SEA_FILE_REPO_TITLE, repoTitle);
+        intent.putExtra(KEY_SEA_FILE_REPO_PERMISSION, repoPermission);
         intent.putExtra(KEY_SEA_FILE_REPO_ID, seaFileRepoId);
         intent.putExtra(KEY_SEA_FILE_DIR_PATH, seaFileDirPath);
         context.startActivity(intent);
@@ -196,10 +197,11 @@ public class FolderListActivity extends FolderBaseActivity
     protected void initView() {
         super.initView();
         EventBus.getDefault().register(this);
-        setTitle(getIntent().getStringExtra("title"));
+        setTitle(getRepoTitle());
         ImageView titleActionImage = getTitleActionImage();
         if (titleActionImage != null) {
             titleActionImage.setImageResource(R.mipmap.header_icon_add);
+            setViewInVisible(titleActionImage, TextUtils.equals(getRepoPermission(), PERMISSION_RW));
         }
 
         ImageView titleActionImage2 = getTitleActionImage2();
@@ -213,15 +215,10 @@ public class FolderListActivity extends FolderBaseActivity
 
         headerFooterAdapter = new HeaderFooterAdapter<>(
                 folderDocumentAdapter = new FolderDocumentWrapAdapter(VIEW_TYPE_ITEM,
-                        new ISeaFileImageLoader() {
-                            @Override
-                            public void loadSFileImage(String fileName, ImageView view, int type, int size) {
-                                GlideUtils.loadSFilePic(getContext(), getSfileThumbnailImage(fileName), view);
-                            }
-                        },
+                        getSeaFileRepoId(),
+                        getSeaFileDirPath(),
                         false,
-                        selectedFolderDocuments,
-                        false));
+                        selectedFolderDocuments));
         addHeadView();
 
         addFooterView();
@@ -282,21 +279,6 @@ public class FolderListActivity extends FolderBaseActivity
         return selectedFolderDocuments.size() == totals.size();
     }
 
-    /**
-     * 获取缩略图地址
-     *
-     * @param name
-     * @return
-     */
-    private String getSfileThumbnailImage(String name) {
-        //https://test.alphalawyer.cn/ilaw/api/v2/documents/thumbnailImage?repoId=d4f82446-a37f-478c-b6b5-ed0e779e1768&seafileToken=%20d6c69d6f4fc208483c243246c6973d8eb141501c&p=//1502507774237.png&size=250
-        return String.format("%silaw/api/v2/documents/thumbnailImage?repoId=%s&seafileToken=%s&p=%s&size=%s",
-                BuildConfig.API_URL,
-                getSeaFileRepoId(),
-                SFileTokenUtils.getSFileToken(),
-                String.format("%s%s", getSeaFileDirPath(), name),
-                150);
-    }
 
     private void addHeadView() {
         headerView = HeaderFooterAdapter.inflaterView(getContext(), R.layout.header_search_folder_document, recyclerView);
@@ -491,13 +473,13 @@ public class FolderListActivity extends FolderBaseActivity
                             updateSelectableModeSatue(folderDocumentAdapter.isSelectable());
                         } else if (TextUtils.equals(action, "查看资料库详情")) {
                             RepoDetailsDialogFragment.show(
-                                    SFileConfig.convert2RepoType(getIntent().getIntExtra("repoType", 0)),
+                                    getRepoType(),
                                     getSeaFileRepoId(),
                                     0,
                                     getSupportFragmentManager());
                         } else if (TextUtils.equals(action, "回收站")) {
                             RepoDetailsDialogFragment.show(
-                                    SFileConfig.convert2RepoType(getIntent().getIntExtra("repoType", 0)),
+                                    getRepoType(),
                                     getSeaFileRepoId(),
                                     2,
                                     getSupportFragmentManager());
@@ -765,7 +747,8 @@ public class FolderListActivity extends FolderBaseActivity
                 if (item == null) return;
                 if (item.isDir()) {
                     FolderListActivity.launch(getContext(),
-                            SFileConfig.convert2RepoType(getIntent().getIntExtra("repoType", 0)),
+                            getRepoType(),
+                            getRepoPermission(),
                             getSeaFileRepoId(),
                             item.name,
                             String.format("%s%s/", getSeaFileDirPath(), item.name));
@@ -784,7 +767,12 @@ public class FolderListActivity extends FolderBaseActivity
     public boolean onItemLongClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
         if (adapter instanceof FolderDocumentAdapter) {
             FolderDocumentAdapter folderDocumentAdapter = (FolderDocumentAdapter) adapter;
-            if (!folderDocumentAdapter.isSelectable()) {
+            FolderDocumentEntity item = folderDocumentAdapter.getItem(position);
+            if (item == null) return false;
+            //有可读写权限
+            boolean showFolderActionMenu = !folderDocumentAdapter.isSelectable()
+                    && TextUtils.equals(item.permission, PERMISSION_RW);
+            if (showFolderActionMenu) {
                 showFolderActionMenu(adapter, position);
             }
         }
@@ -797,6 +785,10 @@ public class FolderListActivity extends FolderBaseActivity
             switch (view.getId()) {
                 case R.id.document_expand_iv:
                     showFolderActionMenu(adapter, position);
+                    break;
+                case R.id.document_detail_iv:
+                    FolderDocumentAdapter folderDocumentAdapter = (FolderDocumentAdapter) adapter;
+                    lookDetails(folderDocumentAdapter.getItem(position));
                     break;
             }
         }
@@ -820,19 +812,7 @@ public class FolderListActivity extends FolderBaseActivity
                         dialog.dismiss();
                         String action = adapter.getItem(position);
                         if (TextUtils.equals(action, "查看文件详情")) {
-                            if (item.isDir()) {
-                                FolderDetailDialogFragment.show(
-                                        getSeaFileRepoId(),
-                                        getSeaFileDirPath(),
-                                        item,
-                                        getSupportFragmentManager());
-                            } else {
-                                FileDetailDialogFragment.show(
-                                        getSeaFileRepoId(),
-                                        getSeaFileDirPath(),
-                                        item,
-                                        getSupportFragmentManager());
-                            }
+                            lookDetails(item);
                         } else if (TextUtils.equals(action, "重命名")) {
                             FolderRenameActivity.launch(
                                     getContext(),
@@ -854,6 +834,23 @@ public class FolderListActivity extends FolderBaseActivity
                         }
                     }
                 }).show();
+    }
+
+    private void lookDetails(final FolderDocumentEntity item) {
+        if (item == null) return;
+        if (item.isDir()) {
+            FolderDetailDialogFragment.show(
+                    getSeaFileRepoId(),
+                    getSeaFileDirPath(),
+                    item,
+                    getSupportFragmentManager());
+        } else {
+            FileDetailDialogFragment.show(
+                    getSeaFileRepoId(),
+                    getSeaFileDirPath(),
+                    item,
+                    getSupportFragmentManager());
+        }
     }
 
     protected final void showFolderTargetListDialogFragment(@Const.FILE_ACTION_TYPE int folderActionType,

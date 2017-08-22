@@ -2,7 +2,6 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@drawable/list_view_item_touch_bg"
     android:gravity="center_vertical"
     android:orientation="vertical">
 
@@ -49,12 +48,14 @@
                 android:textSize="@dimen/alpha_font_size_mini_lowest" />
         </LinearLayout>
 
+
         <ImageView
-            android:id="@+id/document_expand_iv"
+            android:id="@+id/document_restore_iv"
             android:layout_width="46dp"
             android:layout_height="46dp"
             android:padding="15dp"
-            android:src="@mipmap/ic_open_menu" />
+            android:src="@mipmap/restore" />
+
     </LinearLayout>
 
     <View

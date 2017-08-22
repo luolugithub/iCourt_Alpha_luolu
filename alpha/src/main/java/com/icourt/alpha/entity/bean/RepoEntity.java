@@ -26,7 +26,7 @@ public class RepoEntity implements Serializable, ILongFieldEntity {
 
     @JsonAdapter(BooleanTypeAdapter.class)
     public boolean encrypted;
-    @SerializedName(value = "id",alternate = {"repo_id"})
+    @SerializedName(value = "id", alternate = {"repo_id"})
     public String repo_id;
     @SerializedName(value = "repo_name", alternate = {"name"})
     public String repo_name;
@@ -34,6 +34,7 @@ public class RepoEntity implements Serializable, ILongFieldEntity {
     @JsonAdapter(SeaFileTimeJsonAdapter.class)
     public long last_modified;
     public long size;
+    public String permission;//权限
 
     @Override
     public boolean equals(Object o) {

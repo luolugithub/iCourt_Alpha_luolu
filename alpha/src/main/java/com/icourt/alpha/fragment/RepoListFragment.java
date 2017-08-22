@@ -46,6 +46,9 @@ import butterknife.Unbinder;
 import retrofit2.Call;
 import retrofit2.Response;
 
+import static com.icourt.alpha.constants.SFileConfig.PERMISSION_RW;
+import static com.icourt.alpha.constants.SFileConfig.REPO_MINE;
+
 /**
  * Description  资料库列表
  * 只有我的资料库 长按才有效
@@ -326,8 +329,13 @@ public class RepoListFragment extends BaseFragment
     public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
         RepoEntity item = repoAdapter.getItem(position);
         if (item == null) return;
+        String repo_permission = item.permission;
+        if (repoType == REPO_MINE) {
+            repo_permission = PERMISSION_RW;
+        }
         FolderListActivity.launch(getContext(),
                 SFileConfig.convert2RepoType(getArguments().getInt("repoType", 0)),
+                SFileConfig.convert2filePermission(repo_permission),
                 item.repo_id,
                 item.repo_name,
                 "/");
@@ -466,11 +474,10 @@ public class RepoListFragment extends BaseFragment
     public void onItemChildClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
         switch (view.getId()) {
             case R.id.document_expand_iv:
-                if (repoType == 0) {
-                    showDocumentActionDialog(position);
-                } else {
-                    lookDetail(position);
-                }
+                showDocumentActionDialog(position);
+                break;
+            case R.id.document_detail_iv:
+                lookDetail(position);
                 break;
         }
     }

@@ -81,6 +81,7 @@ public class RepoDetailsDialogFragment extends BaseDialogFragment
     String fromRepoId;
     protected static final String KEY_SEA_FILE_FROM_REPO_ID = "seaFileFromRepoId";//原仓库id
     protected static final String KEY_LOCATION_TAB_INDEX = "locationPage";//定位的tab
+    protected static final String KEY_SEA_FILE_REPO_TYPE = "seaFileRepoType";//repo类型
 
     public static void show(@SFileConfig.REPO_TYPE int repoType,
                             String fromRepoId,
@@ -198,7 +199,9 @@ public class RepoDetailsDialogFragment extends BaseDialogFragment
                 FileChangedHistoryEntity fileVersionEntity = fileVersionEntities.get(0);
                 fileUpdateInfoTv.setText(String.format("%s 更新于 %s", fileVersionEntity.operator_name, DateUtils.getyyyyMMddHHmm(fileVersionEntity.date)));
             } else {
-                fileUpdateInfoTv.setText("");
+                if (fileUpdateInfoTv != null) {
+                    fileUpdateInfoTv.setText("");
+                }
             }
         }
     }

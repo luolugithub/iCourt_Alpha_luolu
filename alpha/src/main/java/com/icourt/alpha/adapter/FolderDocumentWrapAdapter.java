@@ -7,7 +7,6 @@ import android.support.v7.widget.RecyclerView;
 import com.icourt.alpha.R;
 import com.icourt.alpha.constants.Const;
 import com.icourt.alpha.entity.bean.FolderDocumentEntity;
-import com.icourt.alpha.interfaces.ISeaFileImageLoader;
 
 import java.util.List;
 import java.util.Set;
@@ -27,17 +26,14 @@ public class FolderDocumentWrapAdapter
     int adapterViewType;
 
     private Set<FolderDocumentEntity> selectedFolderDocuments;
-    boolean isFromTrash;
 
     public FolderDocumentWrapAdapter(@Const.AdapterViewType int adapterViewType,
-                                     ISeaFileImageLoader seaFileImageLoader,
+                                     String seaFileRepoId, String seaFileDirPath,
                                      boolean selectable,
-                                     Set<FolderDocumentEntity> selectedFolderDocuments,
-                                     boolean isFromTrash) {
-        super(seaFileImageLoader, selectable);
+                                     Set<FolderDocumentEntity> selectedFolderDocuments) {
+        super(seaFileRepoId,seaFileDirPath, selectable);
         this.adapterViewType = adapterViewType;
         this.selectedFolderDocuments = selectedFolderDocuments;
-        this.isFromTrash = isFromTrash;
     }
 
 
@@ -84,10 +80,10 @@ public class FolderDocumentWrapAdapter
         if (folderDocumentAdapter == null) {
             recyclerView.setAdapter(
                     folderDocumentAdapter = new FolderDocumentAdapter(adapterViewType,
-                            seaFileImageLoader,
+                            getSeaFileRepoId(),
+                            getSeaFileDirPath(),
                             isSelectable(),
-                            selectedFolderDocuments,
-                            isFromTrash));
+                            selectedFolderDocuments));
         } else {
             folderDocumentAdapter.setAdapterViewType(adapterViewType);
             folderDocumentAdapter.setSelectable(isSelectable());

@@ -1,6 +1,8 @@
 package com.icourt.alpha.constants;
 
 import android.support.annotation.IntDef;
+import android.support.annotation.StringDef;
+import android.text.TextUtils;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -53,6 +55,38 @@ public class SFileConfig {
                 return REPO_PROJECT;
             default:
                 return REPO_MINE;
+        }
+    }
+
+
+    /**
+     * 文件权限
+     */
+    public static final String PERMISSION_RW = "rw";
+    public static final String PERMISSION_R = "r";
+
+    @StringDef({PERMISSION_RW,
+            PERMISSION_R})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface FILE_PERMISSION {
+
+    }
+
+    /**
+     * 转换
+     *
+     * @param permission
+     * @return
+     */
+    @FILE_PERMISSION
+    public static final String convert2filePermission(String permission) {
+        String stringPermission = permission;
+        if (TextUtils.equals(stringPermission, PERMISSION_RW)) {
+            return PERMISSION_RW;
+        } else if (TextUtils.equals(stringPermission, PERMISSION_R)) {
+            return PERMISSION_R;
+        } else {
+            return PERMISSION_R;
         }
     }
 }

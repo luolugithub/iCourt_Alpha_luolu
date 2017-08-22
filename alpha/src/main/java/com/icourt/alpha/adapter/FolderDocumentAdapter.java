@@ -1,5 +1,6 @@
 package com.icourt.alpha.adapter;
 
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.CheckedTextView;
 import android.widget.ImageView;
@@ -7,8 +8,8 @@ import android.widget.TextView;
 
 import com.icourt.alpha.R;
 import com.icourt.alpha.constants.Const;
+import com.icourt.alpha.constants.SFileConfig;
 import com.icourt.alpha.entity.bean.FolderDocumentEntity;
-import com.icourt.alpha.interfaces.ISeaFileImageLoader;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.FileUtils;
 import com.icourt.alpha.utils.IMUtils;
@@ -17,6 +18,7 @@ import java.util.Set;
 
 import static com.icourt.alpha.constants.Const.VIEW_TYPE_GRID;
 import static com.icourt.alpha.constants.Const.VIEW_TYPE_ITEM;
+import static com.icourt.alpha.constants.SFileConfig.PERMISSION_RW;
 
 /**
  * Description
@@ -30,17 +32,14 @@ public class FolderDocumentAdapter extends SFileImgBaseAdapter<FolderDocumentEnt
     private Set<FolderDocumentEntity> selectedFolderDocuments;
     @Const.AdapterViewType
     int adapterViewType;
-    boolean isFromTrash;
 
     public FolderDocumentAdapter(@Const.AdapterViewType int adapterViewType,
-                                 ISeaFileImageLoader seaFileImageLoader,
+                                 String seaFileRepoId, String seaFileDirPath,
                                  boolean selectable,
-                                 Set<FolderDocumentEntity> selectedFolderDocuments,
-                                 boolean isFromTrash) {
-        super(seaFileImageLoader, selectable);
+                                 Set<FolderDocumentEntity> selectedFolderDocuments) {
+        super(seaFileRepoId, seaFileDirPath, selectable);
         this.adapterViewType = adapterViewType;
         this.selectedFolderDocuments = selectedFolderDocuments;
-        this.isFromTrash=isFromTrash;
     }
 
 
@@ -74,78 +73,89 @@ public class FolderDocumentAdapter extends SFileImgBaseAdapter<FolderDocumentEnt
     }
 
 
-    /**
-     * 设置文件类型的图标
-     *
-     * @param iv
-     * @param fileName
-     */
-    private void setFileTypeIcon(ImageView iv, String fileName) {
-        if (iv == null) return;
-        iv.setImageResource(getFileIcon(fileName));
-    }
-
-    /**
-     * 获取文件对应图标
-     *
-     * @param fileName
-     * @return
-     */
-    public static int getFileIcon(String fileName) {
-        return FileUtils.getSFileIcon(fileName);
-    }
-
     @Override
     public void onBindHoder(ViewHolder holder, FolderDocumentEntity folderDocumentEntity, int position) {
         if (folderDocumentEntity == null) return;
-        CheckedTextView folder_document_ctv = holder.obtainView(R.id.folder_document_ctv);
         switch (holder.getItemViewType()) {
-            case VIEW_TYPE_GRID: {
-                ImageView document_type_iv = holder.obtainView(R.id.document_type_iv);
-                TextView document_title_tv = holder.obtainView(R.id.document_title_tv);
-                ImageView document_pic_iv = holder.obtainView(R.id.document_pic_iv);
-                document_title_tv.setText(folderDocumentEntity.name);
-                if (folderDocumentEntity.isDir()) {
-                    document_pic_iv.setVisibility(View.GONE);
-                    document_type_iv.setImageResource(R.mipmap.folder);
-                } else {
-                    if (IMUtils.isPIC(folderDocumentEntity.name)) {
-                        document_pic_iv.setVisibility(View.VISIBLE);
-                        loadSFileImage(folderDocumentEntity.name, document_pic_iv, 0, 250);
-                    } else {
-                        document_pic_iv.setVisibility(View.GONE);
-                        setFileTypeIcon(document_type_iv, folderDocumentEntity.name);
-                    }
-                }
-            }
-            break;
-            case VIEW_TYPE_ITEM: {
-                ImageView document_type_iv = holder.obtainView(R.id.document_type_iv);
-                TextView document_title_tv = holder.obtainView(R.id.document_title_tv);
-                TextView document_desc_tv = holder.obtainView(R.id.document_desc_tv);
-                ImageView document_expand_iv = holder.obtainView(R.id.document_expand_iv);
-                holder.bindChildClick(document_expand_iv);
+            case VIEW_TYPE_GRID:
+                setGridItemData(holder, folderDocumentEntity, position);
+                break;
+            case VIEW_TYPE_ITEM:
+                setItemData(holder, folderDocumentEntity, position);
+                break;
+        }
+    }
 
-                document_title_tv.setText(folderDocumentEntity.name);
-                if (folderDocumentEntity.isDir()) {
-                    document_type_iv.setImageResource(R.mipmap.folder);
-                    document_desc_tv.setText(DateUtils.getFormatChatTimeSimple(folderDocumentEntity.mtime * 1_000));
-                } else {
-                    document_desc_tv.setText(String.format("%s, %s", FileUtils.bFormat(folderDocumentEntity.size), DateUtils.getFormatChatTimeSimple(folderDocumentEntity.mtime * 1_000)));
-                    if (IMUtils.isPIC(folderDocumentEntity.name)) {
-                        loadSFileImage(folderDocumentEntity.name, document_type_iv, 0, 250);
-                    } else {
-                        setFileTypeIcon(document_type_iv, folderDocumentEntity.name);
-                    }
-                }
-                document_expand_iv.setImageResource(isFromTrash ? R.mipmap.restore : R.mipmap.ic_open_menu);
-                document_expand_iv.setVisibility(isSelectable() ? View.GONE : View.VISIBLE);
+    /**
+     * 是否选中
+     *
+     * @param folderDocumentEntity
+     * @return
+     */
+
+    private boolean isSelected(FolderDocumentEntity folderDocumentEntity) {
+        return selectedFolderDocuments != null
+                && selectedFolderDocuments.contains(folderDocumentEntity);
+    }
+
+    /**
+     * 设置格子布局数据
+     *
+     * @param holder
+     * @param folderDocumentEntity
+     * @param position
+     */
+    private void setGridItemData(ViewHolder holder, FolderDocumentEntity folderDocumentEntity, int position) {
+        CheckedTextView folder_document_ctv = holder.obtainView(R.id.folder_document_ctv);
+        ImageView document_type_iv = holder.obtainView(R.id.document_type_iv);
+        TextView document_title_tv = holder.obtainView(R.id.document_title_tv);
+        ImageView document_pic_iv = holder.obtainView(R.id.document_pic_iv);
+        document_title_tv.setText(folderDocumentEntity.name);
+        if (folderDocumentEntity.isDir()) {
+            document_pic_iv.setVisibility(View.GONE);
+            document_type_iv.setImageResource(R.mipmap.folder);
+        } else {
+            if (IMUtils.isPIC(folderDocumentEntity.name)) {
+                document_pic_iv.setVisibility(View.VISIBLE);
+                loadSFileImage(folderDocumentEntity.name, document_pic_iv);
+            } else {
+                document_pic_iv.setVisibility(View.GONE);
+                document_type_iv.setImageResource(getSFileTypeIcon(folderDocumentEntity.name));
             }
-            break;
         }
-        if (folder_document_ctv != null) {
-            folder_document_ctv.setVisibility(isSelectable() ? View.VISIBLE : View.GONE);
-            folder_document_ctv.setChecked(selectedFolderDocuments.contains(folderDocumentEntity));
+        folder_document_ctv.setVisibility(isSelectable() ? View.VISIBLE : View.GONE);
+        folder_document_ctv.setChecked(isSelected(folderDocumentEntity));
+    }
+
+    private void setItemData(ViewHolder holder, FolderDocumentEntity folderDocumentEntity, int position) {
+        CheckedTextView folder_document_ctv = holder.obtainView(R.id.folder_document_ctv);
+        ImageView document_type_iv = holder.obtainView(R.id.document_type_iv);
+        TextView document_title_tv = holder.obtainView(R.id.document_title_tv);
+        TextView document_desc_tv = holder.obtainView(R.id.document_desc_tv);
+        ImageView document_expand_iv = holder.obtainView(R.id.document_expand_iv);
+        holder.bindChildClick(document_expand_iv);
+        ImageView document_detail_iv = holder.obtainView(R.id.document_detail_iv);
+        holder.bindChildClick(document_detail_iv);
+
+        document_title_tv.setText(folderDocumentEntity.name);
+        if (folderDocumentEntity.isDir()) {
+            document_type_iv.setImageResource(R.mipmap.folder);
+            document_desc_tv.setText(DateUtils.getFormatChatTimeSimple(folderDocumentEntity.mtime * 1_000));
+        } else {
+            document_desc_tv.setText(String.format("%s, %s", FileUtils.bFormat(folderDocumentEntity.size), DateUtils.getFormatChatTimeSimple(folderDocumentEntity.mtime * 1_000)));
+            if (IMUtils.isPIC(folderDocumentEntity.name)) {
+                loadSFileImage(folderDocumentEntity.name, document_type_iv);
+            } else {
+                document_type_iv.setImageResource(getSFileTypeIcon(folderDocumentEntity.name));
+            }
         }
+        String permission = SFileConfig.convert2filePermission(folderDocumentEntity.permission);
+        boolean isShowActionView = !isSelectable() && TextUtils.equals(permission, PERMISSION_RW);
+        boolean isShowDetailsView = !isSelectable() && !TextUtils.equals(permission, PERMISSION_RW);
+        document_expand_iv.setVisibility(isShowActionView ? View.VISIBLE : View.GONE);
+        document_detail_iv.setVisibility(isShowDetailsView ? View.VISIBLE : View.GONE);
+
+        folder_document_ctv.setVisibility(isSelectable() ? View.VISIBLE : View.GONE);
+        folder_document_ctv.setChecked(isSelected(folderDocumentEntity));
     }
 }
