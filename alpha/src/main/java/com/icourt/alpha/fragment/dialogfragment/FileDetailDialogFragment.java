@@ -6,9 +6,11 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
+import android.text.TextUtils;
 
 import com.icourt.alpha.BuildConfig;
 import com.icourt.alpha.adapter.baseadapter.BaseFragmentAdapter;
+import com.icourt.alpha.constants.SFileConfig;
 import com.icourt.alpha.entity.bean.FileVersionCommits;
 import com.icourt.alpha.entity.bean.FileVersionEntity;
 import com.icourt.alpha.entity.bean.FolderDocumentEntity;
@@ -32,6 +34,8 @@ import java.util.List;
 import retrofit2.Call;
 import retrofit2.Response;
 
+import static com.icourt.alpha.constants.SFileConfig.PERMISSION_RW;
+
 /**
  * Description   文件详情
  * Company Beijing icourt
@@ -39,7 +43,8 @@ import retrofit2.Response;
  * date createTime：2017/8/9
  * version 2.1.0
  */
-public class FileDetailDialogFragment extends FileDetailsBaseDialogFragment implements OnFragmentDataChangeListener {
+public class FileDetailDialogFragment extends FileDetailsBaseDialogFragment
+        implements OnFragmentDataChangeListener {
     BaseFragmentAdapter baseFragmentAdapter;
     FolderDocumentEntity folderDocumentEntity;
     String fromRepoId, fromRepoDirPath;
@@ -49,6 +54,7 @@ public class FileDetailDialogFragment extends FileDetailsBaseDialogFragment impl
                             String fromRepoFilePath,
                             FolderDocumentEntity folderDocumentEntity,
                             @IntRange(from = 0, to = 1) int locationTabIndex,
+                            @SFileConfig.FILE_PERMISSION String repoPermission,
                             @NonNull FragmentManager fragmentManager) {
         if (folderDocumentEntity == null) return;
         if (fragmentManager == null) return;
@@ -58,7 +64,7 @@ public class FileDetailDialogFragment extends FileDetailsBaseDialogFragment impl
         if (fragment != null) {
             mFragTransaction.remove(fragment);
         }
-        show(newInstance(fromRepoId, fromRepoFilePath, folderDocumentEntity, locationTabIndex), tag, mFragTransaction);
+        show(newInstance(fromRepoId, fromRepoFilePath, folderDocumentEntity, locationTabIndex, repoPermission), tag, mFragTransaction);
     }
 
 
@@ -66,12 +72,14 @@ public class FileDetailDialogFragment extends FileDetailsBaseDialogFragment impl
             String fromRepoId,
             String fromRepoFilePath,
             FolderDocumentEntity folderDocumentEntity,
-            @IntRange(from = 0, to = 1) int locationTabIndex) {
+            @IntRange(from = 0, to = 1) int locationTabIndex,
+            @SFileConfig.FILE_PERMISSION String repoPermission) {
         FileDetailDialogFragment fragment = new FileDetailDialogFragment();
         Bundle args = new Bundle();
         args.putString(KEY_SEA_FILE_FROM_REPO_ID, fromRepoId);
         args.putString(KEY_SEA_FILE_DIR_PATH, fromRepoFilePath);
         args.putInt(KEY_LOCATION_TAB_INDEX, locationTabIndex);
+        args.putString(KEY_SEA_FILE_REPO_PERMISSION, repoPermission);
         args.putSerializable("data", folderDocumentEntity);
         fragment.setArguments(args);
         return fragment;
@@ -102,13 +110,25 @@ public class FileDetailDialogFragment extends FileDetailsBaseDialogFragment impl
         tabLayout.setupWithViewPager(viewPager);
         baseFragmentAdapter.bindTitle(true, Arrays.asList("历史版本", "下载链接"));
         String filePath = String.format("%s%s", fromRepoDirPath, folderDocumentEntity.name);
-        baseFragmentAdapter.bindData(true,
-                Arrays.asList(FileVersionListFragment.newInstance(fromRepoId, filePath),
-                        FileLinkFragment.newInstance(fromRepoId,
-                                filePath,
-                                0)));
+        //有读写权限
+        if (TextUtils.equals(getRepoPermission(), PERMISSION_RW)) {
+            baseFragmentAdapter.bindData(true,
+                    Arrays.asList(FileVersionListFragment.newInstance(fromRepoId, filePath, getRepoPermission()),
+                            FileLinkFragment.newInstance(fromRepoId,
+                                    filePath,
+                                    0,
+                                    getRepoPermission())));
+        } else {//只读权限
+            baseFragmentAdapter.bindData(true,
+                    Arrays.asList(FileVersionListFragment.newInstance(fromRepoId,
+                            filePath,
+                            getRepoPermission())));
+        }
+
         int tabIndex = getArguments().getInt(KEY_LOCATION_TAB_INDEX);
-        viewPager.setCurrentItem(tabIndex);
+        if (tabIndex < baseFragmentAdapter.getCount()) {
+            viewPager.setCurrentItem(tabIndex);
+        }
         getData(true);
     }
 

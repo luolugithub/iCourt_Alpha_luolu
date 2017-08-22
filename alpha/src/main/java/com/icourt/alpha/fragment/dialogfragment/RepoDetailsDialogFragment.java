@@ -81,11 +81,12 @@ public class RepoDetailsDialogFragment extends BaseDialogFragment
     String fromRepoId;
     protected static final String KEY_SEA_FILE_FROM_REPO_ID = "seaFileFromRepoId";//原仓库id
     protected static final String KEY_LOCATION_TAB_INDEX = "locationPage";//定位的tab
-    protected static final String KEY_SEA_FILE_REPO_TYPE = "seaFileRepoType";//repo类型
+    protected static final String KEY_SEA_FILE_REPO_PERMISSION = "seaFileRepoPermission";//repo的权限
 
     public static void show(@SFileConfig.REPO_TYPE int repoType,
                             String fromRepoId,
                             @IntRange(from = 0, to = 2) int locationTabIndex,
+                            @SFileConfig.FILE_PERMISSION String repoPermission,
                             @NonNull FragmentManager fragmentManager) {
         if (fragmentManager == null) return;
         String tag = FileDetailDialogFragment.class.getSimpleName();
@@ -94,20 +95,33 @@ public class RepoDetailsDialogFragment extends BaseDialogFragment
         if (fragment != null) {
             mFragTransaction.remove(fragment);
         }
-        show(newInstance(repoType, fromRepoId, locationTabIndex), tag, mFragTransaction);
+        show(newInstance(repoType, fromRepoId, locationTabIndex, repoPermission), tag, mFragTransaction);
     }
 
 
     public static RepoDetailsDialogFragment newInstance(@SFileConfig.REPO_TYPE int repoType,
                                                         String fromRepoId,
-                                                        @IntRange(from = 0, to = 2) int locationTabIndex) {
+                                                        @IntRange(from = 0, to = 2) int locationTabIndex,
+                                                        @SFileConfig.FILE_PERMISSION String repoPermission) {
         RepoDetailsDialogFragment fragment = new RepoDetailsDialogFragment();
         Bundle args = new Bundle();
         args.putString(KEY_SEA_FILE_FROM_REPO_ID, fromRepoId);
         args.putInt(KEY_LOCATION_TAB_INDEX, locationTabIndex);
+        args.putString(KEY_SEA_FILE_REPO_PERMISSION, repoPermission);
         args.putInt("repoType", repoType);
         fragment.setArguments(args);
         return fragment;
+    }
+
+    /**
+     * repo 的权限
+     *
+     * @return
+     */
+    @SFileConfig.FILE_PERMISSION
+    protected String getRepoPermission() {
+        String stringPermission = getArguments().getString(KEY_SEA_FILE_REPO_PERMISSION, "");
+        return SFileConfig.convert2filePermission(stringPermission);
     }
 
     @Nullable
@@ -141,12 +155,15 @@ public class RepoDetailsDialogFragment extends BaseDialogFragment
         baseFragmentAdapter.bindData(true,
                 Arrays.asList(FileChangeHistoryFragment.newInstance(
                         SFileConfig.convert2RepoType(getArguments().getInt("repoType")),
-                        fromRepoId),
-                        FileInnerShareFragment.newInstance(fromRepoId, "/"),
-                        FileTrashListFragment.newInstance(fromRepoId, "/")));
+                        fromRepoId,
+                        getRepoPermission()),
+                        FileInnerShareFragment.newInstance(fromRepoId, "/", getRepoPermission()),
+                        FileTrashListFragment.newInstance(fromRepoId, "/", getRepoPermission())));
 
         int tabIndex = getArguments().getInt(KEY_LOCATION_TAB_INDEX);
-        viewPager.setCurrentItem(tabIndex);
+        if (tabIndex < baseFragmentAdapter.getCount()) {
+            viewPager.setCurrentItem(tabIndex);
+        }
         getData(true);
     }
 

@@ -13,6 +13,7 @@ import com.google.gson.JsonObject;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.base.BaseFragment;
+import com.icourt.alpha.constants.SFileConfig;
 import com.icourt.alpha.entity.bean.SFileLinkInfoEntity;
 import com.icourt.alpha.http.callback.SFileCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
@@ -57,6 +58,7 @@ public class FileLinkFragment extends BaseFragment {
     TextView fileLinkActionTv;
     @BindView(R.id.file_share_link_title_tv)
     TextView fileShareLinkTitleTv;
+    protected static final String KEY_SEA_FILE_REPO_PERMISSION = "seaFileRepoPermission";//repo的权限
 
     /**
      * @param fromRepoId
@@ -66,12 +68,15 @@ public class FileLinkFragment extends BaseFragment {
      */
     public static FileLinkFragment newInstance(
             String fromRepoId,
-            String fromRepoFilePath, int linkType) {
+            String fromRepoFilePath,
+            int linkType,
+            @SFileConfig.FILE_PERMISSION String repoPermission) {
         FileLinkFragment fragment = new FileLinkFragment();
         Bundle args = new Bundle();
         args.putString(KEY_SEA_FILE_FROM_REPO_ID, fromRepoId);
         args.putString(KEY_SEA_FILE_FROM_FILE_PATH, fromRepoFilePath);
         args.putInt(KEY_SEA_FILE_LINK_TYPE, linkType);
+        args.putString(KEY_SEA_FILE_REPO_PERMISSION, repoPermission);
         fragment.setArguments(args);
         return fragment;
     }
@@ -83,7 +88,16 @@ public class FileLinkFragment extends BaseFragment {
         unbinder = ButterKnife.bind(this, view);
         return view;
     }
-
+    /**
+     * repo 的权限
+     *
+     * @return
+     */
+    @SFileConfig.FILE_PERMISSION
+    protected String getRepoPermission() {
+        String stringPermission = getArguments().getString(KEY_SEA_FILE_REPO_PERMISSION, "");
+        return SFileConfig.convert2filePermission(stringPermission);
+    }
     @Override
     protected void initView() {
         getData(true);
@@ -160,6 +174,7 @@ public class FileLinkFragment extends BaseFragment {
                 new BottomActionDialog.OnActionItemClickListener() {
                     @Override
                     public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
+                        dialog.dismiss();
                         deleteFileShareLink();
                     }
                 })

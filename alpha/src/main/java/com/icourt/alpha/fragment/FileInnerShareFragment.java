@@ -6,6 +6,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,6 +19,7 @@ import com.icourt.alpha.adapter.FileInnerShareAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.HeaderFooterAdapter;
 import com.icourt.alpha.base.BaseFragment;
+import com.icourt.alpha.constants.SFileConfig;
 import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.icourt.alpha.entity.bean.SFileShareUserInfo;
 import com.icourt.alpha.fragment.dialogfragment.ContactSelectDialogFragment;
@@ -37,6 +39,8 @@ import butterknife.ButterKnife;
 import butterknife.Unbinder;
 import retrofit2.Call;
 import retrofit2.Response;
+
+import static com.icourt.alpha.constants.SFileConfig.PERMISSION_RW;
 
 /**
  * Description
@@ -60,16 +64,30 @@ public class FileInnerShareFragment extends BaseFragment
 
     protected static final String KEY_SEA_FILE_FROM_REPO_ID = "seaFileFromRepoId";//原仓库id
     protected static final String KEY_SEA_FILE_FROM_DIR_PATH = "seaFileFromDirPath";//原仓库路径
+    protected static final String KEY_SEA_FILE_REPO_PERMISSION = "seaFileRepoPermission";//repo的权限
 
     public static FileInnerShareFragment newInstance(
             String fromRepoId,
-            String fromRepoDirPath) {
+            String fromRepoDirPath,
+            @SFileConfig.FILE_PERMISSION String repoPermission) {
         FileInnerShareFragment fragment = new FileInnerShareFragment();
         Bundle args = new Bundle();
         args.putString(KEY_SEA_FILE_FROM_REPO_ID, fromRepoId);
         args.putString(KEY_SEA_FILE_FROM_DIR_PATH, fromRepoDirPath);
+        args.putString(KEY_SEA_FILE_REPO_PERMISSION, repoPermission);
         fragment.setArguments(args);
         return fragment;
+    }
+
+    /**
+     * repo 的权限
+     *
+     * @return
+     */
+    @SFileConfig.FILE_PERMISSION
+    protected String getRepoPermission() {
+        String stringPermission = getArguments().getString(KEY_SEA_FILE_REPO_PERMISSION, "");
+        return SFileConfig.convert2filePermission(stringPermission);
     }
 
     @Nullable
@@ -82,17 +100,23 @@ public class FileInnerShareFragment extends BaseFragment
 
     @Override
     protected void initView() {
+        boolean hasEditPermission = TextUtils.equals(getRepoPermission(), PERMISSION_RW);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.addItemDecoration(ItemDecorationUtils.getCommFullDivider(getContext(), true));
-        headerFooterAdapter = new HeaderFooterAdapter<>(fileInnerShareAdapter = new FileInnerShareAdapter());
+        headerFooterAdapter = new HeaderFooterAdapter<>(fileInnerShareAdapter
+                = new FileInnerShareAdapter(hasEditPermission));
         fileInnerShareAdapter.setOnItemChildClickListener(this);
-        View headerView = HeaderFooterAdapter.inflaterView(getContext(), R.layout.footer_add_attachment, recyclerView);
-        TextView attachmentTv = headerView.findViewById(R.id.add_attachment_view);
-        if (attachmentTv != null) {
-            attachmentTv.setText("添加共享成员");
+        //有编辑的权限
+        if (hasEditPermission) {
+            View footerView = HeaderFooterAdapter.inflaterView(getContext(), R.layout.footer_add_attachment, recyclerView);
+            TextView attachmentTv = footerView.findViewById(R.id.add_attachment_view);
+            if (attachmentTv != null) {
+                attachmentTv.setText("添加共享成员");
+            }
+            registerClick(attachmentTv);
+            headerFooterAdapter.addFooter(footerView);
         }
-        registerClick(attachmentTv);
-        headerFooterAdapter.addFooter(headerView);
+
         recyclerView.setAdapter(headerFooterAdapter);
         refreshLayout.setXRefreshViewListener(new XRefreshView.SimpleXRefreshListener() {
             @Override
@@ -101,6 +125,7 @@ public class FileInnerShareFragment extends BaseFragment
                 getData(true);
             }
         });
+
         refreshLayout.startRefresh();
     }
 

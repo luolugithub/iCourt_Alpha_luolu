@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,6 +16,7 @@ import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.FileVersionAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.adapterObserver.DataChangeAdapterObserver;
+import com.icourt.alpha.constants.SFileConfig;
 import com.icourt.alpha.entity.bean.FileVersionCommits;
 import com.icourt.alpha.entity.bean.FileVersionEntity;
 import com.icourt.alpha.http.callback.SFileCallBack;
@@ -31,6 +33,8 @@ import butterknife.Unbinder;
 import retrofit2.Call;
 import retrofit2.Response;
 
+import static com.icourt.alpha.constants.SFileConfig.PERMISSION_RW;
+
 /**
  * Description  文件版本历史
  * Company Beijing icourt
@@ -42,6 +46,8 @@ public class FileVersionListFragment extends SeaFileBaseFragment implements Base
 
     protected static final String KEY_SEA_FILE_FROM_REPO_ID = "seaFileFromRepoId";//原仓库id
     protected static final String KEY_SEA_FILE_FROM_FILE_PATH = "seaFileFromFilePath";//原文件路径
+    protected static final String KEY_SEA_FILE_REPO_PERMISSION = "seaFileRepoPermission";//repo的权限
+
     @BindView(R.id.recyclerView)
     RecyclerView recyclerView;
     @BindView(R.id.refreshLayout)
@@ -58,11 +64,13 @@ public class FileVersionListFragment extends SeaFileBaseFragment implements Base
      */
     public static FileVersionListFragment newInstance(
             String fromRepoId,
-            String fromRepoFilePath) {
+            String fromRepoFilePath,
+            @SFileConfig.FILE_PERMISSION String repoPermission) {
         FileVersionListFragment fragment = new FileVersionListFragment();
         Bundle args = new Bundle();
         args.putString(KEY_SEA_FILE_FROM_REPO_ID, fromRepoId);
         args.putString(KEY_SEA_FILE_FROM_FILE_PATH, fromRepoFilePath);
+        args.putString(KEY_SEA_FILE_REPO_PERMISSION, repoPermission);
         fragment.setArguments(args);
         return fragment;
     }
@@ -81,6 +89,17 @@ public class FileVersionListFragment extends SeaFileBaseFragment implements Base
         }
     }
 
+    /**
+     * repo 的权限
+     *
+     * @return
+     */
+    @SFileConfig.FILE_PERMISSION
+    protected String getRepoPermission() {
+        String stringPermission = getArguments().getString(KEY_SEA_FILE_REPO_PERMISSION, "");
+        return SFileConfig.convert2filePermission(stringPermission);
+    }
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -94,7 +113,7 @@ public class FileVersionListFragment extends SeaFileBaseFragment implements Base
         fromRepoId = getArguments().getString(KEY_SEA_FILE_FROM_REPO_ID, "");
         fromRepoFilePath = getArguments().getString(KEY_SEA_FILE_FROM_FILE_PATH, "");
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        recyclerView.setAdapter(fileVersionAdapter = new FileVersionAdapter());
+        recyclerView.setAdapter(fileVersionAdapter = new FileVersionAdapter(TextUtils.equals(getRepoPermission(), PERMISSION_RW)));
         fileVersionAdapter.registerAdapterDataObserver(new DataChangeAdapterObserver() {
             @Override
             protected void updateUI() {

@@ -93,7 +93,9 @@ import static com.icourt.alpha.widget.comparators.FileSortComparator.FILE_SORT_T
  * version 2.1.0
  */
 public class FolderListActivity extends FolderBaseActivity
-        implements BaseRecyclerAdapter.OnItemClickListener, BaseRecyclerAdapter.OnItemLongClickListener, BaseRecyclerAdapter.OnItemChildClickListener {
+        implements BaseRecyclerAdapter.OnItemClickListener,
+        BaseRecyclerAdapter.OnItemLongClickListener,
+        BaseRecyclerAdapter.OnItemChildClickListener {
     @BindView(R.id.titleBack)
     ImageView titleBack;
     @BindView(R.id.titleContent)
@@ -485,12 +487,14 @@ public class FolderListActivity extends FolderBaseActivity
                                     getRepoType(),
                                     getSeaFileRepoId(),
                                     0,
+                                    getRepoPermission(),
                                     getSupportFragmentManager());
                         } else if (TextUtils.equals(action, "回收站")) {
                             RepoDetailsDialogFragment.show(
                                     getRepoType(),
                                     getSeaFileRepoId(),
                                     2,
+                                    getRepoPermission(),
                                     getSupportFragmentManager());
                         }
                     }
@@ -767,6 +771,7 @@ public class FolderListActivity extends FolderBaseActivity
                             getSeaFileDirPath(),
                             item,
                             0,
+                            getRepoPermission(),
                             getSupportFragmentManager());
                 }
             }
@@ -836,6 +841,7 @@ public class FolderListActivity extends FolderBaseActivity
                                         getSeaFileDirPath(),
                                         item,
                                         0,
+                                        getRepoPermission(),
                                         getSupportFragmentManager());
                             } else {
                                 FileDetailDialogFragment.show(
@@ -843,6 +849,7 @@ public class FolderListActivity extends FolderBaseActivity
                                         getSeaFileDirPath(),
                                         item,
                                         1,
+                                        getRepoPermission(),
                                         getSupportFragmentManager());
                             }
                         } else if (TextUtils.equals(action, "复制")) {
@@ -868,6 +875,7 @@ public class FolderListActivity extends FolderBaseActivity
                     getSeaFileDirPath(),
                     item,
                     0,
+                    getRepoPermission(),
                     getSupportFragmentManager());
         } else {
             FileDetailDialogFragment.show(
@@ -875,6 +883,7 @@ public class FolderListActivity extends FolderBaseActivity
                     getSeaFileDirPath(),
                     item,
                     0,
+                    getRepoPermission(),
                     getSupportFragmentManager());
         }
     }

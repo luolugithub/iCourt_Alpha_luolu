@@ -1,5 +1,6 @@
 package com.icourt.alpha.adapter;
 
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -16,6 +17,12 @@ import com.icourt.alpha.utils.DateUtils;
  * version 2.1.0
  */
 public class FileVersionAdapter extends BaseArrayRecyclerAdapter<FileVersionEntity> {
+    boolean canRevert;
+
+    public FileVersionAdapter(boolean canRevert) {
+        this.canRevert = canRevert;
+    }
+
     @Override
     public int bindView(int viewtype) {
         return R.layout.adapter_item_file_version;
@@ -33,5 +40,6 @@ public class FileVersionAdapter extends BaseArrayRecyclerAdapter<FileVersionEnti
         file_title_tv.setText(DateUtils.getyyyyMMddHHmm(fileVersionEntity.ctime * 1_000));
         file_desc_tv.setText(fileVersionEntity.user_info != null ? fileVersionEntity.user_info.name : "");
         holder.bindChildClick(file_restore_iv);
+        file_restore_iv.setVisibility(canRevert? View.VISIBLE:View.GONE);
     }
 }

@@ -40,6 +40,8 @@ import butterknife.Unbinder;
 import retrofit2.Call;
 import retrofit2.Response;
 
+import static com.icourt.alpha.constants.SFileConfig.PERMISSION_RW;
+
 /**
  * Description
  * Company Beijing icourt
@@ -57,14 +59,18 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
     int page = 0;
 
     protected static final String KEY_SEA_FILE_FROM_REPO_ID = "seaFileFromRepoId";//原仓库id
+    protected static final String KEY_SEA_FILE_REPO_PERMISSION = "seaFileRepoPermission";//repo的权限
+
     OnFragmentDataChangeListener onFragmentDataChangeListener;
 
     public static FileChangeHistoryFragment newInstance(
             @SFileConfig.REPO_TYPE int repoType,
-            String fromRepoId) {
+            String fromRepoId,
+            @SFileConfig.FILE_PERMISSION String repoPermission) {
         FileChangeHistoryFragment fragment = new FileChangeHistoryFragment();
         Bundle args = new Bundle();
         args.putString(KEY_SEA_FILE_FROM_REPO_ID, fromRepoId);
+        args.putString(KEY_SEA_FILE_REPO_PERMISSION, repoPermission);
         args.putInt("repoType", repoType);
         fragment.setArguments(args);
         return fragment;
@@ -73,6 +79,17 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
     @SFileConfig.REPO_TYPE
     private int getRepoType() {
         return SFileConfig.convert2RepoType(getArguments().getInt("repoType"));
+    }
+
+    /**
+     * repo 的权限
+     *
+     * @return
+     */
+    @SFileConfig.FILE_PERMISSION
+    protected String getRepoPermission() {
+        String stringPermission = getArguments().getString(KEY_SEA_FILE_REPO_PERMISSION, "");
+        return SFileConfig.convert2filePermission(stringPermission);
     }
 
     @Override
@@ -100,7 +117,8 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
     @Override
     protected void initView() {
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        recyclerView.setAdapter(fileChangedHistoryAdapter = new FileChangedHistoryAdapter());
+        recyclerView.setAdapter(fileChangedHistoryAdapter = new FileChangedHistoryAdapter(
+                TextUtils.equals(getRepoPermission(), PERMISSION_RW)));
         fileChangedHistoryAdapter.registerAdapterDataObserver(new DataChangeAdapterObserver() {
             @Override
             protected void updateUI() {

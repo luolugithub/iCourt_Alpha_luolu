@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,6 +14,7 @@ import com.google.gson.JsonObject;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.SFileTrashAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
+import com.icourt.alpha.constants.SFileConfig;
 import com.icourt.alpha.entity.bean.FolderDocumentEntity;
 import com.icourt.alpha.entity.bean.SeaFileTrashPageEntity;
 import com.icourt.alpha.http.callback.SFileCallBack;
@@ -27,6 +29,8 @@ import butterknife.ButterKnife;
 import butterknife.Unbinder;
 import retrofit2.Call;
 import retrofit2.Response;
+
+import static com.icourt.alpha.constants.SFileConfig.PERMISSION_RW;
 
 /**
  * Description  文件回收站
@@ -46,17 +50,31 @@ public class FileTrashListFragment extends SeaFileBaseFragment
     Unbinder unbinder;
     protected static final String KEY_SEA_FILE_REPO_ID = "seaFileRepoId";//仓库id
     protected static final String KEY_SEA_FILE_DIR_PATH = "seaFileDirPath";//目录路径
+    protected static final String KEY_SEA_FILE_REPO_PERMISSION = "seaFileRepoPermission";//repo的权限
     SFileTrashAdapter folderDocumentAdapter;
 
     public static FileTrashListFragment newInstance(
             String fromRepoId,
-            String fromRepoDirPath) {
+            String fromRepoDirPath,
+            @SFileConfig.FILE_PERMISSION String repoPermission) {
         FileTrashListFragment fragment = new FileTrashListFragment();
         Bundle args = new Bundle();
         args.putString(KEY_SEA_FILE_REPO_ID, fromRepoId);
         args.putString(KEY_SEA_FILE_DIR_PATH, fromRepoDirPath);
+        args.putString(KEY_SEA_FILE_REPO_PERMISSION, repoPermission);
         fragment.setArguments(args);
         return fragment;
+    }
+
+    /**
+     * repo 的权限
+     *
+     * @return
+     */
+    @SFileConfig.FILE_PERMISSION
+    protected String getRepoPermission() {
+        String stringPermission = getArguments().getString(KEY_SEA_FILE_REPO_PERMISSION, "");
+        return SFileConfig.convert2filePermission(stringPermission);
     }
 
     @Nullable
@@ -73,7 +91,8 @@ public class FileTrashListFragment extends SeaFileBaseFragment
         recyclerView.setAdapter(folderDocumentAdapter = new SFileTrashAdapter(
                 getSeaFileRepoId(),
                 getSeaFileDirPath(),
-                false));
+                false,
+                TextUtils.equals(getRepoPermission(), PERMISSION_RW)));
         folderDocumentAdapter.setOnItemClickListener(this);
         folderDocumentAdapter.setOnItemChildClickListener(this);
         refreshLayout.setXRefreshViewListener(new XRefreshView.SimpleXRefreshListener() {

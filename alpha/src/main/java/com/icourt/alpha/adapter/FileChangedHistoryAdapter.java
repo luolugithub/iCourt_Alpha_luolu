@@ -19,6 +19,12 @@ import com.icourt.alpha.utils.GlideUtils;
  * version 2.1.0
  */
 public class FileChangedHistoryAdapter extends BaseArrayRecyclerAdapter<FileChangedHistoryEntity> {
+    boolean canRevert;
+
+    public FileChangedHistoryAdapter(boolean canRevert) {
+        this.canRevert = canRevert;
+    }
+
     @Override
     public int bindView(int viewtype) {
         return R.layout.adapter_item_file_change_history;
@@ -39,9 +45,9 @@ public class FileChangedHistoryAdapter extends BaseArrayRecyclerAdapter<FileChan
         file_title_tv.setText(fileChangedHistoryEntity.file_name);
         file_time_tv.setText(DateUtils.getFormatChatTime(fileChangedHistoryEntity.date));
         holder.bindChildClick(file_restore_iv);
-        file_restore_iv.setVisibility(canRestore(fileChangedHistoryEntity) ? View.VISIBLE : View.GONE);
-    }
+        file_restore_iv.setVisibility(canRevert && canRestore(fileChangedHistoryEntity) ? View.VISIBLE : View.GONE);
 
+    }
     /**
      * 是否可以撤销
      *

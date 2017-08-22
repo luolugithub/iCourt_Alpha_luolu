@@ -17,6 +17,12 @@ import com.icourt.alpha.entity.bean.SFileShareUserInfo;
  * version 2.1.0
  */
 public class FileInnerShareAdapter extends BaseArrayRecyclerAdapter<SFileShareUserInfo> {
+    boolean canEdit;
+
+    public FileInnerShareAdapter(boolean canEdit) {
+        this.canEdit = canEdit;
+    }
+
     @Override
     public int bindView(int viewtype) {
         return R.layout.adapter_item_file_inner_share;
@@ -35,5 +41,6 @@ public class FileInnerShareAdapter extends BaseArrayRecyclerAdapter<SFileShareUs
         user_action_tv.setText(TextUtils.equals(sFileShareUserInfo.permission, "rw") ? "可读写" : "只读");
         holder.bindChildClick(user_action_tv);
         user_name_tv.setText(sFileShareUserInfo.user_info != null ? sFileShareUserInfo.user_info.nickname : "");
+        user_name_tv.setCompoundDrawablesWithIntrinsicBounds(0, 0, canEdit ? R.mipmap.arrow_bottom : 0, 0);
     }
 }

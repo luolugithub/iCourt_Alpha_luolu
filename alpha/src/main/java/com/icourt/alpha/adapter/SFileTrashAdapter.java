@@ -1,5 +1,6 @@
 package com.icourt.alpha.adapter;
 
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -18,8 +19,11 @@ import com.icourt.alpha.utils.IMUtils;
  */
 public class SFileTrashAdapter extends SFileImgBaseAdapter<FolderDocumentEntity> {
 
-    public SFileTrashAdapter(String seaFileRepoId, String seaFileDirPath, boolean selectable) {
+    boolean canRevert;
+
+    public SFileTrashAdapter(String seaFileRepoId, String seaFileDirPath, boolean selectable, boolean canRevert) {
         super(seaFileRepoId, seaFileDirPath, selectable);
+        this.canRevert = canRevert;
     }
 
     @Override
@@ -34,6 +38,7 @@ public class SFileTrashAdapter extends SFileImgBaseAdapter<FolderDocumentEntity>
         TextView document_desc_tv = holder.obtainView(R.id.document_desc_tv);
         ImageView document_restore_iv = holder.obtainView(R.id.document_restore_iv);
         holder.bindChildClick(document_restore_iv);
+        document_restore_iv.setVisibility(canRevert ? View.VISIBLE : View.GONE);
 
         document_title_tv.setText(folderDocumentEntity.name);
         if (folderDocumentEntity.isDir()) {

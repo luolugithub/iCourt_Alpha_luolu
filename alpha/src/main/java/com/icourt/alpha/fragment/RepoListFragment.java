@@ -394,10 +394,14 @@ public class RepoListFragment extends BaseFragment
     private void lookDetail(int pos) {
         RepoEntity item = repoAdapter.getItem(pos);
         if (item == null) return;
+        if (repoType == REPO_MINE) {
+            item.permission = PERMISSION_RW;
+        }
         RepoDetailsDialogFragment.show(
                 SFileConfig.convert2RepoType(repoType),
                 item.repo_id,
                 0,
+                item.permission,
                 getChildFragmentManager());
     }
 
@@ -420,10 +424,14 @@ public class RepoListFragment extends BaseFragment
     private void shareDocument(int pos) {
         final RepoEntity item = repoAdapter.getItem(pos);
         if (item == null) return;
+        if (repoType == REPO_MINE) {
+            item.permission = PERMISSION_RW;
+        }
         RepoDetailsDialogFragment.show(
                 SFileConfig.convert2RepoType(repoType),
                 item.repo_id,
                 1,
+                item.permission,
                 getChildFragmentManager());
     }
 
