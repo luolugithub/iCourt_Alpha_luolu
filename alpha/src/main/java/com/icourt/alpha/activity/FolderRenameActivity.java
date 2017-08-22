@@ -6,10 +6,14 @@ import android.support.annotation.NonNull;
 import android.text.TextUtils;
 import android.widget.EditText;
 
+import com.icourt.alpha.BuildConfig;
 import com.icourt.alpha.R;
 import com.icourt.alpha.entity.bean.FolderDocumentEntity;
 import com.icourt.alpha.http.callback.SFileCallBack;
 import com.icourt.alpha.utils.FileUtils;
+import com.icourt.alpha.utils.GlideUtils;
+import com.icourt.alpha.utils.IMUtils;
+import com.icourt.alpha.utils.SFileTokenUtils;
 
 import retrofit2.Call;
 import retrofit2.Response;
@@ -53,7 +57,14 @@ public class FolderRenameActivity extends FolderCreateActivity {
         if (!folderDocumentEntity.isDir()) {
             inputNameEt.setHint("文件名称");
             setTitle("重命名文件");
-            inputTypeIv.setImageResource(FileUtils.getSFileIcon(folderDocumentEntity.name));
+            //图片格式 加载缩略图
+            if (IMUtils.isPIC(folderDocumentEntity.name)) {
+                GlideUtils.loadSFilePic(getContext(),
+                        getSfileThumbnailImage(folderDocumentEntity.name),
+                        inputTypeIv);
+            } else {
+                inputTypeIv.setImageResource(FileUtils.getSFileIcon(folderDocumentEntity.name));
+            }
             fileSuffix = FileUtils.getFileSuffix(folderDocumentEntity.name);
         } else {
             inputNameEt.setHint("文件夹名称");
@@ -62,6 +73,23 @@ public class FolderRenameActivity extends FolderCreateActivity {
         }
         inputNameEt.setText(getFolderEditNamePart());
         inputNameEt.setSelection(inputNameEt.getText().length());
+    }
+
+
+    /**
+     * 获取缩略图地址
+     *
+     * @param name
+     * @return
+     */
+    private String getSfileThumbnailImage(String name) {
+        //https://test.alphalawyer.cn/ilaw/api/v2/documents/thumbnailImage?repoId=d4f82446-a37f-478c-b6b5-ed0e779e1768&seafileToken=%20d6c69d6f4fc208483c243246c6973d8eb141501c&p=//1502507774237.png&size=250
+        return String.format("%silaw/api/v2/documents/thumbnailImage?repoId=%s&seafileToken=%s&p=%s&size=%s",
+                BuildConfig.API_URL,
+                getSeaFileRepoId(),
+                SFileTokenUtils.getSFileToken(),
+                String.format("%s%s", getSeaFileDirPath(), name),
+                150);
     }
 
     /**
