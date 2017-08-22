@@ -463,7 +463,7 @@ public class TaskAdapter extends BaseArrayRecyclerAdapter<TaskEntity>
             @Override
             public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
                 dismissLoadingDialog();
-                EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_DELETE_ACTION,itemEntity));
+                EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION,itemEntity));
             }
 
             @Override

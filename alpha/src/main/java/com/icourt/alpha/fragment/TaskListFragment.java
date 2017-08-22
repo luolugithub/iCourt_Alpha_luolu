@@ -754,10 +754,10 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
         if (event == null) return;
         switch (event.action) {
             case TimingEvent.TIMING_ADD:
-
+                updateTimming();
                 break;
             case TimingEvent.TIMING_UPDATE_PROGRESS:
-                updateTimming();
+
                 break;
             case TimingEvent.TIMING_STOP:
                 if (lastEntity != null) {
@@ -861,8 +861,8 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
      * @param taskId
      */
     private void updateChildTimeing(String taskId, boolean isTiming) {
-        int parentPos = getParentPositon(taskId) + headerFooterAdapter.getHeaderCount();
-        if (parentPos > 0) {
+        int parentPos = getParentPositon(taskId) ;
+        if (parentPos >=0) {
             int childPos = getChildPositon(taskId);
             if (childPos >= 0) {
                 BaseArrayRecyclerAdapter.ViewHolder viewHolderForAdapterPosition = (BaseArrayRecyclerAdapter.ViewHolder) recyclerView.findViewHolderForAdapterPosition(parentPos);
