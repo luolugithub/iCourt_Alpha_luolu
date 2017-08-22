@@ -6,6 +6,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 
+import com.icourt.alpha.BuildConfig;
 import com.icourt.alpha.adapter.baseadapter.BaseFragmentAdapter;
 import com.icourt.alpha.entity.bean.FileVersionCommits;
 import com.icourt.alpha.entity.bean.FileVersionEntity;
@@ -16,6 +17,9 @@ import com.icourt.alpha.http.callback.SFileCallBack;
 import com.icourt.alpha.interfaces.OnFragmentDataChangeListener;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.FileUtils;
+import com.icourt.alpha.utils.GlideUtils;
+import com.icourt.alpha.utils.IMUtils;
+import com.icourt.alpha.utils.SFileTokenUtils;
 import com.icourt.alpha.widget.comparators.LongFieldEntityComparator;
 import com.icourt.alpha.widget.comparators.ORDER;
 
@@ -78,7 +82,14 @@ public class FileDetailDialogFragment extends FileDetailsBaseDialogFragment impl
 
         fileTitleTv.setText(folderDocumentEntity.name);
         fileSizeTv.setText(FileUtils.bFormat(folderDocumentEntity.size));
-        fileTypeIv.setImageResource(getFileIcon(folderDocumentEntity.name));
+        //图片格式 加载缩略图
+        if (IMUtils.isPIC(folderDocumentEntity.name)) {
+            GlideUtils.loadSFilePic(getContext(),
+                    getSfileThumbnailImage(folderDocumentEntity.name),
+                    fileTypeIv);
+        } else {
+            fileTypeIv.setImageResource(getFileIcon(folderDocumentEntity.name));
+        }
         titleContent.setText("文件详情");
 
 
@@ -94,6 +105,21 @@ public class FileDetailDialogFragment extends FileDetailsBaseDialogFragment impl
         getData(true);
     }
 
+    /**
+     * 获取缩略图地址
+     *
+     * @param name
+     * @return
+     */
+    private String getSfileThumbnailImage(String name) {
+        //https://test.alphalawyer.cn/ilaw/api/v2/documents/thumbnailImage?repoId=d4f82446-a37f-478c-b6b5-ed0e779e1768&seafileToken=%20d6c69d6f4fc208483c243246c6973d8eb141501c&p=//1502507774237.png&size=250
+        return String.format("%silaw/api/v2/documents/thumbnailImage?repoId=%s&seafileToken=%s&p=%s&size=%s",
+                BuildConfig.API_URL,
+                fromRepoId,
+                SFileTokenUtils.getSFileToken(),
+                String.format("%s%s", fromRepoDirPath, name),
+                150);
+    }
 
     /**
      * 获取文件对应图标
