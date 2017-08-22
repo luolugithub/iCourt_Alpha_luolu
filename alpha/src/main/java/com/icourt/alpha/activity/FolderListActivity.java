@@ -242,7 +242,11 @@ public class FolderListActivity extends FolderBaseActivity
                             }
                         }
                     }
-                    footerView.setText(String.format("%s个文件夹, %s个文件", dirNum, fileNum));
+                    if (dirNum == 0 && fileNum == 0) {
+                        footerView.setText("本目录下没有文件");
+                    } else {
+                        footerView.setText(String.format("%s个文件夹, %s个文件", dirNum, fileNum));
+                    }
                 }
             }
         });
@@ -458,7 +462,12 @@ public class FolderListActivity extends FolderBaseActivity
     }
 
     private void showActionMoreDialog() {
-        List<String> strings = Arrays.asList("批量操作", "查看资料库详情", "回收站");
+        List<String> strings;
+        if (TextUtils.equals(getRepoPermission(), PERMISSION_RW)) {
+            strings = Arrays.asList("批量操作", "查看资料库详情", "回收站");
+        } else {
+            strings = Arrays.asList("查看资料库详情", "回收站");
+        }
         new BottomActionDialog(getContext(),
                 null,
                 strings,
