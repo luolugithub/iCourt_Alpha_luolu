@@ -138,19 +138,17 @@ public class ProjectTaskFragment extends BaseFragment implements TaskAdapter.OnS
             }
         });
 //        refreshLayout.startRefresh();
-
         allTaskEntities = new ArrayList<>();
         taskEntities = new ArrayList<>();
         myStarTaskEntities = new ArrayList<>();
+        getData(true);
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        if (!EventBus.getDefault().isRegistered(this)) {
-            EventBus.getDefault().register(this);
-        }
-        refreshLayout.startRefresh();
+        if (taskAdapter != null)
+            taskAdapter.notifyDataSetChanged();
     }
 
     @Override

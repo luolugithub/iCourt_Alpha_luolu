@@ -483,16 +483,6 @@ public class TaskDetailActivity extends BaseActivity
     }
 
     /**
-     * 获取红色'删除'字符串
-     *
-     * @param attachOriginStr
-     * @return
-     */
-    private String getRedDeleteText(String attachOriginStr) {
-        return SpannableUtils.getTextForegroundColorSpan(attachOriginStr, attachOriginStr, 0xFFFF0000).toString();
-    }
-
-    /**
      * 显示底部菜单
      */
     private void showBottomMeau() {
