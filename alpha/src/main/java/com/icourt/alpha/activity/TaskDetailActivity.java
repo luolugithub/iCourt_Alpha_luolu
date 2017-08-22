@@ -566,6 +566,8 @@ public class TaskDetailActivity extends BaseActivity
         new BottomActionDialog(getContext(),
                 title,
                 Arrays.asList("确定"),
+                0,
+                0xFFFF0000,
                 new BottomActionDialog.OnActionItemClickListener() {
                     @Override
                     public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {

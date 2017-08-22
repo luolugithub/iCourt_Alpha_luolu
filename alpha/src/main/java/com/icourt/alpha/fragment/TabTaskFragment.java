@@ -356,6 +356,8 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
                 new BottomActionDialog(getContext(),
                         null,
                         titles,
+                        1,
+                        0xFFFF0000,
                         new BottomActionDialog.OnActionItemClickListener() {
                             @Override
                             public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
@@ -381,6 +383,8 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
         new BottomActionDialog(getContext(),
                 "该操作不可恢复，确定清空？",
                 Arrays.asList("确定"),
+                0,
+                0xFFFF0000,
                 new BottomActionDialog.OnActionItemClickListener() {
                     @Override
                     public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
