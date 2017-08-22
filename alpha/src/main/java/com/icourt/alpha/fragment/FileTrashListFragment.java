@@ -11,7 +11,6 @@ import android.view.ViewGroup;
 import com.andview.refreshview.XRefreshView;
 import com.google.gson.JsonObject;
 import com.icourt.alpha.R;
-import com.icourt.alpha.adapter.FolderDocumentAdapter;
 import com.icourt.alpha.adapter.SFileTrashAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.entity.bean.FolderDocumentEntity;
@@ -150,8 +149,8 @@ public class FileTrashListFragment extends SeaFileBaseFragment
      *
      * @param position
      */
-    private void fileRevert(FolderDocumentAdapter adapter, int position) {
-        final FolderDocumentEntity item = adapter.getItem(position);
+    private void fileRevert(int position) {
+        final FolderDocumentEntity item = folderDocumentAdapter.getItem(position);
         if (item == null) return;
         Call<JsonObject> jsonObjectCall;
         if (item.isDir()) {
@@ -188,22 +187,19 @@ public class FileTrashListFragment extends SeaFileBaseFragment
 
     @Override
     public void onItemChildClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
-        if (adapter instanceof FolderDocumentAdapter) {
-            switch (view.getId()) {
-                case R.id.document_restore_iv:
-                    showFileRevertConfirmDialog((FolderDocumentAdapter) adapter, position);
-                    break;
-            }
+        switch (view.getId()) {
+            case R.id.document_restore_iv:
+                showFileRevertConfirmDialog(position);
+                break;
         }
     }
 
     /**
      * 展示文件恢复确认对话框
      *
-     * @param folderDocumentAdapter
-     * @param position
+     * @param pos
      */
-    private void showFileRevertConfirmDialog(final FolderDocumentAdapter folderDocumentAdapter, int position) {
+    private void showFileRevertConfirmDialog(final int pos) {
         new BottomActionDialog(getContext(),
                 null,
                 Arrays.asList("恢复"),
@@ -211,7 +207,7 @@ public class FileTrashListFragment extends SeaFileBaseFragment
                     @Override
                     public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
                         dialog.dismiss();
-                        fileRevert(folderDocumentAdapter, position);
+                        fileRevert(pos);
                     }
                 }).show();
     }

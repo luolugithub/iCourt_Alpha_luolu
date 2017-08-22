@@ -99,6 +99,14 @@ public interface ApiSFileService {
                                              @Query("shared_from") String shared_from,
                                              @Query("type") String type);
 
+    /**
+     * 获取所有资料库
+     *
+     * @return
+     */
+    @GET("api2/repos/")
+    Call<List<RepoEntity>> repoQueryAll();
+
 
     /**
      * 获取律所律所资料库
