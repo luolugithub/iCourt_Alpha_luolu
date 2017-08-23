@@ -88,6 +88,7 @@ public class FileLinkFragment extends BaseFragment {
         unbinder = ButterKnife.bind(this, view);
         return view;
     }
+
     /**
      * repo 的权限
      *
@@ -98,6 +99,7 @@ public class FileLinkFragment extends BaseFragment {
         String stringPermission = getArguments().getString(KEY_SEA_FILE_REPO_PERMISSION, "");
         return SFileConfig.convert2filePermission(stringPermission);
     }
+
     @Override
     protected void initView() {
         getData(true);
@@ -113,24 +115,37 @@ public class FileLinkFragment extends BaseFragment {
                 .enqueue(new SFileCallBack<SFileLinkInfoEntity>() {
                     @Override
                     public void onSuccess(Call<SFileLinkInfoEntity> call, Response<SFileLinkInfoEntity> response) {
-                        sFileLinkInfoEntity = response.body();
-                        if (!isNoFileShareLink()) {
-                            linkCopyTv.setVisibility(View.VISIBLE);
-                            fileShareLinkTitleTv.setText("已生成下载链接");
-                            fileLinkActionTv.setText("删除下载链接");
-                            fileAccessPwdTv.setText(sFileLinkInfoEntity.isNeedAccessPwd() ? sFileLinkInfoEntity.password : "不需要");
-                            fileAccessTimeLimitTv.setText(sFileLinkInfoEntity.expireTime <= 0 ? "永不过期" : DateUtils.getyyyy_MM_dd(sFileLinkInfoEntity.expireTime));
-                            fileShareLinkTv.setText(sFileLinkInfoEntity.getRealShareLink());
-                        } else {
-                            fileAccessTimeLimitTv.setText("7天有效期");
-                            fileShareLinkTv.setText("");
-                            fileAccessPwdTv.setText("自动生成");
-                            fileShareLinkTitleTv.setText("生成下载链接");
-                            fileLinkActionTv.setText("生成");
-                            linkCopyTv.setVisibility(View.GONE);
-                        }
+                        updateUI(response.body());
                     }
                 });
+    }
+
+    private void updateUI(SFileLinkInfoEntity data) {
+        sFileLinkInfoEntity = data;
+        if (!isNoFileShareLink()) {
+            linkCopyTv.setVisibility(View.VISIBLE);
+            if (getArguments().getInt(KEY_SEA_FILE_LINK_TYPE) == 0) {
+                fileShareLinkTitleTv.setText("已生成下载链接");
+                fileLinkActionTv.setText("删除下载链接");
+            } else {
+                fileShareLinkTitleTv.setText("已生成上传链接");
+                fileLinkActionTv.setText("删除上传链接");
+            }
+            fileAccessPwdTv.setText(sFileLinkInfoEntity.isNeedAccessPwd() ? sFileLinkInfoEntity.password : "不需要");
+            fileAccessTimeLimitTv.setText(sFileLinkInfoEntity.expireTime <= 0 ? "永不过期" : DateUtils.getyyyy_MM_dd(sFileLinkInfoEntity.expireTime));
+            fileShareLinkTv.setText(sFileLinkInfoEntity.getRealShareLink());
+        } else {
+            fileAccessTimeLimitTv.setText("7天有效期");
+            fileShareLinkTv.setText("");
+            fileAccessPwdTv.setText("自动生成");
+            if (getArguments().getInt(KEY_SEA_FILE_LINK_TYPE) == 0) {
+                fileShareLinkTitleTv.setText("生成下载链接");
+            } else {
+                fileShareLinkTitleTv.setText("生成上传链接");
+            }
+            fileLinkActionTv.setText("生成");
+            linkCopyTv.setVisibility(View.GONE);
+        }
     }
 
     @OnClick({R.id.link_copy_tv,
@@ -270,8 +285,13 @@ public class FileLinkFragment extends BaseFragment {
                     @Override
                     public void onSuccess(Call<SFileLinkInfoEntity> call, Response<SFileLinkInfoEntity> response) {
                         dismissLoadingDialog();
-                        showToast("创建成功");
-                        getData(true);
+                        //创建失败
+                        if (TextUtils.isEmpty(response.body().officeShareLink) &&
+                                TextUtils.isEmpty(response.body().shareLinkId)) {
+                            showToast("创建共享链接失败");
+                        } else {
+                            getData(true);
+                        }
                     }
 
                     @Override
