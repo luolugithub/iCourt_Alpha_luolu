@@ -2,6 +2,7 @@ package com.icourt.alpha.fragment;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.support.annotation.CheckResult;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -44,6 +45,7 @@ import com.icourt.alpha.utils.JsonUtils;
 import com.icourt.alpha.utils.LogUtils;
 import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.widget.dialog.BottomActionDialog;
+import com.icourt.alpha.widget.nim.GlobalMessageObserver;
 import com.netease.nimlib.sdk.NIMClient;
 import com.netease.nimlib.sdk.RequestCallback;
 import com.netease.nimlib.sdk.RequestCallbackWrapper;
@@ -61,12 +63,7 @@ import com.netease.nimlib.sdk.team.model.Team;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
-import org.json.JSONArray;
-import org.json.JSONObject;
 
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -88,7 +85,6 @@ import retrofit2.Response;
 
 import static com.icourt.alpha.constants.Const.CHAT_TYPE_P2P;
 import static com.icourt.alpha.constants.Const.CHAT_TYPE_TEAM;
-import static com.icourt.alpha.constants.Const.MSG_TYPE_ALPHA_HELPER;
 
 /**
  * Description  会话列表
@@ -98,7 +94,9 @@ import static com.icourt.alpha.constants.Const.MSG_TYPE_ALPHA_HELPER;
  * version 1.0.0
  */
 public class MessageListFragment extends BaseRecentContactFragment
-        implements BaseRecyclerAdapter.OnItemClickListener, OnTabDoubleClickListener, BaseRecyclerAdapter.OnItemLongClickListener {
+        implements BaseRecyclerAdapter.OnItemClickListener,
+        OnTabDoubleClickListener,
+        BaseRecyclerAdapter.OnItemLongClickListener {
 
     private final List<Team> localTeams = new ArrayList<>();
     private final List<GroupContactBean> localGroupContactBeans = new ArrayList<>();
@@ -184,6 +182,7 @@ public class MessageListFragment extends BaseRecentContactFragment
         return view;
     }
 
+
     @Override
     public void onDestroy() {
         if (unbinder != null)
@@ -205,67 +204,61 @@ public class MessageListFragment extends BaseRecentContactFragment
     @Override
     protected void recentContactReceive(@NonNull final List<RecentContact> recentContacts) {
         if (imSessionAdapter == null) return;
-        filterMessage(recentContacts);
-        List<IMSessionEntity> data = new ArrayList<IMSessionEntity>(imSessionAdapter.getData());
         for (RecentContact recentContact : recentContacts) {
-            IMUtils.logRecentContact("------------>recentContactReceive:", recentContact);
             if (recentContact == null) continue;
-            boolean isExist = false;
-            for (IMSessionEntity imSessionEntity : data) {
-                if (imSessionEntity != null
-                        && imSessionEntity.recentContact != null) {
-                    if (StringUtils.equalsIgnoreCase(recentContact.getContactId(), imSessionEntity.recentContact.getContactId(), false)) {
-                        isExist = true;
-                        //解析自定义的消息体
-                        IMMessageCustomBody customIMBody = null;
-                        if (recentContact.getMsgType() == MsgTypeEnum.custom) {
-                            customIMBody = getAlphaHelper(recentContact);
-                            if (customIMBody != null) {
-                                imSessionEntity.customIMBody = customIMBody;
-                                imSessionEntity.recentContact = recentContact;
-                            }
-                        } else {
-                            try {
-                                customIMBody = JsonUtils.Gson2Bean(recentContact.getContent(), IMMessageCustomBody.class);
-                            } catch (Exception ex) {
-                                ex.printStackTrace();
-                            }
-                            if (customIMBody != null) {
-                                if (IMUtils.isFilterChatIMMessage(customIMBody)) continue;
-                                imSessionEntity.customIMBody = customIMBody;
-                                imSessionEntity.recentContact = recentContact;
-                                IMUtils.wrapV1Message(imSessionEntity, recentContact, customIMBody);
-                            }
-                        }
-                    }
-                }
+            addOrUpdateItem(parseSession(recentContact));
+        }
+    }
+
+    /**
+     * 更新一条或者添加一条
+     *
+     * @param imSessionEntity
+     */
+    private void addOrUpdateItem(IMSessionEntity imSessionEntity) {
+        if (imSessionEntity == null) return;
+        List<IMSessionEntity> sessionEntities = imSessionAdapter.getData();
+        int indexOf = sessionEntities.indexOf(imSessionEntity);
+        if (indexOf >= 0) {
+            //1.更新--->2.排序--->3.更新适配器
+            sessionEntities.set(indexOf, imSessionEntity);
+            Collections.sort(sessionEntities, imSessionEntityComparator);
+            imSessionAdapter.notifyDataSetChanged();
+        } else {
+            sessionEntities.add(imSessionEntity);
+            Collections.sort(sessionEntities, imSessionEntityComparator);
+            imSessionAdapter.notifyDataSetChanged();
+        }
+    }
+
+
+    /**
+     * 解析session
+     *
+     * @param recentContact
+     * @return
+     */
+    @CheckResult
+    @Nullable
+    private IMSessionEntity parseSession(RecentContact recentContact) {
+        if (recentContact == null) return null;
+        if (recentContact.getMsgType() == MsgTypeEnum.custom) {
+            IMMessageCustomBody customIMBody = getAlphaHelper(recentContact);
+            if (customIMBody != null) {
+                return new IMSessionEntity(recentContact, customIMBody);
             }
-            if (!isExist) {
-                IMMessageCustomBody customIMBody = null;
-                if (recentContact.getMsgType() == MsgTypeEnum.custom) {
-                    customIMBody = getAlphaHelper(recentContact);
-                    if (customIMBody != null) {
-                        data.add(new IMSessionEntity(recentContact, customIMBody));
-                    }
-                } else {
-                    String jsonBody = recentContact.getContent();
-                    try {
-                        customIMBody = JsonUtils.Gson2Bean(jsonBody, IMMessageCustomBody.class);
-                    } catch (Exception ex) {
-                        ex.printStackTrace();
-                    }
-                    if (customIMBody != null) {
-                        if (IMUtils.isFilterChatIMMessage(customIMBody)) continue;
-                        IMSessionEntity imSessionEntity = new IMSessionEntity(recentContact, customIMBody);
-                        IMUtils.wrapV1Message(imSessionEntity, recentContact, customIMBody);
-                        //装饰实体
-                        data.add(imSessionEntity);
-                    }
+        } else {
+            IMMessageCustomBody imBody = GlobalMessageObserver.getIMBody(recentContact.getContent());
+            if (imBody != null) {
+                if (IMUtils.isFilterChatIMMessage(imBody)) {
+                    return null;
                 }
+                IMSessionEntity imSessionEntity = new IMSessionEntity(recentContact, imBody);
+                IMUtils.wrapV1Message(imSessionEntity, recentContact, imBody);
+                return imSessionEntity;
             }
         }
-        Collections.sort(data, imSessionEntityComparator);
-        imSessionAdapter.bindData(true, data);
+        return null;
     }
 
     /**
@@ -275,90 +268,9 @@ public class MessageListFragment extends BaseRecentContactFragment
      * @return
      */
     private IMMessageCustomBody getAlphaHelper(RecentContact recentContact) {
-        JSONObject alphaJSONObject = null;
-        try {
-            alphaJSONObject = JsonUtils.getJSONObject(recentContact.getAttachment().toJson(false));
-            if (alphaJSONObject.getInt("showType") == MSG_TYPE_ALPHA_HELPER) {
-                String contentStr = alphaJSONObject.getString("content");
-                String type = alphaJSONObject.getString("type");
-                IMMessageCustomBody imMessageCustomBody = new IMMessageCustomBody();
-                if (StringUtils.containsIgnoreCase(type, "APPRO_")) {
-                    imMessageCustomBody.content = "审批消息不支持,请到web端查看!";
-                } else {
-                    imMessageCustomBody.content = contentStr;
-                }
-                imMessageCustomBody.show_type = MSG_TYPE_ALPHA_HELPER;
-                imMessageCustomBody.ope = CHAT_TYPE_P2P;
-                imMessageCustomBody.to = recentContact.getContactId();
-                return imMessageCustomBody;
-            } else {
-                NIMClient.getService(MsgService.class)
-                        .deleteRecentContact(recentContact);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            bugSync("AlphaHelper 解析异常", StringUtils.throwable2string(e)
-                    + "\nalphaJSONObject:" + alphaJSONObject);
-            bugSync("AlphaHelper 解析异常json:", "" + alphaJSONObject);
-            LogUtils.d("---------->AlphaHelper 解析异常:" + e);
-        }
-        return null;
+        return IMUtils.parseAlphaHelperMsg(recentContact);
     }
 
-    /**
-     * 获取alpha小 助手
-     *
-     * @return
-     */
-    private IMMessageCustomBody getAlphaHelper(String s) {
-        JSONObject alphaJSONObject = null;
-        try {
-            alphaJSONObject = JsonUtils.getJSONObject(s);
-            if (alphaJSONObject.getInt("showType") == MSG_TYPE_ALPHA_HELPER) {
-                String contentStr = alphaJSONObject.getString("content");
-                String type = alphaJSONObject.getString("type");
-                IMMessageCustomBody imMessageCustomBody = new IMMessageCustomBody();
-                if (StringUtils.containsIgnoreCase(type, "APPRO_")) {
-                    imMessageCustomBody.content = "审批消息不支持,请到web端查看!";
-                } else {
-                    imMessageCustomBody.content = contentStr;
-                }
-                imMessageCustomBody.show_type = MSG_TYPE_ALPHA_HELPER;
-                imMessageCustomBody.ope = CHAT_TYPE_P2P;
-                imMessageCustomBody.to = s;
-                return imMessageCustomBody;
-            } else {
-                LogUtils.d("---------->AlphaHelper 删除:" + s);
-         /*       NIMClient.getService(MsgService.class)
-                        .deleteRecentContact(recentContact);*/
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            LogUtils.d("---------->AlphaHelper 解析异常:" + e + " json:" + s);
-        }
-        return null;
-    }
-
-    private void test() {
-        try {
-            InputStream is = getContext().getAssets().open("test.json");
-            BufferedReader br = new BufferedReader(new InputStreamReader(is));
-            StringBuffer stringBuffer = new StringBuffer();
-            String str = null;
-            while ((str = br.readLine()) != null) {
-                stringBuffer.append(str);
-            }
-            JSONArray jsonArray = new JSONArray(stringBuffer.toString());
-            for (int i = 0; i < jsonArray.length(); i++) {
-                JSONObject jsonObject = jsonArray.getJSONObject(i);
-                IMMessageCustomBody alphaHelper = getAlphaHelper(jsonObject.toString());
-                log("--------->解析i:" + i + " data:" + alphaHelper);
-            }
-        } catch (Exception e) {
-            log("--------->解析异常xx");
-            e.printStackTrace();
-        }
-    }
 
     /**
      * 消息删除
@@ -683,7 +595,9 @@ public class MessageListFragment extends BaseRecentContactFragment
     @Override
     public void onResume() {
         super.onResume();
-
+        if (imSessionAdapter != null) {
+            imSessionAdapter.notifyDataSetChanged();
+        }
         //test();
 
         //主动登陆一次
