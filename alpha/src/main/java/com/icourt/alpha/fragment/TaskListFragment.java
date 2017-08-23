@@ -762,8 +762,11 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
             case TimingEvent.TIMING_STOP:
                 if (lastEntity != null) {
                     lastEntity.isTiming = false;
-                    taskAdapter.notifyDataSetChanged();
                 }
+                if (taskAdapter != null)
+                    taskAdapter.notifyDataSetChanged();
+                if (taskItemAdapter != null)
+                    taskItemAdapter.notifyDataSetChanged();
                 break;
         }
     }
@@ -861,8 +864,8 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
      * @param taskId
      */
     private void updateChildTimeing(String taskId, boolean isTiming) {
-        int parentPos = getParentPositon(taskId) ;
-        if (parentPos >=0) {
+        int parentPos = getParentPositon(taskId);
+        if (parentPos >= 0) {
             int childPos = getChildPositon(taskId);
             if (childPos >= 0) {
                 BaseArrayRecyclerAdapter.ViewHolder viewHolderForAdapterPosition = (BaseArrayRecyclerAdapter.ViewHolder) recyclerView.findViewHolderForAdapterPosition(parentPos);
@@ -953,12 +956,23 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
     @Override
     public void onItemChildClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, final View view, int position) {
         if (adapter instanceof TaskItemAdapter) {
-            TaskEntity.TaskItemEntity itemEntity = (TaskEntity.TaskItemEntity) adapter.getItem(adapter.getRealPos(position));
+            final TaskEntity.TaskItemEntity itemEntity = (TaskEntity.TaskItemEntity) adapter.getItem(adapter.getRealPos(position));
             switch (view.getId()) {
                 case R.id.task_item_start_timming:
                     if (itemEntity.isTiming) {
                         MobclickAgent.onEvent(getContext(), UMMobClickAgent.stop_timer_click_id);
-                        TimerManager.getInstance().stopTimer();
+                        TimerManager.getInstance().stopTimer(new SimpleCallBack<TimeEntity.ItemEntity>() {
+                            @Override
+                            public void onSuccess(Call<ResEntity<TimeEntity.ItemEntity>> call, Response<ResEntity<TimeEntity.ItemEntity>> response) {
+                                itemEntity.isTiming = false;
+                            }
+
+                            @Override
+                            public void onFailure(Call<ResEntity<TimeEntity.ItemEntity>> call, Throwable t) {
+                                super.onFailure(call, t);
+                                itemEntity.isTiming = true;
+                            }
+                        });
                         ((ImageView) view).setImageResource(R.mipmap.icon_start_20);
                     } else {
                         showLoadingDialog(null);
@@ -969,6 +983,7 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
                                 dismissLoadingDialog();
                                 ((ImageView) view).setImageResource(R.drawable.orange_side_dot_bg);
                                 if (response.body() != null) {
+                                    itemEntity.isTiming = true;
                                     TimerTimingActivity.launch(view.getContext(), response.body());
                                 }
                             }
@@ -976,6 +991,7 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
                             @Override
                             public void onFailure(Call<TimeEntity.ItemEntity> call, Throwable throwable) {
                                 dismissLoadingDialog();
+                                itemEntity.isTiming = false;
                                 ((ImageView) view).setImageResource(R.mipmap.icon_start_20);
                             }
                         });

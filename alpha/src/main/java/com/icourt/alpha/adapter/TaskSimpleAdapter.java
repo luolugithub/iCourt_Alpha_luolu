@@ -186,7 +186,18 @@ public class TaskSimpleAdapter extends MultiSelectRecyclerAdapter<TaskEntity.Tas
             case R.id.task_item_timming_iv:
                 if (itemEntity.isTiming) {
                     MobclickAgent.onEvent(getContext(), UMMobClickAgent.stop_timer_click_id);
-                    TimerManager.getInstance().stopTimer();
+                    TimerManager.getInstance().stopTimer(new SimpleCallBack<TimeEntity.ItemEntity>() {
+                        @Override
+                        public void onSuccess(Call<ResEntity<TimeEntity.ItemEntity>> call, Response<ResEntity<TimeEntity.ItemEntity>> response) {
+                            itemEntity.isTiming = false;
+                        }
+
+                        @Override
+                        public void onFailure(Call<ResEntity<TimeEntity.ItemEntity>> call, Throwable t) {
+                            super.onFailure(call, t);
+                            itemEntity.isTiming = true;
+                        }
+                    });
                 } else {
                     showLoadingDialog(view.getContext(), null);
                     MobclickAgent.onEvent(getContext(), UMMobClickAgent.start_timer_click_id);
@@ -195,6 +206,7 @@ public class TaskSimpleAdapter extends MultiSelectRecyclerAdapter<TaskEntity.Tas
                         public void onResponse(Call<TimeEntity.ItemEntity> call, Response<TimeEntity.ItemEntity> response) {
                             dismissLoadingDialog();
                             if (response.body() != null) {
+                                itemEntity.isTiming = true;
                                 TimerTimingActivity.launch(view.getContext(), response.body());
                             }
                         }
@@ -202,6 +214,7 @@ public class TaskSimpleAdapter extends MultiSelectRecyclerAdapter<TaskEntity.Tas
                         @Override
                         public void onFailure(Call<TimeEntity.ItemEntity> call, Throwable throwable) {
                             dismissLoadingDialog();
+                            itemEntity.isTiming = false;
                         }
                     });
                 }

@@ -272,12 +272,23 @@ public class TaskAdapter extends BaseArrayRecyclerAdapter<TaskEntity>
     @Override
     public void onItemChildClick(BaseRecyclerAdapter adapter, ViewHolder holder, final View view, int position) {
         if (adapter instanceof TaskItemAdapter) {
-            TaskEntity.TaskItemEntity itemEntity = (TaskEntity.TaskItemEntity) adapter.getItem(position);
+            final TaskEntity.TaskItemEntity itemEntity = (TaskEntity.TaskItemEntity) adapter.getItem(position);
             switch (view.getId()) {
                 case R.id.task_item_start_timming:
                     if (itemEntity.isTiming) {
                         MobclickAgent.onEvent(getContext(), UMMobClickAgent.stop_timer_click_id);
-                        TimerManager.getInstance().stopTimer();
+                        TimerManager.getInstance().stopTimer(new SimpleCallBack<TimeEntity.ItemEntity>() {
+                            @Override
+                            public void onSuccess(Call<ResEntity<TimeEntity.ItemEntity>> call, Response<ResEntity<TimeEntity.ItemEntity>> response) {
+                                itemEntity.isTiming = false;
+                            }
+
+                            @Override
+                            public void onFailure(Call<ResEntity<TimeEntity.ItemEntity>> call, Throwable t) {
+                                super.onFailure(call, t);
+                                itemEntity.isTiming = true;
+                            }
+                        });
                         ((ImageView) view).setImageResource(R.mipmap.icon_start_20);
                     } else {
                         showLoadingDialog(view.getContext(), null);
@@ -289,6 +300,7 @@ public class TaskAdapter extends BaseArrayRecyclerAdapter<TaskEntity>
                                 dismissLoadingDialog();
                                 ((ImageView) view).setImageResource(R.drawable.orange_side_dot_bg);
                                 if (response.body() != null) {
+                                    itemEntity.isTiming = true;
                                     timeetity.pkId = response.body().pkId;
                                     TimerTimingActivity.launch(view.getContext(), timeetity);
                                 }
@@ -297,6 +309,7 @@ public class TaskAdapter extends BaseArrayRecyclerAdapter<TaskEntity>
                             @Override
                             public void onFailure(Call<TimeEntity.ItemEntity> call, Throwable throwable) {
                                 dismissLoadingDialog();
+                                itemEntity.isTiming = false;
                                 ((ImageView) view).setImageResource(R.mipmap.icon_start_20);
                             }
                         });

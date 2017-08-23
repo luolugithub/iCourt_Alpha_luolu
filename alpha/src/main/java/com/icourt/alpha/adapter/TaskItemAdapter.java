@@ -11,7 +11,6 @@ import android.widget.TextView;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.baseadapter.BaseArrayRecyclerAdapter;
 import com.icourt.alpha.entity.bean.TaskEntity;
-import com.icourt.alpha.entity.bean.TimeEntity;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.widget.manager.TimerManager;
 
@@ -89,8 +88,8 @@ public class TaskItemAdapter extends BaseArrayRecyclerAdapter<TaskEntity.TaskIte
         } else {
             recyclerView.setVisibility(View.VISIBLE);
         }
-        TimeEntity.ItemEntity timer = TimerManager.getInstance().getTimer();
-        taskItemEntity.isTiming = timer != null && TextUtils.equals(timer.taskPkId, taskItemEntity.id);
+        String timerTaskid = TimerManager.getInstance().getTimerTaskId();
+        taskItemEntity.isTiming = !TextUtils.isEmpty(timerTaskid) && TextUtils.equals(timerTaskid, taskItemEntity.id);
         startTimmingViewSelect(startTimmingView, taskItemEntity.isTiming);
         checkBox.setChecked(taskItemEntity.state);
         if (!taskItemEntity.valid) {

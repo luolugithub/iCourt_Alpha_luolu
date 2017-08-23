@@ -248,7 +248,8 @@ public class TaskCheckItemFragment extends BaseFragment
                         String id = response.body().result.getAsString();
                         itemEntity.id = id;
                         taskCheckItemAdapter.addItem(itemEntity);
-                        checkItemEdit.setText("");
+                        if (checkItemEdit != null)
+                            checkItemEdit.setText("");
                         EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION));
                         updateCheckItemCount();
                     }
@@ -372,11 +373,13 @@ public class TaskCheckItemFragment extends BaseFragment
             public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
                 dismissLoadingDialog();
                 EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION));
-                itemEntity.name = editText.getText().toString();
-                taskCheckItemAdapter.updateItem(itemEntity);
-                if (editText.hasFocus()) {
-                    editText.setFocusable(false);
-                    editText.clearFocus();
+                if (editText != null) {
+                    itemEntity.name = editText.getText().toString();
+                    taskCheckItemAdapter.updateItem(itemEntity);
+                    if (editText.hasFocus()) {
+                        editText.setFocusable(false);
+                        editText.clearFocus();
+                    }
                 }
             }
 
