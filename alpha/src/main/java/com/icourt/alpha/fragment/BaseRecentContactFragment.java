@@ -14,10 +14,12 @@ import com.netease.nimlib.sdk.RequestCallback;
 import com.netease.nimlib.sdk.StatusCode;
 import com.netease.nimlib.sdk.auth.AuthServiceObserver;
 import com.netease.nimlib.sdk.auth.OnlineClient;
+import com.netease.nimlib.sdk.msg.MessageBuilder;
 import com.netease.nimlib.sdk.msg.MsgService;
 import com.netease.nimlib.sdk.msg.MsgServiceObserve;
 import com.netease.nimlib.sdk.msg.constant.MsgTypeEnum;
 import com.netease.nimlib.sdk.msg.constant.SessionTypeEnum;
+import com.netease.nimlib.sdk.msg.model.IMMessage;
 import com.netease.nimlib.sdk.msg.model.RecentContact;
 import com.netease.nimlib.sdk.team.TeamService;
 import com.netease.nimlib.sdk.team.TeamServiceObserver;
@@ -48,6 +50,7 @@ public abstract class BaseRecentContactFragment extends BaseFragment {
         @Override
         public void onEvent(List<RecentContact> recentContacts) {
             if (recentContacts == null || recentContacts.isEmpty()) return;
+
             List<RecentContact> recentContacts1 = new ArrayList<>();
             //过滤其它消息
             for (RecentContact recentContact : recentContacts) {
@@ -55,7 +58,37 @@ public abstract class BaseRecentContactFragment extends BaseFragment {
                         recentContact.getMsgType() == MsgTypeEnum.custom) {
                     recentContacts1.add(recentContact);
                 }
+                //查询一条
+                NIMClient.getService(MsgService.class)
+                        .queryMessageListByType(
+                                MsgTypeEnum.text,
+                                MessageBuilder.createEmptyMessage(
+                                        recentContact.getContactId(),
+                                        recentContact.getSessionType(),
+                                        recentContact.getTime()),
+                                1)
+                        .setCallback(new RequestCallback<List<IMMessage>>() {
+                            @Override
+                            public void onSuccess(List<IMMessage> imMessages) {
+                                if (imMessages != null) {
+
+                                }
+                            }
+
+                            @Override
+                            public void onFailed(int i) {
+
+                            }
+
+                            @Override
+                            public void onException(Throwable throwable) {
+
+                            }
+                        });
+
             }
+
+
             recentContactReceive(recentContacts1);
         }
     };
@@ -185,6 +218,14 @@ public abstract class BaseRecentContactFragment extends BaseFragment {
      * @param recentContacts
      */
     protected abstract void recentContactReceive(@NonNull List<RecentContact> recentContacts);
+
+
+    /**
+     * 收到会话 或者更新会话
+     *
+     * @param recentContacts
+     */
+    protected abstract void recentContactReceive(@NonNull RecentContact recentContacts);
 
     /**
      * 会话删除

@@ -1,5 +1,6 @@
 package com.icourt.alpha.utils;
 
+import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.widget.ImageView;
 
@@ -11,6 +12,7 @@ import com.icourt.alpha.entity.bean.IMMessageExtBody;
 import com.icourt.alpha.entity.bean.IMSessionEntity;
 import com.icourt.alpha.view.TextDrawable;
 import com.netease.nimlib.sdk.NIMClient;
+import com.netease.nimlib.sdk.msg.MsgService;
 import com.netease.nimlib.sdk.msg.model.IMMessage;
 import com.netease.nimlib.sdk.msg.model.RecentContact;
 import com.netease.nimlib.sdk.team.TeamService;
@@ -18,10 +20,16 @@ import com.netease.nimlib.sdk.team.model.MemberChangeAttachment;
 import com.netease.nimlib.sdk.team.model.Team;
 import com.netease.nimlib.sdk.uinfo.model.NimUserInfo;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import static android.R.attr.tag;
+import static com.icourt.alpha.constants.Const.CHAT_TYPE_P2P;
+import static com.icourt.alpha.constants.Const.MSG_TYPE_ALPHA_HELPER;
 import static com.icourt.alpha.constants.Const.MSG_TYPE_AT;
 import static com.icourt.alpha.constants.Const.MSG_TYPE_DING;
 import static com.icourt.alpha.constants.Const.MSG_TYPE_FILE;
@@ -29,6 +37,7 @@ import static com.icourt.alpha.constants.Const.MSG_TYPE_IMAGE;
 import static com.icourt.alpha.constants.Const.MSG_TYPE_LINK;
 import static com.icourt.alpha.constants.Const.MSG_TYPE_SYS;
 import static com.icourt.alpha.constants.Const.MSG_TYPE_TXT;
+import static com.icourt.alpha.utils.BugUtils.bugSync;
 
 /**
  * Description
@@ -38,6 +47,8 @@ import static com.icourt.alpha.constants.Const.MSG_TYPE_TXT;
  * version 1.0.0
  */
 public class IMUtils {
+    //alpha小助手 扩展字段
+    private static final String KEY_EXTEND_ALPHA_HELPER = "KEY_EXTEND_ALPHA_HELPER";
 
     //team 背景 请勿轻易修改
     public static final int[] TEAM_ICON_BGS = {
@@ -345,7 +356,7 @@ public class IMUtils {
             }
             switch (recentContact.getSessionType()) {
                 case P2P:
-                    customIMBody.ope = Const.CHAT_TYPE_P2P;
+                    customIMBody.ope = CHAT_TYPE_P2P;
                     customIMBody.from = recentContact.getFromAccount();
                     customIMBody.to = recentContact.getContactId();
                     break;
@@ -386,5 +397,107 @@ public class IMUtils {
             e.printStackTrace();
         }
         return false;
+    }
+
+    /**
+     * 解析alpha小助手的消息
+     * 坑多:1.不能删除回话 删除消息后 会话不会自动归并到最后一条消息
+     *
+     * @param recentContact
+     */
+    @Nullable
+    public static final IMMessageCustomBody parseAlphaHelperMsg(@Nullable RecentContact recentContact) {
+        if (recentContact != null) {
+            JSONObject alphaJSONObject = null;
+            try {
+                Map<String, Object> extension = recentContact.getExtension();
+                if (extension != null) {
+                    Object o = extension.get(KEY_EXTEND_ALPHA_HELPER);
+                    if (o != null) {
+                        try {
+                            alphaJSONObject = new JSONObject(o.toString());
+                        } catch (JSONException ex) {
+                            ex.printStackTrace();
+                        }
+                    }
+                }
+                if (alphaJSONObject == null) {
+                    alphaJSONObject = JsonUtils.getJSONObject(recentContact.getAttachment().toJson(false));
+                }
+                if (alphaJSONObject.getInt("showType") == MSG_TYPE_ALPHA_HELPER) {
+                    String contentStr = alphaJSONObject.getString("content");
+                    String type = alphaJSONObject.getString("type");
+                    IMMessageCustomBody imMessageCustomBody = new IMMessageCustomBody();
+                    if (StringUtils.containsIgnoreCase(type, "APPRO_")) {
+                        imMessageCustomBody.content = "审批消息不支持,请到web端查看!";
+                    } else {
+                        imMessageCustomBody.content = contentStr;
+                    }
+                    imMessageCustomBody.show_type = MSG_TYPE_ALPHA_HELPER;
+                    imMessageCustomBody.ope = CHAT_TYPE_P2P;
+                    imMessageCustomBody.to = recentContact.getContactId();
+                    return imMessageCustomBody;
+                } else {
+                   /* IMMessageCustomBody imMessageCustomBody = new IMMessageCustomBody();
+                    if (StringUtils.containsIgnoreCase(type, "APPRO_")) {
+                        imMessageCustomBody.content = "审批消息不支持,请到web端查看!";
+                    } else {
+                        imMessageCustomBody.content = contentStr;
+                    }
+                    imMessageCustomBody.show_type = MSG_TYPE_ALPHA_HELPER;
+                    imMessageCustomBody.ope = CHAT_TYPE_P2P;
+                    imMessageCustomBody.to = recentContact.getContactId();
+                    return imMessageCustomBody;*/
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                bugSync("AlphaHelper 解析异常", StringUtils.throwable2string(e)
+                        + "\nalphaJSONObject:" + alphaJSONObject);
+                bugSync("AlphaHelper 解析异常json:", "" + alphaJSONObject);
+                LogUtils.d("---------->AlphaHelper 解析异常:" + e);
+            }
+        }
+        return null;
+    }
+
+    /**
+     * 解析alpha小助手 解析不了 用oldRecentContact替换本地
+     *
+     * @param newRecentContact
+     * @param oldRecentContact
+     */
+    public static final IMMessageCustomBody parseOrReplaceAlphaHelperMsg(
+            @Nullable RecentContact newRecentContact,
+            @Nullable RecentContact oldRecentContact) {
+        if (newRecentContact != null) {
+            JSONObject alphaJSONObject = null;
+            try {
+                alphaJSONObject = JsonUtils.getJSONObject(newRecentContact.getAttachment().toJson(false));
+                if (alphaJSONObject.getInt("showType") == MSG_TYPE_ALPHA_HELPER) {
+                    String contentStr = alphaJSONObject.getString("content");
+                    String type = alphaJSONObject.getString("type");
+                    IMMessageCustomBody imMessageCustomBody = new IMMessageCustomBody();
+                    if (StringUtils.containsIgnoreCase(type, "APPRO_")) {
+                        imMessageCustomBody.content = "审批消息不支持,请到web端查看!";
+                    } else {
+                        imMessageCustomBody.content = contentStr;
+                    }
+                    imMessageCustomBody.show_type = MSG_TYPE_ALPHA_HELPER;
+                    imMessageCustomBody.ope = CHAT_TYPE_P2P;
+                    imMessageCustomBody.to = newRecentContact.getContactId();
+                    return imMessageCustomBody;
+                } else {
+                    NIMClient.getService(MsgService.class)
+                            .deleteRecentContact(newRecentContact);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                bugSync("AlphaHelper 解析异常", StringUtils.throwable2string(e)
+                        + "\nalphaJSONObject:" + alphaJSONObject);
+                bugSync("AlphaHelper 解析异常json:", "" + alphaJSONObject);
+                LogUtils.d("---------->AlphaHelper 解析异常:" + e);
+            }
+        }
+        return null;
     }
 }
