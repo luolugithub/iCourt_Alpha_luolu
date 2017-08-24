@@ -591,15 +591,23 @@ public class MessageListFragment extends BaseRecentContactFragment
         }
     }
 
+    @Override
+    public void setUserVisibleHint(boolean isVisibleToUser) {
+        super.setUserVisibleHint(isVisibleToUser);
+        if (isVisibleToUser) {
+            getData(true);
+        }
+    }
 
     @Override
     public void onResume() {
         super.onResume();
+
         if (imSessionAdapter != null) {
             imSessionAdapter.notifyDataSetChanged();
         }
         //test();
-
+        getData(true);
         //主动登陆一次
         StatusCode status = NIMClient.getStatus();
         if (status == StatusCode.UNLOGIN

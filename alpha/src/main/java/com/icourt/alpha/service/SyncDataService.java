@@ -63,6 +63,7 @@ public class SyncDataService extends IntentService {
                     .getChatApiService()
                     .usersQuery().execute();
             if (execute != null && execute.body() != null && execute.body().result != null) {
+                if(execute.body().result.isEmpty()) return;
                 ContactDbService contactDbService = new ContactDbService(LoginInfoUtils.getLoginUserId());
                 contactDbService.deleteAll();
                 contactDbService.insertOrUpdateAsyn(new ArrayList<IConvertModel<ContactDbModel>>(execute.body().result));
