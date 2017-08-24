@@ -222,6 +222,8 @@ public class TaskAdapter extends BaseArrayRecyclerAdapter<TaskEntity>
                                         dismissLoadingDialog();
                                         if (response.body() != null) {
                                             updateMeauItem(entity, true, menuAdapter);
+                                            taskItemEntity.isTiming = true;
+                                            notifyDataSetChanged();
                                             timeetity.pkId = response.body().pkId;
                                             TimerTimingActivity.launch(view.getContext(), timeetity);
                                         }
@@ -230,6 +232,7 @@ public class TaskAdapter extends BaseArrayRecyclerAdapter<TaskEntity>
                                     @Override
                                     public void onFailure(Call<TimeEntity.ItemEntity> call, Throwable throwable) {
                                         dismissLoadingDialog();
+                                        taskItemEntity.isTiming = false;
                                         updateMeauItem(entity, false, menuAdapter);
                                     }
                                 });
@@ -239,8 +242,20 @@ public class TaskAdapter extends BaseArrayRecyclerAdapter<TaskEntity>
                         case R.mipmap.time_stop_orange_task://停止计时
                             if (taskItemEntity.isTiming) {
                                 MobclickAgent.onEvent(getContext(), UMMobClickAgent.stop_timer_click_id);
-                                TimerManager.getInstance().stopTimer();
-                                updateMeauItem(entity, true, menuAdapter);
+                                TimerManager.getInstance().stopTimer(new SimpleCallBack<TimeEntity.ItemEntity>() {
+                                    @Override
+                                    public void onSuccess(Call<ResEntity<TimeEntity.ItemEntity>> call, Response<ResEntity<TimeEntity.ItemEntity>> response) {
+                                        taskItemEntity.isTiming = false;
+                                        updateMeauItem(entity, true, menuAdapter);
+                                    }
+
+                                    @Override
+                                    public void onFailure(Call<ResEntity<TimeEntity.ItemEntity>> call, Throwable t) {
+                                        super.onFailure(call, t);
+                                        taskItemEntity.isTiming = true;
+                                    }
+                                });
+
                             }
                             break;
                         case R.mipmap.trash_orange://删除
@@ -476,7 +491,7 @@ public class TaskAdapter extends BaseArrayRecyclerAdapter<TaskEntity>
             @Override
             public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
                 dismissLoadingDialog();
-                EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION,itemEntity));
+                EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION, itemEntity));
             }
 
             @Override
