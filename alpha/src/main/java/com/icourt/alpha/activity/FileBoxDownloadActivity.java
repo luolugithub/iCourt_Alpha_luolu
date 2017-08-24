@@ -27,6 +27,7 @@ import com.icourt.alpha.R;
 import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.fragment.dialogfragment.ContactShareDialogFragment;
 import com.icourt.alpha.fragment.dialogfragment.ProjectSaveFileDialogFragment;
+import com.icourt.alpha.http.callback.SFileCallBack;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.ActionConstants;
@@ -48,7 +49,6 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import retrofit2.Call;
-import retrofit2.Callback;
 import retrofit2.Response;
 
 import static com.icourt.alpha.utils.FileUtils.isFileExists;
@@ -61,6 +61,7 @@ import static com.icourt.alpha.utils.FileUtils.isFileExists;
  * version 2.0.0
  */
 
+@Deprecated
 public class FileBoxDownloadActivity extends BaseActivity {
     private static final int CODE_PERMISSION_FILE = 1009;
     public static final int TASK_DOWNLOAD_FILE_ACTION = 1;//任务下载附件
@@ -361,20 +362,16 @@ public class FileBoxDownloadActivity extends BaseActivity {
         if (p.contains("//")) {
             p = p.replace("//", "/");
         }
-        getSFileApi().fileboxDownloadUrlQuery(seaFileRepoId, p).enqueue(new Callback<JsonElement>() {
-            @Override
-            public void onResponse(Call<JsonElement> call, Response<JsonElement> response) {
-                if (response.body() != null) {
-                    String downloadUrl = response.body().getAsString();
-                    downloadFile(downloadUrl);
-                }
-            }
-
-            @Override
-            public void onFailure(Call<JsonElement> call, Throwable throwable) {
-                showTopSnackBar("下载失败");
-            }
-        });
+        getSFileApi().sFileDownloadUrlQuery(seaFileRepoId, p)
+                .enqueue(new SFileCallBack<String>() {
+                    @Override
+                    public void onSuccess(Call<String> call, Response<String> response) {
+                        if (response.body() != null) {
+                            String downloadUrl = response.body();
+                            downloadFile(downloadUrl);
+                        }
+                    }
+                });
     }
 
     /**

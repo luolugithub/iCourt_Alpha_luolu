@@ -122,6 +122,7 @@ public class FileLinkFragment extends BaseFragment {
 
     private void updateUI(SFileLinkInfoEntity data) {
         sFileLinkInfoEntity = data;
+        if (linkCopyTv == null) return;
         if (!isNoFileShareLink()) {
             linkCopyTv.setVisibility(View.VISIBLE);
             if (getArguments().getInt(KEY_SEA_FILE_LINK_TYPE) == 0) {

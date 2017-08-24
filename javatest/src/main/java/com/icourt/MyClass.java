@@ -34,6 +34,9 @@ public class MyClass {
     };
 
     public static void main(String[] args) throws Exception {
+        String s="668f5488bccd4592f0888c5042f6b5f17aab8dd4";
+
+        log("------->"+s.hashCode());
         // * 特殊字符不能作为资料库名称：'\\', '/', ':', '*', '?', '"', '<', '>', '|', '\b', '\t'
         Pattern pattern = Pattern.compile("[\\|/|:|*|?|\"|<|>|\\||\\\\b|\t]", Pattern.CASE_INSENSITIVE);
         String text = "xx\\/:*?\"<>|\b\tdfggsf";

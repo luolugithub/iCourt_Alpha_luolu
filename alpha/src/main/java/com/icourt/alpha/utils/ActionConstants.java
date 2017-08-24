@@ -21,11 +21,11 @@ public class ActionConstants {
             put("rtf", R.mipmap.filetype_doc);
             put("docx", R.mipmap.filetype_doc);
 
-            put("jpg", R.mipmap.filetype_image_40);
-            put("jpeg", R.mipmap.filetype_image_40);
-            put("png", R.mipmap.filetype_image_40);
-            put("gif", R.mipmap.filetype_image_40);
-            put("pic", R.mipmap.filetype_image_40);
+            put("jpg", R.mipmap.filetype_image);
+            put("jpeg", R.mipmap.filetype_image);
+            put("png", R.mipmap.filetype_image);
+            put("gif", R.mipmap.filetype_image);
+            put("pic", R.mipmap.filetype_image);
 
             put("pdf", R.mipmap.filetype_pdf);
             put("ppt", R.mipmap.filetype_ppt);

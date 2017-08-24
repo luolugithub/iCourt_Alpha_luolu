@@ -38,11 +38,11 @@ public class FolderDetailDialogFragment extends FileDetailsBaseDialogFragment {
 
     public static void show(@NonNull String fromRepoId,
                             String fromRepoFilePath,
-                            FolderDocumentEntity folderDocumentEntity,
+                            String fileName,
+                            long fileSize,
                             @IntRange(from = 0, to = 2) int locationTabIndex,
                             @SFileConfig.FILE_PERMISSION String repoPermission,
                             @NonNull FragmentManager fragmentManager) {
-        if (folderDocumentEntity == null) return;
         if (fragmentManager == null) return;
         String tag = FileDetailDialogFragment.class.getSimpleName();
         FragmentTransaction mFragTransaction = fragmentManager.beginTransaction();
@@ -50,13 +50,14 @@ public class FolderDetailDialogFragment extends FileDetailsBaseDialogFragment {
         if (fragment != null) {
             mFragTransaction.remove(fragment);
         }
-        show(newInstance(fromRepoId, fromRepoFilePath, folderDocumentEntity, locationTabIndex,repoPermission), tag, mFragTransaction);
+        show(newInstance(fromRepoId, fromRepoFilePath, fileName, fileSize, locationTabIndex, repoPermission), tag, mFragTransaction);
     }
 
     public static FolderDetailDialogFragment newInstance(
             String fromRepoId,
             String fromRepoFilePath,
-            FolderDocumentEntity folderDocumentEntity,
+            String fileName,
+            long fileSize,
             @IntRange(from = 0, to = 2) int locationTabIndex,
             @SFileConfig.FILE_PERMISSION String repoPermission) {
         FolderDetailDialogFragment fragment = new FolderDetailDialogFragment();
@@ -64,14 +65,14 @@ public class FolderDetailDialogFragment extends FileDetailsBaseDialogFragment {
         args.putString(KEY_SEA_FILE_FROM_REPO_ID, fromRepoId);
         args.putString(KEY_SEA_FILE_DIR_PATH, fromRepoFilePath);
         args.putInt(KEY_LOCATION_TAB_INDEX, locationTabIndex);
-        args.putString(KEY_SEA_FILE_REPO_PERMISSION,repoPermission);
-        args.putSerializable("data", folderDocumentEntity);
+        args.putString(KEY_SEA_FILE_REPO_PERMISSION, repoPermission);
+        args.putLong(KEY_SEA_FILE_SIZE, fileSize);
+        args.putString(KEY_SEA_FILE_NAME, fileName);
         fragment.setArguments(args);
         return fragment;
     }
 
     BaseFragmentAdapter baseFragmentAdapter;
-    FolderDocumentEntity folderDocumentEntity;
     String fromRepoId, fromRepoDirPath;
 
     @Override
@@ -79,12 +80,10 @@ public class FolderDetailDialogFragment extends FileDetailsBaseDialogFragment {
         super.initView();
         fromRepoId = getArguments().getString(KEY_SEA_FILE_FROM_REPO_ID, "");
         fromRepoDirPath = getArguments().getString(KEY_SEA_FILE_DIR_PATH, "");
-        folderDocumentEntity = (FolderDocumentEntity) getArguments().getSerializable("data");
-        if (folderDocumentEntity == null) return;
 
 
-        fileTitleTv.setText(folderDocumentEntity.name);
-        fileSizeTv.setText(FileUtils.bFormat(folderDocumentEntity.size));
+        fileTitleTv.setText(getArguments().getString(KEY_SEA_FILE_NAME, ""));
+        fileSizeTv.setText(FileUtils.bFormat(getArguments().getLong(KEY_SEA_FILE_SIZE, 0)));
         fileTypeIv.setImageResource(R.mipmap.folder);
         titleContent.setText("文件夹详情");
         fileVersionTv.setVisibility(View.GONE);
@@ -92,11 +91,11 @@ public class FolderDetailDialogFragment extends FileDetailsBaseDialogFragment {
         viewPager.setAdapter(baseFragmentAdapter = new BaseFragmentAdapter(getChildFragmentManager()));
         tabLayout.setupWithViewPager(viewPager);
         baseFragmentAdapter.bindTitle(true, Arrays.asList("内部共享", "下载链接", "上传链接"));
-        String folderPath = String.format("%s%s/", fromRepoDirPath, folderDocumentEntity.name);
+        String folderPath = String.format("%s%s/", fromRepoDirPath, getArguments().getString(KEY_SEA_FILE_NAME, ""));
         baseFragmentAdapter.bindData(true,
-                Arrays.asList(FileInnerShareFragment.newInstance(fromRepoId, folderPath,getRepoPermission()),
-                        FileLinkFragment.newInstance(fromRepoId, folderPath, 0,getRepoPermission()),
-                        FileLinkFragment.newInstance(fromRepoId, folderPath, 1,getRepoPermission())));
+                Arrays.asList(FileInnerShareFragment.newInstance(fromRepoId, folderPath, getRepoPermission()),
+                        FileLinkFragment.newInstance(fromRepoId, folderPath, 0, getRepoPermission()),
+                        FileLinkFragment.newInstance(fromRepoId, folderPath, 1, getRepoPermission())));
         int tabIndex = getArguments().getInt(KEY_LOCATION_TAB_INDEX);
         if (tabIndex < baseFragmentAdapter.getCount()) {
             viewPager.setCurrentItem(tabIndex);
@@ -107,7 +106,7 @@ public class FolderDetailDialogFragment extends FileDetailsBaseDialogFragment {
     @Override
     protected void getData(boolean isRefresh) {
         super.getData(isRefresh);
-        String folderPath = String.format("%s%s/", fromRepoDirPath, folderDocumentEntity.name);
+        String folderPath = String.format("%s%s/", fromRepoDirPath, getArguments().getString(KEY_SEA_FILE_NAME, ""));
         getSFileApi().documentDirQuery(
                 fromRepoId,
                 folderPath)

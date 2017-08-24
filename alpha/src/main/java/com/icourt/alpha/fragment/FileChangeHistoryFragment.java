@@ -27,6 +27,7 @@ import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.callback.SimpleCallBack2;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.OnFragmentDataChangeListener;
+import com.icourt.alpha.utils.ActionConstants;
 import com.icourt.alpha.utils.JsonUtils;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 import com.icourt.alpha.widget.dialog.BottomActionDialog;
@@ -222,6 +223,7 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
                 page += 1;
                 fileChangedHistoryAdapter.bindData(isRefresh, response.body().result);
                 stopRefresh();
+                enableLoadMore(response.body().result);
             }
 
             @Override
@@ -232,6 +234,12 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
         });
     }
 
+    private void enableLoadMore(List result) {
+        if (refreshLayout != null) {
+            refreshLayout.setPullLoadEnable(result != null
+                    && result.size() >= ActionConstants.DEFAULT_PAGE_SIZE);
+        }
+    }
 
     private void stopRefresh() {
         if (refreshLayout != null) {

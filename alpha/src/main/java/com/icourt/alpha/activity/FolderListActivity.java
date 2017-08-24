@@ -769,7 +769,8 @@ public class FolderListActivity extends FolderBaseActivity
                     FileDetailDialogFragment.show(
                             getSeaFileRepoId(),
                             getSeaFileDirPath(),
-                            item,
+                            item.name,
+                            item.size,
                             0,
                             getRepoPermission(),
                             getSupportFragmentManager());
@@ -839,7 +840,8 @@ public class FolderListActivity extends FolderBaseActivity
                                 FolderDetailDialogFragment.show(
                                         getSeaFileRepoId(),
                                         getSeaFileDirPath(),
-                                        item,
+                                        item.name,
+                                        item.size,
                                         0,
                                         getRepoPermission(),
                                         getSupportFragmentManager());
@@ -847,7 +849,8 @@ public class FolderListActivity extends FolderBaseActivity
                                 FileDetailDialogFragment.show(
                                         getSeaFileRepoId(),
                                         getSeaFileDirPath(),
-                                        item,
+                                        item.name,
+                                        item.size,
                                         1,
                                         getRepoPermission(),
                                         getSupportFragmentManager());
@@ -873,7 +876,8 @@ public class FolderListActivity extends FolderBaseActivity
             FolderDetailDialogFragment.show(
                     getSeaFileRepoId(),
                     getSeaFileDirPath(),
-                    item,
+                    item.name,
+                    item.size,
                     0,
                     getRepoPermission(),
                     getSupportFragmentManager());
@@ -881,7 +885,8 @@ public class FolderListActivity extends FolderBaseActivity
             FileDetailDialogFragment.show(
                     getSeaFileRepoId(),
                     getSeaFileDirPath(),
-                    item,
+                    item.name,
+                    item.size,
                     0,
                     getRepoPermission(),
                     getSupportFragmentManager());

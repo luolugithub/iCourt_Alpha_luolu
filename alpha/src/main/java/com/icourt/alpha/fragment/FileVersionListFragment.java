@@ -13,6 +13,7 @@ import android.view.ViewGroup;
 import com.andview.refreshview.XRefreshView;
 import com.google.gson.JsonObject;
 import com.icourt.alpha.R;
+import com.icourt.alpha.activity.FileDownloadActivity;
 import com.icourt.alpha.adapter.FileVersionAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.adapterObserver.DataChangeAdapterObserver;
@@ -187,8 +188,28 @@ public class FileVersionListFragment extends SeaFileBaseFragment implements Base
         unbinder.unbind();
     }
 
+    private String getFileName() {
+        String string = fromRepoFilePath;
+        if (!TextUtils.isEmpty(string)) {
+            String[] split = string.split("/");
+            if (split != null && split.length > 0) {
+                return split[split.length - 1];
+            }
+        }
+        return string;
+    }
+
     @Override
     public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
+        FileVersionEntity item = fileVersionAdapter.getItem(position);
+        if (item == null) return;
+        FileDownloadActivity.launch(
+                getContext(),
+                item.repo_id,
+                getFileName(),
+                item.rev_file_size,
+                fromRepoFilePath,
+                item.id);
     }
 
     @Override

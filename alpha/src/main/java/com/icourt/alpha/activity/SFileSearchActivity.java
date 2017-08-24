@@ -20,8 +20,12 @@ import android.widget.TextView;
 import com.andview.refreshview.XRefreshView;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.SFileSearchAdapter;
+import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.base.BaseActivity;
+import com.icourt.alpha.entity.bean.SFileSearchEntity;
 import com.icourt.alpha.entity.bean.SFileSearchPage;
+import com.icourt.alpha.fragment.dialogfragment.FileDetailDialogFragment;
+import com.icourt.alpha.fragment.dialogfragment.FolderDetailDialogFragment;
 import com.icourt.alpha.http.callback.SFileCallBack;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.view.ClearEditText;
@@ -34,6 +38,8 @@ import butterknife.OnClick;
 import retrofit2.Call;
 import retrofit2.Response;
 
+import static com.icourt.alpha.constants.SFileConfig.PERMISSION_R;
+
 /**
  * Description
  * Company Beijing icourt
@@ -41,7 +47,7 @@ import retrofit2.Response;
  * date createTime：2017/8/20
  * version 2.1.0
  */
-public class SFileSearchActivity extends BaseActivity {
+public class SFileSearchActivity extends BaseActivity implements BaseRecyclerAdapter.OnItemClickListener {
 
     @BindView(R.id.et_input_name)
     ClearEditText etInputName;
@@ -89,6 +95,7 @@ public class SFileSearchActivity extends BaseActivity {
         }
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setAdapter(sFileSearchAdapter = new SFileSearchAdapter());
+        sFileSearchAdapter.setOnItemClickListener(this);
         recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
@@ -220,6 +227,32 @@ public class SFileSearchActivity extends BaseActivity {
             default:
                 super.onClick(v);
                 break;
+        }
+    }
+
+    @Override
+    public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
+        SFileSearchEntity item = sFileSearchAdapter.getItem(position);
+        if (item != null) {
+            if (item.is_dir) {
+                FolderDetailDialogFragment.show(
+                        item.repo_id,
+                        item.fullpath,
+                        item.name,
+                        item.size,
+                        0,
+                        PERMISSION_R,
+                        getSupportFragmentManager());
+            } else {
+                FileDetailDialogFragment.show(
+                        item.repo_id,
+                        item.fullpath,
+                        item.name,
+                        item.size,
+                        0,
+                        PERMISSION_R,
+                        getSupportFragmentManager());
+            }
         }
     }
 }

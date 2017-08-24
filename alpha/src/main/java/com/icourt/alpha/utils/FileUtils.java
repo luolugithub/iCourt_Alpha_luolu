@@ -291,7 +291,7 @@ public class FileUtils {
 
 
     /**
-     * 获取文件名 并且没有后缀
+     * 获取文件名 并且没有后缀 不转换大小写
      *
      * @return
      */

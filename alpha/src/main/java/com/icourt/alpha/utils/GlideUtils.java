@@ -146,11 +146,11 @@ public class GlideUtils {
         if (canLoadImage(context)) {
             Glide.with(context)
                     .load(path)
-                    .error(R.mipmap.filetype_image_40)
+                    .error(R.mipmap.filetype_image)
                     .into(imageView);
-
         }
     }
+
     /**
      * 为图片着色
      *

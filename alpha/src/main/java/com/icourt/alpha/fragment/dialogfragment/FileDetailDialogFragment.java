@@ -13,7 +13,6 @@ import com.icourt.alpha.adapter.baseadapter.BaseFragmentAdapter;
 import com.icourt.alpha.constants.SFileConfig;
 import com.icourt.alpha.entity.bean.FileVersionCommits;
 import com.icourt.alpha.entity.bean.FileVersionEntity;
-import com.icourt.alpha.entity.bean.FolderDocumentEntity;
 import com.icourt.alpha.fragment.FileLinkFragment;
 import com.icourt.alpha.fragment.FileVersionListFragment;
 import com.icourt.alpha.http.callback.SFileCallBack;
@@ -46,17 +45,17 @@ import static com.icourt.alpha.constants.SFileConfig.PERMISSION_RW;
 public class FileDetailDialogFragment extends FileDetailsBaseDialogFragment
         implements OnFragmentDataChangeListener {
     BaseFragmentAdapter baseFragmentAdapter;
-    FolderDocumentEntity folderDocumentEntity;
-    String fromRepoId, fromRepoDirPath;
+    String fromRepoId, fromRepoDirPath, fileName;
+    long fileSize;
     protected static final String KEY_LOCATION_TAB_INDEX = "locationPage";//定位的tab
 
     public static void show(@NonNull String fromRepoId,
                             String fromRepoFilePath,
-                            FolderDocumentEntity folderDocumentEntity,
+                            String fileName,
+                            long fileSize,
                             @IntRange(from = 0, to = 1) int locationTabIndex,
                             @SFileConfig.FILE_PERMISSION String repoPermission,
                             @NonNull FragmentManager fragmentManager) {
-        if (folderDocumentEntity == null) return;
         if (fragmentManager == null) return;
         String tag = FileDetailDialogFragment.class.getSimpleName();
         FragmentTransaction mFragTransaction = fragmentManager.beginTransaction();
@@ -64,14 +63,15 @@ public class FileDetailDialogFragment extends FileDetailsBaseDialogFragment
         if (fragment != null) {
             mFragTransaction.remove(fragment);
         }
-        show(newInstance(fromRepoId, fromRepoFilePath, folderDocumentEntity, locationTabIndex, repoPermission), tag, mFragTransaction);
+        show(newInstance(fromRepoId, fromRepoFilePath, fileName, fileSize, locationTabIndex, repoPermission), tag, mFragTransaction);
     }
 
 
     public static FileDetailDialogFragment newInstance(
             String fromRepoId,
             String fromRepoFilePath,
-            FolderDocumentEntity folderDocumentEntity,
+            String fileName,
+            long fileSize,
             @IntRange(from = 0, to = 1) int locationTabIndex,
             @SFileConfig.FILE_PERMISSION String repoPermission) {
         FileDetailDialogFragment fragment = new FileDetailDialogFragment();
@@ -80,7 +80,8 @@ public class FileDetailDialogFragment extends FileDetailsBaseDialogFragment
         args.putString(KEY_SEA_FILE_DIR_PATH, fromRepoFilePath);
         args.putInt(KEY_LOCATION_TAB_INDEX, locationTabIndex);
         args.putString(KEY_SEA_FILE_REPO_PERMISSION, repoPermission);
-        args.putSerializable("data", folderDocumentEntity);
+        args.putString(KEY_SEA_FILE_NAME, fileName);
+        args.putLong(KEY_SEA_FILE_SIZE, fileSize);
         fragment.setArguments(args);
         return fragment;
     }
@@ -90,18 +91,18 @@ public class FileDetailDialogFragment extends FileDetailsBaseDialogFragment
         super.initView();
         fromRepoId = getArguments().getString(KEY_SEA_FILE_FROM_REPO_ID, "");
         fromRepoDirPath = getArguments().getString(KEY_SEA_FILE_DIR_PATH, "");
-        folderDocumentEntity = (FolderDocumentEntity) getArguments().getSerializable("data");
-        if (folderDocumentEntity == null) return;
+        fileName = getArguments().getString(KEY_SEA_FILE_NAME, "");
+        fileSize = getArguments().getLong(KEY_SEA_FILE_SIZE, 0);
 
-        fileTitleTv.setText(folderDocumentEntity.name);
-        fileSizeTv.setText(FileUtils.bFormat(folderDocumentEntity.size));
+        fileTitleTv.setText(fileName);
+        fileSizeTv.setText(FileUtils.bFormat(fileSize));
         //图片格式 加载缩略图
-        if (IMUtils.isPIC(folderDocumentEntity.name)) {
+        if (IMUtils.isPIC(fileName)) {
             GlideUtils.loadSFilePic(getContext(),
-                    getSfileThumbnailImage(folderDocumentEntity.name),
+                    getSfileThumbnailImage(fileName),
                     fileTypeIv);
         } else {
-            fileTypeIv.setImageResource(getFileIcon(folderDocumentEntity.name));
+            fileTypeIv.setImageResource(getFileIcon(fileName));
         }
         titleContent.setText("文件详情");
 
@@ -109,7 +110,7 @@ public class FileDetailDialogFragment extends FileDetailsBaseDialogFragment
         viewPager.setAdapter(baseFragmentAdapter = new BaseFragmentAdapter(getChildFragmentManager()));
         tabLayout.setupWithViewPager(viewPager);
         baseFragmentAdapter.bindTitle(true, Arrays.asList("历史版本", "下载链接"));
-        String filePath = String.format("%s%s", fromRepoDirPath, folderDocumentEntity.name);
+        String filePath = String.format("%s%s", fromRepoDirPath, fileName);
         //有读写权限
         if (TextUtils.equals(getRepoPermission(), PERMISSION_RW)) {
             baseFragmentAdapter.bindData(true,
@@ -161,7 +162,7 @@ public class FileDetailDialogFragment extends FileDetailsBaseDialogFragment
     @Override
     protected void getData(boolean isRefresh) {
         super.getData(isRefresh);
-        String filePath = String.format("%s%s", fromRepoDirPath, folderDocumentEntity.name);
+        String filePath = String.format("%s%s", fromRepoDirPath, fileName);
         getSFileApi().fileVersionQuery(fromRepoId, filePath)
                 .enqueue(new SFileCallBack<FileVersionCommits>() {
                     @Override

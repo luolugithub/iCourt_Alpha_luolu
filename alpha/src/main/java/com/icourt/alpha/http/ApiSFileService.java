@@ -79,11 +79,26 @@ public interface ApiSFileService {
      * 获取文件下载地址
      *
      * @param seaFileRepoId
-     * @param rootName
+     * @param fullPath      全路径
      * @return
      */
     @GET("api2/repos/{seaFileRepoId}/file/")
-    Call<JsonElement> fileboxDownloadUrlQuery(@Path("seaFileRepoId") String seaFileRepoId, @Query("p") String rootName);
+    Call<String> sFileDownloadUrlQuery(@Path("seaFileRepoId") String seaFileRepoId, @Query("p") String fullPath);
+
+
+    /**
+     * 获取历史版本文件下载地址
+     *
+     * @param seaFileRepoId
+     * @param fullPath      全路径
+     * @param commit_id     历史版本提交的id
+     * @return
+     */
+    @GET("api2/repos/{seaFileRepoId}/file/")
+    Call<String> sFileDownloadUrlQuery(
+            @Path("seaFileRepoId") String seaFileRepoId,
+            @Query("p") String fullPath,
+            @Query("commit_id") String commit_id);
 
     /**
      * 获取资料库
@@ -407,7 +422,6 @@ public interface ApiSFileService {
                                            @Query("p") String p,
                                            @Query("share_type") String share_type,
                                            @Query("username") String username);
-
 
     /**
      * 资料库查询

@@ -35,7 +35,8 @@ public class FileDetailsBaseDialogFragment extends BaseDialogFragment {
     protected static final String KEY_SEA_FILE_FROM_REPO_ID = "seaFileFromRepoId";//原仓库id
     protected static final String KEY_SEA_FILE_DIR_PATH = "seaFileDirPath";//原文件目录
     protected static final String KEY_SEA_FILE_REPO_PERMISSION = "seaFileRepoPermission";//repo的权限
-
+    protected static final String KEY_SEA_FILE_NAME = "seaFileName";//file name
+    protected static final String KEY_SEA_FILE_SIZE = "seaFileSize";//file size
     @BindView(R.id.titleContent)
     TextView titleContent;
     @BindView(R.id.titleAction)
@@ -71,6 +72,7 @@ public class FileDetailsBaseDialogFragment extends BaseDialogFragment {
     protected void initView() {
         Dialog dialog = getDialog();
         if (dialog != null) {
+            dialog.setCancelable(false);
             Window window = dialog.getWindow();
             if (window != null) {
                 WindowManager.LayoutParams attributes = window.getAttributes();

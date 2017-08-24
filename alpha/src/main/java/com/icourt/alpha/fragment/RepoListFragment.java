@@ -99,7 +99,7 @@ public class RepoListFragment extends BaseFragment
 
     @Override
     protected void initView() {
-        repoType = getArguments().getInt("repoType");
+        repoType = SFileConfig.convert2RepoType(getArguments().getInt("repoType"));
         EventBus.getDefault().register(this);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
