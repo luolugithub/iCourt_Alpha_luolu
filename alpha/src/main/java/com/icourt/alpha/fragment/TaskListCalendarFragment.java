@@ -202,6 +202,10 @@ public class TaskListCalendarFragment extends BaseFragment {
     public void onResume() {
         super.onResume();
 
+        getTaskData();
+    }
+
+    private void getTaskData() {
         //重新获取一遍数据
         getApi().taskListQuery(0,
                 getLoginUserId(),
@@ -611,7 +615,7 @@ public class TaskListCalendarFragment extends BaseFragment {
         if (targetFrgament != this) return;
         if (bundle != null) {
             ArrayList<TaskEntity.TaskItemEntity> tasks = (ArrayList<TaskEntity.TaskItemEntity>) bundle.getSerializable(KEY_FRAGMENT_RESULT);
-            updateClendarTasks(tasks);
+            getTaskData();
         }
     }
 
