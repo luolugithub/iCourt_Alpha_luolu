@@ -101,7 +101,7 @@ public class TaskAllFragment extends BaseFragment implements OnTasksChangeListen
                     putFragment(type, TaskListFragment.newInstance(0, stateType));
                     break;
                 case TYPE_ALL_TASK_CALENDAR:
-                    // putFragment(type, TaskListCalendarFragment.newInstance(taskItemEntityList));
+//                     putFragment(type, TaskListCalendarFragment.newInstance(taskItemEntityList));
                     putFragment(type, TaskListCalendarFragment.newInstance(null));
                     break;
             }
