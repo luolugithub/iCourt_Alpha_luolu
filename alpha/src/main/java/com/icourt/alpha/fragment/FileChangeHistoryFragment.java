@@ -310,7 +310,7 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
                 renameFileRevoke(item);
             }
         } else if (TextUtils.equals(actionTypeEnglish, "edit")) {
-            revokeFile(item);
+            revokeEditFile(item);
         } else {
             showToast("未命名动作");
         }
@@ -527,6 +527,38 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
                 item.repo_id,
                 item.path,
                 item.pre_commit_id)
+                .enqueue(new SFileCallBack<JsonObject>() {
+                    @Override
+                    public void onSuccess(Call<JsonObject> call, Response<JsonObject> response) {
+                        dismissLoadingDialog();
+                        if (JsonUtils.getBoolValue(response.body(), "success")) {
+                            getData(true);
+                        } else {
+                            showToast("撤销失败");
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<JsonObject> call, Throwable t) {
+                        dismissLoadingDialog();
+                        super.onFailure(call, t);
+                    }
+                });
+    }
+
+    /**
+     * 撤销文件的修改
+     *
+     * @param item
+     */
+    private void revokeEditFile(FileChangedHistoryEntity item) {
+        if (item == null) return;
+        showLoadingDialog(null);
+        getSFileApi().fileRevertEdit(
+                item.repo_id,
+                item.path,
+                item.pre_commit_id,
+                "revert")
                 .enqueue(new SFileCallBack<JsonObject>() {
                     @Override
                     public void onSuccess(Call<JsonObject> call, Response<JsonObject> response) {

@@ -1,6 +1,11 @@
 package com.icourt.alpha.adapter;
 
+import android.graphics.Color;
+import android.text.SpannableString;
+import android.text.Spanned;
 import android.text.TextUtils;
+import android.text.style.ForegroundColorSpan;
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -13,6 +18,9 @@ import com.icourt.alpha.utils.GlideUtils;
 import com.icourt.alpha.utils.IMUtils;
 import com.icourt.alpha.utils.SFileTokenUtils;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 /**
  * Description
  * Company Beijing icourt
@@ -21,10 +29,33 @@ import com.icourt.alpha.utils.SFileTokenUtils;
  * version 2.1.0
  */
 public class SFileSearchAdapter extends BaseArrayRecyclerAdapter<SFileSearchEntity> {
+
+    private View last_document_desc_more_tv;
+
+    private final int VIEW_TYPE_SEARCH_NORMAL = 0;//普通搜索
+    private final int VIEW_TYPE_SEARCH_CONTENT = 1;//通过搜索.doc pdf内容
+
+
     @Override
     public int bindView(int viewtype) {
-        return R.layout.adapter_item_folder;
+        switch (viewtype) {
+            case VIEW_TYPE_SEARCH_CONTENT:
+                return R.layout.adapter_item_sfile_search;
+            case VIEW_TYPE_SEARCH_NORMAL:
+                return R.layout.adapter_item_folder;
+        }
+        return R.layout.adapter_item_sfile_search;
     }
+
+    @Override
+    public int getItemViewType(int position) {
+        SFileSearchEntity item = getItem(position);
+        if (item != null && item.isSearchContent()) {
+            return VIEW_TYPE_SEARCH_CONTENT;
+        }
+        return VIEW_TYPE_SEARCH_NORMAL;
+    }
+
 
     @Override
     public void onBindHoder(ViewHolder holder, SFileSearchEntity sFileSearchEntity, int position) {
@@ -59,6 +90,40 @@ public class SFileSearchAdapter extends BaseArrayRecyclerAdapter<SFileSearchEnti
             }
         }
         document_desc_tv.setText(String.format("%s%s", sFileSearchEntity.repo_name, fileDir));
+
+        if (holder.getItemViewType() == VIEW_TYPE_SEARCH_CONTENT) {
+            TextView document_desc_more_tv = holder.obtainView(R.id.document_desc_more_tv);
+            document_desc_more_tv.setText(getSpanForKeyWord(sFileSearchEntity.content_highlight));
+        }
+    }
+
+    private SpannableString getSpanForKeyWord(String content) {
+        CharSequence originalText = content;
+        String targetText = "<b>.*?</b>";
+        String targetStartStr = "<b>";
+        String targetEndStr = "</b>";
+        SpannableString spannableString = new SpannableString(originalText);
+        try {
+            Pattern pattern = Pattern.compile(targetText, Pattern.CASE_INSENSITIVE);
+            Matcher matcher = pattern.matcher(originalText);
+            while (matcher.find()) {
+                try {
+                    int start = matcher.start() + targetStartStr.length();
+                    int end = matcher.end() - targetEndStr.length();
+                    //循环改变所有的颜色
+                    spannableString.setSpan(
+                            new ForegroundColorSpan(Color.RED),
+                            start,
+                            end,
+                            Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                } catch (Exception e) {
+                    break;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return spannableString;
     }
 
     /**

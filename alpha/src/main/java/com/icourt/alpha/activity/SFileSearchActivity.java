@@ -234,6 +234,10 @@ public class SFileSearchActivity extends BaseActivity implements BaseRecyclerAda
     public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
         SFileSearchEntity item = sFileSearchAdapter.getItem(position);
         if (item != null) {
+            //搜索的内容
+            if (item.isSearchContent()) {
+
+            }
             if (item.is_dir) {
                 FolderDetailDialogFragment.show(
                         item.repo_id,

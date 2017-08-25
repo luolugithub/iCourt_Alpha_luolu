@@ -311,6 +311,22 @@ public interface ApiSFileService {
                                 @Field("commit_id") String commit_id);
 
     /**
+     * 文件恢复
+     *
+     * @param fromRepoId
+     * @param p
+     * @param commit_id
+     * @param operation  revert
+     * @return
+     */
+    @PUT("api2/repos/{seaFileRepoId}/file/revert/")
+    @FormUrlEncoded
+    Call<JsonObject> fileRevertEdit(@Path("seaFileRepoId") String fromRepoId,
+                                    @Field("p") String p,
+                                    @Field("commit_id") String commit_id,
+                                    @Field("operation") String operation);
+
+    /**
      * 文件夹恢复
      *
      * @param fromRepoId

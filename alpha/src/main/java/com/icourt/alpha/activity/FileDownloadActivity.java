@@ -191,6 +191,7 @@ public class FileDownloadActivity extends BaseActivity {
 
         setTitle(fileTitle);
         fileSizeTv.setText(FileUtils.bFormat(fileSize));
+        fileNameTv.setText(fileTitle);
         fileTypeIcon.setImageResource(FileUtils.getSFileIcon(fileTitle));
         ImageView titleActionImage = getTitleActionImage();
         if (titleActionImage != null) {
