@@ -805,8 +805,8 @@ public class TaskDetailActivity extends BaseActivity
             } else {
                 setNoAllocation();
             }
-            taskUsersArrowIv.setVisibility(taskItemEntity.valid ? View.VISIBLE : View.GONE);
-            taskUserArrowIv.setVisibility(taskItemEntity.valid ? View.VISIBLE : View.GONE);
+            taskUsersArrowIv.setVisibility(taskItemEntity.valid && !taskItemEntity.state ? View.VISIBLE : View.GONE);
+            taskUserArrowIv.setVisibility(taskItemEntity.valid && !taskItemEntity.state ? View.VISIBLE : View.GONE);
             taskStartIamge.setVisibility(taskItemEntity.valid ? View.VISIBLE : View.GONE);
             commentEditTv.setVisibility(taskItemEntity.valid ? View.VISIBLE : View.GONE);
         }
@@ -977,7 +977,7 @@ public class TaskDetailActivity extends BaseActivity
             public void onSuccess(Call<ResEntity<TaskEntity.TaskItemEntity>> call, Response<ResEntity<TaskEntity.TaskItemEntity>> response) {
                 dismissLoadingDialog();
                 if (response.body().result != null) {
-                    EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_UPDATE_ITEM, response.body().result));
+                    EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION, response.body().result));
                 }
                 if (checkbox != null)
                     checkbox.setChecked(state);

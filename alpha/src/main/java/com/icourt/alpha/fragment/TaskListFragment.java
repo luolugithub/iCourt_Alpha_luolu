@@ -698,20 +698,6 @@ public class TaskListFragment extends BaseFragment implements
                     refreshLayout.startRefresh();
                 }
                 break;
-            case TaskActionEvent.TASK_UPDATE_ITEM:
-                if (event.entity == null) return;
-                if (type == TYPE_ALL) {
-                    if (stateType == 0) {
-                        updateChildItem(event.entity);
-                    } else if (stateType == 1 || stateType == 3) {
-                        if (taskItemAdapter != null) {
-                            taskItemAdapter.updateItem(event.entity);
-                        }
-                    }
-                } else if (type == TYPE_MY_ATTENTION) {
-                    updateChildItem(event.entity);
-                }
-                break;
         }
 
     }
