@@ -7,8 +7,11 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.text.TextUtils;
+import android.view.View;
 
 import com.icourt.alpha.BuildConfig;
+import com.icourt.alpha.R;
+import com.icourt.alpha.activity.FileDownloadActivity;
 import com.icourt.alpha.adapter.baseadapter.BaseFragmentAdapter;
 import com.icourt.alpha.constants.SFileConfig;
 import com.icourt.alpha.entity.bean.FileVersionCommits;
@@ -30,6 +33,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import butterknife.OnClick;
 import retrofit2.Call;
 import retrofit2.Response;
 
@@ -48,6 +52,7 @@ public class FileDetailDialogFragment extends FileDetailsBaseDialogFragment
     String fromRepoId, fromRepoDirPath, fileName;
     long fileSize;
     protected static final String KEY_LOCATION_TAB_INDEX = "locationPage";//定位的tab
+    final List<FileVersionEntity> fileVersionEntities = new ArrayList<>();
 
     public static void show(@NonNull String fromRepoId,
                             String fromRepoFilePath,
@@ -177,10 +182,33 @@ public class FileDetailDialogFragment extends FileDetailsBaseDialogFragment
 
     }
 
+    @OnClick({R.id.file_title_tv})
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.file_title_tv:
+                if (!fileVersionEntities.isEmpty()) {
+                    FileVersionEntity item = fileVersionEntities.get(0);
+                    if (item == null) return;
+                    FileDownloadActivity.launch(
+                            getContext(),
+                            item.repo_id,
+                            fileName,
+                            item.rev_file_size,
+                            String.format("%s%s", fromRepoDirPath, fileName),
+                            item.id);
+                }
+                break;
+            default:
+                super.onClick(v);
+                break;
+        }
+    }
+
     @Override
     public void onFragmentDataChanged(Fragment fragment, int type, Object o) {
         if (fragment instanceof FileVersionListFragment) {
-            List<FileVersionEntity> fileVersionEntities = new ArrayList<>();
+            fileVersionEntities.clear();
             try {
                 fileVersionEntities.addAll((List<FileVersionEntity>) o);
                 Collections.sort(fileVersionEntities, new LongFieldEntityComparator<FileVersionEntity>(ORDER.DESC));

@@ -82,8 +82,11 @@ public class FileDownloadActivity extends BaseActivity {
     LinearLayout downloadLayout;
     @BindView(R.id.download_continue_tv)
     TextView downloadContinueTv;
+    @BindView(R.id.download_cancel_tv)
+    ImageView downloadCancelTv;
 
-    private String fileCachePath = "xxx";//保存路径
+    private String fileCachePath = "";//保存路径
+    private String fileDownloadUrl = "";//下载的地址
 
     /**
      * @param context
@@ -155,6 +158,7 @@ public class FileDownloadActivity extends BaseActivity {
 
         @Override
         protected void error(BaseDownloadTask task, Throwable e) {
+            log("------------->下载异常:" + StringUtils.throwable2string(e));
             showTopSnackBar(String.format("下载异常!" + StringUtils.throwable2string(e)));
             bugSync("下载异常", e);
         }
@@ -219,8 +223,9 @@ public class FileDownloadActivity extends BaseActivity {
                     @Override
                     public void onSuccess(Call<String> call, Response<String> response) {
                         dismissLoadingDialog();
+                        fileDownloadUrl = response.body();
                         if (isDestroyOrFinishing()) return;
-                        downloadFile(response.body());
+                        downloadFile(fileDownloadUrl);
                     }
 
                     @Override
@@ -300,7 +305,8 @@ public class FileDownloadActivity extends BaseActivity {
 
 
     @OnClick({R.id.download_continue_tv,
-            R.id.file_open_tv})
+            R.id.file_open_tv,
+            R.id.download_cancel_tv})
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
@@ -308,6 +314,13 @@ public class FileDownloadActivity extends BaseActivity {
                 showBottomMenuDialog();
                 break;
             case R.id.download_continue_tv:
+                updateViewState(0);
+                //地址失效 断点下载有问题
+                getData(true);
+                break;
+            case R.id.download_cancel_tv:
+                updateViewState(1);
+                pauseDownload();
                 break;
             case R.id.file_open_tv:
                 showOpenableThirdPartyAppDialog();
@@ -436,15 +449,18 @@ public class FileDownloadActivity extends BaseActivity {
 
     @Override
     protected void onDestroy() {
+        pauseDownload();
         super.onDestroy();
-        //暂时不暂停 校验完整度有问题
-       /* if (fileDownloadListener != null) {
+    }
+
+    private void pauseDownload() {
+        if (fileDownloadListener != null) {
             try {
                 FileDownloader
                         .getImpl()
                         .pause(fileDownloadListener);
             } catch (Exception e) {
             }
-        }*/
+        }
     }
 }

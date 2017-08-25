@@ -151,6 +151,7 @@ public class FolderDetailDialogFragment extends FileDetailsBaseDialogFragment {
                 });
     }
 
+
     private void updateFolderSize(int dirNum, int fileNum) {
         if (fileSizeTv != null) {
             fileSizeTv.setText(String.format("%s个文件夹, %s个文件", dirNum, fileNum));
