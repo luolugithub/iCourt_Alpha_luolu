@@ -602,10 +602,6 @@ public class MessageListFragment extends BaseRecentContactFragment
     @Override
     public void onResume() {
         super.onResume();
-
-        if (imSessionAdapter != null) {
-            imSessionAdapter.notifyDataSetChanged();
-        }
         //test();
         getData(true);
         //主动登陆一次
@@ -794,12 +790,14 @@ public class MessageListFragment extends BaseRecentContactFragment
                             int indexOf = localGroupContactBeans.indexOf(groupContactBean);
                             if (indexOf >= 0) {
                                 groupContactBean = localGroupContactBeans.get(indexOf);
-                                ChatActivity.launchP2P(getActivity(),
-                                        data.recentContact.getContactId(),
-                                        groupContactBean.name,
-                                        0,
-                                        totalUnReadCount);
+                            } else {
+                                groupContactBean.name = data.recentContact.getFromNick();
                             }
+                            ChatActivity.launchP2P(getActivity(),
+                                    data.recentContact.getContactId(),
+                                    groupContactBean.name,
+                                    0,
+                                    totalUnReadCount);
                         }
                     }
                     break;

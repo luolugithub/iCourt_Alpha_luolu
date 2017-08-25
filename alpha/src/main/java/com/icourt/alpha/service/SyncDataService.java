@@ -13,6 +13,7 @@ import com.icourt.alpha.db.dbservice.ContactDbService;
 import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.icourt.alpha.http.RetrofitServiceFactory;
 import com.icourt.alpha.http.httpmodel.ResEntity;
+import com.icourt.alpha.utils.BugUtils;
 import com.icourt.alpha.utils.LogUtils;
 import com.icourt.alpha.utils.LoginInfoUtils;
 
@@ -62,14 +63,16 @@ public class SyncDataService extends IntentService {
             Response<ResEntity<List<GroupContactBean>>> execute = RetrofitServiceFactory
                     .getChatApiService()
                     .usersQuery().execute();
-            if (execute != null && execute.body() != null && execute.body().result != null) {
-                if(execute.body().result.isEmpty()) return;
+            if (execute != null && execute.body() != null
+                    && execute.body().result != null) {
+                if (execute.body().result.isEmpty()) return;
                 ContactDbService contactDbService = new ContactDbService(LoginInfoUtils.getLoginUserId());
                 contactDbService.deleteAll();
                 contactDbService.insertOrUpdateAsyn(new ArrayList<IConvertModel<ContactDbModel>>(execute.body().result));
             }
         } catch (Exception e) {
             e.printStackTrace();
+            BugUtils.bugSync("同步联系人", e);
             LogUtils.d("----------->SyncDataService syncContacts 失败:" + e);
         }
     }
