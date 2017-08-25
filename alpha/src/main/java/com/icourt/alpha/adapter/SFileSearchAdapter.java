@@ -83,6 +83,8 @@ public class SFileSearchAdapter extends BaseArrayRecyclerAdapter<SFileSearchEnti
 
 
         holder.bindChildClick(document_detail_iv);
+        document_detail_iv.setVisibility(sFileSearchEntity.is_dir ? View.GONE : View.VISIBLE);
+
         document_title_tv.setText(sFileSearchEntity.name);
 
         //显示文件类别图片

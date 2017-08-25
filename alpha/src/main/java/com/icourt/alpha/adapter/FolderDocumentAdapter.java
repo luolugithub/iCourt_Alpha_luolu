@@ -149,11 +149,25 @@ public class FolderDocumentAdapter extends SFileImgBaseAdapter<FolderDocumentEnt
                 document_type_iv.setImageResource(getSFileTypeIcon(folderDocumentEntity.name));
             }
         }
-        String permission = SFileConfig.convert2filePermission(folderDocumentEntity.permission);
-        boolean isShowActionView = !isSelectable() && TextUtils.equals(permission, PERMISSION_RW);
-        boolean isShowDetailsView = !isSelectable() && !TextUtils.equals(permission, PERMISSION_RW);
-        document_expand_iv.setVisibility(isShowActionView ? View.VISIBLE : View.GONE);
-        document_detail_iv.setVisibility(isShowDetailsView ? View.VISIBLE : View.GONE);
+
+        if (!isSelectable()) {
+            String permission = SFileConfig.convert2filePermission(folderDocumentEntity.permission);
+            if (TextUtils.equals(permission, PERMISSION_RW)) {//可读写
+                document_expand_iv.setVisibility(View.VISIBLE);
+                document_detail_iv.setVisibility(View.GONE);
+            } else {//可读
+                if (folderDocumentEntity.isDir()) {
+                    document_expand_iv.setVisibility(View.GONE);
+                    document_detail_iv.setVisibility(View.GONE);
+                } else {
+                    document_expand_iv.setVisibility(View.GONE);
+                    document_detail_iv.setVisibility(View.VISIBLE);
+                }
+            }
+        } else {
+            document_detail_iv.setVisibility(View.GONE);
+            document_detail_iv.setVisibility(View.GONE);
+        }
 
         folder_document_ctv.setVisibility(isSelectable() ? View.VISIBLE : View.GONE);
         folder_document_ctv.setChecked(isSelected(folderDocumentEntity));

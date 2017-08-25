@@ -25,7 +25,6 @@ import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.entity.bean.SFileSearchEntity;
 import com.icourt.alpha.entity.bean.SFileSearchPage;
 import com.icourt.alpha.fragment.dialogfragment.FileDetailDialogFragment;
-import com.icourt.alpha.fragment.dialogfragment.FolderDetailDialogFragment;
 import com.icourt.alpha.http.callback.SFileCallBack;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.view.ClearEditText;
@@ -265,14 +264,7 @@ public class SFileSearchActivity extends BaseActivity implements BaseRecyclerAda
     private void lookDetail(SFileSearchEntity item) {
         if (item == null) return;
         if (item.is_dir) {
-            FolderDetailDialogFragment.show(
-                    item.repo_id,
-                    getDirPath(item.fullpath),
-                    item.name,
-                    item.size,
-                    0,
-                    PERMISSION_R,
-                    getSupportFragmentManager());
+            showTopSnackBar("搜索结果中无法预览文件夹");
         } else {
             FileDetailDialogFragment.show(
                     item.repo_id,
