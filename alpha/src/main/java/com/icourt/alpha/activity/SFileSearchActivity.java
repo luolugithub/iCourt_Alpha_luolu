@@ -47,7 +47,7 @@ import static com.icourt.alpha.constants.SFileConfig.PERMISSION_R;
  * date createTime：2017/8/20
  * version 2.1.0
  */
-public class SFileSearchActivity extends BaseActivity implements BaseRecyclerAdapter.OnItemClickListener {
+public class SFileSearchActivity extends BaseActivity implements BaseRecyclerAdapter.OnItemClickListener, BaseRecyclerAdapter.OnItemChildClickListener {
 
     @BindView(R.id.et_input_name)
     ClearEditText etInputName;
@@ -96,6 +96,7 @@ public class SFileSearchActivity extends BaseActivity implements BaseRecyclerAda
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setAdapter(sFileSearchAdapter = new SFileSearchAdapter());
         sFileSearchAdapter.setOnItemClickListener(this);
+        sFileSearchAdapter.setOnItemChildClickListener(this);
         recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
@@ -234,28 +235,67 @@ public class SFileSearchActivity extends BaseActivity implements BaseRecyclerAda
     public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
         SFileSearchEntity item = sFileSearchAdapter.getItem(position);
         if (item != null) {
-            //搜索的内容
             if (item.isSearchContent()) {
-
-            }
-            if (item.is_dir) {
-                FolderDetailDialogFragment.show(
-                        item.repo_id,
-                        item.fullpath,
-                        item.name,
-                        item.size,
-                        0,
-                        PERMISSION_R,
-                        getSupportFragmentManager());
+                if (!sFileSearchAdapter.isItemExpand(position)) {
+                    sFileSearchAdapter.expandItem(position);
+                } else {
+                    sFileSearchAdapter.closeItem(position);
+                }
             } else {
-                FileDetailDialogFragment.show(
-                        item.repo_id,
-                        item.fullpath,
-                        item.name,
-                        item.size,
-                        0,
-                        PERMISSION_R,
-                        getSupportFragmentManager());
+                lookDetail(item);
+            }
+        }
+    }
+
+    private String getDirPath(String fullPath) {
+        if (!TextUtils.isEmpty(fullPath)) {
+            int indexOf = fullPath.lastIndexOf("/");
+            if (indexOf >= 0) {
+                return fullPath.substring(0, indexOf + 1);
+            }
+        }
+        return fullPath;
+    }
+
+    /**
+     * 查看详情
+     *
+     * @param item
+     */
+    private void lookDetail(SFileSearchEntity item) {
+        if (item == null) return;
+        if (item.is_dir) {
+            FolderDetailDialogFragment.show(
+                    item.repo_id,
+                    getDirPath(item.fullpath),
+                    item.name,
+                    item.size,
+                    0,
+                    PERMISSION_R,
+                    getSupportFragmentManager());
+        } else {
+            FileDetailDialogFragment.show(
+                    item.repo_id,
+                    getDirPath(item.fullpath),
+                    item.name,
+                    item.size,
+                    0,
+                    PERMISSION_R,
+                    getSupportFragmentManager());
+        }
+    }
+
+    @Override
+    public void onItemChildClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
+        SFileSearchEntity item = sFileSearchAdapter.getItem(position);
+        if (item != null) {
+            switch (view.getId()) {
+                case R.id.document_desc_more_tv:
+                    lookDetail(item);
+                    break;
+                case R.id.document_detail_iv:
+                    lookDetail(item);
+                    break;
             }
         }
     }

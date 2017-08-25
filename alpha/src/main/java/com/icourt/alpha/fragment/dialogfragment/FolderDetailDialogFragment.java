@@ -37,7 +37,7 @@ public class FolderDetailDialogFragment extends FileDetailsBaseDialogFragment {
     protected static final String KEY_LOCATION_TAB_INDEX = "locationPage";//定位的tab
 
     public static void show(@NonNull String fromRepoId,
-                            String fromRepoFilePath,
+                            String fromRepoFileDirPath,
                             String fileName,
                             long fileSize,
                             @IntRange(from = 0, to = 2) int locationTabIndex,
@@ -50,12 +50,12 @@ public class FolderDetailDialogFragment extends FileDetailsBaseDialogFragment {
         if (fragment != null) {
             mFragTransaction.remove(fragment);
         }
-        show(newInstance(fromRepoId, fromRepoFilePath, fileName, fileSize, locationTabIndex, repoPermission), tag, mFragTransaction);
+        show(newInstance(fromRepoId, fromRepoFileDirPath, fileName, fileSize, locationTabIndex, repoPermission), tag, mFragTransaction);
     }
 
     public static FolderDetailDialogFragment newInstance(
             String fromRepoId,
-            String fromRepoFilePath,
+            String fromRepoFileDirPath,
             String fileName,
             long fileSize,
             @IntRange(from = 0, to = 2) int locationTabIndex,
@@ -63,7 +63,7 @@ public class FolderDetailDialogFragment extends FileDetailsBaseDialogFragment {
         FolderDetailDialogFragment fragment = new FolderDetailDialogFragment();
         Bundle args = new Bundle();
         args.putString(KEY_SEA_FILE_FROM_REPO_ID, fromRepoId);
-        args.putString(KEY_SEA_FILE_DIR_PATH, fromRepoFilePath);
+        args.putString(KEY_SEA_FILE_DIR_PATH, fromRepoFileDirPath);
         args.putInt(KEY_LOCATION_TAB_INDEX, locationTabIndex);
         args.putString(KEY_SEA_FILE_REPO_PERMISSION, repoPermission);
         args.putLong(KEY_SEA_FILE_SIZE, fileSize);

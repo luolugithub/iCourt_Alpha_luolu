@@ -50,17 +50,25 @@
                 android:text="45.6M, 5天前"
                 android:textSize="@dimen/alpha_font_size_mini_lowest" />
         </LinearLayout>
+
+        <ImageView
+            android:id="@+id/document_detail_iv"
+            android:layout_width="46dp"
+            android:layout_height="46dp"
+            android:padding="15dp"
+            android:src="@mipmap/icon_about_16" />
     </LinearLayout>
 
     <TextView
         android:id="@+id/document_desc_more_tv"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="60dp"
-        android:layout_marginRight="15dp"
+        android:background="@android:color/white"
         android:ellipsize="end"
         android:maxLines="3"
-        android:layout_marginBottom="11dp"
+        android:paddingBottom="11dp"
+        android:paddingLeft="60dp"
+        android:paddingRight="15dp"
         android:text=".....aaaa......"
         android:textSize="@dimen/alpha_font_size_mini_lowest" />
 
