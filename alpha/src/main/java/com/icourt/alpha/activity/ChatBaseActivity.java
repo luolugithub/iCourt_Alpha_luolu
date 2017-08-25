@@ -6,7 +6,6 @@ import android.os.Handler;
 import android.support.annotation.CheckResult;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.annotation.UiThread;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.text.TextUtils;
@@ -19,12 +18,7 @@ import com.icourt.alpha.adapter.ChatAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.constants.Const;
-import com.icourt.alpha.db.convertor.IConvertModel;
-import com.icourt.alpha.db.convertor.ListConvertor;
-import com.icourt.alpha.db.dbmodel.ContactDbModel;
-import com.icourt.alpha.db.dbservice.ContactDbService;
 import com.icourt.alpha.entity.bean.AlphaUserInfo;
-import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.icourt.alpha.entity.bean.IMMessageCustomBody;
 import com.icourt.alpha.entity.bean.MsgConvert2Task;
 import com.icourt.alpha.entity.event.MessageEvent;
@@ -78,7 +72,6 @@ import io.reactivex.ObservableOnSubscribe;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
-import io.realm.RealmResults;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import retrofit2.Call;
@@ -152,7 +145,6 @@ public abstract class ChatBaseActivity
             teamUpdates(teams);
         }
     };
-    private ContactDbService contactDbService;
     private AlphaUserInfo loadedLoginUserInfo;
 
     @Override
@@ -160,7 +152,6 @@ public abstract class ChatBaseActivity
         super.onCreate(savedInstanceState);
         EventBus.getDefault().register(this);
         loadedLoginUserInfo = getLoginUserInfo();
-        contactDbService = new ContactDbService(getLoginUserId());
         registerObservers(true);
     }
 
@@ -192,9 +183,6 @@ public abstract class ChatBaseActivity
     protected void onDestroy() {
         clearUnReadNum();
         registerObservers(false);
-        if (contactDbService != null) {
-            contactDbService.releaseService();
-        }
         EventBus.getDefault().unregister(this);
         if (mHandler != null) {
             mHandler.removeCallbacksAndMessages(null);
@@ -313,58 +301,6 @@ public abstract class ChatBaseActivity
                 });
     }
 
-
-    /**
-     * 查询本地联系人
-     *
-     * @return
-     */
-    @UiThread
-    @Nullable
-    @CheckResult
-    protected final List<GroupContactBean> queryAllContactFromDb() {
-        if (contactDbService != null && contactDbService.isServiceAvailable()) {
-            RealmResults<ContactDbModel> contactDbModels = contactDbService.queryAll();
-            if (contactDbModels != null) {
-                List<GroupContactBean> contactBeen = ListConvertor.convertList(new ArrayList<IConvertModel<GroupContactBean>>(contactDbModels));
-                return contactBeen;
-            }
-        }
-        return null;
-    }
-
-    /**
-     * 异步查询本地联系人
-     */
-    protected final void queryAllContactFromDbAsync(@NonNull Consumer<List<GroupContactBean>> consumer) {
-        if (consumer == null) return;
-        Observable.create(new ObservableOnSubscribe<List<GroupContactBean>>() {
-            @Override
-            public void subscribe(ObservableEmitter<List<GroupContactBean>> e) throws Exception {
-                ContactDbService threadContactDbService = null;
-                try {
-                    if (!e.isDisposed()) {
-                        threadContactDbService = new ContactDbService(getLoginUserId());
-                        RealmResults<ContactDbModel> contactDbModels = threadContactDbService.queryAll();
-                        if (contactDbModels != null) {
-                            List<GroupContactBean> contactBeen = ListConvertor.convertList(new ArrayList<IConvertModel<GroupContactBean>>(contactDbModels));
-                            e.onNext(contactBeen);
-                        }
-                        e.onComplete();
-                    }
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                } finally {
-                    if (threadContactDbService != null) {
-                        threadContactDbService.releaseService();
-                    }
-                }
-            }
-        }).compose(this.<List<GroupContactBean>>bindToLifecycle())
-                .subscribeOn(Schedulers.newThread())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(consumer);
-    }
 
 
     private void registerObservers(boolean register) {

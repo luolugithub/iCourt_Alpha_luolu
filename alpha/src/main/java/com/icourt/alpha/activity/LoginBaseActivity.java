@@ -16,6 +16,7 @@ import com.icourt.alpha.http.callback.BaseCallBack;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.exception.ResponseException;
 import com.icourt.alpha.http.httpmodel.ResEntity;
+import com.icourt.alpha.service.SyncDataService;
 import com.icourt.alpha.utils.JsonUtils;
 import com.icourt.alpha.utils.UserPreferences;
 import com.icourt.api.RequestUtils;
@@ -181,6 +182,8 @@ public class LoginBaseActivity extends BaseUmengActivity {
         if (result == null) {
             dismissLoadingDialog();
         } else {
+            //同步联系人
+            SyncDataService.startSyncContact(getContext());
             //模拟用户
             /*result.accid = "D6A26515644911E7855190E2BACDCE28";
             result.imToken = "f76149045c6ee5e74d82f93a32869c6e";*/

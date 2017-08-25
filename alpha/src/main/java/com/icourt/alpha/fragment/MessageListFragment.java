@@ -26,6 +26,9 @@ import com.icourt.alpha.adapter.IMSessionAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.HeaderFooterAdapter;
 import com.icourt.alpha.adapter.baseadapter.adapterObserver.DataChangeAdapterObserver;
+import com.icourt.alpha.db.convertor.IConvertModel;
+import com.icourt.alpha.db.convertor.ListConvertor;
+import com.icourt.alpha.db.dbmodel.ContactDbModel;
 import com.icourt.alpha.db.dbservice.ContactDbService;
 import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.icourt.alpha.entity.bean.GroupContactBean;
@@ -80,6 +83,8 @@ import io.reactivex.ObservableOnSubscribe;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
+import io.realm.RealmChangeListener;
+import io.realm.RealmResults;
 import retrofit2.Call;
 import retrofit2.Response;
 
@@ -102,6 +107,22 @@ public class MessageListFragment extends BaseRecentContactFragment
     private final List<GroupContactBean> localGroupContactBeans = new ArrayList<>();
     private final List<String> localSetTops = new ArrayList<>();
     private final List<String> localNoDisturbs = new ArrayList<>();
+    ContactDbService contactDbService;
+    RealmChangeListener<RealmResults<ContactDbModel>> realmResultsRealmChangeListener = new RealmChangeListener<RealmResults<ContactDbModel>>() {
+        @Override
+        public void onChange(RealmResults<ContactDbModel> contactDbModels) {
+            if (contactDbModels != null) {
+                log("----------->联系人数据库发生改变");
+                localGroupContactBeans.clear();
+                localGroupContactBeans.addAll(ListConvertor.convertList(new ArrayList<IConvertModel<GroupContactBean>>(contactDbModels)));
+                if (recyclerView != null
+                        && imSessionAdapter != null) {
+                    imSessionAdapter.notifyDataSetChanged();
+                }
+            }
+        }
+    };
+
     @BindView(R.id.login_status_tv)
     TextView loginStatusTv;
     @BindView(R.id.start_chat_tv)
@@ -174,6 +195,19 @@ public class MessageListFragment extends BaseRecentContactFragment
         }
     }
 
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        contactDbService = new ContactDbService(getLoginUserId());
+        RealmResults<ContactDbModel> contactDbModels = contactDbService.queryAll();
+        if (contactDbModels != null) {
+            localGroupContactBeans.clear();
+            localGroupContactBeans.addAll(ListConvertor.convertList(new ArrayList<IConvertModel<GroupContactBean>>(contactDbModels)));
+            contactDbModels.removeChangeListener(realmResultsRealmChangeListener);
+            contactDbModels.addChangeListener(realmResultsRealmChangeListener);
+        }
+    }
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -188,6 +222,9 @@ public class MessageListFragment extends BaseRecentContactFragment
         if (unbinder != null)
             unbinder.unbind();
         super.onDestroy();
+        if (contactDbService != null) {
+            contactDbService.releaseService();
+        }
         EventBus.getDefault().unregister(this);
     }
 
@@ -594,7 +631,7 @@ public class MessageListFragment extends BaseRecentContactFragment
     @Override
     public void setUserVisibleHint(boolean isVisibleToUser) {
         super.setUserVisibleHint(isVisibleToUser);
-        if (isVisibleToUser) {
+        if (isVisibleToUser && imSessionAdapter != null) {
             getData(true);
         }
     }
@@ -654,16 +691,6 @@ public class MessageListFragment extends BaseRecentContactFragment
             }
         });
 
-        queryAllContactFromDbAsync(new Consumer<List<GroupContactBean>>() {
-            @Override
-            public void accept(List<GroupContactBean> groupContactBeanList) throws Exception {
-                if (groupContactBeanList != null) {
-                    localGroupContactBeans.clear();
-                    localGroupContactBeans.addAll(groupContactBeanList);
-                    imSessionAdapter.notifyDataSetChanged();
-                }
-            }
-        });
 
         // 查询最近联系人列表数据
         NIMClient.getService(MsgService.class)

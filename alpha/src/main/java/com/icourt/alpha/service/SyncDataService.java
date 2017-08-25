@@ -42,7 +42,7 @@ public class SyncDataService extends IntentService {
      *
      * @param context
      */
-    public static void startSysnContact(@NonNull Context context) {
+    public static void startSyncContact(@NonNull Context context) {
         if (context == null) return;
         Intent intent = new Intent(context, SyncDataService.class);
         intent.setAction(ACTION_SYNC_CONTACT);
@@ -53,7 +53,9 @@ public class SyncDataService extends IntentService {
     protected void onHandleIntent(@Nullable Intent intent) {
         if (intent != null) {
             if (TextUtils.equals(intent.getAction(), ACTION_SYNC_CONTACT)) {
-                syncContacts();
+                if (LoginInfoUtils.isUserLogin()) {
+                    syncContacts();
+                }
             }
         }
     }
@@ -70,9 +72,9 @@ public class SyncDataService extends IntentService {
                 contactDbService.deleteAll();
                 contactDbService.insertOrUpdateAsyn(new ArrayList<IConvertModel<ContactDbModel>>(execute.body().result));
             }
-        } catch (Exception e) {
+        } catch (Throwable e) {
             e.printStackTrace();
-            BugUtils.bugSync("同步联系人", e);
+            BugUtils.bugSync("同步联系人异常", e);
             LogUtils.d("----------->SyncDataService syncContacts 失败:" + e);
         }
     }
