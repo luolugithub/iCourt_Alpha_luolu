@@ -39,7 +39,7 @@ import retrofit2.Call;
 import retrofit2.Response;
 
 /**
- * Description 未完成任务
+ * Description 已完成任务
  * Company Beijing icourt
  * author  lu.zhao  E-mail:zhaolu@icourt.cc
  * date createTime：17/8/15
@@ -150,7 +150,7 @@ public class FinishedTaskFragment extends BaseFragment implements BaseRecyclerAd
         super.getData(isRefresh);
         taskSelectAdapter.clearSelected();
         if (!TextUtils.isEmpty(projectId)) {
-            getApi().projectQueryTaskList(projectId, 1, 0, 1, -1)
+            getApi().projectQueryTaskList(getLoginUserId(),projectId, 1, 0, 1, -1)
                     .enqueue(new SimpleCallBack<TaskEntity>() {
                         @Override
                         public void onSuccess(Call<ResEntity<TaskEntity>> call, Response<ResEntity<TaskEntity>> response) {
@@ -213,7 +213,7 @@ public class FinishedTaskFragment extends BaseFragment implements BaseRecyclerAd
         taskSelectAdapter.clearSelected();
         if (!TextUtils.isEmpty(projectId)) {
             //pms 环境有
-            getApi().taskQueryByName(null, taskName, 0, 0, projectId)
+            getApi().taskQueryByName(getLoginUserId(), taskName, 1, 0, projectId)
                     .enqueue(new SimpleCallBack<TaskEntity>() {
                         @Override
                         public void onSuccess(Call<ResEntity<TaskEntity>> call, Response<ResEntity<TaskEntity>> response) {
@@ -225,7 +225,7 @@ public class FinishedTaskFragment extends BaseFragment implements BaseRecyclerAd
                     });
         } else {
             //pms 环境有
-            getApi().taskQueryByName(getLoginUserId(), taskName, 0, 0)
+            getApi().taskQueryByName(getLoginUserId(), taskName, 1, 0)
                     .enqueue(new SimpleCallBack<TaskEntity>() {
                         @Override
                         public void onSuccess(Call<ResEntity<TaskEntity>> call, Response<ResEntity<TaskEntity>> response) {

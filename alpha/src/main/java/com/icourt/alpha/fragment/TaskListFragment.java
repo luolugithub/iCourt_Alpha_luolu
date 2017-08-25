@@ -936,6 +936,36 @@ public class TaskListFragment extends BaseFragment implements
         return -1;
     }
 
+    /**
+     * 判断item是否显示在当前屏幕
+     *
+     * @param parentPos
+     * @param childPos
+     * @return
+     */
+    private boolean isShowInScreen(int parentPos, int childPos) {
+        int laseParentVisible = -1;
+        if (parentPos >= 0) {
+            if (childPos >= 0) {
+                if (linearLayoutManager != null) {
+                    laseParentVisible = linearLayoutManager.findLastCompletelyVisibleItemPosition();
+                }
+                BaseArrayRecyclerAdapter.ViewHolder viewHolderForAdapterPosition = (BaseArrayRecyclerAdapter.ViewHolder) recyclerView.findViewHolderForAdapterPosition(parentPos);
+                if (viewHolderForAdapterPosition != null) {
+                    RecyclerView recyclerview = viewHolderForAdapterPosition.obtainView(R.id.parent_item_task_recyclerview);
+                    LinearLayoutManager layoutManager = (LinearLayoutManager) recyclerview.getLayoutManager();
+                    if (layoutManager != null) {
+                        int lastVisibleItem = layoutManager.findLastCompletelyVisibleItemPosition();
+                        int viewTop = layoutManager.getChildAt(childPos).getTop();
+                        int screenheight = (int) DensityUtil.getHeightInPx(getContext());
+                        return laseParentVisible <= parentPos && lastVisibleItem <= childPos && viewTop < screenheight;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
     @Override
     public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
         if (adapter instanceof TaskItemAdapter) {

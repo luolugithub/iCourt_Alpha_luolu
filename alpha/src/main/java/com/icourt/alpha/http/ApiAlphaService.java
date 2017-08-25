@@ -449,7 +449,8 @@ public interface ApiAlphaService {
      * @return
      */
     @GET("api/v2/taskflow/queryMatterTask")
-    Call<ResEntity<TaskEntity>> projectQueryTaskList(@Query("matterId") String projectId,
+    Call<ResEntity<TaskEntity>> projectQueryTaskList(@Query("assignTos") String assignTos,
+                                                     @Query("matterId") String projectId,
                                                      @Query("stateType") int stateType,
                                                      @Query("type") int type,
                                                      @Query("pageIndex") int pageIndex,
@@ -826,7 +827,7 @@ public interface ApiAlphaService {
      */
     @GET("api/v1/matters/attorney")
     Call<ResEntity<List<TaskEntity.TaskItemEntity.AttendeeUserEntity>>> taskOwerListQuery(@Query("id") String project,
-                                                                       @Query("name") String name);
+                                                                                          @Query("name") String name);
 
 
     /**
@@ -1283,6 +1284,7 @@ public interface ApiAlphaService {
     /**
      * 恢复已删除的任务
      * 文档地址：https://dev.alphalawyer.cn/ilaw/swagger/index.html#!/taskflow-api/returnTaskFlowUsingPUT
+     *
      * @param taskId
      * @return
      */
@@ -1292,6 +1294,7 @@ public interface ApiAlphaService {
     /**
      * 清空所有已删除的任务
      * 文档地址：https://dev.alphalawyer.cn/ilaw/swagger/index.html#!/taskflow-api/deleteTaskFlowByIdsUsingDELETE
+     *
      * @param ids
      * @return
      */
@@ -1301,6 +1304,7 @@ public interface ApiAlphaService {
     /**
      * 获取任务下计时列表
      * 文档地址：https://dev.alphalawyer.cn/ilaw/swagger/index.html#!/timing-api/findTimingByTaskIdUsingGET
+     *
      * @param taskId
      * @return
      */
