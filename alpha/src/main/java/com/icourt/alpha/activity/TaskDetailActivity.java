@@ -513,7 +513,7 @@ public class TaskDetailActivity extends BaseActivity
                                         if (!taskItemEntity.state) {
                                             if (taskItemEntity.attendeeUsers != null) {
                                                 if (taskItemEntity.attendeeUsers.size() > 1) {
-                                                    showDeleteDialog("该任务为多人任务，确定要完成吗?", SHOW_FINISH_DIALOG);
+                                                    showDeleteDialog("该任务由多人负责，确定完成?", SHOW_FINISH_DIALOG);
                                                 } else {
                                                     updateTask(taskItemEntity, true, taskCheckbox);
                                                 }

@@ -58,6 +58,7 @@ public class TaskAdapter extends BaseArrayRecyclerAdapter<TaskEntity>
         BaseRecyclerAdapter.OnItemChildClickListener {
 
     private OnShowFragmenDialogListener onShowFragmenDialogListener;
+    private OnUpdateNewTaskCountListener onUpdateNewTaskCountListener;
     private static final int SHOW_DELETE_DIALOG = 0;//删除提示对话框
     private static final int SHOW_FINISH_DIALOG = 1;//完成任务提示对话框
 
@@ -85,6 +86,10 @@ public class TaskAdapter extends BaseArrayRecyclerAdapter<TaskEntity>
 
     public void setOnShowFragmenDialogListener(OnShowFragmenDialogListener onShowFragmenDialogListener) {
         this.onShowFragmenDialogListener = onShowFragmenDialogListener;
+    }
+
+    public void setOnUpdateNewTaskCountListener(OnUpdateNewTaskCountListener onUpdateNewTaskCountListener) {
+        this.onUpdateNewTaskCountListener = onUpdateNewTaskCountListener;
     }
 
     @Override
@@ -468,7 +473,8 @@ public class TaskAdapter extends BaseArrayRecyclerAdapter<TaskEntity>
                         }
                     }
                     itemEntity.state = state;
-
+                    if (onUpdateNewTaskCountListener != null)
+                        onUpdateNewTaskCountListener.updateNewTaskCount(itemEntity);
                 }
             }
 
@@ -491,6 +497,8 @@ public class TaskAdapter extends BaseArrayRecyclerAdapter<TaskEntity>
             @Override
             public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
                 dismissLoadingDialog();
+                if (onUpdateNewTaskCountListener != null)
+                    onUpdateNewTaskCountListener.updateNewTaskCount(itemEntity);
                 EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION, itemEntity));
             }
 
@@ -531,5 +539,9 @@ public class TaskAdapter extends BaseArrayRecyclerAdapter<TaskEntity>
         void showDateSelectDialog(TaskEntity.TaskItemEntity taskItemEntity);
 
         void showProjectSelectDialog(TaskEntity.TaskItemEntity taskItemEntity);
+    }
+
+    public interface OnUpdateNewTaskCountListener {
+        void updateNewTaskCount(TaskEntity.TaskItemEntity taskItemEntity);
     }
 }

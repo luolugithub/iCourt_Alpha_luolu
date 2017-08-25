@@ -625,6 +625,7 @@ public class TaskListCalendarFragment extends BaseFragment {
      * @param tasks
      */
     private void updateClendarTasks(List<TaskEntity.TaskItemEntity> tasks) {
+        if (viewPager == null || isDetached()) return;
         if (tasks != null && !tasks.isEmpty()) {
             updateClendarTasks(new ArrayList<TaskEntity.TaskItemEntity>(tasks));
         }

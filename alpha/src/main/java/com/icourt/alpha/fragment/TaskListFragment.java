@@ -98,8 +98,13 @@ import static com.icourt.alpha.fragment.TabTaskFragment.select_position;
  * version 2.0.0
  */
 
-public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShowFragmenDialogListener,
-        OnFragmentCallBackListener, ProjectSelectDialogFragment.OnProjectTaskGroupSelectListener, BaseRecyclerAdapter.OnItemClickListener, BaseRecyclerAdapter.OnItemChildClickListener {
+public class TaskListFragment extends BaseFragment implements
+        TaskAdapter.OnShowFragmenDialogListener,
+        TaskAdapter.OnUpdateNewTaskCountListener,
+        OnFragmentCallBackListener,
+        ProjectSelectDialogFragment.OnProjectTaskGroupSelectListener,
+        BaseRecyclerAdapter.OnItemClickListener,
+        BaseRecyclerAdapter.OnItemChildClickListener {
 
     public static final int TYPE_ALL = 0;//全部
     public static final int TYPE_NEW = 1;//新任务
@@ -202,6 +207,7 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
             taskAdapter.setEditTask(true);
             taskAdapter.setAddTime(true);
             taskAdapter.setOnShowFragmenDialogListener(this);
+            taskAdapter.setOnUpdateNewTaskCountListener(this);
         } else if (stateType == 1 || stateType == 3) {
             headerFooterItemAdapter = new HeaderFooterAdapter<>(taskItemAdapter = new TaskItemAdapter());
 
@@ -1191,6 +1197,9 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
                     if (totalCount > 0) {
                         newTaskCardview.setVisibility(View.VISIBLE);
                         newTaskCountTv.setText(String.valueOf(totalCount));
+                    } else {
+                        newTaskCardview.setVisibility(View.GONE);
+                        newTaskEntities.clear();
                     }
                 }
             }
@@ -1513,6 +1522,24 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
                     }
                 }
             }
+
+            @Override
+            public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
+                super.onFailure(call, t);
+                dismissLoadingDialog();
+            }
         });
+    }
+
+    @Override
+    public void updateNewTaskCount(TaskEntity.TaskItemEntity taskItemEntity) {
+        if (taskItemEntity != null) {
+            if (newTaskEntities != null && newTaskEntities.size() >= 1) {
+                if (newTaskEntities.contains(taskItemEntity)) {
+                    newTaskEntities.remove(taskItemEntity);
+                }
+            }
+        }
+        getNewTasksCount();
     }
 }
