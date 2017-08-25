@@ -206,6 +206,21 @@ public class BaseActivity
     }
 
     /**
+     * 设置标题右上角的操作按钮
+     *
+     * @param charSequence
+     * @return
+     */
+    public boolean setTitleActionTextView(CharSequence charSequence) {
+        TextView titleActionTextView = getTitleActionTextView();
+        if (titleActionTextView != null) {
+            titleActionTextView.setText(charSequence);
+            return true;
+        }
+        return false;
+    }
+
+    /**
      * 获取数据 标准方法 请主动调用
      *
      * @param isRefresh 是否刷新

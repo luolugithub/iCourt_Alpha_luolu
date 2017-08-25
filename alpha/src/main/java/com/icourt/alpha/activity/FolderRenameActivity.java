@@ -1,8 +1,10 @@
 package com.icourt.alpha.activity;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.support.annotation.NonNull;
+import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
 import android.widget.EditText;
 
@@ -14,6 +16,7 @@ import com.icourt.alpha.utils.FileUtils;
 import com.icourt.alpha.utils.GlideUtils;
 import com.icourt.alpha.utils.IMUtils;
 import com.icourt.alpha.utils.SFileTokenUtils;
+import com.icourt.alpha.utils.StringUtils;
 
 import retrofit2.Call;
 import retrofit2.Response;
@@ -71,6 +74,7 @@ public class FolderRenameActivity extends FolderCreateActivity {
             setTitle("重命名文件夹");
             inputTypeIv.setImageResource(R.mipmap.folder);
         }
+        setTitleActionTextView("保存");
         inputNameEt.setText(getFolderEditNamePart());
         inputNameEt.setSelection(inputNameEt.getText().length());
     }
@@ -112,7 +116,7 @@ public class FolderRenameActivity extends FolderCreateActivity {
     protected void onSubmitInput(EditText et) {
         if (checkInput(et)) {
             if (folderDocumentEntity == null) return;
-            String fileName = et.getText().toString().concat(fileSuffix);
+            String fileName = et.getText().toString().trim().concat(fileSuffix);
             //无需提交
             if (TextUtils.equals(fileName, folderDocumentEntity.name)) {
                 finish();
@@ -171,25 +175,41 @@ public class FolderRenameActivity extends FolderCreateActivity {
     }
 
     @Override
-    protected boolean onCancelSubmitInput(EditText et) {
+    protected boolean onCancelSubmitInput(final EditText et) {
         if (!TextUtils.isEmpty(et.getText())) {
-            String fileName = et.getText().toString().concat(fileSuffix);
+            String fileName = et.getText().toString().trim().concat(fileSuffix);
             //无需提交
             if (TextUtils.equals(fileName, folderDocumentEntity.name)) {
                 finish();
                 return false;
             }
         }
-        return super.onCancelSubmitInput(et);
+        new AlertDialog.Builder(getContext())
+                .setTitle("提示")
+                .setMessage("保存本次编辑?")
+                .setPositiveButton("保存", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        onSubmitInput(et);
+                    }
+                })
+                .setNegativeButton("不保存", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        dialogInterface.dismiss();
+                        finish();
+                    }
+                }).show();
+        return true;
     }
 
     @Override
     protected boolean checkInput(EditText et) {
-        if (et.getText().toString().endsWith(" ")) {
+        if (StringUtils.isEmpty(et.getText())) {
             if (folderDocumentEntity.isDir()) {
-                showTopSnackBar("文件夹名称末尾不得有空格");
+                showTopSnackBar("文件夹名称为空");
             } else {
-                showTopSnackBar("文件名称末尾不得有空格");
+                showTopSnackBar("文件名称为空");
             }
             return false;
         }

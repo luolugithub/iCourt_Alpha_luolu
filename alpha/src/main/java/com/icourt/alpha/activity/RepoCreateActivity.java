@@ -1,16 +1,15 @@
 package com.icourt.alpha.activity;
 
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.support.annotation.NonNull;
-import android.support.v7.app.AlertDialog;
 import android.text.InputFilter;
-import android.text.TextUtils;
 import android.widget.EditText;
 
 import com.icourt.alpha.entity.bean.RepoEntity;
 import com.icourt.alpha.http.callback.SFileCallBack;
+import com.icourt.alpha.utils.SpUtils;
+import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.widget.filter.SFileNameFilter;
 
 import org.greenrobot.eventbus.EventBus;
@@ -34,6 +33,8 @@ import retrofit2.Response;
  * version 2.1.0
  */
 public class RepoCreateActivity extends SFileEditBaseActivity {
+    private static final String KEY_CACHE_REPO = "key_cache_repo" + RepoCreateActivity.class.getSimpleName();//缓存的folder名字
+
     /**
      * 资料库创建
      *
@@ -49,10 +50,13 @@ public class RepoCreateActivity extends SFileEditBaseActivity {
     protected void initView() {
         super.initView();
         setTitle("新建资料库");
+        setTitleActionTextView("完成");
         inputNameEt.setHint("资料库名称");
         inputNameEt.setFilters(new InputFilter[]{
                 new InputFilter.LengthFilter(getMaxInputLimitNum()),
                 new SFileNameFilter()});
+        inputNameEt.setText(SpUtils.getInstance().getStringData(KEY_CACHE_REPO, ""));
+        inputNameEt.setSelection(inputNameEt.getText().length());
     }
 
     @Override
@@ -64,12 +68,13 @@ public class RepoCreateActivity extends SFileEditBaseActivity {
     protected void onSubmitInput(EditText et) {
         if (checkInput(et)) {
             showLoadingDialog("创建中...");
-            getSFileApi().documentRootCreate(et.getText().toString())
+            getSFileApi().documentRootCreate(et.getText().toString().trim())
                     .enqueue(new SFileCallBack<RepoEntity>() {
                         @Override
                         public void onSuccess(Call<RepoEntity> call, Response<RepoEntity> response) {
                             dismissLoadingDialog();
                             showToast("创建资料库成功");
+                            SpUtils.getInstance().remove(KEY_CACHE_REPO);
                             EventBus.getDefault().post(response.body());
                             finish();
                         }
@@ -85,33 +90,17 @@ public class RepoCreateActivity extends SFileEditBaseActivity {
 
     @Override
     protected boolean onCancelSubmitInput(final EditText et) {
-        if (!TextUtils.isEmpty(et.getText())) {
-            new AlertDialog.Builder(getContext())
-                    .setTitle("提示")
-                    .setMessage("保存本次编辑?")
-                    .setPositiveButton("保存", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
-                            onSubmitInput(et);
-                        }
-                    })
-                    .setNegativeButton("不保存", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
-                            dialogInterface.dismiss();
-                            finish();
-                        }
-                    }).show();
-        } else {
-            finish();
+        if (!StringUtils.isEmpty(et.getText())) {
+            SpUtils.getInstance().putData(KEY_CACHE_REPO, et.getText().toString());
         }
+        finish();
         return true;
     }
 
 
     protected boolean checkInput(EditText et) {
-        if (et.getText().toString().endsWith(" ")) {
-            showTopSnackBar("资料库名称末尾不得有空格");
+        if (StringUtils.isEmpty(et.getText())) {
+            showTopSnackBar("资料库名称为空");
             return false;
         }
         return true;

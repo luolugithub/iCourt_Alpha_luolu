@@ -1,8 +1,10 @@
 package com.icourt.alpha.activity;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.support.annotation.NonNull;
+import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
 import android.widget.EditText;
 
@@ -43,6 +45,7 @@ public class RepoRenameActivity extends RepoCreateActivity {
     protected void initView() {
         super.initView();
         setTitle("重命名资料库");
+        setTitleActionTextView("保存");
         inputNameEt.setHint("资料库名称");
         paramRepoEntity = (RepoEntity) getIntent().getSerializableExtra("data");
         if (paramRepoEntity == null) {
@@ -56,9 +59,25 @@ public class RepoRenameActivity extends RepoCreateActivity {
     protected boolean onCancelSubmitInput(final EditText et) {
         if (TextUtils.equals(paramRepoEntity.repo_name, et.getText())) {
             finish();
-            return false;
+            return true;
         }
-        return super.onCancelSubmitInput(et);
+        new AlertDialog.Builder(getContext())
+                .setTitle("提示")
+                .setMessage("保存本次编辑?")
+                .setPositiveButton("保存", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        onSubmitInput(et);
+                    }
+                })
+                .setNegativeButton("不保存", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        dialogInterface.dismiss();
+                        finish();
+                    }
+                }).show();
+        return true;
     }
 
     @Override
@@ -66,7 +85,7 @@ public class RepoRenameActivity extends RepoCreateActivity {
         if (checkInput(et)) {
             if (paramRepoEntity == null) return;
             showLoadingDialog("更改中...");
-            paramRepoEntity.repo_name = et.getText().toString();
+            paramRepoEntity.repo_name = et.getText().toString().trim();
             paramRepoEntity.last_modified = DateUtils.millis();
             getSFileApi().documentRootUpdateName(
                     paramRepoEntity.repo_id,

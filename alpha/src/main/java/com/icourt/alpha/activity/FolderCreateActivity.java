@@ -8,6 +8,8 @@ import android.widget.EditText;
 import com.google.gson.JsonObject;
 import com.icourt.alpha.entity.bean.RepoEntity;
 import com.icourt.alpha.http.callback.SFileCallBack;
+import com.icourt.alpha.utils.SpUtils;
+import com.icourt.alpha.utils.StringUtils;
 import com.icourt.api.RequestUtils;
 
 import retrofit2.Call;
@@ -20,7 +22,8 @@ import retrofit2.Response;
  * date createTime：2017/8/18
  * version 2.1.0
  */
-public class FolderCreateActivity extends RepoCreateActivity {
+public class FolderCreateActivity extends SFileEditBaseActivity {
+    private static final String KEY_CACHE_FOLDER = "key_cache_folder" + FolderCreateActivity.class.getSimpleName();//缓存的folder名字
     protected static final String KEY_SEA_FILE_REPO_ID = "seaFileRepoId";//仓库id
     protected static final String KEY_SEA_FILE_DIR_PATH = "seaFileDirPath";//目录路径
 
@@ -54,7 +57,15 @@ public class FolderCreateActivity extends RepoCreateActivity {
     protected void initView() {
         super.initView();
         setTitle("新建文件夹");
+        setTitleActionTextView("完成");
         inputNameEt.setHint("文件夹名称");
+        inputNameEt.setText(SpUtils.getInstance().getStringData(KEY_CACHE_FOLDER, ""));
+        inputNameEt.setSelection(inputNameEt.getText().length());
+    }
+
+    @Override
+    protected int getMaxInputLimitNum() {
+        return 50;
     }
 
     @Override
@@ -65,13 +76,14 @@ public class FolderCreateActivity extends RepoCreateActivity {
             operationJsonObject.addProperty("operation", "mkdir");
             getSFileApi().folderCreate(
                     getSeaFileRepoId(),
-                    String.format("%s%s", getSeaFileDirPath(), et.getText().toString()),
+                    String.format("%s%s", getSeaFileDirPath(), et.getText().toString().trim()),
                     RequestUtils.createJsonBody(operationJsonObject.toString()))
                     .enqueue(new SFileCallBack<RepoEntity>() {
                         @Override
                         public void onSuccess(Call<RepoEntity> call, Response<RepoEntity> response) {
                             dismissLoadingDialog();
                             showToast("创建文件夹成功");
+                            SpUtils.getInstance().remove(KEY_CACHE_FOLDER);
                             finish();
                         }
 
@@ -85,12 +97,20 @@ public class FolderCreateActivity extends RepoCreateActivity {
     }
 
     @Override
+    protected boolean onCancelSubmitInput(EditText et) {
+        if (!StringUtils.isEmpty(et.getText())) {
+            SpUtils.getInstance().putData(KEY_CACHE_FOLDER, et.getText().toString());
+        }
+        finish();
+        return true;
+    }
+
     protected boolean checkInput(EditText et) {
-        if (et.getText().toString().endsWith(" ")) {
-            showTopSnackBar("文件夹名称末尾不得有空格");
+        if (StringUtils.isEmpty(et.getText())) {
+            showTopSnackBar("文件夹名称为空");
             return false;
         }
-        return super.checkInput(et);
+        return true;
     }
 }
 
