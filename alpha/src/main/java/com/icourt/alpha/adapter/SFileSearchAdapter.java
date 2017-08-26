@@ -5,7 +5,6 @@ import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.TextUtils;
 import android.text.style.ForegroundColorSpan;
-import android.util.SparseBooleanArray;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -19,7 +18,6 @@ import com.icourt.alpha.utils.GlideUtils;
 import com.icourt.alpha.utils.IMUtils;
 import com.icourt.alpha.utils.SFileTokenUtils;
 
-import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -32,43 +30,10 @@ import java.util.regex.Pattern;
  */
 public class SFileSearchAdapter extends BaseArrayRecyclerAdapter<SFileSearchEntity> {
 
-    private SparseBooleanArray expandArray = new SparseBooleanArray();
-
-
-    @Override
-    public boolean bindData(boolean isRefresh, List<SFileSearchEntity> datas) {
-        expandArray.clear();
-        return super.bindData(isRefresh, datas);
-    }
 
     @Override
     public int bindView(int viewtype) {
         return R.layout.adapter_item_sfile_search;
-    }
-
-    /**
-     * 是否展开模式
-     *
-     * @param position
-     * @return
-     */
-    public boolean isItemExpand(int position) {
-        return expandArray.get(position, false);
-    }
-
-    /**
-     * 展开单个个item
-     *
-     * @param position
-     */
-    public void expandItem(int position) {
-        expandArray.put(position, true);
-        this.notifyDataSetChanged();
-    }
-
-    public void closeItem(int position) {
-        expandArray.put(position, false);
-        this.notifyDataSetChanged();
     }
 
 
@@ -116,8 +81,6 @@ public class SFileSearchAdapter extends BaseArrayRecyclerAdapter<SFileSearchEnti
             document_desc_more_tv.setVisibility(View.GONE);
         } else {
             document_desc_more_tv.setText(getSpanForKeyWord(sFileSearchEntity.content_highlight));
-            holder.bindChildClick(document_desc_more_tv);
-            document_desc_more_tv.setVisibility(expandArray.get(position, false) ? View.VISIBLE : View.GONE);
         }
     }
 

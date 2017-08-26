@@ -63,7 +63,6 @@
         android:id="@+id/document_desc_more_tv"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@android:color/white"
         android:ellipsize="end"
         android:maxLines="3"
         android:paddingBottom="11dp"

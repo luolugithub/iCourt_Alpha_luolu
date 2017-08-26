@@ -46,7 +46,8 @@ import static com.icourt.alpha.constants.SFileConfig.PERMISSION_R;
  * date createTime：2017/8/20
  * version 2.1.0
  */
-public class SFileSearchActivity extends BaseActivity implements BaseRecyclerAdapter.OnItemClickListener, BaseRecyclerAdapter.OnItemChildClickListener {
+public class SFileSearchActivity extends BaseActivity
+        implements BaseRecyclerAdapter.OnItemClickListener, BaseRecyclerAdapter.OnItemChildClickListener {
 
     @BindView(R.id.et_input_name)
     ClearEditText etInputName;
@@ -92,6 +93,7 @@ public class SFileSearchActivity extends BaseActivity implements BaseRecyclerAda
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             etInputName.setTransitionName(transitionName);
         }
+        etInputName.setHint("搜索所有资料库下的文件和文件夹");
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setAdapter(sFileSearchAdapter = new SFileSearchAdapter());
         sFileSearchAdapter.setOnItemClickListener(this);
@@ -234,15 +236,7 @@ public class SFileSearchActivity extends BaseActivity implements BaseRecyclerAda
     public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
         SFileSearchEntity item = sFileSearchAdapter.getItem(position);
         if (item != null) {
-            if (item.isSearchContent()) {
-                if (!sFileSearchAdapter.isItemExpand(position)) {
-                    sFileSearchAdapter.expandItem(position);
-                } else {
-                    sFileSearchAdapter.closeItem(position);
-                }
-            } else {
-                lookDetail(item);
-            }
+            lookDetail(item);
         }
     }
 
@@ -282,9 +276,6 @@ public class SFileSearchActivity extends BaseActivity implements BaseRecyclerAda
         SFileSearchEntity item = sFileSearchAdapter.getItem(position);
         if (item != null) {
             switch (view.getId()) {
-                case R.id.document_desc_more_tv:
-                    lookDetail(item);
-                    break;
                 case R.id.document_detail_iv:
                     lookDetail(item);
                     break;
