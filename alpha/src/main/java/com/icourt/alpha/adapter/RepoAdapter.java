@@ -64,6 +64,6 @@ public class RepoAdapter extends BaseArrayRecyclerAdapter<RepoEntity> {
 
         document_expand_iv.setImageResource(type == 0 ? R.mipmap.ic_open_menu : R.mipmap.icon_about_16);
         document_title_tv.setText(repoEntity.repo_name);
-        document_desc_tv.setText(String.format("%s, %s", FileUtils.bFormat(repoEntity.size), DateUtils.getFormatChatTimeSimple(repoEntity.last_modified)));
+        document_desc_tv.setText(String.format("%s, %s", FileUtils.bFormat(repoEntity.size), DateUtils.getStandardSimpleFormatTime(repoEntity.getUpdateTime())));
     }
 }

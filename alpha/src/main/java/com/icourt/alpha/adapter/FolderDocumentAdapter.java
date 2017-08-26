@@ -127,6 +127,7 @@ public class FolderDocumentAdapter extends SFileImgBaseAdapter<FolderDocumentEnt
     }
 
     private void setItemData(ViewHolder holder, FolderDocumentEntity folderDocumentEntity, int position) {
+        if (folderDocumentEntity == null) return;
         CheckedTextView folder_document_ctv = holder.obtainView(R.id.folder_document_ctv);
         ImageView document_type_iv = holder.obtainView(R.id.document_type_iv);
         TextView document_title_tv = holder.obtainView(R.id.document_title_tv);
@@ -139,9 +140,9 @@ public class FolderDocumentAdapter extends SFileImgBaseAdapter<FolderDocumentEnt
         document_title_tv.setText(folderDocumentEntity.name);
         if (folderDocumentEntity.isDir()) {
             document_type_iv.setImageResource(R.mipmap.folder);
-            document_desc_tv.setText(DateUtils.getFormatChatTimeSimple(folderDocumentEntity.mtime * 1_000));
+            document_desc_tv.setText(DateUtils.getStandardSimpleFormatTime(folderDocumentEntity.mtime * 1_000));
         } else {
-            document_desc_tv.setText(String.format("%s, %s", FileUtils.bFormat(folderDocumentEntity.size), DateUtils.getFormatChatTimeSimple(folderDocumentEntity.mtime * 1_000)));
+            document_desc_tv.setText(String.format("%s, %s", FileUtils.bFormat(folderDocumentEntity.size), DateUtils.getStandardSimpleFormatTime(folderDocumentEntity.mtime * 1_000)));
             if (IMUtils.isPIC(folderDocumentEntity.name)) {
                 loadSFileImage(folderDocumentEntity.name, document_type_iv);
             } else {

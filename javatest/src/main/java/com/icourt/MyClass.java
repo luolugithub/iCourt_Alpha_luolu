@@ -1,15 +1,10 @@
 package com.icourt;
 
-import java.text.CollationKey;
-import java.text.Collator;
-import java.util.ArrayList;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class MyClass {
 
@@ -34,6 +29,13 @@ public class MyClass {
     };
 
     public static void main(String[] args) throws Exception {
+        SimpleDateFormat sdf = new SimpleDateFormat();
+        sdf.applyPattern("yyyy-MM-dd: hh:mm");
+        log("------->1:" + sdf.format(new Date(1503745957)));
+        sdf.applyPattern("yyyy年MM-dd: hh:mm");
+        log("------->2:" + sdf.format(new Date(1503745957)));
+
+        /*
         String s = "668f5488bccd4592f0888c5042f6b5f17aab8dd4";
         String ss = "dshhggsd/sdbh/";
         log("--------->sss:" + ss.substring(0, ss.lastIndexOf("/") + 2));
@@ -68,9 +70,9 @@ public class MyClass {
         log("------M:" + keyClendar.get(Calendar.MONTH));
         log("------H:" + keyClendar.get(Calendar.HOUR));
         log("------H2:" + keyClendar.get(Calendar.MILLISECOND));
-    /*    keyClendar.set(Calendar.HOUR,0);
+    *//*    keyClendar.set(Calendar.HOUR,0);
         keyClendar.set(Calendar.SECOND,0);
-        keyClendar.set(Calendar.MINUTE,0);*/
+        keyClendar.set(Calendar.MINUTE,0);*//*
 
 
         int age = Integer.parseInt("06");
@@ -104,7 +106,7 @@ public class MyClass {
         Collections.sort(list, longComparator2);
         log("------list3:" + list);
 
-      /*  String a = "cdgsgyfgsggfgfggfgfhds";
+      *//*  String a = "cdgsgyfgsggfgfggfgfhds";
         String b = "cdgsgyfgsggfgfggfgfhds0";
         new Thread(new Runnable() {
             @Override
@@ -113,12 +115,12 @@ public class MyClass {
                     String ba = a + "_" + b;
                 }
             }
-        });*/
+        });*//*
 
 
         long time = 60 + 1; //秒
         long minite = (time + 59) / 60;
-
+*/
     }
 
 
