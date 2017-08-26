@@ -74,7 +74,7 @@ public class SortTypeSelectDialog extends Dialog implements View.OnClickListener
         win.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
         win.getDecorView().setPadding(0, 0, 0, 0);
         win.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        win.setGravity(Gravity.CENTER);
+        win.setGravity(Gravity.BOTTOM);
         win.getAttributes().dimAmount = 0.5f;
         win.getAttributes().windowAnimations = R.style.SlideAnimBottom;
         setCanceledOnTouchOutside(true);
