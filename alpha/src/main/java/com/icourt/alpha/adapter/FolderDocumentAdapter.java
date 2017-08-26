@@ -28,7 +28,6 @@ import static com.icourt.alpha.constants.SFileConfig.PERMISSION_RW;
  * version 2.1.0
  */
 public class FolderDocumentAdapter extends SFileImgBaseAdapter<FolderDocumentEntity> {
-
     private Set<FolderDocumentEntity> selectedFolderDocuments;
     @Const.AdapterViewType
     int adapterViewType;

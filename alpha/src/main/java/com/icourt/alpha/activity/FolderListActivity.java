@@ -195,6 +195,7 @@ public class FolderListActivity extends FolderBaseActivity
         initView();
     }
 
+
     @Override
     protected void initView() {
         super.initView();
@@ -216,7 +217,8 @@ public class FolderListActivity extends FolderBaseActivity
         recyclerView.setLayoutManager(linearLayoutManager);
 
         headerFooterAdapter = new HeaderFooterAdapter<>(
-                folderDocumentAdapter = new FolderDocumentWrapAdapter(VIEW_TYPE_ITEM,
+                folderDocumentAdapter = new FolderDocumentWrapAdapter(
+                        SFileConfig.getSFileLayoutType(getSeaFileRepoId(), VIEW_TYPE_ITEM),
                         getSeaFileRepoId(),
                         getSeaFileDirPath(),
                         false,
@@ -302,6 +304,13 @@ public class FolderListActivity extends FolderBaseActivity
     @Override
     protected void onResume() {
         super.onResume();
+        //恢复布局样式
+        int sFileLayoutType = SFileConfig.getSFileLayoutType(getSeaFileRepoId(), VIEW_TYPE_ITEM);
+        if (sFileLayoutType
+                != folderDocumentAdapter.getAdapterViewType()) {
+            folderDocumentAdapter.setAdapterViewType(sFileLayoutType);
+        }
+        //重写加载数据
         getData(true);
     }
 
@@ -435,6 +444,8 @@ public class FolderListActivity extends FolderBaseActivity
                         folderDocumentAdapter.setAdapterViewType(VIEW_TYPE_ITEM);
                         break;
                 }
+                //内存保存
+                SFileConfig.putSFileLayoutType(getSeaFileRepoId(), folderDocumentAdapter.getAdapterViewType());
                 break;
             case R.id.header_search_sort_iv:
                 showSortDialog();

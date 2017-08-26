@@ -51,6 +51,7 @@ public class FolderBaseActivity extends BaseActivity {
 
     /**
      * 资料库标题
+     *
      * @return
      */
     protected String getRepoTitle() {

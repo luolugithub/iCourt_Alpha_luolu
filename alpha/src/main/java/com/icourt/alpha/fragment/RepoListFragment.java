@@ -46,8 +46,12 @@ import butterknife.Unbinder;
 import retrofit2.Call;
 import retrofit2.Response;
 
+import static com.icourt.alpha.constants.Const.VIEW_TYPE_ITEM;
 import static com.icourt.alpha.constants.SFileConfig.PERMISSION_RW;
+import static com.icourt.alpha.constants.SFileConfig.REPO_LAWFIRM;
 import static com.icourt.alpha.constants.SFileConfig.REPO_MINE;
+import static com.icourt.alpha.constants.SFileConfig.REPO_PROJECT;
+import static com.icourt.alpha.constants.SFileConfig.REPO_SHARED_ME;
 
 /**
  * Description  资料库列表
@@ -102,6 +106,20 @@ public class RepoListFragment extends BaseFragment
         repoType = SFileConfig.convert2RepoType(getArguments().getInt("repoType"));
         EventBus.getDefault().register(this);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        switch (repoType) {
+            case REPO_MINE:
+                refreshLayout.setNoticeEmptyText("暂无资料库");
+                break;
+            case REPO_SHARED_ME:
+                refreshLayout.setNoticeEmptyText("没有共享给我的资料库");
+                break;
+            case REPO_LAWFIRM:
+                refreshLayout.setNoticeEmptyText("尚未建立资料库");
+                break;
+            case REPO_PROJECT:
+                refreshLayout.setNoticeEmptyText("暂无资料库");
+                break;
+        }
 
         headerFooterAdapter = new HeaderFooterAdapter<>(repoAdapter = new RepoAdapter(repoType));
         footer_textview = (TextView) HeaderFooterAdapter.inflaterView(getContext(), R.layout.footer_textview, recyclerView);

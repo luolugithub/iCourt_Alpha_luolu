@@ -2,10 +2,14 @@ package com.icourt.alpha.constants;
 
 import android.support.annotation.IntDef;
 import android.support.annotation.StringDef;
+import android.support.v4.util.ArrayMap;
 import android.text.TextUtils;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+
+import static com.icourt.alpha.constants.Const.VIEW_TYPE_GRID;
+import static com.icourt.alpha.constants.Const.VIEW_TYPE_ITEM;
 
 /**
  * Description
@@ -88,5 +92,39 @@ public class SFileConfig {
         } else {
             return PERMISSION_R;
         }
+    }
+
+    /**
+     * sfile列表全局记录展现样式 仅仅限于内存保存
+     */
+    public static final ArrayMap<String, Integer> SFileLayoutTypeMap = new ArrayMap<>();
+
+    /**
+     * @param repoId
+     * @return
+     */
+    @Const.AdapterViewType
+    public static int getSFileLayoutType(String repoId, @Const.AdapterViewType int defaultType) {
+        Integer integer = SFileLayoutTypeMap.get(repoId);
+        if (integer != null) {
+            switch (integer.intValue()) {
+                case VIEW_TYPE_ITEM:
+                    return VIEW_TYPE_ITEM;
+                case VIEW_TYPE_GRID:
+                    return VIEW_TYPE_GRID;
+            }
+        }
+        return defaultType;
+    }
+
+    /**
+     * 保存
+     *
+     * @param repoId
+     * @param layoutType
+     * @return
+     */
+    public static Integer putSFileLayoutType(String repoId, @Const.AdapterViewType int layoutType) {
+        return SFileLayoutTypeMap.put(repoId, layoutType);
     }
 }
