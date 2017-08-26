@@ -163,14 +163,30 @@ public class FolderTargetListFragment extends SeaFileBaseFragment
     protected void initView() {
         switch (getFileActionType()) {
             case FILE_ACTION_COPY:
-                copyOrMoveTv.setText("复制到");
+                if (!isSameDir()) {
+                    copyOrMoveTv.setText("复制");
+                    copyOrMoveTv.setEnabled(true);
+                } else {
+                    copyOrMoveTv.setText("无法复制到同目录");
+                    copyOrMoveTv.setEnabled(false);
+                }
                 break;
             case FILE_ACTION_MOVE:
-                copyOrMoveTv.setText("移动到");
+                if (!isSameDir()) {
+                    copyOrMoveTv.setText("移动");
+                    copyOrMoveTv.setEnabled(true);
+                } else {
+                    copyOrMoveTv.setText("无法移动到同目录");
+                    copyOrMoveTv.setEnabled(false);
+                }
                 break;
             default:
+                copyOrMoveTv.setEnabled(true);
                 copyOrMoveTv.setText("确定");
                 break;
+        }
+        if (isSameDir()) {
+
         }
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setAdapter(folderAdapter = new FolderAdapter());
@@ -217,6 +233,16 @@ public class FolderTargetListFragment extends SeaFileBaseFragment
         }
     }
 
+    /**
+     * 是否是同一级目录
+     *
+     * @return
+     */
+    private boolean isSameDir() {
+        return (TextUtils.equals(getSeaFileFromRepoId(), getSeaFileDstRepoId())
+                && TextUtils.equals(getSeaFileFromDirPath(), getSeaFileDstDirPath()));
+    }
+
     @OnClick({R.id.copy_or_move_tv})
     @Override
     public void onClick(View v) {
@@ -249,6 +275,7 @@ public class FolderTargetListFragment extends SeaFileBaseFragment
      * 移动或复制
      * 注意:不能复制或者移动到当前文件所在目录
      */
+
     private void copyOrMove() {
 
         final ArrayList<FolderDocumentEntity> selectedFolderDocumentEntities = (ArrayList<FolderDocumentEntity>) getArguments().getSerializable(KEY_SEA_FILE_SELCTED_FILES);
