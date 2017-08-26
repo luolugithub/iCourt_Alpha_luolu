@@ -259,6 +259,7 @@ public class TaskListFragment extends BaseFragment implements
                 if (getParentFragment() instanceof TaskAllFragment) {
                     if (getParentFragment().getParentFragment() instanceof TabTaskFragment) {
                         if (select_position != 0) {
+                           TabTaskFragment.isShowCalendar = false;
                             ((TabTaskFragment) (getParentFragment().getParentFragment())).setFirstTabText("未完成", 0);
                             ((TabTaskFragment) (getParentFragment().getParentFragment())).updateListData(0);
                             TabTaskFragment.isAwayScroll = true;
