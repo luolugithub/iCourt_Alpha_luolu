@@ -150,7 +150,7 @@ public class UnFinishTaskFragment extends BaseFragment implements BaseRecyclerAd
         super.getData(isRefresh);
         taskSelectAdapter.clearSelected();
         if (!TextUtils.isEmpty(projectId)) {
-            getApi().projectQueryTaskList(getLoginUserId(),projectId, 0, 0, 1, -1)
+            getApi().projectQueryTaskList(null,projectId, 0, 0, 1, -1)
                     .enqueue(new SimpleCallBack<TaskEntity>() {
                         @Override
                         public void onSuccess(Call<ResEntity<TaskEntity>> call, Response<ResEntity<TaskEntity>> response) {
@@ -213,7 +213,7 @@ public class UnFinishTaskFragment extends BaseFragment implements BaseRecyclerAd
         taskSelectAdapter.clearSelected();
         if (!TextUtils.isEmpty(projectId)) {
             //pms 环境有
-            getApi().taskQueryByName(getLoginUserId(), taskName, 0, 0, projectId)
+            getApi().taskQueryByName(null, taskName, 0, 0, projectId)
                     .enqueue(new SimpleCallBack<TaskEntity>() {
                         @Override
                         public void onSuccess(Call<ResEntity<TaskEntity>> call, Response<ResEntity<TaskEntity>> response) {

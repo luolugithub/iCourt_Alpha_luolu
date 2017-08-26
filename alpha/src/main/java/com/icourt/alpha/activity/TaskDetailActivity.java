@@ -930,7 +930,7 @@ public class TaskDetailActivity extends BaseActivity
                 myStar = TaskEntity.UNATTENTIONED;
                 titleAction.setImageResource(R.mipmap.header_icon_star_line);
                 taskItemEntity.attentioned = TaskEntity.ATTENTIONED;
-                EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_DELETE_ACTION, taskItemEntity));
+                EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION, taskItemEntity));
             }
 
             @Override

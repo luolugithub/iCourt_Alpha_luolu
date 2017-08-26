@@ -677,7 +677,8 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
         if (isIMLinkText(txt)) {
             sendIMLinkMsg(txt);
         } else {
-            if (txt.contains("@")) {
+            if (getIMChatType() == Const.CHAT_TYPE_TEAM
+                    && txt.contains("@")) {
                 if (txt.contains("@所有人")) {
                     sendAtMsg(txt, true, null);
                 } else {
