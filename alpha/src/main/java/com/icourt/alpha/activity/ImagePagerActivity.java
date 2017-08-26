@@ -462,7 +462,7 @@ public class ImagePagerActivity extends BaseUmengActivity implements BasePagerAd
                 final boolean isDinged = isDinged(sFileImageInfoEntity.chatMsgId);
                 new BottomActionDialog(getContext(),
                         null,
-                        Arrays.asList("分享", "发送到享聊", isCollected ? "取消收藏" : "收藏", isDinged ? "取消钉" : "钉", "保存到项目"),
+                        Arrays.asList("分享", "转发给同事", isCollected ? "取消收藏" : "收藏", isDinged ? "取消钉" : "钉", "保存到项目资料库"),
                         new BottomActionDialog.OnActionItemClickListener() {
                             @Override
                             public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
@@ -498,14 +498,14 @@ public class ImagePagerActivity extends BaseUmengActivity implements BasePagerAd
             } else {
                 new BottomActionDialog(getContext(),
                         null,
-                        Arrays.asList("分享", "发送到享聊", "保存到项目"),
+                        Arrays.asList("保存图片", "转发给同事", "分享", "保存到项目资料库"),
                         new BottomActionDialog.OnActionItemClickListener() {
                             @Override
                             public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
                                 dialog.dismiss();
                                 switch (position) {
                                     case 0:
-                                        shareImage2WeiXin(drawable);
+                                        checkPermissionOrDownload();
                                         break;
                                     case 1:
                                         if (getIMMsgId() <= 0 && urls != null && urls.length > 0) {
@@ -515,6 +515,9 @@ public class ImagePagerActivity extends BaseUmengActivity implements BasePagerAd
                                         }
                                         break;
                                     case 2:
+                                        shareImage2WeiXin(drawable);
+                                        break;
+                                    case 3:
                                         if (checkPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
                                             String fileName = getFileName(adapter.getItem(position));
                                             savedImport2Project(drawable, fileName);

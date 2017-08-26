@@ -29,6 +29,7 @@ import com.icourt.alpha.fragment.dialogfragment.ProjectSaveFileDialogFragment;
 import com.icourt.alpha.http.callback.SFileCallBack;
 import com.icourt.alpha.utils.ActionConstants;
 import com.icourt.alpha.utils.FileUtils;
+import com.icourt.alpha.utils.IMUtils;
 import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.view.ProgressLayout;
 import com.icourt.alpha.widget.dialog.BottomActionDialog;
@@ -149,6 +150,7 @@ public class FileDownloadActivity extends BaseActivity {
             if (downloadProgressbar != null) {
                 downloadProgressbar.setCurrentProgress(100);
                 updateViewState(2);
+                openImageView();
             }
         }
 
@@ -200,6 +202,7 @@ public class FileDownloadActivity extends BaseActivity {
 
         //可能有bug
         if (FileUtils.isFileExists(fileCachePath)) {
+            openImageView();
             updateViewState(2);
         } else {
             updateViewState(0);
@@ -209,6 +212,15 @@ public class FileDownloadActivity extends BaseActivity {
             } else {
                 reqPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, "下载文件需要文件写入权限!", CODE_PERMISSION_FILE);
             }
+        }
+    }
+
+    private void openImageView() {
+        if (IMUtils.isPIC(fileCachePath)) {
+            ImagePagerActivity.launch(
+                    getContext(),
+                    Arrays.asList(fileCachePath));
+            finish();
         }
     }
 

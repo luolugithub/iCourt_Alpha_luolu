@@ -31,6 +31,10 @@ public class ActionConstants {
             put("ppt", R.mipmap.filetype_ppt);
             put("pptx", R.mipmap.filetype_ppt);
 
+            put("numbers", R.mipmap.filetype_number);
+            put("pages", R.mipmap.filetype_pages);
+            put("key", R.mipmap.filetype_keynote);
+
             put("xls", R.mipmap.filetype_excel);
             put("xlsx", R.mipmap.filetype_excel);
             put("xlsm", R.mipmap.filetype_excel);
