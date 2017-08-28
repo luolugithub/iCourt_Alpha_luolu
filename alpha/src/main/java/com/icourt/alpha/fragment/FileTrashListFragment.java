@@ -8,12 +8,15 @@ import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import com.andview.refreshview.XRefreshView;
 import com.google.gson.JsonObject;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.SFileTrashAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
+import com.icourt.alpha.adapter.baseadapter.HeaderFooterAdapter;
+import com.icourt.alpha.adapter.baseadapter.adapterObserver.DataChangeAdapterObserver;
 import com.icourt.alpha.constants.SFileConfig;
 import com.icourt.alpha.entity.bean.FolderDocumentEntity;
 import com.icourt.alpha.entity.bean.SeaFileTrashPageEntity;
@@ -51,7 +54,9 @@ public class FileTrashListFragment extends SeaFileBaseFragment
     protected static final String KEY_SEA_FILE_REPO_ID = "seaFileRepoId";//仓库id
     protected static final String KEY_SEA_FILE_DIR_PATH = "seaFileDirPath";//目录路径
     protected static final String KEY_SEA_FILE_REPO_PERMISSION = "seaFileRepoPermission";//repo的权限
+    HeaderFooterAdapter<SFileTrashAdapter> headerFooterAdapter;
     SFileTrashAdapter folderDocumentAdapter;
+    TextView footerView;
 
     public static FileTrashListFragment newInstance(
             String fromRepoId,
@@ -88,11 +93,38 @@ public class FileTrashListFragment extends SeaFileBaseFragment
     @Override
     protected void initView() {
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        recyclerView.setAdapter(folderDocumentAdapter = new SFileTrashAdapter(
+        headerFooterAdapter = new HeaderFooterAdapter<>(folderDocumentAdapter = new SFileTrashAdapter(
                 getSeaFileRepoId(),
                 getSeaFileDirPath(),
                 false,
                 TextUtils.equals(getRepoPermission(), PERMISSION_RW)));
+        footerView = (TextView) HeaderFooterAdapter.inflaterView(getContext(), R.layout.footer_folder_document_num, recyclerView);
+        headerFooterAdapter.addFooter(footerView);
+        folderDocumentAdapter.registerAdapterDataObserver(new DataChangeAdapterObserver() {
+            @Override
+            protected void updateUI() {
+                if (footerView != null) {
+                    int dirNum = 0, fileNum = 0;
+                    for (int i = 0; i < folderDocumentAdapter.getItemCount(); i++) {
+                        FolderDocumentEntity item = folderDocumentAdapter.getItem(i);
+                        if (item != null) {
+                            if (item.isDir()) {
+                                dirNum += 1;
+                            } else {
+                                fileNum += 1;
+                            }
+                        }
+                    }
+                    if (dirNum == 0 && fileNum == 0) {
+                        footerView.setText("回收站里没有文件");
+                    } else {
+                        footerView.setText(String.format("%s个文件夹, %s个文件", dirNum, fileNum));
+                    }
+                }
+            }
+        });
+
+        recyclerView.setAdapter(headerFooterAdapter);
         folderDocumentAdapter.setOnItemClickListener(this);
         folderDocumentAdapter.setOnItemChildClickListener(this);
         refreshLayout.setXRefreshViewListener(new XRefreshView.SimpleXRefreshListener() {

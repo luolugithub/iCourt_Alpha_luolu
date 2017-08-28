@@ -9,6 +9,7 @@ import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import com.andview.refreshview.XRefreshView;
 import com.google.gson.JsonElement;
@@ -16,6 +17,7 @@ import com.google.gson.JsonObject;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.FileChangedHistoryAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
+import com.icourt.alpha.adapter.baseadapter.HeaderFooterAdapter;
 import com.icourt.alpha.adapter.baseadapter.adapterObserver.DataChangeAdapterObserver;
 import com.icourt.alpha.base.BaseDialogFragment;
 import com.icourt.alpha.constants.SFileConfig;
@@ -51,11 +53,6 @@ import static com.icourt.alpha.constants.SFileConfig.PERMISSION_RW;
  * version 2.1.0
  */
 public class FileChangeHistoryFragment extends BaseDialogFragment implements BaseRecyclerAdapter.OnItemChildClickListener {
-    @BindView(R.id.recyclerView)
-    RecyclerView recyclerView;
-    @BindView(R.id.refreshLayout)
-    RefreshLayout refreshLayout;
-    Unbinder unbinder;
     FileChangedHistoryAdapter fileChangedHistoryAdapter;
     int page = 0;
 
@@ -63,6 +60,12 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
     protected static final String KEY_SEA_FILE_REPO_PERMISSION = "seaFileRepoPermission";//repo的权限
 
     OnFragmentDataChangeListener onFragmentDataChangeListener;
+    @BindView(R.id.recyclerView)
+    @Nullable
+    RecyclerView recyclerView;
+    @BindView(R.id.refreshLayout)
+    RefreshLayout refreshLayout;
+    Unbinder unbinder;
 
     public static FileChangeHistoryFragment newInstance(
             @SFileConfig.REPO_TYPE int repoType,
@@ -118,6 +121,11 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
     @Override
     protected void initView() {
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        TextView footerView = (TextView) HeaderFooterAdapter.inflaterView(getContext(), R.layout.footer_folder_document_num, recyclerView);
+        footerView.setText("暂无修改历史");
+        refreshLayout.setEmptyView(footerView);
+
+
         recyclerView.setAdapter(fileChangedHistoryAdapter = new FileChangedHistoryAdapter(
                 TextUtils.equals(getRepoPermission(), PERMISSION_RW)));
         fileChangedHistoryAdapter.registerAdapterDataObserver(new DataChangeAdapterObserver() {
@@ -128,6 +136,14 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
                             FileChangeHistoryFragment.this,
                             0,
                             fileChangedHistoryAdapter.getData());
+                }
+            }
+        });
+        fileChangedHistoryAdapter.registerAdapterDataObserver(new DataChangeAdapterObserver() {
+            @Override
+            protected void updateUI() {
+                if (refreshLayout != null) {
+                    refreshLayout.enableEmptyView(fileChangedHistoryAdapter.getItemCount() <= 0);
                 }
             }
         });
