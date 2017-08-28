@@ -10,6 +10,7 @@ import com.icourt.alpha.activity.LoginSelectActivity;
 import com.icourt.alpha.base.BaseApplication;
 import com.icourt.alpha.http.exception.ResponseException;
 import com.icourt.alpha.utils.BugUtils;
+import com.icourt.alpha.utils.LogUtils;
 import com.icourt.alpha.utils.NetUtils;
 import com.icourt.alpha.utils.SnackbarUtils;
 import com.icourt.alpha.utils.SystemUtils;
@@ -40,6 +41,7 @@ public class HttpThrowableUtils {
      */
     public static final void handleHttpThrowable(@android.support.annotation.NonNull IDefNotify iDefNotify, @NonNull Throwable t) {
         if (t != null) {
+            LogUtils.d("----------->handleHttpThrowable:" + t);
             if (t instanceof ResponseException) {
                 defNotify(iDefNotify, ((ResponseException) t).message);
 

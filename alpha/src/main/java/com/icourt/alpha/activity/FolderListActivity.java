@@ -77,6 +77,8 @@ import cn.finalteam.galleryfinal.FunctionConfig;
 import cn.finalteam.galleryfinal.GalleryFinal;
 import cn.finalteam.galleryfinal.model.PhotoInfo;
 import io.reactivex.Observable;
+import io.reactivex.ObservableEmitter;
+import io.reactivex.ObservableOnSubscribe;
 import io.reactivex.ObservableSource;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.functions.Action;
@@ -363,16 +365,8 @@ public class FolderListActivity extends FolderBaseActivity
                 .enqueue(new SFileCallBack<List<FolderDocumentEntity>>() {
                     @Override
                     public void onSuccess(Call<List<FolderDocumentEntity>> call, Response<List<FolderDocumentEntity>> response) {
-                        if (response.body() != null) {
-                            IndexUtils.setSuspensions(getContext(), response.body());
-                            try {
-                                Collections.sort(response.body(), new FileSortComparator(fileSortType));
-                            } catch (Throwable e) {
-                                e.printStackTrace();
-                                bugSync("排序异常", e);
-                            }
-                        }
                         folderDocumentAdapter.bindData(isRefresh, wrapGridData(response.body()));
+                        sortFile();
                         stopRefresh();
                     }
 
@@ -539,21 +533,52 @@ public class FolderListActivity extends FolderBaseActivity
                     public void onSortTypeSelected(@FileSortComparator.FileSortType int sortType) {
                         if (fileSortType != sortType) {
                             fileSortType = sortType;
-                            List<FolderDocumentEntity> totals = new ArrayList<>();
-                            List<List<FolderDocumentEntity>> data = folderDocumentAdapter.getData();
-                            for (List<FolderDocumentEntity> documentEntities : data) {
-                                totals.addAll(documentEntities);
-                            }
-                            try {
-                                Collections.sort(totals, new FileSortComparator(fileSortType));
-                                folderDocumentAdapter.bindData(true, wrapGridData(totals));
-                            } catch (Throwable e) {
-                                e.printStackTrace();
-                                bugSync("排序异常", e);
-                            }
+                            sortFile();
                         }
                     }
                 }).show();
+    }
+
+    /**
+     * 排序
+     */
+    private void sortFile() {
+        showLoadingDialog("排序中...");
+        Observable.create(new ObservableOnSubscribe<List<FolderDocumentEntity>>() {
+            @Override
+            public void subscribe(@io.reactivex.annotations.NonNull ObservableEmitter<List<FolderDocumentEntity>> observableEmitter) throws Exception {
+                if (observableEmitter.isDisposed()) return;
+                List<FolderDocumentEntity> totals = new ArrayList<>();
+                List<List<FolderDocumentEntity>> data = folderDocumentAdapter.getData();
+                for (List<FolderDocumentEntity> documentEntities : data) {
+                    totals.addAll(documentEntities);
+                }
+                try {
+                    IndexUtils.setSuspensions(getContext(), totals);
+                    Collections.sort(totals, new FileSortComparator(fileSortType));
+                } catch (Throwable e) {
+                    e.printStackTrace();
+                    bugSync("排序异常", e);
+                }
+                observableEmitter.onNext(totals);
+                observableEmitter.onComplete();
+            }
+        }).compose(this.<List<FolderDocumentEntity>>bindToLifecycle())
+                .subscribeOn(Schedulers.newThread())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new BaseObserver<List<FolderDocumentEntity>>() {
+
+                    @Override
+                    public void onNext(@io.reactivex.annotations.NonNull List<FolderDocumentEntity> folderDocumentEntities) {
+                        folderDocumentAdapter.bindData(true, wrapGridData(folderDocumentEntities));
+                    }
+
+                    @Override
+                    public void onComplete() {
+                        super.onComplete();
+                        dismissLoadingDialog();
+                    }
+                });
     }
 
     /**
@@ -706,7 +731,13 @@ public class FolderListActivity extends FolderBaseActivity
                                public void accept(@io.reactivex.annotations.NonNull JsonElement jsonElement) throws Exception {
 
                                }
-                           }, new BaseThrowableConsumer(),
+                           }, new BaseThrowableConsumer() {
+                               @Override
+                               public void accept(@io.reactivex.annotations.NonNull Throwable t) throws Exception {
+                                   super.accept(t);
+                                   dismissLoadingDialog();
+                               }
+                           },
                         new Action() {
                             @Override
                             public void run() throws Exception {
@@ -990,6 +1021,12 @@ public class FolderListActivity extends FolderBaseActivity
                 .subscribe(new BaseObserver<JsonObject>() {
                     @Override
                     public void onNext(@io.reactivex.annotations.NonNull JsonObject jsonObject) {
+                    }
+
+                    @Override
+                    public void onError(@io.reactivex.annotations.NonNull Throwable throwable) {
+                        super.onError(throwable);
+                        dismissLoadingDialog();
                     }
 
                     @Override
