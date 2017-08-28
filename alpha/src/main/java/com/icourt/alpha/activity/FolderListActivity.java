@@ -289,6 +289,7 @@ public class FolderListActivity extends FolderBaseActivity
         });
 
         bottomBarAllSelectCb.setOnCheckedChangeListener(onCheckedChangeListener);
+        refreshLayout.startRefresh();
     }
 
     private boolean isAllSelected() {
@@ -366,7 +367,7 @@ public class FolderListActivity extends FolderBaseActivity
                     @Override
                     public void onSuccess(Call<List<FolderDocumentEntity>> call, Response<List<FolderDocumentEntity>> response) {
                         folderDocumentAdapter.bindData(isRefresh, wrapGridData(response.body()));
-                        sortFile();
+                        sortFile(false);
                         stopRefresh();
                     }
 
@@ -533,7 +534,7 @@ public class FolderListActivity extends FolderBaseActivity
                     public void onSortTypeSelected(@FileSortComparator.FileSortType int sortType) {
                         if (fileSortType != sortType) {
                             fileSortType = sortType;
-                            sortFile();
+                            sortFile(true);
                         }
                     }
                 }).show();
@@ -542,8 +543,10 @@ public class FolderListActivity extends FolderBaseActivity
     /**
      * 排序
      */
-    private void sortFile() {
-        showLoadingDialog("排序中...");
+    private void sortFile(boolean isShowLoading) {
+        if (isShowLoading) {
+            showLoadingDialog("排序中...");
+        }
         Observable.create(new ObservableOnSubscribe<List<FolderDocumentEntity>>() {
             @Override
             public void subscribe(@io.reactivex.annotations.NonNull ObservableEmitter<List<FolderDocumentEntity>> observableEmitter) throws Exception {

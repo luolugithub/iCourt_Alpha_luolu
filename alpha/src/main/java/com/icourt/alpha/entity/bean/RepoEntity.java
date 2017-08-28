@@ -33,6 +33,8 @@ public class RepoEntity implements Serializable, ILongFieldEntity {
 
     @JsonAdapter(SeaFileTimeJsonAdapter.class)
     public long last_modified;
+
+    @JsonAdapter(SeaFileTimeJsonAdapter.class)
     public long mtime;
     public long size;
     public String permission;//权限
