@@ -5,7 +5,6 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
 
-import com.icourt.alpha.activity.TimerDetailActivity;
 import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.icourt.alpha.entity.bean.TimeEntity;
 import com.icourt.alpha.entity.event.TimingEvent;
@@ -25,8 +24,6 @@ import java.util.concurrent.TimeUnit;
 
 import retrofit2.Call;
 import retrofit2.Response;
-
-import static com.umeng.socialize.utils.ContextUtil.getContext;
 
 /**
  * Description  计时管理器
@@ -439,7 +436,6 @@ public class TimerManager {
                             if (callBack != null) {
                                 callBack.onSuccess(call, response);
                             }
-                            TimerDetailActivity.launch(getContext(), timer);
                             stopTimingTask();
                             SpUtils.getInstance().putData(String.format(KEY_TIMER, getUid()), "");
                             SpUtils.getInstance().putData(String.format(KEY_TIMER_TASK_ID, getUid()), "");
