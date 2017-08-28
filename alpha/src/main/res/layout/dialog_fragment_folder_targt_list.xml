@@ -24,7 +24,7 @@
             android:paddingLeft="10dp"
             android:paddingRight="10dp"
             android:text="取消"
-            android:textColor="@color/alpha_font_color_gray"
+            android:textColor="@color/alpha_font_color_orange"
             android:textSize="@dimen/alpha_font_size_comm" />
 
         <TextView

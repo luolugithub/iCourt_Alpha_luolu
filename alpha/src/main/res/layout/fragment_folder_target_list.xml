@@ -10,12 +10,27 @@
         android:layout_height="wrap_content"
         android:layout_weight="1">
 
-        <android.support.v7.widget.RecyclerView
-            android:id="@+id/recyclerView"
+        <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent">
 
-            android:background="@android:color/white" />
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/recyclerView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@android:color/white" />
+
+            <TextView
+                android:id="@+id/empty_text"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:padding="15dp"
+                android:text="点击移动"
+                android:textColor="@color/alpha_font_color_gray"
+                android:textSize="@dimen/alpha_font_size_mini"
+                android:visibility="gone" />
+        </FrameLayout>
     </com.icourt.alpha.view.xrefreshlayout.RefreshLayout>
 
 

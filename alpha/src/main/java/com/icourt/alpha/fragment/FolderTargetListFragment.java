@@ -16,6 +16,7 @@ import com.google.gson.JsonElement;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.FolderAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
+import com.icourt.alpha.adapter.baseadapter.adapterObserver.DataChangeAdapterObserver;
 import com.icourt.alpha.constants.Const;
 import com.icourt.alpha.entity.bean.FolderDocumentEntity;
 import com.icourt.alpha.entity.event.SeaFolderEvent;
@@ -57,6 +58,8 @@ public class FolderTargetListFragment extends SeaFileBaseFragment
     protected static final String KEY_SEA_FILE_DST_DIR_PATH = "seaFileDstDirPath";//目标仓库路径
 
     protected static final String KEY_FOLDER_ACTION_TYPE = "folderActionType";//文件操作类型
+    @BindView(R.id.empty_text)
+    TextView emptyText;
 
     public static FolderTargetListFragment newInstance(
             @Const.FILE_ACTION_TYPE int folderActionType,
@@ -163,6 +166,7 @@ public class FolderTargetListFragment extends SeaFileBaseFragment
     protected void initView() {
         switch (getFileActionType()) {
             case FILE_ACTION_COPY:
+                emptyText.setText("点击\"复制\"，将所选项复制到此目录");
                 if (!isSameDir()) {
                     copyOrMoveTv.setText("复制");
                     copyOrMoveTv.setEnabled(true);
@@ -172,6 +176,7 @@ public class FolderTargetListFragment extends SeaFileBaseFragment
                 }
                 break;
             case FILE_ACTION_MOVE:
+                emptyText.setText("点击\"移动\"，将所选项移动到此目录");
                 if (!isSameDir()) {
                     copyOrMoveTv.setText("移动");
                     copyOrMoveTv.setEnabled(true);
@@ -181,6 +186,7 @@ public class FolderTargetListFragment extends SeaFileBaseFragment
                 }
                 break;
             default:
+                emptyText.setText("点击“确定”，将所选项操作到此目录");
                 copyOrMoveTv.setEnabled(true);
                 copyOrMoveTv.setText("确定");
                 break;
@@ -190,6 +196,14 @@ public class FolderTargetListFragment extends SeaFileBaseFragment
         }
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setAdapter(folderAdapter = new FolderAdapter());
+        folderAdapter.registerAdapterDataObserver(new DataChangeAdapterObserver() {
+            @Override
+            protected void updateUI() {
+                if (emptyText != null) {
+                    emptyText.setVisibility(folderAdapter.getItemCount() <= 0 ? View.VISIBLE : View.GONE);
+                }
+            }
+        });
         folderAdapter.setOnItemClickListener(this);
         refreshLayout.setXRefreshViewListener(new XRefreshView.SimpleXRefreshListener() {
             @Override
