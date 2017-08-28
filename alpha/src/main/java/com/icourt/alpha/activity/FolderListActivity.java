@@ -159,6 +159,7 @@ public class FolderListActivity extends FolderBaseActivity
                 }
                 bottomBarSelectNumTv.setText(String.format("已选择: %s", selectedFolderDocuments.size()));
             }
+            updateActionViewStatus();
         }
     };
 
@@ -251,6 +252,7 @@ public class FolderListActivity extends FolderBaseActivity
                     } else {
                         footerView.setText(String.format("%s个文件夹, %s个文件", dirNum, fileNum));
                     }
+
                 }
             }
         });
@@ -279,12 +281,17 @@ public class FolderListActivity extends FolderBaseActivity
     }
 
     private boolean isAllSelected() {
+        List<FolderDocumentEntity> allData = getAllData();
+        return !allData.isEmpty() && selectedFolderDocuments.size() == allData.size();
+    }
+
+    private List<FolderDocumentEntity> getAllData() {
         List<FolderDocumentEntity> totals = new ArrayList<>();
         List<List<FolderDocumentEntity>> data = folderDocumentAdapter.getData();
         for (List<FolderDocumentEntity> documentEntities : data) {
             totals.addAll(documentEntities);
         }
-        return selectedFolderDocuments.size() == totals.size();
+        return totals;
     }
 
 
@@ -552,6 +559,7 @@ public class FolderListActivity extends FolderBaseActivity
         bottomBarLayout.setVisibility(isSelectable ? View.VISIBLE : View.GONE);
         bottomBarAllSelectCb.setChecked(false);
         bottomBarSelectNumTv.setText(String.format("已选择: %s", selectedFolderDocuments.size()));
+        updateActionViewStatus();
     }
 
 
@@ -757,7 +765,16 @@ public class FolderListActivity extends FolderBaseActivity
         bottomBarAllSelectCb.setChecked(isAllSelected());
         bottomBarAllSelectCb.setOnCheckedChangeListener(onCheckedChangeListener);
         folderDocumentAdapter.notifyDataSetChanged();
+        updateActionViewStatus();
         bottomBarSelectNumTv.setText(String.format("已选择: %s", selectedFolderDocuments.size()));
+    }
+
+    private void updateActionViewStatus() {
+        //未选中的时候 不能点击移动复制
+        boolean canAction = !selectedFolderDocuments.isEmpty();
+        bottomBarCopyTv.setEnabled(canAction);
+        bottomBarMoveTv.setEnabled(canAction);
+        bottomBarDeleteTv.setEnabled(canAction);
     }
 
     @Override
@@ -932,7 +949,8 @@ public class FolderListActivity extends FolderBaseActivity
         if (items == null || items.isEmpty()) return;
         showLoadingDialog(null);
         //循环删除
-        for (FolderDocumentEntity item : items) {
+        for (final FolderDocumentEntity item : items) {
+            if (item == null) continue;
             Call<JsonObject> delCall = null;
             if (item.isDir()) {
                 delCall = getSFileApi()
@@ -952,7 +970,10 @@ public class FolderListActivity extends FolderBaseActivity
                     dismissLoadingDialog();
                     if (response.body().has("success")
                             && response.body().get("success").getAsBoolean()) {
-                        getData(true);
+
+                        List<FolderDocumentEntity> allData = getAllData();
+                        allData.remove(item);
+                        folderDocumentAdapter.bindData(true, wrapGridData(allData));
                     }
                 }
 

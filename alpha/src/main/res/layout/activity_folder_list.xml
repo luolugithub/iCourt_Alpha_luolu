@@ -104,13 +104,14 @@
                 android:id="@+id/bottom_bar_copy_tv"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:background="@drawable/bg_round_rect_white_orange_line"
+                android:background="@drawable/sl_round_rect_white_orange_line"
+                android:enabled="false"
                 android:paddingBottom="7dp"
                 android:paddingLeft="18dp"
                 android:paddingRight="18dp"
                 android:paddingTop="7dp"
                 android:text="复制"
-                android:textColor="@color/alpha_font_color_black"
+                android:textColor="@color/sl_black_2_gray"
                 android:textSize="@dimen/alpha_font_size_mini_medium" />
 
             <TextView
@@ -118,13 +119,14 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="5dp"
-                android:background="@drawable/bg_round_rect_white_orange_line"
+                android:background="@drawable/sl_round_rect_white_orange_line"
+                android:enabled="false"
                 android:paddingBottom="7dp"
                 android:paddingLeft="18dp"
                 android:paddingRight="18dp"
                 android:paddingTop="7dp"
                 android:text="移动"
-                android:textColor="@color/alpha_font_color_black"
+                android:textColor="@color/sl_black_2_gray"
                 android:textSize="@dimen/alpha_font_size_mini_medium" />
 
             <TextView
@@ -132,13 +134,14 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="5dp"
-                android:background="@drawable/bg_round_rect_white_orange_line"
+                android:background="@drawable/sl_round_rect_white_orange_line"
+                android:enabled="false"
                 android:paddingBottom="7dp"
                 android:paddingLeft="18dp"
                 android:paddingRight="18dp"
                 android:paddingTop="7dp"
                 android:text="删除"
-                android:textColor="@color/alpha_font_color_black"
+                android:textColor="@color/sl_black_2_gray"
                 android:textSize="@dimen/alpha_font_size_mini_medium" />
 
         </LinearLayout>
