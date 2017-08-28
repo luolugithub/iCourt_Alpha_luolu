@@ -138,6 +138,12 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
                 super.onRefresh(isPullDown);
                 getData(true);
             }
+
+            @Override
+            public void onLoadMore(boolean isSilence) {
+                super.onLoadMore(isSilence);
+                getData(false);
+            }
         });
         refreshLayout.startRefresh();
     }
@@ -326,7 +332,7 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
                 orginName = split[split.length - 1];
             }
         }
-        showLoadingDialog(null);
+        showLoadingDialog("处理中");
         getSFileApi().fileRename(
                 item.repo_id,
                 TextUtils.isEmpty(item.new_path) ? item.path : item.new_path,
@@ -336,6 +342,7 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
                     @Override
                     public void onSuccess(Call<FolderDocumentEntity> call, Response<FolderDocumentEntity> response) {
                         dismissLoadingDialog();
+                        showToast("撤销成功");
                         getData(true);
                     }
 
@@ -357,7 +364,7 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
                 orginName = split[split.length - 1];
             }
         }
-        showLoadingDialog(null);
+        showLoadingDialog("处理中");
         getSFileApi().folderRename(
                 item.repo_id,
                 TextUtils.isEmpty(item.new_path) ? item.path : item.new_path,
@@ -367,6 +374,7 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
                     @Override
                     public void onSuccess(Call<String> call, Response<String> response) {
                         dismissLoadingDialog();
+                        showToast("撤销成功");
                         getData(true);
                     }
 
@@ -385,7 +393,7 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
      */
     private void fileRevokeMove(FileChangedHistoryEntity item) {
         if (item == null) return;
-        showLoadingDialog(null);
+        showLoadingDialog("处理中");
         //eg.   "/hshh"---->"/" "/hshh/xx1"---> "/hshh"
         String orginPath = item.path;
         if (!TextUtils.isEmpty(item.path)) {
@@ -415,6 +423,7 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
                     @Override
                     public void onSuccess(Call<JsonElement> call, Response<JsonElement> response) {
                         dismissLoadingDialog();
+                        showToast("撤销成功");
                         getData(true);
                     }
 
@@ -433,7 +442,7 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
      */
     private void revokeFolder(FileChangedHistoryEntity item) {
         if (item == null) return;
-        showLoadingDialog(null);
+        showLoadingDialog("处理中");
         getSFileApi().folderRevert(
                 item.repo_id,
                 item.path,
@@ -443,6 +452,7 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
                     public void onSuccess(Call<JsonObject> call, Response<JsonObject> response) {
                         dismissLoadingDialog();
                         if (JsonUtils.getBoolValue(response.body(), "success")) {
+                            showToast("撤销成功");
                             getData(true);
                         } else {
                             showToast("撤销失败");
@@ -463,7 +473,7 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
      * @param item
      */
     private void deleteFile(FileChangedHistoryEntity item) {
-        showLoadingDialog(null);
+        showLoadingDialog("处理中");
         getSFileApi().fileDelete(
                 item.repo_id,
                 item.path)
@@ -472,6 +482,7 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
                     public void onSuccess(Call<JsonObject> call, Response<JsonObject> response) {
                         dismissLoadingDialog();
                         if (JsonUtils.getBoolValue(response.body(), "success")) {
+                            showToast("撤销成功");
                             getData(true);
                         } else {
                             showToast("撤销失败");
@@ -492,7 +503,7 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
      * @param item
      */
     private void deleteFolder(FileChangedHistoryEntity item) {
-        showLoadingDialog(null);
+        showLoadingDialog("处理中");
         getSFileApi().folderDelete(
                 item.repo_id,
                 item.path)
@@ -501,6 +512,7 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
                     public void onSuccess(Call<JsonObject> call, Response<JsonObject> response) {
                         dismissLoadingDialog();
                         if (JsonUtils.getBoolValue(response.body(), "success")) {
+                            showToast("撤销成功");
                             getData(true);
                         } else {
                             showToast("撤销失败");
@@ -522,7 +534,7 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
      */
     private void revokeFile(FileChangedHistoryEntity item) {
         if (item == null) return;
-        showLoadingDialog(null);
+        showLoadingDialog("处理中");
         getSFileApi().fileRevert(
                 item.repo_id,
                 item.path,
@@ -532,6 +544,7 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
                     public void onSuccess(Call<JsonObject> call, Response<JsonObject> response) {
                         dismissLoadingDialog();
                         if (JsonUtils.getBoolValue(response.body(), "success")) {
+                            showToast("撤销成功");
                             getData(true);
                         } else {
                             showToast("撤销失败");
@@ -553,7 +566,7 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
      */
     private void revokeEditFile(FileChangedHistoryEntity item) {
         if (item == null) return;
-        showLoadingDialog(null);
+        showLoadingDialog("处理中");
         getSFileApi().fileRevertEdit(
                 item.repo_id,
                 item.path,
@@ -564,6 +577,7 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
                     public void onSuccess(Call<JsonObject> call, Response<JsonObject> response) {
                         dismissLoadingDialog();
                         if (JsonUtils.getBoolValue(response.body(), "success")) {
+                            showToast("撤销成功");
                             getData(true);
                         } else {
                             showToast("撤销失败");

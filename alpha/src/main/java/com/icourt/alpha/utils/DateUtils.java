@@ -113,7 +113,12 @@ public class DateUtils {
         } else if (isToday(milliseconds)) {//2.今天
             long distanceMilliseconds = System.currentTimeMillis() - milliseconds;
             if (distanceMilliseconds < TimeUnit.HOURS.toMillis(1)) {//3.x分钟前
-                return String.format("%s分钟前", TimeUnit.MILLISECONDS.toMinutes(distanceMilliseconds));
+                long distanceSeconds = TimeUnit.MILLISECONDS.toMinutes(distanceMilliseconds);
+                if (distanceSeconds == 0) {
+                    return "刚刚";
+                } else {
+                    return String.format("%s分钟前", TimeUnit.MILLISECONDS.toMinutes(distanceMilliseconds));
+                }
             } else {//4.x小时前
                 return String.format("%s小时前", TimeUnit.MILLISECONDS.toHours(distanceMilliseconds));
             }
@@ -128,6 +133,48 @@ public class DateUtils {
                 sdf.applyPattern("yyyy-MM-dd");
                 return sdf.format(milliseconds);
             }
+        }
+    }
+
+    /**
+     * 注意:别轻易修改
+     * 文档地址:http://wiki.alphalawyer.cn/pages/viewpage.action?pageId=1773098
+     * 获取标准的时间格式化:
+     * <p>
+     * 对近期时间点敏感、对具体时间点要求高、显示区域充裕
+     * 通常不带有社交属性
+     * <p>
+     * 1. t < 60 分钟：x分钟前（x = 1～59）
+     * 2. 1 小时 ≤ t < 24 小时：x小时前（x = 1～23）
+     * 3. 24 小时 ≤ t ≤ 前一天零点：昨天 + hh:mm
+     * 4. t > 前一天零点：yyyy-mm-dd + hh:mm
+     *
+     * @param milliseconds
+     * @return
+     */
+    public static final String getStandardFormatTime(long milliseconds) {
+        SimpleDateFormat sdf = new SimpleDateFormat();
+        if (isOverToday(milliseconds)) {//1.未来
+            sdf.applyPattern("yyyy-MM-dd: hh:mm");
+            return sdf.format(milliseconds);
+        } else if (isToday(milliseconds)) {//2.今天
+            long distanceMilliseconds = System.currentTimeMillis() - milliseconds;
+            if (distanceMilliseconds < TimeUnit.HOURS.toMillis(1)) {//3.x分钟前
+                long distanceSeconds = TimeUnit.MILLISECONDS.toMinutes(distanceMilliseconds);
+                if (distanceSeconds == 0) {
+                    return "刚刚";
+                } else {
+                    return String.format("%s分钟前", TimeUnit.MILLISECONDS.toMinutes(distanceMilliseconds));
+                }
+            } else {//4.x小时前
+                return String.format("%s小时前", TimeUnit.MILLISECONDS.toHours(distanceMilliseconds));
+            }
+        } else if (isYesterday(milliseconds)) {
+            sdf.applyPattern("昨天 hh:mm");
+            return sdf.format(milliseconds);
+        } else {
+            sdf.applyPattern("yyyy-MM-dd hh:mm");
+            return sdf.format(milliseconds);
         }
     }
 

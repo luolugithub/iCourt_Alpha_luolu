@@ -43,11 +43,12 @@ public class FileChangedHistoryAdapter extends BaseArrayRecyclerAdapter<FileChan
         file_action_title_tv.setText(getCombineActionTitle(fileChangedHistoryEntity));
 
         file_title_tv.setText(fileChangedHistoryEntity.file_name);
-        file_time_tv.setText(DateUtils.getFormatChatTime(fileChangedHistoryEntity.date));
+        file_time_tv.setText(DateUtils.getStandardFormatTime(fileChangedHistoryEntity.date));
         holder.bindChildClick(file_restore_iv);
         file_restore_iv.setVisibility(canRevert && canRestore(fileChangedHistoryEntity) ? View.VISIBLE : View.GONE);
 
     }
+
     /**
      * 是否可以撤销
      *
