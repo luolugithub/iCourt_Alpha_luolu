@@ -118,8 +118,7 @@ public class TaskListCalendarFragment extends BaseFragment {
         return view;
     }
 
-    @Override
-    protected void initView() {
+ protected void initView() {
         taskItemEntityList = (ArrayList<TaskEntity.TaskItemEntity>) getArguments().getSerializable(KEY_TASKS);
         if (taskItemEntityList == null) {
             taskItemEntityList = new ArrayList<>();
@@ -202,6 +201,10 @@ public class TaskListCalendarFragment extends BaseFragment {
     public void onResume() {
         super.onResume();
 
+        getTaskData();
+    }
+
+    private void getTaskData() {
         //重新获取一遍数据
         getApi().taskListQuery(0,
                 getLoginUserId(),
@@ -219,6 +222,17 @@ public class TaskListCalendarFragment extends BaseFragment {
                 }
             }
         });
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onDeleteTaskEvent(TaskActionEvent event) {
+        if (event == null) return;
+
+        switch (event.action) {
+            case TaskActionEvent.TASK_REFRESG_ACTION:
+                getTaskData();
+                break;
+        }
     }
 
     /**
@@ -611,7 +625,7 @@ public class TaskListCalendarFragment extends BaseFragment {
         if (targetFrgament != this) return;
         if (bundle != null) {
             ArrayList<TaskEntity.TaskItemEntity> tasks = (ArrayList<TaskEntity.TaskItemEntity>) bundle.getSerializable(KEY_FRAGMENT_RESULT);
-            updateClendarTasks(tasks);
+            getTaskData();
         }
     }
 
@@ -621,6 +635,7 @@ public class TaskListCalendarFragment extends BaseFragment {
      * @param tasks
      */
     private void updateClendarTasks(List<TaskEntity.TaskItemEntity> tasks) {
+        if (viewPager == null || isDetached()) return;
         if (tasks != null && !tasks.isEmpty()) {
             updateClendarTasks(new ArrayList<TaskEntity.TaskItemEntity>(tasks));
         }

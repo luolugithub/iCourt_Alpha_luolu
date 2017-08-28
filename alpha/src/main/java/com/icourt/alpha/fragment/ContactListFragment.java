@@ -291,7 +291,7 @@ public class ContactListFragment extends BaseFragment implements BaseRecyclerAda
      * @param data
      */
     private void insertAsynContact(List<GroupContactBean> data) {
-        if (data == null) return;
+        if (data == null||data.isEmpty()) return;
         try {
             contactDbService.deleteAll();
             contactDbService.insertOrUpdateAsyn(new ArrayList<IConvertModel<ContactDbModel>>(data));

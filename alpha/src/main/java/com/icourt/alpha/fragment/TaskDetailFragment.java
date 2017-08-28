@@ -224,15 +224,16 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
             @Override
             public void onSuccess(Call<ResEntity<TaskReminderEntity>> call, Response<ResEntity<TaskReminderEntity>> response) {
                 taskReminderEntity = response.body().result;
-                if (taskReminderIcon == null) return;
-                if (taskReminderEntity != null) {
-                    if (taskReminderEntity.ruleTime != null || taskReminderEntity.customTime != null) {
-                        taskReminderIcon.setVisibility(View.VISIBLE);
+                if (taskReminderIcon != null) {
+                    if (taskReminderEntity != null) {
+                        if (taskReminderEntity.ruleTime != null || taskReminderEntity.customTime != null) {
+                            taskReminderIcon.setVisibility(View.VISIBLE);
+                        } else {
+                            taskReminderIcon.setVisibility(View.INVISIBLE);
+                        }
                     } else {
                         taskReminderIcon.setVisibility(View.INVISIBLE);
                     }
-                } else {
-                    taskReminderIcon.setVisibility(View.INVISIBLE);
                 }
             }
         });
@@ -373,42 +374,44 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
             @Override
             public void onSuccess(Call<ResEntity<TaskEntity.TaskItemEntity>> call, Response<ResEntity<TaskEntity.TaskItemEntity>> response) {
                 dismissLoadingDialog();
-
-                if (projectEntity != null) {
-                    taskProjectTv.setText(projectEntity.name);
-                    taskGroupLayout.setVisibility(View.VISIBLE);
-                    EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_UPDATE_PROJECT_ACTION, projectEntity.pkId));
-                    if (taskItemEntity != null) {
-                        if (taskItemEntity.matter != null) {
-                            taskItemEntity.matter.id = projectEntity.pkId;
-                            taskItemEntity.matter.name = projectEntity.name;
+                if (taskProjectTv != null) {
+                    if (projectEntity != null) {
+                        taskProjectTv.setText(projectEntity.name);
+                        taskGroupLayout.setVisibility(View.VISIBLE);
+                        EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_UPDATE_PROJECT_ACTION, projectEntity.pkId));
+                        if (taskItemEntity != null) {
+                            if (taskItemEntity.matter != null) {
+                                taskItemEntity.matter.id = projectEntity.pkId;
+                                taskItemEntity.matter.name = projectEntity.name;
+                            } else {
+                                TaskEntity.TaskItemEntity.MatterEntity matterEntity = new TaskEntity.TaskItemEntity.MatterEntity();
+                                matterEntity.id = projectEntity.pkId;
+                                matterEntity.name = projectEntity.name;
+                                taskItemEntity.matter = matterEntity;
+                            }
+                        }
+                        if (taskGroupEntity != null) {
+                            taskGroupTv.setText(taskGroupEntity.name);
                         } else {
-                            TaskEntity.TaskItemEntity.MatterEntity matterEntity = new TaskEntity.TaskItemEntity.MatterEntity();
-                            matterEntity.id = projectEntity.pkId;
-                            matterEntity.name = projectEntity.name;
-                            taskItemEntity.matter = matterEntity;
+                            taskGroupTv.setText("");
+                        }
+                    } else {
+                        if (taskGroupEntity != null) {
+                            taskGroupTv.setText(taskGroupEntity.name);
+                        } else {
+                            taskGroupTv.setText(taskItemEntity != null ? taskItemEntity.parentFlow != null ? taskItemEntity.parentFlow.name : "" : "");
                         }
                     }
-                    if (taskGroupEntity != null) {
-                        taskGroupTv.setText(taskGroupEntity.name);
-                    } else {
-                        taskGroupTv.setText("");
+                    try {
+                        if (taskDescTv == null) return;
+                        taskDescTv.setText(URLDecoder.decode(itemEntity.description, "utf-8"));
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        bugSync("任务详情－任务描述URLDecoder.decode失败：" + itemEntity.description, e);
                     }
-                } else {
-                    if (taskGroupEntity != null) {
-                        taskGroupTv.setText(taskGroupEntity.name);
-                    } else {
-                        taskGroupTv.setText(taskItemEntity != null ? taskItemEntity.parentFlow != null ? taskItemEntity.parentFlow.name : "" : "");
-                    }
+                    addReminders(taskReminderEntity);
+                    EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION, itemEntity.id, ""));
                 }
-                try {
-                    if (taskDescTv == null) return;
-                    taskDescTv.setText(URLDecoder.decode(itemEntity.description, "utf-8"));
-                } catch (UnsupportedEncodingException e) {
-                    e.printStackTrace();
-                }
-                addReminders(taskReminderEntity);
-                EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION, itemEntity.id, ""));
             }
 
             @Override
@@ -478,18 +481,21 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
         getApi().taskReminderAdd(taskItemEntity.id, RequestUtils.createJsonBody(json)).enqueue(new SimpleCallBack<TaskReminderEntity>() {
             @Override
             public void onSuccess(Call<ResEntity<TaskReminderEntity>> call, Response<ResEntity<TaskReminderEntity>> response) {
-                if ((taskReminderEntity.ruleTime != null && taskReminderEntity.ruleTime.size() > 0) ||
-                        (taskReminderEntity.customTime != null && taskReminderEntity.customTime.size() > 0)) {
-                    taskReminderIcon.setVisibility(View.VISIBLE);
-                } else {
-                    taskReminderIcon.setVisibility(View.INVISIBLE);
+                if (taskReminderIcon != null) {
+                    if ((taskReminderEntity.ruleTime != null && taskReminderEntity.ruleTime.size() > 0) ||
+                            (taskReminderEntity.customTime != null && taskReminderEntity.customTime.size() > 0)) {
+                        taskReminderIcon.setVisibility(View.VISIBLE);
+                    } else {
+                        taskReminderIcon.setVisibility(View.INVISIBLE);
+                    }
                 }
             }
 
             @Override
             public void onFailure(Call<ResEntity<TaskReminderEntity>> call, Throwable t) {
                 super.onFailure(call, t);
-                taskReminderIcon.setVisibility(View.INVISIBLE);
+                if (taskReminderIcon != null)
+                    taskReminderIcon.setVisibility(View.INVISIBLE);
             }
         });
     }

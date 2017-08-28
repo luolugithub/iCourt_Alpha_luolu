@@ -513,7 +513,7 @@ public class TaskDetailActivity extends BaseActivity
                                         if (!taskItemEntity.state) {
                                             if (taskItemEntity.attendeeUsers != null) {
                                                 if (taskItemEntity.attendeeUsers.size() > 1) {
-                                                    showDeleteDialog("该任务为多人任务，确定要完成吗?", SHOW_FINISH_DIALOG);
+                                                    showDeleteDialog("该任务由多人负责，确定完成?", SHOW_FINISH_DIALOG);
                                                 } else {
                                                     updateTask(taskItemEntity, true, taskCheckbox);
                                                 }
@@ -805,8 +805,8 @@ public class TaskDetailActivity extends BaseActivity
             } else {
                 setNoAllocation();
             }
-            taskUsersArrowIv.setVisibility(taskItemEntity.valid ? View.VISIBLE : View.GONE);
-            taskUserArrowIv.setVisibility(taskItemEntity.valid ? View.VISIBLE : View.GONE);
+            taskUsersArrowIv.setVisibility(taskItemEntity.valid && !taskItemEntity.state ? View.VISIBLE : View.GONE);
+            taskUserArrowIv.setVisibility(taskItemEntity.valid && !taskItemEntity.state ? View.VISIBLE : View.GONE);
             taskStartIamge.setVisibility(taskItemEntity.valid ? View.VISIBLE : View.GONE);
             commentEditTv.setVisibility(taskItemEntity.valid ? View.VISIBLE : View.GONE);
         }
@@ -930,7 +930,7 @@ public class TaskDetailActivity extends BaseActivity
                 myStar = TaskEntity.UNATTENTIONED;
                 titleAction.setImageResource(R.mipmap.header_icon_star_line);
                 taskItemEntity.attentioned = TaskEntity.ATTENTIONED;
-                EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_DELETE_ACTION, taskItemEntity));
+                EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION, taskItemEntity));
             }
 
             @Override
@@ -977,7 +977,7 @@ public class TaskDetailActivity extends BaseActivity
             public void onSuccess(Call<ResEntity<TaskEntity.TaskItemEntity>> call, Response<ResEntity<TaskEntity.TaskItemEntity>> response) {
                 dismissLoadingDialog();
                 if (response.body().result != null) {
-                    EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_UPDATE_ITEM, response.body().result));
+                    EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION, response.body().result));
                 }
                 if (checkbox != null)
                     checkbox.setChecked(state);

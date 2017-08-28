@@ -142,7 +142,6 @@ public class UnFinishTaskFragment extends BaseFragment implements BaseRecyclerAd
             }
         });
         headerCommSearchInputLl.setVisibility(View.GONE);
-        showLoadingDialog(null);
         getData(true);
     }
 
@@ -151,11 +150,10 @@ public class UnFinishTaskFragment extends BaseFragment implements BaseRecyclerAd
         super.getData(isRefresh);
         taskSelectAdapter.clearSelected();
         if (!TextUtils.isEmpty(projectId)) {
-            getApi().projectQueryTaskList(projectId, 0, 0, 1, -1)
+            getApi().projectQueryTaskList(null,projectId, 0, 0, 1, -1)
                     .enqueue(new SimpleCallBack<TaskEntity>() {
                         @Override
                         public void onSuccess(Call<ResEntity<TaskEntity>> call, Response<ResEntity<TaskEntity>> response) {
-                            dismissLoadingDialog();
                             if (response.body().result != null) {
                                 taskSelectAdapter.bindData(isRefresh, response.body().result.items);
                                 setSelectedTask();
@@ -165,7 +163,6 @@ public class UnFinishTaskFragment extends BaseFragment implements BaseRecyclerAd
                         @Override
                         public void onFailure(Call<ResEntity<TaskEntity>> call, Throwable t) {
                             super.onFailure(call, t);
-                            dismissLoadingDialog();
                         }
                     });
         } else {
@@ -179,7 +176,6 @@ public class UnFinishTaskFragment extends BaseFragment implements BaseRecyclerAd
                     0).enqueue(new SimpleCallBack<TaskEntity>() {
                 @Override
                 public void onSuccess(Call<ResEntity<TaskEntity>> call, Response<ResEntity<TaskEntity>> response) {
-                    dismissLoadingDialog();
                     if (response.body().result != null) {
                         taskSelectAdapter.bindData(isRefresh, response.body().result.items);
                         setSelectedTask();
@@ -189,7 +185,6 @@ public class UnFinishTaskFragment extends BaseFragment implements BaseRecyclerAd
                 @Override
                 public void onFailure(Call<ResEntity<TaskEntity>> call, Throwable t) {
                     super.onFailure(call, t);
-                    dismissLoadingDialog();
                 }
             });
         }
@@ -269,7 +264,7 @@ public class UnFinishTaskFragment extends BaseFragment implements BaseRecyclerAd
     @Override
     public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
         taskSelectAdapter.setSelectedPos(adapter.getRealPos(position));
-        if(getParentFragment() instanceof TaskSelectDialogFragment){
+        if (getParentFragment() instanceof TaskSelectDialogFragment) {
             ((TaskSelectDialogFragment) getParentFragment()).finishClearSelected();
         }
     }

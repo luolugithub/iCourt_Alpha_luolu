@@ -84,7 +84,7 @@ public class TabNewsFragment extends BaseFragment
     @Override
     public void onResume() {
         super.onResume();
-        SyncDataService.startSysnContact(getActivity());
+        SyncDataService.startSyncContact(getActivity());
     }
 
     @Nullable

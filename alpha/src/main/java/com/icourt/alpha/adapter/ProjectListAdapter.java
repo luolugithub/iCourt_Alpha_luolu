@@ -50,37 +50,39 @@ public class ProjectListAdapter extends BaseArrayRecyclerAdapter<ProjectEntity> 
         } else {
             timeView.setText("00:00");
         }
-        switch (Integer.valueOf(projectEntity.matterType)) {
-            case 0:
-                if (!TextUtils.isEmpty(projectEntity.caseProcessName))
-                    typeView.setText(projectEntity.caseProcessName);
-                else if (!TextUtils.isEmpty(projectEntity.matterTypeName))
-                    typeView.setText(projectEntity.matterTypeName);
-                else
-                    typeView.setText("争议解决");
-                headerIcon.setImageResource(R.mipmap.project_type_dis);
-                break;
-            case 1:
-                if (!TextUtils.isEmpty(projectEntity.matterTypeName))
-                    typeView.setText(projectEntity.matterTypeName);
-                else
-                    typeView.setText("非诉专项");
-                headerIcon.setImageResource(R.mipmap.project_type_noju);
-                break;
-            case 2:
-                if (!TextUtils.isEmpty(projectEntity.matterTypeName))
-                    typeView.setText(projectEntity.matterTypeName);
-                else
-                    typeView.setText("常年顾问");
-                headerIcon.setImageResource(R.mipmap.project_type_coun);
-                break;
-            case 3:
-                if (!TextUtils.isEmpty(projectEntity.matterTypeName))
-                    typeView.setText(projectEntity.matterTypeName);
-                else
-                    typeView.setText("内部事务");
-                headerIcon.setImageResource(R.mipmap.project_type_aff);
-                break;
+        if (!TextUtils.isEmpty(projectEntity.matterType)) {
+            switch (Integer.valueOf(projectEntity.matterType)) {
+                case 0:
+                    if (!TextUtils.isEmpty(projectEntity.caseProcessName))
+                        typeView.setText(projectEntity.caseProcessName);
+                    else if (!TextUtils.isEmpty(projectEntity.matterTypeName))
+                        typeView.setText(projectEntity.matterTypeName);
+                    else
+                        typeView.setText("争议解决");
+                    headerIcon.setImageResource(R.mipmap.project_type_dis);
+                    break;
+                case 1:
+                    if (!TextUtils.isEmpty(projectEntity.matterTypeName))
+                        typeView.setText(projectEntity.matterTypeName);
+                    else
+                        typeView.setText("非诉专项");
+                    headerIcon.setImageResource(R.mipmap.project_type_noju);
+                    break;
+                case 2:
+                    if (!TextUtils.isEmpty(projectEntity.matterTypeName))
+                        typeView.setText(projectEntity.matterTypeName);
+                    else
+                        typeView.setText("常年顾问");
+                    headerIcon.setImageResource(R.mipmap.project_type_coun);
+                    break;
+                case 3:
+                    if (!TextUtils.isEmpty(projectEntity.matterTypeName))
+                        typeView.setText(projectEntity.matterTypeName);
+                    else
+                        typeView.setText("内部事务");
+                    headerIcon.setImageResource(R.mipmap.project_type_aff);
+                    break;
+            }
         }
     }
 

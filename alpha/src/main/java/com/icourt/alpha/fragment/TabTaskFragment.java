@@ -146,7 +146,7 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
                 titleCalendar.setVisibility(View.GONE);
                 switch (position) {
                     case 0:
-                        titleCalendar.setVisibility(View.VISIBLE);
+                        titleCalendar.setVisibility(select_position == 0 ? View.VISIBLE : View.GONE);
                         if (topMiddlePopup != null && topMiddlePopup.getAdapter() != null) {
                             FilterDropEntity filterDropEntity = topMiddlePopup.getAdapter().getItem(select_position);
                             if (filterDropEntity != null) {

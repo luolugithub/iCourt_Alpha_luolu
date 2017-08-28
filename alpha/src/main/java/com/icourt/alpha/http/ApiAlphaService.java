@@ -23,7 +23,6 @@ import com.icourt.alpha.entity.bean.TaskCheckItemEntity;
 import com.icourt.alpha.entity.bean.TaskEntity;
 import com.icourt.alpha.entity.bean.TaskGroupEntity;
 import com.icourt.alpha.entity.bean.TaskMemberWrapEntity;
-import com.icourt.alpha.entity.bean.TaskOwerEntity;
 import com.icourt.alpha.entity.bean.TaskReminderEntity;
 import com.icourt.alpha.entity.bean.TimeEntity;
 import com.icourt.alpha.entity.bean.TimingCountEntity;
@@ -48,8 +47,6 @@ import retrofit2.http.PartMap;
 import retrofit2.http.Path;
 import retrofit2.http.Query;
 import retrofit2.http.Url;
-
-import static com.umeng.analytics.pro.x.P;
 
 /**
  * @author xuanyouwu
@@ -449,7 +446,8 @@ public interface ApiAlphaService {
      * @return
      */
     @GET("api/v2/taskflow/queryMatterTask")
-    Call<ResEntity<TaskEntity>> projectQueryTaskList(@Query("matterId") String projectId,
+    Call<ResEntity<TaskEntity>> projectQueryTaskList(@Query("assignTos") String assignTos,
+                                                     @Query("matterId") String projectId,
                                                      @Query("stateType") int stateType,
                                                      @Query("type") int type,
                                                      @Query("pageIndex") int pageIndex,
@@ -709,7 +707,6 @@ public interface ApiAlphaService {
      * <p>
      * 文档地址：http://testpms.alphalawyer.cn/ilaw/swagger/index.html#!/taskflow-api/queryTaskFlowsUsingGET_1
      *
-     * @param assignedByMe  0：所有； 1：我分配的
      * @param assignTos     分配给谁的，用户的id序列
      * @param attentionType 全部:0    我关注的:1
      * @param orderBy       按指定类型排序或分组；matterId表示按项目排序;createTime表示按日期排序(默认);parentId表示按清单;assignTo表示按负责人排序
@@ -826,7 +823,7 @@ public interface ApiAlphaService {
      */
     @GET("api/v1/matters/attorney")
     Call<ResEntity<List<TaskEntity.TaskItemEntity.AttendeeUserEntity>>> taskOwerListQuery(@Query("id") String project,
-                                                                       @Query("name") String name);
+                                                                                          @Query("name") String name);
 
 
     /**
@@ -1283,6 +1280,7 @@ public interface ApiAlphaService {
     /**
      * 恢复已删除的任务
      * 文档地址：https://dev.alphalawyer.cn/ilaw/swagger/index.html#!/taskflow-api/returnTaskFlowUsingPUT
+     *
      * @param taskId
      * @return
      */
@@ -1292,6 +1290,7 @@ public interface ApiAlphaService {
     /**
      * 清空所有已删除的任务
      * 文档地址：https://dev.alphalawyer.cn/ilaw/swagger/index.html#!/taskflow-api/deleteTaskFlowByIdsUsingDELETE
+     *
      * @param ids
      * @return
      */
@@ -1301,6 +1300,7 @@ public interface ApiAlphaService {
     /**
      * 获取任务下计时列表
      * 文档地址：https://dev.alphalawyer.cn/ilaw/swagger/index.html#!/timing-api/findTimingByTaskIdUsingGET
+     *
      * @param taskId
      * @return
      */

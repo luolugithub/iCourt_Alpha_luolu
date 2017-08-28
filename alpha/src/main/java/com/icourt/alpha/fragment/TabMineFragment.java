@@ -160,23 +160,23 @@ public class TabMineFragment extends BaseFragment {
      * @param alphaUserInfo
      */
     private void setDataToView(AlphaUserInfo alphaUserInfo) {
-        if (userNameTv == null) return;
-        if (myCenterClearCacheTextview == null) return;
-        if (alphaUserInfo != null) {
-            GlideUtils.loadUser(getContext(), alphaUserInfo.getPic(), photoImage);
-            if (GlideUtils.canLoadImage(getContext())) {
-                Glide.with(getContext())
-                        .load(alphaUserInfo.getPic())
-                        .thumbnail(0.1f)
-                        .bitmapTransform(new BlurTransformation(getContext(), 50))
-                        .crossFade()
-                        .into(photoBigImage);
-                userNameTv.setText(alphaUserInfo.getName());
+        if (userNameTv != null) {
+            if (alphaUserInfo != null) {
+                GlideUtils.loadUser(getContext(), alphaUserInfo.getPic(), photoImage);
+                if (GlideUtils.canLoadImage(getContext())) {
+                    Glide.with(getContext())
+                            .load(alphaUserInfo.getPic())
+                            .thumbnail(0.1f)
+                            .bitmapTransform(new BlurTransformation(getContext(), 50))
+                            .crossFade()
+                            .into(photoBigImage);
+                    userNameTv.setText(alphaUserInfo.getName());
 //                officeNameTv.setText(getUserGroup(alphaUserInfo.getGroups()));
-                try {
-                    myCenterClearCacheTextview.setText(DataCleanManager.getTotalCacheSize(getContext()));
-                } catch (Exception e) {
-                    e.printStackTrace();
+                    try {
+                        myCenterClearCacheTextview.setText(DataCleanManager.getTotalCacheSize(getContext()));
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                 }
             }
         }

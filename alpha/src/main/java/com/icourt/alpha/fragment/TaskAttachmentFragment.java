@@ -31,7 +31,6 @@ import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.interfaces.OnUpdateTaskListener;
 import com.icourt.alpha.utils.DateUtils;
-import com.icourt.alpha.utils.LogUtils;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.widget.dialog.BottomActionDialog;
 import com.icourt.api.RequestUtils;
@@ -189,9 +188,10 @@ public class TaskAttachmentFragment extends BaseFragment implements BaseRecycler
         @Override
         public void onHanlderSuccess(int reqeustCode, List<PhotoInfo> resultList) {
             if (resultList != null) {
-                for (PhotoInfo photoInfo : resultList) {
-                    if (photoInfo != null && !TextUtils.isEmpty(photoInfo.getPhotoPath())) {
-                        uploadAttachmentToTask(photoInfo.getPhotoPath());
+                showLoadingDialog("正在上传...");
+                for (int i = 0; i < resultList.size(); i++) {
+                    if (resultList.get(i) != null && !TextUtils.isEmpty(resultList.get(i).getPhotoPath())) {
+                        uploadAttachmentToTask(resultList.get(i).getPhotoPath(), i, resultList.size() - 1);
                     }
                 }
             }
@@ -294,25 +294,29 @@ public class TaskAttachmentFragment extends BaseFragment implements BaseRecycler
      *
      * @param filePath
      */
-    private void uploadAttachmentToTask(String filePath) {
-        LogUtils.e("filePath :   " + filePath);
-        if (TextUtils.isEmpty(filePath)) return;
+    private void uploadAttachmentToTask(String filePath, final int position, final int size) {
+        if (TextUtils.isEmpty(filePath)) {
+            dismissLoadingDialog();
+            return;
+        }
         File file = new File(filePath);
         if (!file.exists()) {
+            dismissLoadingDialog();
             showTopSnackBar("文件不存在啦");
             return;
         }
-        showLoadingDialog("正在上传...");
         String key = "file\";filename=\"" + DateUtils.millis() + ".png";
         Map<String, RequestBody> params = new HashMap<>();
         params.put(key, RequestUtils.createImgBody(file));
         getApi().taskAttachmentUpload(taskId, params).enqueue(new SimpleCallBack<JsonElement>() {
             @Override
             public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
-                dismissLoadingDialog();
-                showTopSnackBar("上传成功");
-                EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION));
-                getData(true);
+                if (position == size) {
+                    dismissLoadingDialog();
+                    showTopSnackBar("上传成功");
+                    EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION));
+                    getData(true);
+                }
             }
 
             @Override
@@ -357,7 +361,8 @@ public class TaskAttachmentFragment extends BaseFragment implements BaseRecycler
         switch (requestCode) {
             case REQUEST_CODE_CAMERA:
                 if (resultCode == Activity.RESULT_OK) {
-                    uploadAttachmentToTask(path);
+                    if (!TextUtils.isEmpty(path))
+                        uploadAttachmentToTask(path, 1, 1);
                 }
                 break;
             default:

@@ -5,6 +5,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
 
+import com.icourt.alpha.activity.TimerDetailActivity;
 import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.icourt.alpha.entity.bean.TimeEntity;
 import com.icourt.alpha.entity.event.TimingEvent;
@@ -25,6 +26,8 @@ import java.util.concurrent.TimeUnit;
 import retrofit2.Call;
 import retrofit2.Response;
 
+import static com.umeng.socialize.utils.ContextUtil.getContext;
+
 /**
  * Description  计时管理器
  * Company Beijing icourt
@@ -35,6 +38,7 @@ import retrofit2.Response;
 public class TimerManager {
 
     private static final String KEY_TIMER = "key_timer_entity_%s";
+    private static final String KEY_TIMER_TASK_ID = "key_timer_entity_task_id_%s";
 
     private TimerManager() {
 
@@ -196,6 +200,7 @@ public class TimerManager {
                         }
 
                         SpUtils.getInstance().putData(String.format(KEY_TIMER, getUid()), response.body().result);
+                        SpUtils.getInstance().putData(String.format(KEY_TIMER_TASK_ID, getUid()), response.body().result.taskPkId);
                         broadTimingEvent(response.body().result.pkId, TimingEvent.TIMING_ADD);
                         setBase(0);
                         startTimingTask();
@@ -240,6 +245,7 @@ public class TimerManager {
         if (timer == null) return;
         if (isTimer(timer.pkId)) {
             SpUtils.getInstance().putData(String.format(KEY_TIMER, getUid()), timer);
+            SpUtils.getInstance().putData(String.format(KEY_TIMER_TASK_ID, getUid()), timer.taskPkId);
         }
     }
 
@@ -254,7 +260,7 @@ public class TimerManager {
             timer.useTime = 0;
         }
         SpUtils.getInstance().putData(String.format(KEY_TIMER, getUid()), timer);
-
+        SpUtils.getInstance().putData(String.format(KEY_TIMER_TASK_ID, getUid()), timer.taskPkId);
         globalTimingId = timer.pkId;
         broadTimingEvent(globalTimingId, TimingEvent.TIMING_ADD);
         //resumeTimer();
@@ -275,6 +281,15 @@ public class TimerManager {
 
     public TimeEntity.ItemEntity getTimer() {
         return (TimeEntity.ItemEntity) SpUtils.getInstance().getSerializableData(String.format(KEY_TIMER, getUid()));
+    }
+
+    /**
+     * 获取计时对象的taskid
+     *
+     * @return
+     */
+    public String getTimerTaskId() {
+        return SpUtils.getInstance().getStringData(String.format(KEY_TIMER_TASK_ID, getUid()), "");
     }
 
     /**
@@ -350,6 +365,7 @@ public class TimerManager {
         TimeEntity.ItemEntity timer = getTimer();
         if (timer != null && StringUtils.equalsIgnoreCase(itemEntity.pkId, timer.pkId, false)) {
             SpUtils.getInstance().putData(String.format(KEY_TIMER, getUid()), itemEntity);
+            SpUtils.getInstance().putData(String.format(KEY_TIMER_TASK_ID, getUid()), timer.taskPkId);
             resumeTimer(itemEntity);
         }
     }
@@ -397,6 +413,7 @@ public class TimerManager {
             EventBus.getDefault().post(timingSingle);
 
             SpUtils.getInstance().putData(String.format(KEY_TIMER, getUid()), "");
+            SpUtils.getInstance().remove(String.format(KEY_TIMER_TASK_ID, getUid()));
         }
     }
 
@@ -422,9 +439,10 @@ public class TimerManager {
                             if (callBack != null) {
                                 callBack.onSuccess(call, response);
                             }
+                            TimerDetailActivity.launch(getContext(), timer);
                             stopTimingTask();
                             SpUtils.getInstance().putData(String.format(KEY_TIMER, getUid()), "");
-
+                            SpUtils.getInstance().putData(String.format(KEY_TIMER_TASK_ID, getUid()), "");
                             TimingEvent timingSingle = TimingEvent.timingSingle;
                             timingSingle.action = TimingEvent.TIMING_STOP;
                             timingSingle.timingId = timer.pkId;
@@ -439,6 +457,7 @@ public class TimerManager {
                                 callBack.onFailure(call, t);
                             }
                             SpUtils.getInstance().putData(String.format(KEY_TIMER, getUid()), "");
+                            SpUtils.getInstance().putData(String.format(KEY_TIMER_TASK_ID, getUid()), "");
                         }
                     });
         }

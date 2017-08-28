@@ -98,8 +98,13 @@ import static com.icourt.alpha.fragment.TabTaskFragment.select_position;
  * version 2.0.0
  */
 
-public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShowFragmenDialogListener,
-        OnFragmentCallBackListener, ProjectSelectDialogFragment.OnProjectTaskGroupSelectListener, BaseRecyclerAdapter.OnItemClickListener, BaseRecyclerAdapter.OnItemChildClickListener {
+public class TaskListFragment extends BaseFragment implements
+        TaskAdapter.OnShowFragmenDialogListener,
+        TaskAdapter.OnUpdateNewTaskCountListener,
+        OnFragmentCallBackListener,
+        ProjectSelectDialogFragment.OnProjectTaskGroupSelectListener,
+        BaseRecyclerAdapter.OnItemClickListener,
+        BaseRecyclerAdapter.OnItemChildClickListener {
 
     public static final int TYPE_ALL = 0;//全部
     public static final int TYPE_NEW = 1;//新任务
@@ -202,6 +207,7 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
             taskAdapter.setEditTask(true);
             taskAdapter.setAddTime(true);
             taskAdapter.setOnShowFragmenDialogListener(this);
+            taskAdapter.setOnUpdateNewTaskCountListener(this);
         } else if (stateType == 1 || stateType == 3) {
             headerFooterItemAdapter = new HeaderFooterAdapter<>(taskItemAdapter = new TaskItemAdapter());
 
@@ -253,6 +259,7 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
                 if (getParentFragment() instanceof TaskAllFragment) {
                     if (getParentFragment().getParentFragment() instanceof TabTaskFragment) {
                         if (select_position != 0) {
+                           TabTaskFragment.isShowCalendar = false;
                             ((TabTaskFragment) (getParentFragment().getParentFragment())).setFirstTabText("未完成", 0);
                             ((TabTaskFragment) (getParentFragment().getParentFragment())).updateListData(0);
                             TabTaskFragment.isAwayScroll = true;
@@ -692,20 +699,6 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
                     refreshLayout.startRefresh();
                 }
                 break;
-            case TaskActionEvent.TASK_UPDATE_ITEM:
-                if (event.entity == null) return;
-                if (type == TYPE_ALL) {
-                    if (stateType == 0) {
-                        updateChildItem(event.entity);
-                    } else if (stateType == 1 || stateType == 3) {
-                        if (taskItemAdapter != null) {
-                            taskItemAdapter.updateItem(event.entity);
-                        }
-                    }
-                } else if (type == TYPE_MY_ATTENTION) {
-                    updateChildItem(event.entity);
-                }
-                break;
         }
 
     }
@@ -762,8 +755,11 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
             case TimingEvent.TIMING_STOP:
                 if (lastEntity != null) {
                     lastEntity.isTiming = false;
-                    taskAdapter.notifyDataSetChanged();
                 }
+                if (taskAdapter != null)
+                    taskAdapter.notifyDataSetChanged();
+                if (taskItemAdapter != null)
+                    taskItemAdapter.notifyDataSetChanged();
                 break;
         }
     }
@@ -861,8 +857,8 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
      * @param taskId
      */
     private void updateChildTimeing(String taskId, boolean isTiming) {
-        int parentPos = getParentPositon(taskId) ;
-        if (parentPos >=0) {
+        int parentPos = getParentPositon(taskId);
+        if (parentPos >= 0) {
             int childPos = getChildPositon(taskId);
             if (childPos >= 0) {
                 BaseArrayRecyclerAdapter.ViewHolder viewHolderForAdapterPosition = (BaseArrayRecyclerAdapter.ViewHolder) recyclerView.findViewHolderForAdapterPosition(parentPos);
@@ -941,6 +937,36 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
         return -1;
     }
 
+    /**
+     * 判断item是否显示在当前屏幕
+     *
+     * @param parentPos
+     * @param childPos
+     * @return
+     */
+    private boolean isShowInScreen(int parentPos, int childPos) {
+        int laseParentVisible = -1;
+        if (parentPos >= 0) {
+            if (childPos >= 0) {
+                if (linearLayoutManager != null) {
+                    laseParentVisible = linearLayoutManager.findLastCompletelyVisibleItemPosition();
+                }
+                BaseArrayRecyclerAdapter.ViewHolder viewHolderForAdapterPosition = (BaseArrayRecyclerAdapter.ViewHolder) recyclerView.findViewHolderForAdapterPosition(parentPos);
+                if (viewHolderForAdapterPosition != null) {
+                    RecyclerView recyclerview = viewHolderForAdapterPosition.obtainView(R.id.parent_item_task_recyclerview);
+                    LinearLayoutManager layoutManager = (LinearLayoutManager) recyclerview.getLayoutManager();
+                    if (layoutManager != null) {
+                        int lastVisibleItem = layoutManager.findLastCompletelyVisibleItemPosition();
+                        int viewTop = layoutManager.getChildAt(childPos).getTop();
+                        int screenheight = (int) DensityUtil.getHeightInPx(getContext());
+                        return laseParentVisible <= parentPos && lastVisibleItem <= childPos && viewTop < screenheight;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
     @Override
     public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
         if (adapter instanceof TaskItemAdapter) {
@@ -953,12 +979,23 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
     @Override
     public void onItemChildClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, final View view, int position) {
         if (adapter instanceof TaskItemAdapter) {
-            TaskEntity.TaskItemEntity itemEntity = (TaskEntity.TaskItemEntity) adapter.getItem(adapter.getRealPos(position));
+            final TaskEntity.TaskItemEntity itemEntity = (TaskEntity.TaskItemEntity) adapter.getItem(adapter.getRealPos(position));
             switch (view.getId()) {
                 case R.id.task_item_start_timming:
                     if (itemEntity.isTiming) {
                         MobclickAgent.onEvent(getContext(), UMMobClickAgent.stop_timer_click_id);
-                        TimerManager.getInstance().stopTimer();
+                        TimerManager.getInstance().stopTimer(new SimpleCallBack<TimeEntity.ItemEntity>() {
+                            @Override
+                            public void onSuccess(Call<ResEntity<TimeEntity.ItemEntity>> call, Response<ResEntity<TimeEntity.ItemEntity>> response) {
+                                itemEntity.isTiming = false;
+                            }
+
+                            @Override
+                            public void onFailure(Call<ResEntity<TimeEntity.ItemEntity>> call, Throwable t) {
+                                super.onFailure(call, t);
+                                itemEntity.isTiming = true;
+                            }
+                        });
                         ((ImageView) view).setImageResource(R.mipmap.icon_start_20);
                     } else {
                         showLoadingDialog(null);
@@ -969,6 +1006,7 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
                                 dismissLoadingDialog();
                                 ((ImageView) view).setImageResource(R.drawable.orange_side_dot_bg);
                                 if (response.body() != null) {
+                                    itemEntity.isTiming = true;
                                     TimerTimingActivity.launch(view.getContext(), response.body());
                                 }
                             }
@@ -976,6 +1014,7 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
                             @Override
                             public void onFailure(Call<TimeEntity.ItemEntity> call, Throwable throwable) {
                                 dismissLoadingDialog();
+                                itemEntity.isTiming = false;
                                 ((ImageView) view).setImageResource(R.mipmap.icon_start_20);
                             }
                         });
@@ -1175,6 +1214,9 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
                     if (totalCount > 0) {
                         newTaskCardview.setVisibility(View.VISIBLE);
                         newTaskCountTv.setText(String.valueOf(totalCount));
+                    } else {
+                        newTaskCardview.setVisibility(View.GONE);
+                        newTaskEntities.clear();
                     }
                 }
             }
@@ -1497,6 +1539,24 @@ public class TaskListFragment extends BaseFragment implements TaskAdapter.OnShow
                     }
                 }
             }
+
+            @Override
+            public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
+                super.onFailure(call, t);
+                dismissLoadingDialog();
+            }
         });
+    }
+
+    @Override
+    public void updateNewTaskCount(TaskEntity.TaskItemEntity taskItemEntity) {
+        if (taskItemEntity != null) {
+            if (newTaskEntities != null && newTaskEntities.size() >= 1) {
+                if (newTaskEntities.contains(taskItemEntity)) {
+                    newTaskEntities.remove(taskItemEntity);
+                }
+            }
+        }
+        getNewTasksCount();
     }
 }

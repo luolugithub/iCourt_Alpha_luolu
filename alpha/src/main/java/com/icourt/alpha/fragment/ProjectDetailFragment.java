@@ -359,7 +359,8 @@ public class ProjectDetailFragment extends BaseFragment implements BaseRecyclerA
     @Override
     public void onDestroy() {
         super.onDestroy();
-        unbinder.unbind();
+        if (unbinder != null)
+            unbinder.unbind();
     }
 
     @OnClick({R.id.project_add_routine,

@@ -75,6 +75,11 @@ public class AlphaClient extends SimpleClient implements HttpLoggingInterceptor.
         }
     }
 
+    @Override
+    protected boolean isInterceptHttpLog() {
+        return !HConst.HTTP_LOG_ENABLE;
+    }
+
     protected void logHttp(String message) {
         if (TextUtils.isEmpty(message)) return;
         LogUtils.d("logger-http", message);
