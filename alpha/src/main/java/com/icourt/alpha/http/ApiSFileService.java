@@ -226,6 +226,16 @@ public interface ApiSFileService {
                                   @Query("p") String p);
 
     /**
+     * 删除文件夹
+     *
+     * @param p
+     * @return
+     */
+    @DELETE("api/v2.1/repos/{seaFileRepoId}/dir/")
+    Observable<JsonObject> folderDeleteObservable(@Path("seaFileRepoId") String seaFileRepoId,
+                                  @Query("p") String p);
+
+    /**
      * 删除文件
      *
      * @param p
@@ -233,6 +243,16 @@ public interface ApiSFileService {
      */
     @DELETE("api/v2.1/repos/{seaFileRepoId}/file/")
     Call<JsonObject> fileDelete(@Path("seaFileRepoId") String seaFileRepoId,
+                                @Query("p") String p);
+
+    /**
+     * 删除文件
+     *
+     * @param p
+     * @return
+     */
+    @DELETE("api/v2.1/repos/{seaFileRepoId}/file/")
+    Observable<JsonObject> fileDeleteObservable(@Path("seaFileRepoId") String seaFileRepoId,
                                 @Query("p") String p);
 
 

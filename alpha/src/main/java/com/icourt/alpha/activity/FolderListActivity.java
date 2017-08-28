@@ -44,7 +44,8 @@ import com.icourt.alpha.fragment.dialogfragment.FolderDetailDialogFragment;
 import com.icourt.alpha.fragment.dialogfragment.FolderTargetListDialogFragment;
 import com.icourt.alpha.fragment.dialogfragment.RepoDetailsDialogFragment;
 import com.icourt.alpha.http.callback.SFileCallBack;
-import com.icourt.alpha.http.callback.SimpleCallBack2;
+import com.icourt.alpha.http.consumer.BaseThrowableConsumer;
+import com.icourt.alpha.http.observer.BaseObserver;
 import com.icourt.alpha.utils.ImageUtils;
 import com.icourt.alpha.utils.IndexUtils;
 import com.icourt.alpha.utils.SystemUtils;
@@ -64,6 +65,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -74,6 +76,13 @@ import butterknife.OnClick;
 import cn.finalteam.galleryfinal.FunctionConfig;
 import cn.finalteam.galleryfinal.GalleryFinal;
 import cn.finalteam.galleryfinal.model.PhotoInfo;
+import io.reactivex.Observable;
+import io.reactivex.ObservableSource;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.functions.Action;
+import io.reactivex.functions.Consumer;
+import io.reactivex.functions.Function;
+import io.reactivex.schedulers.Schedulers;
 import okhttp3.RequestBody;
 import retrofit2.Call;
 import retrofit2.Response;
@@ -659,24 +668,19 @@ public class FolderListActivity extends FolderBaseActivity
     }
 
     /**
-     * 上传文件
+     * 批量上传文件
      *
      * @param filePaths 文件路径
      * @param serverUrl 服务器路径
      */
     private void uploadFiles(final List<String> filePaths, @NonNull final String serverUrl) {
-       /* Observable.just(filePaths)
-                .filter(new Predicate<List<String>>() {
+        if (filePaths == null && filePaths.isEmpty()) return;
+        showLoadingDialog("上传中...");
+        Observable.just(filePaths)
+                .flatMap(new Function<List<String>, ObservableSource<JsonElement>>() {
                     @Override
-                    public boolean test(@io.reactivex.annotations.NonNull List<String> strings) throws Exception {
-                        return strings != null
-                                && !strings.isEmpty();
-                    }
-                })
-                .flatMap(new Function<List<String>, ObservableSource<?>>() {
-                    @Override
-                    public ObservableSource<?> apply(@io.reactivex.annotations.NonNull List<String> strings) throws Exception {
-                        List<Observable> observables = new ArrayList<Observable>();
+                    public ObservableSource<JsonElement> apply(@io.reactivex.annotations.NonNull List<String> strings) throws Exception {
+                        List<Observable<JsonElement>> observables = new ArrayList<Observable<JsonElement>>();
                         for (int i = 0; i < strings.size(); i++) {
                             String filePath = strings.get(i);
                             if (TextUtils.isEmpty(filePath)) {
@@ -686,7 +690,6 @@ public class FolderListActivity extends FolderBaseActivity
                             if (!file.exists()) {
                                 continue;
                             }
-
                             Map<String, RequestBody> params = new HashMap<>();
                             params.put(RequestUtils.createStreamKey(file), RequestUtils.createStreamBody(file));
                             params.put("parent_dir", RequestUtils.createTextBody(getSeaFileDirPath()));
@@ -694,45 +697,23 @@ public class FolderListActivity extends FolderBaseActivity
                         }
                         return Observable.concat(observables);
                     }
-                })*/
-        if (filePaths != null
-                && !filePaths.isEmpty()
-                && !TextUtils.isEmpty(serverUrl)) {
-            for (int i = 0; i < filePaths.size(); i++) {
-                if (isDestroyOrFinishing()) break;
+                })
+                .compose(this.<JsonElement>bindToLifecycle())
+                .subscribeOn(Schedulers.newThread())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Consumer<JsonElement>() {
+                               @Override
+                               public void accept(@io.reactivex.annotations.NonNull JsonElement jsonElement) throws Exception {
 
-                String filePath = filePaths.get(i);
-                if (TextUtils.isEmpty(filePath)) {
-                    showTopSnackBar(String.format("第%s个文件不存在", i + 1));
-                    continue;
-                }
-                File file = new File(filePath);
-                if (!file.exists()) {
-                    showTopSnackBar(String.format("第%s个文件不存在", i + 1));
-                    continue;
-                }
-
-                showLoadingDialog("上传中...");
-                Map<String, RequestBody> params = new HashMap<>();
-                params.put(RequestUtils.createStreamKey(file), RequestUtils.createStreamBody(file));
-                params.put("parent_dir", RequestUtils.createTextBody(getSeaFileDirPath()));
-                // params.put("relative_path",RequestUtils.createTextBody(""));
-                getSFileApi().sfileUploadFile(serverUrl, params)
-                        .enqueue(new SimpleCallBack2<JsonElement>() {
+                               }
+                           }, new BaseThrowableConsumer(),
+                        new Action() {
                             @Override
-                            public void onSuccess(Call<JsonElement> call, Response<JsonElement> response) {
+                            public void run() throws Exception {
                                 dismissLoadingDialog();
                                 getData(true);
                             }
-
-                            @Override
-                            public void onFailure(Call<JsonElement> call, Throwable t) {
-                                super.onFailure(call, t);
-                                dismissLoadingDialog();
-                            }
                         });
-            }
-        }
     }
 
 
@@ -922,7 +903,9 @@ public class FolderListActivity extends FolderBaseActivity
                             folderDocumentEntities1.add(item);
                             showFolderTargetListDialogFragment(Const.FILE_ACTION_MOVE, folderDocumentEntities1);
                         } else if (TextUtils.equals(action, "删除")) {
-                            showDeleteComfirmDialog(item);
+                            HashSet<FolderDocumentEntity> objects = new HashSet<>();
+                            objects.add(item);
+                            showDeleteComfirmDialog(objects);
                         }
                     }
                 }).show();
@@ -977,61 +960,47 @@ public class FolderListActivity extends FolderBaseActivity
      */
     private void deleteFolderOrDocuments(final Set<FolderDocumentEntity> items) {
         if (items == null || items.isEmpty()) return;
-        showLoadingDialog(null);
-        //循环删除
-        for (final FolderDocumentEntity item : items) {
-            if (item == null) continue;
-            Call<JsonObject> delCall = null;
-            if (item.isDir()) {
-                delCall = getSFileApi()
-                        .folderDelete(
-                                getSeaFileRepoId(),
-                                String.format("%s%s", getSeaFileDirPath(), item.name));
-            } else {
-                delCall = getSFileApi()
-                        .fileDelete(
-                                getSeaFileRepoId(),
-                                String.format("%s%s", getSeaFileDirPath(), item.name));
-            }
-            showLoadingDialog("删除中...");
-            delCall.enqueue(new SFileCallBack<JsonObject>() {
-                @Override
-                public void onSuccess(Call<JsonObject> call, Response<JsonObject> response) {
-                    dismissLoadingDialog();
-                    if (response.body().has("success")
-                            && response.body().get("success").getAsBoolean()) {
-
-                        List<FolderDocumentEntity> allData = getAllData();
-                        allData.remove(item);
-                        folderDocumentAdapter.bindData(true, wrapGridData(allData));
+        showLoadingDialog("删除中...");
+        Observable.just(items)
+                .flatMap(new Function<Set<FolderDocumentEntity>, ObservableSource<JsonObject>>() {
+                    @Override
+                    public ObservableSource<JsonObject> apply(@io.reactivex.annotations.NonNull Set<FolderDocumentEntity> folderDocumentEntities) throws Exception {
+                        List<Observable<JsonObject>> observables = new ArrayList<Observable<JsonObject>>();
+                        for (FolderDocumentEntity item : folderDocumentEntities) {
+                            Observable<JsonObject> delCall = null;
+                            if (item.isDir()) {
+                                delCall = getSFileApi()
+                                        .folderDeleteObservable(
+                                                getSeaFileRepoId(),
+                                                String.format("%s%s", getSeaFileDirPath(), item.name));
+                            } else {
+                                delCall = getSFileApi()
+                                        .fileDeleteObservable(
+                                                getSeaFileRepoId(),
+                                                String.format("%s%s", getSeaFileDirPath(), item.name));
+                            }
+                            observables.add(delCall);
+                        }
+                        return Observable.concat(observables);
                     }
-                }
+                })
+                .compose(this.<JsonObject>bindToLifecycle())
+                .subscribeOn(Schedulers.newThread())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new BaseObserver<JsonObject>() {
+                    @Override
+                    public void onNext(@io.reactivex.annotations.NonNull JsonObject jsonObject) {
+                    }
 
-                @Override
-                public void onFailure(Call<JsonObject> call, Throwable t) {
-                    super.onFailure(call, t);
-                    dismissLoadingDialog();
-                }
-            });
-        }
+                    @Override
+                    public void onComplete() {
+                        super.onComplete();
+                        dismissLoadingDialog();
+                        getData(true);
+                    }
+                });
     }
 
-
-    /**
-     * 展示删除确认对话框
-     *
-     * @param item
-     */
-    private void showDeleteComfirmDialog(final FolderDocumentEntity item) {
-        if (item == null) return;
-        showDeleteComfirmDialog(new BottomActionDialog.OnActionItemClickListener() {
-            @Override
-            public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
-                dialog.dismiss();
-                deleteFolderOrDocument(item);
-            }
-        });
-    }
 
     /**
      * 展示删除确认对话框
@@ -1057,44 +1026,6 @@ public class FolderListActivity extends FolderBaseActivity
                 l).show();
     }
 
-    /**
-     * 删除文件或者删除文件夹
-     *
-     * @param item
-     */
-    private void deleteFolderOrDocument(final FolderDocumentEntity item) {
-        if (item == null) return;
-        //删除
-        Call<JsonObject> delCall = null;
-        if (item.isDir()) {
-            delCall = getSFileApi()
-                    .folderDelete(
-                            getSeaFileRepoId(),
-                            String.format("%s%s", getSeaFileDirPath(), item.name));
-        } else {
-            delCall = getSFileApi()
-                    .fileDelete(
-                            getSeaFileRepoId(),
-                            String.format("%s%s", getSeaFileDirPath(), item.name));
-        }
-        showLoadingDialog("删除中...");
-        delCall.enqueue(new SFileCallBack<JsonObject>() {
-            @Override
-            public void onSuccess(Call<JsonObject> call, Response<JsonObject> response) {
-                dismissLoadingDialog();
-                if (response.body().has("success") && response.body().get("success").getAsBoolean()) {
-                    showTopSnackBar("删除成功");
-                    getData(true);
-                }
-            }
-
-            @Override
-            public void onFailure(Call<JsonObject> call, Throwable t) {
-                super.onFailure(call, t);
-                dismissLoadingDialog();
-            }
-        });
-    }
 
     @Override
     protected void onDestroy() {
