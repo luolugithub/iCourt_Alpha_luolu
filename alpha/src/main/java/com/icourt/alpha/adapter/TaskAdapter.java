@@ -16,6 +16,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.icourt.alpha.R;
 import com.icourt.alpha.activity.TaskDetailActivity;
+import com.icourt.alpha.activity.TimerDetailActivity;
 import com.icourt.alpha.activity.TimerTimingActivity;
 import com.icourt.alpha.adapter.baseadapter.BaseArrayRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
@@ -252,6 +253,8 @@ public class TaskAdapter extends BaseArrayRecyclerAdapter<TaskEntity>
                                     public void onSuccess(Call<ResEntity<TimeEntity.ItemEntity>> call, Response<ResEntity<TimeEntity.ItemEntity>> response) {
                                         taskItemEntity.isTiming = false;
                                         updateMeauItem(entity, true, menuAdapter);
+                                        TimeEntity.ItemEntity timer = TimerManager.getInstance().getTimer();
+                                        TimerDetailActivity.launch(view.getContext(), timer);
                                     }
 
                                     @Override
@@ -301,6 +304,8 @@ public class TaskAdapter extends BaseArrayRecyclerAdapter<TaskEntity>
                             @Override
                             public void onSuccess(Call<ResEntity<TimeEntity.ItemEntity>> call, Response<ResEntity<TimeEntity.ItemEntity>> response) {
                                 itemEntity.isTiming = false;
+                                TimeEntity.ItemEntity timer = TimerManager.getInstance().getTimer();
+                                TimerDetailActivity.launch(view.getContext(), timer);
                             }
 
                             @Override

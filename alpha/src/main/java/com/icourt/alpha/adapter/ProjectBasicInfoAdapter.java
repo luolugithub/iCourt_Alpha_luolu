@@ -94,6 +94,8 @@ public class ProjectBasicInfoAdapter extends BaseArrayRecyclerAdapter<ProjectBas
             case Const.PROJECT_CLIENT_TYPE://客户
             case Const.PROJECT_TIME_TYPE://时间
             case Const.PROJECT_CASEPROCESS_TYPE://程序
+            case Const.PROJECT_PRICE_TYPE://标的
+            case Const.PROJECT_CASENO_TYPE://案由号码
                 return false;
 
         }

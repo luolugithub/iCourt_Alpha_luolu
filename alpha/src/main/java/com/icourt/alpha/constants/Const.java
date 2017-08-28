@@ -183,6 +183,9 @@ public class Const {
     public static final int PROJECT_PERSON_TYPE = 17;//当事人
     public static final int PROJECT_ARBITRATORS_TYPE = 18;//仲裁员
     public static final int PROJECT_SECRETARIES_TYPE = 19;//仲裁秘书
+    public static final int PROJECT_PRICE_TYPE = 20;//标的
+    public static final int PROJECT_CASENO_TYPE = 21;//案由号码
+    public static final int PROJECT_ACCEPTANCE_TYPE = 22;//acceptance  type
 
     @IntDef({PROJECT_NAME_TYPE,
             PROJECT_TYPE_TYPE,

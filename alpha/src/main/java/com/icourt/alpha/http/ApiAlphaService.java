@@ -16,6 +16,7 @@ import com.icourt.alpha.entity.bean.MsgConvert2Task;
 import com.icourt.alpha.entity.bean.PageEntity;
 import com.icourt.alpha.entity.bean.ProjectDetailEntity;
 import com.icourt.alpha.entity.bean.ProjectEntity;
+import com.icourt.alpha.entity.bean.ProjectProcessesEntity;
 import com.icourt.alpha.entity.bean.SearchEngineEntity;
 import com.icourt.alpha.entity.bean.SelectGroupBean;
 import com.icourt.alpha.entity.bean.TaskAttachmentEntity;
@@ -1306,6 +1307,16 @@ public interface ApiAlphaService {
      */
     @GET("api/v2/timing/timing/findByTaskId")
     Call<ResEntity<TimeEntity>> taskTimesByIdQuery(@Query("taskId") String taskId);
+
+    /**
+     * 获取项目下程序信息
+     * 文档地址：https://dev.alphalawyer.cn/ilaw/swagger/index.html#!/matters-api/getProcessListUsingGET_1
+     *
+     * @param matterId
+     * @return
+     */
+    @GET("api/v1/matters/{matterId}/processes")
+    Call<ResEntity<List<ProjectProcessesEntity>>> projectProcessesQuery(@Path("matterId") String matterId);
 }
 
 

@@ -26,6 +26,9 @@ import com.icourt.alpha.db.dbservice.CustomerDbService;
 import com.icourt.alpha.entity.bean.CustomerEntity;
 import com.icourt.alpha.entity.bean.ProjectBasicItemEntity;
 import com.icourt.alpha.entity.bean.ProjectDetailEntity;
+import com.icourt.alpha.entity.bean.ProjectProcessesEntity;
+import com.icourt.alpha.http.callback.SimpleCallBack;
+import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.ItemDecorationUtils;
 import com.icourt.alpha.utils.LoginInfoUtils;
 import com.icourt.alpha.utils.SpUtils;
@@ -38,6 +41,8 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
+import retrofit2.Call;
+import retrofit2.Response;
 
 import static com.icourt.alpha.activity.MainActivity.KEY_CUSTOMER_PERMISSION;
 
@@ -87,70 +92,139 @@ public class ProjectRangeFragment extends BaseFragment implements BaseRecyclerAd
         customerDbService = new CustomerDbService(LoginInfoUtils.getLoginUserId());
         projectDetailEntity = (ProjectDetailEntity) getArguments().getSerializable(KEY_PROJECT);
         if (projectDetailEntity != null) {
-            List<ProjectBasicItemEntity> projectBasicItemEntities = new ArrayList<>();
-            if (!TextUtils.isEmpty(projectDetailEntity.caseProcessName) && !TextUtils.equals("null", projectDetailEntity.caseProcessName)) {
-                projectBasicItemEntities.add(new ProjectBasicItemEntity("程序", projectDetailEntity.caseProcessName, Const.PROJECT_CASEPROCESS_TYPE));
-            }
-            if (!TextUtils.isEmpty(projectDetailEntity.matterCaseName) && !TextUtils.equals("null", projectDetailEntity.matterCaseName)) {
-                projectBasicItemEntities.add(new ProjectBasicItemEntity("案由", projectDetailEntity.matterCaseName, Const.PROJECT_CASE_TYPE));
-            }
-            if (!TextUtils.isEmpty(projectDetailEntity.matterNumber) && !TextUtils.equals("null", projectDetailEntity.matterNumber)) {
-                projectBasicItemEntities.add(new ProjectBasicItemEntity("案号", projectDetailEntity.matterNumber, Const.PROJECT_CASENUMBER_TYPE));
-            }
-            if (!TextUtils.isEmpty(projectDetailEntity.competentCourt) && !TextUtils.equals("null", projectDetailEntity.competentCourt)) {
-                String key = null;
-                if (TextUtils.equals("4", projectDetailEntity.caseProcess) || TextUtils.equals("5", projectDetailEntity.caseProcess)) {
-                    key = "仲裁庭";
-                } else {
-                    key = "法院";
-                }
-                projectBasicItemEntities.add(new ProjectBasicItemEntity(key, projectDetailEntity.competentCourt, Const.PROJECT_COMPETENT_TYPE));
-            }
-            if (TextUtils.equals("4", projectDetailEntity.caseProcess) || TextUtils.equals("5", projectDetailEntity.caseProcess)) {
-                if (projectDetailEntity.arbitrators != null && projectDetailEntity.arbitrators.size() > 0) {
-                    String name = getArbitratorName(projectDetailEntity.arbitrators);
-                    if (!TextUtils.isEmpty(name)) {
-                        projectBasicItemEntities.add(new ProjectBasicItemEntity("仲裁员", getArbitratorName(projectDetailEntity.arbitrators), Const.PROJECT_ARBITRATORS_TYPE));
-                    }
-                }
-                if (projectDetailEntity.secretaries != null && projectDetailEntity.secretaries.size() > 0) {
-                    String name = getSecretarieName(projectDetailEntity.secretaries);
-                    if (!TextUtils.isEmpty(name)) {
-                        projectBasicItemEntities.add(new ProjectBasicItemEntity("仲裁秘书", getSecretarieName(projectDetailEntity.secretaries), Const.PROJECT_SECRETARIES_TYPE));
-                    }
-                }
-            } else {
-                if (projectDetailEntity.judges != null && projectDetailEntity.judges.size() > 0) {
-                    String name = getJudgeName(projectDetailEntity.judges);
-                    if (!TextUtils.isEmpty(name)) {
-                        projectBasicItemEntities.add(new ProjectBasicItemEntity("法官", getJudgeName(projectDetailEntity.judges), Const.PROJECT_JUDGE_TYPE));
-                    }
-                }
-                if (projectDetailEntity.clerks != null && projectDetailEntity.clerks.size() > 0) {
-                    String name = getClerkName(projectDetailEntity.clerks);
-                    if (!TextUtils.isEmpty(name)) {
-                        projectBasicItemEntities.add(new ProjectBasicItemEntity("书记员", getClerkName(projectDetailEntity.clerks), Const.PROJECT_CLERK_TYPE));
-                    }
-                }
-            }
-
-            if (projectDetailEntity.litigants != null) {
-                for (ProjectDetailEntity.LitigantsBean litigant : projectDetailEntity.litigants) {
-                    if (!TextUtils.isEmpty(litigant.contactName))
-                        if (!TextUtils.isEmpty(litigant.customerPositionName)) {
-                            projectBasicItemEntities.add(new ProjectBasicItemEntity(litigant.customerPositionName, litigant.contactName, Const.PROJECT_PERSON_TYPE, litigant.contactPkid));
-                        } else {
-                            projectBasicItemEntities.add(new ProjectBasicItemEntity("当事人", litigant.contactName, Const.PROJECT_PERSON_TYPE, litigant.contactPkid));
-                        }
-                }
-            }
-            rangeRecyclerview.setLayoutManager(new LinearLayoutManager(getContext()));
-            rangeRecyclerview.addItemDecoration(ItemDecorationUtils.getCommMagin5Divider(getContext(), false));
-            rangeRecyclerview.setHasFixedSize(true);
-            rangeRecyclerview.setAdapter(projectBasicInfoAdapter = new ProjectBasicInfoAdapter());
-            projectBasicInfoAdapter.setOnItemClickListener(this);
-            projectBasicInfoAdapter.bindData(false, projectBasicItemEntities);
+            getData(true);
         }
+//        if (projectDetailEntity != null) {
+//            List<ProjectBasicItemEntity> projectBasicItemEntities = new ArrayList<>();
+//            if (!TextUtils.isEmpty(projectDetailEntity.caseProcessName) && !TextUtils.equals("null", projectDetailEntity.caseProcessName)) {
+//                projectBasicItemEntities.add(new ProjectBasicItemEntity("程序", projectDetailEntity.caseProcessName, Const.PROJECT_CASEPROCESS_TYPE));
+//            }
+//            if (!TextUtils.isEmpty(projectDetailEntity.matterCaseName) && !TextUtils.equals("null", projectDetailEntity.matterCaseName)) {
+//                projectBasicItemEntities.add(new ProjectBasicItemEntity("案由", projectDetailEntity.matterCaseName, Const.PROJECT_CASE_TYPE));
+//            }
+//            if (!TextUtils.isEmpty(projectDetailEntity.matterNumber) && !TextUtils.equals("null", projectDetailEntity.matterNumber)) {
+//                projectBasicItemEntities.add(new ProjectBasicItemEntity("案号", projectDetailEntity.matterNumber, Const.PROJECT_CASENUMBER_TYPE));
+//            }
+//            if (!TextUtils.isEmpty(projectDetailEntity.competentCourt) && !TextUtils.equals("null", projectDetailEntity.competentCourt)) {
+//                String key = null;
+//                if (TextUtils.equals("4", projectDetailEntity.caseProcess) || TextUtils.equals("5", projectDetailEntity.caseProcess)) {
+//                    key = "仲裁庭";
+//                } else {
+//                    key = "法院";
+//                }
+//                projectBasicItemEntities.add(new ProjectBasicItemEntity(key, projectDetailEntity.competentCourt, Const.PROJECT_COMPETENT_TYPE));
+//            }
+//            if (TextUtils.equals("4", projectDetailEntity.caseProcess) || TextUtils.equals("5", projectDetailEntity.caseProcess)) {
+//                if (projectDetailEntity.arbitrators != null && projectDetailEntity.arbitrators.size() > 0) {
+//                    String name = getArbitratorName(projectDetailEntity.arbitrators);
+//                    if (!TextUtils.isEmpty(name)) {
+//                        projectBasicItemEntities.add(new ProjectBasicItemEntity("仲裁员", getArbitratorName(projectDetailEntity.arbitrators), Const.PROJECT_ARBITRATORS_TYPE));
+//                    }
+//                }
+//                if (projectDetailEntity.secretaries != null && projectDetailEntity.secretaries.size() > 0) {
+//                    String name = getSecretarieName(projectDetailEntity.secretaries);
+//                    if (!TextUtils.isEmpty(name)) {
+//                        projectBasicItemEntities.add(new ProjectBasicItemEntity("仲裁秘书", getSecretarieName(projectDetailEntity.secretaries), Const.PROJECT_SECRETARIES_TYPE));
+//                    }
+//                }
+//            } else {
+//                if (projectDetailEntity.judges != null && projectDetailEntity.judges.size() > 0) {
+//                    String name = getJudgeName(projectDetailEntity.judges);
+//                    if (!TextUtils.isEmpty(name)) {
+//                        projectBasicItemEntities.add(new ProjectBasicItemEntity("法官", getJudgeName(projectDetailEntity.judges), Const.PROJECT_JUDGE_TYPE));
+//                    }
+//                }
+//                if (projectDetailEntity.clerks != null && projectDetailEntity.clerks.size() > 0) {
+//                    String name = getClerkName(projectDetailEntity.clerks);
+//                    if (!TextUtils.isEmpty(name)) {
+//                        projectBasicItemEntities.add(new ProjectBasicItemEntity("书记员", getClerkName(projectDetailEntity.clerks), Const.PROJECT_CLERK_TYPE));
+//                    }
+//                }
+//            }
+//
+//            if (projectDetailEntity.litigants != null) {
+//                for (ProjectDetailEntity.LitigantsBean litigant : projectDetailEntity.litigants) {
+//                    if (!TextUtils.isEmpty(litigant.contactName))
+//                        if (!TextUtils.isEmpty(litigant.customerPositionName)) {
+//                            projectBasicItemEntities.add(new ProjectBasicItemEntity(litigant.customerPositionName, litigant.contactName, Const.PROJECT_PERSON_TYPE, litigant.contactPkid));
+//                        } else {
+//                            projectBasicItemEntities.add(new ProjectBasicItemEntity("当事人", litigant.contactName, Const.PROJECT_PERSON_TYPE, litigant.contactPkid));
+//                        }
+//                }
+//            }
+//            rangeRecyclerview.setLayoutManager(new LinearLayoutManager(getContext()));
+//            rangeRecyclerview.addItemDecoration(ItemDecorationUtils.getCommMagin5Divider(getContext(), false));
+//            rangeRecyclerview.setHasFixedSize(true);
+//            rangeRecyclerview.setAdapter(projectBasicInfoAdapter = new ProjectBasicInfoAdapter());
+//            projectBasicInfoAdapter.setOnItemClickListener(this);
+//            projectBasicInfoAdapter.bindData(false, projectBasicItemEntities);
+//        }
+    }
+
+    @Override
+    protected void getData(boolean isRefresh) {
+        getApi().projectProcessesQuery(projectDetailEntity.pkId).enqueue(new SimpleCallBack<List<ProjectProcessesEntity>>() {
+            @Override
+            public void onSuccess(Call<ResEntity<List<ProjectProcessesEntity>>> call, Response<ResEntity<List<ProjectProcessesEntity>>> response) {
+                if (response.body().result != null && response.body().result.size() > 0) {
+                    setDataToView(response.body().result.get(0));
+                }
+            }
+        });
+    }
+
+    private void setDataToView(ProjectProcessesEntity projectProcessesEntity) {
+        if (projectProcessesEntity == null) return;
+        List<ProjectBasicItemEntity> projectBasicItemEntities = new ArrayList<>();
+        if (!TextUtils.isEmpty(projectProcessesEntity.processName)) {
+            projectBasicItemEntities.add(new ProjectBasicItemEntity("程序", projectProcessesEntity.processName, Const.PROJECT_CASEPROCESS_TYPE));
+        }
+        if (!TextUtils.isEmpty(projectProcessesEntity.priceStr)) {
+            projectBasicItemEntities.add(new ProjectBasicItemEntity("标的", projectProcessesEntity.priceStr, Const.PROJECT_PRICE_TYPE));
+        }
+        if (projectProcessesEntity.caseCode != null && projectProcessesEntity.caseCode.size() > 0) {
+            projectBasicItemEntities.add(new ProjectBasicItemEntity("案由号码", getStringListName(projectProcessesEntity.caseCode), Const.PROJECT_CASENO_TYPE));
+        }
+        if (projectProcessesEntity.caseName != null && projectProcessesEntity.caseName.size() > 0) {
+            projectBasicItemEntities.add(new ProjectBasicItemEntity("案由", getStringListName(projectProcessesEntity.caseName), Const.PROJECT_CASE_TYPE));
+        }
+        if (projectProcessesEntity.acceptance != null && projectProcessesEntity.acceptance.size() > 0) {
+            for (ProjectProcessesEntity.AcceptanceBean acceptanceBean : projectProcessesEntity.acceptance) {
+                projectBasicItemEntities.add(new ProjectBasicItemEntity(acceptanceBean.name, getAcceptanceName(acceptanceBean.values), Const.PROJECT_ACCEPTANCE_TYPE));
+            }
+        }
+        rangeRecyclerview.setLayoutManager(new LinearLayoutManager(getContext()));
+        rangeRecyclerview.addItemDecoration(ItemDecorationUtils.getCommMagin5Divider(getContext(), false));
+        rangeRecyclerview.setHasFixedSize(true);
+        rangeRecyclerview.setAdapter(projectBasicInfoAdapter = new ProjectBasicInfoAdapter());
+        projectBasicInfoAdapter.setOnItemClickListener(this);
+        projectBasicInfoAdapter.bindData(false, projectBasicItemEntities);
+    }
+
+
+    /**
+     * 获取acceptance名称
+     *
+     * @param values
+     * @return
+     */
+    private String getAcceptanceName(List<ProjectProcessesEntity.AcceptanceBean.ValuesBean> values) {
+        if (values == null || values.size() <= 0) return "";
+
+        StringBuilder stringBuilder = new StringBuilder();
+        for (ProjectProcessesEntity.AcceptanceBean.ValuesBean value : values) {
+            stringBuilder.append(value.text).append(",");
+        }
+        return stringBuilder.toString().substring(0, stringBuilder.toString().length() - 1);
+    }
+
+    private String getStringListName(List<String> list) {
+        if (list == null || list.size() <= 0) return "";
+        StringBuilder stringBuilder = new StringBuilder();
+        for (String str : list) {
+            stringBuilder.append(str).append(",");
+        }
+        return stringBuilder.toString().substring(0, stringBuilder.toString().length() - 1);
     }
 
     /**

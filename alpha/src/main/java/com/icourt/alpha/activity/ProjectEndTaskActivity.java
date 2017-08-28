@@ -238,6 +238,8 @@ public class ProjectEndTaskActivity extends BaseActivity
                             @Override
                             public void onSuccess(Call<ResEntity<TimeEntity.ItemEntity>> call, Response<ResEntity<TimeEntity.ItemEntity>> response) {
                                 itemEntity.isTiming = false;
+                                TimeEntity.ItemEntity timer = TimerManager.getInstance().getTimer();
+                                TimerDetailActivity.launch(view.getContext(), timer);
                             }
 
                             @Override

@@ -32,6 +32,7 @@ import com.google.gson.JsonObject;
 import com.icourt.alpha.R;
 import com.icourt.alpha.activity.SearchProjectActivity;
 import com.icourt.alpha.activity.TaskDetailActivity;
+import com.icourt.alpha.activity.TimerDetailActivity;
 import com.icourt.alpha.activity.TimerTimingActivity;
 import com.icourt.alpha.adapter.TaskAdapter;
 import com.icourt.alpha.adapter.TaskItemAdapter;
@@ -988,6 +989,8 @@ public class TaskListFragment extends BaseFragment implements
                             @Override
                             public void onSuccess(Call<ResEntity<TimeEntity.ItemEntity>> call, Response<ResEntity<TimeEntity.ItemEntity>> response) {
                                 itemEntity.isTiming = false;
+                                TimeEntity.ItemEntity timer = TimerManager.getInstance().getTimer();
+                                TimerDetailActivity.launch(view.getContext(), timer);
                             }
 
                             @Override
