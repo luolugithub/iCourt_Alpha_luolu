@@ -6,6 +6,7 @@ import android.widget.TextView;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.baseadapter.BaseArrayRecyclerAdapter;
 import com.icourt.alpha.entity.bean.ProjectDetailEntity;
+import com.icourt.alpha.entity.bean.ProjectProcessesEntity;
 
 /**
  * Description  项目下法官列表
@@ -47,6 +48,10 @@ public class ProjectJudgeAdapter<T> extends BaseArrayRecyclerAdapter<T> {
             ProjectDetailEntity.GroupsBean groupsBean = (ProjectDetailEntity.GroupsBean) t;
             nameview.setText(groupsBean.name);
             phoneview.setVisibility(View.GONE);
+        } else if (t instanceof ProjectProcessesEntity.AcceptanceBean.ValuesBean) {
+            ProjectProcessesEntity.AcceptanceBean.ValuesBean valuesBean = (ProjectProcessesEntity.AcceptanceBean.ValuesBean) t;
+            nameview.setText(valuesBean.text);
+            phoneview.setText(valuesBean.phone);
         }
     }
 }

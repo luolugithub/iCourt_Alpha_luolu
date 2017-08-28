@@ -313,6 +313,9 @@
         <activity
             android:name=".activity.ProjectJudgeActivity"
             android:screenOrientation="portrait" />
+        <activity
+            android:name=".activity.ProjecTacceptanceActivity"
+            android:screenOrientation="portrait" />
 
         <meta-data
             android:name="com.icourt.alpha.utils.glide.MyGlideModule"

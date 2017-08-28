@@ -13,17 +13,13 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.icourt.alpha.R;
-import com.icourt.alpha.activity.CustomerCompanyDetailActivity;
-import com.icourt.alpha.activity.CustomerPersonDetailActivity;
+import com.icourt.alpha.activity.ProjecTacceptanceActivity;
 import com.icourt.alpha.activity.ProjectBasicTextInfoActivity;
-import com.icourt.alpha.activity.ProjectJudgeActivity;
 import com.icourt.alpha.adapter.ProjectBasicInfoAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.constants.Const;
-import com.icourt.alpha.db.dbmodel.CustomerDbModel;
 import com.icourt.alpha.db.dbservice.CustomerDbService;
-import com.icourt.alpha.entity.bean.CustomerEntity;
 import com.icourt.alpha.entity.bean.ProjectBasicItemEntity;
 import com.icourt.alpha.entity.bean.ProjectDetailEntity;
 import com.icourt.alpha.entity.bean.ProjectProcessesEntity;
@@ -32,8 +28,6 @@ import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.ItemDecorationUtils;
 import com.icourt.alpha.utils.LoginInfoUtils;
 import com.icourt.alpha.utils.SpUtils;
-import com.icourt.alpha.utils.UMMobClickAgent;
-import com.umeng.analytics.MobclickAgent;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -190,7 +184,7 @@ public class ProjectRangeFragment extends BaseFragment implements BaseRecyclerAd
         }
         if (projectProcessesEntity.acceptance != null && projectProcessesEntity.acceptance.size() > 0) {
             for (ProjectProcessesEntity.AcceptanceBean acceptanceBean : projectProcessesEntity.acceptance) {
-                projectBasicItemEntities.add(new ProjectBasicItemEntity(acceptanceBean.name, getAcceptanceName(acceptanceBean.values), Const.PROJECT_ACCEPTANCE_TYPE));
+                projectBasicItemEntities.add(new ProjectBasicItemEntity(acceptanceBean.name, getAcceptanceName(acceptanceBean.values), Const.PROJECT_ACCEPTANCE_TYPE, acceptanceBean));
             }
         }
         rangeRecyclerview.setLayoutManager(new LinearLayoutManager(getContext()));
@@ -213,7 +207,7 @@ public class ProjectRangeFragment extends BaseFragment implements BaseRecyclerAd
 
         StringBuilder stringBuilder = new StringBuilder();
         for (ProjectProcessesEntity.AcceptanceBean.ValuesBean value : values) {
-            stringBuilder.append(value.text).append(",");
+            stringBuilder.append(value.text).append("、");
         }
         return stringBuilder.toString().substring(0, stringBuilder.toString().length() - 1);
     }
@@ -222,7 +216,7 @@ public class ProjectRangeFragment extends BaseFragment implements BaseRecyclerAd
         if (list == null || list.size() <= 0) return "";
         StringBuilder stringBuilder = new StringBuilder();
         for (String str : list) {
-            stringBuilder.append(str).append(",");
+            stringBuilder.append(str).append("、");
         }
         return stringBuilder.toString().substring(0, stringBuilder.toString().length() - 1);
     }
@@ -321,42 +315,13 @@ public class ProjectRangeFragment extends BaseFragment implements BaseRecyclerAd
     public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
         if (projectDetailEntity == null) return;
         ProjectBasicItemEntity itemEntity = (ProjectBasicItemEntity) adapter.getItem(position);
+
         switch (itemEntity.type) {
             case Const.PROJECT_CASE_TYPE:
-            case Const.PROJECT_CASENUMBER_TYPE:
-            case Const.PROJECT_COMPETENT_TYPE:
                 ProjectBasicTextInfoActivity.launch(view.getContext(), itemEntity.value, itemEntity.type);
                 break;
-            case Const.PROJECT_JUDGE_TYPE://法官
-                ProjectJudgeActivity.launch(getContext(), projectDetailEntity.judges, itemEntity.type);
-                break;
-            case Const.PROJECT_CLERK_TYPE://书记员
-                ProjectJudgeActivity.launch(getContext(), projectDetailEntity.clerks, itemEntity.type);
-                break;
-            case Const.PROJECT_ARBITRATORS_TYPE://仲裁员
-                ProjectJudgeActivity.launch(getContext(), projectDetailEntity.arbitrators, itemEntity.type);
-                break;
-            case Const.PROJECT_SECRETARIES_TYPE://仲裁秘书
-                ProjectJudgeActivity.launch(getContext(), projectDetailEntity.secretaries, itemEntity.type);
-                break;
-            case Const.PROJECT_PERSON_TYPE:
-                if (!hasCustomerPermission()) return;
-                if (customerDbService == null) return;
-                ProjectBasicItemEntity item = (ProjectBasicItemEntity) adapter.getItem(position);
-                CustomerEntity customerEntity = null;
-                CustomerDbModel customerDbModel = customerDbService.queryFirst("pkid", item.personId);
-                if (customerDbModel == null) return;
-                customerEntity = customerDbModel.convert2Model();
-                if (customerEntity == null) return;
-                if (!TextUtils.isEmpty(customerEntity.contactType)) {
-                    MobclickAgent.onEvent(getContext(), UMMobClickAgent.look_client_click_id);
-                    //公司
-                    if (TextUtils.equals(customerEntity.contactType.toUpperCase(), "C")) {
-                        CustomerCompanyDetailActivity.launch(getContext(), customerEntity.pkid, customerEntity.name, false);
-                    } else if (TextUtils.equals(customerEntity.contactType.toUpperCase(), "P")) {
-                        CustomerPersonDetailActivity.launch(getContext(), customerEntity.pkid, customerEntity.name, false);
-                    }
-                }
+            case Const.PROJECT_ACCEPTANCE_TYPE:
+                ProjecTacceptanceActivity.launch(getContext(), itemEntity.acceptanceBean);
                 break;
         }
     }
