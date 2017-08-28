@@ -13,6 +13,7 @@ import com.icourt.alpha.entity.bean.SeaFileTrashPageEntity;
 import java.util.List;
 import java.util.Map;
 
+import io.reactivex.Observable;
 import okhttp3.RequestBody;
 import retrofit2.Call;
 import retrofit2.http.Body;
@@ -30,6 +31,7 @@ import retrofit2.http.Url;
 
 /**
  * Description  sfile api
+ * 注意如果用的是Observable api必须以Observable结尾
  * Company Beijing icourt
  * author  youxuan  E-mail:xuanyouwu@163.com
  * date createTime：2017/6/9
@@ -47,7 +49,7 @@ public interface ApiSFileService {
     Call<List<FileBoxBean>> projectQueryFileBoxList(@Path("seaFileRepoId") String seaFileRepoId);
 
     /**
-     * 项目下上传文件
+     * sfile上传文件
      *
      * @param url
      * @param params
@@ -57,6 +59,18 @@ public interface ApiSFileService {
     @POST()
     Call<JsonElement> sfileUploadFile(@Url String url,
                                       @PartMap Map<String, RequestBody> params);
+
+    /**
+     * sfile上传文件
+     *
+     * @param url
+     * @param params
+     * @return
+     */
+    @Multipart
+    @POST()
+    Observable<JsonElement> sfileUploadFileObservable(@Url String url,
+                                                      @PartMap Map<String, RequestBody> params);
 
     /**
      * 获取上传文件url

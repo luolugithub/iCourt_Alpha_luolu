@@ -59,6 +59,7 @@ import retrofit2.http.Url;
  * @email xuanyouwu@163.com
  * @time 2016-06-02 14:26
  * <p>
+ *     注意如果用的是Observable api必须以Observable结尾
  * 分页公共参数 整形  请大家按照这个【顺序】写
  * @Query("pageNum") int pageNum,
  * @Query("pageSize") int pageSize

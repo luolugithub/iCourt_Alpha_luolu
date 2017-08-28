@@ -664,7 +664,37 @@ public class FolderListActivity extends FolderBaseActivity
      * @param filePaths 文件路径
      * @param serverUrl 服务器路径
      */
-    private void uploadFiles(List<String> filePaths, @NonNull String serverUrl) {
+    private void uploadFiles(final List<String> filePaths, @NonNull final String serverUrl) {
+       /* Observable.just(filePaths)
+                .filter(new Predicate<List<String>>() {
+                    @Override
+                    public boolean test(@io.reactivex.annotations.NonNull List<String> strings) throws Exception {
+                        return strings != null
+                                && !strings.isEmpty();
+                    }
+                })
+                .flatMap(new Function<List<String>, ObservableSource<?>>() {
+                    @Override
+                    public ObservableSource<?> apply(@io.reactivex.annotations.NonNull List<String> strings) throws Exception {
+                        List<Observable> observables = new ArrayList<Observable>();
+                        for (int i = 0; i < strings.size(); i++) {
+                            String filePath = strings.get(i);
+                            if (TextUtils.isEmpty(filePath)) {
+                                continue;
+                            }
+                            File file = new File(filePath);
+                            if (!file.exists()) {
+                                continue;
+                            }
+
+                            Map<String, RequestBody> params = new HashMap<>();
+                            params.put(RequestUtils.createStreamKey(file), RequestUtils.createStreamBody(file));
+                            params.put("parent_dir", RequestUtils.createTextBody(getSeaFileDirPath()));
+                            observables.add(getSFileApi().sfileUploadFileObservable(serverUrl, params));
+                        }
+                        return Observable.concat(observables);
+                    }
+                })*/
         if (filePaths != null
                 && !filePaths.isEmpty()
                 && !TextUtils.isEmpty(serverUrl)) {
