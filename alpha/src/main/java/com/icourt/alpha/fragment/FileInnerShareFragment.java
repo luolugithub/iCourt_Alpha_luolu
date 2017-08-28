@@ -322,7 +322,7 @@ public class FileInnerShareFragment extends BaseFragment
         if (item.user_info == null) return;
         switch (view.getId()) {
             case R.id.user_action_tv:
-                new BottomActionDialog(getContext(), null, Arrays.asList("可读写", "可读", "取消共享"), new BottomActionDialog.OnActionItemClickListener() {
+                new BottomActionDialog(getContext(), null, Arrays.asList("可读写", "只读", "取消共享"), new BottomActionDialog.OnActionItemClickListener() {
                     @Override
                     public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
                         dialog.dismiss();
