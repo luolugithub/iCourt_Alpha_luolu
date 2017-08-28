@@ -42,7 +42,6 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
-import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -163,6 +162,10 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
         taskProjectArrowIv.setVisibility((valid && !isFinish) ? View.VISIBLE : View.GONE);
         taskGroupArrowIv.setVisibility((valid && !isFinish) ? View.VISIBLE : View.GONE);
         taskTimeArrowIv.setVisibility((valid && !isFinish) ? View.VISIBLE : View.GONE);
+
+        if (taskReminderEntity != null && (taskReminderEntity.ruleTime != null || taskReminderEntity.customTime != null)) {
+            taskReminderIcon.setVisibility(!isFinish ? View.VISIBLE : View.GONE);
+        }
     }
 
     @OnClick({R.id.task_project_layout, R.id.task_group_layout, R.id.task_time_layout, R.id.task_desc_tv})
@@ -227,7 +230,7 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
                 if (taskReminderIcon != null) {
                     if (taskReminderEntity != null) {
                         if (taskReminderEntity.ruleTime != null || taskReminderEntity.customTime != null) {
-                            taskReminderIcon.setVisibility(View.VISIBLE);
+                            taskReminderIcon.setVisibility(isFinish ? View.GONE : View.VISIBLE);
                         } else {
                             taskReminderIcon.setVisibility(View.INVISIBLE);
                         }

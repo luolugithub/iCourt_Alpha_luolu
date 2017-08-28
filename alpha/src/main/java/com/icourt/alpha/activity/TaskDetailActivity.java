@@ -664,7 +664,7 @@ public class TaskDetailActivity extends BaseActivity
      */
     private boolean hasTaskAddDocument() {
         if (taskItemEntity != null && taskItemEntity.right != null) {
-            return taskItemEntity.right.contains("MAT:matter.document:readwrite");
+            return taskItemEntity.right.contains("MAT:matter.document:readwrite") || taskItemEntity.right.contains("MAT:matter.document:read");
         }
         return false;
     }
@@ -769,7 +769,7 @@ public class TaskDetailActivity extends BaseActivity
             baseFragmentAdapter.bindData(true, Arrays.asList(
                     taskDetailFragment == null ? taskDetailFragment = TaskDetailFragment.newInstance(taskItemEntity) : taskDetailFragment,
                     TaskCheckItemFragment.newInstance(taskItemEntity.id, hasTaskEditPermission(), taskItemEntity.valid),
-                    TaskAttachmentFragment.newInstance(taskItemEntity.id, (hasTaskAddDocument() && hasTaskEditPermission()), taskItemEntity.valid)
+                    TaskAttachmentFragment.newInstance(taskItemEntity.id, (hasTaskEditPermission()&&hasTaskAddDocument()), taskItemEntity.valid)
             ));
 
             updateDetailFargment();
