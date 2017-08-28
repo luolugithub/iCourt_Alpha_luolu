@@ -190,7 +190,7 @@ public class DateSelectFragment extends BaseFragment {
                 int hour = selectedCalendar.get(Calendar.HOUR_OF_DAY);
                 int minute = selectedCalendar.get(Calendar.MINUTE);
                 int second = selectedCalendar.get(Calendar.SECOND);
-                if ((hour == 23 && minute == 59 && second == 59) || (hour == 0 && minute == 0)) {
+                if ((hour == 23 && minute == 59 && second == 59)) {
                     setNullDueTime();
                 } else {
                     duetimeTv.setText(DateUtils.getHHmm(selectedCalendar.getTimeInMillis()));
@@ -287,7 +287,7 @@ public class DateSelectFragment extends BaseFragment {
             int hour = selectedCalendar.get(Calendar.HOUR_OF_DAY);
             int minute = selectedCalendar.get(Calendar.MINUTE);
             int second = selectedCalendar.get(Calendar.SECOND);
-            return (hour == 23 && minute == 59 && second == 59) || (hour == 0 && minute == 0);
+            return (hour == 23 && minute == 59 && second == 59);
         }
         return true;
     }
