@@ -109,6 +109,8 @@ public class FolderDocumentAdapter extends SFileImgBaseAdapter<FolderDocumentEnt
         ImageView document_type_iv = holder.obtainView(R.id.document_type_iv);
         TextView document_title_tv = holder.obtainView(R.id.document_title_tv);
         ImageView document_pic_iv = holder.obtainView(R.id.document_pic_iv);
+        View folder_mask_view = holder.obtainView(R.id.folder_mask_view);
+
         document_title_tv.setText(folderDocumentEntity.name);
         if (folderDocumentEntity.isDir()) {
             document_pic_iv.setVisibility(View.GONE);
@@ -122,8 +124,10 @@ public class FolderDocumentAdapter extends SFileImgBaseAdapter<FolderDocumentEnt
                 document_type_iv.setImageResource(getSFileTypeIcon(folderDocumentEntity.name));
             }
         }
+
         folder_document_ctv.setVisibility(isSelectable() ? View.VISIBLE : View.GONE);
         folder_document_ctv.setChecked(isSelected(folderDocumentEntity));
+        folder_mask_view.setVisibility(isSelected(folderDocumentEntity) ? View.VISIBLE : View.GONE);
     }
 
     private void setItemData(ViewHolder holder, FolderDocumentEntity folderDocumentEntity, int position) {

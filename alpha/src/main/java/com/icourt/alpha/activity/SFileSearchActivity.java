@@ -96,7 +96,7 @@ public class SFileSearchActivity extends BaseActivity
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             etSearchName.setTransitionName(transitionName);
         }
-        etSearchName.setHint("在所有资料库下搜索");
+        etSearchName.setHint("在所有资料库内搜索");
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setAdapter(sFileSearchAdapter = new SFileSearchAdapter());
         sFileSearchAdapter.setOnItemClickListener(this);
@@ -178,6 +178,11 @@ public class SFileSearchActivity extends BaseActivity
         super.getData(isRefresh);
         if (isRefresh) {
             pageIndex = 1;
+        }
+        if (TextUtils.isEmpty(etSearchName.getText())) {
+            sFileSearchAdapter.clearData();
+            stopRefresh();
+            return;
         }
         getSFileApi().fileSearch(
                 pageIndex,
