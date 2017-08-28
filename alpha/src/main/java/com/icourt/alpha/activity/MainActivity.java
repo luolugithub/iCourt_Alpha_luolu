@@ -149,7 +149,7 @@ public class MainActivity extends BaseAppUpdateActivity
             new ItemsEntity("计时", TYPE_FRAGMENT_TIMING, R.drawable.tab_timer),
             new ItemsEntity("客户", TYPE_FRAGMENT_CUSTOMER, R.drawable.tab_customer),
             new ItemsEntity("搜索", TYPE_FRAGMENT_SEARCH, R.drawable.tab_search),
-            new ItemsEntity("文档", TYPE_FRAGMENT_DOCUMENTS, R.drawable.tab_news));
+            new ItemsEntity("文档", TYPE_FRAGMENT_DOCUMENTS, R.drawable.tab_document));
 
     //可改变的tab
     private final List<ItemsEntity> tabChangeableData = new ArrayList<>();
