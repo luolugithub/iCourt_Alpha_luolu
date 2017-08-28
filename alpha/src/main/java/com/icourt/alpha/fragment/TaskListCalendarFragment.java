@@ -118,8 +118,7 @@ public class TaskListCalendarFragment extends BaseFragment {
         return view;
     }
 
-    @Override
-    protected void initView() {
+ protected void initView() {
         taskItemEntityList = (ArrayList<TaskEntity.TaskItemEntity>) getArguments().getSerializable(KEY_TASKS);
         if (taskItemEntityList == null) {
             taskItemEntityList = new ArrayList<>();
@@ -223,6 +222,17 @@ public class TaskListCalendarFragment extends BaseFragment {
                 }
             }
         });
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onDeleteTaskEvent(TaskActionEvent event) {
+        if (event == null) return;
+
+        switch (event.action) {
+            case TaskActionEvent.TASK_REFRESG_ACTION:
+                getTaskData();
+                break;
+        }
     }
 
     /**

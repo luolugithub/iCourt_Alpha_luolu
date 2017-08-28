@@ -5,7 +5,7 @@
     android:background="?attr/selectableItemBackground"
     android:gravity="center_vertical"
     android:orientation="vertical"
-    android:paddingLeft="10dp"
+    android:paddingLeft="3dp"
     android:paddingRight="10dp">
 
     <LinearLayout
@@ -55,6 +55,6 @@
     <View
         android:layout_width="match_parent"
         android:layout_height="@dimen/alpha_height_divider"
-        android:layout_marginLeft="15dp"
+        android:layout_marginLeft="10dp"
         android:background="@color/alpha_divider_color" />
 </LinearLayout>
