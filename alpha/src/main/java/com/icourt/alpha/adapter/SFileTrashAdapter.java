@@ -43,9 +43,11 @@ public class SFileTrashAdapter extends SFileImgBaseAdapter<FolderDocumentEntity>
         document_title_tv.setText(folderDocumentEntity.name);
         if (folderDocumentEntity.isDir()) {
             document_type_iv.setImageResource(R.mipmap.folder);
-            document_desc_tv.setText(DateUtils.getStandardSimpleFormatTime(folderDocumentEntity.mtime * 1_000));
+            document_desc_tv.setText(DateUtils.getStandardSimpleFormatTime(folderDocumentEntity.deleted_time));
         } else {
-            document_desc_tv.setText(String.format("%s, %s", FileUtils.bFormat(folderDocumentEntity.size), DateUtils.getFormatChatTimeSimple(folderDocumentEntity.mtime * 1_000)));
+            document_desc_tv.setText(String.format("%s, %s",
+                    FileUtils.bFormat(folderDocumentEntity.size),
+                    DateUtils.getStandardSimpleFormatTime(folderDocumentEntity.deleted_time)));
             if (IMUtils.isPIC(folderDocumentEntity.name)) {
                 loadSFileImage(folderDocumentEntity.name, document_type_iv);
             } else {

@@ -19,11 +19,12 @@
         android:id="@+id/user_name_tv"
         android:layout_width="wrap_content"
         android:layout_height="32dp"
-        android:gravity="center_vertical"
         android:layout_marginLeft="13dp"
         android:layout_weight="1"
         android:ellipsize="end"
+        android:gravity="center_vertical"
         android:maxLines="1"
+        android:paddingRight="10dp"
         android:text="阿三哥"
         android:textColor="@color/alpha_font_color_black" />
 

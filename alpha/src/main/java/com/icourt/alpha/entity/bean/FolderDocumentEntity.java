@@ -52,9 +52,10 @@ public class FolderDocumentEntity
     public boolean is_locked;
 
     @JsonAdapter(SeaFileTimeJsonAdapter.class)
-    @SerializedName(value = "mtime", alternate = {"deleted_time"})
     public long mtime;//文档上传时间
 
+    @JsonAdapter(SeaFileTimeJsonAdapter.class)
+    public long deleted_time;//文档删除的时间
 
     @SerializedName(value = "type", alternate = {"is_dir"})
     @JsonAdapter(DirBooleanTypeAdapter.class)

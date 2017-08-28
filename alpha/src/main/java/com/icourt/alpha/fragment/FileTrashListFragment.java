@@ -99,6 +99,7 @@ public class FileTrashListFragment extends SeaFileBaseFragment
                 false,
                 TextUtils.equals(getRepoPermission(), PERMISSION_RW)));
         footerView = (TextView) HeaderFooterAdapter.inflaterView(getContext(), R.layout.footer_folder_document_num, recyclerView);
+        footerView.setText("回收站里没有文件");
         headerFooterAdapter.addFooter(footerView);
         folderDocumentAdapter.registerAdapterDataObserver(new DataChangeAdapterObserver() {
             @Override

@@ -37,10 +37,10 @@ public class FileInnerShareAdapter extends BaseArrayRecyclerAdapter<SFileShareUs
 
         TextView user_name_tv = holder.obtainView(R.id.user_name_tv);
         TextView user_action_tv = holder.obtainView(R.id.user_action_tv);
+        user_name_tv.setText(sFileShareUserInfo.user_info != null ? sFileShareUserInfo.user_info.nickname : "");
 
         user_action_tv.setText(TextUtils.equals(sFileShareUserInfo.permission, "rw") ? "可读写" : "只读");
         holder.bindChildClick(user_action_tv);
-        user_name_tv.setText(sFileShareUserInfo.user_info != null ? sFileShareUserInfo.user_info.nickname : "");
-        user_name_tv.setCompoundDrawablesWithIntrinsicBounds(0, 0, canEdit ? R.mipmap.arrow_bottom : 0, 0);
+        user_action_tv.setCompoundDrawablesWithIntrinsicBounds(0, 0, canEdit ? R.mipmap.arrow_bottom : 0, 0);
     }
 }
