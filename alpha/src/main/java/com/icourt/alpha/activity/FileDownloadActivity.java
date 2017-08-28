@@ -192,7 +192,7 @@ public class FileDownloadActivity extends BaseActivity {
         fileCachePath = buildSavePath();
 
         setTitle(fileTitle);
-        fileSizeTv.setText(FileUtils.bFormat(fileSize));
+        fileSizeTv.setText(String.format("(%s)", FileUtils.bFormat(fileSize)));
         fileNameTv.setText(fileTitle);
         fileTypeIcon.setImageResource(FileUtils.getSFileIcon(fileTitle));
         ImageView titleActionImage = getTitleActionImage();
@@ -255,16 +255,22 @@ public class FileDownloadActivity extends BaseActivity {
     private void updateViewState(int state) {
         switch (state) {
             case 0:
+                titleAction.setEnabled(false);
+                titleAction.setImageResource(R.mipmap.more_disabled);
                 fileOpenTv.setVisibility(View.GONE);
                 downloadLayout.setVisibility(View.VISIBLE);
                 downloadContinueTv.setVisibility(View.GONE);
                 break;
             case 1:
+                titleAction.setEnabled(false);
+                titleAction.setImageResource(R.mipmap.more_disabled);
                 fileOpenTv.setVisibility(View.GONE);
                 downloadLayout.setVisibility(View.GONE);
                 downloadContinueTv.setVisibility(View.VISIBLE);
                 break;
             case 2:
+                titleAction.setEnabled(true);
+                titleAction.setImageResource(R.mipmap.header_icon_more);
                 fileOpenTv.setVisibility(View.VISIBLE);
                 downloadLayout.setVisibility(View.GONE);
                 downloadContinueTv.setVisibility(View.GONE);
