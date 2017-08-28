@@ -15,6 +15,7 @@ import android.text.TextWatcher;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.andview.refreshview.XRefreshView;
@@ -49,21 +50,23 @@ import static com.icourt.alpha.constants.SFileConfig.PERMISSION_R;
 public class SFileSearchActivity extends BaseActivity
         implements BaseRecyclerAdapter.OnItemClickListener, BaseRecyclerAdapter.OnItemChildClickListener {
 
-    @BindView(R.id.et_input_name)
-    ClearEditText etInputName;
+    SFileSearchAdapter sFileSearchAdapter;
+    int pageIndex = 1;
+    private static final String transitionName = "searchLayout1";
+    @BindView(R.id.refreshLayout)
+    RefreshLayout refreshLayout;
+    @BindView(R.id.et_search_name)
+    ClearEditText etSearchName;
     @BindView(R.id.tv_search_cancel)
     TextView tvSearchCancel;
+    @BindView(R.id.searchLayout)
+    LinearLayout searchLayout;
     @BindView(R.id.recyclerView)
     RecyclerView recyclerView;
     @BindView(R.id.contentEmptyText)
     TextView contentEmptyText;
     @BindView(R.id.softKeyboardSizeWatchLayout)
     SoftKeyboardSizeWatchLayout softKeyboardSizeWatchLayout;
-    SFileSearchAdapter sFileSearchAdapter;
-    int pageIndex = 1;
-    private static final String transitionName = "searchLayout1";
-    @BindView(R.id.refreshLayout)
-    RefreshLayout refreshLayout;
 
     public static void launch(Activity context,
                               @Nullable View transitionView) {
@@ -91,9 +94,9 @@ public class SFileSearchActivity extends BaseActivity
     protected void initView() {
         super.initView();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            etInputName.setTransitionName(transitionName);
+            etSearchName.setTransitionName(transitionName);
         }
-        etInputName.setHint("搜索所有资料库下的文件和文件夹");
+        etSearchName.setHint("在所有资料库下搜索");
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setAdapter(sFileSearchAdapter = new SFileSearchAdapter());
         sFileSearchAdapter.setOnItemClickListener(this);
@@ -106,7 +109,7 @@ public class SFileSearchActivity extends BaseActivity
                     case RecyclerView.SCROLL_STATE_DRAGGING: {
                         if (softKeyboardSizeWatchLayout != null
                                 && softKeyboardSizeWatchLayout.isSoftKeyboardPop()) {
-                            SystemUtils.hideSoftKeyBoard(getActivity(), etInputName, true);
+                            SystemUtils.hideSoftKeyBoard(getActivity(), etSearchName, true);
                         }
                     }
                     break;
@@ -118,7 +121,7 @@ public class SFileSearchActivity extends BaseActivity
                 super.onScrolled(recyclerView, dx, dy);
             }
         });
-        etInputName.addTextChangedListener(new TextWatcher() {
+        etSearchName.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
 
@@ -138,13 +141,13 @@ public class SFileSearchActivity extends BaseActivity
                 }
             }
         });
-        etInputName.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+        etSearchName.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 switch (actionId) {
                     case EditorInfo.IME_ACTION_SEARCH: {
-                        SystemUtils.hideSoftKeyBoard(getActivity(), etInputName);
-                        if (!TextUtils.isEmpty(etInputName.getText())) {
+                        SystemUtils.hideSoftKeyBoard(getActivity(), etSearchName);
+                        if (!TextUtils.isEmpty(etSearchName.getText())) {
                             getData(true);
                         }
                     }
@@ -178,7 +181,7 @@ public class SFileSearchActivity extends BaseActivity
         }
         getSFileApi().fileSearch(
                 pageIndex,
-                etInputName.getText().toString(),
+                etSearchName.getText().toString(),
                 "custom",
                 "all")
                 .enqueue(new SFileCallBack<SFileSearchPage>() {

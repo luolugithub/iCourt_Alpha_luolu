@@ -10,38 +10,7 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:paddingBottom="10dp"
-            android:paddingLeft="10dp"
-            android:paddingTop="10dp"
-            android:transitionName="searchLayout">
-
-            <com.icourt.alpha.view.ClearEditText
-                android:id="@+id/et_input_name"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:background="@drawable/bg_round_rect_gray"
-                android:drawableLeft="@mipmap/icon_search_14"
-                android:drawablePadding="8dp"
-                android:imeActionLabel="搜索"
-                android:imeOptions="actionSearch"
-                android:maxLines="1"
-                android:padding="10dp"
-                android:singleLine="true"
-                android:textSize="@dimen/alpha_font_size_mini" />
-
-            <TextView
-                android:id="@+id/tv_search_cancel"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:padding="10dp"
-                android:text="取消"
-                android:textColor="@color/alpha_font_color_orange" />
-        </LinearLayout>
+        <include layout="@layout/layout_comm_serach" />
 
         <FrameLayout
             android:layout_width="match_parent"
@@ -49,7 +18,7 @@
             android:layout_weight="1">
 
 
-            <include layout="@layout/layout_refresh_recyclerview"/>
+            <include layout="@layout/layout_refresh_recyclerview" />
 
             <include
                 layout="@layout/layout_empty_tv"
