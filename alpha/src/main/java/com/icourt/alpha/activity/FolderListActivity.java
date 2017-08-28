@@ -473,7 +473,7 @@ public class FolderListActivity extends FolderBaseActivity
                 showDeleteComfirmDialog(selectedFolderDocuments);
                 break;
             case R.id.header_comm_search_ll:
-                SFileSearchActivity.launch(getActivity(), v);
+                SFileSearchActivity.launch(getActivity(), v.findViewById(R.id.rl_comm_search));
                 break;
             default:
                 super.onClick(v);
