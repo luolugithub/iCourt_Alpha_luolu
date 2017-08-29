@@ -652,7 +652,7 @@ public class TaskDetailActivity extends BaseActivity
      */
     private boolean hasTaskEditPermission() {
         if (taskItemEntity != null && taskItemEntity.right != null) {
-            return taskItemEntity.right.contains("MAT:matter.task:edit");
+            return taskItemEntity.right.contains("MAT:matter.task:edit") || taskItemEntity.right.contains("MAT:matter.task:view");
         }
         return false;
     }
@@ -769,7 +769,7 @@ public class TaskDetailActivity extends BaseActivity
             baseFragmentAdapter.bindData(true, Arrays.asList(
                     taskDetailFragment == null ? taskDetailFragment = TaskDetailFragment.newInstance(taskItemEntity) : taskDetailFragment,
                     TaskCheckItemFragment.newInstance(taskItemEntity.id, hasTaskEditPermission(), taskItemEntity.valid),
-                    TaskAttachmentFragment.newInstance(taskItemEntity.id, (hasTaskEditPermission()&&hasTaskAddDocument()), taskItemEntity.valid)
+                    TaskAttachmentFragment.newInstance(taskItemEntity.id, (hasTaskEditPermission() && hasTaskAddDocument()), taskItemEntity.valid)
             ));
 
             updateDetailFargment();

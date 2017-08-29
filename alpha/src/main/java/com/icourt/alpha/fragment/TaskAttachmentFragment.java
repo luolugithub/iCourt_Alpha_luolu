@@ -191,7 +191,7 @@ public class TaskAttachmentFragment extends BaseFragment implements BaseRecycler
                 showLoadingDialog("正在上传...");
                 for (int i = 0; i < resultList.size(); i++) {
                     if (resultList.get(i) != null && !TextUtils.isEmpty(resultList.get(i).getPhotoPath())) {
-                        uploadAttachmentToTask(resultList.get(i).getPhotoPath(), i, resultList.size() - 1);
+                        uploadAttachmentToTask(resultList.get(i).getPhotoPath());
                     }
                 }
             }
@@ -294,7 +294,7 @@ public class TaskAttachmentFragment extends BaseFragment implements BaseRecycler
      *
      * @param filePath
      */
-    private void uploadAttachmentToTask(String filePath, final int position, final int size) {
+    private void uploadAttachmentToTask(String filePath) {
         if (TextUtils.isEmpty(filePath)) {
             dismissLoadingDialog();
             return;
@@ -311,12 +311,10 @@ public class TaskAttachmentFragment extends BaseFragment implements BaseRecycler
         getApi().taskAttachmentUpload(taskId, params).enqueue(new SimpleCallBack<JsonElement>() {
             @Override
             public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
-                if (position == size) {
-                    dismissLoadingDialog();
-                    showTopSnackBar("上传成功");
-                    EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION));
-                    getData(true);
-                }
+                dismissLoadingDialog();
+                showTopSnackBar("上传成功");
+                EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION));
+                getData(true);
             }
 
             @Override
@@ -362,7 +360,7 @@ public class TaskAttachmentFragment extends BaseFragment implements BaseRecycler
             case REQUEST_CODE_CAMERA:
                 if (resultCode == Activity.RESULT_OK) {
                     if (!TextUtils.isEmpty(path))
-                        uploadAttachmentToTask(path, 1, 1);
+                        uploadAttachmentToTask(path);
                 }
                 break;
             default:

@@ -203,6 +203,10 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
         titleCalendar.setVisibility(position == 0 ? View.VISIBLE : View.GONE);
     }
 
+    /**
+     * 更新全部任务列表
+     * @param stateType
+     */
     public void updateListData(int stateType) {
         Bundle bundle = new Bundle();
         bundle.putInt("stateType", stateType);
