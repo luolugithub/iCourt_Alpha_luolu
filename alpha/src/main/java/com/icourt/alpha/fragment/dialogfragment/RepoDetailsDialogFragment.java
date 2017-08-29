@@ -32,6 +32,7 @@ import com.icourt.alpha.http.callback.SFileCallBack;
 import com.icourt.alpha.interfaces.OnFragmentDataChangeListener;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.FileUtils;
+import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.widget.comparators.LongFieldEntityComparator;
 import com.icourt.alpha.widget.comparators.ORDER;
 
@@ -252,7 +253,9 @@ public class RepoDetailsDialogFragment extends BaseDialogFragment
                     && !fileVersionEntities.isEmpty()
                     && fileVersionEntities.get(0) != null) {
                 FileChangedHistoryEntity fileVersionEntity = fileVersionEntities.get(0);
-                fileUpdateInfoTv.setText(String.format("%s 更新于 %s", fileVersionEntity.operator_name, DateUtils.getyyyyMMddHHmm(fileVersionEntity.date)));
+                fileUpdateInfoTv.setText(String.format("%s 更新于 %s",
+                        StringUtils.getEllipsizeText(fileVersionEntity.operator_name, 8),
+                        DateUtils.getyyyyMMddHHmm(fileVersionEntity.date)));
             } else {
                 if (fileUpdateInfoTv != null) {
                     fileUpdateInfoTv.setText("");

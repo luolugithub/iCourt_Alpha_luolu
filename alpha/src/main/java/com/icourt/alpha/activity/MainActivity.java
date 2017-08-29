@@ -352,7 +352,7 @@ public class MainActivity extends BaseAppUpdateActivity
         }
 
         //增加文档
-        tabChangeableData.add(new ItemsEntity("文档", TYPE_FRAGMENT_DOCUMENTS, R.drawable.tab_news));
+        tabChangeableData.add(new ItemsEntity("文档", TYPE_FRAGMENT_DOCUMENTS, R.drawable.tab_document));
     }
 
 

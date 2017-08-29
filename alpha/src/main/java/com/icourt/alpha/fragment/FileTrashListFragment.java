@@ -57,6 +57,7 @@ public class FileTrashListFragment extends SeaFileBaseFragment
     HeaderFooterAdapter<SFileTrashAdapter> headerFooterAdapter;
     SFileTrashAdapter folderDocumentAdapter;
     TextView footerView;
+    String scanStat;
 
     public static FileTrashListFragment newInstance(
             String fromRepoId,
@@ -156,13 +157,18 @@ public class FileTrashListFragment extends SeaFileBaseFragment
     @Override
     protected void getData(final boolean isRefresh) {
         super.getData(isRefresh);
+        if (isRefresh) {
+            scanStat = null;
+        }
         getSFileApi().folderTrashQuery(
                 getSeaFileRepoId(),
                 getSeaFileDirPath(),
-                ActionConstants.DEFAULT_PAGE_SIZE)
+                ActionConstants.DEFAULT_PAGE_SIZE,
+                scanStat)
                 .enqueue(new SFileCallBack<SeaFileTrashPageEntity<FolderDocumentEntity>>() {
                     @Override
                     public void onSuccess(Call<SeaFileTrashPageEntity<FolderDocumentEntity>> call, Response<SeaFileTrashPageEntity<FolderDocumentEntity>> response) {
+                        scanStat = response.body().scan_stat;
                         folderDocumentAdapter.bindData(isRefresh, response.body().data);
                         stopRefresh();
                         if (refreshLayout != null) {

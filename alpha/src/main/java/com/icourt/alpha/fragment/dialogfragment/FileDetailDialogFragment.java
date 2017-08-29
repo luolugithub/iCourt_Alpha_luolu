@@ -25,6 +25,7 @@ import com.icourt.alpha.utils.FileUtils;
 import com.icourt.alpha.utils.GlideUtils;
 import com.icourt.alpha.utils.IMUtils;
 import com.icourt.alpha.utils.SFileTokenUtils;
+import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.widget.comparators.LongFieldEntityComparator;
 import com.icourt.alpha.widget.comparators.ORDER;
 
@@ -230,14 +231,14 @@ public class FileDetailDialogFragment extends FileDetailsBaseDialogFragment
                 }
                 if (fileVersionEntityCreate != null) {
                     fileCreateInfoTv.setText(String.format("%s 创建于 %s",
-                            fileVersionEntityCreate.user_info != null ? fileVersionEntityCreate.user_info.name : "",
+                            StringUtils.getEllipsizeText(fileVersionEntityCreate.user_info != null ? fileVersionEntityCreate.user_info.name : "", 8),
                             DateUtils.getyyyyMMddHHmm(fileVersionEntityCreate.ctime * 1_000)));
                 } else {
                     fileCreateInfoTv.setText("");
                 }
                 if (fileVersionEntityNewly != null) {
                     fileUpdateInfoTv.setText(String.format("%s 更新于 %s",
-                            fileVersionEntityCreate.user_info != null ? fileVersionEntityNewly.user_info.name : "",
+                            StringUtils.getEllipsizeText(fileVersionEntityCreate.user_info != null ? fileVersionEntityNewly.user_info.name : "", 8),
                             DateUtils.getyyyyMMddHHmm(fileVersionEntityNewly.ctime * 1_000)));
                 } else {
                     fileUpdateInfoTv.setText("");

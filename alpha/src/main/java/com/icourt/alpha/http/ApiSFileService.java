@@ -328,7 +328,8 @@ public interface ApiSFileService {
     @GET("api/v2.1/repos/{seaFileRepoId}/trash/")
     Call<SeaFileTrashPageEntity<FolderDocumentEntity>> folderTrashQuery(@Path("seaFileRepoId") String fromRepoId,
                                                                         @Query("path") String p,
-                                                                        @Query("per_page") int per_page);
+                                                                        @Query("per_page") int per_page,
+                                                                        @Query("scan_stat") String scan_stat);
 
     /**
      * 文件恢复

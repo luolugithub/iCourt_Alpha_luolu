@@ -22,6 +22,22 @@ public class StringUtils {
     }
 
     /**
+     * 获取截取后 并添加省略号的文本
+     *
+     * @param text
+     * @param maxNum
+     * @return
+     */
+    public static String getEllipsizeText(String text, int maxNum) {
+        if (!TextUtils.isEmpty(text)
+                && maxNum > 0
+                && text.length() > maxNum) {
+            return text.substring(0, maxNum).concat("...");
+        }
+        return text;
+    }
+
+    /**
      * 获取小写
      *
      * @param text
