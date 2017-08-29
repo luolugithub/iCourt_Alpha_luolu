@@ -37,7 +37,7 @@ public class ProjectEntity implements Serializable {
      * myStar : 0
      */
     @SerializedName(value = "pkId", alternate = {"id"})
-    public String pkId;
+    public String pkId="";
     public String name;
     public String status;
     public String matterType;//项目模板(类型)(0争议解决，1非诉专项,2常年顾问，3所内事务)
