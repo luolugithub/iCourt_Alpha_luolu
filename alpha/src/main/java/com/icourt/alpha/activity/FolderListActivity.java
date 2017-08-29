@@ -487,10 +487,11 @@ public class FolderListActivity extends FolderBaseActivity
 
     private void showActionMoreDialog() {
         List<String> strings;
-        if (TextUtils.equals(getRepoPermission(), PERMISSION_RW)) {
-            strings = Arrays.asList("批量操作", "查看资料库详情", "回收站");
-        } else {
+        if (folderDocumentAdapter.getItemCount() <= 0
+                || !TextUtils.equals(getRepoPermission(), PERMISSION_RW)) {
             strings = Arrays.asList("查看资料库详情", "回收站");
+        } else {
+            strings = Arrays.asList("批量操作", "查看资料库详情", "回收站");
         }
         new BottomActionDialog(getContext(),
                 null,

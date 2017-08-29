@@ -15,7 +15,7 @@ import java.util.regex.Pattern;
 public class SFileNameFilter implements InputFilter {
 
     // 特殊字符不能作为资料库名称：'\\', '/', ':', '*', '?', '"', '<', '>', '|', '\b', '\t'
-    Pattern pattern = Pattern.compile("[\\|/|:|：|*|?|？|\"|“|”|<|>|\\||\t]", Pattern.CASE_INSENSITIVE);
+    Pattern pattern = Pattern.compile("[\\\\|/|:|：|*|?|？|\"|“|”|<|>|\\||\t]", Pattern.CASE_INSENSITIVE);
 
     /**
      * @param source 为即将输入的字符串。source

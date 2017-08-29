@@ -41,6 +41,7 @@ public class ActionConstants {
 
             put("zip", R.mipmap.filetype_zip);
             put("rar", R.mipmap.filetype_zip);
+            put("apk", R.mipmap.filetype_zip);
 
             put("mp3", R.mipmap.filetype_music);
             put("wav", R.mipmap.filetype_music);

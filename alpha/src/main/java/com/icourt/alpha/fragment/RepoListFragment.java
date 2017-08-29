@@ -46,7 +46,6 @@ import butterknife.Unbinder;
 import retrofit2.Call;
 import retrofit2.Response;
 
-import static com.icourt.alpha.constants.Const.VIEW_TYPE_ITEM;
 import static com.icourt.alpha.constants.SFileConfig.PERMISSION_RW;
 import static com.icourt.alpha.constants.SFileConfig.REPO_LAWFIRM;
 import static com.icourt.alpha.constants.SFileConfig.REPO_MINE;
@@ -379,9 +378,9 @@ public class RepoListFragment extends BaseFragment
     private void showDocumentActionDialog(final int pos) {
         RepoEntity item = repoAdapter.getItem(pos);
         if (item == null) return;
-        List<String> menus = Arrays.asList("详细信息", "重命名", "共享", "删除");
+        List<String> menus = Arrays.asList("查看资料库详情", "重命名", "内部共享", "删除");
         if (isDefaultReop(item.repo_id)) {
-            menus = Arrays.asList("详细信息", "重命名", "共享");
+            menus = Arrays.asList("查看资料库详情", "重命名", "内部共享");
         }
         new BottomActionDialog(getContext(),
                 null,
@@ -391,14 +390,14 @@ public class RepoListFragment extends BaseFragment
                     public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
                         dialog.dismiss();
                         String s = adapter.getItem(position);
-                        if (TextUtils.equals(s, "详细信息")) {
+                        if (TextUtils.equals(s, "查看资料库详情")) {
                             lookDetail(pos);
                         } else if (TextUtils.equals(s, "重命名")) {
                             renameDocument(pos);
-                        } else if (TextUtils.equals(s, "共享")) {
+                        } else if (TextUtils.equals(s, "内部共享")) {
                             shareDocument(pos);
                         } else if (TextUtils.equals(s, "删除")) {
-                            showDelDialog(pos);
+                            showDelConfirmDialog(pos);
                         }
                     }
                 }).show();
@@ -454,9 +453,9 @@ public class RepoListFragment extends BaseFragment
     }
 
 
-    private void showDelDialog(final int pos) {
+    private void showDelConfirmDialog(final int pos) {
         new BottomActionDialog(getContext(),
-                "删除后不可恢复,确定要删除吗?",
+                "删除后不可恢复, 确定删除吗?",
                 Arrays.asList("删除"), new BottomActionDialog.OnActionItemClickListener() {
             @Override
             public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
