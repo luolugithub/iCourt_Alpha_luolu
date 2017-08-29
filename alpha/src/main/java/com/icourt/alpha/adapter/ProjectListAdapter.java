@@ -1,5 +1,6 @@
 package com.icourt.alpha.adapter;
 
+import android.content.Context;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.ImageView;
@@ -10,8 +11,16 @@ import com.icourt.alpha.activity.ProjectDetailActivity;
 import com.icourt.alpha.adapter.baseadapter.BaseArrayRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.entity.bean.ProjectEntity;
+import com.icourt.alpha.http.callback.SimpleCallBack;
+import com.icourt.alpha.http.httpmodel.ResEntity;
 
+import java.util.List;
 import java.util.Locale;
+
+import retrofit2.Call;
+import retrofit2.Response;
+
+import static com.icourt.alpha.utils.LoginInfoUtils.getLoginUserId;
 
 /**
  * Description
@@ -96,8 +105,34 @@ public class ProjectListAdapter extends BaseArrayRecyclerAdapter<ProjectEntity> 
     public void onItemClick(BaseRecyclerAdapter adapter, ViewHolder holder, View view, int position) {
         ProjectEntity projectEntity = (ProjectEntity) adapter.getItem(getRealPos(position));
         if (projectEntity != null) {
-            ProjectDetailActivity.launch(view.getContext(), projectEntity.pkId, projectEntity.name);
+            checkAddTaskAndDocumentPms(view.getContext(), projectEntity);
         }
+    }
+
+    /**
+     * 获取项目权限
+     */
+    private void checkAddTaskAndDocumentPms(final Context context, final ProjectEntity projectEntity) {
+        showLoadingDialog(context, null);
+        getApi().permissionQuery(getLoginUserId(), "MAT", projectEntity.pkId).enqueue(new SimpleCallBack<List<String>>() {
+            @Override
+            public void onSuccess(Call<ResEntity<List<String>>> call, Response<ResEntity<List<String>>> response) {
+                dismissLoadingDialog();
+                if (response.body().result != null) {
+                    if (response.body().result.contains("MAT:matter.matterSelf:enter")) {
+                        ProjectDetailActivity.launch(context, projectEntity.pkId, projectEntity.name);
+                    } else {
+                        showToast("您没有进入此项目的权限");
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResEntity<List<String>>> call, Throwable t) {
+                super.onFailure(call, t);
+                dismissLoadingDialog();
+            }
+        });
     }
 
     @Override

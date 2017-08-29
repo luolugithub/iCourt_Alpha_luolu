@@ -210,7 +210,10 @@ public class ProjectTaskFragment extends BaseFragment implements TaskAdapter.OnS
         });
     }
 
-
+    /**
+     * 异步分组
+     * @param taskEntity
+     */
     private void getTaskGroupDatas(final TaskEntity taskEntity) {
         if (taskEntity != null) {
             enableEmptyView(taskEntity.items);
@@ -243,6 +246,10 @@ public class ProjectTaskFragment extends BaseFragment implements TaskAdapter.OnS
         }
     }
 
+    /**
+     * 任务分组
+     * @param taskitems
+     */
     private void groupingByTasks(List<TaskEntity.TaskItemEntity> taskitems) {
         List<TaskEntity.TaskItemEntity> noitems = new ArrayList<>();//未分组
         TimeEntity.ItemEntity timerEntity = TimerManager.getInstance().getTimer();

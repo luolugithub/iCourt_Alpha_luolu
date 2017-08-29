@@ -501,6 +501,9 @@ public class ProjectFileBoxFragment extends BaseFragment implements BaseRecycler
         }
     }
 
+    /**
+     * 选择照片回调
+     */
     private GalleryFinal.OnHanlderResultCallback mOnHanlderResultCallback = new GalleryFinal.OnHanlderResultCallback() {
         @Override
         public void onHanlderSuccess(int reqeustCode, List<PhotoInfo> resultList) {

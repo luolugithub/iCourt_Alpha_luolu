@@ -245,6 +245,9 @@ public class ProjectDetailActivity extends BaseActivity implements OnFragmentCal
         }
     }
 
+    /**
+     * 头部点击
+     */
     private void titleActionClick() {
         switch (detailTablayout.getSelectedTabPosition()) {
             case 1:     //任务
