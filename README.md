@@ -2,7 +2,7 @@
 #接入流程  
  1. 申请企业邮箱(eg. youxuan@icourt.cc),负责人(HR 韩时雨);用企业邮箱注册gitlab,并让管理员(吴佑炫)邀请  
  2. 下载最新的Android Studio,并安装git AS与git链接成功;  
- 3. 将gitlab的代码导入AS(时间可能持续很长) 
+ 3. 将gitlab的代码导入AS(时间可能持续很长) https://code.alphalawyer.cn/users/sign_in  
  4. 下载zeplin客户端(UI设计图)并注册账号,让管理员(李方明)邀请加入Android项目;
  5. 下载享聊客户端活着手机客户端 找李珊珊邀请加入jira bug管理系统 (http://jira.alphalawyer.cn/secure/BrowseProjects.jspa#all)  
  6. 需求文档(wiki http://wiki.alphalawyer.cn) 找吕东东开一个账户;  

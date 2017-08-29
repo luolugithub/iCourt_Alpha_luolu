@@ -182,11 +182,17 @@ public class FileDetailDialogFragment extends FileDetailsBaseDialogFragment
 
     }
 
-    @OnClick({R.id.file_title_tv})
+    @OnClick({R.id.file_title_tv,
+            R.id.file_version_tv,
+            R.id.file_type_iv,
+            R.id.file_size_tv})
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.file_title_tv:
+            case R.id.file_version_tv:
+            case R.id.file_type_iv:
+            case R.id.file_size_tv:
                 if (!fileVersionEntities.isEmpty()) {
                     FileVersionEntity item = fileVersionEntities.get(0);
                     if (item == null) return;

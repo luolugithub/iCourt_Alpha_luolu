@@ -148,6 +148,7 @@ public class RepoDetailsDialogFragment extends BaseDialogFragment
         fileVersionTv.setVisibility(View.GONE);
         fileCreateInfoTv.setVisibility(View.GONE);
         fileTypeIv.setImageResource(R.mipmap.ic_document);
+        fileUpdateInfoTv.setText("");
 
         viewPager.setAdapter(baseFragmentAdapter = new BaseFragmentAdapter(getChildFragmentManager()));
         tabLayout.setupWithViewPager(viewPager);
