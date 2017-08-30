@@ -1217,9 +1217,12 @@ public class TaskListFragment extends BaseFragment implements
                     int totalCount = response.body().result.size();
                     if (totalCount > 0) {
                         newTaskCardview.setVisibility(View.VISIBLE);
+                        newTaskCardview.setClickable(true);
+                        nextTaskLayout.setVisibility(View.GONE);
                         newTaskCountTv.setText(String.valueOf(totalCount));
                     } else {
                         newTaskCardview.setVisibility(View.GONE);
+                        nextTaskLayout.setVisibility(View.GONE);
                         newTaskEntities.clear();
                     }
                 }
@@ -1560,9 +1563,15 @@ public class TaskListFragment extends BaseFragment implements
     @Override
     public void updateNewTaskCount(TaskEntity.TaskItemEntity taskItemEntity) {
         if (taskItemEntity != null) {
-            if (newTaskEntities != null && newTaskEntities.size() >= 1) {
-                if (newTaskEntities.contains(taskItemEntity)) {
-                    newTaskEntities.remove(taskItemEntity);
+            if (newTaskEntities != null) {
+                if (taskItemEntity.state) {
+                    if (newTaskEntities.contains(taskItemEntity)) {
+                        newTaskEntities.remove(taskItemEntity);
+                    }
+                } else {
+                    if (!newTaskEntities.contains(taskItemEntity)) {
+                        newTaskEntities.add(taskItemEntity);
+                    }
                 }
             }
         }
