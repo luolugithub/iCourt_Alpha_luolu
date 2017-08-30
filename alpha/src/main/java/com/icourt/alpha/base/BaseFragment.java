@@ -25,6 +25,7 @@ import com.icourt.alpha.http.ApiAlphaService;
 import com.icourt.alpha.http.ApiChatService;
 import com.icourt.alpha.http.ApiProjectService;
 import com.icourt.alpha.http.ApiSFileService;
+import com.icourt.alpha.http.IContextCallQueue;
 import com.icourt.alpha.http.RetrofitServiceFactory;
 import com.icourt.alpha.interfaces.INotifyFragment;
 import com.icourt.alpha.interfaces.ProgressHUDImp;
@@ -40,6 +41,10 @@ import com.trello.rxlifecycle2.LifecycleTransformer;
 import com.trello.rxlifecycle2.RxLifecycle;
 import com.trello.rxlifecycle2.android.FragmentEvent;
 import com.trello.rxlifecycle2.android.RxLifecycleAndroid;
+
+import java.lang.ref.WeakReference;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import io.reactivex.Observable;
 import io.reactivex.subjects.BehaviorSubject;
@@ -57,9 +62,12 @@ import retrofit2.Callback;
 public abstract class BaseFragment
         extends BasePermissionFragment
         implements ProgressHUDImp,
+        IContextCallQueue,
         View.OnClickListener,
         INotifyFragment,
         LifecycleProvider<FragmentEvent> {
+    Queue<WeakReference<Call>> contextCallQueue = new ConcurrentLinkedQueue<>();
+
     protected static final String KEY_FRAGMENT_RESULT = "FragmentResult";
     protected static final String KEY_FRAGMENT_UPDATE_KEY = "fragment_update_key";
     private final BehaviorSubject<FragmentEvent> lifecycleSubject = BehaviorSubject.create();
@@ -131,6 +139,7 @@ public abstract class BaseFragment
     @Override
     @CallSuper
     public void onDestroyView() {
+        cancelAllCall();
         lifecycleSubject.onNext(FragmentEvent.DESTROY_VIEW);
         super.onDestroyView();
     }
@@ -585,15 +594,57 @@ public abstract class BaseFragment
 
 
     /**
-     * 执行call请求
+     * 加入队列
      *
      * @param call
      * @param callback
      * @param <T>
      * @return
      */
-    protected <T> Call<T> callEnqueue(Call<T> call, Callback<T> callback) {
-        return RequestUtils.callEnqueue(call, callback);
+    @Override
+    public <T> Call<T> callEnqueue(@NonNull Call<T> call, Callback<T> callback) {
+        if (isDetached()) return null;
+        if (call != null) {
+            contextCallQueue.offer(new WeakReference<Call>(call));
+            return RequestUtils.callEnqueue(call, callback);
+        }
+        return call;
+    }
+
+    /**
+     * 取消当前页面所有请求
+     */
+    @Override
+    public void cancelAllCall() {
+        while (contextCallQueue.peek() != null) {
+            WeakReference<Call> poll = contextCallQueue.poll();
+            if (poll != null) {
+                Call call = RequestUtils.cancelCall(poll.get());
+                if (call != null) {
+                    call = null;
+                }
+            }
+        }
+    }
+
+    /**
+     * 取消单个请求
+     *
+     * @param call
+     * @param <T>
+     */
+    @Override
+    public <T> void cancelCall(@NonNull Call<T> call) {
+        for (WeakReference<Call> poll : contextCallQueue) {
+            if (poll != null && call == poll.get()) {
+                contextCallQueue.remove(poll);
+                break;
+            }
+        }
+        Call callRtv = RequestUtils.cancelCall(call);
+        if (callRtv != null) {
+            callRtv = null;
+        }
     }
 
 }

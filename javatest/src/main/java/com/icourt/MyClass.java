@@ -1,5 +1,6 @@
 package com.icourt;
 
+import java.lang.ref.WeakReference;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -29,6 +30,15 @@ public class MyClass {
     };
 
     public static void main(String[] args) throws Exception {
+
+        String abc=new String("abc");
+        WeakReference<String> abcWeakRef = new WeakReference<String>(abc);
+        //abc=null;
+        System.out.println("before gc: "+abcWeakRef.get());
+        System.out.println("before gc1: "+abc);
+        System.gc();
+        System.out.println("after gc: "+abcWeakRef.get());
+
         SimpleDateFormat sdf = new SimpleDateFormat();
         sdf.applyPattern("yyyy-MM-dd: hh:mm");
         log("------->1:" + sdf.format(new Date(1503745957)));

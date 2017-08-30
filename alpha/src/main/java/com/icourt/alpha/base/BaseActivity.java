@@ -30,6 +30,7 @@ import com.icourt.alpha.http.ApiAlphaService;
 import com.icourt.alpha.http.ApiChatService;
 import com.icourt.alpha.http.ApiProjectService;
 import com.icourt.alpha.http.ApiSFileService;
+import com.icourt.alpha.http.IContextCallQueue;
 import com.icourt.alpha.http.RetrofitServiceFactory;
 import com.icourt.alpha.interfaces.IContextResourcesImp;
 import com.icourt.alpha.interfaces.ProgressHUDImp;
@@ -39,6 +40,7 @@ import com.icourt.alpha.utils.SnackbarUtils;
 import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.utils.ToastUtils;
+import com.icourt.api.RequestUtils;
 import com.kaopiz.kprogresshud.KProgressHUD;
 import com.trello.rxlifecycle2.LifecycleProvider;
 import com.trello.rxlifecycle2.LifecycleTransformer;
@@ -47,8 +49,14 @@ import com.trello.rxlifecycle2.android.ActivityEvent;
 import com.trello.rxlifecycle2.android.RxLifecycleAndroid;
 import com.umeng.analytics.MobclickAgent;
 
+import java.lang.ref.WeakReference;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
+
 import io.reactivex.Observable;
 import io.reactivex.subjects.BehaviorSubject;
+import retrofit2.Call;
+import retrofit2.Callback;
 
 import static com.umeng.socialize.utils.DeviceConfig.context;
 
@@ -63,9 +71,11 @@ import static com.umeng.socialize.utils.DeviceConfig.context;
 public class BaseActivity
         extends BasePermisionActivity
         implements ProgressHUDImp,
+        IContextCallQueue,
         View.OnClickListener,
         IContextResourcesImp,
         LifecycleProvider<ActivityEvent> {
+    Queue<WeakReference<Call>> contextCallQueue = new ConcurrentLinkedQueue<>();
     private final BehaviorSubject<ActivityEvent> lifecycleSubject = BehaviorSubject.create();
     public static final String KEY_ACTIVITY_RESULT = "ActivityResult";
 
@@ -576,9 +586,6 @@ public class BaseActivity
         if (targetFragment == currentFragment) return currentFragment;
         FragmentManager fm = getSupportFragmentManager();
         FragmentTransaction transaction = fm.beginTransaction();
-   /*     transaction.setCustomAnimations(
-                R.anim.fragment_slide_right_in, R.anim.fragment_slide_left_out,
-                R.anim.fragment_slide_left_in, R.anim.fragment_slide_right_out);*/
         if (!targetFragment.isAdded()) { // 如果当前fragment添加，则添加到Fragment管理器中
             if (currentFragment == null) {
                 transaction
@@ -695,6 +702,7 @@ public class BaseActivity
     @Override
     protected void onDestroy() {
         dismissLoadingDialog();
+        cancelAllCall();
         lifecycleSubject.onNext(ActivityEvent.DESTROY);
         super.onDestroy();
     }
@@ -754,4 +762,58 @@ public class BaseActivity
         return LoginInfoUtils.getUserToken();
     }
 
+
+    /**
+     * 加入队列
+     *
+     * @param call
+     * @param callback
+     * @param <T>
+     * @return
+     */
+    @Override
+    public <T> Call<T> callEnqueue(@NonNull Call<T> call, Callback<T> callback) {
+        if(isDestroyOrFinishing()) return null;
+        if (call != null) {
+            contextCallQueue.offer(new WeakReference<Call>(call));
+            return RequestUtils.callEnqueue(call, callback);
+        }
+        return call;
+    }
+
+    /**
+     * 取消当前页面所有请求
+     */
+    @Override
+    public void cancelAllCall() {
+        while (contextCallQueue.peek() != null) {
+            WeakReference<Call> poll = contextCallQueue.poll();
+            if (poll != null) {
+                Call call = RequestUtils.cancelCall(poll.get());
+                if (call != null) {
+                    call = null;
+                }
+            }
+        }
+    }
+
+    /**
+     * 取消单个请求
+     *
+     * @param call
+     * @param <T>
+     */
+    @Override
+    public <T> void cancelCall(@NonNull Call<T> call) {
+        for (WeakReference<Call> poll : contextCallQueue) {
+            if (poll != null && call == poll.get()) {
+                contextCallQueue.remove(poll);
+                break;
+            }
+        }
+        Call callRtv = RequestUtils.cancelCall(call);
+        if (callRtv != null) {
+            callRtv = null;
+        }
+    }
 }

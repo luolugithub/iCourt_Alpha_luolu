@@ -128,4 +128,22 @@ public class RequestUtils {
         }
         return call;
     }
+
+    /**
+     * 执行call请求
+     *
+     * @param call
+     * @param <T>
+     * @return
+     */
+    public static <T> Call<T> cancelCall(Call<T> call) {
+        if (call != null) {
+            try {
+                call.cancel();
+            } catch (Throwable e) {
+                e.printStackTrace();
+            }
+        }
+        return call;
+    }
 }
