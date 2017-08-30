@@ -89,8 +89,6 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-import static com.icourt.alpha.fragment.TabTaskFragment.select_position;
-
 /**
  * Description 任务列表
  * Company Beijing icourt
@@ -108,10 +106,8 @@ public class TaskListFragment extends BaseFragment implements
         BaseRecyclerAdapter.OnItemChildClickListener {
 
     public static final int TYPE_ALL = 0;//全部
-    public static final int TYPE_NEW = 1;//新任务
     public static final int TYPE_MY_ATTENTION = 2;//我关注的
 
-    private static final int SHOW_DELETE_DIALOG = 0;//删除提示对话框
     private static final int SHOW_FINISH_DIALOG = 1;//完成任务提示对话框
     Unbinder unbinder;
     @Nullable
@@ -150,9 +146,11 @@ public class TaskListFragment extends BaseFragment implements
     LinearLayout nextTaskLayout;
     @BindView(R.id.next_task_cardview)
     CardView nextTaskCardview;
-
+    TaskEntity.TaskItemEntity lastEntity;
     Handler handler = new Handler();
-//    boolean isAwayScroll = false; //切换时是否滚动，在'已完成和已删除'状态下，点击新任务提醒。
+    View childItemView;
+    boolean isUpdate = true;
+    TabTaskFragment tabTaskFragment = null;
 
     public static TaskListFragment newInstance(int type, int stateType) {
         TaskListFragment projectTaskFragment = new TaskListFragment();
@@ -188,6 +186,7 @@ public class TaskListFragment extends BaseFragment implements
     @Override
     protected void initView() {
         EventBus.getDefault().register(this);
+        tabTaskFragment = getParentTabTaskFragment();
         type = getArguments().getInt("type");
         stateType = getArguments().getInt("stateType");
         refreshLayout.setNoticeEmpty(R.mipmap.bg_no_task, R.string.task_list_null_text);
@@ -257,29 +256,27 @@ public class TaskListFragment extends BaseFragment implements
                 SearchProjectActivity.launchTask(getContext(), getLoginUserId(), type, SearchProjectActivity.SEARCH_TASK);
                 break;
             case R.id.new_task_cardview:
-                if (getParentFragment() instanceof TaskAllFragment) {
-                    if (getParentFragment().getParentFragment() instanceof TabTaskFragment) {
-                        if (select_position != 0) {
-                            TabTaskFragment.isShowCalendar = false;
-                            ((TabTaskFragment) (getParentFragment().getParentFragment())).setFirstTabText("未完成", 0);
-                            ((TabTaskFragment) (getParentFragment().getParentFragment())).updateListData(0);
-                            TabTaskFragment.isAwayScroll = true;
-                        } else {
-                            if (newTaskEntities != null) {
-                                if (newTaskEntities.size() > 1) {
-                                    nextTaskLayout.setVisibility(View.VISIBLE);
+                if (tabTaskFragment != null) {
+                    if (tabTaskFragment.select_position != 0) {
+                        tabTaskFragment.isShowCalendar = false;
+                        tabTaskFragment.setFirstTabText("未完成", 0);
+                        tabTaskFragment.updateListData(0);
+                        tabTaskFragment.isAwayScroll = true;
+                    } else {
+                        if (newTaskEntities != null) {
+                            if (newTaskEntities.size() > 1) {
+                                nextTaskLayout.setVisibility(View.VISIBLE);
+                                updateNextTaskState();
+                                v.setClickable(false);
+                            } else if (newTaskEntities.size() == 1) {
+                                if (newTaskEntities.get(0) != null) {
                                     updateNextTaskState();
-                                    v.setClickable(false);
-                                } else if (newTaskEntities.size() == 1) {
-                                    if (newTaskEntities.get(0) != null) {
-                                        updateNextTaskState();
-                                        scrollToByPosition(newTaskEntities.get(0).id);
-                                    }
+                                    scrollToByPosition(newTaskEntities.get(0).id);
                                 }
                             }
                         }
-                        newTaskCardview.setVisibility(View.GONE);
                     }
+                    newTaskCardview.setVisibility(View.GONE);
                 }
                 break;
             case R.id.next_task_cardview://下一个
@@ -302,8 +299,23 @@ public class TaskListFragment extends BaseFragment implements
     }
 
     /**
+     * 获取父fragment
+     *
+     * @return
+     */
+    private TabTaskFragment getParentTabTaskFragment() {
+        if (getParentFragment() != null && getParentFragment() instanceof TaskAllFragment) {
+            if (getParentFragment().getParentFragment() != null && getParentFragment().getParentFragment() instanceof TabTaskFragment) {
+                return (TabTaskFragment) getParentFragment().getParentFragment();
+            }
+        }
+        return null;
+    }
+
+    /**
      * 下一个
      */
+
     private void updateNextTaskState() {
         if (newTaskEntities != null) {
             if (newTaskEntities.size() > 0) {
@@ -313,9 +325,6 @@ public class TaskListFragment extends BaseFragment implements
             }
         }
     }
-
-    View childItemView;
-    boolean isUpdate = true;
 
     /**
      * 滚动到指定位置
@@ -329,8 +338,7 @@ public class TaskListFragment extends BaseFragment implements
         final int offset = childPosition * 130 + 46;
 
         handler.removeCallbacksAndMessages(null);
-
-        if (TabTaskFragment.isAwayScroll) {
+        if (tabTaskFragment.isAwayScroll) {
             handler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
@@ -345,7 +353,7 @@ public class TaskListFragment extends BaseFragment implements
         List<String> ids = new ArrayList<>();
         ids.add(taskId);
         onCheckNewTask(ids);
-        TabTaskFragment.isAwayScroll = false;
+        tabTaskFragment.isAwayScroll = false;
     }
 
     /**
@@ -519,22 +527,31 @@ public class TaskListFragment extends BaseFragment implements
                         @Override
                         public void accept(List<TaskEntity> searchPolymerizationEntities) throws Exception {
                             taskAdapter.bindData(true, allTaskEntities);
-                            if (TabTaskFragment.isAwayScroll && stateType == 0) {
-                                if (newTaskEntities.size() > 1) {
-                                    nextTaskLayout.setVisibility(View.VISIBLE);
-                                }
-                                nextTaskTv.setText("下一个 (" + String.valueOf(newTaskEntities.size()) + ")");
-                                updateNextTaskState();
-                            } else {
-                                if (newTaskEntities.size() > 0) {
-                                    newTaskCardview.setVisibility(View.VISIBLE);
-                                    newTaskCardview.setClickable(true);
-                                    newTaskCountTv.setText(String.valueOf(newTaskEntities.size()));
-                                    nextTaskLayout.setVisibility(View.GONE);
-                                } else {
-                                    newTaskCardview.setVisibility(View.GONE);
+                            if (getParentFragment() != null) {
+                                if (getParentFragment() instanceof TaskAllFragment) {
+                                    if (getParentFragment().getParentFragment() != null) {
+                                        if (getParentFragment().getParentFragment() instanceof TabTaskFragment) {
+                                            if (tabTaskFragment.isAwayScroll && stateType == 0) {
+                                                if (newTaskEntities.size() > 1) {
+                                                    nextTaskLayout.setVisibility(View.VISIBLE);
+                                                }
+                                                nextTaskTv.setText(String.format("下一个 (%s)", newTaskEntities.size()));
+                                                updateNextTaskState();
+                                            } else {
+                                                if (newTaskEntities.size() > 0) {
+                                                    newTaskCardview.setVisibility(View.VISIBLE);
+                                                    newTaskCardview.setClickable(true);
+                                                    newTaskCountTv.setText(String.valueOf(newTaskEntities.size()));
+                                                    nextTaskLayout.setVisibility(View.GONE);
+                                                } else {
+                                                    newTaskCardview.setVisibility(View.GONE);
+                                                }
+                                            }
+                                        }
+                                    }
                                 }
                             }
+
                             //第一次进入 隐藏搜索框
                             if (isFirstTimeIntoPage) {
                                 linearLayoutManager.scrollToPositionWithOffset(headerFooterAdapter.getHeaderCount(), 0);
@@ -557,13 +574,15 @@ public class TaskListFragment extends BaseFragment implements
      * @param taskItemEntities
      */
     private void groupingByTasks(List<TaskEntity.TaskItemEntity> taskItemEntities) {
+
         for (TaskEntity.TaskItemEntity taskItemEntity : taskItemEntities) {
             if (taskItemEntity.dueTime > 0) {
-                if (TextUtils.equals(DateUtils.getTimeDateFormatYear(taskItemEntity.dueTime), DateUtils.getTimeDateFormatYear(DateUtils.millis())) || DateUtils.getDayDiff(DateUtils.millis(), taskItemEntity.dueTime) < 0) {
+                long dueTimeDiff = DateUtils.getDayDiff(DateUtils.millis(), taskItemEntity.dueTime);
+                if (TextUtils.equals(DateUtils.getTimeDateFormatYear(taskItemEntity.dueTime), DateUtils.getTimeDateFormatYear(DateUtils.millis())) || dueTimeDiff < 0) {
                     todayTaskEntities.add(taskItemEntity);
-                } else if (DateUtils.getDayDiff(DateUtils.millis(), taskItemEntity.dueTime) <= 3 && DateUtils.getDayDiff(DateUtils.millis(), taskItemEntity.dueTime) > 0) {
+                } else if (dueTimeDiff <= 3 && dueTimeDiff > 0) {
                     beAboutToTaskEntities.add(taskItemEntity);
-                } else if (DateUtils.getDayDiff(DateUtils.millis(), taskItemEntity.dueTime) > 3) {
+                } else if (dueTimeDiff > 3) {
                     futureTaskEntities.add(taskItemEntity);
                 } else {
                     datedTaskEntities.add(taskItemEntity);
@@ -850,8 +869,6 @@ public class TaskListFragment extends BaseFragment implements
         }
         return null;
     }
-
-    TaskEntity.TaskItemEntity lastEntity;
 
     /**
      * 更新item
@@ -1371,19 +1388,14 @@ public class TaskListFragment extends BaseFragment implements
      * @return
      */
     private String getTaskJson(TaskEntity.TaskItemEntity itemEntity, boolean state) {
-        try {
-            itemEntity.state = state;
-            JsonObject jsonObject = new JsonObject();
-            jsonObject.addProperty("id", itemEntity.id);
-            jsonObject.addProperty("name", itemEntity.name);
-            jsonObject.addProperty("state", itemEntity.state);
-            jsonObject.addProperty("valid", true);
-            jsonObject.addProperty("updateTime", DateUtils.millis());
-            return jsonObject.toString();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
+        itemEntity.state = state;
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("id", itemEntity.id);
+        jsonObject.addProperty("name", itemEntity.name);
+        jsonObject.addProperty("state", itemEntity.state);
+        jsonObject.addProperty("valid", true);
+        jsonObject.addProperty("updateTime", DateUtils.millis());
+        return jsonObject.toString();
     }
 
     /**
@@ -1536,7 +1548,7 @@ public class TaskListFragment extends BaseFragment implements
                             nextTaskLayout.setVisibility(View.VISIBLE);
                         }
                         newTaskCountTv.setText(String.valueOf(newTaskEntities.size()));
-                        nextTaskTv.setText("下一个 (" + String.valueOf(newTaskEntities.size()) + ")");
+                        nextTaskTv.setText(String.format("下一个 (%s)", newTaskEntities.size()));
                     } else {
                         newTaskEntities.clear();
                     }

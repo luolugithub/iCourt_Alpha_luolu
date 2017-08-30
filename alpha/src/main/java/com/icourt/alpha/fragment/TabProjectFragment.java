@@ -48,7 +48,7 @@ import retrofit2.Response;
  * version 1.0.0
  */
 public class TabProjectFragment extends BaseFragment implements TopMiddlePopup.OnItemClickListener, OnFragmentCallBackListener {
-    public static int select_position = 0;//选择的筛选选项
+    private int select_position = 0;//选择的筛选选项
     @BindView(R.id.tabLayout)
     TabLayout tabLayout;
     @BindView(R.id.titleAction)
@@ -148,7 +148,7 @@ public class TabProjectFragment extends BaseFragment implements TopMiddlePopup.O
         public void onClick(View view) {
             if (tabLayout.getTabAt(0) != null) {
                 if (view.isSelected()) {
-                    postDiyDissPop();
+                    postDismissPop();
                     topMiddlePopup.show(titleView, dropEntities, select_position);
                     setFirstTabImage(true);
                     if (topMiddlePopup.isShowing()) {
@@ -161,7 +161,10 @@ public class TabProjectFragment extends BaseFragment implements TopMiddlePopup.O
         }
     }
 
-    private void postDiyDissPop() {
+    /**
+     * 隐藏pop
+     */
+    private void postDismissPop() {
         handler.removeCallbacksAndMessages(null);
         handler.postDelayed(new Runnable() {
             @Override
