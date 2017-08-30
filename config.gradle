@@ -82,7 +82,7 @@ ext {
 
             // ------------- reyclerview ------------
             recyclerview              : "com.android.support:recyclerview-v7:${dependVersion.support}",
-            recyclerview_animators    : "jp.wasabeef:recyclerview-animators:2.2.5",
+            recyclerview_animators    : "jp.wasabeef:recyclerview-animators:2.2.6",
             recyclerview_divider      : "com.yqritc:recyclerview-flexibledivider:1.4.0",
 
             // ------------- 网络请求 -------------
