@@ -24,7 +24,9 @@ import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.icourt.alpha.entity.bean.SFileShareUserInfo;
 import com.icourt.alpha.fragment.dialogfragment.ContactSelectDialogFragment;
 import com.icourt.alpha.http.callback.SFileCallBack;
+import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.callback.SimpleCallBack2;
+import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.utils.ItemDecorationUtils;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
@@ -132,18 +134,18 @@ public class FileInnerShareFragment extends BaseFragment
     @Override
     protected void getData(final boolean isRefresh) {
         super.getData(isRefresh);
-        getSFileApi().folderSharedUserQuery(getArguments().getString(KEY_SEA_FILE_FROM_REPO_ID, ""),
-                getArguments().getString(KEY_SEA_FILE_FROM_DIR_PATH, ""),
-                "user")
-                .enqueue(new SFileCallBack<List<SFileShareUserInfo>>() {
+        getApi().folderSharedUserQuery(
+                getArguments().getString(KEY_SEA_FILE_FROM_REPO_ID, ""),
+                getArguments().getString(KEY_SEA_FILE_FROM_DIR_PATH, ""))
+                .enqueue(new SimpleCallBack<List<SFileShareUserInfo>>() {
                     @Override
-                    public void onSuccess(Call<List<SFileShareUserInfo>> call, Response<List<SFileShareUserInfo>> response) {
-                        fileInnerShareAdapter.bindData(isRefresh, response.body());
+                    public void onSuccess(Call<ResEntity<List<SFileShareUserInfo>>> call, Response<ResEntity<List<SFileShareUserInfo>>> response) {
+                        fileInnerShareAdapter.bindData(isRefresh, response.body().result);
                         stopRefresh();
                     }
 
                     @Override
-                    public void onFailure(Call<List<SFileShareUserInfo>> call, Throwable t) {
+                    public void onFailure(Call<ResEntity<List<SFileShareUserInfo>>> call, Throwable t) {
                         super.onFailure(call, t);
                         stopRefresh();
                     }
@@ -167,7 +169,14 @@ public class FileInnerShareFragment extends BaseFragment
         if (fragment != null) {
             mFragTransaction.remove(fragment);
         }
-        ContactSelectDialogFragment.newInstance(null, true)
+        List<SFileShareUserInfo> data = fileInnerShareAdapter.getData();
+        ArrayList<String> uids = new ArrayList<>();
+        for (SFileShareUserInfo sFileShareUserInfo : data) {
+            if (sFileShareUserInfo == null) continue;
+            if (sFileShareUserInfo.userInfo == null) continue;
+            uids.add(sFileShareUserInfo.userInfo.userId);
+        }
+        ContactSelectDialogFragment.newInstanceWithUids(uids, true)
                 .show(mFragTransaction, tag);
     }
 
@@ -319,7 +328,7 @@ public class FileInnerShareFragment extends BaseFragment
     public void onItemChildClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
         final SFileShareUserInfo item = fileInnerShareAdapter.getItem(fileInnerShareAdapter.getRealPos(position));
         if (item == null) return;
-        if (item.user_info == null) return;
+        if (item.userInfo == null) return;
         switch (view.getId()) {
             case R.id.user_action_tv:
                 new BottomActionDialog(getContext(), null, Arrays.asList("可读写", "只读", "取消共享"), new BottomActionDialog.OnActionItemClickListener() {
@@ -328,13 +337,13 @@ public class FileInnerShareFragment extends BaseFragment
                         dialog.dismiss();
                         switch (position) {
                             case 0:
-                                changeUserPermission("rw", item.user_info.name);
+                                changeUserPermission("rw", item.userInfo.name);
                                 break;
                             case 1:
-                                changeUserPermission("r", item.user_info.name);
+                                changeUserPermission("r", item.userInfo.name);
                                 break;
                             case 2:
-                                deleteUserSharedFile(item.user_info.name);
+                                deleteUserSharedFile(item.userInfo.name);
                                 break;
                         }
                     }

@@ -233,7 +233,7 @@ public interface ApiSFileService {
      */
     @DELETE("api/v2.1/repos/{seaFileRepoId}/dir/")
     Observable<JsonObject> folderDeleteObservable(@Path("seaFileRepoId") String seaFileRepoId,
-                                  @Query("p") String p);
+                                                  @Query("p") String p);
 
     /**
      * 删除文件
@@ -253,7 +253,7 @@ public interface ApiSFileService {
      */
     @DELETE("api/v2.1/repos/{seaFileRepoId}/file/")
     Observable<JsonObject> fileDeleteObservable(@Path("seaFileRepoId") String seaFileRepoId,
-                                @Query("p") String p);
+                                                @Query("p") String p);
 
 
     /**
@@ -427,6 +427,7 @@ public interface ApiSFileService {
     Call<List<SFileShareUserInfo>> folderSharedUserQuery(@Path("seaFileRepoId") String fromRepoId,
                                                          @Query("p") String p,
                                                          @Query("share_type") String share_type);
+
 
     /**
      * 分享的用户文件夹权限

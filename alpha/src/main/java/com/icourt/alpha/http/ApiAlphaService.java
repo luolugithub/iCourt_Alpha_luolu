@@ -20,6 +20,7 @@ import com.icourt.alpha.entity.bean.ProjectDetailEntity;
 import com.icourt.alpha.entity.bean.ProjectEntity;
 import com.icourt.alpha.entity.bean.RepoMatterEntity;
 import com.icourt.alpha.entity.bean.SFileLinkInfoEntity;
+import com.icourt.alpha.entity.bean.SFileShareUserInfo;
 import com.icourt.alpha.entity.bean.SFileTokenEntity;
 import com.icourt.alpha.entity.bean.SearchEngineEntity;
 import com.icourt.alpha.entity.bean.SelectGroupBean;
@@ -1359,6 +1360,18 @@ public interface ApiAlphaService {
      */
     @GET("ilaw/api/v2/library/mime/default")
     Call<ResEntity<DefaultRepoEntity>> repoDefaultQuery();
+
+    /**
+     * 获取文件夹 分享的用户列表
+     *
+     * @param fromRepoId
+     * @param path
+     * @return
+     */
+    @GET("ilaw/api/v2/documents/{seaFileRepoId}/dir/shareUsers")
+    Call<ResEntity<List<SFileShareUserInfo>>> folderSharedUserQuery(@Path("seaFileRepoId") String fromRepoId,
+                                                         @Query("path") String path);
+
 
 }
 

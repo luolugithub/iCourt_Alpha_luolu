@@ -9,11 +9,13 @@ package com.icourt.alpha.entity.bean;
  */
 public class SFileShareUserInfo {
     public static class UserInfo {
-        public String nickname;
+        public String nickName;
         public String name;
+        public String pic;
+        public String userId;
     }
 
     public String share_type;
     public String permission;
-    public UserInfo user_info;
+    public UserInfo userInfo;
 }

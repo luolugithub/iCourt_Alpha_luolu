@@ -103,6 +103,17 @@ public class ContactSelectDialogFragment extends BaseDialogFragment {
         return contactSelectDialogFragment;
     }
 
+    public static ContactSelectDialogFragment newInstanceWithUids(
+            @Nullable ArrayList<String> selectedUserIds,
+            boolean isSelectPermission) {
+        ContactSelectDialogFragment contactSelectDialogFragment = new ContactSelectDialogFragment();
+        Bundle args = new Bundle();
+        args.putSerializable("selectedUserIds", selectedUserIds);
+        args.putSerializable("isSelectPermission", isSelectPermission);
+        contactSelectDialogFragment.setArguments(args);
+        return contactSelectDialogFragment;
+    }
+
     public static ContactSelectDialogFragment newInstance(
             @Nullable ArrayList<GroupContactBean> selectedList) {
         return newInstance(selectedList, false);
@@ -140,6 +151,15 @@ public class ContactSelectDialogFragment extends BaseDialogFragment {
         return (ArrayList<GroupContactBean>) getArguments().getSerializable("data");
     }
 
+    /**
+     * 获取选中的uids
+     *
+     * @return
+     */
+    private ArrayList<String> getSelectedUserIds() {
+        return (ArrayList<String>) getArguments().getSerializable("selectedUserIds");
+    }
+
     @Override
     protected void initView() {
         Dialog dialog = getDialog();
@@ -152,6 +172,9 @@ public class ContactSelectDialogFragment extends BaseDialogFragment {
                     int dp20 = DensityUtil.dip2px(getContext(), 20);
                     decorView.setPadding(dp20 / 2, dp20, dp20 / 2, dp20);
                 }
+                WindowManager.LayoutParams attributes = window.getAttributes();
+                attributes.windowAnimations = R.style.SlideAnimBottom;
+                window.setAttributes(attributes);
             }
         }
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getContext());
@@ -245,6 +268,7 @@ public class ContactSelectDialogFragment extends BaseDialogFragment {
                 if (selectedData != null) {
                     contactBeen.removeAll(selectedData);
                 }
+                filterSelectedUsers(contactBeen);
                 try {
                     if (contactBeen != null) {
                         IndexUtils.setSuspensions(getContext(), contactBeen);
@@ -261,6 +285,27 @@ public class ContactSelectDialogFragment extends BaseDialogFragment {
             }
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    /**
+     * 过滤用户 通过user_id 过滤
+     *
+     * @param datas
+     */
+    private void filterSelectedUsers(List<GroupContactBean> datas) {
+        ArrayList<String> selectedUserIds = getSelectedUserIds();
+        if (selectedUserIds != null
+                && !selectedUserIds.isEmpty()
+                && datas != null
+                && !datas.isEmpty()) {
+            for (int i = datas.size() - 1; i >= 0; i--) {
+                GroupContactBean contactBean = datas.get(i);
+                if (contactBean == null) continue;
+                if (selectedUserIds.contains(contactBean.userId)) {
+                    datas.remove(i);
+                }
+            }
         }
     }
 
@@ -306,6 +351,7 @@ public class ContactSelectDialogFragment extends BaseDialogFragment {
                         if (selectedData != null) {
                             contactBeen.removeAll(selectedData);
                         }
+                        filterSelectedUsers(contactBeen);
                         filterRobot(contactBeen);
                         if (contactBeen != null) {
                             IndexUtils.setSuspensions(getContext(), contactBeen);
