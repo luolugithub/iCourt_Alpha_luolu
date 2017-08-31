@@ -47,6 +47,7 @@ public class FileTrashListFragment extends SeaFileBaseFragment
         BaseRecyclerAdapter.OnItemChildClickListener {
 
     @BindView(R.id.recyclerView)
+    @Nullable
     RecyclerView recyclerView;
     @BindView(R.id.refreshLayout)
     RefreshLayout refreshLayout;

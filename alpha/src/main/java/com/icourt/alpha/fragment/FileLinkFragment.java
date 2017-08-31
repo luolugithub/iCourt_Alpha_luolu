@@ -54,11 +54,13 @@ public class FileLinkFragment extends BaseFragment {
     @BindView(R.id.link_copy_tv)
     TextView linkCopyTv;
     SFileLinkInfoEntity sFileLinkInfoEntity;
-    @BindView(R.id.file_link_action_tv)
-    TextView fileLinkActionTv;
+    @BindView(R.id.file_link_create_tv)
+    TextView fileLinkCreateTv;
     @BindView(R.id.file_share_link_title_tv)
     TextView fileShareLinkTitleTv;
     protected static final String KEY_SEA_FILE_REPO_PERMISSION = "seaFileRepoPermission";//repo的权限
+    @BindView(R.id.file_link_delete_tv)
+    TextView fileLinkDeleteTv;
 
     /**
      * @param fromRepoId
@@ -125,17 +127,23 @@ public class FileLinkFragment extends BaseFragment {
         if (linkCopyTv == null) return;
         if (!isNoFileShareLink()) {
             linkCopyTv.setVisibility(View.VISIBLE);
+            fileLinkCreateTv.setVisibility(View.GONE);
+            fileLinkDeleteTv.setVisibility(View.VISIBLE);
+
             if (getArguments().getInt(KEY_SEA_FILE_LINK_TYPE) == 0) {
                 fileShareLinkTitleTv.setText("已生成下载链接");
-                fileLinkActionTv.setText("删除下载链接");
+                fileLinkDeleteTv.setText("删除下载链接");
             } else {
                 fileShareLinkTitleTv.setText("已生成上传链接");
-                fileLinkActionTv.setText("删除上传链接");
+                fileLinkDeleteTv.setText("删除上传链接");
             }
             fileAccessPwdTv.setText(sFileLinkInfoEntity.isNeedAccessPwd() ? sFileLinkInfoEntity.password : "不需要");
             fileAccessTimeLimitTv.setText(sFileLinkInfoEntity.expireTime <= 0 ? "永不过期" : DateUtils.getyyyy_MM_dd(sFileLinkInfoEntity.expireTime));
             fileShareLinkTv.setText(sFileLinkInfoEntity.getRealShareLink());
         } else {
+            fileLinkCreateTv.setVisibility(View.VISIBLE);
+            fileLinkDeleteTv.setVisibility(View.GONE);
+
             fileAccessTimeLimitTv.setText("7天有效期");
             fileShareLinkTv.setText("");
             fileAccessPwdTv.setText("自动生成");
@@ -144,27 +152,24 @@ public class FileLinkFragment extends BaseFragment {
             } else {
                 fileShareLinkTitleTv.setText("生成上传链接");
             }
-            fileLinkActionTv.setText("生成");
             linkCopyTv.setVisibility(View.GONE);
         }
     }
 
     @OnClick({R.id.link_copy_tv,
-            R.id.file_link_action_tv,
+            R.id.file_link_create_tv,
             R.id.file_access_pwd_tv,
-            R.id.file_access_time_limit_tv})
+            R.id.file_access_time_limit_tv,
+            R.id.file_link_delete_tv,
+    })
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.link_copy_tv:
                 copyFileShareLink();
                 break;
-            case R.id.file_link_action_tv:
-                if (isNoFileShareLink()) {
-                    createFileShareLink();
-                } else {
-                    showDeleteFileConfirmDialog();
-                }
+            case R.id.file_link_create_tv:
+                createFileShareLink();
                 break;
             case R.id.file_access_pwd_tv:
                 if (isNoFileShareLink()) {
@@ -175,6 +180,9 @@ public class FileLinkFragment extends BaseFragment {
                 if (isNoFileShareLink()) {
                     showSelectTimeLimit();
                 }
+                break;
+            case R.id.file_link_delete_tv:
+                showDeleteFileConfirmDialog();
                 break;
             default:
                 super.onClick(v);
