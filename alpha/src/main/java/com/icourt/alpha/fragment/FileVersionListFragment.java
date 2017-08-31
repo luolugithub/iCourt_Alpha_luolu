@@ -24,6 +24,7 @@ import com.icourt.alpha.entity.bean.FileVersionCommits;
 import com.icourt.alpha.entity.bean.FileVersionEntity;
 import com.icourt.alpha.http.callback.SFileCallBack;
 import com.icourt.alpha.interfaces.OnFragmentDataChangeListener;
+import com.icourt.alpha.utils.IMUtils;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 import com.icourt.alpha.widget.comparators.LongFieldEntityComparator;
 import com.icourt.alpha.widget.comparators.ORDER;
@@ -152,6 +153,12 @@ public class FileVersionListFragment extends SeaFileBaseFragment implements Base
     @Override
     protected void getData(final boolean isRefresh) {
         super.getData(isRefresh);
+        //图片不加载历史版本
+        if (IMUtils.isPIC(fromRepoFilePath)) {
+            stopRefresh();
+            fileVersionAdapter.notifyDataSetChanged();
+            return;
+        }
         callEnqueue(getSFileApi().fileVersionQuery(fromRepoId, fromRepoFilePath),
                 new SFileCallBack<FileVersionCommits>() {
                     @Override

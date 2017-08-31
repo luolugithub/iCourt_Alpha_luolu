@@ -839,14 +839,13 @@ public class FolderListActivity extends FolderBaseActivity
                             item.name,
                             String.format("%s%s/", getSeaFileDirPath(), item.name));
                 } else {
-                    FileDetailDialogFragment.show(
+                    FileDownloadActivity.launch(
+                            getContext(),
                             getSeaFileRepoId(),
-                            getSeaFileDirPath(),
                             item.name,
                             item.size,
-                            0,
-                            getRepoPermission(),
-                            getSupportFragmentManager());
+                            String.format("%s%s", getSeaFileDirPath(), item.name),
+                            null);
                 }
             }
         }
