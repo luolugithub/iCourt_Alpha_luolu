@@ -145,6 +145,7 @@
                 android:paddingRight="30dp"
                 android:paddingTop="5dp"
                 android:text="生成"
+                android:visibility="gone"
                 android:textColor="@android:color/white" />
 
             <TextView
@@ -160,6 +161,7 @@
                 android:paddingRight="30dp"
                 android:paddingTop="10dp"
                 android:text="删除下载链接"
+                android:visibility="gone"
                 android:textColor="#ec1d37" />
         </LinearLayout>
 
