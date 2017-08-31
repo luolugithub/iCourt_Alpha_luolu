@@ -83,6 +83,7 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
     FilterDropEntity deleteEntity = new FilterDropEntity("已删除", "0", 3);//已删除
 
     private Handler handler = new Handler();
+
     public static TabTaskFragment newInstance() {
         return new TabTaskFragment();
     }
@@ -122,11 +123,13 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
             ImageView downIv = tab.getCustomView().findViewById(R.id.tab_custom_title_iv);
             switch (i) {
                 case 0:
+                    titleTv.setTextColor(0xFF313131);
                     titleTv.setText("未完成");
                     downIv.setVisibility(View.VISIBLE);
                     tab.getCustomView().setOnClickListener(new OnTabClickListener());
                     break;
                 case 1:
+                    titleTv.setTextColor(0xFF979797);
                     titleTv.setText("我关注的");
                     downIv.setVisibility(View.GONE);
                     break;
@@ -141,23 +144,31 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
             @Override
             public void onPageSelected(int position) {
                 titleCalendar.setVisibility(View.GONE);
-                switch (position) {
-                    case 0:
-                        titleCalendar.setVisibility(select_position == 0 ? View.VISIBLE : View.GONE);
-                        if (topMiddlePopup != null && topMiddlePopup.getAdapter() != null) {
-                            FilterDropEntity filterDropEntity = topMiddlePopup.getAdapter().getItem(select_position);
-                            if (filterDropEntity != null) {
-                                setFirstTabText(filterDropEntity.name, select_position);
-                                updateListData(filterDropEntity.stateType);
+                if (tabLayout.getTabAt(0).getCustomView() != null && tabLayout.getTabAt(1).getCustomView() != null) {
+                    TextView titleTv_0 = tabLayout.getTabAt(0).getCustomView().findViewById(R.id.tab_custom_title_tv);
+                    TextView titleTv_1 = tabLayout.getTabAt(1).getCustomView().findViewById(R.id.tab_custom_title_tv);
+                    switch (position) {
+                        case 0:
+                            titleTv_0.setTextColor(0xFF313131);
+                            titleTv_1.setTextColor(0xFF979797);
+                            titleCalendar.setVisibility(select_position == 0 ? View.VISIBLE : View.GONE);
+                            if (topMiddlePopup != null && topMiddlePopup.getAdapter() != null) {
+                                FilterDropEntity filterDropEntity = topMiddlePopup.getAdapter().getItem(select_position);
+                                if (filterDropEntity != null) {
+                                    setFirstTabText(filterDropEntity.name, select_position);
+                                    updateListData(filterDropEntity.stateType);
+                                }
                             }
-                        }
-                        break;
-                    case 1:
-                        setFirstTabImage(false);
-                        Bundle bundle = new Bundle();
-                        bundle.putInt("stateType", 0);
-                        attentionTaskFragment.notifyFragmentUpdate(attentionTaskFragment, TaskListFragment.TYPE_MY_ATTENTION, bundle);
-                        break;
+                            break;
+                        case 1:
+                            titleTv_0.setTextColor(0xFF979797);
+                            titleTv_1.setTextColor(0xFF313131);
+                            setFirstTabImage(false);
+                            Bundle bundle = new Bundle();
+                            bundle.putInt("stateType", 0);
+                            attentionTaskFragment.notifyFragmentUpdate(attentionTaskFragment, TaskListFragment.TYPE_MY_ATTENTION, bundle);
+                            break;
+                    }
                 }
             }
 

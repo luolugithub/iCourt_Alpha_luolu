@@ -20,7 +20,6 @@ import com.icourt.alpha.base.BaseDialogFragment;
 import com.icourt.alpha.entity.bean.ProjectTypeEntity;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.utils.DensityUtil;
-import com.icourt.alpha.utils.ItemDecorationUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -94,7 +93,6 @@ public class ProjectTypeSelectDialogFragment extends BaseDialogFragment implemen
             }
         }
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        recyclerView.addItemDecoration(ItemDecorationUtils.getCommFullDivider(getContext(), true));
         recyclerView.setAdapter(projectTypeListAdapter = new ProjectTypeListAdapter());
         projectTypeListAdapter.setOnItemClickListener(this);
         getData(true);

@@ -18,7 +18,7 @@ import com.icourt.alpha.entity.bean.ProjectTypeEntity;
 public class ProjectTypeListAdapter extends MultiSelectRecyclerAdapter<ProjectTypeEntity> {
     @Override
     public int bindView(int viewtype) {
-        return R.layout.adapter_item_task_ower_layout;
+        return R.layout.adapter_item_project_type_layout;
     }
 
     @Override
