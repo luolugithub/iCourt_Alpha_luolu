@@ -9,9 +9,9 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.LinearLayoutManager;
@@ -26,9 +26,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.andview.refreshview.XRefreshView;
-import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 import com.icourt.alpha.R;
 import com.icourt.alpha.activity.SearchProjectActivity;
 import com.icourt.alpha.activity.TaskDetailActivity;
@@ -40,7 +38,6 @@ import com.icourt.alpha.adapter.baseadapter.BaseArrayRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.HeaderFooterAdapter;
 import com.icourt.alpha.adapter.baseadapter.adapterObserver.RefreshViewEmptyObserver;
-import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.entity.bean.ProjectEntity;
 import com.icourt.alpha.entity.bean.TaskEntity;
 import com.icourt.alpha.entity.bean.TaskGroupEntity;
@@ -58,20 +55,16 @@ import com.icourt.alpha.interfaces.OnTasksChangeListener;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.DensityUtil;
 import com.icourt.alpha.utils.ItemDecorationUtils;
-import com.icourt.alpha.utils.JsonUtils;
 import com.icourt.alpha.utils.LoginInfoUtils;
 import com.icourt.alpha.utils.UMMobClickAgent;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 import com.icourt.alpha.widget.manager.TimerManager;
-import com.icourt.api.RequestUtils;
 import com.umeng.analytics.MobclickAgent;
 
-import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -97,7 +90,7 @@ import retrofit2.Response;
  * version 2.0.0
  */
 
-public class TaskListFragment extends BaseFragment implements
+public class TaskListFragment extends BaseTaskFragment implements
         TaskAdapter.OnShowFragmenDialogListener,
         TaskAdapter.OnUpdateNewTaskCountListener,
         OnFragmentCallBackListener,
@@ -185,7 +178,7 @@ public class TaskListFragment extends BaseFragment implements
 
     @Override
     protected void initView() {
-        EventBus.getDefault().register(this);
+        super.initView();
         tabTaskFragment = getParentTabTaskFragment();
         type = getArguments().getInt("type");
         stateType = getArguments().getInt("stateType");
@@ -1044,18 +1037,19 @@ public class TaskListFragment extends BaseFragment implements
                 case R.id.task_item_checkbox:
                     if (stateType == 0 || stateType == 1) {
                         CheckBox checkbox = (CheckBox) view;
+                        itemEntity.state = !itemEntity.state;
                         if (checkbox.isChecked()) {//完成任务
                             if (itemEntity.attendeeUsers != null) {
                                 if (itemEntity.attendeeUsers.size() > 1) {
                                     showDeleteDialog("该任务由多人负责,确定完成?", itemEntity, SHOW_FINISH_DIALOG, checkbox);
                                 } else {
-                                    updateTask(itemEntity, true, checkbox);
+                                    updateTaskState(itemEntity);
                                 }
                             } else {
-                                updateTask(itemEntity, true, checkbox);
+                                updateTaskState(itemEntity);
                             }
                         } else {
-                            updateTask(itemEntity, false, checkbox);
+                            updateTaskState(itemEntity);
                         }
                     } else {
                         recoverTaskById(itemEntity);
@@ -1081,11 +1075,7 @@ public class TaskListFragment extends BaseFragment implements
                 switch (which) {
                     case Dialog.BUTTON_POSITIVE://确定
                         if (type == SHOW_FINISH_DIALOG) {
-                            if (itemEntity.state) {
-                                updateTask(itemEntity, false, checkbox);
-                            } else {
-                                updateTask(itemEntity, true, checkbox);
-                            }
+                            updateTaskState(itemEntity);
                         }
                         break;
                     case Dialog.BUTTON_NEGATIVE://取消
@@ -1107,55 +1097,33 @@ public class TaskListFragment extends BaseFragment implements
     }
 
     /**
-     * 展示选择负责人对话框
+     * 删除成功回调
+     *
+     * @param itemEntity
      */
-    public void showTaskAllotSelectDialogFragment(String projectId, List<TaskEntity.TaskItemEntity.AttendeeUserEntity> attendeeUsers) {
-        String tag = TaskAllotSelectDialogFragment.class.getSimpleName();
-        FragmentTransaction mFragTransaction = getChildFragmentManager().beginTransaction();
-        Fragment fragment = getChildFragmentManager().findFragmentByTag(tag);
-        if (fragment != null) {
-            mFragTransaction.remove(fragment);
-        }
+    @Override
+    protected void taskDeleteBack(@NonNull TaskEntity.TaskItemEntity itemEntity) {
 
-        TaskAllotSelectDialogFragment.newInstance(projectId, attendeeUsers)
-                .show(mFragTransaction, tag);
     }
 
     /**
-     * 展示选择项目对话框
+     * 修改成功回调
+     *
+     * @param itemEntity
      */
-    public void showProjectSelectDialogFragment() {
-        String tag = ProjectSelectDialogFragment.class.getSimpleName();
-        FragmentTransaction mFragTransaction = getChildFragmentManager().beginTransaction();
-        Fragment fragment = getChildFragmentManager().findFragmentByTag(tag);
-        if (fragment != null) {
-            mFragTransaction.remove(fragment);
-        }
+    @Override
+    protected void taskUpdateBack(@NonNull TaskEntity.TaskItemEntity itemEntity) {
 
-        ProjectSelectDialogFragment.newInstance()
-                .show(mFragTransaction, tag);
     }
 
     /**
-     * 展示选择到期时间对话框
+     * 计时回调
+     *
+     * @param taskId
      */
-    private void showDateSelectDialogFragment(long dueTime, String taskId) {
-        String tag = DateSelectDialogFragment.class.getSimpleName();
-        FragmentTransaction mFragTransaction = getChildFragmentManager().beginTransaction();
-        Fragment fragment = getChildFragmentManager().findFragmentByTag(tag);
-        if (fragment != null) {
-            mFragTransaction.remove(fragment);
-        }
-        Calendar calendar = Calendar.getInstance();
-        if (dueTime <= 0) {
-            calendar.set(Calendar.HOUR_OF_DAY, 23);
-            calendar.set(Calendar.MINUTE, 59);
-            calendar.set(Calendar.SECOND, 59);
-        } else {
-            calendar.setTimeInMillis(dueTime);
-        }
-        DateSelectDialogFragment.newInstance(calendar, null, taskId)
-                .show(mFragTransaction, tag);
+    @Override
+    protected void taskTimerUpdateBack(String taskId) {
+
     }
 
     @Override
@@ -1165,7 +1133,6 @@ public class TaskListFragment extends BaseFragment implements
         if (unbinder != null) {
             unbinder.unbind();
         }
-        EventBus.getDefault().unregister(this);
     }
 
     @Override
@@ -1195,13 +1162,13 @@ public class TaskListFragment extends BaseFragment implements
                 if (updateTaskItemEntity.attendeeUsers != null) {
                     updateTaskItemEntity.attendeeUsers.clear();
                     updateTaskItemEntity.attendeeUsers.addAll(attusers);
-                    updateTask(updateTaskItemEntity, null, null, null);
+                    updateTaskProjectOrGroup(updateTaskItemEntity, null, null, null);
                 }
             } else if (fragment instanceof DateSelectDialogFragment) {
                 long millis = params.getLong(KEY_FRAGMENT_RESULT);
                 updateTaskItemEntity.dueTime = millis;
                 TaskReminderEntity taskReminderEntity = (TaskReminderEntity) params.getSerializable("taskReminder");
-                updateTask(updateTaskItemEntity, null, null, taskReminderEntity);
+                updateTaskProjectOrGroup(updateTaskItemEntity, null, null, taskReminderEntity);
             }
         }
     }
@@ -1220,7 +1187,7 @@ public class TaskListFragment extends BaseFragment implements
             taskGroupEntity = new TaskGroupEntity();
             taskGroupEntity.id = "";
         }
-        updateTask2(updateTaskItemEntity, projectEntity, taskGroupEntity);
+        updateTaskProjectOrGroup(updateTaskItemEntity, projectEntity, taskGroupEntity, null);
     }
 
     /**
@@ -1302,208 +1269,6 @@ public class TaskListFragment extends BaseFragment implements
                 dismissLoadingDialog();
             }
         });
-    }
-
-    /**
-     * 修改任务
-     *
-     * @param itemEntity
-     * @param state
-     * @param checkbox
-     */
-    private void updateTask(final TaskEntity.TaskItemEntity itemEntity, final boolean state, final CheckBox checkbox) {
-        showLoadingDialog(null);
-        getApi().taskUpdate(RequestUtils.createJsonBody(getTaskJson(itemEntity, state))).enqueue(new SimpleCallBack<JsonElement>() {
-            @Override
-            public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
-                dismissLoadingDialog();
-                checkbox.setChecked(state);
-                itemEntity.state = state;
-                itemEntity.updateTime = DateUtils.millis();
-                taskItemAdapter.notifyDataSetChanged();
-//                EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION));
-            }
-
-            @Override
-            public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
-                super.onFailure(call, t);
-                dismissLoadingDialog();
-                checkbox.setChecked(!state);
-            }
-        });
-    }
-
-    /**
-     * 修改任务
-     *
-     * @param itemEntity
-     */
-    private void updateTask2(TaskEntity.TaskItemEntity itemEntity, ProjectEntity projectEntity, TaskGroupEntity taskGroupEntity) {
-        showLoadingDialog(null);
-        getApi().taskUpdate(RequestUtils.createJsonBody(getTaskJson2(itemEntity, projectEntity, taskGroupEntity))).enqueue(new SimpleCallBack<JsonElement>() {
-            @Override
-            public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
-                dismissLoadingDialog();
-                refreshLayout.startRefresh();
-            }
-
-            @Override
-            public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
-                super.onFailure(call, t);
-                dismissLoadingDialog();
-            }
-        });
-    }
-
-    /**
-     * 修改任务
-     *
-     * @param itemEntity
-     */
-    private void updateTask(final TaskEntity.TaskItemEntity itemEntity, ProjectEntity projectEntity, TaskGroupEntity taskGroupEntity, final TaskReminderEntity taskReminderEntity) {
-        showLoadingDialog(null);
-        getApi().taskUpdate(RequestUtils.createJsonBody(getTaskJson(itemEntity, projectEntity, taskGroupEntity))).enqueue(new SimpleCallBack<JsonElement>() {
-            @Override
-            public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
-                dismissLoadingDialog();
-                if (itemEntity != null && taskReminderEntity != null) {
-                    addReminders(updateTaskItemEntity, taskReminderEntity);
-                }
-                refreshLayout.startRefresh();
-            }
-
-            @Override
-            public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
-                super.onFailure(call, t);
-                dismissLoadingDialog();
-            }
-        });
-    }
-
-    /**
-     * 获取任务json
-     *
-     * @param itemEntity
-     * @param state
-     * @return
-     */
-    private String getTaskJson(TaskEntity.TaskItemEntity itemEntity, boolean state) {
-        itemEntity.state = state;
-        JsonObject jsonObject = new JsonObject();
-        jsonObject.addProperty("id", itemEntity.id);
-        jsonObject.addProperty("name", itemEntity.name);
-        jsonObject.addProperty("state", itemEntity.state);
-        jsonObject.addProperty("valid", true);
-        jsonObject.addProperty("updateTime", DateUtils.millis());
-        return jsonObject.toString();
-    }
-
-    /**
-     * 获取任务json
-     *
-     * @param itemEntity
-     * @return
-     */
-    private String getTaskJson(TaskEntity.TaskItemEntity itemEntity, ProjectEntity projectEntity, TaskGroupEntity taskGroupEntity) {
-        if (itemEntity == null) return null;
-        JsonObject jsonObject = new JsonObject();
-        jsonObject.addProperty("id", itemEntity.id);
-        jsonObject.addProperty("state", itemEntity.state);
-        jsonObject.addProperty("valid", true);
-        jsonObject.addProperty("name", itemEntity.name);
-        jsonObject.addProperty("parentId", itemEntity.parentId);
-        jsonObject.addProperty("dueTime", itemEntity.dueTime);
-        jsonObject.addProperty("updateTime", DateUtils.millis());
-        if (projectEntity != null) {
-            jsonObject.addProperty("matterId", projectEntity.pkId);
-        }
-        if (taskGroupEntity != null) {
-            jsonObject.addProperty("parentId", taskGroupEntity.id);
-        }
-        JsonArray jsonarr = new JsonArray();
-        if (itemEntity.attendeeUsers != null) {
-            for (TaskEntity.TaskItemEntity.AttendeeUserEntity attendeeUser : itemEntity.attendeeUsers) {
-                jsonarr.add(attendeeUser.userId);
-            }
-            jsonObject.add("attendees", jsonarr);
-        }
-        return jsonObject.toString();
-    }
-
-    /**
-     * 获取任务json
-     *
-     * @param itemEntity
-     * @return
-     */
-    private String getTaskJson2(TaskEntity.TaskItemEntity itemEntity, ProjectEntity projectEntity, TaskGroupEntity taskGroupEntity) {
-        if (itemEntity == null) return null;
-        JsonObject jsonObject = new JsonObject();
-        jsonObject.addProperty("id", itemEntity.id);
-        jsonObject.addProperty("state", itemEntity.state);
-        jsonObject.addProperty("valid", true);
-        jsonObject.addProperty("name", itemEntity.name);
-        jsonObject.addProperty("parentId", itemEntity.parentId);
-        jsonObject.addProperty("dueTime", itemEntity.dueTime);
-        jsonObject.addProperty("updateTime", DateUtils.millis());
-        JsonArray jsonarr = new JsonArray();
-        if (projectEntity != null) {
-            jsonObject.addProperty("matterId", projectEntity.pkId);
-        }
-        if (itemEntity.attendeeUsers != null) {
-            if (itemEntity.attendeeUsers.size() > 0) {
-                for (TaskEntity.TaskItemEntity.AttendeeUserEntity attendeeUser : itemEntity.attendeeUsers) {
-                    jsonarr.add(attendeeUser.userId);
-                }
-                jsonObject.add("attendees", jsonarr);
-            }
-
-        }
-
-        if (taskGroupEntity != null) {
-            jsonObject.addProperty("parentId", taskGroupEntity.id);
-        }
-        return jsonObject.toString();
-    }
-
-    /**
-     * 添加任务提醒
-     *
-     * @param taskItemEntity
-     * @param taskReminderEntity
-     */
-    private void addReminders(TaskEntity.TaskItemEntity taskItemEntity, final TaskReminderEntity taskReminderEntity) {
-        if (taskReminderEntity == null) return;
-        if (taskItemEntity == null) return;
-        String json = getReminderJson(taskReminderEntity);
-        if (TextUtils.isEmpty(json)) return;
-        getApi().taskReminderAdd(taskItemEntity.id, RequestUtils.createJsonBody(json)).enqueue(new SimpleCallBack<TaskReminderEntity>() {
-            @Override
-            public void onSuccess(Call<ResEntity<TaskReminderEntity>> call, Response<ResEntity<TaskReminderEntity>> response) {
-
-            }
-
-            @Override
-            public void onFailure(Call<ResEntity<TaskReminderEntity>> call, Throwable t) {
-                super.onFailure(call, t);
-            }
-        });
-    }
-
-    /**
-     * 获取提醒json
-     *
-     * @param taskReminderEntity
-     * @return
-     */
-    private String getReminderJson(TaskReminderEntity taskReminderEntity) {
-        try {
-            if (taskReminderEntity == null) return null;
-            return JsonUtils.getGson().toJson(taskReminderEntity);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
     }
 
     /**
