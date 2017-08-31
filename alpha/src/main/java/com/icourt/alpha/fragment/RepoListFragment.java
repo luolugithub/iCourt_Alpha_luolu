@@ -8,7 +8,6 @@ import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
 import com.andview.refreshview.XRefreshView;
 import com.icourt.alpha.R;
@@ -16,7 +15,6 @@ import com.icourt.alpha.activity.FolderListActivity;
 import com.icourt.alpha.activity.RepoRenameActivity;
 import com.icourt.alpha.adapter.RepoAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
-import com.icourt.alpha.adapter.baseadapter.HeaderFooterAdapter;
 import com.icourt.alpha.adapter.baseadapter.adapterObserver.RefreshViewEmptyObserver;
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.constants.SFileConfig;
@@ -75,8 +73,6 @@ public class RepoListFragment extends BaseFragment
     int repoType;
 
     RepoAdapter repoAdapter;
-    HeaderFooterAdapter<RepoAdapter> headerFooterAdapter;
-    TextView footer_textview;
 
     /**
      * @param type
@@ -118,20 +114,16 @@ public class RepoListFragment extends BaseFragment
                 refreshLayout.setNoticeEmptyText("暂无资料库");
                 break;
         }
-
-        headerFooterAdapter = new HeaderFooterAdapter<>(repoAdapter = new RepoAdapter(repoType));
-        footer_textview = (TextView) HeaderFooterAdapter.inflaterView(getContext(), R.layout.footer_textview, recyclerView);
-        headerFooterAdapter.addFooter(footer_textview);
+        recyclerView.setAdapter(repoAdapter = new RepoAdapter(repoType));
         repoAdapter.registerAdapterDataObserver(new RefreshViewEmptyObserver(refreshLayout, repoAdapter) {
             @Override
             protected void updateUI() {
                 super.updateUI();
-                if (footer_textview != null) {
-                    footer_textview.setText(String.format("%s个资料库", repoAdapter.getItemCount()));
+                if (refreshLayout != null) {
+                    refreshLayout.enableEmptyView(repoAdapter.getItemCount() <= 0);
                 }
             }
         });
-        recyclerView.setAdapter(headerFooterAdapter);
 
         repoAdapter.setOnItemClickListener(this);
         repoAdapter.setOnItemChildClickListener(this);
