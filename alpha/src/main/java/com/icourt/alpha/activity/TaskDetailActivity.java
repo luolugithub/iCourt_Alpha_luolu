@@ -257,7 +257,7 @@ public class TaskDetailActivity extends BaseActivity
                 }
                 break;
             case R.id.titleAction2://更多
-                showBottomMeau();
+                showBottomMenu();
                 break;
             case R.id.task_name:
                 if (taskItemEntity != null)
@@ -485,7 +485,7 @@ public class TaskDetailActivity extends BaseActivity
     /**
      * 显示底部菜单
      */
-    private void showBottomMeau() {
+    private void showBottomMenu() {
         if (taskItemEntity == null) return;
         List<String> titles = null;
         if (taskItemEntity.valid) {

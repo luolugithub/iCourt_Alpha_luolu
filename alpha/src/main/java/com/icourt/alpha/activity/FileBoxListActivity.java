@@ -163,10 +163,10 @@ public class FileBoxListActivity extends BaseActivity implements BaseRecyclerAda
         super.onClick(v);
         switch (v.getId()) {
             case R.id.titleAction:
-                showBottomMeau();
+                showBottomMenu();
                 break;
             case R.id.titleAction2:
-                showDocumentMeau();
+                showDocumentMenu();
                 break;
         }
     }
@@ -427,7 +427,7 @@ public class FileBoxListActivity extends BaseActivity implements BaseRecyclerAda
     /**
      * 显示底部菜单
      */
-    public void showBottomMeau() {
+    public void showBottomMenu() {
         new BottomActionDialog(getContext(),
                 null,
                 Arrays.asList("拍照", "从手机相册选择"),
@@ -450,7 +450,7 @@ public class FileBoxListActivity extends BaseActivity implements BaseRecyclerAda
     /**
      * 显示文档更多菜单
      */
-    private void showDocumentMeau() {
+    private void showDocumentMenu() {
         new BottomActionDialog(getContext(),
                 null,
                 list,
@@ -566,7 +566,7 @@ public class FileBoxListActivity extends BaseActivity implements BaseRecyclerAda
      * @param filePath
      */
     private void uploadFile(String uploadUrl, String filePath) {
-        String key = "file\";filename=\"" + DateUtils.millis() + ".png";
+        String key = String.format("file\";filename=\"%s.png", DateUtils.millis());
         Map<String, RequestBody> params = new HashMap<>();
         params.put("parent_dir", RequestUtils.createTextBody("/" + rootName));
         params.put(key, RequestUtils.createImgBody(new File(filePath)));

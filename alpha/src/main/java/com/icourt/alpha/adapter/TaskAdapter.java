@@ -149,7 +149,7 @@ public class TaskAdapter extends BaseArrayRecyclerAdapter<TaskEntity>
                 timeEntity.itemTitle = "开始计时";
             }
             if (isEditTask && isDeleteTask) {
-                showLongMeau(view.getContext(), Arrays.asList(
+                showLongMenu(view.getContext(), Arrays.asList(
                         new ItemsEntity("项目/任务组", R.mipmap.project_orange),
                         new ItemsEntity("分配给", R.mipmap.assign_orange),
                         new ItemsEntity("到期日", R.mipmap.date_orange),
@@ -157,12 +157,12 @@ public class TaskAdapter extends BaseArrayRecyclerAdapter<TaskEntity>
                         new ItemsEntity("查看详情", R.mipmap.info_orange),
                         new ItemsEntity("删除", R.mipmap.trash_orange)), taskItemEntity);
             } else if (isDeleteTask && !isEditTask) {
-                showLongMeau(view.getContext(), Arrays.asList(
+                showLongMenu(view.getContext(), Arrays.asList(
                         new ItemsEntity("查看详情", R.mipmap.info_orange),
                         timeEntity,
                         new ItemsEntity("删除", R.mipmap.trash_orange)), taskItemEntity);
             } else if (!isDeleteTask && isEditTask) {
-                showLongMeau(view.getContext(), Arrays.asList(
+                showLongMenu(view.getContext(), Arrays.asList(
                         new ItemsEntity("项目/任务组", R.mipmap.project_orange),
                         new ItemsEntity("分配给", R.mipmap.assign_orange),
                         new ItemsEntity("到期日", R.mipmap.date_orange),
@@ -175,7 +175,7 @@ public class TaskAdapter extends BaseArrayRecyclerAdapter<TaskEntity>
         return true;
     }
 
-    private void showLongMeau(Context context, List<ItemsEntity> itemsEntities, TaskEntity.TaskItemEntity taskItemEntity) {
+    private void showLongMenu(Context context, List<ItemsEntity> itemsEntities, TaskEntity.TaskItemEntity taskItemEntity) {
         CenterMenuDialog centerMenuDialog = new CenterMenuDialog(context, null, itemsEntities);
         centerMenuDialog.show();
         centerMenuDialog.setOnItemClickListener(new CustOnItemClickListener(centerMenuDialog, taskItemEntity));
@@ -227,7 +227,7 @@ public class TaskAdapter extends BaseArrayRecyclerAdapter<TaskEntity>
                                     public void onResponse(Call<TimeEntity.ItemEntity> call, Response<TimeEntity.ItemEntity> response) {
                                         dismissLoadingDialog();
                                         if (response.body() != null) {
-                                            updateMeauItem(entity, true, menuAdapter);
+                                            updateMenuItem(entity, true, menuAdapter);
                                             taskItemEntity.isTiming = true;
                                             notifyDataSetChanged();
                                             timeetity.pkId = response.body().pkId;
@@ -239,7 +239,7 @@ public class TaskAdapter extends BaseArrayRecyclerAdapter<TaskEntity>
                                     public void onFailure(Call<TimeEntity.ItemEntity> call, Throwable throwable) {
                                         dismissLoadingDialog();
                                         taskItemEntity.isTiming = false;
-                                        updateMeauItem(entity, false, menuAdapter);
+                                        updateMenuItem(entity, false, menuAdapter);
                                     }
                                 });
 
@@ -252,7 +252,7 @@ public class TaskAdapter extends BaseArrayRecyclerAdapter<TaskEntity>
                                     @Override
                                     public void onSuccess(Call<ResEntity<TimeEntity.ItemEntity>> call, Response<ResEntity<TimeEntity.ItemEntity>> response) {
                                         taskItemEntity.isTiming = false;
-                                        updateMeauItem(entity, true, menuAdapter);
+                                        updateMenuItem(entity, true, menuAdapter);
                                         TimeEntity.ItemEntity timer = TimerManager.getInstance().getTimer();
                                         TimerDetailActivity.launch(view.getContext(), timer);
                                     }
@@ -286,7 +286,7 @@ public class TaskAdapter extends BaseArrayRecyclerAdapter<TaskEntity>
     /**
      * 开始／结束计时之后，更新meau
      */
-    private void updateMeauItem(ItemsEntity entity, boolean isTimering, CenterMenuDialog.MenuAdapter menuAdapter) {
+    private void updateMenuItem(ItemsEntity entity, boolean isTimering, CenterMenuDialog.MenuAdapter menuAdapter) {
         entity.itemIconRes = isTimering ? R.mipmap.time_start_orange_task : R.mipmap.time_start_orange;
         entity.itemTitle = isTimering ? "停止计时" : "开始计时";
         menuAdapter.updateItem(entity);

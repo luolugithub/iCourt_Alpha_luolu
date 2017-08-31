@@ -522,7 +522,7 @@ public class ProjectFileBoxFragment extends BaseFragment implements BaseRecycler
     /**
      * 显示底部菜单
      */
-    public void showBottomMeau() {
+    public void showBottomMenu() {
         new BottomActionDialog(getContext(),
                 null,
                 Arrays.asList("拍照", "从手机相册选择"),

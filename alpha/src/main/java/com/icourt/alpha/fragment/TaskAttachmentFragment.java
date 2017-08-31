@@ -147,7 +147,7 @@ public class TaskAttachmentFragment extends BaseFragment implements BaseRecycler
         switch (v.getId()) {
             case R.id.add_attachment_view://添加附件
                 if (hasPermission) {
-                    showBottomAddMeau();
+                    showBottomAddMenu();
                 } else {
                     showTopSnackBar("您没有编辑任务的权限");
                 }
@@ -206,7 +206,7 @@ public class TaskAttachmentFragment extends BaseFragment implements BaseRecycler
     /**
      * 显示底部添加菜单
      */
-    private void showBottomAddMeau() {
+    private void showBottomAddMenu() {
         new BottomActionDialog(getContext(),
                 null,
                 Arrays.asList("拍照", "从手机相册选择"),
@@ -229,7 +229,7 @@ public class TaskAttachmentFragment extends BaseFragment implements BaseRecycler
     /**
      * 显示底部删除菜单
      */
-    private void showBottomDeleteMeau(final TaskAttachmentEntity entity) {
+    private void showBottomDeleteMenu(final TaskAttachmentEntity entity) {
         new BottomActionDialog(getContext(),
                 null,
                 Arrays.asList("删除"),
@@ -418,7 +418,7 @@ public class TaskAttachmentFragment extends BaseFragment implements BaseRecycler
         if (hasPermission) {
             TaskAttachmentEntity entity = (TaskAttachmentEntity) adapter.getItem(position);
             if (entity.pathInfoVo != null)
-                showBottomDeleteMeau(entity);
+                showBottomDeleteMenu(entity);
         } else {
             showTopSnackBar("对不起，您没有查看此文件的权限");
         }

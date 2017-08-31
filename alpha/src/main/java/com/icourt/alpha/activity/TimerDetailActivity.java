@@ -296,7 +296,7 @@ public class TimerDetailActivity extends BaseTimerActivity
                     if (TextUtils.isEmpty(itemEntity.matterPkId)) {
                         showProjectSelectDialogFragment(null);
                     } else {
-                        showBottomMeau();
+                        showBottomMenu();
                     }
                 }
                 break;
@@ -318,7 +318,7 @@ public class TimerDetailActivity extends BaseTimerActivity
     /**
      * 显示底部菜单
      */
-    private void showBottomMeau() {
+    private void showBottomMenu() {
         new BottomActionDialog(getContext(),
                 null,
                 Arrays.asList("选择项目", "查看项目"),

@@ -864,16 +864,16 @@ public class CustomerPersonCreateActivity extends BaseActivity {
                 String time = null;
                 String month = null, day = null;
                 if (i1 + 1 < 10) {
-                    month = "0" + (i1 + 1);
+                    month = String.format("0%s", i1 + 1);
                 } else {
-                    month = (i1 + 1) + "";
+                    month = String.valueOf((i1 + 1));
                 }
                 if (i2 < 10) {
-                    day = "0" + i2;
+                    day = String.format("0%s", i2);
                 } else {
-                    day = i2 + "";
+                    day = String.valueOf((i2));
                 }
-                time = i + "年" + month + "月" + day + "日";
+                time = String.format("%s年%s月%s日", i, month, day);
                 textView.setText(time);
             }
         }, c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH));
