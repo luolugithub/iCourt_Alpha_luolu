@@ -17,6 +17,7 @@ import com.icourt.alpha.fragment.FileLinkFragment;
 import com.icourt.alpha.http.callback.SFileCallBack;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.FileUtils;
+import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.widget.comparators.FileSortComparator;
 
 import java.util.Arrays;
@@ -136,7 +137,7 @@ public class FolderDetailDialogFragment extends FileDetailsBaseDialogFragment {
                             FolderDocumentEntity folderDocumentEntity = response.body().get(0);
                             if (folderDocumentEntity != null) {
                                 fileUpdateInfoTv.setText("");
-                                fileCreateInfoTv.setText(String.format("%s 更新于 %s", folderDocumentEntity.modifier_name, DateUtils.getyyyyMMddHHmm(folderDocumentEntity.mtime * 1_000)));
+                                fileCreateInfoTv.setText(String.format("%s 更新于 %s", StringUtils.getEllipsizeText(folderDocumentEntity.modifier_name, 8), DateUtils.getyyyyMMddHHmm(folderDocumentEntity.mtime * 1_000)));
                             } else {
                                 fileUpdateInfoTv.setText("");
                                 fileCreateInfoTv.setText("");

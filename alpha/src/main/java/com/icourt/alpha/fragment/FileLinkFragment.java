@@ -251,7 +251,7 @@ public class FileLinkFragment extends BaseFragment {
         } else {
             SystemUtils.copyToClipboard(getContext(), "link", String.format("链接:%s", sFileLinkInfoEntity.getRealShareLink()));
         }
-        showToast("已复制到剪切版");
+        showToast("已复制");
     }
 
 

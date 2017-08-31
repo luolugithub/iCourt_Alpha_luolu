@@ -34,7 +34,9 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
                 android:autoLink="none"
+                android:textColor="#4990e2"
                 android:ellipsize="end"
+                android:textSize="@dimen/alpha_font_size_mini"
                 android:maxLines="1" />
 
             <TextView
