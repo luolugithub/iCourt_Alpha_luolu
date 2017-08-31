@@ -26,6 +26,7 @@ import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.callback.SimpleCallBack2;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.ActionConstants;
+import com.icourt.alpha.utils.DensityUtil;
 import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 import com.icourt.alpha.widget.dialog.BottomActionDialog;
@@ -99,6 +100,10 @@ public class RepoListFragment extends BaseFragment
     protected void initView() {
         repoType = SFileConfig.convert2RepoType(getArguments().getInt("repoType"));
         EventBus.getDefault().register(this);
+
+        recyclerView.setClipToPadding(false);
+        recyclerView.setPadding(0, DensityUtil.dip2px(getContext(), 20), 0, 0);
+
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         switch (repoType) {
             case REPO_MINE:

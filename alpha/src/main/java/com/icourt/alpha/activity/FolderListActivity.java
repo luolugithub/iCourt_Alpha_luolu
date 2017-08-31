@@ -77,8 +77,6 @@ import cn.finalteam.galleryfinal.FunctionConfig;
 import cn.finalteam.galleryfinal.GalleryFinal;
 import cn.finalteam.galleryfinal.model.PhotoInfo;
 import io.reactivex.Observable;
-import io.reactivex.ObservableEmitter;
-import io.reactivex.ObservableOnSubscribe;
 import io.reactivex.ObservableSource;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.functions.Action;
@@ -280,15 +278,10 @@ public class FolderListActivity extends FolderBaseActivity
                 super.onRefresh(isPullDown);
                 getData(true);
             }
-
-            @Override
-            public void onLoadMore(boolean isSilence) {
-                super.onLoadMore(isSilence);
-                getData(false);
-            }
         });
 
         bottomBarAllSelectCb.setOnCheckedChangeListener(onCheckedChangeListener);
+        refreshLayout.setPullLoadEnable(false);
         refreshLayout.startRefresh();
     }
 
@@ -336,7 +329,22 @@ public class FolderListActivity extends FolderBaseActivity
     @Override
     protected void getData(final boolean isRefresh) {
         super.getData(isRefresh);
-        getFolder(isRefresh);
+        callEnqueue(getSFileApi().documentDirQuery(
+                getSeaFileRepoId(),
+                getSeaFileDirPath()),
+                new SFileCallBack<List<FolderDocumentEntity>>() {
+                    @Override
+                    public void onSuccess(Call<List<FolderDocumentEntity>> call, Response<List<FolderDocumentEntity>> response) {
+                        sortFile(false, response.body());
+                        stopRefresh();
+                    }
+
+                    @Override
+                    public void onFailure(Call<List<FolderDocumentEntity>> call, Throwable t) {
+                        super.onFailure(call, t);
+                        stopRefresh();
+                    }
+                });
     }
 
     private List<List<FolderDocumentEntity>> wrapGridData(List<FolderDocumentEntity> datas) {
@@ -358,25 +366,6 @@ public class FolderListActivity extends FolderBaseActivity
         return result;
     }
 
-    private void getFolder(final boolean isRefresh) {
-        callEnqueue(getSFileApi().documentDirQuery(
-                getSeaFileRepoId(),
-                getSeaFileDirPath()),
-                new SFileCallBack<List<FolderDocumentEntity>>() {
-                    @Override
-                    public void onSuccess(Call<List<FolderDocumentEntity>> call, Response<List<FolderDocumentEntity>> response) {
-                        folderDocumentAdapter.bindData(isRefresh, wrapGridData(response.body()));
-                        sortFile(false);
-                        stopRefresh();
-                    }
-
-                    @Override
-                    public void onFailure(Call<List<FolderDocumentEntity>> call, Throwable t) {
-                        super.onFailure(call, t);
-                        stopRefresh();
-                    }
-                });
-    }
 
     private void stopRefresh() {
         if (refreshLayout != null) {
@@ -534,7 +523,7 @@ public class FolderListActivity extends FolderBaseActivity
                     public void onSortTypeSelected(@FileSortComparator.FileSortType int sortType) {
                         if (fileSortType != sortType) {
                             fileSortType = sortType;
-                            sortFile(true);
+                            sortFile(true, getAllData());
                         }
                     }
                 }).show();
@@ -543,34 +532,32 @@ public class FolderListActivity extends FolderBaseActivity
     /**
      * 排序
      */
-    private void sortFile(boolean isShowLoading) {
+    private void sortFile(boolean isShowLoading, List<FolderDocumentEntity> datas) {
         if (isShowLoading) {
             showLoadingDialog("排序中...");
         }
-        Observable.create(new ObservableOnSubscribe<List<FolderDocumentEntity>>() {
-            @Override
-            public void subscribe(@io.reactivex.annotations.NonNull ObservableEmitter<List<FolderDocumentEntity>> observableEmitter) throws Exception {
-                if (observableEmitter.isDisposed()) return;
-                List<FolderDocumentEntity> totals = new ArrayList<>();
-                List<List<FolderDocumentEntity>> data = folderDocumentAdapter.getData();
-                for (List<FolderDocumentEntity> documentEntities : data) {
-                    totals.addAll(documentEntities);
-                }
-                try {
-                    IndexUtils.setSuspensions(getContext(), totals);
-                    Collections.sort(totals, new FileSortComparator(fileSortType));
-                } catch (Throwable e) {
-                    e.printStackTrace();
-                    bugSync("排序异常", e);
-                }
-                observableEmitter.onNext(totals);
-                observableEmitter.onComplete();
-            }
-        }).compose(this.<List<FolderDocumentEntity>>bindToLifecycle())
+        Observable.just(datas)
+                .map(new Function<List<FolderDocumentEntity>, List<FolderDocumentEntity>>() {
+                    @Override
+                    public List<FolderDocumentEntity> apply(@io.reactivex.annotations.NonNull List<FolderDocumentEntity> lists) throws Exception {
+                        List<FolderDocumentEntity> totals = new ArrayList<>();
+                        if (lists != null) {
+                            totals.addAll(lists);
+                        }
+                        try {
+                            IndexUtils.setSuspensions(getContext(), totals);
+                            Collections.sort(totals, new FileSortComparator(fileSortType));
+                        } catch (Throwable e) {
+                            e.printStackTrace();
+                            bugSync("排序异常", e);
+                        }
+                        return totals;
+                    }
+                })
+                .compose(this.<List<FolderDocumentEntity>>bindToLifecycle())
                 .subscribeOn(Schedulers.newThread())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new BaseObserver<List<FolderDocumentEntity>>() {
-
                     @Override
                     public void onNext(@io.reactivex.annotations.NonNull List<FolderDocumentEntity> folderDocumentEntities) {
                         folderDocumentAdapter.bindData(true, wrapGridData(folderDocumentEntities));
