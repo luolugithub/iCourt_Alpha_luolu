@@ -186,8 +186,8 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
                 getChangeHistory(isRefresh, null);
                 break;
             case SFileConfig.REPO_PROJECT:
-                getApi().repoMatterIdQuery(getSeaFileRepoId())
-                        .enqueue(new SimpleCallBack2<RepoMatterEntity>() {
+                callEnqueue(getApi().repoMatterIdQuery(getSeaFileRepoId()),
+                        new SimpleCallBack2<RepoMatterEntity>() {
                             @Override
                             public void onSuccess(Call<RepoMatterEntity> call, Response<RepoMatterEntity> response) {
                                 getChangeHistory(isRefresh, response.body().matterId);
@@ -229,7 +229,7 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
             stopRefresh();
             return;
         }
-        resEntityCall.enqueue(new SimpleCallBack<List<FileChangedHistoryEntity>>() {
+        callEnqueue(resEntityCall, new SimpleCallBack<List<FileChangedHistoryEntity>>() {
 
             @Override
             protected void dispatchHttpSuccess(Call<ResEntity<List<FileChangedHistoryEntity>>> call, Response<ResEntity<List<FileChangedHistoryEntity>>> response) {
@@ -349,12 +349,12 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
             }
         }
         showLoadingDialog("处理中");
-        getSFileApi().fileRename(
+        callEnqueue(getSFileApi().fileRename(
                 item.repo_id,
                 TextUtils.isEmpty(item.new_path) ? item.path : item.new_path,
                 "rename",
-                orginName)
-                .enqueue(new SFileCallBack<FolderDocumentEntity>() {
+                orginName),
+                new SFileCallBack<FolderDocumentEntity>() {
                     @Override
                     public void onSuccess(Call<FolderDocumentEntity> call, Response<FolderDocumentEntity> response) {
                         dismissLoadingDialog();
@@ -381,12 +381,12 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
             }
         }
         showLoadingDialog("处理中");
-        getSFileApi().folderRename(
+        callEnqueue(getSFileApi().folderRename(
                 item.repo_id,
                 TextUtils.isEmpty(item.new_path) ? item.path : item.new_path,
                 "rename",
-                orginName)
-                .enqueue(new SFileCallBack<String>() {
+                orginName),
+                new SFileCallBack<String>() {
                     @Override
                     public void onSuccess(Call<String> call, Response<String> response) {
                         dismissLoadingDialog();
@@ -429,13 +429,13 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
                 fromDir = "/";
             }
         }
-        getSFileApi().fileMove(
+        callEnqueue(getSFileApi().fileMove(
                 getSeaFileRepoId(),
                 fromDir,
                 item.file_name,
                 item.repo_id,
-                orginPath)
-                .enqueue(new SFileCallBack<JsonElement>() {
+                orginPath),
+                new SFileCallBack<JsonElement>() {
                     @Override
                     public void onSuccess(Call<JsonElement> call, Response<JsonElement> response) {
                         dismissLoadingDialog();
@@ -459,11 +459,11 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
     private void revokeFolder(FileChangedHistoryEntity item) {
         if (item == null) return;
         showLoadingDialog("处理中");
-        getSFileApi().folderRevert(
+        callEnqueue(getSFileApi().folderRevert(
                 item.repo_id,
                 item.path,
-                item.pre_commit_id)
-                .enqueue(new SFileCallBack<JsonObject>() {
+                item.pre_commit_id),
+                new SFileCallBack<JsonObject>() {
                     @Override
                     public void onSuccess(Call<JsonObject> call, Response<JsonObject> response) {
                         dismissLoadingDialog();
@@ -490,10 +490,10 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
      */
     private void deleteFile(FileChangedHistoryEntity item) {
         showLoadingDialog("处理中");
-        getSFileApi().fileDelete(
+        callEnqueue(getSFileApi().fileDelete(
                 item.repo_id,
-                item.path)
-                .enqueue(new SFileCallBack<JsonObject>() {
+                item.path),
+                new SFileCallBack<JsonObject>() {
                     @Override
                     public void onSuccess(Call<JsonObject> call, Response<JsonObject> response) {
                         dismissLoadingDialog();
@@ -520,10 +520,10 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
      */
     private void deleteFolder(FileChangedHistoryEntity item) {
         showLoadingDialog("处理中");
-        getSFileApi().folderDelete(
+        callEnqueue(getSFileApi().folderDelete(
                 item.repo_id,
-                item.path)
-                .enqueue(new SFileCallBack<JsonObject>() {
+                item.path),
+                new SFileCallBack<JsonObject>() {
                     @Override
                     public void onSuccess(Call<JsonObject> call, Response<JsonObject> response) {
                         dismissLoadingDialog();
@@ -551,11 +551,11 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
     private void revokeFile(FileChangedHistoryEntity item) {
         if (item == null) return;
         showLoadingDialog("处理中");
-        getSFileApi().fileRevert(
+        callEnqueue(getSFileApi().fileRevert(
                 item.repo_id,
                 item.path,
-                item.pre_commit_id)
-                .enqueue(new SFileCallBack<JsonObject>() {
+                item.pre_commit_id),
+                new SFileCallBack<JsonObject>() {
                     @Override
                     public void onSuccess(Call<JsonObject> call, Response<JsonObject> response) {
                         dismissLoadingDialog();
@@ -583,12 +583,12 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
     private void revokeEditFile(FileChangedHistoryEntity item) {
         if (item == null) return;
         showLoadingDialog("处理中");
-        getSFileApi().fileRevertEdit(
+        callEnqueue(getSFileApi().fileRevertEdit(
                 item.repo_id,
                 item.path,
                 item.pre_commit_id,
-                "revert")
-                .enqueue(new SFileCallBack<JsonObject>() {
+                "revert"),
+                new SFileCallBack<JsonObject>() {
                     @Override
                     public void onSuccess(Call<JsonObject> call, Response<JsonObject> response) {
                         dismissLoadingDialog();

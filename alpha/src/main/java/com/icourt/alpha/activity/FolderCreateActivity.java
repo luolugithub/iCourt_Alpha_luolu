@@ -74,11 +74,11 @@ public class FolderCreateActivity extends SFileEditBaseActivity {
             showLoadingDialog("创建中...");
             JsonObject operationJsonObject = new JsonObject();
             operationJsonObject.addProperty("operation", "mkdir");
-            getSFileApi().folderCreate(
+            callEnqueue(getSFileApi().folderCreate(
                     getSeaFileRepoId(),
                     String.format("%s%s", getSeaFileDirPath(), et.getText().toString().trim()),
-                    RequestUtils.createJsonBody(operationJsonObject.toString()))
-                    .enqueue(new SFileCallBack<RepoEntity>() {
+                    RequestUtils.createJsonBody(operationJsonObject.toString())),
+                    new SFileCallBack<RepoEntity>() {
                         @Override
                         public void onSuccess(Call<RepoEntity> call, Response<RepoEntity> response) {
                             dismissLoadingDialog();

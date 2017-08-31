@@ -124,38 +124,37 @@ public class FolderRenameActivity extends FolderCreateActivity {
             }
             showLoadingDialog("更改中...");
             if (folderDocumentEntity.isDir()) {
-                getSFileApi()
+                callEnqueue(getSFileApi()
                         .folderRename(
                                 getSeaFileRepoId(),
                                 String.format("%s%s", getSeaFileDirPath(), folderDocumentEntity.name),
                                 "rename",
-                                fileName)
-                        .enqueue(new SFileCallBack<String>() {
-                            @Override
-                            public void onSuccess(Call<String> call, Response<String> response) {
-                                dismissLoadingDialog();
-                                if (TextUtils.equals("success", response.body())) {
-                                    showToast("更改标题成功");
-                                    finish();
-                                } else {
-                                    showTopSnackBar("更改标题失败");
-                                }
-                            }
+                                fileName), new SFileCallBack<String>() {
+                    @Override
+                    public void onSuccess(Call<String> call, Response<String> response) {
+                        dismissLoadingDialog();
+                        if (TextUtils.equals("success", response.body())) {
+                            showToast("更改标题成功");
+                            finish();
+                        } else {
+                            showTopSnackBar("更改标题失败");
+                        }
+                    }
 
-                            @Override
-                            public void onFailure(Call<String> call, Throwable t) {
-                                super.onFailure(call, t);
-                                dismissLoadingDialog();
-                            }
-                        });
+                    @Override
+                    public void onFailure(Call<String> call, Throwable t) {
+                        super.onFailure(call, t);
+                        dismissLoadingDialog();
+                    }
+                });
             } else {
-                getSFileApi()
-                        .fileRename(
-                                getSeaFileRepoId(),
-                                String.format("%s%s", getSeaFileDirPath(), folderDocumentEntity.name),
-                                "rename",
-                                fileName)
-                        .enqueue(new SFileCallBack<FolderDocumentEntity>() {
+                callEnqueue(getSFileApi()
+                                .fileRename(
+                                        getSeaFileRepoId(),
+                                        String.format("%s%s", getSeaFileDirPath(), folderDocumentEntity.name),
+                                        "rename",
+                                        fileName),
+                        new SFileCallBack<FolderDocumentEntity>() {
                             @Override
                             public void onSuccess(Call<FolderDocumentEntity> call, Response<FolderDocumentEntity> response) {
                                 dismissLoadingDialog();

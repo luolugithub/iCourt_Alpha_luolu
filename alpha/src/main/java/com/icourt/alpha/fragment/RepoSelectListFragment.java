@@ -110,8 +110,8 @@ public class RepoSelectListFragment extends BaseFragment
     @Override
     protected void getData(final boolean isRefresh) {
         super.getData(isRefresh);
-        getSFileApi().repoQueryAll()
-                .enqueue(new SFileCallBack<List<RepoEntity>>() {
+        callEnqueue(getSFileApi().repoQueryAll(),
+                new SFileCallBack<List<RepoEntity>>() {
                     @Override
                     public void onSuccess(Call<List<RepoEntity>> call, Response<List<RepoEntity>> response) {
                         stopRefresh();

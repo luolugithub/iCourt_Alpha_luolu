@@ -190,8 +190,8 @@ public class FolderTargetListDialogFragment
     @Override
     protected void getData(boolean isRefresh) {
         super.getData(isRefresh);
-        getSFileApi().repoDetailsQuery(getSeaFileFromRepoId())
-                .enqueue(new SFileCallBack<RepoEntity>() {
+        callEnqueue(getSFileApi().repoDetailsQuery(getSeaFileFromRepoId()),
+                new SFileCallBack<RepoEntity>() {
                     @Override
                     public void onSuccess(Call<RepoEntity> call, Response<RepoEntity> response) {
                         repoEntity = response.body();

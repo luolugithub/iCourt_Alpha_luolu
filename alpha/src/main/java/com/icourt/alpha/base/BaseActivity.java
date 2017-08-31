@@ -773,7 +773,7 @@ public class BaseActivity
      */
     @Override
     public <T> Call<T> callEnqueue(@NonNull Call<T> call, Callback<T> callback) {
-        if(isDestroyOrFinishing()) return null;
+        if (isDestroyOrFinishing()) return null;
         if (call != null) {
             contextCallQueue.offer(new WeakReference<Call>(call));
             return RequestUtils.callEnqueue(call, callback);
@@ -789,10 +789,7 @@ public class BaseActivity
         while (contextCallQueue.peek() != null) {
             WeakReference<Call> poll = contextCallQueue.poll();
             if (poll != null) {
-                Call call = RequestUtils.cancelCall(poll.get());
-                if (call != null) {
-                    call = null;
-                }
+                RequestUtils.cancelCall(poll.get());
             }
         }
     }
@@ -811,9 +808,6 @@ public class BaseActivity
                 break;
             }
         }
-        Call callRtv = RequestUtils.cancelCall(call);
-        if (callRtv != null) {
-            callRtv = null;
-        }
+        RequestUtils.cancelCall(call);
     }
 }

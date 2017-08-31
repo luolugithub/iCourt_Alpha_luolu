@@ -359,11 +359,10 @@ public class FolderListActivity extends FolderBaseActivity
     }
 
     private void getFolder(final boolean isRefresh) {
-
-        getSFileApi().documentDirQuery(
+        callEnqueue(getSFileApi().documentDirQuery(
                 getSeaFileRepoId(),
-                getSeaFileDirPath())
-                .enqueue(new SFileCallBack<List<FolderDocumentEntity>>() {
+                getSeaFileDirPath()),
+                new SFileCallBack<List<FolderDocumentEntity>>() {
                     @Override
                     public void onSuccess(Call<List<FolderDocumentEntity>> call, Response<List<FolderDocumentEntity>> response) {
                         folderDocumentAdapter.bindData(isRefresh, wrapGridData(response.body()));
@@ -675,11 +674,11 @@ public class FolderListActivity extends FolderBaseActivity
             if (isDestroyOrFinishing()) return;
             //2.获取上传地址
             showLoadingDialog("sfile 上传地址获取中...");
-            getSFileApi().sfileUploadUrlQuery(
+            callEnqueue(getSFileApi().sfileUploadUrlQuery(
                     getSeaFileRepoId(),
                     "upload",
-                    getSeaFileDirPath())
-                    .enqueue(new SFileCallBack<String>() {
+                    getSeaFileDirPath()),
+                    new SFileCallBack<String>() {
                         @Override
                         public void onSuccess(Call<String> call, Response<String> response) {
                             if (isDestroyOrFinishing()) return;

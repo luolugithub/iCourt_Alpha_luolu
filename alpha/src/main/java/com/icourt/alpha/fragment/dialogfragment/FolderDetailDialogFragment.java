@@ -107,10 +107,10 @@ public class FolderDetailDialogFragment extends FileDetailsBaseDialogFragment {
     protected void getData(boolean isRefresh) {
         super.getData(isRefresh);
         String folderPath = String.format("%s%s/", fromRepoDirPath, getArguments().getString(KEY_SEA_FILE_NAME, ""));
-        getSFileApi().documentDirQuery(
+        callEnqueue(getSFileApi().documentDirQuery(
                 fromRepoId,
-                folderPath)
-                .enqueue(new SFileCallBack<List<FolderDocumentEntity>>() {
+                folderPath),
+                new SFileCallBack<List<FolderDocumentEntity>>() {
                     @Override
                     public void onSuccess(Call<List<FolderDocumentEntity>> call, Response<List<FolderDocumentEntity>> response) {
                         if (response.body() != null

@@ -134,10 +134,10 @@ public class FileInnerShareFragment extends BaseFragment
     @Override
     protected void getData(final boolean isRefresh) {
         super.getData(isRefresh);
-        getApi().folderSharedUserQuery(
+        callEnqueue(getApi().folderSharedUserQuery(
                 getArguments().getString(KEY_SEA_FILE_FROM_REPO_ID, ""),
-                getArguments().getString(KEY_SEA_FILE_FROM_DIR_PATH, ""))
-                .enqueue(new SimpleCallBack<List<SFileShareUserInfo>>() {
+                getArguments().getString(KEY_SEA_FILE_FROM_DIR_PATH, "")),
+                new SimpleCallBack<List<SFileShareUserInfo>>() {
                     @Override
                     public void onSuccess(Call<ResEntity<List<SFileShareUserInfo>>> call, Response<ResEntity<List<SFileShareUserInfo>>> response) {
                         fileInnerShareAdapter.bindData(isRefresh, response.body().result);
@@ -226,20 +226,20 @@ public class FileInnerShareFragment extends BaseFragment
             }
             if (uidBuilder.length() > 0) {
                 showLoadingDialog("alpha用户转换中...");
-                getApi().sfileUserInfosQuery(uidBuilder.toString())
-                        .enqueue(new SimpleCallBack2<List<String>>() {
+                callEnqueue(getApi().sfileUserInfosQuery(uidBuilder.toString()),
+                        new SimpleCallBack2<List<String>>() {
                             @Override
                             public void onSuccess(Call<List<String>> call, Response<List<String>> response) {
                                 dismissLoadingDialog();
                                 for (int i = 0; i < response.body().size(); i++) {
                                     String s = response.body().get(i);
-                                    getSFileApi().folderShareUserPermission(
+                                    callEnqueue(getSFileApi().folderShareUserPermission(
                                             getArguments().getString(KEY_SEA_FILE_FROM_REPO_ID, ""),
                                             getArguments().getString(KEY_SEA_FILE_FROM_DIR_PATH, ""),
                                             permission,
                                             "user",
-                                            s)
-                                            .enqueue(new SFileCallBack<JsonObject>() {
+                                            s),
+                                            new SFileCallBack<JsonObject>() {
                                                 @Override
                                                 public void onSuccess(Call<JsonObject> call, Response<JsonObject> response) {
                                                     dismissLoadingDialog();
@@ -275,12 +275,12 @@ public class FileInnerShareFragment extends BaseFragment
      */
     private void deleteUserSharedFile(String sfileUser) {
         showLoadingDialog(null);
-        getSFileApi().folderShareUserDelete(
+        callEnqueue(getSFileApi().folderShareUserDelete(
                 getArguments().getString(KEY_SEA_FILE_FROM_REPO_ID, ""),
                 getArguments().getString(KEY_SEA_FILE_FROM_DIR_PATH, ""),
                 "user",
-                sfileUser)
-                .enqueue(new SFileCallBack<JsonObject>() {
+                sfileUser),
+                new SFileCallBack<JsonObject>() {
                     @Override
                     public void onSuccess(Call<JsonObject> call, Response<JsonObject> response) {
                         dismissLoadingDialog();
@@ -303,13 +303,13 @@ public class FileInnerShareFragment extends BaseFragment
      */
     private void changeUserPermission(String per, String sfileUser) {
         showLoadingDialog(null);
-        getSFileApi().folderShareUserChangePermission(
+        callEnqueue(getSFileApi().folderShareUserChangePermission(
                 getArguments().getString(KEY_SEA_FILE_FROM_REPO_ID, ""),
                 getArguments().getString(KEY_SEA_FILE_FROM_DIR_PATH, ""),
                 per,
                 "user",
-                sfileUser)
-                .enqueue(new SFileCallBack<JsonObject>() {
+                sfileUser),
+                new SFileCallBack<JsonObject>() {
                     @Override
                     public void onSuccess(Call<JsonObject> call, Response<JsonObject> response) {
                         dismissLoadingDialog();

@@ -108,11 +108,11 @@ public class FileLinkFragment extends BaseFragment {
     @Override
     protected void getData(boolean isRefresh) {
         super.getData(isRefresh);
-        getApi().fileShareLinkQuery(
+        callEnqueue(getApi().fileShareLinkQuery(
                 getArguments().getString(KEY_SEA_FILE_FROM_REPO_ID, ""),
                 getArguments().getString(KEY_SEA_FILE_FROM_FILE_PATH, ""),
-                getArguments().getInt(KEY_SEA_FILE_LINK_TYPE))
-                .enqueue(new SFileCallBack<SFileLinkInfoEntity>() {
+                getArguments().getInt(KEY_SEA_FILE_LINK_TYPE)),
+                new SFileCallBack<SFileLinkInfoEntity>() {
                     @Override
                     public void onSuccess(Call<SFileLinkInfoEntity> call, Response<SFileLinkInfoEntity> response) {
                         updateUI(response.body());
@@ -281,8 +281,8 @@ public class FileLinkFragment extends BaseFragment {
         paramJsonObject.addProperty("repoId", getArguments().getString(KEY_SEA_FILE_FROM_REPO_ID, ""));
         paramJsonObject.addProperty("type", getArguments().getInt(KEY_SEA_FILE_LINK_TYPE));
         showLoadingDialog("创建中...");
-        getApi().fileShareLinkCreate(RequestUtils.createJsonBody(paramJsonObject.toString()))
-                .enqueue(new SFileCallBack<SFileLinkInfoEntity>() {
+        callEnqueue(getApi().fileShareLinkCreate(RequestUtils.createJsonBody(paramJsonObject.toString()))
+                , new SFileCallBack<SFileLinkInfoEntity>() {
                     @Override
                     public void onSuccess(Call<SFileLinkInfoEntity> call, Response<SFileLinkInfoEntity> response) {
                         dismissLoadingDialog();
@@ -310,8 +310,8 @@ public class FileLinkFragment extends BaseFragment {
     private void deleteFileShareLink() {
         if (sFileLinkInfoEntity == null) return;
         showLoadingDialog("删除中...");
-        getApi().fileShareLinkDelete(sFileLinkInfoEntity.shareLinkId)
-                .enqueue(new SFileCallBack<ResEntity<JsonElement>>() {
+        callEnqueue(getApi().fileShareLinkDelete(sFileLinkInfoEntity.shareLinkId),
+                new SFileCallBack<ResEntity<JsonElement>>() {
                     @Override
                     public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
                         dismissLoadingDialog();

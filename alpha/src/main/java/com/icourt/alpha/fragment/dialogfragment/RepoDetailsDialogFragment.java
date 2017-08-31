@@ -222,8 +222,8 @@ public class RepoDetailsDialogFragment extends BaseDialogFragment
     @Override
     protected void getData(boolean isRefresh) {
         super.getData(isRefresh);
-        getSFileApi().repoDetailsQuery(fromRepoId)
-                .enqueue(new SFileCallBack<RepoEntity>() {
+        callEnqueue(getSFileApi().repoDetailsQuery(fromRepoId),
+                new SFileCallBack<RepoEntity>() {
                     @Override
                     public void onSuccess(Call<RepoEntity> call, Response<RepoEntity> response) {
                         if (fileTitleTv != null) {

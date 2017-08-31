@@ -87,11 +87,11 @@ public class RepoRenameActivity extends RepoCreateActivity {
             showLoadingDialog("更改中...");
             paramRepoEntity.repo_name = et.getText().toString().trim();
             paramRepoEntity.last_modified = DateUtils.millis();
-            getSFileApi().documentRootUpdateName(
+            callEnqueue(getSFileApi().documentRootUpdateName(
                     paramRepoEntity.repo_id,
                     "rename",
-                    paramRepoEntity.repo_name)
-                    .enqueue(new SFileCallBack<String>() {
+                    paramRepoEntity.repo_name),
+                    new SFileCallBack<String>() {
                         @Override
                         public void onSuccess(Call<String> call, Response<String> response) {
                             dismissLoadingDialog();

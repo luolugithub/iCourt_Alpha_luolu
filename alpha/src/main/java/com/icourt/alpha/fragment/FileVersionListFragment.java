@@ -152,8 +152,8 @@ public class FileVersionListFragment extends SeaFileBaseFragment implements Base
     @Override
     protected void getData(final boolean isRefresh) {
         super.getData(isRefresh);
-        getSFileApi().fileVersionQuery(fromRepoId, fromRepoFilePath)
-                .enqueue(new SFileCallBack<FileVersionCommits>() {
+        callEnqueue(getSFileApi().fileVersionQuery(fromRepoId, fromRepoFilePath),
+                new SFileCallBack<FileVersionCommits>() {
                     @Override
                     public void onSuccess(Call<FileVersionCommits> call, Response<FileVersionCommits> response) {
                         if (response.body().commits != null) {

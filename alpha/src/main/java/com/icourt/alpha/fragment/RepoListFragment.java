@@ -22,7 +22,6 @@ import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.constants.SFileConfig;
 import com.icourt.alpha.entity.bean.DefaultRepoEntity;
 import com.icourt.alpha.entity.bean.RepoEntity;
-import com.icourt.alpha.entity.bean.SFileTokenEntity;
 import com.icourt.alpha.fragment.dialogfragment.RepoDetailsDialogFragment;
 import com.icourt.alpha.http.callback.SFileCallBack;
 import com.icourt.alpha.http.callback.SimpleCallBack;
@@ -177,8 +176,8 @@ public class RepoListFragment extends BaseFragment
     @Override
     protected void getData(final boolean isRefresh) {
         super.getData(isRefresh);
-        getApi().repoDefaultQuery()
-                .enqueue(new SimpleCallBack<DefaultRepoEntity>() {
+        callEnqueue(getApi().repoDefaultQuery(),
+                new SimpleCallBack<DefaultRepoEntity>() {
                     @Override
                     public void onSuccess(Call<ResEntity<DefaultRepoEntity>> call, Response<ResEntity<DefaultRepoEntity>> response) {
                         if (response.body().result != null) {
@@ -195,22 +194,21 @@ public class RepoListFragment extends BaseFragment
                         stopRefresh();
                     }
                 });
-
     }
 
     private void getRepoList(final boolean isRefresh) {
         switch (repoType) {
-            case 0: {
+            case REPO_MINE: {
                 getDocumentRoot(isRefresh, null);
             }
             break;
-            case 1: {
+            case REPO_SHARED_ME: {
                 //获取管理员账号
-                getApi().getOfficeAdmin(getLoginUserId())
-                        .enqueue(new SimpleCallBack2<String>() {
+                callEnqueue(getApi().getOfficeAdmin(getLoginUserId()),
+                        new SimpleCallBack2<String>() {
                             @Override
                             public void onSuccess(Call<String> call, Response<String> response) {
-                                getSfileTokenAndgetDocument(isRefresh, response.body());
+                                getDocumentRoot(isRefresh, response.body());
                             }
 
                             @Override
@@ -221,17 +219,17 @@ public class RepoListFragment extends BaseFragment
                         });
             }
             break;
-            case 2: {
+            case REPO_LAWFIRM: {
                 getDocumentRoot(isRefresh, null);
             }
             break;
-            case 3: {
+            case REPO_PROJECT: {
                 //获取管理员账号
-                getApi().getOfficeAdmin(getLoginUserId())
-                        .enqueue(new SimpleCallBack2<String>() {
+                callEnqueue(getApi().getOfficeAdmin(getLoginUserId()),
+                        new SimpleCallBack2<String>() {
                             @Override
                             public void onSuccess(Call<String> call, Response<String> response) {
-                                getSfileTokenAndgetDocument(isRefresh, response.body());
+                                getDocumentRoot(isRefresh, response.body());
                             }
 
                             @Override
@@ -243,32 +241,6 @@ public class RepoListFragment extends BaseFragment
             }
             break;
         }
-    }
-
-    /**
-     * 获取token 并且 获取文档列表
-     *
-     * @param isRefresh
-     */
-    private void getSfileTokenAndgetDocument(final boolean isRefresh, final String adminId) {
-        getApi().sFileTokenQuery()
-                .enqueue(new SimpleCallBack2<SFileTokenEntity<String>>() {
-                    @Override
-                    public void onSuccess(Call<SFileTokenEntity<String>> call, Response<SFileTokenEntity<String>> response) {
-                        if (TextUtils.isEmpty(response.body().authToken)) {
-                            showTopSnackBar("sfile authToken返回为null");
-                            stopRefresh();
-                            return;
-                        }
-                        getDocumentRoot(isRefresh, adminId);
-                    }
-
-                    @Override
-                    public void onFailure(Call<SFileTokenEntity<String>> call, Throwable t) {
-                        super.onFailure(call, t);
-                        stopRefresh();
-                    }
-                });
     }
 
     /**
@@ -297,23 +269,21 @@ public class RepoListFragment extends BaseFragment
                 listCall = getSFileApi().documentRootQuery(pageIndex, pageSize, null, officeAdminId, "shared");
                 break;
         }
-        if (listCall != null) {
-            listCall.enqueue(new SFileCallBack<List<RepoEntity>>() {
-                @Override
-                public void onSuccess(Call<List<RepoEntity>> call, Response<List<RepoEntity>> response) {
-                    stopRefresh();
-                    repoAdapter.bindData(isRefresh, response.body());
-                    pageIndex += 1;
-                    enableLoadMore(response.body());
-                }
+        callEnqueue(listCall, new SFileCallBack<List<RepoEntity>>() {
+            @Override
+            public void onSuccess(Call<List<RepoEntity>> call, Response<List<RepoEntity>> response) {
+                stopRefresh();
+                repoAdapter.bindData(isRefresh, response.body());
+                pageIndex += 1;
+                enableLoadMore(response.body());
+            }
 
-                @Override
-                public void onFailure(Call<List<RepoEntity>> call, Throwable t) {
-                    super.onFailure(call, t);
-                    stopRefresh();
-                }
-            });
-        }
+            @Override
+            public void onFailure(Call<List<RepoEntity>> call, Throwable t) {
+                super.onFailure(call, t);
+                stopRefresh();
+            }
+        });
     }
 
 
@@ -453,6 +423,11 @@ public class RepoListFragment extends BaseFragment
     }
 
 
+    /**
+     * 删除确认对话框
+     *
+     * @param pos
+     */
     private void showDelConfirmDialog(final int pos) {
         new BottomActionDialog(getContext(),
                 "删除后不可恢复, 确定删除吗?",
@@ -474,8 +449,8 @@ public class RepoListFragment extends BaseFragment
         final RepoEntity item = repoAdapter.getItem(pos);
         if (item == null) return;
         showLoadingDialog("资料库删除中...");
-        getSFileApi().documentRootDelete(item.repo_id)
-                .enqueue(new SFileCallBack<String>() {
+        callEnqueue(getSFileApi().documentRootDelete(item.repo_id),
+                new SFileCallBack<String>() {
                     @Override
                     public void onSuccess(Call<String> call, Response<String> response) {
                         dismissLoadingDialog();

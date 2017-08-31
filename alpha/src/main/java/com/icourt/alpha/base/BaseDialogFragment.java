@@ -649,10 +649,7 @@ public abstract class BaseDialogFragment extends DialogFragment
         while (contextCallQueue.peek() != null) {
             WeakReference<Call> poll = contextCallQueue.poll();
             if (poll != null) {
-                Call call = RequestUtils.cancelCall(poll.get());
-                if (call != null) {
-                    call = null;
-                }
+                RequestUtils.cancelCall(poll.get());
             }
         }
     }
@@ -671,9 +668,6 @@ public abstract class BaseDialogFragment extends DialogFragment
                 break;
             }
         }
-        Call callRtv = RequestUtils.cancelCall(call);
-        if (callRtv != null) {
-            callRtv = null;
-        }
+        RequestUtils.cancelCall(call);
     }
 }

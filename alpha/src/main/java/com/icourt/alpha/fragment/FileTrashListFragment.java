@@ -143,12 +143,12 @@ public class FileTrashListFragment extends SeaFileBaseFragment
         if (isRefresh) {
             scanStat = null;
         }
-        getSFileApi().folderTrashQuery(
+        callEnqueue(getSFileApi().folderTrashQuery(
                 getSeaFileRepoId(),
                 getSeaFileDirPath(),
                 ActionConstants.DEFAULT_PAGE_SIZE,
-                scanStat)
-                .enqueue(new SFileCallBack<SeaFileTrashPageEntity<FolderDocumentEntity>>() {
+                scanStat),
+                new SFileCallBack<SeaFileTrashPageEntity<FolderDocumentEntity>>() {
                     @Override
                     public void onSuccess(Call<SeaFileTrashPageEntity<FolderDocumentEntity>> call, Response<SeaFileTrashPageEntity<FolderDocumentEntity>> response) {
                         scanStat = response.body().scan_stat;
@@ -205,25 +205,26 @@ public class FileTrashListFragment extends SeaFileBaseFragment
                     String.format("%s%s", item.parent_dir, item.name),
                     item.commit_id);
         }
-        jsonObjectCall.enqueue(new SFileCallBack<JsonObject>() {
-            @Override
-            public void onSuccess(Call<JsonObject> call, Response<JsonObject> response) {
-                dismissLoadingDialog();
-                if (response.body().has("success")
-                        && response.body().get("success").getAsBoolean()) {
-                    getData(true);
-                    showTopSnackBar("文件恢复成功");
-                } else {
-                    showTopSnackBar("文件恢复失败");
-                }
-            }
+        callEnqueue(jsonObjectCall,
+                new SFileCallBack<JsonObject>() {
+                    @Override
+                    public void onSuccess(Call<JsonObject> call, Response<JsonObject> response) {
+                        dismissLoadingDialog();
+                        if (response.body().has("success")
+                                && response.body().get("success").getAsBoolean()) {
+                            getData(true);
+                            showTopSnackBar("文件恢复成功");
+                        } else {
+                            showTopSnackBar("文件恢复失败");
+                        }
+                    }
 
-            @Override
-            public void onFailure(Call<JsonObject> call, Throwable t) {
-                dismissLoadingDialog();
-                super.onFailure(call, t);
-            }
-        });
+                    @Override
+                    public void onFailure(Call<JsonObject> call, Throwable t) {
+                        dismissLoadingDialog();
+                        super.onFailure(call, t);
+                    }
+                });
     }
 
     @Override

@@ -218,10 +218,10 @@ public class FolderTargetListFragment extends SeaFileBaseFragment
     @Override
     protected void getData(final boolean isRefresh) {
         super.getData(isRefresh);
-        getSFileApi().documentDirQuery(
+        callEnqueue(getSFileApi().documentDirQuery(
                 getSeaFileDstRepoId(),
-                getSeaFileDstDirPath())
-                .enqueue(new SFileCallBack<List<FolderDocumentEntity>>() {
+                getSeaFileDstDirPath()),
+                new SFileCallBack<List<FolderDocumentEntity>>() {
                     @Override
                     public void onSuccess(Call<List<FolderDocumentEntity>> call, Response<List<FolderDocumentEntity>> response) {
                         stopRefresh();
@@ -339,26 +339,27 @@ public class FolderTargetListFragment extends SeaFileBaseFragment
                 break;
         }
         final String finalActionSucessNoticeStr = actionSucessNoticeStr;
-        jsonElementCall.enqueue(new SFileCallBack<JsonElement>() {
-            @Override
-            public void onSuccess(Call<JsonElement> call, Response<JsonElement> response) {
-                dismissLoadingDialog();
-                //发送广播
-                EventBus.getDefault().post(new SeaFolderEvent(getFileActionType(), getSeaFileFromRepoId(), getSeaFileFromDirPath()));
-                showToast(finalActionSucessNoticeStr);
+        callEnqueue(jsonElementCall,
+                new SFileCallBack<JsonElement>() {
+                    @Override
+                    public void onSuccess(Call<JsonElement> call, Response<JsonElement> response) {
+                        dismissLoadingDialog();
+                        //发送广播
+                        EventBus.getDefault().post(new SeaFolderEvent(getFileActionType(), getSeaFileFromRepoId(), getSeaFileFromDirPath()));
+                        showToast(finalActionSucessNoticeStr);
 
-                //回调 关闭页面
-                if (onFragmentCallBackListener != null) {
-                    onFragmentCallBackListener.onFragmentCallBack(FolderTargetListFragment.this, -1, null);
-                }
-            }
+                        //回调 关闭页面
+                        if (onFragmentCallBackListener != null) {
+                            onFragmentCallBackListener.onFragmentCallBack(FolderTargetListFragment.this, -1, null);
+                        }
+                    }
 
-            @Override
-            public void onFailure(Call<JsonElement> call, Throwable t) {
-                dismissLoadingDialog();
-                super.onFailure(call, t);
-            }
-        });
+                    @Override
+                    public void onFailure(Call<JsonElement> call, Throwable t) {
+                        dismissLoadingDialog();
+                        super.onFailure(call, t);
+                    }
+                });
 
     }
 

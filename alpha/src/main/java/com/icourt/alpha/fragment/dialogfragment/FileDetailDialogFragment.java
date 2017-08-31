@@ -169,8 +169,8 @@ public class FileDetailDialogFragment extends FileDetailsBaseDialogFragment
     protected void getData(boolean isRefresh) {
         super.getData(isRefresh);
         String filePath = String.format("%s%s", fromRepoDirPath, fileName);
-        getSFileApi().fileVersionQuery(fromRepoId, filePath)
-                .enqueue(new SFileCallBack<FileVersionCommits>() {
+        callEnqueue(getSFileApi().fileVersionQuery(fromRepoId, filePath),
+                new SFileCallBack<FileVersionCommits>() {
                     @Override
                     public void onSuccess(Call<FileVersionCommits> call, Response<FileVersionCommits> response) {
                         if (response.body().commits != null) {

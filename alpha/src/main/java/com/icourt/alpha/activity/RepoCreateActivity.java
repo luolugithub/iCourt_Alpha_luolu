@@ -68,8 +68,8 @@ public class RepoCreateActivity extends SFileEditBaseActivity {
     protected void onSubmitInput(EditText et) {
         if (checkInput(et)) {
             showLoadingDialog("创建中...");
-            getSFileApi().documentRootCreate(et.getText().toString().trim())
-                    .enqueue(new SFileCallBack<RepoEntity>() {
+            callEnqueue(getSFileApi().documentRootCreate(et.getText().toString().trim()),
+                    new SFileCallBack<RepoEntity>() {
                         @Override
                         public void onSuccess(Call<RepoEntity> call, Response<RepoEntity> response) {
                             dismissLoadingDialog();
