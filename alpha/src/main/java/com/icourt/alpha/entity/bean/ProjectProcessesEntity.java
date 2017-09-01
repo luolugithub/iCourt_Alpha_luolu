@@ -15,38 +15,55 @@ public class ProjectProcessesEntity implements Serializable {
 
 
     /**
+     * id : 0acd664a896f11e7bb2600163e0691a5
+     * legalType : 1
+     * processCode : 111
      * processName : 一审
      * priceStr : 10,000,000
-     * caseCode : ["1010010010070"]
-     * caseName : ["民事一审"]
-     * position : [{"partyCode":"114103","partyName":"张三","contactPkid":"C4C321B0B60911E6834900163E001EAA"},{"partyCode":"117102","partyName":"李四","contactPkid":"B0DA184CCCA111E6A9E000163E162ADD"}]
-     * acceptance : [{"type":"court","name":"法院","values":[{"id":"10101","text":"朝阳人民法院","phone":""},{"id":"10102","text":"海淀法院","phone":""}]},{"type":"caseNo","name":"案由","values":[{"id":"","text":"第-1010993号","phone":""}]}]
-     * bailTime : 2017-08-25 16:26
+     * price : 10000000
+     * caseCodes : [{"code":"1010010010070","name":"触电人身损害赔偿纠纷"},{"code":"","name":"民事一审"}]
+     * position : [{"partyCode":"114103","partyName":"张三","contactPkid":"C4C321B0B60911E6834900163E001EAA","contactName":null},{"partyCode":"117102","partyName":"李四","contactPkid":"B0DA184CCCA111E6A9E000163E162ADD","contactName":null}]
+     * extra : [{"type":"court","name":"法院","values":[{"id":"10101","text":"朝阳人民法院","phone":""},{"id":"10102","text":"海淀法院","phone":""}]},{"type":"caseNo","name":"案由","values":[{"id":"","text":"第-1010993号","phone":""}]}]
      */
 
-    public String processName;//程序名称
-    public String priceStr; //标的额，long类型，精确到分
-    public String bailTime;
-    public List<String> caseCode;//案由代码
-    public List<String> caseName;//案由名称，多个会已英文逗号分隔
-    public List<PositionBean> position;//当事人地位信息
-    public List<AcceptanceBean> acceptance;//受理信息，不同的程序内部字段不同
+    public String id;
+    public String legalType;
+    public String processCode;
+    public String processName;
+    public String priceStr;
+    public String price;
+    public List<CaseCodesBean> caseCodes;
+    public List<PositionBean> position;
+    public List<ExtraBean> extra;
 
 
-    public static class PositionBean implements Serializable {
+    public static class CaseCodesBean implements Serializable{
+        /**
+         * code : 1010010010070
+         * name : 触电人身损害赔偿纠纷
+         */
+
+        public String code;
+        public String name;
+
+    }
+
+    public static class PositionBean implements Serializable{
         /**
          * partyCode : 114103
          * partyName : 张三
          * contactPkid : C4C321B0B60911E6834900163E001EAA
+         * contactName : null
          */
 
         public String partyCode;
         public String partyName;
         public String contactPkid;
+        public String contactName;
 
     }
 
-    public static class AcceptanceBean implements Serializable {
+    public static class ExtraBean implements Serializable{
         /**
          * type : court
          * name : 法院
@@ -57,8 +74,7 @@ public class ProjectProcessesEntity implements Serializable {
         public String name;
         public List<ValuesBean> values;
 
-
-        public static class ValuesBean implements Serializable {
+        public static class ValuesBean implements Serializable{
             /**
              * id : 10101
              * text : 朝阳人民法院
@@ -68,6 +84,7 @@ public class ProjectProcessesEntity implements Serializable {
             public String id;
             public String text;
             public String phone;
+
         }
     }
 }

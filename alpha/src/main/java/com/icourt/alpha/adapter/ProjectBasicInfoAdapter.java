@@ -118,8 +118,6 @@ public class ProjectBasicInfoAdapter extends BaseArrayRecyclerAdapter<ProjectBas
                 return R.mipmap.lawyer;
             case Const.PROJECT_NUMBER_TYPE://项目编号
                 return R.mipmap.number;
-            case Const.PROJECT_OTHER_PERSON_TYPE://其他当事人
-                return R.mipmap.project_user_icon;
         }
         return -1;
     }

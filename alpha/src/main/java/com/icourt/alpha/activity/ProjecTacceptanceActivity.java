@@ -22,6 +22,8 @@ import com.icourt.alpha.entity.bean.ProjectProcessesEntity;
 import com.icourt.alpha.utils.ItemDecorationUtils;
 import com.icourt.alpha.utils.SystemUtils;
 
+import java.io.Serializable;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
@@ -42,7 +44,7 @@ public class ProjecTacceptanceActivity extends BaseActivity {
     AppBarLayout titleView;
     @BindView(R.id.recyclerView)
     RecyclerView recyclerView;
-    private ProjectProcessesEntity.AcceptanceBean acceptanceBean;
+    private ProjectProcessesEntity.ExtraBean extraBean;
     ProjectJudgeAdapter projectJudgeAdapter;
 
     @Override
@@ -54,19 +56,19 @@ public class ProjecTacceptanceActivity extends BaseActivity {
         getData(true);
     }
 
-    public static void launch(@NonNull Context context, ProjectProcessesEntity.AcceptanceBean acceptanceBean) {
+    public static void launch(@NonNull Context context, ProjectProcessesEntity.ExtraBean extraBean) {
         if (context == null) return;
         Intent intent = new Intent(context, ProjecTacceptanceActivity.class);
-        intent.putExtra("acceptanceBean", acceptanceBean);
+        intent.putExtra("extraBean", (Serializable) extraBean);
         context.startActivity(intent);
     }
 
     @Override
     protected void initView() {
         super.initView();
-        acceptanceBean = (ProjectProcessesEntity.AcceptanceBean) getIntent().getSerializableExtra("acceptanceBean");
-        if (acceptanceBean != null) {
-            setTitle(acceptanceBean.name);
+        extraBean = (ProjectProcessesEntity.ExtraBean) getIntent().getSerializableExtra("extraBean");
+        if (extraBean != null) {
+            setTitle(extraBean.name);
         }
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getContext());
         recyclerView.setLayoutManager(linearLayoutManager);
@@ -86,8 +88,8 @@ public class ProjecTacceptanceActivity extends BaseActivity {
     }
 
     private void bindData() {
-        if (acceptanceBean != null) {
-            projectJudgeAdapter.bindData(true, acceptanceBean.values);
+        if (extraBean != null) {
+            projectJudgeAdapter.bindData(true, extraBean.values);
         }
     }
 

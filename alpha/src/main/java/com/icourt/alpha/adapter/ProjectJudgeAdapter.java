@@ -48,8 +48,8 @@ public class ProjectJudgeAdapter<T> extends BaseArrayRecyclerAdapter<T> {
             ProjectDetailEntity.GroupsBean groupsBean = (ProjectDetailEntity.GroupsBean) t;
             nameview.setText(groupsBean.name);
             phoneview.setVisibility(View.GONE);
-        } else if (t instanceof ProjectProcessesEntity.AcceptanceBean.ValuesBean) {
-            ProjectProcessesEntity.AcceptanceBean.ValuesBean valuesBean = (ProjectProcessesEntity.AcceptanceBean.ValuesBean) t;
+        } else if (t instanceof ProjectProcessesEntity.ExtraBean.ValuesBean) {
+            ProjectProcessesEntity.ExtraBean.ValuesBean valuesBean = (ProjectProcessesEntity.ExtraBean.ValuesBean) t;
             nameview.setText(valuesBean.text);
             phoneview.setText(valuesBean.phone);
         }

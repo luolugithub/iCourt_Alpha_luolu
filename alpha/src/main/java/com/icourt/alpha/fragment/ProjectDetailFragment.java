@@ -102,6 +102,7 @@ public class ProjectDetailFragment extends BaseFragment implements BaseRecyclerA
     OnFragmentCallBackListener onFragmentCallBackListener;
     ProjectDetailEntity projectDetailBean;
     private CustomerDbService customerDbService = null;
+    ProjectRangeFragment projectRangeFragment;
 
     public static ProjectDetailFragment newInstance(@NonNull String projectId) {
         ProjectDetailFragment projectDetailFragment = new ProjectDetailFragment();
@@ -152,10 +153,8 @@ public class ProjectDetailFragment extends BaseFragment implements BaseRecyclerA
             @Override
             public void onLoadMore(boolean isSilence) {
                 super.onLoadMore(isSilence);
-                getData(false);
             }
         });
-        refreshLayout.setAutoRefresh(true);
         refreshLayout.startRefresh();
     }
 
@@ -317,17 +316,26 @@ public class ProjectDetailFragment extends BaseFragment implements BaseRecyclerA
                 serviceContentLayout.setVisibility(View.GONE);
             }
             if (projectDetailBean.matterType == 0) {//争议解决
-                if (!TextUtils.isEmpty(projectDetailBean.matterCaseName) || !TextUtils.isEmpty(projectDetailBean.competentCourt) || projectDetailBean.judges != null) {
-                    procedureLayout.setVisibility(View.VISIBLE);
+//                if (!TextUtils.isEmpty(projectDetailBean.matterCaseName) || !TextUtils.isEmpty(projectDetailBean.competentCourt) || projectDetailBean.judges != null) {
+//                    procedureLayout.setVisibility(View.VISIBLE);
+//                } else {
+//                    procedureLayout.setVisibility(View.GONE);
+//                }
+                procedureLayout.setVisibility(View.VISIBLE);
+                if (baseFragmentAdapter == null) {
+                    baseFragmentAdapter = new BaseFragmentAdapter(getChildFragmentManager());
+                    projectViewpager.setAdapter(baseFragmentAdapter);
+                    baseFragmentAdapter.bindData(true,
+                            Arrays.asList(
+                                    projectRangeFragment == null ? projectRangeFragment = ProjectRangeFragment.newInstance(projectDetailBean) : projectRangeFragment)
+                    );
                 } else {
-                    procedureLayout.setVisibility(View.GONE);
+                    if (projectRangeFragment != null) {
+                        Bundle bundle = new Bundle();
+                        bundle.putSerializable("key_project", projectDetailBean);
+                        projectRangeFragment.notifyFragmentUpdate(projectRangeFragment, 0, bundle);
+                    }
                 }
-                baseFragmentAdapter = new BaseFragmentAdapter(getChildFragmentManager());
-                projectViewpager.setAdapter(baseFragmentAdapter);
-                baseFragmentAdapter.bindData(true,
-                        Arrays.asList(
-                                ProjectRangeFragment.newInstance(projectDetailBean)
-                        ));
             } else {
                 procedureLayout.setVisibility(View.GONE);
             }

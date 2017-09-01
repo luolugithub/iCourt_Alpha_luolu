@@ -16,7 +16,8 @@ public class ProjectBasicItemEntity implements Serializable {
     public String value;
     public int type;
     public String personId;
-    public ProjectProcessesEntity.AcceptanceBean acceptanceBean;
+    public ProjectProcessesEntity.ExtraBean extraBean;
+    public ProjectProcessesEntity.PositionBean positionBean;
 
     public ProjectBasicItemEntity() {
     }
@@ -34,10 +35,17 @@ public class ProjectBasicItemEntity implements Serializable {
         this.personId = personId;
     }
 
-    public ProjectBasicItemEntity(String key, String value, int type, ProjectProcessesEntity.AcceptanceBean acceptanceBean) {
+    public ProjectBasicItemEntity(String key, String value, int type, ProjectProcessesEntity.ExtraBean extraBean) {
         this.key = key;
         this.value = value;
         this.type = type;
-        this.acceptanceBean = acceptanceBean;
+        this.extraBean = extraBean;
+    }
+
+    public ProjectBasicItemEntity(String key, String value, int type, ProjectProcessesEntity.PositionBean positionBean) {
+        this.key = key;
+        this.value = value;
+        this.type = type;
+        this.positionBean = positionBean;
     }
 }

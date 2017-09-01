@@ -3,6 +3,7 @@ package com.icourt.alpha.fragment;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
@@ -13,13 +14,17 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.icourt.alpha.R;
+import com.icourt.alpha.activity.CustomerCompanyDetailActivity;
+import com.icourt.alpha.activity.CustomerPersonDetailActivity;
 import com.icourt.alpha.activity.ProjecTacceptanceActivity;
 import com.icourt.alpha.activity.ProjectBasicTextInfoActivity;
 import com.icourt.alpha.adapter.ProjectBasicInfoAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.constants.Const;
+import com.icourt.alpha.db.dbmodel.CustomerDbModel;
 import com.icourt.alpha.db.dbservice.CustomerDbService;
+import com.icourt.alpha.entity.bean.CustomerEntity;
 import com.icourt.alpha.entity.bean.ProjectBasicItemEntity;
 import com.icourt.alpha.entity.bean.ProjectDetailEntity;
 import com.icourt.alpha.entity.bean.ProjectProcessesEntity;
@@ -28,6 +33,8 @@ import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.ItemDecorationUtils;
 import com.icourt.alpha.utils.LoginInfoUtils;
 import com.icourt.alpha.utils.SpUtils;
+import com.icourt.alpha.utils.UMMobClickAgent;
+import com.umeng.analytics.MobclickAgent;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -88,77 +95,19 @@ public class ProjectRangeFragment extends BaseFragment implements BaseRecyclerAd
         if (projectDetailEntity != null) {
             getData(true);
         }
-//        if (projectDetailEntity != null) {
-//            List<ProjectBasicItemEntity> projectBasicItemEntities = new ArrayList<>();
-//            if (!TextUtils.isEmpty(projectDetailEntity.caseProcessName) && !TextUtils.equals("null", projectDetailEntity.caseProcessName)) {
-//                projectBasicItemEntities.add(new ProjectBasicItemEntity("程序", projectDetailEntity.caseProcessName, Const.PROJECT_CASEPROCESS_TYPE));
-//            }
-//            if (!TextUtils.isEmpty(projectDetailEntity.matterCaseName) && !TextUtils.equals("null", projectDetailEntity.matterCaseName)) {
-//                projectBasicItemEntities.add(new ProjectBasicItemEntity("案由", projectDetailEntity.matterCaseName, Const.PROJECT_CASE_TYPE));
-//            }
-//            if (!TextUtils.isEmpty(projectDetailEntity.matterNumber) && !TextUtils.equals("null", projectDetailEntity.matterNumber)) {
-//                projectBasicItemEntities.add(new ProjectBasicItemEntity("案号", projectDetailEntity.matterNumber, Const.PROJECT_CASENUMBER_TYPE));
-//            }
-//            if (!TextUtils.isEmpty(projectDetailEntity.competentCourt) && !TextUtils.equals("null", projectDetailEntity.competentCourt)) {
-//                String key = null;
-//                if (TextUtils.equals("4", projectDetailEntity.caseProcess) || TextUtils.equals("5", projectDetailEntity.caseProcess)) {
-//                    key = "仲裁庭";
-//                } else {
-//                    key = "法院";
-//                }
-//                projectBasicItemEntities.add(new ProjectBasicItemEntity(key, projectDetailEntity.competentCourt, Const.PROJECT_COMPETENT_TYPE));
-//            }
-//            if (TextUtils.equals("4", projectDetailEntity.caseProcess) || TextUtils.equals("5", projectDetailEntity.caseProcess)) {
-//                if (projectDetailEntity.arbitrators != null && projectDetailEntity.arbitrators.size() > 0) {
-//                    String name = getArbitratorName(projectDetailEntity.arbitrators);
-//                    if (!TextUtils.isEmpty(name)) {
-//                        projectBasicItemEntities.add(new ProjectBasicItemEntity("仲裁员", getArbitratorName(projectDetailEntity.arbitrators), Const.PROJECT_ARBITRATORS_TYPE));
-//                    }
-//                }
-//                if (projectDetailEntity.secretaries != null && projectDetailEntity.secretaries.size() > 0) {
-//                    String name = getSecretarieName(projectDetailEntity.secretaries);
-//                    if (!TextUtils.isEmpty(name)) {
-//                        projectBasicItemEntities.add(new ProjectBasicItemEntity("仲裁秘书", getSecretarieName(projectDetailEntity.secretaries), Const.PROJECT_SECRETARIES_TYPE));
-//                    }
-//                }
-//            } else {
-//                if (projectDetailEntity.judges != null && projectDetailEntity.judges.size() > 0) {
-//                    String name = getJudgeName(projectDetailEntity.judges);
-//                    if (!TextUtils.isEmpty(name)) {
-//                        projectBasicItemEntities.add(new ProjectBasicItemEntity("法官", getJudgeName(projectDetailEntity.judges), Const.PROJECT_JUDGE_TYPE));
-//                    }
-//                }
-//                if (projectDetailEntity.clerks != null && projectDetailEntity.clerks.size() > 0) {
-//                    String name = getClerkName(projectDetailEntity.clerks);
-//                    if (!TextUtils.isEmpty(name)) {
-//                        projectBasicItemEntities.add(new ProjectBasicItemEntity("书记员", getClerkName(projectDetailEntity.clerks), Const.PROJECT_CLERK_TYPE));
-//                    }
-//                }
-//            }
-//
-//            if (projectDetailEntity.litigants != null) {
-//                for (ProjectDetailEntity.LitigantsBean litigant : projectDetailEntity.litigants) {
-//                    if (!TextUtils.isEmpty(litigant.contactName))
-//                        if (!TextUtils.isEmpty(litigant.customerPositionName)) {
-//                            projectBasicItemEntities.add(new ProjectBasicItemEntity(litigant.customerPositionName, litigant.contactName, Const.PROJECT_PERSON_TYPE, litigant.contactPkid));
-//                        } else {
-//                            projectBasicItemEntities.add(new ProjectBasicItemEntity("当事人", litigant.contactName, Const.PROJECT_PERSON_TYPE, litigant.contactPkid));
-//                        }
-//                }
-//            }
-//            rangeRecyclerview.setLayoutManager(new LinearLayoutManager(getContext()));
-//            rangeRecyclerview.addItemDecoration(ItemDecorationUtils.getCommMagin5Divider(getContext(), false));
-//            rangeRecyclerview.setHasFixedSize(true);
-//            rangeRecyclerview.setAdapter(projectBasicInfoAdapter = new ProjectBasicInfoAdapter());
-//            projectBasicInfoAdapter.setOnItemClickListener(this);
-//            projectBasicInfoAdapter.bindData(false, projectBasicItemEntities);
-//        }
+    }
+
+    @Override
+    public void notifyFragmentUpdate(Fragment targetFrgament, int type, Bundle bundle) {
+        super.notifyFragmentUpdate(targetFrgament, type, bundle);
+        if (bundle == null) return;
+        projectDetailEntity = (ProjectDetailEntity) bundle.getSerializable(KEY_PROJECT);
+        getData(true);
     }
 
     @Override
     protected void getData(boolean isRefresh) {
         getApi().projectProcessesQuery(projectDetailEntity.pkId).enqueue(new SimpleCallBack<List<ProjectProcessesEntity>>() {
-            @Override
             public void onSuccess(Call<ResEntity<List<ProjectProcessesEntity>>> call, Response<ResEntity<List<ProjectProcessesEntity>>> response) {
                 if (response.body().result != null && response.body().result.size() > 0) {
                     setDataToView(response.body().result.get(0));
@@ -176,15 +125,17 @@ public class ProjectRangeFragment extends BaseFragment implements BaseRecyclerAd
         if (!TextUtils.isEmpty(projectProcessesEntity.priceStr)) {
             projectBasicItemEntities.add(new ProjectBasicItemEntity("标的", projectProcessesEntity.priceStr, Const.PROJECT_PRICE_TYPE));
         }
-        if (projectProcessesEntity.caseCode != null && projectProcessesEntity.caseCode.size() > 0) {
-            projectBasicItemEntities.add(new ProjectBasicItemEntity("案由号码", getStringListName(projectProcessesEntity.caseCode), Const.PROJECT_CASENO_TYPE));
+        if (projectProcessesEntity.caseCodes != null && projectProcessesEntity.caseCodes.size() > 0) {
+            projectBasicItemEntities.add(new ProjectBasicItemEntity("案由", getCaseCodeName(projectProcessesEntity.caseCodes), Const.PROJECT_CASE_TYPE));
         }
-        if (projectProcessesEntity.caseName != null && projectProcessesEntity.caseName.size() > 0) {
-            projectBasicItemEntities.add(new ProjectBasicItemEntity("案由", getStringListName(projectProcessesEntity.caseName), Const.PROJECT_CASE_TYPE));
+        if (projectProcessesEntity.extra != null && projectProcessesEntity.extra.size() > 0) {
+            for (ProjectProcessesEntity.ExtraBean extra : projectProcessesEntity.extra) {
+                projectBasicItemEntities.add(new ProjectBasicItemEntity(extra.name, getExtraName(extra.values), Const.PROJECT_ACCEPTANCE_TYPE, extra));
+            }
         }
-        if (projectProcessesEntity.acceptance != null && projectProcessesEntity.acceptance.size() > 0) {
-            for (ProjectProcessesEntity.AcceptanceBean acceptanceBean : projectProcessesEntity.acceptance) {
-                projectBasicItemEntities.add(new ProjectBasicItemEntity(acceptanceBean.name, getAcceptanceName(acceptanceBean.values), Const.PROJECT_ACCEPTANCE_TYPE, acceptanceBean));
+        if (projectProcessesEntity.position != null && projectProcessesEntity.position.size() > 0) {
+            for (ProjectProcessesEntity.PositionBean positionBean : projectProcessesEntity.position) {
+                projectBasicItemEntities.add(new ProjectBasicItemEntity(positionBean.partyName, positionBean.contactName, Const.PROJECT_OTHER_PERSON_TYPE, positionBean));
             }
         }
         rangeRecyclerview.setLayoutManager(new LinearLayoutManager(getContext()));
@@ -197,16 +148,32 @@ public class ProjectRangeFragment extends BaseFragment implements BaseRecyclerAd
 
 
     /**
+     * 获取caseCodes名称
+     *
+     * @param caseCodes
+     * @return
+     */
+    private String getCaseCodeName(List<ProjectProcessesEntity.CaseCodesBean> caseCodes) {
+        if (caseCodes == null || caseCodes.size() <= 0) return "";
+
+        StringBuilder stringBuilder = new StringBuilder();
+        for (ProjectProcessesEntity.CaseCodesBean code : caseCodes) {
+            stringBuilder.append(code.name).append("、");
+        }
+        return stringBuilder.toString().substring(0, stringBuilder.toString().length() - 1);
+    }
+
+    /**
      * 获取acceptance名称
      *
      * @param values
      * @return
      */
-    private String getAcceptanceName(List<ProjectProcessesEntity.AcceptanceBean.ValuesBean> values) {
+    private String getExtraName(List<ProjectProcessesEntity.ExtraBean.ValuesBean> values) {
         if (values == null || values.size() <= 0) return "";
 
         StringBuilder stringBuilder = new StringBuilder();
-        for (ProjectProcessesEntity.AcceptanceBean.ValuesBean value : values) {
+        for (ProjectProcessesEntity.ExtraBean.ValuesBean value : values) {
             stringBuilder.append(value.text).append("、");
         }
         return stringBuilder.toString().substring(0, stringBuilder.toString().length() - 1);
@@ -321,7 +288,27 @@ public class ProjectRangeFragment extends BaseFragment implements BaseRecyclerAd
                 ProjectBasicTextInfoActivity.launch(view.getContext(), itemEntity.value, itemEntity.type);
                 break;
             case Const.PROJECT_ACCEPTANCE_TYPE:
-                ProjecTacceptanceActivity.launch(getContext(), itemEntity.acceptanceBean);
+                ProjecTacceptanceActivity.launch(getContext(), itemEntity.extraBean);
+                break;
+            case Const.PROJECT_OTHER_PERSON_TYPE:
+                if (itemEntity.positionBean == null) return;
+                if (!hasCustomerPermission()) return;
+                if (customerDbService == null) return;
+                CustomerEntity customerEntity = null;
+                CustomerDbModel customerDbModel = customerDbService.queryFirst("pkid", itemEntity.positionBean.contactPkid);
+                if (customerDbModel == null) return;
+                customerEntity = customerDbModel.convert2Model();
+                if (customerEntity == null) return;
+                if (!TextUtils.isEmpty(customerEntity.contactType)) {
+                    MobclickAgent.onEvent(getContext(), UMMobClickAgent.look_client_click_id);
+                    //公司
+                    if (TextUtils.equals(customerEntity.contactType.toUpperCase(), "C")) {
+                        CustomerCompanyDetailActivity.launch(getContext(), customerEntity.pkid, customerEntity.name, false);
+                    } else if (TextUtils.equals(customerEntity.contactType.toUpperCase(), "P")) {
+                        CustomerPersonDetailActivity.launch(getContext(), customerEntity.pkid, customerEntity.name, false);
+                    }
+                }
+
                 break;
         }
     }
