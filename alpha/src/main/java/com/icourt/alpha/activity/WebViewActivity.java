@@ -1,6 +1,5 @@
 package com.icourt.alpha.activity;
 
-import android.Manifest;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -365,7 +364,14 @@ public class WebViewActivity extends BaseActivity implements DownloadListener {
      */
     @Override
     public void onDownloadStart(String url, String userAgent, String contentDisposition, String mimetype, long contentLength) {
-        if (TextUtils.isEmpty(url)) {
+        //跳转到浏览器下载
+        Uri uri = Uri.parse(url);
+        Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+        startActivity(intent);
+
+        //暂时不用自己做下载
+
+        /*if (TextUtils.isEmpty(url)) {
             showTopSnackBar("下载地址为空!");
             return;
         }
@@ -373,7 +379,7 @@ public class WebViewActivity extends BaseActivity implements DownloadListener {
             startDownload(url);
         } else {
             reqPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, "我们需要文件写入权限!", REQUEST_FILE_PERMISSION);
-        }
+        }*/
     }
 
     /**
