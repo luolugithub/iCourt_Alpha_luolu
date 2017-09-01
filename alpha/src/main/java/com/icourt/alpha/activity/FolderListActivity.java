@@ -282,7 +282,9 @@ public class FolderListActivity extends FolderBaseActivity
 
         bottomBarAllSelectCb.setOnCheckedChangeListener(onCheckedChangeListener);
         refreshLayout.setPullLoadEnable(false);
-        refreshLayout.startRefresh();
+
+        showLoadingDialog(null);
+        getData(true);
     }
 
     private boolean isAllSelected() {
@@ -336,12 +338,14 @@ public class FolderListActivity extends FolderBaseActivity
                     @Override
                     public void onSuccess(Call<List<FolderDocumentEntity>> call, Response<List<FolderDocumentEntity>> response) {
                         sortFile(false, response.body());
+                        dismissLoadingDialog();
                         stopRefresh();
                     }
 
                     @Override
                     public void onFailure(Call<List<FolderDocumentEntity>> call, Throwable t) {
                         super.onFailure(call, t);
+                        dismissLoadingDialog();
                         stopRefresh();
                     }
                 });
