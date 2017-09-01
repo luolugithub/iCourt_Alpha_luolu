@@ -11,6 +11,7 @@ import android.widget.TextView;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.icourt.alpha.R;
+import com.icourt.alpha.activity.WebViewActivity;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.constants.SFileConfig;
@@ -62,6 +63,20 @@ public class FileLinkFragment extends BaseFragment {
     @BindView(R.id.file_link_delete_tv)
     TextView fileLinkDeleteTv;
 
+    @Nullable
+    @Override
+    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        View view = super.onCreateView(R.layout.fragment_file_link, inflater, container, savedInstanceState);
+        unbinder = ButterKnife.bind(this, view);
+        return view;
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        unbinder.unbind();
+    }
+
     /**
      * @param fromRepoId
      * @param fromRepoFilePath
@@ -81,14 +96,6 @@ public class FileLinkFragment extends BaseFragment {
         args.putString(KEY_SEA_FILE_REPO_PERMISSION, repoPermission);
         fragment.setArguments(args);
         return fragment;
-    }
-
-    @Nullable
-    @Override
-    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = super.onCreateView(R.layout.fragment_file_link, inflater, container, savedInstanceState);
-        unbinder = ButterKnife.bind(this, view);
-        return view;
     }
 
     /**
@@ -124,7 +131,6 @@ public class FileLinkFragment extends BaseFragment {
 
     private void updateUI(SFileLinkInfoEntity data) {
         sFileLinkInfoEntity = data;
-        if (linkCopyTv == null) return;
         if (!isNoFileShareLink()) {
             linkCopyTv.setVisibility(View.VISIBLE);
             fileLinkCreateTv.setVisibility(View.GONE);
@@ -138,6 +144,7 @@ public class FileLinkFragment extends BaseFragment {
                 fileLinkDeleteTv.setText("删除上传链接");
             }
             fileAccessPwdTv.setText(sFileLinkInfoEntity.isNeedAccessPwd() ? sFileLinkInfoEntity.password : "不需要");
+            linkCopyTv.setText(sFileLinkInfoEntity.isNeedAccessPwd() ? "复制链接和密码" : "复制链接");
             fileAccessTimeLimitTv.setText(sFileLinkInfoEntity.expireTime <= 0 ? "永不过期" : DateUtils.getyyyy_MM_dd(sFileLinkInfoEntity.expireTime));
             fileShareLinkTv.setText(sFileLinkInfoEntity.getRealShareLink());
         } else {
@@ -161,6 +168,7 @@ public class FileLinkFragment extends BaseFragment {
             R.id.file_access_pwd_tv,
             R.id.file_access_time_limit_tv,
             R.id.file_link_delete_tv,
+            R.id.file_share_link_tv,
     })
     @Override
     public void onClick(View v) {
@@ -183,6 +191,12 @@ public class FileLinkFragment extends BaseFragment {
                 break;
             case R.id.file_link_delete_tv:
                 showDeleteFileConfirmDialog();
+                break;
+            case R.id.file_share_link_tv:
+                if (!isNoFileShareLink()) {
+                    WebViewActivity.launch(getContext(),
+                            sFileLinkInfoEntity.getRealShareLink());
+                }
                 break;
             default:
                 super.onClick(v);
@@ -345,9 +359,4 @@ public class FileLinkFragment extends BaseFragment {
     }
 
 
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        unbinder.unbind();
-    }
 }

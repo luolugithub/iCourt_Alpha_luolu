@@ -1,18 +1,25 @@
 package com.icourt.alpha.activity;
 
+import android.Manifest;
 import android.annotation.TargetApi;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
+import android.support.annotation.CallSuper;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.AppBarLayout;
+import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
 import android.view.View;
 import android.webkit.ConsoleMessage;
+import android.webkit.DownloadListener;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceError;
 import android.webkit.WebResourceRequest;
@@ -25,7 +32,20 @@ import android.widget.TextView;
 
 import com.icourt.alpha.R;
 import com.icourt.alpha.base.BaseActivity;
+import com.icourt.alpha.base.BaseApplication;
+import com.icourt.alpha.utils.ActionConstants;
+import com.icourt.alpha.utils.FileUtils;
+import com.icourt.alpha.utils.NetUtils;
+import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.view.ProgressLayout;
+import com.kaopiz.kprogresshud.KProgressHUD;
+import com.liulishuo.filedownloader.BaseDownloadTask;
+import com.liulishuo.filedownloader.FileDownloadListener;
+import com.liulishuo.filedownloader.FileDownloader;
+import com.liulishuo.filedownloader.exception.FileDownloadHttpException;
+import com.liulishuo.filedownloader.exception.FileDownloadOutOfSpaceException;
+
+import java.io.File;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -38,7 +58,15 @@ import butterknife.Unbinder;
  * date createTime：2017/5/12
  * version 1.0.0
  */
-public class WebViewActivity extends BaseActivity {
+public class WebViewActivity extends BaseActivity implements DownloadListener {
+    public static void launch(@NonNull Context context, String url) {
+        if (context == null) return;
+        if (TextUtils.isEmpty(url)) return;
+        Intent intent = new Intent(context, WebViewActivity.class);
+        intent.putExtra(KEY_URL, url);
+        context.startActivity(intent);
+    }
+
     @BindView(R.id.titleBack)
     ImageView titleBack;
     @BindView(R.id.titleContent)
@@ -47,20 +75,14 @@ public class WebViewActivity extends BaseActivity {
     ImageView titleAction;
     @BindView(R.id.titleView)
     AppBarLayout titleView;
-
-    public static void launch(@NonNull Context context, String url) {
-        if (context == null) return;
-        if (TextUtils.isEmpty(url)) return;
-        Intent intent = new Intent(context, WebViewActivity.class);
-        intent.putExtra("url", url);
-        context.startActivity(intent);
-    }
-
+    private static final int REQUEST_FILE_PERMISSION = 9999;
+    private static final String KEY_URL = "url";
     @BindView(R.id.webView)
     WebView webView;
     @BindView(R.id.progressLayout)
     ProgressLayout progressLayout;
     Unbinder unbinder;
+    KProgressHUD hud;
 
     WebViewClient mWebViewClient = new WebViewClient() {
         @Override
@@ -157,6 +179,70 @@ public class WebViewActivity extends BaseActivity {
 
 
     };
+    private FileDownloadListener fileDownloadListener = new FileDownloadListener() {
+
+        @Override
+        protected void pending(BaseDownloadTask task, int soFarBytes, int totalBytes) {
+            log("----------->下载开始:" + soFarBytes + "  totalBytes:" + totalBytes);
+            if (hud != null) {
+                hud.show();
+            }
+        }
+
+        @Override
+        protected void progress(BaseDownloadTask task, int soFarBytes, int totalBytes) {
+            log("----------->下载进度:" + soFarBytes + ";totalBytes:" + totalBytes);
+            if (hud != null) {
+                if (totalBytes > 0 && totalBytes > soFarBytes) {
+                    hud.setProgress((int) ((soFarBytes * 1.0f / totalBytes * 1.0f) * 100));
+                }
+            }
+        }
+
+        @Override
+        protected void completed(BaseDownloadTask task) {
+            if (hud != null) {
+                hud.dismiss();
+            }
+            showTopSnackBar(String.format("已下载至目录%s", task.getTargetFilePath()));
+        }
+
+        @Override
+        protected void paused(BaseDownloadTask task, int soFarBytes, int totalBytes) {
+        }
+
+        @Override
+        protected void error(BaseDownloadTask task, Throwable e) {
+            if (hud != null) {
+                hud.dismiss();
+            }
+            if (NetUtils.hasNetwork(BaseApplication.getApplication())) {
+                bugSync("web 文件下载失败", e);
+            }
+            if (e instanceof FileDownloadHttpException) {
+                int code = ((FileDownloadHttpException) e).getCode();
+                showTopSnackBar(String.format("%s:%s", code, "下载异常!"));
+            } else if (e instanceof FileDownloadOutOfSpaceException) {
+                new AlertDialog.Builder(getActivity())
+                        .setTitle("提示")
+                        .setMessage("存储空间严重不足,去清理?")
+                        .setPositiveButton("确认", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss();
+                            }
+                        }).show();
+            } else {
+                showTopSnackBar(String.format("下载异常!" + StringUtils.throwable2string(e)));
+            }
+        }
+
+        @Override
+        protected void warn(BaseDownloadTask task) {
+            log("--------->warn");
+        }
+    };
+
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -167,8 +253,48 @@ public class WebViewActivity extends BaseActivity {
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+        if (webView != null) {
+            webView.onResume();
+        }
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        if (webView != null) {
+            webView.onPause();
+        }
+    }
+
+    @Override
+    public void onDestroy() {
+        pauseDownload();
+        if (webView != null) {
+            webView.clearHistory();
+            webView.clearFormData();
+            webView.clearMatches();
+            webView.removeAllViews();
+            try {
+                webView.destroy();
+            } catch (Throwable t) {
+            }
+            webView = null;
+        }
+        super.onDestroy();
+    }
+
+
+    @Override
     protected void initView() {
         super.initView();
+
+        hud = KProgressHUD.create(getContext())
+                .setStyle(KProgressHUD.Style.PIE_DETERMINATE)
+                .setMaxProgress(100)
+                .setLabel("下载中...");
+
         setTitle("Alpha");
         ImageView titleActionImage = getTitleActionImage();
         if (titleActionImage != null) {
@@ -186,9 +312,22 @@ public class WebViewActivity extends BaseActivity {
         webSettings.setDomStorageEnabled(true);
         webView.setWebViewClient(mWebViewClient);
         webView.setWebChromeClient(mWebChromeClient);
+        webView.setDownloadListener(this);
         progressLayout.setMaxProgress(100);
-        webView.loadUrl(getIntent().getStringExtra("url"));
+        webView.loadUrl(getIntent().getStringExtra(KEY_URL));
     }
+
+    private void pauseDownload() {
+        if (fileDownloadListener != null) {
+            try {
+                FileDownloader
+                        .getImpl()
+                        .pause(fileDownloadListener);
+            } catch (Exception e) {
+            }
+        }
+    }
+
 
     @Override
     public void onClick(View v) {
@@ -214,36 +353,67 @@ public class WebViewActivity extends BaseActivity {
         startActivity(intent);
     }
 
+
+    /**
+     * 文件下载
+     *
+     * @param url
+     * @param userAgent
+     * @param contentDisposition
+     * @param mimetype
+     * @param contentLength
+     */
     @Override
-    public void onResume() {
-        super.onResume();
-        if (webView != null) {
-            webView.onResume();
+    public void onDownloadStart(String url, String userAgent, String contentDisposition, String mimetype, long contentLength) {
+        if (TextUtils.isEmpty(url)) {
+            showTopSnackBar("下载地址为空!");
+            return;
+        }
+        if (checkPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+            startDownload(url);
+        } else {
+            reqPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, "我们需要文件写入权限!", REQUEST_FILE_PERMISSION);
         }
     }
 
-    @Override
-    public void onPause() {
-        super.onPause();
-        if (webView != null) {
-            webView.onPause();
+    /**
+     * 执行下载
+     *
+     * @param url
+     */
+    private void startDownload(String url) {
+        log("----------->startDownload:" + url);
+        if (Environment.isExternalStorageEmulated()) {
+            String ROOTPATH = Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator;
+            StringBuilder pathBuilder = new StringBuilder();
+            pathBuilder.append(ROOTPATH);
+            pathBuilder.append(ActionConstants.FILE_DOWNLOAD_PATH);
+            pathBuilder.append(File.separator);
+            pathBuilder.append(FileUtils.getFileName(url));
+
+            FileDownloader
+                    .getImpl()
+                    .create(url)
+                    .setPath(pathBuilder.toString())
+                    .setListener(fileDownloadListener)
+                    .start();
+        } else {
+            showTopSnackBar("sd卡不可用!");
         }
     }
 
-
+    @CallSuper
     @Override
-    public void onDestroy() {
-        super.onDestroy();
-        if (webView != null) {
-            webView.clearHistory();
-            webView.clearFormData();
-            webView.clearMatches();
-            webView.removeAllViews();
-            try {
-                webView.destroy();
-            } catch (Throwable t) {
-            }
-            webView = null;
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        switch (requestCode) {
+            case REQUEST_FILE_PERMISSION:
+                if (grantResults[0] == PackageManager.PERMISSION_DENIED) {
+                    showTopSnackBar("文件写入权限被拒绝！");
+                }
+                break;
+            default:
+                super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+                break;
         }
     }
 }

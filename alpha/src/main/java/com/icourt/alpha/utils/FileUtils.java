@@ -307,6 +307,22 @@ public class FileUtils {
     }
 
     /**
+     * 获取文件名
+     *
+     * @return
+     */
+    public static String getFileName(String path) {
+        if (!TextUtils.isEmpty(path)) {
+            int separatorIndex = path.lastIndexOf(File.separator);
+            if (separatorIndex > 0
+                    && separatorIndex < path.length() - 1) {
+                return path.substring(separatorIndex + 1, path.length());
+            }
+        }
+        return path;
+    }
+
+    /**
      * 获取文件后缀名
      *
      * @param fileName
