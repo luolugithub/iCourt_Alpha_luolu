@@ -6,6 +6,7 @@ import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
+import android.support.v4.util.ArrayMap;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -24,11 +25,10 @@ import com.icourt.alpha.activity.SearchProjectActivity;
 import com.icourt.alpha.activity.TaskDetailActivity;
 import com.icourt.alpha.activity.TimerDetailActivity;
 import com.icourt.alpha.activity.TimerTimingActivity;
-import com.icourt.alpha.adapter.TaskAdapter;
-import com.icourt.alpha.adapter.TaskItemAdapter;
-import com.icourt.alpha.adapter.baseadapter.BaseArrayRecyclerAdapter;
+import com.icourt.alpha.adapter.TaskItemAdapter2;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.HeaderFooterAdapter;
+import com.icourt.alpha.adapter.baseadapter.adapterObserver.DataChangeAdapterObserver;
 import com.icourt.alpha.adapter.baseadapter.adapterObserver.RefreshViewEmptyObserver;
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.entity.bean.TaskEntity;
@@ -39,6 +39,7 @@ import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.UMMobClickAgent;
+import com.icourt.alpha.view.recyclerviewDivider.TastItemDecoration;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 import com.icourt.alpha.widget.manager.TimerManager;
 import com.icourt.api.RequestUtils;
@@ -94,17 +95,16 @@ public class TaskOtherListFragment extends BaseFragment implements BaseRecyclerA
     @BindView(R.id.refreshLayout)
     RefreshLayout refreshLayout;
 
-    List<TaskEntity> allTaskEntities = new ArrayList<>();
-    List<TaskEntity.TaskItemEntity> todayTaskEntities = new ArrayList<>();//今天到期
-    List<TaskEntity.TaskItemEntity> beAboutToTaskEntities = new ArrayList<>();//即将到期
-    List<TaskEntity.TaskItemEntity> futureTaskEntities = new ArrayList<>();//未来
-    List<TaskEntity.TaskItemEntity> noDueTaskEntities = new ArrayList<>();//为指定到期
-    List<TaskEntity.TaskItemEntity> datedTaskEntities = new ArrayList<>();//已过期
+    List<TaskEntity.TaskItemEntity> allTaskEntities = new ArrayList<>();//展示所要用到的列表集合
     int startType, finishType;
     ArrayList<String> ids;
     private int pageIndex = 1;
-    TaskAdapter taskAdapter;
-    HeaderFooterAdapter<TaskAdapter> headerFooterAdapter;
+    TaskItemAdapter2 taskAdapter;
+    HeaderFooterAdapter<TaskItemAdapter2> headerFooterAdapter;
+
+    TaskEntity.TaskItemEntity lastEntity;
+
+    private ArrayMap<String, Integer> mArrayMap = new ArrayMap<>();//用来存储每个group有多少个数量。
 
     @IntDef({UNFINISH_TYPE,
             FINISH_TYPE})
@@ -149,13 +149,46 @@ public class TaskOtherListFragment extends BaseFragment implements BaseRecyclerA
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setHasFixedSize(true);
 
-        headerFooterAdapter = new HeaderFooterAdapter<>(taskAdapter = new TaskAdapter());
+        headerFooterAdapter = new HeaderFooterAdapter<>(taskAdapter = new TaskItemAdapter2());
+        taskAdapter.registerAdapterDataObserver(new DataChangeAdapterObserver() {
+            @Override
+            public void onItemRangeRemoved(int positionStart, int itemCount) {
+                super.onItemRangeRemoved(positionStart, itemCount);
+            }
+
+            @Override
+            protected void updateUI() {
+                //当RecyclerView进行刷新的时候，会回调该方法，这个方法会比Decoration先执行。
+            }
+        });
         View headerView = HeaderFooterAdapter.inflaterView(getContext(), R.layout.header_search_comm, recyclerView);
         View rl_comm_search = headerView.findViewById(R.id.rl_comm_search);
         registerClick(rl_comm_search);
         headerFooterAdapter.addHeader(headerView);
         taskAdapter.registerAdapterDataObserver(new RefreshViewEmptyObserver(refreshLayout, taskAdapter));
+        taskAdapter.setOnItemClickListener(this);
+        taskAdapter.setOnItemChildClickListener(this);
         recyclerView.setAdapter(headerFooterAdapter);
+
+        recyclerView.addItemDecoration(new TastItemDecoration(getActivity(), new TastItemDecoration.DecorationCallBack() {
+            @Override
+            public String getGroupName(int position) {
+                if (position < 0 || position < headerFooterAdapter.getHeaderCount()) {
+                    //说明是不存在或者是header
+                    return null;
+                } else {
+                    //说明是child
+                    int realPos = taskAdapter.getRealPos(position);
+                    TaskEntity.TaskItemEntity item = taskAdapter.getItem(realPos);
+                    return item.groupName;
+                }
+            }
+
+            @Override
+            public int getCountByGroupName(String groupName) {
+                return mArrayMap.get(groupName);
+            }
+        }));
 
 
         refreshLayout.setXRefreshViewListener(new XRefreshView.SimpleXRefreshListener() {
@@ -267,120 +300,108 @@ public class TaskOtherListFragment extends BaseFragment implements BaseRecyclerA
     private void getTaskGroupData(final TaskEntity taskEntity) {
         if (taskEntity == null) return;
         if (taskEntity.items == null) return;
-        Observable.create(new ObservableOnSubscribe<List<TaskEntity>>() {
+        Observable.create(new ObservableOnSubscribe<List<TaskEntity.TaskItemEntity>>() {
             @Override
-            public void subscribe(ObservableEmitter<List<TaskEntity>> e) throws Exception {
+            public void subscribe(ObservableEmitter<List<TaskEntity.TaskItemEntity>> e) throws Exception {
                 if (e.isDisposed()) return;
                 groupingByTasks(taskEntity.items);
-                addDataToAllTask();
                 e.onNext(allTaskEntities);
                 e.onComplete();
             }
-        }).compose(this.<List<TaskEntity>>bindToLifecycle())
+        }).compose(this.<List<TaskEntity.TaskItemEntity>>bindToLifecycle())
                 .subscribeOn(Schedulers.newThread())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Consumer<List<TaskEntity>>() {
+                .subscribe(new Consumer<List<TaskEntity.TaskItemEntity>>() {
                     @Override
-                    public void accept(List<TaskEntity> searchPolymerizationEntities) throws Exception {
+                    public void accept(List<TaskEntity.TaskItemEntity> searchPolymerizationEntities) throws Exception {
                         taskAdapter.bindData(true, allTaskEntities);
                     }
                 });
     }
 
     /**
-     * 分组
+     * 分组排序，并添加到显示的集合
      *
      * @param taskItemEntities
      */
     private void groupingByTasks(List<TaskEntity.TaskItemEntity> taskItemEntities) {
+        List<TaskEntity.TaskItemEntity> todayTaskEntities = new ArrayList<>();//今天到期
+        List<TaskEntity.TaskItemEntity> beAboutToTaskEntities = new ArrayList<>();//即将到期
+        List<TaskEntity.TaskItemEntity> futureTaskEntities = new ArrayList<>();//未来
+        List<TaskEntity.TaskItemEntity> noDueTaskEntities = new ArrayList<>();//为指定到期
+        List<TaskEntity.TaskItemEntity> datedTaskEntities = new ArrayList<>();//已过期
         for (TaskEntity.TaskItemEntity taskItemEntity : taskItemEntities) {
             if (taskItemEntity.dueTime > 0) {
                 if (TextUtils.equals(DateUtils.getTimeDateFormatYear(taskItemEntity.dueTime), DateUtils.getTimeDateFormatYear(DateUtils.millis())) || DateUtils.getDayDiff(DateUtils.millis(), taskItemEntity.dueTime) < 0) {
+                    //今天到期
+                    taskItemEntity.groupName = "今天到期";
                     todayTaskEntities.add(taskItemEntity);
                 } else if (DateUtils.getDayDiff(DateUtils.millis(), taskItemEntity.dueTime) <= 3 && DateUtils.getDayDiff(DateUtils.millis(), taskItemEntity.dueTime) > 0) {
+                    //即将到期
+                    taskItemEntity.groupName = "即将到期";
                     beAboutToTaskEntities.add(taskItemEntity);
                 } else if (DateUtils.getDayDiff(DateUtils.millis(), taskItemEntity.dueTime) > 3) {
+                    //未来
+                    taskItemEntity.groupName = "未来";
                     futureTaskEntities.add(taskItemEntity);
                 } else {
+                    //已到期
+                    taskItemEntity.groupName = "已到期";
                     datedTaskEntities.add(taskItemEntity);
                 }
             } else {
+                //未指定到期日
+                taskItemEntity.groupName = "未指定到期日";
                 noDueTaskEntities.add(taskItemEntity);
             }
         }
-    }
-
-    /**
-     * 分组内容添加到allTaskEntities
-     */
-    private void addDataToAllTask() {
+        //将分组信息添加到allTaskEntities集合中，并且在mArrayMap中记录每组的数量
         if (datedTaskEntities.size() > 0) {
-            TaskEntity todayTask = new TaskEntity();
-            todayTask.items = datedTaskEntities;
-            todayTask.groupName = "已到期";
-            todayTask.groupTaskCount = datedTaskEntities.size();
-            allTaskEntities.add(todayTask);
+            allTaskEntities.addAll(datedTaskEntities);
+            mArrayMap.put(datedTaskEntities.get(0).groupName, datedTaskEntities.size());
         }
         if (todayTaskEntities.size() > 0) {
-            TaskEntity todayTask = new TaskEntity();
-            todayTask.items = todayTaskEntities;
-            todayTask.groupName = "今天到期";
-            todayTask.groupTaskCount = todayTaskEntities.size();
-            allTaskEntities.add(todayTask);
+            allTaskEntities.addAll(todayTaskEntities);
+            mArrayMap.put(todayTaskEntities.get(0).groupName, todayTaskEntities.size());
         }
 
         if (beAboutToTaskEntities.size() > 0) {
-            TaskEntity task = new TaskEntity();
-            task.items = beAboutToTaskEntities;
-            task.groupName = "即将到期";
-            task.groupTaskCount = beAboutToTaskEntities.size();
-            allTaskEntities.add(task);
+            allTaskEntities.addAll(beAboutToTaskEntities);
+            mArrayMap.put(beAboutToTaskEntities.get(0).groupName, beAboutToTaskEntities.size());
         }
 
         if (futureTaskEntities.size() > 0) {
-            TaskEntity task = new TaskEntity();
-            task.items = futureTaskEntities;
-            task.groupName = "未来";
-            task.groupTaskCount = futureTaskEntities.size();
-            allTaskEntities.add(task);
+            allTaskEntities.addAll(futureTaskEntities);
+            mArrayMap.put(futureTaskEntities.get(0).groupName, futureTaskEntities.size());
         }
 
         if (noDueTaskEntities.size() > 0) {
-            TaskEntity task = new TaskEntity();
-            task.items = noDueTaskEntities;
-            task.groupName = "未指定到期日";
-            task.groupTaskCount = noDueTaskEntities.size();
-            allTaskEntities.add(task);
+            allTaskEntities.addAll(noDueTaskEntities);
+            mArrayMap.put(noDueTaskEntities.get(0).groupName, noDueTaskEntities.size());
         }
     }
 
     private void clearLists() {
         if (allTaskEntities != null)
             allTaskEntities.clear();
-        if (datedTaskEntities != null)
-            datedTaskEntities.clear();
-        if (todayTaskEntities != null)
-            todayTaskEntities.clear();
-        if (beAboutToTaskEntities != null)
-            beAboutToTaskEntities.clear();
-        if (futureTaskEntities != null)
-            futureTaskEntities.clear();
-        if (noDueTaskEntities != null)
-            noDueTaskEntities.clear();
     }
 
     @Override
     public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
-        if (adapter instanceof TaskItemAdapter) {
-            TaskEntity.TaskItemEntity taskItemEntity = (TaskEntity.TaskItemEntity) adapter.getItem(position);
+        if (adapter instanceof TaskItemAdapter2) {
+            //因为有搜索的header，所以需要获取真实的position
+            int realPos = taskAdapter.getRealPos(position);
+            TaskEntity.TaskItemEntity taskItemEntity = (TaskEntity.TaskItemEntity) adapter.getItem(realPos);
             TaskDetailActivity.launch(view.getContext(), taskItemEntity.id);
         }
     }
 
     @Override
     public void onItemChildClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, final View view, int position) {
-        if (adapter instanceof TaskItemAdapter) {
-            final TaskEntity.TaskItemEntity itemEntity = (TaskEntity.TaskItemEntity) adapter.getItem(position);
+        if (adapter instanceof TaskItemAdapter2) {
+            //因为有搜索的header，所以需要获取真实的position
+            int realPos = taskAdapter.getRealPos(position);
+            final TaskEntity.TaskItemEntity itemEntity = (TaskEntity.TaskItemEntity) adapter.getItem(realPos);
             switch (view.getId()) {
                 case R.id.task_item_start_timming:
                     if (itemEntity.isTiming) {
@@ -589,42 +610,13 @@ public class TaskOtherListFragment extends BaseFragment implements BaseRecyclerA
     }
 
     /**
-     * 获取子view中的RecyclerView
-     *
-     * @param taskId
-     * @return
-     */
-    private RecyclerView getChildRecyclerView(String taskId) {
-        if (taskAdapter == null) return null;
-        int parentPos = getParentPositon(taskId);
-        if (parentPos > 0) {
-            int childPos = getChildPositon(taskId);
-            if (childPos >= 0) {
-                BaseArrayRecyclerAdapter.ViewHolder viewHolderForAdapterPosition = (BaseArrayRecyclerAdapter.ViewHolder) recyclerView.findViewHolderForAdapterPosition(parentPos);
-                if (viewHolderForAdapterPosition != null) {
-                    RecyclerView recyclerview = viewHolderForAdapterPosition.obtainView(R.id.parent_item_task_recyclerview);
-                    return recyclerview;
-                }
-            }
-        }
-        return null;
-    }
-
-    /**
      * 删除子item
      *
      * @param itemEntity
      */
     private void removeChildItem(TaskEntity.TaskItemEntity itemEntity) {
         if (itemEntity == null) return;
-        RecyclerView recyclerView = getChildRecyclerView(itemEntity.id);
-        if (recyclerView == null) return;
-        if (recyclerView.getAdapter() != null) {
-            if (recyclerView.getAdapter() instanceof TaskItemAdapter) {
-                TaskItemAdapter adapter = (TaskItemAdapter) recyclerView.getAdapter();
-                adapter.removeItem(itemEntity);
-            }
-        }
+        taskAdapter.removeItem(itemEntity);
     }
 
     /**
@@ -633,15 +625,8 @@ public class TaskOtherListFragment extends BaseFragment implements BaseRecyclerA
      * @param itemEntity
      */
     private void updateChildItem(TaskEntity.TaskItemEntity itemEntity) {
-        if (itemEntity == null) return;
-        RecyclerView recyclerView = getChildRecyclerView(itemEntity.id);
-        if (recyclerView == null) return;
-        if (recyclerView.getAdapter() != null) {
-            if (recyclerView.getAdapter() instanceof TaskItemAdapter) {
-                TaskItemAdapter adapter = (TaskItemAdapter) recyclerView.getAdapter();
-                adapter.updateItem(itemEntity);
-            }
-        }
+        taskAdapter.updateItem(itemEntity);
+
     }
 
     /**
@@ -671,52 +656,12 @@ public class TaskOtherListFragment extends BaseFragment implements BaseRecyclerA
         }
     }
 
-    /**
-     * 获取item所在子容器position
-     *
-     * @param taskId
-     * @return
-     */
-    private int getChildPositon(String taskId) {
+    private int getItemPosition(String taskId) {
         if (taskAdapter.getData() != null) {
             for (int i = 0; i < taskAdapter.getData().size(); i++) {
-                TaskEntity task = taskAdapter.getData().get(i);
-                if (task != null && task.items != null) {
-                    for (int j = 0; j < task.items.size(); j++) {
-                        TaskEntity.TaskItemEntity item = task.items.get(j);
-                        if (item != null) {
-                            if (TextUtils.equals(item.id, taskId)) {
-                                return j;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        return -1;
-    }
-
-    TaskEntity.TaskItemEntity lastEntity;
-
-    /**
-     * 获取item所在父容器position
-     *
-     * @param taskId
-     * @return
-     */
-    private int getParentPositon(String taskId) {
-        if (taskAdapter.getData() != null) {
-            for (int i = 0; i < taskAdapter.getData().size(); i++) {
-                TaskEntity task = taskAdapter.getData().get(i);
-                if (task != null && task.items != null) {
-                    for (int j = 0; j < task.items.size(); j++) {
-                        TaskEntity.TaskItemEntity item = task.items.get(j);
-                        if (item != null) {
-                            if (TextUtils.equals(item.id, taskId)) {
-                                return i;
-                            }
-                        }
-                    }
+                TaskEntity.TaskItemEntity taskItemEntity = taskAdapter.getData().get(i);
+                if (TextUtils.equals(taskItemEntity.id, taskId)) {
+                    return i;
                 }
             }
         }
@@ -729,33 +674,33 @@ public class TaskOtherListFragment extends BaseFragment implements BaseRecyclerA
      * @param taskId
      */
     private void updateUnFinishChildTimeing(String taskId, boolean isTiming) {
-        int parentPos = getParentPositon(taskId);
-        if (parentPos >= 0) {
-            int childPos = getChildPositon(taskId);
-            if (childPos >= 0) {
-                BaseArrayRecyclerAdapter.ViewHolder viewHolderForAdapterPosition = (BaseArrayRecyclerAdapter.ViewHolder) recyclerView.findViewHolderForAdapterPosition(parentPos);
-                if (viewHolderForAdapterPosition != null) {
-                    RecyclerView recyclerview = viewHolderForAdapterPosition.obtainView(R.id.parent_item_task_recyclerview);
-                    if (recyclerview != null) {
-                        TaskItemAdapter itemAdapter = (TaskItemAdapter) recyclerview.getAdapter();
-                        if (itemAdapter != null) {
-                            TaskEntity.TaskItemEntity entity = itemAdapter.getItem(childPos);
-                            if (entity != null) {
-                                if (lastEntity != null)
-                                    if (!TextUtils.equals(entity.id, lastEntity.id)) {
-                                        lastEntity.isTiming = false;
-                                        taskAdapter.notifyDataSetChanged();
-                                    }
-                                if (entity.isTiming != isTiming) {
-                                    entity.isTiming = isTiming;
-                                    itemAdapter.updateItem(entity);
-                                    lastEntity = entity;
-                                }
-                            }
-                        }
+        int itemPos = getItemPosition(taskId);
+        if (itemPos >= 0) {
+//            int childPos = getChildPositon(taskId);
+//            if (childPos >= 0) {
+//                BaseArrayRecyclerAdapter.ViewHolder viewHolderForAdapterPosition = (BaseArrayRecyclerAdapter.ViewHolder) recyclerView.findViewHolderForAdapterPosition(parentPos);
+//                if (viewHolderForAdapterPosition != null) {
+//                    RecyclerView recyclerview = viewHolderForAdapterPosition.obtainView(R.id.parent_item_task_recyclerview);
+//                    if (recyclerview != null) {
+//                        TaskItemAdapter itemAdapter = (TaskItemAdapter) recyclerview.getAdapter();
+//                        if (itemAdapter != null) {
+            TaskEntity.TaskItemEntity entity = taskAdapter.getItem(itemPos);
+            if (entity != null) {
+                if (lastEntity != null)
+                    if (!TextUtils.equals(entity.id, lastEntity.id)) {
+                        lastEntity.isTiming = false;
+                        taskAdapter.notifyDataSetChanged();
                     }
+                if (entity.isTiming != isTiming) {
+                    entity.isTiming = isTiming;
+                    taskAdapter.updateItem(entity);
+                    lastEntity = entity;
                 }
             }
+//                        }
+//                    }
+//                }
+//            }
         } else {
             taskAdapter.notifyDataSetChanged();
         }

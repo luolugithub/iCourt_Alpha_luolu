@@ -25,7 +25,9 @@ public class TaskEntity implements Serializable {
     public int groupTaskCount;//分组内任务个数
     public List<TaskItemEntity> items;
 
-    public static class TaskItemEntity implements Serializable {
+    public static class TaskItemEntity implements Serializable{
+        public String groupName;//任务所在分组名称
+
         public String id;
         public String name;//任务名称
         public String parentId;//任务组id
