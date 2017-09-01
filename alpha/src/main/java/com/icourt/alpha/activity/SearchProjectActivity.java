@@ -272,14 +272,7 @@ public class SearchProjectActivity extends BaseActivity implements BaseRecyclerA
      * 搜索任务
      */
     private void searchTask(String keyword) {
-        int statusType = -1;
-        if (taskStatuType == -1) {
-            statusType = 0;
-        } else if (taskStatuType == 0) {
-            statusType = taskStatuType;
-        } else {
-            statusType = 1;
-        }
+        int statusType = -1;//搜索全部状态的任务
         searchTaskType = 0;//我关注的，新任务，都搜索全部
         if (!TextUtils.isEmpty(assignTos)) {
             getApi().taskQueryByName(assignTos, keyword, statusType, searchTaskType, projectId).enqueue(new SimpleCallBack<TaskEntity>() {

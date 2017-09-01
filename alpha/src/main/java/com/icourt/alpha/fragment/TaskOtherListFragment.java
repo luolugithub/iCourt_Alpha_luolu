@@ -20,6 +20,7 @@ import com.andview.refreshview.XRefreshView;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.icourt.alpha.R;
+import com.icourt.alpha.activity.SearchProjectActivity;
 import com.icourt.alpha.activity.TaskDetailActivity;
 import com.icourt.alpha.activity.TimerDetailActivity;
 import com.icourt.alpha.activity.TimerTimingActivity;
@@ -27,6 +28,7 @@ import com.icourt.alpha.adapter.TaskAdapter;
 import com.icourt.alpha.adapter.TaskItemAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseArrayRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
+import com.icourt.alpha.adapter.baseadapter.HeaderFooterAdapter;
 import com.icourt.alpha.adapter.baseadapter.adapterObserver.RefreshViewEmptyObserver;
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.entity.bean.TaskEntity;
@@ -102,6 +104,7 @@ public class TaskOtherListFragment extends BaseFragment implements BaseRecyclerA
     ArrayList<String> ids;
     private int pageIndex = 1;
     TaskAdapter taskAdapter;
+    HeaderFooterAdapter<TaskAdapter> headerFooterAdapter;
 
     @IntDef({UNFINISH_TYPE,
             FINISH_TYPE})
@@ -145,8 +148,15 @@ public class TaskOtherListFragment extends BaseFragment implements BaseRecyclerA
         refreshLayout.setMoveForHorizontal(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setHasFixedSize(true);
-        recyclerView.setAdapter(taskAdapter = new TaskAdapter());
+
+        headerFooterAdapter = new HeaderFooterAdapter<>(taskAdapter = new TaskAdapter());
+        View headerView = HeaderFooterAdapter.inflaterView(getContext(), R.layout.header_search_comm, recyclerView);
+        View rl_comm_search = headerView.findViewById(R.id.rl_comm_search);
+        registerClick(rl_comm_search);
+        headerFooterAdapter.addHeader(headerView);
         taskAdapter.registerAdapterDataObserver(new RefreshViewEmptyObserver(refreshLayout, taskAdapter));
+        recyclerView.setAdapter(headerFooterAdapter);
+
 
         refreshLayout.setXRefreshViewListener(new XRefreshView.SimpleXRefreshListener() {
             @Override
@@ -162,6 +172,16 @@ public class TaskOtherListFragment extends BaseFragment implements BaseRecyclerA
             }
         });
         refreshLayout.startRefresh();
+    }
+
+    @Override
+    public void onClick(View v) {
+        super.onClick(v);
+        switch (v.getId()) {
+            case R.id.rl_comm_search:
+                SearchProjectActivity.launchTask(getContext(), getAssignTos(), 0, SearchProjectActivity.SEARCH_TASK);
+                break;
+        }
     }
 
     @Override

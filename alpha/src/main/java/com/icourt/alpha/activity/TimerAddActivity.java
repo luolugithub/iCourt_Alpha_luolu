@@ -380,7 +380,7 @@ public class TimerAddActivity extends BaseTimerActivity
         itemEntityCopy.endTime = selectedEndDate.getTimeInMillis();
         itemEntityCopy.state = 1;
         itemEntityCopy.workDate = selectedStartDate.getTimeInMillis();
-        itemEntityCopy.matterPkId = selectedProjectEntity != null ? selectedProjectEntity.pkId : null;
+        itemEntityCopy.matterPkId = selectedProjectEntity != null ? selectedProjectEntity.pkId : "";
         itemEntityCopy.workTypeId = selectedWorkType != null ? selectedWorkType.pkId : null;
         itemEntityCopy.taskPkId = selectedTaskItem != null ? selectedTaskItem.id : null;
         itemEntityCopy.name = TextUtils.isEmpty(timeNameTv.getText()) ? null : timeNameTv.getText().toString();

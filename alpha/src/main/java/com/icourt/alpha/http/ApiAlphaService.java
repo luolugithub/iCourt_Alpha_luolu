@@ -34,6 +34,7 @@ import com.icourt.alpha.http.httpmodel.ResEntity;
 import java.util.List;
 import java.util.Map;
 
+import io.reactivex.Observable;
 import okhttp3.RequestBody;
 import retrofit2.Call;
 import retrofit2.http.Body;
@@ -768,6 +769,19 @@ public interface ApiAlphaService {
     @Multipart
     @POST("api/v2/task/{taskId}/attachment/addFromFile")
     Call<ResEntity<JsonElement>> taskAttachmentUpload(@Path("taskId") String taskId, @PartMap Map<String, RequestBody> params);
+
+    /**
+     * 任务上传附件
+     * <p>
+     * 文档地址：http://testpms.alphalawyer.cn/ilaw/swagger/index.html#!/taskflow-api/addFromFileUsingPOST
+     *
+     * @param taskId
+     * @param params
+     * @return
+     */
+    @Multipart
+    @POST("api/v2/task/{taskId}/attachment/addFromFile")
+    Observable<JsonElement> taskAttachmentUploadObservable(@Path("taskId") String taskId, @PartMap Map<String, RequestBody> params);
 
     /**
      * 获取指定时间段的计时

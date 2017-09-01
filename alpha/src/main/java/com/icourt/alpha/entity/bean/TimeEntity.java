@@ -40,7 +40,7 @@ public class TimeEntity implements Serializable {
 
         public String pkId;
         public String name;
-        public String matterPkId;
+        public String matterPkId = "";
         public String taskPkId = "";
         public long startTime;//计时的起始点
         public long endTime;

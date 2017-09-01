@@ -38,6 +38,7 @@ import com.icourt.api.RequestUtils;
 import org.greenrobot.eventbus.EventBus;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -50,6 +51,13 @@ import butterknife.Unbinder;
 import cn.finalteam.galleryfinal.FunctionConfig;
 import cn.finalteam.galleryfinal.GalleryFinal;
 import cn.finalteam.galleryfinal.model.PhotoInfo;
+import io.reactivex.Observable;
+import io.reactivex.ObservableSource;
+import io.reactivex.Observer;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.Function;
+import io.reactivex.schedulers.Schedulers;
 import okhttp3.RequestBody;
 import retrofit2.Call;
 import retrofit2.Response;
@@ -188,12 +196,14 @@ public class TaskAttachmentFragment extends BaseFragment implements BaseRecycler
         @Override
         public void onHanlderSuccess(int reqeustCode, List<PhotoInfo> resultList) {
             if (resultList != null) {
-                showLoadingDialog("正在上传...");
+
+                List<String> paths = new ArrayList<>();
                 for (int i = 0; i < resultList.size(); i++) {
                     if (resultList.get(i) != null && !TextUtils.isEmpty(resultList.get(i).getPhotoPath())) {
-                        uploadAttachmentToTask(resultList.get(i).getPhotoPath(), i, resultList.size() - 1);
+                        paths.add(resultList.get(i).getPhotoPath());
                     }
                 }
+                uploadFiles(taskId, paths);
             }
         }
 
@@ -290,42 +300,64 @@ public class TaskAttachmentFragment extends BaseFragment implements BaseRecycler
     }
 
     /**
-     * 上传任务附件
+     * 批量上传文件
      *
-     * @param filePath
+     * @param filePaths 文件路径
      */
-    private void uploadAttachmentToTask(String filePath, final int position, final int size) {
-        if (TextUtils.isEmpty(filePath)) {
-            dismissLoadingDialog();
-            return;
-        }
-        File file = new File(filePath);
-        if (!file.exists()) {
-            dismissLoadingDialog();
-            showTopSnackBar("文件不存在啦");
-            return;
-        }
-        String key = "file\";filename=\"" + DateUtils.millis() + ".png";
-        Map<String, RequestBody> params = new HashMap<>();
-        params.put(key, RequestUtils.createImgBody(file));
-        getApi().taskAttachmentUpload(taskId, params).enqueue(new SimpleCallBack<JsonElement>() {
-            @Override
-            public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
-                if (position == size) {
-                    dismissLoadingDialog();
-                    showTopSnackBar("上传成功");
-                    EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION));
-                    getData(true);
-                }
-            }
+    private void uploadFiles(final String taskId, final List<String> filePaths) {
+        if (TextUtils.isEmpty(taskId)) return;
+        if (filePaths == null && filePaths.isEmpty()) return;
+        showLoadingDialog("正在上传...");
+        Observable.just(filePaths)
+                .flatMap(new Function<List<String>, ObservableSource<JsonElement>>() {
+                    @Override
+                    public ObservableSource<JsonElement> apply(@io.reactivex.annotations.NonNull List<String> strings) throws Exception {
+                        List<Observable<JsonElement>> observables = new ArrayList<Observable<JsonElement>>();
+                        for (int i = 0; i < strings.size(); i++) {
+                            String filePath = strings.get(i);
+                            if (TextUtils.isEmpty(filePath)) {
+                                continue;
+                            }
+                            File file = new File(filePath);
+                            if (!file.exists()) {
+                                continue;
+                            }
+                            String key = "file\";filename=\"" + DateUtils.millis() + ".png";
+                            Map<String, RequestBody> params = new HashMap<>();
+                            params.put(key, RequestUtils.createImgBody(file));
+                            observables.add(getApi().taskAttachmentUploadObservable(taskId, params));
+                        }
+                        return Observable.concat(observables);
+                    }
+                })
+                .compose(this.<JsonElement>bindToLifecycle())
+                .subscribeOn(Schedulers.newThread())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Observer<JsonElement>() {
+                    @Override
+                    public void onSubscribe(@io.reactivex.annotations.NonNull Disposable disposable) {
 
-            @Override
-            public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
-                super.onFailure(call, t);
-                dismissLoadingDialog();
-                showTopSnackBar("上传失败");
-            }
-        });
+                    }
+
+                    @Override
+                    public void onNext(@io.reactivex.annotations.NonNull JsonElement jsonElement) {
+
+                    }
+
+                    @Override
+                    public void onError(@io.reactivex.annotations.NonNull Throwable throwable) {
+                        dismissLoadingDialog();
+                        showTopSnackBar("上传失败");
+                    }
+
+                    @Override
+                    public void onComplete() {
+                        dismissLoadingDialog();
+                        showTopSnackBar("上传成功");
+                        EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION));
+                        getData(true);
+                    }
+                });
     }
 
     /**
@@ -361,8 +393,9 @@ public class TaskAttachmentFragment extends BaseFragment implements BaseRecycler
         switch (requestCode) {
             case REQUEST_CODE_CAMERA:
                 if (resultCode == Activity.RESULT_OK) {
-                    if (!TextUtils.isEmpty(path))
-                        uploadAttachmentToTask(path, 1, 1);
+                    if (!TextUtils.isEmpty(path)) {
+                        uploadFiles(taskId, Arrays.asList(path));
+                    }
                 }
                 break;
             default:

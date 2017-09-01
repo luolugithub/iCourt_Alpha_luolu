@@ -20,7 +20,6 @@ import com.google.gson.JsonObject;
 import com.icourt.alpha.R;
 import com.icourt.alpha.activity.MyAllotTaskActivity;
 import com.icourt.alpha.activity.TaskCreateActivity;
-import com.icourt.alpha.adapter.ListDropDownAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseFragmentAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.base.BaseFragment;
@@ -57,7 +56,9 @@ import retrofit2.Response;
  */
 public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackListener, TopMiddlePopup.OnItemClickListener {
 
-    public static int select_position = 0;//选择的筛选选项
+    public int select_position = 0;//选择的筛选选项
+    public boolean isAwayScroll = false; //切换时是否滚动，在'已完成和已删除'状态下，点击新任务提醒。
+    public boolean isShowCalendar;//是否显示日历页面
 
     @BindView(R.id.tabLayout)
     TabLayout tabLayout;
@@ -75,15 +76,12 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
     ImageView titleCalendar;
     TaskListFragment attentionTaskFragment;
     TaskAllFragment alltaskFragment;
-    ListDropDownAdapter listDropDownAdapter;
     TopMiddlePopup topMiddlePopup;
     List<FilterDropEntity> dropEntities = new ArrayList<>();
     FilterDropEntity doingEntity = new FilterDropEntity("未完成", "0", 0);//未完成
     FilterDropEntity doneEntity = new FilterDropEntity("已完成", "0", 1);//已完成
     FilterDropEntity deleteEntity = new FilterDropEntity("已删除", "0", 3);//已删除
-    public static boolean isAwayScroll = false; //切换时是否滚动，在'已完成和已删除'状态下，点击新任务提醒。
 
-    public static boolean isShowCalendar;//是否显示日历页面
     private Handler handler = new Handler();
 
     public static TabTaskFragment newInstance() {
@@ -125,11 +123,13 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
             ImageView downIv = tab.getCustomView().findViewById(R.id.tab_custom_title_iv);
             switch (i) {
                 case 0:
+                    titleTv.setTextColor(0xFF313131);
                     titleTv.setText("未完成");
                     downIv.setVisibility(View.VISIBLE);
                     tab.getCustomView().setOnClickListener(new OnTabClickListener());
                     break;
                 case 1:
+                    titleTv.setTextColor(0xFF979797);
                     titleTv.setText("我关注的");
                     downIv.setVisibility(View.GONE);
                     break;
@@ -144,23 +144,31 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
             @Override
             public void onPageSelected(int position) {
                 titleCalendar.setVisibility(View.GONE);
-                switch (position) {
-                    case 0:
-                        titleCalendar.setVisibility(select_position == 0 ? View.VISIBLE : View.GONE);
-                        if (topMiddlePopup != null && topMiddlePopup.getAdapter() != null) {
-                            FilterDropEntity filterDropEntity = topMiddlePopup.getAdapter().getItem(select_position);
-                            if (filterDropEntity != null) {
-                                setFirstTabText(filterDropEntity.name, select_position);
-                                updateListData(filterDropEntity.stateType);
+                if (tabLayout.getTabAt(0).getCustomView() != null && tabLayout.getTabAt(1).getCustomView() != null) {
+                    TextView titleTv_0 = tabLayout.getTabAt(0).getCustomView().findViewById(R.id.tab_custom_title_tv);
+                    TextView titleTv_1 = tabLayout.getTabAt(1).getCustomView().findViewById(R.id.tab_custom_title_tv);
+                    switch (position) {
+                        case 0:
+                            titleTv_0.setTextColor(0xFF313131);
+                            titleTv_1.setTextColor(0xFF979797);
+                            titleCalendar.setVisibility(select_position == 0 ? View.VISIBLE : View.GONE);
+                            if (topMiddlePopup != null && topMiddlePopup.getAdapter() != null) {
+                                FilterDropEntity filterDropEntity = topMiddlePopup.getAdapter().getItem(select_position);
+                                if (filterDropEntity != null) {
+                                    setFirstTabText(filterDropEntity.name, select_position);
+                                    updateListData(filterDropEntity.stateType);
+                                }
                             }
-                        }
-                        break;
-                    case 1:
-                        setFirstTabImage(false);
-                        Bundle bundle = new Bundle();
-                        bundle.putInt("stateType", 0);
-                        attentionTaskFragment.notifyFragmentUpdate(attentionTaskFragment, TaskListFragment.TYPE_MY_ATTENTION, bundle);
-                        break;
+                            break;
+                        case 1:
+                            titleTv_0.setTextColor(0xFF979797);
+                            titleTv_1.setTextColor(0xFF313131);
+                            setFirstTabImage(false);
+                            Bundle bundle = new Bundle();
+                            bundle.putInt("stateType", 0);
+                            attentionTaskFragment.notifyFragmentUpdate(attentionTaskFragment, TaskListFragment.TYPE_MY_ATTENTION, bundle);
+                            break;
+                    }
                 }
             }
 
@@ -203,6 +211,11 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
         titleCalendar.setVisibility(position == 0 ? View.VISIBLE : View.GONE);
     }
 
+    /**
+     * 更新全部任务列表
+     *
+     * @param stateType
+     */
     public void updateListData(int stateType) {
         Bundle bundle = new Bundle();
         bundle.putInt("stateType", stateType);
@@ -227,7 +240,7 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
         public void onClick(View view) {
             if (tabLayout.getTabAt(0) != null) {
                 if (view.isSelected()) {
-                    postDiyDissPop();
+                    postDismissPop();
                     topMiddlePopup.show(titleView, dropEntities, select_position);
                     setFirstTabImage(true);
                     if (topMiddlePopup.isShowing()) {
@@ -240,7 +253,10 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
         }
     }
 
-    private void postDiyDissPop() {
+    /**
+     * 隐藏pop
+     */
+    private void postDismissPop() {
         handler.removeCallbacksAndMessages(null);
         handler.postDelayed(new Runnable() {
             @Override
@@ -265,18 +281,20 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
             public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
                 JsonElement jsonElement = response.body().result;
                 if (jsonElement != null) {
-                    JsonObject jsonObject = jsonElement.getAsJsonObject();
-                    if (jsonObject != null) {
-                        doingEntity.count = jsonObject.get("doingCount").getAsString();
-                        doneEntity.count = jsonObject.get("doneCount").getAsString();
-                        deleteEntity.count = jsonObject.get("deletedCount").getAsString();
-                        dropEntities.clear();
-                        dropEntities.add(doingEntity);
-                        dropEntities.add(doneEntity);
-                        dropEntities.add(deleteEntity);
-                        if (topMiddlePopup != null && topMiddlePopup.isShowing()) {
-                            if (topMiddlePopup.getAdapter() != null) {
-                                topMiddlePopup.getAdapter().bindData(true, dropEntities);
+                    if (jsonElement.isJsonObject()) {
+                        JsonObject jsonObject = jsonElement.getAsJsonObject();
+                        if (jsonObject != null) {
+                            doingEntity.count = jsonObject.get("doingCount").getAsString();
+                            doneEntity.count = jsonObject.get("doneCount").getAsString();
+                            deleteEntity.count = jsonObject.get("deletedCount").getAsString();
+                            dropEntities.clear();
+                            dropEntities.add(doingEntity);
+                            dropEntities.add(doneEntity);
+                            dropEntities.add(deleteEntity);
+                            if (topMiddlePopup != null && topMiddlePopup.isShowing()) {
+                                if (topMiddlePopup.getAdapter() != null) {
+                                    topMiddlePopup.getAdapter().bindData(true, dropEntities);
+                                }
                             }
                         }
                     }
@@ -415,6 +433,7 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
     @Override
     public void onDestroy() {
         super.onDestroy();
+        handler.removeCallbacksAndMessages(null);
         if (unbinder != null) {
             unbinder.unbind();
         }
@@ -455,11 +474,7 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
         if (currFragment instanceof TaskListFragment) {
             TaskListFragment taskListFragment = (TaskListFragment) currFragment;
             int visibility = taskListFragment.nextTaskCardview.getVisibility();
-            if (visibility == View.GONE || visibility == View.INVISIBLE) {
-                return true;
-            } else {
-                return false;
-            }
+            return (visibility == View.GONE || visibility == View.INVISIBLE);
         }
         return false;
     }

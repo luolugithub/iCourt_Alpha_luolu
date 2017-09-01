@@ -118,7 +118,7 @@ public class TaskListCalendarFragment extends BaseFragment {
         return view;
     }
 
- protected void initView() {
+    protected void initView() {
         taskItemEntityList = (ArrayList<TaskEntity.TaskItemEntity>) getArguments().getSerializable(KEY_TASKS);
         if (taskItemEntityList == null) {
             taskItemEntityList = new ArrayList<>();
@@ -568,10 +568,18 @@ public class TaskListCalendarFragment extends BaseFragment {
                         SearchProjectActivity.SEARCH_TASK);
                 break;
             case R.id.new_task_cardview:
-                TabTaskFragment.isShowCalendar = false;
-                TabTaskFragment.isAwayScroll = true;
-                ((TabTaskFragment) (getParentFragment().getParentFragment())).setFirstTabText("未完成", 0);
-                ((TabTaskFragment) (getParentFragment().getParentFragment())).updateListData(0);
+                if (getParentFragment() != null) {
+                    if (getParentFragment() instanceof TaskAllFragment) {
+                        TaskAllFragment allFragment = (TaskAllFragment) getParentFragment();
+                        if (allFragment.getParentFragment() instanceof TabTaskFragment) {
+                            TabTaskFragment tabTaskFragment = (TabTaskFragment) allFragment.getParentFragment();
+                            tabTaskFragment.isShowCalendar = false;
+                            tabTaskFragment.isAwayScroll = true;
+                            tabTaskFragment.setFirstTabText("未完成", 0);
+                            tabTaskFragment.updateListData(0);
+                        }
+                    }
+                }
                 break;
         }
     }
