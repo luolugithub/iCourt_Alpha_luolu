@@ -38,6 +38,7 @@ import com.liulishuo.filedownloader.FileDownloadListener;
 import com.liulishuo.filedownloader.FileDownloader;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
 
 import butterknife.BindView;
@@ -217,9 +218,14 @@ public class FileDownloadActivity extends BaseActivity {
 
     private void openImageView() {
         if (IMUtils.isPIC(fileCachePath)) {
-            ImagePagerActivity.launch(
+            ArrayList<String> smallImageUrl = new ArrayList<>();
+            smallImageUrl.add(fileCachePath);
+            ImageViewerActivity.launch(
                     getContext(),
-                    Arrays.asList(fileCachePath));
+                    smallImageUrl,
+                    null,
+                    0
+            );
             finish();
         }
     }

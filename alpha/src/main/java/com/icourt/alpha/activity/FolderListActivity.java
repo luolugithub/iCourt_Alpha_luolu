@@ -29,6 +29,7 @@ import android.widget.TextView;
 import com.andview.refreshview.XRefreshView;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.icourt.alpha.BuildConfig;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.FolderDocumentAdapter;
 import com.icourt.alpha.adapter.FolderDocumentWrapAdapter;
@@ -46,8 +47,10 @@ import com.icourt.alpha.fragment.dialogfragment.RepoDetailsDialogFragment;
 import com.icourt.alpha.http.callback.SFileCallBack;
 import com.icourt.alpha.http.consumer.BaseThrowableConsumer;
 import com.icourt.alpha.http.observer.BaseObserver;
+import com.icourt.alpha.utils.IMUtils;
 import com.icourt.alpha.utils.ImageUtils;
 import com.icourt.alpha.utils.IndexUtils;
+import com.icourt.alpha.utils.SFileTokenUtils;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.utils.UriUtils;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
@@ -830,17 +833,47 @@ public class FolderListActivity extends FolderBaseActivity
                             item.name,
                             String.format("%s%s/", getSeaFileDirPath(), item.name));
                 } else {
-                    FileDownloadActivity.launch(
-                            getContext(),
-                            getSeaFileRepoId(),
-                            item.name,
-                            item.size,
-                            String.format("%s%s", getSeaFileDirPath(), item.name),
-                            null);
+                    //图片 直接预览
+                    if (IMUtils.isPIC(item.name)) {
+                        ArrayList<String> bigImageUrls = new ArrayList<>();
+                        ArrayList<String> smallImageUrls = new ArrayList<>();
+                        List<FolderDocumentEntity> allData = getAllData();
+                        for (int i = 0; i < allData.size(); i++) {
+                            FolderDocumentEntity folderDocumentEntity = allData.get(i);
+                            bigImageUrls.add(
+                                    getSFileImageUrl(folderDocumentEntity != null ?
+                                            folderDocumentEntity.name : "", Integer.MAX_VALUE));
+                            smallImageUrls.add(getSFileImageUrl(folderDocumentEntity != null ?
+                                    folderDocumentEntity.name : "", 200));
+                        }
+                        ImageViewerActivity.launch(
+                                getContext(),
+                                smallImageUrls,
+                                bigImageUrls,
+                                position);
+                    } else {
+                        FileDownloadActivity.launch(
+                                getContext(),
+                                getSeaFileRepoId(),
+                                item.name,
+                                item.size,
+                                String.format("%s%s", getSeaFileDirPath(), item.name),
+                                null);
+                    }
                 }
             }
         }
     }
+
+    protected String getSFileImageUrl(String name, int size) {
+        return String.format("%silaw/api/v2/documents/thumbnailImage?repoId=%s&seafileToken=%s&size=%s&p=%s",
+                BuildConfig.API_URL,
+                getSeaFileRepoId(),
+                SFileTokenUtils.getSFileToken(),
+                size,
+                String.format("%s%s", getSeaFileDirPath(), name));
+    }
+
 
     @Override
     public boolean onItemLongClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {

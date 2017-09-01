@@ -53,7 +53,6 @@ import com.icourt.alpha.utils.JsonUtils;
 import com.icourt.alpha.utils.Md5Utils;
 import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.view.HackyViewPager;
-import com.icourt.alpha.view.TouchImageView;
 import com.icourt.alpha.widget.dialog.BottomActionDialog;
 import com.icourt.api.RequestUtils;
 import com.liulishuo.filedownloader.BaseDownloadTask;
@@ -825,7 +824,7 @@ public class ImagePagerActivity extends BaseUmengActivity implements BasePagerAd
 
         @Override
         public void bindDataToItem(final String s, ViewGroup container, View itemView, final int pos) {
-            final TouchImageView touchImageView = (TouchImageView) itemView.findViewById(R.id.imageView);
+            final ImageView touchImageView = itemView.findViewById(R.id.imageView);
             setTransitionView(touchImageView, s);
             touchImageView.setOnClickListener(new View.OnClickListener() {
                 @Override
