@@ -185,8 +185,8 @@ public class FileImportNavFragment extends BaseFragment {
         if (fragment != null) {
             mFragTransaction.remove(fragment);
         }
-        ProjectSaveFileDialogFragment.newInstance(filePath,ProjectSaveFileDialogFragment.OTHER_TYPE)
-                .show(mFragTransaction, tag);
+        mFragTransaction.add(ProjectSaveFileDialogFragment.newInstance(filePath, ProjectSaveFileDialogFragment.OTHER_TYPE), tag);
+        mFragTransaction.commitAllowingStateLoss();
     }
 
     @Override

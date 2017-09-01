@@ -305,8 +305,9 @@ public class FileBoxDownloadActivity extends BaseActivity {
         if (fragment != null) {
             mFragTransaction.remove(fragment);
         }
-        ProjectSaveFileDialogFragment.newInstance(filePath, ProjectSaveFileDialogFragment.ALPHA_TYPE)
-                .show(mFragTransaction, tag);
+
+        mFragTransaction.add(ProjectSaveFileDialogFragment.newInstance(filePath, ProjectSaveFileDialogFragment.ALPHA_TYPE), tag);
+        mFragTransaction.commitAllowingStateLoss();
     }
 
     /**

@@ -1109,7 +1109,7 @@ public class MainActivity extends BaseAppUpdateActivity
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_BACK) {
             IntentWrapper.onBackPressed(this);
-            moveTaskToBack(false);
+            moveTaskToBack(true);
             return true;
         }
         return super.onKeyDown(keyCode, event);
