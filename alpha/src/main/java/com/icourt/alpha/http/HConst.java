@@ -40,7 +40,7 @@ public class HConst {
 
 
     // Android 渠道
-    public static final String OS_TYPE = "ANDROID";
+    public static final String OS_TYPE = "1";
 
 
     public static final String WX_APPID = "wxa3502404446fe64e";//微信appid
