@@ -179,98 +179,16 @@ public class ProjectDetailFragment extends BaseFragment implements BaseRecyclerA
             }
 
             List<ProjectBasicItemEntity> basicItemEntities = new ArrayList<>();
-            if (!TextUtils.isEmpty(projectDetailBean.matterTypeName)) {//项目类型
-                ProjectBasicItemEntity itemEntity = new ProjectBasicItemEntity();
-                itemEntity.key = "项目类型";
-                itemEntity.value = projectDetailBean.matterTypeName;
-                itemEntity.type = Const.PROJECT_TYPE_TYPE;
-                basicItemEntities.add(itemEntity);
-            }
-            if (!TextUtils.isEmpty(projectDetailBean.name)) {//项目名称
-                ProjectBasicItemEntity itemEntity = new ProjectBasicItemEntity();
-                itemEntity.key = "项目名称";
-                itemEntity.value = projectDetailBean.name;
-                itemEntity.type = Const.PROJECT_NAME_TYPE;
-                basicItemEntities.add(itemEntity);
-            }
-            if (!TextUtils.isEmpty(projectDetailBean.matterNo)) {//项目编号
-                ProjectBasicItemEntity itemEntity = new ProjectBasicItemEntity();
-                itemEntity.key = "项目编号";
-                itemEntity.value = projectDetailBean.matterNo;
-                itemEntity.type = Const.PROJECT_NUMBER_TYPE;
-                basicItemEntities.add(itemEntity);
-            }
+            setKeyValueData(basicItemEntities, "项目类型", projectDetailBean.matterTypeName, Const.PROJECT_TYPE_TYPE);
+            setKeyValueData(basicItemEntities, "项目名称", projectDetailBean.name, Const.PROJECT_NAME_TYPE);
+            setKeyValueData(basicItemEntities, "项目编号", projectDetailBean.matterNo, Const.PROJECT_NUMBER_TYPE);
+            setClientData(basicItemEntities);//客户
+            setGroupsData(basicItemEntities);//负责部门
+            setAttorneysData(basicItemEntities);//案源律师
 
-            if (projectDetailBean.clients != null) {//客户
-                if (projectDetailBean.clients.size() > 0) {
-                    ProjectBasicItemEntity itemEntity = new ProjectBasicItemEntity();
-                    if (projectDetailBean.clients.size() > 1) {
-                        itemEntity.key = "客户 (" + projectDetailBean.clients.size() + ")";
-                    } else {
-                        itemEntity.key = "客户";
-                    }
-                    StringBuffer buffer = new StringBuffer();
-                    for (ProjectDetailEntity.ClientsBean client : projectDetailBean.clients) {
-                        buffer.append(client.contactName).append("、");
-                    }
-                    itemEntity.value = buffer.toString();
-                    if (itemEntity.value.length() > 0) {
-                        itemEntity.value = itemEntity.value.substring(0, itemEntity.value.length() - 1);
-                    }
-                    itemEntity.type = Const.PROJECT_CLIENT_TYPE;
-                    basicItemEntities.add(itemEntity);
-                }
-            }
-
-            if (projectDetailBean.groups != null) {//负责部门
-                if (projectDetailBean.groups.size() > 0) {
-                    ProjectBasicItemEntity itemEntity = new ProjectBasicItemEntity();
-                    if (projectDetailBean.groups.size() > 1) {
-                        itemEntity.key = "负责部门 (" + projectDetailBean.groups.size() + ")";
-                    } else {
-                        itemEntity.key = "负责部门";
-                    }
-                    StringBuffer buffer = new StringBuffer();
-                    for (ProjectDetailEntity.GroupsBean group : projectDetailBean.groups) {
-                        buffer.append(group.name).append("、");
-                    }
-                    itemEntity.value = buffer.toString();
-                    if (itemEntity.value.length() > 0) {
-                        itemEntity.value = itemEntity.value.substring(0, itemEntity.value.length() - 1);
-                    }
-                    itemEntity.type = Const.PROJECT_DEPARTMENT_TYPE;
-                    basicItemEntities.add(itemEntity);
-                }
-            }
-
-            if (projectDetailBean.attorneys != null) {//案源律师
-                if (projectDetailBean.attorneys.size() > 0) {
-                    ProjectBasicItemEntity itemEntity = new ProjectBasicItemEntity();
-                    if (projectDetailBean.attorneys.size() > 1) {
-                        itemEntity.key = "案源律师 (" + projectDetailBean.attorneys.size() + ")";
-                    } else {
-                        itemEntity.key = "案源律师";
-                    }
-                    StringBuffer buffer = new StringBuffer();
-                    for (ProjectDetailEntity.AttorneysBean attorneysBean : projectDetailBean.attorneys) {
-                        buffer.append(attorneysBean.attorneyName).append("、");
-                    }
-                    itemEntity.value = buffer.toString();
-                    if (itemEntity.value.length() > 0) {
-                        itemEntity.value = itemEntity.value.substring(0, itemEntity.value.length() - 1);
-                    }
-                    itemEntity.type = Const.PROJECT_ANYUAN_LAWYER_TYPE;
-                    basicItemEntities.add(itemEntity);
-                }
-            }
-
-            if (projectDetailBean.beginDate > 0 && projectDetailBean.endDate > 0) {//项目时间
-                ProjectBasicItemEntity itemEntity = new ProjectBasicItemEntity();
-                itemEntity.key = "项目时间";
-                itemEntity.value = DateUtils.getTimeDateFormatYearDot(projectDetailBean.beginDate) + " - " + DateUtils.getTimeDateFormatYearDot(projectDetailBean.endDate);
-                itemEntity.type = Const.PROJECT_TIME_TYPE;
-                basicItemEntities.add(itemEntity);
-            }
+            setKeyValueData(basicItemEntities, "项目时间", String.format("%s - %s",
+                    DateUtils.getTimeDateFormatYearDot(projectDetailBean.beginDate),
+                    DateUtils.getTimeDateFormatYearDot(projectDetailBean.endDate)), Const.PROJECT_TIME_TYPE);
 
             projectBasicInfoAdapter.setClientsBeens(projectDetailBean.clients);
             projectBasicInfoAdapter.bindData(true, basicItemEntities);
@@ -293,11 +211,6 @@ public class ProjectDetailFragment extends BaseFragment implements BaseRecyclerA
                 serviceContentLayout.setVisibility(View.GONE);
             }
             if (projectDetailBean.matterType == 0) {//争议解决
-//                if (!TextUtils.isEmpty(projectDetailBean.matterCaseName) || !TextUtils.isEmpty(projectDetailBean.competentCourt) || projectDetailBean.judges != null) {
-//                    procedureLayout.setVisibility(View.VISIBLE);
-//                } else {
-//                    procedureLayout.setVisibility(View.GONE);
-//                }
                 procedureLayout.setVisibility(View.VISIBLE);
                 if (baseFragmentAdapter == null) {
                     baseFragmentAdapter = new BaseFragmentAdapter(getChildFragmentManager());
@@ -317,6 +230,100 @@ public class ProjectDetailFragment extends BaseFragment implements BaseRecyclerA
                 procedureLayout.setVisibility(View.GONE);
             }
         }
+    }
+
+    /**
+     * 设置单一的数据类型：value为string
+     *
+     * @param basicItemEntities
+     * @param key
+     * @param value
+     * @param type
+     */
+    private void setKeyValueData(List<ProjectBasicItemEntity> basicItemEntities, String key, String value, int type) {
+        if (!TextUtils.isEmpty(value)) return;
+        ProjectBasicItemEntity itemEntity = new ProjectBasicItemEntity();
+        itemEntity.key = key;
+        itemEntity.value = value;
+        itemEntity.type = type;
+        basicItemEntities.add(itemEntity);
+    }
+
+    /**
+     * 设置客户信息
+     *
+     * @param basicItemEntities
+     */
+    private void setClientData(List<ProjectBasicItemEntity> basicItemEntities) {
+        if (projectDetailBean.clients == null || projectDetailBean.clients.size() <= 0) return;
+        ProjectBasicItemEntity itemEntity = new ProjectBasicItemEntity();
+        if (projectDetailBean.clients.size() > 1) {
+            itemEntity.key = "客户 (" + projectDetailBean.clients.size() + ")";
+        } else {
+            itemEntity.key = "客户";
+        }
+        StringBuffer buffer = new StringBuffer();
+        for (ProjectDetailEntity.ClientsBean client : projectDetailBean.clients) {
+            buffer.append(client.contactName).append("、");
+        }
+        itemEntity.value = buffer.toString();
+        if (itemEntity.value.length() > 0) {
+            itemEntity.value = itemEntity.value.substring(0, itemEntity.value.length() - 1);
+        }
+        itemEntity.type = Const.PROJECT_CLIENT_TYPE;
+        basicItemEntities.add(itemEntity);
+    }
+
+    /**
+     * 设置部门信息
+     *
+     * @param basicItemEntities
+     */
+    private void setGroupsData(List<ProjectBasicItemEntity> basicItemEntities) {
+        if (projectDetailBean.groups == null || projectDetailBean.groups.size() <= 0) return;
+        ProjectBasicItemEntity itemEntity = new ProjectBasicItemEntity();
+        if (projectDetailBean.groups.size() > 1) {
+            itemEntity.key = "负责部门 (" + projectDetailBean.groups.size() + ")";
+        } else {
+            itemEntity.key = "负责部门";
+        }
+        StringBuffer buffer = new StringBuffer();
+        for (ProjectDetailEntity.GroupsBean group : projectDetailBean.groups) {
+            buffer.append(group.name).append("、");
+        }
+        itemEntity.value = buffer.toString();
+        if (itemEntity.value.length() > 0) {
+            itemEntity.value = itemEntity.value.substring(0, itemEntity.value.length() - 1);
+        }
+        itemEntity.type = Const.PROJECT_DEPARTMENT_TYPE;
+        basicItemEntities.add(itemEntity);
+
+    }
+
+    /**
+     * 设置案源律师数据
+     *
+     * @param basicItemEntities
+     */
+    private void setAttorneysData(List<ProjectBasicItemEntity> basicItemEntities) {
+        if (projectDetailBean.attorneys == null || projectDetailBean.attorneys.size() <= 0) return;
+        ProjectBasicItemEntity itemEntity = new ProjectBasicItemEntity();
+        if (projectDetailBean.attorneys.size() > 1) {
+            itemEntity.key = "案源律师 (" + projectDetailBean.attorneys.size() + ")";
+        } else {
+            itemEntity.key = "案源律师";
+        }
+        StringBuffer buffer = new StringBuffer();
+        for (ProjectDetailEntity.AttorneysBean attorneysBean : projectDetailBean.attorneys) {
+            buffer.append(attorneysBean.attorneyName).append("、");
+        }
+        itemEntity.value = buffer.toString();
+        if (itemEntity.value.length() > 0) {
+            itemEntity.value = itemEntity.value.substring(0, itemEntity.value.length() - 1);
+        }
+        itemEntity.type = Const.PROJECT_ANYUAN_LAWYER_TYPE;
+        basicItemEntities.add(itemEntity);
+
     }
 
     @Override
