@@ -337,22 +337,25 @@ public class MainActivity extends BaseAppUpdateActivity
                     new ItemsEntity("项目", TYPE_FRAGMENT_PROJECT, R.drawable.tab_project),
                     new ItemsEntity("我的", TYPE_FRAGMENT_MINE, R.drawable.tab_mine),
                     new ItemsEntity("计时", TYPE_FRAGMENT_TIMING, R.drawable.tab_timer),
-                    new ItemsEntity("搜索", TYPE_FRAGMENT_SEARCH, R.drawable.tab_search)));
+                    new ItemsEntity("搜索", TYPE_FRAGMENT_SEARCH, R.drawable.tab_search),
+                    new ItemsEntity("文档", TYPE_FRAGMENT_DOCUMENTS, R.drawable.tab_document))
+            );
         } else if (hasCustomerPermission()) {
             tabChangeableData.addAll(Arrays.asList(
                     new ItemsEntity("客户", TYPE_FRAGMENT_CUSTOMER, R.drawable.tab_customer),
                     new ItemsEntity("我的", TYPE_FRAGMENT_MINE, R.drawable.tab_mine),
                     new ItemsEntity("计时", TYPE_FRAGMENT_TIMING, R.drawable.tab_timer),
-                    new ItemsEntity("搜索", TYPE_FRAGMENT_SEARCH, R.drawable.tab_search)));
+                    new ItemsEntity("搜索", TYPE_FRAGMENT_SEARCH, R.drawable.tab_search),
+                    new ItemsEntity("文档", TYPE_FRAGMENT_DOCUMENTS, R.drawable.tab_document))
+            );
         } else {
             tabChangeableData.addAll(Arrays.asList(
                     new ItemsEntity("计时", TYPE_FRAGMENT_TIMING, R.drawable.tab_timer),
                     new ItemsEntity("搜索", TYPE_FRAGMENT_SEARCH, R.drawable.tab_search),
-                    new ItemsEntity("我的", TYPE_FRAGMENT_MINE, R.drawable.tab_mine)));
+                    new ItemsEntity("我的", TYPE_FRAGMENT_MINE, R.drawable.tab_mine),
+                    new ItemsEntity("文档", TYPE_FRAGMENT_DOCUMENTS, R.drawable.tab_document))
+            );
         }
-
-        //增加文档
-        tabChangeableData.add(new ItemsEntity("文档", TYPE_FRAGMENT_DOCUMENTS, R.drawable.tab_document));
     }
 
 
