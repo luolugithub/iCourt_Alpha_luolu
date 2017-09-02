@@ -119,11 +119,11 @@ public class ProjectMembersActivity extends BaseAppUpdateActivity {
                     if (object instanceof ProjectDetailEntity.MembersBean) {
                         ProjectDetailEntity.MembersBean membersBean = (ProjectDetailEntity.MembersBean) object;
                         if (!TextUtils.isEmpty(membersBean.userId))
-                            showContactDialogFragment(membersBean.userId.toLowerCase(), true);
+                            showContactDialogFragment(membersBean.userId.toLowerCase(), false);
                     } else if (object instanceof ProjectDetailEntity.AttorneysBean) {
                         ProjectDetailEntity.AttorneysBean attorneysBean = (ProjectDetailEntity.AttorneysBean) object;
                         if (!TextUtils.isEmpty(attorneysBean.attorneyPkid))
-                            showContactDialogFragment(attorneysBean.attorneyPkid.toLowerCase(), true);
+                            showContactDialogFragment(attorneysBean.attorneyPkid.toLowerCase(), false);
                     }
                 }
             }
@@ -221,7 +221,7 @@ public class ProjectMembersActivity extends BaseAppUpdateActivity {
      * @param hiddenChatBtn
      */
     public void showContactDialogFragment(String accid, boolean hiddenChatBtn) {
-        String tag = "ContactDialogFragment";
+        String tag = ContactDialogFragment.class.getSimpleName();
         FragmentTransaction mFragTransaction = getSupportFragmentManager().beginTransaction();
         Fragment fragment = getSupportFragmentManager().findFragmentByTag(tag);
         if (fragment != null) {

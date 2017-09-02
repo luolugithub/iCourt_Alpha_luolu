@@ -243,29 +243,6 @@ public class ProjectDetailFragment extends BaseFragment implements BaseRecyclerA
                 }
             }
 
-//            if (projectDetailBean.matterType == 1) {//非诉专项
-//                if (projectDetailBean.litigants != null) {//其他当事人
-//                    if (projectDetailBean.litigants.size() > 0) {
-//                        ProjectBasicItemEntity itemEntity = new ProjectBasicItemEntity();
-//                        if (projectDetailBean.litigants.size() > 1) {
-//                            itemEntity.key = "当事人 (" + projectDetailBean.litigants.size() + ")";
-//                        } else {
-//                            itemEntity.key = "当事人";
-//                        }
-//                        StringBuffer buffer = new StringBuffer();
-//                        for (ProjectDetailEntity.LitigantsBean litigant : projectDetailBean.litigants) {
-//                            buffer.append(litigant.contactName).append("、");
-//                        }
-//                        itemEntity.value = buffer.toString();
-//                        if (itemEntity.value.length() > 0) {
-//                            itemEntity.value = itemEntity.value.substring(0, itemEntity.value.length() - 1);
-//                        }
-//                        itemEntity.type = Const.PROJECT_OTHER_PERSON_TYPE;
-//                        basicItemEntities.add(itemEntity);
-//                    }
-//                }
-//            }
-
             if (projectDetailBean.attorneys != null) {//案源律师
                 if (projectDetailBean.attorneys.size() > 0) {
                     ProjectBasicItemEntity itemEntity = new ProjectBasicItemEntity();
