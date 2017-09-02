@@ -316,6 +316,7 @@ public class FolderListActivity extends FolderBaseActivity
     private void addFooterView() {
         footerView = (TextView) HeaderFooterAdapter.inflaterView(getContext(), R.layout.footer_folder_document_num, recyclerView);
         headerFooterAdapter.addFooter(footerView);
+        footerView.setText("");
     }
 
     @Override

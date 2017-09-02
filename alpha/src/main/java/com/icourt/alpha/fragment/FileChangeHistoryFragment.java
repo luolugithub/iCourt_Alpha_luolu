@@ -122,7 +122,7 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
     protected void initView() {
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         TextView footerView = (TextView) HeaderFooterAdapter.inflaterView(getContext(), R.layout.footer_folder_document_num, recyclerView);
-        footerView.setText("暂无修改历史");
+        footerView.setText("尚未有修改记录");
         refreshLayout.setEmptyView(footerView);
 
 
