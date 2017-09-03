@@ -1,5 +1,6 @@
 package com.icourt.alpha.fragment;
 
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
@@ -20,6 +21,7 @@ import com.icourt.alpha.http.callback.SFileCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.SystemUtils;
+import com.icourt.alpha.widget.dialog.AlertListDialog;
 import com.icourt.alpha.widget.dialog.BottomActionDialog;
 import com.icourt.api.RequestUtils;
 
@@ -29,6 +31,7 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import butterknife.OnLongClick;
 import butterknife.Unbinder;
 import retrofit2.Call;
 import retrofit2.Response;
@@ -161,6 +164,48 @@ public class FileLinkFragment extends BaseFragment {
             }
             linkCopyTv.setVisibility(View.GONE);
         }
+    }
+
+    @OnLongClick({R.id.file_access_pwd_tv,
+            R.id.file_share_link_tv})
+    public boolean onLongClick(View v) {
+        switch (v.getId()) {
+            case R.id.file_access_pwd_tv:
+                if (!isNoFileShareLink()) {
+                    showCopyMenuDialog(new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            dialogInterface.dismiss();
+                            SystemUtils.copyToClipboard(getContext(),
+                                    "pwd",
+                                    sFileLinkInfoEntity.password);
+                            showToast("已复制");
+                        }
+                    });
+                }
+                break;
+            case R.id.file_share_link_tv:
+                if (!isNoFileShareLink()) {
+                    showCopyMenuDialog(new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            dialogInterface.dismiss();
+                            SystemUtils.copyToClipboard(getContext(),
+                                    "link",
+                                    sFileLinkInfoEntity.getRealShareLink());
+                            showToast("已复制");
+                        }
+                    });
+                }
+                break;
+        }
+        return true;
+    }
+
+    private void showCopyMenuDialog(DialogInterface.OnClickListener listener) {
+        new AlertListDialog.ListBuilder(getContext())
+                .setItems(new String[]{"复制"}, listener)
+                .show();
     }
 
     @OnClick({R.id.link_copy_tv,
