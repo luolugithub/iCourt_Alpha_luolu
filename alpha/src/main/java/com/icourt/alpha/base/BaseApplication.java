@@ -53,6 +53,7 @@ import com.umeng.socialize.PlatformConfig;
 import com.umeng.socialize.UMShareAPI;
 import com.umeng.socialize.utils.Log;
 
+import java.io.IOException;
 import java.net.Proxy;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -65,7 +66,10 @@ import cn.finalteam.galleryfinal.ThemeConfig;
 import io.reactivex.functions.Consumer;
 import io.reactivex.plugins.RxJavaPlugins;
 import io.realm.Realm;
+import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 import static com.icourt.alpha.utils.LoginInfoUtils.getLoginUserInfo;
 
@@ -379,18 +383,19 @@ public class BaseApplication extends MultiDexApplication {
                         builder.connectTimeout(35_000, TimeUnit.MILLISECONDS);
                         // you can set the HTTP proxy.
                         builder.proxy(Proxy.NO_PROXY);
-
-                      /*  builder.addInterceptor(new Interceptor() {
+                        builder.addInterceptor(new Interceptor() {
                             @Override
                             public Response intercept(Chain chain) throws IOException {
                                 Request request = chain.request();
                                 Request requestBuilder = request.newBuilder()
-                                        .addHeader("Cookie", "officeId==" + AlphaClient.getInstance().getOfficeId())
-                                        .addHeader("token", AlphaClient.getInstance().getToken())
+                                        .addHeader("Cookie", "officeId=" + AlphaClient.getOfficeId())
+                                        .addHeader("token", AlphaClient.getToken())
                                         .build();
-                                return chain.proceed(requestBuilder);
+                                Response response = chain.proceed(requestBuilder);
+                                return response;
                             }
-                        });*/
+                        });
+
                         // etc.
                         return builder.build();
                     }

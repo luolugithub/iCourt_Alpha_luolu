@@ -113,7 +113,7 @@ public class FileUtils {
      * @return
      */
     public static String getSDPath() {
-        return Environment.getExternalStorageDirectory() + "/";
+        return Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator;
     }
 
     /**
@@ -403,7 +403,23 @@ public class FileUtils {
      * 保存方法
      */
     public static boolean saveBitmap(Context context, String picName, Bitmap bitmap) {
-        File f = new File(dirFilePath, picName + ".png");
+        return saveBitmap(context, dirFilePath, picName, bitmap);
+    }
+
+    /**
+     * 保存drawable 到sd卡中...
+     *
+     * @param context
+     * @param dir
+     * @param picName
+     * @param bitmap
+     * @return
+     */
+    public static boolean saveBitmap(Context context,
+                                     String dir,
+                                     String picName,
+                                     Bitmap bitmap) {
+        File f = new File(dir, picName);
         if (f.exists()) {
             f.delete();
         }
