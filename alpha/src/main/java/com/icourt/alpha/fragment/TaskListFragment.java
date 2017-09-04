@@ -30,6 +30,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.icourt.alpha.R;
+import com.icourt.alpha.activity.MainActivity;
 import com.icourt.alpha.activity.SearchProjectActivity;
 import com.icourt.alpha.activity.TaskDetailActivity;
 import com.icourt.alpha.activity.TimerDetailActivity;
@@ -265,7 +266,7 @@ public class TaskListFragment extends BaseFragment implements
                     } else {
                         if (newTaskEntities != null) {
                             if (newTaskEntities.size() > 1) {
-                                nextTaskLayout.setVisibility(View.VISIBLE);
+                                showNextTaskLayout();
                                 updateNextTaskState();
                                 v.setClickable(false);
                             } else if (newTaskEntities.size() == 1) {
@@ -533,7 +534,7 @@ public class TaskListFragment extends BaseFragment implements
                                         if (getParentFragment().getParentFragment() instanceof TabTaskFragment) {
                                             if (tabTaskFragment.isAwayScroll && stateType == 0) {
                                                 if (newTaskEntities.size() > 1) {
-                                                    nextTaskLayout.setVisibility(View.VISIBLE);
+                                                    showNextTaskLayout();
                                                 }
                                                 nextTaskTv.setText(String.format("下一个 (%s)", newTaskEntities.size()));
                                                 updateNextTaskState();
@@ -1532,7 +1533,17 @@ public class TaskListFragment extends BaseFragment implements
     }
 
     /**
-     * 我知道了
+     * 显示下一个view
+     */
+    private void showNextTaskLayout(){
+        nextTaskLayout.setVisibility(View.VISIBLE);
+        if (getActivity() instanceof MainActivity) {
+            ((MainActivity) getActivity()).dismissOverTimingRemindDialogFragment(false);
+        }
+    }
+
+    /**
+     *
      */
     public void onCheckNewTask(final List<String> ids) {
         if (newTaskEntities == null) return;
@@ -1545,7 +1556,7 @@ public class TaskListFragment extends BaseFragment implements
                         if (newTaskEntities.size() > 0)
                             newTaskEntities.remove(0);
                         if (newTaskEntities.size() > 1) {
-                            nextTaskLayout.setVisibility(View.VISIBLE);
+                            showNextTaskLayout();
                         }
                         newTaskCountTv.setText(String.valueOf(newTaskEntities.size()));
                         nextTaskTv.setText(String.format("下一个 (%s)", newTaskEntities.size()));

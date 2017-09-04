@@ -1175,6 +1175,12 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
         if (isDestroyOrFinishing()) {
             return;
         }
+        if (currentFragment instanceof TabTaskFragment) {
+            TabTaskFragment tabTaskFragment = (TabTaskFragment) currentFragment;
+            if (tabTaskFragment.isShowingNextTaskView()) {
+                return;
+            }
+        }
         String tag = OverTimingRemindDialogFragment.class.getSimpleName();
         FragmentTransaction mFragTransaction = getSupportFragmentManager().beginTransaction();
         OverTimingRemindDialogFragment fragment = (OverTimingRemindDialogFragment)
