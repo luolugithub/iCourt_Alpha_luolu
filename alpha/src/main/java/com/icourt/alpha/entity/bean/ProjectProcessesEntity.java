@@ -27,8 +27,9 @@ public class ProjectProcessesEntity implements Serializable {
      */
 
     public String id;
-    public String legalType;
+    public int legalType;// 程序类型，1：民事，2：刑事，3：行政
     public String processCode;
+    public String legalName;
     public String processName;
     public String priceStr;
     public String price;
@@ -37,7 +38,7 @@ public class ProjectProcessesEntity implements Serializable {
     public List<ExtraBean> extra;
 
 
-    public static class CaseCodesBean implements Serializable{
+    public static class CaseCodesBean implements Serializable {
         /**
          * code : 1010010010070
          * name : 触电人身损害赔偿纠纷
@@ -48,7 +49,7 @@ public class ProjectProcessesEntity implements Serializable {
 
     }
 
-    public static class PositionBean implements Serializable{
+    public static class PositionBean implements Serializable {
         /**
          * partyCode : 114103
          * partyName : 张三
@@ -63,7 +64,7 @@ public class ProjectProcessesEntity implements Serializable {
 
     }
 
-    public static class ExtraBean implements Serializable{
+    public static class ExtraBean implements Serializable {
         /**
          * type : court
          * name : 法院
@@ -74,7 +75,7 @@ public class ProjectProcessesEntity implements Serializable {
         public String name;
         public List<ValuesBean> values;
 
-        public static class ValuesBean implements Serializable{
+        public static class ValuesBean implements Serializable {
             /**
              * id : 10101
              * text : 朝阳人民法院

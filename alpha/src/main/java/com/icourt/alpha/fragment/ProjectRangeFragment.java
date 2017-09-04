@@ -26,10 +26,7 @@ import com.icourt.alpha.db.dbmodel.CustomerDbModel;
 import com.icourt.alpha.db.dbservice.CustomerDbService;
 import com.icourt.alpha.entity.bean.CustomerEntity;
 import com.icourt.alpha.entity.bean.ProjectBasicItemEntity;
-import com.icourt.alpha.entity.bean.ProjectDetailEntity;
 import com.icourt.alpha.entity.bean.ProjectProcessesEntity;
-import com.icourt.alpha.http.callback.SimpleCallBack;
-import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.ItemDecorationUtils;
 import com.icourt.alpha.utils.LoginInfoUtils;
 import com.icourt.alpha.utils.SpUtils;
@@ -42,8 +39,6 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
-import retrofit2.Call;
-import retrofit2.Response;
 
 import static com.icourt.alpha.activity.MainActivity.KEY_CUSTOMER_PERMISSION;
 
@@ -57,7 +52,7 @@ import static com.icourt.alpha.activity.MainActivity.KEY_CUSTOMER_PERMISSION;
 
 public class ProjectRangeFragment extends BaseFragment implements BaseRecyclerAdapter.OnItemClickListener {
 
-    private static final String KEY_PROJECT = "key_project";
+    private static final String KEY_PROJECT_PROCESSES = "key_project_processes";
 
     @BindView(R.id.range_name_tv)
     TextView rangeNameTv;
@@ -67,15 +62,15 @@ public class ProjectRangeFragment extends BaseFragment implements BaseRecyclerAd
     RecyclerView rangeRecyclerview;
     @BindView(R.id.caseProcess_layout)
     LinearLayout caseProcessLayout;
-    private ProjectDetailEntity projectDetailEntity;
+    private ProjectProcessesEntity projectProcessesEntity;
     Unbinder unbinder;
     ProjectBasicInfoAdapter projectBasicInfoAdapter;
     private CustomerDbService customerDbService = null;
 
-    public static ProjectRangeFragment newInstance(@NonNull ProjectDetailEntity projectDetailEntity) {
+    public static ProjectRangeFragment newInstance(@NonNull ProjectProcessesEntity projectProcessesEntity) {
         ProjectRangeFragment projectRangeFragment = new ProjectRangeFragment();
         Bundle bundle = new Bundle();
-        bundle.putSerializable(KEY_PROJECT, projectDetailEntity);
+        bundle.putSerializable(KEY_PROJECT_PROCESSES, projectProcessesEntity);
         projectRangeFragment.setArguments(bundle);
         return projectRangeFragment;
     }
@@ -91,53 +86,50 @@ public class ProjectRangeFragment extends BaseFragment implements BaseRecyclerAd
     @Override
     protected void initView() {
         customerDbService = new CustomerDbService(LoginInfoUtils.getLoginUserId());
-        projectDetailEntity = (ProjectDetailEntity) getArguments().getSerializable(KEY_PROJECT);
-        if (projectDetailEntity != null) {
-            getData(true);
-        }
+        projectProcessesEntity = (ProjectProcessesEntity) getArguments().getSerializable(KEY_PROJECT_PROCESSES);
+        setDataToView(projectProcessesEntity);
     }
 
     @Override
     public void notifyFragmentUpdate(Fragment targetFrgament, int type, Bundle bundle) {
         super.notifyFragmentUpdate(targetFrgament, type, bundle);
         if (bundle == null) return;
-        projectDetailEntity = (ProjectDetailEntity) bundle.getSerializable(KEY_PROJECT);
-        getData(true);
-    }
-
-    @Override
-    protected void getData(boolean isRefresh) {
-        getApi().projectProcessesQuery(projectDetailEntity.pkId).enqueue(new SimpleCallBack<List<ProjectProcessesEntity>>() {
-            public void onSuccess(Call<ResEntity<List<ProjectProcessesEntity>>> call, Response<ResEntity<List<ProjectProcessesEntity>>> response) {
-                if (response.body().result != null && response.body().result.size() > 0) {
-                    setDataToView(response.body().result.get(0));
-                }
-            }
-        });
+        projectProcessesEntity = (ProjectProcessesEntity) getArguments().getSerializable(KEY_PROJECT_PROCESSES);
+        setDataToView(projectProcessesEntity);
     }
 
     private void setDataToView(ProjectProcessesEntity projectProcessesEntity) {
         if (projectProcessesEntity == null) return;
         List<ProjectBasicItemEntity> projectBasicItemEntities = new ArrayList<>();
         if (!TextUtils.isEmpty(projectProcessesEntity.processName)) {
-            projectBasicItemEntities.add(new ProjectBasicItemEntity("程序", projectProcessesEntity.processName, Const.PROJECT_CASEPROCESS_TYPE));
+            projectBasicItemEntities.add(new ProjectBasicItemEntity("程序", projectProcessesEntity.legalName + projectProcessesEntity.processName, Const.PROJECT_CASEPROCESS_TYPE));
         }
         if (!TextUtils.isEmpty(projectProcessesEntity.priceStr)) {
-            projectBasicItemEntities.add(new ProjectBasicItemEntity("标的", projectProcessesEntity.priceStr, Const.PROJECT_PRICE_TYPE));
+            String keyName = "标的";
+            if (projectProcessesEntity.legalType == Const.LEGAL_PENAL_TYPE) {
+                keyName = "涉案金额";
+            }
+            projectBasicItemEntities.add(new ProjectBasicItemEntity(keyName, projectProcessesEntity.priceStr, Const.PROJECT_PRICE_TYPE));
         }
         if (projectProcessesEntity.caseCodes != null && projectProcessesEntity.caseCodes.size() > 0) {
-            projectBasicItemEntities.add(new ProjectBasicItemEntity("案由", getCaseCodeName(projectProcessesEntity.caseCodes), Const.PROJECT_CASE_TYPE));
+            String keyName = "案由";
+            if (projectProcessesEntity.legalType == Const.LEGAL_PENAL_TYPE) {
+                keyName = "罪名";
+            }
+            projectBasicItemEntities.add(new ProjectBasicItemEntity(keyName, getCaseCodeName(projectProcessesEntity.caseCodes), Const.PROJECT_CASE_TYPE));
+        }
+        if (projectProcessesEntity.position != null && projectProcessesEntity.position.size() > 0) {
+            for (ProjectProcessesEntity.PositionBean positionBean : projectProcessesEntity.position) {
+                if (!TextUtils.isEmpty(positionBean.contactName))
+                    projectBasicItemEntities.add(new ProjectBasicItemEntity(positionBean.partyName, positionBean.contactName, Const.PROJECT_OTHER_PERSON_TYPE, positionBean));
+            }
         }
         if (projectProcessesEntity.extra != null && projectProcessesEntity.extra.size() > 0) {
             for (ProjectProcessesEntity.ExtraBean extra : projectProcessesEntity.extra) {
                 projectBasicItemEntities.add(new ProjectBasicItemEntity(extra.name, getExtraName(extra.values), Const.PROJECT_ACCEPTANCE_TYPE, extra));
             }
         }
-        if (projectProcessesEntity.position != null && projectProcessesEntity.position.size() > 0) {
-            for (ProjectProcessesEntity.PositionBean positionBean : projectProcessesEntity.position) {
-                projectBasicItemEntities.add(new ProjectBasicItemEntity(positionBean.partyName, positionBean.contactName, Const.PROJECT_OTHER_PERSON_TYPE, positionBean));
-            }
-        }
+
         rangeRecyclerview.setLayoutManager(new LinearLayoutManager(getContext()));
         rangeRecyclerview.addItemDecoration(ItemDecorationUtils.getCommMagin5Divider(getContext(), false));
         rangeRecyclerview.setHasFixedSize(true);
@@ -179,99 +171,6 @@ public class ProjectRangeFragment extends BaseFragment implements BaseRecyclerAd
         return stringBuilder.toString().substring(0, stringBuilder.toString().length() - 1);
     }
 
-    private String getStringListName(List<String> list) {
-        if (list == null || list.size() <= 0) return "";
-        StringBuilder stringBuilder = new StringBuilder();
-        for (String str : list) {
-            stringBuilder.append(str).append("、");
-        }
-        return stringBuilder.toString().substring(0, stringBuilder.toString().length() - 1);
-    }
-
-    /**
-     * 获取法官名字
-     *
-     * @param judgeBeens
-     * @return
-     */
-    private String getJudgeName(List<ProjectDetailEntity.JudgeBean> judgeBeens) {
-        if (judgeBeens.size() <= 0) return "";
-        try {
-            StringBuilder stringBuilder = new StringBuilder();
-            for (ProjectDetailEntity.JudgeBean judgeBeen : judgeBeens) {
-                stringBuilder.append(judgeBeen.name).append(",");
-            }
-            return stringBuilder.toString().substring(0, stringBuilder.toString().length() - 1);
-        } catch (Exception e) {
-            e.printStackTrace();
-            bugSync("获取法官名称失败", e);
-        }
-        return "";
-    }
-
-    /**
-     * 获取书记员名字
-     *
-     * @param clerkBeanList
-     * @return
-     */
-    private String getClerkName(List<ProjectDetailEntity.ClerkBean> clerkBeanList) {
-        if (clerkBeanList.size() <= 0) return "";
-        try {
-            StringBuilder stringBuilder = new StringBuilder();
-            for (ProjectDetailEntity.ClerkBean clerkBean : clerkBeanList) {
-                stringBuilder.append(clerkBean.name).append(",");
-            }
-            return stringBuilder.toString().substring(0, stringBuilder.toString().length() - 1);
-        } catch (Exception e) {
-            e.printStackTrace();
-            bugSync("获取书记员名称失败", e);
-        }
-        return "";
-    }
-
-    /**
-     * 获取仲裁员名字
-     *
-     * @param arbitratorBeens
-     * @return
-     */
-    private String getArbitratorName(List<ProjectDetailEntity.ArbitratorBean> arbitratorBeens) {
-        if (arbitratorBeens.size() <= 0) return "";
-        try {
-            StringBuilder stringBuilder = new StringBuilder();
-            for (ProjectDetailEntity.ArbitratorBean arbitratorBean : arbitratorBeens) {
-                stringBuilder.append(arbitratorBean.name).append(",");
-            }
-            return stringBuilder.toString().substring(0, stringBuilder.toString().length() - 1);
-        } catch (Exception e) {
-            e.printStackTrace();
-            bugSync("获取仲裁员名称失败", e);
-        }
-        return "";
-    }
-
-    /**
-     * 获取仲裁秘书名字
-     *
-     * @param secretarieBeens
-     * @return
-     */
-    private String getSecretarieName(List<ProjectDetailEntity.SecretarieBean> secretarieBeens) {
-        if (secretarieBeens.size() <= 0) return "";
-        try {
-            StringBuilder stringBuilder = new StringBuilder();
-            for (ProjectDetailEntity.SecretarieBean secretarieBean : secretarieBeens) {
-                stringBuilder.append(secretarieBean.name).append(",");
-            }
-            return stringBuilder.toString().substring(0, stringBuilder.toString().length() - 1);
-        } catch (Exception e) {
-            e.printStackTrace();
-            bugSync("获取仲裁秘书名称失败", e);
-        }
-        return "";
-    }
-
     @Override
     public void onDestroyView() {
         super.onDestroyView();
@@ -280,7 +179,7 @@ public class ProjectRangeFragment extends BaseFragment implements BaseRecyclerAd
 
     @Override
     public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
-        if (projectDetailEntity == null) return;
+        if (projectProcessesEntity == null) return;
         ProjectBasicItemEntity itemEntity = (ProjectBasicItemEntity) adapter.getItem(position);
 
         switch (itemEntity.type) {

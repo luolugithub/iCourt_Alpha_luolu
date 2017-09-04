@@ -187,6 +187,17 @@ public class Const {
     public static final int PROJECT_CASENO_TYPE = 21;//案由号码
     public static final int PROJECT_ACCEPTANCE_TYPE = 22;//acceptance  type
 
+    //项目类型 0争议解决，1非诉专项,2常年顾问，3所内事务
+    public static final int PROJECT_DISPUTE_TYPE = 0;//争议解决
+    public static final int PROJECT_NON_LAWSUIT_TYPE = 1;//非诉专项
+    public static final int PROJECT_COUNSELOR_TYPE = 2;//常年顾问
+    public static final int PROJECT_TRANSACTION_TYPE = 3;//所内事务
+
+    //程序类型
+    public static final int LEGAL_CIVIL_TYPE = 1;//程序类型：民事
+    public static final int LEGAL_PENAL_TYPE = 2;//程序类型：刑事
+    public static final int LEGAL_ADMINISTRATIVE_TYPE = 3;//程序类型：行政
+
     @IntDef({PROJECT_NAME_TYPE,
             PROJECT_TYPE_TYPE,
             PROJECT_NUMBER_TYPE,

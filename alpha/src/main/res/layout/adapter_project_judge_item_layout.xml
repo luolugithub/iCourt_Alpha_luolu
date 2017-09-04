@@ -9,6 +9,7 @@
         android:id="@+id/judge_name_tv"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginLeft="@dimen/dp5"
         android:layout_weight="1"
         android:text="adhasdad" />
 
@@ -16,6 +17,7 @@
         android:id="@+id/judge_phone_tv"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginRight="@dimen/dp5"
         android:layout_weight="1"
         android:gravity="end"
         android:text="111111111" />

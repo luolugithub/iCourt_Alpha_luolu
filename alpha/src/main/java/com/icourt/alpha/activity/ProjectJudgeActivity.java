@@ -25,10 +25,17 @@ import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.HeaderFooterAdapter;
 import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.constants.Const;
+import com.icourt.alpha.db.dbmodel.CustomerDbModel;
+import com.icourt.alpha.db.dbservice.CustomerDbService;
+import com.icourt.alpha.entity.bean.CustomerEntity;
 import com.icourt.alpha.entity.bean.ProjectDetailEntity;
 import com.icourt.alpha.utils.ItemDecorationUtils;
+import com.icourt.alpha.utils.LoginInfoUtils;
+import com.icourt.alpha.utils.SpUtils;
 import com.icourt.alpha.utils.SystemUtils;
+import com.icourt.alpha.utils.UMMobClickAgent;
 import com.icourt.alpha.view.ClearEditText;
+import com.umeng.analytics.MobclickAgent;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -37,6 +44,8 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+
+import static com.icourt.alpha.activity.MainActivity.KEY_CUSTOMER_PERMISSION;
 
 /**
  * Description  项目法官列表
@@ -65,6 +74,7 @@ public class ProjectJudgeActivity extends BaseActivity {
     int type;
     ProjectJudgeAdapter projectJudgeAdapter;
     HeaderFooterAdapter<ProjectJudgeAdapter> headerFooterAdapter;
+    private CustomerDbService customerDbService = null;
 
     public static void launch(@NonNull Context context, List list, int type) {
         if (context == null) return;
@@ -95,6 +105,8 @@ public class ProjectJudgeActivity extends BaseActivity {
                 return "仲裁员";
             case Const.PROJECT_SECRETARIES_TYPE://仲裁秘书
                 return "仲裁秘书";
+            case Const.PROJECT_PERSON_TYPE://当事人
+                return "当事人";
         }
         return "";
     }
@@ -102,10 +114,9 @@ public class ProjectJudgeActivity extends BaseActivity {
     @Override
     protected void initView() {
         super.initView();
-//        judgeBeens = (List<ProjectDetailEntity.JudgeBean>) getIntent().getSerializableExtra("judgeBeens");
-//        clerkBeens = (List<ProjectDetailEntity.ClerkBean>) getIntent().getSerializableExtra("clerkBeens");
         list = (List) getIntent().getSerializableExtra("list");
         type = getIntent().getIntExtra("type", -1);
+        customerDbService = new CustomerDbService(LoginInfoUtils.getLoginUserId());
         setTitle(getTitleText());
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getContext());
         recyclerView.setLayoutManager(linearLayoutManager);
@@ -126,6 +137,8 @@ public class ProjectJudgeActivity extends BaseActivity {
                             type == Const.PROJECT_SECRETARIES_TYPE) {//仲裁秘书
                         TextView phoneview = holder.obtainView(R.id.judge_phone_tv);
                         callPhone(phoneview.getText());
+                    } else if (type == Const.PROJECT_PERSON_TYPE) {//当事人
+                        gotoContactActivity(adapter.getRealPos(position));
                     }
                 }
             }
@@ -177,6 +190,31 @@ public class ProjectJudgeActivity extends BaseActivity {
     }
 
     /**
+     * 跳转到联系人详情
+     *
+     * @param position
+     */
+    private void gotoContactActivity(int position) {
+        if (!hasCustomerPermission()) return;
+        if (customerDbService == null) return;
+        ProjectDetailEntity.LitigantsBean litigantsBean = (ProjectDetailEntity.LitigantsBean) projectJudgeAdapter.getItem(position);
+        CustomerEntity customerEntity = null;
+        CustomerDbModel customerDbModel = customerDbService.queryFirst("pkid", litigantsBean.contactPkid);
+        if (customerDbModel == null) return;
+        customerEntity = customerDbModel.convert2Model();
+        if (customerEntity == null) return;
+        if (!TextUtils.isEmpty(customerEntity.contactType)) {
+            MobclickAgent.onEvent(getContext(), UMMobClickAgent.look_client_click_id);
+            //公司
+            if (TextUtils.equals(customerEntity.contactType.toUpperCase(), "C")) {
+                CustomerCompanyDetailActivity.launch(getContext(), customerEntity.pkid, customerEntity.name, false);
+            } else if (TextUtils.equals(customerEntity.contactType.toUpperCase(), "P")) {
+                CustomerPersonDetailActivity.launch(getContext(), customerEntity.pkid, customerEntity.name, false);
+            }
+        }
+    }
+
+    /**
      * 搜索
      *
      * @param name
@@ -210,6 +248,11 @@ public class ProjectJudgeActivity extends BaseActivity {
                     ProjectDetailEntity.GroupsBean groupsBean = (ProjectDetailEntity.GroupsBean) list.get(i);
                     if (groupsBean.name.contains(name)) {
                         entities.add(groupsBean);
+                    }
+                } else if (list.get(i) instanceof ProjectDetailEntity.LitigantsBean) {
+                    ProjectDetailEntity.LitigantsBean litigantsBean = (ProjectDetailEntity.LitigantsBean) list.get(i);
+                    if (litigantsBean.contactName.contains(name)) {
+                        entities.add(litigantsBean);
                     }
                 }
             }
@@ -249,5 +292,9 @@ public class ProjectJudgeActivity extends BaseActivity {
                 SystemUtils.callPhone(getContext(), phone.toString());
             }
         }
+    }
+
+    private boolean hasCustomerPermission() {
+        return SpUtils.getInstance().getBooleanData(KEY_CUSTOMER_PERMISSION, false);
     }
 }

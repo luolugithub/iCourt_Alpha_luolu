@@ -34,6 +34,7 @@ import com.icourt.alpha.db.dbservice.CustomerDbService;
 import com.icourt.alpha.entity.bean.CustomerEntity;
 import com.icourt.alpha.entity.bean.ProjectBasicItemEntity;
 import com.icourt.alpha.entity.bean.ProjectDetailEntity;
+import com.icourt.alpha.entity.bean.ProjectProcessesEntity;
 import com.icourt.alpha.entity.event.ProjectActionEvent;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
@@ -183,12 +184,17 @@ public class ProjectDetailFragment extends BaseFragment implements BaseRecyclerA
             setKeyValueData(basicItemEntities, "项目名称", projectDetailBean.name, Const.PROJECT_NAME_TYPE);
             setKeyValueData(basicItemEntities, "项目编号", projectDetailBean.matterNo, Const.PROJECT_NUMBER_TYPE);
             setClientData(basicItemEntities);//客户
+            if (projectDetailBean.matterType != Const.PROJECT_TRANSACTION_TYPE) { //所内事务不显示当事人item
+                setLitigantData(basicItemEntities);//当事人
+            }
             setGroupsData(basicItemEntities);//负责部门
             setAttorneysData(basicItemEntities);//案源律师
 
-            setKeyValueData(basicItemEntities, "项目时间", String.format("%s - %s",
-                    DateUtils.getTimeDateFormatYearDot(projectDetailBean.beginDate),
-                    DateUtils.getTimeDateFormatYearDot(projectDetailBean.endDate)), Const.PROJECT_TIME_TYPE);
+            if (projectDetailBean.beginDate > 0 && projectDetailBean.endDate > 0) {
+                setKeyValueData(basicItemEntities, "项目时间", String.format("%s - %s",
+                        DateUtils.getTimeDateFormatYearDot(projectDetailBean.beginDate),
+                        DateUtils.getTimeDateFormatYearDot(projectDetailBean.endDate)), Const.PROJECT_TIME_TYPE);
+            }
 
             projectBasicInfoAdapter.setClientsBeens(projectDetailBean.clients);
             projectBasicInfoAdapter.bindData(true, basicItemEntities);
@@ -197,7 +203,7 @@ public class ProjectDetailFragment extends BaseFragment implements BaseRecyclerA
             if (projectDetailBean.members != null) {//项目成员
                 if (projectDetailBean.members.size() > 0) {
                     projectMemberLayout.setVisibility(View.VISIBLE);
-                    projectMemberCount.setText("项目成员（" + projectDetailBean.members.size() + "）");
+                    projectMemberCount.setText(String.format("项目成员（%s)", projectDetailBean.members.size()));
                     projectMemberAdapter.bindData(true, projectDetailBean.members);
                 }
             } else {
@@ -211,21 +217,7 @@ public class ProjectDetailFragment extends BaseFragment implements BaseRecyclerA
                 serviceContentLayout.setVisibility(View.GONE);
             }
             if (projectDetailBean.matterType == 0) {//争议解决
-                procedureLayout.setVisibility(View.VISIBLE);
-                if (baseFragmentAdapter == null) {
-                    baseFragmentAdapter = new BaseFragmentAdapter(getChildFragmentManager());
-                    projectViewpager.setAdapter(baseFragmentAdapter);
-                    baseFragmentAdapter.bindData(true,
-                            Arrays.asList(
-                                    projectRangeFragment == null ? projectRangeFragment = ProjectRangeFragment.newInstance(projectDetailBean) : projectRangeFragment)
-                    );
-                } else {
-                    if (projectRangeFragment != null) {
-                        Bundle bundle = new Bundle();
-                        bundle.putSerializable("key_project", projectDetailBean);
-                        projectRangeFragment.notifyFragmentUpdate(projectRangeFragment, 0, bundle);
-                    }
-                }
+                getRangeData(projectDetailBean.pkId);
             } else {
                 procedureLayout.setVisibility(View.GONE);
             }
@@ -241,7 +233,7 @@ public class ProjectDetailFragment extends BaseFragment implements BaseRecyclerA
      * @param type
      */
     private void setKeyValueData(List<ProjectBasicItemEntity> basicItemEntities, String key, String value, int type) {
-        if (!TextUtils.isEmpty(value)) return;
+        if (TextUtils.isEmpty(value)) return;
         ProjectBasicItemEntity itemEntity = new ProjectBasicItemEntity();
         itemEntity.key = key;
         itemEntity.value = value;
@@ -258,7 +250,7 @@ public class ProjectDetailFragment extends BaseFragment implements BaseRecyclerA
         if (projectDetailBean.clients == null || projectDetailBean.clients.size() <= 0) return;
         ProjectBasicItemEntity itemEntity = new ProjectBasicItemEntity();
         if (projectDetailBean.clients.size() > 1) {
-            itemEntity.key = "客户 (" + projectDetailBean.clients.size() + ")";
+            itemEntity.key = String.format("客户 (%s)", projectDetailBean.clients.size());
         } else {
             itemEntity.key = "客户";
         }
@@ -275,6 +267,31 @@ public class ProjectDetailFragment extends BaseFragment implements BaseRecyclerA
     }
 
     /**
+     * 设置当事人信息
+     *
+     * @param basicItemEntities
+     */
+    private void setLitigantData(List<ProjectBasicItemEntity> basicItemEntities) {
+        if (projectDetailBean.litigants == null || projectDetailBean.litigants.size() <= 0) return;
+        ProjectBasicItemEntity itemEntity = new ProjectBasicItemEntity();
+        if (projectDetailBean.litigants.size() > 1) {
+            itemEntity.key = String.format("当事人 (%s)", projectDetailBean.litigants.size());
+        } else {
+            itemEntity.key = "当事人";
+        }
+        StringBuffer buffer = new StringBuffer();
+        for (ProjectDetailEntity.LitigantsBean litigant : projectDetailBean.litigants) {
+            buffer.append(litigant.contactName).append(",");
+        }
+        itemEntity.value = buffer.toString();
+        if (itemEntity.value.length() > 0) {
+            itemEntity.value = itemEntity.value.substring(0, itemEntity.value.length() - 1);
+        }
+        itemEntity.type = Const.PROJECT_PERSON_TYPE;
+        basicItemEntities.add(itemEntity);
+    }
+
+    /**
      * 设置部门信息
      *
      * @param basicItemEntities
@@ -283,7 +300,7 @@ public class ProjectDetailFragment extends BaseFragment implements BaseRecyclerA
         if (projectDetailBean.groups == null || projectDetailBean.groups.size() <= 0) return;
         ProjectBasicItemEntity itemEntity = new ProjectBasicItemEntity();
         if (projectDetailBean.groups.size() > 1) {
-            itemEntity.key = "负责部门 (" + projectDetailBean.groups.size() + ")";
+            itemEntity.key = String.format("负责部门 (%s)", projectDetailBean.groups.size());
         } else {
             itemEntity.key = "负责部门";
         }
@@ -309,7 +326,7 @@ public class ProjectDetailFragment extends BaseFragment implements BaseRecyclerA
         if (projectDetailBean.attorneys == null || projectDetailBean.attorneys.size() <= 0) return;
         ProjectBasicItemEntity itemEntity = new ProjectBasicItemEntity();
         if (projectDetailBean.attorneys.size() > 1) {
-            itemEntity.key = "案源律师 (" + projectDetailBean.attorneys.size() + ")";
+            itemEntity.key = String.format("案源律师 (%s)", projectDetailBean.attorneys.size());
         } else {
             itemEntity.key = "案源律师";
         }
@@ -339,6 +356,48 @@ public class ProjectDetailFragment extends BaseFragment implements BaseRecyclerA
                 }
             }
         });
+    }
+
+    /**
+     * 获取程序信息
+     *
+     * @param projectId
+     */
+    private void getRangeData(String projectId) {
+        getApi().projectProcessesQuery(projectId).enqueue(new SimpleCallBack<List<ProjectProcessesEntity>>() {
+            public void onSuccess(Call<ResEntity<List<ProjectProcessesEntity>>> call, Response<ResEntity<List<ProjectProcessesEntity>>> response) {
+                if (procedureLayout != null) {
+                    if (response.body().result != null && response.body().result.size() > 0) {
+                        procedureLayout.setVisibility(View.VISIBLE);
+                        setRangeDataToView(response.body().result.get(0));
+                    } else {
+                        procedureLayout.setVisibility(View.GONE);
+                    }
+                }
+            }
+        });
+    }
+
+    /**
+     * 设置程序信息
+     *
+     * @param projectProcessesEntity
+     */
+    private void setRangeDataToView(ProjectProcessesEntity projectProcessesEntity) {
+        if (baseFragmentAdapter == null) {
+            baseFragmentAdapter = new BaseFragmentAdapter(getChildFragmentManager());
+            projectViewpager.setAdapter(baseFragmentAdapter);
+            baseFragmentAdapter.bindData(true,
+                    Arrays.asList(
+                            projectRangeFragment == null ? projectRangeFragment = ProjectRangeFragment.newInstance(projectProcessesEntity) : projectRangeFragment)
+            );
+        } else {
+            if (projectRangeFragment != null) {
+                Bundle bundle = new Bundle();
+                bundle.putSerializable("key_project_processes", projectProcessesEntity);
+                projectRangeFragment.notifyFragmentUpdate(projectRangeFragment, 0, bundle);
+            }
+        }
     }
 
     private void stopRefresh() {
@@ -398,6 +457,9 @@ public class ProjectDetailFragment extends BaseFragment implements BaseRecyclerA
                     break;
                 case Const.PROJECT_DEPARTMENT_TYPE://负责部门
                     ProjectJudgeActivity.launch(getContext(), projectDetailBean.groups, entity.type);
+                    break;
+                case Const.PROJECT_PERSON_TYPE://当事人
+                    ProjectJudgeActivity.launch(getContext(), projectDetailBean.litigants, entity.type);
                     break;
             }
         } else if (adapter instanceof ProjectClientAdapter) {
