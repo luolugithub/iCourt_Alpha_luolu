@@ -95,6 +95,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import butterknife.OnLongClick;
+import me.leolin.shortcutbadger.ShortcutBadger;
 import q.rorbin.badgeview.Badge;
 import q.rorbin.badgeview.QBadgeView;
 import retrofit2.Call;
@@ -836,6 +837,7 @@ public class MainActivity extends BaseAppUpdateActivity
      */
     private void updateBadge(Badge badge, int num) {
         if (badge != null && num >= 0) {
+            ShortcutBadger.applyCount(getBaseContext(), num);
             if (num > 99) {
                 //显示99+
                 badge.setBadgeText("99+");

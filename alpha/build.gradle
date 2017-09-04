@@ -266,7 +266,6 @@ dependencies {
     compile rootProject.ext.dependencies.cardview
     //------------  recyclerview  -------------
     compile rootProject.ext.dependencies.recyclerview
-    compile rootProject.ext.dependencies.recyclerview_animators
     compile rootProject.ext.dependencies.recyclerview_divider
     //------------  通信  --------------
     compile rootProject.ext.dependencies.eventbus
@@ -306,5 +305,6 @@ dependencies {
     compile project(path: ':lib_daemon')
     compile files('libs/MiPush_SDK_Client_3_4_3.jar')
     compile(name: 'HMS-SDK-2.4.0.300', ext: 'aar')
+    compile "me.leolin:ShortcutBadger:1.1.18@aar"
 }
 
