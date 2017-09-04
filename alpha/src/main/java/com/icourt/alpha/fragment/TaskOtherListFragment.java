@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.IntDef;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.util.ArrayMap;
 import android.support.v7.app.AlertDialog;
@@ -73,7 +74,7 @@ import retrofit2.Response;
  * version 2.0.0
  */
 
-public class TaskOtherListFragment extends BaseFragment implements BaseQuickAdapter.OnItemClickListener, BaseQuickAdapter.OnItemChildClickListener {
+public class TaskOtherListFragment extends BaseTaskFragment implements BaseQuickAdapter.OnItemClickListener, BaseQuickAdapter.OnItemChildClickListener {
 
     //实例化当前Fragment所要传递的参数标识
     private static final String TAG_START_TYPE = "startType";
@@ -371,50 +372,16 @@ public class TaskOtherListFragment extends BaseFragment implements BaseQuickAdap
         final TaskEntity.TaskItemEntity itemEntity = taskAdapter.getItem(i);
         switch (view.getId()) {
             case R.id.task_item_start_timming:
-                if (itemEntity.isTiming) {
+                if (itemEntity.isTiming) {//停止计时
                     MobclickAgent.onEvent(getContext(), UMMobClickAgent.stop_timer_click_id);
-                    TimerManager.getInstance().stopTimer(new SimpleCallBack<TimeEntity.ItemEntity>() {
-                        @Override
-                        public void onSuccess(Call<ResEntity<TimeEntity.ItemEntity>> call, Response<ResEntity<TimeEntity.ItemEntity>> response) {
-                            itemEntity.isTiming = false;
-                            taskAdapter.updateItem(itemEntity);
-                            TimeEntity.ItemEntity timer = TimerManager.getInstance().getTimer();
-                            TimerDetailActivity.launch(view.getContext(), timer);
-                        }
-
-                        @Override
-                        public void onFailure(Call<ResEntity<TimeEntity.ItemEntity>> call, Throwable t) {
-                            super.onFailure(call, t);
-                            itemEntity.isTiming = true;
-                            taskAdapter.updateItem(itemEntity);
-                        }
-                    });
-                } else {
+                    stopTiming(itemEntity);
+                } else {//开始计时
                     MobclickAgent.onEvent(getContext(), UMMobClickAgent.start_timer_click_id);
-                    TimerManager.getInstance().addTimer(getTimer(itemEntity), new Callback<TimeEntity.ItemEntity>() {
-                        @Override
-                        public void onResponse(Call<TimeEntity.ItemEntity> call, Response<TimeEntity.ItemEntity> response) {
-                            dismissLoadingDialog();
-                            ((ImageView) view).setImageResource(R.drawable.orange_side_dot_bg);
-                            if (response.body() != null) {
-                                itemEntity.isTiming = true;
-                                taskAdapter.updateItem(itemEntity);
-                                TimerTimingActivity.launch(view.getContext(), response.body());
-                            }
-                        }
-
-                        @Override
-                        public void onFailure(Call<TimeEntity.ItemEntity> call, Throwable throwable) {
-                            dismissLoadingDialog();
-                            itemEntity.isTiming = false;
-                            taskAdapter.updateItem(itemEntity);
-                        }
-                    });
+                    startTiming(itemEntity);
                 }
                 break;
             case R.id.task_item_checkbox:
-                CheckBox checkbox = (CheckBox) view;
-                if (checkbox.isChecked()) {//完成任务
+                if (!itemEntity.state) {//完成任务
                     if (itemEntity.attendeeUsers != null) {
                         if (itemEntity.attendeeUsers.size() > 1) {
                             showFinishDialog(view.getContext(), "该任务由多人负责,确定完成?", itemEntity);
@@ -424,7 +391,7 @@ public class TaskOtherListFragment extends BaseFragment implements BaseQuickAdap
                     } else {
                         updateTask(itemEntity, true);
                     }
-                } else {
+                } else {//取消完成任务
                     updateTask(itemEntity, false);
                 }
                 break;
@@ -459,25 +426,47 @@ public class TaskOtherListFragment extends BaseFragment implements BaseQuickAdap
         }
     }
 
-    /**
-     * 获取添加计时实体
-     *
-     * @return
-     */
-    private TimeEntity.ItemEntity getTimer(TaskEntity.TaskItemEntity taskItemEntity) {
-        TimeEntity.ItemEntity itemEntity = new TimeEntity.ItemEntity();
-        if (taskItemEntity != null) {
-            itemEntity.taskPkId = taskItemEntity.id;
-            itemEntity.name = taskItemEntity.name;
-            itemEntity.workDate = DateUtils.millis();
-            itemEntity.createUserId = getLoginUserId();
-            itemEntity.username = getLoginUserInfo().getName();
-            itemEntity.startTime = DateUtils.millis();
-            if (taskItemEntity.matter != null) {
-                itemEntity.matterPkId = taskItemEntity.matter.id;
-            }
+
+    @Override
+    protected void startTimingBack(TaskEntity.TaskItemEntity requestEntity, Response<TimeEntity.ItemEntity> response) {
+        taskAdapter.updateItem(requestEntity);
+        if (response.body() != null) {
+            TimerTimingActivity.launch(getActivity(), response.body());
+            TimeEntity.ItemEntity timer = TimerManager.getInstance().getTimer();
+            TimerDetailActivity.launch(getActivity(), timer);
         }
-        return itemEntity;
+    }
+
+    @Override
+    protected void stopTimingBack(TaskEntity.TaskItemEntity requestEntity) {
+        taskAdapter.updateItem(requestEntity);
+        TimeEntity.ItemEntity timer = TimerManager.getInstance().getTimer();
+        TimerDetailActivity.launch(getActivity(), timer);
+    }
+
+    @Override
+    protected void taskDeleteBack(@NonNull TaskEntity.TaskItemEntity itemEntity) {
+
+    }
+
+    @Override
+    protected void taskUpdateBack(@NonNull TaskEntity.TaskItemEntity itemEntity) {
+        taskAdapter.updateItem(itemEntity);
+    }
+
+    @Override
+    protected void taskTimerUpdateBack(String taskId) {
+        if (!TextUtils.isEmpty(taskId)) {//添加计时
+            TimeEntity.ItemEntity updateItem = TimerManager.getInstance().getTimer();
+            if (updateItem != null) {
+                updateUnFinishChildTimeing(updateItem.taskPkId, true);
+            }
+        } else {//结束计时
+            if (lastEntity != null) {
+                lastEntity.isTiming = false;
+            }
+            taskAdapter.notifyDataSetChanged();
+        }
     }
 
     /**
@@ -498,8 +487,6 @@ public class TaskOtherListFragment extends BaseFragment implements BaseQuickAdap
                         updateTask(itemEntity, true);
                         break;
                     case Dialog.BUTTON_NEGATIVE://取消
-                        itemEntity.state = false;
-                        taskAdapter.updateItem(itemEntity);
                         break;
                 }
             }
@@ -517,27 +504,12 @@ public class TaskOtherListFragment extends BaseFragment implements BaseQuickAdap
      * 修改任务完成状态
      *
      * @param itemEntity
-     * @param state
+     * @param state      true：完成状态；false：未完成状态。
      */
     private void updateTask(final TaskEntity.TaskItemEntity itemEntity, final boolean state) {
         showLoadingDialog(null);
-        getApi().taskUpdate(RequestUtils.createJsonBody(getTaskJson(itemEntity, state))).enqueue(new SimpleCallBack<JsonElement>() {
-            @Override
-            public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
-                dismissLoadingDialog();
-                itemEntity.state = state;
-                taskAdapter.updateItem(itemEntity);
-                EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_UPDATE_DESC_ACTION, itemEntity));
-            }
-
-            @Override
-            public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
-                super.onFailure(call, t);
-                dismissLoadingDialog();
-                itemEntity.state = !state;
-                taskAdapter.updateItem(itemEntity);
-            }
-        });
+        itemEntity.state = state;
+        updateTaskState(itemEntity);
     }
 
     /**
@@ -603,33 +575,6 @@ public class TaskOtherListFragment extends BaseFragment implements BaseQuickAdap
      */
     private void updateChildItem(TaskEntity.TaskItemEntity itemEntity) {
         taskAdapter.updateItem(itemEntity);
-    }
-
-    /**
-     * 计时事件
-     *
-     * @param event
-     */
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onTimerEvent(TimingEvent event) {
-        if (event == null) return;
-        switch (event.action) {
-            case TimingEvent.TIMING_ADD:
-                TimeEntity.ItemEntity updateItem = TimerManager.getInstance().getTimer();
-                if (updateItem != null) {
-                    updateUnFinishChildTimeing(updateItem.taskPkId, true);
-                }
-                break;
-            case TimingEvent.TIMING_UPDATE_PROGRESS:
-
-                break;
-            case TimingEvent.TIMING_STOP:
-                if (lastEntity != null) {
-                    lastEntity.isTiming = false;
-                }
-                taskAdapter.notifyDataSetChanged();
-                break;
-        }
     }
 
     /**

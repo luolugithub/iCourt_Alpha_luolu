@@ -5,6 +5,7 @@ import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.CheckBox;
+import android.widget.CheckedTextView;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -13,7 +14,9 @@ import com.chad.library.adapter.base.BaseViewHolder;
 import com.icourt.alpha.R;
 import com.icourt.alpha.entity.bean.TaskEntity;
 import com.icourt.alpha.utils.DateUtils;
+import com.icourt.alpha.utils.LogUtils;
 import com.icourt.alpha.widget.manager.TimerManager;
+import com.umeng.socialize.utils.Log;
 
 /**
  * * Description
@@ -34,7 +37,7 @@ public class TaskItemAdapter2 extends BaseMultiItemQuickAdapter<TaskEntity.TaskI
 
     public TaskItemAdapter2() {
         super(null);
-        addItemType(TYPE_TASK, R.layout.adapter_item_task);
+        addItemType(TYPE_TASK, R.layout.adapter_item_task2);
         addItemType(TYPE_TASK_GROUP, R.layout.adapter_item_task_title);
     }
 
@@ -58,7 +61,7 @@ public class TaskItemAdapter2 extends BaseMultiItemQuickAdapter<TaskEntity.TaskI
      * @param taskItemEntity
      */
     private void initTaskItem(BaseViewHolder baseViewHolder, TaskEntity.TaskItemEntity taskItemEntity) {
-        CheckBox checkBox = baseViewHolder.getView(R.id.task_item_checkbox);
+        CheckedTextView checkBox = baseViewHolder.getView(R.id.task_item_checkbox);
         TextView taskNameView = baseViewHolder.getView(R.id.task_title_tv);
         ImageView startTimmingView = baseViewHolder.getView(R.id.task_item_start_timming);
         TextView projectNameView = baseViewHolder.getView(R.id.task_project_belong_tv);
@@ -114,6 +117,7 @@ public class TaskItemAdapter2 extends BaseMultiItemQuickAdapter<TaskEntity.TaskI
         checkBox.setChecked(taskItemEntity.state);
         if (!taskItemEntity.valid) {
             startTimmingView.setVisibility(View.GONE);
+//            checkBox.setImageResource(R.mipmap.restore);
             checkBox.setCompoundDrawablesWithIntrinsicBounds(R.mipmap.restore, 0, 0, 0);
         }
 
@@ -221,6 +225,7 @@ public class TaskItemAdapter2 extends BaseMultiItemQuickAdapter<TaskEntity.TaskI
         int index = getData().indexOf(t);
         if (index >= 0 && index < getData().size()) {
             getData().set(index, t);
+            LogUtils.i("修改了=============>" + index);
             notifyItemChanged(index + getHeaderLayoutCount());
             return true;
         }

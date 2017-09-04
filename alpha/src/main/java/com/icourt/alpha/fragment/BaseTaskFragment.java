@@ -4,10 +4,14 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.text.TextUtils;
+import android.widget.ImageView;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.icourt.alpha.R;
+import com.icourt.alpha.activity.TimerDetailActivity;
+import com.icourt.alpha.activity.TimerTimingActivity;
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.entity.bean.ProjectEntity;
 import com.icourt.alpha.entity.bean.TaskEntity;
@@ -22,6 +26,7 @@ import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.JsonUtils;
+import com.icourt.alpha.utils.LoginInfoUtils;
 import com.icourt.alpha.utils.UMMobClickAgent;
 import com.icourt.alpha.widget.manager.TimerManager;
 import com.icourt.api.RequestUtils;
@@ -35,12 +40,13 @@ import java.util.Calendar;
 import java.util.List;
 
 import retrofit2.Call;
+import retrofit2.Callback;
 import retrofit2.Response;
 
 import static com.umeng.socialize.utils.DeviceConfig.context;
 
 /**
- * Description  任务碎片基类
+ * Description  任务列表碎片基类
  * Company Beijing icourt
  * author  lu.zhao  E-mail:zhaolu@icourt.cc
  * date createTime：17/8/31
@@ -55,7 +61,7 @@ public abstract class BaseTaskFragment extends BaseFragment {
     }
 
     /**
-     * 计时事件
+     * 计时事件的广播接收
      *
      * @param event
      */
@@ -77,8 +83,52 @@ public abstract class BaseTaskFragment extends BaseFragment {
         }
     }
 
+
     /**
-     * 修改任务状态
+     * 开始计时
+     *
+     * @param itemEntity
+     */
+    protected void startTiming(final TaskEntity.TaskItemEntity itemEntity) {
+        TimerManager.getInstance().addTimer(getTimer(itemEntity), new Callback<TimeEntity.ItemEntity>() {
+            @Override
+            public void onResponse(Call<TimeEntity.ItemEntity> call, Response<TimeEntity.ItemEntity> response) {
+                dismissLoadingDialog();
+                itemEntity.isTiming = true;
+                startTimingBack(itemEntity, response);
+            }
+
+            @Override
+            public void onFailure(Call<TimeEntity.ItemEntity> call, Throwable throwable) {
+                dismissLoadingDialog();
+            }
+        });
+    }
+
+    /**
+     * 结束计时
+     *
+     * @param itemEntity
+     */
+    protected void stopTiming(final TaskEntity.TaskItemEntity itemEntity) {
+        TimerManager.getInstance().stopTimer(new SimpleCallBack<TimeEntity.ItemEntity>() {
+            @Override
+            public void onSuccess(Call<ResEntity<TimeEntity.ItemEntity>> call, Response<ResEntity<TimeEntity.ItemEntity>> response) {
+                dismissLoadingDialog();
+                itemEntity.isTiming = false;
+                stopTimingBack(itemEntity);
+            }
+
+            @Override
+            public void onFailure(Call<ResEntity<TimeEntity.ItemEntity>> call, Throwable t) {
+                super.onFailure(call, t);
+                dismissLoadingDialog();
+            }
+        });
+    }
+
+    /**
+     * 修改任务状态(完成、未完成两种状态)
      *
      * @param itemEntity
      */
@@ -96,6 +146,8 @@ public abstract class BaseTaskFragment extends BaseFragment {
             public void onFailure(Call<ResEntity<TaskEntity.TaskItemEntity>> call, Throwable t) {
                 super.onFailure(call, t);
                 dismissLoadingDialog();
+                //因为是引用，要将数据置回相反的状态。
+                itemEntity.state = !itemEntity.state;
             }
         });
     }
@@ -295,25 +347,66 @@ public abstract class BaseTaskFragment extends BaseFragment {
     }
 
     /**
-     * 删除任务
+     * 获取添加计时实体
+     *
+     * @return
+     */
+    protected TimeEntity.ItemEntity getTimer(TaskEntity.TaskItemEntity taskItemEntity) {
+        TimeEntity.ItemEntity itemEntity = new TimeEntity.ItemEntity();
+        if (taskItemEntity != null) {
+            itemEntity.taskPkId = taskItemEntity.id;
+            itemEntity.taskName = taskItemEntity.name;
+            itemEntity.name = taskItemEntity.name;
+            itemEntity.workDate = DateUtils.millis();
+            itemEntity.createUserId = getLoginUserId();
+            if (LoginInfoUtils.getLoginUserInfo() != null) {
+                itemEntity.username = LoginInfoUtils.getLoginUserInfo().getName();
+            }
+            itemEntity.startTime = DateUtils.millis();
+            if (taskItemEntity.matter != null) {
+                itemEntity.matterPkId = taskItemEntity.matter.id;
+                itemEntity.matterName = taskItemEntity.matter.name;
+            }
+        }
+        return itemEntity;
+    }
+
+    /**
+     * 任务开始计时成功的回调
+     *
+     * @param requestEntity
+     */
+    protected abstract void startTimingBack(TaskEntity.TaskItemEntity requestEntity, Response<TimeEntity.ItemEntity> response);
+
+    /**
+     * 任务结束计时成功的回调
+     *
+     * @param requestEntity
+     */
+    protected abstract void stopTimingBack(TaskEntity.TaskItemEntity requestEntity);
+
+    /**
+     * 删除任务回调
      *
      * @param itemEntity
      */
-    protected abstract void taskDeleteBack(@NonNull TaskEntity.TaskItemEntity itemEntity);
+    protected void taskDeleteBack(@NonNull TaskEntity.TaskItemEntity itemEntity) {
+    }
 
     /**
-     * 更新任务
+     * 更新任务成功的回调
      *
      * @param itemEntity
      */
     protected abstract void taskUpdateBack(@NonNull TaskEntity.TaskItemEntity itemEntity);
 
     /**
-     * 更加计时任务状态
+     * 更新计时任务状态回调
      *
      * @param taskId
      */
     protected abstract void taskTimerUpdateBack(String taskId);
+
 
     @Override
     public void onDestroy() {

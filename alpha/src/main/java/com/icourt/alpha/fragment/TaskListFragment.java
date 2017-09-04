@@ -1106,6 +1106,7 @@ public class TaskListFragment extends BaseTaskFragment implements
 
     }
 
+
     /**
      * 修改成功回调
      *
@@ -1115,6 +1116,7 @@ public class TaskListFragment extends BaseTaskFragment implements
     protected void taskUpdateBack(@NonNull TaskEntity.TaskItemEntity itemEntity) {
 
     }
+
 
     /**
      * 计时回调
@@ -1271,29 +1273,40 @@ public class TaskListFragment extends BaseTaskFragment implements
         });
     }
 
-    /**
-     * 获取添加计时实体
-     *
-     * @return
-     */
-    private TimeEntity.ItemEntity getTimer(TaskEntity.TaskItemEntity taskItemEntity) {
-        TimeEntity.ItemEntity itemEntity = new TimeEntity.ItemEntity();
-        if (taskItemEntity != null) {
-            itemEntity.taskPkId = taskItemEntity.id;
-            itemEntity.taskName = taskItemEntity.name;
-            itemEntity.name = taskItemEntity.name;
-            itemEntity.workDate = DateUtils.millis();
-            itemEntity.createUserId = getLoginUserId();
-            if (LoginInfoUtils.getLoginUserInfo() != null) {
-                itemEntity.username = LoginInfoUtils.getLoginUserInfo().getName();
-            }
-            itemEntity.startTime = DateUtils.millis();
-            if (taskItemEntity.matter != null) {
-                itemEntity.matterPkId = taskItemEntity.matter.id;
-                itemEntity.matterName = taskItemEntity.matter.name;
-            }
-        }
-        return itemEntity;
+//    /**
+//     * 获取添加计时实体
+//     *
+//     * @return
+//     */
+//    @Override
+//    protected TimeEntity.ItemEntity getTimer(TaskEntity.TaskItemEntity taskItemEntity) {
+//        TimeEntity.ItemEntity itemEntity = new TimeEntity.ItemEntity();
+//        if (taskItemEntity != null) {
+//            itemEntity.taskPkId = taskItemEntity.id;
+//            itemEntity.taskName = taskItemEntity.name;
+//            itemEntity.name = taskItemEntity.name;
+//            itemEntity.workDate = DateUtils.millis();
+//            itemEntity.createUserId = getLoginUserId();
+//            if (LoginInfoUtils.getLoginUserInfo() != null) {
+//                itemEntity.username = LoginInfoUtils.getLoginUserInfo().getName();
+//            }
+//            itemEntity.startTime = DateUtils.millis();
+//            if (taskItemEntity.matter != null) {
+//                itemEntity.matterPkId = taskItemEntity.matter.id;
+//                itemEntity.matterName = taskItemEntity.matter.name;
+//            }
+//        }
+//        return itemEntity;
+//    }
+
+    @Override
+    protected void startTimingBack(TaskEntity.TaskItemEntity requestEntity, Response<TimeEntity.ItemEntity> response) {
+
+    }
+
+    @Override
+    protected void stopTimingBack(TaskEntity.TaskItemEntity requestEntity) {
+
     }
 
     /**

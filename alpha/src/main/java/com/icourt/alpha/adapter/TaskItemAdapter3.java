@@ -101,7 +101,7 @@ public class TaskItemAdapter3 extends BaseTaskRecyclerAdapter<TaskEntity.TaskIte
      * @param position
      */
     private void initTask(ViewHolder holder, TaskEntity.TaskItemEntity taskItemEntity, int position) {
-        CheckBox checkBox = holder.obtainView(R.id.task_item_checkbox);
+        ImageView checkBox = holder.obtainView(R.id.task_item_checkbox);
         TextView taskNameView = holder.obtainView(R.id.task_title_tv);
         ImageView startTimmingView = holder.obtainView(R.id.task_item_start_timming);
         TextView projectNameView = holder.obtainView(R.id.task_project_belong_tv);
@@ -154,10 +154,11 @@ public class TaskItemAdapter3 extends BaseTaskRecyclerAdapter<TaskEntity.TaskIte
         String timerTaskid = TimerManager.getInstance().getTimerTaskId();
         taskItemEntity.isTiming = !TextUtils.isEmpty(timerTaskid) && TextUtils.equals(timerTaskid, taskItemEntity.id);
         startTimmingViewSelect(startTimmingView, taskItemEntity.isTiming);
-        checkBox.setChecked(taskItemEntity.state);
+        checkBox.setSelected(taskItemEntity.state);
         if (!taskItemEntity.valid) {
             startTimmingView.setVisibility(View.GONE);
-            checkBox.setCompoundDrawablesWithIntrinsicBounds(R.mipmap.restore, 0, 0, 0);
+            checkBox.setImageResource(R.mipmap.restore);
+//            checkBox.setCompoundDrawablesWithIntrinsicBounds(R.mipmap.restore, 0, 0, 0);
         }
         holder.bindChildClick(checkBox);
         holder.bindChildClick(startTimmingView);

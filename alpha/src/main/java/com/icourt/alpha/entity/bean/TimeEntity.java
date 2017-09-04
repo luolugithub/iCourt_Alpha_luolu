@@ -38,10 +38,10 @@ public class TimeEntity implements Serializable {
 
         public String suspensionTag;
 
-        public String pkId;
+        public String pkId;//计时主键
         public String name;
         public String matterPkId = "";
-        public String taskPkId = "";
+        public String taskPkId = "";//任务ID
         public long startTime;//计时的起始点
         public long endTime;
         public long useTime;
