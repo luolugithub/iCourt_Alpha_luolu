@@ -62,6 +62,7 @@ public class RepoListFragment extends BaseFragment
         implements BaseRecyclerAdapter.OnItemClickListener,
         BaseRecyclerAdapter.OnItemLongClickListener,
         BaseRecyclerAdapter.OnItemChildClickListener {
+    private static final String KEY_REPO_TYPE = "repoType";
 
     @BindView(R.id.recyclerView)
     @Nullable
@@ -82,7 +83,7 @@ public class RepoListFragment extends BaseFragment
     public static RepoListFragment newInstance(@SFileConfig.REPO_TYPE int type) {
         RepoListFragment documentsListFragment = new RepoListFragment();
         Bundle args = new Bundle();
-        args.putInt("repoType", type);
+        args.putInt(KEY_REPO_TYPE, type);
         documentsListFragment.setArguments(args);
         return documentsListFragment;
     }
@@ -98,7 +99,7 @@ public class RepoListFragment extends BaseFragment
 
     @Override
     protected void initView() {
-        repoType = SFileConfig.convert2RepoType(getArguments().getInt("repoType"));
+        repoType = SFileConfig.convert2RepoType(getArguments().getInt(KEY_REPO_TYPE));
         EventBus.getDefault().register(this);
 
         recyclerView.setClipToPadding(false);
@@ -107,16 +108,16 @@ public class RepoListFragment extends BaseFragment
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         switch (repoType) {
             case REPO_MINE:
-                refreshLayout.setNoticeEmptyText("暂无资料库");
+                refreshLayout.setNoticeEmptyText(R.string.repo_empty);
                 break;
             case REPO_SHARED_ME:
-                refreshLayout.setNoticeEmptyText("没有共享给我的资料库");
+                refreshLayout.setNoticeEmptyText(R.string.repo_share_empty);
                 break;
             case REPO_LAWFIRM:
-                refreshLayout.setNoticeEmptyText("尚未建立资料库");
+                refreshLayout.setNoticeEmptyText(R.string.repo_lawfirm_empty);
                 break;
             case REPO_PROJECT:
-                refreshLayout.setNoticeEmptyText("暂无资料库");
+                refreshLayout.setNoticeEmptyText(R.string.repo_empty);
                 break;
         }
         recyclerView.setAdapter(repoAdapter = new RepoAdapter(repoType));
@@ -345,9 +346,9 @@ public class RepoListFragment extends BaseFragment
     private void showDocumentActionDialog(final int pos) {
         RepoEntity item = repoAdapter.getItem(pos);
         if (item == null) return;
-        List<String> menus = Arrays.asList("查看资料库详情", "重命名", "内部共享", "删除");
+        List<String> menus = Arrays.asList(getResources().getStringArray(R.array.repo_action_menu_rw));
         if (isDefaultReop(item.repo_id)) {
-            menus = Arrays.asList("查看资料库详情", "重命名", "内部共享");
+            menus = Arrays.asList(getResources().getStringArray(R.array.repo_action_menu_r));
         }
         new BottomActionDialog(getContext(),
                 null,
@@ -427,8 +428,8 @@ public class RepoListFragment extends BaseFragment
      */
     private void showDelConfirmDialog(final int pos) {
         new BottomActionDialog(getContext(),
-                "删除后不可恢复, 确定删除吗?",
-                Arrays.asList("删除"), new BottomActionDialog.OnActionItemClickListener() {
+                getString(R.string.repo_delete_confirm),
+                Arrays.asList(getString(R.string.str_delete)), new BottomActionDialog.OnActionItemClickListener() {
             @Override
             public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
                 dialog.dismiss();
@@ -445,17 +446,17 @@ public class RepoListFragment extends BaseFragment
     private void delDocument(int pos) {
         final RepoEntity item = repoAdapter.getItem(pos);
         if (item == null) return;
-        showLoadingDialog("资料库删除中...");
+        showLoadingDialog(R.string.repo_delete_ing);
         callEnqueue(getSFileApi().documentRootDelete(item.repo_id),
                 new SFileCallBack<String>() {
                     @Override
                     public void onSuccess(Call<String> call, Response<String> response) {
                         dismissLoadingDialog();
                         if (TextUtils.equals("success", response.body())) {
-                            showTopSnackBar("资料库删除成功");
+                            showTopSnackBar(R.string.repo_delete_success);
                             repoAdapter.removeItem(item);
                         } else {
-                            showTopSnackBar("资料库删除失败");
+                            showTopSnackBar(R.string.repo_delete_fail);
                         }
                     }
 

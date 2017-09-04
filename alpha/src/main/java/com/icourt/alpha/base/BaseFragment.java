@@ -413,6 +413,15 @@ public abstract class BaseFragment
         }
         return progressHUD;
     }
+    /**
+     * 展示加载对话框
+     *
+     * @param id
+     */
+    @UiThread
+    public final void showLoadingDialog(@StringRes int id) {
+        this.showLoadingDialog(getString(id));
+    }
 
     /***
      *  展示加载对话框

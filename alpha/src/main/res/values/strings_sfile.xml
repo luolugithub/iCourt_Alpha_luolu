@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- 资料库 sfile相关的字符串资源 -->
+    <string name="repo_empty">暂无资料库</string>
+    <string name="repo_share_empty">没有共享给我的资料库</string>
+    <string name="repo_lawfirm_empty">尚未建立资料库</string>
+
+    <string-array name="repo_type">
+        <item>我的</item>
+        <item>共享给我的</item>
+        <item>律所</item>
+        <item>项目</item>
+    </string-array>
+
+    <string-array name="repo_action_menu_rw">
+        <item>查看资料库详情</item>
+        <item>重命名</item>
+        <item>@string/str_rename</item>
+        <item>@string/str_delete</item>
+    </string-array>
+
+    <string-array name="repo_action_menu_r">
+        <item>查看资料库详情</item>
+        <item>@string/str_rename</item>
+        <item>内部共享</item>
+    </string-array>
+
+    <string name="repo_delete_confirm">删除后不可恢复, 确定删除吗?</string>
+    <string name="repo_delete_ing">资料库删除中...</string>
+    <string name="repo_delete_success">资料库删除成功</string>
+    <string name="repo_delete_fail">资料库删除失败</string>
+</resources>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 标准的字符串资源 str_开头-->
+    <string name="str_ok">确定</string>
+    <string name="str_cancel">取消</string>
+    <string name="str_delete">删除</string>
+    <string name="str_finish">完成</string>
+    <string name="str_rename">重命名</string>
+</resources>
