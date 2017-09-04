@@ -428,7 +428,7 @@ public class ProjectDetailFragment extends BaseFragment implements BaseRecyclerA
             case R.id.service_content_layout://项目备注
                 if (!TextUtils.isEmpty(projectServiceContent.getText())) {
                     String remark = projectServiceContent.getText().toString();
-                    ProjectBasicTextInfoActivity.launch(getContext(), remark, Const.PROJECT_REMARK_TYPE);
+                    ProjectBasicTextInfoActivity.launch(getContext(), "项目备注", remark, Const.PROJECT_REMARK_TYPE);
                 }
                 break;
             case R.id.project_member_layout:
@@ -448,9 +448,8 @@ public class ProjectDetailFragment extends BaseFragment implements BaseRecyclerA
             ProjectBasicItemEntity entity = (ProjectBasicItemEntity) adapter.getItem(position);
             switch (entity.type) {
                 case Const.PROJECT_NAME_TYPE:
-                case Const.PROJECT_TYPE_TYPE:
                 case Const.PROJECT_NUMBER_TYPE:
-                    ProjectBasicTextInfoActivity.launch(view.getContext(), entity.value, entity.type);
+                    ProjectBasicTextInfoActivity.launch(view.getContext(),entity.key, entity.value, entity.type);
                     break;
                 case Const.PROJECT_ANYUAN_LAWYER_TYPE://案源律师
                     ProjectMembersActivity.launch(view.getContext(), projectDetailBean.attorneys, Const.PROJECT_ANYUAN_LAWYER_TYPE);
@@ -483,7 +482,11 @@ public class ProjectDetailFragment extends BaseFragment implements BaseRecyclerA
         }
     }
 
-
+    /**
+     * 是否有查看联系人权限
+     *
+     * @return
+     */
     private boolean hasCustomerPermission() {
         return SpUtils.getInstance().getBooleanData(KEY_CUSTOMER_PERMISSION, false);
     }

@@ -101,9 +101,13 @@ public class ProjectRangeFragment extends BaseFragment implements BaseRecyclerAd
     private void setDataToView(ProjectProcessesEntity projectProcessesEntity) {
         if (projectProcessesEntity == null) return;
         List<ProjectBasicItemEntity> projectBasicItemEntities = new ArrayList<>();
+
+        //程序名称
         if (!TextUtils.isEmpty(projectProcessesEntity.processName)) {
             projectBasicItemEntities.add(new ProjectBasicItemEntity("程序", projectProcessesEntity.legalName + projectProcessesEntity.processName, Const.PROJECT_CASEPROCESS_TYPE));
         }
+
+        //标的
         if (!TextUtils.isEmpty(projectProcessesEntity.priceStr)) {
             String keyName = "标的";
             if (projectProcessesEntity.legalType == Const.LEGAL_PENAL_TYPE) {
@@ -111,6 +115,8 @@ public class ProjectRangeFragment extends BaseFragment implements BaseRecyclerAd
             }
             projectBasicItemEntities.add(new ProjectBasicItemEntity(keyName, projectProcessesEntity.priceStr, Const.PROJECT_PRICE_TYPE));
         }
+
+        //案由
         if (projectProcessesEntity.caseCodes != null && projectProcessesEntity.caseCodes.size() > 0) {
             String keyName = "案由";
             if (projectProcessesEntity.legalType == Const.LEGAL_PENAL_TYPE) {
@@ -118,12 +124,16 @@ public class ProjectRangeFragment extends BaseFragment implements BaseRecyclerAd
             }
             projectBasicItemEntities.add(new ProjectBasicItemEntity(keyName, getCaseCodeName(projectProcessesEntity.caseCodes), Const.PROJECT_CASE_TYPE));
         }
+
+        //其他当事人
         if (projectProcessesEntity.position != null && projectProcessesEntity.position.size() > 0) {
             for (ProjectProcessesEntity.PositionBean positionBean : projectProcessesEntity.position) {
                 if (!TextUtils.isEmpty(positionBean.contactName))
                     projectBasicItemEntities.add(new ProjectBasicItemEntity(positionBean.partyName, positionBean.contactName, Const.PROJECT_OTHER_PERSON_TYPE, positionBean));
             }
         }
+
+        //其他信息
         if (projectProcessesEntity.extra != null && projectProcessesEntity.extra.size() > 0) {
             for (ProjectProcessesEntity.ExtraBean extra : projectProcessesEntity.extra) {
                 projectBasicItemEntities.add(new ProjectBasicItemEntity(extra.name, getExtraName(extra.values), Const.PROJECT_ACCEPTANCE_TYPE, extra));
@@ -184,7 +194,9 @@ public class ProjectRangeFragment extends BaseFragment implements BaseRecyclerAd
 
         switch (itemEntity.type) {
             case Const.PROJECT_CASE_TYPE:
-                ProjectBasicTextInfoActivity.launch(view.getContext(), itemEntity.value, itemEntity.type);
+            case Const.PROJECT_CASEPROCESS_TYPE:
+            case Const.PROJECT_PRICE_TYPE:
+                ProjectBasicTextInfoActivity.launch(view.getContext(), itemEntity.key,itemEntity.value, itemEntity.type);
                 break;
             case Const.PROJECT_ACCEPTANCE_TYPE:
                 ProjecTacceptanceActivity.launch(getContext(), itemEntity.extraBean);
@@ -212,6 +224,10 @@ public class ProjectRangeFragment extends BaseFragment implements BaseRecyclerAd
         }
     }
 
+    /**
+     * 是否有查看联系人权限
+     * @return
+     */
     private boolean hasCustomerPermission() {
         return SpUtils.getInstance().getBooleanData(KEY_CUSTOMER_PERMISSION, false);
     }

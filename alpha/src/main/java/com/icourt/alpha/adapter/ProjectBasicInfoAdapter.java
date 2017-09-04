@@ -81,6 +81,11 @@ public class ProjectBasicInfoAdapter extends BaseArrayRecyclerAdapter<ProjectBas
             ImageView rightView = holder.obtainView(R.id.arrow_right_iv);
             rightView.setVisibility(isShowRightView(projectBasicItemEntity.type) ? View.VISIBLE : View.GONE);
             valueView.setText(projectBasicItemEntity.value);
+            if (projectBasicItemEntity.type == Const.PROJECT_DEPARTMENT_TYPE) {
+                valueView.setMaxEms(5);
+            } else {
+                valueView.setMaxEms(8);
+            }
         }
     }
 
@@ -93,9 +98,10 @@ public class ProjectBasicInfoAdapter extends BaseArrayRecyclerAdapter<ProjectBas
         switch (type) {
             case Const.PROJECT_CLIENT_TYPE://客户
             case Const.PROJECT_TIME_TYPE://时间
-            case Const.PROJECT_CASEPROCESS_TYPE://程序
-            case Const.PROJECT_PRICE_TYPE://标的
+//            case Const.PROJECT_CASEPROCESS_TYPE://程序
+//            case Const.PROJECT_PRICE_TYPE://标的
             case Const.PROJECT_CASENO_TYPE://案由号码
+            case Const.PROJECT_TYPE_TYPE://项目类型
                 return false;
 
         }

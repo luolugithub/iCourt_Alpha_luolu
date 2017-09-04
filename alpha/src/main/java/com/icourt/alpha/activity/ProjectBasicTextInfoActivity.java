@@ -34,9 +34,10 @@ import static com.icourt.alpha.constants.Const.PROJECT_TYPE_TYPE;
 
 public class ProjectBasicTextInfoActivity extends BaseActivity {
 
-    private static final String KEY_DEST_TEXT = "key_desc_text";
+    private static final String KEY_TEXT = "key_text";
+    private static final String KEY_VALUE_TEXT = "key_value_text";
     private static final String KEY_TYPE = "key_type";
-    String desc;
+    String key, value;
     int type;
     @BindView(R.id.titleBack)
     ImageView titleBack;
@@ -49,10 +50,11 @@ public class ProjectBasicTextInfoActivity extends BaseActivity {
     @BindView(R.id.content_length_tv)
     TextView contentLengthTv;
 
-    public static void launch(@NonNull Context context, @NonNull String desc, @Const.PROJECT_INFO_TEXT_TYPE int type) {
+    public static void launch(@NonNull Context context, String key, @NonNull String value, @Const.PROJECT_INFO_TEXT_TYPE int type) {
         if (context == null) return;
         Intent intent = new Intent(context, ProjectBasicTextInfoActivity.class);
-        intent.putExtra(KEY_DEST_TEXT, desc);
+        intent.putExtra(KEY_TEXT, key);
+        intent.putExtra(KEY_VALUE_TEXT, value);
         intent.putExtra(KEY_TYPE, type);
         context.startActivity(intent);
     }
@@ -69,10 +71,11 @@ public class ProjectBasicTextInfoActivity extends BaseActivity {
     @Override
     protected void initView() {
         super.initView();
-        desc = getIntent().getStringExtra(KEY_DEST_TEXT);
+        key = getIntent().getStringExtra(KEY_TEXT);
+        value = getIntent().getStringExtra(KEY_VALUE_TEXT);
         type = getIntent().getIntExtra(KEY_TYPE, -1);
-        titleContent.setText(getTitleText());
-        descText.setText(desc);
+        titleContent.setText(key);
+        descText.setText(value);
     }
 
     /**
@@ -90,6 +93,10 @@ public class ProjectBasicTextInfoActivity extends BaseActivity {
                 return "项目编号";
             case PROJECT_REMARK_TYPE:
                 return "项目备注";
+            case Const.PROJECT_CASEPROCESS_TYPE://程序名称
+                return "程序名称";
+            case Const.PROJECT_PRICE_TYPE:
+                return "标的";
             case PROJECT_CASE_TYPE:
                 return "案由";
             case PROJECT_CASENUMBER_TYPE:

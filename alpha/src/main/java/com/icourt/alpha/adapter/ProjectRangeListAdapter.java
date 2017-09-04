@@ -44,7 +44,7 @@ public class ProjectRangeListAdapter extends BaseArrayRecyclerAdapter<RangeItemE
             case Const.PROJECT_CASE_TYPE:
             case Const.PROJECT_CASENUMBER_TYPE:
             case Const.PROJECT_COMPETENT_TYPE:
-                ProjectBasicTextInfoActivity.launch(view.getContext(), entity.itemValue, entity.itemType);
+                ProjectBasicTextInfoActivity.launch(view.getContext(), entity.itemName, entity.itemValue, entity.itemType);
                 break;
         }
     }
