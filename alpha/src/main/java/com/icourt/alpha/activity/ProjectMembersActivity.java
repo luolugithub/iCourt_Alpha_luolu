@@ -221,6 +221,7 @@ public class ProjectMembersActivity extends BaseAppUpdateActivity {
      * @param hiddenChatBtn
      */
     public void showContactDialogFragment(String accid, boolean hiddenChatBtn) {
+        SystemUtils.hideSoftKeyBoard(this);
         String tag = ContactDialogFragment.class.getSimpleName();
         FragmentTransaction mFragTransaction = getSupportFragmentManager().beginTransaction();
         Fragment fragment = getSupportFragmentManager().findFragmentByTag(tag);

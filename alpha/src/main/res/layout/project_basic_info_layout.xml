@@ -25,7 +25,7 @@
         android:id="@+id/service_content_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/white"
+        android:background="?attr/selectableItemBackground"
         android:visibility="gone"
         android:orientation="vertical">
 
@@ -37,6 +37,7 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:background="@color/white"
             android:orientation="vertical"
             >
 
@@ -88,14 +89,15 @@
         android:id="@+id/project_member_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/white"
         android:orientation="vertical"
+        android:background="@color/white"
         android:visibility="gone">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center_vertical"
+            android:background="@color/white"
             android:padding="@dimen/dp15">
 
             <ImageView
