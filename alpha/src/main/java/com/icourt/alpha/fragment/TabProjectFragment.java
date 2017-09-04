@@ -108,11 +108,13 @@ public class TabProjectFragment extends BaseFragment implements TopMiddlePopup.O
             ImageView downIv = tab.getCustomView().findViewById(R.id.tab_custom_title_iv);
             switch (i) {
                 case 0:
+                    titleTv.setTextColor(0xFF313131);
                     titleTv.setText("进行中");
                     downIv.setVisibility(View.VISIBLE);
                     tab.getCustomView().setOnClickListener(new OnTabClickListener());
                     break;
                 case 1:
+                    titleTv.setTextColor(0xFF979797);
                     titleTv.setText("我关注的");
                     downIv.setVisibility(View.GONE);
                     break;
@@ -133,6 +135,20 @@ public class TabProjectFragment extends BaseFragment implements TopMiddlePopup.O
             @Override
             public void onPageSelected(int position) {
                 titleAction.setVisibility(position == 0 ? View.VISIBLE : View.GONE);
+                if (tabLayout.getTabAt(0).getCustomView() != null && tabLayout.getTabAt(1).getCustomView() != null) {
+                    TextView titleTv_0 = tabLayout.getTabAt(0).getCustomView().findViewById(R.id.tab_custom_title_tv);
+                    TextView titleTv_1 = tabLayout.getTabAt(1).getCustomView().findViewById(R.id.tab_custom_title_tv);
+                    switch (position) {
+                        case 0:
+                            titleTv_0.setTextColor(0xFF313131);
+                            titleTv_1.setTextColor(0xFF979797);
+                            break;
+                        case 1:
+                            titleTv_0.setTextColor(0xFF979797);
+                            titleTv_1.setTextColor(0xFF313131);
+                            break;
+                    }
+                }
             }
 
             @Override

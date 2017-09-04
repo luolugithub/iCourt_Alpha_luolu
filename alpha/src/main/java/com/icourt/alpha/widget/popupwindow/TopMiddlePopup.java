@@ -123,7 +123,6 @@ public class TopMiddlePopup extends PopupWindow implements BaseRecyclerAdapter.O
                 if (event.getAction() == MotionEvent.ACTION_UP) {
                     if (y > height || x < left || x > right) {
                         dismiss();
-                        startLayoutAnimatorout();
                     }
                 }
                 return true;
@@ -151,8 +150,6 @@ public class TopMiddlePopup extends PopupWindow implements BaseRecyclerAdapter.O
     public void show(View view, List<FilterDropEntity> items, int position) {
         adapter.bindData(true, items);
         adapter.setSelectedPos(position);
-        startLayoutAnimatorin();
         showAsDropDown(view);
     }
-
 }
