@@ -340,6 +340,16 @@ public class FileUtils {
     }
 
     /**
+     * 是否是gif图片
+     *
+     * @param path
+     * @return
+     */
+    public static boolean isGif(String path) {
+        return TextUtils.equals(getFileSuffix(path), ".gif");
+    }
+
+    /**
      * 获取文件类型
      *
      * @param fileName

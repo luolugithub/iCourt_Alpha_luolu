@@ -22,6 +22,11 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.load.resource.drawable.GlideDrawable;
+import com.bumptech.glide.request.RequestListener;
+import com.bumptech.glide.request.target.Target;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.baseadapter.BasePagerAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
@@ -40,6 +45,7 @@ import com.liulishuo.filedownloader.FileDownloader;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.concurrent.TimeUnit;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -152,11 +158,118 @@ public class ImageViewerActivity extends BaseUmengActivity {
     class ImagePagerAdapter extends BasePagerAdapter<String> implements PhotoViewAttacher.OnViewTapListener {
 
 
+        /**
+         * 获取大图的地址
+         *
+         * @param pos
+         * @return
+         */
+        private String getBigImageUrl(int pos) {
+            if (bigUrls != null && pos < bigUrls.size()) {
+                return bigUrls.get(pos);
+            }
+            return null;
+        }
+
         @Override
-        public void bindDataToItem(String s, ViewGroup container, View itemView, int pos) {
+        public void bindDataToItem(String s, ViewGroup container, final View itemView, int pos) {
             final PhotoView touchImageView = itemView.findViewById(R.id.imageView);
+            final View imgLookOriginalTv = itemView.findViewById(R.id.img_look_original_tv);
+            final String bigUrl = getBigImageUrl(pos);
+            imgLookOriginalTv.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    loadBigImage(bigUrl, touchImageView, imgLookOriginalTv);
+                }
+            });
             touchImageView.setOnViewTapListener(this);
-            GlideUtils.loadSFilePic(getContext(), s, touchImageView);
+            if (FileUtils.isGif(s)) {
+                GlideUtils.loadSFilePic(getContext(), s, touchImageView);
+            } else {
+                if (GlideUtils.canLoadImage(getContext())) {
+                    Glide.with(getContext())
+                            .load(s)
+                            .diskCacheStrategy(DiskCacheStrategy.SOURCE)
+                            .error(R.mipmap.filetype_image)
+                            .listener(new RequestListener<String, GlideDrawable>() {
+                                @Override
+                                public boolean onException(Exception e, String model, Target<GlideDrawable> target, boolean isFirstResource) {
+                                    return false;
+                                }
+
+                                @Override
+                                public boolean onResourceReady(GlideDrawable resource, String model, Target<GlideDrawable> target, boolean isFromMemoryCache, boolean isFirstResource) {
+                                    //有原图
+                                    if (!TextUtils.isEmpty(bigUrl)
+                                            && resource != null
+                                            && (resource.getIntrinsicHeight() >= 800 || resource.getIntrinsicWidth() >= 800)) {
+                                        checkAndLoadBigImage(bigUrl, touchImageView, imgLookOriginalTv);
+                                    } else {
+                                        imgLookOriginalTv.setVisibility(View.GONE);
+                                    }
+                                    return false;
+                                }
+                            }).into(touchImageView);
+
+                }
+            }
+        }
+
+        /**
+         * 检查和加载原图
+         *
+         * @param bigUrl
+         * @param imageView
+         */
+        private void checkAndLoadBigImage(final String bigUrl, final ImageView imageView, final View imgLookOriginalTv) {
+            Observable.create(new ObservableOnSubscribe<Boolean>() {
+                @Override
+                public void subscribe(ObservableEmitter<Boolean> e) throws Exception {
+                    if (e.isDisposed()) return;
+                    File file = null;
+                    try {
+                        file = Glide.with(getContext())
+                                .load(bigUrl)
+                                .downloadOnly(Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL)
+                                .get(200, TimeUnit.MILLISECONDS);
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    }
+                    e.onNext(file != null && file.exists());
+                    e.onComplete();
+                }
+            }).compose(ImageViewerActivity.this.<Boolean>bindToLifecycle())
+                    .subscribeOn(Schedulers.newThread())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(new io.reactivex.functions.Consumer<Boolean>() {
+                        @Override
+                        public void accept(Boolean aBoolean) throws Exception {
+                            if (!GlideUtils.canLoadImage(getContext())) return;
+
+                            //大图 已经缓存
+                            if (aBoolean != null && aBoolean.booleanValue()) {
+                                loadBigImage(bigUrl, imageView, imgLookOriginalTv);
+                            } else {
+                                if (isFullScreenMode()) {
+                                    imgLookOriginalTv.setVisibility(View.VISIBLE);
+                                } else {
+                                    imgLookOriginalTv.setVisibility(View.GONE);
+                                }
+                            }
+                        }
+                    });
+        }
+
+        /**
+         * 加载大图
+         *
+         * @param bigUrl
+         * @param imageView
+         * @param imgLookOriginalTv
+         */
+        private void loadBigImage(final String bigUrl, ImageView imageView, final View imgLookOriginalTv) {
+            imgLookOriginalTv.setVisibility(View.GONE);
+            GlideUtils.loadSFilePic(getContext(), bigUrl, imageView);
         }
 
         @Override
@@ -164,16 +277,28 @@ public class ImageViewerActivity extends BaseUmengActivity {
             return R.layout.adapter_item_image_pager;
         }
 
+
+        /**
+         * 是全屏模式
+         *
+         * @return
+         */
+        private boolean isFullScreenMode() {
+            return titleView.getVisibility() != View.VISIBLE;
+        }
+
         @Override
         public void onViewTap(View view, float v, float v1) {
-            if (titleView.getVisibility() == View.VISIBLE) {
+            if (!isFullScreenMode()) {
                 titleView.setVisibility(View.GONE);
                 mainContent.setBackgroundColor(Color.BLACK);
                 downloadImg.setVisibility(View.VISIBLE);
+                notifyDataSetChanged();
             } else {
                 titleView.setVisibility(View.VISIBLE);
                 mainContent.setBackgroundColor(Color.WHITE);
                 downloadImg.setVisibility(View.GONE);
+                notifyDataSetChanged();
             }
         }
     }
