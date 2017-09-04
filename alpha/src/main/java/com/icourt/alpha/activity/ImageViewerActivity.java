@@ -74,6 +74,8 @@ public class ImageViewerActivity extends BaseUmengActivity {
     ImageView titleAction;
     @BindView(R.id.main_content)
     LinearLayout mainContent;
+    @BindView(R.id.download_img)
+    ImageView downloadImg;
 
     public static void launch(@NonNull Context context,
                               ArrayList<String> smallUrls,
@@ -167,9 +169,11 @@ public class ImageViewerActivity extends BaseUmengActivity {
             if (titleView.getVisibility() == View.VISIBLE) {
                 titleView.setVisibility(View.GONE);
                 mainContent.setBackgroundColor(Color.BLACK);
+                downloadImg.setVisibility(View.VISIBLE);
             } else {
                 titleView.setVisibility(View.VISIBLE);
                 mainContent.setBackgroundColor(Color.WHITE);
+                downloadImg.setVisibility(View.GONE);
             }
         }
     }
@@ -210,12 +214,16 @@ public class ImageViewerActivity extends BaseUmengActivity {
         setTitle(FileUtils.getFileName(smallUrls.get(0)));
     }
 
-    @OnClick({R.id.titleAction})
+    @OnClick({R.id.titleAction,
+            R.id.download_img})
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.titleAction:
                 showBottomMenuDialog();
+                break;
+            case R.id.download_img:
+                checkPermissionOrDownload();
                 break;
             default:
                 super.onClick(v);
