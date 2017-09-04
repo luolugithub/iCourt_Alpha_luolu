@@ -292,7 +292,7 @@ public class TaskListFragment extends BaseTaskFragment implements
     }
 
     /**
-     * 获取父fragment
+     * 获取爷爷fragment：TabTaskFragment
      *
      * @return
      */
@@ -308,7 +308,6 @@ public class TaskListFragment extends BaseTaskFragment implements
     /**
      * 下一个
      */
-
     private void updateNextTaskState() {
         if (newTaskEntities != null) {
             if (newTaskEntities.size() > 0) {
@@ -520,26 +519,22 @@ public class TaskListFragment extends BaseTaskFragment implements
                         @Override
                         public void accept(List<TaskEntity> searchPolymerizationEntities) throws Exception {
                             taskAdapter.bindData(true, allTaskEntities);
-                            if (getParentFragment() != null) {
-                                if (getParentFragment() instanceof TaskAllFragment) {
-                                    if (getParentFragment().getParentFragment() != null) {
-                                        if (getParentFragment().getParentFragment() instanceof TabTaskFragment) {
-                                            if (tabTaskFragment.isAwayScroll && stateType == 0) {
-                                                if (newTaskEntities.size() > 1) {
-                                                    nextTaskLayout.setVisibility(View.VISIBLE);
-                                                }
-                                                nextTaskTv.setText(String.format("下一个 (%s)", newTaskEntities.size()));
-                                                updateNextTaskState();
-                                            } else {
-                                                if (newTaskEntities.size() > 0) {
-                                                    newTaskCardview.setVisibility(View.VISIBLE);
-                                                    newTaskCardview.setClickable(true);
-                                                    newTaskCountTv.setText(String.valueOf(newTaskEntities.size()));
-                                                    nextTaskLayout.setVisibility(View.GONE);
-                                                } else {
-                                                    newTaskCardview.setVisibility(View.GONE);
-                                                }
-                                            }
+                            if (getParentFragment() != null && getParentFragment() instanceof TaskAllFragment) {
+                                if (getParentFragment().getParentFragment() != null && getParentFragment().getParentFragment() instanceof TabTaskFragment) {
+                                    if (tabTaskFragment.isAwayScroll && stateType == 0) {
+                                        if (newTaskEntities.size() > 1) {
+                                            nextTaskLayout.setVisibility(View.VISIBLE);
+                                        }
+                                        nextTaskTv.setText(String.format("下一个 (%s)", newTaskEntities.size()));
+                                        updateNextTaskState();
+                                    } else {
+                                        if (newTaskEntities.size() > 0) {
+                                            newTaskCardview.setVisibility(View.VISIBLE);
+                                            newTaskCardview.setClickable(true);
+                                            newTaskCountTv.setText(String.valueOf(newTaskEntities.size()));
+                                            nextTaskLayout.setVisibility(View.GONE);
+                                        } else {
+                                            newTaskCardview.setVisibility(View.GONE);
                                         }
                                     }
                                 }
@@ -1272,32 +1267,6 @@ public class TaskListFragment extends BaseTaskFragment implements
             }
         });
     }
-
-//    /**
-//     * 获取添加计时实体
-//     *
-//     * @return
-//     */
-//    @Override
-//    protected TimeEntity.ItemEntity getTimer(TaskEntity.TaskItemEntity taskItemEntity) {
-//        TimeEntity.ItemEntity itemEntity = new TimeEntity.ItemEntity();
-//        if (taskItemEntity != null) {
-//            itemEntity.taskPkId = taskItemEntity.id;
-//            itemEntity.taskName = taskItemEntity.name;
-//            itemEntity.name = taskItemEntity.name;
-//            itemEntity.workDate = DateUtils.millis();
-//            itemEntity.createUserId = getLoginUserId();
-//            if (LoginInfoUtils.getLoginUserInfo() != null) {
-//                itemEntity.username = LoginInfoUtils.getLoginUserInfo().getName();
-//            }
-//            itemEntity.startTime = DateUtils.millis();
-//            if (taskItemEntity.matter != null) {
-//                itemEntity.matterPkId = taskItemEntity.matter.id;
-//                itemEntity.matterName = taskItemEntity.matter.name;
-//            }
-//        }
-//        return itemEntity;
-//    }
 
     @Override
     protected void startTimingBack(TaskEntity.TaskItemEntity requestEntity, Response<TimeEntity.ItemEntity> response) {

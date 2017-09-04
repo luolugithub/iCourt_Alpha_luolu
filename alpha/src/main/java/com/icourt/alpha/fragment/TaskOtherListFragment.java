@@ -445,11 +445,6 @@ public class TaskOtherListFragment extends BaseTaskFragment implements BaseQuick
     }
 
     @Override
-    protected void taskDeleteBack(@NonNull TaskEntity.TaskItemEntity itemEntity) {
-
-    }
-
-    @Override
     protected void taskUpdateBack(@NonNull TaskEntity.TaskItemEntity itemEntity) {
         taskAdapter.updateItem(itemEntity);
     }
