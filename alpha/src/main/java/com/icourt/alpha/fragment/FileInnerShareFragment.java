@@ -45,7 +45,7 @@ import retrofit2.Response;
 import static com.icourt.alpha.constants.SFileConfig.PERMISSION_RW;
 
 /**
- * Description
+ * Description  内部共享页面
  * Company Beijing icourt
  * author  youxuan  E-mail:xuanyouwu@163.com
  * date createTime：2017/8/16
@@ -299,16 +299,21 @@ public class FileInnerShareFragment extends BaseFragment
      * 改变用户分享的权限
      *
      * @param per
-     * @param sfileUser
+     * @param item
      */
-    private void changeUserPermission(String per, String sfileUser) {
+    private void changeUserPermission(String per, SFileShareUserInfo item) {
+        if (item == null) return;
+        if (item.userInfo == null) return;
+        if (TextUtils.equals(per, item.permission)) {
+            return;
+        }
         showLoadingDialog(null);
         callEnqueue(getSFileApi().folderShareUserChangePermission(
                 getArguments().getString(KEY_SEA_FILE_FROM_REPO_ID, ""),
                 getArguments().getString(KEY_SEA_FILE_FROM_DIR_PATH, ""),
                 per,
                 "user",
-                sfileUser),
+                item.userInfo.name),
                 new SFileCallBack<JsonObject>() {
                     @Override
                     public void onSuccess(Call<JsonObject> call, Response<JsonObject> response) {
@@ -331,16 +336,31 @@ public class FileInnerShareFragment extends BaseFragment
         if (item.userInfo == null) return;
         switch (view.getId()) {
             case R.id.user_action_tv:
-                new BottomActionDialog(getContext(), null, Arrays.asList("可读写", "只读", "取消共享"), new BottomActionDialog.OnActionItemClickListener() {
+                showBottomChangePermissionDialog(item);
+                break;
+        }
+    }
+
+    /**
+     * 展示底部改变用户权限的对话框
+     *
+     * @param item
+     */
+    private void showBottomChangePermissionDialog(final SFileShareUserInfo item) {
+        if (item == null) return;
+        new BottomActionDialog(getContext(),
+                null,
+                Arrays.asList("可读写", "只读", "取消共享"),
+                new BottomActionDialog.OnActionItemClickListener() {
                     @Override
                     public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
                         dialog.dismiss();
                         switch (position) {
                             case 0:
-                                changeUserPermission("rw", item.userInfo.name);
+                                changeUserPermission("rw", item);
                                 break;
                             case 1:
-                                changeUserPermission("r", item.userInfo.name);
+                                changeUserPermission("r", item);
                                 break;
                             case 2:
                                 deleteUserSharedFile(item.userInfo.name);
@@ -348,7 +368,5 @@ public class FileInnerShareFragment extends BaseFragment
                         }
                     }
                 }).show();
-                break;
-        }
     }
 }
