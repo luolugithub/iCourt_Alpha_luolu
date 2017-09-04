@@ -13,12 +13,16 @@ import com.icourt.alpha.entity.bean.TimeEntity;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.GlideUtils;
 import com.icourt.alpha.utils.LoginInfoUtils;
+import com.icourt.alpha.utils.UMMobClickAgent;
 import com.icourt.alpha.view.recyclerviewDivider.ITimeDividerInterface;
 import com.icourt.alpha.widget.manager.TimerManager;
+import com.umeng.analytics.MobclickAgent;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+
+import static com.umeng.socialize.utils.ContextUtil.getContext;
 
 /**
  * Description 计时
@@ -299,9 +303,11 @@ public class TimeAdapter extends BaseArrayRecyclerAdapter<TimeEntity.ItemEntity>
             case R.id.timer_icon:
                 if (item.state == TimeEntity.TIMER_STATE_END_TYPE) {
                     item.state = 0;
+                    MobclickAgent.onEvent(getContext(), UMMobClickAgent.start_timer_click_id);
                     TimerManager.getInstance().addTimer(item);
                 } else {
                     item.state = 1;
+                    MobclickAgent.onEvent(getContext(), UMMobClickAgent.stop_timer_click_id);
                     TimerManager.getInstance().stopTimer();
                 }
                 break;

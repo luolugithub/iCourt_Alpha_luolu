@@ -21,11 +21,11 @@ import com.bigkoo.pickerview.TimePickerView;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.icourt.alpha.R;
+import com.icourt.alpha.base.BaseDialogFragment;
 import com.icourt.alpha.entity.bean.ProjectEntity;
 import com.icourt.alpha.entity.bean.TaskEntity;
 import com.icourt.alpha.entity.bean.TimeEntity;
 import com.icourt.alpha.entity.bean.WorkType;
-import com.icourt.alpha.base.BaseDialogFragment;
 import com.icourt.alpha.fragment.dialogfragment.CalendaerSelectDialogFragment;
 import com.icourt.alpha.fragment.dialogfragment.ProjectSimpleSelectDialogFragment;
 import com.icourt.alpha.fragment.dialogfragment.TaskSelectDialogFragment;
@@ -37,8 +37,10 @@ import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.JsonUtils;
 import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.utils.SystemUtils;
+import com.icourt.alpha.utils.UMMobClickAgent;
 import com.icourt.alpha.view.CircleTimerView;
 import com.icourt.api.RequestUtils;
+import com.umeng.analytics.MobclickAgent;
 
 import java.io.Serializable;
 import java.util.Calendar;
@@ -64,6 +66,7 @@ public class TimerAddActivity extends BaseTimerActivity
 
     private static final String KEY_PROJECT_ID = "key_project_id";
     private static final String KEY_PROJECT_NAME = "key_project_name";
+    private static final String KEY_TASKITEMENTITY = "key_taskItemEntity";
 
     @BindView(R.id.titleBack)
     CheckedTextView titleBack;
@@ -119,6 +122,13 @@ public class TimerAddActivity extends BaseTimerActivity
         context.startActivity(intent);
     }
 
+    public static void launch(@NonNull Context context, TaskEntity.TaskItemEntity taskItemEntity) {
+        if (context == null) return;
+        Intent intent = new Intent(context, TimerAddActivity.class);
+        intent.putExtra(KEY_TASKITEMENTITY, taskItemEntity);
+        context.startActivity(intent);
+    }
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -138,8 +148,19 @@ public class TimerAddActivity extends BaseTimerActivity
         }
         projectId = getIntent().getStringExtra(KEY_PROJECT_ID);
         projectName = getIntent().getStringExtra(KEY_PROJECT_NAME);
+        selectedTaskItem = (TaskEntity.TaskItemEntity) getIntent().getSerializableExtra(KEY_TASKITEMENTITY);
         if (selectedProjectEntity == null) {
             selectedProjectEntity = new ProjectEntity();
+        }
+        if (selectedTaskItem != null) {
+            if (selectedTaskItem.matter != null) {
+                projectId = selectedTaskItem.matter.id;
+                projectName = selectedTaskItem.matter.name;
+            }
+            if (!TextUtils.isEmpty(selectedTaskItem.name)) {
+                timeNameTv.setText(selectedTaskItem.name);
+                taskNameTv.setText(selectedTaskItem.name);
+            }
         }
         if (!TextUtils.isEmpty(projectName)) {
             projectNameTv.setText(projectName);
@@ -148,6 +169,7 @@ public class TimerAddActivity extends BaseTimerActivity
         if (!TextUtils.isEmpty(projectId)) {
             selectedProjectEntity.pkId = projectId;
         }
+
         selectedStartDate = Calendar.getInstance();
         //默认开始时间 早上9点整开始
         selectedStartDate.set(Calendar.HOUR_OF_DAY, 9);
@@ -358,7 +380,7 @@ public class TimerAddActivity extends BaseTimerActivity
         itemEntityCopy.endTime = selectedEndDate.getTimeInMillis();
         itemEntityCopy.state = 1;
         itemEntityCopy.workDate = selectedStartDate.getTimeInMillis();
-        itemEntityCopy.matterPkId = selectedProjectEntity != null ? selectedProjectEntity.pkId : null;
+        itemEntityCopy.matterPkId = selectedProjectEntity != null ? selectedProjectEntity.pkId : "";
         itemEntityCopy.workTypeId = selectedWorkType != null ? selectedWorkType.pkId : null;
         itemEntityCopy.taskPkId = selectedTaskItem != null ? selectedTaskItem.id : null;
         itemEntityCopy.name = TextUtils.isEmpty(timeNameTv.getText()) ? null : timeNameTv.getText().toString();
@@ -379,6 +401,7 @@ public class TimerAddActivity extends BaseTimerActivity
                 jsonObject.remove("timingCount");
             }
             showLoadingDialog(null);
+            MobclickAgent.onEvent(getContext(), UMMobClickAgent.creat_timer_click_id);
             getApi().timingAdd(RequestUtils.createJsonBody(jsonObject.toString()))
                     .enqueue(new SimpleCallBack<String>() {
                         @Override

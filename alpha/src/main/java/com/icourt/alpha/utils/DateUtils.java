@@ -535,7 +535,7 @@ public class DateUtils {
         int hour = calendar.get(Calendar.HOUR_OF_DAY);
         int minute = calendar.get(Calendar.MINUTE);
         int second = calendar.get(Calendar.SECOND);
-        if ((hour == 23 && minute == 59 && second == 59) || (hour == 0 && minute == 0)) {
+        if ((hour == 23 && minute == 59 && second == 59)) {
             return getMMMdd(millis);
         } else {
             return getTimeDateFormatMm(millis);
@@ -554,7 +554,7 @@ public class DateUtils {
         int hour = calendar.get(Calendar.HOUR_OF_DAY);
         int minute = calendar.get(Calendar.MINUTE);
         int second = calendar.get(Calendar.SECOND);
-        if ((hour == 23 && minute == 59 && second == 59) || (hour == 0 && minute == 0)) {
+        if ((hour == 23 && minute == 59 && second == 59)) {
             return getMMXdd(millis);
         } else {
             return getTimeDateFormatXMm(millis);

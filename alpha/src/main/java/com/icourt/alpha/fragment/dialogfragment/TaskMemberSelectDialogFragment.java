@@ -71,7 +71,7 @@ public class TaskMemberSelectDialogFragment extends BaseDialogFragment {
     TextView headerCommSearchCancelTv;
     @BindView(R.id.header_comm_search_input_ll)
     LinearLayout headerCommSearchInputLl;
-
+    List<TaskMemberEntity> members = new ArrayList<TaskMemberEntity>();
     public static TaskMemberSelectDialogFragment newInstance() {
         TaskMemberSelectDialogFragment contactSelectDialogFragment = new TaskMemberSelectDialogFragment();
         Bundle args = new Bundle();
@@ -177,12 +177,11 @@ public class TaskMemberSelectDialogFragment extends BaseDialogFragment {
      */
     private void searchUserByName(String name) {
         if (TextUtils.isEmpty(name)) return;
-        if (taskMemberAdapter != null) {
-            if (taskMemberAdapter.getData() == null) return;
+        if (members != null) {
             List<TaskMemberEntity> memberEntities = new ArrayList<TaskMemberEntity>();
-            for (int i = 0; i < taskMemberAdapter.getData().size(); i++) {
-                if (taskMemberAdapter.getData().get(i).userName.contains(name)) {
-                    memberEntities.add(taskMemberAdapter.getData().get(i));
+            for (int i = 0; i < members.size(); i++) {
+                if (members.get(i).userName.contains(name)) {
+                    memberEntities.add(members.get(i));
                 }
             }
             taskMemberAdapter.clearSelected();
@@ -199,8 +198,6 @@ public class TaskMemberSelectDialogFragment extends BaseDialogFragment {
                     @Override
                     public void onSuccess(Call<ResEntity<List<TaskMemberWrapEntity>>> call, Response<ResEntity<List<TaskMemberWrapEntity>>> response) {
                         if (response.body().result != null && !response.body().result.isEmpty()) {
-
-                            List<TaskMemberEntity> members = new ArrayList<TaskMemberEntity>();
                             for (TaskMemberWrapEntity taskMemberWrapEntity : response.body().result) {
                                 if (taskMemberWrapEntity.members != null) {
                                     members.addAll(taskMemberWrapEntity.members);

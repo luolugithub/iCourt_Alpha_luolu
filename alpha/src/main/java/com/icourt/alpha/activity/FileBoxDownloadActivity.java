@@ -35,10 +35,12 @@ import com.icourt.alpha.utils.FileUtils;
 import com.icourt.alpha.utils.IMUtils;
 import com.icourt.alpha.utils.LogUtils;
 import com.icourt.alpha.utils.StringUtils;
+import com.icourt.alpha.utils.UMMobClickAgent;
 import com.icourt.alpha.view.ProgressLayout;
 import com.liulishuo.filedownloader.BaseDownloadTask;
 import com.liulishuo.filedownloader.FileDownloadListener;
 import com.liulishuo.filedownloader.FileDownloader;
+import com.umeng.analytics.MobclickAgent;
 
 import java.io.File;
 import java.lang.annotation.Retention;
@@ -151,6 +153,7 @@ public class FileBoxDownloadActivity extends BaseActivity {
         seaFileRepoId = getIntent().getStringExtra("seaFileRepoId");
         rootName = getIntent().getStringExtra("rootName");
         progressbar.setMaxProgress(100);
+        MobclickAgent.onEvent(this, UMMobClickAgent.download_document_click_id);
         if (!TextUtils.isEmpty(rootName)) {
             if (rootName.contains("/")) {
                 fileName = rootName.substring(rootName.lastIndexOf("/") + 1);

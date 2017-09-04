@@ -36,9 +36,10 @@ import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.callback.AppUpdateCallBack;
 import com.icourt.alpha.utils.GlideUtils;
 import com.icourt.alpha.utils.LoginInfoUtils;
+import com.icourt.alpha.utils.UMMobClickAgent;
 import com.icourt.alpha.utils.transformations.BlurTransformation;
 import com.icourt.alpha.widget.manager.DataCleanManager;
-import com.icourt.alpha.widget.manager.TimerManager;
+import com.umeng.analytics.MobclickAgent;
 import com.umeng.socialize.UMAuthListener;
 import com.umeng.socialize.UMShareAPI;
 import com.umeng.socialize.bean.SHARE_MEDIA;
@@ -159,23 +160,23 @@ public class TabMineFragment extends BaseFragment {
      * @param alphaUserInfo
      */
     private void setDataToView(AlphaUserInfo alphaUserInfo) {
-        if (userNameTv == null) return;
-        if (myCenterClearCacheTextview == null) return;
-        if (alphaUserInfo != null) {
-            GlideUtils.loadUser(getContext(), alphaUserInfo.getPic(), photoImage);
-            if (GlideUtils.canLoadImage(getContext())) {
-                Glide.with(getContext())
-                        .load(alphaUserInfo.getPic())
-                        .thumbnail(0.1f)
-                        .bitmapTransform(new BlurTransformation(getContext(), 50))
-                        .crossFade()
-                        .into(photoBigImage);
-                userNameTv.setText(alphaUserInfo.getName());
+        if (userNameTv != null) {
+            if (alphaUserInfo != null) {
+                GlideUtils.loadUser(getContext(), alphaUserInfo.getPic(), photoImage);
+                if (GlideUtils.canLoadImage(getContext())) {
+                    Glide.with(getContext())
+                            .load(alphaUserInfo.getPic())
+                            .thumbnail(0.1f)
+                            .bitmapTransform(new BlurTransformation(getContext(), 50))
+                            .crossFade()
+                            .into(photoBigImage);
+                    userNameTv.setText(alphaUserInfo.getName());
 //                officeNameTv.setText(getUserGroup(alphaUserInfo.getGroups()));
-                try {
-                    myCenterClearCacheTextview.setText(DataCleanManager.getTotalCacheSize(getContext()));
-                } catch (Exception e) {
-                    e.printStackTrace();
+                    try {
+                        myCenterClearCacheTextview.setText(DataCleanManager.getTotalCacheSize(getContext()));
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                 }
             }
         }
@@ -316,7 +317,7 @@ public class TabMineFragment extends BaseFragment {
         //神策退出
        /* SensorsDataAPI.sharedInstance(getContext())
                 .logout();*/
-
+        MobclickAgent.onEvent(getContext(), UMMobClickAgent.login_out_click_id);
         //撤销微信授权
         if (!mShareAPI.isAuthorize(getActivity(), SHARE_MEDIA.WEIXIN)) {
             dismissLoadingDialog();

@@ -23,13 +23,15 @@ public class TaskActionEvent {
     public static final int TASK_UPDATE_NAME_ACTION = 4;
     public static final int TASK_UPDATE_PROJECT_ACTION = 5;
     public static final int TASK_UPDATE_ITEM = 6;
+    public static final int TASK_ADD_ITEM_ACITON = 7;
 
     @IntDef({TASK_DELETE_ACTION,
             TASK_UPDATE_DESC_ACTION,
             TASK_REFRESG_ACTION,
             TASK_UPDATE_NAME_ACTION,
             TASK_UPDATE_PROJECT_ACTION,
-            TASK_UPDATE_ITEM})
+            TASK_UPDATE_ITEM,
+            TASK_ADD_ITEM_ACITON})
     @Retention(RetentionPolicy.SOURCE)
     public @interface TASK_ACTION {
 

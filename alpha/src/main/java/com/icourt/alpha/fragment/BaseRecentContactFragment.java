@@ -8,6 +8,7 @@ import com.icourt.alpha.db.convertor.ListConvertor;
 import com.icourt.alpha.db.dbmodel.ContactDbModel;
 import com.icourt.alpha.db.dbservice.ContactDbService;
 import com.icourt.alpha.entity.bean.GroupContactBean;
+import com.icourt.alpha.utils.IMUtils;
 import com.netease.nimlib.sdk.NIMClient;
 import com.netease.nimlib.sdk.Observer;
 import com.netease.nimlib.sdk.RequestCallback;
@@ -16,7 +17,6 @@ import com.netease.nimlib.sdk.auth.AuthServiceObserver;
 import com.netease.nimlib.sdk.auth.OnlineClient;
 import com.netease.nimlib.sdk.msg.MsgService;
 import com.netease.nimlib.sdk.msg.MsgServiceObserve;
-import com.netease.nimlib.sdk.msg.constant.MsgTypeEnum;
 import com.netease.nimlib.sdk.msg.constant.SessionTypeEnum;
 import com.netease.nimlib.sdk.msg.model.RecentContact;
 import com.netease.nimlib.sdk.team.TeamService;
@@ -48,12 +48,19 @@ public abstract class BaseRecentContactFragment extends BaseFragment {
         @Override
         public void onEvent(List<RecentContact> recentContacts) {
             if (recentContacts == null || recentContacts.isEmpty()) return;
+
             List<RecentContact> recentContacts1 = new ArrayList<>();
             //过滤其它消息
             for (RecentContact recentContact : recentContacts) {
-                if (recentContact != null && recentContact.getMsgType() == MsgTypeEnum.text ||
-                        recentContact.getMsgType() == MsgTypeEnum.custom) {
-                    recentContacts1.add(recentContact);
+                if (recentContact == null) continue;
+                IMUtils.logRecentContact("------------>recentContactReceive:", recentContact);
+                switch (recentContact.getMsgType()) {
+                    case text:
+                        recentContacts1.add(recentContact);
+                        break;
+                    case custom:
+                        recentContacts1.add(recentContact);
+                        break;
                 }
             }
             recentContactReceive(recentContacts1);

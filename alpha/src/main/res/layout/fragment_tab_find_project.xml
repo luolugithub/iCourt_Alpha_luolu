@@ -29,11 +29,11 @@
             <ImageView
                 android:id="@id/titleAction"
                 android:layout_width="38dp"
-                android:layout_height="38dp"
+                android:layout_height="match_parent"
+                android:layout_marginRight="@dimen/dp10"
                 android:background="?attr/selectableItemBackground"
                 android:padding="10dp"
-                android:src="@mipmap/header_icon_analytics"
-                android:visibility="gone" />
+                android:src="@mipmap/project_unfilter" />
 
             <ImageView
                 android:id="@id/titleAction2"

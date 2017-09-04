@@ -20,12 +20,15 @@ import com.andview.refreshview.XRefreshView;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.icourt.alpha.R;
+import com.icourt.alpha.activity.SearchProjectActivity;
 import com.icourt.alpha.activity.TaskDetailActivity;
+import com.icourt.alpha.activity.TimerDetailActivity;
 import com.icourt.alpha.activity.TimerTimingActivity;
 import com.icourt.alpha.adapter.TaskAdapter;
 import com.icourt.alpha.adapter.TaskItemAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseArrayRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
+import com.icourt.alpha.adapter.baseadapter.HeaderFooterAdapter;
 import com.icourt.alpha.adapter.baseadapter.adapterObserver.RefreshViewEmptyObserver;
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.entity.bean.TaskEntity;
@@ -35,9 +38,11 @@ import com.icourt.alpha.entity.event.TimingEvent;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.DateUtils;
+import com.icourt.alpha.utils.UMMobClickAgent;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 import com.icourt.alpha.widget.manager.TimerManager;
 import com.icourt.api.RequestUtils;
+import com.umeng.analytics.MobclickAgent;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -99,6 +104,7 @@ public class TaskOtherListFragment extends BaseFragment implements BaseRecyclerA
     ArrayList<String> ids;
     private int pageIndex = 1;
     TaskAdapter taskAdapter;
+    HeaderFooterAdapter<TaskAdapter> headerFooterAdapter;
 
     @IntDef({UNFINISH_TYPE,
             FINISH_TYPE})
@@ -142,8 +148,15 @@ public class TaskOtherListFragment extends BaseFragment implements BaseRecyclerA
         refreshLayout.setMoveForHorizontal(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setHasFixedSize(true);
-        recyclerView.setAdapter(taskAdapter = new TaskAdapter());
+
+        headerFooterAdapter = new HeaderFooterAdapter<>(taskAdapter = new TaskAdapter());
+        View headerView = HeaderFooterAdapter.inflaterView(getContext(), R.layout.header_search_comm, recyclerView);
+        View rl_comm_search = headerView.findViewById(R.id.rl_comm_search);
+        registerClick(rl_comm_search);
+        headerFooterAdapter.addHeader(headerView);
         taskAdapter.registerAdapterDataObserver(new RefreshViewEmptyObserver(refreshLayout, taskAdapter));
+        recyclerView.setAdapter(headerFooterAdapter);
+
 
         refreshLayout.setXRefreshViewListener(new XRefreshView.SimpleXRefreshListener() {
             @Override
@@ -159,6 +172,16 @@ public class TaskOtherListFragment extends BaseFragment implements BaseRecyclerA
             }
         });
         refreshLayout.startRefresh();
+    }
+
+    @Override
+    public void onClick(View v) {
+        super.onClick(v);
+        switch (v.getId()) {
+            case R.id.rl_comm_search:
+                SearchProjectActivity.launchTask(getContext(), getAssignTos(), 0, SearchProjectActivity.SEARCH_TASK);
+                break;
+        }
     }
 
     @Override
@@ -357,25 +380,44 @@ public class TaskOtherListFragment extends BaseFragment implements BaseRecyclerA
     @Override
     public void onItemChildClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, final View view, int position) {
         if (adapter instanceof TaskItemAdapter) {
-            TaskEntity.TaskItemEntity itemEntity = (TaskEntity.TaskItemEntity) adapter.getItem(position);
+            final TaskEntity.TaskItemEntity itemEntity = (TaskEntity.TaskItemEntity) adapter.getItem(position);
             switch (view.getId()) {
                 case R.id.task_item_start_timming:
                     if (itemEntity.isTiming) {
-                        TimerManager.getInstance().stopTimer();
+                        MobclickAgent.onEvent(getContext(), UMMobClickAgent.stop_timer_click_id);
+                        TimerManager.getInstance().stopTimer(new SimpleCallBack<TimeEntity.ItemEntity>() {
+                            @Override
+                            public void onSuccess(Call<ResEntity<TimeEntity.ItemEntity>> call, Response<ResEntity<TimeEntity.ItemEntity>> response) {
+                                itemEntity.isTiming = false;
+                                TimeEntity.ItemEntity timer = TimerManager.getInstance().getTimer();
+                                TimerDetailActivity.launch(view.getContext(), timer);
+                            }
+
+                            @Override
+                            public void onFailure(Call<ResEntity<TimeEntity.ItemEntity>> call, Throwable t) {
+                                super.onFailure(call, t);
+                                itemEntity.isTiming = true;
+                            }
+                        });
                         ((ImageView) view).setImageResource(R.mipmap.icon_start_20);
                     } else {
-                        ((ImageView) view).setImageResource(R.drawable.orange_side_dot_bg);
+                        MobclickAgent.onEvent(getContext(), UMMobClickAgent.start_timer_click_id);
                         TimerManager.getInstance().addTimer(getTimer(itemEntity), new Callback<TimeEntity.ItemEntity>() {
                             @Override
                             public void onResponse(Call<TimeEntity.ItemEntity> call, Response<TimeEntity.ItemEntity> response) {
+                                dismissLoadingDialog();
+                                ((ImageView) view).setImageResource(R.drawable.orange_side_dot_bg);
                                 if (response.body() != null) {
+                                    itemEntity.isTiming = true;
                                     TimerTimingActivity.launch(view.getContext(), response.body());
                                 }
                             }
 
                             @Override
                             public void onFailure(Call<TimeEntity.ItemEntity> call, Throwable throwable) {
-
+                                dismissLoadingDialog();
+                                itemEntity.isTiming = false;
+                                ((ImageView) view).setImageResource(R.mipmap.icon_start_20);
                             }
                         });
                     }
@@ -525,8 +567,80 @@ public class TaskOtherListFragment extends BaseFragment implements BaseRecyclerA
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onDeleteTaskEvent(TaskActionEvent event) {
         if (event == null) return;
-        if (event.action == TaskActionEvent.TASK_REFRESG_ACTION) {
-            refreshLayout.startRefresh();
+
+        switch (event.action) {
+            case TaskActionEvent.TASK_REFRESG_ACTION:
+                refreshLayout.startRefresh();
+                break;
+            case TaskActionEvent.TASK_DELETE_ACTION:
+                if (event.entity == null) return;
+                removeChildItem(event.entity);
+                if (taskAdapter != null)
+                    taskAdapter.notifyDataSetChanged();
+                break;
+            case TaskActionEvent.TASK_ADD_ITEM_ACITON:
+                refreshLayout.startRefresh();
+                break;
+            case TaskActionEvent.TASK_UPDATE_ITEM:
+                if (event.entity == null) return;
+                updateChildItem(event.entity);
+                break;
+        }
+    }
+
+    /**
+     * 获取子view中的RecyclerView
+     *
+     * @param taskId
+     * @return
+     */
+    private RecyclerView getChildRecyclerView(String taskId) {
+        if (taskAdapter == null) return null;
+        int parentPos = getParentPositon(taskId);
+        if (parentPos > 0) {
+            int childPos = getChildPositon(taskId);
+            if (childPos >= 0) {
+                BaseArrayRecyclerAdapter.ViewHolder viewHolderForAdapterPosition = (BaseArrayRecyclerAdapter.ViewHolder) recyclerView.findViewHolderForAdapterPosition(parentPos);
+                if (viewHolderForAdapterPosition != null) {
+                    RecyclerView recyclerview = viewHolderForAdapterPosition.obtainView(R.id.parent_item_task_recyclerview);
+                    return recyclerview;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * 删除子item
+     *
+     * @param itemEntity
+     */
+    private void removeChildItem(TaskEntity.TaskItemEntity itemEntity) {
+        if (itemEntity == null) return;
+        RecyclerView recyclerView = getChildRecyclerView(itemEntity.id);
+        if (recyclerView == null) return;
+        if (recyclerView.getAdapter() != null) {
+            if (recyclerView.getAdapter() instanceof TaskItemAdapter) {
+                TaskItemAdapter adapter = (TaskItemAdapter) recyclerView.getAdapter();
+                adapter.removeItem(itemEntity);
+            }
+        }
+    }
+
+    /**
+     * 更新子item
+     *
+     * @param itemEntity
+     */
+    private void updateChildItem(TaskEntity.TaskItemEntity itemEntity) {
+        if (itemEntity == null) return;
+        RecyclerView recyclerView = getChildRecyclerView(itemEntity.id);
+        if (recyclerView == null) return;
+        if (recyclerView.getAdapter() != null) {
+            if (recyclerView.getAdapter() instanceof TaskItemAdapter) {
+                TaskItemAdapter adapter = (TaskItemAdapter) recyclerView.getAdapter();
+                adapter.updateItem(itemEntity);
+            }
         }
     }
 
@@ -540,19 +654,19 @@ public class TaskOtherListFragment extends BaseFragment implements BaseRecyclerA
         if (event == null) return;
         switch (event.action) {
             case TimingEvent.TIMING_ADD:
-
-                break;
-            case TimingEvent.TIMING_UPDATE_PROGRESS:
                 TimeEntity.ItemEntity updateItem = TimerManager.getInstance().getTimer();
                 if (updateItem != null) {
                     updateUnFinishChildTimeing(updateItem.taskPkId, true);
                 }
                 break;
+            case TimingEvent.TIMING_UPDATE_PROGRESS:
+
+                break;
             case TimingEvent.TIMING_STOP:
                 if (lastEntity != null) {
                     lastEntity.isTiming = false;
-                    taskAdapter.notifyDataSetChanged();
                 }
+                taskAdapter.notifyDataSetChanged();
                 break;
         }
     }
@@ -616,7 +730,7 @@ public class TaskOtherListFragment extends BaseFragment implements BaseRecyclerA
      */
     private void updateUnFinishChildTimeing(String taskId, boolean isTiming) {
         int parentPos = getParentPositon(taskId);
-        if (parentPos > 0) {
+        if (parentPos >= 0) {
             int childPos = getChildPositon(taskId);
             if (childPos >= 0) {
                 BaseArrayRecyclerAdapter.ViewHolder viewHolderForAdapterPosition = (BaseArrayRecyclerAdapter.ViewHolder) recyclerView.findViewHolderForAdapterPosition(parentPos);
