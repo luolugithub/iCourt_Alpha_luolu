@@ -269,12 +269,12 @@ public class ProjectTaskFragment extends BaseFragment implements TaskAdapter.OnS
                 itemEntity.groupId = taskItemEntity.id;
                 allTaskEntities.add(itemEntity);
             } else if (taskItemEntity.type == 0) {
-                if (TextUtils.isEmpty(taskItemEntity.parentId)) {
+                if (TextUtils.isEmpty(taskItemEntity.parentId)) {//根据是否有parentId，判断是否属于哪个任务组
                     noitems.add(taskItemEntity);
                 } else {
                     taskEntities.add(taskItemEntity);
                 }
-                if (taskItemEntity.attentioned == 1) {
+                if (taskItemEntity.attentioned == 1) {//我关注的
                     myStarTaskEntities.add(taskItemEntity);
                 }
             }
