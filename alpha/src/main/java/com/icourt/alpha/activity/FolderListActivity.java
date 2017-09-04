@@ -841,17 +841,18 @@ public class FolderListActivity extends FolderBaseActivity
                         List<FolderDocumentEntity> allData = getAllData();
                         for (int i = 0; i < allData.size(); i++) {
                             FolderDocumentEntity folderDocumentEntity = allData.get(i);
-                            bigImageUrls.add(
-                                    getSFileImageUrl(folderDocumentEntity != null ?
-                                            folderDocumentEntity.name : "", Integer.MAX_VALUE));
-                            smallImageUrls.add(getSFileImageUrl(folderDocumentEntity != null ?
-                                    folderDocumentEntity.name : "", 200));
+                            if (folderDocumentEntity == null) continue;
+                            if (IMUtils.isPIC(folderDocumentEntity.name)) {
+                                bigImageUrls.add(getSFileImageUrl(folderDocumentEntity.name, Integer.MAX_VALUE));
+                                smallImageUrls.add(getSFileImageUrl(folderDocumentEntity.name, 200));
+                            }
                         }
+                        int indexOf = bigImageUrls.indexOf(getSFileImageUrl(item.name, Integer.MAX_VALUE));
                         ImageViewerActivity.launch(
                                 getContext(),
                                 smallImageUrls,
                                 bigImageUrls,
-                                position);
+                                indexOf);
                     } else {
                         FileDownloadActivity.launch(
                                 getContext(),

@@ -207,9 +207,9 @@ public class ImageViewerActivity extends BaseUmengActivity {
             mHandler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    viewPager.setCurrentItem(selectPos, true);
+                    viewPager.setCurrentItem(selectPos, false);
                 }
-            }, 2_00);
+            }, 1_00);
         }
         setTitle(FileUtils.getFileName(smallUrls.get(0)));
     }
