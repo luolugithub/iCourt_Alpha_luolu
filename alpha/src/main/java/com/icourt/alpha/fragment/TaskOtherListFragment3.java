@@ -18,7 +18,6 @@ import android.widget.CheckBox;
 import android.widget.ImageView;
 
 import com.andview.refreshview.XRefreshView;
-import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.icourt.alpha.R;
@@ -26,7 +25,9 @@ import com.icourt.alpha.activity.SearchProjectActivity;
 import com.icourt.alpha.activity.TaskDetailActivity;
 import com.icourt.alpha.activity.TimerDetailActivity;
 import com.icourt.alpha.activity.TimerTimingActivity;
-import com.icourt.alpha.adapter.TaskItemAdapter2;
+import com.icourt.alpha.adapter.TaskItemAdapter3;
+import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
+import com.icourt.alpha.adapter.baseadapter.HeaderFooterAdapter;
 import com.icourt.alpha.adapter.baseadapter.adapterObserver.DataChangeAdapterObserver;
 import com.icourt.alpha.adapter.baseadapter.adapterObserver.RefreshViewEmptyObserver;
 import com.icourt.alpha.base.BaseFragment;
@@ -73,7 +74,7 @@ import retrofit2.Response;
  * version 2.0.0
  */
 
-public class TaskOtherListFragment extends BaseFragment implements BaseQuickAdapter.OnItemClickListener, BaseQuickAdapter.OnItemChildClickListener {
+public class TaskOtherListFragment3 extends BaseFragment implements BaseRecyclerAdapter.OnItemClickListener, BaseRecyclerAdapter.OnItemChildClickListener {
 
     //实例化当前Fragment所要传递的参数标识
     private static final String TAG_START_TYPE = "startType";
@@ -102,11 +103,13 @@ public class TaskOtherListFragment extends BaseFragment implements BaseQuickAdap
     int startType, finishType;
     ArrayList<String> ids;
     private int pageIndex = 1;
-    TaskItemAdapter2 taskAdapter;
+    TaskItemAdapter3 taskAdapter;
+    HeaderFooterAdapter<TaskItemAdapter3> headerFooterAdapter;
 
     TaskEntity.TaskItemEntity lastEntity;
 
     private ArrayMap<String, Integer> mArrayMap = new ArrayMap<>();//用来存储每个group有多少个数量。
+
 
     @IntDef({UNFINISH_TYPE,
             FINISH_TYPE})
@@ -122,8 +125,8 @@ public class TaskOtherListFragment extends BaseFragment implements BaseQuickAdap
 
     }
 
-    public static TaskOtherListFragment newInstance(@START_TYPE int startType, @IS_FINISH_TYPE int finishType, ArrayList<String> ids) {
-        TaskOtherListFragment taskOtherListFragment = new TaskOtherListFragment();
+    public static TaskOtherListFragment3 newInstance(@START_TYPE int startType, @IS_FINISH_TYPE int finishType, ArrayList<String> ids) {
+        TaskOtherListFragment3 taskOtherListFragment = new TaskOtherListFragment3();
         Bundle bundle = new Bundle();
         bundle.putInt(TAG_START_TYPE, startType);
         bundle.putInt(TAG_FINISH_TYPE, finishType);
@@ -146,12 +149,14 @@ public class TaskOtherListFragment extends BaseFragment implements BaseQuickAdap
         startType = getArguments().getInt(TAG_START_TYPE);
         finishType = getArguments().getInt(TAG_FINISH_TYPE);
         ids = getArguments().getStringArrayList(TAG_IDS);
+
         refreshLayout.setNoticeEmpty(R.mipmap.bg_no_task, R.string.task_list_null_text);
         refreshLayout.setMoveForHorizontal(true);
+
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setHasFixedSize(true);
 
-        taskAdapter = new TaskItemAdapter2();
+        headerFooterAdapter = new HeaderFooterAdapter<>(taskAdapter = new TaskItemAdapter3());
         taskAdapter.registerAdapterDataObserver(new DataChangeAdapterObserver() {
             @Override
             public void onItemRangeRemoved(int positionStart, int itemCount) {
@@ -163,14 +168,36 @@ public class TaskOtherListFragment extends BaseFragment implements BaseQuickAdap
                 //当RecyclerView进行刷新的时候，会回调该方法，这个方法会比Decoration先执行。
             }
         });
-        View headerView = getActivity().getLayoutInflater().inflate(R.layout.header_search_comm, (ViewGroup) recyclerView.getParent(), false);
+
+        View headerView = HeaderFooterAdapter.inflaterView(getContext(), R.layout.header_search_comm, recyclerView);
         View rl_comm_search = headerView.findViewById(R.id.rl_comm_search);
         registerClick(rl_comm_search);
-        taskAdapter.addHeaderView(headerView);
+        headerFooterAdapter.addHeader(headerView);
         taskAdapter.registerAdapterDataObserver(new RefreshViewEmptyObserver(refreshLayout, taskAdapter));
         taskAdapter.setOnItemClickListener(this);
         taskAdapter.setOnItemChildClickListener(this);
-        recyclerView.setAdapter(taskAdapter);
+        recyclerView.setAdapter(headerFooterAdapter);
+
+//        recyclerView.addItemDecoration(new TastItemDecoration(getActivity(), new TastItemDecoration.DecorationCallBack() {
+//            @Override
+//            public String getGroupName(int position) {
+//                if (position < 0 || position < headerFooterAdapter.getHeaderCount()) {
+//                    //说明是不存在或者是header
+//                    return null;
+//                } else {
+//                    //说明是child
+//                    int realPos = taskAdapter.getRealPos(position);
+//                    TaskEntity.TaskItemEntity item = taskAdapter.getItem(realPos);
+//                    return item.groupName;
+//                }
+//            }
+//
+//            @Override
+//            public int getCountByGroupName(String groupName) {
+//                return mArrayMap.get(groupName);
+//            }
+//        }));
+
 
         refreshLayout.setXRefreshViewListener(new XRefreshView.SimpleXRefreshListener() {
             @Override
@@ -201,6 +228,7 @@ public class TaskOtherListFragment extends BaseFragment implements BaseQuickAdap
     @Override
     protected void getData(boolean isRefresh) {
         super.getData(isRefresh);
+
         switch (startType) {
             case MY_ALLOT_TYPE:
                 getMyAllotTask(isRefresh);
@@ -252,11 +280,11 @@ public class TaskOtherListFragment extends BaseFragment implements BaseQuickAdap
         }
         pageIndex = -1;
         pageSize = 10000;
+        clearLists();
         getApi().taskListItemQuery(getAssignTos(), stateType, 0, orderBy, pageIndex, pageSize, 0).enqueue(new SimpleCallBack<TaskEntity>() {
             @Override
             public void onSuccess(Call<ResEntity<TaskEntity>> call, Response<ResEntity<TaskEntity>> response) {
                 if (response.body().result != null) {
-                    clearLists();
                     getTaskGroupData(response.body().result);
                     if (isRefresh)
                         enableEmptyView(response.body().result.items);
@@ -294,7 +322,7 @@ public class TaskOtherListFragment extends BaseFragment implements BaseQuickAdap
                 .subscribe(new Consumer<List<TaskEntity.TaskItemEntity>>() {
                     @Override
                     public void accept(List<TaskEntity.TaskItemEntity> searchPolymerizationEntities) throws Exception {
-                        taskAdapter.setNewData(allTaskEntities);
+                        taskAdapter.bindData(true, allTaskEntities);
                     }
                 });
     }
@@ -343,6 +371,7 @@ public class TaskOtherListFragment extends BaseFragment implements BaseQuickAdap
         addToAllTaskEntities(noDueTaskEntities);
     }
 
+
     /**
      * 将分组的list添加到总的任务集合中去
      *
@@ -367,78 +396,85 @@ public class TaskOtherListFragment extends BaseFragment implements BaseQuickAdap
     }
 
     @Override
-    public void onItemChildClick(BaseQuickAdapter baseQuickAdapter, final View view, int i) {
-        final TaskEntity.TaskItemEntity itemEntity = taskAdapter.getItem(i);
-        switch (view.getId()) {
-            case R.id.task_item_start_timming:
-                if (itemEntity.isTiming) {
-                    MobclickAgent.onEvent(getContext(), UMMobClickAgent.stop_timer_click_id);
-                    TimerManager.getInstance().stopTimer(new SimpleCallBack<TimeEntity.ItemEntity>() {
-                        @Override
-                        public void onSuccess(Call<ResEntity<TimeEntity.ItemEntity>> call, Response<ResEntity<TimeEntity.ItemEntity>> response) {
-                            itemEntity.isTiming = false;
-                            taskAdapter.updateItem(itemEntity);
-                            TimeEntity.ItemEntity timer = TimerManager.getInstance().getTimer();
-                            TimerDetailActivity.launch(view.getContext(), timer);
-                        }
-
-                        @Override
-                        public void onFailure(Call<ResEntity<TimeEntity.ItemEntity>> call, Throwable t) {
-                            super.onFailure(call, t);
-                            itemEntity.isTiming = true;
-                            taskAdapter.updateItem(itemEntity);
-                        }
-                    });
-                } else {
-                    MobclickAgent.onEvent(getContext(), UMMobClickAgent.start_timer_click_id);
-                    TimerManager.getInstance().addTimer(getTimer(itemEntity), new Callback<TimeEntity.ItemEntity>() {
-                        @Override
-                        public void onResponse(Call<TimeEntity.ItemEntity> call, Response<TimeEntity.ItemEntity> response) {
-                            dismissLoadingDialog();
-                            ((ImageView) view).setImageResource(R.drawable.orange_side_dot_bg);
-                            if (response.body() != null) {
-                                itemEntity.isTiming = true;
-                                taskAdapter.updateItem(itemEntity);
-                                TimerTimingActivity.launch(view.getContext(), response.body());
-                            }
-                        }
-
-                        @Override
-                        public void onFailure(Call<TimeEntity.ItemEntity> call, Throwable throwable) {
-                            dismissLoadingDialog();
-                            itemEntity.isTiming = false;
-                            taskAdapter.updateItem(itemEntity);
-                        }
-                    });
-                }
-                break;
-            case R.id.task_item_checkbox:
-                CheckBox checkbox = (CheckBox) view;
-                if (checkbox.isChecked()) {//完成任务
-                    if (itemEntity.attendeeUsers != null) {
-                        if (itemEntity.attendeeUsers.size() > 1) {
-                            showFinishDialog(view.getContext(), "该任务由多人负责,确定完成?", itemEntity);
-                        } else {
-                            updateTask(itemEntity, true);
-                        }
-                    } else {
-                        updateTask(itemEntity, true);
-                    }
-                } else {
-                    updateTask(itemEntity, false);
-                }
-                break;
+    public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
+        if (adapter instanceof TaskItemAdapter3) {
+            //因为有搜索的header，所以需要获取真实的position
+            int realPos = taskAdapter.getRealPos(position);
+            TaskEntity.TaskItemEntity taskItemEntity = (TaskEntity.TaskItemEntity) adapter.getItem(realPos);
+            if (taskItemEntity.type == 0) {//只有任务要跳转到任务详情页，任务组不需要跳转
+                TaskDetailActivity.launch(view.getContext(), taskItemEntity.id);
+            }
         }
     }
 
     @Override
-    public void onItemClick(BaseQuickAdapter baseQuickAdapter, View view, int i) {
-        TaskEntity.TaskItemEntity taskItemEntity = taskAdapter.getItem(i);
-        if (taskItemEntity.type == 0) {//item为任务的时候才可以点击
-            TaskDetailActivity.launch(view.getContext(), taskItemEntity.id);
+    public void onItemChildClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, final View view, int position) {
+        if (adapter instanceof TaskItemAdapter3) {
+            //因为有搜索的header，所以需要获取真实的position
+            int realPos = taskAdapter.getRealPos(position);
+            final TaskEntity.TaskItemEntity itemEntity = (TaskEntity.TaskItemEntity) adapter.getItem(realPos);
+            switch (view.getId()) {
+                case R.id.task_item_start_timming:
+                    if (itemEntity.isTiming) {
+                        MobclickAgent.onEvent(getContext(), UMMobClickAgent.stop_timer_click_id);
+                        TimerManager.getInstance().stopTimer(new SimpleCallBack<TimeEntity.ItemEntity>() {
+                            @Override
+                            public void onSuccess(Call<ResEntity<TimeEntity.ItemEntity>> call, Response<ResEntity<TimeEntity.ItemEntity>> response) {
+                                itemEntity.isTiming = false;
+                                taskAdapter.updateItem(itemEntity);
+                                TimeEntity.ItemEntity timer = TimerManager.getInstance().getTimer();
+                                TimerDetailActivity.launch(view.getContext(), timer);
+                            }
+
+                            @Override
+                            public void onFailure(Call<ResEntity<TimeEntity.ItemEntity>> call, Throwable t) {
+                                super.onFailure(call, t);
+                                itemEntity.isTiming = true;
+                                taskAdapter.updateItem(itemEntity);
+                            }
+                        });
+                        ((ImageView) view).setImageResource(R.mipmap.icon_start_20);
+                    } else {
+                        MobclickAgent.onEvent(getContext(), UMMobClickAgent.start_timer_click_id);
+                        TimerManager.getInstance().addTimer(getTimer(itemEntity), new Callback<TimeEntity.ItemEntity>() {
+                            @Override
+                            public void onResponse(Call<TimeEntity.ItemEntity> call, Response<TimeEntity.ItemEntity> response) {
+                                dismissLoadingDialog();
+                                if (response.body() != null) {
+                                    itemEntity.isTiming = true;
+                                    taskAdapter.updateItem(itemEntity);
+                                    TimerTimingActivity.launch(view.getContext(), response.body());
+                                }
+                            }
+
+                            @Override
+                            public void onFailure(Call<TimeEntity.ItemEntity> call, Throwable throwable) {
+                                dismissLoadingDialog();
+                                itemEntity.isTiming = false;
+                                taskAdapter.updateItem(itemEntity);
+                            }
+                        });
+                    }
+                    break;
+                case R.id.task_item_checkbox:
+                    CheckBox checkbox = (CheckBox) view;
+                    if (checkbox.isChecked()) {//完成任务
+                        if (itemEntity.attendeeUsers != null) {
+                            if (itemEntity.attendeeUsers.size() > 1) {
+                                showFinishDialog(view.getContext(), "该任务由多人负责,确定完成?", itemEntity);
+                            } else {
+                                updateTask(itemEntity, true);
+                            }
+                        } else {
+                            updateTask(itemEntity, true);
+                        }
+                    } else {
+                        updateTask(itemEntity, false);
+                    }
+                    break;
+            }
         }
     }
-
 
     private void enableEmptyView(List result) {
         if (refreshLayout != null) {
@@ -632,17 +668,13 @@ public class TaskOtherListFragment extends BaseFragment implements BaseQuickAdap
         }
     }
 
-    /**
-     * 根据任务id，获取任务在Adapter中的位置
-     *
-     * @param taskId
-     * @return
-     */
     private int getItemPosition(String taskId) {
-        for (int i = 0; i < taskAdapter.getData().size(); i++) {
-            TaskEntity.TaskItemEntity taskItemEntity = taskAdapter.getData().get(i);
-            if (taskItemEntity.type == 0 && TextUtils.equals(taskItemEntity.id, taskId)) {
-                return i;
+        if (taskAdapter.getData() != null) {
+            for (int i = 0; i < taskAdapter.getData().size(); i++) {
+                TaskEntity.TaskItemEntity taskItemEntity = taskAdapter.getData().get(i);
+                if (TextUtils.equals(taskItemEntity.id, taskId)) {
+                    return i;
+                }
             }
         }
         return -1;
@@ -656,6 +688,14 @@ public class TaskOtherListFragment extends BaseFragment implements BaseQuickAdap
     private void updateUnFinishChildTimeing(String taskId, boolean isTiming) {
         int itemPos = getItemPosition(taskId);
         if (itemPos >= 0) {
+//            int childPos = getChildPositon(taskId);
+//            if (childPos >= 0) {
+//                BaseArrayRecyclerAdapter.ViewHolder viewHolderForAdapterPosition = (BaseArrayRecyclerAdapter.ViewHolder) recyclerView.findViewHolderForAdapterPosition(parentPos);
+//                if (viewHolderForAdapterPosition != null) {
+//                    RecyclerView recyclerview = viewHolderForAdapterPosition.obtainView(R.id.parent_item_task_recyclerview);
+//                    if (recyclerview != null) {
+//                        TaskItemAdapter itemAdapter = (TaskItemAdapter) recyclerview.getAdapter();
+//                        if (itemAdapter != null) {
             TaskEntity.TaskItemEntity entity = taskAdapter.getItem(itemPos);
             if (entity != null) {
                 if (lastEntity != null)
@@ -669,6 +709,10 @@ public class TaskOtherListFragment extends BaseFragment implements BaseQuickAdap
                     lastEntity = entity;
                 }
             }
+//                        }
+//                    }
+//                }
+//            }
         } else {
             taskAdapter.notifyDataSetChanged();
         }

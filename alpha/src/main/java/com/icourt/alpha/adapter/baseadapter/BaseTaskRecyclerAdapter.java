@@ -12,6 +12,7 @@ import java.util.List;
  * author  zhaodanyang  E-mail:zhaodanyang@icourt.cc
  * date createTime：2017/9/1 9:56
  * version
+ * 这个Adapter是为了实现Adapter内部数据源的引用和外部是同一个数据源。
  */
 public abstract class BaseTaskRecyclerAdapter<T> extends BaseRecyclerAdapter {
     private List<T> dataList = new ArrayList<>();

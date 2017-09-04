@@ -8,65 +8,108 @@ import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.chad.library.adapter.base.BaseMultiItemQuickAdapter;
-import com.chad.library.adapter.base.BaseViewHolder;
 import com.icourt.alpha.R;
+import com.icourt.alpha.adapter.baseadapter.BaseArrayRecyclerAdapter;
+import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
+import com.icourt.alpha.adapter.baseadapter.BaseTaskRecyclerAdapter;
 import com.icourt.alpha.entity.bean.TaskEntity;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.widget.manager.TimerManager;
 
 /**
- * * Description
+ * Description
  * Company Beijing icourt
  * author  danyang  E-mail:zhaodanyang@icourt.cc
- * date createTime：2017/9/1
+ * date createTime：17/8/31
  * version 2.0.0
  */
 
-public class TaskItemAdapter2 extends BaseMultiItemQuickAdapter<TaskEntity.TaskItemEntity, BaseViewHolder> {
-
+public class TaskItemAdapter3 extends BaseTaskRecyclerAdapter<TaskEntity.TaskItemEntity> {
     private boolean isAddTime = true;//添加计时权限
     private static final int BLACK_COLOR = 0xFFa6a6a6;
     private static final int RED_COLOR = 0xFFec1d37;
 
-    private static final int TYPE_TASK = 0;//0,任务
-    private static final int TYPE_TASK_GROUP = 1;//1，任务组
-
-    public TaskItemAdapter2() {
-        super(null);
-        addItemType(TYPE_TASK, R.layout.adapter_item_task);
-        addItemType(TYPE_TASK_GROUP, R.layout.adapter_item_task_title);
-    }
+    private static final int TYPE_TASK = 0;//item是任务
+    private static final int TYPE_TASK_HEAD = 1;//item是任务组
 
     public void setAddTime(boolean addTime) {
         isAddTime = addTime;
     }
 
     @Override
-    protected void convert(BaseViewHolder baseViewHolder, TaskEntity.TaskItemEntity taskItemEntity) {
-        if (taskItemEntity.type == TYPE_TASK_GROUP) {//说明是标题
-            initTaskTitle(baseViewHolder, taskItemEntity);
+    public int bindView(int viewtype) {
+        if (viewtype == TYPE_TASK_HEAD) {
+            return R.layout.adapter_item_task_title;
         } else {
-            initTaskItem(baseViewHolder, taskItemEntity);
+            return R.layout.adapter_item_task;
         }
     }
 
+    @Override
+    public int getItemViewType(int position) {
+        TaskEntity.TaskItemEntity item = getItem(position);
+        if (item != null) {
+            if (item.type == 0) {//说明是任务
+                return TYPE_TASK;
+            } else if (item.type == 1) {//说明是任务组
+                return TYPE_TASK_HEAD;
+            }
+        }
+        return super.getItemViewType(position);
+    }
+
+    @Override
+    public void onBindHoder(ViewHolder holder, TaskEntity.TaskItemEntity taskItemEntity, int position) {
+        if (taskItemEntity.getItemType() == TYPE_TASK) {//说明是任务
+            initTask(holder, taskItemEntity, position);
+        } else if (taskItemEntity.getItemType() == TYPE_TASK_HEAD) {//说明是任务组
+            initTaskGroup(holder, taskItemEntity, position);
+        }
+    }
+
+    public boolean updateItem(TaskEntity.TaskItemEntity taskItemEntity) {
+        if (taskItemEntity == null) return false;
+        int index = getData().indexOf(taskItemEntity);
+        if (index >= 0 && index < getData().size()) {
+            getData().set(index, taskItemEntity);
+            if (getParentHeaderFooterAdapter() != null) {
+                index = index + getParentHeaderFooterAdapter().getHeaderCount();
+            }
+            notifyItemChanged(index);
+            return true;
+        }
+        return false;
+    }
+
     /**
-     * 构造task的item
+     * 初始化任务
      *
-     * @param baseViewHolder
+     * @param holder
      * @param taskItemEntity
+     * @param position
      */
-    private void initTaskItem(BaseViewHolder baseViewHolder, TaskEntity.TaskItemEntity taskItemEntity) {
-        CheckBox checkBox = baseViewHolder.getView(R.id.task_item_checkbox);
-        TextView taskNameView = baseViewHolder.getView(R.id.task_title_tv);
-        ImageView startTimmingView = baseViewHolder.getView(R.id.task_item_start_timming);
-        TextView projectNameView = baseViewHolder.getView(R.id.task_project_belong_tv);
-        TextView timeView = baseViewHolder.getView(R.id.task_time_tv);
-        TextView checkListView = baseViewHolder.getView(R.id.task_check_list_tv);
-        TextView documentNumView = baseViewHolder.getView(R.id.task_file_num_tv);
-        TextView commentNumView = baseViewHolder.getView(R.id.task_comment_num_tv);
-        RecyclerView recyclerView = baseViewHolder.getView(R.id.tasl_member_recyclerview);
+    private void initTaskGroup(ViewHolder holder, TaskEntity.TaskItemEntity taskItemEntity, int position) {
+        holder.setText(R.id.task_time_group_name, taskItemEntity.groupName);
+        holder.setText(R.id.task_time_group_count, String.valueOf(taskItemEntity.groupItemCount));
+    }
+
+    /**
+     * 初始化任务
+     *
+     * @param holder
+     * @param taskItemEntity
+     * @param position
+     */
+    private void initTask(ViewHolder holder, TaskEntity.TaskItemEntity taskItemEntity, int position) {
+        CheckBox checkBox = holder.obtainView(R.id.task_item_checkbox);
+        TextView taskNameView = holder.obtainView(R.id.task_title_tv);
+        ImageView startTimmingView = holder.obtainView(R.id.task_item_start_timming);
+        TextView projectNameView = holder.obtainView(R.id.task_project_belong_tv);
+        TextView timeView = holder.obtainView(R.id.task_time_tv);
+        TextView checkListView = holder.obtainView(R.id.task_check_list_tv);
+        TextView documentNumView = holder.obtainView(R.id.task_file_num_tv);
+        TextView commentNumView = holder.obtainView(R.id.task_comment_num_tv);
+        RecyclerView recyclerView = holder.obtainView(R.id.tasl_member_recyclerview);
 
         taskNameView.setText(taskItemEntity.name);
         startTimmingView.setVisibility(isAddTime ? View.VISIBLE : View.GONE);
@@ -116,20 +159,8 @@ public class TaskItemAdapter2 extends BaseMultiItemQuickAdapter<TaskEntity.TaskI
             startTimmingView.setVisibility(View.GONE);
             checkBox.setCompoundDrawablesWithIntrinsicBounds(R.mipmap.restore, 0, 0, 0);
         }
-
-        baseViewHolder.addOnClickListener(R.id.task_item_checkbox);
-        baseViewHolder.addOnClickListener(R.id.task_item_start_timming);
-    }
-
-    /**
-     * 构造task的title
-     *
-     * @param baseViewHolder
-     * @param taskItemEntity
-     */
-    private void initTaskTitle(BaseViewHolder baseViewHolder, TaskEntity.TaskItemEntity taskItemEntity) {
-        baseViewHolder.setText(R.id.task_time_group_name, taskItemEntity.groupName);
-        baseViewHolder.setText(R.id.task_time_group_count, String.valueOf(taskItemEntity.groupItemCount));
+        holder.bindChildClick(checkBox);
+        holder.bindChildClick(startTimmingView);
     }
 
     /**
@@ -191,39 +222,5 @@ public class TaskItemAdapter2 extends BaseMultiItemQuickAdapter<TaskEntity.TaskI
         if (textView == null) return;
         textView.setVisibility(count > 0 ? View.VISIBLE : View.GONE);
         textView.setText(content);
-    }
-
-    /**
-     * 删除其中某一个
-     *
-     * @param t
-     * @return
-     */
-    public boolean removeItem(TaskEntity.TaskItemEntity t) {
-        if (t == null) return false;
-        int index = getData().indexOf(t);
-        if (index >= 0) {
-            //remove方法已经对header进行判断了
-            remove(index);
-            return true;
-        }
-        return false;
-    }
-
-    /**
-     * 更新某一条
-     *
-     * @param t
-     * @return
-     */
-    public boolean updateItem(TaskEntity.TaskItemEntity t) {
-        if (t == null) return false;
-        int index = getData().indexOf(t);
-        if (index >= 0 && index < getData().size()) {
-            getData().set(index, t);
-            notifyItemChanged(index + getHeaderLayoutCount());
-            return true;
-        }
-        return false;
     }
 }

@@ -188,7 +188,7 @@ public class TaskListFragment extends BaseTaskFragment implements
         recyclerView.addItemDecoration(ItemDecorationUtils.getCommTrans5Divider(getContext(), true));
         recyclerView.setHasFixedSize(true);
         recyclerView.setNestedScrollingEnabled(false);
-        if (stateType == 0) {
+        if (stateType == 0) {//未完成
             headerFooterAdapter = new HeaderFooterAdapter<>(taskAdapter = new TaskAdapter());
             View headerView = HeaderFooterAdapter.inflaterView(getContext(), R.layout.header_search_comm, recyclerView);
             View rl_comm_search = headerView.findViewById(R.id.rl_comm_search);
@@ -201,7 +201,7 @@ public class TaskListFragment extends BaseTaskFragment implements
             taskAdapter.setAddTime(true);
             taskAdapter.setOnShowFragmenDialogListener(this);
             taskAdapter.setOnUpdateNewTaskCountListener(this);
-        } else if (stateType == 1 || stateType == 3) {
+        } else if (stateType == 1 || stateType == 3) {//已完成、已删除
             headerFooterItemAdapter = new HeaderFooterAdapter<>(taskItemAdapter = new TaskItemAdapter());
 
             View headerView = HeaderFooterAdapter.inflaterView(getContext(), R.layout.header_search_comm, recyclerView);
