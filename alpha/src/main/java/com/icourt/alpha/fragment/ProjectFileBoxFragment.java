@@ -32,9 +32,11 @@ import com.icourt.alpha.utils.ItemDecorationUtils;
 import com.icourt.alpha.utils.PingYinUtil;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.utils.TextFormater;
+import com.icourt.alpha.utils.UMMobClickAgent;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 import com.icourt.alpha.widget.dialog.BottomActionDialog;
 import com.icourt.api.RequestUtils;
+import com.umeng.analytics.MobclickAgent;
 
 import java.io.File;
 import java.util.Arrays;
@@ -499,6 +501,9 @@ public class ProjectFileBoxFragment extends BaseFragment implements BaseRecycler
         }
     }
 
+    /**
+     * 选择照片回调
+     */
     private GalleryFinal.OnHanlderResultCallback mOnHanlderResultCallback = new GalleryFinal.OnHanlderResultCallback() {
         @Override
         public void onHanlderSuccess(int reqeustCode, List<PhotoInfo> resultList) {
@@ -566,6 +571,7 @@ public class ProjectFileBoxFragment extends BaseFragment implements BaseRecycler
             showTopSnackBar("文件不存在啦");
             return;
         }
+        MobclickAgent.onEvent(getContext(), UMMobClickAgent.upload_document_click_id);
         showLoadingDialog("正在上传...");
         getSFileApi().projectUploadUrlQuery("Token " + authToken, seaFileRepoId).enqueue(new Callback<JsonElement>() {
             @Override

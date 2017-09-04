@@ -19,6 +19,7 @@ import android.widget.TextView;
 import com.icourt.alpha.R;
 import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.entity.event.TaskActionEvent;
+import com.icourt.alpha.utils.StringUtils;
 
 import org.greenrobot.eventbus.EventBus;
 
@@ -140,6 +141,11 @@ public class TaskDescUpdateActivity extends BaseActivity {
         super.onClick(v);
         switch (v.getId()) {
             case R.id.titleAction:
+                if (StringUtils.isEmpty(descEditText.getText())) {
+                    descEditText.setText("");
+                    showTopSnackBar("请输入具体内容");
+                    return;
+                }
                 if (type == UPDATE_TASK_DESC) {
                     EventBus.getDefault().post(new TaskActionEvent(TASK_UPDATE_DESC_ACTION, null, descEditText.getText().toString()));
                 } else if (type == UPDATE_TASK_NAME) {

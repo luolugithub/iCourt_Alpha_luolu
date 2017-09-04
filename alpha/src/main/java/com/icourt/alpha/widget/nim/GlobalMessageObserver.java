@@ -2,8 +2,6 @@ package com.icourt.alpha.widget.nim;
 
 import android.text.TextUtils;
 
-import com.google.gson.JsonObject;
-import com.icourt.alpha.BuildConfig;
 import com.icourt.alpha.constants.Const;
 import com.icourt.alpha.entity.bean.BaseCustomerMsg;
 import com.icourt.alpha.entity.bean.IMMessageCustomBody;
@@ -40,7 +38,8 @@ public class GlobalMessageObserver implements Observer<List<IMMessage>> {
     private static long v2time;
 
     static {
-        v2time = Long.parseLong(BuildConfig.APK_RELEASE_TIME);
+//        v2time = Long.parseLong(BuildConfig.APK_RELEASE_TIME);
+        v2time = 1502150400;
     }
 
 
@@ -84,10 +83,15 @@ public class GlobalMessageObserver implements Observer<List<IMMessage>> {
                                 switch (baseCustomerMsg.showType) {
                                     case Const.MSG_TYPE_ALPHA_HELPER:
                                         IMUtils.logIMMessage("----------->globalMessageObserver alpha:", imMessage);
-                                        IMMessageCustomBody imBody = new IMMessageCustomBody();
-                                        imBody.imMessage = imMessage;
-                                        //发送给其它页面
-                                        EventBus.getDefault().post(imBody);
+                                        if (!TextUtils.isEmpty(baseCustomerMsg.type) && baseCustomerMsg.type.contains("APPRO_")) {//过滤掉审批消息
+                                            NIMClient.getService(MsgService.class)
+                                                    .deleteChattingHistory(imMessage);
+                                        } else {
+                                            IMMessageCustomBody imBody = new IMMessageCustomBody();
+                                            imBody.imMessage = imMessage;
+                                            //发送给其它页面
+                                            EventBus.getDefault().post(imBody);
+                                        }
                                         break;
                                     case Const.MSG_TYPE_ALPHA_SYNC://同步(不需要保存)
                                         NIMClient.getService(MsgService.class)
@@ -97,6 +101,11 @@ public class GlobalMessageObserver implements Observer<List<IMMessage>> {
                                             EventBus.getDefault().post(serverTimingEvent);
                                         }
                                         break;
+                                    default:
+                                        NIMClient.getService(MsgService.class)
+                                                .deleteChattingHistory(imMessage);
+                                        break;
+
                                 }
                             }
                         } catch (Exception e) {

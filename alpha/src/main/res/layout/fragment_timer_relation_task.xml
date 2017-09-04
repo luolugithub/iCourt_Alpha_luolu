@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_weight="1">
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/recyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:overScrollMode="never" />
+
+    <include layout="@layout/header_search_input_text2" />
+
+    <TextView
+        android:id="@id/contentEmptyText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:drawablePadding="26dp"
+        android:drawableTop="@mipmap/bg_no_task"
+        android:gravity="center"
+        android:maxLines="3"
+        android:paddingLeft="10dp"
+        android:paddingRight="10dp"
+        android:text="暂无任务"
+        android:textSize="14dp"
+        android:visibility="gone" />
+</FrameLayout>

@@ -71,6 +71,8 @@ public class TimerDetailActivity extends BaseTimerActivity
 
     private static final String KEY_TIME = "key_time";
 
+    private static final long HOUR_TIME_24 = 24 * 60 * 60;
+
 
     TimeEntity.ItemEntity itemEntity;
     @BindView(R.id.titleBack)
@@ -164,7 +166,9 @@ public class TimerDetailActivity extends BaseTimerActivity
              */
             @Override
             public void onTimerSetValueChanged(long time) {
-                log("---------->onTimerSetValueChanged:" + time);
+                if (time > HOUR_TIME_24) {
+                    showTopSnackBar("未来还未来，请勿记录未来时间～");
+                }
                 selectedEndDate.setTimeInMillis(selectedStartDate.getTimeInMillis() + time * 1000);
                 stopTimeMinTv.setText(DateUtils.getHHmm(selectedEndDate.getTimeInMillis()));
             }
@@ -472,6 +476,11 @@ public class TimerDetailActivity extends BaseTimerActivity
                         @Override
                         public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
 
+                        }
+
+                        @Override
+                        public void defNotify(String noticeStr) {
+                            showToast(noticeStr);
                         }
                     });
         }

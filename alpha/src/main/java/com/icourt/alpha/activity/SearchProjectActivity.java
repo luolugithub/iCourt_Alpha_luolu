@@ -38,9 +38,11 @@ import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.SystemUtils;
+import com.icourt.alpha.utils.UMMobClickAgent;
 import com.icourt.alpha.view.SoftKeyboardSizeWatchLayout;
 import com.icourt.alpha.widget.manager.TimerManager;
 import com.icourt.api.RequestUtils;
+import com.umeng.analytics.MobclickAgent;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -54,6 +56,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import retrofit2.Call;
+import retrofit2.Callback;
 import retrofit2.Response;
 
 /**
@@ -269,14 +272,7 @@ public class SearchProjectActivity extends BaseActivity implements BaseRecyclerA
      * 搜索任务
      */
     private void searchTask(String keyword) {
-        int statusType = -1;
-        if (taskStatuType == -1) {
-            statusType = 0;
-        } else if (taskStatuType == 0) {
-            statusType = taskStatuType;
-        } else {
-            statusType = 1;
-        }
+        int statusType = -1;//搜索全部状态的任务
         searchTaskType = 0;//我关注的，新任务，都搜索全部
         if (!TextUtils.isEmpty(assignTos)) {
             getApi().taskQueryByName(assignTos, keyword, statusType, searchTaskType, projectId).enqueue(new SimpleCallBack<TaskEntity>() {
@@ -311,16 +307,48 @@ public class SearchProjectActivity extends BaseActivity implements BaseRecyclerA
     }
 
     @Override
-    public void onItemChildClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
+    public void onItemChildClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, final View view, int position) {
         if (adapter instanceof TaskItemAdapter) {
-            TaskEntity.TaskItemEntity itemEntity = (TaskEntity.TaskItemEntity) adapter.getItem(position);
+            final TaskEntity.TaskItemEntity itemEntity = (TaskEntity.TaskItemEntity) adapter.getItem(position);
             switch (view.getId()) {
                 case R.id.task_item_start_timming:
                     if (itemEntity.isTiming) {
-                        TimerManager.getInstance().stopTimer();
+                        TimerManager.getInstance().stopTimer(new SimpleCallBack<TimeEntity.ItemEntity>() {
+                            @Override
+                            public void onSuccess(Call<ResEntity<TimeEntity.ItemEntity>> call, Response<ResEntity<TimeEntity.ItemEntity>> response) {
+                                itemEntity.isTiming = false;
+                                TimeEntity.ItemEntity timer = TimerManager.getInstance().getTimer();
+                                TimerDetailActivity.launch(view.getContext(), timer);
+                            }
+
+                            @Override
+                            public void onFailure(Call<ResEntity<TimeEntity.ItemEntity>> call, Throwable t) {
+                                super.onFailure(call, t);
+                                itemEntity.isTiming = true;
+                            }
+                        });
+                        MobclickAgent.onEvent(getContext(), UMMobClickAgent.stop_timer_click_id);
                         ((ImageView) view).setImageResource(R.mipmap.icon_start_20);
                     } else {
-                        TimerManager.getInstance().addTimer(getTimer(itemEntity));
+                        MobclickAgent.onEvent(getContext(), UMMobClickAgent.start_timer_click_id);
+                        TimerManager.getInstance().addTimer(getTimer(itemEntity), new Callback<TimeEntity.ItemEntity>() {
+                            @Override
+                            public void onResponse(Call<TimeEntity.ItemEntity> call, Response<TimeEntity.ItemEntity> response) {
+                                dismissLoadingDialog();
+                                ((ImageView) view).setImageResource(R.drawable.orange_side_dot_bg);
+                                if (response.body() != null) {
+                                    itemEntity.isTiming = true;
+                                    TimerTimingActivity.launch(view.getContext(), response.body());
+                                }
+                            }
+
+                            @Override
+                            public void onFailure(Call<TimeEntity.ItemEntity> call, Throwable throwable) {
+                                dismissLoadingDialog();
+                                itemEntity.isTiming = false;
+                                ((ImageView) view).setImageResource(R.mipmap.icon_start_20);
+                            }
+                        });
                         ((ImageView) view).setImageResource(R.drawable.orange_side_dot_bg);
                     }
                     break;
@@ -449,8 +477,30 @@ public class SearchProjectActivity extends BaseActivity implements BaseRecyclerA
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onDeleteTaskEvent(TaskActionEvent event) {
         if (event == null) return;
-        if (event.action == TaskActionEvent.TASK_REFRESG_ACTION) {
-            getData(true);
+        switch (event.action) {
+            case TaskActionEvent.TASK_REFRESG_ACTION:
+                getData(true);
+                break;
+            case TaskActionEvent.TASK_DELETE_ACTION:
+                if (event.entity == null) return;
+                if (taskItemAdapter != null) {
+                    taskItemAdapter.removeItem(event.entity);
+                    taskItemAdapter.notifyDataSetChanged();
+                }
+                break;
+            case TaskActionEvent.TASK_ADD_ITEM_ACITON:
+                if (event.entity == null) return;
+                if (taskItemAdapter != null) {
+                    taskItemAdapter.addItem(event.entity);
+                    taskItemAdapter.notifyDataSetChanged();
+                }
+                break;
+            case TaskActionEvent.TASK_UPDATE_ITEM:
+                if (event.entity == null) return;
+                if (taskItemAdapter != null) {
+                    taskItemAdapter.updateItem(event.entity);
+                }
+                break;
         }
     }
 
@@ -464,20 +514,20 @@ public class SearchProjectActivity extends BaseActivity implements BaseRecyclerA
         if (event == null) return;
         switch (event.action) {
             case TimingEvent.TIMING_ADD:
-
-                break;
-            case TimingEvent.TIMING_UPDATE_PROGRESS:
                 TimeEntity.ItemEntity updateItem = TimerManager.getInstance().getTimer();
                 if (updateItem != null) {
                     getChildPositon(updateItem.taskPkId);
                     updateChildTimeing(updateItem.taskPkId, true);
                 }
                 break;
+            case TimingEvent.TIMING_UPDATE_PROGRESS:
+
+                break;
             case TimingEvent.TIMING_STOP:
                 if (lastEntity != null) {
                     lastEntity.isTiming = false;
-                    taskItemAdapter.notifyDataSetChanged();
                 }
+                taskItemAdapter.notifyDataSetChanged();
                 break;
         }
     }

@@ -4,7 +4,7 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
-import android.util.SparseArray;
+import android.support.v7.widget.CardView;
 import android.view.GestureDetector;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -17,14 +17,12 @@ import android.widget.TextView;
 
 import com.icourt.alpha.R;
 import com.icourt.alpha.activity.SearchProjectActivity;
-import com.icourt.alpha.adapter.baseadapter.BaseFragmentAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRefreshFragmentAdapter;
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.entity.bean.TaskEntity;
 import com.icourt.alpha.entity.event.TaskActionEvent;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
-import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.DensityUtil;
 import com.icourt.alpha.view.GestureDetectorLayout;
 import com.jeek.calendar.widget.calendar.CalendarUtils;
@@ -95,6 +93,10 @@ public class TaskListCalendarFragment extends BaseFragment {
     Unbinder unbinder;
     @BindView(R.id.gestureDetectorLayout)
     GestureDetectorLayout gestureDetectorLayout;
+    @BindView(R.id.new_task_count_tv)
+    TextView newTaskCountTv;
+    @BindView(R.id.new_task_cardview)
+    CardView newTaskCardview;
     private int MAXDAILYPAGE = 5000;
     private int dailyTaskPagePOS;
 
@@ -116,7 +118,6 @@ public class TaskListCalendarFragment extends BaseFragment {
         return view;
     }
 
-    @Override
     protected void initView() {
         taskItemEntityList = (ArrayList<TaskEntity.TaskItemEntity>) getArguments().getSerializable(KEY_TASKS);
         if (taskItemEntityList == null) {
@@ -200,6 +201,10 @@ public class TaskListCalendarFragment extends BaseFragment {
     public void onResume() {
         super.onResume();
 
+        getTaskData();
+    }
+
+    private void getTaskData() {
         //重新获取一遍数据
         getApi().taskListQuery(0,
                 getLoginUserId(),
@@ -213,6 +218,40 @@ public class TaskListCalendarFragment extends BaseFragment {
             public void onSuccess(Call<ResEntity<TaskEntity>> call, Response<ResEntity<TaskEntity>> response) {
                 if (response.body().result != null) {
                     updateClendarTasks(response.body().result.items);
+                    getNewTasksCount();
+                }
+            }
+        });
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onDeleteTaskEvent(TaskActionEvent event) {
+        if (event == null) return;
+
+        switch (event.action) {
+            case TaskActionEvent.TASK_REFRESG_ACTION:
+                getTaskData();
+                break;
+        }
+    }
+
+    /**
+     * 获取新任务数量
+     */
+    private void getNewTasksCount() {
+        getApi().newTasksCountQuery().enqueue(new SimpleCallBack<List<String>>() {
+            @Override
+            public void onSuccess(Call<ResEntity<List<String>>> call, Response<ResEntity<List<String>>> response) {
+                if (response.body().result != null) {
+                    int totalCount = response.body().result.size();
+                    if (newTaskCardview != null) {
+                        if (totalCount > 0) {
+                            newTaskCardview.setVisibility(View.VISIBLE);
+                            newTaskCountTv.setText(String.valueOf(totalCount));
+                        } else {
+                            newTaskCardview.setVisibility(View.GONE);
+                        }
+                    }
                 }
             }
         });
@@ -492,7 +531,8 @@ public class TaskListCalendarFragment extends BaseFragment {
     @OnClick({R.id.titleBack,
             R.id.titleForward,
             R.id.titleAction,
-            R.id.header_comm_search_ll})
+            R.id.header_comm_search_ll,
+            R.id.new_task_cardview})
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
@@ -526,6 +566,20 @@ public class TaskListCalendarFragment extends BaseFragment {
                         getLoginUserId(),
                         0,
                         SearchProjectActivity.SEARCH_TASK);
+                break;
+            case R.id.new_task_cardview:
+                if (getParentFragment() != null) {
+                    if (getParentFragment() instanceof TaskAllFragment) {
+                        TaskAllFragment allFragment = (TaskAllFragment) getParentFragment();
+                        if (allFragment.getParentFragment() instanceof TabTaskFragment) {
+                            TabTaskFragment tabTaskFragment = (TabTaskFragment) allFragment.getParentFragment();
+                            tabTaskFragment.isShowCalendar = false;
+                            tabTaskFragment.isAwayScroll = true;
+                            tabTaskFragment.setFirstTabText("未完成", 0);
+                            tabTaskFragment.updateListData(0);
+                        }
+                    }
+                }
                 break;
         }
     }
@@ -579,7 +633,7 @@ public class TaskListCalendarFragment extends BaseFragment {
         if (targetFrgament != this) return;
         if (bundle != null) {
             ArrayList<TaskEntity.TaskItemEntity> tasks = (ArrayList<TaskEntity.TaskItemEntity>) bundle.getSerializable(KEY_FRAGMENT_RESULT);
-            updateClendarTasks(tasks);
+            getTaskData();
         }
     }
 
@@ -589,6 +643,7 @@ public class TaskListCalendarFragment extends BaseFragment {
      * @param tasks
      */
     private void updateClendarTasks(List<TaskEntity.TaskItemEntity> tasks) {
+        if (viewPager == null || isDetached()) return;
         if (tasks != null && !tasks.isEmpty()) {
             updateClendarTasks(new ArrayList<TaskEntity.TaskItemEntity>(tasks));
         }

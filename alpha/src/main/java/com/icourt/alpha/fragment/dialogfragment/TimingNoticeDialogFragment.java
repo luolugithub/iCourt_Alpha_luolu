@@ -23,8 +23,10 @@ import com.icourt.alpha.entity.event.ServerTimingEvent;
 import com.icourt.alpha.entity.event.TimingEvent;
 import com.icourt.alpha.utils.DensityUtil;
 import com.icourt.alpha.utils.LoginInfoUtils;
+import com.icourt.alpha.utils.UMMobClickAgent;
 import com.icourt.alpha.view.fittextview.AutofitTextView;
 import com.icourt.alpha.widget.manager.TimerManager;
+import com.umeng.analytics.MobclickAgent;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -164,6 +166,7 @@ public class TimingNoticeDialogFragment extends BaseDialogFragment {
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.notice_timing_stop_iv:
+                MobclickAgent.onEvent(getContext(), UMMobClickAgent.stop_timer_click_id);
                 TimerManager.getInstance().stopTimer();
                 dismiss();
                 break;

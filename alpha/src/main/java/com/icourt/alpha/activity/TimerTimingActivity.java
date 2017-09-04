@@ -42,8 +42,10 @@ import com.icourt.alpha.utils.JsonUtils;
 import com.icourt.alpha.utils.LoginInfoUtils;
 import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.utils.SystemUtils;
+import com.icourt.alpha.utils.UMMobClickAgent;
 import com.icourt.alpha.widget.manager.TimerManager;
 import com.icourt.api.RequestUtils;
+import com.umeng.analytics.MobclickAgent;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -207,6 +209,7 @@ public class TimerTimingActivity extends BaseTimerActivity
             case R.id.stop_time_tv:
                 itemEntity.state = TimeEntity.ItemEntity.TIMER_STATE_STOP;
                 showLoadingDialog(null);
+                MobclickAgent.onEvent(getContext(), UMMobClickAgent.stop_timer_click_id);
                 TimerManager.getInstance().stopTimer(new SimpleCallBack<TimeEntity.ItemEntity>() {
                     @Override
                     public void onSuccess(Call<ResEntity<TimeEntity.ItemEntity>> call, Response<ResEntity<TimeEntity.ItemEntity>> response) {

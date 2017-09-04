@@ -47,10 +47,12 @@ import com.icourt.alpha.utils.ActionConstants;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.JsonUtils;
 import com.icourt.alpha.utils.LoginInfoUtils;
+import com.icourt.alpha.utils.UMMobClickAgent;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 import com.icourt.alpha.widget.dialog.CenterMenuDialog;
 import com.icourt.alpha.widget.manager.TimerManager;
 import com.icourt.api.RequestUtils;
+import com.umeng.analytics.MobclickAgent;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -227,21 +229,36 @@ public class ProjectEndTaskActivity extends BaseActivity
     @Override
     public void onItemChildClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, final View view, int position) {
         if (adapter instanceof TaskItemAdapter) {
-            TaskEntity.TaskItemEntity itemEntity = (TaskEntity.TaskItemEntity) adapter.getItem(adapter.getRealPos(position));
+            final TaskEntity.TaskItemEntity itemEntity = (TaskEntity.TaskItemEntity) adapter.getItem(adapter.getRealPos(position));
             switch (view.getId()) {
                 case R.id.task_item_start_timming:
                     if (itemEntity.isTiming) {
-                        TimerManager.getInstance().stopTimer();
+                        MobclickAgent.onEvent(getContext(), UMMobClickAgent.stop_timer_click_id);
+                        TimerManager.getInstance().stopTimer(new SimpleCallBack<TimeEntity.ItemEntity>() {
+                            @Override
+                            public void onSuccess(Call<ResEntity<TimeEntity.ItemEntity>> call, Response<ResEntity<TimeEntity.ItemEntity>> response) {
+                                itemEntity.isTiming = false;
+                                TimeEntity.ItemEntity timer = TimerManager.getInstance().getTimer();
+                                TimerDetailActivity.launch(view.getContext(), timer);
+                            }
+
+                            @Override
+                            public void onFailure(Call<ResEntity<TimeEntity.ItemEntity>> call, Throwable t) {
+                                super.onFailure(call, t);
+                                itemEntity.isTiming = true;
+                            }
+                        });
                         ((ImageView) view).setImageResource(R.mipmap.icon_start_20);
                     } else {
                         showLoadingDialog(null);
-
+                        MobclickAgent.onEvent(getContext(), UMMobClickAgent.start_timer_click_id);
                         TimerManager.getInstance().addTimer(getTimer(itemEntity), new Callback<TimeEntity.ItemEntity>() {
                             @Override
                             public void onResponse(Call<TimeEntity.ItemEntity> call, Response<TimeEntity.ItemEntity> response) {
                                 dismissLoadingDialog();
                                 ((ImageView) view).setImageResource(R.drawable.orange_side_dot_bg);
                                 if (response.body() != null) {
+                                    itemEntity.isTiming = true;
                                     TimerTimingActivity.launch(view.getContext(), response.body());
                                 }
                             }
@@ -249,6 +266,7 @@ public class ProjectEndTaskActivity extends BaseActivity
                             @Override
                             public void onFailure(Call<TimeEntity.ItemEntity> call, Throwable throwable) {
                                 dismissLoadingDialog();
+                                itemEntity.isTiming = false;
                                 ((ImageView) view).setImageResource(R.mipmap.icon_start_20);
                             }
                         });
@@ -344,6 +362,7 @@ public class ProjectEndTaskActivity extends BaseActivity
                             break;
                         case R.mipmap.time_start_orange_task://开始计时
                             if (!taskItemEntity.isTiming) {
+                                MobclickAgent.onEvent(getContext(), UMMobClickAgent.start_timer_click_id);
                                 TimerManager.getInstance().addTimer(getTimer(taskItemEntity), new Callback<TimeEntity.ItemEntity>() {
                                     @Override
                                     public void onResponse(Call<TimeEntity.ItemEntity> call, Response<TimeEntity.ItemEntity> response) {
@@ -365,6 +384,7 @@ public class ProjectEndTaskActivity extends BaseActivity
                             break;
                         case R.mipmap.time_stop_orange_task://停止计时
                             if (taskItemEntity.isTiming) {
+                                MobclickAgent.onEvent(getContext(), UMMobClickAgent.stop_timer_click_id);
                                 TimerManager.getInstance().stopTimer();
                                 updateMeauItem(entity, true, menuAdapter);
                             }
@@ -607,6 +627,7 @@ public class ProjectEndTaskActivity extends BaseActivity
      */
     private void deleteTask(TaskEntity.TaskItemEntity itemEntity) {
         showLoadingDialog(null);
+        MobclickAgent.onEvent(this, UMMobClickAgent.delete_task_click_id);
         getApi().taskDelete(itemEntity.id).enqueue(new SimpleCallBack<JsonElement>() {
             @Override
             public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
@@ -751,8 +772,30 @@ public class ProjectEndTaskActivity extends BaseActivity
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onDeleteTaskEvent(TaskActionEvent event) {
         if (event == null) return;
-        if (event.action == TaskActionEvent.TASK_REFRESG_ACTION) {
-            refreshLayout.startRefresh();
+        switch (event.action) {
+            case TaskActionEvent.TASK_REFRESG_ACTION:
+                refreshLayout.startRefresh();
+                break;
+            case TaskActionEvent.TASK_DELETE_ACTION:
+                if (event.entity == null) return;
+                if (taskAdapter != null) {
+                    taskAdapter.removeItem(event.entity);
+                    taskAdapter.notifyDataSetChanged();
+                }
+                break;
+            case TaskActionEvent.TASK_ADD_ITEM_ACITON:
+                if (event.entity == null) return;
+                if (taskAdapter != null) {
+                    taskAdapter.addItem(event.entity);
+                    taskAdapter.notifyDataSetChanged();
+                }
+                break;
+            case TaskActionEvent.TASK_UPDATE_ITEM:
+                if (event.entity == null) return;
+                if (taskAdapter != null) {
+                    taskAdapter.updateItem(event.entity);
+                }
+                break;
         }
     }
 
@@ -766,20 +809,20 @@ public class ProjectEndTaskActivity extends BaseActivity
         if (event == null) return;
         switch (event.action) {
             case TimingEvent.TIMING_ADD:
-
-                break;
-            case TimingEvent.TIMING_UPDATE_PROGRESS:
                 TimeEntity.ItemEntity updateItem = TimerManager.getInstance().getTimer();
                 if (updateItem != null) {
 //                    getChildPositon(updateItem.taskPkId);
                     updateChildTimeing(updateItem.taskPkId, true);
                 }
                 break;
+            case TimingEvent.TIMING_UPDATE_PROGRESS:
+
+                break;
             case TimingEvent.TIMING_STOP:
                 if (lastEntity != null) {
                     lastEntity.isTiming = false;
-                    taskAdapter.notifyDataSetChanged();
                 }
+                taskAdapter.notifyDataSetChanged();
                 break;
         }
     }

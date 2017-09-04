@@ -1,5 +1,6 @@
 package com.icourt.alpha.utils;
 
+import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.widget.ImageView;
 
@@ -18,10 +19,14 @@ import com.netease.nimlib.sdk.team.model.MemberChangeAttachment;
 import com.netease.nimlib.sdk.team.model.Team;
 import com.netease.nimlib.sdk.uinfo.model.NimUserInfo;
 
+import org.json.JSONObject;
+
 import java.util.Arrays;
 import java.util.List;
 
 import static android.R.attr.tag;
+import static com.icourt.alpha.constants.Const.CHAT_TYPE_P2P;
+import static com.icourt.alpha.constants.Const.MSG_TYPE_ALPHA_HELPER;
 import static com.icourt.alpha.constants.Const.MSG_TYPE_AT;
 import static com.icourt.alpha.constants.Const.MSG_TYPE_DING;
 import static com.icourt.alpha.constants.Const.MSG_TYPE_FILE;
@@ -29,6 +34,7 @@ import static com.icourt.alpha.constants.Const.MSG_TYPE_IMAGE;
 import static com.icourt.alpha.constants.Const.MSG_TYPE_LINK;
 import static com.icourt.alpha.constants.Const.MSG_TYPE_SYS;
 import static com.icourt.alpha.constants.Const.MSG_TYPE_TXT;
+import static com.icourt.alpha.utils.BugUtils.bugSync;
 
 /**
  * Description
@@ -38,7 +44,7 @@ import static com.icourt.alpha.constants.Const.MSG_TYPE_TXT;
  * version 1.0.0
  */
 public class IMUtils {
-
+    private static final String KEY_CACHE_ALPHA_HELPER_CONTENT = "KEY_CACHE_ALPHA_HELPER_CONTENT_%s";
     //team 背景 请勿轻易修改
     public static final int[] TEAM_ICON_BGS = {
             0xFFA3D9E3,
@@ -345,7 +351,7 @@ public class IMUtils {
             }
             switch (recentContact.getSessionType()) {
                 case P2P:
-                    customIMBody.ope = Const.CHAT_TYPE_P2P;
+                    customIMBody.ope = CHAT_TYPE_P2P;
                     customIMBody.from = recentContact.getFromAccount();
                     customIMBody.to = recentContact.getContactId();
                     break;
@@ -386,5 +392,75 @@ public class IMUtils {
             e.printStackTrace();
         }
         return false;
+    }
+
+    /**
+     * 获取alpha小助手content text
+     *
+     * @param sessionId
+     * @return
+     */
+    private static String getAlphaHelperText(String sessionId) {
+        return SpUtils.getInstance().getStringData(String.format(KEY_CACHE_ALPHA_HELPER_CONTENT, sessionId), "");
+    }
+
+
+    /**
+     * 更新alpha小助手content text
+     *
+     * @param sessionId
+     * @param text
+     */
+    private static void putAlphaHelperText(String sessionId, String text) {
+        SpUtils.getInstance().putData(String.format(KEY_CACHE_ALPHA_HELPER_CONTENT, sessionId), text);
+    }
+
+    /**
+     * 解析alpha小助手的消息
+     * 坑多:1.不能删除回话 删除消息后 会话不会自动归并到最后一条消息
+     *
+     * @param recentContact
+     */
+    @Nullable
+    public static final IMMessageCustomBody parseAlphaHelperMsg(@Nullable RecentContact recentContact) {
+        if (recentContact != null) {
+            JSONObject alphaJSONObject = null;
+            try {
+                alphaJSONObject = JsonUtils.getJSONObject(recentContact.getAttachment().toJson(false));
+                if (alphaJSONObject.has("showType")
+                        && alphaJSONObject.getInt("showType") == MSG_TYPE_ALPHA_HELPER) {
+                    String contentStr = alphaJSONObject.getString("content");
+                    String type = alphaJSONObject.getString("type");
+                    IMMessageCustomBody imMessageCustomBody = new IMMessageCustomBody();
+                    if (StringUtils.containsIgnoreCase(type, "APPRO_")) {
+                        imMessageCustomBody.content = getAlphaHelperText(recentContact.getContactId());
+                    } else {
+                        imMessageCustomBody.content = contentStr;
+                    }
+                    imMessageCustomBody.show_type = MSG_TYPE_ALPHA_HELPER;
+                    imMessageCustomBody.ope = CHAT_TYPE_P2P;
+                    imMessageCustomBody.to = recentContact.getContactId();
+
+                    //保存
+                    putAlphaHelperText(recentContact.getContactId(), imMessageCustomBody.content);
+
+                    return imMessageCustomBody;
+                } else {
+                    IMMessageCustomBody imMessageCustomBody = new IMMessageCustomBody();
+                    imMessageCustomBody.show_type = MSG_TYPE_ALPHA_HELPER;
+                    imMessageCustomBody.ope = CHAT_TYPE_P2P;
+                    imMessageCustomBody.content = getAlphaHelperText(recentContact.getContactId());
+                    imMessageCustomBody.to = recentContact.getContactId();
+                    return imMessageCustomBody;
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                bugSync("AlphaHelper 解析异常", StringUtils.throwable2string(e)
+                        + "\nalphaJSONObject:" + alphaJSONObject);
+                bugSync("AlphaHelper 解析异常json:", "" + alphaJSONObject);
+                LogUtils.d("---------->AlphaHelper 解析异常:" + e);
+            }
+        }
+        return null;
     }
 }

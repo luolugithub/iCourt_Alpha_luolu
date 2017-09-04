@@ -20,15 +20,16 @@ import com.icourt.alpha.utils.ApkUtils;
 import com.icourt.alpha.utils.Md5Utils;
 import com.icourt.alpha.utils.NetUtils;
 import com.icourt.alpha.utils.StringUtils;
+import com.icourt.alpha.utils.UMMobClickAgent;
 import com.icourt.alpha.utils.UrlUtils;
 import com.liulishuo.filedownloader.BaseDownloadTask;
 import com.liulishuo.filedownloader.FileDownloadListener;
 import com.liulishuo.filedownloader.FileDownloader;
 import com.liulishuo.filedownloader.exception.FileDownloadHttpException;
 import com.liulishuo.filedownloader.exception.FileDownloadOutOfSpaceException;
+import com.umeng.analytics.MobclickAgent;
 
 import java.io.File;
-import java.util.Random;
 
 import retrofit2.Call;
 import retrofit2.HttpException;
@@ -111,6 +112,7 @@ public class BaseAppUpdateActivity extends BaseUmengActivity implements
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 if (hasFilePermission(context)) {
+                    MobclickAgent.onEvent(context, UMMobClickAgent.dialog_update_btn_click_id);
                     getUpdateProgressDialog().setMax(appVersionEntity.binary != null ? (int) appVersionEntity.binary.fsize : 1_000);
                     String updateUrl = UrlUtils.appendParam(appVersionEntity.install_url, "versionShort", appVersionEntity.versionShort);
                     showAppDownloadingDialog(getActivity(), updateUrl);

@@ -17,8 +17,6 @@ import android.support.v4.util.ArrayMap;
 import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
 import android.util.SparseArray;
-import android.util.SparseIntArray;
-import android.util.SparseLongArray;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -60,13 +58,13 @@ import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.interfaces.OnTabDoubleClickListener;
 import com.icourt.alpha.service.DaemonService;
-import com.icourt.alpha.utils.AppManager;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.DensityUtil;
 import com.icourt.alpha.utils.LoginInfoUtils;
 import com.icourt.alpha.utils.SimpleViewGestureListener;
 import com.icourt.alpha.utils.SpUtils;
 import com.icourt.alpha.utils.SystemUtils;
+import com.icourt.alpha.utils.UMMobClickAgent;
 import com.icourt.alpha.view.CheckableLayout;
 import com.icourt.alpha.widget.manager.TimerManager;
 import com.icourt.alpha.widget.nim.GlobalMessageObserver;
@@ -80,6 +78,7 @@ import com.netease.nimlib.sdk.msg.constant.MsgTypeEnum;
 import com.netease.nimlib.sdk.msg.model.IMMessage;
 import com.netease.nimlib.sdk.team.TeamService;
 import com.netease.nimlib.sdk.team.model.Team;
+import com.umeng.analytics.MobclickAgent;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -598,6 +597,22 @@ public class MainActivity extends BaseAppUpdateActivity
         currentFragment.setUserVisibleHint(true);
     }
 
+    /**
+     * tab设置自定义事件
+     */
+    private void mobClickAgent() {
+        if (currentFragment instanceof TabProjectFragment) {
+            MobclickAgent.onEvent(this, UMMobClickAgent.main_project_tab_click_id);
+        } else if (currentFragment instanceof TabTimingFragment) {
+            MobclickAgent.onEvent(this, UMMobClickAgent.main_timer_tab_click_id);
+        } else if (currentFragment instanceof TabCustomerFragment) {
+            MobclickAgent.onEvent(this, UMMobClickAgent.main_client_tab_click_id);
+        } else if (currentFragment instanceof TabSearchFragment) {
+            MobclickAgent.onEvent(this, UMMobClickAgent.main_search_tab_click_id);
+        } else if (currentFragment instanceof TabMineFragment) {
+            MobclickAgent.onEvent(this, UMMobClickAgent.main_mine_tab_click_id);
+        }
+    }
 
     @OnClick({R.id.tab_timing,
             R.id.tab_news,
@@ -608,21 +623,26 @@ public class MainActivity extends BaseAppUpdateActivity
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.tab_news:
+                MobclickAgent.onEvent(this, UMMobClickAgent.main_chat_tab_click_id);
                 checkedTab(R.id.tab_news, TYPE_FRAGMENT_NEWS);
                 break;
             case R.id.tab_task:
+                MobclickAgent.onEvent(this, UMMobClickAgent.main_task_tab_click_id);
                 checkedTab(R.id.tab_task, TYPE_FRAGMENT_TASK);
                 break;
             case R.id.tab_find:
                 checkedTab(R.id.tab_find, getFragmentType(R.id.tab_find));
+                mobClickAgent();
                 break;
             case R.id.tab_mine:
                 checkedTab(R.id.tab_mine, getFragmentType(R.id.tab_mine));
+                mobClickAgent();
                 break;
             case R.id.tab_timing:
                 if (TimerManager.getInstance().hasTimer()) {
                     showTimingDialogFragment();
                 } else {
+                    MobclickAgent.onEvent(getContext(), UMMobClickAgent.start_timer_click_id);
                     TimerManager.getInstance().addTimer(new TimeEntity.ItemEntity(),
                             new Callback<TimeEntity.ItemEntity>() {
                                 @Override
@@ -1068,8 +1088,10 @@ public class MainActivity extends BaseAppUpdateActivity
         if (fragment != null) {
             mFragTransaction.remove(fragment);
         }
-        TimingNoticeDialogFragment.newInstance(timer)
-                .show(mFragTransaction, tag);
+        //show方法源码是commit提交，会产生：Can not perform this action after onSaveInstanceState 异常
+//      TimingNoticeDialogFragment.newInstance(timer).show(mFragTransaction, tag);
+        mFragTransaction.add(TimingNoticeDialogFragment.newInstance(timer), tag);
+        mFragTransaction.commitAllowingStateLoss();
     }
 
     /**
@@ -1087,7 +1109,13 @@ public class MainActivity extends BaseAppUpdateActivity
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_BACK) {
             IntentWrapper.onBackPressed(this);
-            moveTaskToBack(false);
+            try {
+                moveTaskToBack(true);
+            } catch (Exception e) {
+                e.printStackTrace();
+                bugSync("首页返回模拟HOME出错", e);
+                return super.onKeyDown(keyCode, event);
+            }
             return true;
         }
         return super.onKeyDown(keyCode, event);
