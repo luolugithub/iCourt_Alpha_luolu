@@ -568,9 +568,8 @@ public class FolderListActivity extends FolderBaseActivity
                         }
                         bigImageUrls.clear();
                         smallImageUrls.clear();
-                        List<FolderDocumentEntity> allData = getAllData();
-                        for (int i = 0; i < allData.size(); i++) {
-                            FolderDocumentEntity folderDocumentEntity = allData.get(i);
+                        for (int i = 0; i < totals.size(); i++) {
+                            FolderDocumentEntity folderDocumentEntity = totals.get(i);
                             if (folderDocumentEntity == null) continue;
                             if (IMUtils.isPIC(folderDocumentEntity.name)) {
                                 bigImageUrls.add(getSFileImageUrl(folderDocumentEntity.name, Integer.MAX_VALUE));
