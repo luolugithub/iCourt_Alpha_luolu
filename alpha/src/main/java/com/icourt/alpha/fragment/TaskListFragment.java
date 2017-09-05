@@ -55,7 +55,6 @@ import com.icourt.alpha.interfaces.OnTasksChangeListener;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.DensityUtil;
 import com.icourt.alpha.utils.ItemDecorationUtils;
-import com.icourt.alpha.utils.LoginInfoUtils;
 import com.icourt.alpha.utils.UMMobClickAgent;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 import com.icourt.alpha.widget.manager.TimerManager;
@@ -98,6 +97,9 @@ public class TaskListFragment extends BaseTaskFragment implements
         BaseRecyclerAdapter.OnItemClickListener,
         BaseRecyclerAdapter.OnItemChildClickListener {
 
+    public static final String TYPE = "type";//type的传参标识
+    public static final String STATE_TYPE = "stateType";//stateType的传参标识
+
     public static final int TYPE_ALL = 0;//全部
     public static final int TYPE_MY_ATTENTION = 2;//我关注的
 
@@ -122,7 +124,8 @@ public class TaskListFragment extends BaseTaskFragment implements
     List<TaskEntity.TaskItemEntity> newTaskEntities;//新任务
     List<TaskEntity.TaskItemEntity> datedTaskEntities;//已过期
 
-    int type, stateType = 0;//全部任务：－1；已完成：1；未完成：0；已删除：3；
+    int type = 0;//全部，我关注的
+    int stateType = 0;//全部任务：－1；已完成：1；未完成：0；已删除：3；
     HeaderFooterAdapter<TaskAdapter> headerFooterAdapter;
     HeaderFooterAdapter<TaskItemAdapter> headerFooterItemAdapter;
     OnTasksChangeListener onTasksChangeListener;
@@ -148,8 +151,8 @@ public class TaskListFragment extends BaseTaskFragment implements
     public static TaskListFragment newInstance(int type, int stateType) {
         TaskListFragment projectTaskFragment = new TaskListFragment();
         Bundle bundle = new Bundle();
-        bundle.putInt("type", type);
-        bundle.putInt("stateType", stateType);
+        bundle.putInt(TYPE, type);
+        bundle.putInt(STATE_TYPE, stateType);
         projectTaskFragment.setArguments(bundle);
         return projectTaskFragment;
     }
@@ -180,8 +183,8 @@ public class TaskListFragment extends BaseTaskFragment implements
     protected void initView() {
         super.initView();
         tabTaskFragment = getParentTabTaskFragment();
-        type = getArguments().getInt("type");
-        stateType = getArguments().getInt("stateType");
+        type = getArguments().getInt(TYPE);
+        stateType = getArguments().getInt(STATE_TYPE);
         refreshLayout.setNoticeEmpty(R.mipmap.bg_no_task, R.string.task_list_null_text);
         refreshLayout.setMoveForHorizontal(true);
         recyclerView.setLayoutManager(linearLayoutManager = new LinearLayoutManager(getContext()));
@@ -1038,13 +1041,13 @@ public class TaskListFragment extends BaseTaskFragment implements
                                 if (itemEntity.attendeeUsers.size() > 1) {
                                     showDeleteDialog("该任务由多人负责,确定完成?", itemEntity, SHOW_FINISH_DIALOG, checkbox);
                                 } else {
-                                    updateTaskState(itemEntity);
+                                    updateTaskState(itemEntity, true);
                                 }
                             } else {
-                                updateTaskState(itemEntity);
+                                updateTaskState(itemEntity, true);
                             }
                         } else {
-                            updateTaskState(itemEntity);
+                            updateTaskState(itemEntity, false);
                         }
                     } else {
                         recoverTaskById(itemEntity);
@@ -1070,7 +1073,7 @@ public class TaskListFragment extends BaseTaskFragment implements
                 switch (which) {
                     case Dialog.BUTTON_POSITIVE://确定
                         if (type == SHOW_FINISH_DIALOG) {
-                            updateTaskState(itemEntity);
+                            updateTaskState(itemEntity, true);
                         }
                         break;
                     case Dialog.BUTTON_NEGATIVE://取消
@@ -1108,8 +1111,12 @@ public class TaskListFragment extends BaseTaskFragment implements
      * @param itemEntity
      */
     @Override
-    protected void taskUpdateBack(@NonNull TaskEntity.TaskItemEntity itemEntity) {
+    protected void taskUpdateBack(@ChangeType int changeType, @NonNull TaskEntity.TaskItemEntity itemEntity) {
+        if (changeType == CHANGE_DUETIME) {//修改到期时间、提醒
+            getData(true);
+        } else {
 
+        }
     }
 
 
@@ -1159,13 +1166,13 @@ public class TaskListFragment extends BaseTaskFragment implements
                 if (updateTaskItemEntity.attendeeUsers != null) {
                     updateTaskItemEntity.attendeeUsers.clear();
                     updateTaskItemEntity.attendeeUsers.addAll(attusers);
-                    updateTaskProjectOrGroup(updateTaskItemEntity, null, null, null);
+                    updateTaskProjectOrGroup(CHANGE_ALLOT, updateTaskItemEntity, null, null, null);
                 }
-            } else if (fragment instanceof DateSelectDialogFragment) {
+            } else if (fragment instanceof DateSelectDialogFragment) {//修改到期时间
                 long millis = params.getLong(KEY_FRAGMENT_RESULT);
                 updateTaskItemEntity.dueTime = millis;
                 TaskReminderEntity taskReminderEntity = (TaskReminderEntity) params.getSerializable("taskReminder");
-                updateTaskProjectOrGroup(updateTaskItemEntity, null, null, taskReminderEntity);
+                updateTaskProjectOrGroup(CHANGE_DUETIME, updateTaskItemEntity, null, null, taskReminderEntity);
             }
         }
     }
@@ -1184,7 +1191,7 @@ public class TaskListFragment extends BaseTaskFragment implements
             taskGroupEntity = new TaskGroupEntity();
             taskGroupEntity.id = "";
         }
-        updateTaskProjectOrGroup(updateTaskItemEntity, projectEntity, taskGroupEntity, null);
+        updateTaskProjectOrGroup(CHANGE_PROJECT, updateTaskItemEntity, projectEntity, taskGroupEntity, null);
     }
 
     /**

@@ -310,5 +310,6 @@ dependencies {
 
     //RecyclerViewAdapter
     compile rootProject.ext.dependencies.recyclerview_adapter
+
 }
 

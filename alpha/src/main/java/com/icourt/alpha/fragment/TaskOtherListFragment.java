@@ -15,12 +15,9 @@ import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.CheckBox;
-import android.widget.ImageView;
 
 import com.andview.refreshview.XRefreshView;
 import com.chad.library.adapter.base.BaseQuickAdapter;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.icourt.alpha.R;
 import com.icourt.alpha.activity.SearchProjectActivity;
@@ -30,18 +27,15 @@ import com.icourt.alpha.activity.TimerTimingActivity;
 import com.icourt.alpha.adapter.TaskItemAdapter2;
 import com.icourt.alpha.adapter.baseadapter.adapterObserver.DataChangeAdapterObserver;
 import com.icourt.alpha.adapter.baseadapter.adapterObserver.RefreshViewEmptyObserver;
-import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.entity.bean.TaskEntity;
 import com.icourt.alpha.entity.bean.TimeEntity;
 import com.icourt.alpha.entity.event.TaskActionEvent;
-import com.icourt.alpha.entity.event.TimingEvent;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.UMMobClickAgent;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 import com.icourt.alpha.widget.manager.TimerManager;
-import com.icourt.api.RequestUtils;
 import com.umeng.analytics.MobclickAgent;
 
 import org.greenrobot.eventbus.EventBus;
@@ -63,7 +57,6 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
 import retrofit2.Call;
-import retrofit2.Callback;
 import retrofit2.Response;
 
 /**
@@ -93,13 +86,16 @@ public class TaskOtherListFragment extends BaseTaskFragment implements BaseQuick
     public static final int TASK_NODUE_TYPE = 4;//未指定到期任务
     public static final int TASK_DATED_TYPE = 5;//已过期任务
 
+    private boolean isFirstTimeIntoPage = true;//用来判断是不是第一次进入该界面，如果是，滚动到一条，隐藏搜索栏。
+
     Unbinder unbinder;
     @BindView(R.id.recyclerView)
     RecyclerView recyclerView;
     @BindView(R.id.refreshLayout)
     RefreshLayout refreshLayout;
 
-    List<TaskEntity.TaskItemEntity> allTaskEntities = new ArrayList<>();//展示所要用到的列表集合
+    private LinearLayoutManager mLinearLayoutManager;
+
     int startType, finishType;
     ArrayList<String> ids;
     private int pageIndex = 1;
@@ -107,7 +103,7 @@ public class TaskOtherListFragment extends BaseTaskFragment implements BaseQuick
 
     TaskEntity.TaskItemEntity lastEntity;
 
-    private ArrayMap<String, Integer> mArrayMap = new ArrayMap<>();//用来存储每个group有多少个数量。
+    private ArrayMap<String, Integer> mArrayMap = new ArrayMap<>();//用来存储每个group有多少个数量（暂时保留，待分页再优化）。
 
     @IntDef({UNFINISH_TYPE,
             FINISH_TYPE})
@@ -149,7 +145,8 @@ public class TaskOtherListFragment extends BaseTaskFragment implements BaseQuick
         ids = getArguments().getStringArrayList(TAG_IDS);
         refreshLayout.setNoticeEmpty(R.mipmap.bg_no_task, R.string.task_list_null_text);
         refreshLayout.setMoveForHorizontal(true);
-        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        mLinearLayoutManager = new LinearLayoutManager(getContext());
+        recyclerView.setLayoutManager(mLinearLayoutManager);
         recyclerView.setHasFixedSize(true);
 
         taskAdapter = new TaskItemAdapter2();
@@ -257,7 +254,6 @@ public class TaskOtherListFragment extends BaseTaskFragment implements BaseQuick
             @Override
             public void onSuccess(Call<ResEntity<TaskEntity>> call, Response<ResEntity<TaskEntity>> response) {
                 if (response.body().result != null) {
-                    clearLists();
                     getTaskGroupData(response.body().result);
                     if (isRefresh)
                         enableEmptyView(response.body().result.items);
@@ -285,8 +281,7 @@ public class TaskOtherListFragment extends BaseTaskFragment implements BaseQuick
             @Override
             public void subscribe(ObservableEmitter<List<TaskEntity.TaskItemEntity>> e) throws Exception {
                 if (e.isDisposed()) return;
-                groupingByTasks(taskEntity.items);
-                e.onNext(allTaskEntities);
+                e.onNext(groupingByTasks(taskEntity.items));
                 e.onComplete();
             }
         }).compose(this.<List<TaskEntity.TaskItemEntity>>bindToLifecycle())
@@ -295,7 +290,11 @@ public class TaskOtherListFragment extends BaseTaskFragment implements BaseQuick
                 .subscribe(new Consumer<List<TaskEntity.TaskItemEntity>>() {
                     @Override
                     public void accept(List<TaskEntity.TaskItemEntity> searchPolymerizationEntities) throws Exception {
-                        taskAdapter.setNewData(allTaskEntities);
+                        taskAdapter.setNewData(searchPolymerizationEntities);
+                        if (isFirstTimeIntoPage) {
+                            mLinearLayoutManager.scrollToPositionWithOffset(taskAdapter.getHeaderLayoutCount(), 0);
+                            isFirstTimeIntoPage = false;
+                        }
                     }
                 });
     }
@@ -305,7 +304,8 @@ public class TaskOtherListFragment extends BaseTaskFragment implements BaseQuick
      *
      * @param taskItemEntities
      */
-    private void groupingByTasks(List<TaskEntity.TaskItemEntity> taskItemEntities) {
+    private List<TaskEntity.TaskItemEntity> groupingByTasks(List<TaskEntity.TaskItemEntity> taskItemEntities) {
+        List<TaskEntity.TaskItemEntity> allTaskEntities = new ArrayList<>();//展示所要用到的列表集合
         List<TaskEntity.TaskItemEntity> todayTaskEntities = new ArrayList<>();//今天到期
         List<TaskEntity.TaskItemEntity> beAboutToTaskEntities = new ArrayList<>();//即将到期
         List<TaskEntity.TaskItemEntity> futureTaskEntities = new ArrayList<>();//未来
@@ -337,11 +337,12 @@ public class TaskOtherListFragment extends BaseTaskFragment implements BaseQuick
             }
         }
         //将分组信息添加到allTaskEntities集合中，并且在mArrayMap中记录每组的数量
-        addToAllTaskEntities(datedTaskEntities);
-        addToAllTaskEntities(todayTaskEntities);
-        addToAllTaskEntities(beAboutToTaskEntities);
-        addToAllTaskEntities(futureTaskEntities);
-        addToAllTaskEntities(noDueTaskEntities);
+        addToAllTaskEntities("已到期", datedTaskEntities, allTaskEntities);
+        addToAllTaskEntities("今天到期", todayTaskEntities, allTaskEntities);
+        addToAllTaskEntities("即将到期", beAboutToTaskEntities, allTaskEntities);
+        addToAllTaskEntities("未来", futureTaskEntities, allTaskEntities);
+        addToAllTaskEntities("未指定到期日", noDueTaskEntities, allTaskEntities);
+        return allTaskEntities;
     }
 
     /**
@@ -349,22 +350,16 @@ public class TaskOtherListFragment extends BaseTaskFragment implements BaseQuick
      *
      * @param list
      */
-    private void addToAllTaskEntities(List<TaskEntity.TaskItemEntity> list) {
+    private void addToAllTaskEntities(String groupName, List<TaskEntity.TaskItemEntity> list, List<TaskEntity.TaskItemEntity> allTaskEntities) {
         if (list == null || list.size() == 0)
             return;
         //创建一个群组标题的item
         TaskEntity.TaskItemEntity itemEntity = new TaskEntity.TaskItemEntity();
-        itemEntity.groupName = list.get(0).groupName;
-        itemEntity.groupItemCount = list.size();
+        itemEntity.groupName = groupName;
+        itemEntity.groupTaskCount = list.size();
         itemEntity.type = 1;//0：普通；1：任务组。
         allTaskEntities.add(itemEntity);
         allTaskEntities.addAll(list);
-        mArrayMap.put(list.get(0).groupName, list.size());
-    }
-
-    private void clearLists() {
-        if (allTaskEntities != null)
-            allTaskEntities.clear();
     }
 
     @Override
@@ -386,13 +381,13 @@ public class TaskOtherListFragment extends BaseTaskFragment implements BaseQuick
                         if (itemEntity.attendeeUsers.size() > 1) {
                             showFinishDialog(view.getContext(), "该任务由多人负责,确定完成?", itemEntity);
                         } else {
-                            updateTask(itemEntity, true);
+                            updateTaskState(itemEntity, true);
                         }
                     } else {
-                        updateTask(itemEntity, true);
+                        updateTaskState(itemEntity, true);
                     }
                 } else {//取消完成任务
-                    updateTask(itemEntity, false);
+                    updateTaskState(itemEntity, false);
                 }
                 break;
         }
@@ -432,8 +427,8 @@ public class TaskOtherListFragment extends BaseTaskFragment implements BaseQuick
         taskAdapter.updateItem(requestEntity);
         if (response.body() != null) {
             TimerTimingActivity.launch(getActivity(), response.body());
-            TimeEntity.ItemEntity timer = TimerManager.getInstance().getTimer();
-            TimerDetailActivity.launch(getActivity(), timer);
+//            TimeEntity.ItemEntity timer = TimerManager.getInstance().getTimer();
+//            TimerDetailActivity.launch(getActivity(), timer);
         }
     }
 
@@ -445,7 +440,7 @@ public class TaskOtherListFragment extends BaseTaskFragment implements BaseQuick
     }
 
     @Override
-    protected void taskUpdateBack(@NonNull TaskEntity.TaskItemEntity itemEntity) {
+    protected void taskUpdateBack(@ChangeType int type, @NonNull TaskEntity.TaskItemEntity itemEntity) {
         taskAdapter.updateItem(itemEntity);
     }
 
@@ -479,7 +474,7 @@ public class TaskOtherListFragment extends BaseTaskFragment implements BaseQuick
             public void onClick(DialogInterface dialog, int which) {
                 switch (which) {
                     case Dialog.BUTTON_POSITIVE://确定
-                        updateTask(itemEntity, true);
+                        updateTaskState(itemEntity, true);
                         break;
                     case Dialog.BUTTON_NEGATIVE://取消
                         break;
@@ -495,17 +490,6 @@ public class TaskOtherListFragment extends BaseTaskFragment implements BaseQuick
         builder.create().show();
     }
 
-    /**
-     * 修改任务完成状态
-     *
-     * @param itemEntity
-     * @param state      true：完成状态；false：未完成状态。
-     */
-    private void updateTask(final TaskEntity.TaskItemEntity itemEntity, final boolean state) {
-        showLoadingDialog(null);
-        itemEntity.state = state;
-        updateTaskState(itemEntity);
-    }
 
     /**
      * 获取任务json

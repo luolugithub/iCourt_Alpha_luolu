@@ -4,13 +4,10 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.View;
-import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.icourt.alpha.R;
-import com.icourt.alpha.adapter.baseadapter.BaseArrayRecyclerAdapter;
-import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseTaskRecyclerAdapter;
 import com.icourt.alpha.entity.bean.TaskEntity;
 import com.icourt.alpha.utils.DateUtils;
@@ -90,7 +87,7 @@ public class TaskItemAdapter3 extends BaseTaskRecyclerAdapter<TaskEntity.TaskIte
      */
     private void initTaskGroup(ViewHolder holder, TaskEntity.TaskItemEntity taskItemEntity, int position) {
         holder.setText(R.id.task_time_group_name, taskItemEntity.groupName);
-        holder.setText(R.id.task_time_group_count, String.valueOf(taskItemEntity.groupItemCount));
+        holder.setText(R.id.task_time_group_count, String.valueOf(taskItemEntity.groupTaskCount));
     }
 
     /**

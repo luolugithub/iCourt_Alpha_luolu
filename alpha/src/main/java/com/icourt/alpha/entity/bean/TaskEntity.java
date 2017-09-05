@@ -28,7 +28,8 @@ public class TaskEntity implements Serializable {
 
     public static class TaskItemEntity implements Serializable, MultiItemEntity {
         public String groupName;//任务所在分组名称
-        public int groupItemCount;//分组有多少个任务
+        public String groupId;//分组id
+        public int groupTaskCount;//分组有多少个任务
 
         public String id;
         public String name;//任务名称

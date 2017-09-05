@@ -23,6 +23,7 @@ import com.icourt.alpha.entity.event.ProjectActionEvent;
 import com.icourt.alpha.fragment.ProjectDetailFragment;
 import com.icourt.alpha.fragment.ProjectFileBoxFragment;
 import com.icourt.alpha.fragment.ProjectTaskFragment;
+import com.icourt.alpha.fragment.ProjectTaskFragment2;
 import com.icourt.alpha.fragment.ProjectTimeFragment;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
@@ -120,7 +121,7 @@ public class ProjectDetailActivity extends BaseActivity implements OnFragmentCal
         baseFragmentAdapter.bindData(true,
                 Arrays.asList(
                         ProjectDetailFragment.newInstance(projectId),
-                        ProjectTaskFragment.newInstance(projectId),
+                        ProjectTaskFragment2.newInstance(projectId),
                         ProjectTimeFragment.newInstance(projectId),
                         projectFileBoxFragment = ProjectFileBoxFragment.newInstance(projectId, isCanlookAddDocument)
                 ));

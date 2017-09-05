@@ -383,7 +383,7 @@ public class TaskOtherListFragment3 extends BaseFragment implements BaseRecycler
         //创建一个群组标题的item
         TaskEntity.TaskItemEntity itemEntity = new TaskEntity.TaskItemEntity();
         itemEntity.groupName = list.get(0).groupName;
-        itemEntity.groupItemCount = list.size();
+        itemEntity.groupTaskCount = list.size();
         itemEntity.type = 1;//0：普通；1：任务组。
         allTaskEntities.add(itemEntity);
         allTaskEntities.addAll(list);

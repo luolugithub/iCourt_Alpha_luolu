@@ -4,7 +4,6 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.View;
-import android.widget.CheckBox;
 import android.widget.CheckedTextView;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -16,7 +15,6 @@ import com.icourt.alpha.entity.bean.TaskEntity;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.LogUtils;
 import com.icourt.alpha.widget.manager.TimerManager;
-import com.umeng.socialize.utils.Log;
 
 /**
  * * Description
@@ -133,7 +131,7 @@ public class TaskItemAdapter2 extends BaseMultiItemQuickAdapter<TaskEntity.TaskI
      */
     private void initTaskTitle(BaseViewHolder baseViewHolder, TaskEntity.TaskItemEntity taskItemEntity) {
         baseViewHolder.setText(R.id.task_time_group_name, taskItemEntity.groupName);
-        baseViewHolder.setText(R.id.task_time_group_count, String.valueOf(taskItemEntity.groupItemCount));
+        baseViewHolder.setText(R.id.task_time_group_count, String.valueOf(taskItemEntity.groupTaskCount));
     }
 
     /**
