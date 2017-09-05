@@ -54,7 +54,7 @@ import static com.icourt.alpha.constants.SFileConfig.REPO_PROJECT;
 import static com.icourt.alpha.constants.SFileConfig.REPO_SHARED_ME;
 
 /**
- * Description
+ * Description 资料库详情
  * Company Beijing icourt
  * author  youxuan  E-mail:xuanyouwu@163.com
  * date createTime：2017/8/19
@@ -91,6 +91,7 @@ public class RepoDetailsDialogFragment extends BaseDialogFragment
     protected static final String KEY_SEA_FILE_FROM_REPO_ID = "seaFileFromRepoId";//原仓库id
     protected static final String KEY_LOCATION_TAB_INDEX = "locationPage";//定位的tab
     protected static final String KEY_SEA_FILE_REPO_PERMISSION = "seaFileRepoPermission";//repo的权限
+    protected static final String KEY_SEA_FILE_REPO_TYPE = "repoType";//repo类型
 
     public static void show(@SFileConfig.REPO_TYPE int repoType,
                             String fromRepoId,
@@ -117,7 +118,7 @@ public class RepoDetailsDialogFragment extends BaseDialogFragment
         args.putString(KEY_SEA_FILE_FROM_REPO_ID, fromRepoId);
         args.putInt(KEY_LOCATION_TAB_INDEX, locationTabIndex);
         args.putString(KEY_SEA_FILE_REPO_PERMISSION, repoPermission);
-        args.putInt("repoType", repoType);
+        args.putInt(KEY_SEA_FILE_REPO_TYPE, repoType);
         fragment.setArguments(args);
         return fragment;
     }
@@ -144,7 +145,7 @@ public class RepoDetailsDialogFragment extends BaseDialogFragment
     @Override
     protected void initView() {
         fromRepoId = getArguments().getString(KEY_SEA_FILE_FROM_REPO_ID, "");
-        repoType = SFileConfig.convert2RepoType(getArguments().getInt("repoType"));
+        repoType = SFileConfig.convert2RepoType(getArguments().getInt(KEY_SEA_FILE_REPO_TYPE));
         repoPermission = getRepoPermission();
         Dialog dialog = getDialog();
         if (dialog != null) {
@@ -155,7 +156,7 @@ public class RepoDetailsDialogFragment extends BaseDialogFragment
                 window.setAttributes(attributes);
             }
         }
-        titleContent.setText("资料库详情");
+        titleContent.setText(R.string.repo_details);
         fileVersionTv.setVisibility(View.GONE);
         fileCreateInfoTv.setVisibility(View.GONE);
         fileTypeIv.setImageResource(R.mipmap.ic_document);
@@ -165,34 +166,41 @@ public class RepoDetailsDialogFragment extends BaseDialogFragment
         tabLayout.setupWithViewPager(viewPager);
         switch (repoType) {
             case REPO_MINE:
-                baseFragmentAdapter.bindTitle(true, Arrays.asList("修改历史", "内部共享", "回收站"));
+                baseFragmentAdapter.bindTitle(true, Arrays.asList(
+                        getString(R.string.repo_change_history),
+                        getString(R.string.repo_inner_share),
+                        getString(R.string.repo_recycle_bin)));
                 baseFragmentAdapter.bindData(true,
                         Arrays.asList(FileChangeHistoryFragment.newInstance(
-                                SFileConfig.convert2RepoType(getArguments().getInt("repoType")),
+                                repoType,
                                 fromRepoId,
                                 repoPermission),
                                 FileInnerShareFragment.newInstance(fromRepoId, "/", repoPermission),
                                 FileTrashListFragment.newInstance(fromRepoId, "/", repoPermission)));
                 break;
             case REPO_SHARED_ME:
-                baseFragmentAdapter.bindTitle(true, Arrays.asList("修改历史", "回收站"));
+                baseFragmentAdapter.bindTitle(true, Arrays.asList(
+                        getString(R.string.repo_change_history),
+                        getString(R.string.repo_recycle_bin)));
                 baseFragmentAdapter.bindData(true,
                         Arrays.asList(FileChangeHistoryFragment.newInstance(
-                                SFileConfig.convert2RepoType(getArguments().getInt("repoType")),
+                                repoType,
                                 fromRepoId,
                                 repoPermission),
                                 FileTrashListFragment.newInstance(fromRepoId, "/", repoPermission)));
                 break;
             case REPO_LAWFIRM:
-                baseFragmentAdapter.bindTitle(true, Arrays.asList("回收站"));
+                baseFragmentAdapter.bindTitle(true, Arrays.asList(getString(R.string.repo_recycle_bin)));
                 baseFragmentAdapter.bindData(true,
                         Arrays.asList(FileTrashListFragment.newInstance(fromRepoId, "/", repoPermission)));
                 break;
             case REPO_PROJECT:
-                baseFragmentAdapter.bindTitle(true, Arrays.asList("修改历史", "回收站"));
+                baseFragmentAdapter.bindTitle(true, Arrays.asList(
+                        getString(R.string.repo_change_history),
+                        getString(R.string.repo_recycle_bin)));
                 baseFragmentAdapter.bindData(true,
                         Arrays.asList(FileChangeHistoryFragment.newInstance(
-                                SFileConfig.convert2RepoType(getArguments().getInt("repoType")),
+                                repoType,
                                 fromRepoId,
                                 repoPermission),
                                 FileTrashListFragment.newInstance(fromRepoId, "/", repoPermission)));

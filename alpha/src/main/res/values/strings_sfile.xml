@@ -6,6 +6,11 @@
     <string name="repo_share_empty">没有共享给我的资料库</string>
     <string name="repo_lawfirm_empty">尚未建立资料库</string>
 
+    <string name="repo_change_history">修改历史</string>
+    <string name="repo_inner_share">内部共享</string>
+    <string name="repo_recycle_bin">回收站</string>
+    <string name="repo_details">查看资料库详情</string>
+
     <string-array name="repo_type_array">
         <item>我的</item>
         <item>共享给我的</item>
@@ -14,7 +19,7 @@
     </string-array>
 
     <string-array name="repo_action_menus_rw_array">
-        <item>查看资料库详情</item>
+        <item>@string/repo_details</item>
         <item>重命名</item>
         <item>@string/str_rename</item>
         <item>@string/str_delete</item>
