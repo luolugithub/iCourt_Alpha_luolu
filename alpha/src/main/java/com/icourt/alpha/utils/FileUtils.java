@@ -128,17 +128,19 @@ public class FileUtils {
         long gb = mb * 1024;
         long tb = gb * 1024;
         if (b >= tb) {
-            return String.format("%.1f T", (float) b / tb);
+            float f = (float) b / tb;
+            return String.format(f > 100? "%.0fT" : "%.1fT", f);
         } else if (b >= gb) {
-            return String.format("%.1f G", (float) b / gb);
+            float f = (float) b / gb;
+            return String.format(f > 100? "%.0fG" : "%.1fG", f);
         } else if (b >= mb) {
             float f = (float) b / mb;
-            return String.format(f > 100 ? "%.0f M" : "%.1f M", f);
+            return String.format(f > 100 ? "%.0fM" : "%.1fM", f);
         } else if (b >= kb) {
             float f = (float) b / kb;
-            return String.format(f > 100 ? "%.0f K" : "%.1f K", f);
+            return String.format(f > 100 ? "%.0fK" : "%.1fK", f);
         } else
-            return String.format("%d B", b);
+            return String.format("%dB", b);
     }
 
     /**

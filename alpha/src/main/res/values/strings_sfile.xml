@@ -21,7 +21,7 @@
     <string-array name="repo_action_menus_rw_array">
         <item>@string/repo_details</item>
         <item>重命名</item>
-        <item>@string/str_rename</item>
+        <item>@string/repo_inner_share</item>
         <item>@string/str_delete</item>
     </string-array>
 
