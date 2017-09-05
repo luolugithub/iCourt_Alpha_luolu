@@ -85,4 +85,9 @@
     </string-array>
 
     <string name="sfile_not_exist">文件不存在</string>
+    <string name="sfile_change_history_empty">尚未有修改记录</string>
+    <string name="sfile_change_history_revert_confirm">将资料库恢复到该次修改前到状态</string>
+    <string name="sfile_change_history_revert">撤销修改</string>
+    <string name="sfile_revert_success">撤销成功</string>
+    <string name="sfile_revert_fail">撤销失败</string>
 </resources>

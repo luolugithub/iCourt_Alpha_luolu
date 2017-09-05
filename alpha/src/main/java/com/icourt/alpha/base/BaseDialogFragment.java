@@ -444,6 +444,11 @@ public abstract class BaseDialogFragment extends DialogFragment
         return progressHUD;
     }
 
+    @UiThread
+    public void showLoadingDialog(@StringRes int noticeId) {
+        showLoadingDialog(getString(noticeId));
+    }
+
     /***
      *  展示加载对话框
      * @param notice

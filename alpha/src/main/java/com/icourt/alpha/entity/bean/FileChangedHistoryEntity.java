@@ -1,8 +1,12 @@
 package com.icourt.alpha.entity.bean;
 
+import android.support.annotation.StringDef;
 import android.text.TextUtils;
 
 import com.icourt.alpha.widget.comparators.ILongFieldEntity;
+
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 
 /**
  * Description  文件修改历史
@@ -12,6 +16,27 @@ import com.icourt.alpha.widget.comparators.ILongFieldEntity;
  * version 2.1.0
  */
 public class FileChangedHistoryEntity implements ILongFieldEntity {
+    public static final String OP_TYPE_CREATE = "create";
+    public static final String OP_TYPE_MOVE = "move";
+    public static final String OP_TYPE_DELETE = "delete";
+    public static final String OP_TYPE_RECOVER = "recover";
+    public static final String OP_TYPE_RENAME = "rename";
+    public static final String OP_TYPE_EDIT = "edit";
+
+    @StringDef({
+            OP_TYPE_CREATE,
+            OP_TYPE_MOVE,
+            OP_TYPE_DELETE,
+            OP_TYPE_RECOVER,
+            OP_TYPE_RENAME,
+            OP_TYPE_EDIT,
+    })
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface OP_TYPE {
+
+    }
+
+
     /**
      * {
      * "id": 2628144,
@@ -33,6 +58,7 @@ public class FileChangedHistoryEntity implements ILongFieldEntity {
      */
     public long id;
     public String obj_type;
+    @OP_TYPE
     public String op_type;
     public String operator_id;
     public String operator_name;
