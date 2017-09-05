@@ -1,10 +1,7 @@
 package com.icourt.alpha.http;
 
 
-import android.text.TextUtils;
-
 import com.icourt.alpha.BuildConfig;
-import com.icourt.alpha.utils.SpUtils;
 
 /**
  * @author xuanyouwu

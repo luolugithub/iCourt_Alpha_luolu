@@ -23,7 +23,6 @@ import com.icourt.alpha.R;
 import com.icourt.alpha.activity.FileBoxDownloadActivity;
 import com.icourt.alpha.adapter.TaskAttachmentAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
-import com.icourt.alpha.adapter.baseadapter.adapterObserver.DataChangeAdapterObserver;
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.entity.bean.TaskAttachmentEntity;
 import com.icourt.alpha.entity.event.TaskActionEvent;
@@ -32,7 +31,6 @@ import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.interfaces.OnUpdateTaskListener;
 import com.icourt.alpha.utils.DateUtils;
-import com.icourt.alpha.utils.LogUtils;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.widget.dialog.BottomActionDialog;
 import com.icourt.api.RequestUtils;
@@ -40,6 +38,7 @@ import com.icourt.api.RequestUtils;
 import org.greenrobot.eventbus.EventBus;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -52,6 +51,13 @@ import butterknife.Unbinder;
 import cn.finalteam.galleryfinal.FunctionConfig;
 import cn.finalteam.galleryfinal.GalleryFinal;
 import cn.finalteam.galleryfinal.model.PhotoInfo;
+import io.reactivex.Observable;
+import io.reactivex.ObservableSource;
+import io.reactivex.Observer;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.Function;
+import io.reactivex.schedulers.Schedulers;
 import okhttp3.RequestBody;
 import retrofit2.Call;
 import retrofit2.Response;
@@ -67,6 +73,7 @@ import retrofit2.Response;
 public class TaskAttachmentFragment extends BaseFragment implements BaseRecyclerAdapter.OnItemClickListener, BaseRecyclerAdapter.OnItemLongClickListener {
     private static final String KEY_TASK_ID = "key_task_id";
     private static final String KEY_HAS_PERMISSION = "key_has_permission";
+    private static final String KEY_VALID = "key_valid";
     private static final int REQUEST_CODE_CAMERA = 1000;
     private static final int REQUEST_CODE_GALLERY = 1001;
     private static final int REQUEST_CODE_AT_MEMBER = 1002;
@@ -84,7 +91,7 @@ public class TaskAttachmentFragment extends BaseFragment implements BaseRecycler
     String path;
     TaskAttachmentAdapter taskAttachmentAdapter;
     OnUpdateTaskListener updateTaskListener;
-    boolean hasPermission;
+    boolean hasPermission, valid;
     @BindView(R.id.empty_layout)
     LinearLayout emptyLayout;
     @BindView(R.id.list_layout)
@@ -92,11 +99,12 @@ public class TaskAttachmentFragment extends BaseFragment implements BaseRecycler
     @BindView(R.id.empty_text)
     TextView emptyText;
 
-    public static TaskAttachmentFragment newInstance(@NonNull String taskId, boolean hasPermission) {
+    public static TaskAttachmentFragment newInstance(@NonNull String taskId, boolean hasPermission, boolean valid) {
         TaskAttachmentFragment taskAttachmentFragment = new TaskAttachmentFragment();
         Bundle bundle = new Bundle();
         bundle.putString(KEY_TASK_ID, taskId);
         bundle.putBoolean(KEY_HAS_PERMISSION, hasPermission);
+        bundle.putBoolean(KEY_VALID, valid);
         taskAttachmentFragment.setArguments(bundle);
         return taskAttachmentFragment;
     }
@@ -123,14 +131,14 @@ public class TaskAttachmentFragment extends BaseFragment implements BaseRecycler
     protected void initView() {
         taskId = getArguments().getString(KEY_TASK_ID);
         hasPermission = getArguments().getBoolean(KEY_HAS_PERMISSION);
+        valid = getArguments().getBoolean(KEY_VALID);
         recyclerview.setNestedScrollingEnabled(false);
         recyclerview.setLayoutManager(new LinearLayoutManager(getContext()));
-//        recyclerview.addItemDecoration(ItemDecorationUtils.getCommFull05Divider(getContext(), true, R.color.alpha_divider_color));
         recyclerview.setAdapter(taskAttachmentAdapter = new TaskAttachmentAdapter());
         taskAttachmentAdapter.setOnItemClickListener(this);
         taskAttachmentAdapter.setOnItemLongClickListener(this);
 
-        addAttachmentView.setVisibility(hasPermission ? View.VISIBLE : View.GONE);
+        addAttachmentView.setVisibility(hasPermission && valid ? View.VISIBLE : View.GONE);
         if (hasPermission) {
             getData(true);
             emptyText.setText("暂无附件");
@@ -188,11 +196,14 @@ public class TaskAttachmentFragment extends BaseFragment implements BaseRecycler
         @Override
         public void onHanlderSuccess(int reqeustCode, List<PhotoInfo> resultList) {
             if (resultList != null) {
-                for (PhotoInfo photoInfo : resultList) {
-                    if (photoInfo != null && !TextUtils.isEmpty(photoInfo.getPhotoPath())) {
-                        uploadAttachmentToTask(photoInfo.getPhotoPath());
+
+                List<String> paths = new ArrayList<>();
+                for (int i = 0; i < resultList.size(); i++) {
+                    if (resultList.get(i) != null && !TextUtils.isEmpty(resultList.get(i).getPhotoPath())) {
+                        paths.add(resultList.get(i).getPhotoPath());
                     }
                 }
+                uploadFiles(taskId, paths);
             }
         }
 
@@ -289,38 +300,64 @@ public class TaskAttachmentFragment extends BaseFragment implements BaseRecycler
     }
 
     /**
-     * 上传任务附件
+     * 批量上传文件
      *
-     * @param filePath
+     * @param filePaths 文件路径
      */
-    private void uploadAttachmentToTask(String filePath) {
-        LogUtils.e("filePath :   " + filePath);
-        if (TextUtils.isEmpty(filePath)) return;
-        File file = new File(filePath);
-        if (!file.exists()) {
-            showTopSnackBar("文件不存在啦");
-            return;
-        }
+    private void uploadFiles(final String taskId, final List<String> filePaths) {
+        if (TextUtils.isEmpty(taskId)) return;
+        if (filePaths == null && filePaths.isEmpty()) return;
         showLoadingDialog("正在上传...");
-        String key = "file\";filename=\"" + DateUtils.millis() + ".png";
-        Map<String, RequestBody> params = new HashMap<>();
-        params.put(key, RequestUtils.createImgBody(file));
-        getApi().taskAttachmentUpload(taskId, params).enqueue(new SimpleCallBack<JsonElement>() {
-            @Override
-            public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
-                dismissLoadingDialog();
-                showTopSnackBar("上传成功");
-                EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION));
-                getData(true);
-            }
+        Observable.just(filePaths)
+                .flatMap(new Function<List<String>, ObservableSource<JsonElement>>() {
+                    @Override
+                    public ObservableSource<JsonElement> apply(@io.reactivex.annotations.NonNull List<String> strings) throws Exception {
+                        List<Observable<JsonElement>> observables = new ArrayList<Observable<JsonElement>>();
+                        for (int i = 0; i < strings.size(); i++) {
+                            String filePath = strings.get(i);
+                            if (TextUtils.isEmpty(filePath)) {
+                                continue;
+                            }
+                            File file = new File(filePath);
+                            if (!file.exists()) {
+                                continue;
+                            }
+                            String key = "file\";filename=\"" + DateUtils.millis() + ".png";
+                            Map<String, RequestBody> params = new HashMap<>();
+                            params.put(key, RequestUtils.createImgBody(file));
+                            observables.add(getApi().taskAttachmentUploadObservable(taskId, params));
+                        }
+                        return Observable.concat(observables);
+                    }
+                })
+                .compose(this.<JsonElement>bindToLifecycle())
+                .subscribeOn(Schedulers.newThread())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Observer<JsonElement>() {
+                    @Override
+                    public void onSubscribe(@io.reactivex.annotations.NonNull Disposable disposable) {
 
-            @Override
-            public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
-                super.onFailure(call, t);
-                dismissLoadingDialog();
-                showTopSnackBar("上传失败");
-            }
-        });
+                    }
+
+                    @Override
+                    public void onNext(@io.reactivex.annotations.NonNull JsonElement jsonElement) {
+
+                    }
+
+                    @Override
+                    public void onError(@io.reactivex.annotations.NonNull Throwable throwable) {
+                        dismissLoadingDialog();
+                        showTopSnackBar("上传失败");
+                    }
+
+                    @Override
+                    public void onComplete() {
+                        dismissLoadingDialog();
+                        showTopSnackBar("上传成功");
+                        EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION));
+                        getData(true);
+                    }
+                });
     }
 
     /**
@@ -356,7 +393,9 @@ public class TaskAttachmentFragment extends BaseFragment implements BaseRecycler
         switch (requestCode) {
             case REQUEST_CODE_CAMERA:
                 if (resultCode == Activity.RESULT_OK) {
-                    uploadAttachmentToTask(path);
+                    if (!TextUtils.isEmpty(path)) {
+                        uploadFiles(taskId, Arrays.asList(path));
+                    }
                 }
                 break;
             default:
@@ -383,6 +422,7 @@ public class TaskAttachmentFragment extends BaseFragment implements BaseRecycler
             showTopSnackBar("对不起，您没有查看此文件的权限");
         }
     }
+
     /**
      * type=100 更新 KEY_HAS_PERMISSION
      *

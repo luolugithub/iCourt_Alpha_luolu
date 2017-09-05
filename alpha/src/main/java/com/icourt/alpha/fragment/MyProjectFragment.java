@@ -3,6 +3,7 @@ package com.icourt.alpha.fragment;
 import android.os.Bundle;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -71,6 +72,8 @@ public class MyProjectFragment extends BaseFragment {
     ProjectListAdapter projectListAdapter;
 
     boolean isFirstTimeIntoPage = true;
+    int status = 2;//默认为进行中
+    String matterType = "";
     LinearLayoutManager linearLayoutManager;
 
     public static MyProjectFragment newInstance(@QueryProjectType int projectType) {
@@ -100,6 +103,8 @@ public class MyProjectFragment extends BaseFragment {
         } else if (projectType == TYPE_MY_ATTENTION_PROJECT) {
             attorneyType = "";
             myStar = "1";
+            status = -1;
+            matterType = "";
             refreshLayout.setNoticeEmpty(R.mipmap.icon_placeholder_project, "暂无关注项目");
         } else if (projectType == TYPE_MY_PARTIC_PROJECT) {
             attorneyType = "O";
@@ -149,11 +154,46 @@ public class MyProjectFragment extends BaseFragment {
     }
 
     @Override
+    public void notifyFragmentUpdate(Fragment targetFrgament, int type, Bundle bundle) {
+        super.notifyFragmentUpdate(targetFrgament, type, bundle);
+        if (targetFrgament instanceof MyProjectFragment) {
+            if (type == 100) {//根据状态筛选
+                if (bundle != null) {
+                    status = bundle.getInt("status");
+                }
+            } else if (type == 101) {//根据类型筛选
+                if (bundle != null) {
+                    List<Integer> paramList = bundle.getIntegerArrayList(KEY_FRAGMENT_RESULT);
+                    if (paramList != null && paramList.size() > 0) {
+                        StringBuilder stringBuilder = new StringBuilder();
+                        for (Integer integer : paramList) {
+                            stringBuilder.append(String.valueOf(integer)).append(",");
+                        }
+                        matterType = stringBuilder.substring(0, stringBuilder.length() - 1);
+                    } else {
+                        matterType = "";
+                    }
+                }
+            }
+            if (projectType == TYPE_MY_ATTENTION_PROJECT) {
+                status = -1;
+                matterType = "";
+                attorneyType = "";
+            }
+            getData(true);
+        }
+    }
+
+    @Override
     protected void getData(final boolean isRefresh) {
         if (isRefresh) {
             pageIndex = 1;
         }
-        getApi().projectQueryAll(pageIndex, ActionConstants.DEFAULT_PAGE_SIZE, "name", "", "", "", attorneyType, myStar)
+        String sta = "";
+        if (status >= 0) {
+            sta = String.valueOf(status);
+        }
+        getApi().projectQueryAll(pageIndex, ActionConstants.DEFAULT_PAGE_SIZE, "name", "", sta, matterType, attorneyType, myStar)
                 .enqueue(new SimpleCallBack<List<ProjectEntity>>() {
                     @Override
                     public void onSuccess(Call<ResEntity<List<ProjectEntity>>> call, Response<ResEntity<List<ProjectEntity>>> response) {

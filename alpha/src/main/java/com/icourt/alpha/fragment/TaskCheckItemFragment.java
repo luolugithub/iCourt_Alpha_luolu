@@ -59,6 +59,7 @@ public class TaskCheckItemFragment extends BaseFragment
         TaskCheckItemAdapter.OnLoseFocusListener {
     private static final String KEY_TASK_ID = "key_task_id";
     private static final String KEY_HAS_PERMISSION = "key_has_permission";
+    private static final String KEY_VALID = "key_valid";
     Unbinder unbinder;
     @BindView(R.id.recyclerview)
     RecyclerView recyclerview;
@@ -70,7 +71,7 @@ public class TaskCheckItemFragment extends BaseFragment
     @BindView(R.id.check_item_add)
     ImageView checkItemAdd;
     OnUpdateTaskListener updateTaskListener;
-    boolean hasPermission;
+    boolean hasPermission, valid;
     @BindView(R.id.add_item_layout)
     LinearLayout addItemLayout;
     @BindView(R.id.empty_layout)
@@ -82,11 +83,12 @@ public class TaskCheckItemFragment extends BaseFragment
     @BindView(R.id.empty_text)
     TextView emptyText;
 
-    public static TaskCheckItemFragment newInstance(@NonNull String taskId, boolean hasPermission) {
+    public static TaskCheckItemFragment newInstance(@NonNull String taskId, boolean hasPermission, boolean valid) {
         TaskCheckItemFragment taskCheckItemFragment = new TaskCheckItemFragment();
         Bundle bundle = new Bundle();
         bundle.putString(KEY_TASK_ID, taskId);
         bundle.putBoolean(KEY_HAS_PERMISSION, hasPermission);
+        bundle.putBoolean(KEY_VALID, valid);
         taskCheckItemFragment.setArguments(bundle);
         return taskCheckItemFragment;
     }
@@ -113,6 +115,7 @@ public class TaskCheckItemFragment extends BaseFragment
     protected void initView() {
         taskId = getArguments().getString(KEY_TASK_ID);
         hasPermission = getArguments().getBoolean(KEY_HAS_PERMISSION);
+        valid = getArguments().getBoolean(KEY_VALID);
         nestedScrollView.setOnScrollChangeListener(new NestedScrollView.OnScrollChangeListener() {
             @Override
             public void onScrollChange(NestedScrollView v, int scrollX, int scrollY, int oldScrollX, int oldScrollY) {
@@ -122,14 +125,16 @@ public class TaskCheckItemFragment extends BaseFragment
         recyclerview.setNestedScrollingEnabled(false);
         recyclerview.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerview.setAdapter(taskCheckItemAdapter = new TaskCheckItemAdapter());
+        taskCheckItemAdapter.setValid(valid);
 //        recyclerview.addItemDecoration(ItemDecorationUtils.getCommFull05Divider(getContext(), true, R.color.alpha_divider_color));
         getData(false);
         if (hasPermission) {
-            addItemLayout.setVisibility(View.VISIBLE);
+            addItemLayout.setVisibility(valid ? View.VISIBLE : View.GONE);
             emptyText.setText("暂无检查项");
             taskCheckItemAdapter.setOnItemChildClickListener(this);
             taskCheckItemAdapter.setOnItemClickListener(this);
-            taskCheckItemAdapter.setOnLoseFocusListener(this);
+            if (valid)
+                taskCheckItemAdapter.setOnLoseFocusListener(this);
             checkItemEdit.setOnEditorActionListener(new TextView.OnEditorActionListener() {
                 @Override
                 public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
@@ -168,17 +173,17 @@ public class TaskCheckItemFragment extends BaseFragment
             public void onSuccess(Call<ResEntity<TaskCheckItemEntity>> call, Response<ResEntity<TaskCheckItemEntity>> response) {
                 if (getActivity() != null && !getActivity().isFinishing())
                     dismissLoadingDialog();
-                if (response.body().result.items != null) {
-                    taskCheckItemAdapter.bindData(false, response.body().result.items);
-                    if (!hasPermission) {
-                        listLayout.setVisibility(View.GONE);
-                        emptyLayout.setVisibility(View.VISIBLE);
+                if (listLayout != null) {
+                    if (response.body().result.items != null) {
+                        taskCheckItemAdapter.bindData(false, response.body().result.items);
+                        if (!hasPermission) {
+                            listLayout.setVisibility(View.GONE);
+                            emptyLayout.setVisibility(View.VISIBLE);
+                        } else {
+                            listLayout.setVisibility(View.VISIBLE);
+                            emptyLayout.setVisibility(View.GONE);
+                        }
                     } else {
-                        listLayout.setVisibility(View.VISIBLE);
-                        emptyLayout.setVisibility(View.GONE);
-                    }
-                } else {
-                    if (listLayout != null) {
                         listLayout.setVisibility(View.GONE);
                         emptyLayout.setVisibility(View.VISIBLE);
                     }
@@ -206,6 +211,7 @@ public class TaskCheckItemFragment extends BaseFragment
             }
         }
     }
+
     /**
      * type=100 更新 KEY_HAS_PERMISSION
      *
@@ -218,7 +224,7 @@ public class TaskCheckItemFragment extends BaseFragment
         super.notifyFragmentUpdate(targetFrgament, type, bundle);
         if (type == 100 && bundle != null) {
             hasPermission = bundle.getBoolean(KEY_HAS_PERMISSION, false);
-            if(listLayout==null) return;
+            if (listLayout == null) return;
             if (!hasPermission) {
                 listLayout.setVisibility(View.GONE);
                 emptyLayout.setVisibility(View.VISIBLE);
@@ -228,6 +234,7 @@ public class TaskCheckItemFragment extends BaseFragment
             }
         }
     }
+
     /**
      * 添加检查项
      */
@@ -241,7 +248,8 @@ public class TaskCheckItemFragment extends BaseFragment
                         String id = response.body().result.getAsString();
                         itemEntity.id = id;
                         taskCheckItemAdapter.addItem(itemEntity);
-                        checkItemEdit.setText("");
+                        if (checkItemEdit != null)
+                            checkItemEdit.setText("");
                         EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION));
                         updateCheckItemCount();
                     }
@@ -301,17 +309,19 @@ public class TaskCheckItemFragment extends BaseFragment
 
     @Override
     public void onItemChildClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
-        TaskCheckItemEntity.ItemEntity itemEntity = (TaskCheckItemEntity.ItemEntity) adapter.getItem(adapter.getRealPos(position));
-        showLoadingDialog(null);
-        switch (view.getId()) {
-            case R.id.check_item_checktext_tv:
-                itemEntity.state = !itemEntity.state;
-                finisCheckItem(itemEntity, adapter.getRealPos(position));
-                break;
-            case R.id.check_item_delete_image:
-                deleteCheckItem(itemEntity, adapter.getRealPos(position));
+        if (valid) {
+            TaskCheckItemEntity.ItemEntity itemEntity = (TaskCheckItemEntity.ItemEntity) adapter.getItem(adapter.getRealPos(position));
+            showLoadingDialog(null);
+            switch (view.getId()) {
+                case R.id.check_item_checktext_tv:
+                    itemEntity.state = !itemEntity.state;
+                    finisCheckItem(itemEntity, adapter.getRealPos(position));
+                    break;
+                case R.id.check_item_delete_image:
+                    deleteCheckItem(itemEntity, adapter.getRealPos(position));
 
-                break;
+                    break;
+            }
         }
     }
 
@@ -363,11 +373,13 @@ public class TaskCheckItemFragment extends BaseFragment
             public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
                 dismissLoadingDialog();
                 EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION));
-                itemEntity.name = editText.getText().toString();
-                taskCheckItemAdapter.updateItem(itemEntity);
-                if (editText.hasFocus()) {
-                    editText.setFocusable(false);
-                    editText.clearFocus();
+                if (editText != null) {
+                    itemEntity.name = editText.getText().toString();
+                    taskCheckItemAdapter.updateItem(itemEntity);
+                    if (editText.hasFocus()) {
+                        editText.setFocusable(false);
+                        editText.clearFocus();
+                    }
                 }
             }
 

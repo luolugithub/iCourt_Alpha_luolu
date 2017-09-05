@@ -20,12 +20,10 @@ import com.icourt.alpha.entity.bean.IMMessageCustomBody;
 import com.icourt.alpha.entity.event.UnReadEvent;
 import com.icourt.alpha.utils.IMUtils;
 import com.icourt.alpha.utils.JsonUtils;
-import com.icourt.alpha.utils.LogUtils;
 import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.view.bgabadgeview.BGABadgeTextView;
 import com.icourt.alpha.view.recyclerviewDivider.ChatItemDecoration;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
-import com.icourt.alpha.widget.nim.GlobalMessageObserver;
 import com.netease.nimlib.sdk.NIMClient;
 import com.netease.nimlib.sdk.RequestCallback;
 import com.netease.nimlib.sdk.msg.MessageBuilder;
@@ -38,6 +36,7 @@ import com.netease.nimlib.sdk.team.model.Team;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -237,9 +236,21 @@ public class AlphaSpecialHelperActivity extends ChatBaseActivity {
     }
 
     private AlphaSecialHeplerMsgEntity getAlphaBody(IMMessage message) {
+        JSONObject alphaJSONObject = null;
         try {
-            return JsonUtils.Gson2Bean(message.getAttachment().toJson(false), AlphaSecialHeplerMsgEntity.class);
+            String s = message.getAttachment().toJson(false);
+            alphaJSONObject = JsonUtils.getJSONObject(s);
+            if (alphaJSONObject.has("type")) {
+                String type = alphaJSONObject.getString("type");
+                //屏蔽审批消息
+                if (StringUtils.containsIgnoreCase(type, "APPRO_")) {
+                    return null;
+                }
+            }
+            return JsonUtils.Gson2Bean(s, AlphaSecialHeplerMsgEntity.class);
         } catch (Exception e) {
+            bugSync("AlphaHelper 解析异常2", StringUtils.throwable2string(e)
+                    + "\nalphaJSONObject:" + alphaJSONObject);
             e.printStackTrace();
         }
         return null;

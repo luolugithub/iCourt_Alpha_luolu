@@ -34,6 +34,10 @@ import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.ChatAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.constants.Const;
+import com.icourt.alpha.db.convertor.IConvertModel;
+import com.icourt.alpha.db.convertor.ListConvertor;
+import com.icourt.alpha.db.dbmodel.ContactDbModel;
+import com.icourt.alpha.db.dbservice.ContactDbService;
 import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.icourt.alpha.entity.bean.IMMessageCustomBody;
 import com.icourt.alpha.entity.bean.SFileImageInfoEntity;
@@ -80,7 +84,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 
 import butterknife.BindView;
@@ -90,6 +93,8 @@ import cn.finalteam.galleryfinal.FunctionConfig;
 import cn.finalteam.galleryfinal.GalleryFinal;
 import cn.finalteam.galleryfinal.model.PhotoInfo;
 import io.reactivex.functions.Consumer;
+import io.realm.RealmChangeListener;
+import io.realm.RealmResults;
 import retrofit2.Call;
 import retrofit2.Response;
 import sj.keyboard.adpater.EmoticonsAdapter;
@@ -136,6 +141,20 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
 
     //本地同步的联系人
     protected final List<GroupContactBean> localContactList = new ArrayList<>();
+    ContactDbService contactDbService;
+    RealmChangeListener<RealmResults<ContactDbModel>> realmResultsRealmChangeListener = new RealmChangeListener<RealmResults<ContactDbModel>>() {
+        @Override
+        public void onChange(RealmResults<ContactDbModel> contactDbModels) {
+            if (contactDbModels != null) {
+                localContactList.clear();
+                localContactList.addAll(ListConvertor.convertList(new ArrayList<IConvertModel<GroupContactBean>>(contactDbModels)));
+                if (recyclerView != null
+                        && chatAdapter != null) {
+                    chatAdapter.notifyDataSetChanged();
+                }
+            }
+        }
+    };
 
     MySelectPhotoLayout mySelectPhotoLayout;
     ChatAdapter chatAdapter;
@@ -218,7 +237,6 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
         ButterKnife.bind(this);
         initView();
         initEmoticonsKeyBoardBar();
-        getLocalContacts();
         if (getLocationMsgId() > 0) {
             getLocationCenterMsgId();
         } else {
@@ -371,21 +389,6 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
         }
     }
 
-    /**
-     * 获取本地联系人
-     */
-    private void getLocalContacts() {
-        queryAllContactFromDbAsync(new Consumer<List<GroupContactBean>>() {
-            @Override
-            public void accept(List<GroupContactBean> groupContactBeen) throws Exception {
-                if (groupContactBeen != null && !groupContactBeen.isEmpty()) {
-                    localContactList.clear();
-                    localContactList.addAll(groupContactBeen);
-                    chatAdapter.notifyDataSetChanged();
-                }
-            }
-        });
-    }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onMessageEvent(NoDisturbingEvent noDisturbingEvent) {
@@ -674,7 +677,8 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
         if (isIMLinkText(txt)) {
             sendIMLinkMsg(txt);
         } else {
-            if (txt.contains("@")) {
+            if (getIMChatType() == Const.CHAT_TYPE_TEAM
+                    && txt.contains("@")) {
                 if (txt.contains("@所有人")) {
                     sendAtMsg(txt, true, null);
                 } else {
@@ -770,6 +774,17 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
     @Override
     protected void initView() {
         super.initView();
+        //初始化数据
+        contactDbService = new ContactDbService(getLoginUserId());
+        RealmResults<ContactDbModel> contactDbModels = contactDbService.queryAll();
+        if (contactDbModels != null) {
+            localContactList.clear();
+            localContactList.addAll(ListConvertor.convertList(new ArrayList<IConvertModel<GroupContactBean>>(contactDbModels)));
+            contactDbModels.removeChangeListener(realmResultsRealmChangeListener);
+            contactDbModels.addChangeListener(realmResultsRealmChangeListener);
+        }
+
+
         setTitle(getIntent().getStringExtra(KEY_TITLE));
         ImageView titleActionImage2 = getTitleActionImage2();
         if (titleActionImage2 != null) {
@@ -1651,6 +1666,9 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
 
     @Override
     protected void onDestroy() {
+        if (contactDbService != null) {
+            contactDbService.releaseService();
+        }
         saveTextDraft();
         super.onDestroy();
     }

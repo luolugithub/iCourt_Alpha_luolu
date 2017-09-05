@@ -13,6 +13,7 @@ import com.icourt.alpha.db.dbservice.ContactDbService;
 import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.icourt.alpha.http.RetrofitServiceFactory;
 import com.icourt.alpha.http.httpmodel.ResEntity;
+import com.icourt.alpha.utils.BugUtils;
 import com.icourt.alpha.utils.LogUtils;
 import com.icourt.alpha.utils.LoginInfoUtils;
 
@@ -41,7 +42,7 @@ public class SyncDataService extends IntentService {
      *
      * @param context
      */
-    public static void startSysnContact(@NonNull Context context) {
+    public static void startSyncContact(@NonNull Context context) {
         if (context == null) return;
         Intent intent = new Intent(context, SyncDataService.class);
         intent.setAction(ACTION_SYNC_CONTACT);
@@ -52,7 +53,9 @@ public class SyncDataService extends IntentService {
     protected void onHandleIntent(@Nullable Intent intent) {
         if (intent != null) {
             if (TextUtils.equals(intent.getAction(), ACTION_SYNC_CONTACT)) {
-                syncContacts();
+                if (LoginInfoUtils.isUserLogin()) {
+                    syncContacts();
+                }
             }
         }
     }
@@ -62,13 +65,16 @@ public class SyncDataService extends IntentService {
             Response<ResEntity<List<GroupContactBean>>> execute = RetrofitServiceFactory
                     .getChatApiService()
                     .usersQuery().execute();
-            if (execute != null && execute.body() != null && execute.body().result != null) {
+            if (execute != null && execute.body() != null
+                    && execute.body().result != null) {
+                if (execute.body().result.isEmpty()) return;
                 ContactDbService contactDbService = new ContactDbService(LoginInfoUtils.getLoginUserId());
                 contactDbService.deleteAll();
                 contactDbService.insertOrUpdateAsyn(new ArrayList<IConvertModel<ContactDbModel>>(execute.body().result));
             }
-        } catch (Exception e) {
+        } catch (Throwable e) {
             e.printStackTrace();
+            BugUtils.bugSync("同步联系人异常", e);
             LogUtils.d("----------->SyncDataService syncContacts 失败:" + e);
         }
     }
