@@ -415,7 +415,7 @@ public class FolderListActivity extends FolderBaseActivity
             case R.id.titleAction:
                 new BottomActionDialog(getContext(),
                         null,
-                        Arrays.asList(getResources().getStringArray(R.array.sfile_folder_action_menu)),
+                        Arrays.asList(getResources().getStringArray(R.array.sfile_folder_action_menus_array)),
                         new BottomActionDialog.OnActionItemClickListener() {
                             @Override
                             public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
@@ -490,9 +490,9 @@ public class FolderListActivity extends FolderBaseActivity
         List<String> strings;
         if (folderDocumentAdapter.getItemCount() <= 0
                 || !TextUtils.equals(getRepoPermission(), PERMISSION_RW)) {
-            strings = Arrays.asList(getResources().getStringArray(R.array.sfile_folder_menu_r));
+            strings = Arrays.asList(getResources().getStringArray(R.array.sfile_folder_menus_r_array));
         } else {
-            strings = Arrays.asList(getResources().getStringArray(R.array.sfile_folder_menu_rw));
+            strings = Arrays.asList(getResources().getStringArray(R.array.sfile_folder_menus_rw_array));
         }
         new BottomActionDialog(getContext(),
                 null,
@@ -610,7 +610,7 @@ public class FolderListActivity extends FolderBaseActivity
             Uri picUri = Uri.fromFile(new File(path));
             SystemUtils.doTakePhotoAction(this, picUri, REQUEST_CODE_CAMERA);
         } else {
-            reqPermission(Manifest.permission.CAMERA, "我们需要拍照权限!", REQ_CODE_PERMISSION_CAMERA);
+            reqPermission(Manifest.permission.CAMERA, R.string.permission_rationale_camera, REQ_CODE_PERMISSION_CAMERA);
         }
     }
 
@@ -624,7 +624,7 @@ public class FolderListActivity extends FolderBaseActivity
                     .build();
             GalleryFinal.openGalleryMuti(REQUEST_CODE_GALLERY, config, mOnHanlderResultCallback);
         } else {
-            reqPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, "我们需要文件读写权限!", REQ_CODE_PERMISSION_ACCESS_FILE);
+            reqPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, R.string.permission_rationale_storage, REQ_CODE_PERMISSION_ACCESS_FILE);
         }
     }
 
@@ -657,7 +657,7 @@ public class FolderListActivity extends FolderBaseActivity
         if (TextUtils.isEmpty(filePath)) return;
         File file = new File(filePath);
         if (!file.exists()) {
-            showTopSnackBar("文件不存在");
+            showTopSnackBar(R.string.sfile_not_exist);
             return;
         }
         uploadFiles(Arrays.asList(filePath));
@@ -703,7 +703,7 @@ public class FolderListActivity extends FolderBaseActivity
      */
     private void uploadFiles(final List<String> filePaths, @NonNull final String serverUrl) {
         if (filePaths == null && filePaths.isEmpty()) return;
-        showLoadingDialog("上传中...");
+        showLoadingDialog(R.string.str_uploading);
         Observable.just(filePaths)
                 .flatMap(new Function<List<String>, ObservableSource<JsonElement>>() {
                     @Override
@@ -756,14 +756,14 @@ public class FolderListActivity extends FolderBaseActivity
             case REQ_CODE_PERMISSION_CAMERA:
                 if (grantResults != null) {
                     if (grantResults[0] == PackageManager.PERMISSION_DENIED) {
-                        showTopSnackBar("拍照权限被拒绝");
+                        showTopSnackBar(R.string.permission_denied_camera);
                     }
                 }
                 break;
             case REQ_CODE_PERMISSION_ACCESS_FILE:
                 if (grantResults != null) {
                     if (grantResults[0] == PackageManager.PERMISSION_DENIED) {
-                        showTopSnackBar("文件读写权限被拒绝");
+                        showTopSnackBar(R.string.permission_denied_storage);
                     }
                 }
                 break;
@@ -810,7 +810,7 @@ public class FolderListActivity extends FolderBaseActivity
         bottomBarAllSelectCb.setOnCheckedChangeListener(onCheckedChangeListener);
         folderDocumentAdapter.notifyDataSetChanged();
         updateActionViewStatus();
-        bottomBarSelectNumTv.setText(String.format("已选择: %s", selectedFolderDocuments.size()));
+        bottomBarSelectNumTv.setText(getString(R.string.sfile_file_already_selected, String.valueOf(selectedFolderDocuments.size())));
     }
 
     private void updateActionViewStatus() {
@@ -923,21 +923,21 @@ public class FolderListActivity extends FolderBaseActivity
         new BottomActionDialog(
                 getContext(),
                 null,
-                Arrays.asList("查看文件详情", "重命名", "共享", "复制", "移动", "删除"),
+                Arrays.asList(getResources().getStringArray(R.array.sfile_file_menus_array)),
                 new BottomActionDialog.OnActionItemClickListener() {
                     @Override
                     public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
                         dialog.dismiss();
                         String action = adapter.getItem(position);
-                        if (TextUtils.equals(action, "查看文件详情")) {
+                        if (TextUtils.equals(action, getString(R.string.sfile_file_details))) {
                             lookDetails(item);
-                        } else if (TextUtils.equals(action, "重命名")) {
+                        } else if (TextUtils.equals(action, getString(R.string.sfile_file_rename))) {
                             FolderRenameActivity.launch(
                                     getContext(),
                                     item,
                                     getSeaFileRepoId(),
                                     getSeaFileDirPath());
-                        } else if (TextUtils.equals(action, "共享")) {
+                        } else if (TextUtils.equals(action, getString(R.string.sfile_file_share))) {
                             if (item.isDir()) {
                                 FolderDetailDialogFragment.show(
                                         getSeaFileRepoId(),
@@ -957,15 +957,15 @@ public class FolderListActivity extends FolderBaseActivity
                                         getRepoPermission(),
                                         getSupportFragmentManager());
                             }
-                        } else if (TextUtils.equals(action, "复制")) {
+                        } else if (TextUtils.equals(action, getString(R.string.sfile_file_copy))) {
                             ArrayList<FolderDocumentEntity> folderDocumentEntities = new ArrayList<>();
                             folderDocumentEntities.add(item);
                             showFolderTargetListDialogFragment(Const.FILE_ACTION_COPY, folderDocumentEntities);
-                        } else if (TextUtils.equals(action, "移动")) {
+                        } else if (TextUtils.equals(action, getString(R.string.sfile_file_move))) {
                             ArrayList<FolderDocumentEntity> folderDocumentEntities1 = new ArrayList<>();
                             folderDocumentEntities1.add(item);
                             showFolderTargetListDialogFragment(Const.FILE_ACTION_MOVE, folderDocumentEntities1);
-                        } else if (TextUtils.equals(action, "删除")) {
+                        } else if (TextUtils.equals(action, getString(R.string.sfile_file_delete))) {
                             HashSet<FolderDocumentEntity> objects = new HashSet<>();
                             objects.add(item);
                             showDeleteComfirmDialog(objects);
@@ -1023,7 +1023,7 @@ public class FolderListActivity extends FolderBaseActivity
      */
     private void deleteFolderOrDocuments(final Set<FolderDocumentEntity> items) {
         if (items == null || items.isEmpty()) return;
-        showLoadingDialog("删除中...");
+        showLoadingDialog(R.string.str_deleting);
         Observable.just(items)
                 .flatMap(new Function<Set<FolderDocumentEntity>, ObservableSource<JsonObject>>() {
                     @Override
@@ -1090,8 +1090,8 @@ public class FolderListActivity extends FolderBaseActivity
     private void showDeleteComfirmDialog(BottomActionDialog.OnActionItemClickListener l) {
         new BottomActionDialog(
                 getContext(),
-                "删除后可以从回收站找回,确定删除?",
-                Arrays.asList("删除"),
+                getString(R.string.sfile_delete_confirm),
+                Arrays.asList(getString(R.string.str_delete)),
                 l).show();
     }
 

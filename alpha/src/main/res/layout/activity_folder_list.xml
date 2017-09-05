@@ -92,7 +92,7 @@
                 android:button="@null"
                 android:drawableLeft="@drawable/sl_checkbox"
                 android:drawablePadding="10dp"
-                android:text="全选"
+                android:text="@string/str_check_all"
                 android:textColor="@color/alpha_font_color_black" />
 
             <android.support.v4.widget.Space
@@ -110,7 +110,7 @@
                 android:paddingLeft="18dp"
                 android:paddingRight="18dp"
                 android:paddingTop="7dp"
-                android:text="复制"
+                android:text="@string/str_copy"
                 android:textColor="@color/sl_black_2_gray"
                 android:textSize="@dimen/alpha_font_size_mini_medium" />
 
@@ -125,7 +125,7 @@
                 android:paddingLeft="18dp"
                 android:paddingRight="18dp"
                 android:paddingTop="7dp"
-                android:text="移动"
+                android:text="@string/str_move"
                 android:textColor="@color/sl_black_2_gray"
                 android:textSize="@dimen/alpha_font_size_mini_medium" />
 
@@ -140,7 +140,7 @@
                 android:paddingLeft="18dp"
                 android:paddingRight="18dp"
                 android:paddingTop="7dp"
-                android:text="删除"
+                android:text="@string/str_delete"
                 android:textColor="@color/sl_black_2_gray"
                 android:textSize="@dimen/alpha_font_size_mini_medium" />
 

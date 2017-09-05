@@ -346,9 +346,9 @@ public class RepoListFragment extends BaseFragment
     private void showDocumentActionDialog(final int pos) {
         RepoEntity item = repoAdapter.getItem(pos);
         if (item == null) return;
-        List<String> menus = Arrays.asList(getResources().getStringArray(R.array.repo_action_menu_rw));
+        List<String> menus = Arrays.asList(getResources().getStringArray(R.array.repo_action_menus_rw_array));
         if (isDefaultReop(item.repo_id)) {
-            menus = Arrays.asList(getResources().getStringArray(R.array.repo_action_menu_r));
+            menus = Arrays.asList(getResources().getStringArray(R.array.repo_action_menus_r_array));
         }
         new BottomActionDialog(getContext(),
                 null,

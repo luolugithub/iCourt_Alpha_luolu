@@ -10,6 +10,14 @@
 
     <string name="str_finish">完成</string>
     <string name="str_rename">重命名</string>
+    <string name="str_copy">复制</string>
+    <string name="str_move">移动</string>
+    <string name="str_uploading">上传中...</string>
+
+
+    <string name="str_check_all">全选</string>
+    <string name="str_check_reverse">反选</string>
 
     <string name="str_sorting">排序中...</string>
+
 </resources>

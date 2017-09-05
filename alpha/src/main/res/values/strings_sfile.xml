@@ -6,21 +6,21 @@
     <string name="repo_share_empty">没有共享给我的资料库</string>
     <string name="repo_lawfirm_empty">尚未建立资料库</string>
 
-    <string-array name="repo_type">
+    <string-array name="repo_type_array">
         <item>我的</item>
         <item>共享给我的</item>
         <item>律所</item>
         <item>项目</item>
     </string-array>
 
-    <string-array name="repo_action_menu_rw">
+    <string-array name="repo_action_menus_rw_array">
         <item>查看资料库详情</item>
         <item>重命名</item>
         <item>@string/str_rename</item>
         <item>@string/str_delete</item>
     </string-array>
 
-    <string-array name="repo_action_menu_r">
+    <string-array name="repo_action_menus_r_array">
         <item>查看资料库详情</item>
         <item>@string/str_rename</item>
         <item>内部共享</item>
@@ -39,13 +39,13 @@
     <string name="sfile_menu_recycle_bin">回收站</string>
     <string name="sfile_menu_batch_operation">批量操作</string>
 
-    <string-array name="sfile_folder_menu_rw">
+    <string-array name="sfile_folder_menus_rw_array">
         <item>@string/sfile_menu_batch_operation</item>
         <item>@string/sfile_menu_repo_details</item>
         <item>@string/sfile_menu_recycle_bin</item>
     </string-array>
 
-    <string-array name="sfile_folder_menu_r">
+    <string-array name="sfile_folder_menus_r_array">
         <item>@string/sfile_menu_repo_details</item>
         <item>@string/sfile_menu_recycle_bin</item>
     </string-array>
@@ -55,10 +55,29 @@
     <string name="sfile_select_from_album">从相册选取</string>
     <string name="sfile_select_from_camera">拍照</string>
 
-    <string-array name="sfile_folder_action_menu">
+    <string-array name="sfile_folder_action_menus_array">
         <item>@string/sfile_create_folder</item>
         <item>@string/sfile_upload</item>
         <item>@string/sfile_select_from_album</item>
         <item>@string/sfile_select_from_camera</item>
     </string-array>
+    <string name="sfile_delete_confirm">删除后可以从回收站找回,确定删除?</string>
+
+    <string name="sfile_file_details">查看文件详情</string>
+    <string name="sfile_file_rename">@string/str_rename</string>
+    <string name="sfile_file_share">共享</string>
+    <string name="sfile_file_copy">@string/str_copy</string>
+    <string name="sfile_file_move">@string/str_move</string>
+    <string name="sfile_file_delete">@string/str_delete</string>
+
+    <string-array name="sfile_file_menus_array">
+        <item>@string/sfile_file_details</item>
+        <item>@string/sfile_file_rename</item>
+        <item>@string/sfile_file_share</item>
+        <item>@string/sfile_file_copy</item>
+        <item>@string/sfile_file_move</item>
+        <item>@string/sfile_file_delete</item>
+    </string-array>
+
+    <string name="sfile_not_exist">文件不存在</string>
 </resources>

@@ -60,7 +60,7 @@ public class TabDocumentsFragment extends BaseFragment {
         viewPager.setAdapter(baseFragmentAdapter = new BaseFragmentAdapter(getChildFragmentManager()));
         tabLayout.setupWithViewPager(viewPager);
         baseFragmentAdapter.bindTitle(true,
-                Arrays.asList(getResources().getStringArray(R.array.repo_type)));
+                Arrays.asList(getResources().getStringArray(R.array.repo_type_array)));
         baseFragmentAdapter.bindData(true,
                 Arrays.asList(
                         RepoListFragment.newInstance(SFileConfig.REPO_MINE),
