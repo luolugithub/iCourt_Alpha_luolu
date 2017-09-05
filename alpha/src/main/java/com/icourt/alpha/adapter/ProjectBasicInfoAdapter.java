@@ -27,6 +27,7 @@ public class ProjectBasicInfoAdapter extends BaseArrayRecyclerAdapter<ProjectBas
 
     private static final int CLIENT_TYPE = 0;//客户type
     private static final int OTHER_TYPE = 1;//其他type
+    private static final int NAME_AND_CONTENT_TYPE = 2;//项目名称、项目备注item
     private List<ProjectDetailEntity.ClientsBean> clientsBeens = new ArrayList<>();
 
 
@@ -39,6 +40,8 @@ public class ProjectBasicInfoAdapter extends BaseArrayRecyclerAdapter<ProjectBas
         ProjectBasicItemEntity entity = getItem(position);
         if (entity.type == Const.PROJECT_CLIENT_TYPE) {
             return CLIENT_TYPE;
+        } else if (entity.type == Const.PROJECT_NAME_TYPE || entity.type == Const.PROJECT_REMARK_TYPE) {
+            return NAME_AND_CONTENT_TYPE;
         }
         return OTHER_TYPE;
     }
@@ -48,6 +51,8 @@ public class ProjectBasicInfoAdapter extends BaseArrayRecyclerAdapter<ProjectBas
         switch (viewtype) {
             case CLIENT_TYPE:
                 return R.layout.project_detail_item_client_layout;
+            case NAME_AND_CONTENT_TYPE:
+                return R.layout.project_detail_item_name_and_content_layout;
             case OTHER_TYPE:
                 return R.layout.adapter_item_project_basic_info_layout;
         }
@@ -63,10 +68,10 @@ public class ProjectBasicInfoAdapter extends BaseArrayRecyclerAdapter<ProjectBas
             iconView.setImageResource(getImageByType(projectBasicItemEntity.type));
         iconView.setVisibility(resourcId > 0 ? View.VISIBLE : View.GONE);
         keyView.setText(projectBasicItemEntity.key);
-        if (getItemViewType(position) == CLIENT_TYPE) {
+        ImageView rightView = holder.obtainView(R.id.arrow_right_iv);
+        rightView.setVisibility(isShowRightView(projectBasicItemEntity.type) ? View.VISIBLE : View.GONE);
+        if (getItemViewType(position) == CLIENT_TYPE) {//客户
             RecyclerView recyclerView = holder.obtainView(R.id.client_recyclerview);
-            ImageView rightView = holder.obtainView(R.id.arrow_right_iv);
-            rightView.setVisibility(View.GONE);
             ProjectClientAdapter projectClientAdapter = null;
             if (recyclerView.getLayoutManager() == null) {
                 LinearLayoutManager layoutManager = new LinearLayoutManager(recyclerView.getContext());
@@ -76,10 +81,11 @@ public class ProjectBasicInfoAdapter extends BaseArrayRecyclerAdapter<ProjectBas
             }
             projectClientAdapter = (ProjectClientAdapter) recyclerView.getAdapter();
             projectClientAdapter.bindData(true, clientsBeens);
-        } else {
+        } else if (getItemViewType(position) == NAME_AND_CONTENT_TYPE) { //名称、备注
+            TextView valueView = holder.obtainView(R.id.item_content_tv);
+            valueView.setText(projectBasicItemEntity.value);
+        } else { //其他信息
             TextView valueView = holder.obtainView(R.id.value_name_tv);
-            ImageView rightView = holder.obtainView(R.id.arrow_right_iv);
-            rightView.setVisibility(isShowRightView(projectBasicItemEntity.type) ? View.VISIBLE : View.GONE);
             valueView.setText(projectBasicItemEntity.value);
             if (projectBasicItemEntity.type == Const.PROJECT_DEPARTMENT_TYPE) {
                 valueView.setMaxEms(5);
@@ -96,10 +102,10 @@ public class ProjectBasicInfoAdapter extends BaseArrayRecyclerAdapter<ProjectBas
      */
     private boolean isShowRightView(int type) {
         switch (type) {
+            case Const.PROJECT_NAME_TYPE://项目名称
+            case Const.PROJECT_REMARK_TYPE://项目备注
             case Const.PROJECT_CLIENT_TYPE://客户
             case Const.PROJECT_TIME_TYPE://时间
-//            case Const.PROJECT_CASEPROCESS_TYPE://程序
-//            case Const.PROJECT_PRICE_TYPE://标的
             case Const.PROJECT_CASENO_TYPE://案由号码
             case Const.PROJECT_TYPE_TYPE://项目类型
                 return false;
@@ -114,6 +120,8 @@ public class ProjectBasicInfoAdapter extends BaseArrayRecyclerAdapter<ProjectBas
                 return R.mipmap.project_name_icon;
             case Const.PROJECT_TYPE_TYPE://项目类型
                 return R.mipmap.project_type_icon;
+            case Const.PROJECT_REMARK_TYPE://项目备注
+                return R.mipmap.project_detail_icon;
             case Const.PROJECT_DEPARTMENT_TYPE://负责部门
                 return R.mipmap.project_department_icon;
             case Const.PROJECT_CLIENT_TYPE://客户

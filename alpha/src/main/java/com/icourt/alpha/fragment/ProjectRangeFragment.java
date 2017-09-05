@@ -94,7 +94,7 @@ public class ProjectRangeFragment extends BaseFragment implements BaseRecyclerAd
     public void notifyFragmentUpdate(Fragment targetFrgament, int type, Bundle bundle) {
         super.notifyFragmentUpdate(targetFrgament, type, bundle);
         if (bundle == null) return;
-        projectProcessesEntity = (ProjectProcessesEntity) getArguments().getSerializable(KEY_PROJECT_PROCESSES);
+        projectProcessesEntity = (ProjectProcessesEntity) bundle.getSerializable(KEY_PROJECT_PROCESSES);
         setDataToView(projectProcessesEntity);
     }
 

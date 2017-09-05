@@ -89,10 +89,6 @@ public class ProjectDetailFragment extends BaseFragment implements BaseRecyclerA
     RecyclerView basicTopRecyclerview;
     @BindView(R.id.project_member_layout)
     LinearLayout projectMemberLayout;
-    @BindView(R.id.project_service_content)
-    TextView projectServiceContent;
-    @BindView(R.id.service_content_layout)
-    LinearLayout serviceContentLayout;
     @BindView(R.id.procedure_layout)
     LinearLayout procedureLayout;
 
@@ -189,6 +185,7 @@ public class ProjectDetailFragment extends BaseFragment implements BaseRecyclerA
             }
             setGroupsData(basicItemEntities);//负责部门
             setAttorneysData(basicItemEntities);//案源律师
+            setKeyValueData(basicItemEntities, "项目备注", projectDetailBean.remark, Const.PROJECT_REMARK_TYPE);
 
             if (projectDetailBean.beginDate > 0 && projectDetailBean.endDate > 0) {
                 setKeyValueData(basicItemEntities, "项目时间", String.format("%s - %s",
@@ -210,12 +207,6 @@ public class ProjectDetailFragment extends BaseFragment implements BaseRecyclerA
                 projectMemberLayout.setVisibility(View.GONE);
             }
             projectMemberAdapter.setOnItemClickListener(this);
-            if (!TextUtils.isEmpty(projectDetailBean.remark)) {//服务内容
-                serviceContentLayout.setVisibility(View.VISIBLE);
-                projectServiceContent.setText(projectDetailBean.remark);
-            } else {
-                serviceContentLayout.setVisibility(View.GONE);
-            }
             if (projectDetailBean.matterType == 0) {//争议解决
                 getRangeData(projectDetailBean.pkId);
             } else {
@@ -415,7 +406,6 @@ public class ProjectDetailFragment extends BaseFragment implements BaseRecyclerA
     }
 
     @OnClick({R.id.project_add_routine,
-            R.id.service_content_layout,
             R.id.project_member_layout,
             R.id.project_member_recyclerview,
             R.id.project_member_childlayout})
@@ -424,12 +414,6 @@ public class ProjectDetailFragment extends BaseFragment implements BaseRecyclerA
         switch (v.getId()) {
             case R.id.project_add_routine:
                 showTopSnackBar("添加程序信息");
-                break;
-            case R.id.service_content_layout://项目备注
-                if (!TextUtils.isEmpty(projectServiceContent.getText())) {
-                    String remark = projectServiceContent.getText().toString();
-                    ProjectBasicTextInfoActivity.launch(getContext(), "项目备注", remark, Const.PROJECT_REMARK_TYPE);
-                }
                 break;
             case R.id.project_member_layout:
             case R.id.project_member_childlayout:
@@ -448,8 +432,9 @@ public class ProjectDetailFragment extends BaseFragment implements BaseRecyclerA
             ProjectBasicItemEntity entity = (ProjectBasicItemEntity) adapter.getItem(position);
             switch (entity.type) {
                 case Const.PROJECT_NAME_TYPE:
+                case Const.PROJECT_REMARK_TYPE:
                 case Const.PROJECT_NUMBER_TYPE:
-                    ProjectBasicTextInfoActivity.launch(view.getContext(),entity.key, entity.value, entity.type);
+                    ProjectBasicTextInfoActivity.launch(view.getContext(), entity.key, entity.value, entity.type);
                     break;
                 case Const.PROJECT_ANYUAN_LAWYER_TYPE://案源律师
                     ProjectMembersActivity.launch(view.getContext(), projectDetailBean.attorneys, Const.PROJECT_ANYUAN_LAWYER_TYPE);

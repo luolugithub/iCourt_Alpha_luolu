@@ -1,5 +1,6 @@
 package com.icourt.alpha.adapter;
 
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.TextView;
 
@@ -55,6 +56,7 @@ public class ProjectJudgeAdapter<T> extends BaseArrayRecyclerAdapter<T> {
         } else if (t instanceof ProjectProcessesEntity.ExtraBean.ValuesBean) {
             ProjectProcessesEntity.ExtraBean.ValuesBean valuesBean = (ProjectProcessesEntity.ExtraBean.ValuesBean) t;
             nameview.setText(valuesBean.text);
+            phoneview.setVisibility(TextUtils.isEmpty(valuesBean.phone) ? View.GONE : View.VISIBLE);
             phoneview.setText(valuesBean.phone);
         }
     }
