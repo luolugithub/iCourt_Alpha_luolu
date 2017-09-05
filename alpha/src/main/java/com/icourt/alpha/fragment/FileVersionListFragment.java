@@ -133,7 +133,7 @@ public class FileVersionListFragment extends SeaFileBaseFragment implements Base
             protected void updateUI() {
                 if (refreshLayout != null) {
                     refreshLayout.enableEmptyView(fileVersionAdapter.getItemCount() <= 0);
-                    emptyView.setText("暂无历史版本");
+                    emptyView.setText(R.string.sfile_version_list_empty);
                 }
             }
         });
@@ -264,7 +264,7 @@ public class FileVersionListFragment extends SeaFileBaseFragment implements Base
         if (item == null) return;
         new BottomActionDialog(getContext(),
                 null,
-                Arrays.asList("回滚到历史版本"),
+                Arrays.asList(getString(R.string.sfile_backspace_confirm)),
                 new BottomActionDialog.OnActionItemClickListener() {
                     @Override
                     public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
@@ -282,7 +282,7 @@ public class FileVersionListFragment extends SeaFileBaseFragment implements Base
      */
     private void restoreFile(FileVersionEntity item) {
         if (item == null) return;
-        showLoadingDialog("回退中...");
+        showLoadingDialog(R.string.sfile_backspacing);
         getSFileApi().fileRetroversion(
                 getArguments().getString(KEY_SEA_FILE_FROM_REPO_ID),
                 getArguments().getString(KEY_SEA_FILE_FROM_FILE_PATH),
@@ -294,10 +294,10 @@ public class FileVersionListFragment extends SeaFileBaseFragment implements Base
                         dismissLoadingDialog();
                         if (response.body().has("success")
                                 && response.body().get("success").getAsBoolean()) {
-                            showToast("回退成功");
+                            showToast(R.string.sfile_backspace_success);
                             getData(true);
                         } else {
-                            showToast("回退失败");
+                            showToast(R.string.sfile_backspace_fail);
                         }
                     }
 

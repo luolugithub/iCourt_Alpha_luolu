@@ -103,4 +103,48 @@
     <string name="sfile_recovery_fail">文件恢复失败</string>
 
 
+    <string name="sfile_backspace_confirm">回滚到历史版本</string>
+    <string name="sfile_backspacing">回退中...</string>
+    <string name="sfile_backspace_success">回退成功</string>
+    <string name="sfile_backspace_fail">回退失败</string>
+
+    <string name="sfile_version_list_empty">暂无历史版本</string>
+
+
+    <string name="sfile_link_already_copied">已复制</string>
+    <string name="sfile_link_delete_confirm">删除链接会导致已分享的链接失效</string>
+
+    <string name="sfile_link_upload_create">生成上传链接</string>
+    <string name="sfile_link_create_fail">创建共享链接失败</string>
+    <string name="sfile_link_upload_created">已生成上传链接</string>
+    <string name="sfile_link_upload_delete">删除上传链接</string>
+    <string name="sfile_link_download_create">生成下载链接</string>
+    <string name="sfile_link_download_created">已生成下载链接</string>
+    <string name="sfile_link_download_delete">删除下载链接</string>
+
+    <string name="sfile_link_access_password">访问密码</string>
+    <string name="sfile_link_access_password_confirm">是否需要访问密码?</string>
+    <string name="sfile_link_password_auto_generation">自动生成</string>
+    <string name="sfile_link_password_null">不需要</string>
+    <string name="sfile_link_password_generation">生成</string>
+
+
+    <string name="sfile_link_limit_date">过期时间</string>
+    <string name="sfile_link_limit_upload_date">上传链接有效期</string>
+    <string name="sfile_link_limit_download_date">下载链接有效期</string>
+    <string name="sfile_link_limit_date_0">永不过期</string>
+    <string name="sfile_link_limit_date_1">1天有效期</string>
+    <string name="sfile_link_limit_date_5">5天有效期</string>
+    <string name="sfile_link_limit_date_7">7天有效期</string>
+    <string name="sfile_link_limit_date_14">14天有效期</string>
+
+    <string-array name="sfile_link_limit_date_array">
+        <item>@string/sfile_link_limit_date_0</item>
+        <item>@string/sfile_link_limit_date_1</item>
+        <item>@string/sfile_link_limit_date_5</item>
+        <item>@string/sfile_link_limit_date_7</item>
+        <item>@string/sfile_link_limit_date_14</item>
+    </string-array>
+
+
 </resources>

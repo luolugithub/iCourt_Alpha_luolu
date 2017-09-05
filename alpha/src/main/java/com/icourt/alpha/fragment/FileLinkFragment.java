@@ -2,6 +2,7 @@ package com.icourt.alpha.fragment;
 
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -48,6 +49,18 @@ public class FileLinkFragment extends BaseFragment {
     protected static final String KEY_SEA_FILE_FROM_REPO_ID = "seaFileFromRepoId";//原仓库id
     protected static final String KEY_SEA_FILE_FROM_FILE_PATH = "seaFileFromFilePath";//原文件路径
     protected static final String KEY_SEA_FILE_LINK_TYPE = "seaFileLinkType";//文件链接类型
+    protected static final String KEY_SEA_FILE_REPO_PERMISSION = "seaFileRepoPermission";//repo的权限
+
+    protected static final int LINK_TYPE_DOWNLOAD = 0;//下载链接类型
+    protected static final int LINK_TYPE_UPLOAD = 1;//上传链接类型
+
+    @IntDef({LINK_TYPE_DOWNLOAD,
+            LINK_TYPE_UPLOAD})
+    public @interface LINK_TYPE {
+
+    }
+
+
     @BindView(R.id.file_access_pwd_tv)
     TextView fileAccessPwdTv;
     @BindView(R.id.file_access_time_limit_tv)
@@ -62,9 +75,11 @@ public class FileLinkFragment extends BaseFragment {
     TextView fileLinkCreateTv;
     @BindView(R.id.file_share_link_title_tv)
     TextView fileShareLinkTitleTv;
-    protected static final String KEY_SEA_FILE_REPO_PERMISSION = "seaFileRepoPermission";//repo的权限
     @BindView(R.id.file_link_delete_tv)
     TextView fileLinkDeleteTv;
+
+    @LINK_TYPE
+    int linkType;
 
     @Nullable
     @Override
@@ -89,7 +104,7 @@ public class FileLinkFragment extends BaseFragment {
     public static FileLinkFragment newInstance(
             String fromRepoId,
             String fromRepoFilePath,
-            int linkType,
+            @LINK_TYPE int linkType,
             @SFileConfig.FILE_PERMISSION String repoPermission) {
         FileLinkFragment fragment = new FileLinkFragment();
         Bundle args = new Bundle();
@@ -114,6 +129,17 @@ public class FileLinkFragment extends BaseFragment {
 
     @Override
     protected void initView() {
+        switch (getArguments().getInt(KEY_SEA_FILE_LINK_TYPE)) {
+            case LINK_TYPE_DOWNLOAD:
+                linkType = LINK_TYPE_DOWNLOAD;
+                break;
+            case LINK_TYPE_UPLOAD:
+                linkType = LINK_TYPE_UPLOAD;
+                break;
+            default:
+                linkType = LINK_TYPE_UPLOAD;
+                break;
+        }
         getData(true);
     }
 
@@ -139,28 +165,28 @@ public class FileLinkFragment extends BaseFragment {
             fileLinkCreateTv.setVisibility(View.GONE);
             fileLinkDeleteTv.setVisibility(View.VISIBLE);
 
-            if (getArguments().getInt(KEY_SEA_FILE_LINK_TYPE) == 0) {
-                fileShareLinkTitleTv.setText("已生成下载链接");
-                fileLinkDeleteTv.setText("删除下载链接");
+            if (linkType == LINK_TYPE_DOWNLOAD) {
+                fileShareLinkTitleTv.setText(R.string.sfile_link_download_created);
+                fileLinkDeleteTv.setText(R.string.sfile_link_download_delete);
             } else {
-                fileShareLinkTitleTv.setText("已生成上传链接");
-                fileLinkDeleteTv.setText("删除上传链接");
+                fileShareLinkTitleTv.setText(R.string.sfile_link_upload_created);
+                fileLinkDeleteTv.setText(R.string.sfile_link_upload_delete);
             }
-            fileAccessPwdTv.setText(sFileLinkInfoEntity.isNeedAccessPwd() ? sFileLinkInfoEntity.password : "不需要");
+            fileAccessPwdTv.setText(sFileLinkInfoEntity.isNeedAccessPwd() ? sFileLinkInfoEntity.password : getString(R.string.sfile_link_password_null));
             linkCopyTv.setText(sFileLinkInfoEntity.isNeedAccessPwd() ? "复制链接和密码" : "复制链接");
-            fileAccessTimeLimitTv.setText(sFileLinkInfoEntity.expireTime <= 0 ? "永不过期" : DateUtils.getyyyy_MM_dd(sFileLinkInfoEntity.expireTime));
+            fileAccessTimeLimitTv.setText(sFileLinkInfoEntity.expireTime <= 0 ? getString(R.string.sfile_link_limit_date_0) : DateUtils.getyyyy_MM_dd(sFileLinkInfoEntity.expireTime));
             fileShareLinkTv.setText(sFileLinkInfoEntity.getRealShareLink());
         } else {
             fileLinkCreateTv.setVisibility(View.VISIBLE);
             fileLinkDeleteTv.setVisibility(View.GONE);
 
-            fileAccessTimeLimitTv.setText("7天有效期");
+            fileAccessTimeLimitTv.setText(getString(R.string.sfile_link_limit_date_7));
             fileShareLinkTv.setText("");
-            fileAccessPwdTv.setText("自动生成");
-            if (getArguments().getInt(KEY_SEA_FILE_LINK_TYPE) == 0) {
-                fileShareLinkTitleTv.setText("生成下载链接");
+            fileAccessPwdTv.setText(R.string.sfile_link_password_generation);
+            if (linkType == LINK_TYPE_DOWNLOAD) {
+                fileShareLinkTitleTv.setText(R.string.sfile_link_download_create);
             } else {
-                fileShareLinkTitleTv.setText("生成上传链接");
+                fileShareLinkTitleTv.setText(R.string.sfile_link_upload_create);
             }
             linkCopyTv.setVisibility(View.GONE);
         }
@@ -179,7 +205,7 @@ public class FileLinkFragment extends BaseFragment {
                             SystemUtils.copyToClipboard(getContext(),
                                     "pwd",
                                     sFileLinkInfoEntity.password);
-                            showToast("已复制");
+                            showToast(R.string.sfile_link_already_copied);
                         }
                     });
                 }
@@ -193,7 +219,7 @@ public class FileLinkFragment extends BaseFragment {
                             SystemUtils.copyToClipboard(getContext(),
                                     "link",
                                     sFileLinkInfoEntity.getRealShareLink());
-                            showToast("已复制");
+                            showToast(R.string.sfile_link_already_copied);
                         }
                     });
                 }
@@ -204,7 +230,7 @@ public class FileLinkFragment extends BaseFragment {
 
     private void showCopyMenuDialog(DialogInterface.OnClickListener listener) {
         new AlertListDialog.ListBuilder(getContext())
-                .setItems(new String[]{"复制"}, listener)
+                .setItems(new String[]{getString(R.string.str_copy)}, listener)
                 .show();
     }
 
@@ -252,8 +278,8 @@ public class FileLinkFragment extends BaseFragment {
     private void showDeleteFileConfirmDialog() {
         if (sFileLinkInfoEntity == null) return;
         new BottomActionDialog(getContext(),
-                "删除链接会导致已分享的链接失效",
-                Arrays.asList("删除"),
+                getString(R.string.sfile_link_delete_confirm),
+                Arrays.asList(getString(R.string.str_delete)),
                 new BottomActionDialog.OnActionItemClickListener() {
                     @Override
                     public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
@@ -268,9 +294,13 @@ public class FileLinkFragment extends BaseFragment {
      * 选择过期时间限制
      */
     private void showSelectTimeLimit() {
+        String noticeTitle = getString(R.string.sfile_link_limit_download_date);
+        if (linkType != LINK_TYPE_DOWNLOAD) {
+            noticeTitle = getString(R.string.sfile_link_limit_upload_date);
+        }
         new BottomActionDialog(getContext(),
-                "下载链接有效期",
-                Arrays.asList("永不过期", "1天有效期", "5天有效期", "7天有效期", "14天有效期"),
+                noticeTitle,
+                Arrays.asList(getResources().getStringArray(R.array.sfile_link_limit_date_array)),
                 new BottomActionDialog.OnActionItemClickListener() {
 
                     @Override
@@ -287,8 +317,11 @@ public class FileLinkFragment extends BaseFragment {
      */
     private void showSelectPwdType() {
         new BottomActionDialog(getContext(),
-                "是否需要访问密码?",
-                Arrays.asList("自动生成", "不需要"),
+                getString(R.string.sfile_link_access_password_confirm),
+                Arrays.asList(
+                        getString(R.string.sfile_link_password_auto_generation),
+                        getString(R.string.sfile_link_password_null)
+                ),
                 new BottomActionDialog.OnActionItemClickListener() {
 
                     @Override
@@ -302,7 +335,6 @@ public class FileLinkFragment extends BaseFragment {
 
     private void copyFileShareLink() {
         if (isNoFileShareLink()) {
-            showTopSnackBar("暂无链接可复制");
             return;
         }
         if (sFileLinkInfoEntity.isNeedAccessPwd()) {
@@ -310,7 +342,7 @@ public class FileLinkFragment extends BaseFragment {
         } else {
             SystemUtils.copyToClipboard(getContext(), "link", String.format("链接:%s", sFileLinkInfoEntity.getRealShareLink()));
         }
-        showToast("已复制");
+        showToast(R.string.sfile_link_already_copied);
     }
 
 
@@ -318,7 +350,7 @@ public class FileLinkFragment extends BaseFragment {
      * 获取选中的天数
      */
     private int getSelectedExpireDays() {
-        List<String> expiredays = Arrays.asList("永不过期", "1天有效期", "5天有效期", "7天有效期", "14天有效期");
+        List<String> expiredays = Arrays.asList(getResources().getStringArray(R.array.sfile_link_limit_date_array));
         List<Integer> expiredayValues = Arrays.asList(0, 1, 5, 7, 14);
         int indexof = expiredays.indexOf(fileAccessTimeLimitTv.getText());
         if (indexof >= 0) {
@@ -333,7 +365,7 @@ public class FileLinkFragment extends BaseFragment {
      * @return
      */
     private boolean isCreatePassword() {
-        return !TextUtils.equals(fileAccessPwdTv.getText(), "不需要");
+        return !TextUtils.equals(fileAccessPwdTv.getText(), getString(R.string.sfile_link_password_null));
     }
 
     /**
@@ -346,8 +378,8 @@ public class FileLinkFragment extends BaseFragment {
         paramJsonObject.addProperty("expireDays", getSelectedExpireDays());
         paramJsonObject.addProperty("path", getArguments().getString(KEY_SEA_FILE_FROM_FILE_PATH, ""));
         paramJsonObject.addProperty("repoId", getArguments().getString(KEY_SEA_FILE_FROM_REPO_ID, ""));
-        paramJsonObject.addProperty("type", getArguments().getInt(KEY_SEA_FILE_LINK_TYPE));
-        showLoadingDialog("创建中...");
+        paramJsonObject.addProperty("type",linkType);
+        showLoadingDialog(R.string.str_creating);
         callEnqueue(getApi().fileShareLinkCreate(RequestUtils.createJsonBody(paramJsonObject.toString()))
                 , new SFileCallBack<SFileLinkInfoEntity>() {
                     @Override
@@ -356,7 +388,7 @@ public class FileLinkFragment extends BaseFragment {
                         //创建失败
                         if (TextUtils.isEmpty(response.body().officeShareLink) &&
                                 TextUtils.isEmpty(response.body().shareLinkId)) {
-                            showToast("创建共享链接失败");
+                            showToast(R.string.sfile_link_create_fail);
                         } else {
                             getData(true);
                         }
@@ -376,13 +408,13 @@ public class FileLinkFragment extends BaseFragment {
      */
     private void deleteFileShareLink() {
         if (sFileLinkInfoEntity == null) return;
-        showLoadingDialog("删除中...");
+        showLoadingDialog(R.string.str_deleting);
         callEnqueue(getApi().fileShareLinkDelete(sFileLinkInfoEntity.shareLinkId),
                 new SFileCallBack<ResEntity<JsonElement>>() {
                     @Override
                     public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
                         dismissLoadingDialog();
-                        showToast("删除成功");
+                        showToast(R.string.str_delete_sucess);
                         getData(true);
                     }
 

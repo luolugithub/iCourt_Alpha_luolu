@@ -23,4 +23,8 @@
     <string name="str_cancelling">取消中...</string>
     <string name="str_deleting">删除中...</string>
     <string name="str_sorting">排序中...</string>
+    <string name="str_creating">创建中...</string>
+
+
+    <string name="str_delete_sucess">删除成功</string>
 </resources>
