@@ -100,7 +100,7 @@ public class FileTrashListFragment extends SeaFileBaseFragment
                 false,
                 TextUtils.equals(getRepoPermission(), PERMISSION_RW)));
         emptyView = (TextView) HeaderFooterAdapter.inflaterView(getContext(), R.layout.footer_folder_document_num, recyclerView);
-        emptyView.setText("回收站里没有文件");
+        emptyView.setText(R.string.sfile_recycle_bin_empty);
         refreshLayout.setEmptyView(emptyView);
         folderDocumentAdapter.registerAdapterDataObserver(new DataChangeAdapterObserver() {
             @Override
@@ -183,7 +183,7 @@ public class FileTrashListFragment extends SeaFileBaseFragment
 
     @Override
     public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
-        showToast("无法浏览回收站里的文件");
+        showToast(R.string.sfile_recycle_bin_not_clickable);
     }
 
     /**
@@ -214,9 +214,9 @@ public class FileTrashListFragment extends SeaFileBaseFragment
                         if (response.body().has("success")
                                 && response.body().get("success").getAsBoolean()) {
                             getData(true);
-                            showTopSnackBar("文件恢复成功");
+                            showToast(R.string.sfile_recovery_success);
                         } else {
-                            showTopSnackBar("文件恢复失败");
+                            showToast(R.string.sfile_recovery_fail);
                         }
                     }
 
@@ -245,7 +245,7 @@ public class FileTrashListFragment extends SeaFileBaseFragment
     private void showFileRevertConfirmDialog(final int pos) {
         new BottomActionDialog(getContext(),
                 null,
-                Arrays.asList("恢复"),
+                Arrays.asList(getString(R.string.sfile_recovery)),
                 new BottomActionDialog.OnActionItemClickListener() {
                     @Override
                     public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {

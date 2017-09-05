@@ -42,6 +42,7 @@ import butterknife.Unbinder;
 import retrofit2.Call;
 import retrofit2.Response;
 
+import static com.icourt.alpha.constants.SFileConfig.PERMISSION_R;
 import static com.icourt.alpha.constants.SFileConfig.PERMISSION_RW;
 
 /**
@@ -113,7 +114,7 @@ public class FileInnerShareFragment extends BaseFragment
             View footerView = HeaderFooterAdapter.inflaterView(getContext(), R.layout.footer_add_attachment, recyclerView);
             TextView attachmentTv = footerView.findViewById(R.id.add_attachment_view);
             if (attachmentTv != null) {
-                attachmentTv.setText("添加共享成员");
+                attachmentTv.setText(R.string.sfile_add_share_member);
             }
             registerClick(attachmentTv);
             headerFooterAdapter.addFooter(footerView);
@@ -189,9 +190,9 @@ public class FileInnerShareFragment extends BaseFragment
     @Override
     public void onFragmentCallBack(Fragment fragment, int type, Bundle params) {
         if (fragment instanceof ContactSelectDialogFragment && params != null) {
-            final String permission = params.getString("permission", "rw");
+            final String permission = params.getString("permission", PERMISSION_RW);
             ArrayList<GroupContactBean> contactBeens = (ArrayList<GroupContactBean>) params.getSerializable(KEY_FRAGMENT_RESULT);
-            shareFile2User(permission, contactBeens);
+            covertSeaFileUser(permission, contactBeens);
         }
     }
 
@@ -211,9 +212,44 @@ public class FileInnerShareFragment extends BaseFragment
      * 分享文件给用户
      *
      * @param permission
+     * @param users
+     */
+    private void shareFile2User(final String permission, List<String> users) {
+        if (users == null || users.isEmpty()) return;
+        showLoadingDialog(null);
+        for (int i = 0; i < users.size(); i++) {
+            String s = users.get(i);
+            callEnqueue(getSFileApi().folderShareUserPermission(
+                    getArguments().getString(KEY_SEA_FILE_FROM_REPO_ID, ""),
+                    getArguments().getString(KEY_SEA_FILE_FROM_DIR_PATH, ""),
+                    permission,
+                    "user",
+                    s),
+                    new SFileCallBack<JsonObject>() {
+                        @Override
+                        public void onSuccess(Call<JsonObject> call, Response<JsonObject> response) {
+                            dismissLoadingDialog();
+                            if (response.body().has("success")) {
+                                getData(true);
+                            }
+                        }
+
+                        @Override
+                        public void onFailure(Call<JsonObject> call, Throwable t) {
+                            dismissLoadingDialog();
+                            super.onFailure(call, t);
+                        }
+                    });
+        }
+    }
+
+    /**
+     * 转换sfile用户
+     *
+     * @param permission
      * @param contactBeens
      */
-    private void shareFile2User(final String permission, ArrayList<GroupContactBean> contactBeens) {
+    public void covertSeaFileUser(final String permission, ArrayList<GroupContactBean> contactBeens) {
         if (contactBeens != null && !contactBeens.isEmpty()) {
             StringBuilder uidBuilder = new StringBuilder();
             for (int i = 0; i < contactBeens.size(); i++) {
@@ -225,36 +261,13 @@ public class FileInnerShareFragment extends BaseFragment
                 uidBuilder.append(contactBean.userId);
             }
             if (uidBuilder.length() > 0) {
-                showLoadingDialog("alpha用户转换中...");
+                showLoadingDialog(R.string.sfile_user_transform_to_alpha_user);
                 callEnqueue(getApi().sfileUserInfosQuery(uidBuilder.toString()),
                         new SimpleCallBack2<List<String>>() {
                             @Override
                             public void onSuccess(Call<List<String>> call, Response<List<String>> response) {
                                 dismissLoadingDialog();
-                                for (int i = 0; i < response.body().size(); i++) {
-                                    String s = response.body().get(i);
-                                    callEnqueue(getSFileApi().folderShareUserPermission(
-                                            getArguments().getString(KEY_SEA_FILE_FROM_REPO_ID, ""),
-                                            getArguments().getString(KEY_SEA_FILE_FROM_DIR_PATH, ""),
-                                            permission,
-                                            "user",
-                                            s),
-                                            new SFileCallBack<JsonObject>() {
-                                                @Override
-                                                public void onSuccess(Call<JsonObject> call, Response<JsonObject> response) {
-                                                    dismissLoadingDialog();
-                                                    if (response.body().has("success")) {
-                                                        getData(true);
-                                                    }
-                                                }
-
-                                                @Override
-                                                public void onFailure(Call<JsonObject> call, Throwable t) {
-                                                    dismissLoadingDialog();
-                                                    super.onFailure(call, t);
-                                                }
-                                            });
-                                }
+                                shareFile2User(permission, response.body());
                             }
 
                             @Override
@@ -350,17 +363,20 @@ public class FileInnerShareFragment extends BaseFragment
         if (item == null) return;
         new BottomActionDialog(getContext(),
                 null,
-                Arrays.asList("可读写", "只读", "取消共享"),
+                Arrays.asList(
+                        getString(R.string.sfile_permission_rw),
+                        getString(R.string.sfile_permission_r),
+                        getString(R.string.sfile_delete_share_member)),
                 new BottomActionDialog.OnActionItemClickListener() {
                     @Override
                     public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
                         dialog.dismiss();
                         switch (position) {
                             case 0:
-                                changeUserPermission("rw", item);
+                                changeUserPermission(PERMISSION_RW, item);
                                 break;
                             case 1:
-                                changeUserPermission("r", item);
+                                changeUserPermission(PERMISSION_R, item);
                                 break;
                             case 2:
                                 deleteUserSharedFile(item.userInfo.name);

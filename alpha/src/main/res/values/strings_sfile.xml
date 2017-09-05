@@ -90,4 +90,17 @@
     <string name="sfile_change_history_revert">撤销修改</string>
     <string name="sfile_revert_success">撤销成功</string>
     <string name="sfile_revert_fail">撤销失败</string>
+    <string name="sfile_user_transform_to_alpha_user">alpha用户转换中...</string>
+    <string name="sfile_add_share_member">添加共享成员</string>
+    <string name="sfile_delete_share_member">取消共享</string>
+
+    <string name="sfile_permission_r">只读</string>
+    <string name="sfile_permission_rw">可读写</string>
+    <string name="sfile_recycle_bin_empty">回收站里没有文件</string>
+    <string name="sfile_recycle_bin_not_clickable">无法浏览回收站里的文件</string>
+    <string name="sfile_recovery">恢复</string>
+    <string name="sfile_recovery_success">文件恢复成功</string>
+    <string name="sfile_recovery_fail">文件恢复失败</string>
+
+
 </resources>
