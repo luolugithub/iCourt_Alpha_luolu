@@ -739,7 +739,6 @@ public class FolderListActivity extends FolderBaseActivity
                         new Action() {
                             @Override
                             public void run() throws Exception {
-                                dismissLoadingDialog();
                                 getData(true);
                             }
                         });

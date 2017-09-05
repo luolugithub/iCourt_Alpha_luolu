@@ -157,7 +157,6 @@ public class ImageViewerActivity extends BaseUmengActivity {
      */
     class ImagePagerAdapter extends BasePagerAdapter<String> implements PhotoViewAttacher.OnViewTapListener {
 
-
         /**
          * 获取大图的地址
          *
@@ -209,7 +208,9 @@ public class ImageViewerActivity extends BaseUmengActivity {
                                     }
                                     return false;
                                 }
-                            }).into(touchImageView);
+                            })
+                            .dontAnimate()
+                            .into(touchImageView);
 
                 }
             }
@@ -269,7 +270,14 @@ public class ImageViewerActivity extends BaseUmengActivity {
          */
         private void loadBigImage(final String bigUrl, ImageView imageView, final View imgLookOriginalTv) {
             imgLookOriginalTv.setVisibility(View.GONE);
-            GlideUtils.loadSFilePic(getContext(), bigUrl, imageView);
+            if (GlideUtils.canLoadImage(getContext())) {
+                Glide.with(getContext())
+                        .load(bigUrl)
+                        .placeholder(imageView.getDrawable())
+                        .error(R.mipmap.filetype_image)
+                        .dontAnimate()
+                        .into(imageView);
+            }
         }
 
         @Override
@@ -293,14 +301,14 @@ public class ImageViewerActivity extends BaseUmengActivity {
                 titleView.setVisibility(View.GONE);
                 mainContent.setBackgroundColor(Color.BLACK);
                 downloadImg.setVisibility(View.VISIBLE);
-                notifyDataSetChanged();
             } else {
                 titleView.setVisibility(View.VISIBLE);
                 mainContent.setBackgroundColor(Color.WHITE);
                 downloadImg.setVisibility(View.GONE);
-                notifyDataSetChanged();
             }
+            notifyDataSetChanged();
         }
+
     }
 
 
@@ -320,6 +328,7 @@ public class ImageViewerActivity extends BaseUmengActivity {
         bigUrls = getIntent().getStringArrayListExtra(KEY_BIG_URLS);
         selectPos = getIntent().getIntExtra(KEY_SELECT_POS, 0);
         viewPager.setAdapter(imagePagerAdapter = new ImagePagerAdapter());
+        imagePagerAdapter.setCanupdateItem(true);
         imagePagerAdapter.bindData(true, smallUrls);
         viewPager.addOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
             @Override
@@ -334,7 +343,7 @@ public class ImageViewerActivity extends BaseUmengActivity {
                 public void run() {
                     viewPager.setCurrentItem(selectPos, false);
                 }
-            }, 1_00);
+            }, 50);
         }
         setTitle(FileUtils.getFileName(smallUrls.get(0)));
     }
