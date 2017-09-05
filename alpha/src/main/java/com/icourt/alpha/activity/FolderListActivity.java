@@ -147,6 +147,8 @@ public class FolderListActivity extends FolderBaseActivity
     CheckBox bottomBarAllSelectCb;
 
     int fileSortType = FILE_SORT_TYPE_DEFAULT;
+    final ArrayList<String> bigImageUrls = new ArrayList<>();
+    final ArrayList<String> smallImageUrls = new ArrayList<>();
 
     private static final int REQUEST_CODE_CAMERA = 1000;
     private static final int REQUEST_CODE_GALLERY = 1001;
@@ -340,7 +342,7 @@ public class FolderListActivity extends FolderBaseActivity
                 new SFileCallBack<List<FolderDocumentEntity>>() {
                     @Override
                     public void onSuccess(Call<List<FolderDocumentEntity>> call, Response<List<FolderDocumentEntity>> response) {
-                        sortFile(false, response.body());
+                        sortFile(true, response.body());
                         dismissLoadingDialog();
                         stopRefresh();
                     }
@@ -563,6 +565,17 @@ public class FolderListActivity extends FolderBaseActivity
                         } catch (Throwable e) {
                             e.printStackTrace();
                             bugSync("排序异常", e);
+                        }
+                        bigImageUrls.clear();
+                        smallImageUrls.clear();
+                        List<FolderDocumentEntity> allData = getAllData();
+                        for (int i = 0; i < allData.size(); i++) {
+                            FolderDocumentEntity folderDocumentEntity = allData.get(i);
+                            if (folderDocumentEntity == null) continue;
+                            if (IMUtils.isPIC(folderDocumentEntity.name)) {
+                                bigImageUrls.add(getSFileImageUrl(folderDocumentEntity.name, Integer.MAX_VALUE));
+                                smallImageUrls.add(getSFileImageUrl(folderDocumentEntity.name, 200));
+                            }
                         }
                         return totals;
                     }
@@ -828,7 +841,7 @@ public class FolderListActivity extends FolderBaseActivity
             if (folderDocumentAdapter.isSelectable()) {
                 toggleSelect(folderDocumentAdapter, position);
             } else {
-                FolderDocumentEntity item = folderDocumentAdapter.getItem(position);
+                final FolderDocumentEntity item = folderDocumentAdapter.getItem(position);
                 if (item == null) return;
                 if (item.isDir()) {
                     FolderListActivity.launch(getContext(),
@@ -840,17 +853,6 @@ public class FolderListActivity extends FolderBaseActivity
                 } else {
                     //图片 直接预览
                     if (IMUtils.isPIC(item.name)) {
-                        ArrayList<String> bigImageUrls = new ArrayList<>();
-                        ArrayList<String> smallImageUrls = new ArrayList<>();
-                        List<FolderDocumentEntity> allData = getAllData();
-                        for (int i = 0; i < allData.size(); i++) {
-                            FolderDocumentEntity folderDocumentEntity = allData.get(i);
-                            if (folderDocumentEntity == null) continue;
-                            if (IMUtils.isPIC(folderDocumentEntity.name)) {
-                                bigImageUrls.add(getSFileImageUrl(folderDocumentEntity.name, Integer.MAX_VALUE));
-                                smallImageUrls.add(getSFileImageUrl(folderDocumentEntity.name, 200));
-                            }
-                        }
                         int indexOf = bigImageUrls.indexOf(getSFileImageUrl(item.name, Integer.MAX_VALUE));
                         ImageViewerActivity.launch(
                                 getContext(),
@@ -870,6 +872,7 @@ public class FolderListActivity extends FolderBaseActivity
             }
         }
     }
+
 
     protected String getSFileImageUrl(String name, int size) {
         return String.format("%silaw/api/v2/documents/thumbnailImage?repoId=%s&seafileToken=%s&size=%s&p=%s",
