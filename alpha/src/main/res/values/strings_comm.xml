@@ -3,7 +3,13 @@
     <!-- 标准的字符串资源 str_开头-->
     <string name="str_ok">确定</string>
     <string name="str_cancel">取消</string>
+    <string name="str_cancelling">取消中...</string>
+
     <string name="str_delete">删除</string>
+    <string name="str_deleting">删除中...</string>
+
     <string name="str_finish">完成</string>
     <string name="str_rename">重命名</string>
+
+    <string name="str_sorting">排序中...</string>
 </resources>

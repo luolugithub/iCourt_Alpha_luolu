@@ -30,4 +30,35 @@
     <string name="repo_delete_ing">资料库删除中...</string>
     <string name="repo_delete_success">资料库删除成功</string>
     <string name="repo_delete_fail">资料库删除失败</string>
+
+    <string name="sfile_folder_empty">本目录下没有文件</string>
+    <string name="sfile_folder_statistics" formatted="false">%s个文件夹, %s个文件</string>
+    <string name="sfile_file_already_selected" formatted="false">已选择: %s</string>
+
+    <string name="sfile_menu_repo_details">查看资料库详情</string>
+    <string name="sfile_menu_recycle_bin">回收站</string>
+    <string name="sfile_menu_batch_operation">批量操作</string>
+
+    <string-array name="sfile_folder_menu_rw">
+        <item>@string/sfile_menu_batch_operation</item>
+        <item>@string/sfile_menu_repo_details</item>
+        <item>@string/sfile_menu_recycle_bin</item>
+    </string-array>
+
+    <string-array name="sfile_folder_menu_r">
+        <item>@string/sfile_menu_repo_details</item>
+        <item>@string/sfile_menu_recycle_bin</item>
+    </string-array>
+
+    <string name="sfile_create_folder">新建文件夹</string>
+    <string name="sfile_upload">上传文件</string>
+    <string name="sfile_select_from_album">从相册选取</string>
+    <string name="sfile_select_from_camera">拍照</string>
+
+    <string-array name="sfile_folder_action_menu">
+        <item>@string/sfile_create_folder</item>
+        <item>@string/sfile_upload</item>
+        <item>@string/sfile_select_from_album</item>
+        <item>@string/sfile_select_from_camera</item>
+    </string-array>
 </resources>

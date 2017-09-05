@@ -163,14 +163,13 @@ public class FolderListActivity extends FolderBaseActivity
                     selectedFolderDocuments.addAll(documentEntities);
                 }
                 folderDocumentAdapter.notifyDataSetChanged();
-                bottomBarSelectNumTv.setText(String.format("已选择: %s", selectedFolderDocuments.size()));
             } else {
                 if (!selectedFolderDocuments.isEmpty()) {
                     selectedFolderDocuments.clear();
                     folderDocumentAdapter.notifyDataSetChanged();
                 }
-                bottomBarSelectNumTv.setText(String.format("已选择: %s", selectedFolderDocuments.size()));
             }
+            bottomBarSelectNumTv.setText(getString(R.string.sfile_file_already_selected, String.valueOf(selectedFolderDocuments.size())));
             updateActionViewStatus();
         }
     };
@@ -260,9 +259,9 @@ public class FolderListActivity extends FolderBaseActivity
                         }
                     }
                     if (dirNum == 0 && fileNum == 0) {
-                        footerView.setText("本目录下没有文件");
+                        footerView.setText(R.string.sfile_folder_empty);
                     } else {
-                        footerView.setText(String.format("%s个文件夹, %s个文件", dirNum, fileNum));
+                        footerView.setText(getString(R.string.sfile_folder_statistics, String.valueOf(dirNum), String.valueOf(fileNum)));
                     }
 
                 }
@@ -355,6 +354,12 @@ public class FolderListActivity extends FolderBaseActivity
                 });
     }
 
+    /**
+     * 拆分列表
+     *
+     * @param datas
+     * @return
+     */
     private List<List<FolderDocumentEntity>> wrapGridData(List<FolderDocumentEntity> datas) {
         List<List<FolderDocumentEntity>> result = new ArrayList<>();
         if (datas != null && !datas.isEmpty()) {
@@ -410,7 +415,7 @@ public class FolderListActivity extends FolderBaseActivity
             case R.id.titleAction:
                 new BottomActionDialog(getContext(),
                         null,
-                        Arrays.asList("新建文件夹", "上传文件", "从相册选取", "拍照"),
+                        Arrays.asList(getResources().getStringArray(R.array.sfile_folder_action_menu)),
                         new BottomActionDialog.OnActionItemClickListener() {
                             @Override
                             public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
@@ -485,9 +490,9 @@ public class FolderListActivity extends FolderBaseActivity
         List<String> strings;
         if (folderDocumentAdapter.getItemCount() <= 0
                 || !TextUtils.equals(getRepoPermission(), PERMISSION_RW)) {
-            strings = Arrays.asList("查看资料库详情", "回收站");
+            strings = Arrays.asList(getResources().getStringArray(R.array.sfile_folder_menu_r));
         } else {
-            strings = Arrays.asList("批量操作", "查看资料库详情", "回收站");
+            strings = Arrays.asList(getResources().getStringArray(R.array.sfile_folder_menu_rw));
         }
         new BottomActionDialog(getContext(),
                 null,
@@ -497,18 +502,18 @@ public class FolderListActivity extends FolderBaseActivity
                     public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
                         dialog.dismiss();
                         String action = adapter.getItem(position);
-                        if (TextUtils.equals(action, "批量操作")) {
+                        if (TextUtils.equals(action, getString(R.string.sfile_menu_batch_operation))) {
                             folderDocumentAdapter.setSelectable(true);
                             folderDocumentAdapter.notifyDataSetChanged();
                             updateSelectableModeSatue(folderDocumentAdapter.isSelectable());
-                        } else if (TextUtils.equals(action, "查看资料库详情")) {
+                        } else if (TextUtils.equals(action, getString(R.string.sfile_menu_repo_details))) {
                             RepoDetailsDialogFragment.show(
                                     getRepoType(),
                                     getSeaFileRepoId(),
                                     0,
                                     getRepoPermission(),
                                     getSupportFragmentManager());
-                        } else if (TextUtils.equals(action, "回收站")) {
+                        } else if (TextUtils.equals(action, getString(R.string.sfile_menu_recycle_bin))) {
                             RepoDetailsDialogFragment.show(
                                     getRepoType(),
                                     getSeaFileRepoId(),
@@ -542,7 +547,7 @@ public class FolderListActivity extends FolderBaseActivity
      */
     private void sortFile(boolean isShowLoading, List<FolderDocumentEntity> datas) {
         if (isShowLoading) {
-            showLoadingDialog("排序中...");
+            showLoadingDialog(R.string.str_sorting);
         }
         Observable.just(datas)
                 .map(new Function<List<FolderDocumentEntity>, List<FolderDocumentEntity>>() {
@@ -590,7 +595,7 @@ public class FolderListActivity extends FolderBaseActivity
         titleView.setVisibility(!isSelectable ? View.VISIBLE : View.GONE);
         bottomBarLayout.setVisibility(isSelectable ? View.VISIBLE : View.GONE);
         bottomBarAllSelectCb.setChecked(false);
-        bottomBarSelectNumTv.setText(String.format("已选择: %s", selectedFolderDocuments.size()));
+        bottomBarSelectNumTv.setText(getString(R.string.sfile_file_already_selected, String.valueOf(selectedFolderDocuments.size())));
         updateActionViewStatus();
     }
 
