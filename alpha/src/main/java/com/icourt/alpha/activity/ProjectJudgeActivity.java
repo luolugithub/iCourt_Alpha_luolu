@@ -72,15 +72,17 @@ public class ProjectJudgeActivity extends BaseActivity {
     LinearLayout headerCommSearchInputLl;
     private List list = new ArrayList<>();
     int type;
+    String key;
     ProjectJudgeAdapter projectJudgeAdapter;
     HeaderFooterAdapter<ProjectJudgeAdapter> headerFooterAdapter;
     private CustomerDbService customerDbService = null;
 
-    public static void launch(@NonNull Context context, List list, int type) {
+    public static void launch(@NonNull Context context, String key,List list, int type) {
         if (context == null) return;
         Intent intent = new Intent(context, ProjectJudgeActivity.class);
         intent.putExtra("list", (Serializable) list);
         intent.putExtra("type", type);
+        intent.putExtra("key", key);
         context.startActivity(intent);
     }
 
@@ -93,31 +95,14 @@ public class ProjectJudgeActivity extends BaseActivity {
         getData(true);
     }
 
-    private String getTitleText() {
-        switch (type) {
-            case Const.PROJECT_DEPARTMENT_TYPE://负责部门
-                return "负责部门";
-            case Const.PROJECT_JUDGE_TYPE://法官
-                return "法官";
-            case Const.PROJECT_CLERK_TYPE://书记员
-                return "书记员";
-            case Const.PROJECT_ARBITRATORS_TYPE://仲裁员
-                return "仲裁员";
-            case Const.PROJECT_SECRETARIES_TYPE://仲裁秘书
-                return "仲裁秘书";
-            case Const.PROJECT_PERSON_TYPE://当事人
-                return "当事人";
-        }
-        return "";
-    }
-
     @Override
     protected void initView() {
         super.initView();
         list = (List) getIntent().getSerializableExtra("list");
         type = getIntent().getIntExtra("type", -1);
+        key = getIntent().getStringExtra("key");
         customerDbService = new CustomerDbService(LoginInfoUtils.getLoginUserId());
-        setTitle(getTitleText());
+        setTitle(key);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getContext());
         recyclerView.setLayoutManager(linearLayoutManager);
         recyclerView.addItemDecoration(ItemDecorationUtils.getCommFull05Divider(getContext(), true));

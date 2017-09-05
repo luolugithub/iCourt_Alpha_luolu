@@ -46,6 +46,7 @@ public class ProjectProcessesEntity implements Serializable {
 
         public String code;
         public String name;
+        public String crowdedName;
 
     }
 
@@ -61,6 +62,8 @@ public class ProjectProcessesEntity implements Serializable {
         public String partyName;
         public String contactPkid;
         public String contactName;
+        public String contactType;
+        public boolean beCustomer;
 
     }
 

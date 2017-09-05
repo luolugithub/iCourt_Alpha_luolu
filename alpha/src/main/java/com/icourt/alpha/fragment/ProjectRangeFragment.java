@@ -18,6 +18,7 @@ import com.icourt.alpha.activity.CustomerCompanyDetailActivity;
 import com.icourt.alpha.activity.CustomerPersonDetailActivity;
 import com.icourt.alpha.activity.ProjecTacceptanceActivity;
 import com.icourt.alpha.activity.ProjectBasicTextInfoActivity;
+import com.icourt.alpha.activity.ProjectJudgeActivity;
 import com.icourt.alpha.adapter.ProjectBasicInfoAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.base.BaseFragment;
@@ -113,6 +114,7 @@ public class ProjectRangeFragment extends BaseFragment implements BaseRecyclerAd
             if (projectProcessesEntity.legalType == Const.LEGAL_PENAL_TYPE) {
                 keyName = "涉案金额";
             }
+
             projectBasicItemEntities.add(new ProjectBasicItemEntity(keyName, projectProcessesEntity.priceStr, Const.PROJECT_PRICE_TYPE));
         }
 
@@ -129,14 +131,16 @@ public class ProjectRangeFragment extends BaseFragment implements BaseRecyclerAd
         if (projectProcessesEntity.position != null && projectProcessesEntity.position.size() > 0) {
             for (ProjectProcessesEntity.PositionBean positionBean : projectProcessesEntity.position) {
                 if (!TextUtils.isEmpty(positionBean.contactName))
-                    projectBasicItemEntities.add(new ProjectBasicItemEntity(positionBean.partyName, positionBean.contactName, Const.PROJECT_OTHER_PERSON_TYPE, positionBean));
+                    projectBasicItemEntities.add(new ProjectBasicItemEntity(TextUtils.isEmpty(positionBean.partyName) ? "当事人" : positionBean.partyName, positionBean.contactName, Const.PROJECT_OTHER_PERSON_TYPE, positionBean));
             }
         }
 
         //其他信息
         if (projectProcessesEntity.extra != null && projectProcessesEntity.extra.size() > 0) {
             for (ProjectProcessesEntity.ExtraBean extra : projectProcessesEntity.extra) {
-                projectBasicItemEntities.add(new ProjectBasicItemEntity(extra.name, getExtraName(extra.values), Const.PROJECT_ACCEPTANCE_TYPE, extra));
+                String value = getExtraName(extra.values);
+                if (!TextUtils.isEmpty(value))
+                    projectBasicItemEntities.add(new ProjectBasicItemEntity(extra.name, getExtraName(extra.values), Const.PROJECT_ACCEPTANCE_TYPE, extra));
             }
         }
 
@@ -193,10 +197,12 @@ public class ProjectRangeFragment extends BaseFragment implements BaseRecyclerAd
         ProjectBasicItemEntity itemEntity = (ProjectBasicItemEntity) adapter.getItem(position);
 
         switch (itemEntity.type) {
-            case Const.PROJECT_CASE_TYPE:
+            case Const.PROJECT_CASE_TYPE://案由
+                ProjectJudgeActivity.launch(getContext(), itemEntity.key, projectProcessesEntity.caseCodes, Const.PROJECT_CASE_TYPE);
+                break;
             case Const.PROJECT_CASEPROCESS_TYPE:
             case Const.PROJECT_PRICE_TYPE:
-                ProjectBasicTextInfoActivity.launch(view.getContext(), itemEntity.key,itemEntity.value, itemEntity.type);
+                ProjectBasicTextInfoActivity.launch(view.getContext(), itemEntity.key, itemEntity.value, itemEntity.type);
                 break;
             case Const.PROJECT_ACCEPTANCE_TYPE:
                 ProjecTacceptanceActivity.launch(getContext(), itemEntity.extraBean);
@@ -226,6 +232,7 @@ public class ProjectRangeFragment extends BaseFragment implements BaseRecyclerAd
 
     /**
      * 是否有查看联系人权限
+     *
      * @return
      */
     private boolean hasCustomerPermission() {

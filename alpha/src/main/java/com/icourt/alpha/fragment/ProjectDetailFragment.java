@@ -440,10 +440,10 @@ public class ProjectDetailFragment extends BaseFragment implements BaseRecyclerA
                     ProjectMembersActivity.launch(view.getContext(), projectDetailBean.attorneys, Const.PROJECT_ANYUAN_LAWYER_TYPE);
                     break;
                 case Const.PROJECT_DEPARTMENT_TYPE://负责部门
-                    ProjectJudgeActivity.launch(getContext(), projectDetailBean.groups, entity.type);
+                    ProjectJudgeActivity.launch(getContext(), entity.key, projectDetailBean.groups, entity.type);
                     break;
                 case Const.PROJECT_PERSON_TYPE://当事人
-                    ProjectJudgeActivity.launch(getContext(), projectDetailBean.litigants, entity.type);
+                    ProjectJudgeActivity.launch(getContext(), entity.key, projectDetailBean.litigants, entity.type);
                     break;
             }
         } else if (adapter instanceof ProjectClientAdapter) {
