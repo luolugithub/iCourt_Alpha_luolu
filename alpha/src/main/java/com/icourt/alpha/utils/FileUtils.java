@@ -126,7 +126,10 @@ public class FileUtils {
         long kb = 1024;
         long mb = kb * 1024;
         long gb = mb * 1024;
-        if (b >= gb) {
+        long tb = gb * 1024;
+        if (b >= tb) {
+            return String.format("%.1f T", (float) b / tb);
+        } else if (b >= gb) {
             return String.format("%.1f G", (float) b / gb);
         } else if (b >= mb) {
             float f = (float) b / mb;

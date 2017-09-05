@@ -342,8 +342,7 @@ public class FolderListActivity extends FolderBaseActivity
                 new SFileCallBack<List<FolderDocumentEntity>>() {
                     @Override
                     public void onSuccess(Call<List<FolderDocumentEntity>> call, Response<List<FolderDocumentEntity>> response) {
-                        sortFile(true, response.body());
-                        dismissLoadingDialog();
+                        sortFile(false, response.body());
                         stopRefresh();
                     }
 
