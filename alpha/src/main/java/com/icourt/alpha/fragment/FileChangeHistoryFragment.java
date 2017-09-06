@@ -422,10 +422,10 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
             }
         }
         String fromDir = item.new_path;
-        if (!TextUtils.isEmpty(item.new_path)) {
-            int indexOf = item.new_path.lastIndexOf("/");
+        if (!TextUtils.isEmpty(fromDir)) {
+            int indexOf = fromDir.lastIndexOf("/");
             if (indexOf >= 1) {
-                fromDir = item.path.substring(0, indexOf);
+                fromDir = fromDir.substring(0, indexOf);
             } else {
                 fromDir = "/";
             }
