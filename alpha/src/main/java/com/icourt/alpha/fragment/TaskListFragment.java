@@ -98,7 +98,7 @@ public class TaskListFragment extends BaseTaskFragment implements
         BaseRecyclerAdapter.OnItemChildClickListener {
 
     public static final String TYPE = "type";//type的传参标识
-    public static final String STATE_TYPE = "stateType";//stateType的传参标识
+    public static final String STATE_TYPE = "stateType";//stateType的传参标识，stateType参数含义：-1，全部任务；0，未完成；1，已完成；3，已删除。
 
     public static final int TYPE_ALL = 0;//全部
     public static final int TYPE_MY_ATTENTION = 2;//我关注的
@@ -124,8 +124,8 @@ public class TaskListFragment extends BaseTaskFragment implements
     List<TaskEntity.TaskItemEntity> newTaskEntities;//新任务
     List<TaskEntity.TaskItemEntity> datedTaskEntities;//已过期
 
-    int type = 0;//全部，我关注的
-    int stateType = 0;//全部任务：－1；已完成：1；未完成：0；已删除：3；
+    int type = 0;//0，全部；1，我关注的。
+    int stateType = 0;//全部任务：－1；已完成：1；未完成：0；已删除：3。
     HeaderFooterAdapter<TaskAdapter> headerFooterAdapter;
     HeaderFooterAdapter<TaskItemAdapter> headerFooterItemAdapter;
     OnTasksChangeListener onTasksChangeListener;
@@ -322,7 +322,7 @@ public class TaskListFragment extends BaseTaskFragment implements
     }
 
     /**
-     * 滚动到指定位置
+     * 滚动到指定位置（查看新任务的时候会调用）
      *
      * @param taskId
      */
@@ -444,7 +444,7 @@ public class TaskListFragment extends BaseTaskFragment implements
         super.notifyFragmentUpdate(targetFrgament, type, bundle);
         if (targetFrgament != this) return;
         if (bundle != null) {
-            stateType = bundle.getInt("stateType");
+            stateType = bundle.getInt(STATE_TYPE);
         }
         this.type = type;
         //刷新

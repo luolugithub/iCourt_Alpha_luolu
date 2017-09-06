@@ -56,7 +56,7 @@ import retrofit2.Response;
  */
 public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackListener, TopMiddlePopup.OnItemClickListener {
 
-    public int select_position = 0;//选择的筛选选项
+    public int select_position = 0;//选择的筛选选项的position：0，未完成；1，已完成；2，已删除。
     public boolean isAwayScroll = false; //切换时是否滚动，在'已完成和已删除'状态下，点击新任务提醒。
     public boolean isShowCalendar;//是否显示日历页面
 
@@ -160,12 +160,12 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
                                 }
                             }
                             break;
-                        case 1:
+                        case 1://我关注的
                             titleTv_0.setTextColor(0xFF979797);
                             titleTv_1.setTextColor(0xFF313131);
                             setFirstTabImage(false);
                             Bundle bundle = new Bundle();
-                            bundle.putInt("stateType", 0);
+                            bundle.putInt(TaskListFragment.STATE_TYPE, 0);
                             attentionTaskFragment.notifyFragmentUpdate(attentionTaskFragment, TaskListFragment.TYPE_MY_ATTENTION, bundle);
                             break;
                     }
@@ -218,9 +218,9 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
      */
     public void updateListData(int stateType) {
         Bundle bundle = new Bundle();
-        bundle.putInt("stateType", stateType);
+        bundle.putInt(TaskListFragment.STATE_TYPE, stateType);
         int type = TaskAllFragment.TYPE_ALL_TASK;
-        if (stateType == 0) {
+        if (stateType == 0) {//说明该任务状态是全部的任务状态
             titleCalendar.setVisibility(View.VISIBLE);
             if (isShowCalendar) {
                 type = TaskAllFragment.TYPE_ALL_TASK_CALENDAR;
@@ -354,7 +354,7 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
                                     stateType = filterDropEntity.stateType;
                                 }
                                 Bundle bundle = new Bundle();
-                                bundle.putInt("stateType", stateType);
+                                bundle.putInt(TaskListFragment.STATE_TYPE, stateType);
                                 taskAllFragment.notifyFragmentUpdate(taskAllFragment, TaskAllFragment.TYPE_ALL_TASK, bundle);
                             }
                             break;
