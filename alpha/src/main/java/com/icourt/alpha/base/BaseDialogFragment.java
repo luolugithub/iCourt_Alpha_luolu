@@ -2,6 +2,7 @@ package com.icourt.alpha.base;
 
 import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
@@ -34,6 +35,7 @@ import com.icourt.alpha.http.ApiSFileService;
 import com.icourt.alpha.http.IContextCallQueue;
 import com.icourt.alpha.http.RetrofitServiceFactory;
 import com.icourt.alpha.interfaces.INotifyFragment;
+import com.icourt.alpha.interfaces.OnDialogFragmentDismissListener;
 import com.icourt.alpha.interfaces.ProgressHUDImp;
 import com.icourt.alpha.utils.LogUtils;
 import com.icourt.alpha.utils.LoginInfoUtils;
@@ -178,6 +180,21 @@ public abstract class BaseDialogFragment extends DialogFragment
         super.onDetach();
     }
 
+    /**
+     * 通知父容器刷新
+     * @param dialog
+     */
+    @Override
+    public void onDismiss(DialogInterface dialog) {
+        if (getParentFragment() instanceof OnDialogFragmentDismissListener) {
+            ((OnDialogFragmentDismissListener) getParentFragment())
+                    .onDialogFragmentDismiss(this);
+        } else if (getActivity() instanceof OnDialogFragmentDismissListener) {
+            ((OnDialogFragmentDismissListener) getActivity())
+                    .onDialogFragmentDismiss(this);
+        }
+        super.onDismiss(dialog);
+    }
 
     /**
      * 如果当前的父亲不是手机窗体上的时候,移除掉

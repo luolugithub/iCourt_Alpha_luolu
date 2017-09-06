@@ -36,6 +36,7 @@ import com.icourt.alpha.adapter.FolderDocumentWrapAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.HeaderFooterAdapter;
 import com.icourt.alpha.adapter.baseadapter.adapterObserver.DataChangeAdapterObserver;
+import com.icourt.alpha.base.BaseDialogFragment;
 import com.icourt.alpha.constants.Const;
 import com.icourt.alpha.constants.SFileConfig;
 import com.icourt.alpha.entity.bean.FolderDocumentEntity;
@@ -47,6 +48,7 @@ import com.icourt.alpha.fragment.dialogfragment.RepoDetailsDialogFragment;
 import com.icourt.alpha.http.callback.SFileCallBack;
 import com.icourt.alpha.http.consumer.BaseThrowableConsumer;
 import com.icourt.alpha.http.observer.BaseObserver;
+import com.icourt.alpha.interfaces.OnDialogFragmentDismissListener;
 import com.icourt.alpha.utils.IMUtils;
 import com.icourt.alpha.utils.ImageUtils;
 import com.icourt.alpha.utils.IndexUtils;
@@ -107,7 +109,8 @@ import static com.icourt.alpha.widget.comparators.FileSortComparator.FILE_SORT_T
 public class FolderListActivity extends FolderBaseActivity
         implements BaseRecyclerAdapter.OnItemClickListener,
         BaseRecyclerAdapter.OnItemLongClickListener,
-        BaseRecyclerAdapter.OnItemChildClickListener {
+        BaseRecyclerAdapter.OnItemChildClickListener,
+        OnDialogFragmentDismissListener {
     @BindView(R.id.titleBack)
     ImageView titleBack;
     @BindView(R.id.titleContent)
@@ -1101,5 +1104,11 @@ public class FolderListActivity extends FolderBaseActivity
     protected void onDestroy() {
         EventBus.getDefault().unregister(this);
         super.onDestroy();
+    }
+
+    @Override
+    public void onDialogFragmentDismiss(BaseDialogFragment baseDialogFragment) {
+        if (isDestroyOrFinishing()) return;
+        getData(true);
     }
 }

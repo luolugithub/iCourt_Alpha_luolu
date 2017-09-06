@@ -95,8 +95,8 @@ public class FolderDetailDialogFragment extends FileDetailsBaseDialogFragment {
         String folderPath = String.format("%s%s/", fromRepoDirPath, getArguments().getString(KEY_SEA_FILE_NAME, ""));
         baseFragmentAdapter.bindData(true,
                 Arrays.asList(FileInnerShareFragment.newInstance(fromRepoId, folderPath, getRepoPermission()),
-                        FileLinkFragment.newInstance(fromRepoId, folderPath, 0, getRepoPermission()),
-                        FileLinkFragment.newInstance(fromRepoId, folderPath, 1, getRepoPermission())));
+                        FileLinkFragment.newInstance(fromRepoId, folderPath, FileLinkFragment.LINK_TYPE_DOWNLOAD, getRepoPermission()),
+                        FileLinkFragment.newInstance(fromRepoId, folderPath, FileLinkFragment.LINK_TYPE_UPLOAD, getRepoPermission())));
         int tabIndex = getArguments().getInt(KEY_LOCATION_TAB_INDEX);
         if (tabIndex < baseFragmentAdapter.getCount()) {
             viewPager.setCurrentItem(tabIndex);

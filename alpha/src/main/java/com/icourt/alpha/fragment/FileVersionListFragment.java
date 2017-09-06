@@ -153,12 +153,6 @@ public class FileVersionListFragment extends SeaFileBaseFragment implements Base
     @Override
     protected void getData(final boolean isRefresh) {
         super.getData(isRefresh);
-        //图片不加载历史版本
-        if (IMUtils.isPIC(fromRepoFilePath)) {
-            stopRefresh();
-            fileVersionAdapter.notifyDataSetChanged();
-            return;
-        }
         callEnqueue(getSFileApi().fileVersionQuery(fromRepoId, fromRepoFilePath),
                 new SFileCallBack<FileVersionCommits>() {
                     @Override
@@ -185,14 +179,16 @@ public class FileVersionListFragment extends SeaFileBaseFragment implements Base
                                         0,
                                         response.body().commits);
                             }
-
-                            //填充布局  最新版本不计入历史版本
-                            List<FileVersionEntity> dispFileVersionEntities = new ArrayList<FileVersionEntity>();
-                            if (response.body().commits.size() > 1) {
-                                dispFileVersionEntities.addAll(
-                                        response.body().commits.subList(1, response.body().commits.size()));
+                            //图片不加载历史版本
+                            if (!IMUtils.isPIC(fromRepoFilePath)) {
+                                //填充布局  最新版本不计入历史版本
+                                List<FileVersionEntity> dispFileVersionEntities = new ArrayList<FileVersionEntity>();
+                                if (response.body().commits.size() > 1) {
+                                    dispFileVersionEntities.addAll(
+                                            response.body().commits.subList(1, response.body().commits.size()));
+                                }
+                                fileVersionAdapter.bindData(isRefresh, dispFileVersionEntities);
                             }
-                            fileVersionAdapter.bindData(isRefresh, dispFileVersionEntities);
                         }
                         stopRefresh();
                     }

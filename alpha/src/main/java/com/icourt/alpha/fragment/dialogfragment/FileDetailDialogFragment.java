@@ -123,7 +123,7 @@ public class FileDetailDialogFragment extends FileDetailsBaseDialogFragment
                     Arrays.asList(FileVersionListFragment.newInstance(fromRepoId, filePath, getRepoPermission()),
                             FileLinkFragment.newInstance(fromRepoId,
                                     filePath,
-                                    0,
+                                    FileLinkFragment.LINK_TYPE_DOWNLOAD,
                                     getRepoPermission())));
         } else {//只读权限
             baseFragmentAdapter.bindData(true,
@@ -183,6 +183,14 @@ public class FileDetailDialogFragment extends FileDetailsBaseDialogFragment
 
     }
 
+    @Override
+    public void onStop() {
+        super.onStop();
+        if (getDialog() != null) {
+            getDialog().show();
+        }
+    }
+
     @OnClick({R.id.file_title_tv,
             R.id.file_version_tv,
             R.id.file_type_iv,
@@ -204,6 +212,8 @@ public class FileDetailDialogFragment extends FileDetailsBaseDialogFragment
                             item.rev_file_size,
                             String.format("%s%s", fromRepoDirPath, fileName),
                             item.id);
+                } else {
+
                 }
                 break;
             default:

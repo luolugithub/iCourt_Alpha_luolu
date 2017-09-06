@@ -51,8 +51,8 @@ public class FileLinkFragment extends BaseFragment {
     protected static final String KEY_SEA_FILE_LINK_TYPE = "seaFileLinkType";//文件链接类型
     protected static final String KEY_SEA_FILE_REPO_PERMISSION = "seaFileRepoPermission";//repo的权限
 
-    protected static final int LINK_TYPE_DOWNLOAD = 0;//下载链接类型
-    protected static final int LINK_TYPE_UPLOAD = 1;//上传链接类型
+    public static final int LINK_TYPE_DOWNLOAD = 0;//下载链接类型
+    public static final int LINK_TYPE_UPLOAD = 1;//上传链接类型
 
     @IntDef({LINK_TYPE_DOWNLOAD,
             LINK_TYPE_UPLOAD})
