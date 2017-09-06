@@ -216,7 +216,7 @@ public class FileInnerShareFragment extends BaseFragment
      */
     private void shareFile2User(final String permission, List<String> users) {
         if (users == null || users.isEmpty()) return;
-        showLoadingDialog(null);
+        showLoadingDialog(R.string.str_executing);
         for (int i = 0; i < users.size(); i++) {
             String s = users.get(i);
             callEnqueue(getSFileApi().folderShareUserPermission(

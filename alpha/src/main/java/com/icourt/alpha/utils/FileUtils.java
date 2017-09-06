@@ -118,6 +118,14 @@ public class FileUtils {
 
     /**
      * 获取 友好提示文件单位
+     * <p>
+     * <p>
+     * 大小单位逐级使用 B, K, M, G, T
+     * 大小为 0 时（比如某文件夹内无内容）显示为 0B
+     * 最多保留小数点后两位，四舍五入
+     * 四舍五入后小数点后末尾为 “00” 时省略 “00”，只有一个 “0” 时不省略，如
+     * 13.00M 显示为 13M
+     * 13.80M 依然显示为 13.80M
      *
      * @param b B
      * @return
@@ -129,16 +137,16 @@ public class FileUtils {
         long tb = gb * 1024;
         if (b >= tb) {
             float f = (float) b / tb;
-            return String.format(f > 100? "%.0fT" : "%.1fT", f);
+            return String.format(b % tb == 0 ? "%.0fT" : "%.2fT", f);
         } else if (b >= gb) {
             float f = (float) b / gb;
-            return String.format(f > 100? "%.0fG" : "%.1fG", f);
+            return String.format(b % gb == 0 ? "%.0fG" : "%.2fG", f);
         } else if (b >= mb) {
             float f = (float) b / mb;
-            return String.format(f > 100 ? "%.0fM" : "%.1fM", f);
+            return String.format(b % mb == 0 ? "%.0fM" : "%.2fM", f);
         } else if (b >= kb) {
             float f = (float) b / kb;
-            return String.format(f > 100 ? "%.0fK" : "%.1fK", f);
+            return String.format(b % kb == 0 ? "%.0fK" : "%.2fK", f);
         } else
             return String.format("%dB", b);
     }

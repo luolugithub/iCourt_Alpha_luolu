@@ -2,6 +2,7 @@ package com.icourt.alpha.fragment;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -67,6 +68,7 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
     @BindView(R.id.refreshLayout)
     RefreshLayout refreshLayout;
     Unbinder unbinder;
+    Handler mHandler = new Handler();
 
     public static FileChangeHistoryFragment newInstance(
             @SFileConfig.REPO_TYPE int repoType,
@@ -271,9 +273,23 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
         }
     }
 
+    /**
+     * 延迟刷新 sfile有延迟
+     */
+    private void delayRefresh() {
+        mHandler.removeCallbacksAndMessages(null);
+        mHandler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                getData(true);
+            }
+        }, 500);
+    }
+
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+        mHandler.removeCallbacksAndMessages(null);
         unbinder.unbind();
     }
 
@@ -360,13 +376,18 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
                     public void onSuccess(Call<FolderDocumentEntity> call, Response<FolderDocumentEntity> response) {
                         dismissLoadingDialog();
                         showToast(R.string.sfile_revert_success);
-                        getData(true);
+                        delayRefresh();
                     }
 
                     @Override
                     public void onFailure(Call<FolderDocumentEntity> call, Throwable t) {
                         super.onFailure(call, t);
                         dismissLoadingDialog();
+                    }
+                    @Override
+                    public void defNotify(String noticeStr) {
+                        showToast(noticeStr);
+                        //super.defNotify(noticeStr);
                     }
                 });
     }
@@ -392,13 +413,18 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
                     public void onSuccess(Call<String> call, Response<String> response) {
                         dismissLoadingDialog();
                         showToast(R.string.sfile_revert_success);
-                        getData(true);
+                        delayRefresh();
                     }
 
                     @Override
                     public void onFailure(Call<String> call, Throwable t) {
                         dismissLoadingDialog();
                         super.onFailure(call, t);
+                    }
+                    @Override
+                    public void defNotify(String noticeStr) {
+                        showToast(noticeStr);
+                        //super.defNotify(noticeStr);
                     }
                 });
     }
@@ -441,13 +467,18 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
                     public void onSuccess(Call<JsonElement> call, Response<JsonElement> response) {
                         dismissLoadingDialog();
                         showToast(R.string.sfile_revert_success);
-                        getData(true);
+                        delayRefresh();
                     }
 
                     @Override
                     public void onFailure(Call<JsonElement> call, Throwable t) {
                         super.onFailure(call, t);
                         dismissLoadingDialog();
+                    }
+                    @Override
+                    public void defNotify(String noticeStr) {
+                        showToast(noticeStr);
+                        //super.defNotify(noticeStr);
                     }
                 });
     }
@@ -470,7 +501,8 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
                         dismissLoadingDialog();
                         if (JsonUtils.getBoolValue(response.body(), "success")) {
                             showToast(R.string.sfile_revert_success);
-                            getData(true);
+                            delayRefresh();
+
                         } else {
                             showToast(R.string.sfile_revert_fail);
                         }
@@ -480,6 +512,12 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
                     public void onFailure(Call<JsonObject> call, Throwable t) {
                         super.onFailure(call, t);
                         dismissLoadingDialog();
+                    }
+
+                    @Override
+                    public void defNotify(String noticeStr) {
+                        showToast(noticeStr);
+                        //super.defNotify(noticeStr);
                     }
                 });
     }
@@ -500,7 +538,7 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
                         dismissLoadingDialog();
                         if (JsonUtils.getBoolValue(response.body(), "success")) {
                             showToast(R.string.sfile_revert_success);
-                            getData(true);
+                            delayRefresh();
                         } else {
                             showToast(R.string.sfile_revert_fail);
                         }
@@ -510,6 +548,11 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
                     public void onFailure(Call<JsonObject> call, Throwable t) {
                         dismissLoadingDialog();
                         super.onFailure(call, t);
+                    }
+                    @Override
+                    public void defNotify(String noticeStr) {
+                        showToast(noticeStr);
+                        //super.defNotify(noticeStr);
                     }
                 });
     }
@@ -530,7 +573,7 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
                         dismissLoadingDialog();
                         if (JsonUtils.getBoolValue(response.body(), "success")) {
                             showToast(R.string.sfile_revert_success);
-                            getData(true);
+                            delayRefresh();
                         } else {
                             showToast(R.string.sfile_revert_fail);
                         }
@@ -540,6 +583,11 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
                     public void onFailure(Call<JsonObject> call, Throwable t) {
                         dismissLoadingDialog();
                         super.onFailure(call, t);
+                    }
+                    @Override
+                    public void defNotify(String noticeStr) {
+                        showToast(noticeStr);
+                        //super.defNotify(noticeStr);
                     }
                 });
     }
@@ -562,7 +610,7 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
                         dismissLoadingDialog();
                         if (JsonUtils.getBoolValue(response.body(), "success")) {
                             showToast(R.string.sfile_revert_success);
-                            getData(true);
+                            delayRefresh();
                         } else {
                             showToast(R.string.sfile_revert_fail);
                         }
@@ -572,6 +620,11 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
                     public void onFailure(Call<JsonObject> call, Throwable t) {
                         dismissLoadingDialog();
                         super.onFailure(call, t);
+                    }
+                    @Override
+                    public void defNotify(String noticeStr) {
+                        showToast(noticeStr);
+                        //super.defNotify(noticeStr);
                     }
                 });
     }
@@ -595,7 +648,7 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
                         dismissLoadingDialog();
                         if (JsonUtils.getBoolValue(response.body(), "success")) {
                             showToast(R.string.sfile_revert_success);
-                            getData(true);
+                            delayRefresh();
                         } else {
                             showToast(R.string.sfile_revert_fail);
                         }
@@ -605,6 +658,11 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
                     public void onFailure(Call<JsonObject> call, Throwable t) {
                         dismissLoadingDialog();
                         super.onFailure(call, t);
+                    }
+                    @Override
+                    public void defNotify(String noticeStr) {
+                        showToast(noticeStr);
+                        //super.defNotify(noticeStr);
                     }
                 });
     }

@@ -46,9 +46,9 @@
             android:orientation="horizontal"
             android:paddingBottom="10dp"
             android:paddingLeft="20dp"
-            android:visibility="gone"
             android:paddingRight="20dp"
-            android:paddingTop="10dp">
+            android:paddingTop="10dp"
+            android:visibility="gone">
 
             <TextView
                 android:layout_width="wrap_content"
@@ -65,14 +65,17 @@
                     android:id="@+id/share_permission_rw_rb"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:checked="true"
                     android:text="可读写"
-                    android:checked="true"/>
+                    android:textColor="@color/alpha_font_color_gray" />
 
                 <RadioButton
                     android:id="@+id/share_permission_r_rb"
                     android:layout_width="wrap_content"
+                    android:layout_marginLeft="10dp"
                     android:layout_height="wrap_content"
-                    android:text="只读" />
+                    android:text="只读"
+                    android:textColor="@color/alpha_font_color_gray" />
             </RadioGroup>
         </LinearLayout>
 
