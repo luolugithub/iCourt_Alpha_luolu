@@ -12,6 +12,7 @@ import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.entity.bean.TimeEntity;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.GlideUtils;
+import com.icourt.alpha.utils.LogUtils;
 import com.icourt.alpha.utils.LoginInfoUtils;
 import com.icourt.alpha.utils.UMMobClickAgent;
 import com.icourt.alpha.view.recyclerviewDivider.ITimeDividerInterface;
@@ -47,6 +48,13 @@ public class TimeAdapter extends BaseArrayRecyclerAdapter<TimeEntity.ItemEntity>
     public boolean bindData(boolean isRefresh, List<TimeEntity.ItemEntity> datas) {
         if (isRefresh) {
             timeShowArray.clear();
+            //分组  避免上拉加载从最后初始化
+            if (datas != null && !datas.isEmpty()) {
+                for (int i = 0; i < datas.size(); i++) {
+                    TimeEntity.ItemEntity itemEntity = datas.get(i);
+                    addTimeDividerArray(itemEntity, i);
+                }
+            }
         }
         return super.bindData(isRefresh, datas);
     }
