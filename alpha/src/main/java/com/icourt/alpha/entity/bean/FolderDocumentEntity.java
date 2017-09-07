@@ -100,6 +100,9 @@ public class FolderDocumentEntity
     @NonNull
     @Override
     public String getSuspensionTag() {
+        if (TextUtils.isEmpty(suspensionTag)) {
+            return name;
+        }
         return suspensionTag;
     }
 

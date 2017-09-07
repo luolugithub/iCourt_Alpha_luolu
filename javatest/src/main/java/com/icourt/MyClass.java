@@ -1,8 +1,11 @@
 package com.icourt;
 
 import java.lang.ref.WeakReference;
+import java.text.CollationKey;
+import java.text.Collator;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
@@ -29,15 +32,47 @@ public class MyClass {
         }
     };
 
-    public static void main(String[] args) throws Exception {
+    /**
+     * Description 中国字符比较
+     * Company Beijing icourt
+     * author  youxuan  E-mail:xuanyouwu@163.com
+     * date createTime：2017/8/18
+     * version 2.1.0
+     */
+    public static class ChinaComparator implements Comparator<String> {
+        Collator cmp = Collator.getInstance(java.util.Locale.CHINA);
 
-        String abc=new String("abc");
+        @Override
+        public int compare(String t0, String t1) {
+            int result = 0;
+            if (null != t0 && null != t1) {
+                CollationKey c1 = cmp.getCollationKey(t0);
+                CollationKey c2 = cmp.getCollationKey(t1);
+                result = cmp.compare(c1.getSourceString(), c2.getSourceString());
+            } else if (null == t0) {
+                result = 1;
+            } else if (null == t1) {
+                result = -1;
+            }
+            return result;
+        }
+    }
+
+
+    public static void main(String[] args) throws Exception {
+        List<String> list = Arrays.asList("v说", ",", ".", ".DD");
+        log("--------->sort before:" + list);
+        Collections.sort(list, new ChinaComparator());
+        log("--------->sort after:" + list);
+
+
+        String abc = new String("abc");
         WeakReference<String> abcWeakRef = new WeakReference<String>(abc);
         //abc=null;
-        System.out.println("before gc: "+abcWeakRef.get());
-        System.out.println("before gc1: "+abc);
+        System.out.println("before gc: " + abcWeakRef.get());
+        System.out.println("before gc1: " + abc);
         System.gc();
-        System.out.println("after gc: "+abcWeakRef.get());
+        System.out.println("after gc: " + abcWeakRef.get());
 
         SimpleDateFormat sdf = new SimpleDateFormat();
         sdf.applyPattern("yyyy-MM-dd: hh:mm");

@@ -302,6 +302,12 @@ public class FileVersionListFragment extends SeaFileBaseFragment implements Base
                         dismissLoadingDialog();
                         super.onFailure(call, t);
                     }
+
+                    @Override
+                    public void defNotify(String noticeStr) {
+                       // super.defNotify(noticeStr);
+                        showToast(noticeStr);
+                    }
                 });
     }
 }

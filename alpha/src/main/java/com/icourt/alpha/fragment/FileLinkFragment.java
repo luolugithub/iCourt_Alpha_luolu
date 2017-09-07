@@ -414,7 +414,7 @@ public class FileLinkFragment extends BaseFragment {
                     @Override
                     public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
                         dismissLoadingDialog();
-                        showToast(R.string.str_delete_sucess);
+                        //showToast(R.string.str_delete_sucess);
                         getData(true);
                     }
 
