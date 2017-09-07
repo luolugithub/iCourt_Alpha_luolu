@@ -15,11 +15,11 @@ import android.view.ViewGroup;
 import com.andview.refreshview.XRefreshView;
 import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.icourt.alpha.R;
-import com.icourt.alpha.activity.SearchProjectActivity;
+import com.icourt.alpha.activity.SearchTaskActivity;
 import com.icourt.alpha.activity.TaskDetailActivity;
 import com.icourt.alpha.activity.TimerDetailActivity;
 import com.icourt.alpha.activity.TimerTimingActivity;
-import com.icourt.alpha.adapter.TaskItemAdapter2;
+import com.icourt.alpha.adapter.TaskAdapter;
 import com.icourt.alpha.adapter.baseadapter.adapterObserver.DataChangeAdapterObserver;
 import com.icourt.alpha.adapter.baseadapter.adapterObserver.RefreshViewEmptyObserver;
 import com.icourt.alpha.entity.bean.TaskEntity;
@@ -90,12 +90,14 @@ public class TaskOtherListFragment extends BaseTaskFragment implements BaseQuick
 
     private LinearLayoutManager mLinearLayoutManager;
 
-    int startType, finishType;
+    int startType;//我分配的任务列表／他人的任务列表（我分配的暂时已经废弃了）
+    int finishType;//未完成／已完成
+
     ArrayList<String> ids;
 
     private int pageIndex = 1;//分页页码（暂时保留字段）
 
-    TaskItemAdapter2 taskAdapter;
+    TaskAdapter taskAdapter;
 
     TaskEntity.TaskItemEntity lastEntity;
 
@@ -144,7 +146,7 @@ public class TaskOtherListFragment extends BaseTaskFragment implements BaseQuick
         recyclerView.setLayoutManager(mLinearLayoutManager);
         recyclerView.setHasFixedSize(true);
 
-        taskAdapter = new TaskItemAdapter2();
+        taskAdapter = new TaskAdapter();
         taskAdapter.registerAdapterDataObserver(new DataChangeAdapterObserver() {
             @Override
             public void onItemRangeRemoved(int positionStart, int itemCount) {
@@ -186,7 +188,7 @@ public class TaskOtherListFragment extends BaseTaskFragment implements BaseQuick
         super.onClick(v);
         switch (v.getId()) {
             case R.id.rl_comm_search:
-                SearchProjectActivity.launchTask(getContext(), getAssignTos(), 0, SearchProjectActivity.SEARCH_TASK);
+                SearchTaskActivity.launchTask(getContext(), getAssignTos(), 0);
                 break;
         }
     }
@@ -260,6 +262,7 @@ public class TaskOtherListFragment extends BaseTaskFragment implements BaseQuick
             public void onFailure(Call<ResEntity<TaskEntity>> call, Throwable t) {
                 super.onFailure(call, t);
                 stopRefresh();
+                enableEmptyView(null);
             }
         });
     }
@@ -310,33 +313,33 @@ public class TaskOtherListFragment extends BaseTaskFragment implements BaseQuick
             if (taskItemEntity.dueTime > 0) {
                 if (TextUtils.equals(DateUtils.getTimeDateFormatYear(taskItemEntity.dueTime), DateUtils.getTimeDateFormatYear(DateUtils.millis())) || DateUtils.getDayDiff(DateUtils.millis(), taskItemEntity.dueTime) < 0) {
                     //今天到期
-                    taskItemEntity.groupName = "今天到期";
+                    taskItemEntity.groupName = getString(R.string.task_today_due);
                     todayTaskEntities.add(taskItemEntity);
                 } else if (DateUtils.getDayDiff(DateUtils.millis(), taskItemEntity.dueTime) <= 3 && DateUtils.getDayDiff(DateUtils.millis(), taskItemEntity.dueTime) > 0) {
                     //即将到期
-                    taskItemEntity.groupName = "即将到期";
+                    taskItemEntity.groupName = getString(R.string.task_due_soon);
                     beAboutToTaskEntities.add(taskItemEntity);
                 } else if (DateUtils.getDayDiff(DateUtils.millis(), taskItemEntity.dueTime) > 3) {
                     //未来
-                    taskItemEntity.groupName = "未来";
+                    taskItemEntity.groupName = getString(R.string.task_future);
                     futureTaskEntities.add(taskItemEntity);
                 } else {
                     //已到期
-                    taskItemEntity.groupName = "已到期";
+                    taskItemEntity.groupName = getString(R.string.task_was_due);
                     datedTaskEntities.add(taskItemEntity);
                 }
             } else {
                 //未指定到期日
-                taskItemEntity.groupName = "未指定到期日";
+                taskItemEntity.groupName = getString(R.string.task_no_due_time);
                 noDueTaskEntities.add(taskItemEntity);
             }
         }
         //将分组信息添加到allTaskEntities集合中，并且在mArrayMap中记录每组的数量
-        addToAllTaskEntities("已到期", datedTaskEntities, allTaskEntities);
-        addToAllTaskEntities("今天到期", todayTaskEntities, allTaskEntities);
-        addToAllTaskEntities("即将到期", beAboutToTaskEntities, allTaskEntities);
-        addToAllTaskEntities("未来", futureTaskEntities, allTaskEntities);
-        addToAllTaskEntities("未指定到期日", noDueTaskEntities, allTaskEntities);
+        addToAllTaskEntities(getString(R.string.task_was_due), datedTaskEntities, allTaskEntities);//已到期
+        addToAllTaskEntities(getString(R.string.task_today_due), todayTaskEntities, allTaskEntities);//今天到期
+        addToAllTaskEntities(getString(R.string.task_due_soon), beAboutToTaskEntities, allTaskEntities);//即将到期
+        addToAllTaskEntities(getString(R.string.task_future), futureTaskEntities, allTaskEntities);//未来
+        addToAllTaskEntities(getString(R.string.task_no_due_time), noDueTaskEntities, allTaskEntities);//未指定到期日
         return allTaskEntities;
     }
 
@@ -378,7 +381,7 @@ public class TaskOtherListFragment extends BaseTaskFragment implements BaseQuick
                 if (!itemEntity.state) {//完成任务
                     if (itemEntity.attendeeUsers != null) {
                         if (itemEntity.attendeeUsers.size() > 1) {
-                            showFinishDialog(view.getContext(), "该任务由多人负责,确定完成?", itemEntity, SHOW_FINISH_DIALOG);
+                            showFinishDialog(view.getContext(), getString(R.string.task_is_confirm_complete_task), itemEntity, SHOW_FINISH_DIALOG);
                         } else {
                             updateTaskState(itemEntity, true);
                         }

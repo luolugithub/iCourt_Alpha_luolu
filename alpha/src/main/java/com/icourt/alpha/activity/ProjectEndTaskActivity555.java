@@ -78,7 +78,7 @@ import static com.icourt.alpha.base.BaseDialogFragment.KEY_FRAGMENT_RESULT;
  * version 2.0.0
  */
 
-public class ProjectEndTaskActivity extends BaseActivity
+public class ProjectEndTaskActivity555 extends BaseActivity
         implements BaseRecyclerAdapter.OnItemClickListener,
         BaseRecyclerAdapter.OnItemChildClickListener,
         BaseRecyclerAdapter.OnItemLongClickListener,
@@ -108,7 +108,7 @@ public class ProjectEndTaskActivity extends BaseActivity
 
     public static void launch(@NonNull Context context, @NonNull String projectId) {
         if (context == null) return;
-        Intent intent = new Intent(context, ProjectEndTaskActivity.class);
+        Intent intent = new Intent(context, ProjectEndTaskActivity555.class);
         intent.putExtra(KEY_PROJECT_ID, projectId);
         context.startActivity(intent);
     }
@@ -116,7 +116,7 @@ public class ProjectEndTaskActivity extends BaseActivity
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_project_end_task_layout);
+        setContentView(R.layout.activity_project_end_task_layout555);
         ButterKnife.bind(this);
         initView();
     }
@@ -172,7 +172,7 @@ public class ProjectEndTaskActivity extends BaseActivity
         super.onClick(v);
         switch (v.getId()) {
             case R.id.rl_comm_search:
-                SearchProjectActivity.launchFinishTask(getContext(), "", 0, 1, SearchProjectActivity.SEARCH_TASK, projectId);
+                SearchTaskActivity.launchFinishTask(getContext(), "", 0, 1, projectId);
                 break;
             default:
                 super.onClick(v);

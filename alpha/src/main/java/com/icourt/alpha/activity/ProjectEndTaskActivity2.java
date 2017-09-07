@@ -54,7 +54,7 @@ public class ProjectEndTaskActivity2 extends BaseActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_project_end_task_layout2);
+        setContentView(R.layout.activity_project_end_task_layout);
         ButterKnife.bind(this);
         initView();
     }

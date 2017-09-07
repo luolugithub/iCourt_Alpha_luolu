@@ -33,7 +33,7 @@ public class TaskItemAdapter extends BaseArrayRecyclerAdapter<TaskEntity.TaskIte
 
     @Override
     public int bindView(int viewtype) {
-        return R.layout.adapter_item_task;
+        return R.layout.adapter_item_task555;
     }
 
     @Override

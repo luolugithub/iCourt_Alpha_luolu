@@ -1,10 +1,10 @@
 package com.icourt.alpha.fragment;
 
 import android.content.Context;
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
 import android.text.TextUtils;
@@ -12,24 +12,21 @@ import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.CheckBox;
 import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.google.gson.JsonElement;
 import com.icourt.alpha.R;
-import com.icourt.alpha.activity.SearchProjectActivity;
 import com.icourt.alpha.activity.TaskDetailActivity;
 import com.icourt.alpha.activity.TimerDetailActivity;
 import com.icourt.alpha.activity.TimerTimingActivity;
-import com.icourt.alpha.adapter.TaskItemAdapter;
-import com.icourt.alpha.adapter.TaskItemAdapter2;
+import com.icourt.alpha.adapter.TaskAdapter;
 import com.icourt.alpha.adapter.baseadapter.adapterObserver.DataChangeAdapterObserver;
 import com.icourt.alpha.entity.bean.TaskEntity;
 import com.icourt.alpha.entity.bean.TimeEntity;
+import com.icourt.alpha.entity.event.TaskActionEvent;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.SystemUtils;
@@ -38,12 +35,14 @@ import com.icourt.alpha.view.SoftKeyboardSizeWatchLayout;
 import com.icourt.alpha.widget.manager.TimerManager;
 import com.umeng.analytics.MobclickAgent;
 
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import butterknife.Unbinder;
 import retrofit2.Call;
-import retrofit2.Callback;
 import retrofit2.Response;
 
 /**
@@ -56,8 +55,10 @@ import retrofit2.Response;
 
 public class SearchTaskFragment extends BaseTaskFragment implements BaseQuickAdapter.OnItemClickListener, BaseQuickAdapter.OnItemChildClickListener {
 
-    public static final String KEY_SEARCH_TASK_TYPE = "search_search_task_type";
-    public static final String KEY_SEARCH_TASK_STATUS_TYPE = "search_search_task_status_type";
+    public static final String KEY_SEARCH_TASK_TYPE = "search_task_type";
+    public static final String KEY_SEARCH_TASK_STATUS_TYPE = "search_task_status_type";
+    public static final String KEY_PROJECT_ID = "projectId";
+    public static final String KEY_ASSIGN_TOS = "assignTos";
 
     private Unbinder unbinder;
 
@@ -80,7 +81,7 @@ public class SearchTaskFragment extends BaseTaskFragment implements BaseQuickAda
     String projectId;//项目的id
     String assignTos;//负责人的id的集合
 
-    private TaskItemAdapter2 taskAdapter;
+    private TaskAdapter taskAdapter;
 
     /**
      * 搜索已完成的全部任务
@@ -95,8 +96,8 @@ public class SearchTaskFragment extends BaseTaskFragment implements BaseQuickAda
         Bundle bundle = new Bundle();
         bundle.putInt(KEY_SEARCH_TASK_TYPE, searchTaskType);
         bundle.putInt(KEY_SEARCH_TASK_STATUS_TYPE, taskStatuType);
-        bundle.putString("projectId", projectId);
-        bundle.putString("assignTos", assignTos);
+        bundle.putString(KEY_PROJECT_ID, projectId);
+        bundle.putString(KEY_ASSIGN_TOS, assignTos);
         searchTaskFragment.setArguments(bundle);
         return searchTaskFragment;
     }
@@ -107,17 +108,18 @@ public class SearchTaskFragment extends BaseTaskFragment implements BaseQuickAda
         View view = super.onCreateView(R.layout.fragment_search_task, inflater, container, savedInstanceState);
         unbinder = ButterKnife.bind(this, view);
         if (getArguments() != null) {
+            searchTaskType = getArguments().getInt(KEY_SEARCH_TASK_TYPE);
             taskStatuType = getArguments().getInt(KEY_SEARCH_TASK_STATUS_TYPE);
-            projectId = getArguments().getString("projectId");
-            assignTos = getArguments().getString("assignTos");
+            projectId = getArguments().getString(KEY_PROJECT_ID);
+            assignTos = getArguments().getString(KEY_ASSIGN_TOS);
         }
         return view;
     }
 
     @Override
     protected void initView() {
-        taskAdapter = new TaskItemAdapter2();
-        recyclerView.setAdapter(taskAdapter);
+        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        taskAdapter = new TaskAdapter();
         taskAdapter.setOnItemClickListener(this);
         taskAdapter.setOnItemChildClickListener(this);
         taskAdapter.registerAdapterDataObserver(new DataChangeAdapterObserver() {
@@ -128,7 +130,7 @@ public class SearchTaskFragment extends BaseTaskFragment implements BaseQuickAda
                 }
             }
         });
-
+        recyclerView.setAdapter(taskAdapter);
         etSearchName.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -162,6 +164,36 @@ public class SearchTaskFragment extends BaseTaskFragment implements BaseQuickAda
             }
         });
     }
+
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onDeleteTaskEvent(TaskActionEvent event) {
+        if (event == null) return;
+        switch (event.action) {
+            case TaskActionEvent.TASK_REFRESG_ACTION:
+                getData(true);
+                break;
+            case TaskActionEvent.TASK_DELETE_ACTION:
+                if (event.entity == null) return;
+                if (taskAdapter != null) {
+                    taskAdapter.removeItem(event.entity);
+                }
+                break;
+            case TaskActionEvent.TASK_ADD_ITEM_ACITON:
+                if (event.entity == null) return;
+                if (taskAdapter != null) {
+                    taskAdapter.addData(event.entity);
+                }
+                break;
+            case TaskActionEvent.TASK_UPDATE_ITEM:
+                if (event.entity == null) return;
+                if (taskAdapter != null) {
+                    getData(true);
+                }
+                break;
+        }
+    }
+
 
     @OnClick({R.id.tv_search_cancel})
     @Override
@@ -222,9 +254,7 @@ public class SearchTaskFragment extends BaseTaskFragment implements BaseQuickAda
             @Override
             public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
                 dismissLoadingDialog();
-                if (taskAdapter != null) {
-                    taskAdapter.removeItem(itemEntity);
-                }
+                getData(true);
             }
 
             @Override
@@ -265,7 +295,7 @@ public class SearchTaskFragment extends BaseTaskFragment implements BaseQuickAda
                     if (!itemEntity.state) {//完成任务
                         if (itemEntity.attendeeUsers != null) {
                             if (itemEntity.attendeeUsers.size() > 1) {
-                                showFinishDialog(getActivity(), "该任务由多人负责,确定完成?", itemEntity, SHOW_FINISH_DIALOG);
+                                showFinishDialog(getActivity(), getString(R.string.task_is_confirm_complete_task), itemEntity, SHOW_FINISH_DIALOG);
                             } else {
                                 updateTaskState(itemEntity, true);
                             }
@@ -302,7 +332,7 @@ public class SearchTaskFragment extends BaseTaskFragment implements BaseQuickAda
 
     @Override
     protected void taskUpdateBack(@ChangeType int actionType, @NonNull TaskEntity.TaskItemEntity itemEntity) {
-
+        getData(true);
     }
 
     @Override

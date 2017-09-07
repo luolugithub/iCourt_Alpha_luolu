@@ -1,29 +1,24 @@
 package com.icourt.alpha.fragment;
 
 import android.content.Context;
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.design.widget.AppBarLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
-import android.widget.TextView;
 
 import com.andview.refreshview.XRefreshView;
 import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.icourt.alpha.R;
-import com.icourt.alpha.activity.SearchProjectActivity;
+import com.icourt.alpha.activity.SearchTaskActivity;
 import com.icourt.alpha.activity.TaskDetailActivity;
 import com.icourt.alpha.activity.TimerDetailActivity;
 import com.icourt.alpha.activity.TimerTimingActivity;
-import com.icourt.alpha.adapter.TaskItemAdapter;
-import com.icourt.alpha.adapter.TaskItemAdapter2;
+import com.icourt.alpha.adapter.TaskAdapter;
 import com.icourt.alpha.adapter.baseadapter.HeaderFooterAdapter;
 import com.icourt.alpha.adapter.baseadapter.adapterObserver.RefreshViewEmptyObserver;
 import com.icourt.alpha.entity.bean.TaskEntity;
@@ -66,7 +61,7 @@ public class ProjectEndTaskFragment extends BaseTaskFragment implements BaseQuic
     RefreshLayout refreshLayout;
 
     Unbinder unbinder;
-    TaskItemAdapter2 taskAdapter;
+    TaskAdapter taskAdapter;
     String projectId;
     private int pageIndex = 1;
     TaskEntity.TaskItemEntity lastEntity;//最后一次操作的任务
@@ -90,7 +85,7 @@ public class ProjectEndTaskFragment extends BaseTaskFragment implements BaseQuic
     @Override
     protected void initView() {
         projectId = getArguments().getString(KEY_PROJECT_ID);
-        refreshLayout.setNoticeEmpty(R.mipmap.bg_no_task, "暂无已完成任务");
+        refreshLayout.setNoticeEmpty(R.mipmap.bg_no_task, R.string.task_none_finished_task);
         refreshLayout.setMoveForHorizontal(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setHasFixedSize(true);
@@ -98,7 +93,7 @@ public class ProjectEndTaskFragment extends BaseTaskFragment implements BaseQuic
         View headerView = HeaderFooterAdapter.inflaterView(getContext(), R.layout.header_search_comm, recyclerView);
         View rl_comm_search = headerView.findViewById(R.id.rl_comm_search);
         registerClick(rl_comm_search);
-        taskAdapter = new TaskItemAdapter2();
+        taskAdapter = new TaskAdapter();
         taskAdapter.addHeaderView(headerView);
         taskAdapter.setOnItemClickListener(this);
         taskAdapter.setOnItemChildClickListener(this);
@@ -156,7 +151,7 @@ public class ProjectEndTaskFragment extends BaseTaskFragment implements BaseQuic
         super.onClick(v);
         switch (v.getId()) {
             case R.id.rl_comm_search:
-                SearchProjectActivity.launchFinishTask(getContext(), "", 0, 1, SearchProjectActivity.SEARCH_TASK, projectId);
+                SearchTaskActivity.launchFinishTask(getContext(), "", 0, 1, projectId);
                 break;
         }
     }
@@ -230,7 +225,7 @@ public class ProjectEndTaskFragment extends BaseTaskFragment implements BaseQuic
                     if (!itemEntity.state) {//完成任务
                         if (itemEntity.attendeeUsers != null) {
                             if (itemEntity.attendeeUsers.size() > 1) {
-                                showFinishDialog(getActivity(), "该任务由多人负责,确定完成?", itemEntity, SHOW_FINISH_DIALOG);
+                                showFinishDialog(getActivity(), getString(R.string.task_is_confirm_complete_task), itemEntity, SHOW_FINISH_DIALOG);
                             } else {
                                 updateTaskState(itemEntity, true);
                             }
@@ -241,7 +236,7 @@ public class ProjectEndTaskFragment extends BaseTaskFragment implements BaseQuic
                         updateTaskState(itemEntity, false);
                     }
                 } else {
-                    showTopSnackBar("您没有编辑任务的权限");
+                    showTopSnackBar(getString(R.string.task_not_permission_edit_task));
                 }
                 break;
         }

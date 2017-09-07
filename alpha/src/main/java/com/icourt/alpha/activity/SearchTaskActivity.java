@@ -43,7 +43,7 @@ public class SearchTaskActivity extends BaseActivity {
         if (context == null) return;
         Intent intent = new Intent(context, SearchTaskActivity.class);
         intent.putExtra(SearchTaskFragment.KEY_SEARCH_TASK_TYPE, searchTaskType);
-        intent.putExtra("assignTos", assignTos);
+        intent.putExtra(SearchTaskFragment.KEY_ASSIGN_TOS, assignTos);
         context.startActivity(intent);
     }
 
@@ -60,8 +60,8 @@ public class SearchTaskActivity extends BaseActivity {
         Intent intent = new Intent(context, SearchTaskActivity.class);
         intent.putExtra(SearchTaskFragment.KEY_SEARCH_TASK_TYPE, searchTaskType);
         intent.putExtra(SearchTaskFragment.KEY_SEARCH_TASK_STATUS_TYPE, taskStatuType);
-        intent.putExtra("projectId", projectId);
-        intent.putExtra("assignTos", assignTos);
+        intent.putExtra(SearchTaskFragment.KEY_PROJECT_ID, projectId);
+        intent.putExtra(SearchTaskFragment.KEY_ASSIGN_TOS, assignTos);
         context.startActivity(intent);
     }
 
@@ -70,6 +70,7 @@ public class SearchTaskActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_search_task);
         ButterKnife.bind(this);
+        initView();
     }
 
     @Override
@@ -77,8 +78,8 @@ public class SearchTaskActivity extends BaseActivity {
         super.initView();
         searchTaskType = getIntent().getIntExtra(SearchTaskFragment.KEY_SEARCH_TASK_TYPE, -1);
         taskStatuType = getIntent().getIntExtra(SearchTaskFragment.KEY_SEARCH_TASK_STATUS_TYPE, -1);
-        projectId = getIntent().getStringExtra("projectId");
-        assignTos = getIntent().getStringExtra("assignTos");
+        projectId = getIntent().getStringExtra(SearchTaskFragment.KEY_PROJECT_ID);
+        assignTos = getIntent().getStringExtra(SearchTaskFragment.KEY_ASSIGN_TOS);
 
         SearchTaskFragment searchTaskFragment = SearchTaskFragment.newInstance(getActivity(), assignTos, searchTaskType, taskStatuType, projectId);
         addOrShowFragmentAnim(searchTaskFragment, R.id.container, true);
@@ -98,5 +99,10 @@ public class SearchTaskActivity extends BaseActivity {
         }
         transaction.add(containerViewId, targetFragment, String.valueOf(targetFragment.hashCode())).commitAllowingStateLoss();
         transaction.addToBackStack(null);
+    }
+
+    @Override
+    public void onBackPressed() {
+        finish();
     }
 }

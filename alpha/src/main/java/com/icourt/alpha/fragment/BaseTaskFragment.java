@@ -12,16 +12,12 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
 import android.view.View;
-import android.widget.CheckBox;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.icourt.alpha.R;
 import com.icourt.alpha.activity.TaskDetailActivity;
-import com.icourt.alpha.activity.TimerDetailActivity;
-import com.icourt.alpha.activity.TimerTimingActivity;
-import com.icourt.alpha.adapter.TaskAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.entity.bean.ItemsEntity;
@@ -60,7 +56,6 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-import static com.umeng.socialize.utils.ContextUtil.getContext;
 import static com.umeng.socialize.utils.DeviceConfig.context;
 
 /**
@@ -78,6 +73,11 @@ public abstract class BaseTaskFragment extends BaseFragment implements OnFragmen
     protected boolean isDeleteTask = false;//删除任务权限
     protected boolean isAddTime = false;//添加计时权限
 
+    public static final int CHANGE_STATUS = 1;//修改任务完成状态
+    public static final int CHANGE_PROJECT = 2;//修改任务所属项目/任务组（更新item）
+    public static final int CHANGE_ALLOT = 3;//将任务分配给其他负责人（更新item）
+    public static final int CHANGE_DUETIME = 4;//修改任务到期时间（全部更新）
+
     /**
      * 以下为对任务的操作状态
      */
@@ -86,11 +86,9 @@ public abstract class BaseTaskFragment extends BaseFragment implements OnFragmen
     public @interface ChangeType {
     }
 
-    public static final int CHANGE_STATUS = 1;//修改任务完成状态
-    public static final int CHANGE_PROJECT = 2;//修改任务所属项目/任务组（更新item）
-    public static final int CHANGE_ALLOT = 3;//将任务分配给其他负责人（更新item）
-    public static final int CHANGE_DUETIME = 4;//修改任务到期时间（全部更新）
 
+    protected static final int SHOW_DELETE_DIALOG = 0;//删除提示对话框
+    protected static final int SHOW_FINISH_DIALOG = 1;//完成任务提示对话框
 
     /**
      * 以下为弹出对话框的分类
@@ -99,9 +97,6 @@ public abstract class BaseTaskFragment extends BaseFragment implements OnFragmen
     @Retention(RetentionPolicy.SOURCE)
     public @interface DialogType {
     }
-
-    protected static final int SHOW_DELETE_DIALOG = 0;//删除提示对话框
-    protected static final int SHOW_FINISH_DIALOG = 1;//完成任务提示对话框
 
 
     private TaskEntity.TaskItemEntity updateTaskItemEntity;//当前修改任务到期事件、负责人、所属项目的任务
@@ -242,7 +237,7 @@ public abstract class BaseTaskFragment extends BaseFragment implements OnFragmen
      * @param taskItemEntity
      * @param taskReminderEntity
      */
-    protected void addReminders(TaskEntity.TaskItemEntity taskItemEntity, final TaskReminderEntity taskReminderEntity) {
+    private void addReminders(TaskEntity.TaskItemEntity taskItemEntity, final TaskReminderEntity taskReminderEntity) {
         if (taskReminderEntity == null) return;
         if (taskItemEntity == null) return;
         String json = getReminderJson(taskReminderEntity);
@@ -345,34 +340,34 @@ public abstract class BaseTaskFragment extends BaseFragment implements OnFragmen
         if (taskItemEntity.state) {
             return;
         }
-        ItemsEntity timeEntity = new ItemsEntity("开始计时", R.mipmap.time_start_orange_task);
+        ItemsEntity timeEntity = new ItemsEntity(getString(R.string.task_start_timing), R.mipmap.time_start_orange_task);
         if (taskItemEntity.isTiming) {
             timeEntity.itemIconRes = R.mipmap.time_stop_orange_task;
-            timeEntity.itemTitle = "停止计时";
+            timeEntity.itemTitle = getString(R.string.task_stop_timing);
         } else {
             timeEntity.itemIconRes = R.mipmap.time_start_orange_task;
-            timeEntity.itemTitle = "开始计时";
+            timeEntity.itemTitle = getString(R.string.task_start_timing);
         }
         if (isEditTask && isDeleteTask) {
             showLongMeau(getActivity(), Arrays.asList(
-                    new ItemsEntity("项目/任务组", R.mipmap.project_orange),
-                    new ItemsEntity("分配给", R.mipmap.assign_orange),
-                    new ItemsEntity("到期日", R.mipmap.date_orange),
+                    new ItemsEntity(getString(R.string.task_project_or_taskset), R.mipmap.project_orange),
+                    new ItemsEntity(getString(R.string.task_allot_to), R.mipmap.assign_orange),
+                    new ItemsEntity(getString(R.string.task_due_date), R.mipmap.date_orange),
                     timeEntity,
-                    new ItemsEntity("查看详情", R.mipmap.info_orange),
-                    new ItemsEntity("删除", R.mipmap.trash_orange)), taskItemEntity);
+                    new ItemsEntity(getString(R.string.task_check_detail), R.mipmap.info_orange),
+                    new ItemsEntity(getString(R.string.task_delete), R.mipmap.trash_orange)), taskItemEntity);
         } else if (isDeleteTask && !isEditTask) {
             showLongMeau(getActivity(), Arrays.asList(
-                    new ItemsEntity("查看详情", R.mipmap.info_orange),
+                    new ItemsEntity(getString(R.string.task_check_detail), R.mipmap.info_orange),
                     timeEntity,
-                    new ItemsEntity("删除", R.mipmap.trash_orange)), taskItemEntity);
+                    new ItemsEntity(getString(R.string.task_delete), R.mipmap.trash_orange)), taskItemEntity);
         } else if (!isDeleteTask && isEditTask) {
             showLongMeau(getActivity(), Arrays.asList(
-                    new ItemsEntity("项目/任务组", R.mipmap.project_orange),
-                    new ItemsEntity("分配给", R.mipmap.assign_orange),
-                    new ItemsEntity("到期日", R.mipmap.date_orange),
+                    new ItemsEntity(getString(R.string.task_project_or_taskset), R.mipmap.project_orange),
+                    new ItemsEntity(getString(R.string.task_allot_to), R.mipmap.assign_orange),
+                    new ItemsEntity(getString(R.string.task_due_date), R.mipmap.date_orange),
                     timeEntity,
-                    new ItemsEntity("查看详情", R.mipmap.info_orange)
+                    new ItemsEntity(getString(R.string.task_check_detail), R.mipmap.info_orange)
                     ),
                     taskItemEntity);
         }
@@ -407,7 +402,7 @@ public abstract class BaseTaskFragment extends BaseFragment implements OnFragmen
                                 updateTaskItemEntity = taskItemEntity;
                                 showTaskAllotSelectDialogFragment(taskItemEntity.matter.id, taskItemEntity.attendeeUsers);
                             } else {
-                                showToast("请先选择项目");
+                                showToast(R.string.task_please_check_project);
                             }
                             break;
                         case R.mipmap.date_orange://到期日
@@ -435,12 +430,12 @@ public abstract class BaseTaskFragment extends BaseFragment implements OnFragmen
                         case R.mipmap.trash_orange://删除
                             if (taskItemEntity.attendeeUsers != null) {
                                 if (taskItemEntity.attendeeUsers.size() > 1) {
-                                    showFinishDialog(view.getContext(), "该任务由多人负责,确定删除?", taskItemEntity, SHOW_DELETE_DIALOG);
+                                    showFinishDialog(view.getContext(), getString(R.string.task_is_confirm_delete_task), taskItemEntity, SHOW_DELETE_DIALOG);
                                 } else {
-                                    showFinishDialog(view.getContext(), "是非成败转头空，确定要删除吗?", taskItemEntity, SHOW_DELETE_DIALOG);
+                                    showFinishDialog(view.getContext(), getString(R.string.task_is_confirm_delete), taskItemEntity, SHOW_DELETE_DIALOG);
                                 }
                             } else {
-                                showFinishDialog(view.getContext(), "是非成败转头空，确定要删除吗?", taskItemEntity, SHOW_DELETE_DIALOG);
+                                showFinishDialog(view.getContext(), getString(R.string.task_is_confirm_delete), taskItemEntity, SHOW_DELETE_DIALOG);
                             }
                             break;
                     }
@@ -483,10 +478,10 @@ public abstract class BaseTaskFragment extends BaseFragment implements OnFragmen
         };
         //dialog参数设置
         AlertDialog.Builder builder = new AlertDialog.Builder(context);  //先得到构造器
-        builder.setTitle("提示"); //设置标题
+        builder.setTitle(R.string.task_remind); //设置标题
         builder.setMessage(message); //设置内容
-        builder.setPositiveButton("确认", dialogOnclicListener);
-        builder.setNegativeButton("取消", dialogOnclicListener);
+        builder.setPositiveButton(R.string.task_confirm, dialogOnclicListener);
+        builder.setNegativeButton(R.string.task_cancel, dialogOnclicListener);
         builder.create().show();
     }
 
@@ -662,7 +657,7 @@ public abstract class BaseTaskFragment extends BaseFragment implements OnFragmen
     /**
      * 更新计时任务状态回调
      *
-     * @param taskId
+     * @param taskId 如果为空，则是接收到停止计时的通知；如果不为空，则是接收到开始计时的通知。
      */
     protected abstract void taskTimerUpdateBack(String taskId);
 

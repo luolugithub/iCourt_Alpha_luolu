@@ -165,7 +165,7 @@ public class MyFinishTaskActivity extends BaseActivity
         super.onClick(v);
         switch (v.getId()) {
             case R.id.rl_comm_search:
-                SearchProjectActivity.launchFinishTask(getContext(), getLoginUserId(), 0, 1, SearchProjectActivity.SEARCH_TASK, null);
+                SearchTaskActivity.launchFinishTask(getContext(), getLoginUserId(), 0, 1, null);
                 break;
             default:
                 super.onClick(v);

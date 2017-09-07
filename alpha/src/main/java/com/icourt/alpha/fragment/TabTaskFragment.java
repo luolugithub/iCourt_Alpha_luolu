@@ -74,13 +74,13 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
     ImageView titleAction2;
     @BindView(R.id.titleCalendar)
     ImageView titleCalendar;
-    TaskListFragment2 attentionTaskFragment;
+    TaskListFragment attentionTaskFragment;
     TaskAllFragment alltaskFragment;
     TopMiddlePopup topMiddlePopup;
     List<FilterDropEntity> dropEntities = new ArrayList<>();
-    FilterDropEntity doingEntity = new FilterDropEntity("未完成", "0", 0);//未完成
-    FilterDropEntity doneEntity = new FilterDropEntity("已完成", "0", 1);//已完成
-    FilterDropEntity deleteEntity = new FilterDropEntity("已删除", "0", 3);//已删除
+    FilterDropEntity doingEntity;//未完成
+    FilterDropEntity doneEntity;//已完成
+    FilterDropEntity deleteEntity;//已删除
 
     private Handler handler = new Handler();
 
@@ -99,6 +99,11 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
 
     @Override
     protected void initView() {
+        doingEntity = new FilterDropEntity(getString(R.string.task_unfinished), "0", 0);
+        doneEntity = new FilterDropEntity(getString(R.string.task_finished), "0", 1);
+        deleteEntity = new FilterDropEntity(getString(R.string.task_deleted), "0", 3);
+
+
         select_position = 0;
         baseFragmentAdapter = new BaseFragmentAdapter(getChildFragmentManager());
         viewPager.setNoScroll(false);
@@ -108,7 +113,7 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
         baseFragmentAdapter.bindData(true,
                 Arrays.asList(
                         alltaskFragment = TaskAllFragment.newInstance(),
-                        attentionTaskFragment = TaskListFragment2.newInstance(TaskListFragment2.TYPE_MY_ATTENTION, 0)));
+                        attentionTaskFragment = TaskListFragment.newInstance(TaskListFragment.TYPE_MY_ATTENTION, 0)));
 
         topMiddlePopup = new TopMiddlePopup(getContext(), DensityUtil.getWidthInDp(getContext()), (int) (DensityUtil.getHeightInPx(getContext()) - DensityUtil.dip2px(getContext(), 75)), this);
         dropEntities.add(doingEntity);
@@ -124,13 +129,13 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
             switch (i) {
                 case 0:
                     titleTv.setTextColor(0xFF313131);
-                    titleTv.setText("未完成");
+                    titleTv.setText(getString(R.string.task_unfinished));
                     downIv.setVisibility(View.VISIBLE);
                     tab.getCustomView().setOnClickListener(new OnTabClickListener());
                     break;
                 case 1:
                     titleTv.setTextColor(0xFF979797);
-                    titleTv.setText("我关注的");
+                    titleTv.setText(getString(R.string.task_my_attention));
                     downIv.setVisibility(View.GONE);
                     break;
             }
@@ -165,8 +170,8 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
                             titleTv_1.setTextColor(0xFF313131);
                             setFirstTabImage(false);
                             Bundle bundle = new Bundle();
-                            bundle.putInt(TaskListFragment2.STATE_TYPE, 0);
-                            attentionTaskFragment.notifyFragmentUpdate(attentionTaskFragment, TaskListFragment2.TYPE_MY_ATTENTION, bundle);
+                            bundle.putInt(TaskListFragment.STATE_TYPE, 0);
+                            attentionTaskFragment.notifyFragmentUpdate(attentionTaskFragment, TaskListFragment.TYPE_MY_ATTENTION, bundle);
                             break;
                     }
                 }
@@ -218,7 +223,7 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
      */
     public void updateListData(int stateType) {
         Bundle bundle = new Bundle();
-        bundle.putInt(TaskListFragment2.STATE_TYPE, stateType);
+        bundle.putInt(TaskListFragment.STATE_TYPE, stateType);
         int type = TaskAllFragment.TYPE_ALL_TASK;
         if (stateType == 0) {//说明该任务状态是全部的任务状态
             titleCalendar.setVisibility(View.VISIBLE);
@@ -354,7 +359,7 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
                                     stateType = filterDropEntity.stateType;
                                 }
                                 Bundle bundle = new Bundle();
-                                bundle.putInt(TaskListFragment2.STATE_TYPE, stateType);
+                                bundle.putInt(TaskListFragment.STATE_TYPE, stateType);
                                 taskAllFragment.notifyFragmentUpdate(taskAllFragment, TaskAllFragment.TYPE_ALL_TASK, bundle);
                             }
                             break;
@@ -367,9 +372,9 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
             case R.id.titleAction2:
                 List<String> titles = null;
                 if (select_position != 2 || tabLayout.getSelectedTabPosition() == 1) {
-                    titles = Arrays.asList("查看他人任务");
+                    titles = Arrays.asList(getString(R.string.task_look_others_task));
                 } else {
-                    titles = Arrays.asList("查看他人任务", "清空所有已删除任务");
+                    titles = Arrays.asList(getString(R.string.task_look_others_task), getString(R.string.task_clear_deleted_task));
                 }
                 new BottomActionDialog(getContext(),
                         null,
@@ -399,8 +404,8 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
      */
     private void showTwiceSureDialog() {
         new BottomActionDialog(getContext(),
-                "该操作不可恢复，确定清空？",
-                Arrays.asList("确定"),
+                getString(R.string.task_can_not_revert),
+                Arrays.asList(getString(R.string.task_confirm)),
                 0,
                 0xFFFF0000,
                 new BottomActionDialog.OnActionItemClickListener() {
@@ -457,8 +462,8 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
      */
     private void clearAllDeletedTask() {
         if (select_position == 2) {
-            if (alltaskFragment.currFragment instanceof TaskListFragment2) {
-                TaskListFragment2 fragment = (TaskListFragment2) alltaskFragment.currFragment;
+            if (alltaskFragment.currFragment instanceof TaskListFragment) {
+                TaskListFragment fragment = (TaskListFragment) alltaskFragment.currFragment;
                 fragment.clearAllDeletedTask();
             }
         }
@@ -471,8 +476,8 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
      */
     public boolean isShowingNextTaskView() {
         Fragment currFragment = alltaskFragment.currFragment;
-        if (currFragment instanceof TaskListFragment2) {
-            TaskListFragment2 taskListFragment = (TaskListFragment2) currFragment;
+        if (currFragment instanceof TaskListFragment) {
+            TaskListFragment taskListFragment = (TaskListFragment) currFragment;
             int visibility = taskListFragment.nextTaskCardview.getVisibility();
             return (visibility == View.GONE || visibility == View.INVISIBLE);
         }

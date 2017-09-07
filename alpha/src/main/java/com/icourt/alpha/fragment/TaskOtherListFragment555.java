@@ -21,11 +21,11 @@ import com.andview.refreshview.XRefreshView;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.icourt.alpha.R;
-import com.icourt.alpha.activity.SearchProjectActivity;
+import com.icourt.alpha.activity.SearchTaskActivity;
 import com.icourt.alpha.activity.TaskDetailActivity;
 import com.icourt.alpha.activity.TimerDetailActivity;
 import com.icourt.alpha.activity.TimerTimingActivity;
-import com.icourt.alpha.adapter.TaskItemAdapter3;
+import com.icourt.alpha.adapter.TaskItemAdapter555;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.HeaderFooterAdapter;
 import com.icourt.alpha.adapter.baseadapter.adapterObserver.DataChangeAdapterObserver;
@@ -74,7 +74,7 @@ import retrofit2.Response;
  * version 2.0.0
  */
 
-public class TaskOtherListFragment3 extends BaseFragment implements BaseRecyclerAdapter.OnItemClickListener, BaseRecyclerAdapter.OnItemChildClickListener {
+public class TaskOtherListFragment555 extends BaseFragment implements BaseRecyclerAdapter.OnItemClickListener, BaseRecyclerAdapter.OnItemChildClickListener {
 
     //实例化当前Fragment所要传递的参数标识
     private static final String TAG_START_TYPE = "startType";
@@ -103,8 +103,8 @@ public class TaskOtherListFragment3 extends BaseFragment implements BaseRecycler
     int startType, finishType;
     ArrayList<String> ids;
     private int pageIndex = 1;
-    TaskItemAdapter3 taskAdapter;
-    HeaderFooterAdapter<TaskItemAdapter3> headerFooterAdapter;
+    TaskItemAdapter555 taskAdapter;
+    HeaderFooterAdapter<TaskItemAdapter555> headerFooterAdapter;
 
     TaskEntity.TaskItemEntity lastEntity;
 
@@ -125,8 +125,8 @@ public class TaskOtherListFragment3 extends BaseFragment implements BaseRecycler
 
     }
 
-    public static TaskOtherListFragment3 newInstance(@START_TYPE int startType, @IS_FINISH_TYPE int finishType, ArrayList<String> ids) {
-        TaskOtherListFragment3 taskOtherListFragment = new TaskOtherListFragment3();
+    public static TaskOtherListFragment555 newInstance(@START_TYPE int startType, @IS_FINISH_TYPE int finishType, ArrayList<String> ids) {
+        TaskOtherListFragment555 taskOtherListFragment = new TaskOtherListFragment555();
         Bundle bundle = new Bundle();
         bundle.putInt(TAG_START_TYPE, startType);
         bundle.putInt(TAG_FINISH_TYPE, finishType);
@@ -156,7 +156,7 @@ public class TaskOtherListFragment3 extends BaseFragment implements BaseRecycler
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setHasFixedSize(true);
 
-        headerFooterAdapter = new HeaderFooterAdapter<>(taskAdapter = new TaskItemAdapter3());
+        headerFooterAdapter = new HeaderFooterAdapter<>(taskAdapter = new TaskItemAdapter555());
         taskAdapter.registerAdapterDataObserver(new DataChangeAdapterObserver() {
             @Override
             public void onItemRangeRemoved(int positionStart, int itemCount) {
@@ -186,8 +186,8 @@ public class TaskOtherListFragment3 extends BaseFragment implements BaseRecycler
 //                    return null;
 //                } else {
 //                    //说明是child
-//                    int realPos = taskAdapter.getRealPos(position);
-//                    TaskEntity.TaskItemEntity item = taskAdapter.getItem(realPos);
+//                    int realPos = taskAdapter555.getRealPos(position);
+//                    TaskEntity.TaskItemEntity item = taskAdapter555.getItem(realPos);
 //                    return item.groupName;
 //                }
 //            }
@@ -220,7 +220,7 @@ public class TaskOtherListFragment3 extends BaseFragment implements BaseRecycler
         super.onClick(v);
         switch (v.getId()) {
             case R.id.rl_comm_search:
-                SearchProjectActivity.launchTask(getContext(), getAssignTos(), 0, SearchProjectActivity.SEARCH_TASK);
+                SearchTaskActivity.launchTask(getContext(), getAssignTos(), 0);
                 break;
         }
     }
@@ -397,7 +397,7 @@ public class TaskOtherListFragment3 extends BaseFragment implements BaseRecycler
 
     @Override
     public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
-        if (adapter instanceof TaskItemAdapter3) {
+        if (adapter instanceof TaskItemAdapter555) {
             //因为有搜索的header，所以需要获取真实的position
             int realPos = taskAdapter.getRealPos(position);
             TaskEntity.TaskItemEntity taskItemEntity = (TaskEntity.TaskItemEntity) adapter.getItem(realPos);
@@ -409,7 +409,7 @@ public class TaskOtherListFragment3 extends BaseFragment implements BaseRecycler
 
     @Override
     public void onItemChildClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, final View view, int position) {
-        if (adapter instanceof TaskItemAdapter3) {
+        if (adapter instanceof TaskItemAdapter555) {
             //因为有搜索的header，所以需要获取真实的position
             int realPos = taskAdapter.getRealPos(position);
             final TaskEntity.TaskItemEntity itemEntity = (TaskEntity.TaskItemEntity) adapter.getItem(realPos);
