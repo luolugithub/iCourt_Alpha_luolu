@@ -54,6 +54,7 @@ import com.icourt.alpha.utils.IMUtils;
 import com.icourt.alpha.utils.ImageUtils;
 import com.icourt.alpha.utils.IndexUtils;
 import com.icourt.alpha.utils.SFileTokenUtils;
+import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.utils.UriUtils;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
@@ -113,6 +114,8 @@ public class FolderListActivity extends FolderBaseActivity
         BaseRecyclerAdapter.OnItemLongClickListener,
         BaseRecyclerAdapter.OnItemChildClickListener,
         OnDialogFragmentDismissListener {
+
+    private static final int MAX_LENGTH_FILE_NAME = 100;
     @BindView(R.id.titleBack)
     ImageView titleBack;
     @BindView(R.id.titleContent)
@@ -693,6 +696,7 @@ public class FolderListActivity extends FolderBaseActivity
             //1.检验文件名称合法性
             for (int i = filePathsArray.size() - 1; i >= 0; i--) {
                 String path = filePathsArray.get(i);
+
                 File file = null;
                 try {
                     //可能出现路径异常
@@ -705,7 +709,7 @@ public class FolderListActivity extends FolderBaseActivity
                     e.printStackTrace();
                 }
                 if (file != null) {
-                    //检验文件合法
+                    //2.先检验文件合法
                     boolean isLegal = SFileNameFilter.checkFileNameIsLegal(
                             file.getName(),
                             new IDefNotify() {
@@ -716,6 +720,12 @@ public class FolderListActivity extends FolderBaseActivity
                             });
                     if (!isLegal) {
                         filePathsArray.remove(path);
+                    } else {
+                        //3.再校验文件名称长度
+                        if (StringUtils.isOverLength(file.getName(), MAX_LENGTH_FILE_NAME)) {
+                            showTopSnackBar(getString(R.string.sfile_length_limit_format, String.valueOf(MAX_LENGTH_FILE_NAME)));
+                            filePathsArray.remove(path);
+                        }
                     }
                 }
             }

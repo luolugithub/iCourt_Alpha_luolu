@@ -46,16 +46,10 @@ public class SFileNameFilter extends EmojiFilter {
     public static boolean checkFileNameIsLegal(@Nullable String fileName,
                                                @Nullable IDefNotify iDefNotify) {
         try {
-            if (EmojiFilter.containEmoji(fileName)) {
-                if (iDefNotify != null) {
-                    iDefNotify.defNotify("文件名不能包含emoji");
-                }
-                return false;
-            }
             Matcher matcher = pattern.matcher(fileName);
-            if (matcher.find()) {
+            if (matcher.find() || containEmoji(fileName)) {
                 if (iDefNotify != null) {
-                    iDefNotify.defNotify("文件名不能包含 \\ / : * ? \" < > | \b \t特殊字符");
+                    iDefNotify.defNotify("文件名不能包含 \\ / : * ? \" < > | 和 emoji");
                 }
                 return false;
             }

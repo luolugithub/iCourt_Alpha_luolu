@@ -61,7 +61,7 @@ public class RepoCreateActivity extends SFileEditBaseActivity {
 
     @Override
     protected int getMaxInputLimitNum() {
-        return 50;
+        return 100;
     }
 
     @Override

@@ -62,6 +62,10 @@ public class RepoRenameActivity extends RepoCreateActivity {
 
     @Override
     protected boolean onCancelSubmitInput(final EditText et) {
+        if (TextUtils.isEmpty(et.getText())) {
+            finish();
+            return false;
+        }
         if (TextUtils.equals(paramRepoEntity.repo_name, et.getText())) {
             finish();
             return true;

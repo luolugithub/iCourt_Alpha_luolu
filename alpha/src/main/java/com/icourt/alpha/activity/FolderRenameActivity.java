@@ -175,6 +175,10 @@ public class FolderRenameActivity extends FolderCreateActivity {
 
     @Override
     protected boolean onCancelSubmitInput(final EditText et) {
+        if (TextUtils.isEmpty(et.getText())) {
+            finish();
+            return false;
+        }
         if (!TextUtils.isEmpty(et.getText())) {
             String fileName = et.getText().toString().trim().concat(fileSuffix);
             //无需提交

@@ -14,11 +14,41 @@ import java.util.List;
  * @time 2016-05-05 10:38
  */
 public class StringUtils {
+    /**
+     * 判断是否为空 去掉 空格
+     *
+     * @param text
+     * @return
+     */
     public static final boolean isEmpty(CharSequence text) {
         if (TextUtils.isEmpty(text)) {
             return true;
         }
         return text.toString().trim().length() <= 0;
+    }
+
+    /**
+     * 统计到字符长度
+     *
+     * @param text
+     * @return
+     */
+    public static final int length(CharSequence text) {
+        if (TextUtils.isEmpty(text)) {
+            return 0;
+        }
+        return text.toString().length();
+    }
+
+    /**
+     * 是否超过指定长度
+     *
+     * @param text
+     * @param len
+     * @return
+     */
+    public static final boolean isOverLength(CharSequence text, int len) {
+        return length(text) > len;
     }
 
     /**

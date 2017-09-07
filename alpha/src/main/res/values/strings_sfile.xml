@@ -95,6 +95,7 @@
     </string-array>
 
     <string name="sfile_not_exist">文件不存在</string>
+    <string name="sfile_length_limit_format" formatted="false">文件名不能超过%s个字符</string>
     <string name="sfile_name_contain_special_characters" formatted="false">文件名包含特殊字符 \"%s\"</string>
     <string name="sfile_change_history_empty">尚未有修改记录</string>
     <string name="sfile_change_history_revert_confirm">将资料库恢复到该次修改前到状态</string>
