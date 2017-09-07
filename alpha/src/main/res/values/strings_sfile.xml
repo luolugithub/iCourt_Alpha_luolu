@@ -69,6 +69,7 @@
     <string name="sfile_delete_confirm">删除后可以从回收站找回,确定删除?</string>
 
     <string name="sfile_file_details">查看文件详情</string>
+    <string name="sfile_folder_details">查看文件夹详情</string>
     <string name="sfile_file_rename">@string/str_rename</string>
     <string name="sfile_file_share">共享</string>
     <string name="sfile_file_copy">@string/str_copy</string>
@@ -77,6 +78,14 @@
 
     <string-array name="sfile_file_menus_array">
         <item>@string/sfile_file_details</item>
+        <item>@string/sfile_file_rename</item>
+        <item>@string/sfile_file_share</item>
+        <item>@string/sfile_file_copy</item>
+        <item>@string/sfile_file_move</item>
+        <item>@string/sfile_file_delete</item>
+    </string-array>
+    <string-array name="sfile_folder_menus_array">
+        <item>@string/sfile_folder_details</item>
         <item>@string/sfile_file_rename</item>
         <item>@string/sfile_file_share</item>
         <item>@string/sfile_file_copy</item>

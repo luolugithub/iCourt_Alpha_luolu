@@ -924,16 +924,21 @@ public class FolderListActivity extends FolderBaseActivity
     private void showFolderActionMenu(BaseRecyclerAdapter adapter, int position) {
         final FolderDocumentEntity item = (FolderDocumentEntity) adapter.getItem(position);
         if (item == null) return;
+        List<String> strings = Arrays.asList(getResources().getStringArray(R.array.sfile_file_menus_array));
+        if (item.isDir()) {
+            strings = Arrays.asList(getResources().getStringArray(R.array.sfile_folder_menus_array));
+        }
         new BottomActionDialog(
                 getContext(),
                 null,
-                Arrays.asList(getResources().getStringArray(R.array.sfile_file_menus_array)),
+                strings,
                 new BottomActionDialog.OnActionItemClickListener() {
                     @Override
                     public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
                         dialog.dismiss();
                         String action = adapter.getItem(position);
-                        if (TextUtils.equals(action, getString(R.string.sfile_file_details))) {
+                        if (TextUtils.equals(action, getString(R.string.sfile_file_details))
+                                || TextUtils.equals(action, getString(R.string.sfile_folder_details))) {
                             lookDetails(item);
                         } else if (TextUtils.equals(action, getString(R.string.sfile_file_rename))) {
                             FolderRenameActivity.launch(
