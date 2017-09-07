@@ -162,6 +162,7 @@ public class RepoDetailsDialogFragment extends BaseDialogFragment
         fileTypeIv.setImageResource(R.mipmap.ic_document);
         fileUpdateInfoTv.setText("");
 
+        viewPager.setOffscreenPageLimit(3);
         viewPager.setAdapter(baseFragmentAdapter = new BaseFragmentAdapter(getChildFragmentManager()));
         tabLayout.setupWithViewPager(viewPager);
         switch (repoType) {

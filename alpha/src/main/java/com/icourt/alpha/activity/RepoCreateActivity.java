@@ -50,7 +50,6 @@ public class RepoCreateActivity extends SFileEditBaseActivity {
     protected void initView() {
         super.initView();
         setTitle("新建资料库");
-        setTitleActionTextView("完成");
         inputNameEt.setHint("资料库名称");
         inputNameEt.setFilters(new InputFilter[]{
                 new InputFilter.LengthFilter(getMaxInputLimitNum()),

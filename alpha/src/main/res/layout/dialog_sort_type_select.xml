@@ -30,7 +30,8 @@
                 android:layout_height="wrap_content"
                 android:gravity="center"
                 android:lines="1"
-                android:padding="10dp"
+                android:paddingTop="5dp"
+                android:paddingBottom="15dp"
                 android:text="选择排序方式"
                 android:textColor="@color/alpha_font_color_black" />
 

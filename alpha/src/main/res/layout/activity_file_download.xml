@@ -28,7 +28,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
             android:ellipsize="end"
-            android:maxLines="5"
+            android:maxLines="2"
             android:text="文件名称sddwghhghg"
             android:textColor="@color/alpha_font_color_black" />
 

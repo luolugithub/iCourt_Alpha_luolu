@@ -15,6 +15,7 @@ import android.widget.TextView;
 
 import com.icourt.alpha.R;
 import com.icourt.alpha.base.BaseActivity;
+import com.icourt.alpha.utils.StringUtils;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -59,6 +60,7 @@ public abstract class SFileEditBaseActivity
     protected void initView() {
         super.initView();
         titleAction.setEnabled(false);
+        setTitleActionTextView("完成");
         inputNameEt.setFilters(new InputFilter[]{new InputFilter.LengthFilter(getMaxInputLimitNum())});
         inputNameEt.addTextChangedListener(this);
     }
@@ -79,7 +81,7 @@ public abstract class SFileEditBaseActivity
             inputLimitNumTv.setText(String.format("%s/%s", editable.length(), getMaxInputLimitNum()));
             inputLimitNumTv.setVisibility(editable.length() > 0 ? View.VISIBLE : View.GONE);
             inputClearIv.setVisibility(editable.length() > 0 ? View.VISIBLE : View.GONE);
-            titleAction.setEnabled(editable.length() > 0);
+            titleAction.setEnabled(!StringUtils.isEmpty(editable));
         } else {
             inputLimitNumTv.setVisibility(View.GONE);
             inputClearIv.setVisibility(View.GONE);

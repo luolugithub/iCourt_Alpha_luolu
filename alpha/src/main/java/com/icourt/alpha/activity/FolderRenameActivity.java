@@ -74,7 +74,6 @@ public class FolderRenameActivity extends FolderCreateActivity {
             setTitle("重命名文件夹");
             inputTypeIv.setImageResource(R.mipmap.folder);
         }
-        setTitleActionTextView("保存");
         inputNameEt.setText(getFolderEditNamePart());
         inputNameEt.setSelection(inputNameEt.getText().length());
     }

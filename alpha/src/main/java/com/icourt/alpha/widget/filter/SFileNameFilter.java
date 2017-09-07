@@ -5,12 +5,13 @@ import android.text.Spanned;
 
 import com.icourt.alpha.http.IDefNotify;
 import com.icourt.alpha.utils.BugUtils;
+import com.icourt.alpha.utils.ToastUtils;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Description
+ * Description  sfile文件 资料库名称
  * Company Beijing icourt
  * author  youxuan  E-mail:xuanyouwu@163.com
  * date createTime：2017/8/18
@@ -18,6 +19,7 @@ import java.util.regex.Pattern;
  */
 public class SFileNameFilter extends EmojiFilter {
 
+    private static final String noticeStr = "文件名不能包含 \\ / : * ? \" < > | 和 emoji";
     // 特殊字符不能作为资料库名称：'\\', '/', ':', '*', '?', '"', '<', '>', '|', '\b', '\t'
     private static final String patternStr = "[\\\\|/|:|：|*|?|？|\"|“|”|<|>|\\||\t]";
     private static final Pattern pattern = Pattern.compile(patternStr, Pattern.CASE_INSENSITIVE);
@@ -33,6 +35,12 @@ public class SFileNameFilter extends EmojiFilter {
      */
     @Override
     public CharSequence filter(CharSequence source, int start, int end, Spanned dest, int dstart, int dend) {
+        checkFileNameIsLegal(source, new IDefNotify() {
+            @Override
+            public void defNotify(String noticeStr) {
+                ToastUtils.showToast(noticeStr);
+            }
+        });
         return pattern.matcher(super.filter(source, start, end, dest, dstart, dend)).replaceAll("");
     }
 
@@ -43,13 +51,13 @@ public class SFileNameFilter extends EmojiFilter {
      * @param iDefNotify
      * @return
      */
-    public static boolean checkFileNameIsLegal(@Nullable String fileName,
+    public static boolean checkFileNameIsLegal(@Nullable CharSequence fileName,
                                                @Nullable IDefNotify iDefNotify) {
         try {
             Matcher matcher = pattern.matcher(fileName);
             if (matcher.find() || containEmoji(fileName)) {
                 if (iDefNotify != null) {
-                    iDefNotify.defNotify("文件名不能包含 \\ / : * ? \" < > | 和 emoji");
+                    iDefNotify.defNotify(noticeStr);
                 }
                 return false;
             }

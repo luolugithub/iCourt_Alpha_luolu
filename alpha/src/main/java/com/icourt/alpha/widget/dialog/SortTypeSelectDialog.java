@@ -18,6 +18,7 @@ import android.widget.TextView;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.FileSoryTypeAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
+import com.icourt.alpha.utils.ItemDecorationUtils;
 import com.icourt.alpha.widget.comparators.FileSortComparator;
 
 import java.util.Arrays;
@@ -86,6 +87,7 @@ public class SortTypeSelectDialog extends Dialog implements View.OnClickListener
         btOk = findViewById(R.id.bt_ok);
 
         dialogRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        dialogRecyclerView.addItemDecoration(ItemDecorationUtils.getCommFullDivider(getContext(), false));
         dialogRecyclerView.setAdapter(fileSoryTypeAdapter = new FileSoryTypeAdapter());
         fileSoryTypeAdapter.bindData(true, menus);
         fileSoryTypeAdapter.setOnItemClickListener(new BaseRecyclerAdapter.OnItemClickListener() {

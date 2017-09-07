@@ -47,7 +47,6 @@ public class RepoRenameActivity extends RepoCreateActivity {
     protected void initView() {
         super.initView();
         setTitle("重命名资料库");
-        setTitleActionTextView("保存");
         inputNameEt.setHint("资料库名称");
         inputNameEt.setFilters(new InputFilter[]{
                 new InputFilter.LengthFilter(getMaxInputLimitNum()),

@@ -59,7 +59,6 @@ public class FolderCreateActivity extends SFileEditBaseActivity {
     protected void initView() {
         super.initView();
         setTitle("新建文件夹");
-        setTitleActionTextView("完成");
         inputNameEt.setHint("文件夹名称");
         inputNameEt.setFilters(new InputFilter[]{
                 new InputFilter.LengthFilter(getMaxInputLimitNum()),
