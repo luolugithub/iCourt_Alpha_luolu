@@ -74,7 +74,7 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
     ImageView titleAction2;
     @BindView(R.id.titleCalendar)
     ImageView titleCalendar;
-    TaskListFragment attentionTaskFragment;
+    TaskListFragment2 attentionTaskFragment;
     TaskAllFragment alltaskFragment;
     TopMiddlePopup topMiddlePopup;
     List<FilterDropEntity> dropEntities = new ArrayList<>();
@@ -108,7 +108,7 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
         baseFragmentAdapter.bindData(true,
                 Arrays.asList(
                         alltaskFragment = TaskAllFragment.newInstance(),
-                        attentionTaskFragment = TaskListFragment.newInstance(TaskListFragment.TYPE_MY_ATTENTION, 0)));
+                        attentionTaskFragment = TaskListFragment2.newInstance(TaskListFragment2.TYPE_MY_ATTENTION, 0)));
 
         topMiddlePopup = new TopMiddlePopup(getContext(), DensityUtil.getWidthInDp(getContext()), (int) (DensityUtil.getHeightInPx(getContext()) - DensityUtil.dip2px(getContext(), 75)), this);
         dropEntities.add(doingEntity);
@@ -165,8 +165,8 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
                             titleTv_1.setTextColor(0xFF313131);
                             setFirstTabImage(false);
                             Bundle bundle = new Bundle();
-                            bundle.putInt(TaskListFragment.STATE_TYPE, 0);
-                            attentionTaskFragment.notifyFragmentUpdate(attentionTaskFragment, TaskListFragment.TYPE_MY_ATTENTION, bundle);
+                            bundle.putInt(TaskListFragment2.STATE_TYPE, 0);
+                            attentionTaskFragment.notifyFragmentUpdate(attentionTaskFragment, TaskListFragment2.TYPE_MY_ATTENTION, bundle);
                             break;
                     }
                 }
@@ -218,7 +218,7 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
      */
     public void updateListData(int stateType) {
         Bundle bundle = new Bundle();
-        bundle.putInt(TaskListFragment.STATE_TYPE, stateType);
+        bundle.putInt(TaskListFragment2.STATE_TYPE, stateType);
         int type = TaskAllFragment.TYPE_ALL_TASK;
         if (stateType == 0) {//说明该任务状态是全部的任务状态
             titleCalendar.setVisibility(View.VISIBLE);
@@ -354,7 +354,7 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
                                     stateType = filterDropEntity.stateType;
                                 }
                                 Bundle bundle = new Bundle();
-                                bundle.putInt(TaskListFragment.STATE_TYPE, stateType);
+                                bundle.putInt(TaskListFragment2.STATE_TYPE, stateType);
                                 taskAllFragment.notifyFragmentUpdate(taskAllFragment, TaskAllFragment.TYPE_ALL_TASK, bundle);
                             }
                             break;
@@ -457,8 +457,8 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
      */
     private void clearAllDeletedTask() {
         if (select_position == 2) {
-            if (alltaskFragment.currFragment instanceof TaskListFragment) {
-                TaskListFragment fragment = (TaskListFragment) alltaskFragment.currFragment;
+            if (alltaskFragment.currFragment instanceof TaskListFragment2) {
+                TaskListFragment2 fragment = (TaskListFragment2) alltaskFragment.currFragment;
                 fragment.clearAllDeletedTask();
             }
         }
@@ -471,8 +471,8 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
      */
     public boolean isShowingNextTaskView() {
         Fragment currFragment = alltaskFragment.currFragment;
-        if (currFragment instanceof TaskListFragment) {
-            TaskListFragment taskListFragment = (TaskListFragment) currFragment;
+        if (currFragment instanceof TaskListFragment2) {
+            TaskListFragment2 taskListFragment = (TaskListFragment2) currFragment;
             int visibility = taskListFragment.nextTaskCardview.getVisibility();
             return (visibility == View.GONE || visibility == View.INVISIBLE);
         }

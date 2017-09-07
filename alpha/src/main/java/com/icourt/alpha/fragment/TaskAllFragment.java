@@ -87,13 +87,13 @@ public class TaskAllFragment extends BaseFragment implements OnTasksChangeListen
      */
     private Fragment getFragment(@ChildFragmentType int type, int stateType) {
         if (type == TYPE_ALL_TASK) {//如果是任务列表的话，每次都刷新。
-            return TaskListFragment.newInstance(0, stateType);
+            return TaskListFragment2.newInstance(0, stateType);
         }
         Fragment fragment = fragmentSparseArray.get(type);
         if (fragment == null) {
             switch (type) {
                 case TYPE_ALL_TASK:
-                    putFragment(type, TaskListFragment.newInstance(0, stateType));
+                    putFragment(type, TaskListFragment2.newInstance(0, stateType));
                     break;
                 case TYPE_ALL_TASK_CALENDAR:
 //                     putFragment(type, TaskListCalendarFragment.newInstance(taskItemEntityList));
@@ -158,7 +158,7 @@ public class TaskAllFragment extends BaseFragment implements OnTasksChangeListen
         getArguments().putInt(CHILD_FRAGMENT, type);
         int stateType = 0;
         if (bundle != null) {
-            stateType = bundle.getInt(TaskListFragment.STATE_TYPE);
+            stateType = bundle.getInt(TaskListFragment2.STATE_TYPE);
         }
         currFragment = addOrShowFragmentAnim(
                 getFragment(type, stateType),

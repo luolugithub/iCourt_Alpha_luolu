@@ -1,14 +1,10 @@
 package com.icourt.alpha.fragment;
 
-import android.app.Dialog;
-import android.content.Context;
-import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.util.ArrayMap;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
@@ -18,7 +14,6 @@ import android.view.ViewGroup;
 
 import com.andview.refreshview.XRefreshView;
 import com.chad.library.adapter.base.BaseQuickAdapter;
-import com.google.gson.JsonObject;
 import com.icourt.alpha.R;
 import com.icourt.alpha.activity.SearchProjectActivity;
 import com.icourt.alpha.activity.TaskDetailActivity;
@@ -38,7 +33,6 @@ import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 import com.icourt.alpha.widget.manager.TimerManager;
 import com.umeng.analytics.MobclickAgent;
 
-import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
@@ -80,13 +74,13 @@ public class TaskOtherListFragment extends BaseTaskFragment implements BaseQuick
     public static final int UNFINISH_TYPE = 1;//未完成
     public static final int FINISH_TYPE = 2;//已完成
 
-    public static final int TASK_TODAY_TYPE = 1;//今天任务
-    public static final int TASK_BEABOUT_TYPE = 2;//即将到期任务
-    public static final int TASK_FUTURE_TYPE = 3;//未来任务
-    public static final int TASK_NODUE_TYPE = 4;//未指定到期任务
-    public static final int TASK_DATED_TYPE = 5;//已过期任务
+    public static final int TASK_TODAY_TYPE = 1;//今天任务（暂时保留字段）
+    public static final int TASK_BEABOUT_TYPE = 2;//即将到期任务（暂时保留字段）
+    public static final int TASK_FUTURE_TYPE = 3;//未来任务（暂时保留字段）
+    public static final int TASK_NODUE_TYPE = 4;//未指定到期任务（暂时保留字段）
+    public static final int TASK_DATED_TYPE = 5;//已过期任务（暂时保留字段）
 
-    private boolean isFirstTimeIntoPage = true;//用来判断是不是第一次进入该界面，如果是，滚动到一条，隐藏搜索栏。
+    private boolean isFirstTimeIntoPage = true;//用来判断是不是第一次进入该界面，如果是，滚动到一条任务，隐藏搜索栏。
 
     Unbinder unbinder;
     @BindView(R.id.recyclerView)
@@ -98,7 +92,9 @@ public class TaskOtherListFragment extends BaseTaskFragment implements BaseQuick
 
     int startType, finishType;
     ArrayList<String> ids;
-    private int pageIndex = 1;
+
+    private int pageIndex = 1;//分页页码（暂时保留字段）
+
     TaskItemAdapter2 taskAdapter;
 
     TaskEntity.TaskItemEntity lastEntity;
@@ -139,7 +135,6 @@ public class TaskOtherListFragment extends BaseTaskFragment implements BaseQuick
 
     @Override
     protected void initView() {
-        EventBus.getDefault().register(this);
         startType = getArguments().getInt(TAG_START_TYPE);
         finishType = getArguments().getInt(TAG_FINISH_TYPE);
         ids = getArguments().getStringArrayList(TAG_IDS);
@@ -367,6 +362,8 @@ public class TaskOtherListFragment extends BaseTaskFragment implements BaseQuick
         final TaskEntity.TaskItemEntity itemEntity = taskAdapter.getItem(i);
         switch (view.getId()) {
             case R.id.task_item_start_timming:
+                if (itemEntity == null)
+                    return;
                 if (itemEntity.isTiming) {//停止计时
                     MobclickAgent.onEvent(getContext(), UMMobClickAgent.stop_timer_click_id);
                     stopTiming(itemEntity);
@@ -376,10 +373,12 @@ public class TaskOtherListFragment extends BaseTaskFragment implements BaseQuick
                 }
                 break;
             case R.id.task_item_checkbox:
+                if (itemEntity == null)
+                    return;
                 if (!itemEntity.state) {//完成任务
                     if (itemEntity.attendeeUsers != null) {
                         if (itemEntity.attendeeUsers.size() > 1) {
-                            showFinishDialog(view.getContext(), "该任务由多人负责,确定完成?", itemEntity);
+                            showFinishDialog(view.getContext(), "该任务由多人负责,确定完成?", itemEntity, SHOW_FINISH_DIALOG);
                         } else {
                             updateTaskState(itemEntity, true);
                         }
@@ -396,12 +395,17 @@ public class TaskOtherListFragment extends BaseTaskFragment implements BaseQuick
     @Override
     public void onItemClick(BaseQuickAdapter baseQuickAdapter, View view, int i) {
         TaskEntity.TaskItemEntity taskItemEntity = taskAdapter.getItem(i);
-        if (taskItemEntity.type == 0) {//item为任务的时候才可以点击
+        if (taskItemEntity != null && taskItemEntity.type == 0) {//item为任务的时候才可以点击
             TaskDetailActivity.launch(view.getContext(), taskItemEntity.id);
         }
     }
 
 
+    /**
+     * 根据数据是否为空，判断是否显示空页面。
+     *
+     * @param result 用来判断是否要显示空页面的列表
+     */
     private void enableEmptyView(List result) {
         if (refreshLayout != null) {
             if (result != null) {
@@ -414,6 +418,9 @@ public class TaskOtherListFragment extends BaseTaskFragment implements BaseQuick
         }
     }
 
+    /**
+     * 停止刷新
+     */
     private void stopRefresh() {
         if (refreshLayout != null) {
             refreshLayout.stopRefresh();
@@ -425,15 +432,14 @@ public class TaskOtherListFragment extends BaseTaskFragment implements BaseQuick
     @Override
     protected void startTimingBack(TaskEntity.TaskItemEntity requestEntity, Response<TimeEntity.ItemEntity> response) {
         taskAdapter.updateItem(requestEntity);
-        if (response.body() != null) {
+        if (response.body() != null) {//开始计时成功，跳转到计时页。
             TimerTimingActivity.launch(getActivity(), response.body());
-//            TimeEntity.ItemEntity timer = TimerManager.getInstance().getTimer();
-//            TimerDetailActivity.launch(getActivity(), timer);
         }
     }
 
     @Override
     protected void stopTimingBack(TaskEntity.TaskItemEntity requestEntity) {
+        //停止计时成功，跳转到计时详情页
         taskAdapter.updateItem(requestEntity);
         TimeEntity.ItemEntity timer = TimerManager.getInstance().getTimer();
         TimerDetailActivity.launch(getActivity(), timer);
@@ -441,6 +447,8 @@ public class TaskOtherListFragment extends BaseTaskFragment implements BaseQuick
 
     @Override
     protected void taskUpdateBack(@ChangeType int type, @NonNull TaskEntity.TaskItemEntity itemEntity) {
+        //更新任务成功的回调:修改状态，修改所属项目／任务组，修改负责人，修改到期时间
+        //因为他人任务只有开始/结束计时，完成/未完成任务的操作，所以不需要刷新列表。
         taskAdapter.updateItem(itemEntity);
     }
 
@@ -459,78 +467,23 @@ public class TaskOtherListFragment extends BaseTaskFragment implements BaseQuick
         }
     }
 
-    /**
-     * 显示多人任务提醒
-     *
-     * @param context
-     * @param message
-     * @param itemEntity
-     */
-    private void showFinishDialog(final Context context, String message, final TaskEntity.TaskItemEntity itemEntity) {
-        //先new出一个监听器，设置好监听
-        DialogInterface.OnClickListener dialogOnclicListener = new DialogInterface.OnClickListener() {
-
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                switch (which) {
-                    case Dialog.BUTTON_POSITIVE://确定
-                        updateTaskState(itemEntity, true);
-                        break;
-                    case Dialog.BUTTON_NEGATIVE://取消
-                        break;
-                }
-            }
-        };
-        //dialog参数设置
-        AlertDialog.Builder builder = new AlertDialog.Builder(context);  //先得到构造器
-        builder.setTitle("提示"); //设置标题
-        builder.setMessage(message); //设置内容
-        builder.setPositiveButton("确认", dialogOnclicListener);
-        builder.setNegativeButton("取消", dialogOnclicListener);
-        builder.create().show();
-    }
-
-
-    /**
-     * 获取任务json
-     *
-     * @param itemEntity
-     * @param state
-     * @return
-     */
-    private String getTaskJson(TaskEntity.TaskItemEntity itemEntity, boolean state) {
-        try {
-            itemEntity.state = state;
-            JsonObject jsonObject = new JsonObject();
-            jsonObject.addProperty("id", itemEntity.id);
-            jsonObject.addProperty("state", itemEntity.state);
-            jsonObject.addProperty("valid", true);
-            jsonObject.addProperty("updateTime", DateUtils.millis());
-            return jsonObject.toString();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onDeleteTaskEvent(TaskActionEvent event) {
         if (event == null) return;
-
         switch (event.action) {
-            case TaskActionEvent.TASK_REFRESG_ACTION:
+            case TaskActionEvent.TASK_REFRESG_ACTION://刷新的广播
                 refreshLayout.startRefresh();
                 break;
-            case TaskActionEvent.TASK_DELETE_ACTION:
+            case TaskActionEvent.TASK_DELETE_ACTION://删除的广播
                 if (event.entity == null) return;
-                removeChildItem(event.entity);
-                if (taskAdapter != null)
-                    taskAdapter.notifyDataSetChanged();
-                break;
-            case TaskActionEvent.TASK_ADD_ITEM_ACITON:
+                //因为考虑到本地分组的原因，所以需要刷新全部（等后端添加分页逻辑，再进行修改）
                 refreshLayout.startRefresh();
                 break;
-            case TaskActionEvent.TASK_UPDATE_ITEM:
+            case TaskActionEvent.TASK_ADD_ITEM_ACITON://添加的广播
+                refreshLayout.startRefresh();
+                break;
+            case TaskActionEvent.TASK_UPDATE_ITEM://更新计时的广播
                 if (event.entity == null) return;
                 updateChildItem(event.entity);
                 break;
@@ -601,7 +554,6 @@ public class TaskOtherListFragment extends BaseTaskFragment implements BaseQuick
     @Override
     public void onDestroy() {
         super.onDestroy();
-        EventBus.getDefault().unregister(this);
         if (unbinder != null) {
             unbinder.unbind();
         }

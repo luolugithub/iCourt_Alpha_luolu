@@ -6,6 +6,7 @@ import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AlertDialog;
@@ -68,6 +69,7 @@ import static com.umeng.socialize.utils.DeviceConfig.context;
  * author  lu.zhao  E-mail:zhaolu@icourt.cc
  * date createTime：17/8/31
  * version 2.0.0
+ * 注意：所有继承这个类的子类都不需要再注册/取消注册广播了。
  */
 
 public abstract class BaseTaskFragment extends BaseFragment implements OnFragmentCallBackListener, ProjectSelectDialogFragment.OnProjectTaskGroupSelectListener {
@@ -105,9 +107,11 @@ public abstract class BaseTaskFragment extends BaseFragment implements OnFragmen
     private TaskEntity.TaskItemEntity updateTaskItemEntity;//当前修改任务到期事件、负责人、所属项目的任务
 
     @Override
-    protected void initView() {
+    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
         EventBus.getDefault().register(this);
     }
+
 
     /**
      * 计时事件的广播接收
@@ -131,7 +135,6 @@ public abstract class BaseTaskFragment extends BaseFragment implements OnFragmen
                 break;
         }
     }
-
 
     /**
      * 开始计时
@@ -282,70 +285,6 @@ public abstract class BaseTaskFragment extends BaseFragment implements OnFragmen
     }
 
     /**
-     * 获取修改任务状态json
-     *
-     * @param itemEntity
-     * @return
-     */
-    private String getTaskStateJson(TaskEntity.TaskItemEntity itemEntity) {
-        JsonObject jsonObject = new JsonObject();
-        jsonObject.addProperty("id", itemEntity.id);
-        jsonObject.addProperty("name", itemEntity.name);
-        jsonObject.addProperty("state", itemEntity.state);
-        jsonObject.addProperty("valid", true);
-        jsonObject.addProperty("updateTime", DateUtils.millis());
-        return jsonObject.toString();
-    }
-
-    /**
-     * 获取任务json
-     *
-     * @param itemEntity
-     * @return
-     */
-    private String getTaskProjectOrGroupJson(TaskEntity.TaskItemEntity itemEntity, ProjectEntity projectEntity, TaskGroupEntity taskGroupEntity) {
-        if (itemEntity == null) return null;
-        JsonObject jsonObject = new JsonObject();
-        jsonObject.addProperty("id", itemEntity.id);
-        jsonObject.addProperty("state", itemEntity.state);
-        jsonObject.addProperty("valid", true);
-        jsonObject.addProperty("name", itemEntity.name);
-        jsonObject.addProperty("parentId", itemEntity.parentId);
-        jsonObject.addProperty("dueTime", itemEntity.dueTime);
-        jsonObject.addProperty("updateTime", DateUtils.millis());
-        if (projectEntity != null) {
-            jsonObject.addProperty("matterId", projectEntity.pkId);
-        }
-        if (taskGroupEntity != null) {
-            jsonObject.addProperty("parentId", taskGroupEntity.id);
-        }
-        JsonArray jsonarr = new JsonArray();
-        if (itemEntity.attendeeUsers != null) {
-            for (TaskEntity.TaskItemEntity.AttendeeUserEntity attendeeUser : itemEntity.attendeeUsers) {
-                jsonarr.add(attendeeUser.userId);
-            }
-            jsonObject.add("attendees", jsonarr);
-        }
-        return jsonObject.toString();
-    }
-
-    /**
-     * 获取提醒json
-     *
-     * @param taskReminderEntity
-     * @return
-     */
-    private String getReminderJson(TaskReminderEntity taskReminderEntity) {
-        try {
-            if (taskReminderEntity == null) return null;
-            return JsonUtils.getGson().toJson(taskReminderEntity);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    /**
      * 展示选择负责人对话框
      */
     protected void showTaskAllotSelectDialogFragment(String projectId, List<TaskEntity.TaskItemEntity.AttendeeUserEntity> attendeeUsers) {
@@ -396,32 +335,6 @@ public abstract class BaseTaskFragment extends BaseFragment implements OnFragmen
         DateSelectDialogFragment.newInstance(calendar, null, taskId)
                 .show(mFragTransaction, tag);
     }
-
-    /**
-     * 获取添加计时实体
-     *
-     * @return
-     */
-    protected TimeEntity.ItemEntity getTimer(TaskEntity.TaskItemEntity taskItemEntity) {
-        TimeEntity.ItemEntity itemEntity = new TimeEntity.ItemEntity();
-        if (taskItemEntity != null) {
-            itemEntity.taskPkId = taskItemEntity.id;
-            itemEntity.taskName = taskItemEntity.name;
-            itemEntity.name = taskItemEntity.name;
-            itemEntity.workDate = DateUtils.millis();
-            itemEntity.createUserId = getLoginUserId();
-            if (LoginInfoUtils.getLoginUserInfo() != null) {
-                itemEntity.username = LoginInfoUtils.getLoginUserInfo().getName();
-            }
-            itemEntity.startTime = DateUtils.millis();
-            if (taskItemEntity.matter != null) {
-                itemEntity.matterPkId = taskItemEntity.matter.id;
-                itemEntity.matterName = taskItemEntity.matter.name;
-            }
-        }
-        return itemEntity;
-    }
-
 
     /**
      * 显示长按弹出的菜单
@@ -626,6 +539,97 @@ public abstract class BaseTaskFragment extends BaseFragment implements OnFragmen
         updateTaskProjectOrGroup(CHANGE_PROJECT, updateTaskItemEntity, projectEntity, taskGroupEntity, null);
     }
 
+
+    /**
+     * 获取添加计时实体
+     *
+     * @return
+     */
+    protected TimeEntity.ItemEntity getTimer(TaskEntity.TaskItemEntity taskItemEntity) {
+        TimeEntity.ItemEntity itemEntity = new TimeEntity.ItemEntity();
+        if (taskItemEntity != null) {
+            itemEntity.taskPkId = taskItemEntity.id;
+            itemEntity.taskName = taskItemEntity.name;
+            itemEntity.name = taskItemEntity.name;
+            itemEntity.workDate = DateUtils.millis();
+            itemEntity.createUserId = getLoginUserId();
+            if (LoginInfoUtils.getLoginUserInfo() != null) {
+                itemEntity.username = LoginInfoUtils.getLoginUserInfo().getName();
+            }
+            itemEntity.startTime = DateUtils.millis();
+            if (taskItemEntity.matter != null) {
+                itemEntity.matterPkId = taskItemEntity.matter.id;
+                itemEntity.matterName = taskItemEntity.matter.name;
+            }
+        }
+        return itemEntity;
+    }
+
+
+    /**
+     * 获取修改任务状态json
+     *
+     * @param itemEntity
+     * @return
+     */
+    private String getTaskStateJson(TaskEntity.TaskItemEntity itemEntity) {
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("id", itemEntity.id);
+        jsonObject.addProperty("name", itemEntity.name);
+        jsonObject.addProperty("state", itemEntity.state);
+        jsonObject.addProperty("valid", true);
+        jsonObject.addProperty("updateTime", DateUtils.millis());
+        return jsonObject.toString();
+    }
+
+    /**
+     * 获取任务json
+     *
+     * @param itemEntity
+     * @return
+     */
+    private String getTaskProjectOrGroupJson(TaskEntity.TaskItemEntity itemEntity, ProjectEntity projectEntity, TaskGroupEntity taskGroupEntity) {
+        if (itemEntity == null) return null;
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("id", itemEntity.id);
+        jsonObject.addProperty("state", itemEntity.state);
+        jsonObject.addProperty("valid", true);
+        jsonObject.addProperty("name", itemEntity.name);
+        jsonObject.addProperty("parentId", itemEntity.parentId);
+        jsonObject.addProperty("dueTime", itemEntity.dueTime);
+        jsonObject.addProperty("updateTime", DateUtils.millis());
+        if (projectEntity != null) {
+            jsonObject.addProperty("matterId", projectEntity.pkId);
+        }
+        if (taskGroupEntity != null) {
+            jsonObject.addProperty("parentId", taskGroupEntity.id);
+        }
+        JsonArray jsonarr = new JsonArray();
+        if (itemEntity.attendeeUsers != null) {
+            for (TaskEntity.TaskItemEntity.AttendeeUserEntity attendeeUser : itemEntity.attendeeUsers) {
+                jsonarr.add(attendeeUser.userId);
+            }
+            jsonObject.add("attendees", jsonarr);
+        }
+        return jsonObject.toString();
+    }
+
+    /**
+     * 获取提醒json
+     *
+     * @param taskReminderEntity
+     * @return
+     */
+    private String getReminderJson(TaskReminderEntity taskReminderEntity) {
+        try {
+            if (taskReminderEntity == null) return null;
+            return JsonUtils.getGson().toJson(taskReminderEntity);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     /**
      * 任务开始计时成功的回调
      *
@@ -665,8 +669,9 @@ public abstract class BaseTaskFragment extends BaseFragment implements OnFragmen
 
 
     @Override
-    public void onDestroy() {
-        super.onDestroy();
+    public void onDestroyView() {
+        super.onDestroyView();
         EventBus.getDefault().unregister(this);
     }
+
 }

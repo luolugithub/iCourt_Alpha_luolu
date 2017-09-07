@@ -3,62 +3,37 @@ package com.icourt.alpha.fragment;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentTransaction;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.CheckBox;
-import android.widget.ImageView;
 
 import com.andview.refreshview.XRefreshView;
 import com.chad.library.adapter.base.BaseQuickAdapter;
-import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 import com.icourt.alpha.R;
 import com.icourt.alpha.activity.SearchProjectActivity;
 import com.icourt.alpha.activity.TaskDetailActivity;
 import com.icourt.alpha.activity.TimerDetailActivity;
 import com.icourt.alpha.activity.TimerTimingActivity;
-import com.icourt.alpha.adapter.TaskAdapter;
-import com.icourt.alpha.adapter.TaskItemAdapter;
 import com.icourt.alpha.adapter.TaskItemAdapter2;
-import com.icourt.alpha.adapter.baseadapter.BaseArrayRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.HeaderFooterAdapter;
 import com.icourt.alpha.adapter.baseadapter.adapterObserver.RefreshViewEmptyObserver;
-import com.icourt.alpha.base.BaseFragment;
-import com.icourt.alpha.entity.bean.ProjectEntity;
 import com.icourt.alpha.entity.bean.TaskEntity;
-import com.icourt.alpha.entity.bean.TaskGroupEntity;
-import com.icourt.alpha.entity.bean.TaskReminderEntity;
 import com.icourt.alpha.entity.bean.TimeEntity;
 import com.icourt.alpha.entity.event.TaskActionEvent;
-import com.icourt.alpha.entity.event.TimingEvent;
-import com.icourt.alpha.fragment.dialogfragment.DateSelectDialogFragment;
-import com.icourt.alpha.fragment.dialogfragment.ProjectSelectDialogFragment;
-import com.icourt.alpha.fragment.dialogfragment.TaskAllotSelectDialogFragment;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
-import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
-import com.icourt.alpha.utils.DateUtils;
-import com.icourt.alpha.utils.ItemDecorationUtils;
 import com.icourt.alpha.utils.UMMobClickAgent;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 import com.icourt.alpha.widget.manager.TimerManager;
-import com.icourt.api.RequestUtils;
 import com.umeng.analytics.MobclickAgent;
 
-import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.List;
 
 import butterknife.BindView;
@@ -71,10 +46,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
 import retrofit2.Call;
-import retrofit2.Callback;
 import retrofit2.Response;
-
-import static com.umeng.socialize.utils.ContextUtil.getContext;
 
 /**
  * Description 项目下任务列表
@@ -95,12 +67,11 @@ public class ProjectTaskFragment2 extends BaseTaskFragment implements BaseQuickA
     @BindView(R.id.refreshLayout)
     RefreshLayout refreshLayout;
 
-    private boolean isFirstTimeIntoPage = true;//用来判断是不是第一次进入该界面，如果是，滚动到一条，隐藏搜索栏。
+    private boolean isFirstTimeIntoPage = true;//用来判断是不是第一次进入该界面，如果是，滚动到一条任务，隐藏搜索栏。
 
     TaskItemAdapter2 taskAdapter;
     TaskEntity.TaskItemEntity lastEntity;
     String projectId;
-    int startType, finishType;
 
     private LinearLayoutManager mLinearLayoutManager;
 
@@ -122,7 +93,6 @@ public class ProjectTaskFragment2 extends BaseTaskFragment implements BaseQuickA
 
     @Override
     protected void initView() {
-        super.initView();
         projectId = getArguments().getString(KEY_PROJECT_ID);
         refreshLayout.setNoticeEmpty(R.mipmap.bg_no_task, R.string.task_list_null_text);
         refreshLayout.setMoveForHorizontal(true);
@@ -244,6 +214,7 @@ public class ProjectTaskFragment2 extends BaseTaskFragment implements BaseQuickA
                                 stopRefresh();
                                 taskAdapter.setAddTime(isAddTime);
                                 taskAdapter.setNewData(searchPolymerizationEntities);
+                                enableEmptyView(searchPolymerizationEntities);
                                 if (isFirstTimeIntoPage) {
                                     mLinearLayoutManager.scrollToPositionWithOffset(taskAdapter.getHeaderLayoutCount(), 0);
                                     isFirstTimeIntoPage = false;
@@ -259,56 +230,60 @@ public class ProjectTaskFragment2 extends BaseTaskFragment implements BaseQuickA
 
     /**
      * 任务分组
+     * 项目下的任务分组是按照任务组来分的
      *
      * @param taskitems
      */
     private List<TaskEntity.TaskItemEntity> groupingByTasks(List<TaskEntity.TaskItemEntity> taskitems) {
         List<TaskEntity.TaskItemEntity> allTaskEntities = new ArrayList<>();//展示所要用到的列表集合
-        List<TaskEntity> taskGroup = new ArrayList<>();//用来存放分组的列表
-        List<TaskEntity.TaskItemEntity> noitems = new ArrayList<>();//没有分组的任务列表
-        List<TaskEntity.TaskItemEntity> taskEntities = new ArrayList<>();//所有分组了的任务列表
+        List<TaskEntity> taskGroup = new ArrayList<>();//用来存放任务组的列表
+        List<TaskEntity.TaskItemEntity> noitems = new ArrayList<>();//没有分配任务组的任务列表
+        List<TaskEntity.TaskItemEntity> taskEntities = new ArrayList<>();//所有分配了任务组的任务列表
         List<TaskEntity.TaskItemEntity> myStarTaskEntities = new ArrayList<>();//我关注的的任务列表
 
         TimeEntity.ItemEntity timerEntity = TimerManager.getInstance().getTimer();
         for (TaskEntity.TaskItemEntity taskItemEntity : taskitems) {
+            //如果该任务正在计时，将任务的isTiming置为true。
             if (TimerManager.getInstance().hasTimer()) {
                 if (timerEntity != null) {
                     if (!TextUtils.isEmpty(timerEntity.taskPkId)) {
                         if (TextUtils.equals(timerEntity.taskPkId, taskItemEntity.id)) {
                             taskItemEntity.isTiming = true;
+                        } else {
+                            taskItemEntity.isTiming = false;
                         }
                     }
                 }
             }
-            if (taskItemEntity.type == 1) {//1:任务组，将所有任务组单独拿出来
+            if (taskItemEntity.type == 1) {//1:任务组，将所有任务组单独拿出来，存放到taskGroup列表中。
                 TaskEntity itemEntity = new TaskEntity();
                 itemEntity.groupName = taskItemEntity.name;
                 itemEntity.groupId = taskItemEntity.id;
                 taskGroup.add(itemEntity);
-            } else if (taskItemEntity.type == 0) {//0:任务
-                if (TextUtils.isEmpty(taskItemEntity.parentId)) {//根据是否有parentId，判断是否属于哪个任务组
+            } else if (taskItemEntity.type == 0) {//0:任务，对任务进行分组处理。
+                if (TextUtils.isEmpty(taskItemEntity.parentId)) {//如果parentId为空，说明该任务没有分配任务组。
                     noitems.add(taskItemEntity);
                 } else {
                     taskEntities.add(taskItemEntity);
                 }
-                if (taskItemEntity.attentioned == 1) {//我关注的
+                if (taskItemEntity.attentioned == 1) {//我关注的任务
                     myStarTaskEntities.add(taskItemEntity);
                 }
             }
         }
-        if (taskGroup.size() > 0) {//遍历所有分组，将有分组的item添加到对应组的列表里面。
-            for (TaskEntity allTaskEntity : taskGroup) {
-                List<TaskEntity.TaskItemEntity> items = new ArrayList<>();//有分组
+        if (taskGroup.size() > 0) {//遍历所有任务组，将有任务组的item添加到对应任务组的列表里面。
+            for (TaskEntity taskEntity : taskGroup) {
+                List<TaskEntity.TaskItemEntity> items = new ArrayList<>();
                 for (TaskEntity.TaskItemEntity entity : taskEntities) {
-                    if (TextUtils.equals(allTaskEntity.groupId, entity.parentId)) {
+                    if (TextUtils.equals(taskEntity.groupId, entity.parentId)) {
                         items.add(entity);
                     }
                 }
-                allTaskEntity.items = items;
-                allTaskEntity.groupTaskCount = items.size();
+                taskEntity.items = items;
+                taskEntity.groupTaskCount = items.size();
             }
         } else {
-            if (!taskEntities.isEmpty()) {
+            if (!taskEntities.isEmpty()) {//如果任务组列表为空，将所有任务添加到为分组列表里面。
                 noitems.addAll(taskEntities);
             }
         }
@@ -415,11 +390,7 @@ public class ProjectTaskFragment2 extends BaseTaskFragment implements BaseQuickA
     @Override
     protected void startTimingBack(TaskEntity.TaskItemEntity requestEntity, Response<TimeEntity.ItemEntity> response) {
         taskAdapter.updateItem(requestEntity);
-        if (response.body() != null) {
-            TimerTimingActivity.launch(getActivity(), response.body());
-//            TimeEntity.ItemEntity timer = TimerManager.getInstance().getTimer();
-//            TimerDetailActivity.launch(getActivity(), timer);
-        }
+        TimerTimingActivity.launch(getActivity(), response.body());
     }
 
     @Override
@@ -457,7 +428,7 @@ public class ProjectTaskFragment2 extends BaseTaskFragment implements BaseQuickA
     @Override
     public boolean onItemLongClick(BaseQuickAdapter baseQuickAdapter, View view, int i) {
         TaskEntity.TaskItemEntity item = taskAdapter.getItem(i);
-        if (item.type == 0)//说明是任务
+        if (item != null && item.type == 0)//说明是任务
             showLongMenu(item);
         return false;
     }
@@ -467,6 +438,8 @@ public class ProjectTaskFragment2 extends BaseTaskFragment implements BaseQuickA
         TaskEntity.TaskItemEntity itemEntity = taskAdapter.getItem(i);
         switch (view.getId()) {
             case R.id.task_item_start_timming:
+                if (itemEntity == null)
+                    return;
                 if (!itemEntity.isTiming) {
                     MobclickAgent.onEvent(getContext(), UMMobClickAgent.stop_timer_click_id);
                     startTiming(itemEntity);
@@ -477,6 +450,8 @@ public class ProjectTaskFragment2 extends BaseTaskFragment implements BaseQuickA
                 break;
             case R.id.task_item_checkbox:
                 if (isEditTask) {
+                    if (itemEntity == null)
+                        return;
                     if (!itemEntity.state) {//完成任务
                         if (itemEntity.attendeeUsers != null) {
                             if (itemEntity.attendeeUsers.size() > 1) {
@@ -500,7 +475,7 @@ public class ProjectTaskFragment2 extends BaseTaskFragment implements BaseQuickA
     @Override
     public void onItemClick(BaseQuickAdapter baseQuickAdapter, View view, int i) {
         TaskEntity.TaskItemEntity item = taskAdapter.getItem(i);
-        if (item.type == 0)//说明是任务
+        if (item != null && item.type == 0)//说明是任务
             TaskDetailActivity.launch(view.getContext(), item.id);
     }
 

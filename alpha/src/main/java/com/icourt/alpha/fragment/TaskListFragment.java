@@ -181,7 +181,6 @@ public class TaskListFragment extends BaseTaskFragment implements
 
     @Override
     protected void initView() {
-        super.initView();
         tabTaskFragment = getParentTabTaskFragment();
         type = getArguments().getInt(TYPE);
         stateType = getArguments().getInt(STATE_TYPE);

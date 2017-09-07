@@ -94,7 +94,8 @@ public class TaskItemAdapter2 extends BaseMultiItemQuickAdapter<TaskEntity.TaskI
                 layoutManager.setOrientation(LinearLayoutManager.HORIZONTAL);
                 layoutManager.setReverseLayout(true);
                 recyclerView.setLayoutManager(layoutManager);
-                recyclerView.setAdapter(usersAdapter = new TaskUsersAdapter(recyclerView.getContext()));
+                usersAdapter = new TaskUsersAdapter(recyclerView.getContext());
+                recyclerView.setAdapter(usersAdapter);
             }
             usersAdapter = (TaskUsersAdapter) recyclerView.getAdapter();
             usersAdapter.bindData(true, taskItemEntity.attendeeUsers);
@@ -116,7 +117,7 @@ public class TaskItemAdapter2 extends BaseMultiItemQuickAdapter<TaskEntity.TaskI
         if (!taskItemEntity.valid) {
             startTimmingView.setVisibility(View.GONE);
 //            checkBox.setImageResource(R.mipmap.restore);
-            checkBox.setCompoundDrawablesWithIntrinsicBounds(R.mipmap.restore, 0, 0, 0);
+            checkBox.setBackgroundResource(R.mipmap.restore);
         }
 
         baseViewHolder.addOnClickListener(R.id.task_item_checkbox);
