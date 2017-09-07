@@ -17,6 +17,7 @@ import com.icourt.alpha.constants.Const;
 import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.icourt.alpha.http.AlphaClient;
 import com.icourt.alpha.http.HConst;
+import com.icourt.alpha.service.DaemonService;
 import com.icourt.alpha.utils.ActivityLifecycleTaskCallbacks;
 import com.icourt.alpha.utils.GlideImageLoader;
 import com.icourt.alpha.utils.LogUtils;
@@ -26,7 +27,6 @@ import com.icourt.alpha.utils.UserPreferences;
 import com.icourt.alpha.widget.nim.AlphaMessageNotifierCustomization;
 import com.icourt.alpha.widget.nim.NimAttachParser;
 import com.icourt.lib.daemon.DaemonEnv;
-import com.icourt.alpha.service.DaemonService;
 import com.iflytek.cloud.SpeechConstant;
 import com.iflytek.cloud.SpeechUtility;
 import com.liulishuo.filedownloader.FileDownloader;
@@ -52,8 +52,6 @@ import com.umeng.socialize.UMShareAPI;
 import com.umeng.socialize.utils.Log;
 
 import java.net.Proxy;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -387,16 +385,18 @@ public class BaseApplication extends MultiDexApplication {
     private void initGalleryFinal() {
         ThemeConfig themeConfig = new ThemeConfig.Builder()
                 .setCheckSelectedColor(SystemUtils.getColor(this, R.color.alpha_font_color_orange))
+                .setCropControlColor(SystemUtils.getColor(this, R.color.alpha_font_color_orange))
                 .setFabNornalColor(SystemUtils.getColor(this, R.color.alpha_font_color_orange))
                 .setTitleBarTextColor(SystemUtils.getColor(this, R.color.alpha_font_color_black))
                 .setTitleBarBgColor(Color.WHITE)
                 .setTitleBarIconColor(SystemUtils.getColor(this, R.color.alpha_font_color_orange))
+                .setIconCrop(0)
                 .build();
 
         FunctionConfig.Builder functionConfigBuilder = new FunctionConfig.Builder();
         ImageLoader imageLoader = new GlideImageLoader();
         functionConfigBuilder.setMutiSelectMaxSize(9);
-        functionConfigBuilder.setEnableEdit(true);
+        functionConfigBuilder.setEnableEdit(false);
         functionConfigBuilder.setEnableRotate(true);
         functionConfigBuilder.setRotateReplaceSource(true);
         functionConfigBuilder.setEnableCrop(true);

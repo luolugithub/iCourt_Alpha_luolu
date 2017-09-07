@@ -257,7 +257,7 @@
             android:screenOrientation="portrait"
             android:windowSoftInputMode="stateVisible" />
         <activity
-            android:name=".activity.SettingActivity"
+            android:name=".activity.UserInfoActivity"
             android:screenOrientation="portrait"
             android:windowSoftInputMode="adjustUnspecified|stateHidden" />
 
@@ -303,6 +303,12 @@
             android:screenOrientation="portrait" />
         <activity
             android:name=".activity.AlphaSpeciaSetActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".activity.SetingActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".activity.FeedBackActivity"
             android:screenOrientation="portrait" />
 
         <meta-data

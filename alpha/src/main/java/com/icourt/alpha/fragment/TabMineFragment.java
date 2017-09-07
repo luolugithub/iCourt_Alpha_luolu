@@ -1,10 +1,7 @@
 package com.icourt.alpha.fragment;
 
-import android.content.Context;
-import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,16 +13,11 @@ import android.widget.TextView;
 import com.bumptech.glide.Glide;
 import com.icourt.alpha.BuildConfig;
 import com.icourt.alpha.R;
-import com.icourt.alpha.activity.AboutActivity;
 import com.icourt.alpha.activity.ChatMsgClassfyActivity;
-import com.icourt.alpha.activity.LoginSelectActivity;
-import com.icourt.alpha.activity.MyAtedActivity;
-import com.icourt.alpha.activity.MyFileTabActivity;
-import com.icourt.alpha.activity.SettingActivity;
-import com.icourt.alpha.base.BaseAppUpdateActivity;
+import com.icourt.alpha.activity.SetingActivity;
+import com.icourt.alpha.activity.UserInfoActivity;
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.entity.bean.AlphaUserInfo;
-import com.icourt.alpha.entity.bean.AppVersionEntity;
 import com.icourt.alpha.entity.bean.GroupBean;
 import com.icourt.alpha.entity.bean.SelectGroupBean;
 import com.icourt.alpha.entity.bean.UserDataEntity;
@@ -33,16 +25,9 @@ import com.icourt.alpha.entity.event.ServerTimingEvent;
 import com.icourt.alpha.entity.event.TimingEvent;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
-import com.icourt.alpha.interfaces.callback.AppUpdateCallBack;
 import com.icourt.alpha.utils.GlideUtils;
 import com.icourt.alpha.utils.LoginInfoUtils;
-import com.icourt.alpha.utils.UMMobClickAgent;
 import com.icourt.alpha.utils.transformations.BlurTransformation;
-import com.icourt.alpha.widget.manager.DataCleanManager;
-import com.umeng.analytics.MobclickAgent;
-import com.umeng.socialize.UMAuthListener;
-import com.umeng.socialize.UMShareAPI;
-import com.umeng.socialize.bean.SHARE_MEDIA;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -50,14 +35,12 @@ import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import butterknife.Unbinder;
 import retrofit2.Call;
-import retrofit2.HttpException;
 import retrofit2.Response;
 
 /**
@@ -72,8 +55,6 @@ public class TabMineFragment extends BaseFragment {
     Unbinder unbinder;
     @BindView(R.id.photo_big_image)
     ImageView photoBigImage;
-    @BindView(R.id.set_image)
-    ImageView setImage;
     @BindView(R.id.photo_image)
     ImageView photoImage;
     @BindView(R.id.user_name_tv)
@@ -86,44 +67,18 @@ public class TabMineFragment extends BaseFragment {
     TextView monthDuractionTv;
     @BindView(R.id.done_task_tv)
     TextView doneTaskTv;
+    @BindView(R.id.my_center_timer_layout)
+    LinearLayout myCenterTimerLayout;
     @BindView(R.id.my_center_collect_textview)
     TextView myCenterCollectTextview;
     @BindView(R.id.my_center_collect_layout)
     LinearLayout myCenterCollectLayout;
-    @BindView(R.id.my_center_at_textview)
-    TextView myCenterAtTextview;
-    @BindView(R.id.my_center_at_layout)
-    LinearLayout myCenterAtLayout;
-    @BindView(R.id.my_center_file_textview)
-    TextView myCenterFileTextview;
-    @BindView(R.id.my_center_file_layout)
-    LinearLayout myCenterFileLayout;
-    @BindView(R.id.my_center_clear_cache_textview)
-    TextView myCenterClearCacheTextview;
-    @BindView(R.id.my_center_clear_cache_layout)
-    LinearLayout myCenterClearCacheLayout;
-    @BindView(R.id.my_center_about_count_view)
-    TextView myCenterAboutCountView;
-    @BindView(R.id.my_center_clear_about_layout)
-    LinearLayout myCenterClearAboutLayout;
-    @BindView(R.id.my_center_clear_loginout_layout)
-    LinearLayout myCenterClearLoginoutLayout;
+    @BindView(R.id.my_center_set_layout)
+    LinearLayout myCenterSetLayout;
     @BindView(R.id.menu_test)
     TextView menuTest;
-
-    private UMShareAPI mShareAPI;
-
-    private BaseAppUpdateActivity baseAppUpdateActivity;
-
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-        try {
-            baseAppUpdateActivity = (BaseAppUpdateActivity) context;
-        } catch (ClassCastException e) {
-            e.printStackTrace();
-        }
-    }
+    @BindView(R.id.user_info_layout)
+    LinearLayout userInfoLayout;
 
     public static TabMineFragment newInstance() {
         return new TabMineFragment();
@@ -142,8 +97,6 @@ public class TabMineFragment extends BaseFragment {
     protected void initView() {
         EventBus.getDefault().register(this);
         getData(false);
-//        setDataToView(getLoginUserInfo());
-        mShareAPI = UMShareAPI.get(getContext());
         menuTest.setVisibility(BuildConfig.IS_DEBUG ? View.VISIBLE : View.GONE);
     }
 
@@ -171,12 +124,6 @@ public class TabMineFragment extends BaseFragment {
                             .crossFade()
                             .into(photoBigImage);
                     userNameTv.setText(alphaUserInfo.getName());
-//                officeNameTv.setText(getUserGroup(alphaUserInfo.getGroups()));
-                    try {
-                        myCenterClearCacheTextview.setText(DataCleanManager.getTotalCacheSize(getContext()));
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
                 }
             }
         }
@@ -246,111 +193,31 @@ public class TabMineFragment extends BaseFragment {
     }
 
 
-    @OnClick({R.id.set_image,
+    @OnClick({
+            R.id.photo_image,
+            R.id.user_info_layout,
             R.id.my_center_collect_layout,
-            R.id.my_center_at_layout,
-            R.id.my_center_file_layout,
-            R.id.my_center_clear_cache_layout,
-            R.id.my_center_clear_about_layout,
-            R.id.my_center_clear_loginout_layout,
+            R.id.my_center_set_layout,
             R.id.menu_test})
     @Override
     public void onClick(View v) {
         super.onClick(v);
         switch (v.getId()) {
-            case R.id.set_image://设置
-                SettingActivity.launch(getContext());
+            case R.id.photo_image:
+                UserInfoActivity.launch(getContext());
+                break;
+            case R.id.user_info_layout:
+                UserInfoActivity.launch(getContext());
+                break;
+            case R.id.my_center_set_layout://设置
+                SetingActivity.launch(getContext());
                 break;
             case R.id.my_center_collect_layout://收藏
                 ChatMsgClassfyActivity.launchMyCollected(getContext());
                 break;
-            case R.id.my_center_at_layout://提及我的
-                MyAtedActivity.launch(getContext());
-                break;
-            case R.id.my_center_file_layout://我的文件
-                MyFileTabActivity.launch(getContext());
-                break;
-            case R.id.my_center_clear_cache_layout://清除缓存
-                new AlertDialog.Builder(getContext())
-                        .setMessage("确认清除?")
-                        .setPositiveButton("确定", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                DataCleanManager.clearAllCache(getActivity());
-                                myCenterClearCacheTextview.setText("0K");
-                                showTopSnackBar(R.string.my_center_clear_cache_succee_text);
-                            }
-                        }).setNegativeButton("取消", null)
-                        .show();
-                break;
-            case R.id.my_center_clear_about_layout://关于
-                AboutActivity.launch(getContext());
-                break;
-            case R.id.my_center_clear_loginout_layout://退出
-                showLoginOutConfirmDialog();
-                break;
             case R.id.menu_test:
 //                test1();
                 break;
-        }
-    }
-
-
-    private void showLoginOutConfirmDialog() {
-        new AlertDialog.Builder(getActivity())
-                .setTitle("提示")
-                .setMessage(getResources().getStringArray(R.array.my_center_isloginout_text_arr)[Math.random() > 0.5 ? 1 : 0].replace("|", "\n"))
-                .setPositiveButton("确认", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        loginOut();
-                    }
-                })
-                .setNegativeButton("取消", null)
-                .create().show();
-    }
-
-    /**
-     * 退出登录
-     */
-    private void loginOut() {
-        //神策退出
-       /* SensorsDataAPI.sharedInstance(getContext())
-                .logout();*/
-        MobclickAgent.onEvent(getContext(), UMMobClickAgent.login_out_click_id);
-        //撤销微信授权
-        if (!mShareAPI.isAuthorize(getActivity(), SHARE_MEDIA.WEIXIN)) {
-            dismissLoadingDialog();
-            LoginSelectActivity.launch(getContext());
-        } else {
-            mShareAPI.deleteOauth(getActivity(), SHARE_MEDIA.WEIXIN, new UMAuthListener() {
-                @Override
-                public void onStart(SHARE_MEDIA share_media) {
-                    showLoadingDialog(null);
-                }
-
-                @Override
-                public void onComplete(SHARE_MEDIA share_media, int i, Map<String, String> map) {
-                    exit();
-                }
-
-                @Override
-                public void onError(SHARE_MEDIA share_media, int i, Throwable throwable) {
-                    exit();
-                }
-
-
-                @Override
-                public void onCancel(SHARE_MEDIA share_media, int i) {
-                    exit();
-                }
-
-                private void exit() {
-                    dismissLoadingDialog();
-                    LoginSelectActivity.launch(getContext());
-                }
-
-            });
         }
     }
 
@@ -380,27 +247,6 @@ public class TabMineFragment extends BaseFragment {
         });
         getMyDoneTask();
         getGroupList();
-        if (baseAppUpdateActivity != null) {
-            baseAppUpdateActivity.checkAppUpdate(new AppUpdateCallBack() {
-                @Override
-                public void onSuccess(Call<AppVersionEntity> call, Response<AppVersionEntity> response) {
-                    if (myCenterAboutCountView == null) return;
-                    myCenterAboutCountView.setVisibility(baseAppUpdateActivity.shouldUpdate(response.body()) ? View.VISIBLE : View.INVISIBLE);
-                }
-
-                @Override
-                public void onFailure(Call<AppVersionEntity> call, Throwable t) {
-                    if (t instanceof HttpException) {
-                        HttpException hx = (HttpException) t;
-                        if (hx.code() == 401) {
-                            showTopSnackBar("fir token 更改");
-                            return;
-                        }
-                    }
-                    super.onFailure(call, t);
-                }
-            });
-        }
     }
 
     /**
@@ -447,14 +293,6 @@ public class TabMineFragment extends BaseFragment {
         long hour = times / 3600;
         long minute = times % 3600 / 60;
         return String.format(Locale.CHINA, "%02d:%02d", hour, minute);
-    }
-
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        if (mShareAPI != null) {
-            mShareAPI.release();
-        }
     }
 
     @Override
