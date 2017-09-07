@@ -6,6 +6,7 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
+import android.text.TextUtils;
 import android.view.View;
 
 import com.icourt.alpha.R;
@@ -135,7 +136,7 @@ public class FolderDetailDialogFragment extends FileDetailsBaseDialogFragment {
                                 }
                             }
                             FolderDocumentEntity folderDocumentEntity = response.body().get(0);
-                            if (folderDocumentEntity != null) {
+                            if (folderDocumentEntity != null&& !TextUtils.isEmpty(folderDocumentEntity.modifier_name)) {
                                 fileUpdateInfoTv.setText("");
                                 fileCreateInfoTv.setText(String.format("%s 更新于 %s", StringUtils.getEllipsizeText(folderDocumentEntity.modifier_name, 8), DateUtils.getyyyyMMddHHmm(folderDocumentEntity.mtime * 1_000)));
                             } else {
