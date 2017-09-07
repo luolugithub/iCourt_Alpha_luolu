@@ -5,12 +5,14 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
+import android.text.InputFilter;
 import android.text.TextUtils;
 import android.widget.EditText;
 
 import com.icourt.alpha.entity.bean.RepoEntity;
 import com.icourt.alpha.http.callback.SFileCallBack;
 import com.icourt.alpha.utils.DateUtils;
+import com.icourt.alpha.widget.filter.SFileNameFilter;
 
 import org.greenrobot.eventbus.EventBus;
 
@@ -47,6 +49,9 @@ public class RepoRenameActivity extends RepoCreateActivity {
         setTitle("重命名资料库");
         setTitleActionTextView("保存");
         inputNameEt.setHint("资料库名称");
+        inputNameEt.setFilters(new InputFilter[]{
+                new InputFilter.LengthFilter(getMaxInputLimitNum()),
+                new SFileNameFilter()});
         paramRepoEntity = (RepoEntity) getIntent().getSerializableExtra("data");
         if (paramRepoEntity == null) {
             finish();

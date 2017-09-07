@@ -3,6 +3,7 @@ package com.icourt.alpha.activity;
 import android.content.Context;
 import android.content.Intent;
 import android.support.annotation.NonNull;
+import android.text.InputFilter;
 import android.widget.EditText;
 
 import com.google.gson.JsonObject;
@@ -10,6 +11,7 @@ import com.icourt.alpha.entity.bean.RepoEntity;
 import com.icourt.alpha.http.callback.SFileCallBack;
 import com.icourt.alpha.utils.SpUtils;
 import com.icourt.alpha.utils.StringUtils;
+import com.icourt.alpha.widget.filter.SFileNameFilter;
 import com.icourt.api.RequestUtils;
 
 import retrofit2.Call;
@@ -59,6 +61,9 @@ public class FolderCreateActivity extends SFileEditBaseActivity {
         setTitle("新建文件夹");
         setTitleActionTextView("完成");
         inputNameEt.setHint("文件夹名称");
+        inputNameEt.setFilters(new InputFilter[]{
+                new InputFilter.LengthFilter(getMaxInputLimitNum()),
+                new SFileNameFilter()});
         inputNameEt.setText(SpUtils.getInstance().getStringData(KEY_CACHE_FOLDER, ""));
         inputNameEt.setSelection(inputNameEt.getText().length());
     }

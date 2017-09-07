@@ -707,12 +707,11 @@ public class FolderListActivity extends FolderBaseActivity
                 if (file != null) {
                     //检验文件合法
                     boolean isLegal = SFileNameFilter.checkFileNameIsLegal(
-                            getContext(),
                             file.getName(),
                             new IDefNotify() {
                                 @Override
                                 public void defNotify(String noticeStr) {
-                                    showTopSnackBar(String.format("%s,%s", getString(R.string.sfile_upload_fail), noticeStr));
+                                    showTopSnackBar(noticeStr);
                                 }
                             });
                     if (!isLegal) {
