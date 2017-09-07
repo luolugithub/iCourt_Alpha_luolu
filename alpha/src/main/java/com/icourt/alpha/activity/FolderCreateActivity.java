@@ -82,7 +82,7 @@ public class FolderCreateActivity extends SFileEditBaseActivity {
                         @Override
                         public void onSuccess(Call<RepoEntity> call, Response<RepoEntity> response) {
                             dismissLoadingDialog();
-                            showToast("创建文件夹成功");
+                            showToast("新建文件夹成功");
                             SpUtils.getInstance().remove(KEY_CACHE_FOLDER);
                             finish();
                         }

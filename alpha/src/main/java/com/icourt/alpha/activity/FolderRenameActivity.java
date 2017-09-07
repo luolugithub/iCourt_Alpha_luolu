@@ -158,7 +158,7 @@ public class FolderRenameActivity extends FolderCreateActivity {
                             @Override
                             public void onSuccess(Call<FolderDocumentEntity> call, Response<FolderDocumentEntity> response) {
                                 dismissLoadingDialog();
-                                showToast("更改标题成功");
+                                showToast("重命名成功");
                                 // EventBus.getDefault().post(paramDocumentRootEntity);
                                 finish();
                             }
