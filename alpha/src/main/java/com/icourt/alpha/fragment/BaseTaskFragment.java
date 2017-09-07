@@ -208,7 +208,7 @@ public abstract class BaseTaskFragment extends BaseFragment implements OnFragmen
 
 
     /**
-     * 修改任务所属项目／任务组／提醒
+     * 修改任务所属项目／任务组／提醒时间
      *
      * @param itemEntity
      */
@@ -567,7 +567,7 @@ public abstract class BaseTaskFragment extends BaseFragment implements OnFragmen
 
 
     /**
-     * 获取修改任务状态json
+     * 获取修改任务状态json（修改任务完成／未完成状态调用这个方法）
      *
      * @param itemEntity
      * @return
@@ -583,7 +583,7 @@ public abstract class BaseTaskFragment extends BaseFragment implements OnFragmen
     }
 
     /**
-     * 获取任务json
+     * 获取任务json（修改任务所属项目／任务组／提醒时间调用这个方法）
      *
      * @param itemEntity
      * @return

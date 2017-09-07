@@ -87,22 +87,24 @@ public class ProjectEndTaskActivity extends BaseActivity
     private static final int SHOW_DELETE_DIALOG = 0;//删除提示对话框
     private static final int SHOW_FINISH_DIALOG = 1;//完成任务提示对话框
     private static final String KEY_PROJECT_ID = "key_project_id";
+
     @BindView(R.id.recyclerView)
     RecyclerView recyclerView;
     @BindView(R.id.refreshLayout)
     RefreshLayout refreshLayout;
-
-    TaskItemAdapter taskAdapter;
-    String projectId;
     @BindView(R.id.titleBack)
     ImageView titleBack;
     @BindView(R.id.titleContent)
     TextView titleContent;
     @BindView(R.id.titleView)
     AppBarLayout titleView;
+
+    TaskItemAdapter taskAdapter;
+    String projectId;
     private int pageIndex = 1;
     HeaderFooterAdapter<TaskItemAdapter> headerFooterAdapter;
     TaskEntity.TaskItemEntity updateTaskItemEntity;
+    TaskEntity.TaskItemEntity lastEntity;//最后一次操作的任务
 
     public static void launch(@NonNull Context context, @NonNull String projectId) {
         if (context == null) return;
@@ -475,13 +477,13 @@ public class ProjectEndTaskActivity extends BaseActivity
                 if (updateTaskItemEntity.attendeeUsers != null) {
                     updateTaskItemEntity.attendeeUsers.clear();
                     updateTaskItemEntity.attendeeUsers.addAll(attusers);
-                    updateTask(getTaskJson(updateTaskItemEntity, null, null), true,updateTaskItemEntity,null);
+                    updateTask(getTaskJson(updateTaskItemEntity, null, null), true, updateTaskItemEntity, null);
                 }
             } else if (fragment instanceof DateSelectDialogFragment) {
                 long millis = params.getLong(KEY_FRAGMENT_RESULT);
                 updateTaskItemEntity.dueTime = millis;
                 TaskReminderEntity taskReminderEntity = (TaskReminderEntity) params.getSerializable("taskReminder");
-                updateTask(getTaskJson(updateTaskItemEntity, null, null), true,updateTaskItemEntity,taskReminderEntity);
+                updateTask(getTaskJson(updateTaskItemEntity, null, null), true, updateTaskItemEntity, taskReminderEntity);
 
             }
         }
@@ -491,7 +493,7 @@ public class ProjectEndTaskActivity extends BaseActivity
     @Override
     public void onProjectTaskGroupSelect(ProjectEntity projectEntity, TaskGroupEntity taskGroupEntity) {
 
-        updateTask(getTaskJsonByProject(updateTaskItemEntity, projectEntity, taskGroupEntity), TextUtils.equals(projectId, projectEntity.pkId),updateTaskItemEntity,null);
+        updateTask(getTaskJsonByProject(updateTaskItemEntity, projectEntity, taskGroupEntity), TextUtils.equals(projectId, projectEntity.pkId), updateTaskItemEntity, null);
     }
 
     /**
@@ -846,8 +848,6 @@ public class ProjectEndTaskActivity extends BaseActivity
         }
         return -1;
     }
-
-    TaskEntity.TaskItemEntity lastEntity;
 
     /**
      * 更新item
