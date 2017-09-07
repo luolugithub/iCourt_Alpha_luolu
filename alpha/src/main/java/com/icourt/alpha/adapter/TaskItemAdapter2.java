@@ -113,11 +113,13 @@ public class TaskItemAdapter2 extends BaseMultiItemQuickAdapter<TaskEntity.TaskI
         String timerTaskid = TimerManager.getInstance().getTimerTaskId();
         taskItemEntity.isTiming = !TextUtils.isEmpty(timerTaskid) && TextUtils.equals(timerTaskid, taskItemEntity.id);
         startTimmingViewSelect(startTimmingView, taskItemEntity.isTiming);
-        checkBox.setChecked(taskItemEntity.state);
         if (!taskItemEntity.valid) {
             startTimmingView.setVisibility(View.GONE);
-//            checkBox.setImageResource(R.mipmap.restore);
             checkBox.setBackgroundResource(R.mipmap.restore);
+        } else {
+            startTimmingView.setVisibility(View.VISIBLE);
+            checkBox.setBackgroundResource(R.drawable.sl_checkbox);
+            checkBox.setChecked(taskItemEntity.state);
         }
 
         baseViewHolder.addOnClickListener(R.id.task_item_checkbox);

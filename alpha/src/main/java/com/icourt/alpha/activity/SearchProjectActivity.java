@@ -104,9 +104,11 @@ public class SearchProjectActivity extends BaseActivity implements BaseRecyclerA
     int searchTaskType;//搜索任务type
 
     int taskStatuType;//搜索任务状态type
-    String projectId, assignTos;
+    String projectId;//项目的id
+    String assignTos;//负责人的id的集合
 
     /**
+     * ·
      * 搜索未完成（全部、新任务、我关注的）的任务
      *
      * @param context
