@@ -378,11 +378,13 @@ public class DateUtils {
     }
 
     /**
+     * yyyy-MM-dd 格式
+     *
      * @param milliseconds
      * @return
      */
     public static String getyyyy_MM_dd(long milliseconds) {
-        SimpleDateFormat formatter = new SimpleDateFormat("yyyy_MM_dd");
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
         return formatter.format(milliseconds);
     }
 
