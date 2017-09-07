@@ -61,10 +61,14 @@ public class ProjectEndTaskFragment extends BaseTaskFragment implements BaseQuic
     RefreshLayout refreshLayout;
 
     Unbinder unbinder;
-    TaskAdapter taskAdapter;
+
+    private LinearLayoutManager linearLayoutManager;
+
+    private TaskAdapter taskAdapter;
     String projectId;
     private int pageIndex = 1;
     TaskEntity.TaskItemEntity lastEntity;//最后一次操作的任务
+    boolean isFirstTimeIntoPage = true;//是否是第一次进入界面，第一次进入界面，要隐藏搜索栏，滚动到第一个任务。
 
     public static ProjectEndTaskFragment newInstance(@NonNull Context context, @NonNull String projectId) {
         ProjectEndTaskFragment projectTaskFragment = new ProjectEndTaskFragment();
@@ -87,7 +91,8 @@ public class ProjectEndTaskFragment extends BaseTaskFragment implements BaseQuic
         projectId = getArguments().getString(KEY_PROJECT_ID);
         refreshLayout.setNoticeEmpty(R.mipmap.bg_no_task, R.string.task_none_finished_task);
         refreshLayout.setMoveForHorizontal(true);
-        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        linearLayoutManager = new LinearLayoutManager(getContext());
+        recyclerView.setLayoutManager(linearLayoutManager);
         recyclerView.setHasFixedSize(true);
 
         View headerView = HeaderFooterAdapter.inflaterView(getContext(), R.layout.header_search_comm, recyclerView);
@@ -168,6 +173,11 @@ public class ProjectEndTaskFragment extends BaseTaskFragment implements BaseQuic
                 stopRefresh();
                 if (response.body().result != null) {
                     taskAdapter.setNewData(response.body().result.items);
+                    //第一次进入 隐藏搜索框
+                    if (isFirstTimeIntoPage && taskAdapter.getData().size() > 0) {
+                        linearLayoutManager.scrollToPositionWithOffset(taskAdapter.getHeaderLayoutCount(), 0);
+                        isFirstTimeIntoPage = false;
+                    }
                     pageIndex += 1;
                     enableLoadMore(response.body().result.items);
                 }

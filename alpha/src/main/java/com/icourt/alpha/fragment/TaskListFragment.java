@@ -499,7 +499,7 @@ public class TaskListFragment extends BaseTaskFragment implements
                                 }
                             }
                             //第一次进入 隐藏搜索框
-                            if (isFirstTimeIntoPage) {
+                            if (isFirstTimeIntoPage && taskAdapter.getData().size() > 0) {
                                 linearLayoutManager.scrollToPositionWithOffset(taskAdapter.getHeaderLayoutCount(), 0);
                                 isFirstTimeIntoPage = false;
                             }

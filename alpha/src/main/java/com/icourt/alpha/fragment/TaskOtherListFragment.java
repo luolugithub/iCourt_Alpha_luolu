@@ -289,7 +289,7 @@ public class TaskOtherListFragment extends BaseTaskFragment implements BaseQuick
                     @Override
                     public void accept(List<TaskEntity.TaskItemEntity> searchPolymerizationEntities) throws Exception {
                         taskAdapter.setNewData(searchPolymerizationEntities);
-                        if (isFirstTimeIntoPage) {
+                        if (isFirstTimeIntoPage && taskAdapter.getData().size() > 0) {
                             mLinearLayoutManager.scrollToPositionWithOffset(taskAdapter.getHeaderLayoutCount(), 0);
                             isFirstTimeIntoPage = false;
                         }

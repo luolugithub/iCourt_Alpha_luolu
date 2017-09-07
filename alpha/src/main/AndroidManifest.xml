@@ -205,11 +205,7 @@
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".activity.ProjectEndTaskActivity555"
-            android:configChanges="orientation|keyboardHidden|screenSize"
-            android:screenOrientation="portrait" />
-        <activity
-            android:name=".activity.ProjectEndTaskActivity2"
+            android:name=".activity.ProjectEndTaskActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:screenOrientation="portrait" />
         <activity
@@ -296,10 +292,6 @@
             android:windowSoftInputMode="adjustUnspecified|adjustResize|stateHidden" />
         <activity
             android:name=".activity.MyAllotTaskActivity"
-            android:configChanges="orientation|keyboardHidden|screenSize"
-            android:screenOrientation="portrait" />
-        <activity
-            android:name=".activity.MyFinishTaskActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:screenOrientation="portrait" />
         <activity

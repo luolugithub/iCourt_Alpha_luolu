@@ -31,7 +31,7 @@ import butterknife.ButterKnife;
  * version 2.0.0
  */
 
-public class ProjectEndTaskActivity2 extends BaseActivity {
+public class ProjectEndTaskActivity extends BaseActivity {
 
     @BindView(R.id.titleBack)
     ImageView titleBack;
@@ -46,7 +46,7 @@ public class ProjectEndTaskActivity2 extends BaseActivity {
 
     public static void launch(@NonNull Context context, @NonNull String projectId) {
         if (context == null) return;
-        Intent intent = new Intent(context, ProjectEndTaskActivity2.class);
+        Intent intent = new Intent(context, ProjectEndTaskActivity.class);
         intent.putExtra(ProjectEndTaskFragment.KEY_PROJECT_ID, projectId);
         context.startActivity(intent);
     }
