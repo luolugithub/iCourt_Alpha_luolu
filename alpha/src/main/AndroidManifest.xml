@@ -306,6 +306,9 @@
             android:name=".activity.SearchProjectActivity"
             android:screenOrientation="portrait" />
         <activity
+            android:name=".activity.SearchTaskActivity"
+            android:screenOrientation="portrait" />
+        <activity
             android:name=".activity.AlphaSpeciaSetActivity"
             android:screenOrientation="portrait" />
 

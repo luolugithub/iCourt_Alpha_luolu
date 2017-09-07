@@ -33,7 +33,6 @@ import butterknife.ButterKnife;
 
 public class ProjectEndTaskActivity2 extends BaseActivity {
 
-
     @BindView(R.id.titleBack)
     ImageView titleBack;
     @BindView(R.id.titleContent)

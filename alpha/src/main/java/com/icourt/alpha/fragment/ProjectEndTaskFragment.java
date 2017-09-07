@@ -336,4 +336,9 @@ public class ProjectEndTaskFragment extends BaseTaskFragment implements BaseQuic
         }
     }
 
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        unbinder.unbind();
+    }
 }
