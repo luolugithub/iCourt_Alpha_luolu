@@ -446,6 +446,11 @@ public class TaskOtherListFragment extends BaseTaskFragment implements BaseQuick
     }
 
     @Override
+    protected void taskDeleteBack(@NonNull TaskEntity.TaskItemEntity itemEntity) {
+
+    }
+
+    @Override
     protected void taskUpdateBack(@ChangeType int type, @NonNull TaskEntity.TaskItemEntity itemEntity) {
         //更新任务成功的回调:修改状态，修改所属项目／任务组，修改负责人，修改到期时间
         //因为他人任务只有开始/结束计时，完成/未完成任务的操作，所以不需要刷新列表。
@@ -455,10 +460,7 @@ public class TaskOtherListFragment extends BaseTaskFragment implements BaseQuick
     @Override
     protected void taskTimerUpdateBack(String taskId) {
         if (!TextUtils.isEmpty(taskId)) {//添加计时
-            TimeEntity.ItemEntity updateItem = TimerManager.getInstance().getTimer();
-            if (updateItem != null) {
-                updateUnFinishChildTimeing(updateItem.taskPkId, true);
-            }
+            taskAdapter.notifyDataSetChanged();
         } else {//结束计时
             if (lastEntity != null) {
                 lastEntity.isTiming = false;

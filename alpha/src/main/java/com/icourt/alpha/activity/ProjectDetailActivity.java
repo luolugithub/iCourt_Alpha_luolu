@@ -302,7 +302,7 @@ public class ProjectDetailActivity extends BaseActivity implements OnFragmentCal
                         dialog.dismiss();
                         switch (position) {
                             case 0://"已完成任务"
-                                ProjectEndTaskActivity.launch(ProjectDetailActivity.this, projectId);
+                                ProjectEndTaskActivity2.launch(ProjectDetailActivity.this, projectId);
                                 break;
                             case 1://"管理任务组"
                                 ProjectTaskGroupActivity.launch(ProjectDetailActivity.this, projectId);

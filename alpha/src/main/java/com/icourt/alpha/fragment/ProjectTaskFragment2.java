@@ -401,6 +401,11 @@ public class ProjectTaskFragment2 extends BaseTaskFragment implements BaseQuickA
     }
 
     @Override
+    protected void taskDeleteBack(@NonNull TaskEntity.TaskItemEntity itemEntity) {
+        getData(true);
+    }
+
+    @Override
     protected void taskUpdateBack(@ChangeType int actionType, @NonNull TaskEntity.TaskItemEntity itemEntity) {
         if (actionType == CHANGE_DUETIME) {
             getData(true);
@@ -417,10 +422,7 @@ public class ProjectTaskFragment2 extends BaseTaskFragment implements BaseQuickA
             }
             taskAdapter.notifyDataSetChanged();
         } else {//开始计时的广播
-            TimeEntity.ItemEntity updateItem = TimerManager.getInstance().getTimer();
-            if (updateItem != null) {
-                updateChildTimeing(updateItem.taskPkId, true);
-            }
+            taskAdapter.notifyDataSetChanged();
         }
 
     }

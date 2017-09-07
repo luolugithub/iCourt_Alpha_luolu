@@ -729,10 +729,7 @@ public class TaskListFragment2 extends BaseTaskFragment implements
     @Override
     protected void taskTimerUpdateBack(String taskId) {
         if (!TextUtils.isEmpty(taskId)) {//添加计时
-            TimeEntity.ItemEntity updateItem = TimerManager.getInstance().getTimer();
-            if (updateItem != null) {
-                updateUnFinishChildTimeing(updateItem.taskPkId, true);
-            }
+            taskAdapter.notifyDataSetChanged();
         } else {//结束计时
             if (lastEntity != null) {
                 lastEntity.isTiming = false;

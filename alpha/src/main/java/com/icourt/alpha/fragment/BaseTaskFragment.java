@@ -649,8 +649,7 @@ public abstract class BaseTaskFragment extends BaseFragment implements OnFragmen
      *
      * @param itemEntity
      */
-    protected void taskDeleteBack(@NonNull TaskEntity.TaskItemEntity itemEntity) {
-    }
+    protected abstract void taskDeleteBack(@NonNull TaskEntity.TaskItemEntity itemEntity);
 
     /**
      * 更新任务成功的回调:修改状态，修改所属项目／任务组，修改负责人，修改到期时间
