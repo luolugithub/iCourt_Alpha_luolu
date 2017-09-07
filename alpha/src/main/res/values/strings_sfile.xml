@@ -57,6 +57,7 @@
 
     <string name="sfile_create_folder">新建文件夹</string>
     <string name="sfile_upload">上传文件</string>
+    <string name="sfile_upload_fail">上传文件失败</string>
     <string name="sfile_select_from_album">从相册选取</string>
     <string name="sfile_select_from_camera">拍照</string>
 
@@ -94,6 +95,7 @@
     </string-array>
 
     <string name="sfile_not_exist">文件不存在</string>
+    <string name="sfile_name_contain_special_characters" formatted="false">文件名包含特殊字符 \"%s\"</string>
     <string name="sfile_change_history_empty">尚未有修改记录</string>
     <string name="sfile_change_history_revert_confirm">将资料库恢复到该次修改前到状态</string>
     <string name="sfile_change_history_revert">撤销修改</string>

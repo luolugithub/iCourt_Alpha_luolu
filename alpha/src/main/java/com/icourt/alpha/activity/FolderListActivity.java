@@ -45,6 +45,7 @@ import com.icourt.alpha.fragment.dialogfragment.FileDetailDialogFragment;
 import com.icourt.alpha.fragment.dialogfragment.FolderDetailDialogFragment;
 import com.icourt.alpha.fragment.dialogfragment.FolderTargetListDialogFragment;
 import com.icourt.alpha.fragment.dialogfragment.RepoDetailsDialogFragment;
+import com.icourt.alpha.http.IDefNotify;
 import com.icourt.alpha.http.callback.SFileCallBack;
 import com.icourt.alpha.http.consumer.BaseThrowableConsumer;
 import com.icourt.alpha.http.observer.BaseObserver;
@@ -59,6 +60,7 @@ import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 import com.icourt.alpha.widget.comparators.FileSortComparator;
 import com.icourt.alpha.widget.dialog.BottomActionDialog;
 import com.icourt.alpha.widget.dialog.SortTypeSelectDialog;
+import com.icourt.alpha.widget.filter.SFileNameFilter;
 import com.icourt.api.RequestUtils;
 
 import org.greenrobot.eventbus.EventBus;
@@ -686,7 +688,44 @@ public class FolderListActivity extends FolderBaseActivity
         if (filePaths != null
                 && !filePaths.isEmpty()) {
             if (isDestroyOrFinishing()) return;
-            //2.获取上传地址
+            final ArrayList<String> filePathsArray = new ArrayList<>(filePaths);
+
+            //1.检验文件名称合法性
+            for (int i = filePathsArray.size() - 1; i >= 0; i--) {
+                String path = filePathsArray.get(i);
+                File file = null;
+                try {
+                    //可能出现路径异常
+                    file = new File(path);
+                    if (!file.exists()) {
+                        filePathsArray.remove(path);
+                        continue;
+                    }
+                } catch (Throwable e) {
+                    e.printStackTrace();
+                }
+                if (file != null) {
+                    //检验文件合法
+                    boolean isLegal = SFileNameFilter.checkFileNameIsLegal(
+                            getContext(),
+                            file.getName(),
+                            new IDefNotify() {
+                                @Override
+                                public void defNotify(String noticeStr) {
+                                    showTopSnackBar(String.format("%s,%s", getString(R.string.sfile_upload_fail), noticeStr));
+                                }
+                            });
+                    if (!isLegal) {
+                        filePathsArray.remove(path);
+                    }
+                }
+            }
+
+            //2.避免为空
+            if (filePathsArray.isEmpty()) {
+                return;
+            }
+            //3.获取上传地址
             showLoadingDialog("sfile 上传地址获取中...");
             callEnqueue(getSFileApi().sfileUploadUrlQuery(
                     getSeaFileRepoId(),
@@ -697,7 +736,7 @@ public class FolderListActivity extends FolderBaseActivity
                         public void onSuccess(Call<String> call, Response<String> response) {
                             if (isDestroyOrFinishing()) return;
                             dismissLoadingDialog();
-                            uploadFiles(filePaths, response.body());
+                            uploadFiles(filePathsArray, response.body());
                         }
 
                         @Override
@@ -758,6 +797,7 @@ public class FolderListActivity extends FolderBaseActivity
                         new Action() {
                             @Override
                             public void run() throws Exception {
+                                showLoadingDialog(null);
                                 getData(true);
                             }
                         });
