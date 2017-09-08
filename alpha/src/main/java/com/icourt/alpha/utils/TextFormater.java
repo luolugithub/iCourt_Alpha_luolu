@@ -21,6 +21,7 @@ import java.util.regex.Pattern;
  * Created by icourt on 16/12/7.
  */
 
+@Deprecated
 public class TextFormater {
     static final int GB_SP_DIFF = 160;
     // 存放国标一级汉字不同读音的起始区位码
@@ -79,6 +80,7 @@ public class TextFormater {
     /**
      * 返回kb的数据大小对应的文本
      */
+    @Deprecated
     public static String getKBDataSize(long size) {
         if (size < 0) {
             size = 0;
@@ -94,7 +96,7 @@ public class TextFormater {
      * @param fileS
      * @return
      */
-
+    @Deprecated
     public static String FormetFileSize(long fileS) {
         DecimalFormat df = new DecimalFormat("#.00");
         String fileSizeString = "";

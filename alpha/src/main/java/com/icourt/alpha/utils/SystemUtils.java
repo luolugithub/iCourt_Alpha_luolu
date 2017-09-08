@@ -778,6 +778,7 @@ public class SystemUtils {
 
     /**
      * 打开文件管理器
+     *
      * @param context
      * @param reqCode
      */
@@ -792,5 +793,22 @@ public class SystemUtils {
         }
     }
 
+
+    /**
+     * 打开文件管理器
+     *
+     * @param fragment
+     * @param reqCode
+     */
+    public static final void chooseFile(Fragment fragment, int reqCode) {
+        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+        intent.setType("*/*");
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        try {
+            fragment.startActivityForResult(Intent.createChooser(intent, "选择文件"), reqCode);
+        } catch (android.content.ActivityNotFoundException ex) {
+            SnackbarUtils.showTopSnackBar(fragment.getActivity(), "亲，木有文件管理器啊-_-!!");
+        }
+    }
 
 }

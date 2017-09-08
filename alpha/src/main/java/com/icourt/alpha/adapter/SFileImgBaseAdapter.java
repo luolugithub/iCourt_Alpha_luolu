@@ -22,6 +22,14 @@ public abstract class SFileImgBaseAdapter<T> extends BaseArrayRecyclerAdapter<T>
     private String seaFileRepoId;
     private String seaFileDirPath;
 
+    public void setSeaFileRepoId(String seaFileRepoId) {
+        this.seaFileRepoId = seaFileRepoId;
+    }
+
+    public void setSeaFileDirPath(String seaFileDirPath) {
+        this.seaFileDirPath = seaFileDirPath;
+    }
+
     public String getSeaFileRepoId() {
         return seaFileRepoId;
     }

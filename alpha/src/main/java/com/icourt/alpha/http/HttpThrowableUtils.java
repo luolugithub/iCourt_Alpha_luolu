@@ -1,6 +1,8 @@
 package com.icourt.alpha.http;
 
 import android.app.Activity;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.annotation.UiThread;
 import android.text.TextUtils;
 
@@ -33,6 +35,8 @@ import static com.icourt.alpha.utils.AppManager.getAppManager;
  * version 2.1.0
  */
 public class HttpThrowableUtils {
+
+    private static final Handler mHandler = new Handler(Looper.getMainLooper());
 
     /**
      * 处理http异常
@@ -119,10 +123,11 @@ public class HttpThrowableUtils {
 
     /**
      * 默认的网络提示
+     * 注意自子线程的问题
      *
      * @param noticeStr
      */
-    public static final void defaultNotify(String noticeStr) {
+    public static final void defaultNotify(final String noticeStr) {
         if (TextUtils.isEmpty(noticeStr)) return;
         if (!SystemUtils.isMainThread()) return;
         Activity currentActivity = null;
@@ -131,9 +136,23 @@ public class HttpThrowableUtils {
         } catch (Exception e) {
         }
         if (currentActivity != null && !currentActivity.isFinishing()) {
-            try {
-                SnackbarUtils.showTopSnackBarWithError(currentActivity, noticeStr);
-            } catch (Throwable e) {
+            if (SystemUtils.isMainThread()) {
+                try {
+                    SnackbarUtils.showTopSnackBarWithError(currentActivity, noticeStr);
+                } catch (Throwable e) {
+                }
+            } else {
+                final Activity finalCurrentActivity = currentActivity;
+                mHandler.removeCallbacksAndMessages(null);
+                mHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            SnackbarUtils.showTopSnackBarWithError(finalCurrentActivity, noticeStr);
+                        } catch (Throwable e) {
+                        }
+                    }
+                });
             }
         }
     }

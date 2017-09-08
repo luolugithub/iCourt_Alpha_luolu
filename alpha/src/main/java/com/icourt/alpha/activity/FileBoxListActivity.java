@@ -82,7 +82,6 @@ public class FileBoxListActivity extends BaseActivity implements BaseRecyclerAda
     @BindView(R.id.refreshLayout)
     RefreshLayout refreshLayout;
 
-    FileBoxBean fileBoxBean;
     String seaFileRepoId, rootName, path;
     ProjectFileBoxAdapter projectFileBoxAdapter;
     List<FileBoxBean> fileBoxBeanList;
@@ -96,12 +95,12 @@ public class FileBoxListActivity extends BaseActivity implements BaseRecyclerAda
     private static final int SIZE_SORT_TYPE = 3;//按大小排序
 
     public static void launch(@NonNull Context context,
-                              @NonNull FileBoxBean fileBoxBean,
+                              @NonNull String fileName,
                               @NonNull String seaFileRepoId,
                               @NonNull String rootName) {
         if (context == null) return;
         Intent intent = new Intent(context, FileBoxListActivity.class);
-        intent.putExtra("file", fileBoxBean);
+        intent.putExtra("fileName", fileName);
         intent.putExtra("seaFileRepoId", seaFileRepoId);
         intent.putExtra("rootName", rootName);
         context.startActivity(intent);
@@ -124,10 +123,7 @@ public class FileBoxListActivity extends BaseActivity implements BaseRecyclerAda
         list.add("按修改时间升序排序");
         seaFileRepoId = getIntent().getStringExtra("seaFileRepoId");
         rootName = getIntent().getStringExtra("rootName");
-        fileBoxBean = (FileBoxBean) getIntent().getSerializableExtra("file");
-        if (fileBoxBean != null) {
-            setTitle(fileBoxBean.name);
-        }
+        setTitle(getIntent().getStringExtra("fileName"));
         firstlist = TextFormater.firstList();
         firstlist.add(0, "#");
         titleAction.setImageResource(R.mipmap.header_icon_add);
@@ -240,7 +236,7 @@ public class FileBoxListActivity extends BaseActivity implements BaseRecyclerAda
             }
             if (TextUtils.equals("dir", fileBoxBean.type)) {
                 FileBoxListActivity.launch(this,
-                        fileBoxBean,
+                        fileBoxBean.name,
                         seaFileRepoId,
                         rootName + "/" + fileBoxBean.name);
             }

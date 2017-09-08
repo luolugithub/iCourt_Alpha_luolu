@@ -104,7 +104,7 @@ public class FolderDocumentAdapter extends SFileImgBaseAdapter<FolderDocumentEnt
      * @param folderDocumentEntity
      * @param position
      */
-    private void setGridItemData(ViewHolder holder, FolderDocumentEntity folderDocumentEntity, int position) {
+    protected void setGridItemData(ViewHolder holder, FolderDocumentEntity folderDocumentEntity, int position) {
         CheckedTextView folder_document_ctv = holder.obtainView(R.id.folder_document_ctv);
         ImageView document_type_iv = holder.obtainView(R.id.document_type_iv);
         TextView document_title_tv = holder.obtainView(R.id.document_title_tv);
@@ -130,7 +130,7 @@ public class FolderDocumentAdapter extends SFileImgBaseAdapter<FolderDocumentEnt
         folder_mask_view.setVisibility(isSelected(folderDocumentEntity) ? View.VISIBLE : View.GONE);
     }
 
-    private void setItemData(ViewHolder holder, FolderDocumentEntity folderDocumentEntity, int position) {
+    protected void setItemData(ViewHolder holder, FolderDocumentEntity folderDocumentEntity, int position) {
         if (folderDocumentEntity == null) return;
         CheckedTextView folder_document_ctv = holder.obtainView(R.id.folder_document_ctv);
         ImageView document_type_iv = holder.obtainView(R.id.document_type_iv);

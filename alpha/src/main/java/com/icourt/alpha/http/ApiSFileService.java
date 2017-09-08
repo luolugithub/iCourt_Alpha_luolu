@@ -49,6 +49,15 @@ public interface ApiSFileService {
     Call<List<FileBoxBean>> projectQueryFileBoxList(@Path("seaFileRepoId") String seaFileRepoId);
 
     /**
+     * 获取项目详情文档列表
+     *
+     * @param seaFileRepoId
+     * @return
+     */
+    @GET("api2/repos/{seaFileRepoId}/dir/")
+    Observable<List<FolderDocumentEntity>> projectQueryFileBoxListObservable(@Path("seaFileRepoId") String seaFileRepoId);
+
+    /**
      * sfile上传文件
      *
      * @param url

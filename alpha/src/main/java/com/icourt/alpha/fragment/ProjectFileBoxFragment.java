@@ -64,6 +64,7 @@ import retrofit2.Response;
  * version 2.0.0
  */
 
+@Deprecated
 public class ProjectFileBoxFragment extends BaseFragment implements BaseRecyclerAdapter.OnItemClickListener {
 
     private static final String KEY_PROJECT_ID = "key_project_id";
@@ -437,7 +438,7 @@ public class ProjectFileBoxFragment extends BaseFragment implements BaseRecycler
             }
             if (TextUtils.equals("dir", fileBoxBean.type)) {
                 FileBoxListActivity.launch(getContext(),
-                        fileBoxBean,
+                        fileBoxBean.name,
                         seaFileRepoId,
                         fileBoxBean.name);
             }

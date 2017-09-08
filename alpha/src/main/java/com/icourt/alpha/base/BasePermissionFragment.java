@@ -5,6 +5,7 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.annotation.StringRes;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
@@ -63,6 +64,25 @@ public class BasePermissionFragment extends Fragment {
             }
         }
         return true;
+    }
+
+    /**
+     * @param permission
+     * @param rationaleId
+     * @param requestCode
+     */
+    protected void reqPermission(final String permission, @StringRes int rationaleId, final int requestCode) {
+        if (shouldShowRequestPermissionRationale(permission)) {
+            showAlertDialog(getString(R.string.permission_title_rationale), getString(rationaleId),
+                    new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            requestPermissions(new String[]{permission}, requestCode);
+                        }
+                    }, getString(R.string.label_ok), null, getString(R.string.label_cancel));
+        } else {
+            requestPermissions(new String[]{permission}, requestCode);
+        }
     }
 
     /**

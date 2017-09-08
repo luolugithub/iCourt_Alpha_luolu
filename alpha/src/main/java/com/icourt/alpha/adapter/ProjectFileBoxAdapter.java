@@ -18,6 +18,7 @@ import com.icourt.alpha.utils.FileUtils;
  * version 2.0.0
  */
 
+@Deprecated
 public class ProjectFileBoxAdapter extends BaseArrayRecyclerAdapter<FileBoxBean> {
 
     private static final int FILE_TYPE = 0;//文件

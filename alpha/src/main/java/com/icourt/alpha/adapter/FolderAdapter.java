@@ -1,11 +1,13 @@
 package com.icourt.alpha.adapter;
 
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.icourt.alpha.R;
-import com.icourt.alpha.adapter.baseadapter.BaseArrayRecyclerAdapter;
 import com.icourt.alpha.entity.bean.FolderDocumentEntity;
 import com.icourt.alpha.utils.DateUtils;
+import com.icourt.alpha.utils.FileUtils;
+import com.icourt.alpha.utils.IMUtils;
 
 /**
  * Description
@@ -14,7 +16,11 @@ import com.icourt.alpha.utils.DateUtils;
  * date createTime：2017/8/14
  * version 2.1.0
  */
-public class FolderAdapter extends BaseArrayRecyclerAdapter<FolderDocumentEntity> {
+public class FolderAdapter extends SFileImgBaseAdapter<FolderDocumentEntity> {
+    public FolderAdapter() {
+        super("", "", false);
+    }
+
     @Override
     public int bindView(int viewtype) {
         return R.layout.adapter_item_folder;
@@ -24,9 +30,21 @@ public class FolderAdapter extends BaseArrayRecyclerAdapter<FolderDocumentEntity
     public void onBindHoder(ViewHolder holder, FolderDocumentEntity folderDocumentEntity, int position) {
         if (folderDocumentEntity == null) return;
         TextView document_title_tv = holder.obtainView(R.id.document_title_tv);
+        ImageView folder_type_iv = holder.obtainView(R.id.folder_type_iv);
         TextView document_desc_tv = holder.obtainView(R.id.document_desc_tv);
 
         document_title_tv.setText(folderDocumentEntity.name);
-        document_desc_tv.setText(DateUtils.getFormatChatTimeSimple(folderDocumentEntity.mtime * 1_000));
+        if (folderDocumentEntity.isDir()) {
+            folder_type_iv.setImageResource(R.mipmap.folder);
+            document_desc_tv.setText(DateUtils.getStandardSimpleFormatTime(folderDocumentEntity.mtime * 1_000));
+        } else {
+            document_desc_tv.setText(String.format("%s, %s",
+                    FileUtils.bFormat(folderDocumentEntity.size), DateUtils.getStandardSimpleFormatTime(folderDocumentEntity.mtime * 1_000)));
+            if (IMUtils.isPIC(folderDocumentEntity.name)) {
+                loadSFileImage(folderDocumentEntity.name, folder_type_iv);
+            } else {
+                folder_type_iv.setImageResource(getSFileTypeIcon(folderDocumentEntity.name));
+            }
+        }
     }
 }

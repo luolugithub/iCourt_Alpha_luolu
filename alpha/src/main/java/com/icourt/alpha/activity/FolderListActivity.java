@@ -426,36 +426,7 @@ public class FolderListActivity extends FolderBaseActivity
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.titleAction:
-                new BottomActionDialog(getContext(),
-                        null,
-                        Arrays.asList(getResources().getStringArray(R.array.sfile_folder_action_menus_array)),
-                        new BottomActionDialog.OnActionItemClickListener() {
-                            @Override
-                            public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
-                                dialog.dismiss();
-                                switch (position) {
-                                    case 0:
-                                        FolderCreateActivity.launch(
-                                                getContext(),
-                                                getSeaFileRepoId(),
-                                                getSeaFileDirPath());
-                                        break;
-                                    case 1:
-                                        if (checkPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-                                            SystemUtils.chooseFile(getActivity(), REQUEST_CODE_CHOOSE_FILE);
-                                        } else {
-                                            reqPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, "我们需要文件读写权限!", REQ_CODE_PERMISSION_ACCESS_FILE);
-                                        }
-                                        break;
-                                    case 2:
-                                        checkAndOpenPhotos();
-                                        break;
-                                    case 3:
-                                        checkAndOpenCamera();
-                                        break;
-                                }
-                            }
-                        }).show();
+                showActionDialog();
                 break;
             case R.id.titleAction2:
                 showActionMoreDialog();
@@ -497,6 +468,39 @@ public class FolderListActivity extends FolderBaseActivity
                 super.onClick(v);
                 break;
         }
+    }
+
+    private void showActionDialog() {
+        new BottomActionDialog(getContext(),
+                null,
+                Arrays.asList(getResources().getStringArray(R.array.sfile_folder_action_menus_array)),
+                new BottomActionDialog.OnActionItemClickListener() {
+                    @Override
+                    public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
+                        dialog.dismiss();
+                        switch (position) {
+                            case 0:
+                                FolderCreateActivity.launch(
+                                        getContext(),
+                                        getSeaFileRepoId(),
+                                        getSeaFileDirPath());
+                                break;
+                            case 1:
+                                if (checkPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+                                    SystemUtils.chooseFile(getActivity(), REQUEST_CODE_CHOOSE_FILE);
+                                } else {
+                                    reqPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, R.string.permission_rationale_storage, REQ_CODE_PERMISSION_ACCESS_FILE);
+                                }
+                                break;
+                            case 2:
+                                checkAndOpenPhotos();
+                                break;
+                            case 3:
+                                checkAndOpenCamera();
+                                break;
+                        }
+                    }
+                }).show();
     }
 
     private void showActionMoreDialog() {

@@ -18,6 +18,7 @@ import com.icourt.alpha.entity.bean.MsgConvert2Task;
 import com.icourt.alpha.entity.bean.PageEntity;
 import com.icourt.alpha.entity.bean.ProjectDetailEntity;
 import com.icourt.alpha.entity.bean.ProjectEntity;
+import com.icourt.alpha.entity.bean.RepoIdResEntity;
 import com.icourt.alpha.entity.bean.RepoMatterEntity;
 import com.icourt.alpha.entity.bean.SFileLinkInfoEntity;
 import com.icourt.alpha.entity.bean.SFileShareUserInfo;
@@ -40,6 +41,7 @@ import com.icourt.alpha.http.httpmodel.ResEntity;
 import java.util.List;
 import java.util.Map;
 
+import io.reactivex.Observable;
 import okhttp3.RequestBody;
 import retrofit2.Call;
 import retrofit2.http.Body;
@@ -60,7 +62,7 @@ import retrofit2.http.Url;
  * @email xuanyouwu@163.com
  * @time 2016-06-02 14:26
  * <p>
- *     注意如果用的是Observable api必须以Observable结尾
+ * 注意如果用的是Observable api必须以Observable结尾
  * 分页公共参数 整形  请大家按照这个【顺序】写
  * @Query("pageNum") int pageNum,
  * @Query("pageSize") int pageSize
@@ -428,6 +430,17 @@ public interface ApiAlphaService {
      */
     @GET("ilaw/api/v2/documents/getRepo/{projectId}")
     Call<JsonObject> projectQueryDocumentId(@Path("projectId") String projectId);
+
+    /**
+     * 获取项目详情文档id
+     * <p>
+     * 文档地址：http://testpms.alphalawyer.cn/ilaw/swagger/index.html#!/documents-api/getRepoIdUsingGET
+     *
+     * @param projectId
+     * @return
+     */
+    @GET("ilaw/api/v2/documents/getRepo/{projectId}")
+    Observable<RepoIdResEntity> projectQueryDocumentIdObservable(@Path("projectId") String projectId);
 
 
     /**
@@ -1152,6 +1165,22 @@ public interface ApiAlphaService {
                                                   @Query("subjectid") String subjectid);
 
     /**
+     * 获取是否有新建任务/联系人查看编辑等权限
+     * 聚合权限
+     * <p>
+     * 文档地址：swagger上暂无
+     *
+     * @param uid
+     * @param type      //MAT,CON,KM,HR,DEP
+     * @param subjectid
+     * @return
+     */
+    @GET("ilaw/api/v2/permission/engine/{uid}/getPmsStrings")
+    Observable<ResEntity<List<String>>> permissionQueryObservable(@Path("uid") String uid,
+                                                                  @Query("type") String type,
+                                                                  @Query("subjectid") String subjectid);
+
+    /**
      * 获取任务详情(返回权限)
      * <p>
      * 文档地址：http://testpms.alphalawyer.cn/ilaw/swagger/index.html#!/taskflow-api/findTaskFlowWithRightUsingGET
@@ -1370,7 +1399,7 @@ public interface ApiAlphaService {
      */
     @GET("ilaw/api/v2/documents/{seaFileRepoId}/dir/shareUsers")
     Call<ResEntity<List<SFileShareUserInfo>>> folderSharedUserQuery(@Path("seaFileRepoId") String fromRepoId,
-                                                         @Query("path") String path);
+                                                                    @Query("path") String path);
 
 
 }
