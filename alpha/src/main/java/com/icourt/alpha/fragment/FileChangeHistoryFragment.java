@@ -47,7 +47,7 @@ import retrofit2.Response;
 import static com.icourt.alpha.constants.SFileConfig.PERMISSION_RW;
 
 /**
- * Description
+ * Description   修改历史列表
  * Company Beijing icourt
  * author  youxuan  E-mail:xuanyouwu@163.com
  * date createTime：2017/8/17
@@ -56,6 +56,8 @@ import static com.icourt.alpha.constants.SFileConfig.PERMISSION_RW;
 public class FileChangeHistoryFragment extends BaseDialogFragment implements BaseRecyclerAdapter.OnItemChildClickListener {
     FileChangedHistoryAdapter fileChangedHistoryAdapter;
     int page = 0;
+
+    protected static final String STRING_HTTP_SUCCESS = "success";
 
     protected static final String KEY_SEA_FILE_FROM_REPO_ID = "seaFileFromRepoId";//原仓库id
     protected static final String KEY_SEA_FILE_REPO_PERMISSION = "seaFileRepoPermission";//repo的权限
@@ -140,11 +142,6 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
                             0,
                             fileChangedHistoryAdapter.getData());
                 }
-            }
-        });
-        fileChangedHistoryAdapter.registerAdapterDataObserver(new DataChangeAdapterObserver() {
-            @Override
-            protected void updateUI() {
                 if (refreshLayout != null) {
                     refreshLayout.enableEmptyView(fileChangedHistoryAdapter.getItemCount() <= 0);
                 }
@@ -180,11 +177,7 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
         }
         switch (getRepoType()) {
             case SFileConfig.REPO_MINE:
-                getChangeHistory(isRefresh, null);
-                break;
             case SFileConfig.REPO_SHARED_ME:
-                getChangeHistory(isRefresh, null);
-                break;
             case SFileConfig.REPO_LAWFIRM:
                 getChangeHistory(isRefresh, null);
                 break;
@@ -384,6 +377,7 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
                         super.onFailure(call, t);
                         dismissLoadingDialog();
                     }
+
                     @Override
                     public void defNotify(String noticeStr) {
                         showToast(noticeStr);
@@ -421,6 +415,7 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
                         dismissLoadingDialog();
                         super.onFailure(call, t);
                     }
+
                     @Override
                     public void defNotify(String noticeStr) {
                         showToast(noticeStr);
@@ -475,6 +470,7 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
                         super.onFailure(call, t);
                         dismissLoadingDialog();
                     }
+
                     @Override
                     public void defNotify(String noticeStr) {
                         showToast(noticeStr);
@@ -499,7 +495,7 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
                     @Override
                     public void onSuccess(Call<JsonObject> call, Response<JsonObject> response) {
                         dismissLoadingDialog();
-                        if (JsonUtils.getBoolValue(response.body(), "success")) {
+                        if (JsonUtils.getBoolValue(response.body(), STRING_HTTP_SUCCESS)) {
                             showToast(R.string.sfile_revert_success);
                             delayRefresh();
 
@@ -536,7 +532,7 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
                     @Override
                     public void onSuccess(Call<JsonObject> call, Response<JsonObject> response) {
                         dismissLoadingDialog();
-                        if (JsonUtils.getBoolValue(response.body(), "success")) {
+                        if (JsonUtils.getBoolValue(response.body(), STRING_HTTP_SUCCESS)) {
                             showToast(R.string.sfile_revert_success);
                             delayRefresh();
                         } else {
@@ -549,6 +545,7 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
                         dismissLoadingDialog();
                         super.onFailure(call, t);
                     }
+
                     @Override
                     public void defNotify(String noticeStr) {
                         showToast(noticeStr);
@@ -571,7 +568,7 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
                     @Override
                     public void onSuccess(Call<JsonObject> call, Response<JsonObject> response) {
                         dismissLoadingDialog();
-                        if (JsonUtils.getBoolValue(response.body(), "success")) {
+                        if (JsonUtils.getBoolValue(response.body(), STRING_HTTP_SUCCESS)) {
                             showToast(R.string.sfile_revert_success);
                             delayRefresh();
                         } else {
@@ -584,6 +581,7 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
                         dismissLoadingDialog();
                         super.onFailure(call, t);
                     }
+
                     @Override
                     public void defNotify(String noticeStr) {
                         showToast(noticeStr);
@@ -608,7 +606,7 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
                     @Override
                     public void onSuccess(Call<JsonObject> call, Response<JsonObject> response) {
                         dismissLoadingDialog();
-                        if (JsonUtils.getBoolValue(response.body(), "success")) {
+                        if (JsonUtils.getBoolValue(response.body(), STRING_HTTP_SUCCESS)) {
                             showToast(R.string.sfile_revert_success);
                             delayRefresh();
                         } else {
@@ -621,6 +619,7 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
                         dismissLoadingDialog();
                         super.onFailure(call, t);
                     }
+
                     @Override
                     public void defNotify(String noticeStr) {
                         showToast(noticeStr);
@@ -646,7 +645,7 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
                     @Override
                     public void onSuccess(Call<JsonObject> call, Response<JsonObject> response) {
                         dismissLoadingDialog();
-                        if (JsonUtils.getBoolValue(response.body(), "success")) {
+                        if (JsonUtils.getBoolValue(response.body(), STRING_HTTP_SUCCESS)) {
                             showToast(R.string.sfile_revert_success);
                             delayRefresh();
                         } else {
@@ -659,6 +658,7 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
                         dismissLoadingDialog();
                         super.onFailure(call, t);
                     }
+
                     @Override
                     public void defNotify(String noticeStr) {
                         showToast(noticeStr);
