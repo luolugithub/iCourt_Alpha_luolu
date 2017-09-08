@@ -748,7 +748,6 @@ public class FolderListActivity extends FolderBaseActivity
                         @Override
                         public void onSuccess(Call<String> call, Response<String> response) {
                             if (isDestroyOrFinishing()) return;
-                            dismissLoadingDialog();
                             uploadFiles(filePathsArray, response.body());
                         }
 
@@ -810,7 +809,6 @@ public class FolderListActivity extends FolderBaseActivity
                         new Action() {
                             @Override
                             public void run() throws Exception {
-                                showLoadingDialog(null);
                                 getData(true);
                             }
                         });

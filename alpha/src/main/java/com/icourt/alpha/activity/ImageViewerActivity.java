@@ -173,6 +173,7 @@ public class ImageViewerActivity extends BaseUmengActivity {
         @Override
         public void bindDataToItem(String s, ViewGroup container, final View itemView, int pos) {
             final PhotoView touchImageView = itemView.findViewById(R.id.imageView);
+            touchImageView.setMaximumScale(5.0f);
             final View imgLookOriginalTv = itemView.findViewById(R.id.img_look_original_tv);
             final String bigUrl = getBigImageUrl(pos);
             imgLookOriginalTv.setOnClickListener(new View.OnClickListener() {
