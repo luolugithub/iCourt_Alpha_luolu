@@ -23,14 +23,14 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 
 /**
- * Description 我分配的任务列表
+ * Description 我分配的/查看他人的任务列表
  * Company Beijing icourt
  * author  lu.zhao  E-mail:zhaolu@icourt.cc
  * date createTime：17/5/19
  * version 2.0.0
  */
 
-public class MyAllotTaskActivity extends BaseActivity {
+public class TaskOtherActivity extends BaseActivity {
 
     @BindView(R.id.titleBack)
     ImageView titleBack;
@@ -49,9 +49,9 @@ public class MyAllotTaskActivity extends BaseActivity {
                               @TaskOtherListFragment.START_TYPE int startType,
                               @Nullable ArrayList<String> uids) {
         if (context == null) return;
-        Intent intent = new Intent(context, MyAllotTaskActivity.class);
-        intent.putExtra("startType", startType);
-        intent.putExtra("uids", uids);
+        Intent intent = new Intent(context, TaskOtherActivity.class);
+        intent.putExtra(TaskOtherListFragment.TAG_START_TYPE, startType);
+        intent.putExtra(TaskOtherListFragment.TAG_IDS, uids);
         context.startActivity(intent);
     }
 
@@ -63,9 +63,34 @@ public class MyAllotTaskActivity extends BaseActivity {
         initView();
     }
 
+
+    @Override
+    protected void initView() {
+        super.initView();
+        if (getQueryType() == TaskOtherListFragment.MY_ALLOT_TYPE) {
+            setTitle(R.string.task_my_allot_task);
+        } else if (getQueryType() == TaskOtherListFragment.SELECT_OTHER_TYPE) {
+            setTitle(getString(R.string.task_look_others_task));
+        }
+        baseFragmentAdapter = new BaseFragmentAdapter(getSupportFragmentManager());
+        viewpager.setAdapter(baseFragmentAdapter);
+        tablayout.setupWithViewPager(viewpager);
+        ArrayList<String> uids = (ArrayList<String>) getIntent().getSerializableExtra(TaskOtherListFragment.TAG_IDS);
+        baseFragmentAdapter.bindTitle(true, Arrays.asList(getString(R.string.task_unfinished), getString(R.string.task_finished)));
+        baseFragmentAdapter.bindData(true,
+                Arrays.asList(
+                        TaskOtherListFragment.newInstance(getQueryType(), TaskOtherListFragment.UNFINISH_TYPE, uids),
+                        TaskOtherListFragment.newInstance(getQueryType(), TaskOtherListFragment.FINISH_TYPE, uids)));
+    }
+
+    /**
+     * 获取查询的类型：我分配的／查看他人的
+     *
+     * @return START_TYPE枚举中所定义的两种类型。
+     */
     @TaskOtherListFragment.START_TYPE
     private int getQueryType() {
-        switch (getIntent().getIntExtra("startType", 0)) {
+        switch (getIntent().getIntExtra(TaskOtherListFragment.TAG_START_TYPE, 0)) {
             case TaskOtherListFragment.MY_ALLOT_TYPE:
                 return TaskOtherListFragment.MY_ALLOT_TYPE;
             case TaskOtherListFragment.SELECT_OTHER_TYPE:
@@ -73,24 +98,5 @@ public class MyAllotTaskActivity extends BaseActivity {
             default:
                 return TaskOtherListFragment.MY_ALLOT_TYPE;
         }
-    }
-
-    @Override
-    protected void initView() {
-        super.initView();
-        if (getQueryType() == TaskOtherListFragment.MY_ALLOT_TYPE) {
-            setTitle("我分配的任务");
-        } else if (getQueryType() == TaskOtherListFragment.SELECT_OTHER_TYPE) {
-            setTitle("查看他人任务");
-        }
-        baseFragmentAdapter = new BaseFragmentAdapter(getSupportFragmentManager());
-        viewpager.setAdapter(baseFragmentAdapter);
-        tablayout.setupWithViewPager(viewpager);
-        ArrayList<String> uids = (ArrayList<String>) getIntent().getSerializableExtra("uids");
-        baseFragmentAdapter.bindTitle(true, Arrays.asList("未完成", "已完成"));
-        baseFragmentAdapter.bindData(true,
-                Arrays.asList(
-                        TaskOtherListFragment.newInstance(getQueryType(), TaskOtherListFragment.UNFINISH_TYPE, uids),
-                        TaskOtherListFragment.newInstance(getQueryType(), TaskOtherListFragment.FINISH_TYPE, uids)));
     }
 }

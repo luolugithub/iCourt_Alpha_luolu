@@ -20,6 +20,7 @@ import com.icourt.alpha.entity.bean.SearchEngineEntity;
 import com.icourt.alpha.entity.bean.SelectGroupBean;
 import com.icourt.alpha.entity.bean.TaskAttachmentEntity;
 import com.icourt.alpha.entity.bean.TaskCheckItemEntity;
+import com.icourt.alpha.entity.bean.TaskCountEntity;
 import com.icourt.alpha.entity.bean.TaskEntity;
 import com.icourt.alpha.entity.bean.TaskGroupEntity;
 import com.icourt.alpha.entity.bean.TaskMemberWrapEntity;
@@ -1270,7 +1271,7 @@ public interface ApiAlphaService {
      * @return
      */
     @GET("api/v2/taskflow/state/count")
-    Call<ResEntity<JsonElement>> taskStateCountQuery();
+    Call<ResEntity<TaskCountEntity>> taskStateCountQuery();
 
     /**
      * 获取各个状态、类型的项目数量

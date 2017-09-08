@@ -73,7 +73,7 @@ public class ProjectTaskFragment extends BaseTaskFragment implements BaseQuickAd
     TaskEntity.TaskItemEntity lastEntity;
     String projectId;
 
-    private LinearLayoutManager mLinearLayoutManager;
+    private LinearLayoutManager linearLayoutManager;
 
     public static ProjectTaskFragment newInstance(@NonNull String projectId) {
         ProjectTaskFragment projectTaskFragment = new ProjectTaskFragment();
@@ -96,8 +96,8 @@ public class ProjectTaskFragment extends BaseTaskFragment implements BaseQuickAd
         projectId = getArguments().getString(KEY_PROJECT_ID);
         refreshLayout.setNoticeEmpty(R.mipmap.bg_no_task, R.string.task_list_null_text);
         refreshLayout.setMoveForHorizontal(true);
-        mLinearLayoutManager = new LinearLayoutManager(getContext());
-        recyclerView.setLayoutManager(mLinearLayoutManager);
+        linearLayoutManager = new LinearLayoutManager(getContext());
+        recyclerView.setLayoutManager(linearLayoutManager);
         recyclerView.setHasFixedSize(true);
 
         View headerView = HeaderFooterAdapter.inflaterView(getContext(), R.layout.header_search_comm, recyclerView);
@@ -214,11 +214,8 @@ public class ProjectTaskFragment extends BaseTaskFragment implements BaseQuickAd
                                 stopRefresh();
                                 taskAdapter.setAddTime(isAddTime);
                                 taskAdapter.setNewData(searchPolymerizationEntities);
+                                goFirstTask();
                                 enableEmptyView(searchPolymerizationEntities);
-                                if (isFirstTimeIntoPage) {
-                                    mLinearLayoutManager.scrollToPositionWithOffset(taskAdapter.getHeaderLayoutCount(), 0);
-                                    isFirstTimeIntoPage = false;
-                                }
                                 TimerManager.getInstance().timerQuerySync();
                             }
                         });
@@ -323,14 +320,20 @@ public class ProjectTaskFragment extends BaseTaskFragment implements BaseQuickAd
         }
     }
 
+    /**
+     * 如果是第一次进入该界面，滚动到第一条任务，隐藏搜索框
+     */
+    private void goFirstTask() {
+        if (isFirstTimeIntoPage && taskAdapter.getData().size() > 0) {
+            linearLayoutManager.scrollToPositionWithOffset(taskAdapter.getHeaderLayoutCount(), 0);
+            isFirstTimeIntoPage = false;
+        }
+    }
+
     private void enableEmptyView(List result) {
         if (refreshLayout != null) {
-            if (result != null) {
-                if (result.size() > 0) {
-                    refreshLayout.enableEmptyView(false);
-                } else {
-                    refreshLayout.enableEmptyView(true);
-                }
+            if (result != null && result.size() > 0) {
+                refreshLayout.enableEmptyView(false);
             } else {
                 refreshLayout.enableEmptyView(true);
             }
@@ -341,7 +344,7 @@ public class ProjectTaskFragment extends BaseTaskFragment implements BaseQuickAd
     public void onUpdateTaskEvent(TaskActionEvent event) {
         if (event == null) return;
         if (event.action == TaskActionEvent.TASK_REFRESG_ACTION) {
-            refreshLayout.startRefresh();
+            getData(true);
         }
     }
 
@@ -407,11 +410,7 @@ public class ProjectTaskFragment extends BaseTaskFragment implements BaseQuickAd
 
     @Override
     protected void taskUpdateBack(@ChangeType int actionType, @NonNull TaskEntity.TaskItemEntity itemEntity) {
-        if (actionType == CHANGE_DUETIME) {
-            getData(true);
-        } else {
-            taskAdapter.updateItem(itemEntity);
-        }
+        getData(true);
     }
 
     @Override

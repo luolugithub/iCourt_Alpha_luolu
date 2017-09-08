@@ -167,12 +167,10 @@ public class TaskAllFragment extends BaseFragment implements OnTasksChangeListen
                 type == TYPE_ALL_TASK_CALENDAR);
 
         switch (type) {
-            case TYPE_ALL_TASK_CALENDAR:
+            case TYPE_ALL_TASK_CALENDAR://说明是更新日历的任务列表
                 updateCalendarRefresh();
                 break;
-            case TYPE_ALL_TASK:
-//                BaseFragment fragment = (BaseFragment) getFragment(TYPE_ALL_TASK);
-//                if (fragment != null) fragment.notifyFragmentUpdate(fragment, 100, bundle);
+            case TYPE_ALL_TASK://说明是更新未完成／已完成／已取消的任务列表
                 break;
         }
     }

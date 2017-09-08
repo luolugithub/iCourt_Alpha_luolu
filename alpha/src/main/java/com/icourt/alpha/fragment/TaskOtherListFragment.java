@@ -64,15 +64,30 @@ import retrofit2.Response;
 public class TaskOtherListFragment extends BaseTaskFragment implements BaseQuickAdapter.OnItemClickListener, BaseQuickAdapter.OnItemChildClickListener {
 
     //实例化当前Fragment所要传递的参数标识
-    private static final String TAG_START_TYPE = "startType";
-    private static final String TAG_FINISH_TYPE = "finishType";
-    private static final String TAG_IDS = "ids";
+    public static final String TAG_START_TYPE = "startType";//我分配的／查看他人，所对应的参数应该是START_TYPE枚举里的两种类型。
+    public static final String TAG_FINISH_TYPE = "finishType";//未完成／已完成，所对应的应该是IS_FINISH_TYPE枚举里的两种类型。
+    public static final String TAG_IDS = "ids";
 
     public static final int MY_ALLOT_TYPE = 1;//我分配的
     public static final int SELECT_OTHER_TYPE = 2;//查看其他人
 
+    @IntDef({MY_ALLOT_TYPE,
+            SELECT_OTHER_TYPE})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface START_TYPE {
+
+    }
+
     public static final int UNFINISH_TYPE = 1;//未完成
     public static final int FINISH_TYPE = 2;//已完成
+
+    @IntDef({UNFINISH_TYPE,
+            FINISH_TYPE})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface IS_FINISH_TYPE {
+
+    }
+
 
     public static final int TASK_TODAY_TYPE = 1;//今天任务（暂时保留字段）
     public static final int TASK_BEABOUT_TYPE = 2;//即将到期任务（暂时保留字段）
@@ -88,7 +103,7 @@ public class TaskOtherListFragment extends BaseTaskFragment implements BaseQuick
     @BindView(R.id.refreshLayout)
     RefreshLayout refreshLayout;
 
-    private LinearLayoutManager mLinearLayoutManager;
+    private LinearLayoutManager linearLayoutManager;
 
     int startType;//我分配的任务列表／他人的任务列表（我分配的暂时已经废弃了）
     int finishType;//未完成／已完成
@@ -103,19 +118,6 @@ public class TaskOtherListFragment extends BaseTaskFragment implements BaseQuick
 
     private ArrayMap<String, Integer> mArrayMap = new ArrayMap<>();//用来存储每个group有多少个数量（暂时保留，待分页再优化）。
 
-    @IntDef({UNFINISH_TYPE,
-            FINISH_TYPE})
-    @Retention(RetentionPolicy.SOURCE)
-    public @interface IS_FINISH_TYPE {
-
-    }
-
-    @IntDef({MY_ALLOT_TYPE,
-            SELECT_OTHER_TYPE})
-    @Retention(RetentionPolicy.SOURCE)
-    public @interface START_TYPE {
-
-    }
 
     public static TaskOtherListFragment newInstance(@START_TYPE int startType, @IS_FINISH_TYPE int finishType, ArrayList<String> ids) {
         TaskOtherListFragment taskOtherListFragment = new TaskOtherListFragment();
@@ -142,8 +144,8 @@ public class TaskOtherListFragment extends BaseTaskFragment implements BaseQuick
         ids = getArguments().getStringArrayList(TAG_IDS);
         refreshLayout.setNoticeEmpty(R.mipmap.bg_no_task, R.string.task_list_null_text);
         refreshLayout.setMoveForHorizontal(true);
-        mLinearLayoutManager = new LinearLayoutManager(getContext());
-        recyclerView.setLayoutManager(mLinearLayoutManager);
+        linearLayoutManager = new LinearLayoutManager(getContext());
+        recyclerView.setLayoutManager(linearLayoutManager);
         recyclerView.setHasFixedSize(true);
 
         taskAdapter = new TaskAdapter();
@@ -289,10 +291,7 @@ public class TaskOtherListFragment extends BaseTaskFragment implements BaseQuick
                     @Override
                     public void accept(List<TaskEntity.TaskItemEntity> searchPolymerizationEntities) throws Exception {
                         taskAdapter.setNewData(searchPolymerizationEntities);
-                        if (isFirstTimeIntoPage && taskAdapter.getData().size() > 0) {
-                            mLinearLayoutManager.scrollToPositionWithOffset(taskAdapter.getHeaderLayoutCount(), 0);
-                            isFirstTimeIntoPage = false;
-                        }
+                        goFirstTask();
                     }
                 });
     }
@@ -403,6 +402,15 @@ public class TaskOtherListFragment extends BaseTaskFragment implements BaseQuick
         }
     }
 
+    /**
+     * 如果是第一次进入该界面，滚动到第一条任务，隐藏搜索框
+     */
+    private void goFirstTask() {
+        if (isFirstTimeIntoPage && taskAdapter.getData().size() > 0) {
+            linearLayoutManager.scrollToPositionWithOffset(taskAdapter.getHeaderLayoutCount(), 0);
+            isFirstTimeIntoPage = false;
+        }
+    }
 
     /**
      * 根据数据是否为空，判断是否显示空页面。
@@ -411,12 +419,10 @@ public class TaskOtherListFragment extends BaseTaskFragment implements BaseQuick
      */
     private void enableEmptyView(List result) {
         if (refreshLayout != null) {
-            if (result != null) {
-                if (result.size() > 0) {
-                    refreshLayout.enableEmptyView(false);
-                } else {
-                    refreshLayout.enableEmptyView(true);
-                }
+            if (result != null && result.size() > 0) {
+                refreshLayout.enableEmptyView(false);
+            } else {
+                refreshLayout.enableEmptyView(true);
             }
         }
     }
@@ -450,7 +456,7 @@ public class TaskOtherListFragment extends BaseTaskFragment implements BaseQuick
 
     @Override
     protected void taskDeleteBack(@NonNull TaskEntity.TaskItemEntity itemEntity) {
-
+        //他人任务列表不能删除任务
     }
 
     @Override
@@ -478,19 +484,20 @@ public class TaskOtherListFragment extends BaseTaskFragment implements BaseQuick
         if (event == null) return;
         switch (event.action) {
             case TaskActionEvent.TASK_REFRESG_ACTION://刷新的广播
-                refreshLayout.startRefresh();
+                getData(true);
                 break;
             case TaskActionEvent.TASK_DELETE_ACTION://删除的广播
                 if (event.entity == null) return;
                 //因为考虑到本地分组的原因，所以需要刷新全部（等后端添加分页逻辑，再进行修改）
-                refreshLayout.startRefresh();
+                getData(true);
                 break;
             case TaskActionEvent.TASK_ADD_ITEM_ACITON://添加的广播
-                refreshLayout.startRefresh();
+                getData(true);
                 break;
             case TaskActionEvent.TASK_UPDATE_ITEM://更新计时的广播
                 if (event.entity == null) return;
-                updateChildItem(event.entity);
+                if (recyclerView != null)
+                    updateChildItem(event.entity);
                 break;
         }
     }

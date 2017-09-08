@@ -63,6 +63,8 @@ public class TaskListCalendarFragment extends BaseFragment {
 
 
     private static final String KEY_TASKS = "key_tasks";
+    private Unbinder unbinder;
+
     @BindView(R.id.titleBack)
     ImageView titleBack;
     @BindView(R.id.titleContent)
@@ -83,21 +85,22 @@ public class TaskListCalendarFragment extends BaseFragment {
     RelativeLayout rlScheduleList;
     @BindView(R.id.slSchedule)
     ScheduleLayout slSchedule;
-    ArrayList<TaskEntity.TaskItemEntity> taskItemEntityList;
-    BaseRefreshFragmentAdapter fragmentPagerAdapter;
     @BindView(R.id.rl_comm_search)
     RelativeLayout rlCommSearch;
     @BindView(R.id.header_comm_search_ll)
     LinearLayout headerCommSearchLl;
     @BindView(R.id.calendar_title_ll)
     LinearLayout calendarTitleLl;
-    Unbinder unbinder;
     @BindView(R.id.gestureDetectorLayout)
     GestureDetectorLayout gestureDetectorLayout;
     @BindView(R.id.new_task_count_tv)
     TextView newTaskCountTv;
     @BindView(R.id.new_task_cardview)
     CardView newTaskCardview;
+
+    ArrayList<TaskEntity.TaskItemEntity> taskItemEntityList;
+    BaseRefreshFragmentAdapter fragmentPagerAdapter;
+
     private int MAXDAILYPAGE = 5000;
     private int dailyTaskPagePOS;
 

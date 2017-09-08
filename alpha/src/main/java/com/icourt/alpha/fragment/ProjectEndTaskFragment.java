@@ -171,8 +171,11 @@ public class ProjectEndTaskFragment extends BaseTaskFragment implements BaseQuic
             @Override
             public void onSuccess(Call<ResEntity<TaskEntity>> call, Response<ResEntity<TaskEntity>> response) {
                 stopRefresh();
-                if (response.body().result != null) {
+                if (response.body().result != null && recyclerView != null) {
                     taskAdapter.setNewData(response.body().result.items);
+                    if (isRefresh) {//如果是下拉刷新情况，才判断要不要显示空页面
+                        enableEmptyView(taskAdapter.getData());
+                    }
                     //第一次进入 隐藏搜索框
                     if (isFirstTimeIntoPage && taskAdapter.getData().size() > 0) {
                         linearLayoutManager.scrollToPositionWithOffset(taskAdapter.getHeaderLayoutCount(), 0);
@@ -187,8 +190,26 @@ public class ProjectEndTaskFragment extends BaseTaskFragment implements BaseQuic
             public void onFailure(Call<ResEntity<TaskEntity>> call, Throwable t) {
                 super.onFailure(call, t);
                 stopRefresh();
+                if (isRefresh) {//如果是下拉刷新情况，才判断要不要显示空页面
+                    enableEmptyView(taskAdapter.getData());
+                }
             }
         });
+    }
+
+    /**
+     * 根据数据是否为空，判断是否显示空页面。
+     *
+     * @param result 用来判断是否要显示空页面的列表
+     */
+    private void enableEmptyView(List result) {
+        if (refreshLayout != null) {
+            if (result != null && result.size() > 0) {
+                refreshLayout.enableEmptyView(false);
+            } else {
+                refreshLayout.enableEmptyView(true);
+            }
+        }
     }
 
     private void enableLoadMore(List result) {
