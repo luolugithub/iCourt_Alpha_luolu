@@ -74,7 +74,7 @@
             android:layout_marginTop="5dp"
             android:ellipsize="end"
             android:maxLines="1"
-            android:text="阿三哥  创建于 2017-4-1" />
+            android:text="" />
 
         <TextView
             android:id="@+id/file_update_info_tv"
@@ -83,7 +83,7 @@
             android:layout_marginTop="5dp"
             android:ellipsize="end"
             android:maxLines="1"
-            android:text="阿三哥  更新于 2017-5-1" />
+            android:text="" />
 
     </LinearLayout>
 

@@ -106,7 +106,16 @@ public class FolderDocumentEntity
         return suspensionTag;
     }
 
-
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (o == null) return false;
+        if (getClass() != o.getClass())
+            return false;
+        final FolderDocumentEntity other = (FolderDocumentEntity) o;
+        return TextUtils.equals(this.id, other.id);
+    }
     public class DirBooleanTypeAdapter extends BooleanTypeAdapter {
 
         @Override

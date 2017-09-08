@@ -351,6 +351,9 @@ public class FolderListActivity extends FolderBaseActivity
                 new SFileCallBack<List<FolderDocumentEntity>>() {
                     @Override
                     public void onSuccess(Call<List<FolderDocumentEntity>> call, Response<List<FolderDocumentEntity>> response) {
+                        //取消批量操作界面
+                        onClick(titleEditCancelView);
+
                         sortFile(false, response.body());
                         stopRefresh();
                     }
