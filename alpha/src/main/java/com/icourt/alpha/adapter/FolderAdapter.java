@@ -21,6 +21,10 @@ public class FolderAdapter extends SFileImgBaseAdapter<FolderDocumentEntity> {
         super("", "", false);
     }
 
+    public FolderAdapter(String seaFileRepoId, String seaFileDirPath, boolean selectable) {
+        super(seaFileRepoId, seaFileDirPath, selectable);
+    }
+
     @Override
     public int bindView(int viewtype) {
         return R.layout.adapter_item_folder;

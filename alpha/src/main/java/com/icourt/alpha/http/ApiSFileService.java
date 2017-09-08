@@ -94,9 +94,21 @@ public interface ApiSFileService {
      * @param rootName
      * @return
      */
+    @Deprecated
     @GET("api2/repos/{seaFileRepoId}/dir/")
     Call<List<FileBoxBean>> projectQueryFileBoxByDir(@Path("seaFileRepoId") String seaFileRepoId,
                                                      @Query("p") String rootName);
+
+    /**
+     * 获取项目下文档列表
+     *
+     * @param seaFileRepoId
+     * @param rootName
+     * @return
+     */
+    @GET("api2/repos/{seaFileRepoId}/dir/")
+    Call<List<FolderDocumentEntity>> projectQueryFileBoxByDir2(@Path("seaFileRepoId") String seaFileRepoId,
+                                                               @Query("p") String rootName);
 
     /**
      * 获取文件下载地址

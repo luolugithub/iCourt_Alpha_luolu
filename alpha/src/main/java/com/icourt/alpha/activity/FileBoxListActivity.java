@@ -60,6 +60,7 @@ import retrofit2.Response;
  * version 2.0.0
  */
 
+@Deprecated
 public class FileBoxListActivity extends BaseActivity implements BaseRecyclerAdapter.OnItemClickListener {
     private static final int REQUEST_CODE_CAMERA = 1000;
     private static final int REQUEST_CODE_GALLERY = 1001;

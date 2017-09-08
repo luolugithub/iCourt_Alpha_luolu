@@ -1,42 +1,37 @@
-package com.icourt.alpha.fragment;
+package com.icourt.alpha.activity;
 
 import android.Manifest;
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.res.ColorStateList;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.design.widget.AppBarLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.andview.refreshview.XRefreshView;
 import com.google.gson.JsonElement;
 import com.icourt.alpha.BuildConfig;
 import com.icourt.alpha.R;
-import com.icourt.alpha.activity.FileDownloadActivity;
-import com.icourt.alpha.activity.FileSimpleListActivity;
-import com.icourt.alpha.activity.FolderCreateActivity;
-import com.icourt.alpha.activity.ImageViewerActivity;
 import com.icourt.alpha.adapter.FolderAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.HeaderFooterAdapter;
 import com.icourt.alpha.adapter.baseadapter.adapterObserver.DataChangeAdapterObserver;
-import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.constants.SFileConfig;
 import com.icourt.alpha.entity.bean.FolderDocumentEntity;
-import com.icourt.alpha.entity.bean.RepoIdResEntity;
 import com.icourt.alpha.http.IDefNotify;
 import com.icourt.alpha.http.callback.SFileCallBack;
 import com.icourt.alpha.http.consumer.BaseThrowableConsumer;
-import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.http.observer.BaseObserver;
-import com.icourt.alpha.interfaces.OnParentTitleBarClickListener;
+import com.icourt.alpha.utils.GlideUtils;
 import com.icourt.alpha.utils.IMUtils;
 import com.icourt.alpha.utils.ImageUtils;
 import com.icourt.alpha.utils.IndexUtils;
@@ -61,6 +56,7 @@ import java.util.Map;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 import butterknife.Unbinder;
 import cn.finalteam.galleryfinal.FunctionConfig;
 import cn.finalteam.galleryfinal.GalleryFinal;
@@ -72,23 +68,23 @@ import io.reactivex.annotations.NonNull;
 import io.reactivex.functions.Action;
 import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Function;
-import io.reactivex.functions.Predicate;
 import io.reactivex.schedulers.Schedulers;
 import okhttp3.RequestBody;
 import retrofit2.Call;
 import retrofit2.Response;
 
+import static com.icourt.alpha.constants.SFileConfig.PERMISSION_R;
+import static com.icourt.alpha.constants.SFileConfig.PERMISSION_RW;
 import static com.icourt.alpha.widget.comparators.FileSortComparator.FILE_SORT_TYPE_DEFAULT;
 
 /**
- * Description  项目下的文档列表
+ * Description
  * Company Beijing icourt
  * author  youxuan  E-mail:xuanyouwu@163.com
  * date createTime：2017/9/8
  * version 2.1.0
  */
-public class ProjectFileFragment extends BaseFragment implements OnParentTitleBarClickListener, BaseRecyclerAdapter.OnItemClickListener {
-    private static final String KEY_PROJECT_ID = "key_project_id";
+public class FileSimpleListActivity extends FolderBaseActivity implements BaseRecyclerAdapter.OnItemClickListener {
     private static final int REQUEST_CODE_CAMERA = 1000;
     private static final int REQUEST_CODE_GALLERY = 1001;
     private static final int REQUEST_CODE_CHOOSE_FILE = 1002;
@@ -106,14 +102,24 @@ public class ProjectFileFragment extends BaseFragment implements OnParentTitleBa
 
     HeaderFooterAdapter<FolderAdapter> headerFooterAdapter;
     FolderAdapter folderAdapter;
-    String projectId;
-    String repoId;
     String path;
     int fileSortType = FILE_SORT_TYPE_DEFAULT;
 
 
     final ArrayList<String> bigImageUrls = new ArrayList<>();
     final ArrayList<String> smallImageUrls = new ArrayList<>();
+    @BindView(R.id.titleBack)
+    ImageView titleBack;
+    @BindView(R.id.titleContent)
+    TextView titleContent;
+    @BindView(R.id.titleAction)
+    ImageView titleAction;
+    @BindView(R.id.titleView)
+    AppBarLayout titleView;
+    @BindView(R.id.titleAction2)
+    ImageView titleAction2;
+
+
     private GalleryFinal.OnHanlderResultCallback mOnHanlderResultCallback = new GalleryFinal.OnHanlderResultCallback() {
         @Override
         public void onHanlderSuccess(int reqeustCode, List<PhotoInfo> resultList) {
@@ -134,30 +140,50 @@ public class ProjectFileFragment extends BaseFragment implements OnParentTitleBa
         }
     };
 
-    public static ProjectFileFragment newInstance(@NonNull String projectId) {
-        ProjectFileFragment projectFileBoxFragment = new ProjectFileFragment();
-        Bundle bundle = new Bundle();
-        bundle.putString(KEY_PROJECT_ID, projectId);
-        projectFileBoxFragment.setArguments(bundle);
-        return projectFileBoxFragment;
+    /**
+     * @param context
+     * @param repoPermission repo权限 "rw" "r"
+     * @param seaFileRepoId  repoid
+     * @param repoTitle      repo 标题
+     * @param seaFileDirPath repo目录路径
+     */
+    public static void launch(@NonNull Context context,
+                              @SFileConfig.FILE_PERMISSION String repoPermission,
+                              String seaFileRepoId,
+                              String repoTitle,
+                              String seaFileDirPath) {
+        if (context == null) return;
+        Intent intent = new Intent(context, FileSimpleListActivity.class);
+        intent.putExtra(KEY_SEA_FILE_REPO_TITLE, repoTitle);
+        intent.putExtra(KEY_SEA_FILE_REPO_PERMISSION, repoPermission);
+        intent.putExtra(KEY_SEA_FILE_REPO_ID, seaFileRepoId);
+        intent.putExtra(KEY_SEA_FILE_DIR_PATH, seaFileDirPath);
+        context.startActivity(intent);
     }
 
-    @Nullable
     @Override
-    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = super.onCreateView(R.layout.layout_refresh_recyclerview, inflater, container, savedInstanceState);
-        unbinder = ButterKnife.bind(this, view);
-        return view;
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_file_simple_list);
+        ButterKnife.bind(this);
+        initView();
     }
 
-    @Override
-    protected void initView() {
-        SFileTokenUtils.syncServerSFileToken();
 
-        projectId = getArguments().getString(KEY_PROJECT_ID, "");
+    @Override
+    public void initView() {
+        super.initView();
+
+        setTitle(getRepoTitle());
+        titleAction.setImageResource(R.mipmap.header_icon_add);
+        if (TextUtils.equals(getIntent().getStringExtra(KEY_SEA_FILE_REPO_PERMISSION), PERMISSION_R)) {
+            titleAction.setVisibility(View.GONE);
+        }
+        titleAction2.setImageDrawable(GlideUtils.getTintedDrawable(getDrawable(getContext(), R.mipmap.sort),
+                ColorStateList.valueOf(getContextColor(R.color.alpha_font_color_orange))));
 
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        headerFooterAdapter = new HeaderFooterAdapter<>(folderAdapter = new FolderAdapter());
+        headerFooterAdapter = new HeaderFooterAdapter<>(folderAdapter = new FolderAdapter(getSeaFileRepoId(), getSeaFileDirPath(), false));
 
         footerView = (TextView) HeaderFooterAdapter.inflaterView(getContext(), R.layout.footer_folder_document_num, recyclerView);
         headerFooterAdapter.addFooter(footerView);
@@ -205,73 +231,39 @@ public class ProjectFileFragment extends BaseFragment implements OnParentTitleBa
         getData(true);
     }
 
+    @OnClick({R.id.titleAction,
+            R.id.titleAction2})
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.titleAction:
+                showActionDialog();
+                break;
+            case R.id.titleAction2:
+                showSortDialog();
+                break;
+            default:
+                super.onClick(v);
+                break;
+        }
+    }
+
     @Override
     protected void getData(boolean isRefresh) {
         super.getData(isRefresh);
-        Observable.just(projectId)//1:项目id-->获取权限
-                .flatMap(new Function<String, ObservableSource<List<String>>>() {
+        getSFileApi().projectQueryFileBoxByDir2(
+                getSeaFileRepoId(),
+                getSeaFileDirPath())
+                .enqueue(new SFileCallBack<List<FolderDocumentEntity>>() {
                     @Override
-                    public ObservableSource<List<String>> apply(@NonNull String s) throws Exception {
-                        return getApi().permissionQueryObservable(getLoginUserId(), "MAT", s)
-                                .map(new Function<ResEntity<List<String>>, List<String>>() {
-                                    @Override
-                                    public List<String> apply(@NonNull ResEntity<List<String>> listResEntity) throws Exception {
-                                        return listResEntity != null ? listResEntity.result : new ArrayList<String>();
-                                    }
-                                });
-                    }
-                })
-                .filter(new Predicate<List<String>>() {  //2--->是否有可读或者可读写权限
-                    @Override
-                    public boolean test(@NonNull List<String> strings) throws Exception {
-                        return (strings.contains("MAT:matter.document:readwrite")
-                                || strings.contains("MAT:matter.document:read"));
-                    }
-                })
-                .flatMap(new Function<List<String>, ObservableSource<String>>() {//3--->项目id转换repoid
-                    @Override
-                    public ObservableSource<String> apply(@NonNull List<String> strings) throws Exception {
-                        return getApi().projectQueryDocumentIdObservable(projectId)
-                                .map(new Function<RepoIdResEntity, String>() {
-                                    @Override
-                                    public String apply(@NonNull RepoIdResEntity repoIdResEntity) throws Exception {
-                                        return repoIdResEntity != null ? repoIdResEntity.seaFileRepoId : "";
-                                    }
-                                });
-                    }
-                })
-                .filter(new Predicate<String>() {//4----->校验repoid不能为空
-                    @Override
-                    public boolean test(@NonNull String s) throws Exception {
-                        return !TextUtils.isEmpty(s);
-                    }
-                })
-                .flatMap(new Function<String, ObservableSource<List<FolderDocumentEntity>>>() {//5--->获取该repo下面的文件
-                    @Override
-                    public ObservableSource<List<FolderDocumentEntity>> apply(@NonNull String s) throws Exception {
-                        repoId = s;
-                        return getSFileApi().projectQueryFileBoxListObservable(s);
-                    }
-                })
-                .compose(this.<List<FolderDocumentEntity>>bindToLifecycle())
-                .subscribeOn(Schedulers.newThread())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new BaseObserver<List<FolderDocumentEntity>>() {
-                    @Override
-                    public void onNext(@NonNull List<FolderDocumentEntity> fileBoxBeen) {
-                        folderAdapter.setSeaFileRepoId(getSeaFileRepoId());
-                        sortFile(false, fileBoxBeen);
-                    }
-
-                    @Override
-                    public void onError(@NonNull Throwable throwable) {
-                        super.onError(throwable);
+                    public void onSuccess(Call<List<FolderDocumentEntity>> call, Response<List<FolderDocumentEntity>> response) {
+                        sortFile(false, response.body());
                         stopRefresh();
                     }
 
                     @Override
-                    public void onComplete() {
-                        super.onComplete();
+                    public void onFailure(Call<List<FolderDocumentEntity>> call, Throwable t) {
+                        super.onFailure(call, t);
                         stopRefresh();
                     }
                 });
@@ -282,32 +274,6 @@ public class ProjectFileFragment extends BaseFragment implements OnParentTitleBa
             refreshLayout.stopRefresh();
             refreshLayout.stopLoadMore();
         }
-    }
-
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        unbinder.unbind();
-    }
-
-    @Override
-    public boolean onParentTitleBack(Object parent, View v, int type, Bundle bundle) {
-        return false;
-    }
-
-    @Override
-    public void onParentTitleClick(Object parent, View v, int type, Bundle bundle) {
-
-    }
-
-    @Override
-    public void onParentTitleActionClick(Object parent, View v, int type, Bundle bundle) {
-        showActionDialog();
-    }
-
-    @Override
-    public void onParentTitleActionClick2(Object parent, View v, int type, Bundle bundle) {
-        showSortDialog();
     }
 
     private void showActionDialog() {
@@ -327,7 +293,7 @@ public class ProjectFileFragment extends BaseFragment implements OnParentTitleBa
                                 break;
                             case 1:
                                 if (checkPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-                                    SystemUtils.chooseFile(ProjectFileFragment.this, REQUEST_CODE_CHOOSE_FILE);
+                                    SystemUtils.chooseFile(getActivity(), REQUEST_CODE_CHOOSE_FILE);
                                 } else {
                                     reqPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, R.string.permission_rationale_storage, REQ_CODE_PERMISSION_ACCESS_FILE);
                                 }
@@ -461,7 +427,7 @@ public class ProjectFileFragment extends BaseFragment implements OnParentTitleBa
         Observable.just(datas)
                 .map(new Function<List<FolderDocumentEntity>, List<FolderDocumentEntity>>() {
                     @Override
-                    public List<FolderDocumentEntity> apply(@io.reactivex.annotations.NonNull List<FolderDocumentEntity> lists) throws Exception {
+                    public List<FolderDocumentEntity> apply(@NonNull List<FolderDocumentEntity> lists) throws Exception {
                         List<FolderDocumentEntity> totals = new ArrayList<>();
                         if (lists != null) {
                             totals.addAll(lists);
@@ -491,7 +457,7 @@ public class ProjectFileFragment extends BaseFragment implements OnParentTitleBa
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new BaseObserver<List<FolderDocumentEntity>>() {
                     @Override
-                    public void onNext(@io.reactivex.annotations.NonNull List<FolderDocumentEntity> folderDocumentEntities) {
+                    public void onNext(@NonNull List<FolderDocumentEntity> folderDocumentEntities) {
                         folderAdapter.bindData(true, folderDocumentEntities);
                     }
 
@@ -512,13 +478,6 @@ public class ProjectFileFragment extends BaseFragment implements OnParentTitleBa
                 String.format("%s%s", getSeaFileDirPath(), name));
     }
 
-    public String getSeaFileRepoId() {
-        return repoId;
-    }
-
-    public String getSeaFileDirPath() {
-        return "/";
-    }
 
     /**
      * 上传文件
@@ -604,7 +563,7 @@ public class ProjectFileFragment extends BaseFragment implements OnParentTitleBa
         Observable.just(filePaths)
                 .flatMap(new Function<List<String>, ObservableSource<JsonElement>>() {
                     @Override
-                    public ObservableSource<JsonElement> apply(@io.reactivex.annotations.NonNull List<String> strings) throws Exception {
+                    public ObservableSource<JsonElement> apply(@NonNull List<String> strings) throws Exception {
                         List<Observable<JsonElement>> observables = new ArrayList<Observable<JsonElement>>();
                         for (int i = 0; i < strings.size(); i++) {
                             String filePath = strings.get(i);
@@ -628,12 +587,12 @@ public class ProjectFileFragment extends BaseFragment implements OnParentTitleBa
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Consumer<JsonElement>() {
                                @Override
-                               public void accept(@io.reactivex.annotations.NonNull JsonElement jsonElement) throws Exception {
+                               public void accept(@NonNull JsonElement jsonElement) throws Exception {
 
                                }
                            }, new BaseThrowableConsumer() {
                                @Override
-                               public void accept(@io.reactivex.annotations.NonNull Throwable t) throws Exception {
+                               public void accept(@NonNull Throwable t) throws Exception {
                                    super.accept(t);
                                    dismissLoadingDialog();
                                }
@@ -653,7 +612,7 @@ public class ProjectFileFragment extends BaseFragment implements OnParentTitleBa
         if (item.isDir()) {
             FileSimpleListActivity.launch(
                     getContext(),
-                    SFileConfig.PERMISSION_RW,
+                    PERMISSION_RW,
                     getSeaFileRepoId(),
                     item.name,
                     String.format("%s%s/", getSeaFileDirPath(), item.name));

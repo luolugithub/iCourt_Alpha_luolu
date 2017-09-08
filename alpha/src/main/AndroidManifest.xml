@@ -344,6 +344,9 @@
         <activity
             android:name=".activity.SFileSearchActivity"
             android:screenOrientation="portrait" />
+        <activity
+            android:name=".activity.FileSimpleListActivity"
+            android:screenOrientation="portrait" />
 
         <meta-data
             android:name="com.icourt.alpha.utils.glide.MyGlideModule"

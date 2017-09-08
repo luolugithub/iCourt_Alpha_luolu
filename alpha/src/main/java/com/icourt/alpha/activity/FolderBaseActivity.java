@@ -1,6 +1,5 @@
 package com.icourt.alpha.activity;
 
-import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.constants.SFileConfig;
 
 /**
@@ -10,7 +9,7 @@ import com.icourt.alpha.constants.SFileConfig;
  * date createTime：2017/8/11
  * version 2.1.0
  */
-public class FolderBaseActivity extends BaseActivity {
+public class FolderBaseActivity extends FileBaseActivity {
 
     protected static final String KEY_SEA_FILE_REPO_ID = "seaFileRepoId";//仓库id
     protected static final String KEY_SEA_FILE_DIR_PATH = "seaFileDirPath";//目录路径

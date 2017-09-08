@@ -1,11 +1,8 @@
 package com.icourt.alpha.activity;
 
-import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -52,7 +49,6 @@ import com.icourt.alpha.http.consumer.BaseThrowableConsumer;
 import com.icourt.alpha.http.observer.BaseObserver;
 import com.icourt.alpha.interfaces.OnDialogFragmentDismissListener;
 import com.icourt.alpha.utils.IMUtils;
-import com.icourt.alpha.utils.ImageUtils;
 import com.icourt.alpha.utils.IndexUtils;
 import com.icourt.alpha.utils.SFileTokenUtils;
 import com.icourt.alpha.utils.StringUtils;
@@ -82,7 +78,6 @@ import java.util.Set;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-import cn.finalteam.galleryfinal.FunctionConfig;
 import cn.finalteam.galleryfinal.GalleryFinal;
 import cn.finalteam.galleryfinal.model.PhotoInfo;
 import io.reactivex.Observable;
@@ -159,12 +154,7 @@ public class FolderListActivity extends FolderBaseActivity
     final ArrayList<String> bigImageUrls = new ArrayList<>();
     final ArrayList<String> smallImageUrls = new ArrayList<>();
 
-    private static final int REQUEST_CODE_CAMERA = 1000;
-    private static final int REQUEST_CODE_GALLERY = 1001;
     private static final int REQUEST_CODE_CHOOSE_FILE = 1002;
-
-    private static final int REQ_CODE_PERMISSION_CAMERA = 1100;
-    private static final int REQ_CODE_PERMISSION_ACCESS_FILE = 1101;
     CompoundButton.OnCheckedChangeListener onCheckedChangeListener = new CompoundButton.OnCheckedChangeListener() {
         @Override
         public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
@@ -486,17 +476,17 @@ public class FolderListActivity extends FolderBaseActivity
                                         getSeaFileDirPath());
                                 break;
                             case 1:
-                                if (checkPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+                                if (checkAcessFilePermission()) {
                                     SystemUtils.chooseFile(getActivity(), REQUEST_CODE_CHOOSE_FILE);
                                 } else {
-                                    reqPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, R.string.permission_rationale_storage, REQ_CODE_PERMISSION_ACCESS_FILE);
+                                    requestAcessFilePermission();
                                 }
                                 break;
                             case 2:
-                                checkAndOpenPhotos();
+                                checkAndSelectMutiPhotos(mOnHanlderResultCallback);
                                 break;
                             case 3:
-                                checkAndOpenCamera();
+                                checkAndSelectFromCamera(mOnHanlderResultCallback);
                                 break;
                         }
                     }
@@ -626,34 +616,6 @@ public class FolderListActivity extends FolderBaseActivity
         updateActionViewStatus();
     }
 
-
-    /**
-     * 打开相机
-     */
-    private void checkAndOpenCamera() {
-        if (checkPermission(Manifest.permission.CAMERA)) {
-            path = SystemUtils.getFileDiskCache(getContext()) + File.separator
-                    + System.currentTimeMillis() + ".png";
-            Uri picUri = Uri.fromFile(new File(path));
-            SystemUtils.doTakePhotoAction(this, picUri, REQUEST_CODE_CAMERA);
-        } else {
-            reqPermission(Manifest.permission.CAMERA, R.string.permission_rationale_camera, REQ_CODE_PERMISSION_CAMERA);
-        }
-    }
-
-    /**
-     * 打开相册
-     */
-    private void checkAndOpenPhotos() {
-        if (checkPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-            FunctionConfig config = new FunctionConfig.Builder()
-                    .setMutiSelectMaxSize(9)
-                    .build();
-            GalleryFinal.openGalleryMuti(REQUEST_CODE_GALLERY, config, mOnHanlderResultCallback);
-        } else {
-            reqPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, R.string.permission_rationale_storage, REQ_CODE_PERMISSION_ACCESS_FILE);
-        }
-    }
 
     private GalleryFinal.OnHanlderResultCallback mOnHanlderResultCallback = new GalleryFinal.OnHanlderResultCallback() {
         @Override
@@ -818,41 +780,9 @@ public class FolderListActivity extends FolderBaseActivity
                         });
     }
 
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        switch (requestCode) {
-            case REQ_CODE_PERMISSION_CAMERA:
-                if (grantResults != null) {
-                    if (grantResults[0] == PackageManager.PERMISSION_DENIED) {
-                        showTopSnackBar(R.string.permission_denied_camera);
-                    }
-                }
-                break;
-            case REQ_CODE_PERMISSION_ACCESS_FILE:
-                if (grantResults != null) {
-                    if (grantResults[0] == PackageManager.PERMISSION_DENIED) {
-                        showTopSnackBar(R.string.permission_denied_storage);
-                    }
-                }
-                break;
-            default:
-                super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-                break;
-        }
-    }
-
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         switch (requestCode) {
-            case REQUEST_CODE_CAMERA:
-                if (resultCode == Activity.RESULT_OK) {
-                    if (!TextUtils.isEmpty(path) && ImageUtils.getBitmapDegree(path) > 0) {
-                        ImageUtils.degreeImage(path);
-                    }
-                    uploadFile(path);
-                }
-                break;
             case REQUEST_CODE_CHOOSE_FILE:
                 if (resultCode == Activity.RESULT_OK) {
                     if (data != null) {
