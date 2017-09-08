@@ -31,10 +31,6 @@ import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 import com.icourt.alpha.widget.dialog.BottomActionDialog;
 
-import org.greenrobot.eventbus.EventBus;
-import org.greenrobot.eventbus.Subscribe;
-import org.greenrobot.eventbus.ThreadMode;
-
 import java.util.Arrays;
 import java.util.List;
 
@@ -100,7 +96,6 @@ public class RepoListFragment extends BaseFragment
     @Override
     protected void initView() {
         repoType = SFileConfig.convert2RepoType(getArguments().getInt(KEY_REPO_TYPE));
-        EventBus.getDefault().register(this);
 
         recyclerView.setClipToPadding(false);
         recyclerView.setPadding(0, DensityUtil.dip2px(getContext(), 20), 0, 0);
@@ -254,16 +249,16 @@ public class RepoListFragment extends BaseFragment
         Call<List<RepoEntity>> listCall = null;
         final int pageSize = ActionConstants.DEFAULT_PAGE_SIZE;
         switch (repoType) {
-            case 0:
+            case REPO_MINE:
                 listCall = getSFileApi().documentRootQuery(pageIndex, pageSize, null, null, null);
                 break;
-            case 1:
+            case REPO_SHARED_ME:
                 listCall = getSFileApi().documentRootQuery(pageIndex, pageSize, officeAdminId, null, "shared");
                 break;
-            case 2:
+            case REPO_LAWFIRM:
                 listCall = getSFileApi().documentRootQuery();
                 break;
-            case 3:
+            case REPO_PROJECT:
                 listCall = getSFileApi().documentRootQuery(pageIndex, pageSize, null, officeAdminId, "shared");
                 break;
         }
@@ -284,7 +279,6 @@ public class RepoListFragment extends BaseFragment
         });
     }
 
-
     private void stopRefresh() {
         if (refreshLayout != null) {
             refreshLayout.stopRefresh();
@@ -292,22 +286,10 @@ public class RepoListFragment extends BaseFragment
         }
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onDocumentRootEvent(RepoEntity repoEntity) {
-        if (repoEntity == null) return;
-    }
-
-
     @Override
     public void onDestroyView() {
         super.onDestroyView();
         unbinder.unbind();
-    }
-
-    @Override
-    public void onDestroy() {
-        EventBus.getDefault().unregister(this);
-        super.onDestroy();
     }
 
     @Override
@@ -319,7 +301,7 @@ public class RepoListFragment extends BaseFragment
             repo_permission = PERMISSION_RW;
         }
         FolderListActivity.launch(getContext(),
-                SFileConfig.convert2RepoType(getArguments().getInt("repoType", 0)),
+                SFileConfig.convert2RepoType(getArguments().getInt(KEY_REPO_TYPE, 0)),
                 SFileConfig.convert2filePermission(repo_permission),
                 item.repo_id,
                 item.repo_name,
@@ -358,13 +340,13 @@ public class RepoListFragment extends BaseFragment
                     public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
                         dialog.dismiss();
                         String s = adapter.getItem(position);
-                        if (TextUtils.equals(s, "查看资料库详情")) {
+                        if (TextUtils.equals(s, getString(R.string.repo_details))) {//查看资料库详情
                             lookDetail(pos);
-                        } else if (TextUtils.equals(s, "重命名")) {
+                        } else if (TextUtils.equals(s, getString(R.string.str_rename))) {//重命名
                             renameDocument(pos);
-                        } else if (TextUtils.equals(s, "内部共享")) {
+                        } else if (TextUtils.equals(s, getString(R.string.repo_inner_share))) {//内部共享
                             shareDocument(pos);
-                        } else if (TextUtils.equals(s, "删除")) {
+                        } else if (TextUtils.equals(s, getString(R.string.str_delete))) {//删除
                             showDelConfirmDialog(pos);
                         }
                     }
