@@ -39,6 +39,7 @@ import com.icourt.alpha.entity.event.UpdateCustomerEvent;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.IDCardValidate;
+import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.utils.TextFormater;
 import com.icourt.api.RequestUtils;
@@ -1408,12 +1409,12 @@ public class CustomerPersonCreateActivity extends BaseActivity {
                 String value = ((TextView) entry.getValue().findViewById(R.id.activity_add_contact_item_valuename_text)).getText().toString().trim();
                 if (value != null && value.length() > 0) {
                     if (TextUtils.equals("tels", type)) {
-                        if (!TextFormater.isMobileNO(value)) {
+                        if (!StringUtils.isMobileNO(value)) {
                             showTopSnackBar("请输入正确的手机号号码");
                             return null;
                         }
                     } else if (TextUtils.equals("mails", type)) {
-                        if (!TextFormater.isMailNO(value)) {
+                        if (!StringUtils.isMailNO(value)) {
                             showTopSnackBar("请输入正确的邮箱地址");
                             return null;
                         }

@@ -218,4 +218,28 @@ public class StringUtils {
         return false;
     }
 
+    /**
+     * 判断手机号
+     *
+     * @param mobiles
+     * @return
+     */
+    public static boolean isMobileNO(String mobiles) {
+        String telRegex = "(010\\d{8})|(0[2-9]\\d{9})|(13\\d{9})|(14[57]\\d{8})|(15\\d{9})|(17\\d{9})|(18\\d{9})";
+        if (TextUtils.isEmpty(mobiles)) return false;
+        else return mobiles.matches(telRegex);
+    }
+
+    /**
+     * 判断邮箱
+     *
+     * @param mail
+     * @return
+     */
+    public static boolean isMailNO(String mail) {
+        String telRegex = "^([a-z0-9A-Z]+[-|\\.]?)+[a-z0-9A-Z]@([a-z0-9A-Z]+(-[a-z0-9A-Z]+)?\\.)+[a-zA-Z]{2,}$";
+        if (TextUtils.isEmpty(mail)) return false;
+        else return mail.matches(telRegex);
+    }
+
 }
