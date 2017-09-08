@@ -463,7 +463,7 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
      * 清空所有已删除的任务
      */
     private void clearAllDeletedTask() {
-        if (selectPosition == 2) {
+        if (selectPosition == 2) {//已删除的任务列表
             if (alltaskFragment.currFragment instanceof TaskListFragment) {
                 TaskListFragment fragment = (TaskListFragment) alltaskFragment.currFragment;
                 fragment.clearAllDeletedTask();

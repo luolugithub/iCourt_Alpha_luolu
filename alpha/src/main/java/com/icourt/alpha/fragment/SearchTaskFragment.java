@@ -336,7 +336,7 @@ public class SearchTaskFragment extends BaseTaskFragment implements BaseQuickAda
     }
 
     @Override
-    protected void taskTimerUpdateBack(String taskId) {
+    protected void taskTimingUpdateEvent(String taskId) {
         taskAdapter.notifyDataSetChanged();
     }
 

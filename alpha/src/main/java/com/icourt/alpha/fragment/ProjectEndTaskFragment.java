@@ -111,6 +111,7 @@ public class ProjectEndTaskFragment extends BaseTaskFragment implements BaseQuic
             @Override
             public void onRefresh(boolean isPullDown) {
                 super.onRefresh(isPullDown);
+                checkAddTaskAndDocumentPms(projectId);
                 getData(true);
             }
 
@@ -192,6 +193,29 @@ public class ProjectEndTaskFragment extends BaseTaskFragment implements BaseQuic
                 stopRefresh();
                 if (isRefresh) {//如果是下拉刷新情况，才判断要不要显示空页面
                     enableEmptyView(taskAdapter.getData());
+                }
+            }
+        });
+    }
+
+    /**
+     * 获取权限列表
+     */
+    private void checkAddTaskAndDocumentPms(String projectId) {
+        getApi().permissionQuery(getLoginUserId(), "MAT", projectId).enqueue(new SimpleCallBack<List<String>>() {
+            @Override
+            public void onSuccess(Call<ResEntity<List<String>>> call, Response<ResEntity<List<String>>> response) {
+
+                if (response.body().result != null) {
+                    if (response.body().result.contains("MAT:matter.task:edit")) {
+                        isEditTask = true;
+                    }
+                    if (response.body().result.contains("MAT:matter.task:delete")) {
+                        isDeleteTask = true;
+                    }
+                    if (response.body().result.contains("MAT:matter.timeLog:add")) {
+                        isAddTime = true;
+                    }
                 }
             }
         });
@@ -296,20 +320,17 @@ public class ProjectEndTaskFragment extends BaseTaskFragment implements BaseQuic
 
     @Override
     protected void taskDeleteBack(@NonNull TaskEntity.TaskItemEntity itemEntity) {
-        getData(true);
+        //因为没有分组，所以可以直接操作item
+        taskAdapter.removeItem(itemEntity);
     }
 
     @Override
     protected void taskUpdateBack(@ChangeType int actionType, @NonNull TaskEntity.TaskItemEntity itemEntity) {
-        if (actionType == CHANGE_DUETIME) {
-            getData(true);
-        } else {
-            taskAdapter.updateItem(itemEntity);
-        }
+        taskAdapter.updateItem(itemEntity);
     }
 
     @Override
-    protected void taskTimerUpdateBack(String taskId) {
+    protected void taskTimingUpdateEvent(String taskId) {
         if (TextUtils.isEmpty(taskId)) {//停止计时的广播
             if (lastEntity != null) {
                 lastEntity.isTiming = false;

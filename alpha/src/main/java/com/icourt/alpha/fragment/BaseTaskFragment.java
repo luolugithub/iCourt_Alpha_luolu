@@ -74,9 +74,9 @@ public abstract class BaseTaskFragment extends BaseFragment implements OnFragmen
     protected boolean isAddTime = false;//添加计时权限
 
     public static final int CHANGE_STATUS = 1;//修改任务完成状态
-    public static final int CHANGE_PROJECT = 2;//修改任务所属项目/任务组（更新item）
-    public static final int CHANGE_ALLOT = 3;//将任务分配给其他负责人（更新item）
-    public static final int CHANGE_DUETIME = 4;//修改任务到期时间（全部更新）
+    public static final int CHANGE_PROJECT = 2;//修改任务所属项目/任务组
+    public static final int CHANGE_ALLOT = 3;//将任务分配给其他负责人
+    public static final int CHANGE_DUETIME = 4;//修改任务到期时间和提醒时间
 
     /**
      * 以下为对任务的操作状态
@@ -120,13 +120,13 @@ public abstract class BaseTaskFragment extends BaseFragment implements OnFragmen
             case TimingEvent.TIMING_ADD:
                 TimeEntity.ItemEntity timer = TimerManager.getInstance().getTimer();
                 if (timer != null && !TextUtils.isEmpty(timer.taskPkId))
-                    taskTimerUpdateBack(timer.taskPkId);
+                    taskTimingUpdateEvent(timer.taskPkId);
                 break;
             case TimingEvent.TIMING_UPDATE_PROGRESS:
 
                 break;
             case TimingEvent.TIMING_STOP:
-                taskTimerUpdateBack(null);
+                taskTimingUpdateEvent(null);
                 break;
         }
     }
@@ -337,7 +337,7 @@ public abstract class BaseTaskFragment extends BaseFragment implements OnFragmen
      * @param taskItemEntity
      */
     protected void showLongMenu(TaskEntity.TaskItemEntity taskItemEntity) {
-        if (taskItemEntity.state) {
+        if (taskItemEntity.state) {//已完成的任务不能进行长按操作
             return;
         }
         ItemsEntity timeEntity = new ItemsEntity(getString(R.string.task_start_timing), R.mipmap.time_start_orange_task);
@@ -659,7 +659,7 @@ public abstract class BaseTaskFragment extends BaseFragment implements OnFragmen
      *
      * @param taskId 如果为空，则是接收到停止计时的通知；如果不为空，则是接收到开始计时的通知。
      */
-    protected abstract void taskTimerUpdateBack(String taskId);
+    protected abstract void taskTimingUpdateEvent(String taskId);
 
 
     @Override

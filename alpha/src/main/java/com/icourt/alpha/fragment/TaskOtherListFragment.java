@@ -467,7 +467,7 @@ public class TaskOtherListFragment extends BaseTaskFragment implements BaseQuick
     }
 
     @Override
-    protected void taskTimerUpdateBack(String taskId) {
+    protected void taskTimingUpdateEvent(String taskId) {
         if (!TextUtils.isEmpty(taskId)) {//添加计时
             taskAdapter.notifyDataSetChanged();
         } else {//结束计时

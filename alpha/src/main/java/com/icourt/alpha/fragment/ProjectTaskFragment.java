@@ -226,8 +226,7 @@ public class ProjectTaskFragment extends BaseTaskFragment implements BaseQuickAd
     }
 
     /**
-     * 任务分组
-     * 项目下的任务分组是按照任务组来分的
+     * 任务分组（项目下的任务分组是按照任务组来分的）
      *
      * @param taskitems
      */
@@ -364,32 +363,6 @@ public class ProjectTaskFragment extends BaseTaskFragment implements BaseQuickAd
         return -1;
     }
 
-
-    /**
-     * 更新item
-     *
-     * @param taskId
-     */
-    private void updateChildTimeing(String taskId, boolean isTiming) {
-        int pos = getItemPosition(taskId);
-        if (pos >= 0) {
-            TaskEntity.TaskItemEntity entity = taskAdapter.getItem(pos);
-            if (entity != null) {
-                if (lastEntity != null)
-                    if (!TextUtils.equals(entity.id, lastEntity.id)) {
-                        lastEntity.isTiming = false;
-                        taskAdapter.notifyDataSetChanged();
-                    }
-                if (entity.isTiming != isTiming) {
-                    entity.isTiming = isTiming;
-                    taskAdapter.updateItem(entity);
-                    lastEntity = entity;
-                }
-            }
-        }
-    }
-
-
     @Override
     protected void startTimingBack(TaskEntity.TaskItemEntity requestEntity, Response<TimeEntity.ItemEntity> response) {
         taskAdapter.updateItem(requestEntity);
@@ -410,11 +383,15 @@ public class ProjectTaskFragment extends BaseTaskFragment implements BaseQuickAd
 
     @Override
     protected void taskUpdateBack(@ChangeType int actionType, @NonNull TaskEntity.TaskItemEntity itemEntity) {
-        getData(true);
+        if (actionType == CHANGE_PROJECT) {//因为项目下是以任务组来分组的，所以如果切换任务的项目／任务组，则需要刷新列表
+            getData(true);
+        } else {
+            taskAdapter.updateItem(itemEntity);
+        }
     }
 
     @Override
-    protected void taskTimerUpdateBack(String taskId) {
+    protected void taskTimingUpdateEvent(String taskId) {
         if (TextUtils.isEmpty(taskId)) {//停止计时的广播
             if (lastEntity != null) {
                 lastEntity.isTiming = false;
