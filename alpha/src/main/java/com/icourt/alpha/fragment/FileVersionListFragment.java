@@ -39,6 +39,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
 import retrofit2.Call;
+import retrofit2.HttpException;
 import retrofit2.Response;
 
 import static com.icourt.alpha.constants.SFileConfig.PERMISSION_RW;
@@ -301,11 +302,15 @@ public class FileVersionListFragment extends SeaFileBaseFragment implements Base
                     public void onFailure(Call<JsonObject> call, Throwable t) {
                         dismissLoadingDialog();
                         super.onFailure(call, t);
+                        if (t instanceof HttpException
+                                && ((HttpException) t).code() == 500) {
+                            showToast("文件可能被移除或者重命名无法回退!");
+                        }
                     }
 
                     @Override
                     public void defNotify(String noticeStr) {
-                       // super.defNotify(noticeStr);
+                        // super.defNotify(noticeStr);
                         showToast(noticeStr);
                     }
                 });
