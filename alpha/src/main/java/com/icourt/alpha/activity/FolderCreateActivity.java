@@ -104,6 +104,8 @@ public class FolderCreateActivity extends SFileEditBaseActivity {
     protected boolean onCancelSubmitInput(EditText et) {
         if (!StringUtils.isEmpty(et.getText())) {
             SpUtils.getInstance().putData(KEY_CACHE_FOLDER, et.getText().toString());
+        } else {
+            SpUtils.getInstance().remove(KEY_CACHE_FOLDER);
         }
         finish();
         return true;

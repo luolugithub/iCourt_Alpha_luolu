@@ -91,6 +91,8 @@ public class RepoCreateActivity extends SFileEditBaseActivity {
     protected boolean onCancelSubmitInput(final EditText et) {
         if (!StringUtils.isEmpty(et.getText())) {
             SpUtils.getInstance().putData(KEY_CACHE_REPO, et.getText().toString());
+        } else {
+            SpUtils.getInstance().remove(KEY_CACHE_REPO);
         }
         finish();
         return true;
