@@ -542,7 +542,7 @@ public class TaskListFragment extends BaseTaskFragment implements
                                     if (newTaskEntities.size() > 1) {
                                         nextTaskLayout.setVisibility(View.VISIBLE);
                                     }
-                                    nextTaskTv.setText(getString(R.string.task_next, newTaskEntities.size()));
+                                    nextTaskTv.setText(getString(R.string.task_next, String.valueOf(newTaskEntities.size())));
                                     updateNextTaskState();
                                 } else {
                                     if (newTaskEntities.size() > 0) {
@@ -850,7 +850,7 @@ public class TaskListFragment extends BaseTaskFragment implements
                             nextTaskLayout.setVisibility(View.VISIBLE);
                         }
                         newTaskCountTv.setText(String.valueOf(newTaskEntities.size()));
-                        nextTaskTv.setText(getString(R.string.task_next, newTaskEntities.size()));
+                        nextTaskTv.setText(getString(R.string.task_next, String.valueOf(newTaskEntities.size())));
                     } else {
                         newTaskEntities.clear();
                     }
