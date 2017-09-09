@@ -47,7 +47,6 @@ import retrofit2.http.PUT;
 import retrofit2.http.PartMap;
 import retrofit2.http.Path;
 import retrofit2.http.Query;
-import retrofit2.http.Url;
 
 /**
  * @author xuanyouwu
@@ -63,14 +62,12 @@ public interface ApiAlphaService {
 
     /**
      * 获取新版本app
-     * 文档参考 https://fir.im/docs/version_detection
+     * 文档参考 https://test.alphalawyer.cn/ilaw/swagger/index.html#/
      *
-     * @param url fir地址
      * @return
      */
-    @GET
-    Call<AppVersionEntity> getNewVersionAppInfo(
-            @Url String url);
+    @GET("api/v2/versions/lastest")
+    Call<ResEntity<AppVersionEntity>> getNewVersionAppInfo();
 
     /**
      * 修改律师电话信息

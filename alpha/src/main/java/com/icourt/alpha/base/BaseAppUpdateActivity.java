@@ -14,14 +14,14 @@ import android.text.TextUtils;
 import com.icourt.alpha.BuildConfig;
 import com.icourt.alpha.entity.bean.AppVersionEntity;
 import com.icourt.alpha.http.callback.BaseCallBack;
+import com.icourt.alpha.http.callback.SimpleCallBack;
+import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.UpdateAppDialogNoticeImp;
-import com.icourt.alpha.interfaces.callback.AppUpdateCallBack;
 import com.icourt.alpha.utils.ApkUtils;
 import com.icourt.alpha.utils.Md5Utils;
 import com.icourt.alpha.utils.NetUtils;
 import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.utils.UMMobClickAgent;
-import com.icourt.alpha.utils.UrlUtils;
 import com.liulishuo.filedownloader.BaseDownloadTask;
 import com.liulishuo.filedownloader.FileDownloadListener;
 import com.liulishuo.filedownloader.FileDownloader;
@@ -59,23 +59,23 @@ public class BaseAppUpdateActivity extends BaseUmengActivity implements
     }
 
     @Override
-    public final void checkAppUpdate(@NonNull BaseCallBack<AppVersionEntity> callBack) {
+    public final void checkAppUpdate(@NonNull BaseCallBack<ResEntity<AppVersionEntity>> callBack) {
         if (callBack == null) return;
-        getApi().getNewVersionAppInfo(BuildConfig.APK_UPDATE_URL)
+        getApi().getNewVersionAppInfo()
                 .enqueue(callBack);
     }
 
     @Override
     public final void checkAppUpdate(@NonNull final Context context) {
         if (context == null) return;
-        checkAppUpdate(new AppUpdateCallBack() {
+        checkAppUpdate(new SimpleCallBack<AppVersionEntity>() {
             @Override
-            public void onSuccess(Call<AppVersionEntity> call, Response<AppVersionEntity> response) {
-                showAppUpdateDialog(getActivity(), response.body());
+            public void onSuccess(Call<ResEntity<AppVersionEntity>> call, Response<ResEntity<AppVersionEntity>> response) {
+                showAppUpdateDialog(getActivity(), response.body().result);
             }
 
             @Override
-            public void onFailure(Call<AppVersionEntity> call, Throwable t) {
+            public void onFailure(Call<ResEntity<AppVersionEntity>> call, Throwable t) {
                 if (t instanceof HttpException) {
                     HttpException hx = (HttpException) t;
                     if (hx.code() == 401) {
@@ -107,15 +107,14 @@ public class BaseAppUpdateActivity extends BaseUmengActivity implements
         if (!shouldUpdate(appVersionEntity)) return;
         AlertDialog.Builder builder = new AlertDialog.Builder(context)
                 .setTitle("更新提醒")
-                .setMessage(TextUtils.isEmpty(appVersionEntity.changelog) ? "有一个新版本,请立即更新吧" : appVersionEntity.changelog); //设置内容
+                .setMessage(TextUtils.isEmpty(appVersionEntity.versionDesc) ? "有一个新版本,请立即更新吧" : appVersionEntity.versionDesc); //设置内容
         builder.setPositiveButton("更新", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 if (hasFilePermission(context)) {
                     MobclickAgent.onEvent(context, UMMobClickAgent.dialog_update_btn_click_id);
-                    getUpdateProgressDialog().setMax(appVersionEntity.binary != null ? (int) appVersionEntity.binary.fsize : 1_000);
-                    String updateUrl = UrlUtils.appendParam(appVersionEntity.install_url, "versionShort", appVersionEntity.versionShort);
-                    showAppDownloadingDialog(getActivity(), updateUrl);
+//                    getUpdateProgressDialog().setMax(appVersionEntity.binary != null ? (int) appVersionEntity.binary.fsize : 1_000);//下载进度条
+                    showAppDownloadingDialog(getActivity(), appVersionEntity.upgradeUrl);
                 } else {
                     requestFilePermission(context, REQUEST_FILE_PERMISSION);
                 }
@@ -143,13 +142,14 @@ public class BaseAppUpdateActivity extends BaseUmengActivity implements
      * @return
      */
     public final boolean shouldForceUpdate(@NonNull AppVersionEntity appVersionEntity) {
-        return appVersionEntity != null && appVersionEntity.version > BuildConfig.VERSION_CODE;
+//        return appVersionEntity != null && appVersionEntity.buildVersion > BuildConfig.VERSION_CODE;
+        return false;
     }
 
     @Override
     public final boolean shouldUpdate(@NonNull AppVersionEntity appVersionEntity) {
         return appVersionEntity != null
-                && !TextUtils.equals(appVersionEntity.versionShort, BuildConfig.VERSION_NAME);
+                && !TextUtils.equals(appVersionEntity.appVersion, BuildConfig.VERSION_NAME);
     }
 
     private ProgressDialog getUpdateProgressDialog() {

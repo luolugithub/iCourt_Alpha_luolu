@@ -14,7 +14,8 @@ import com.icourt.alpha.BuildConfig;
 import com.icourt.alpha.R;
 import com.icourt.alpha.base.BaseAppUpdateActivity;
 import com.icourt.alpha.entity.bean.AppVersionEntity;
-import com.icourt.alpha.interfaces.callback.AppUpdateCallBack;
+import com.icourt.alpha.http.callback.SimpleCallBack;
+import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.DateUtils;
 
 import butterknife.BindView;
@@ -74,10 +75,10 @@ public class AboutActivity extends BaseAppUpdateActivity {
     @Override
     protected void getData(boolean isRefresh) {
         super.getData(isRefresh);
-        checkAppUpdate(new AppUpdateCallBack() {
+        checkAppUpdate(new SimpleCallBack<AppVersionEntity>() {
             @Override
-            public void onSuccess(Call<AppVersionEntity> call, Response<AppVersionEntity> response) {
-                appVersionEntity = response.body();
+            public void onSuccess(Call<ResEntity<AppVersionEntity>> call, Response<ResEntity<AppVersionEntity>> response) {
+                appVersionEntity = response.body().result;
                 if (shouldUpdate(appVersionEntity)) {
                     aboutCheckIsUpdateView.setText(getString(R.string.my_center_have_new_version_text));
                 } else {
@@ -86,7 +87,7 @@ public class AboutActivity extends BaseAppUpdateActivity {
             }
 
             @Override
-            public void onFailure(Call<AppVersionEntity> call, Throwable t) {
+            public void onFailure(Call<ResEntity<AppVersionEntity>> call, Throwable t) {
                 if (t instanceof HttpException) {
                     HttpException hx = (HttpException) t;
                     if (hx.code() == 401) {

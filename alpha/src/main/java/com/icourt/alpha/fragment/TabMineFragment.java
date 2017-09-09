@@ -33,7 +33,6 @@ import com.icourt.alpha.entity.event.ServerTimingEvent;
 import com.icourt.alpha.entity.event.TimingEvent;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
-import com.icourt.alpha.interfaces.callback.AppUpdateCallBack;
 import com.icourt.alpha.utils.GlideUtils;
 import com.icourt.alpha.utils.LoginInfoUtils;
 import com.icourt.alpha.utils.UMMobClickAgent;
@@ -381,15 +380,15 @@ public class TabMineFragment extends BaseFragment {
         getMyDoneTask();
         getGroupList();
         if (baseAppUpdateActivity != null) {
-            baseAppUpdateActivity.checkAppUpdate(new AppUpdateCallBack() {
+            baseAppUpdateActivity.checkAppUpdate(new SimpleCallBack<AppVersionEntity>() {
                 @Override
-                public void onSuccess(Call<AppVersionEntity> call, Response<AppVersionEntity> response) {
+                public void onSuccess(Call<ResEntity<AppVersionEntity>> call, Response<ResEntity<AppVersionEntity>> response) {
                     if (myCenterAboutCountView == null) return;
-                    myCenterAboutCountView.setVisibility(baseAppUpdateActivity.shouldUpdate(response.body()) ? View.VISIBLE : View.INVISIBLE);
+                    myCenterAboutCountView.setVisibility(baseAppUpdateActivity.shouldUpdate(response.body().result) ? View.VISIBLE : View.INVISIBLE);
                 }
 
                 @Override
-                public void onFailure(Call<AppVersionEntity> call, Throwable t) {
+                public void onFailure(Call<ResEntity<AppVersionEntity>> call, Throwable t) {
                     if (t instanceof HttpException) {
                         HttpException hx = (HttpException) t;
                         if (hx.code() == 401) {
