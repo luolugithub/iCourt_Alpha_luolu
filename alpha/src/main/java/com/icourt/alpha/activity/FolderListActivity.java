@@ -124,7 +124,7 @@ public class FolderListActivity extends FolderBaseActivity
     View headerView;
     TextView footerView;
 
-    String path;
+
     @BindView(R.id.titleEditCancelView)
     CheckedTextView titleEditCancelView;
     @BindView(R.id.titleEditView)
@@ -941,6 +941,7 @@ public class FolderListActivity extends FolderBaseActivity
         }
         FolderTargetListDialogFragment.newInstance(
                 folderActionType,
+                getRepoType(),
                 getSeaFileRepoId(),
                 getSeaFileDirPath(),
                 getSeaFileRepoId(),

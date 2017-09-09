@@ -18,9 +18,12 @@ import android.widget.TextView;
 import com.icourt.alpha.R;
 import com.icourt.alpha.base.BaseDialogFragment;
 import com.icourt.alpha.constants.Const;
+import com.icourt.alpha.constants.SFileConfig;
 import com.icourt.alpha.entity.bean.FolderDocumentEntity;
 import com.icourt.alpha.entity.bean.RepoEntity;
+import com.icourt.alpha.entity.bean.RepoTypeEntity;
 import com.icourt.alpha.fragment.FolderTargetListFragment;
+import com.icourt.alpha.fragment.RepoNavigationFragment;
 import com.icourt.alpha.fragment.RepoSelectListFragment;
 import com.icourt.alpha.http.callback.SFileCallBack;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
@@ -66,14 +69,28 @@ public class FolderTargetListDialogFragment
     protected static final String KEY_SEA_FILE_DST_REPO_ID = "seaFileDstRepoId";//目标仓库id
     protected static final String KEY_SEA_FILE_DST_DIR_PATH = "seaFileDstDirPath";//目标仓库路径
     protected static final String KEY_FOLDER_ACTION_TYPE = "folderActionType";//文件操作类型
+
+
+    private static final String KEY_REPO_TYPE = "repoType";
     @BindView(R.id.dir_path_title_layout)
     RelativeLayout dirPathTitleLayout;
 
     Fragment currFragment;
     RepoEntity repoEntity;
 
+    /**
+     * @param folderActionType
+     * @param repoType
+     * @param fromRepoId
+     * @param fromRepoDirPath
+     * @param dstRepoId
+     * @param dstRepoDirPath
+     * @param selectedFolderDocumentEntities
+     * @return
+     */
     public static FolderTargetListDialogFragment newInstance(
             @Const.FILE_ACTION_TYPE int folderActionType,
+            @SFileConfig.REPO_TYPE int repoType,
             String fromRepoId,
             String fromRepoDirPath,
             String dstRepoId,
@@ -82,6 +99,7 @@ public class FolderTargetListDialogFragment
         FolderTargetListDialogFragment fragment = new FolderTargetListDialogFragment();
         Bundle args = new Bundle();
         args.putInt(KEY_FOLDER_ACTION_TYPE, folderActionType);
+        args.putInt(KEY_REPO_TYPE, repoType);
         args.putString(KEY_SEA_FILE_FROM_REPO_ID, fromRepoId);
         args.putString(KEY_SEA_FILE_FROM_DIR_PATH, fromRepoDirPath);
 
@@ -211,10 +229,12 @@ public class FolderTargetListDialogFragment
                 dismiss();
                 break;
             case R.id.foldr_go_parent_tv:
-                if (canBack2ParentDir()) {
+                if (canBackRepoType()) {
+                    replaceRepoTypeFragment();
+                } else if (canBack2ParentDir()) {
                     back2ParentDir();
                 } else {
-                    replaceRepoFragmemt();
+                    replaceRepoListFragmemt();
                 }
                 break;
             default:
@@ -269,6 +289,15 @@ public class FolderTargetListDialogFragment
         }
     }
 
+    /**
+     * 是否返回到资料库类型导航页面
+     *
+     * @return
+     */
+    private boolean canBackRepoType() {
+        return TextUtils.isEmpty(getSeaFileDstRepoId());
+    }
+
     @Override
     public void onDestroyView() {
         super.onDestroyView();
@@ -290,6 +319,10 @@ public class FolderTargetListDialogFragment
                         repoEntity.repo_id,
                         "/");
             }
+        } else if (fragment instanceof RepoNavigationFragment && params != null) {
+            RepoTypeEntity repoTypeEntity = (RepoTypeEntity) params.getSerializable(KEY_FRAGMENT_RESULT);
+            getArguments().putInt(KEY_REPO_TYPE, repoTypeEntity.repoType);
+            replaceRepoListFragmemt();
         } else {
             if (type == 1 && params != null) {
                 replaceFolderFragmemt(
@@ -304,19 +337,54 @@ public class FolderTargetListDialogFragment
     /**
      * 替换资料库选择页面
      */
-    private void replaceRepoFragmemt() {
+    private void replaceRepoListFragmemt() {
+        updateTargetRepo(null, null);
+        dirPathTitleLayout.setVisibility(View.VISIBLE);
+
         currFragment = addOrShowFragment(
-                RepoSelectListFragment.newInstance(),
+                RepoSelectListFragment.newInstance(SFileConfig.convert2RepoType(getArguments().getInt(KEY_REPO_TYPE))),
                 currFragment,
                 R.id.main_fl_content);
-        dirPathTitleLayout.setVisibility(View.GONE);
     }
 
+    /**
+     * 替换资料库类型界面
+     */
+    private void replaceRepoTypeFragment() {
+        updateTargetRepo(null, null);
+        dirPathTitleLayout.setVisibility(View.GONE);
+
+        currFragment = addOrShowFragment(
+                RepoNavigationFragment.newInstance(),
+                currFragment,
+                R.id.main_fl_content);
+    }
+
+    /**
+     * 更新目标地址
+     *
+     * @param targetSeaFileRepoId
+     * @param targetSeaFileParentDirPath
+     */
+    private void updateTargetRepo(String targetSeaFileRepoId,
+                                  String targetSeaFileParentDirPath) {
+
+        getArguments().putString(KEY_SEA_FILE_DST_REPO_ID, targetSeaFileRepoId);
+        getArguments().putString(KEY_SEA_FILE_DST_DIR_PATH, targetSeaFileParentDirPath);
+    }
+
+    /**
+     * 替换资料库下面的子目录
+     *
+     * @param seaFileRepoId
+     * @param seaFileParentDirPath
+     */
     private void replaceFolderFragmemt(String seaFileRepoId,
                                        String seaFileParentDirPath) {
+
+        updateTargetRepo(seaFileRepoId, seaFileParentDirPath);
         dirPathTitleLayout.setVisibility(View.VISIBLE);
-        getArguments().putString(KEY_SEA_FILE_DST_REPO_ID, seaFileRepoId);
-        getArguments().putString(KEY_SEA_FILE_DST_DIR_PATH, seaFileParentDirPath);
+
         currFragment = addOrShowFragment(
                 FolderTargetListFragment.newInstance(
                         getFileActionType(),

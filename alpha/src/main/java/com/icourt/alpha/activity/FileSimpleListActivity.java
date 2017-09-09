@@ -3,7 +3,6 @@ package com.icourt.alpha.activity;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.content.res.ColorStateList;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.AppBarLayout;
@@ -27,7 +26,6 @@ import com.icourt.alpha.entity.bean.FolderDocumentEntity;
 import com.icourt.alpha.http.IDefNotify;
 import com.icourt.alpha.http.callback.SFileCallBack;
 import com.icourt.alpha.http.observer.BaseObserver;
-import com.icourt.alpha.utils.GlideUtils;
 import com.icourt.alpha.utils.IMUtils;
 import com.icourt.alpha.utils.SFileTokenUtils;
 import com.icourt.alpha.utils.StringUtils;
@@ -159,8 +157,7 @@ public class FileSimpleListActivity extends FolderBaseActivity
         if (TextUtils.equals(getIntent().getStringExtra(KEY_SEA_FILE_REPO_PERMISSION), PERMISSION_R)) {
             titleAction.setVisibility(View.GONE);
         }
-        titleAction2.setImageDrawable(GlideUtils.getTintedDrawable(getDrawable(getContext(), R.mipmap.sort),
-                ColorStateList.valueOf(getContextColor(R.color.alpha_font_color_orange))));
+        titleAction2.setImageResource(R.mipmap.header_icon_more);
 
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         headerFooterAdapter = new HeaderFooterAdapter<>(folderAdapter = new FolderAdapter(getSeaFileRepoId(), getSeaFileDirPath(), false));

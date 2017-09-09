@@ -19,6 +19,7 @@ import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.constants.SFileConfig;
 import com.icourt.alpha.entity.bean.RepoEntity;
 import com.icourt.alpha.http.callback.SFileCallBack;
+import com.icourt.alpha.http.callback.SimpleCallBack2;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 import com.icourt.alpha.widget.filter.ListFilter;
@@ -32,6 +33,10 @@ import retrofit2.Call;
 import retrofit2.Response;
 
 import static com.icourt.alpha.constants.SFileConfig.PERMISSION_R;
+import static com.icourt.alpha.constants.SFileConfig.REPO_LAWFIRM;
+import static com.icourt.alpha.constants.SFileConfig.REPO_MINE;
+import static com.icourt.alpha.constants.SFileConfig.REPO_PROJECT;
+import static com.icourt.alpha.constants.SFileConfig.REPO_SHARED_ME;
 
 /**
  * Description
@@ -42,6 +47,7 @@ import static com.icourt.alpha.constants.SFileConfig.PERMISSION_R;
  */
 public class RepoSelectListFragment extends BaseFragment
         implements BaseRecyclerAdapter.OnItemClickListener {
+    private static final String KEY_REPO_TYPE = "repoType";
 
     @BindView(R.id.recyclerView)
     RecyclerView recyclerView;
@@ -50,9 +56,13 @@ public class RepoSelectListFragment extends BaseFragment
     Unbinder unbinder;
     RepoAdapter repoAdapter;
     OnFragmentCallBackListener onFragmentCallBackListener;
+    int repoType;
 
-    public static RepoSelectListFragment newInstance() {
+    public static RepoSelectListFragment newInstance(@SFileConfig.REPO_TYPE int repoType) {
         RepoSelectListFragment fragment = new RepoSelectListFragment();
+        Bundle args = new Bundle();
+        args.putInt(KEY_REPO_TYPE, repoType);
+        fragment.setArguments(args);
         return fragment;
     }
 
@@ -80,8 +90,10 @@ public class RepoSelectListFragment extends BaseFragment
 
     @Override
     protected void initView() {
+        repoType = SFileConfig.convert2RepoType(getArguments().getInt(KEY_REPO_TYPE));
+
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        recyclerView.setAdapter(repoAdapter = new RepoAdapter(SFileConfig.REPO_MINE) {
+        recyclerView.setAdapter(repoAdapter = new RepoAdapter(REPO_MINE) {
             @Override
             public void onBindHoder(ViewHolder holder, RepoEntity repoEntity, int position) {
                 super.onBindHoder(holder, repoEntity, position);
@@ -110,21 +122,93 @@ public class RepoSelectListFragment extends BaseFragment
     @Override
     protected void getData(final boolean isRefresh) {
         super.getData(isRefresh);
-        callEnqueue(getSFileApi().repoQueryAll(),
-                new SFileCallBack<List<RepoEntity>>() {
-                    @Override
-                    public void onSuccess(Call<List<RepoEntity>> call, Response<List<RepoEntity>> response) {
-                        stopRefresh();
-                        filterOnlyReadPermissionRepo(response.body());
-                        repoAdapter.bindData(isRefresh, response.body());
-                    }
+        getRepoList();
+    }
 
-                    @Override
-                    public void onFailure(Call<List<RepoEntity>> call, Throwable t) {
-                        super.onFailure(call, t);
-                        stopRefresh();
-                    }
-                });
+    private void getRepoList() {
+        switch (repoType) {
+            case REPO_MINE: {
+                getDocumentRoot(null);
+            }
+            break;
+            case REPO_SHARED_ME: {
+                //获取管理员账号
+                callEnqueue(getApi().getOfficeAdmin(getLoginUserId()),
+                        new SimpleCallBack2<String>() {
+                            @Override
+                            public void onSuccess(Call<String> call, Response<String> response) {
+                                getDocumentRoot(response.body());
+                            }
+
+                            @Override
+                            public void onFailure(Call<String> call, Throwable t) {
+                                super.onFailure(call, t);
+                                stopRefresh();
+                            }
+                        });
+            }
+            break;
+            case REPO_LAWFIRM: {
+                getDocumentRoot(null);
+            }
+            break;
+            case REPO_PROJECT: {
+                //获取管理员账号
+                callEnqueue(getApi().getOfficeAdmin(getLoginUserId()),
+                        new SimpleCallBack2<String>() {
+                            @Override
+                            public void onSuccess(Call<String> call, Response<String> response) {
+                                getDocumentRoot(response.body());
+                            }
+
+                            @Override
+                            public void onFailure(Call<String> call, Throwable t) {
+                                super.onFailure(call, t);
+                                stopRefresh();
+                            }
+                        });
+            }
+            break;
+        }
+    }
+
+    /**
+     * 获取资料库
+     * 不分页获取所有
+     *
+     * @param officeAdminId 律所管理员id
+     */
+    private void getDocumentRoot(@Nullable String officeAdminId) {
+        Call<List<RepoEntity>> listCall = null;
+        final int pageSize = Integer.MAX_VALUE;
+        switch (repoType) {
+            case REPO_MINE:
+                listCall = getSFileApi().documentRootQuery(1, pageSize, null, null, null);
+                break;
+            case REPO_SHARED_ME:
+                listCall = getSFileApi().documentRootQuery(1, pageSize, officeAdminId, null, "shared");
+                break;
+            case REPO_LAWFIRM:
+                listCall = getSFileApi().documentRootQuery();
+                break;
+            case REPO_PROJECT:
+                listCall = getSFileApi().documentRootQuery(1, pageSize, null, officeAdminId, "shared");
+                break;
+        }
+        callEnqueue(listCall, new SFileCallBack<List<RepoEntity>>() {
+            @Override
+            public void onSuccess(Call<List<RepoEntity>> call, Response<List<RepoEntity>> response) {
+                stopRefresh();
+                filterOnlyReadPermissionRepo(response.body());
+                repoAdapter.bindData(true, response.body());
+            }
+
+            @Override
+            public void onFailure(Call<List<RepoEntity>> call, Throwable t) {
+                super.onFailure(call, t);
+                stopRefresh();
+            }
+        });
     }
 
     /**
