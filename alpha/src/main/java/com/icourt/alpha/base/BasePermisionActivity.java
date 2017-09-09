@@ -15,101 +15,19 @@ import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 
 import com.icourt.alpha.R;
+import com.icourt.alpha.base.permission.IAlphaPermission;
+import com.icourt.alpha.base.permission.IAlphaSelectPhoto;
 import com.icourt.alpha.utils.SnackbarUtils;
 
 import cn.finalteam.galleryfinal.FunctionConfig;
 import cn.finalteam.galleryfinal.GalleryFinal;
 
-/**
- * Description  权限基类
- * Company Beijing icourt
- * author  youxuan  E-mail:xuanyouwu@163.com
- * date createTime：2017/4/5
- * version 1.0.0
- */
-interface IAlphaPermission {
-
-    /**
-     * 检查相机的权限
-     *
-     * @return
-     */
-    boolean checkCameraPermission();
-
-    /**
-     * 检查文件读写权限
-     *
-     * @return
-     */
-    boolean checkAcessFilePermission();
-
-    /**
-     * 请求相机权限
-     */
-    void requestCameraPermission();
-
-    /**
-     * 请求文件读写权限
-     */
-    void requestAcessFilePermission();
-}
-
-interface ISelectPhoto {
-
-    /**
-     * 检查权限 并多选图片
-     *
-     * @param onHanlderResultCallback
-     */
-    void checkAndSelectMutiPhotos(GalleryFinal.OnHanlderResultCallback onHanlderResultCallback);
-
-    /**
-     * 多选图片
-     *
-     * @param onHanlderResultCallback
-     */
-    void selectMutiPhotos(GalleryFinal.OnHanlderResultCallback onHanlderResultCallback);
-
-    /**
-     * 检查权限 单选
-     *
-     * @param onHanlderResultCallback
-     */
-    void checkAndSelectSingleFromPhotos(GalleryFinal.OnHanlderResultCallback onHanlderResultCallback);
-
-    /**
-     * 检查单权限 单选
-     *
-     * @param onHanlderResultCallback
-     */
-    void selectSingleFromPhotos(GalleryFinal.OnHanlderResultCallback onHanlderResultCallback);
-
-    /**
-     * 拍照
-     *
-     * @param onHanlderResultCallback
-     */
-    void selectFromCamera(GalleryFinal.OnHanlderResultCallback onHanlderResultCallback);
-
-    /**
-     * 检查权限 并拍照
-     *
-     * @param onHanlderResultCallback
-     */
-    void checkAndSelectFromCamera(GalleryFinal.OnHanlderResultCallback onHanlderResultCallback);
-}
-
 public class BasePermisionActivity extends AppCompatActivity
-        implements IAlphaPermission,
-        ISelectPhoto {
-    protected static final int PERMISSION_REQ_CODE_CAMERA = 60001;//权限 相机
-    protected static final int PERMISSION_REQ_CODE_ACCESS_FILE = 60002;//权限 文件
+        implements
+        IAlphaPermission,
+        IAlphaSelectPhoto {
 
-    protected static final int REQ_CODE_CAMERA = 61000;//拍照
-    protected static final int REQ_CODE_GALLERY_SINGLE = 610001;//单选
-    protected static final int REQ_CODE_GALLERY_MUTI = 610003;//多选
-
-    private AlertDialog mAlertDialog;
+    private AlertDialog mPermissionAlertDialog;
 
     /**
      * 检查权限
@@ -203,9 +121,9 @@ public class BasePermisionActivity extends AppCompatActivity
         builder.setMessage(message);
         builder.setPositiveButton(positiveText, onPositiveButtonClickListener);
         builder.setNegativeButton(negativeText, onNegativeButtonClickListener);
-        mAlertDialog = builder.show();
+        mPermissionAlertDialog = builder.show();
     }
-    
+
     @Override
     public boolean checkCameraPermission() {
         return checkPermission(Manifest.permission.CAMERA);
@@ -282,12 +200,20 @@ public class BasePermisionActivity extends AppCompatActivity
 
     @Override
     public void selectSingleFromPhotos(GalleryFinal.OnHanlderResultCallback onHanlderResultCallback) {
-        GalleryFinal.openGallerySingle(REQ_CODE_GALLERY_SINGLE, onHanlderResultCallback);
+        FunctionConfig config = new FunctionConfig.Builder()
+                .setEnableEdit(false)
+                .setEnableCrop(false)
+                .build();
+        GalleryFinal.openGallerySingle(REQ_CODE_GALLERY_SINGLE, config, onHanlderResultCallback);
     }
 
     @Override
     public void selectFromCamera(GalleryFinal.OnHanlderResultCallback onHanlderResultCallback) {
-        GalleryFinal.openCamera(REQ_CODE_CAMERA, onHanlderResultCallback);
+        FunctionConfig config = new FunctionConfig.Builder()
+                .setEnableEdit(false)
+                .setEnableCrop(false)
+                .build();
+        GalleryFinal.openCamera(REQ_CODE_CAMERA, config, onHanlderResultCallback);
     }
 
     @Override
@@ -296,6 +222,15 @@ public class BasePermisionActivity extends AppCompatActivity
             selectFromCamera(onHanlderResultCallback);
         } else {
             requestCameraPermission();
+        }
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if (mPermissionAlertDialog != null
+                && mPermissionAlertDialog.isShowing()) {
+            mPermissionAlertDialog.dismiss();
         }
     }
 }

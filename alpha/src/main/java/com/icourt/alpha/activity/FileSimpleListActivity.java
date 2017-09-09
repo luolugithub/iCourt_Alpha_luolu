@@ -1,12 +1,9 @@
 package com.icourt.alpha.activity;
 
-import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.AppBarLayout;
@@ -33,7 +30,6 @@ import com.icourt.alpha.http.consumer.BaseThrowableConsumer;
 import com.icourt.alpha.http.observer.BaseObserver;
 import com.icourt.alpha.utils.GlideUtils;
 import com.icourt.alpha.utils.IMUtils;
-import com.icourt.alpha.utils.ImageUtils;
 import com.icourt.alpha.utils.IndexUtils;
 import com.icourt.alpha.utils.SFileTokenUtils;
 import com.icourt.alpha.utils.StringUtils;
@@ -58,7 +54,6 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import butterknife.Unbinder;
-import cn.finalteam.galleryfinal.FunctionConfig;
 import cn.finalteam.galleryfinal.GalleryFinal;
 import cn.finalteam.galleryfinal.model.PhotoInfo;
 import io.reactivex.Observable;
@@ -84,13 +79,9 @@ import static com.icourt.alpha.widget.comparators.FileSortComparator.FILE_SORT_T
  * date createTime：2017/9/8
  * version 2.1.0
  */
-public class FileSimpleListActivity extends FolderBaseActivity implements BaseRecyclerAdapter.OnItemClickListener {
-    private static final int REQUEST_CODE_CAMERA = 1000;
-    private static final int REQUEST_CODE_GALLERY = 1001;
+public class FileSimpleListActivity extends FolderBaseActivity
+        implements BaseRecyclerAdapter.OnItemClickListener {
     private static final int REQUEST_CODE_CHOOSE_FILE = 1002;
-
-    private static final int REQ_CODE_PERMISSION_CAMERA = 1100;
-    private static final int REQ_CODE_PERMISSION_ACCESS_FILE = 1101;
     private static final int MAX_LENGTH_FILE_NAME = 100;
 
     @BindView(R.id.recyclerView)
@@ -102,7 +93,6 @@ public class FileSimpleListActivity extends FolderBaseActivity implements BaseRe
 
     HeaderFooterAdapter<FolderAdapter> headerFooterAdapter;
     FolderAdapter folderAdapter;
-    String path;
     int fileSortType = FILE_SORT_TYPE_DEFAULT;
 
 
@@ -292,57 +282,27 @@ public class FileSimpleListActivity extends FolderBaseActivity implements BaseRe
                                         getSeaFileDirPath());
                                 break;
                             case 1:
-                                if (checkPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+                                if (checkAcessFilePermission()) {
                                     SystemUtils.chooseFile(getActivity(), REQUEST_CODE_CHOOSE_FILE);
                                 } else {
-                                    reqPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, R.string.permission_rationale_storage, REQ_CODE_PERMISSION_ACCESS_FILE);
+                                    requestAcessFilePermission();
                                 }
                                 break;
                             case 2:
-                                checkAndOpenPhotos();
+                                checkAndSelectMutiPhotos(mOnHanlderResultCallback);
                                 break;
                             case 3:
-                                checkAndOpenCamera();
+                                checkAndSelectFromCamera(mOnHanlderResultCallback);
                                 break;
                         }
                     }
                 }).show();
     }
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @android.support.annotation.NonNull String[] permissions, @android.support.annotation.NonNull int[] grantResults) {
-        switch (requestCode) {
-            case REQ_CODE_PERMISSION_CAMERA:
-                if (grantResults != null) {
-                    if (grantResults[0] == PackageManager.PERMISSION_DENIED) {
-                        showTopSnackBar(R.string.permission_denied_camera);
-                    }
-                }
-                break;
-            case REQ_CODE_PERMISSION_ACCESS_FILE:
-                if (grantResults != null) {
-                    if (grantResults[0] == PackageManager.PERMISSION_DENIED) {
-                        showTopSnackBar(R.string.permission_denied_storage);
-                    }
-                }
-                break;
-            default:
-                super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-                break;
-        }
-    }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         switch (requestCode) {
-            case REQUEST_CODE_CAMERA:
-                if (resultCode == Activity.RESULT_OK) {
-                    if (!TextUtils.isEmpty(path) && ImageUtils.getBitmapDegree(path) > 0) {
-                        ImageUtils.degreeImage(path);
-                    }
-                    uploadFile(path);
-                }
-                break;
             case REQUEST_CODE_CHOOSE_FILE:
                 if (resultCode == Activity.RESULT_OK) {
                     if (data != null) {
@@ -372,33 +332,6 @@ public class FileSimpleListActivity extends FolderBaseActivity implements BaseRe
         uploadFiles(Arrays.asList(filePath));
     }
 
-    /**
-     * 打开相机
-     */
-    private void checkAndOpenCamera() {
-        if (checkPermission(Manifest.permission.CAMERA)) {
-            path = SystemUtils.getFileDiskCache(getContext()) + File.separator
-                    + System.currentTimeMillis() + ".png";
-            Uri picUri = Uri.fromFile(new File(path));
-            SystemUtils.doTakePhotoAction(this, picUri, REQUEST_CODE_CAMERA);
-        } else {
-            reqPermission(Manifest.permission.CAMERA, R.string.permission_rationale_camera, REQ_CODE_PERMISSION_CAMERA);
-        }
-    }
-
-    /**
-     * 打开相册
-     */
-    private void checkAndOpenPhotos() {
-        if (checkPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-            FunctionConfig config = new FunctionConfig.Builder()
-                    .setMutiSelectMaxSize(9)
-                    .build();
-            GalleryFinal.openGalleryMuti(REQUEST_CODE_GALLERY, config, mOnHanlderResultCallback);
-        } else {
-            reqPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, R.string.permission_rationale_storage, REQ_CODE_PERMISSION_ACCESS_FILE);
-        }
-    }
 
     /**
      * 展示排序对话框
