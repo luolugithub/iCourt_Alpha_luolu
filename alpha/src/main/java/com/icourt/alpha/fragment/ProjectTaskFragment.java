@@ -344,6 +344,8 @@ public class ProjectTaskFragment extends BaseTaskFragment implements BaseQuickAd
         if (event == null) return;
         if (event.action == TaskActionEvent.TASK_REFRESG_ACTION) {
             getData(true);
+        } else if (event.action == TaskActionEvent.TASK_PROJECT_END_OPERATE) {//项目里已完成的任务列表进行操作了。
+            getData(true);
         }
     }
 

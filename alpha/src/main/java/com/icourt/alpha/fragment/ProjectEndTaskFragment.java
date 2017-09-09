@@ -32,6 +32,7 @@ import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 import com.icourt.alpha.widget.manager.TimerManager;
 import com.umeng.analytics.MobclickAgent;
 
+import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
@@ -327,6 +328,9 @@ public class ProjectEndTaskFragment extends BaseTaskFragment implements BaseQuic
     @Override
     protected void taskUpdateBack(@ChangeType int actionType, @NonNull TaskEntity.TaskItemEntity itemEntity) {
         taskAdapter.updateItem(itemEntity);
+        if (actionType == CHANGE_STATUS) {
+            postTaskOperateEvent();
+        }
     }
 
     @Override
@@ -342,45 +346,10 @@ public class ProjectEndTaskFragment extends BaseTaskFragment implements BaseQuic
     }
 
     /**
-     * 获取item所在子容器position
-     *
-     * @param taskId
-     * @return
+     * 发送任务被操作了的通知
      */
-    private int getItemPosition(String taskId) {
-        for (int i = 0; i < taskAdapter.getData().size(); i++) {
-            TaskEntity.TaskItemEntity item = taskAdapter.getData().get(i);
-            if (item != null) {
-                if (TextUtils.equals(item.id, taskId)) {
-                    return i;
-                }
-            }
-        }
-        return -1;
-    }
-
-    /**
-     * 更新item
-     *
-     * @param taskId
-     */
-    private void updateChildTimeing(String taskId, boolean isTiming) {
-        int pos = getItemPosition(taskId);
-        if (pos >= 0) {
-            TaskEntity.TaskItemEntity entity = taskAdapter.getItem(pos);
-            if (entity != null) {
-                if (lastEntity != null)
-                    if (!TextUtils.equals(entity.id, lastEntity.id)) {
-                        lastEntity.isTiming = false;
-                        taskAdapter.notifyDataSetChanged();
-                    }
-                if (entity.isTiming != isTiming) {
-                    entity.isTiming = isTiming;
-                    taskAdapter.updateItem(entity);
-                    lastEntity = entity;
-                }
-            }
-        }
+    private void postTaskOperateEvent() {
+        EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_PROJECT_END_OPERATE));
     }
 
     @Override
