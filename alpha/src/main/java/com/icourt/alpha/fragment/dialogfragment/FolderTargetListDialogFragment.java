@@ -318,6 +318,7 @@ public class FolderTargetListDialogFragment
                 replaceFolderFragmemt(
                         repoEntity.repo_id,
                         "/");
+
             }
         } else if (fragment instanceof RepoNavigationFragment && params != null) {
             RepoTypeEntity repoTypeEntity = (RepoTypeEntity) params.getSerializable(KEY_FRAGMENT_RESULT);
