@@ -1,10 +1,7 @@
 package com.icourt.alpha.fragment;
 
-import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
@@ -27,19 +24,14 @@ import com.icourt.alpha.adapter.FolderAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.HeaderFooterAdapter;
 import com.icourt.alpha.adapter.baseadapter.adapterObserver.DataChangeAdapterObserver;
-import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.constants.SFileConfig;
 import com.icourt.alpha.entity.bean.FolderDocumentEntity;
 import com.icourt.alpha.entity.bean.RepoIdResEntity;
 import com.icourt.alpha.http.IDefNotify;
-import com.icourt.alpha.http.callback.SFileCallBack;
-import com.icourt.alpha.http.consumer.BaseThrowableConsumer;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.http.observer.BaseObserver;
 import com.icourt.alpha.interfaces.OnParentTitleBarClickListener;
 import com.icourt.alpha.utils.IMUtils;
-import com.icourt.alpha.utils.ImageUtils;
-import com.icourt.alpha.utils.IndexUtils;
 import com.icourt.alpha.utils.SFileTokenUtils;
 import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.utils.SystemUtils;
@@ -49,34 +41,25 @@ import com.icourt.alpha.widget.comparators.FileSortComparator;
 import com.icourt.alpha.widget.dialog.BottomActionDialog;
 import com.icourt.alpha.widget.dialog.SortTypeSelectDialog;
 import com.icourt.alpha.widget.filter.SFileNameFilter;
-import com.icourt.api.RequestUtils;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
-import cn.finalteam.galleryfinal.FunctionConfig;
 import cn.finalteam.galleryfinal.GalleryFinal;
 import cn.finalteam.galleryfinal.model.PhotoInfo;
 import io.reactivex.Observable;
 import io.reactivex.ObservableSource;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.annotations.NonNull;
-import io.reactivex.functions.Action;
-import io.reactivex.functions.Consumer;
+import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Function;
 import io.reactivex.functions.Predicate;
 import io.reactivex.schedulers.Schedulers;
-import okhttp3.RequestBody;
-import retrofit2.Call;
-import retrofit2.Response;
 
 import static com.icourt.alpha.widget.comparators.FileSortComparator.FILE_SORT_TYPE_DEFAULT;
 
@@ -87,14 +70,10 @@ import static com.icourt.alpha.widget.comparators.FileSortComparator.FILE_SORT_T
  * date createTime：2017/9/8
  * version 2.1.0
  */
-public class ProjectFileFragment extends BaseFragment implements OnParentTitleBarClickListener, BaseRecyclerAdapter.OnItemClickListener {
+public class ProjectFileFragment extends SeaFileBaseFragment
+        implements OnParentTitleBarClickListener, BaseRecyclerAdapter.OnItemClickListener {
     private static final String KEY_PROJECT_ID = "key_project_id";
-    private static final int REQUEST_CODE_CAMERA = 1000;
-    private static final int REQUEST_CODE_GALLERY = 1001;
     private static final int REQUEST_CODE_CHOOSE_FILE = 1002;
-
-    private static final int REQ_CODE_PERMISSION_CAMERA = 1100;
-    private static final int REQ_CODE_PERMISSION_ACCESS_FILE = 1101;
     private static final int MAX_LENGTH_FILE_NAME = 100;
 
     @BindView(R.id.recyclerView)
@@ -260,7 +239,7 @@ public class ProjectFileFragment extends BaseFragment implements OnParentTitleBa
                     @Override
                     public void onNext(@NonNull List<FolderDocumentEntity> fileBoxBeen) {
                         folderAdapter.setSeaFileRepoId(getSeaFileRepoId());
-                        sortFile(false, fileBoxBeen);
+                        sortFile(fileBoxBeen);
                     }
 
                     @Override
@@ -326,57 +305,27 @@ public class ProjectFileFragment extends BaseFragment implements OnParentTitleBa
                                         getSeaFileDirPath());
                                 break;
                             case 1:
-                                if (checkPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+                                if (checkAcessFilePermission()) {
                                     SystemUtils.chooseFile(ProjectFileFragment.this, REQUEST_CODE_CHOOSE_FILE);
                                 } else {
-                                    reqPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, R.string.permission_rationale_storage, REQ_CODE_PERMISSION_ACCESS_FILE);
+                                    requestAcessFilePermission();
                                 }
                                 break;
                             case 2:
-                                checkAndOpenPhotos();
+                                checkAndSelectMutiPhotos(mOnHanlderResultCallback);
                                 break;
                             case 3:
-                                checkAndOpenCamera();
+                                checkAndSelectFromCamera(mOnHanlderResultCallback);
                                 break;
                         }
                     }
                 }).show();
     }
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @android.support.annotation.NonNull String[] permissions, @android.support.annotation.NonNull int[] grantResults) {
-        switch (requestCode) {
-            case REQ_CODE_PERMISSION_CAMERA:
-                if (grantResults != null) {
-                    if (grantResults[0] == PackageManager.PERMISSION_DENIED) {
-                        showTopSnackBar(R.string.permission_denied_camera);
-                    }
-                }
-                break;
-            case REQ_CODE_PERMISSION_ACCESS_FILE:
-                if (grantResults != null) {
-                    if (grantResults[0] == PackageManager.PERMISSION_DENIED) {
-                        showTopSnackBar(R.string.permission_denied_storage);
-                    }
-                }
-                break;
-            default:
-                super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-                break;
-        }
-    }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         switch (requestCode) {
-            case REQUEST_CODE_CAMERA:
-                if (resultCode == Activity.RESULT_OK) {
-                    if (!TextUtils.isEmpty(path) && ImageUtils.getBitmapDegree(path) > 0) {
-                        ImageUtils.degreeImage(path);
-                    }
-                    uploadFile(path);
-                }
-                break;
             case REQUEST_CODE_CHOOSE_FILE:
                 if (resultCode == Activity.RESULT_OK) {
                     if (data != null) {
@@ -406,33 +355,6 @@ public class ProjectFileFragment extends BaseFragment implements OnParentTitleBa
         uploadFiles(Arrays.asList(filePath));
     }
 
-    /**
-     * 打开相机
-     */
-    private void checkAndOpenCamera() {
-        if (checkPermission(Manifest.permission.CAMERA)) {
-            path = SystemUtils.getFileDiskCache(getContext()) + File.separator
-                    + System.currentTimeMillis() + ".png";
-            Uri picUri = Uri.fromFile(new File(path));
-            SystemUtils.doTakePhotoAction(this, picUri, REQUEST_CODE_CAMERA);
-        } else {
-            reqPermission(Manifest.permission.CAMERA, R.string.permission_rationale_camera, REQ_CODE_PERMISSION_CAMERA);
-        }
-    }
-
-    /**
-     * 打开相册
-     */
-    private void checkAndOpenPhotos() {
-        if (checkPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-            FunctionConfig config = new FunctionConfig.Builder()
-                    .setMutiSelectMaxSize(9)
-                    .build();
-            GalleryFinal.openGalleryMuti(REQUEST_CODE_GALLERY, config, mOnHanlderResultCallback);
-        } else {
-            reqPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, R.string.permission_rationale_storage, REQ_CODE_PERMISSION_ACCESS_FILE);
-        }
-    }
 
     /**
      * 展示排序对话框
@@ -445,7 +367,8 @@ public class ProjectFileFragment extends BaseFragment implements OnParentTitleBa
                     public void onSortTypeSelected(@FileSortComparator.FileSortType int sortType) {
                         if (fileSortType != sortType) {
                             fileSortType = sortType;
-                            sortFile(true, folderAdapter.getData());
+                            showLoadingDialog(R.string.str_sorting);
+                            sortFile(new ArrayList<FolderDocumentEntity>(folderAdapter.getData()));
                         }
                     }
                 }).show();
@@ -454,36 +377,22 @@ public class ProjectFileFragment extends BaseFragment implements OnParentTitleBa
     /**
      * 排序
      */
-    private void sortFile(boolean isShowLoading, List<FolderDocumentEntity> datas) {
-        if (isShowLoading) {
-            showLoadingDialog(R.string.str_sorting);
-        }
-        Observable.just(datas)
+    private void sortFile(List<FolderDocumentEntity> datas) {
+        seaFileSort(fileSortType, datas)
                 .map(new Function<List<FolderDocumentEntity>, List<FolderDocumentEntity>>() {
                     @Override
-                    public List<FolderDocumentEntity> apply(@io.reactivex.annotations.NonNull List<FolderDocumentEntity> lists) throws Exception {
-                        List<FolderDocumentEntity> totals = new ArrayList<>();
-                        if (lists != null) {
-                            totals.addAll(lists);
-                        }
-                        try {
-                            IndexUtils.setSuspensions(getContext(), totals);
-                            Collections.sort(totals, new FileSortComparator(fileSortType));
-                        } catch (Throwable e) {
-                            e.printStackTrace();
-                            bugSync("排序异常", e);
-                        }
+                    public List<FolderDocumentEntity> apply(@NonNull List<FolderDocumentEntity> folderDocumentEntities) throws Exception {
                         bigImageUrls.clear();
                         smallImageUrls.clear();
-                        for (int i = 0; i < totals.size(); i++) {
-                            FolderDocumentEntity folderDocumentEntity = totals.get(i);
+                        for (int i = 0; i < folderDocumentEntities.size(); i++) {
+                            FolderDocumentEntity folderDocumentEntity = folderDocumentEntities.get(i);
                             if (folderDocumentEntity == null) continue;
                             if (IMUtils.isPIC(folderDocumentEntity.name)) {
                                 bigImageUrls.add(getSFileImageUrl(folderDocumentEntity.name, Integer.MAX_VALUE));
-                                smallImageUrls.add(getSFileImageUrl(folderDocumentEntity.name, 200));
+                                smallImageUrls.add(getSFileImageUrl(folderDocumentEntity.name, 800));
                             }
                         }
-                        return totals;
+                        return folderDocumentEntities;
                     }
                 })
                 .compose(this.<List<FolderDocumentEntity>>bindToLifecycle())
@@ -491,8 +400,14 @@ public class ProjectFileFragment extends BaseFragment implements OnParentTitleBa
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new BaseObserver<List<FolderDocumentEntity>>() {
                     @Override
-                    public void onNext(@io.reactivex.annotations.NonNull List<FolderDocumentEntity> folderDocumentEntities) {
+                    public void onNext(@NonNull List<FolderDocumentEntity> folderDocumentEntities) {
                         folderAdapter.bindData(true, folderDocumentEntities);
+                    }
+
+                    @Override
+                    public void onError(@NonNull Throwable throwable) {
+                        super.onError(throwable);
+                        dismissLoadingDialog();
                     }
 
                     @Override
@@ -571,80 +486,36 @@ public class ProjectFileFragment extends BaseFragment implements OnParentTitleBa
             if (filePathsArray.isEmpty()) {
                 return;
             }
-            //3.获取上传地址
-            showLoadingDialog("sfile 上传地址获取中...");
-            callEnqueue(getSFileApi().sfileUploadUrlQuery(
-                    getSeaFileRepoId(),
-                    "upload",
-                    getSeaFileDirPath()),
-                    new SFileCallBack<String>() {
+            seaFileUploadFiles(getSeaFileRepoId(),
+                    getSeaFileDirPath(),
+                    filePathsArray,
+                    new BaseObserver<JsonElement>() {
                         @Override
-                        public void onSuccess(Call<String> call, Response<String> response) {
-                            uploadFiles(filePathsArray, response.body());
+                        public void onNext(@NonNull JsonElement jsonElement) {
+
                         }
 
                         @Override
-                        public void onFailure(Call<String> call, Throwable t) {
-                            super.onFailure(call, t);
+                        public void onSubscribe(@NonNull Disposable disposable) {
+                            super.onSubscribe(disposable);
+                            showLoadingDialog(R.string.str_uploading);
+                        }
+
+                        @Override
+                        public void onError(@NonNull Throwable throwable) {
+                            super.onError(throwable);
+                            dismissLoadingDialog();
+                        }
+
+                        @Override
+                        public void onComplete() {
+                            super.onComplete();
                             dismissLoadingDialog();
                         }
                     });
         }
     }
 
-    /**
-     * 批量上传文件
-     *
-     * @param filePaths 文件路径
-     * @param serverUrl 服务器路径
-     */
-    private void uploadFiles(final List<String> filePaths, @NonNull final String serverUrl) {
-        if (filePaths == null && filePaths.isEmpty()) return;
-        showLoadingDialog(R.string.str_uploading);
-        Observable.just(filePaths)
-                .flatMap(new Function<List<String>, ObservableSource<JsonElement>>() {
-                    @Override
-                    public ObservableSource<JsonElement> apply(@io.reactivex.annotations.NonNull List<String> strings) throws Exception {
-                        List<Observable<JsonElement>> observables = new ArrayList<Observable<JsonElement>>();
-                        for (int i = 0; i < strings.size(); i++) {
-                            String filePath = strings.get(i);
-                            if (TextUtils.isEmpty(filePath)) {
-                                continue;
-                            }
-                            File file = new File(filePath);
-                            if (!file.exists()) {
-                                continue;
-                            }
-                            Map<String, RequestBody> params = new HashMap<>();
-                            params.put(RequestUtils.createStreamKey(file), RequestUtils.createStreamBody(file));
-                            params.put("parent_dir", RequestUtils.createTextBody(getSeaFileDirPath()));
-                            observables.add(getSFileApi().sfileUploadFileObservable(serverUrl, params));
-                        }
-                        return Observable.concat(observables);
-                    }
-                })
-                .compose(this.<JsonElement>bindToLifecycle())
-                .subscribeOn(Schedulers.newThread())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Consumer<JsonElement>() {
-                               @Override
-                               public void accept(@io.reactivex.annotations.NonNull JsonElement jsonElement) throws Exception {
-
-                               }
-                           }, new BaseThrowableConsumer() {
-                               @Override
-                               public void accept(@io.reactivex.annotations.NonNull Throwable t) throws Exception {
-                                   super.accept(t);
-                                   dismissLoadingDialog();
-                               }
-                           },
-                        new Action() {
-                            @Override
-                            public void run() throws Exception {
-                                getData(true);
-                            }
-                        });
-    }
 
     @Override
     public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
