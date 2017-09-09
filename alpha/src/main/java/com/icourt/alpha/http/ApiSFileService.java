@@ -224,6 +224,19 @@ public interface ApiSFileService {
                                      @Query("op_type") String op_type,
                                      @Query("path") String path);
 
+    /**
+     * 获取sfile 上传文件url
+     * op_type=upload 上传
+     *
+     * @param op_type
+     * @param path
+     * @return
+     */
+    @GET("api2/repos/{seaFileRepoId}/upload-link/")
+    Observable<String> sfileUploadUrlQueryObservable(@Path("seaFileRepoId") String seaFileRepoId,
+                                                     @Query("op_type") String op_type,
+                                                     @Query("path") String path);
+
 
     /**
      * 创建文件夹

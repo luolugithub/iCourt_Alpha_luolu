@@ -26,11 +26,9 @@ import com.icourt.alpha.constants.SFileConfig;
 import com.icourt.alpha.entity.bean.FolderDocumentEntity;
 import com.icourt.alpha.http.IDefNotify;
 import com.icourt.alpha.http.callback.SFileCallBack;
-import com.icourt.alpha.http.consumer.BaseThrowableConsumer;
 import com.icourt.alpha.http.observer.BaseObserver;
 import com.icourt.alpha.utils.GlideUtils;
 import com.icourt.alpha.utils.IMUtils;
-import com.icourt.alpha.utils.IndexUtils;
 import com.icourt.alpha.utils.SFileTokenUtils;
 import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.utils.SystemUtils;
@@ -40,15 +38,11 @@ import com.icourt.alpha.widget.comparators.FileSortComparator;
 import com.icourt.alpha.widget.dialog.BottomActionDialog;
 import com.icourt.alpha.widget.dialog.SortTypeSelectDialog;
 import com.icourt.alpha.widget.filter.SFileNameFilter;
-import com.icourt.api.RequestUtils;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -56,15 +50,11 @@ import butterknife.OnClick;
 import butterknife.Unbinder;
 import cn.finalteam.galleryfinal.GalleryFinal;
 import cn.finalteam.galleryfinal.model.PhotoInfo;
-import io.reactivex.Observable;
-import io.reactivex.ObservableSource;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.annotations.NonNull;
-import io.reactivex.functions.Action;
-import io.reactivex.functions.Consumer;
+import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Function;
 import io.reactivex.schedulers.Schedulers;
-import okhttp3.RequestBody;
 import retrofit2.Call;
 import retrofit2.Response;
 
@@ -247,7 +237,7 @@ public class FileSimpleListActivity extends FolderBaseActivity
                 .enqueue(new SFileCallBack<List<FolderDocumentEntity>>() {
                     @Override
                     public void onSuccess(Call<List<FolderDocumentEntity>> call, Response<List<FolderDocumentEntity>> response) {
-                        sortFile(false, response.body());
+                        sortFile(response.body());
                         stopRefresh();
                     }
 
@@ -255,6 +245,7 @@ public class FileSimpleListActivity extends FolderBaseActivity
                     public void onFailure(Call<List<FolderDocumentEntity>> call, Throwable t) {
                         super.onFailure(call, t);
                         stopRefresh();
+                        dismissLoadingDialog();
                     }
                 });
     }
@@ -344,7 +335,8 @@ public class FileSimpleListActivity extends FolderBaseActivity
                     public void onSortTypeSelected(@FileSortComparator.FileSortType int sortType) {
                         if (fileSortType != sortType) {
                             fileSortType = sortType;
-                            sortFile(true, folderAdapter.getData());
+                            showLoadingDialog(R.string.str_sorting);
+                            sortFile(folderAdapter.getData());
                         }
                     }
                 }).show();
@@ -353,36 +345,22 @@ public class FileSimpleListActivity extends FolderBaseActivity
     /**
      * 排序
      */
-    private void sortFile(boolean isShowLoading, List<FolderDocumentEntity> datas) {
-        if (isShowLoading) {
-            showLoadingDialog(R.string.str_sorting);
-        }
-        Observable.just(datas)
+    private void sortFile(List<FolderDocumentEntity> datas) {
+        seaFileSort(fileSortType, datas)
                 .map(new Function<List<FolderDocumentEntity>, List<FolderDocumentEntity>>() {
                     @Override
-                    public List<FolderDocumentEntity> apply(@NonNull List<FolderDocumentEntity> lists) throws Exception {
-                        List<FolderDocumentEntity> totals = new ArrayList<>();
-                        if (lists != null) {
-                            totals.addAll(lists);
-                        }
-                        try {
-                            IndexUtils.setSuspensions(getContext(), totals);
-                            Collections.sort(totals, new FileSortComparator(fileSortType));
-                        } catch (Throwable e) {
-                            e.printStackTrace();
-                            bugSync("排序异常", e);
-                        }
+                    public List<FolderDocumentEntity> apply(@NonNull List<FolderDocumentEntity> folderDocumentEntities) throws Exception {
                         bigImageUrls.clear();
                         smallImageUrls.clear();
-                        for (int i = 0; i < totals.size(); i++) {
-                            FolderDocumentEntity folderDocumentEntity = totals.get(i);
+                        for (int i = 0; i < folderDocumentEntities.size(); i++) {
+                            FolderDocumentEntity folderDocumentEntity = folderDocumentEntities.get(i);
                             if (folderDocumentEntity == null) continue;
                             if (IMUtils.isPIC(folderDocumentEntity.name)) {
                                 bigImageUrls.add(getSFileImageUrl(folderDocumentEntity.name, Integer.MAX_VALUE));
-                                smallImageUrls.add(getSFileImageUrl(folderDocumentEntity.name, 200));
+                                smallImageUrls.add(getSFileImageUrl(folderDocumentEntity.name, 800));
                             }
                         }
-                        return totals;
+                        return folderDocumentEntities;
                     }
                 })
                 .compose(this.<List<FolderDocumentEntity>>bindToLifecycle())
@@ -463,79 +441,35 @@ public class FileSimpleListActivity extends FolderBaseActivity
             if (filePathsArray.isEmpty()) {
                 return;
             }
-            //3.获取上传地址
-            showLoadingDialog("sfile 上传地址获取中...");
-            callEnqueue(getSFileApi().sfileUploadUrlQuery(
-                    getSeaFileRepoId(),
-                    "upload",
-                    getSeaFileDirPath()),
-                    new SFileCallBack<String>() {
+
+            seaFileUploadFiles(getSeaFileRepoId(),
+                    getSeaFileDirPath(),
+                    filePathsArray,
+                    new BaseObserver<JsonElement>() {
                         @Override
-                        public void onSuccess(Call<String> call, Response<String> response) {
-                            uploadFiles(filePathsArray, response.body());
+                        public void onSubscribe(@NonNull Disposable disposable) {
+                            super.onSubscribe(disposable);
+                            showLoadingDialog(R.string.str_uploading);
                         }
 
                         @Override
-                        public void onFailure(Call<String> call, Throwable t) {
-                            super.onFailure(call, t);
+                        public void onNext(@NonNull JsonElement jsonElement) {
+
+                        }
+
+                        @Override
+                        public void onError(@NonNull Throwable throwable) {
+                            super.onError(throwable);
                             dismissLoadingDialog();
+                        }
+
+                        @Override
+                        public void onComplete() {
+                            super.onComplete();
+                            getData(true);
                         }
                     });
         }
-    }
-
-    /**
-     * 批量上传文件
-     *
-     * @param filePaths 文件路径
-     * @param serverUrl 服务器路径
-     */
-    private void uploadFiles(final List<String> filePaths, @NonNull final String serverUrl) {
-        if (filePaths == null && filePaths.isEmpty()) return;
-        showLoadingDialog(R.string.str_uploading);
-        Observable.just(filePaths)
-                .flatMap(new Function<List<String>, ObservableSource<JsonElement>>() {
-                    @Override
-                    public ObservableSource<JsonElement> apply(@NonNull List<String> strings) throws Exception {
-                        List<Observable<JsonElement>> observables = new ArrayList<Observable<JsonElement>>();
-                        for (int i = 0; i < strings.size(); i++) {
-                            String filePath = strings.get(i);
-                            if (TextUtils.isEmpty(filePath)) {
-                                continue;
-                            }
-                            File file = new File(filePath);
-                            if (!file.exists()) {
-                                continue;
-                            }
-                            Map<String, RequestBody> params = new HashMap<>();
-                            params.put(RequestUtils.createStreamKey(file), RequestUtils.createStreamBody(file));
-                            params.put("parent_dir", RequestUtils.createTextBody(getSeaFileDirPath()));
-                            observables.add(getSFileApi().sfileUploadFileObservable(serverUrl, params));
-                        }
-                        return Observable.concat(observables);
-                    }
-                })
-                .compose(this.<JsonElement>bindToLifecycle())
-                .subscribeOn(Schedulers.newThread())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Consumer<JsonElement>() {
-                               @Override
-                               public void accept(@NonNull JsonElement jsonElement) throws Exception {
-
-                               }
-                           }, new BaseThrowableConsumer() {
-                               @Override
-                               public void accept(@NonNull Throwable t) throws Exception {
-                                   super.accept(t);
-                                   dismissLoadingDialog();
-                               }
-                           },
-                        new Action() {
-                            @Override
-                            public void run() throws Exception {
-                                getData(true);
-                            }
-                        });
     }
 
     @Override
