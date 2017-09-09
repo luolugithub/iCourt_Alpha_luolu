@@ -20,6 +20,7 @@ import com.icourt.alpha.interfaces.UpdateAppDialogNoticeImp;
 import com.icourt.alpha.utils.ApkUtils;
 import com.icourt.alpha.utils.Md5Utils;
 import com.icourt.alpha.utils.NetUtils;
+import com.icourt.alpha.utils.SpUtils;
 import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.utils.UMMobClickAgent;
 import com.liulishuo.filedownloader.BaseDownloadTask;
@@ -44,9 +45,13 @@ import retrofit2.Response;
  */
 public class BaseAppUpdateActivity extends BaseUmengActivity implements
         UpdateAppDialogNoticeImp {
+    public static final String UPDATE_APP_VERSION_KEY = "update_app_version_key";//版本更新版本号
     private AlertDialog updateNoticeDialog;
     private ProgressDialog updateProgressDialog;
-    private static final int REQUEST_FILE_PERMISSION = 9999;
+    public static final int REQUEST_FILE_PERMISSION = 9999;
+
+    private static final int UPGRADE_STRATEGY_UNCOMPEL_TYPE = 1;//非强制升级
+    private static final int UPGRADE_STRATEGY_COMPEL_TYPE = 2;//强制升级
 
     @Override
     public final boolean hasFilePermission(@NonNull Context context) {
@@ -66,12 +71,19 @@ public class BaseAppUpdateActivity extends BaseUmengActivity implements
     }
 
     @Override
-    public final void checkAppUpdate(@NonNull final Context context) {
+    public final void checkAppUpdate(@NonNull final Context context, final String title) {
         if (context == null) return;
         checkAppUpdate(new SimpleCallBack<AppVersionEntity>() {
             @Override
             public void onSuccess(Call<ResEntity<AppVersionEntity>> call, Response<ResEntity<AppVersionEntity>> response) {
-                showAppUpdateDialog(getActivity(), response.body().result);
+                if (response.body().result == null) return;
+                AppVersionEntity appVersionEntity = response.body().result;
+                if (!TextUtils.equals(appVersionEntity.appVersion, SpUtils.getInstance().getStringData(UPDATE_APP_VERSION_KEY, ""))) {
+                    //如果effectVersion（影响版本号）为null 或者 effectVersion 和本地版本好一致则显示更新对话框
+                    if (TextUtils.isEmpty(appVersionEntity.effectVersion) || TextUtils.equals(appVersionEntity.effectVersion, BuildConfig.VERSION_NAME)) {
+                        showAppUpdateDialog(getActivity(), response.body().result, title);
+                    }
+                }
             }
 
             @Override
@@ -101,12 +113,12 @@ public class BaseAppUpdateActivity extends BaseUmengActivity implements
     }
 
     @Override
-    public final void showAppUpdateDialog(@NonNull final Context context, @NonNull final AppVersionEntity appVersionEntity) {
+    public final void showAppUpdateDialog(@NonNull final Context context, @NonNull final AppVersionEntity appVersionEntity, String title) {
         if (isDestroyOrFinishing()) return;
         if (updateNoticeDialog != null && updateNoticeDialog.isShowing()) return;
         if (!shouldUpdate(appVersionEntity)) return;
         AlertDialog.Builder builder = new AlertDialog.Builder(context)
-                .setTitle("更新提醒")
+                .setTitle(title)
                 .setMessage(TextUtils.isEmpty(appVersionEntity.versionDesc) ? "有一个新版本,请立即更新吧" : appVersionEntity.versionDesc); //设置内容
         builder.setPositiveButton("更新", new DialogInterface.OnClickListener() {
             @Override
@@ -126,6 +138,8 @@ public class BaseAppUpdateActivity extends BaseUmengActivity implements
             builder.setNegativeButton("取消", new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
+                    SpUtils.getInstance().remove(UPDATE_APP_VERSION_KEY);
+                    SpUtils.getInstance().putData(UPDATE_APP_VERSION_KEY, appVersionEntity.appVersion);
                     dialog.dismiss();
                 }
             });
@@ -142,14 +156,28 @@ public class BaseAppUpdateActivity extends BaseUmengActivity implements
      * @return
      */
     public final boolean shouldForceUpdate(@NonNull AppVersionEntity appVersionEntity) {
-//        return appVersionEntity != null && appVersionEntity.buildVersion > BuildConfig.VERSION_CODE;
-        return false;
+        return appVersionEntity != null && appVersionEntity.upgradeStrategy == UPGRADE_STRATEGY_COMPEL_TYPE;
     }
 
+    /**
+     * 是否非强制更新
+     *
+     * @param appVersionEntity
+     * @return
+     */
     @Override
     public final boolean shouldUpdate(@NonNull AppVersionEntity appVersionEntity) {
-        return appVersionEntity != null
-                && !TextUtils.equals(appVersionEntity.appVersion, BuildConfig.VERSION_NAME);
+        return appVersionEntity != null && appVersionEntity.upgradeStrategy == UPGRADE_STRATEGY_UNCOMPEL_TYPE;
+    }
+
+    /**
+     * 是否有最新版本
+     *
+     * @param appVersionEntity
+     * @return
+     */
+    public boolean isUpdateApp(@NonNull AppVersionEntity appVersionEntity) {
+        return appVersionEntity != null && !TextUtils.equals(appVersionEntity.appVersion, BuildConfig.VERSION_NAME);
     }
 
     private ProgressDialog getUpdateProgressDialog() {

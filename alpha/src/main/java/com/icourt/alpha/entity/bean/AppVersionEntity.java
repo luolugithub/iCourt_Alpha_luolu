@@ -24,16 +24,16 @@ public class AppVersionEntity {
      */
 
     public String id;
-    public String createUserId;
-    public long gmtCreate;
-    public String modifyUserId;
-    public long gmtModified;
-    public String appVersion;
-    public String buildVersion;
-    public String effectVersion;
-    public String versionDesc;
-    public int upgradeStrategy;
-    public int osType;
-    public String upgradeUrl;
+    public String createUserId;//创建人Id
+    public long gmtCreate;//创建时间
+    public String modifyUserId;//修改人Id
+    public long gmtModified;//修改时间
+    public String appVersion;//版本号
+    public String buildVersion;//build版本号
+    public String effectVersion;//影响版本号，如果为空则影响所有版本
+    public String versionDesc;//升级描述
+    public int upgradeStrategy;//升级策略：1、常规可选升级；2、强制更新
+    public int osType;//终端类型：1、Android；2、iOS
+    public String upgradeUrl;//升级包地址
 
 }

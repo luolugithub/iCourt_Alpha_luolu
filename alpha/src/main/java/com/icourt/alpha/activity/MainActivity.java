@@ -256,7 +256,7 @@ public class MainActivity extends BaseAppUpdateActivity
                     refreshToken();
                     break;
                 case TYPE_CHECK_APP_UPDATE:
-                    checkAppUpdate(getContext());
+                    checkAppUpdate(getContext(), "发现新版本");
                     break;
                 case TYPE_CHECK_TIMING_UPDATE:
                     TimerManager.getInstance().timerQuerySync();
@@ -320,6 +320,7 @@ public class MainActivity extends BaseAppUpdateActivity
         if (BuildConfig.BUILD_TYPE_INT > 0) {
             mHandler.addCheckAppUpdateTask();
         }
+        mHandler.addCheckAppUpdateTask();
         mHandler.addTokenRefreshTask();
         mHandler.addCheckTimingTask();
     }

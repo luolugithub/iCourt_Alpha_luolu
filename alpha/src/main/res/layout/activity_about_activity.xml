@@ -69,19 +69,38 @@
             android:gravity="center_horizontal"
             android:orientation="vertical">
 
-            <TextView
-                android:id="@+id/about_check_is_update_view"
+            <FrameLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="20dp"
-                android:background="@drawable/orange_circle_bg"
-                android:paddingBottom="5dp"
-                android:paddingLeft="30dp"
-                android:paddingRight="30dp"
-                android:paddingTop="5dp"
-                android:text="检查更新"
-                android:textColor="@android:color/white"
-                android:textSize="13dp" />
+                android:layout_marginBottom="10dp">
+
+                <TextView
+                    android:id="@+id/about_check_is_update_view"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/orange_circle_bg"
+                    android:paddingBottom="5dp"
+                    android:paddingLeft="30dp"
+                    android:paddingRight="30dp"
+                    android:paddingTop="5dp"
+                    android:text="升级最新版"
+                    android:textColor="@android:color/white"
+                    android:textSize="13dp"
+                    android:visibility="gone" />
+
+                <TextView
+                    android:id="@+id/about_new_version_view"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingBottom="5dp"
+                    android:paddingLeft="30dp"
+                    android:paddingRight="30dp"
+                    android:paddingTop="5dp"
+                    android:text="已上最新版本"
+                    android:textColor="@color/alpha_font_color_gray"
+                    android:textSize="13dp"
+                    android:visibility="gone" />
+            </FrameLayout>
 
             <TextView
                 android:layout_width="wrap_content"

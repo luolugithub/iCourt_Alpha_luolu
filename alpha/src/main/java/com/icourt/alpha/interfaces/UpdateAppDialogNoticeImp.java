@@ -45,7 +45,7 @@ public interface UpdateAppDialogNoticeImp {
      *
      * @param context
      */
-    void checkAppUpdate(@NonNull Context context);
+    void checkAppUpdate(@NonNull Context context,String title);
 
     /**
      * app 更新提示
@@ -53,7 +53,7 @@ public interface UpdateAppDialogNoticeImp {
      * @param context
      * @param appVersionEntity 新版本特性描述
      */
-    void showAppUpdateDialog(@NonNull Context context, @NonNull AppVersionEntity appVersionEntity);
+    void showAppUpdateDialog(@NonNull Context context, @NonNull AppVersionEntity appVersionEntity,String title);
 
     /**
      * 本地是否包含apk文件
