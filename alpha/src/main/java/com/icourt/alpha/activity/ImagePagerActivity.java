@@ -1,11 +1,9 @@
 package com.icourt.alpha.activity;
 
-import android.Manifest;
 import android.app.Activity;
 import android.app.ActivityOptions;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
@@ -39,10 +37,12 @@ import com.icourt.alpha.adapter.baseadapter.BasePagerAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.base.BaseUmengActivity;
 import com.icourt.alpha.constants.Const;
+import com.icourt.alpha.constants.SFileConfig;
 import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.icourt.alpha.entity.bean.IMMessageCustomBody;
 import com.icourt.alpha.entity.bean.SFileImageInfoEntity;
 import com.icourt.alpha.fragment.dialogfragment.ContactShareDialogFragment;
+import com.icourt.alpha.fragment.dialogfragment.FolderTargetListDialogFragment;
 import com.icourt.alpha.fragment.dialogfragment.ProjectSaveFileDialogFragment;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
@@ -98,8 +98,6 @@ public class ImagePagerActivity extends BaseUmengActivity implements BasePagerAd
     //钉的消息列表
     protected final Set<Long> msgDingedIdsList = new HashSet<>();
 
-
-    private static final int CODE_PERMISSION_FILE = 1009;
 
     private static final String KEY_URLS = "key_urls";
     private static final String KEY_S_FILE_INFO = "key_s_file_info";
@@ -451,7 +449,7 @@ public class ImagePagerActivity extends BaseUmengActivity implements BasePagerAd
     @Override
     public boolean OnItemLongClick(BasePagerAdapter adapter, final View v, final int pos) {
         if (v instanceof ImageView) {
-            SFileImageInfoEntity sFileImageInfoEntity = getSFileImageInfoEntity(pos);
+            final SFileImageInfoEntity sFileImageInfoEntity = getSFileImageInfoEntity(pos);
             ImageView imageView = (ImageView) v;
             final Drawable drawable = imageView.getDrawable();
             if (drawable == null) return false;
@@ -461,7 +459,7 @@ public class ImagePagerActivity extends BaseUmengActivity implements BasePagerAd
                 final boolean isDinged = isDinged(sFileImageInfoEntity.chatMsgId);
                 new BottomActionDialog(getContext(),
                         null,
-                        Arrays.asList("分享", "转发给同事", isCollected ? "取消收藏" : "收藏", isDinged ? "取消钉" : "钉", "保存到项目资料库"),
+                        Arrays.asList("分享", "转发给同事", isCollected ? "取消收藏" : "收藏", isDinged ? "取消钉" : "钉", "保存到我的文档"),
                         new BottomActionDialog.OnActionItemClickListener() {
                             @Override
                             public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
@@ -484,12 +482,7 @@ public class ImagePagerActivity extends BaseUmengActivity implements BasePagerAd
                                         msgActionDing(!isDinged, finalSFileImageInfoEntity.chatMsgId);
                                         break;
                                     case 4:
-                                        if (checkPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-                                            String fileName = getFileName(adapter.getItem(position));
-                                            savedImport2Project(drawable, fileName);
-                                        } else {
-                                            reqPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, "下载文件需要文件写入权限!", CODE_PERMISSION_FILE);
-                                        }
+                                        savedImport2repo(sFileImageInfoEntity);
                                         break;
                                 }
                             }
@@ -497,7 +490,7 @@ public class ImagePagerActivity extends BaseUmengActivity implements BasePagerAd
             } else {
                 new BottomActionDialog(getContext(),
                         null,
-                        Arrays.asList("保存图片", "转发给同事", "分享", "保存到项目资料库"),
+                        Arrays.asList("保存图片", "转发给同事", "分享", "保存到我的文档"),
                         new BottomActionDialog.OnActionItemClickListener() {
                             @Override
                             public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
@@ -517,11 +510,11 @@ public class ImagePagerActivity extends BaseUmengActivity implements BasePagerAd
                                         shareImage2WeiXin(drawable);
                                         break;
                                     case 3:
-                                        if (checkPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+                                        if (checkAcessFilePermission()) {
                                             String fileName = getFileName(adapter.getItem(position));
-                                            savedImport2Project(drawable, fileName);
+                                            savedImport2repo(drawable, fileName);
                                         } else {
-                                            reqPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, "下载文件需要文件写入权限!", CODE_PERMISSION_FILE);
+                                            requestAcessFilePermission();
                                         }
                                         break;
                                 }
@@ -665,12 +658,37 @@ public class ImagePagerActivity extends BaseUmengActivity implements BasePagerAd
     }
 
     /**
-     * 分享到项目
+     * 保存到我的文档
+     *
+     * @param finalSFileImageInfoEntity
+     */
+    private void savedImport2repo(SFileImageInfoEntity finalSFileImageInfoEntity) {
+        String tag = FolderTargetListDialogFragment.class.getSimpleName();
+        FragmentTransaction mFragTransaction = getSupportFragmentManager().beginTransaction();
+        Fragment fragment = getSupportFragmentManager().findFragmentByTag(tag);
+        if (fragment != null) {
+            mFragTransaction.remove(fragment);
+        }
+        ArrayList<String> selectedFileNames = new ArrayList<>();
+        selectedFileNames.add(finalSFileImageInfoEntity.name);
+        FolderTargetListDialogFragment.newInstance(
+                Const.FILE_ACTION_ADD,
+                SFileConfig.REPO_MINE,
+                finalSFileImageInfoEntity.repo_id,
+                finalSFileImageInfoEntity.path,
+                null,
+                null,
+                selectedFileNames)
+                .show(mFragTransaction, tag);
+    }
+
+    /**
+     * 保存到我的文档
      *
      * @param drawable
      * @param name
      */
-    private void savedImport2Project(final Drawable drawable, final String name) {
+    private void savedImport2repo(final Drawable drawable, final String name) {
         if (drawable == null) return;
         showLoadingDialog(null);
         Observable
@@ -725,10 +743,10 @@ public class ImagePagerActivity extends BaseUmengActivity implements BasePagerAd
      * 检查权限或者下载
      */
     private void checkPermissionOrDownload() {
-        if (checkPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+        if (checkAcessFilePermission()) {
             downloadFile(getCurrImageUrl());
         } else {
-            reqPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, "下载文件需要文件写入权限!", CODE_PERMISSION_FILE);
+            requestAcessFilePermission();
         }
     }
 
@@ -779,23 +797,6 @@ public class ImagePagerActivity extends BaseUmengActivity implements BasePagerAd
      */
     private boolean isFileExists(String url) {
         return FileUtils.isFileExists(getPicSavePath(url));
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        if (grantResults == null) return;
-        if (grantResults.length <= 0) return;
-        switch (requestCode) {
-            case CODE_PERMISSION_FILE:
-                if (grantResults[0] == PackageManager.PERMISSION_DENIED) {
-                    showTopSnackBar("文件写入权限被拒绝!");
-                }
-                break;
-            default:
-                super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-                break;
-        }
-
     }
 
 //    @Override

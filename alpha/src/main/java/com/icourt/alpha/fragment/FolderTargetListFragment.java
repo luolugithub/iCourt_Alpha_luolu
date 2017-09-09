@@ -37,6 +37,7 @@ import butterknife.Unbinder;
 import retrofit2.Call;
 import retrofit2.Response;
 
+import static com.icourt.alpha.constants.Const.FILE_ACTION_ADD;
 import static com.icourt.alpha.constants.Const.FILE_ACTION_COPY;
 import static com.icourt.alpha.constants.Const.FILE_ACTION_MOVE;
 
@@ -61,13 +62,22 @@ public class FolderTargetListFragment extends SeaFileBaseFragment
     @BindView(R.id.empty_text)
     TextView emptyText;
 
+    /**
+     * @param folderActionType
+     * @param fromRepoId
+     * @param fromRepoDirPath
+     * @param dstRepoId
+     * @param dstRepoDirPath
+     * @param selectedFolderNames
+     * @return
+     */
     public static FolderTargetListFragment newInstance(
             @Const.FILE_ACTION_TYPE int folderActionType,
             String fromRepoId,
             String fromRepoDirPath,
-            String dstRepoId,
+            @Nullable String dstRepoId,
             String dstRepoDirPath,
-            ArrayList<FolderDocumentEntity> selectedFolderDocumentEntities) {
+            ArrayList<String> selectedFolderNames) {
         FolderTargetListFragment fragment = new FolderTargetListFragment();
         Bundle args = new Bundle();
         args.putInt(KEY_FOLDER_ACTION_TYPE, folderActionType);
@@ -77,7 +87,7 @@ public class FolderTargetListFragment extends SeaFileBaseFragment
         args.putString(KEY_SEA_FILE_DST_REPO_ID, dstRepoId);
         args.putString(KEY_SEA_FILE_DST_DIR_PATH, dstRepoDirPath);
 
-        args.putSerializable(KEY_SEA_FILE_SELCTED_FILES, selectedFolderDocumentEntities);
+        args.putStringArrayList(KEY_SEA_FILE_SELCTED_FILES, selectedFolderNames);
         fragment.setArguments(args);
         return fragment;
     }
@@ -91,6 +101,7 @@ public class FolderTargetListFragment extends SeaFileBaseFragment
     @BindView(R.id.refreshLayout)
     RefreshLayout refreshLayout;
     OnFragmentCallBackListener onFragmentCallBackListener;
+    ArrayList<String> selectedFolderNames;
 
     @Const.FILE_ACTION_TYPE
     private int getFileActionType() {
@@ -99,6 +110,8 @@ public class FolderTargetListFragment extends SeaFileBaseFragment
                 return FILE_ACTION_COPY;
             case FILE_ACTION_MOVE:
                 return FILE_ACTION_MOVE;
+            case FILE_ACTION_ADD:
+                return FILE_ACTION_ADD;
         }
         return FILE_ACTION_MOVE;
     }
@@ -164,6 +177,7 @@ public class FolderTargetListFragment extends SeaFileBaseFragment
 
     @Override
     protected void initView() {
+        selectedFolderNames = getArguments().getStringArrayList(KEY_SEA_FILE_SELCTED_FILES);
         switch (getFileActionType()) {
             case FILE_ACTION_COPY:
                 emptyText.setText("点击\"复制\"，将所选项复制到此目录");
@@ -184,6 +198,11 @@ public class FolderTargetListFragment extends SeaFileBaseFragment
                     copyOrMoveTv.setText("无法移动到同目录");
                     copyOrMoveTv.setEnabled(false);
                 }
+                break;
+            case FILE_ACTION_ADD:
+                emptyText.setText("点击\"保存\"，将所选项保存到此目录");
+                copyOrMoveTv.setText("保存");
+                copyOrMoveTv.setEnabled(true);
                 break;
             default:
                 emptyText.setText("点击“确定”，将所选项操作到此目录");
@@ -262,14 +281,16 @@ public class FolderTargetListFragment extends SeaFileBaseFragment
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.copy_or_move_tv:
-                if (TextUtils.equals(getSeaFileFromRepoId(), getSeaFileDstRepoId())
-                        && TextUtils.equals(getSeaFileFromDirPath(), getSeaFileDstDirPath())) {
+                if (isSameDir()) {
                     switch (getFileActionType()) {
                         case FILE_ACTION_COPY:
                             showToast("不能复制到当前目录");
                             break;
                         case FILE_ACTION_MOVE:
                             showToast("不能移动到当前目录");
+                            break;
+                        case FILE_ACTION_ADD:
+                            copyOrMove();
                             break;
                         default:
                             showToast("不能选择当前目录");
@@ -291,18 +312,15 @@ public class FolderTargetListFragment extends SeaFileBaseFragment
      */
 
     private void copyOrMove() {
+        if (selectedFolderNames == null || selectedFolderNames.isEmpty()) return;
 
-        final ArrayList<FolderDocumentEntity> selectedFolderDocumentEntities = (ArrayList<FolderDocumentEntity>) getArguments().getSerializable(KEY_SEA_FILE_SELCTED_FILES);
-        if (selectedFolderDocumentEntities == null || selectedFolderDocumentEntities.isEmpty())
-            return;
-
+        //拼接字符串 以冒号做分割
         StringBuilder fileNameSb = new StringBuilder();
         String spliteStr = ":";
-        for (int i = 0; i < selectedFolderDocumentEntities.size(); i++) {
-            FolderDocumentEntity folderDocumentEntity = selectedFolderDocumentEntities.get(i);
-            if (folderDocumentEntity == null) continue;
+        for (int i = 0; i < selectedFolderNames.size(); i++) {
+            String fileName = selectedFolderNames.get(i);
             fileNameSb.append(spliteStr);
-            fileNameSb.append(folderDocumentEntity.name);
+            fileNameSb.append(fileName);
         }
         fileNameSb.replace(0, spliteStr.length(), "");
 
@@ -312,6 +330,15 @@ public class FolderTargetListFragment extends SeaFileBaseFragment
         switch (getFileActionType()) {
             case FILE_ACTION_COPY:
                 actionSucessNoticeStr = "复制成功";
+                jsonElementCall = getSFileApi().fileCopy(
+                        getSeaFileFromRepoId(),
+                        getSeaFileFromDirPath(),
+                        fileNameSb.toString(),
+                        getSeaFileDstRepoId(),
+                        getSeaFileDstDirPath());
+                break;
+            case FILE_ACTION_ADD:
+                actionSucessNoticeStr = "保存成功";
                 jsonElementCall = getSFileApi().fileCopy(
                         getSeaFileFromRepoId(),
                         getSeaFileFromDirPath(),

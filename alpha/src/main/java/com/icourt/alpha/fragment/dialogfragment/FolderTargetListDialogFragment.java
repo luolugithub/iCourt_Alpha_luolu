@@ -19,7 +19,6 @@ import com.icourt.alpha.R;
 import com.icourt.alpha.base.BaseDialogFragment;
 import com.icourt.alpha.constants.Const;
 import com.icourt.alpha.constants.SFileConfig;
-import com.icourt.alpha.entity.bean.FolderDocumentEntity;
 import com.icourt.alpha.entity.bean.RepoEntity;
 import com.icourt.alpha.entity.bean.RepoTypeEntity;
 import com.icourt.alpha.fragment.FolderTargetListFragment;
@@ -38,6 +37,7 @@ import butterknife.Unbinder;
 import retrofit2.Call;
 import retrofit2.Response;
 
+import static com.icourt.alpha.constants.Const.FILE_ACTION_ADD;
 import static com.icourt.alpha.constants.Const.FILE_ACTION_COPY;
 import static com.icourt.alpha.constants.Const.FILE_ACTION_MOVE;
 
@@ -83,9 +83,9 @@ public class FolderTargetListDialogFragment
      * @param repoType
      * @param fromRepoId
      * @param fromRepoDirPath
-     * @param dstRepoId
+     * @param dstRepoId           如果为空 就到资料库类型选择页面
      * @param dstRepoDirPath
-     * @param selectedFolderDocumentEntities
+     * @param selectedFolderNames
      * @return
      */
     public static FolderTargetListDialogFragment newInstance(
@@ -95,7 +95,7 @@ public class FolderTargetListDialogFragment
             String fromRepoDirPath,
             String dstRepoId,
             String dstRepoDirPath,
-            ArrayList<FolderDocumentEntity> selectedFolderDocumentEntities) {
+            ArrayList<String> selectedFolderNames) {
         FolderTargetListDialogFragment fragment = new FolderTargetListDialogFragment();
         Bundle args = new Bundle();
         args.putInt(KEY_FOLDER_ACTION_TYPE, folderActionType);
@@ -106,7 +106,7 @@ public class FolderTargetListDialogFragment
         args.putString(KEY_SEA_FILE_DST_REPO_ID, dstRepoId);
         args.putString(KEY_SEA_FILE_DST_DIR_PATH, dstRepoDirPath);
 
-        args.putSerializable(KEY_SEA_FILE_SELCTED_FILES, selectedFolderDocumentEntities);
+        args.putStringArrayList(KEY_SEA_FILE_SELCTED_FILES, selectedFolderNames);
         fragment.setArguments(args);
         return fragment;
     }
@@ -118,6 +118,8 @@ public class FolderTargetListDialogFragment
                 return FILE_ACTION_COPY;
             case FILE_ACTION_MOVE:
                 return FILE_ACTION_MOVE;
+            case FILE_ACTION_ADD:
+                return FILE_ACTION_ADD;
         }
         return FILE_ACTION_MOVE;
     }
@@ -158,6 +160,8 @@ public class FolderTargetListDialogFragment
         return getArguments().getString(KEY_SEA_FILE_DST_DIR_PATH, "");
     }
 
+    ArrayList<String> selectedFolderNames;
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -179,12 +183,16 @@ public class FolderTargetListDialogFragment
 
     @Override
     protected void initView() {
+        selectedFolderNames = getArguments().getStringArrayList(KEY_SEA_FILE_SELCTED_FILES);
         switch (getFileActionType()) {
             case FILE_ACTION_COPY:
                 titleContent.setText("复制到");
                 break;
             case FILE_ACTION_MOVE:
                 titleContent.setText("移动到");
+                break;
+            case FILE_ACTION_ADD:
+                titleContent.setText("保存到我的文档");
                 break;
             default:
                 titleContent.setText("复制到");
@@ -199,9 +207,14 @@ public class FolderTargetListDialogFragment
                 window.setAttributes(attributes);
             }
         }
-        replaceFolderFragmemt(
-                getSeaFileDstRepoId(),
-                getSeaFileDstDirPath());
+        //没有拷贝目标仓库
+        if (TextUtils.isEmpty(getSeaFileDstRepoId())) {
+            replaceRepoTypeFragment();
+        } else {
+            replaceFolderFragmemt(
+                    getSeaFileDstRepoId(),
+                    getSeaFileDstDirPath());
+        }
         getData(true);
     }
 
@@ -322,7 +335,9 @@ public class FolderTargetListDialogFragment
         } else if (fragment instanceof RepoNavigationFragment && params != null) {
             RepoTypeEntity repoTypeEntity = (RepoTypeEntity) params.getSerializable(KEY_FRAGMENT_RESULT);
             getArguments().putInt(KEY_REPO_TYPE, repoTypeEntity.repoType);
+            foldrParentTv.setText(repoTypeEntity.title);
             replaceRepoListFragmemt();
+
         } else {
             if (type == 1 && params != null) {
                 replaceFolderFragmemt(
@@ -392,7 +407,7 @@ public class FolderTargetListDialogFragment
                         getSeaFileFromDirPath(),
                         getSeaFileDstRepoId(),
                         getSeaFileDstDirPath(),
-                        (ArrayList<FolderDocumentEntity>) getArguments().getSerializable(KEY_SEA_FILE_SELCTED_FILES)),
+                        selectedFolderNames),
                 currFragment,
                 R.id.main_fl_content);
         if (canBack2ParentDir()) {
