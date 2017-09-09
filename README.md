@@ -13,13 +13,13 @@
 #merge requests  
    不允许提交到主要分支,fork一份代码,建立自己的本地分支(格式:开发分支+mr+名称简称 如:permission_mr_wyx),并提交request;  
    插件:GitLab Projects
- 
+ 4
 #fir账号
- 内部：wangchu@icourt.cc   qwer1234  
- 外部：104421133@qq.com    asd123  
- 外部：it@icourt.cc        zzVkn6bKgyWagvu34MhZ （包内的更新token和id都引用的是1044账号的token和id）  
- test：394337795@qq.com    394337795  
- 内部日更新：zhouyong@icourt.cc     Icourtadmin!@#123  
+ 内部：wangchu@icourt.cc   q****  
+ 外部：104421133@qq.com    a*****  
+ 外部：it@icourt.cc        z****** （包内的更新token和id都引用的是1044账号的token和id）  
+ test：394337795@qq.com    3*****  
+ 内部日更新：zhouyong@icourt.cc     I******* 
 
 
 #上线打包日志  
