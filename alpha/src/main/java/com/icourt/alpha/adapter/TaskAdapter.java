@@ -232,4 +232,12 @@ public class TaskAdapter extends BaseMultiItemQuickAdapter<TaskEntity.TaskItemEn
         }
         return false;
     }
+
+    /**
+     * 清空所有数据
+     */
+    public void clearData() {
+        getData().clear();
+        notifyDataSetChanged();
+    }
 }

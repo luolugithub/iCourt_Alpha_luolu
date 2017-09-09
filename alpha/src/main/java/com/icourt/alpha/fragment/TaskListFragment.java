@@ -731,8 +731,8 @@ public class TaskListFragment extends BaseTaskFragment implements
                     @Override
                     public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
                         dismissLoadingDialog();
-                        taskAdapter.getData().clear();
-                        taskAdapter.notifyDataSetChanged();
+                        taskAdapter.clearData();
+                        enableEmptyView(taskAdapter.getData());
                     }
 
                     @Override
