@@ -210,9 +210,6 @@ public class FolderTargetListFragment extends SeaFileBaseFragment
                 copyOrMoveTv.setText("确定");
                 break;
         }
-        if (isSameDir()) {
-
-        }
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setAdapter(folderAdapter = new FolderAdapter());
         folderAdapter.registerAdapterDataObserver(new DataChangeAdapterObserver() {

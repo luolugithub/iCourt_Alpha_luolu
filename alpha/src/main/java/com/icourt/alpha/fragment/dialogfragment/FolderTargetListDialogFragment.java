@@ -77,6 +77,7 @@ public class FolderTargetListDialogFragment
 
     Fragment currFragment;
     RepoEntity repoEntity;
+    ArrayList<String> selectedFolderNames;
 
     /**
      * @param folderActionType
@@ -160,7 +161,7 @@ public class FolderTargetListDialogFragment
         return getArguments().getString(KEY_SEA_FILE_DST_DIR_PATH, "");
     }
 
-    ArrayList<String> selectedFolderNames;
+
 
     @Nullable
     @Override
