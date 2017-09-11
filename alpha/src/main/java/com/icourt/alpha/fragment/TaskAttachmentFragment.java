@@ -6,6 +6,8 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
@@ -24,6 +26,7 @@ import com.icourt.alpha.adapter.baseadapter.adapterObserver.DataChangeAdapterObs
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.entity.bean.TaskAttachmentEntity;
 import com.icourt.alpha.entity.event.TaskActionEvent;
+import com.icourt.alpha.fragment.dialogfragment.SeaFileSelectDialogFragment;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.http.observer.BaseObserver;
@@ -243,11 +246,7 @@ public class TaskAttachmentFragment extends BaseFragment implements BaseRecycler
                         dialog.dismiss();
                         switch (position) {
                             case 0:
-                                if (checkAcessFilePermission()) {
-                                    SystemUtils.chooseFile(TaskAttachmentFragment.this, REQUEST_CODE_CHOOSE_FILE);
-                                } else {
-                                    requestAcessFilePermission();
-                                }
+                                showSeaFileSelectDialogFragment();
                                 break;
                             case 1:
                                 if (checkAcessFilePermission()) {
@@ -282,6 +281,17 @@ public class TaskAttachmentFragment extends BaseFragment implements BaseRecycler
                 super.onActivityResult(requestCode, resultCode, data);
                 break;
         }
+    }
+
+    protected final void showSeaFileSelectDialogFragment() {
+        String tag = SeaFileSelectDialogFragment.class.getSimpleName();
+        FragmentTransaction mFragTransaction = getChildFragmentManager().beginTransaction();
+        Fragment fragment = getChildFragmentManager().findFragmentByTag(tag);
+        if (fragment != null) {
+            mFragTransaction.remove(fragment);
+        }
+        SeaFileSelectDialogFragment.newInstance()
+                .show(mFragTransaction, tag);
     }
 
     /**

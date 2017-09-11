@@ -47,7 +47,7 @@ import static com.icourt.alpha.constants.SFileConfig.REPO_SHARED_ME;
  */
 public class RepoSelectListFragment extends BaseFragment
         implements BaseRecyclerAdapter.OnItemClickListener {
-    private static final String KEY_REPO_TYPE = "repoType";
+    public static final String KEY_REPO_TYPE = "repoType";
 
     @BindView(R.id.recyclerView)
     RecyclerView recyclerView;
@@ -247,6 +247,7 @@ public class RepoSelectListFragment extends BaseFragment
         if (onFragmentCallBackListener != null) {
             Bundle bundle = new Bundle();
             bundle.putSerializable(KEY_FRAGMENT_RESULT, item);
+            bundle.putInt(KEY_REPO_TYPE,repoType);
             onFragmentCallBackListener.onFragmentCallBack(this, 1, bundle);
         }
     }
