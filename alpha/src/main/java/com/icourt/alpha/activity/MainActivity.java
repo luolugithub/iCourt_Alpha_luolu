@@ -263,8 +263,6 @@ public class MainActivity extends BaseAppUpdateActivity
                     break;
             }
         }
-
-
     }
 
     MyHandler mHandler = new MyHandler();

@@ -8,6 +8,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.AppBarLayout;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.widget.CardView;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.ImageView;
@@ -25,6 +26,7 @@ import com.umeng.analytics.MobclickAgent;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 import retrofit2.Call;
 import retrofit2.HttpException;
 import retrofit2.Response;
@@ -53,8 +55,10 @@ public class AboutActivity extends BaseAppUpdateActivity {
     @BindView(R.id.about_verson_textview)
     TextView aboutVersonTextview;
     @BindView(R.id.about_check_is_update_view)
-    TextView aboutCheckIsUpdateView;
+    CardView aboutCheckIsUpdateView;
     AppVersionEntity appVersionEntity;
+    @BindView(R.id.about_new_version_content_view)
+    TextView aboutNewVersionContentView;
 
     public static void launch(@NonNull Context context) {
         if (context == null) return;
@@ -110,6 +114,9 @@ public class AboutActivity extends BaseAppUpdateActivity {
         });
     }
 
+    @OnClick({R.id.about_check_is_update_view,
+            R.id.about_new_version_content_view,
+            R.id.about_new_version_view})
     @Override
     public void onClick(View view) {
         switch (view.getId()) {
@@ -122,7 +129,8 @@ public class AboutActivity extends BaseAppUpdateActivity {
                     requestFilePermission(context, REQUEST_FILE_PERMISSION);
                 }
                 break;
-            case R.id.about_new_version_view:
+            case R.id.about_new_version_content_view://新版本介绍
+            case R.id.about_new_version_view://更新日志
                 showUpdateDescDialog();
                 break;
             default:
@@ -136,7 +144,7 @@ public class AboutActivity extends BaseAppUpdateActivity {
      */
     private void showUpdateDescDialog() {
         if (appVersionEntity == null) return;
-        AlertDialog.Builder builder = new AlertDialog.Builder(context)
+        AlertDialog.Builder builder = new AlertDialog.Builder(this)
                 .setTitle("更新日志")
                 .setMessage(TextUtils.isEmpty(appVersionEntity.versionDesc) ? "有一个新版本,请立即更新吧" : appVersionEntity.versionDesc); //设置内容
         builder.setPositiveButton("关闭", new DialogInterface.OnClickListener() {
@@ -144,6 +152,6 @@ public class AboutActivity extends BaseAppUpdateActivity {
             public void onClick(DialogInterface dialog, int which) {
                 dialog.dismiss();
             }
-        });
+        }).show();
     }
 }

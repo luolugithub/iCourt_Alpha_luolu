@@ -131,7 +131,6 @@ public class TestActivity extends BaseAppUpdateActivity {
     @Override
     protected void getData(boolean isRefresh) {
         super.getData(isRefresh);
-        checkAppUpdate(getContext());
 
         TimeEntity.ItemEntity timer = TimerManager.getInstance().getTimer();
         if (timer != null) {
