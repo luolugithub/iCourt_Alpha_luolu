@@ -1,6 +1,8 @@
 package com.icourt.alpha.fragment;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -28,6 +30,8 @@ import com.icourt.alpha.http.observer.BaseObserver;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.interfaces.OnUpdateTaskListener;
 import com.icourt.alpha.utils.FileUtils;
+import com.icourt.alpha.utils.SystemUtils;
+import com.icourt.alpha.utils.UriUtils;
 import com.icourt.alpha.widget.dialog.BottomActionDialog;
 import com.icourt.api.RequestUtils;
 
@@ -69,6 +73,7 @@ public class TaskAttachmentFragment extends BaseFragment implements BaseRecycler
     private static final String KEY_TASK_LOOK_ATTACHMENT_PERMISSION = "key_task_look_attachment_permission";
     private static final String KEY_TASK_ADD_ATTACHMENT_PERMISSION = "key_task_add_attachment_permission";
     private static final String KEY_TASK_DELETE_ATTACHMENT_PERMISSION = "key_task_delete_attachment_permission";
+    private static final int REQUEST_CODE_CHOOSE_FILE = 1002;
 
     /**
      * hasLookAttachmentPermission>hasAddAttachmentPermission
@@ -231,21 +236,52 @@ public class TaskAttachmentFragment extends BaseFragment implements BaseRecycler
     private void showBottomMenu() {
         new BottomActionDialog(getContext(),
                 null,
-                Arrays.asList("拍照", "从手机相册选择"),
+                Arrays.asList("从文档中选取", "上传文件", "从相册选取", getString(R.string.str_camera)),
                 new BottomActionDialog.OnActionItemClickListener() {
                     @Override
                     public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
                         dialog.dismiss();
                         switch (position) {
                             case 0:
-                                checkAndSelectFromCamera(mOnHanlderResultCallback);
+                                if (checkAcessFilePermission()) {
+                                    SystemUtils.chooseFile(TaskAttachmentFragment.this, REQUEST_CODE_CHOOSE_FILE);
+                                } else {
+                                    requestAcessFilePermission();
+                                }
                                 break;
                             case 1:
+                                if (checkAcessFilePermission()) {
+                                    SystemUtils.chooseFile(TaskAttachmentFragment.this, REQUEST_CODE_CHOOSE_FILE);
+                                } else {
+                                    requestAcessFilePermission();
+                                }
+                                break;
+                            case 2:
                                 checkAndSelectMutiPhotos(mOnHanlderResultCallback);
+                                break;
+                            case 3:
+                                checkAndSelectFromCamera(mOnHanlderResultCallback);
                                 break;
                         }
                     }
                 }).show();
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        switch (requestCode) {
+            case REQUEST_CODE_CHOOSE_FILE:
+                if (resultCode == Activity.RESULT_OK) {
+                    if (data != null) {
+                        String path = UriUtils.getPath(getContext(), data.getData());
+                        uploadFiles(Arrays.asList(path));
+                    }
+                }
+                break;
+            default:
+                super.onActivityResult(requestCode, resultCode, data);
+                break;
+        }
     }
 
     /**

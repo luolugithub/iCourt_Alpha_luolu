@@ -27,4 +27,5 @@
 
 
     <string name="str_delete_sucess">删除成功</string>
+    <string name="str_camera">相机</string>
 </resources>
