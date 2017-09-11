@@ -81,9 +81,9 @@ public class TaskAttachmentFragment extends BaseFragment implements BaseRecycler
      * @return
      */
     public static TaskAttachmentFragment newInstance(@NonNull String taskId,
-                                                      boolean hasLookAttachmentPermission,
-                                                      boolean hasAddAttachmentPermission,
-                                                      boolean hasDeleteAttachmentPermission) {
+                                                     boolean hasLookAttachmentPermission,
+                                                     boolean hasAddAttachmentPermission,
+                                                     boolean hasDeleteAttachmentPermission) {
         TaskAttachmentFragment taskAttachmentFragment = new TaskAttachmentFragment();
         Bundle bundle = new Bundle();
         bundle.putString(KEY_TASK_ID, taskId);
@@ -186,6 +186,8 @@ public class TaskAttachmentFragment extends BaseFragment implements BaseRecycler
         //有浏览权限 再调数据获取接口
         if (hasLookAttachmentPermission) {
             getData(true);
+            //添加附件的权限
+            footerAddView.setVisibility(hasAddAttachmentPermission ? View.VISIBLE : View.GONE);
         } else {
             footerAddView.setVisibility(View.GONE);
             footerNoticeView.setVisibility(View.VISIBLE);
@@ -335,7 +337,11 @@ public class TaskAttachmentFragment extends BaseFragment implements BaseRecycler
 
     @Override
     public boolean onItemLongClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
-        showDeleteConfirmDialog(taskAttachmentAdapter.getItem(position));
+        if (hasDeleteAttachmentPermission) {
+            showDeleteConfirmDialog(taskAttachmentAdapter.getItem(position));
+        } else {
+            showTopSnackBar("暂无删除的权限!");
+        }
         return true;
     }
 
