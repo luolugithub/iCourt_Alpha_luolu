@@ -4,8 +4,6 @@ import android.support.annotation.CheckResult;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
-import android.text.method.LinkMovementMethod;
-import android.text.util.Linkify;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
@@ -541,13 +539,19 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMMessageCustomBody> i
         TextView textView = holder.obtainView(R.id.chat_txt_tv);
         holder.bindChildLongClick(textView);
         if (imMessageCustomBody != null) {
-            textView.setText(imMessageCustomBody.content);
             //注意容易发生崩溃 华为mate9就会
-            try {
+            /*try {
                 textView.setAutoLinkMask(Linkify.ALL);
                 textView.setMovementMethod(LinkMovementMethod.getInstance());
             } catch (Throwable e) {
                 BugUtils.bugSync("文本中Link崩溃", e);
+                e.printStackTrace();
+            }*/
+            try {
+                textView.setText(imMessageCustomBody.content);
+            } catch (Throwable e) {
+                BugUtils.bugSync("文本中Link崩溃2", e);
+                BugUtils.bugSync("文本中Link崩溃2:txt:",imMessageCustomBody.toString());
                 e.printStackTrace();
             }
         } else {
