@@ -39,6 +39,8 @@ import butterknife.Unbinder;
  * version 1.0.0
  */
 public class WebViewActivity extends BaseActivity {
+    private static final String KEY_TITLE = "key_title";
+    private static final String KEY_URL = "key_url";
     @BindView(R.id.titleBack)
     ImageView titleBack;
     @BindView(R.id.titleContent)
@@ -52,7 +54,16 @@ public class WebViewActivity extends BaseActivity {
         if (context == null) return;
         if (TextUtils.isEmpty(url)) return;
         Intent intent = new Intent(context, WebViewActivity.class);
-        intent.putExtra("url", url);
+        intent.putExtra(KEY_URL, url);
+        context.startActivity(intent);
+    }
+
+    public static void launch(@NonNull Context context, String title, String url) {
+        if (context == null) return;
+        if (TextUtils.isEmpty(url)) return;
+        Intent intent = new Intent(context, WebViewActivity.class);
+        intent.putExtra(KEY_URL, url);
+        intent.putExtra(KEY_TITLE, title);
         context.startActivity(intent);
     }
 
@@ -169,7 +180,8 @@ public class WebViewActivity extends BaseActivity {
     @Override
     protected void initView() {
         super.initView();
-        setTitle("Alpha");
+        String title = getIntent().getStringExtra(KEY_TITLE);
+        setTitle(TextUtils.isEmpty(title) ? "Alpha" : title);
         ImageView titleActionImage = getTitleActionImage();
         if (titleActionImage != null) {
             titleActionImage.setImageResource(R.mipmap.browser_open);

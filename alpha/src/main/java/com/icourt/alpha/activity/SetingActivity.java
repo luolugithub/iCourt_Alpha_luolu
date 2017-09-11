@@ -85,6 +85,11 @@ public class SetingActivity extends BaseAppUpdateActivity {
         super.initView();
         setTitle("设置");
         mShareAPI = UMShareAPI.get(getContext());
+        try {
+            settingClearCacheTextview.setText(DataCleanManager.getTotalCacheSize(getContext()));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -114,6 +119,7 @@ public class SetingActivity extends BaseAppUpdateActivity {
     @OnClick({R.id.setting_clear_cache_layout,
             R.id.setting_feedback_layout,
             R.id.setting_about_layout,
+            R.id.setting_helper_layout,
             R.id.setting_loginout_layout})
     @Override
     public void onClick(View v) {
@@ -130,6 +136,9 @@ public class SetingActivity extends BaseAppUpdateActivity {
                             }
                         }).setNegativeButton("取消", null)
                         .show();
+                break;
+            case R.id.setting_helper_layout:
+               WebViewActivity.launch(this,"https://mp.weixin.qq.com/s/CghSah5E7Kj_IMZ65Shp-A","帮助中心");
                 break;
             case R.id.setting_feedback_layout:
                 FeedBackActivity.launch(this);
