@@ -456,8 +456,6 @@ public interface ApiAlphaService {
      * @return
      */
     @GET("ilaw/api/v2/taskflow/queryMatterTask")
-    Call<ResEntity<TaskEntity>> projectQueryTaskList(@Query("matterId") String projectId,
-    @GET("api/v2/taskflow/queryMatterTask")
     Call<ResEntity<TaskEntity>> projectQueryTaskList(@Query("assignTos") String assignTos,
                                                      @Query("matterId") String projectId,
                                                      @Query("stateType") int stateType,
@@ -790,7 +788,7 @@ public interface ApiAlphaService {
      * @return
      */
     @Multipart
-    @POST("api/v2/task/{taskId}/attachment/addFromFile")
+    @POST("ilaw/api/v2/task/{taskId}/attachment/addFromFile")
     Observable<JsonElement> taskAttachmentUploadObservable(@Path("taskId") String taskId, @PartMap Map<String, RequestBody> params);
 
     /**
@@ -847,12 +845,8 @@ public interface ApiAlphaService {
      * @return
      */
     @GET("ilaw/api/v1/matters/attorney")
-    Call<ResEntity<List<TaskOwerEntity>>> taskOwerListQuery(@Query("id") String project,
-                                                            @Query("name") String name);
-    @GET("api/v1/matters/attorney")
     Call<ResEntity<List<TaskEntity.TaskItemEntity.AttendeeUserEntity>>> taskOwerListQuery(@Query("id") String project,
                                                                                           @Query("name") String name);
-
 
     /**
      * 删除计时
@@ -1418,7 +1412,6 @@ public interface ApiAlphaService {
     @GET("ilaw/api/v2/documents/{seaFileRepoId}/dir/shareUsers")
     Call<ResEntity<List<SFileShareUserInfo>>> folderSharedUserQuery(@Path("seaFileRepoId") String fromRepoId,
                                                                     @Query("path") String path);
-
 
 
     /**

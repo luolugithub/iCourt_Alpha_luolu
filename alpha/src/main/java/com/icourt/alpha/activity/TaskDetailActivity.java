@@ -40,7 +40,7 @@ import com.icourt.alpha.entity.bean.TaskEntity;
 import com.icourt.alpha.entity.bean.TimeEntity;
 import com.icourt.alpha.entity.event.TaskActionEvent;
 import com.icourt.alpha.entity.event.TimingEvent;
-import com.icourt.alpha.fragment.TaskAttachmentFragment;
+import com.icourt.alpha.fragment.TaskAttachmentFragment2;
 import com.icourt.alpha.fragment.TaskCheckItemFragment;
 import com.icourt.alpha.fragment.TaskDetailFragment;
 import com.icourt.alpha.fragment.dialogfragment.TaskAllotSelectDialogFragment;
@@ -662,9 +662,24 @@ public class TaskDetailActivity extends BaseActivity
      *
      * @return
      */
-    private boolean hasTaskAddDocument() {
+    private boolean hasDocumentAddPermission() {
         if (taskItemEntity != null && taskItemEntity.right != null) {
-            return taskItemEntity.right.contains("MAT:matter.document:readwrite") || taskItemEntity.right.contains("MAT:matter.document:read");
+            return taskItemEntity.right.contains("MAT:matter.document:readwrite");
+        }
+        return false;
+    }
+
+    /**
+     * 是否有文件浏览权限
+     * 可读 可读写
+     *
+     * @return
+     */
+    private boolean hasDocumentLookPermission() {
+        if (taskItemEntity != null
+                && taskItemEntity.right != null) {
+            return taskItemEntity.right.contains("MAT:matter.document:readwrite")
+                    || taskItemEntity.right.contains("MAT:matter.document:read");
         }
         return false;
     }
@@ -769,7 +784,12 @@ public class TaskDetailActivity extends BaseActivity
             baseFragmentAdapter.bindData(true, Arrays.asList(
                     taskDetailFragment == null ? taskDetailFragment = TaskDetailFragment.newInstance(taskItemEntity) : taskDetailFragment,
                     TaskCheckItemFragment.newInstance(taskItemEntity.id, hasTaskEditPermission(), taskItemEntity.valid),
-                    TaskAttachmentFragment.newInstance(taskItemEntity.id, (hasTaskEditPermission() && hasTaskAddDocument()), taskItemEntity.valid)
+                    TaskAttachmentFragment2.newInstance(
+                            taskItemEntity.id,
+                            hasDocumentLookPermission(),
+                            hasDocumentAddPermission(),
+                            hasTaskEditPermission())
+                    //TaskAttachmentFragment.newInstance(taskItemEntity.id, (hasTaskEditPermission() && hasTaskAddDocument()), taskItemEntity.valid)
             ));
 
             updateDetailFargment();
