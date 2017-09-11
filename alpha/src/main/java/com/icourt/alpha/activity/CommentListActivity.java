@@ -20,6 +20,7 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.andview.refreshview.XRefreshView;
@@ -91,6 +92,8 @@ public class CommentListActivity extends BaseActivity implements BaseRecyclerAda
     HeaderFooterAdapter<CommentListAdapter> headerFooterAdapter;
     @BindView(R.id.softKeyboardSizeWatchLayout)
     SoftKeyboardSizeWatchLayout softKeyboardSizeWatchLayout;
+    @BindView(R.id.bottom_layout)
+    LinearLayout bottomLayout;
 
 
     /**
@@ -147,6 +150,7 @@ public class CommentListActivity extends BaseActivity implements BaseRecyclerAda
         if (taskItemEntity != null) {
             if (taskItemEntity.createUser != null)
                 contentTv.setText(taskItemEntity.createUser.userName + " 创建了任务 " + DateUtils.getTimeDateFormatMm(taskItemEntity.createTime));
+            bottomLayout.setVisibility(taskItemEntity.valid ? View.VISIBLE : View.GONE);
         }
         headerFooterAdapter.addFooter(footerview);
 

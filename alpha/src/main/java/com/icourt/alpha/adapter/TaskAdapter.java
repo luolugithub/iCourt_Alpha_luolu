@@ -16,6 +16,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.icourt.alpha.R;
 import com.icourt.alpha.activity.TaskDetailActivity;
+import com.icourt.alpha.activity.TimerDetailActivity;
 import com.icourt.alpha.activity.TimerTimingActivity;
 import com.icourt.alpha.adapter.baseadapter.BaseArrayRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
@@ -27,9 +28,11 @@ import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.LoginInfoUtils;
+import com.icourt.alpha.utils.UMMobClickAgent;
 import com.icourt.alpha.widget.dialog.CenterMenuDialog;
 import com.icourt.alpha.widget.manager.TimerManager;
 import com.icourt.api.RequestUtils;
+import com.umeng.analytics.MobclickAgent;
 
 import org.greenrobot.eventbus.EventBus;
 
@@ -41,6 +44,7 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 import static com.icourt.alpha.utils.LoginInfoUtils.getLoginUserId;
+import static com.umeng.socialize.utils.ContextUtil.getContext;
 
 /**
  * Description
@@ -55,6 +59,7 @@ public class TaskAdapter extends BaseArrayRecyclerAdapter<TaskEntity>
         BaseRecyclerAdapter.OnItemChildClickListener {
 
     private OnShowFragmenDialogListener onShowFragmenDialogListener;
+    private OnUpdateNewTaskCountListener onUpdateNewTaskCountListener;
     private static final int SHOW_DELETE_DIALOG = 0;//删除提示对话框
     private static final int SHOW_FINISH_DIALOG = 1;//完成任务提示对话框
 
@@ -82,6 +87,10 @@ public class TaskAdapter extends BaseArrayRecyclerAdapter<TaskEntity>
 
     public void setOnShowFragmenDialogListener(OnShowFragmenDialogListener onShowFragmenDialogListener) {
         this.onShowFragmenDialogListener = onShowFragmenDialogListener;
+    }
+
+    public void setOnUpdateNewTaskCountListener(OnUpdateNewTaskCountListener onUpdateNewTaskCountListener) {
+        this.onUpdateNewTaskCountListener = onUpdateNewTaskCountListener;
     }
 
     @Override
@@ -212,12 +221,15 @@ public class TaskAdapter extends BaseArrayRecyclerAdapter<TaskEntity>
                         case R.mipmap.time_start_orange_task://开始计时
                             if (!taskItemEntity.isTiming) {
                                 final TimeEntity.ItemEntity timeetity = getTimer(taskItemEntity);
+                                MobclickAgent.onEvent(getContext(), UMMobClickAgent.start_timer_click_id);
                                 TimerManager.getInstance().addTimer(getTimer(taskItemEntity), new Callback<TimeEntity.ItemEntity>() {
                                     @Override
                                     public void onResponse(Call<TimeEntity.ItemEntity> call, Response<TimeEntity.ItemEntity> response) {
                                         dismissLoadingDialog();
                                         if (response.body() != null) {
                                             updateMeauItem(entity, true, menuAdapter);
+                                            taskItemEntity.isTiming = true;
+                                            notifyDataSetChanged();
                                             timeetity.pkId = response.body().pkId;
                                             TimerTimingActivity.launch(view.getContext(), timeetity);
                                         }
@@ -226,6 +238,7 @@ public class TaskAdapter extends BaseArrayRecyclerAdapter<TaskEntity>
                                     @Override
                                     public void onFailure(Call<TimeEntity.ItemEntity> call, Throwable throwable) {
                                         dismissLoadingDialog();
+                                        taskItemEntity.isTiming = false;
                                         updateMeauItem(entity, false, menuAdapter);
                                     }
                                 });
@@ -234,8 +247,23 @@ public class TaskAdapter extends BaseArrayRecyclerAdapter<TaskEntity>
                             break;
                         case R.mipmap.time_stop_orange_task://停止计时
                             if (taskItemEntity.isTiming) {
-                                TimerManager.getInstance().stopTimer();
-                                updateMeauItem(entity, true, menuAdapter);
+                                MobclickAgent.onEvent(getContext(), UMMobClickAgent.stop_timer_click_id);
+                                TimerManager.getInstance().stopTimer(new SimpleCallBack<TimeEntity.ItemEntity>() {
+                                    @Override
+                                    public void onSuccess(Call<ResEntity<TimeEntity.ItemEntity>> call, Response<ResEntity<TimeEntity.ItemEntity>> response) {
+                                        taskItemEntity.isTiming = false;
+                                        updateMeauItem(entity, true, menuAdapter);
+                                        TimeEntity.ItemEntity timer = TimerManager.getInstance().getTimer();
+                                        TimerDetailActivity.launch(view.getContext(), timer);
+                                    }
+
+                                    @Override
+                                    public void onFailure(Call<ResEntity<TimeEntity.ItemEntity>> call, Throwable t) {
+                                        super.onFailure(call, t);
+                                        taskItemEntity.isTiming = true;
+                                    }
+                                });
+
                             }
                             break;
                         case R.mipmap.trash_orange://删除
@@ -267,21 +295,37 @@ public class TaskAdapter extends BaseArrayRecyclerAdapter<TaskEntity>
     @Override
     public void onItemChildClick(BaseRecyclerAdapter adapter, ViewHolder holder, final View view, int position) {
         if (adapter instanceof TaskItemAdapter) {
-            TaskEntity.TaskItemEntity itemEntity = (TaskEntity.TaskItemEntity) adapter.getItem(position);
+            final TaskEntity.TaskItemEntity itemEntity = (TaskEntity.TaskItemEntity) adapter.getItem(position);
             switch (view.getId()) {
                 case R.id.task_item_start_timming:
                     if (itemEntity.isTiming) {
-                        TimerManager.getInstance().stopTimer();
+                        MobclickAgent.onEvent(getContext(), UMMobClickAgent.stop_timer_click_id);
+                        TimerManager.getInstance().stopTimer(new SimpleCallBack<TimeEntity.ItemEntity>() {
+                            @Override
+                            public void onSuccess(Call<ResEntity<TimeEntity.ItemEntity>> call, Response<ResEntity<TimeEntity.ItemEntity>> response) {
+                                itemEntity.isTiming = false;
+                                TimeEntity.ItemEntity timer = TimerManager.getInstance().getTimer();
+                                TimerDetailActivity.launch(view.getContext(), timer);
+                            }
+
+                            @Override
+                            public void onFailure(Call<ResEntity<TimeEntity.ItemEntity>> call, Throwable t) {
+                                super.onFailure(call, t);
+                                itemEntity.isTiming = true;
+                            }
+                        });
                         ((ImageView) view).setImageResource(R.mipmap.icon_start_20);
                     } else {
                         showLoadingDialog(view.getContext(), null);
                         final TimeEntity.ItemEntity timeetity = getTimer(itemEntity);
+                        MobclickAgent.onEvent(getContext(), UMMobClickAgent.start_timer_click_id);
                         TimerManager.getInstance().addTimer(getTimer(itemEntity), new Callback<TimeEntity.ItemEntity>() {
                             @Override
                             public void onResponse(Call<TimeEntity.ItemEntity> call, Response<TimeEntity.ItemEntity> response) {
                                 dismissLoadingDialog();
                                 ((ImageView) view).setImageResource(R.drawable.orange_side_dot_bg);
                                 if (response.body() != null) {
+                                    itemEntity.isTiming = true;
                                     timeetity.pkId = response.body().pkId;
                                     TimerTimingActivity.launch(view.getContext(), timeetity);
                                 }
@@ -290,6 +334,7 @@ public class TaskAdapter extends BaseArrayRecyclerAdapter<TaskEntity>
                             @Override
                             public void onFailure(Call<TimeEntity.ItemEntity> call, Throwable throwable) {
                                 dismissLoadingDialog();
+                                itemEntity.isTiming = false;
                                 ((ImageView) view).setImageResource(R.mipmap.icon_start_20);
                             }
                         });
@@ -433,7 +478,8 @@ public class TaskAdapter extends BaseArrayRecyclerAdapter<TaskEntity>
                         }
                     }
                     itemEntity.state = state;
-
+                    if (onUpdateNewTaskCountListener != null)
+                        onUpdateNewTaskCountListener.updateNewTaskCount(itemEntity);
                 }
             }
 
@@ -449,14 +495,16 @@ public class TaskAdapter extends BaseArrayRecyclerAdapter<TaskEntity>
     /**
      * 删除任务
      */
-    private void deleteTask(Context context, TaskEntity.TaskItemEntity itemEntity) {
+    private void deleteTask(Context context, final TaskEntity.TaskItemEntity itemEntity) {
         showLoadingDialog(context, null);
+        MobclickAgent.onEvent(context, UMMobClickAgent.delete_task_click_id);
         getApi().taskDelete(itemEntity.id).enqueue(new SimpleCallBack<JsonElement>() {
             @Override
             public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
                 dismissLoadingDialog();
-                EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION));
-
+                if (onUpdateNewTaskCountListener != null)
+                    onUpdateNewTaskCountListener.updateNewTaskCount(itemEntity);
+                EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION, itemEntity));
             }
 
             @Override
@@ -496,5 +544,9 @@ public class TaskAdapter extends BaseArrayRecyclerAdapter<TaskEntity>
         void showDateSelectDialog(TaskEntity.TaskItemEntity taskItemEntity);
 
         void showProjectSelectDialog(TaskEntity.TaskItemEntity taskItemEntity);
+    }
+
+    public interface OnUpdateNewTaskCountListener {
+        void updateNewTaskCount(TaskEntity.TaskItemEntity taskItemEntity);
     }
 }

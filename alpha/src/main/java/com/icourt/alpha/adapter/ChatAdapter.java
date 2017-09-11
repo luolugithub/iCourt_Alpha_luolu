@@ -2,6 +2,7 @@ package com.icourt.alpha.adapter;
 
 import android.support.annotation.CheckResult;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.text.method.LinkMovementMethod;
 import android.text.util.Linkify;
@@ -21,12 +22,16 @@ import com.icourt.alpha.entity.bean.IMMessageCustomBody;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.FileUtils;
 import com.icourt.alpha.utils.GlideUtils;
+import com.icourt.alpha.utils.IMUtils;
 import com.icourt.alpha.utils.LogUtils;
 import com.icourt.alpha.utils.LoginInfoUtils;
 import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.utils.transformations.FitHeightImgViewTarget;
 import com.icourt.alpha.view.BubbleImageView;
 import com.icourt.alpha.view.recyclerviewDivider.ITimeDividerInterface;
+import com.netease.nimlib.sdk.NIMClient;
+import com.netease.nimlib.sdk.uinfo.UserService;
+import com.netease.nimlib.sdk.uinfo.model.NimUserInfo;
 
 import java.util.Collections;
 import java.util.Comparator;
@@ -110,16 +115,8 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMMessageCustomBody> i
      * @return
      */
     public String getUserIcon(String accid) {
-        if (contactBeanList != null && !TextUtils.isEmpty(accid)) {
-            GroupContactBean groupContactBean = new GroupContactBean();
-            groupContactBean.accid = accid.toLowerCase();
-            int indexOf = contactBeanList.indexOf(groupContactBean);
-            if (indexOf >= 0) {
-                groupContactBean = contactBeanList.get(indexOf);
-                return groupContactBean.pic;
-            }
-        }
-        return "";
+        GroupContactBean user = getUser(accid);
+        return user != null ? user.pic : "";
     }
 
     /**
@@ -138,6 +135,22 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMMessageCustomBody> i
                 groupContactBean = contactBeanList.get(indexOf);
                 return groupContactBean;
             }
+        }
+        return IMUtils.convert2GroupContact(getNimUser(accid));
+    }
+
+    /**
+     * @param accid
+     * @return
+     */
+    @CheckResult
+    @Nullable
+    protected NimUserInfo getNimUser(String accid) {
+        try {
+            return NIMClient.getService(UserService.class)
+                    .getUserInfo(accid);
+        } catch (Throwable e) {
+            e.printStackTrace();
         }
         return null;
     }

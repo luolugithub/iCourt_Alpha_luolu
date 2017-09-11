@@ -32,6 +32,7 @@
                 android:layout_height="wrap_content"
                 android:layout_alignParentRight="true"
                 android:padding="10dp"
+                android:layout_marginRight="@dimen/dp10"
                 android:layout_centerVertical="true"
                 android:scaleType="fitCenter"
                 android:src="@mipmap/header_icon_add" />

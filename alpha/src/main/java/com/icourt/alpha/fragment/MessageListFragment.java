@@ -2,6 +2,7 @@ package com.icourt.alpha.fragment;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.support.annotation.CheckResult;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -25,6 +26,9 @@ import com.icourt.alpha.adapter.IMSessionAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.HeaderFooterAdapter;
 import com.icourt.alpha.adapter.baseadapter.adapterObserver.DataChangeAdapterObserver;
+import com.icourt.alpha.db.convertor.IConvertModel;
+import com.icourt.alpha.db.convertor.ListConvertor;
+import com.icourt.alpha.db.dbmodel.ContactDbModel;
 import com.icourt.alpha.db.dbservice.ContactDbService;
 import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.icourt.alpha.entity.bean.GroupContactBean;
@@ -44,6 +48,7 @@ import com.icourt.alpha.utils.JsonUtils;
 import com.icourt.alpha.utils.LogUtils;
 import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.widget.dialog.BottomActionDialog;
+import com.icourt.alpha.widget.nim.GlobalMessageObserver;
 import com.netease.nimlib.sdk.NIMClient;
 import com.netease.nimlib.sdk.RequestCallback;
 import com.netease.nimlib.sdk.RequestCallbackWrapper;
@@ -61,7 +66,6 @@ import com.netease.nimlib.sdk.team.model.Team;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
-import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -79,12 +83,13 @@ import io.reactivex.ObservableOnSubscribe;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
+import io.realm.RealmChangeListener;
+import io.realm.RealmResults;
 import retrofit2.Call;
 import retrofit2.Response;
 
 import static com.icourt.alpha.constants.Const.CHAT_TYPE_P2P;
 import static com.icourt.alpha.constants.Const.CHAT_TYPE_TEAM;
-import static com.icourt.alpha.constants.Const.MSG_TYPE_ALPHA_HELPER;
 
 /**
  * Description  会话列表
@@ -94,12 +99,30 @@ import static com.icourt.alpha.constants.Const.MSG_TYPE_ALPHA_HELPER;
  * version 1.0.0
  */
 public class MessageListFragment extends BaseRecentContactFragment
-        implements BaseRecyclerAdapter.OnItemClickListener, OnTabDoubleClickListener, BaseRecyclerAdapter.OnItemLongClickListener {
+        implements BaseRecyclerAdapter.OnItemClickListener,
+        OnTabDoubleClickListener,
+        BaseRecyclerAdapter.OnItemLongClickListener {
 
     private final List<Team> localTeams = new ArrayList<>();
     private final List<GroupContactBean> localGroupContactBeans = new ArrayList<>();
     private final List<String> localSetTops = new ArrayList<>();
     private final List<String> localNoDisturbs = new ArrayList<>();
+    ContactDbService contactDbService;
+    RealmChangeListener<RealmResults<ContactDbModel>> realmResultsRealmChangeListener = new RealmChangeListener<RealmResults<ContactDbModel>>() {
+        @Override
+        public void onChange(RealmResults<ContactDbModel> contactDbModels) {
+            if (contactDbModels != null) {
+                log("----------->联系人数据库发生改变");
+                localGroupContactBeans.clear();
+                localGroupContactBeans.addAll(ListConvertor.convertList(new ArrayList<IConvertModel<GroupContactBean>>(contactDbModels)));
+                if (recyclerView != null
+                        && imSessionAdapter != null) {
+                    imSessionAdapter.notifyDataSetChanged();
+                }
+            }
+        }
+    };
+
     @BindView(R.id.login_status_tv)
     TextView loginStatusTv;
     @BindView(R.id.start_chat_tv)
@@ -172,6 +195,19 @@ public class MessageListFragment extends BaseRecentContactFragment
         }
     }
 
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        contactDbService = new ContactDbService(getLoginUserId());
+        RealmResults<ContactDbModel> contactDbModels = contactDbService.queryAll();
+        if (contactDbModels != null) {
+            localGroupContactBeans.clear();
+            localGroupContactBeans.addAll(ListConvertor.convertList(new ArrayList<IConvertModel<GroupContactBean>>(contactDbModels)));
+            contactDbModels.removeChangeListener(realmResultsRealmChangeListener);
+            contactDbModels.addChangeListener(realmResultsRealmChangeListener);
+        }
+    }
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -180,11 +216,15 @@ public class MessageListFragment extends BaseRecentContactFragment
         return view;
     }
 
+
     @Override
     public void onDestroy() {
         if (unbinder != null)
             unbinder.unbind();
         super.onDestroy();
+        if (contactDbService != null) {
+            contactDbService.releaseService();
+        }
         EventBus.getDefault().unregister(this);
     }
 
@@ -201,67 +241,61 @@ public class MessageListFragment extends BaseRecentContactFragment
     @Override
     protected void recentContactReceive(@NonNull final List<RecentContact> recentContacts) {
         if (imSessionAdapter == null) return;
-        filterMessage(recentContacts);
-        List<IMSessionEntity> data = new ArrayList<IMSessionEntity>(imSessionAdapter.getData());
         for (RecentContact recentContact : recentContacts) {
-            IMUtils.logRecentContact("------------>recentContactReceive:", recentContact);
             if (recentContact == null) continue;
-            boolean isExist = false;
-            for (IMSessionEntity imSessionEntity : data) {
-                if (imSessionEntity != null
-                        && imSessionEntity.recentContact != null) {
-                    if (StringUtils.equalsIgnoreCase(recentContact.getContactId(), imSessionEntity.recentContact.getContactId(), false)) {
-                        isExist = true;
-                        //解析自定义的消息体
-                        IMMessageCustomBody customIMBody = null;
-                        if (recentContact.getMsgType() == MsgTypeEnum.custom) {
-                            customIMBody = getAlphaHelper(recentContact);
-                            if (customIMBody != null) {
-                                imSessionEntity.customIMBody = customIMBody;
-                                imSessionEntity.recentContact = recentContact;
-                            }
-                        } else {
-                            try {
-                                customIMBody = JsonUtils.Gson2Bean(recentContact.getContent(), IMMessageCustomBody.class);
-                            } catch (Exception ex) {
-                                ex.printStackTrace();
-                            }
-                            if (customIMBody != null) {
-                                if (IMUtils.isFilterChatIMMessage(customIMBody)) continue;
-                                imSessionEntity.customIMBody = customIMBody;
-                                imSessionEntity.recentContact = recentContact;
-                                IMUtils.wrapV1Message(imSessionEntity, recentContact, customIMBody);
-                            }
-                        }
-                    }
-                }
+            addOrUpdateItem(parseSession(recentContact));
+        }
+    }
+
+    /**
+     * 更新一条或者添加一条
+     *
+     * @param imSessionEntity
+     */
+    private void addOrUpdateItem(IMSessionEntity imSessionEntity) {
+        if (imSessionEntity == null) return;
+        List<IMSessionEntity> sessionEntities = imSessionAdapter.getData();
+        int indexOf = sessionEntities.indexOf(imSessionEntity);
+        if (indexOf >= 0) {
+            //1.更新--->2.排序--->3.更新适配器
+            sessionEntities.set(indexOf, imSessionEntity);
+            Collections.sort(sessionEntities, imSessionEntityComparator);
+            imSessionAdapter.notifyDataSetChanged();
+        } else {
+            sessionEntities.add(imSessionEntity);
+            Collections.sort(sessionEntities, imSessionEntityComparator);
+            imSessionAdapter.notifyDataSetChanged();
+        }
+    }
+
+
+    /**
+     * 解析session
+     *
+     * @param recentContact
+     * @return
+     */
+    @CheckResult
+    @Nullable
+    private IMSessionEntity parseSession(RecentContact recentContact) {
+        if (recentContact == null) return null;
+        if (recentContact.getMsgType() == MsgTypeEnum.custom) {
+            IMMessageCustomBody customIMBody = getAlphaHelper(recentContact);
+            if (customIMBody != null) {
+                return new IMSessionEntity(recentContact, customIMBody);
             }
-            if (!isExist) {
-                IMMessageCustomBody customIMBody = null;
-                if (recentContact.getMsgType() == MsgTypeEnum.custom) {
-                    customIMBody = getAlphaHelper(recentContact);
-                    if (customIMBody != null) {
-                        data.add(new IMSessionEntity(recentContact, customIMBody));
-                    }
-                } else {
-                    String jsonBody = recentContact.getContent();
-                    try {
-                        customIMBody = JsonUtils.Gson2Bean(jsonBody, IMMessageCustomBody.class);
-                    } catch (Exception ex) {
-                        ex.printStackTrace();
-                    }
-                    if (customIMBody != null) {
-                        if (IMUtils.isFilterChatIMMessage(customIMBody)) continue;
-                        IMSessionEntity imSessionEntity = new IMSessionEntity(recentContact, customIMBody);
-                        IMUtils.wrapV1Message(imSessionEntity, recentContact, customIMBody);
-                        //装饰实体
-                        data.add(imSessionEntity);
-                    }
+        } else {
+            IMMessageCustomBody imBody = GlobalMessageObserver.getIMBody(recentContact.getContent());
+            if (imBody != null) {
+                if (IMUtils.isFilterChatIMMessage(imBody)) {
+                    return null;
                 }
+                IMSessionEntity imSessionEntity = new IMSessionEntity(recentContact, imBody);
+                IMUtils.wrapV1Message(imSessionEntity, recentContact, imBody);
+                return imSessionEntity;
             }
         }
-        Collections.sort(data, imSessionEntityComparator);
-        imSessionAdapter.bindData(true, data);
+        return null;
     }
 
     /**
@@ -271,26 +305,9 @@ public class MessageListFragment extends BaseRecentContactFragment
      * @return
      */
     private IMMessageCustomBody getAlphaHelper(RecentContact recentContact) {
-        try {
-            JSONObject alphaJSONObject = JsonUtils.getJSONObject(recentContact.getAttachment().toJson(false));
-            if (alphaJSONObject.getInt("showType") == MSG_TYPE_ALPHA_HELPER) {
-                String contentStr = alphaJSONObject.getString("content");
-                IMMessageCustomBody imMessageCustomBody = new IMMessageCustomBody();
-                imMessageCustomBody.content = contentStr;
-                imMessageCustomBody.show_type = MSG_TYPE_ALPHA_HELPER;
-                imMessageCustomBody.ope = CHAT_TYPE_P2P;
-                imMessageCustomBody.to = recentContact.getContactId();
-                return imMessageCustomBody;
-            } else {
-                NIMClient.getService(MsgService.class)
-                        .deleteRecentContact(recentContact);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            LogUtils.d("---------->AlphaHelper 解析异常:" + e);
-        }
-        return null;
+        return IMUtils.parseAlphaHelperMsg(recentContact);
     }
+
 
     /**
      * 消息删除
@@ -611,11 +628,19 @@ public class MessageListFragment extends BaseRecentContactFragment
         }
     }
 
+    @Override
+    public void setUserVisibleHint(boolean isVisibleToUser) {
+        super.setUserVisibleHint(isVisibleToUser);
+        if (isVisibleToUser && imSessionAdapter != null) {
+            getData(true);
+        }
+    }
 
     @Override
     public void onResume() {
         super.onResume();
-
+        //test();
+        getData(true);
         //主动登陆一次
         StatusCode status = NIMClient.getStatus();
         if (status == StatusCode.UNLOGIN
@@ -666,16 +691,6 @@ public class MessageListFragment extends BaseRecentContactFragment
             }
         });
 
-        queryAllContactFromDbAsync(new Consumer<List<GroupContactBean>>() {
-            @Override
-            public void accept(List<GroupContactBean> groupContactBeanList) throws Exception {
-                if (groupContactBeanList != null) {
-                    localGroupContactBeans.clear();
-                    localGroupContactBeans.addAll(groupContactBeanList);
-                    imSessionAdapter.notifyDataSetChanged();
-                }
-            }
-        });
 
         // 查询最近联系人列表数据
         NIMClient.getService(MsgService.class)
@@ -725,6 +740,7 @@ public class MessageListFragment extends BaseRecentContactFragment
                             customIMBody = JsonUtils.Gson2Bean(recentContact.getContent(), IMMessageCustomBody.class);
                         } catch (Exception ex) {
                             ex.printStackTrace();
+                            bugSync("回话解析异常", StringUtils.throwable2string(ex) + "\n json:" + recentContact.getContent());
                             log("------------->解析异常:" + ex + "\n" + recentContact.getContactId() + " \n" + recentContact.getContent());
                         }
                         if (customIMBody == null) continue;
@@ -801,12 +817,14 @@ public class MessageListFragment extends BaseRecentContactFragment
                             int indexOf = localGroupContactBeans.indexOf(groupContactBean);
                             if (indexOf >= 0) {
                                 groupContactBean = localGroupContactBeans.get(indexOf);
-                                ChatActivity.launchP2P(getActivity(),
-                                        data.recentContact.getContactId(),
-                                        groupContactBean.name,
-                                        0,
-                                        totalUnReadCount);
+                            } else {
+                                groupContactBean.name = data.recentContact.getFromNick();
                             }
+                            ChatActivity.launchP2P(getActivity(),
+                                    data.recentContact.getContactId(),
+                                    groupContactBean.name,
+                                    0,
+                                    totalUnReadCount);
                         }
                     }
                     break;

@@ -24,6 +24,8 @@ import com.icourt.alpha.entity.event.UpdateCustomerEvent;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.DateUtils;
+import com.icourt.alpha.utils.UMMobClickAgent;
+import com.umeng.analytics.MobclickAgent;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -168,6 +170,7 @@ public class CustomerPersonDetailActivity extends BaseActivity {
                 }
                 break;
             case R.id.titleAction2:
+                MobclickAgent.onEvent(getContext(), UMMobClickAgent.creat_client_click_id);
                 CustomerPersonCreateActivity.launch(this, contactDeatilBean, CustomerPersonCreateActivity.UPDATE_CUSTOMER_ACTION);
                 break;
         }

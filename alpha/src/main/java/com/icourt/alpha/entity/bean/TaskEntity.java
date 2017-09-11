@@ -2,6 +2,7 @@ package com.icourt.alpha.entity.bean;
 
 import android.text.TextUtils;
 
+import com.google.gson.annotations.SerializedName;
 import com.icourt.alpha.db.convertor.IConvertModel;
 
 import java.io.Serializable;
@@ -83,9 +84,22 @@ public class TaskEntity implements Serializable {
          * 任务相关人
          */
         public static class AttendeeUserEntity implements Serializable {
+            @SerializedName(value = "userId", alternate = {"id"})
             public String userId;
+            @SerializedName(value = "userName", alternate = {"name"})
             public String userName;
             public String pic;
+
+            @Override
+            public boolean equals(Object o) {
+                if (this == o)
+                    return true;
+                if (o == null) return false;
+                if (getClass() != o.getClass())
+                    return false;
+                final AttendeeUserEntity other = (AttendeeUserEntity) o;
+                return TextUtils.equals(this.userId, other.userId);
+            }
         }
 
         public static class ParentFlowEntity implements Serializable {

@@ -1,5 +1,7 @@
 package com.icourt.alpha.entity.bean;
 
+import android.text.TextUtils;
+
 import com.google.gson.annotations.Expose;
 import com.netease.nimlib.sdk.msg.constant.MsgTypeEnum;
 import com.netease.nimlib.sdk.msg.model.RecentContact;
@@ -41,5 +43,19 @@ public class IMSessionEntity {
                 ", recentContact=" + recentContact +
                 ", customIMBody=" + customIMBody +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (o == null) return false;
+        if (getClass() != o.getClass())
+            return false;
+        final IMSessionEntity other = (IMSessionEntity) o;
+        if (other.recentContact != null && recentContact != null) {
+            return TextUtils.equals(other.recentContact.getContactId(), recentContact.getContactId());
+        }
+        return false;
     }
 }

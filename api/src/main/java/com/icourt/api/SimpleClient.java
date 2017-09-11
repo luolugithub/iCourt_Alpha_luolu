@@ -34,7 +34,9 @@ public class SimpleClient extends BaseClient {
         //builder.retryOnConnectionFailure(true);
         //builder.cookieJar(cookieJar);
         builder.addInterceptor(interceptor);
-        builder.addInterceptor(new HttpLoggingInterceptor(logger).setLevel(HttpLoggingInterceptor.Level.BODY));
+        if (!isInterceptHttpLog()) {
+            builder.addInterceptor(new HttpLoggingInterceptor(logger).setLevel(HttpLoggingInterceptor.Level.BODY));
+        }
         builder.writeTimeout(apiConfig.SOCKET_WRITE_TIME_OUT, TimeUnit.MILLISECONDS);
         builder.connectTimeout(apiConfig.SOCKET_TIME_OUT, TimeUnit.MILLISECONDS);
         builder.readTimeout(apiConfig.SOCKET_RESPONSE_TIME_OUT, TimeUnit.MILLISECONDS);
@@ -48,6 +50,16 @@ public class SimpleClient extends BaseClient {
 
         super.attachBaseUrl(builder.build(), baseUrl);
     }
+
+    /**
+     * default is not intercept http log
+     *
+     * @return
+     */
+    protected boolean isInterceptHttpLog() {
+        return false;
+    }
+
 
     /**
      * 默认信任所有的证书

@@ -5,6 +5,8 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.view.ViewGroup;
 
+import com.bugtags.library.Bugtags;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -62,11 +64,12 @@ public class BaseFragmentAdapter extends FragmentPagerAdapter {
         return obj;
     }
 
-    private  Fragment primaryItem;
+    private Fragment primaryItem;
+
     @Override
     public void setPrimaryItem(ViewGroup container, int position, Object object) {
         super.setPrimaryItem(container, position, object);
-        primaryItem= (Fragment) object;
+        primaryItem = (Fragment) object;
     }
 
     public Fragment getPrimaryItem() {
@@ -87,6 +90,15 @@ public class BaseFragmentAdapter extends FragmentPagerAdapter {
     public CharSequence getPageTitle(int position) {
         if (mFragmentTitles.isEmpty()) return "";
         return mFragmentTitles.get(position % mFragmentTitles.size());
+    }
+
+    @Override
+    public void finishUpdate(ViewGroup container) {
+        try {
+            super.finishUpdate(container);
+        } catch (NullPointerException nullPointerException) {
+            Bugtags.sendFeedback("Catch the NullPointerException in FragmentPagerAdapter.finishUpdate");
+        }
     }
 }
 

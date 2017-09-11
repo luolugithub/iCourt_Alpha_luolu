@@ -30,7 +30,6 @@ import com.icourt.alpha.entity.bean.TaskCheckItemEntity;
 import com.icourt.alpha.entity.bean.TaskEntity;
 import com.icourt.alpha.entity.bean.TaskGroupEntity;
 import com.icourt.alpha.entity.bean.TaskMemberWrapEntity;
-import com.icourt.alpha.entity.bean.TaskOwerEntity;
 import com.icourt.alpha.entity.bean.TaskReminderEntity;
 import com.icourt.alpha.entity.bean.TimeEntity;
 import com.icourt.alpha.entity.bean.TimingCountEntity;
@@ -62,7 +61,6 @@ import retrofit2.http.Url;
  * @email xuanyouwu@163.com
  * @time 2016-06-02 14:26
  * <p>
- * 注意如果用的是Observable api必须以Observable结尾
  * 分页公共参数 整形  请大家按照这个【顺序】写
  * @Query("pageNum") int pageNum,
  * @Query("pageSize") int pageSize
@@ -223,7 +221,8 @@ public interface ApiAlphaService {
      *
      * @return
      */
-    @GET("ilaw/api/v2/taskflow/queryTaskByDue")
+    @Deprecated
+    @GET("api/v2/taskflow/queryTaskByDue")
     Call<ResEntity<PageEntity<TaskEntity>>> getAllTask();
 
 
@@ -234,7 +233,8 @@ public interface ApiAlphaService {
      *
      * @return
      */
-    @GET("ilaw/api/v2/taskflow/queryTaskByDue")
+    @Deprecated
+    @GET("api/v2/taskflow/queryTaskByDue")
     Call<ResEntity<PageEntity<TaskEntity.TaskItemEntity>>> getAllTask(@Query("dueStart") String dueStart,
                                                                       @Query("dueEnd") String dueEnd,
                                                                       @Query("assignTos") List<String> assignTos,
@@ -457,6 +457,9 @@ public interface ApiAlphaService {
      */
     @GET("ilaw/api/v2/taskflow/queryMatterTask")
     Call<ResEntity<TaskEntity>> projectQueryTaskList(@Query("matterId") String projectId,
+    @GET("api/v2/taskflow/queryMatterTask")
+    Call<ResEntity<TaskEntity>> projectQueryTaskList(@Query("assignTos") String assignTos,
+                                                     @Query("matterId") String projectId,
                                                      @Query("stateType") int stateType,
                                                      @Query("type") int type,
                                                      @Query("pageIndex") int pageIndex,
@@ -716,7 +719,6 @@ public interface ApiAlphaService {
      * <p>
      * 文档地址：http://testpms.alphalawyer.cn/ilaw/swagger/index.html#!/taskflow-api/queryTaskFlowsUsingGET_1
      *
-     * @param assignedByMe  0：所有； 1：我分配的
      * @param assignTos     分配给谁的，用户的id序列
      * @param attentionType 全部:0    我关注的:1
      * @param orderBy       按指定类型排序或分组；matterId表示按项目排序;createTime表示按日期排序(默认);parentId表示按清单;assignTo表示按负责人排序
@@ -779,6 +781,19 @@ public interface ApiAlphaService {
     Call<ResEntity<JsonElement>> taskAttachmentUpload(@Path("taskId") String taskId, @PartMap Map<String, RequestBody> params);
 
     /**
+     * 任务上传附件
+     * <p>
+     * 文档地址：http://testpms.alphalawyer.cn/ilaw/swagger/index.html#!/taskflow-api/addFromFileUsingPOST
+     *
+     * @param taskId
+     * @param params
+     * @return
+     */
+    @Multipart
+    @POST("api/v2/task/{taskId}/attachment/addFromFile")
+    Observable<JsonElement> taskAttachmentUploadObservable(@Path("taskId") String taskId, @PartMap Map<String, RequestBody> params);
+
+    /**
      * 获取指定时间段的计时
      * <p>
      * 文档地址：http://testpms.alphalawyer.cn/ilaw/swagger/index.html#!/timing-api/queryTimingUsingGET
@@ -834,6 +849,9 @@ public interface ApiAlphaService {
     @GET("ilaw/api/v1/matters/attorney")
     Call<ResEntity<List<TaskOwerEntity>>> taskOwerListQuery(@Query("id") String project,
                                                             @Query("name") String name);
+    @GET("api/v1/matters/attorney")
+    Call<ResEntity<List<TaskEntity.TaskItemEntity.AttendeeUserEntity>>> taskOwerListQuery(@Query("id") String project,
+                                                                                          @Query("name") String name);
 
 
     /**
@@ -1402,6 +1420,64 @@ public interface ApiAlphaService {
                                                                     @Query("path") String path);
 
 
+
+    /**
+     * 获取各个状态的任务数量
+     * 文档地址：https://dev.alphalawyer.cn/ilaw/swagger/index.html#!/taskflow-api/queryTaskStateCountUsingGET
+     *
+     * @return
+     */
+    @GET("api/v2/taskflow/state/count")
+    Call<ResEntity<JsonElement>> taskStateCountQuery();
+
+    /**
+     * 获取各个状态、类型的项目数量
+     * 文档地址:"https://dev.alphalawyer.cn/ilaw/swagger/index.html#!/matters-api/queryMatterStateCountUsingGET
+     *
+     * @param matterTypes 项目类型: [0:争议解决 1:非诉专项 2:常年顾问 3:内部事务], 多个以英文逗号分隔
+     * @return
+     */
+    @GET("api/v1/matters/state/count")
+    Call<ResEntity<JsonElement>> matterStateCountQuery(@Query("matterTypes") String matterTypes);
+
+    /**
+     * 获取新任务数量
+     * 文档地址：https://dev.alphalawyer.cn/ilaw/swagger/index.html#!/taskflow-api/queryNewTasksUsingGET
+     *
+     * @return
+     */
+    @GET("api/v2/taskflow/newtasks")
+    Call<ResEntity<List<String>>> newTasksCountQuery();
+
+    /**
+     * 恢复已删除的任务
+     * 文档地址：https://dev.alphalawyer.cn/ilaw/swagger/index.html#!/taskflow-api/returnTaskFlowUsingPUT
+     *
+     * @param taskId
+     * @return
+     */
+    @PUT("api/v2/taskflow/revivalTaskFlowById")
+    Call<ResEntity<JsonElement>> taskRecoverById(@Query("id") String taskId);
+
+    /**
+     * 清空所有已删除的任务
+     * 文档地址：https://dev.alphalawyer.cn/ilaw/swagger/index.html#!/taskflow-api/deleteTaskFlowByIdsUsingDELETE
+     *
+     * @param ids
+     * @return
+     */
+    @DELETE("api/v2/taskflow/clearTaskFlowByIds")
+    Call<ResEntity<JsonElement>> clearDeletedTask(@Query("ids") List<String> ids);
+
+    /**
+     * 获取任务下计时列表
+     * 文档地址：https://dev.alphalawyer.cn/ilaw/swagger/index.html#!/timing-api/findTimingByTaskIdUsingGET
+     *
+     * @param taskId
+     * @return
+     */
+    @GET("api/v2/timing/timing/findByTaskId")
+    Call<ResEntity<TimeEntity>> taskTimesByIdQuery(@Query("taskId") String taskId);
 }
 
 

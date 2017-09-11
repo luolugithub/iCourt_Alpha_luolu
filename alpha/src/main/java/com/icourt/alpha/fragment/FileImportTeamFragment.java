@@ -365,6 +365,9 @@ public class FileImportTeamFragment extends BaseFragment implements BaseRecycler
     public void onDestroyView() {
         super.onDestroyView();
         unbinder.unbind();
+        if (isShowLoading()) {
+            dismissLoadingDialog();
+        }
     }
 
     @Override

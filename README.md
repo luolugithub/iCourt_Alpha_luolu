@@ -13,13 +13,13 @@
 #merge requests  
    不允许提交到主要分支,fork一份代码,建立自己的本地分支(格式:开发分支+mr+名称简称 如:permission_mr_wyx),并提交request;  
    插件:GitLab Projects
- 
+ 4
 #fir账号
- 内部：wangchu@icourt.cc   qwer1234  
- 外部：104421133@qq.com    asd123  
- 外部：it@icourt.cc        zzVkn6bKgyWagvu34MhZ （包内的更新token和id都引用的是1044账号的token和id）  
- test：394337795@qq.com    394337795  
- 内部日更新：zhouyong@icourt.cc     Icourtadmin!@#123  
+ 内部：wangchu@icourt.cc   q****  
+ 外部：104421133@qq.com    a*****  
+ 外部：it@icourt.cc        z****** （包内的更新token和id都引用的是1044账号的token和id）  
+ test：394337795@qq.com    3*****  
+ 内部日更新：zhouyong@icourt.cc     I******* 
 
 
 #上线打包日志  
@@ -27,6 +27,10 @@
  2017/7/26 v2.0.3 内部包 (fir账号：wangchu@icourt.cc)
 
  2017/7/25 v2.0.0 外部包 (fir账号：104421133@qq.com)
+ 2017/7/26 v2.0.1 外部包 (fir账号：104421133@qq.com) 
+  
+ alpha-BaiDu-release-v2.0.2_2017-08-08 20/25_v202_jiagu_sign.apk  
+ alpha-BaiDu-release-v2.0.3_2017-09-05 23/50_v203_jiagu_sign.apk    
  2017/7/26 v2.0.1 外部包 (fir账号：104421133@qq.com)  
  2017/8/8  v2.0.2 alpha-BaiDu-release-v2.0.2_2017-08-08 20/25_v202_jiagu_sign.apk
 
@@ -46,20 +50,20 @@
  4. 云信正式版 c8c7a60c918645e80229e500f4c0e58f
 
  云信IM账号:  
- 1. 测试:13466661048      密码: iCourt1234  
- 2. 正式:chenli@icourt.cc 密码: iCourt1234   
+ 1. 测试:13466661048      密码: iC******  
+ 2. 正式:chenli@icourt.cc 密码: iC******  
    
  推送:  
- 1. 华为: zhouyong@icourt.cc  Icourtadmin!@#123  
- 2. 小米: 15666794049         Icourt!@#123
+ 1. 华为: zhouyong@icourt.cc  Icourtadmin*****  
+ 2. 小米: 15666794049         Icourt******
 
  查看证书信息命令:  
      keytool -list -v -keystore ~/Desktop/agency.jks -alias 别名 -storepass 密码 -keypass 密码  
       
  神策账号:  
   地址: https://shenceadmin.alphalawyer.cn  
-  测试: 用户名:admin 密码:ud4maK  
-  正式: 用户名:admin 密码:v^db6(  
+  测试: 用户名:admin 密码:ud***** 
+  正式: 用户名:admin 密码:v*****  
   集成文档:https://github.com/sensorsdata/sa-sdk-android  
    
 #日志跟踪tag

@@ -108,6 +108,7 @@ public class ProjectSimpleSelectDialogFragment
         if (dialog != null) {
             Window window = dialog.getWindow();
             if (window != null) {
+                window.setWindowAnimations(R.style.AppThemeSlideAnimation);
                 window.setGravity(Gravity.BOTTOM);
                 View decorView = window.getDecorView();
                 if (decorView != null) {

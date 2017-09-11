@@ -40,7 +40,6 @@ import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.ItemDecorationUtils;
-import com.icourt.alpha.utils.LogUtils;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 import com.icourt.alpha.widget.manager.TimerManager;
 import com.icourt.api.RequestUtils;
@@ -56,6 +55,12 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
+import io.reactivex.Observable;
+import io.reactivex.ObservableEmitter;
+import io.reactivex.ObservableOnSubscribe;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.functions.Consumer;
+import io.reactivex.schedulers.Schedulers;
 import retrofit2.Call;
 import retrofit2.Response;
 
@@ -137,20 +142,17 @@ public class ProjectTaskFragment extends BaseFragment implements TaskAdapter.OnS
                 super.onLoadMore(isSilence);
             }
         });
-//        refreshLayout.startRefresh();
-
         allTaskEntities = new ArrayList<>();
         taskEntities = new ArrayList<>();
         myStarTaskEntities = new ArrayList<>();
+        refreshLayout.startRefresh();
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        if (!EventBus.getDefault().isRegistered(this)) {
-            EventBus.getDefault().register(this);
-        }
-        refreshLayout.startRefresh();
+        if (taskAdapter != null)
+            taskAdapter.notifyDataSetChanged();
     }
 
     @Override
@@ -195,8 +197,7 @@ public class ProjectTaskFragment extends BaseFragment implements TaskAdapter.OnS
         getApi().taskListQueryByMatterId(0, "dueTime", projectId, -1, 1, -1).enqueue(new SimpleCallBack<TaskEntity>() {
             @Override
             public void onSuccess(Call<ResEntity<TaskEntity>> call, Response<ResEntity<TaskEntity>> response) {
-                stopRefresh();
-//                getTaskGroupData(response.body().result);
+
                 getTaskGroupDatas(response.body().result);
             }
 
@@ -209,82 +210,108 @@ public class ProjectTaskFragment extends BaseFragment implements TaskAdapter.OnS
         });
     }
 
-
-    private void getTaskGroupDatas(TaskEntity taskEntity) {
+    /**
+     * 异步分组
+     * @param taskEntity
+     */
+    private void getTaskGroupDatas(final TaskEntity taskEntity) {
         if (taskEntity != null) {
             enableEmptyView(taskEntity.items);
             if (taskEntity.items != null) {
-                List<TaskEntity.TaskItemEntity> noitems = new ArrayList<>();//未分组
-                TimeEntity.ItemEntity timerEntity = TimerManager.getInstance().getTimer();
-                for (TaskEntity.TaskItemEntity taskItemEntity : taskEntity.items) {
-                    if (TimerManager.getInstance().hasTimer()) {
-                        if (timerEntity != null) {
-                            if (!TextUtils.isEmpty(timerEntity.taskPkId)) {
-                                if (TextUtils.equals(timerEntity.taskPkId, taskItemEntity.id)) {
-                                    taskItemEntity.isTiming = true;
-                                }
+                Observable.create(new ObservableOnSubscribe<List<TaskEntity>>() {
+                    @Override
+                    public void subscribe(ObservableEmitter<List<TaskEntity>> e) throws Exception {
+                        if (e.isDisposed()) return;
+                        groupingByTasks(taskEntity.items);
+                        e.onNext(allTaskEntities);
+                        e.onComplete();
+                    }
+                }).compose(this.<List<TaskEntity>>bindToLifecycle())
+                        .subscribeOn(Schedulers.newThread())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(new Consumer<List<TaskEntity>>() {
+                            @Override
+                            public void accept(List<TaskEntity> searchPolymerizationEntities) throws Exception {
+                                stopRefresh();
+                                taskAdapter.setDeleteTask(isDeleteTask);
+                                taskAdapter.setEditTask(isEditTask);
+                                taskAdapter.setAddTime(isAddTime);
+                                taskAdapter.bindData(true, allTaskEntities);
+                                TimerManager.getInstance().timerQuerySync();
                             }
-                        }
-                    }
-                    if (taskItemEntity.type == 1) {
-                        TaskEntity itemEntity = new TaskEntity();
-                        itemEntity.groupName = taskItemEntity.name;
-                        itemEntity.groupId = taskItemEntity.id;
-                        allTaskEntities.add(itemEntity);
-                    } else if (taskItemEntity.type == 0) {
-                        if (TextUtils.isEmpty(taskItemEntity.parentId)) {
-                            noitems.add(taskItemEntity);
-                        } else {
-                            taskEntities.add(taskItemEntity);
-                        }
-                        if (taskItemEntity.attentioned == 1) {
-                            myStarTaskEntities.add(taskItemEntity);
-                        }
-                    }
-                }
-
-                if (allTaskEntities != null) {
-                    if (allTaskEntities.size() > 0) {
-                        for (TaskEntity allTaskEntity : allTaskEntities) {
-                            if (taskEntities != null) {
-                                List<TaskEntity.TaskItemEntity> items = new ArrayList<>();//有分组
-                                for (TaskEntity.TaskItemEntity entity : taskEntities) {
-                                    if (TextUtils.equals(allTaskEntity.groupId, entity.parentId)) {
-                                        items.add(entity);
-                                    }
-                                }
-                                allTaskEntity.items = items;
-                                allTaskEntity.groupTaskCount = items.size();
-                            }
-                        }
-                    } else {
-                        if (taskEntities != null && !taskEntities.isEmpty()) {
-                            noitems.addAll(taskEntities);
-                        }
-                    }
-                    if (noitems.size() > 0) {
-                        TaskEntity itemEntity = new TaskEntity();
-                        itemEntity.groupName = "未分组";
-                        itemEntity.items = noitems;
-                        itemEntity.groupTaskCount = noitems.size();
-                        allTaskEntities.add(itemEntity);
-                    }
-                    if (myStarTaskEntities.size() > 0) {
-                        TaskEntity itemEntity = new TaskEntity();
-                        itemEntity.groupName = "我关注的";
-                        itemEntity.items = myStarTaskEntities;
-                        itemEntity.groupTaskCount = myStarTaskEntities.size();
-                        allTaskEntities.add(0, itemEntity);
-                    }
-                    taskAdapter.setDeleteTask(isDeleteTask);
-                    taskAdapter.setEditTask(isEditTask);
-                    taskAdapter.setAddTime(isAddTime);
-                    taskAdapter.bindData(true, allTaskEntities);
-                    TimerManager.getInstance().timerQuerySync();
-                }
+                        });
             }
         } else {
             enableEmptyView(null);
+        }
+    }
+
+    /**
+     * 任务分组
+     * @param taskitems
+     */
+    private void groupingByTasks(List<TaskEntity.TaskItemEntity> taskitems) {
+        List<TaskEntity.TaskItemEntity> noitems = new ArrayList<>();//未分组
+        TimeEntity.ItemEntity timerEntity = TimerManager.getInstance().getTimer();
+        for (TaskEntity.TaskItemEntity taskItemEntity : taskitems) {
+            if (TimerManager.getInstance().hasTimer()) {
+                if (timerEntity != null) {
+                    if (!TextUtils.isEmpty(timerEntity.taskPkId)) {
+                        if (TextUtils.equals(timerEntity.taskPkId, taskItemEntity.id)) {
+                            taskItemEntity.isTiming = true;
+                        }
+                    }
+                }
+            }
+            if (taskItemEntity.type == 1) {
+                TaskEntity itemEntity = new TaskEntity();
+                itemEntity.groupName = taskItemEntity.name;
+                itemEntity.groupId = taskItemEntity.id;
+                allTaskEntities.add(itemEntity);
+            } else if (taskItemEntity.type == 0) {
+                if (TextUtils.isEmpty(taskItemEntity.parentId)) {
+                    noitems.add(taskItemEntity);
+                } else {
+                    taskEntities.add(taskItemEntity);
+                }
+                if (taskItemEntity.attentioned == 1) {
+                    myStarTaskEntities.add(taskItemEntity);
+                }
+            }
+        }
+        if (allTaskEntities != null) {
+            if (allTaskEntities.size() > 0) {
+                for (TaskEntity allTaskEntity : allTaskEntities) {
+                    if (taskEntities != null) {
+                        List<TaskEntity.TaskItemEntity> items = new ArrayList<>();//有分组
+                        for (TaskEntity.TaskItemEntity entity : taskEntities) {
+                            if (TextUtils.equals(allTaskEntity.groupId, entity.parentId)) {
+                                items.add(entity);
+                            }
+                        }
+                        allTaskEntity.items = items;
+                        allTaskEntity.groupTaskCount = items.size();
+                    }
+                }
+            } else {
+                if (taskEntities != null && !taskEntities.isEmpty()) {
+                    noitems.addAll(taskEntities);
+                }
+            }
+            if (noitems.size() > 0) {
+                TaskEntity itemEntity = new TaskEntity();
+                itemEntity.groupName = "未分组";
+                itemEntity.items = noitems;
+                itemEntity.groupTaskCount = noitems.size();
+                allTaskEntities.add(itemEntity);
+            }
+            if (myStarTaskEntities.size() > 0) {
+                TaskEntity itemEntity = new TaskEntity();
+                itemEntity.groupName = "我关注的";
+                itemEntity.items = myStarTaskEntities;
+                itemEntity.groupTaskCount = myStarTaskEntities.size();
+                allTaskEntities.add(0, itemEntity);
+            }
         }
     }
 
@@ -338,26 +365,19 @@ public class ProjectTaskFragment extends BaseFragment implements TaskAdapter.OnS
 
         switch (event.action) {
             case TimingEvent.TIMING_ADD:
-
-                break;
-            case TimingEvent.TIMING_UPDATE_PROGRESS:
                 TimeEntity.ItemEntity updateItem = TimerManager.getInstance().getTimer();
                 if (updateItem != null) {
                     updateChildTimeing(updateItem.taskPkId, true);
                 }
                 break;
+            case TimingEvent.TIMING_UPDATE_PROGRESS:
+
+                break;
             case TimingEvent.TIMING_STOP:
-                if (taskAdapter != null && lastEntity != null) {
-                    for (TaskEntity entity : taskAdapter.getData()) {
-                        for (TaskEntity.TaskItemEntity item : entity.items) {
-                            if (TextUtils.equals(lastEntity.id, item.id)) {
-                                item.isTiming = false;
-                                LogUtils.e("TimingEvent.TIMING_STOP =========");
-                            }
-                        }
-                    }
-                    taskAdapter.notifyDataSetChanged();
+                if (lastEntity != null) {
+                    lastEntity.isTiming = false;
                 }
+                taskAdapter.notifyDataSetChanged();
                 break;
         }
     }
