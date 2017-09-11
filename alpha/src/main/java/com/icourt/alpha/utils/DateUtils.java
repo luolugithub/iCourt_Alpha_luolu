@@ -576,4 +576,29 @@ public class DateUtils {
         calendar.set(Calendar.MILLISECOND, 0);
         return calendar.getTimeInMillis();
     }
+
+    /**
+     * 获取当月的第一天
+     *
+     * @return
+     */
+    public static String getCurrentMonthFirstDay() {
+        SimpleDateFormat dateFormater = new SimpleDateFormat("yyyy-MM-dd");
+        Calendar cal = Calendar.getInstance();
+        cal.set(Calendar.DAY_OF_MONTH, 1);
+        cal.getTime();
+        return dateFormater.format(cal.getTime());
+    }
+
+    /**
+     * 获取当月的最后一天
+     * @return
+     */
+    public static String getCurrentMonthLastDay() {
+        SimpleDateFormat dateFormater = new SimpleDateFormat("yyyy-MM-dd");
+        Calendar cal = Calendar.getInstance();
+        cal.set(Calendar.DAY_OF_MONTH,
+                cal.getActualMaximum(Calendar.DAY_OF_MONTH));
+        return dateFormater.format(cal.getTime());
+    }
 }

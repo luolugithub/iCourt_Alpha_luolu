@@ -124,7 +124,7 @@ public class MyFinishTaskActivity extends BaseActivity
     @Override
     protected void initView() {
         super.initView();
-        setTitle("查看已完成的任务");
+        setTitle("本月已完成的任务");
         EventBus.getDefault().register(this);
         refreshLayout.setNoticeEmpty(R.mipmap.bg_no_task, "暂无已完成任务");
         refreshLayout.setMoveForHorizontal(true);
@@ -178,7 +178,16 @@ public class MyFinishTaskActivity extends BaseActivity
         if (isRefresh) {
             pageIndex = 1;
         }
-        getApi().taskListQuery(0, getLoginUserId(), 1, 0, "updateTime", pageIndex, ActionConstants.DEFAULT_PAGE_SIZE, 0).enqueue(new SimpleCallBack<TaskEntity>() {
+        getApi().taskListItemByTimeQuery(
+                getLoginUserId(),
+                1,
+                0,
+                "updateTime",
+                pageIndex,
+                ActionConstants.DEFAULT_PAGE_SIZE,
+                0,
+                DateUtils.getCurrentMonthFirstDay(),
+                DateUtils.getCurrentMonthLastDay()).enqueue(new SimpleCallBack<TaskEntity>() {
             @Override
             public void onSuccess(Call<ResEntity<TaskEntity>> call, Response<ResEntity<TaskEntity>> response) {
                 if (response.body().result != null) {

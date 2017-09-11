@@ -91,6 +91,7 @@
                 android:padding="@dimen/dp20">
 
                 <LinearLayout
+                    android:id="@+id/today_duraction_layout"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
@@ -120,6 +121,7 @@
                     android:background="@color/alpha_divider_color" />
 
                 <LinearLayout
+                    android:id="@+id/month_duraction_layout"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
@@ -149,6 +151,7 @@
                     android:background="@color/alpha_divider_color" />
 
                 <LinearLayout
+                    android:id="@+id/done_task_layout"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"

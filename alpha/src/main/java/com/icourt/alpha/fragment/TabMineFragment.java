@@ -14,6 +14,7 @@ import com.bumptech.glide.Glide;
 import com.icourt.alpha.BuildConfig;
 import com.icourt.alpha.R;
 import com.icourt.alpha.activity.ChatMsgClassfyActivity;
+import com.icourt.alpha.activity.MyFinishTaskActivity;
 import com.icourt.alpha.activity.SetingActivity;
 import com.icourt.alpha.activity.UserInfoActivity;
 import com.icourt.alpha.base.BaseFragment;
@@ -79,6 +80,12 @@ public class TabMineFragment extends BaseFragment {
     TextView menuTest;
     @BindView(R.id.user_info_layout)
     LinearLayout userInfoLayout;
+    @BindView(R.id.today_duraction_layout)
+    LinearLayout todayDuractionLayout;
+    @BindView(R.id.month_duraction_layout)
+    LinearLayout monthDuractionLayout;
+    @BindView(R.id.done_task_layout)
+    LinearLayout doneTaskLayout;
 
     public static TabMineFragment newInstance() {
         return new TabMineFragment();
@@ -196,6 +203,9 @@ public class TabMineFragment extends BaseFragment {
     @OnClick({
             R.id.photo_image,
             R.id.user_info_layout,
+            R.id.today_duraction_layout,
+            R.id.month_duraction_layout,
+            R.id.done_task_layout,
             R.id.my_center_collect_layout,
             R.id.my_center_set_layout,
             R.id.menu_test})
@@ -208,6 +218,15 @@ public class TabMineFragment extends BaseFragment {
                 break;
             case R.id.user_info_layout:
                 UserInfoActivity.launch(getContext());
+                break;
+            case R.id.today_duraction_layout://今日计时
+                showTopSnackBar("今日计时");
+                break;
+            case R.id.month_duraction_layout://本月计时
+                showTopSnackBar("本月计时");
+                break;
+            case R.id.done_task_layout://本月完成任务
+                MyFinishTaskActivity.launch(getContext());
                 break;
             case R.id.my_center_set_layout://设置
                 SetingActivity.launch(getContext());
