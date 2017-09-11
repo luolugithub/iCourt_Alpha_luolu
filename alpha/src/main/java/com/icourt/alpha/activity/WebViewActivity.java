@@ -160,6 +160,7 @@ public class WebViewActivity extends BaseActivity {
 
         @Override
         public void onProgressChanged(WebView view, int newProgress) {
+              
             super.onProgressChanged(view, newProgress);
             if (progressLayout != null) {
                 progressLayout.setCurrentProgress(newProgress);
@@ -199,7 +200,7 @@ public class WebViewActivity extends BaseActivity {
         webView.setWebViewClient(mWebViewClient);
         webView.setWebChromeClient(mWebChromeClient);
         progressLayout.setMaxProgress(100);
-        webView.loadUrl(getIntent().getStringExtra("url"));
+        webView.loadUrl(getIntent().getStringExtra(KEY_URL));
     }
 
     @Override
@@ -218,7 +219,7 @@ public class WebViewActivity extends BaseActivity {
      * 用其它app打开网页
      */
     private void openWithOtherApp() {
-        String url = getIntent().getStringExtra("url");
+        String url = getIntent().getStringExtra(KEY_URL);
         Intent intent = new Intent();
         intent.setAction("android.intent.action.VIEW");
         Uri content_url = Uri.parse(url);

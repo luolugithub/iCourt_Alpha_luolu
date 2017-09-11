@@ -1,6 +1,7 @@
 package com.icourt.alpha.activity;
 
 import android.content.ActivityNotFoundException;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -14,6 +15,7 @@ import android.widget.TextView;
 
 import com.icourt.alpha.R;
 import com.icourt.alpha.base.BaseActivity;
+import com.icourt.alpha.utils.ApkUtils;
 import com.icourt.alpha.utils.SystemUtils;
 
 import butterknife.BindView;
@@ -68,7 +70,11 @@ public class FeedBackActivity extends BaseActivity {
         super.onClick(v);
         switch (v.getId()) {
             case R.id.feedback_wechat_tv:
-                showToast("微信");
+                if (ApkUtils.isAppAvilible(this, "com.tencent.mm")) {
+                    startWeiXinApp();
+                } else {
+                    showTopSnackBar("未安装微信");
+                }
                 break;
             case R.id.feedback_email_tv:
                 if (!TextUtils.isEmpty(feedbackEmailTv.getText())) {
@@ -81,5 +87,18 @@ public class FeedBackActivity extends BaseActivity {
                 }
                 break;
         }
+    }
+
+    /**
+     * 打开微信
+     */
+    private void startWeiXinApp() {
+        Intent intent = new Intent();
+        ComponentName cmp = new ComponentName("com.tencent.mm", "com.tencent.mm.ui.LauncherUI");
+        intent.setAction(Intent.ACTION_MAIN);
+        intent.addCategory(Intent.CATEGORY_LAUNCHER);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        intent.setComponent(cmp);
+        startActivity(intent);
     }
 }

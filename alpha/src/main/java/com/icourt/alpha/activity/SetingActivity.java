@@ -138,7 +138,7 @@ public class SetingActivity extends BaseAppUpdateActivity {
                         .show();
                 break;
             case R.id.setting_helper_layout:
-               WebViewActivity.launch(this,"https://mp.weixin.qq.com/s/CghSah5E7Kj_IMZ65Shp-A","帮助中心");
+               WebViewActivity.launch(this,"帮助中心","https://mp.weixin.qq.com/s/CghSah5E7Kj_IMZ65Shp-A");
                 break;
             case R.id.setting_feedback_layout:
                 FeedBackActivity.launch(this);
