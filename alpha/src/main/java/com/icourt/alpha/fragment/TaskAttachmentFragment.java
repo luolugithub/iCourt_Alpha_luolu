@@ -63,6 +63,7 @@ import retrofit2.Response;
  * version 2.0.0
  */
 
+@Deprecated
 public class TaskAttachmentFragment extends BaseFragment implements BaseRecyclerAdapter.OnItemClickListener, BaseRecyclerAdapter.OnItemLongClickListener {
     private static final String KEY_TASK_ID = "key_task_id";
     private static final String KEY_HAS_PERMISSION = "key_has_permission";
@@ -385,6 +386,7 @@ public class TaskAttachmentFragment extends BaseFragment implements BaseRecycler
             showTopSnackBar("对不起，您没有查看此文件的权限");
         }
     }
+
     /**
      * type=100 更新 KEY_HAS_PERMISSION
      *
@@ -393,6 +395,7 @@ public class TaskAttachmentFragment extends BaseFragment implements BaseRecycler
      * @param bundle
      */
     @Override
+    @Deprecated
     public void notifyFragmentUpdate(Fragment targetFrgament, int type, Bundle bundle) {
         super.notifyFragmentUpdate(targetFrgament, type, bundle);
         if (type == 100 && bundle != null) {
