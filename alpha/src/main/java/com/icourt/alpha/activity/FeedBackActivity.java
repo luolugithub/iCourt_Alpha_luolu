@@ -1,7 +1,6 @@
 package com.icourt.alpha.activity;
 
 import android.content.ActivityNotFoundException;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -71,7 +70,7 @@ public class FeedBackActivity extends BaseActivity {
         switch (v.getId()) {
             case R.id.feedback_wechat_tv:
                 if (ApkUtils.isAppAvilible(this, "com.tencent.mm")) {
-                    startWeiXinApp();
+                    ApkUtils.startWeiXinApp(this);
                 } else {
                     showTopSnackBar("未安装微信");
                 }
@@ -89,16 +88,5 @@ public class FeedBackActivity extends BaseActivity {
         }
     }
 
-    /**
-     * 打开微信
-     */
-    private void startWeiXinApp() {
-        Intent intent = new Intent();
-        ComponentName cmp = new ComponentName("com.tencent.mm", "com.tencent.mm.ui.LauncherUI");
-        intent.setAction(Intent.ACTION_MAIN);
-        intent.addCategory(Intent.CATEGORY_LAUNCHER);
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        intent.setComponent(cmp);
-        startActivity(intent);
-    }
+
 }
