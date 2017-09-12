@@ -1238,13 +1238,11 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
         if (keyCode == KeyEvent.KEYCODE_BACK) {
             IntentWrapper.onBackPressed(this);
             try {
-                moveTaskToBack(true);
+                moveTaskToBack(false);
             } catch (Exception e) {
-                e.printStackTrace();
-                bugSync("首页返回模拟HOME出错", e);
+                bugSync("返回键模拟HOME出错", e);
                 return super.onKeyDown(keyCode, event);
             }
-            return true;
         }
         return super.onKeyDown(keyCode, event);
     }
