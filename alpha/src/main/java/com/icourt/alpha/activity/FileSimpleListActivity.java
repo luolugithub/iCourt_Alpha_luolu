@@ -160,7 +160,7 @@ public class FileSimpleListActivity extends FolderBaseActivity
         titleAction2.setImageResource(R.mipmap.header_icon_more);
 
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        headerFooterAdapter = new HeaderFooterAdapter<>(folderAdapter = new FolderAdapter(getSeaFileRepoId(), getSeaFileDirPath(), false));
+        headerFooterAdapter = new HeaderFooterAdapter<>(folderAdapter = new FolderAdapter());
 
         footerView = (TextView) HeaderFooterAdapter.inflaterView(getContext(), R.layout.footer_folder_document_num, recyclerView);
         headerFooterAdapter.addFooter(footerView);
@@ -234,7 +234,7 @@ public class FileSimpleListActivity extends FolderBaseActivity
                 .enqueue(new SFileCallBack<List<FolderDocumentEntity>>() {
                     @Override
                     public void onSuccess(Call<List<FolderDocumentEntity>> call, Response<List<FolderDocumentEntity>> response) {
-                        sortFile(response.body());
+                        sortFile(wrapData(getSeaFileRepoId(),getSeaFileDirPath(),response.body()));
                         stopRefresh();
                     }
 

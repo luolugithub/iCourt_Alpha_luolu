@@ -16,14 +16,11 @@ import com.icourt.alpha.utils.IMUtils;
  * date createTime：2017/8/14
  * version 2.1.0
  */
-public class FolderAdapter extends SFileImgBaseAdapter<FolderDocumentEntity> {
+public class FolderAdapter extends SeaFileImageBaseAdapter<FolderDocumentEntity> {
     public FolderAdapter() {
-        super("", "", false);
+        super(false);
     }
 
-    public FolderAdapter(String seaFileRepoId, String seaFileDirPath, boolean selectable) {
-        super(seaFileRepoId, seaFileDirPath, selectable);
-    }
 
     @Override
     public int bindView(int viewtype) {
@@ -45,7 +42,7 @@ public class FolderAdapter extends SFileImgBaseAdapter<FolderDocumentEntity> {
             document_desc_tv.setText(String.format("%s, %s",
                     FileUtils.bFormat(folderDocumentEntity.size), DateUtils.getStandardSimpleFormatTime(folderDocumentEntity.mtime * 1_000)));
             if (IMUtils.isPIC(folderDocumentEntity.name)) {
-                loadSFileImage(folderDocumentEntity.name, folder_type_iv);
+                loadSFileImage(folderDocumentEntity, folder_type_iv);
             } else {
                 folder_type_iv.setImageResource(getSFileTypeIcon(folderDocumentEntity.name));
             }

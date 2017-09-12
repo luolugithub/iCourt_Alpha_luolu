@@ -13,10 +13,9 @@ import android.view.ViewGroup;
 
 import com.andview.refreshview.XRefreshView;
 import com.icourt.alpha.R;
-import com.icourt.alpha.adapter.FolderDocumentAdapter;
+import com.icourt.alpha.adapter.FolderOnlySelectAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.base.BaseFragment;
-import com.icourt.alpha.constants.Const;
 import com.icourt.alpha.entity.bean.FolderDocumentEntity;
 import com.icourt.alpha.entity.bean.SeaFileSelectParam;
 import com.icourt.alpha.http.callback.SFileCallBack;
@@ -62,7 +61,7 @@ public class SeaFileSelectFragment extends BaseFragment
     RecyclerView recyclerView;
     Unbinder unbinder;
     SeaFileSelectParam iSeaFileSelectParams;
-    FolderDocumentAdapter folderDocumentAdapter;
+    FolderOnlySelectAdapter folderDocumentAdapter;
     OnFragmentCallBackListener onFragmentCallBackListener;
     OnSeaFileSelectListener onSeaFileSelectListener;
     ArrayList<FolderDocumentEntity> selectedFolderDocumentEntities;
@@ -110,12 +109,11 @@ public class SeaFileSelectFragment extends BaseFragment
         selectedFolderDocumentEntities = iSeaFileSelectParams.getSelectedFolderDocuments();
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setAdapter(
-                folderDocumentAdapter = new FolderDocumentAdapter(
-                        Const.VIEW_TYPE_ITEM,
-                        iSeaFileSelectParams.getDstRepoId(),
-                        iSeaFileSelectParams.getDstRepoDirPath(),
+                folderDocumentAdapter = new FolderOnlySelectAdapter(
+                        getSelectedFolderDocumentEntities(),
                         true,
-                        getSelectedFolderDocumentEntities()));
+                        false
+                ));
         folderDocumentAdapter.setOnItemClickListener(this);
         refreshLayout.setXRefreshViewListener(new XRefreshView.SimpleXRefreshListener() {
             @Override

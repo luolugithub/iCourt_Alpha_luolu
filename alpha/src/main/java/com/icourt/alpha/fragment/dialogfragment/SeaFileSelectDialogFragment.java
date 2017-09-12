@@ -22,11 +22,10 @@ import android.widget.TextView;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.icourt.alpha.R;
-import com.icourt.alpha.adapter.FolderDocumentAdapter;
+import com.icourt.alpha.adapter.FolderOnlySelectAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.adapterObserver.DataChangeAdapterObserver;
 import com.icourt.alpha.base.BaseDialogFragment;
-import com.icourt.alpha.constants.Const;
 import com.icourt.alpha.constants.SFileConfig;
 import com.icourt.alpha.entity.bean.FolderDocumentEntity;
 import com.icourt.alpha.entity.bean.RepoEntity;
@@ -91,8 +90,10 @@ public class SeaFileSelectDialogFragment extends BaseDialogFragment
     LinearLayout dragView;
     @BindView(R.id.sliding_layout)
     SlidingUpPanelLayout slidingLayout;
-    FolderDocumentAdapter selectedFolderDocumentAdapter;
+    FolderOnlySelectAdapter selectedFolderDocumentAdapter;
     String taskId;
+    @BindView(R.id.contentEmptyText)
+    TextView contentEmptyText;
 
     public static SeaFileSelectDialogFragment newInstance(@NonNull String taskId) {
         SeaFileSelectDialogFragment fragment = new SeaFileSelectDialogFragment();
@@ -124,6 +125,7 @@ public class SeaFileSelectDialogFragment extends BaseDialogFragment
     @Override
     protected void initView() {
         taskId = getArguments().getString(KEY_TASK_ID, "");
+        contentEmptyText.setText(R.string.sfile_un_select);
         Dialog dialog = getDialog();
         if (dialog != null) {
             Window window = dialog.getWindow();
@@ -137,15 +139,15 @@ public class SeaFileSelectDialogFragment extends BaseDialogFragment
         replaceRepoTypeFragment();
 
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        recyclerView.setAdapter(selectedFolderDocumentAdapter = new FolderDocumentAdapter(
-                Const.VIEW_TYPE_ITEM,
-                null,
-                null,
+        recyclerView.setAdapter(selectedFolderDocumentAdapter = new FolderOnlySelectAdapter(
+                selectedFolderDocumentEntities,
                 true,
-                selectedFolderDocumentEntities));
+                true
+        ));
         selectedFolderDocumentAdapter.registerAdapterDataObserver(new DataChangeAdapterObserver() {
             @Override
             protected void updateUI() {
+                contentEmptyText.setVisibility(selectedFolderDocumentAdapter.getItemCount() > 0 ? View.GONE : View.VISIBLE);
                 updateSelectNum();
             }
         });
@@ -166,6 +168,13 @@ public class SeaFileSelectDialogFragment extends BaseDialogFragment
             }
         });
         selectedFolderDocumentAdapter.bindData(true, new ArrayList<FolderDocumentEntity>(selectedFolderDocumentEntities));
+        slidingLayout.setFadeOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                closePanel();
+            }
+        });
+
     }
 
     /**
@@ -190,7 +199,8 @@ public class SeaFileSelectDialogFragment extends BaseDialogFragment
     @OnClick({R.id.titleBack,
             R.id.foldr_go_parent_tv,
             R.id.selected_num_tv,
-            R.id.ok_tv})
+            R.id.ok_tv,
+            R.id.contentEmptyText})
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
@@ -207,18 +217,47 @@ public class SeaFileSelectDialogFragment extends BaseDialogFragment
                 }
                 break;
             case R.id.selected_num_tv:
-                if (slidingLayout.getPanelState() == SlidingUpPanelLayout.PanelState.EXPANDED) {
-                    slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
-                } else {
-                    slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.EXPANDED);
-                }
+                togglePanel();
                 break;
             case R.id.ok_tv:
                 addAttachmentFromRepo();
                 break;
+            case R.id.contentEmptyText:
+                closePanel();
+                break;
             default:
                 super.onClick(v);
                 break;
+        }
+    }
+
+    /**
+     * 打开面板
+     */
+    private void openPanel() {
+        if (slidingLayout.getPanelState() != SlidingUpPanelLayout.PanelState.EXPANDED) {
+            slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.EXPANDED);
+        }
+    }
+
+    /**
+     * 反选打开状态
+     */
+    private void togglePanel() {
+        if (slidingLayout.getPanelState() != SlidingUpPanelLayout.PanelState.EXPANDED) {
+            openPanel();
+        } else {
+            closePanel();
+        }
+    }
+
+    /**
+     * 关闭面板
+     */
+    private void closePanel() {
+        if (slidingLayout.getPanelState()
+                != SlidingUpPanelLayout.PanelState.COLLAPSED) {
+            slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
         }
     }
 
@@ -235,9 +274,6 @@ public class SeaFileSelectDialogFragment extends BaseDialogFragment
      * }
      */
     private void addAttachmentFromRepo() {
-        if (selectedFolderDocumentEntities.isEmpty()) {
-            return;
-        }
         JsonObject paramObject = new JsonObject();
         paramObject.addProperty("taskId", taskId);
         JsonArray pathInfoArray = new JsonArray();
@@ -273,6 +309,7 @@ public class SeaFileSelectDialogFragment extends BaseDialogFragment
                     }
                 });
     }
+
 
     /**
      * 是否可以返回到sfile父目录
@@ -394,6 +431,7 @@ public class SeaFileSelectDialogFragment extends BaseDialogFragment
                 getString(R.string.sfile_file_already_selected,
                         String.valueOf(selectedFolderDocumentAdapter.getItemCount()) + "/" + String.valueOf(10))
         );
+        okTv.setEnabled(selectedFolderDocumentAdapter.getItemCount() > 0);
     }
 
     @Override

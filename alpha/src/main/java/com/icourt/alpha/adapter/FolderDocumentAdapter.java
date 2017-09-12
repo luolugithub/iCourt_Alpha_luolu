@@ -27,16 +27,15 @@ import static com.icourt.alpha.constants.SFileConfig.PERMISSION_RW;
  * date createTime：2017/8/10
  * version 2.1.0
  */
-public class FolderDocumentAdapter extends SFileImgBaseAdapter<FolderDocumentEntity> {
+public class FolderDocumentAdapter extends SeaFileImageBaseAdapter<FolderDocumentEntity> {
     private ArrayList<FolderDocumentEntity> selectedFolderDocuments;
     @Const.AdapterViewType
     int adapterViewType;
 
     public FolderDocumentAdapter(@Const.AdapterViewType int adapterViewType,
-                                 String seaFileRepoId, String seaFileDirPath,
                                  boolean selectable,
                                  ArrayList<FolderDocumentEntity> selectedFolderDocuments) {
-        super(seaFileRepoId, seaFileDirPath, selectable);
+        super(selectable);
         this.adapterViewType = adapterViewType;
         this.selectedFolderDocuments = selectedFolderDocuments;
     }
@@ -118,7 +117,7 @@ public class FolderDocumentAdapter extends SFileImgBaseAdapter<FolderDocumentEnt
         } else {
             if (IMUtils.isPIC(folderDocumentEntity.name)) {
                 document_pic_iv.setVisibility(View.VISIBLE);
-                loadSFileImage(folderDocumentEntity.name, document_pic_iv);
+                loadSFileImage(folderDocumentEntity,document_pic_iv);
             } else {
                 document_pic_iv.setVisibility(View.GONE);
                 document_type_iv.setImageResource(getSFileTypeIcon(folderDocumentEntity.name));
@@ -148,7 +147,7 @@ public class FolderDocumentAdapter extends SFileImgBaseAdapter<FolderDocumentEnt
         } else {
             document_desc_tv.setText(String.format("%s, %s", FileUtils.bFormat(folderDocumentEntity.size), DateUtils.getStandardSimpleFormatTime(folderDocumentEntity.mtime * 1_000)));
             if (IMUtils.isPIC(folderDocumentEntity.name)) {
-                loadSFileImage(folderDocumentEntity.name, document_type_iv);
+                loadSFileImage(folderDocumentEntity, document_type_iv);
             } else {
                 document_type_iv.setImageResource(getSFileTypeIcon(folderDocumentEntity.name));
             }

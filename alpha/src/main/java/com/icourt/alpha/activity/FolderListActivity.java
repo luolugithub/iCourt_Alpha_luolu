@@ -219,8 +219,6 @@ public class FolderListActivity extends FolderBaseActivity
         headerFooterAdapter = new HeaderFooterAdapter<>(
                 folderDocumentAdapter = new FolderDocumentWrapAdapter(
                         SFileConfig.getSFileLayoutType(getSeaFileRepoId(), VIEW_TYPE_ITEM),
-                        getSeaFileRepoId(),
-                        getSeaFileDirPath(),
                         false,
                         selectedFolderDocuments));
         addHeadView();
@@ -331,7 +329,7 @@ public class FolderListActivity extends FolderBaseActivity
                         //取消批量操作界面
                         onClick(titleEditCancelView);
 
-                        sortFile(response.body());
+                        sortFile(wrapData(getSeaFileRepoId(),getSeaFileDirPath(),response.body()));
                         stopRefresh();
                     }
 

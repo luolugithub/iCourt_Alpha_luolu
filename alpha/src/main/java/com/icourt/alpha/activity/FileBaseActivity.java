@@ -140,6 +140,29 @@ public class FileBaseActivity extends BaseActivity {
                 });
     }
 
+
+    /**
+     * 包装 repoid 和dirpath
+     * @param seaFileRepoId
+     * @param seaFileDirPath
+     * @param items
+     * @return
+     */
+    protected List<FolderDocumentEntity> wrapData(
+            @android.support.annotation.NonNull final String seaFileRepoId,
+            @android.support.annotation.NonNull final String seaFileDirPath,
+            @android.support.annotation.NonNull final List<FolderDocumentEntity> items) {
+        if (items != null) {
+            for (int i = 0; i < items.size(); i++) {
+                FolderDocumentEntity folderDocumentEntity = items.get(i);
+                if (folderDocumentEntity == null) continue;
+                folderDocumentEntity.parent_dir = seaFileDirPath;
+                folderDocumentEntity.repoId = seaFileRepoId;
+            }
+        }
+        return items;
+    }
+
     /**
      * 文件批量删除
      *

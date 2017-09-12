@@ -238,8 +238,7 @@ public class ProjectFileFragment extends SeaFileBaseFragment
                 .subscribe(new BaseObserver<List<FolderDocumentEntity>>() {
                     @Override
                     public void onNext(@NonNull List<FolderDocumentEntity> fileBoxBeen) {
-                        folderAdapter.setSeaFileRepoId(getSeaFileRepoId());
-                        sortFile(fileBoxBeen);
+                        sortFile(wrapData(getSeaFileRepoId(),getSeaFileDirPath(),fileBoxBeen));
                     }
 
                     @Override

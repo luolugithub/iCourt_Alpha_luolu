@@ -17,12 +17,12 @@ import com.icourt.alpha.utils.IMUtils;
  * date createTime：2017/8/22
  * version 2.1.0
  */
-public class SFileTrashAdapter extends SFileImgBaseAdapter<FolderDocumentEntity> {
+public class SFileTrashAdapter extends SeaFileImageBaseAdapter<FolderDocumentEntity> {
 
     boolean canRevert;
 
-    public SFileTrashAdapter(String seaFileRepoId, String seaFileDirPath, boolean selectable, boolean canRevert) {
-        super(seaFileRepoId, seaFileDirPath, selectable);
+    public SFileTrashAdapter(boolean selectable, boolean canRevert) {
+        super(selectable);
         this.canRevert = canRevert;
     }
 
@@ -49,7 +49,7 @@ public class SFileTrashAdapter extends SFileImgBaseAdapter<FolderDocumentEntity>
                     FileUtils.bFormat(folderDocumentEntity.size),
                     DateUtils.getStandardSimpleFormatTime(folderDocumentEntity.deleted_time)));
             if (IMUtils.isPIC(folderDocumentEntity.name)) {
-                loadSFileImage(folderDocumentEntity.name, document_type_iv);
+                loadSFileImage(folderDocumentEntity, document_type_iv);
             } else {
                 document_type_iv.setImageResource(getSFileTypeIcon(folderDocumentEntity.name));
             }

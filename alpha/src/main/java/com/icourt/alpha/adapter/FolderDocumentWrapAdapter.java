@@ -5,6 +5,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 
 import com.icourt.alpha.R;
+import com.icourt.alpha.adapter.baseadapter.BaseArrayRecyclerAdapter;
 import com.icourt.alpha.constants.Const;
 import com.icourt.alpha.entity.bean.FolderDocumentEntity;
 
@@ -21,17 +22,26 @@ import static com.icourt.alpha.constants.Const.VIEW_TYPE_ITEM;
  * version 2.1.0
  */
 public class FolderDocumentWrapAdapter
-        extends SFileImgBaseAdapter<List<FolderDocumentEntity>> {
+        extends BaseArrayRecyclerAdapter<List<FolderDocumentEntity>> {
     @Const.AdapterViewType
     int adapterViewType;
+    boolean selectable;
+
+
+    public boolean isSelectable() {
+        return selectable;
+    }
+
+    public void setSelectable(boolean selectable) {
+        this.selectable = selectable;
+    }
 
     private ArrayList<FolderDocumentEntity> selectedFolderDocuments;
 
     public FolderDocumentWrapAdapter(@Const.AdapterViewType int adapterViewType,
-                                     String seaFileRepoId, String seaFileDirPath,
                                      boolean selectable,
                                      ArrayList<FolderDocumentEntity> selectedFolderDocuments) {
-        super(seaFileRepoId,seaFileDirPath, selectable);
+        this.selectable = selectable;
         this.adapterViewType = adapterViewType;
         this.selectedFolderDocuments = selectedFolderDocuments;
     }
@@ -80,8 +90,6 @@ public class FolderDocumentWrapAdapter
         if (folderDocumentAdapter == null) {
             recyclerView.setAdapter(
                     folderDocumentAdapter = new FolderDocumentAdapter(adapterViewType,
-                            getSeaFileRepoId(),
-                            getSeaFileDirPath(),
                             isSelectable(),
                             selectedFolderDocuments));
         } else {

@@ -95,8 +95,6 @@ public class FileTrashListFragment extends SeaFileBaseFragment
     protected void initView() {
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setAdapter(folderDocumentAdapter = new SFileTrashAdapter(
-                getSeaFileRepoId(),
-                getSeaFileDirPath(),
                 false,
                 TextUtils.equals(getRepoPermission(), PERMISSION_RW)));
         emptyView = (TextView) HeaderFooterAdapter.inflaterView(getContext(), R.layout.footer_folder_document_num, recyclerView);
@@ -153,7 +151,7 @@ public class FileTrashListFragment extends SeaFileBaseFragment
                     @Override
                     public void onSuccess(Call<SeaFileTrashPageEntity<FolderDocumentEntity>> call, Response<SeaFileTrashPageEntity<FolderDocumentEntity>> response) {
                         scanStat = response.body().scan_stat;
-                        folderDocumentAdapter.bindData(isRefresh, response.body().data);
+                        folderDocumentAdapter.bindData(isRefresh, wrapData(getSeaFileRepoId(),getSeaFileDirPath(),response.body().data));
                         stopRefresh();
                         if (refreshLayout != null) {
                             refreshLayout.setPullLoadEnable(response.body().more);

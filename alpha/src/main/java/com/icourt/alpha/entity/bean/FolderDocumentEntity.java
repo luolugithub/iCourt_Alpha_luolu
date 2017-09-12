@@ -21,8 +21,8 @@ import java.io.Serializable;
  * date createTime：2017/8/10
  * version 2.1.0
  */
-public class FolderDocumentEntity
-        implements Serializable, IFilterEntity, ISuspensionInterface {
+public class FolderDocumentEntity implements ISeaFileImage,
+        Serializable, IFilterEntity, ISuspensionInterface {
     public static final int TYPE_FILE = 1;
     /**
      * "lock_time": 0,
@@ -152,6 +152,16 @@ public class FolderDocumentEntity
                 ", suspensionTag='" + suspensionTag + '\'' +
                 ", modifier_name='" + modifier_name + '\'' +
                 '}';
+    }
+
+    @Override
+    public String getSeaFileImageFullPath() {
+        return String.format("%s%s", parent_dir, name);
+    }
+
+    @Override
+    public String getSeaFileImageRepoId() {
+        return repoId;
     }
 
     public class DirBooleanTypeAdapter extends BooleanTypeAdapter {

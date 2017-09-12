@@ -18,6 +18,22 @@ import com.icourt.alpha.utils.SFileTokenUtils;
  * version 2.1.0
  */
 public abstract class SeaFileImageBaseAdapter<T extends ISeaFileImage> extends BaseArrayRecyclerAdapter<T> {
+    boolean selectable;
+
+    public SeaFileImageBaseAdapter(boolean selectable) {
+        this.selectable = selectable;
+    }
+    public SeaFileImageBaseAdapter() {
+    }
+
+    public boolean isSelectable() {
+        return selectable;
+    }
+
+    public void setSelectable(boolean selectable) {
+        this.selectable = selectable;
+    }
+
     /**
      * 加载图片
      *
