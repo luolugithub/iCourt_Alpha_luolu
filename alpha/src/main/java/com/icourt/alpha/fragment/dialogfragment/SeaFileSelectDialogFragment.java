@@ -29,12 +29,14 @@ import com.icourt.alpha.base.BaseDialogFragment;
 import com.icourt.alpha.constants.SFileConfig;
 import com.icourt.alpha.entity.bean.FolderDocumentEntity;
 import com.icourt.alpha.entity.bean.RepoEntity;
+import com.icourt.alpha.entity.bean.RepoIdResEntity;
 import com.icourt.alpha.entity.bean.RepoTypeEntity;
 import com.icourt.alpha.entity.bean.SeaFileSelectParam;
 import com.icourt.alpha.fragment.RepoNavigationFragment;
 import com.icourt.alpha.fragment.RepoSelectListFragment;
 import com.icourt.alpha.fragment.SeaFileSelectFragment;
 import com.icourt.alpha.http.callback.SimpleCallBack;
+import com.icourt.alpha.http.callback.SimpleCallBack2;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.interfaces.OnSeaFileSelectListener;
@@ -50,6 +52,7 @@ import butterknife.Unbinder;
 import retrofit2.Call;
 import retrofit2.Response;
 
+import static com.icourt.alpha.constants.SFileConfig.REPO_PROJECT;
 import static com.icourt.alpha.fragment.RepoSelectListFragment.KEY_REPO_TYPE;
 
 /**
@@ -62,6 +65,8 @@ import static com.icourt.alpha.fragment.RepoSelectListFragment.KEY_REPO_TYPE;
 public class SeaFileSelectDialogFragment extends BaseDialogFragment
         implements OnFragmentCallBackListener, OnSeaFileSelectListener {
     private static final String KEY_TASK_ID = "key_task_id";
+    private static final String KEY_PROJECT_ID = "key_project_id";
+    private static final String KEY_PROJECT_NAME = "key_project_name";
 
     @BindView(R.id.titleBack)
     CheckedTextView titleBack;
@@ -91,14 +96,18 @@ public class SeaFileSelectDialogFragment extends BaseDialogFragment
     @BindView(R.id.sliding_layout)
     SlidingUpPanelLayout slidingLayout;
     FolderOnlySelectAdapter selectedFolderDocumentAdapter;
-    String taskId;
+    String taskId, projectId, projectName;
     @BindView(R.id.contentEmptyText)
     TextView contentEmptyText;
 
-    public static SeaFileSelectDialogFragment newInstance(@NonNull String taskId) {
+    public static SeaFileSelectDialogFragment newInstance(@NonNull String taskId,
+                                                          @Nullable String projectId,
+                                                          @Nullable String projectName) {
         SeaFileSelectDialogFragment fragment = new SeaFileSelectDialogFragment();
         Bundle args = new Bundle();
         args.putString(KEY_TASK_ID, taskId);
+        args.putString(KEY_PROJECT_ID, projectId);
+        args.putString(KEY_PROJECT_NAME, projectName);
         fragment.setArguments(args);
         return fragment;
     }
@@ -125,6 +134,8 @@ public class SeaFileSelectDialogFragment extends BaseDialogFragment
     @Override
     protected void initView() {
         taskId = getArguments().getString(KEY_TASK_ID, "");
+        projectId = getArguments().getString(KEY_PROJECT_ID, "");
+        projectName = getArguments().getString(KEY_PROJECT_NAME, "");
         contentEmptyText.setText(R.string.sfile_un_select);
         Dialog dialog = getDialog();
         if (dialog != null) {
@@ -136,8 +147,6 @@ public class SeaFileSelectDialogFragment extends BaseDialogFragment
             }
         }
         selectRepoTypeEntity = new RepoTypeEntity(SFileConfig.REPO_MINE, "我的");
-        replaceRepoTypeFragment();
-
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setAdapter(selectedFolderDocumentAdapter = new FolderOnlySelectAdapter(
                 selectedFolderDocumentEntities,
@@ -175,6 +184,37 @@ public class SeaFileSelectDialogFragment extends BaseDialogFragment
             }
         });
 
+        if (!TextUtils.isEmpty(projectId)) {
+            getData(true);
+        } else {
+            replaceRepoTypeFragment();
+        }
+    }
+
+    @Override
+    protected void getData(boolean isRefresh) {
+        super.getData(isRefresh);
+        showLoadingDialog(null);
+        callEnqueue(getApi().projectQueryDocumentId(projectId), new SimpleCallBack2<RepoIdResEntity>() {
+            @Override
+            public void onSuccess(Call<RepoIdResEntity> call, Response<RepoIdResEntity> response) {
+                dismissLoadingDialog();
+                //对应项目下的第一级文件
+                SeaFileSelectParam seaFileSelectParam = new SeaFileSelectParam(
+                        REPO_PROJECT,
+                        projectName,
+                        response.body().seaFileRepoId,
+                        "/",
+                        selectedFolderDocumentEntities);
+                replaceFolderFragment(seaFileSelectParam);
+            }
+
+            @Override
+            public void onFailure(Call<RepoIdResEntity> call, Throwable t) {
+                super.onFailure(call, t);
+                dismissLoadingDialog();
+            }
+        });
     }
 
     /**
@@ -400,7 +440,7 @@ public class SeaFileSelectDialogFragment extends BaseDialogFragment
         this.iSeaFileSelectParams = null;
         foldrParentTv.setText(selectRepoTypeEntity.title);
         currFragment = addOrShowFragment(
-                RepoSelectListFragment.newInstance(SFileConfig.convert2RepoType(getArguments().getInt(KEY_REPO_TYPE))),
+                RepoSelectListFragment.newInstance(selectRepoTypeEntity.repoType),
                 currFragment,
                 R.id.main_fl_content);
     }

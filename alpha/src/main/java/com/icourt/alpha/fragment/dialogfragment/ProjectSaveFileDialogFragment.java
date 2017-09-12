@@ -25,12 +25,13 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 import com.icourt.alpha.R;
 import com.icourt.alpha.base.BaseDialogFragment;
+import com.icourt.alpha.entity.bean.RepoIdResEntity;
 import com.icourt.alpha.fragment.FileDirListFragment;
 import com.icourt.alpha.fragment.ProjectSaveListFragment;
 import com.icourt.alpha.http.callback.SimpleCallBack;
+import com.icourt.alpha.http.callback.SimpleCallBack2;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.utils.DensityUtil;
@@ -172,29 +173,16 @@ public class ProjectSaveFileDialogFragment extends BaseDialogFragment
      * 获取根目录id
      */
     private void getDocumentId() {
-        getApi().projectQueryDocumentId(projectId).enqueue(new Callback<JsonObject>() {
+        callEnqueue(getApi().projectQueryDocumentId(projectId), new SimpleCallBack2<RepoIdResEntity>() {
             @Override
-            public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
-                if (response.code() == 200) {
-                    if (response.body() != null) {
-                        if (response.body().has("seaFileRepoId")) {
-                            JsonElement element = response.body().get("seaFileRepoId");
-                            if (!TextUtils.isEmpty(element.toString()) && !TextUtils.equals("null", element.toString())) {
-                                seaFileRepoId = element.getAsString();
-                                shareFile2Project(filePath,seaFileRepoId, rootName);
-                            } else {
-                                onFailure(call, new retrofit2.HttpException(response));
-                            }
-                        }
-                    }
+            public void onSuccess(Call<RepoIdResEntity> call, Response<RepoIdResEntity> response) {
+                if (!TextUtils.isEmpty(response.body().seaFileRepoId)) {
+                    seaFileRepoId = response.body().seaFileRepoId;
+                    shareFile2Project(filePath, seaFileRepoId, rootName);
                 } else {
-                    onFailure(call, new retrofit2.HttpException(response));
+                    bugSync("项目repo 获取null", "projectid:" + projectId);
+                    showTopSnackBar("seaFileRepoId 返回null");
                 }
-            }
-
-            @Override
-            public void onFailure(Call<JsonObject> call, Throwable throwable) {
-                showTopSnackBar("获取文档根目录id失败");
             }
         });
     }
@@ -321,7 +309,7 @@ public class ProjectSaveFileDialogFragment extends BaseDialogFragment
             titleArray.put(getChildFragmentManager().getBackStackEntryCount(), dirName);
 
             //2.替换
-            showFragment(FileDirListFragment.newInstance(projectId,filePath, rootName, seaFileRepoId));
+            showFragment(FileDirListFragment.newInstance(projectId, filePath, rootName, seaFileRepoId));
         }
     }
 
@@ -344,7 +332,7 @@ public class ProjectSaveFileDialogFragment extends BaseDialogFragment
      *
      * @param filePath
      */
-    private void getUploadUrl(final String filePath,String seaFileRepoId, final String rootName) {
+    private void getUploadUrl(final String filePath, String seaFileRepoId, final String rootName) {
         if (TextUtils.isEmpty(filePath)) return;
         File file = new File(filePath);
         if (!file.exists()) {

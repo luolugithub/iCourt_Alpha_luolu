@@ -665,7 +665,7 @@ public class TaskDetailActivity extends BaseActivity
     private boolean hasDocumentAddPermission() {
         if (taskItemEntity != null && taskItemEntity.right != null) {
             return taskItemEntity.valid
-                    &&taskItemEntity.right.contains("MAT:matter.document:readwrite");
+                    && taskItemEntity.right.contains("MAT:matter.document:readwrite");
         }
         return false;
     }
@@ -787,6 +787,8 @@ public class TaskDetailActivity extends BaseActivity
                     TaskCheckItemFragment.newInstance(taskItemEntity.id, hasTaskEditPermission(), taskItemEntity.valid),
                     TaskAttachmentFragment.newInstance(
                             taskItemEntity.id,
+                            taskItemEntity.matterId,
+                            taskItemEntity.matter != null ? taskItemEntity.matter.name : "",
                             hasDocumentLookPermission(),
                             hasDocumentAddPermission(),
                             hasTaskEditPermission())

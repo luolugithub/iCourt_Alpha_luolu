@@ -16,14 +16,15 @@ import android.widget.TextView;
 
 import com.andview.refreshview.XRefreshView;
 import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.ProjectFileBoxAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.adapterObserver.RefreshViewEmptyObserver;
 import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.entity.bean.FileBoxBean;
+import com.icourt.alpha.entity.bean.RepoIdResEntity;
 import com.icourt.alpha.http.callback.SimpleCallBack;
+import com.icourt.alpha.http.callback.SimpleCallBack2;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.ItemDecorationUtils;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
@@ -204,32 +205,25 @@ public class FolderboxSelectActivity extends BaseActivity implements BaseRecycle
      * 获取根目录id
      */
     private void getDocumentId() {
-        getApi().projectQueryDocumentId(projectId).enqueue(new Callback<JsonObject>() {
-            @Override
-            public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
-                if (response.code() == 200) {
-                    if (response.body() != null) {
-                        if (response.body().has("seaFileRepoId")) {
-                            JsonElement element = response.body().get("seaFileRepoId");
-                            if (!TextUtils.isEmpty(element.toString()) && !TextUtils.equals("null", element.toString())) {
-                                seaFileRepoId = element.getAsString();
-                                getData(true);
-                            } else {
-                                onFailure(call, new retrofit2.HttpException(response));
-                            }
+        getApi().projectQueryDocumentId(projectId)
+                .enqueue(new SimpleCallBack2<RepoIdResEntity>() {
+                    @Override
+                    public void onSuccess(Call<RepoIdResEntity> call, Response<RepoIdResEntity> response) {
+                        if (!TextUtils.isEmpty(response.body().seaFileRepoId)) {
+                            seaFileRepoId = response.body().seaFileRepoId;
+                            getData(true);
+                        } else {
+                            bugSync("项目repo 获取null", "projectid:" + projectId);
+                            showTopSnackBar("seaFileRepoId 返回null");
                         }
                     }
-                } else {
-                    onFailure(call, new retrofit2.HttpException(response));
-                }
-            }
 
-            @Override
-            public void onFailure(Call<JsonObject> call, Throwable throwable) {
-                showTopSnackBar("获取文档根目录id失败");
-                enableEmptyView(null);
-            }
-        });
+                    @Override
+                    public void onFailure(Call<RepoIdResEntity> call, Throwable t) {
+                        super.onFailure(call, t);
+                        enableEmptyView(null);
+                    }
+                });
     }
 
     private List<FileBoxBean> getFolders(List<FileBoxBean> fileBoxBeens) {

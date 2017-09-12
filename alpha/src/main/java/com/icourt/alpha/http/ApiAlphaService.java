@@ -1,7 +1,6 @@
 package com.icourt.alpha.http;
 
 import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.icourt.alpha.entity.bean.AppVersionEntity;
 import com.icourt.alpha.entity.bean.CommentEntity;
@@ -429,7 +428,7 @@ public interface ApiAlphaService {
      * @return
      */
     @GET("ilaw/api/v2/documents/getRepo/{projectId}")
-    Call<JsonObject> projectQueryDocumentId(@Path("projectId") String projectId);
+    Call<RepoIdResEntity> projectQueryDocumentId(@Path("projectId") String projectId);
 
     /**
      * 获取项目详情文档id

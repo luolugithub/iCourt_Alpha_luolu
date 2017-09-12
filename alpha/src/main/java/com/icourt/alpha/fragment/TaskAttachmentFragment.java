@@ -77,6 +77,8 @@ public class TaskAttachmentFragment extends BaseFragment
         implements BaseRecyclerAdapter.OnItemClickListener,
         BaseRecyclerAdapter.OnItemLongClickListener, OnDialogFragmentDismissListener {
     private static final String KEY_TASK_ID = "key_task_id";
+    private static final String KEY_PROJECT_ID = "key_project_id";
+    private static final String KEY_PROJECT_NAME = "key_project_name";
     private static final String KEY_TASK_LOOK_ATTACHMENT_PERMISSION = "key_task_look_attachment_permission";
     private static final String KEY_TASK_ADD_ATTACHMENT_PERMISSION = "key_task_add_attachment_permission";
     private static final String KEY_TASK_DELETE_ATTACHMENT_PERMISSION = "key_task_delete_attachment_permission";
@@ -93,12 +95,16 @@ public class TaskAttachmentFragment extends BaseFragment
      * @return
      */
     public static TaskAttachmentFragment newInstance(@NonNull String taskId,
+                                                     @Nullable String projectId,
+                                                     @Nullable String projectName,
                                                      boolean hasLookAttachmentPermission,
                                                      boolean hasAddAttachmentPermission,
                                                      boolean hasDeleteAttachmentPermission) {
         TaskAttachmentFragment taskAttachmentFragment = new TaskAttachmentFragment();
         Bundle bundle = new Bundle();
         bundle.putString(KEY_TASK_ID, taskId);
+        bundle.putString(KEY_PROJECT_ID, projectId);
+        bundle.putString(KEY_PROJECT_NAME, projectName);
         bundle.putBoolean(KEY_TASK_LOOK_ATTACHMENT_PERMISSION, hasLookAttachmentPermission);
         bundle.putBoolean(KEY_TASK_ADD_ATTACHMENT_PERMISSION, hasAddAttachmentPermission);
         bundle.putBoolean(KEY_TASK_DELETE_ATTACHMENT_PERMISSION, hasDeleteAttachmentPermission);
@@ -114,7 +120,7 @@ public class TaskAttachmentFragment extends BaseFragment
     boolean hasLookAttachmentPermission;
     boolean hasAddAttachmentPermission;
     boolean hasDeleteAttachmentPermission;
-    String taskId;
+    String taskId, projectId, projectName;
     TextView footerNoticeView;
     View footerAddView;
     OnUpdateTaskListener updateTaskListener;
@@ -165,6 +171,8 @@ public class TaskAttachmentFragment extends BaseFragment
     @Override
     protected void initView() {
         taskId = getArguments().getString(KEY_TASK_ID, "");
+        projectId = getArguments().getString(KEY_PROJECT_ID, "");
+        projectName = getArguments().getString(KEY_PROJECT_NAME, "");
         hasLookAttachmentPermission = getArguments().getBoolean(KEY_TASK_LOOK_ATTACHMENT_PERMISSION);
         hasAddAttachmentPermission = getArguments().getBoolean(KEY_TASK_ADD_ATTACHMENT_PERMISSION);
         hasDeleteAttachmentPermission = getArguments().getBoolean(KEY_TASK_DELETE_ATTACHMENT_PERMISSION);
@@ -294,7 +302,7 @@ public class TaskAttachmentFragment extends BaseFragment
         if (fragment != null) {
             mFragTransaction.remove(fragment);
         }
-        SeaFileSelectDialogFragment.newInstance(taskId)
+        SeaFileSelectDialogFragment.newInstance(taskId, projectId,projectName)
                 .show(mFragTransaction, tag);
     }
 
