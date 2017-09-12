@@ -27,6 +27,7 @@ import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.adapterObserver.DataChangeAdapterObserver;
 import com.icourt.alpha.base.BaseDialogFragment;
 import com.icourt.alpha.constants.SFileConfig;
+import com.icourt.alpha.entity.bean.DefaultRepoEntity;
 import com.icourt.alpha.entity.bean.FolderDocumentEntity;
 import com.icourt.alpha.entity.bean.RepoEntity;
 import com.icourt.alpha.entity.bean.RepoIdResEntity;
@@ -52,6 +53,7 @@ import butterknife.Unbinder;
 import retrofit2.Call;
 import retrofit2.Response;
 
+import static com.icourt.alpha.constants.SFileConfig.REPO_MINE;
 import static com.icourt.alpha.constants.SFileConfig.REPO_PROJECT;
 import static com.icourt.alpha.fragment.RepoSelectListFragment.KEY_REPO_TYPE;
 
@@ -184,37 +186,63 @@ public class SeaFileSelectDialogFragment extends BaseDialogFragment
             }
         });
 
-        if (!TextUtils.isEmpty(projectId)) {
-            getData(true);
-        } else {
-            replaceRepoTypeFragment();
-        }
+        getData(true);
     }
 
     @Override
     protected void getData(boolean isRefresh) {
         super.getData(isRefresh);
         showLoadingDialog(null);
-        callEnqueue(getApi().projectQueryDocumentId(projectId), new SimpleCallBack2<RepoIdResEntity>() {
-            @Override
-            public void onSuccess(Call<RepoIdResEntity> call, Response<RepoIdResEntity> response) {
-                dismissLoadingDialog();
-                //对应项目下的第一级文件
-                SeaFileSelectParam seaFileSelectParam = new SeaFileSelectParam(
-                        REPO_PROJECT,
-                        projectName,
-                        response.body().seaFileRepoId,
-                        "/",
-                        selectedFolderDocumentEntities);
-                replaceFolderFragment(seaFileSelectParam);
-            }
+        //关联项目  直接展示项目下的文件 否则展示我的默认资料库文件
+        if (!TextUtils.isEmpty(projectId)) {
+            callEnqueue(getApi().projectQueryDocumentId(projectId), new SimpleCallBack2<RepoIdResEntity>() {
+                @Override
+                public void onSuccess(Call<RepoIdResEntity> call, Response<RepoIdResEntity> response) {
+                    dismissLoadingDialog();
+                    //对应项目下的第一级文件
+                    SeaFileSelectParam seaFileSelectParam = new SeaFileSelectParam(
+                            REPO_PROJECT,
+                            projectName,
+                            response.body().seaFileRepoId,
+                            "/",
+                            selectedFolderDocumentEntities);
+                    replaceFolderFragment(seaFileSelectParam);
+                }
 
-            @Override
-            public void onFailure(Call<RepoIdResEntity> call, Throwable t) {
-                super.onFailure(call, t);
-                dismissLoadingDialog();
-            }
-        });
+                @Override
+                public void onFailure(Call<RepoIdResEntity> call, Throwable t) {
+                    super.onFailure(call, t);
+                    dismissLoadingDialog();
+                }
+            });
+        } else {
+            callEnqueue(getApi().repoDefaultQuery(),
+                    new SimpleCallBack<DefaultRepoEntity>() {
+                        @Override
+                        public void onSuccess(Call<ResEntity<DefaultRepoEntity>> call, Response<ResEntity<DefaultRepoEntity>> response) {
+                            dismissLoadingDialog();
+                            if (response.body().result != null) {
+                                //对应项目下的第一级文件
+                                SeaFileSelectParam seaFileSelectParam = new SeaFileSelectParam(
+                                        REPO_MINE,
+                                        "我的默认资料库",
+                                        response.body().result.repoId,
+                                        "/",
+                                        selectedFolderDocumentEntities);
+                                replaceFolderFragment(seaFileSelectParam);
+                            } else {
+                                bugSync("获取默认资料库失败", response.body().toString());
+                                showTopSnackBar("获取默认资料库失败");
+                            }
+                        }
+
+                        @Override
+                        public void onFailure(Call<ResEntity<DefaultRepoEntity>> call, Throwable t) {
+                            super.onFailure(call, t);
+                            dismissLoadingDialog();
+                        }
+                    });
+        }
     }
 
     /**
