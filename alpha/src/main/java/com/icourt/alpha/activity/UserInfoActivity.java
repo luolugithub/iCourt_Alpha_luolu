@@ -109,7 +109,10 @@ public class UserInfoActivity extends BaseActivity {
     protected void initView() {
         super.initView();
         setTitle("个人设置");
-
+        alphaUserInfo = getLoginUserInfo();
+        if (alphaUserInfo != null) {
+            GlideUtils.loadUser(this, alphaUserInfo.getPic(), photoImage);
+        }
     }
 
     @Override
@@ -120,12 +123,10 @@ public class UserInfoActivity extends BaseActivity {
 
     private void setDataToView() {
         alphaUserInfo = getLoginUserInfo();
-        if (alphaUserInfo != null) {
-            GlideUtils.loadUser(this, alphaUserInfo.getPic(), photoImage);
-            nameTv.setText(alphaUserInfo.getName());
-            phoneTv.setText(alphaUserInfo.getPhone());
-            emailTv.setText(alphaUserInfo.getMail());
-        }
+        nameTv.setText(alphaUserInfo.getName());
+        phoneTv.setText(alphaUserInfo.getPhone());
+        emailTv.setText(alphaUserInfo.getMail());
+
     }
 
     @OnClick({R.id.photo_layout,
@@ -212,9 +213,9 @@ public class UserInfoActivity extends BaseActivity {
         if (checkPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
             FunctionConfig config = new FunctionConfig.Builder()
                     .setEnableCrop(true)
-//                    .setCropSquare(true)
-                    .setCropWidth(200)
-                    .setCropHeight(200)
+                    .setCropSquare(true)
+                    .setCropWidth(700)
+                    .setCropHeight(700)
                     .build();
             GalleryFinal.openCrop(REQUEST_CODE_CROP, config, photoPath, mOnHanlderResultCallback);
         } else {

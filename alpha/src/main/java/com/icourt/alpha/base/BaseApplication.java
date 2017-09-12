@@ -1,6 +1,7 @@
 package com.icourt.alpha.base;
 
 import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Build;
@@ -390,6 +391,7 @@ public class BaseApplication extends MultiDexApplication {
                 .setTitleBarTextColor(SystemUtils.getColor(this, R.color.alpha_font_color_black))
                 .setTitleBarBgColor(Color.WHITE)
                 .setTitleBarIconColor(SystemUtils.getColor(this, R.color.alpha_font_color_orange))
+                .setEditPhotoBgTexture(new ColorDrawable(SystemUtils.getColor(this,R.color.black)))
                 .setIconCrop(0)
                 .build();
 

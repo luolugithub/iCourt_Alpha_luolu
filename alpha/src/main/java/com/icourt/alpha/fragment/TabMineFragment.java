@@ -14,6 +14,7 @@ import com.bumptech.glide.Glide;
 import com.icourt.alpha.BuildConfig;
 import com.icourt.alpha.R;
 import com.icourt.alpha.activity.ChatMsgClassfyActivity;
+import com.icourt.alpha.activity.ImagePagerActivity;
 import com.icourt.alpha.activity.MyFinishTaskActivity;
 import com.icourt.alpha.activity.SetingActivity;
 import com.icourt.alpha.activity.UserInfoActivity;
@@ -33,6 +34,7 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
@@ -204,7 +206,7 @@ public class TabMineFragment extends BaseFragment {
         super.onClick(v);
         switch (v.getId()) {
             case R.id.photo_image:
-                UserInfoActivity.launch(getContext());
+                ImagePagerActivity.launch(getContext(), Arrays.asList(getLoginUserInfo().getPic()));
                 break;
             case R.id.user_info_layout:
                 UserInfoActivity.launch(getContext());
