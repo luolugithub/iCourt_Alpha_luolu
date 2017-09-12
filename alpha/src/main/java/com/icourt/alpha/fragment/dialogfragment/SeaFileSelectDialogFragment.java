@@ -2,8 +2,11 @@ package com.icourt.alpha.fragment.dialogfragment;
 
 import android.app.Dialog;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,11 +15,18 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.CheckedTextView;
 import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import com.icourt.alpha.R;
+import com.icourt.alpha.adapter.FolderDocumentAdapter;
+import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
+import com.icourt.alpha.adapter.baseadapter.adapterObserver.DataChangeAdapterObserver;
 import com.icourt.alpha.base.BaseDialogFragment;
+import com.icourt.alpha.constants.Const;
 import com.icourt.alpha.constants.SFileConfig;
 import com.icourt.alpha.entity.bean.FolderDocumentEntity;
 import com.icourt.alpha.entity.bean.RepoEntity;
@@ -25,14 +35,23 @@ import com.icourt.alpha.entity.bean.SeaFileSelectParam;
 import com.icourt.alpha.fragment.RepoNavigationFragment;
 import com.icourt.alpha.fragment.RepoSelectListFragment;
 import com.icourt.alpha.fragment.SeaFileSelectFragment;
+import com.icourt.alpha.http.callback.SimpleCallBack;
+import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
+import com.icourt.alpha.interfaces.OnSeaFileSelectListener;
+import com.icourt.api.RequestUtils;
+import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 
-import java.util.HashSet;
+import java.util.ArrayList;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import butterknife.Unbinder;
+import retrofit2.Call;
+import retrofit2.Response;
+
+import static com.icourt.alpha.fragment.RepoSelectListFragment.KEY_REPO_TYPE;
 
 /**
  * Description
@@ -41,9 +60,9 @@ import butterknife.Unbinder;
  * date createTime：2017/9/11
  * version 2.1.0
  */
-public class SeaFileSelectDialogFragment extends BaseDialogFragment implements OnFragmentCallBackListener {
-
-    private static final String KEY_REPO_TYPE = "repoType";
+public class SeaFileSelectDialogFragment extends BaseDialogFragment
+        implements OnFragmentCallBackListener, OnSeaFileSelectListener {
+    private static final String KEY_TASK_ID = "key_task_id";
 
     @BindView(R.id.titleBack)
     CheckedTextView titleBack;
@@ -59,12 +78,26 @@ public class SeaFileSelectDialogFragment extends BaseDialogFragment implements O
     FrameLayout mainFlContent;
     Unbinder unbinder;
     Fragment currFragment;
-    HashSet<FolderDocumentEntity> selectedFolderDocumentEntities = new HashSet<>();
+    final ArrayList<FolderDocumentEntity> selectedFolderDocumentEntities = new ArrayList<>();
     SeaFileSelectParam iSeaFileSelectParams;
+    RepoTypeEntity selectRepoTypeEntity;
+    @BindView(R.id.recyclerView)
+    RecyclerView recyclerView;
+    @BindView(R.id.selected_num_tv)
+    TextView selectedNumTv;
+    @BindView(R.id.ok_tv)
+    TextView okTv;
+    @BindView(R.id.dragView)
+    LinearLayout dragView;
+    @BindView(R.id.sliding_layout)
+    SlidingUpPanelLayout slidingLayout;
+    FolderDocumentAdapter selectedFolderDocumentAdapter;
+    String taskId;
 
-    public static SeaFileSelectDialogFragment newInstance() {
+    public static SeaFileSelectDialogFragment newInstance(@NonNull String taskId) {
         SeaFileSelectDialogFragment fragment = new SeaFileSelectDialogFragment();
         Bundle args = new Bundle();
+        args.putString(KEY_TASK_ID, taskId);
         fragment.setArguments(args);
         return fragment;
     }
@@ -90,6 +123,7 @@ public class SeaFileSelectDialogFragment extends BaseDialogFragment implements O
 
     @Override
     protected void initView() {
+        taskId = getArguments().getString(KEY_TASK_ID, "");
         Dialog dialog = getDialog();
         if (dialog != null) {
             Window window = dialog.getWindow();
@@ -99,14 +133,46 @@ public class SeaFileSelectDialogFragment extends BaseDialogFragment implements O
                 window.setAttributes(attributes);
             }
         }
-
+        selectRepoTypeEntity = new RepoTypeEntity(SFileConfig.REPO_MINE, "我的");
         replaceRepoTypeFragment();
+
+        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        recyclerView.setAdapter(selectedFolderDocumentAdapter = new FolderDocumentAdapter(
+                Const.VIEW_TYPE_ITEM,
+                null,
+                null,
+                true,
+                selectedFolderDocumentEntities));
+        selectedFolderDocumentAdapter.registerAdapterDataObserver(new DataChangeAdapterObserver() {
+            @Override
+            protected void updateUI() {
+                updateSelectNum();
+            }
+        });
+        selectedFolderDocumentAdapter.setOnItemClickListener(new BaseRecyclerAdapter.OnItemClickListener() {
+            @Override
+            public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
+                FolderDocumentEntity item = selectedFolderDocumentAdapter.getItem(position);
+                if (item == null) return;
+                //更新子fragment
+                if (currFragment instanceof SeaFileSelectFragment) {
+                    SeaFileSelectFragment seaFileSelectFragment = (SeaFileSelectFragment) currFragment;
+                    Bundle args = new Bundle();
+                    args.putSerializable(KEY_FRAGMENT_UPDATE_KEY, item);
+                    seaFileSelectFragment.notifyFragmentUpdate(seaFileSelectFragment, -1, args);
+                }
+
+                selectedFolderDocumentAdapter.removeItem(position);
+            }
+        });
+        selectedFolderDocumentAdapter.bindData(true, new ArrayList<FolderDocumentEntity>(selectedFolderDocumentEntities));
     }
 
     /**
      * 替换资料库类型界面
      */
     private void replaceRepoTypeFragment() {
+        this.iSeaFileSelectParams = null;
         dirPathTitleLayout.setVisibility(View.GONE);
         currFragment = addOrShowFragment(
                 RepoNavigationFragment.newInstance(),
@@ -122,7 +188,9 @@ public class SeaFileSelectDialogFragment extends BaseDialogFragment implements O
 
 
     @OnClick({R.id.titleBack,
-            R.id.foldr_go_parent_tv})
+            R.id.foldr_go_parent_tv,
+            R.id.selected_num_tv,
+            R.id.ok_tv})
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
@@ -138,10 +206,72 @@ public class SeaFileSelectDialogFragment extends BaseDialogFragment implements O
                     replaceRepoListFragmemt();
                 }
                 break;
+            case R.id.selected_num_tv:
+                if (slidingLayout.getPanelState() == SlidingUpPanelLayout.PanelState.EXPANDED) {
+                    slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
+                } else {
+                    slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.EXPANDED);
+                }
+                break;
+            case R.id.ok_tv:
+                addAttachmentFromRepo();
+                break;
             default:
                 super.onClick(v);
                 break;
         }
+    }
+
+    /**
+     * 传递参数
+     * {
+     * "pathInfoList": [
+     * {
+     * "filePath": "/1504061021100.png",
+     * "repoId": "17448144-4b19-42f3-b564-205c57032f8f"
+     * }
+     * ],
+     * "taskId": "56162BDA950411E78479446A2ED9DCBD"
+     * }
+     */
+    private void addAttachmentFromRepo() {
+        if (selectedFolderDocumentEntities.isEmpty()) {
+            return;
+        }
+        JsonObject paramObject = new JsonObject();
+        paramObject.addProperty("taskId", taskId);
+        JsonArray pathInfoArray = new JsonArray();
+        for (FolderDocumentEntity folderDocumentEntity : selectedFolderDocumentEntities) {
+            if (folderDocumentEntity == null) continue;
+            JsonObject pathInfo = new JsonObject();
+            pathInfo.addProperty("filePath", String.format("%s%s", folderDocumentEntity.parent_dir, folderDocumentEntity.name));
+            pathInfo.addProperty("repoId", folderDocumentEntity.repoId);
+            pathInfoArray.add(pathInfo);
+        }
+        paramObject.add("pathInfoList", pathInfoArray);
+        showLoadingDialog(R.string.str_uploading);
+        callEnqueue(
+                getApi().taskAddAttachmentFromRepo(RequestUtils.createJsonBody(paramObject.toString())),
+                new SimpleCallBack<String>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<String>> call, Response<ResEntity<String>> response) {
+                        dismissLoadingDialog();
+                        showToast("上传成功");
+                        dismiss();
+                    }
+
+                    @Override
+                    public void onFailure(Call<ResEntity<String>> call, Throwable t) {
+                        dismissLoadingDialog();
+                        super.onFailure(call, t);
+                    }
+
+                    @Override
+                    public void defNotify(String noticeStr) {
+                        super.defNotify(noticeStr);
+                        showToast(noticeStr);
+                    }
+                });
     }
 
     /**
@@ -192,7 +322,8 @@ public class SeaFileSelectDialogFragment extends BaseDialogFragment implements O
             if (split != null && split.length > 1) {
                 String lastDir = split[split.length - 1];
                 String parentDir = dirPath.substring(0, dirPath.length() - (lastDir.length() + spilteStr.length()));
-                SeaFileSelectParam seaFileSelectParam = new SeaFileSelectParam(iSeaFileSelectParams.getRepoType(),
+                SeaFileSelectParam seaFileSelectParam = new SeaFileSelectParam(
+                        iSeaFileSelectParams.getRepoType(),
                         iSeaFileSelectParams.getRepoName(),
                         iSeaFileSelectParams.getDstRepoId(),
                         parentDir,
@@ -207,16 +338,14 @@ public class SeaFileSelectDialogFragment extends BaseDialogFragment implements O
         if (fragment instanceof SeaFileSelectFragment && params != null) {
             SeaFileSelectParam iSeaFileSelectParams = (SeaFileSelectParam) params.getSerializable(KEY_FRAGMENT_RESULT);
 
-            selectedFolderDocumentEntities.addAll(iSeaFileSelectParams.getSelectedFolderDocuments());
+            // selectedFolderDocumentEntities.addAll(iSeaFileSelectParams.getSelectedFolderDocuments());
             replaceFolderFragment(iSeaFileSelectParams);
         } else if (fragment instanceof RepoNavigationFragment && params != null) {
-            RepoTypeEntity repoTypeEntity = (RepoTypeEntity) params.getSerializable(KEY_FRAGMENT_RESULT);
-            getArguments().putInt(KEY_REPO_TYPE, repoTypeEntity.repoType);
-            foldrParentTv.setText(repoTypeEntity.title);
+            selectRepoTypeEntity = (RepoTypeEntity) params.getSerializable(KEY_FRAGMENT_RESULT);
             replaceRepoListFragmemt();
         } else if (fragment instanceof RepoSelectListFragment && params != null) {
             RepoEntity repoEntity = (RepoEntity) params.getSerializable(KEY_FRAGMENT_RESULT);
-            int repoType = params.getInt(RepoSelectListFragment.KEY_REPO_TYPE);
+            int repoType = params.getInt(KEY_REPO_TYPE);
             SeaFileSelectParam seaFileSelectParam = new SeaFileSelectParam(SFileConfig.convert2RepoType(repoType),
                     repoEntity.repo_name,
                     repoEntity.repo_id,
@@ -232,6 +361,7 @@ public class SeaFileSelectDialogFragment extends BaseDialogFragment implements O
     private void replaceRepoListFragmemt() {
         dirPathTitleLayout.setVisibility(View.VISIBLE);
         this.iSeaFileSelectParams = null;
+        foldrParentTv.setText(selectRepoTypeEntity.title);
         currFragment = addOrShowFragment(
                 RepoSelectListFragment.newInstance(SFileConfig.convert2RepoType(getArguments().getInt(KEY_REPO_TYPE))),
                 currFragment,
@@ -243,9 +373,40 @@ public class SeaFileSelectDialogFragment extends BaseDialogFragment implements O
      */
     private void replaceFolderFragment(SeaFileSelectParam iSeaFileSelectParams) {
         this.iSeaFileSelectParams = iSeaFileSelectParams;
+        dirPathTitleLayout.setVisibility(View.VISIBLE);
+        if (canBack2ParentDir()) {
+            foldrParentTv.setText(getDstParentDirName());
+        } else {
+            foldrParentTv.setText(iSeaFileSelectParams.getRepoName());
+        }
         currFragment = addOrShowFragment(
                 SeaFileSelectFragment.newInstance(iSeaFileSelectParams),
                 currFragment,
                 R.id.main_fl_content);
+    }
+
+
+    /**
+     * 更新选中的数量
+     */
+    private void updateSelectNum() {
+        selectedNumTv.setText(
+                getString(R.string.sfile_file_already_selected,
+                        String.valueOf(selectedFolderDocumentAdapter.getItemCount()) + "/" + String.valueOf(10))
+        );
+    }
+
+    @Override
+    public void onSeaFileSelect(FolderDocumentEntity folderDocumentEntity) {
+        if (!selectedFolderDocumentEntities.contains(folderDocumentEntity)) {
+            selectedFolderDocumentEntities.add(folderDocumentEntity);
+        }
+        selectedFolderDocumentAdapter.addItem(0, folderDocumentEntity);
+    }
+
+    @Override
+    public void onSeaFileSelectCancel(FolderDocumentEntity folderDocumentEntity) {
+        selectedFolderDocumentEntities.remove(folderDocumentEntity);
+        selectedFolderDocumentAdapter.removeItem(folderDocumentEntity);
     }
 }

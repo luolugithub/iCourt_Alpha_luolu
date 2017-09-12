@@ -3,7 +3,7 @@ package com.icourt.alpha.entity.bean;
 import com.icourt.alpha.constants.SFileConfig;
 
 import java.io.Serializable;
-import java.util.HashSet;
+import java.util.ArrayList;
 
 /**
  * Description
@@ -18,9 +18,9 @@ public class SeaFileSelectParam implements Serializable, ISeaFileSelectParams {
     String repoName;
     String dstRepoId;
     String dstRepoDirPath;
-    HashSet<FolderDocumentEntity> selectedFolderDocumentEntities;
+    ArrayList<FolderDocumentEntity> selectedFolderDocumentEntities;
 
-    public SeaFileSelectParam(int repoType, String repoName, String dstRepoId, String dstRepoDirPath, HashSet<FolderDocumentEntity> selectedFolderDocumentEntities) {
+    public SeaFileSelectParam(int repoType, String repoName, String dstRepoId, String dstRepoDirPath, ArrayList<FolderDocumentEntity> selectedFolderDocumentEntities) {
         this.repoType = repoType;
         this.repoName = repoName;
         this.dstRepoId = dstRepoId;
@@ -49,9 +49,9 @@ public class SeaFileSelectParam implements Serializable, ISeaFileSelectParams {
     }
 
     @Override
-    public HashSet<FolderDocumentEntity> getSelectedFolderDocuments() {
+    public ArrayList<FolderDocumentEntity> getSelectedFolderDocuments() {
         if (selectedFolderDocumentEntities == null) {
-            selectedFolderDocumentEntities = new HashSet<>();
+            selectedFolderDocumentEntities = new ArrayList<>();
         }
         return selectedFolderDocumentEntities;
     }

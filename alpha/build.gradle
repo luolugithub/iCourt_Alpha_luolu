@@ -307,5 +307,6 @@ dependencies {
     compile files('libs/MiPush_SDK_Client_3_4_3.jar')
     compile(name: 'HMS-SDK-2.4.0.300', ext: 'aar')
     compile "me.leolin:ShortcutBadger:1.1.18@aar"
+    compile 'com.sothree.slidinguppanel:library:3.3.1'
 }
 

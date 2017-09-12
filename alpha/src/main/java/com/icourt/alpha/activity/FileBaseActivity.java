@@ -21,7 +21,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import io.reactivex.Observable;
 import io.reactivex.ObservableSource;
@@ -149,18 +148,18 @@ public class FileBaseActivity extends BaseActivity {
     protected void seaFileDelete(
             @android.support.annotation.NonNull final String seaFileRepoId,
             @android.support.annotation.NonNull final String seaFileDirPath,
-            @android.support.annotation.NonNull final Set<FolderDocumentEntity> items,
+            @android.support.annotation.NonNull final ArrayList<FolderDocumentEntity> items,
             Observer<JsonObject> observer) {
         Observable.just(items)
-                .filter(new Predicate<Set<FolderDocumentEntity>>() {
+                .filter(new Predicate<ArrayList<FolderDocumentEntity>>() {
                     @Override
-                    public boolean test(@NonNull Set<FolderDocumentEntity> folderDocumentEntities) throws Exception {
+                    public boolean test(@NonNull ArrayList<FolderDocumentEntity> folderDocumentEntities) throws Exception {
                         return !folderDocumentEntities.isEmpty();
                     }
                 })
-                .flatMap(new Function<Set<FolderDocumentEntity>, ObservableSource<JsonObject>>() {
+                .flatMap(new Function<ArrayList<FolderDocumentEntity>, ObservableSource<JsonObject>>() {
                     @Override
-                    public ObservableSource<JsonObject> apply(@io.reactivex.annotations.NonNull Set<FolderDocumentEntity> folderDocumentEntities) throws Exception {
+                    public ObservableSource<JsonObject> apply(@io.reactivex.annotations.NonNull ArrayList<FolderDocumentEntity> folderDocumentEntities) throws Exception {
                         List<Observable<JsonObject>> observables = new ArrayList<Observable<JsonObject>>();
                         for (FolderDocumentEntity item : folderDocumentEntities) {
                             Observable<JsonObject> delCall = null;

@@ -9,7 +9,6 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.AppBarLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
-import android.support.v4.util.ArraySet;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
@@ -65,9 +64,7 @@ import org.greenrobot.eventbus.ThreadMode;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -120,7 +117,7 @@ public class FolderListActivity extends FolderBaseActivity
     HeaderFooterAdapter<FolderDocumentWrapAdapter> headerFooterAdapter;
     @BindView(R.id.bottom_bar_select_num_tv)
     TextView bottomBarSelectNumTv;
-    private ArraySet<FolderDocumentEntity> selectedFolderDocuments = new ArraySet<>();
+    private ArrayList<FolderDocumentEntity> selectedFolderDocuments = new ArrayList<>();
     View headerView;
     TextView footerView;
 
@@ -899,7 +896,7 @@ public class FolderListActivity extends FolderBaseActivity
                             folderDocumentEntities1.add(item);
                             showFolderTargetListDialogFragment(Const.FILE_ACTION_MOVE, folderDocumentEntities1);
                         } else if (TextUtils.equals(action, getString(R.string.sfile_file_delete))) {
-                            HashSet<FolderDocumentEntity> objects = new HashSet<>();
+                            ArrayList<FolderDocumentEntity> objects = new ArrayList<>();
                             objects.add(item);
                             showDeleteComfirmDialog(objects);
                         }
@@ -961,7 +958,7 @@ public class FolderListActivity extends FolderBaseActivity
      *
      * @param items
      */
-    private void deleteFolderOrDocuments(final Set<FolderDocumentEntity> items) {
+    private void deleteFolderOrDocuments(final ArrayList<FolderDocumentEntity> items) {
         if (items == null || items.isEmpty()) return;
         seaFileDelete(getSeaFileRepoId(), getSeaFileDirPath(), items, new BaseObserver<JsonObject>() {
             @Override
@@ -996,7 +993,7 @@ public class FolderListActivity extends FolderBaseActivity
      *
      * @param items
      */
-    private void showDeleteComfirmDialog(final Set<FolderDocumentEntity> items) {
+    private void showDeleteComfirmDialog(final ArrayList<FolderDocumentEntity> items) {
         if (items == null || items.isEmpty()) return;
         showDeleteComfirmDialog(new BottomActionDialog.OnActionItemClickListener() {
             @Override

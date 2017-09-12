@@ -109,7 +109,8 @@
     <string name="sfile_permission_r">只读</string>
     <string name="sfile_permission_rw">可读写</string>
     <string name="sfile_recycle_bin_empty">回收站里没有文件</string>
-    <string name="sfile_recycle_bin_not_clickable">无法浏览回收站里的文件</string>
+    <string name="sfile_recycle_bin_folder_not_clickable">无法浏览回收站里的文件夹</string>
+    <string name="sfile_recycle_bin_file_not_clickable">无法浏览回收站里的文件</string>
     <string name="sfile_recovery">恢复</string>
     <string name="sfile_recovering"> 恢复中 </string>
     <string name="sfile_recovery_success">文件恢复成功</string>

@@ -1471,6 +1471,15 @@ public interface ApiAlphaService {
      */
     @GET("api/v2/timing/timing/findByTaskId")
     Call<ResEntity<TimeEntity>> taskTimesByIdQuery(@Query("taskId") String taskId);
+
+    /**
+     * 任务附件添加 从资料库中选择
+     *
+     * @param requestBody
+     * @return
+     */
+    @POST("ilaw//api/v2/task/attachment/addFromLibrary")
+    Call<ResEntity<String>> taskAddAttachmentFromRepo(@Body RequestBody requestBody);
 }
 
 

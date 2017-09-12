@@ -183,7 +183,13 @@ public class FileTrashListFragment extends SeaFileBaseFragment
 
     @Override
     public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
-        showToast(R.string.sfile_recycle_bin_not_clickable);
+        final FolderDocumentEntity item = folderDocumentAdapter.getItem(position);
+        if (item == null) return;
+        if (item.isDir()) {
+            showToast(R.string.sfile_recycle_bin_folder_not_clickable);
+        } else {
+            showToast(R.string.sfile_recycle_bin_file_not_clickable);
+        }
     }
 
     /**

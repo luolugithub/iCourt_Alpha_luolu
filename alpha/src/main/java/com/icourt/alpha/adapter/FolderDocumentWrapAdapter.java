@@ -8,8 +8,8 @@ import com.icourt.alpha.R;
 import com.icourt.alpha.constants.Const;
 import com.icourt.alpha.entity.bean.FolderDocumentEntity;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 import static com.icourt.alpha.constants.Const.VIEW_TYPE_ITEM;
 
@@ -25,12 +25,12 @@ public class FolderDocumentWrapAdapter
     @Const.AdapterViewType
     int adapterViewType;
 
-    private Set<FolderDocumentEntity> selectedFolderDocuments;
+    private ArrayList<FolderDocumentEntity> selectedFolderDocuments;
 
     public FolderDocumentWrapAdapter(@Const.AdapterViewType int adapterViewType,
                                      String seaFileRepoId, String seaFileDirPath,
                                      boolean selectable,
-                                     Set<FolderDocumentEntity> selectedFolderDocuments) {
+                                     ArrayList<FolderDocumentEntity> selectedFolderDocuments) {
         super(seaFileRepoId,seaFileDirPath, selectable);
         this.adapterViewType = adapterViewType;
         this.selectedFolderDocuments = selectedFolderDocuments;

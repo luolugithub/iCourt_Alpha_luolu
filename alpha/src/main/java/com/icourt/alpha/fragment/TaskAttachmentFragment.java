@@ -23,6 +23,7 @@ import com.icourt.alpha.adapter.TaskAttachmentAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.HeaderFooterAdapter;
 import com.icourt.alpha.adapter.baseadapter.adapterObserver.DataChangeAdapterObserver;
+import com.icourt.alpha.base.BaseDialogFragment;
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.entity.bean.TaskAttachmentEntity;
 import com.icourt.alpha.entity.event.TaskActionEvent;
@@ -30,6 +31,7 @@ import com.icourt.alpha.fragment.dialogfragment.SeaFileSelectDialogFragment;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.http.observer.BaseObserver;
+import com.icourt.alpha.interfaces.OnDialogFragmentDismissListener;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.interfaces.OnUpdateTaskListener;
 import com.icourt.alpha.utils.FileUtils;
@@ -71,7 +73,9 @@ import retrofit2.Response;
  * version 2.0.0
  */
 
-public class TaskAttachmentFragment extends BaseFragment implements BaseRecyclerAdapter.OnItemClickListener, BaseRecyclerAdapter.OnItemLongClickListener {
+public class TaskAttachmentFragment extends BaseFragment
+        implements BaseRecyclerAdapter.OnItemClickListener,
+        BaseRecyclerAdapter.OnItemLongClickListener, OnDialogFragmentDismissListener {
     private static final String KEY_TASK_ID = "key_task_id";
     private static final String KEY_TASK_LOOK_ATTACHMENT_PERMISSION = "key_task_look_attachment_permission";
     private static final String KEY_TASK_ADD_ATTACHMENT_PERMISSION = "key_task_add_attachment_permission";
@@ -290,7 +294,7 @@ public class TaskAttachmentFragment extends BaseFragment implements BaseRecycler
         if (fragment != null) {
             mFragTransaction.remove(fragment);
         }
-        SeaFileSelectDialogFragment.newInstance()
+        SeaFileSelectDialogFragment.newInstance(taskId)
                 .show(mFragTransaction, tag);
     }
 
@@ -443,4 +447,8 @@ public class TaskAttachmentFragment extends BaseFragment implements BaseRecycler
                 });
     }
 
+    @Override
+    public void onDialogFragmentDismiss(BaseDialogFragment baseDialogFragment) {
+        getData(true);
+    }
 }

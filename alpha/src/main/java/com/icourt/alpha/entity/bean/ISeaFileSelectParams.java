@@ -1,6 +1,6 @@
 package com.icourt.alpha.entity.bean;
 
-import java.util.HashSet;
+import java.util.ArrayList;
 
 /**
  * Description
@@ -18,5 +18,5 @@ public interface ISeaFileSelectParams {
 
     String getDstRepoDirPath();
 
-    HashSet<FolderDocumentEntity> getSelectedFolderDocuments();
+    ArrayList<FolderDocumentEntity> getSelectedFolderDocuments();
 }

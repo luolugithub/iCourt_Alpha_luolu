@@ -14,7 +14,7 @@ import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.FileUtils;
 import com.icourt.alpha.utils.IMUtils;
 
-import java.util.Set;
+import java.util.ArrayList;
 
 import static com.icourt.alpha.constants.Const.VIEW_TYPE_GRID;
 import static com.icourt.alpha.constants.Const.VIEW_TYPE_ITEM;
@@ -28,14 +28,14 @@ import static com.icourt.alpha.constants.SFileConfig.PERMISSION_RW;
  * version 2.1.0
  */
 public class FolderDocumentAdapter extends SFileImgBaseAdapter<FolderDocumentEntity> {
-    private Set<FolderDocumentEntity> selectedFolderDocuments;
+    private ArrayList<FolderDocumentEntity> selectedFolderDocuments;
     @Const.AdapterViewType
     int adapterViewType;
 
     public FolderDocumentAdapter(@Const.AdapterViewType int adapterViewType,
                                  String seaFileRepoId, String seaFileDirPath,
                                  boolean selectable,
-                                 Set<FolderDocumentEntity> selectedFolderDocuments) {
+                                 ArrayList<FolderDocumentEntity> selectedFolderDocuments) {
         super(seaFileRepoId, seaFileDirPath, selectable);
         this.adapterViewType = adapterViewType;
         this.selectedFolderDocuments = selectedFolderDocuments;

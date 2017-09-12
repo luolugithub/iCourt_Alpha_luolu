@@ -64,7 +64,12 @@ public class FolderDocumentEntity
     @JsonAdapter(LongTypeAdapter.class)
     public long size;
 
-    public String parent_dir;
+    /**
+     * 唯一区分  repoId+parent_dir+fileName(注意fileName可以重命名)
+     */
+    public String parent_dir;//路径地址
+    public String repoId;//repo id
+
     public String suspensionTag;
     public String modifier_name;
 
@@ -114,8 +119,41 @@ public class FolderDocumentEntity
         if (getClass() != o.getClass())
             return false;
         final FolderDocumentEntity other = (FolderDocumentEntity) o;
-        return TextUtils.equals(this.id, other.id);
+
+        return TextUtils.equals(this.repoId, other.repoId)
+                && TextUtils.equals(this.parent_dir, other.parent_dir)
+                && TextUtils.equals(this.name, other.name);
     }
+
+    @Override
+    public int hashCode() {
+        int result = 17;
+        result = result * 31 + System.identityHashCode(repoId);
+        result = result * 31 + System.identityHashCode(parent_dir);
+        result = result * 31 + System.identityHashCode(name);
+        return result;
+    }
+
+    @Override
+    public String toString() {
+        return "FolderDocumentEntity{" +
+                "id='" + id + '\'' +
+                ", commit_id='" + commit_id + '\'' +
+                ", lock_time=" + lock_time +
+                ", name='" + name + '\'' +
+                ", permission='" + permission + '\'' +
+                ", is_locked=" + is_locked +
+                ", mtime=" + mtime +
+                ", deleted_time=" + deleted_time +
+                ", isDir=" + isDir +
+                ", size=" + size +
+                ", parent_dir='" + parent_dir + '\'' +
+                ", repoId='" + repoId + '\'' +
+                ", suspensionTag='" + suspensionTag + '\'' +
+                ", modifier_name='" + modifier_name + '\'' +
+                '}';
+    }
+
     public class DirBooleanTypeAdapter extends BooleanTypeAdapter {
 
         @Override
