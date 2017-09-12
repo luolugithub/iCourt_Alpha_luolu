@@ -4,8 +4,6 @@ import android.support.annotation.CheckResult;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
-import android.text.method.LinkMovementMethod;
-import android.text.util.Linkify;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
@@ -20,6 +18,7 @@ import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.icourt.alpha.entity.bean.IMMessageCustomBody;
 import com.icourt.alpha.utils.ActionConstants;
+import com.icourt.alpha.utils.BugUtils;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.FileUtils;
 import com.icourt.alpha.utils.GlideUtils;
@@ -540,9 +539,21 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMMessageCustomBody> i
         TextView textView = holder.obtainView(R.id.chat_txt_tv);
         holder.bindChildLongClick(textView);
         if (imMessageCustomBody != null) {
-            textView.setText(imMessageCustomBody.content);
-            textView.setAutoLinkMask(Linkify.ALL);
-            textView.setMovementMethod(LinkMovementMethod.getInstance());
+            //注意容易发生崩溃 华为mate9就会
+            /*try {
+                textView.setAutoLinkMask(Linkify.ALL);
+                textView.setMovementMethod(LinkMovementMethod.getInstance());
+            } catch (Throwable e) {
+                BugUtils.bugSync("文本中Link崩溃", e);
+                e.printStackTrace();
+            }*/
+            try {
+                textView.setText(imMessageCustomBody.content);
+            } catch (Throwable e) {
+                BugUtils.bugSync("文本中Link崩溃2", e);
+                BugUtils.bugSync("文本中Link崩溃2:txt:",imMessageCustomBody.toString());
+                e.printStackTrace();
+            }
         } else {
             textView.setText("null");
         }
