@@ -839,14 +839,15 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
             } else if (event.isBubbleSync()) {
                 if (event.scene != null) {
                     switch (event.scene) {
-                        case ServerTimingEvent.TIMING_SYNC_TOO_LONG:
-                            showOrUpdateOverTimingRemindDialogFragment(false, TimerManager.getInstance().getTimingSeconds());
+                        case ServerTimingEvent.TIMING_SYNC_TOO_LONG://计时超长的通知
+//                            showOrUpdateOverTimingRemindDialogFragment(false, TimerManager.getInstance().getTimingSeconds());
                             break;
-                        case ServerTimingEvent.TIMING_SYNC_CLOSE_BUBBLE:
+                        case ServerTimingEvent.TIMING_SYNC_CLOSE_BUBBLE://关闭计时超长提醒的通知
                             dismissOverTimingRemindDialogFragment(false);
                             break;
-                        case ServerTimingEvent.TIMING_SYNC_NO_REMIND:
+                        case ServerTimingEvent.TIMING_SYNC_NO_REMIND://不再提醒的通知
                             dismissOverTimingRemindDialogFragment(false);
+                            TimerManager.getInstance().setOverTimingRemind(false);
                             break;
                     }
                 }
@@ -936,6 +937,7 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
         if (event == null) return;
         switch (event.action) {
             case TimingEvent.TIMING_ADD:
+                dismissOverTimingRemindDialogFragment(false);
                 tabTimingIcon.setImageResource(R.mipmap.ic_tab_timing);
                 tabTimingIcon.clearAnimation();
                 timingAnim = getTimingAnimation(0f, 359f);
@@ -952,12 +954,13 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
                 }
                 tabTimingTv.setText(toTime(event.timingSecond));
 
-                if (judgeEvenTime(event.timingSecond)) {
-                    // >=2的奇数小时更新时间
+                if (TimerManager.getInstance().isOverTimingRemind() && judgeEvenTime(event.timingSecond)) {
+                    // >=2的偶数小时更新时间
                     showOrUpdateOverTimingRemindDialogFragment(true, event.timingSecond);
                 }
                 break;
             case TimingEvent.TIMING_STOP:
+                dismissOverTimingRemindDialogFragment(false);
                 dismissTimingDialogFragment();
                 tabTimingTv.setText("开始计时");
                 tabTimingIcon.setImageResource(R.mipmap.ic_time_start);
@@ -1001,14 +1004,14 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
     }
 
     /**
-     * 判断>=2的奇数小时
+     * 判断>=2的偶数小时
      *
      * @param times 单位Second
      * @return
      */
     private boolean judgeEvenTime(long times) {
         long hour = TimeUnit.SECONDS.toHours(times);
-        return (hour >= 2) && (times % 3600 == 0) && (hour % 2 == 1);
+        return (hour >= 2) && (times % 3600 == 0) && (hour % 2 == 0);
     }
 
     /**
@@ -1185,18 +1188,18 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
         FragmentTransaction mFragTransaction = getSupportFragmentManager().beginTransaction();
         OverTimingRemindDialogFragment fragment = (OverTimingRemindDialogFragment)
                 getSupportFragmentManager().findFragmentByTag(tag);
-        if (isUpdate) {
-            if (fragment != null) {
-                fragment.updateTimeText(useTime);
-            }
+        if (fragment != null) {
+            fragment.updateTimeText(useTime);
         } else {
-            if (fragment == null) {
-                fragment = OverTimingRemindDialogFragment.newInstance(useTime);
-                fragment.show(mFragTransaction, tag);
-                dismissTimingDialogFragment();
-                tabTimingIcon.setImageResource(R.mipmap.timing_fill);
-            }
+            fragment = OverTimingRemindDialogFragment.newInstance(useTime);
+            fragment.show(mFragTransaction, tag);
+            dismissTimingDialogFragment();
+            tabTimingIcon.setImageResource(R.mipmap.timing_fill);
         }
+//        if (isUpdate) {
+        //        } else {
+
+//        }
     }
 
     /**

@@ -196,6 +196,11 @@ public class TimerTimingActivity extends BaseTimerActivity
         }
     }
 
+    /**
+     * 关闭计时提醒
+     *
+     * @param isSyncServer true：同步到服务器，false：不同步
+     */
     private void closeOverTimingRemind(boolean isSyncServer) {
         viewMoveAnimation(false);
         itemEntity.noRemind = TimeEntity.ItemEntity.STATE_NO_REMIND_ON;
@@ -388,7 +393,7 @@ public class TimerTimingActivity extends BaseTimerActivity
                     timingTv.setText(toTime(event.timingSecond));
 
                     if (itemEntity.noRemind == TimeEntity.ItemEntity.STATE_NO_REMIND_OFF) {
-                        if (TimeUnit.SECONDS.toHours(event.timingSecond) >= 2) {
+                        if (TimeUnit.SECONDS.toHours(event.timingSecond) >= 2) {//如果该计时超过两小时，显示超过2小时的提醒。
 
                             if (overTimingRemind.getVisibility() != View.VISIBLE) {
                                 updateOverTimingRemindText(event.timingSecond);
@@ -417,6 +422,11 @@ public class TimerTimingActivity extends BaseTimerActivity
         overTimingTitleTv.setText(overTimingString);
     }
 
+    /**
+     * 显示超过两小时的任务的提醒
+     *
+     * @param isShow true：显示；false：不显示。
+     */
     private void viewMoveAnimation(final boolean isShow) {
         final int durationTime = 300;
 

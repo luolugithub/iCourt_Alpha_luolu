@@ -7,7 +7,6 @@ import android.text.TextUtils;
 
 import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.icourt.alpha.entity.bean.TimeEntity;
-import com.icourt.alpha.entity.event.OverTimingRemindEvent;
 import com.icourt.alpha.entity.event.TimingEvent;
 import com.icourt.alpha.http.RetrofitServiceFactory;
 import com.icourt.alpha.http.callback.SimpleCallBack;
@@ -37,8 +36,9 @@ public class TimerManager {
 
     private static final String KEY_TIMER = "key_timer_entity_%s";
     private static final String KEY_TIMER_TASK_ID = "key_timer_entity_task_id_%s";
-    public static final int OVER_TIME_REMIND_NO_REMIND = 1;
-    public static final int OVER_TIME_REMIND_BUBBLE_OFF = 2;
+    private static final String KEY_OVER_TIMING_REMIND = "key_over_timing_remind";//超过2小时提醒
+    public static final int OVER_TIME_REMIND_NO_REMIND = 1;//设置不再提醒
+    public static final int OVER_TIME_REMIND_BUBBLE_OFF = 2;//设置关闭气泡
 
     private TimerManager() {
 
@@ -339,6 +339,9 @@ public class TimerManager {
                         if (response.body().result == null) {
                             TimerManager.getInstance().clearTimer();
                         } else {
+                            int noRemind = response.body().result.noRemind;//计时超过2小时的提醒，是否不再提醒
+                            setOverTimingRemind(noRemind == 0);
+
                             if (isTimer(response.body().result.pkId)) {
                                 TimerManager.getInstance().updateTimer(response.body().result);
                             } else {
@@ -357,8 +360,10 @@ public class TimerManager {
 
     /**
      * 请求网络 关闭持续计时过久时的提醒覆层 或者 不再提醒标记
+     *
+     * @param operType 1设置不再提醒；2设置关闭气泡。
      */
-    public void setOverTimingRemindClose(int operType) {
+    public void setOverTimingRemindClose(final int operType) {
         AlphaUserInfo loginUserInfo = LoginInfoUtils.getLoginUserInfo();
         String clientId = loginUserInfo == null ? "" : loginUserInfo.localUniqueId;
         RetrofitServiceFactory
@@ -368,6 +373,9 @@ public class TimerManager {
                     @Override
                     public void onSuccess(Call<ResEntity<String>> call, Response<ResEntity<String>> response) {
                         if (response.body().succeed) {
+                            if (operType == OVER_TIME_REMIND_BUBBLE_OFF) {//设置关闭气泡提醒
+                                setOverTimingRemind(false);
+                            }
                         }
                     }
 
@@ -379,7 +387,25 @@ public class TimerManager {
     }
 
     /**
-     * 更新原计时对象
+     * 设置超过2小时再提醒
+     *
+     * @param remind true:提醒；false：不提醒
+     */
+    public void setOverTimingRemind(boolean remind) {
+        SpUtils.getInstance().putData(KEY_OVER_TIMING_REMIND, remind);
+    }
+
+    /**
+     * 是否超过2小时，是否提醒
+     *
+     * @return true:提醒；false：不提醒
+     */
+    public boolean isOverTimingRemind() {
+        return SpUtils.getInstance().getBooleanData(KEY_OVER_TIMING_REMIND, true);
+    }
+
+    /**
+     * 更新原计时对象（之前已经有对象正在计时了）
      *
      * @return
      */

@@ -67,7 +67,7 @@ public class TimeEntity implements Serializable {
         public boolean timingValid;
         public String taskName;
 
-        public int noRemind;
+        public int noRemind;//不再提醒标志位
         public int bubbleOff;
 
         @Override
