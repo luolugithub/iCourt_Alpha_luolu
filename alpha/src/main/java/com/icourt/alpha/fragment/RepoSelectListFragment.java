@@ -15,6 +15,7 @@ import com.andview.refreshview.XRefreshView;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.RepoAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
+import com.icourt.alpha.adapter.baseadapter.adapterObserver.RefreshViewEmptyObserver;
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.constants.SFileConfig;
 import com.icourt.alpha.entity.bean.RepoEntity;
@@ -108,6 +109,21 @@ public class RepoSelectListFragment extends BaseFragment
             }
         });
         repoAdapter.setOnItemClickListener(this);
+        switch (repoType) {
+            case REPO_MINE:
+                refreshLayout.setNoticeEmptyText(R.string.repo_empty);
+                break;
+            case REPO_SHARED_ME:
+                refreshLayout.setNoticeEmptyText(R.string.repo_share_empty);
+                break;
+            case REPO_LAWFIRM:
+                refreshLayout.setNoticeEmptyText(R.string.repo_lawfirm_empty);
+                break;
+            case REPO_PROJECT:
+                refreshLayout.setNoticeEmptyText(R.string.repo_empty);
+                break;
+        }
+        repoAdapter.registerAdapterDataObserver(new RefreshViewEmptyObserver(refreshLayout, repoAdapter));
         refreshLayout.setXRefreshViewListener(new XRefreshView.SimpleXRefreshListener() {
             @Override
             public void onRefresh(boolean isPullDown) {
@@ -247,7 +263,7 @@ public class RepoSelectListFragment extends BaseFragment
         if (onFragmentCallBackListener != null) {
             Bundle bundle = new Bundle();
             bundle.putSerializable(KEY_FRAGMENT_RESULT, item);
-            bundle.putInt(KEY_REPO_TYPE,repoType);
+            bundle.putInt(KEY_REPO_TYPE, repoType);
             onFragmentCallBackListener.onFragmentCallBack(this, 1, bundle);
         }
     }

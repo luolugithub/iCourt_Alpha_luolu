@@ -116,15 +116,7 @@ public class RepoListFragment extends BaseFragment
                 break;
         }
         recyclerView.setAdapter(repoAdapter = new RepoAdapter(repoType));
-        repoAdapter.registerAdapterDataObserver(new RefreshViewEmptyObserver(refreshLayout, repoAdapter) {
-            @Override
-            protected void updateUI() {
-                super.updateUI();
-                if (refreshLayout != null) {
-                    refreshLayout.enableEmptyView(repoAdapter.getItemCount() <= 0);
-                }
-            }
-        });
+        repoAdapter.registerAdapterDataObserver(new RefreshViewEmptyObserver(refreshLayout, repoAdapter));
 
         repoAdapter.setOnItemClickListener(this);
         repoAdapter.setOnItemChildClickListener(this);

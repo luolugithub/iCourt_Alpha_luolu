@@ -10,11 +10,14 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import com.andview.refreshview.XRefreshView;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.FolderOnlySelectAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
+import com.icourt.alpha.adapter.baseadapter.HeaderFooterAdapter;
+import com.icourt.alpha.adapter.baseadapter.adapterObserver.DataChangeAdapterObserver;
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.entity.bean.FolderDocumentEntity;
 import com.icourt.alpha.entity.bean.SeaFileSelectParam;
@@ -115,6 +118,16 @@ public class SeaFileSelectFragment extends BaseFragment
                         false
                 ));
         folderDocumentAdapter.setOnItemClickListener(this);
+
+        final TextView emptyView = (TextView) HeaderFooterAdapter.inflaterView(getContext(), R.layout.footer_folder_document_num, recyclerView);
+        emptyView.setText(R.string.sfile_folder_empty);
+        refreshLayout.setEmptyView(emptyView);
+        folderDocumentAdapter.registerAdapterDataObserver(new DataChangeAdapterObserver() {
+            @Override
+            protected void updateUI() {
+                refreshLayout.enableEmptyView(folderDocumentAdapter.getItemCount() <= 0);
+            }
+        });
         refreshLayout.setXRefreshViewListener(new XRefreshView.SimpleXRefreshListener() {
             @Override
             public void onRefresh(boolean isPullDown) {
