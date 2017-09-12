@@ -311,6 +311,9 @@
         <activity
             android:name=".activity.FeedBackActivity"
             android:screenOrientation="portrait" />
+        <activity
+            android:name=".activity.MyCollectedMsgActivity"
+            android:screenOrientation="portrait" />
 
         <meta-data
             android:name="com.icourt.alpha.utils.glide.MyGlideModule"

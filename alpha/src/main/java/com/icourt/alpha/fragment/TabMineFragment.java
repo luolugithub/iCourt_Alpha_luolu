@@ -13,8 +13,8 @@ import android.widget.TextView;
 import com.bumptech.glide.Glide;
 import com.icourt.alpha.BuildConfig;
 import com.icourt.alpha.R;
-import com.icourt.alpha.activity.ChatMsgClassfyActivity;
 import com.icourt.alpha.activity.ImagePagerActivity;
+import com.icourt.alpha.activity.MyCollectedMsgActivity;
 import com.icourt.alpha.activity.MyFinishTaskActivity;
 import com.icourt.alpha.activity.SetingActivity;
 import com.icourt.alpha.activity.UserInfoActivity;
@@ -224,7 +224,8 @@ public class TabMineFragment extends BaseFragment {
                 SetingActivity.launch(getContext());
                 break;
             case R.id.my_center_collect_layout://收藏
-                ChatMsgClassfyActivity.launchMyCollected(getContext());
+//                ChatMsgClassfyActivity.launchMyCollected(getContext());
+                MyCollectedMsgActivity.launchMyCollected(getContext());
                 break;
             case R.id.menu_test:
 //                test1();
