@@ -124,6 +124,7 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
             switch (i) {
                 case 0:
                     titleTv.setTextColor(0xFF313131);
+                    titleTv.setPadding(DensityUtil.dip2px(getContext(),8), 0, 0, 0);
                     titleTv.setText("未完成");
                     downIv.setVisibility(View.VISIBLE);
                     tab.getCustomView().setOnClickListener(new OnTabClickListener());
