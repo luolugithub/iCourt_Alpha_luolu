@@ -919,7 +919,7 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
                 dismissOverTimingRemindDialogFragment(false);
                 break;
             case OverTimingRemindEvent.ACTION_SHOW_TIMING_REMIND:
-                showOrUpdateOverTimingRemindDialogFragment(false, event.timeSec);
+                showOrUpdateOverTimingRemindDialogFragment(event.timeSec);
                 break;
             case OverTimingRemindEvent.ACTION_SYNC_BUBBLE_CLOSE_TO_SERVER:
                 TimerManager.getInstance().setOverTimingRemindClose(TimerManager.OVER_TIME_REMIND_BUBBLE_OFF);
@@ -937,7 +937,12 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
         if (event == null) return;
         switch (event.action) {
             case TimingEvent.TIMING_ADD:
-                dismissOverTimingRemindDialogFragment(false);
+                //如果添加的计时大于2个小时，弹出提示
+                if (TimeUnit.SECONDS.toHours(TimerManager.getInstance().getTimingSeconds()) > 2) {
+                    showOrUpdateOverTimingRemindDialogFragment(TimerManager.getInstance().getTimingSeconds());
+                } else {
+                    dismissTimingDialogFragment();
+                }
                 tabTimingIcon.setImageResource(R.mipmap.ic_tab_timing);
                 tabTimingIcon.clearAnimation();
                 timingAnim = getTimingAnimation(0f, 359f);
@@ -954,9 +959,8 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
                 }
                 tabTimingTv.setText(toTime(event.timingSecond));
 
-                if (TimerManager.getInstance().isOverTimingRemind() && judgeEvenTime(event.timingSecond)) {
-                    // >=2的偶数小时更新时间
-                    showOrUpdateOverTimingRemindDialogFragment(true, event.timingSecond);
+                if (judgeEvenTime(event.timingSecond)) {// >=2的偶数小时更新时间
+                    showOrUpdateOverTimingRemindDialogFragment(event.timingSecond);
                 }
                 break;
             case TimingEvent.TIMING_STOP:
@@ -1011,7 +1015,11 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
      */
     private boolean judgeEvenTime(long times) {
         long hour = TimeUnit.SECONDS.toHours(times);
-        return (hour >= 2) && (times % 3600 == 0) && (hour % 2 == 0);
+        if ((hour >= 2) && (times % 3600 == 0) && (hour % 2 == 0)) {
+            TimerManager.getInstance().setOverBubbleRemind(true);
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -1174,7 +1182,10 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
     /**
      * 显示 持续计时过久时的提醒覆层
      */
-    public void showOrUpdateOverTimingRemindDialogFragment(boolean isUpdate, long useTime) {
+    public void showOrUpdateOverTimingRemindDialogFragment(long useTime) {
+        if (!TimerManager.getInstance().isOverTimingRemind() || !TimerManager.getInstance().isBubbleRemind()) {
+            return;
+        }
         if (isDestroyOrFinishing()) {
             return;
         }
