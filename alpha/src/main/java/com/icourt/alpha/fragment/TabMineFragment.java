@@ -20,7 +20,6 @@ import com.icourt.alpha.activity.UserInfoActivity;
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.icourt.alpha.entity.bean.GroupBean;
-import com.icourt.alpha.entity.bean.SelectGroupBean;
 import com.icourt.alpha.entity.bean.UserDataEntity;
 import com.icourt.alpha.entity.event.ServerTimingEvent;
 import com.icourt.alpha.entity.event.TimingEvent;
@@ -114,6 +113,12 @@ public class TabMineFragment extends BaseFragment {
         }
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        setDataToView(getLoginUserInfo());
+    }
+
     /**
      * 设置数据
      *
@@ -134,21 +139,6 @@ public class TabMineFragment extends BaseFragment {
                 }
             }
         }
-    }
-
-    /**
-     * 获取用户部门str
-     *
-     * @param groups
-     * @return
-     */
-    private String getUserGroup(List<SelectGroupBean> groups) {
-        if (groups == null) return "";
-        StringBuffer buffer = new StringBuffer();
-        for (SelectGroupBean group : groups) {
-            buffer.append(group.groupName).append(" ");
-        }
-        return buffer.toString();
     }
 
     /**

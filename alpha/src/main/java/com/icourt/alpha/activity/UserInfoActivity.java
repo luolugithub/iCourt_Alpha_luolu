@@ -19,13 +19,9 @@ import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.entity.bean.AlphaUserInfo;
-import com.icourt.alpha.http.callback.SimpleCallBack;
-import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.GlideUtils;
-import com.icourt.alpha.utils.LoginInfoUtils;
 import com.icourt.alpha.utils.SystemUtils;
-import com.icourt.alpha.utils.TextFormater;
 import com.icourt.alpha.widget.dialog.BottomActionDialog;
 import com.icourt.api.RequestUtils;
 
@@ -50,8 +46,10 @@ import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Function;
 import io.reactivex.schedulers.Schedulers;
 import okhttp3.RequestBody;
-import retrofit2.Call;
-import retrofit2.Response;
+
+import static com.icourt.alpha.activity.UpdateUserInfoActivity.UPDATE_EMAIL_TYPE;
+import static com.icourt.alpha.activity.UpdateUserInfoActivity.UPDATE_NAME_TYPE;
+import static com.icourt.alpha.activity.UpdateUserInfoActivity.UPDATE_PHONE_TYPE;
 
 /**
  * Description 设置
@@ -77,10 +75,18 @@ public class UserInfoActivity extends BaseActivity {
     ImageView photoImage;
     @BindView(R.id.photo_layout)
     LinearLayout photoLayout;
+    @BindView(R.id.name_tv)
+    TextView nameTv;
+    @BindView(R.id.name_layout)
+    LinearLayout nameLayout;
     @BindView(R.id.phone_tv)
     TextView phoneTv;
+    @BindView(R.id.phone_layout)
+    LinearLayout phoneLayout;
     @BindView(R.id.email_tv)
     TextView emailTv;
+    @BindView(R.id.email_layout)
+    LinearLayout emailLayout;
 
     private AlphaUserInfo alphaUserInfo;
     private String path;
@@ -102,22 +108,45 @@ public class UserInfoActivity extends BaseActivity {
     @Override
     protected void initView() {
         super.initView();
-        alphaUserInfo = getLoginUserInfo();
         setTitle("个人设置");
+
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        setDataToView();
+    }
+
+    private void setDataToView() {
+        alphaUserInfo = getLoginUserInfo();
         if (alphaUserInfo != null) {
             GlideUtils.loadUser(this, alphaUserInfo.getPic(), photoImage);
+            nameTv.setText(alphaUserInfo.getName());
             phoneTv.setText(alphaUserInfo.getPhone());
             emailTv.setText(alphaUserInfo.getMail());
         }
     }
 
-    @OnClick({R.id.photo_layout})
+    @OnClick({R.id.photo_layout,
+            R.id.name_layout,
+            R.id.phone_layout,
+            R.id.email_layout})
     @Override
     public void onClick(View v) {
         super.onClick(v);
         switch (v.getId()) {
             case R.id.photo_layout:
                 showBottomAddMeau();
+                break;
+            case R.id.name_layout:
+                UpdateUserInfoActivity.launch(this, UPDATE_NAME_TYPE, alphaUserInfo.getName());
+                break;
+            case R.id.phone_layout:
+                UpdateUserInfoActivity.launch(this, UPDATE_PHONE_TYPE, alphaUserInfo.getPhone());
+                break;
+            case R.id.email_layout:
+                UpdateUserInfoActivity.launch(this, UPDATE_EMAIL_TYPE, alphaUserInfo.getMail());
                 break;
         }
     }
@@ -279,33 +308,5 @@ public class UserInfoActivity extends BaseActivity {
                         showTopSnackBar("更新成功");
                     }
                 });
-    }
-
-    private void updateInfo() {
-        final String phone = phoneTv.getText().toString().trim();
-        final String email = emailTv.getText().toString().trim();
-
-        if (!TextFormater.isMobileNO(phone)) {
-            showTopSnackBar("请输入正确的手机格式");
-            return;
-        }
-        showLoadingDialog(null);
-        getApi().updateUserInfo(alphaUserInfo.getUserId(), phone, email).enqueue(new SimpleCallBack<JsonElement>() {
-            @Override
-            public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
-                dismissLoadingDialog();
-                alphaUserInfo.setPhone(phone);
-                alphaUserInfo.setMail(email);
-                LoginInfoUtils.clearLoginUserInfo();
-                LoginInfoUtils.saveLoginUserInfo(alphaUserInfo);
-                UserInfoActivity.this.finish();
-            }
-
-            @Override
-            public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
-                super.onFailure(call, t);
-                dismissLoadingDialog();
-            }
-        });
     }
 }

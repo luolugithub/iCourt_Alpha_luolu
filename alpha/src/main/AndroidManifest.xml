@@ -125,7 +125,8 @@
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".activity.UpdatePhoneOrMailActivity"
+            android:name=".activity.UpdateUserInfoActivity"
+            android:windowSoftInputMode="stateVisible|adjustResize"
             android:screenOrientation="portrait" />
         <activity
             android:name=".activity.ContactSearchActivity"

@@ -78,10 +78,24 @@ public interface ApiAlphaService {
      * @param phone 手机号码 不包含+86国际代码的字符串
      * @return
      */
-    @Deprecated
     @POST("api/v1/auth/update")
     @FormUrlEncoded
-    Call<ResEntity<String>> updateUserPhone(@Field("phone") String phone);
+    Call<ResEntity<JsonElement>> updateUserPhone(@Field("id") String id,
+                                                 @Field("phone") String phone);
+
+    /**
+     * 更新用户信息
+     * <p>
+     * 文档地址：http://testpms.alphalawyer.cn/ilaw/swagger/index.html#!/auth-api/updateUsingPOST
+     *
+     * @param id
+     * @param name
+     * @return
+     */
+    @POST("api/v1/auth/update")
+    @FormUrlEncoded
+    Call<ResEntity<JsonElement>> updateUserName(@Field("id") String id,
+                                                @Field("name") String name);
 
     /**
      * 修改律师邮箱信息
@@ -89,10 +103,10 @@ public interface ApiAlphaService {
      * @param email
      * @return
      */
-    @Deprecated
     @POST("api/v1/auth/update")
     @FormUrlEncoded
-    Call<ResEntity<String>> updateUserEmail(@Field("email") String email);
+    Call<ResEntity<JsonElement>> updateUserEmail(@Field("id") String id,
+                                                 @Field("email") String email);
 
     /**
      * 微信登陆
@@ -398,7 +412,12 @@ public interface ApiAlphaService {
      * @return
      */
     @POST("api/v1/auth/update")
-    Call<ResEntity<JsonElement>> updateUserInfo(@Query("id") String id, @Query("phone") String phone, @Query("email") String email);
+    Call<ResEntity<JsonElement>> updateUserInfo(@Query("id") String id,
+                                                @Query("name") String name,
+                                                @Query("phone") String phone,
+                                                @Query("email") String email);
+
+
 
     /**
      * 项目下计时列表
