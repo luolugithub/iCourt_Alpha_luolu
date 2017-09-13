@@ -15,6 +15,7 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.CheckedTextView;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -22,7 +23,7 @@ import android.widget.TextView;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.icourt.alpha.R;
-import com.icourt.alpha.adapter.FolderOnlySelectAdapter;
+import com.icourt.alpha.adapter.FolderRemoveAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.adapterObserver.DataChangeAdapterObserver;
 import com.icourt.alpha.base.BaseDialogFragment;
@@ -97,10 +98,12 @@ public class SeaFileSelectDialogFragment extends BaseDialogFragment
     LinearLayout dragView;
     @BindView(R.id.sliding_layout)
     SlidingUpPanelLayout slidingLayout;
-    FolderOnlySelectAdapter selectedFolderDocumentAdapter;
+    FolderRemoveAdapter selectedFolderDocumentAdapter;
     String taskId, projectId, projectName;
     @BindView(R.id.contentEmptyText)
     TextView contentEmptyText;
+    @BindView(R.id.panel_indicator)
+    ImageView panelIndicator;
 
     public static SeaFileSelectDialogFragment newInstance(@NonNull String taskId,
                                                           @Nullable String projectId,
@@ -150,11 +153,7 @@ public class SeaFileSelectDialogFragment extends BaseDialogFragment
         }
         selectRepoTypeEntity = new RepoTypeEntity(SFileConfig.REPO_MINE, "我的");
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        recyclerView.setAdapter(selectedFolderDocumentAdapter = new FolderOnlySelectAdapter(
-                selectedFolderDocumentEntities,
-                true,
-                true
-        ));
+        recyclerView.setAdapter(selectedFolderDocumentAdapter = new FolderRemoveAdapter());
         selectedFolderDocumentAdapter.registerAdapterDataObserver(new DataChangeAdapterObserver() {
             @Override
             protected void updateUI() {
@@ -162,20 +161,24 @@ public class SeaFileSelectDialogFragment extends BaseDialogFragment
                 updateSelectNum();
             }
         });
-        selectedFolderDocumentAdapter.setOnItemClickListener(new BaseRecyclerAdapter.OnItemClickListener() {
+        selectedFolderDocumentAdapter.setOnItemChildClickListener(new BaseRecyclerAdapter.OnItemChildClickListener() {
             @Override
-            public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
-                FolderDocumentEntity item = selectedFolderDocumentAdapter.getItem(position);
-                if (item == null) return;
-                //更新子fragment
-                if (currFragment instanceof SeaFileSelectFragment) {
-                    SeaFileSelectFragment seaFileSelectFragment = (SeaFileSelectFragment) currFragment;
-                    Bundle args = new Bundle();
-                    args.putSerializable(KEY_FRAGMENT_UPDATE_KEY, item);
-                    seaFileSelectFragment.notifyFragmentUpdate(seaFileSelectFragment, -1, args);
-                }
+            public void onItemChildClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
+                switch (view.getId()) {
+                    case R.id.document_delete_iv:
+                        FolderDocumentEntity item = selectedFolderDocumentAdapter.getItem(position);
+                        if (item == null) return;
+                        //更新子fragment
+                        if (currFragment instanceof SeaFileSelectFragment) {
+                            SeaFileSelectFragment seaFileSelectFragment = (SeaFileSelectFragment) currFragment;
+                            Bundle args = new Bundle();
+                            args.putSerializable(KEY_FRAGMENT_UPDATE_KEY, item);
+                            seaFileSelectFragment.notifyFragmentUpdate(seaFileSelectFragment, -1, args);
+                        }
 
-                selectedFolderDocumentAdapter.removeItem(position);
+                        selectedFolderDocumentAdapter.removeItem(position);
+                        break;
+                }
             }
         });
         selectedFolderDocumentAdapter.bindData(true, new ArrayList<FolderDocumentEntity>(selectedFolderDocumentEntities));
@@ -183,6 +186,12 @@ public class SeaFileSelectDialogFragment extends BaseDialogFragment
             @Override
             public void onClick(View view) {
                 closePanel();
+            }
+        });
+        slidingLayout.addPanelSlideListener(new SlidingUpPanelLayout.SimplePanelSlideListener() {
+            @Override
+            public void onPanelStateChanged(View panel, SlidingUpPanelLayout.PanelState previousState, SlidingUpPanelLayout.PanelState newState) {
+                panelIndicator.setImageResource(newState == SlidingUpPanelLayout.PanelState.EXPANDED ? R.mipmap.panel_close : R.mipmap.panel_open);
             }
         });
 
