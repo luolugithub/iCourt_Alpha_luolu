@@ -17,12 +17,15 @@ import com.icourt.alpha.http.callback.BaseCallBack;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.UpdateAppDialogNoticeImp;
+import com.icourt.alpha.utils.ActionConstants;
 import com.icourt.alpha.utils.ApkUtils;
+import com.icourt.alpha.utils.FileUtils;
 import com.icourt.alpha.utils.Md5Utils;
 import com.icourt.alpha.utils.NetUtils;
 import com.icourt.alpha.utils.SpUtils;
 import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.utils.UMMobClickAgent;
+import com.icourt.alpha.utils.UrlUtils;
 import com.liulishuo.filedownloader.BaseDownloadTask;
 import com.liulishuo.filedownloader.FileDownloadListener;
 import com.liulishuo.filedownloader.FileDownloader;
@@ -126,7 +129,8 @@ public class BaseAppUpdateActivity extends BaseUmengActivity implements
                 if (hasFilePermission(context)) {
                     MobclickAgent.onEvent(context, UMMobClickAgent.dialog_update_btn_click_id);
 //                    getUpdateProgressDialog().setMax(appVersionEntity.binary != null ? (int) appVersionEntity.binary.fsize : 1_000);//下载进度条
-                    showAppDownloadingDialog(getActivity(), appVersionEntity.upgradeUrl);
+                    String updateUrl = UrlUtils.appendParam(appVersionEntity.upgradeUrl, "alphaNewApp", appVersionEntity.appVersion);
+                    showAppDownloadingDialog(getActivity(), updateUrl);
                 } else {
                     requestFilePermission(context, REQUEST_FILE_PERMISSION);
                 }
@@ -236,6 +240,7 @@ public class BaseAppUpdateActivity extends BaseUmengActivity implements
             getUpdateProgressDialog().dismiss();
             if (task != null && !TextUtils.isEmpty(task.getPath())) {
                 installApk(new File(task.getPath()));
+                FileUtils.deleteFolderOtherFile(new File(getApkSavePath()), new File(task.getPath()));
             }
         }
 
@@ -277,15 +282,30 @@ public class BaseAppUpdateActivity extends BaseUmengActivity implements
         if (TextUtils.isEmpty(apkUrl)) return;
         if (getUpdateProgressDialog().isShowing()) return;
         if (Environment.isExternalStorageEmulated()) {
-            String ROOTPATH = Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator;
+            String path = getApkSavePath() + Md5Utils.md5(apkUrl, apkUrl) + ".apk";
             FileDownloader
                     .getImpl()
                     .create(apkUrl)
-                    .setPath(ROOTPATH + Md5Utils.md5(apkUrl, apkUrl) + ".apk")
+                    .setPath(path)
                     .setListener(apkDownloadListener).start();
         } else {
             showTopSnackBar("sd卡不可用!");
         }
+    }
+
+    /**
+     * 获取安装包地址
+     *
+     * @return
+     */
+    private String getApkSavePath() {
+        StringBuilder pathBuilder = new StringBuilder(Environment.getExternalStorageDirectory().getAbsolutePath());
+        pathBuilder.append(File.separator);
+        pathBuilder.append(ActionConstants.FILE_DOWNLOAD_PATH);
+        pathBuilder.append(File.separator);
+        pathBuilder.append(ActionConstants.APK_DOWNLOAD_PATH);
+        pathBuilder.append(File.separator);
+        return pathBuilder.toString();
     }
 
     /**

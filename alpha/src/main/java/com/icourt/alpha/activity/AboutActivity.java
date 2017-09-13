@@ -124,6 +124,9 @@ public class AboutActivity extends BaseAppUpdateActivity {
                 if (appVersionEntity == null) return;
                 if (hasFilePermission(context)) {
                     MobclickAgent.onEvent(context, UMMobClickAgent.dialog_update_btn_click_id);
+                    appVersionEntity.upgradeUrl = "https://alphalawyer.cn/#withoutlo/sharelink/6704547496CB11E78479446A2ED9DCBD";
+                    appVersionEntity.upgradeUrl = "https://test.alphalawyer.cn/#withoutlo/sharelink/E78071F4984511E78DD400163E0691A5";
+                    appVersionEntity.upgradeUrl = "https://test.alphalawyer.cn/#withoutlo/sharelink/DA5FAC16984511E78DD400163E0691A5";
                     showAppDownloadingDialog(getActivity(), appVersionEntity.upgradeUrl);
                 } else {
                     requestFilePermission(context, REQUEST_FILE_PERMISSION);

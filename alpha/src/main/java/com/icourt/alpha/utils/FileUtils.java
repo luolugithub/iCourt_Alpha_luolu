@@ -370,7 +370,28 @@ public class FileUtils {
             e.printStackTrace();
             return false;
         }
+    }
 
+    /**
+     * 删除文件夹下某个文件之外的文件
+     *
+     * @param folder
+     * @param file
+     */
+    public static void deleteFolderOtherFile(File folder, File file) {
+        if (folder == null || !folder.exists()) return;
+        if (file == null || !file.exists()) return;
+        File files[] = folder.listFiles();
+        if (files == null) return;
+        for (File f : files) {
+            if (f.exists() && !TextUtils.equals(f.getName(), file.getName())) {
+                try {
+                    f.delete();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
     }
 
 }
