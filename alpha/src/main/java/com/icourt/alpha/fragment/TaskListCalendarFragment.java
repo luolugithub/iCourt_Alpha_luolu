@@ -271,13 +271,15 @@ public class TaskListCalendarFragment extends BaseFragment {
 
             @Override
             public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
+                if (Math.abs(velocityX) > Math.abs(velocityY))
+                    return super.onFling(e1, e2, velocityX, velocityY);
                 if (Math.abs(velocityY) > DensityUtil.dip2px(getContext(), 50)) {
-                    if (slSchedule.getmState() == ScheduleState.CLOSE) {
+                    if (slSchedule.getmState() == ScheduleState.CLOSE) {//日历处于收起状态
                         if (gestureDetectorLayout.getY() > -calendarTitleLl.getHeight()
                                 && velocityY < 0) {
                             gestureDetectorLayout.setY(-calendarTitleLl.getHeight());
                         }
-                    } else if (slSchedule.getmState() == ScheduleState.OPEN) {
+                    } else if (slSchedule.getmState() == ScheduleState.OPEN) {//日历处于打开状态
                         if (gestureDetectorLayout.getY() < 0
                                 && velocityY > 0) {
                             gestureDetectorLayout.setY(0);
