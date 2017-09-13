@@ -70,7 +70,7 @@ public class OverTimingRemindDialogFragment extends BaseDialogFragment implement
     public void updateTimeText(@NonNull long useTime) {
         if (overTimingTitleTv != null && useTime != 0) {
             String overTimingString = String.format(getContext().getResources()
-                    .getString(R.string.timer_over_timing_remind_text), TimeUnit.MILLISECONDS.toHours(useTime));
+                    .getString(R.string.timer_over_timing_remind_text), TimeUnit.SECONDS.toHours(useTime));
             overTimingTitleTv.setText(overTimingString);
         }
     }

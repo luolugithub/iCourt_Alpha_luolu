@@ -16,6 +16,7 @@ import android.support.v4.app.NotificationManagerCompat;
 import android.support.v4.util.ArrayMap;
 import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
+import android.util.Log;
 import android.util.SparseArray;
 import android.view.Gravity;
 import android.view.KeyEvent;
@@ -839,13 +840,14 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
             } else if (event.isBubbleSync()) {
                 if (event.scene != null) {
                     switch (event.scene) {
-                        case ServerTimingEvent.TIMING_SYNC_TOO_LONG://计时超长的通知
-//                            showOrUpdateOverTimingRemindDialogFragment(false, TimerManager.getInstance().getTimingSeconds());
+                        case ServerTimingEvent.TIMING_SYNC_TOO_LONG://计时超长的通知（这个通知每2小时通知一次）
+                            showOrUpdateOverTimingRemindDialogFragment(TimerManager.getInstance().getTimingSeconds());
                             break;
-                        case ServerTimingEvent.TIMING_SYNC_CLOSE_BUBBLE://关闭计时超长提醒的通知
+                        case ServerTimingEvent.TIMING_SYNC_CLOSE_BUBBLE://关闭该计时任务超长提醒泡泡的通知
                             dismissOverTimingRemindDialogFragment(false);
+                            TimerManager.getInstance().setOverBubbleRemind(false);
                             break;
-                        case ServerTimingEvent.TIMING_SYNC_NO_REMIND://不再提醒的通知
+                        case ServerTimingEvent.TIMING_SYNC_NO_REMIND://该计时任务不再提醒泡泡的通知
                             dismissOverTimingRemindDialogFragment(false);
                             TimerManager.getInstance().setOverTimingRemind(false);
                             break;
@@ -939,7 +941,9 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
             case TimingEvent.TIMING_ADD:
                 //如果添加的计时大于2个小时，弹出提示
                 if (TimeUnit.SECONDS.toHours(TimerManager.getInstance().getTimingSeconds()) > 2) {
-                    showOrUpdateOverTimingRemindDialogFragment(TimerManager.getInstance().getTimingSeconds());
+                    if (TimerManager.getInstance().isOverTimingRemind() && TimerManager.getInstance().isBubbleRemind()) {
+                        showOrUpdateOverTimingRemindDialogFragment(TimerManager.getInstance().getTimingSeconds());
+                    }
                 } else {
                     dismissTimingDialogFragment();
                 }
@@ -958,10 +962,6 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
                     tabTimingIcon.startAnimation(timingAnim);
                 }
                 tabTimingTv.setText(toTime(event.timingSecond));
-
-                if (judgeEvenTime(event.timingSecond)) {// >=2的偶数小时更新时间
-                    showOrUpdateOverTimingRemindDialogFragment(event.timingSecond);
-                }
                 break;
             case TimingEvent.TIMING_STOP:
                 dismissOverTimingRemindDialogFragment(false);
@@ -1008,16 +1008,19 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
     }
 
     /**
-     * 判断>=2的偶数小时
+     * 判断>=2的奇数小时整点
      *
      * @param times 单位Second
      * @return
      */
     private boolean judgeEvenTime(long times) {
         long hour = TimeUnit.SECONDS.toHours(times);
-        if ((hour >= 2) && (times % 3600 == 0) && (hour % 2 == 0)) {
-            TimerManager.getInstance().setOverBubbleRemind(true);
-            return true;
+        if ((hour >= 2) && (times % 3600 == 0) && (hour % 2 == 1)) {
+            //如果可以弹出泡泡，并且没有点击不再提醒。
+            if (TimerManager.getInstance().isOverTimingRemind() && TimerManager.getInstance().isBubbleRemind()) {
+                return true;
+            }
+            return false;
         }
         return false;
     }
@@ -1183,12 +1186,10 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
      * 显示 持续计时过久时的提醒覆层
      */
     public void showOrUpdateOverTimingRemindDialogFragment(long useTime) {
-        if (!TimerManager.getInstance().isOverTimingRemind() || !TimerManager.getInstance().isBubbleRemind()) {
+        if (isDestroyOrFinishing()) {//如果界面即将销毁，那么就不执行下去
             return;
         }
-        if (isDestroyOrFinishing()) {
-            return;
-        }
+        //如果没有显示任务列表新任务的下一步按钮
         if (currentFragment instanceof TabTaskFragment) {
             TabTaskFragment tabTaskFragment = (TabTaskFragment) currentFragment;
             if (tabTaskFragment.isShowingNextTaskView()) {
@@ -1204,13 +1205,9 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
         } else {
             fragment = OverTimingRemindDialogFragment.newInstance(useTime);
             fragment.show(mFragTransaction, tag);
-            dismissTimingDialogFragment();
-            tabTimingIcon.setImageResource(R.mipmap.timing_fill);
         }
-//        if (isUpdate) {
-        //        } else {
-
-//        }
+        dismissTimingDialogFragment();
+        tabTimingIcon.setImageResource(R.mipmap.timing_fill);
     }
 
     /**

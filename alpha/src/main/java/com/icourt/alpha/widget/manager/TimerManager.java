@@ -362,6 +362,9 @@ public class TimerManager {
      * @param operType 1设置不再提醒；2设置关闭气泡。
      */
     public void setOverTimingRemindClose(final int operType) {
+        if (TextUtils.isEmpty(getTimerId())) {
+            return;
+        }
         AlphaUserInfo loginUserInfo = LoginInfoUtils.getLoginUserInfo();
         String clientId = loginUserInfo == null ? "" : loginUserInfo.localUniqueId;
         RetrofitServiceFactory
