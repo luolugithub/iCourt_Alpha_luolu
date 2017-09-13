@@ -715,8 +715,10 @@ public class ImagePagerActivity extends BaseUmengActivity implements BasePagerAd
         if (fragment != null) {
             mFragTransaction.remove(fragment);
         }
-        ProjectSaveFileDialogFragment.newInstance(filePath, ProjectSaveFileDialogFragment.ALPHA_TYPE)
-                .show(mFragTransaction, tag);
+//        ProjectSaveFileDialogFragment.newInstance(filePath, ProjectSaveFileDialogFragment.ALPHA_TYPE)
+//                .show(mFragTransaction, tag);
+        mFragTransaction.add(ProjectSaveFileDialogFragment.newInstance(filePath,ProjectSaveFileDialogFragment.OTHER_TYPE), tag);
+        mFragTransaction.commitAllowingStateLoss();
     }
 
     /**
