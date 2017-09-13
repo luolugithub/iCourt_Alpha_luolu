@@ -15,7 +15,7 @@
         sothree:umanoOverlay="true"
         sothree:umanoPanelHeight="25dp"
         sothree:umanoScrollableView="@+id/recyclerView"
-        sothree:umanoShadowHeight="2dp">
+        sothree:umanoShadowHeight="1dp">
 
         <LinearLayout
             android:layout_width="match_parent"

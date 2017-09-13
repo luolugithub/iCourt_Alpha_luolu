@@ -49,6 +49,7 @@ import static com.icourt.alpha.constants.SFileConfig.REPO_SHARED_ME;
 public class RepoSelectListFragment extends BaseFragment
         implements BaseRecyclerAdapter.OnItemClickListener {
     public static final String KEY_REPO_TYPE = "repoType";
+    public static final String KEY_REPO_FILTER_ONLY_READ = "filter_only_read";
 
     @BindView(R.id.recyclerView)
     RecyclerView recyclerView;
@@ -58,11 +59,14 @@ public class RepoSelectListFragment extends BaseFragment
     RepoAdapter repoAdapter;
     OnFragmentCallBackListener onFragmentCallBackListener;
     int repoType;
+    boolean filterOnlyReadRepo;
 
-    public static RepoSelectListFragment newInstance(@SFileConfig.REPO_TYPE int repoType) {
+    public static RepoSelectListFragment newInstance(@SFileConfig.REPO_TYPE int repoType,
+                                                     boolean filterOnlyReadRepo) {
         RepoSelectListFragment fragment = new RepoSelectListFragment();
         Bundle args = new Bundle();
         args.putInt(KEY_REPO_TYPE, repoType);
+        args.putBoolean(KEY_REPO_FILTER_ONLY_READ, filterOnlyReadRepo);
         fragment.setArguments(args);
         return fragment;
     }
@@ -92,6 +96,7 @@ public class RepoSelectListFragment extends BaseFragment
     @Override
     protected void initView() {
         repoType = SFileConfig.convert2RepoType(getArguments().getInt(KEY_REPO_TYPE));
+        filterOnlyReadRepo = getArguments().getBoolean(KEY_REPO_FILTER_ONLY_READ);
 
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setAdapter(repoAdapter = new RepoAdapter(REPO_MINE) {
@@ -144,7 +149,7 @@ public class RepoSelectListFragment extends BaseFragment
     private void getRepoList() {
         switch (repoType) {
             case REPO_MINE: {
-                getDocumentRoot(null);
+                getDocumentRoot(null, false);
             }
             break;
             case REPO_SHARED_ME: {
@@ -153,7 +158,7 @@ public class RepoSelectListFragment extends BaseFragment
                         new SimpleCallBack2<String>() {
                             @Override
                             public void onSuccess(Call<String> call, Response<String> response) {
-                                getDocumentRoot(response.body());
+                                getDocumentRoot(response.body(), filterOnlyReadRepo);
                             }
 
                             @Override
@@ -165,7 +170,7 @@ public class RepoSelectListFragment extends BaseFragment
             }
             break;
             case REPO_LAWFIRM: {
-                getDocumentRoot(null);
+                getDocumentRoot(null, filterOnlyReadRepo);
             }
             break;
             case REPO_PROJECT: {
@@ -174,7 +179,7 @@ public class RepoSelectListFragment extends BaseFragment
                         new SimpleCallBack2<String>() {
                             @Override
                             public void onSuccess(Call<String> call, Response<String> response) {
-                                getDocumentRoot(response.body());
+                                getDocumentRoot(response.body(), filterOnlyReadRepo);
                             }
 
                             @Override
@@ -192,9 +197,10 @@ public class RepoSelectListFragment extends BaseFragment
      * 获取资料库
      * 不分页获取所有
      *
-     * @param officeAdminId 律所管理员id
+     * @param officeAdminId      律所管理员id
+     * @param filterOnlyReadRepo 是否过滤只读权限的repo
      */
-    private void getDocumentRoot(@Nullable String officeAdminId) {
+    private void getDocumentRoot(@Nullable String officeAdminId, final boolean filterOnlyReadRepo) {
         Call<List<RepoEntity>> listCall = null;
         final int pageSize = Integer.MAX_VALUE;
         switch (repoType) {
@@ -215,7 +221,9 @@ public class RepoSelectListFragment extends BaseFragment
             @Override
             public void onSuccess(Call<List<RepoEntity>> call, Response<List<RepoEntity>> response) {
                 stopRefresh();
-                filterOnlyReadPermissionRepo(response.body());
+                if (filterOnlyReadRepo) {
+                    filterOnlyReadPermissionRepo(response.body());
+                }
                 repoAdapter.bindData(true, response.body());
             }
 

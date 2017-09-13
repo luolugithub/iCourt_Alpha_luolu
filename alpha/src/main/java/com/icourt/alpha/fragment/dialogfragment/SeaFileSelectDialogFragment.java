@@ -252,7 +252,7 @@ public class SeaFileSelectDialogFragment extends BaseDialogFragment
         this.iSeaFileSelectParams = null;
         dirPathTitleLayout.setVisibility(View.GONE);
         currFragment = addOrShowFragment(
-                RepoNavigationFragment.newInstance(),
+                RepoNavigationFragment.newInstance(""),
                 currFragment,
                 R.id.main_fl_content);
     }
@@ -468,7 +468,7 @@ public class SeaFileSelectDialogFragment extends BaseDialogFragment
         this.iSeaFileSelectParams = null;
         foldrParentTv.setText(selectRepoTypeEntity.title);
         currFragment = addOrShowFragment(
-                RepoSelectListFragment.newInstance(selectRepoTypeEntity.repoType),
+                RepoSelectListFragment.newInstance(selectRepoTypeEntity.repoType, false),
                 currFragment,
                 R.id.main_fl_content);
     }

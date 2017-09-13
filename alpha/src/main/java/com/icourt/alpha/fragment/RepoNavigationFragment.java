@@ -37,6 +37,7 @@ import butterknife.Unbinder;
 public class RepoNavigationFragment extends BaseFragment
         implements BaseRecyclerAdapter.OnItemClickListener {
 
+    private static final String KEY_FOOTER_NOTICE = "footerNotice";
     Unbinder unbinder;
     RepoTypeAdapter repoTypeAdapter;
     HeaderFooterAdapter<RepoTypeAdapter> headerFooterAdapter;
@@ -46,6 +47,7 @@ public class RepoNavigationFragment extends BaseFragment
     RefreshLayout refreshLayout;
     TextView footerView;
     OnFragmentCallBackListener onFragmentCallBackListener;
+    String footerNotice = "";
 
     @Override
     public void onAttach(Context context) {
@@ -61,8 +63,12 @@ public class RepoNavigationFragment extends BaseFragment
         }
     }
 
-    public static RepoNavigationFragment newInstance() {
-        return new RepoNavigationFragment();
+    public static RepoNavigationFragment newInstance(String footerNotice) {
+        RepoNavigationFragment fragment = new RepoNavigationFragment();
+        Bundle args = new Bundle();
+        args.putString(KEY_FOOTER_NOTICE, footerNotice);
+        fragment.setArguments(args);
+        return fragment;
     }
 
     @Nullable
@@ -75,6 +81,7 @@ public class RepoNavigationFragment extends BaseFragment
 
     @Override
     protected void initView() {
+        footerNotice = getArguments().getString(KEY_FOOTER_NOTICE, "");
         refreshLayout.setPullRefreshEnable(false);
         refreshLayout.setPullLoadEnable(false);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
@@ -84,6 +91,7 @@ public class RepoNavigationFragment extends BaseFragment
         footerView = (TextView) HeaderFooterAdapter.inflaterView(getContext(), R.layout.footer_folder_document_num, recyclerView);
         headerFooterAdapter.addFooter(footerView);
         footerView.setText("将文件保存到可读写权限的资料库");
+        footerView.setText(footerNotice);
 
         recyclerView.setAdapter(headerFooterAdapter);
         String[] repoArray = getResources().getStringArray(R.array.repo_type_array);

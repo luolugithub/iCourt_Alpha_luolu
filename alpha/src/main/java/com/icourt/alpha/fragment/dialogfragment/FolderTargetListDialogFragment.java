@@ -162,7 +162,6 @@ public class FolderTargetListDialogFragment
     }
 
 
-
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -358,7 +357,7 @@ public class FolderTargetListDialogFragment
         dirPathTitleLayout.setVisibility(View.VISIBLE);
 
         currFragment = addOrShowFragment(
-                RepoSelectListFragment.newInstance(SFileConfig.convert2RepoType(getArguments().getInt(KEY_REPO_TYPE))),
+                RepoSelectListFragment.newInstance(SFileConfig.convert2RepoType(getArguments().getInt(KEY_REPO_TYPE)), true),
                 currFragment,
                 R.id.main_fl_content);
     }
@@ -369,9 +368,23 @@ public class FolderTargetListDialogFragment
     private void replaceRepoTypeFragment() {
         updateTargetRepo(null, null);
         dirPathTitleLayout.setVisibility(View.GONE);
-
+        String footerNotice = "";
+        switch (getFileActionType()) {
+            case FILE_ACTION_COPY:
+                footerNotice = "将文件复制到可读写权限的资料库";
+                break;
+            case FILE_ACTION_MOVE:
+                footerNotice = "将文件移动到可读写权限的资料库";
+                break;
+            case FILE_ACTION_ADD:
+                footerNotice = "将文件保存到可读写权限的资料库";
+                break;
+            default:
+                footerNotice = "将文件保存到可读写权限的资料库";
+                break;
+        }
         currFragment = addOrShowFragment(
-                RepoNavigationFragment.newInstance(),
+                RepoNavigationFragment.newInstance(footerNotice),
                 currFragment,
                 R.id.main_fl_content);
     }
