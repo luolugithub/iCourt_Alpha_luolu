@@ -26,6 +26,7 @@ import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -48,6 +49,7 @@ import java.io.File;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 import butterknife.Unbinder;
 
 /**
@@ -58,6 +60,15 @@ import butterknife.Unbinder;
  * version 1.0.0
  */
 public class WebViewActivity extends BaseActivity implements DownloadListener {
+    @BindView(R.id.bottom_back_iv)
+    ImageButton bottomBackIv;
+    @BindView(R.id.bottom_forward_iv)
+    ImageButton bottomForwardIv;
+    @BindView(R.id.bottom_refresh_iv)
+    ImageButton bottomRefreshIv;
+    @BindView(R.id.bottom_share_iv)
+    ImageButton bottomShareIv;
+
     public static void launch(@NonNull Context context, String url) {
         if (context == null) return;
         if (TextUtils.isEmpty(url)) return;
@@ -116,6 +127,7 @@ public class WebViewActivity extends BaseActivity implements DownloadListener {
             if (progressLayout != null) {
                 progressLayout.setVisibility(View.VISIBLE);
             }
+            setBackForwardBtn();
         }
 
         @Override
@@ -125,6 +137,7 @@ public class WebViewActivity extends BaseActivity implements DownloadListener {
             if (progressLayout != null) {
                 progressLayout.setVisibility(View.GONE);
             }
+            setBackForwardBtn();
         }
 
 
@@ -270,16 +283,20 @@ public class WebViewActivity extends BaseActivity implements DownloadListener {
     @Override
     public void onDestroy() {
         pauseDownload();
-        if (webView != null) {
-            webView.clearHistory();
-            webView.clearFormData();
-            webView.clearMatches();
-            webView.removeAllViews();
-            try {
-                webView.destroy();
-            } catch (Throwable t) {
+        try {
+            if (webView != null) {
+                webView.clearHistory();
+                webView.clearFormData();
+                webView.clearMatches();
+                webView.removeAllViews();
+                try {
+                    webView.destroy();
+                } catch (Throwable t) {
+                }
+                webView = null;
             }
-            webView = null;
+        } catch (Throwable e) {
+            e.printStackTrace();
         }
         super.onDestroy();
     }
@@ -328,15 +345,60 @@ public class WebViewActivity extends BaseActivity implements DownloadListener {
     }
 
 
+    @OnClick({R.id.bottom_back_iv,
+            R.id.bottom_forward_iv,
+            R.id.bottom_refresh_iv,
+            R.id.bottom_share_iv})
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
+            case R.id.bottom_back_iv:
+                if (webView.canGoBack()) {
+                    webView.goBack();
+                }
+                break;
+            case R.id.bottom_forward_iv:
+                if (webView.canGoForward()) {
+                    webView.goForward();
+                }
+                break;
+            case R.id.bottom_refresh_iv:
+                webView.reload();
+                break;
+            case R.id.bottom_share_iv:
+                Intent shareIntent = new Intent();
+                shareIntent.setAction(Intent.ACTION_SEND);
+                shareIntent.putExtra(Intent.EXTRA_TEXT, webView.getUrl());
+                shareIntent.setType("text/plain");
+                startActivity(Intent.createChooser(shareIntent, "分享到"));    //设置分享列表的标题，并且每次都显示分享列表
+                break;
             case R.id.titleAction:
                 openWithOtherApp();
                 break;
             default:
                 super.onClick(v);
                 break;
+        }
+    }
+
+    private void setBackForwardBtn() {
+        try {
+            if (bottomBackIv != null) {
+                int unableColor = 0XFFF3F3F3;
+                if (webView.canGoBack()) {
+                    bottomBackIv.setColorFilter(0);
+                } else {
+                    bottomBackIv.setColorFilter(unableColor);
+                }
+
+                if (webView.canGoForward()) {
+                    bottomForwardIv.setColorFilter(0);
+                } else {
+                    bottomForwardIv.setColorFilter(unableColor);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
