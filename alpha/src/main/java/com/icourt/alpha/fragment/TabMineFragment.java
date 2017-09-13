@@ -13,7 +13,6 @@ import android.widget.TextView;
 import com.bumptech.glide.Glide;
 import com.icourt.alpha.BuildConfig;
 import com.icourt.alpha.R;
-import com.icourt.alpha.activity.ImagePagerActivity;
 import com.icourt.alpha.activity.MyCollectedMsgActivity;
 import com.icourt.alpha.activity.MyFinishTaskActivity;
 import com.icourt.alpha.activity.SetingActivity;
@@ -34,7 +33,6 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
@@ -206,7 +204,8 @@ public class TabMineFragment extends BaseFragment {
         super.onClick(v);
         switch (v.getId()) {
             case R.id.photo_image:
-                ImagePagerActivity.launch(getContext(), Arrays.asList(getLoginUserInfo().getPic()));
+//                ImagePagerActivity.launch(getContext(), Arrays.asList(getLoginUserInfo().getPic()));//头像大图浏览
+                UserInfoActivity.launch(getContext());
                 break;
             case R.id.user_info_layout:
                 UserInfoActivity.launch(getContext());
