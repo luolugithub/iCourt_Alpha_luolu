@@ -10,8 +10,12 @@ import android.support.annotation.CallSuper;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
+import android.view.View;
+import android.view.Window;
+import android.widget.TextView;
 
 import com.icourt.alpha.BuildConfig;
+import com.icourt.alpha.R;
 import com.icourt.alpha.entity.bean.AppVersionEntity;
 import com.icourt.alpha.http.callback.BaseCallBack;
 import com.icourt.alpha.http.callback.SimpleCallBack;
@@ -19,6 +23,7 @@ import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.UpdateAppDialogNoticeImp;
 import com.icourt.alpha.utils.ActionConstants;
 import com.icourt.alpha.utils.ApkUtils;
+import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.FileUtils;
 import com.icourt.alpha.utils.Md5Utils;
 import com.icourt.alpha.utils.NetUtils;
@@ -120,36 +125,98 @@ public class BaseAppUpdateActivity extends BaseUmengActivity implements
         if (isDestroyOrFinishing()) return;
         if (updateNoticeDialog != null && updateNoticeDialog.isShowing()) return;
         if (!shouldUpdate(appVersionEntity)) return;
-        AlertDialog.Builder builder = new AlertDialog.Builder(context)
-                .setTitle(title)
-                .setMessage(TextUtils.isEmpty(appVersionEntity.versionDesc) ? "有一个新版本,请立即更新吧" : appVersionEntity.versionDesc); //设置内容
-        builder.setPositiveButton("更新", new DialogInterface.OnClickListener() {
+        showUpdateDescDialog(context, appVersionEntity, false);
+//        AlertDialog.Builder builder = new AlertDialog.Builder(context)
+//                .setTitle(title)
+//                .setMessage(TextUtils.isEmpty(appVersionEntity.versionDesc) ? "有一个新版本,请立即更新吧" : appVersionEntity.versionDesc); //设置内容
+//        builder.setPositiveButton("更新", new DialogInterface.OnClickListener() {
+//            @Override
+//            public void onClick(DialogInterface dialog, int which) {
+//                if (hasFilePermission(context)) {
+//                    MobclickAgent.onEvent(context, UMMobClickAgent.dialog_update_btn_click_id);
+////                    getUpdateProgressDialog().setMax(appVersionEntity.binary != null ? (int) appVersionEntity.binary.fsize : 1_000);//下载进度条
+//                    String updateUrl = UrlUtils.appendParam(appVersionEntity.upgradeUrl, "alphaNewApp", appVersionEntity.appVersion);
+//                    showAppDownloadingDialog(getActivity(), updateUrl);
+//                } else {
+//                    requestFilePermission(context, REQUEST_FILE_PERMISSION);
+//                }
+//            }
+//        });
+//        if (shouldForceUpdate(appVersionEntity)) {
+//            builder.setCancelable(false);
+//        } else {
+//            builder.setNegativeButton("取消", new DialogInterface.OnClickListener() {
+//                @Override
+//                public void onClick(DialogInterface dialog, int which) {
+//                    SpUtils.getInstance().remove(UPDATE_APP_VERSION_KEY);
+//                    SpUtils.getInstance().putData(UPDATE_APP_VERSION_KEY, appVersionEntity.appVersion);
+//                    dialog.dismiss();
+//                }
+//            });
+//        }
+//        updateNoticeDialog = builder.create();
+//        updateNoticeDialog.show();
+    }
+
+    /**
+     * 显示更新对话框
+     *
+     * @param appVersionEntity
+     * @param isLookDesc
+     */
+    public void showUpdateDescDialog(@NonNull final Context context, @NonNull final AppVersionEntity appVersionEntity, final boolean isLookDesc) {
+        if (appVersionEntity == null) return;
+
+        final AlertDialog alertDialog = new AlertDialog.Builder(this).create();
+        alertDialog.show();
+        Window window = alertDialog.getWindow();
+        window.setContentView(R.layout.dialog_update_app_layout);
+        TextView lastVersionTv = (TextView) window.findViewById(R.id.last_version_tv);
+        TextView uploadTimeTv = (TextView) window.findViewById(R.id.last_version_uploadtime_tv);
+        TextView contentTv = (TextView) window.findViewById(R.id.last_version_content_tv);
+        TextView noUpdateTv = (TextView) window.findViewById(R.id.last_version_no_update_tv);
+        TextView updateTv = (TextView) window.findViewById(R.id.last_version_update_tv);
+
+        lastVersionTv.setText(appVersionEntity.appVersion);
+        uploadTimeTv.setText(DateUtils.getTimeDateFormatYearDot(appVersionEntity.gmtCreate));
+        contentTv.setText(appVersionEntity.versionDesc);
+        if (isLookDesc) {
+            noUpdateTv.setVisibility(View.GONE);
+            updateTv.setVisibility(View.VISIBLE);
+            updateTv.setText("关闭");
+        } else {
+            if (shouldForceUpdate(appVersionEntity)) {
+                noUpdateTv.setVisibility(View.GONE);
+                updateTv.setVisibility(View.VISIBLE);
+            } else {
+                noUpdateTv.setVisibility(View.VISIBLE);
+                updateTv.setVisibility(View.VISIBLE);
+            }
+        }
+        noUpdateTv.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(DialogInterface dialog, int which) {
-                if (hasFilePermission(context)) {
-                    MobclickAgent.onEvent(context, UMMobClickAgent.dialog_update_btn_click_id);
-//                    getUpdateProgressDialog().setMax(appVersionEntity.binary != null ? (int) appVersionEntity.binary.fsize : 1_000);//下载进度条
-                    String updateUrl = UrlUtils.appendParam(appVersionEntity.upgradeUrl, "alphaNewApp", appVersionEntity.appVersion);
-                    showAppDownloadingDialog(getActivity(), updateUrl);
+            public void onClick(View v) {
+                SpUtils.getInstance().remove(UPDATE_APP_VERSION_KEY);
+                SpUtils.getInstance().putData(UPDATE_APP_VERSION_KEY, appVersionEntity.appVersion);
+                alertDialog.dismiss();
+            }
+        });
+        updateTv.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (isLookDesc) {
+                    alertDialog.dismiss();
                 } else {
-                    requestFilePermission(context, REQUEST_FILE_PERMISSION);
+                    if (hasFilePermission(context)) {
+                        MobclickAgent.onEvent(context, UMMobClickAgent.dialog_update_btn_click_id);
+                        String updateUrl = UrlUtils.appendParam(appVersionEntity.upgradeUrl, "alphaNewApp", appVersionEntity.appVersion);
+                        showAppDownloadingDialog(getActivity(), updateUrl);
+                    } else {
+                        requestFilePermission(context, REQUEST_FILE_PERMISSION);
+                    }
                 }
             }
         });
-        if (shouldForceUpdate(appVersionEntity)) {
-            builder.setCancelable(false);
-        } else {
-            builder.setNegativeButton("取消", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    SpUtils.getInstance().remove(UPDATE_APP_VERSION_KEY);
-                    SpUtils.getInstance().putData(UPDATE_APP_VERSION_KEY, appVersionEntity.appVersion);
-                    dialog.dismiss();
-                }
-            });
-        }
-        updateNoticeDialog = builder.create();
-        updateNoticeDialog.show();
     }
 
     /**
