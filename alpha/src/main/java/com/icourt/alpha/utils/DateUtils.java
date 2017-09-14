@@ -92,6 +92,7 @@ public class DateUtils {
     }
 
     /**
+     * 格式1
      * 注意:别轻易修改
      * 文档地址:http://wiki.alphalawyer.cn/pages/viewpage.action?pageId=1773098
      * 获取标准的时间格式化:
@@ -137,6 +138,7 @@ public class DateUtils {
     }
 
     /**
+     * 格式2
      * 注意:别轻易修改
      * 文档地址:http://wiki.alphalawyer.cn/pages/viewpage.action?pageId=1773098
      * 获取标准的时间格式化:

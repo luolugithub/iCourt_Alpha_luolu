@@ -289,7 +289,7 @@ public class ProjectDetailActivity extends BaseActivity implements OnFragmentCal
     private void showTaskMeau() {
         new BottomActionDialog(getContext(),
                 null,
-                Arrays.asList("已完成任务", "管理任务组"),
+                Arrays.asList("已完成的任务", "管理任务组"),
                 new BottomActionDialog.OnActionItemClickListener() {
                     @Override
                     public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
