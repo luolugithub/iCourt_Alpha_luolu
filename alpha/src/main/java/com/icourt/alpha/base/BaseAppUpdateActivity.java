@@ -186,20 +186,15 @@ public class BaseAppUpdateActivity extends BaseUmengActivity implements
         recyclerView.setLayoutManager(new LinearLayoutManager(context));
         VersionDescAdapter versionDescAdapter = new VersionDescAdapter();
         recyclerView.setAdapter(versionDescAdapter);
-        versionDescAdapter.bindData(true, appVersionEntity.versionDesc);
+        versionDescAdapter.bindData(true, appVersionEntity.versionDescs);
 
         if (isLookDesc) {
             noUpdateTv.setVisibility(View.GONE);
             updateTv.setVisibility(View.VISIBLE);
             updateTv.setText("关闭");
         } else {
-            if (shouldForceUpdate(appVersionEntity)) {
-                noUpdateTv.setVisibility(View.GONE);
-                updateTv.setVisibility(View.VISIBLE);
-            } else {
-                noUpdateTv.setVisibility(View.VISIBLE);
-                updateTv.setVisibility(View.VISIBLE);
-            }
+            noUpdateTv.setVisibility(shouldForceUpdate(appVersionEntity) ? View.GONE : View.VISIBLE);
+            updateTv.setVisibility(View.VISIBLE);
         }
         noUpdateTv.setOnClickListener(new View.OnClickListener() {
             @Override

@@ -34,7 +34,7 @@ public class AppVersionEntity implements Serializable {
     public String appVersion;//版本号
     public String buildVersion;//build版本号
     public String effectVersion;//影响版本号，如果为空则影响所有版本
-    public List<VersionDescBean> versionDesc;//升级描述
+    public List<VersionDescBean> versionDescs;//升级描述
     public int upgradeStrategy;//升级策略：1、常规可选升级；2、强制更新
     public int osType;//终端类型：1、Android；2、iOS
     public String upgradeUrl;//升级包地址
