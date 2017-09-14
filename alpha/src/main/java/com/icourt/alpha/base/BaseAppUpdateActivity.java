@@ -9,6 +9,8 @@ import android.os.Environment;
 import android.support.annotation.CallSuper;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.Window;
@@ -16,6 +18,7 @@ import android.widget.TextView;
 
 import com.icourt.alpha.BuildConfig;
 import com.icourt.alpha.R;
+import com.icourt.alpha.adapter.VersionDescAdapter;
 import com.icourt.alpha.entity.bean.AppVersionEntity;
 import com.icourt.alpha.http.callback.BaseCallBack;
 import com.icourt.alpha.http.callback.SimpleCallBack;
@@ -173,13 +176,18 @@ public class BaseAppUpdateActivity extends BaseUmengActivity implements
         window.setContentView(R.layout.dialog_update_app_layout);
         TextView lastVersionTv = (TextView) window.findViewById(R.id.last_version_tv);
         TextView uploadTimeTv = (TextView) window.findViewById(R.id.last_version_uploadtime_tv);
-        TextView contentTv = (TextView) window.findViewById(R.id.last_version_content_tv);
+        RecyclerView recyclerView = (RecyclerView) window.findViewById(R.id.last_version_content_recyclerview);
         TextView noUpdateTv = (TextView) window.findViewById(R.id.last_version_no_update_tv);
         TextView updateTv = (TextView) window.findViewById(R.id.last_version_update_tv);
 
         lastVersionTv.setText(appVersionEntity.appVersion);
         uploadTimeTv.setText(DateUtils.getTimeDateFormatYearDot(appVersionEntity.gmtCreate));
-        contentTv.setText(appVersionEntity.versionDesc);
+
+        recyclerView.setLayoutManager(new LinearLayoutManager(context));
+        VersionDescAdapter versionDescAdapter = new VersionDescAdapter();
+        recyclerView.setAdapter(versionDescAdapter);
+        versionDescAdapter.bindData(true, appVersionEntity.versionDesc);
+
         if (isLookDesc) {
             noUpdateTv.setVisibility(View.GONE);
             updateTv.setVisibility(View.VISIBLE);

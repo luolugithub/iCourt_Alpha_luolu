@@ -1,5 +1,8 @@
 package com.icourt.alpha.entity.bean;
 
+import java.io.Serializable;
+import java.util.List;
+
 /**
  * Description  新版本实体类  文档参考 https://fir.im/docs/version_detection
  * Company Beijing icourt
@@ -7,7 +10,7 @@ package com.icourt.alpha.entity.bean;
  * date createTime：2017/4/5
  * version 1.0.0
  */
-public class AppVersionEntity {
+public class AppVersionEntity implements Serializable {
     /**
      * id : 2
      * createUserId : 01CEB4E16D2411E6A5C200163E0020D1
@@ -31,9 +34,14 @@ public class AppVersionEntity {
     public String appVersion;//版本号
     public String buildVersion;//build版本号
     public String effectVersion;//影响版本号，如果为空则影响所有版本
-    public String versionDesc;//升级描述
+    public List<VersionDescBean> versionDesc;//升级描述
     public int upgradeStrategy;//升级策略：1、常规可选升级；2、强制更新
     public int osType;//终端类型：1、Android；2、iOS
     public String upgradeUrl;//升级包地址
 
+    public class VersionDescBean implements Serializable {
+
+        public String type;
+        public String desc;
+    }
 }
