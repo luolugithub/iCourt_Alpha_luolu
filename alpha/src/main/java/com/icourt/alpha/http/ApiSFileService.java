@@ -150,6 +150,20 @@ public interface ApiSFileService {
                                              @Query("type") String type);
 
     /**
+     * 获取资料库
+     *
+     * @param page
+     * @param per_page
+     * @return
+     */
+    @GET("api/v2.1/alpha-box-repos/")
+    Observable<List<RepoEntity>> documentRootQueryObservable(@Query("page") int page,
+                                                             @Query("per_page") int per_page,
+                                                             @Query("not_shared_from") String not_shared_from,
+                                                             @Query("shared_from") String shared_from,
+                                                             @Query("type") String type);
+
+    /**
      * 获取所有资料库
      *
      * @return
@@ -165,6 +179,14 @@ public interface ApiSFileService {
      */
     @GET("api2/repos/public/")
     Call<List<RepoEntity>> documentRootQuery();
+
+    /**
+     * 获取律所律所资料库
+     *
+     * @return
+     */
+    @GET("api2/repos/public/")
+    Observable<List<RepoEntity>> documentRootQueryObservable();
 
     /**
      * 创建资料库

@@ -18,4 +18,6 @@ public class DbConfig {
     public static final String DB_REALM_CUSTOMER = "db_realm_customer_%s.realm";//客户数据库
 
     public static final String DB_REALM_SEARCH_ENGINE = "db_realm_searchengine_%s.realm";//搜索引擎
+
+    public static final String DB_REALM_REPO_ENCRYPTION = "db_realm_repo_encryption_%s.realm";//资料库加密的数据库
 }

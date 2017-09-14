@@ -19,14 +19,19 @@ import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.adapterObserver.RefreshViewEmptyObserver;
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.constants.SFileConfig;
+import com.icourt.alpha.db.dbmodel.RepoEncryptionDbModel;
+import com.icourt.alpha.db.dbservice.RepoEncryptionDbService;
 import com.icourt.alpha.entity.bean.DefaultRepoEntity;
+import com.icourt.alpha.entity.bean.RepoEncryptionEntity;
 import com.icourt.alpha.entity.bean.RepoEntity;
 import com.icourt.alpha.fragment.dialogfragment.RepoDetailsDialogFragment;
 import com.icourt.alpha.http.callback.SFileCallBack;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.callback.SimpleCallBack2;
 import com.icourt.alpha.http.httpmodel.ResEntity;
+import com.icourt.alpha.http.observer.BaseObserver;
 import com.icourt.alpha.utils.ActionConstants;
+import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.DensityUtil;
 import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.view.ClearEditText;
@@ -39,6 +44,11 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
+import io.reactivex.Observable;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.annotations.NonNull;
+import io.reactivex.functions.Function;
+import io.reactivex.schedulers.Schedulers;
 import retrofit2.Call;
 import retrofit2.HttpException;
 import retrofit2.Response;
@@ -256,37 +266,78 @@ public class RepoListFragment extends BaseFragment
         if (isRefresh) {
             pageIndex = 1;
         }
-        Call<List<RepoEntity>> listCall = null;
+        Observable<List<RepoEntity>> listCall = null;
         final int pageSize = ActionConstants.DEFAULT_PAGE_SIZE;
         switch (repoType) {
             case REPO_MINE:
-                listCall = getSFileApi().documentRootQuery(pageIndex, pageSize, null, null, null);
+                listCall = getSFileApi().documentRootQueryObservable(pageIndex, pageSize, null, null, null);
                 break;
             case REPO_SHARED_ME:
-                listCall = getSFileApi().documentRootQuery(pageIndex, pageSize, officeAdminId, null, "shared");
+                listCall = getSFileApi().documentRootQueryObservable(pageIndex, pageSize, officeAdminId, null, "shared");
                 break;
             case REPO_LAWFIRM:
-                listCall = getSFileApi().documentRootQuery();
+                listCall = getSFileApi().documentRootQueryObservable();
                 break;
             case REPO_PROJECT:
-                listCall = getSFileApi().documentRootQuery(pageIndex, pageSize, null, officeAdminId, "shared");
+                listCall = getSFileApi().documentRootQueryObservable(pageIndex, pageSize, null, officeAdminId, "shared");
                 break;
         }
-        callEnqueue(listCall, new SFileCallBack<List<RepoEntity>>() {
+        if (listCall == null) return;
+        listCall.map(new Function<List<RepoEntity>, List<RepoEntity>>() {
             @Override
-            public void onSuccess(Call<List<RepoEntity>> call, Response<List<RepoEntity>> response) {
-                stopRefresh();
-                repoAdapter.bindData(isRefresh, response.body());
-                pageIndex += 1;
-                enableLoadMore(response.body());
-            }
+            public List<RepoEntity> apply(@NonNull List<RepoEntity> repoEntities) throws Exception {
+                RepoEncryptionDbService encryptionDbService = null;
+                try {
+                    encryptionDbService = new RepoEncryptionDbService(getLoginUserId());
+                    for (RepoEntity entity : repoEntities) {
+                        if (entity == null) continue;
+                        RepoEncryptionDbModel query = encryptionDbService.query(entity.repo_id);
+                        if (query != null) {
+                            RepoEncryptionEntity dbRepoEncryptionEntity = query.convert2Model();
+                            dbRepoEncryptionEntity.encrypted = entity.encrypted;
+                            dbRepoEncryptionEntity.decryptMillisecond = dbRepoEncryptionEntity.encrypted ? dbRepoEncryptionEntity.decryptMillisecond : 0;
 
-            @Override
-            public void onFailure(Call<List<RepoEntity>> call, Throwable t) {
-                super.onFailure(call, t);
-                stopRefresh();
+                            //更新解密时间
+                            entity.decryptMillisecond = dbRepoEncryptionEntity.decryptMillisecond;
+                            encryptionDbService.insertOrUpdate(dbRepoEncryptionEntity.convert2Model());
+                        } else {
+                            RepoEncryptionEntity dbRepoEncryptionEntity = new RepoEncryptionEntity(entity.repo_id, entity.encrypted, 0);
+                            encryptionDbService.insertOrUpdate(dbRepoEncryptionEntity.convert2Model());
+                        }
+                    }
+                } catch (Throwable e) {
+                    e.printStackTrace();
+                } finally {
+                    if (encryptionDbService != null) {
+                        encryptionDbService.releaseService();
+                    }
+                }
+                return repoEntities;
             }
-        });
+        }).compose(this.<List<RepoEntity>>bindToLifecycle())
+                .subscribeOn(Schedulers.newThread())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new BaseObserver<List<RepoEntity>>() {
+                    @Override
+                    public void onNext(@NonNull List<RepoEntity> repoEntities) {
+                        stopRefresh();
+                        repoAdapter.bindData(isRefresh, repoEntities);
+                        pageIndex += 1;
+                        enableLoadMore(repoEntities);
+                    }
+
+                    @Override
+                    public void onError(@NonNull Throwable throwable) {
+                        super.onError(throwable);
+                        stopRefresh();
+                    }
+
+                    @Override
+                    public void onComplete() {
+                        super.onComplete();
+                        stopRefresh();
+                    }
+                });
     }
 
     private void stopRefresh() {
@@ -326,37 +377,7 @@ public class RepoListFragment extends BaseFragment
                             showToast("密码不能为空");
                             return;
                         }
-                        showLoadingDialog(null);
-                        callEnqueue(
-                                getSFileApi().repoDecrypt(item.repo_id, repoPwdEt.getText().toString()),
-                                new SimpleCallBack2<String>() {
-                                    @Override
-                                    public void onSuccess(Call<String> call, Response<String> response) {
-                                        dismissLoadingDialog();
-                                        alertDialog.dismiss();
-                                        if (StringUtils.equalsIgnoreCase("success", response.body(), false)) {
-                                            //更新适配器
-                                            item.encrypted = false;
-                                            repoAdapter.updateItem(item);
-
-                                            showTopSnackBar("解密成功");
-                                        } else {
-                                            bugSync("资料库解密返回失败", response.body());
-                                            showTopSnackBar("解密返回失败:" + response.body());
-                                        }
-                                    }
-
-                                    @Override
-                                    public void onFailure(Call<String> call, Throwable t) {
-                                        dismissLoadingDialog();
-                                        if (t instanceof HttpException &&
-                                                ((HttpException) t).code() == 400) {
-                                            showToast("密码错误");
-                                        } else {
-                                            super.onFailure(call, t);
-                                        }
-                                    }
-                                });
+                        decryptRepo(alertDialog,item,repoPwdEt.getText().toString());
                     }
                     break;
                 }
@@ -367,12 +388,80 @@ public class RepoListFragment extends BaseFragment
         alertDialog.show();
     }
 
+    /**
+     * 解密资料库
+     *
+     * @param alertDialog
+     * @param item
+     * @param pwd
+     */
+    private void decryptRepo(@Nullable final AlertDialog alertDialog, final RepoEntity item, String pwd) {
+        if (item == null) return;
+        showLoadingDialog(null);
+        callEnqueue(
+                getSFileApi().repoDecrypt(item.repo_id, pwd),
+                new SimpleCallBack2<String>() {
+                    @Override
+                    public void onSuccess(Call<String> call, Response<String> response) {
+                        dismissLoadingDialog();
+                        if (alertDialog != null) {
+                            alertDialog.dismiss();
+                        }
+                        if (StringUtils.equalsIgnoreCase("success", response.body(), false)) {
+                            //1.更新适配器
+                            item.decryptMillisecond = DateUtils.millis();
+                            repoAdapter.updateItem(item);
+
+                            //2.更新本地
+                            updateLocalRecord(item.repo_id, item.encrypted, item.decryptMillisecond);
+                            showTopSnackBar("解密成功");
+                        } else {
+                            bugSync("资料库解密返回失败", response.body());
+                            showTopSnackBar("解密返回失败:" + response.body());
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<String> call, Throwable t) {
+                        dismissLoadingDialog();
+                        if (t instanceof HttpException &&
+                                ((HttpException) t).code() == 400) {
+                            showToast("密码错误");
+                        } else {
+                            super.onFailure(call, t);
+                        }
+                    }
+                });
+    }
+
+
+    /**
+     * 更新本地记录状态
+     *
+     * @param repoId
+     * @param encrypted
+     * @param decryptMillisecond
+     */
+    private void updateLocalRecord(String repoId, boolean encrypted, long decryptMillisecond) {
+        RepoEncryptionDbService repoEncryptionDbService = null;
+        try {
+            repoEncryptionDbService = new RepoEncryptionDbService(getLoginUserId());
+            repoEncryptionDbService.insertOrUpdate(new RepoEncryptionEntity(repoId, encrypted, decryptMillisecond).convert2Model());
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (repoEncryptionDbService != null) {
+                repoEncryptionDbService.releaseService();
+            }
+        }
+    }
+
 
     @Override
     public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
         RepoEntity item = repoAdapter.getItem(position);
         if (item == null) return;
-        if (item.encrypted) {
+        if (item.isNeedDecrypt()) {
             showDecryptDialog(item);
             return;
         }
@@ -535,6 +624,12 @@ public class RepoListFragment extends BaseFragment
 
     @Override
     public void onItemChildClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
+        RepoEntity item = repoAdapter.getItem(position);
+        if (item == null) return;
+        if (item.isNeedDecrypt()) {
+            showDecryptDialog(item);
+            return;
+        }
         switch (view.getId()) {
             case R.id.document_expand_iv:
                 showDocumentActionDialog(position);

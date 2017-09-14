@@ -45,12 +45,22 @@ public class RepoAdapter extends BaseArrayRecyclerAdapter<RepoEntity> {
     @Override
     public void onBindHoder(ViewHolder holder, RepoEntity repoEntity, int position) {
         if (repoEntity == null) return;
+        ImageView document_type_iv = holder.obtainView(R.id.document_type_iv);
         TextView document_title_tv = holder.obtainView(R.id.document_title_tv);
         TextView document_desc_tv = holder.obtainView(R.id.document_desc_tv);
         ImageView document_expand_iv = holder.obtainView(R.id.document_expand_iv);
         ImageView document_detail_iv = holder.obtainView(R.id.document_detail_iv);
         holder.bindChildClick(document_expand_iv);
         holder.bindChildClick(document_detail_iv);
+        if (!repoEntity.encrypted) {//非加密的
+            document_type_iv.setImageResource(R.mipmap.ic_document);
+        } else {
+            if (repoEntity.isNeedDecrypt()) {//解密时间超时
+                document_type_iv.setImageResource(R.mipmap.vault_locked);
+            } else {
+                document_type_iv.setImageResource(R.mipmap.vault_unlocked);
+            }
+        }
         switch (type) {
             case REPO_MINE:
                 document_expand_iv.setVisibility(View.VISIBLE);
@@ -66,4 +76,5 @@ public class RepoAdapter extends BaseArrayRecyclerAdapter<RepoEntity> {
         document_title_tv.setText(repoEntity.repo_name);
         document_desc_tv.setText(String.format("%s, %s", FileUtils.bFormat(repoEntity.size), DateUtils.getStandardSimpleFormatTime(repoEntity.getUpdateTime())));
     }
+
 }
