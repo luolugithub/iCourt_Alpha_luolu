@@ -244,6 +244,11 @@ public class TaskListFragment extends BaseTaskFragment implements
             }
         });
 
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
         getData(true);
     }
 

@@ -327,10 +327,8 @@ public class TaskCheckItemFragment extends BaseFragment
 
 
     @Override
-    public void loseFocus(BaseRecyclerAdapter.ViewHolder holder, int position) {
-        TaskCheckItemEntity.ItemEntity itemEntity = taskCheckItemAdapter.getItem(taskCheckItemAdapter.getRealPos(position));
-        EditText editText = holder.itemView.findViewById(R.id.check_item_name_tv);
-        updateCheckItem(itemEntity, editText);
+    public void loseFocus(TaskCheckItemEntity.ItemEntity itemEntity, int position, String name) {
+        updateCheckItem(itemEntity, name);
     }
 
     /**
@@ -362,32 +360,35 @@ public class TaskCheckItemFragment extends BaseFragment
      *
      * @param itemEntity
      */
-    private void updateCheckItem(final TaskCheckItemEntity.ItemEntity itemEntity, final EditText editText) {
+    private void updateCheckItem(final TaskCheckItemEntity.ItemEntity itemEntity, final String name) {
         if (itemEntity == null) return;
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("id", itemEntity.id);
-        jsonObject.addProperty("name", editText.getText().toString());
+        jsonObject.addProperty("name", name);
 
         getApi().taskCheckItemUpdate(RequestUtils.createJsonBody(jsonObject.toString())).enqueue(new SimpleCallBack<JsonElement>() {
             @Override
             public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
                 dismissLoadingDialog();
                 EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION));
-                if (editText != null) {
-                    itemEntity.name = editText.getText().toString();
-                    taskCheckItemAdapter.updateItem(itemEntity);
-                    if (editText.hasFocus()) {
-                        editText.setFocusable(false);
-                        editText.clearFocus();
-                    }
-                }
+                itemEntity.name = name;
+                taskCheckItemAdapter.updateItem(itemEntity);
+//                if (editText != null) {
+//                    itemEntity.name = editText.getText().toString();
+//                    taskCheckItemAdapter.updateItem(itemEntity);
+//                    if (editText.hasFocus()) {
+//                        editText.setFocusable(false);
+//                        editText.clearFocus();
+//                    }
+//                }
             }
 
             @Override
             public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
                 super.onFailure(call, t);
                 dismissLoadingDialog();
-                editText.setText(itemEntity.name);
+                taskCheckItemAdapter.updateItem(itemEntity);
+//                editText.setText(itemEntity.name);
             }
         });
     }

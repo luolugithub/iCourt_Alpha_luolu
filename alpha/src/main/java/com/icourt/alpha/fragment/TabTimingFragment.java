@@ -232,7 +232,7 @@ public class TabTimingFragment extends BaseFragment implements BaseRecyclerAdapt
         if (pageIndex <= 0) {
             preWeekStart = DateUtils.getMMMdd(weekStartTimeMillSecond);
             preWeekEnd = DateUtils.getMMMdd(weekEndTimeMillSecond);
-            customerXRefreshViewHeader.setHeaderRefreshTitle("加载本周");
+            customerXRefreshViewHeader.setHeaderRefreshTitle("下拉刷新");
         } else {
             preWeekStart = DateUtils.getMMMdd(weekStartTimeMillSecond + weekMillSecond);
             preWeekEnd = DateUtils.getMMMdd(weekEndTimeMillSecond + weekMillSecond);
