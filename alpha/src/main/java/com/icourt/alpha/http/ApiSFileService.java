@@ -524,5 +524,17 @@ public interface ApiSFileService {
                                      @Query("search_ftypes") String search_ftypes,
                                      @Query("search_repo") String search_repo);
 
+    /**
+     * 资料库解密
+     *
+     * @param password
+     * @return
+     */
+    @POST("api2/repos/{seaFileRepoId}/")
+    @FormUrlEncoded
+    Call<String> repoDecrypt(
+            @Path("seaFileRepoId") String seaFileRepoId,
+            @Field("password") String password);
+
 
 }

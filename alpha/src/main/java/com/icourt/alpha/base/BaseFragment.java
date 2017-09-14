@@ -405,7 +405,8 @@ public abstract class BaseFragment
      *
      * @return
      */
-    private KProgressHUD getSvProgressHUD() {
+    @NonNull
+    protected final KProgressHUD getSvProgressHUD() {
         if (progressHUD == null) {
             progressHUD = KProgressHUD.create(getActivity())
                     .setDimAmount(0.5f)
@@ -413,6 +414,7 @@ public abstract class BaseFragment
         }
         return progressHUD;
     }
+
     /**
      * 展示加载对话框
      *

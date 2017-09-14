@@ -246,7 +246,7 @@ public class BaseActivity
      * @return
      */
     @NonNull
-    private KProgressHUD getSvProgressHUD() {
+    protected final KProgressHUD getSvProgressHUD() {
         if (progressHUD == null) {
             progressHUD = KProgressHUD.create(getContext())
                     .setDimAmount(0.5f)

@@ -2,6 +2,7 @@ package com.icourt.alpha.fragment;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
@@ -28,6 +29,7 @@ import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.ActionConstants;
 import com.icourt.alpha.utils.DensityUtil;
 import com.icourt.alpha.utils.StringUtils;
+import com.icourt.alpha.view.ClearEditText;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 import com.icourt.alpha.widget.dialog.BottomActionDialog;
 
@@ -38,6 +40,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
 import retrofit2.Call;
+import retrofit2.HttpException;
 import retrofit2.Response;
 
 import static com.icourt.alpha.constants.SFileConfig.PERMISSION_RW;
@@ -71,6 +74,8 @@ public class RepoListFragment extends BaseFragment
     int repoType;
 
     RepoAdapter repoAdapter;
+    boolean isLawfirmAdmin;//是否是律所的管理员
+
 
     /**
      * @param type
@@ -205,7 +210,20 @@ public class RepoListFragment extends BaseFragment
             }
             break;
             case REPO_LAWFIRM: {
-                getDocumentRoot(isRefresh, null);
+                callEnqueue(getApi().getOfficeAdmin(getLoginUserId()),
+                        new SimpleCallBack2<String>() {
+                            @Override
+                            public void onSuccess(Call<String> call, Response<String> response) {
+                                isLawfirmAdmin = StringUtils.equalsIgnoreCase(getLoginUserId(), response.body(), false);
+                                getDocumentRoot(isRefresh, null);
+                            }
+
+                            @Override
+                            public void onFailure(Call<String> call, Throwable t) {
+                                super.onFailure(call, t);
+                                stopRefresh();
+                            }
+                        });
             }
             break;
             case REPO_PROJECT: {
@@ -284,13 +302,86 @@ public class RepoListFragment extends BaseFragment
         unbinder.unbind();
     }
 
+
+    /**
+     * 展示资料库解锁的对话框
+     *
+     * @param item
+     */
+    private void showDecryptDialog(final RepoEntity item) {
+        View dialogView = View.inflate(getContext(), R.layout.dialog_repo_decriypt, null);
+        final AlertDialog alertDialog = new AlertDialog.Builder(getContext())
+                .setView(dialogView)
+                .create();
+        final ClearEditText repoPwdEt = dialogView.findViewById(R.id.repo_pwd_et);
+        View.OnClickListener onClickListener = new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                switch (view.getId()) {
+                    case R.id.cancel_tv:
+                        alertDialog.dismiss();
+                        break;
+                    case R.id.ok_tv: {
+                        if (StringUtils.isEmpty(repoPwdEt.getText())) {
+                            showToast("密码不能为空");
+                            return;
+                        }
+                        showLoadingDialog(null);
+                        callEnqueue(
+                                getSFileApi().repoDecrypt(item.repo_id, repoPwdEt.getText().toString()),
+                                new SimpleCallBack2<String>() {
+                                    @Override
+                                    public void onSuccess(Call<String> call, Response<String> response) {
+                                        dismissLoadingDialog();
+                                        alertDialog.dismiss();
+                                        if (StringUtils.equalsIgnoreCase("success", response.body(), false)) {
+                                            //更新适配器
+                                            item.encrypted = false;
+                                            repoAdapter.updateItem(item);
+
+                                            showTopSnackBar("解密成功");
+                                        } else {
+                                            bugSync("资料库解密返回失败", response.body());
+                                            showTopSnackBar("解密返回失败:" + response.body());
+                                        }
+                                    }
+
+                                    @Override
+                                    public void onFailure(Call<String> call, Throwable t) {
+                                        dismissLoadingDialog();
+                                        if (t instanceof HttpException &&
+                                                ((HttpException) t).code() == 400) {
+                                            showToast("密码错误");
+                                        } else {
+                                            super.onFailure(call, t);
+                                        }
+                                    }
+                                });
+                    }
+                    break;
+                }
+            }
+        };
+        dialogView.findViewById(R.id.cancel_tv).setOnClickListener(onClickListener);
+        dialogView.findViewById(R.id.ok_tv).setOnClickListener(onClickListener);
+        alertDialog.show();
+    }
+
+
     @Override
     public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
         RepoEntity item = repoAdapter.getItem(position);
         if (item == null) return;
+        if (item.encrypted) {
+            showDecryptDialog(item);
+            return;
+        }
         String repo_permission = item.permission;
         if (repoType == REPO_MINE) {
             repo_permission = PERMISSION_RW;
+        } else if (repoType == REPO_LAWFIRM) {
+            //是否是超管
+            repo_permission = isLawfirmAdmin ? PERMISSION_RW : item.permission;
         }
         FolderListActivity.launch(getContext(),
                 SFileConfig.convert2RepoType(getArguments().getInt(KEY_REPO_TYPE, 0)),
