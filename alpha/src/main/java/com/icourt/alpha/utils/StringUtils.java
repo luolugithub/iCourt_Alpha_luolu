@@ -183,7 +183,17 @@ public class StringUtils {
         if (TextUtils.isEmpty(mobiles)) return false;
         else return mobiles.matches(telRegex);
     }
-
+    /**
+     * 判断手机号
+     *
+     * @param mobiles
+     * @return
+     */
+    public static boolean isMobileNO86(String mobiles) {
+        String telRegex = "((\\+86)|(86))?(13\\d{9})|(14[57]\\d{8})|(15\\d{9})|(17\\d{9})|(18\\d{9})";
+        if (TextUtils.isEmpty(mobiles)) return false;
+        else return mobiles.matches(telRegex);
+    }
     /**
      * 判断邮箱
      *

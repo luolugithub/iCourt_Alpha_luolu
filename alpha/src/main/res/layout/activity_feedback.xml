@@ -28,7 +28,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="@dimen/dp30"
                 android:layout_marginTop="@dimen/dp30"
-                android:src="@mipmap/about_logo" />
+                android:src="@mipmap/my_settings_feedback_orange" />
 
             <TextView
                 android:layout_width="wrap_content"

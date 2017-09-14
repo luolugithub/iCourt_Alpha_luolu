@@ -138,7 +138,7 @@ public class UserInfoActivity extends BaseActivity {
         super.onClick(v);
         switch (v.getId()) {
             case R.id.photo_layout:
-                showBottomAddMeau();
+//                showBottomAddMeau();   暂时没有上传头像接口，后端在重构用户登录
                 break;
             case R.id.name_layout:
                 UpdateUserInfoActivity.launch(this, UPDATE_NAME_TYPE, alphaUserInfo.getName());

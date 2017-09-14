@@ -418,7 +418,6 @@ public interface ApiAlphaService {
                                                 @Query("email") String email);
 
 
-
     /**
      * 项目下计时列表
      * <p>
@@ -1364,6 +1363,14 @@ public interface ApiAlphaService {
      */
     @GET("api/v2/timing/timing/findByTaskId")
     Call<ResEntity<TimeEntity>> taskTimesByIdQuery(@Query("taskId") String taskId);
+
+    /**
+     * 逸创云客服单点登录接口(帮助中心)
+     * 文档地址：https://dev.alphalawyer.cn/ilaw/swagger/index.html#!/version-control-api/getLastestUpgradeVersionUsingGET
+     * @return
+     */
+    @GET("api/v1/ssologin/help")
+    Call<ResEntity<String>> helperUrlQuery();
 }
 
 

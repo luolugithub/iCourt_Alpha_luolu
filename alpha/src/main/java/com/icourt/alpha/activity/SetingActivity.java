@@ -8,6 +8,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.AppBarLayout;
 import android.support.v7.app.AlertDialog;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -16,6 +17,8 @@ import android.widget.TextView;
 import com.icourt.alpha.R;
 import com.icourt.alpha.base.BaseAppUpdateActivity;
 import com.icourt.alpha.entity.bean.AppVersionEntity;
+import com.icourt.alpha.http.callback.SimpleCallBack;
+import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.callback.AppUpdateCallBack;
 import com.icourt.alpha.utils.UMMobClickAgent;
 import com.icourt.alpha.widget.manager.DataCleanManager;
@@ -138,7 +141,7 @@ public class SetingActivity extends BaseAppUpdateActivity {
                         .show();
                 break;
             case R.id.setting_helper_layout:
-               WebViewActivity.launch(this,"帮助中心","https://mp.weixin.qq.com/s/CghSah5E7Kj_IMZ65Shp-A");
+                getHelperUrl();
                 break;
             case R.id.setting_feedback_layout:
                 FeedBackActivity.launch(this);
@@ -150,6 +153,28 @@ public class SetingActivity extends BaseAppUpdateActivity {
                 showLoginOutConfirmDialog();
                 break;
         }
+    }
+
+    /**
+     * 获取帮助中心url
+     */
+    private void getHelperUrl() {
+        showLoadingDialog(null);
+        getApi().helperUrlQuery().enqueue(new SimpleCallBack<String>() {
+            @Override
+            public void onSuccess(Call<ResEntity<String>> call, Response<ResEntity<String>> response) {
+                dismissLoadingDialog();
+                if (!TextUtils.isEmpty(response.body().message)) {
+                    WebViewActivity.launch(SetingActivity.this, "帮助中心", response.body().message);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResEntity<String>> call, Throwable t) {
+                super.onFailure(call, t);
+                dismissLoadingDialog();
+            }
+        });
     }
 
     /**

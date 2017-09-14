@@ -160,7 +160,7 @@ public class WebViewActivity extends BaseActivity {
 
         @Override
         public void onProgressChanged(WebView view, int newProgress) {
-              
+
             super.onProgressChanged(view, newProgress);
             if (progressLayout != null) {
                 progressLayout.setCurrentProgress(newProgress);
@@ -187,7 +187,7 @@ public class WebViewActivity extends BaseActivity {
         if (titleActionImage != null) {
             titleActionImage.setImageResource(R.mipmap.browser_open);
         }
-
+        titleActionImage.setVisibility(TextUtils.isEmpty(title) ? View.VISIBLE : View.INVISIBLE);
         WebSettings webSettings = webView.getSettings();
         webSettings.setCacheMode(WebSettings.LOAD_NO_CACHE);
         webSettings.setAppCacheEnabled(false);
