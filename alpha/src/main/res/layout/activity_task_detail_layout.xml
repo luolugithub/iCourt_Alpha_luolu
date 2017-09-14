@@ -90,11 +90,11 @@
         <android.support.design.widget.TabLayout
             android:id="@+id/task_tablayout"
             style="@style/AlphaTabLayout"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="44dp"
             android:layout_gravity="center_horizontal"
             android:background="@color/white"
-            app:tabMode="scrollable">
+            app:tabMode="fixed">
 
         </android.support.design.widget.TabLayout>
 
@@ -119,8 +119,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="?attr/selectableItemBackground"
-            android:padding="@dimen/dp10"
-            android:gravity="center_vertical">
+            android:gravity="center_vertical"
+            android:padding="@dimen/dp10">
 
             <TextView
                 android:id="@+id/comment_edit_tv"

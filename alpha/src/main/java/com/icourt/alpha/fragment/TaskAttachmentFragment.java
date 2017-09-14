@@ -183,7 +183,7 @@ public class TaskAttachmentFragment extends BaseFragment
             @Override
             protected void updateUI() {
                 if (updateTaskListener != null) {
-                    updateTaskListener.onUpdateDocument(String.valueOf(taskAttachmentAdapter.getItemCount()));
+                    updateTaskListener.onUpdateDocument(taskAttachmentAdapter.getItemCount());
                 }
             }
         });

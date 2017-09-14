@@ -26,6 +26,7 @@ import com.icourt.alpha.utils.GlideUtils;
 import com.icourt.alpha.utils.IMUtils;
 import com.icourt.alpha.utils.SFileTokenUtils;
 import com.icourt.alpha.utils.StringUtils;
+import com.icourt.alpha.utils.UrlUtils;
 import com.icourt.alpha.widget.comparators.LongFieldEntityComparator;
 import com.icourt.alpha.widget.comparators.ORDER;
 
@@ -151,7 +152,7 @@ public class FileDetailDialogFragment extends FileDetailsBaseDialogFragment
                 BuildConfig.API_URL,
                 fromRepoId,
                 SFileTokenUtils.getSFileToken(),
-                String.format("%s%s", fromRepoDirPath, name),
+                UrlUtils.encodeUrl(String.format("%s%s", fromRepoDirPath, name)),
                 150);
     }
 

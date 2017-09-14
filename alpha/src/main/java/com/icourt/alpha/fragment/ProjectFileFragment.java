@@ -36,6 +36,7 @@ import com.icourt.alpha.utils.SFileTokenUtils;
 import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.utils.UriUtils;
+import com.icourt.alpha.utils.UrlUtils;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 import com.icourt.alpha.widget.comparators.FileSortComparator;
 import com.icourt.alpha.widget.dialog.BottomActionDialog;
@@ -423,7 +424,7 @@ public class ProjectFileFragment extends SeaFileBaseFragment
                 getSeaFileRepoId(),
                 SFileTokenUtils.getSFileToken(),
                 size,
-                String.format("%s%s", getSeaFileDirPath(), name));
+                UrlUtils.encodeUrl(String.format("%s%s", getSeaFileDirPath(), name)));
     }
 
     public String getSeaFileRepoId() {

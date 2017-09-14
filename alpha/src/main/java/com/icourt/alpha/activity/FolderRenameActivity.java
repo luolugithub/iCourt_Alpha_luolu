@@ -17,6 +17,7 @@ import com.icourt.alpha.utils.GlideUtils;
 import com.icourt.alpha.utils.IMUtils;
 import com.icourt.alpha.utils.SFileTokenUtils;
 import com.icourt.alpha.utils.StringUtils;
+import com.icourt.alpha.utils.UrlUtils;
 
 import retrofit2.Call;
 import retrofit2.Response;
@@ -91,7 +92,7 @@ public class FolderRenameActivity extends FolderCreateActivity {
                 BuildConfig.API_URL,
                 getSeaFileRepoId(),
                 SFileTokenUtils.getSFileToken(),
-                String.format("%s%s", getSeaFileDirPath(), name),
+                UrlUtils.encodeUrl(String.format("%s%s", getSeaFileDirPath(), name)),
                 150);
     }
 

@@ -768,13 +768,24 @@ public class TaskDetailActivity extends BaseActivity
             } else {
                 taskTime.setText(getHm(taskItemEntity.timingSum));
             }
-            String checkTargetStr = String.format("%s/%s", taskItemEntity.doneItemCount, taskItemEntity.itemCount);
-            String checkOriginStr = "检查项 " + checkTargetStr;
-            SpannableString checkTextForegroundColorSpan = SpannableUtils.getTextForegroundColorSpan(checkOriginStr, checkTargetStr, 0xFFCACACA);
 
-            String attachTargetStr = String.valueOf(taskItemEntity.attachmentCount);
-            String attachOriginStr = "附件 " + attachTargetStr;
-            SpannableString attachTextForegroundColorSpan = SpannableUtils.getTextForegroundColorSpan(attachOriginStr, attachTargetStr, 0xFFCACACA);
+            SpannableString checkTextForegroundColorSpan = null;
+            if (taskItemEntity.itemCount > 0) {
+                String checkTargetStr = String.format("%s/%s", taskItemEntity.doneItemCount, taskItemEntity.itemCount);
+                String checkOriginStr = "检查项 " + checkTargetStr;
+                checkTextForegroundColorSpan = SpannableUtils.getTextForegroundColorSpan(checkOriginStr, checkTargetStr, 0xFFCACACA);
+            } else {
+                checkTextForegroundColorSpan = new SpannableString("检查项");
+            }
+
+            SpannableString attachTextForegroundColorSpan = null;
+            if (taskItemEntity.attachmentCount > 0) {
+                String attachTargetStr = String.valueOf(taskItemEntity.attachmentCount);
+                String attachOriginStr = "附件 " + attachTargetStr;
+                attachTextForegroundColorSpan = SpannableUtils.getTextForegroundColorSpan(attachOriginStr, attachTargetStr, 0xFFCACACA);
+            } else {
+                attachTextForegroundColorSpan = new SpannableString("附件");
+            }
 
             tabTitles.put(0, "任务详情");
             tabTitles.put(1, checkTextForegroundColorSpan);
@@ -1217,12 +1228,15 @@ public class TaskDetailActivity extends BaseActivity
     }
 
     @Override
-    public void onUpdateDocument(String documentCount) {
-        String attachTargetStr = documentCount;
-        String attachOriginStr = "附件 " + attachTargetStr;
-        SpannableString attachTextForegroundColorSpan = SpannableUtils.getTextForegroundColorSpan(attachOriginStr, attachTargetStr, 0xFFCACACA);
-        tabTitles.put(2, attachTextForegroundColorSpan);
-
+    public void onUpdateDocument(int documentCount) {
+        if (documentCount > 0) {
+            String attachTargetStr = String.valueOf(documentCount);
+            String attachOriginStr = "附件 " + attachTargetStr;
+            SpannableString attachTextForegroundColorSpan = SpannableUtils.getTextForegroundColorSpan(attachOriginStr, attachTargetStr, 0xFFCACACA);
+            tabTitles.put(2, attachTextForegroundColorSpan);
+        } else {
+            tabTitles.put(2, "附件");
+        }
         baseFragmentAdapter.bindTitle(true, Arrays.asList(tabTitles.get(0, ""),
                 tabTitles.get(1, ""),
                 tabTitles.get(2, "")));

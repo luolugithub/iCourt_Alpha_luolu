@@ -22,6 +22,6 @@ public interface OnUpdateTaskListener {
      *
      * @param documentCount
      */
-    void onUpdateDocument(String documentCount);
+    void onUpdateDocument(int documentCount);
 
 }

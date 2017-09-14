@@ -9,6 +9,7 @@ import com.icourt.alpha.entity.bean.ISeaFileImage;
 import com.icourt.alpha.utils.FileUtils;
 import com.icourt.alpha.utils.GlideUtils;
 import com.icourt.alpha.utils.SFileTokenUtils;
+import com.icourt.alpha.utils.UrlUtils;
 
 /**
  * Description  sea file加载图片的适配器
@@ -57,7 +58,7 @@ public abstract class SeaFileImageBaseAdapter<T extends ISeaFileImage> extends B
                 BuildConfig.API_URL,
                 iSeaFileImage.getSeaFileImageRepoId(),
                 SFileTokenUtils.getSFileToken(),
-                iSeaFileImage.getSeaFileImageFullPath(),
+                UrlUtils.encodeUrl(iSeaFileImage.getSeaFileImageFullPath()),
                 150);
     }
 

@@ -188,7 +188,9 @@ public class UrlUtils {
      */
     public static final String encodeUrl(String url) {
         try {
-            return URLEncoder.encode(url, "utf-8");
+            if (!TextUtils.isEmpty(url)) {
+                return URLEncoder.encode(url, "utf-8");
+            }
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }
