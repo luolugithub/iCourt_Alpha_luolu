@@ -17,12 +17,8 @@ import com.icourt.alpha.activity.RepoRenameActivity;
 import com.icourt.alpha.adapter.RepoAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.adapterObserver.RefreshViewEmptyObserver;
-import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.constants.SFileConfig;
-import com.icourt.alpha.db.dbmodel.RepoEncryptionDbModel;
-import com.icourt.alpha.db.dbservice.RepoEncryptionDbService;
 import com.icourt.alpha.entity.bean.DefaultRepoEntity;
-import com.icourt.alpha.entity.bean.RepoEncryptionEntity;
 import com.icourt.alpha.entity.bean.RepoEntity;
 import com.icourt.alpha.fragment.dialogfragment.RepoDetailsDialogFragment;
 import com.icourt.alpha.http.callback.SFileCallBack;
@@ -45,6 +41,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
 import io.reactivex.Observable;
+import io.reactivex.ObservableSource;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.annotations.NonNull;
 import io.reactivex.functions.Function;
@@ -67,7 +64,7 @@ import static com.icourt.alpha.constants.SFileConfig.REPO_SHARED_ME;
  * date createTime：2017/8/9
  * version 2.1.0
  */
-public class RepoListFragment extends BaseFragment
+public class RepoListFragment extends RepoBaseFragment
         implements BaseRecyclerAdapter.OnItemClickListener,
         BaseRecyclerAdapter.OnItemLongClickListener,
         BaseRecyclerAdapter.OnItemChildClickListener {
@@ -283,40 +280,10 @@ public class RepoListFragment extends BaseFragment
                 break;
         }
         if (listCall == null) return;
-        listCall.map(new Function<List<RepoEntity>, List<RepoEntity>>() {
+        listCall.flatMap(new Function<List<RepoEntity>, ObservableSource<List<RepoEntity>>>() {
             @Override
-            public List<RepoEntity> apply(@NonNull List<RepoEntity> repoEntities) throws Exception {
-                RepoEncryptionDbService encryptionDbService = null;
-                try {
-                    encryptionDbService = new RepoEncryptionDbService(getLoginUserId());
-                    for (RepoEntity entity : repoEntities) {
-                        if (entity == null) continue;
-                        RepoEncryptionDbModel query = encryptionDbService.query(entity.repo_id);
-                        if (query != null) {
-                            RepoEncryptionEntity dbRepoEncryptionEntity = query.convert2Model();
-                            dbRepoEncryptionEntity.encrypted = entity.encrypted;
-                            dbRepoEncryptionEntity.decryptMillisecond = dbRepoEncryptionEntity.encrypted ? dbRepoEncryptionEntity.decryptMillisecond : 0;
-
-                            //更新解密时间
-                            entity.decryptMillisecond = dbRepoEncryptionEntity.decryptMillisecond;
-                            encryptionDbService.insertOrUpdate(dbRepoEncryptionEntity.convert2Model());
-                        } else {
-                            RepoEncryptionEntity dbRepoEncryptionEntity = new RepoEncryptionEntity(entity.repo_id, entity.encrypted, 0);
-                            encryptionDbService.insertOrUpdate(dbRepoEncryptionEntity.convert2Model());
-                        }
-                    }
-                } catch (Throwable e) {
-                    e.printStackTrace();
-                    bugSync("更新资料库缓存失败",
-                            new StringBuilder("data:")
-                                    .append(repoEntities)
-                                    .toString());
-                } finally {
-                    if (encryptionDbService != null) {
-                        encryptionDbService.releaseService();
-                    }
-                }
-                return repoEntities;
+            public ObservableSource<List<RepoEntity>> apply(@NonNull List<RepoEntity> repoEntities) throws Exception {
+                return saveEncryptedData(repoEntities);
             }
         }).compose(this.<List<RepoEntity>>bindToLifecycle())
                 .subscribeOn(Schedulers.newThread())
@@ -417,7 +384,7 @@ public class RepoListFragment extends BaseFragment
                             repoAdapter.updateItem(item);
 
                             //2.更新本地
-                            updateLocalRecord(item.repo_id, item.encrypted, item.decryptMillisecond);
+                            updateEncryptedRecord(item.repo_id, item.encrypted, item.decryptMillisecond);
                             showTopSnackBar("解密成功");
                         } else {
                             bugSync("资料库解密返回失败", response.body());
@@ -438,34 +405,6 @@ public class RepoListFragment extends BaseFragment
                 });
     }
 
-
-    /**
-     * 更新本地记录状态
-     *
-     * @param repoId
-     * @param encrypted
-     * @param decryptMillisecond
-     */
-    private void updateLocalRecord(String repoId, boolean encrypted, long decryptMillisecond) {
-        RepoEncryptionDbService repoEncryptionDbService = null;
-        try {
-            repoEncryptionDbService = new RepoEncryptionDbService(getLoginUserId());
-            repoEncryptionDbService.insertOrUpdate(new RepoEncryptionEntity(repoId, encrypted, decryptMillisecond).convert2Model());
-        } catch (Exception e) {
-            e.printStackTrace();
-            bugSync("更新资料库缓存失败",
-                    new StringBuilder("repoId:")
-                            .append(repoId)
-                            .append("encrypted:")
-                            .append(encrypted).append("decryptMillisecond:")
-                            .append(decryptMillisecond)
-                            .toString());
-        } finally {
-            if (repoEncryptionDbService != null) {
-                repoEncryptionDbService.releaseService();
-            }
-        }
-    }
 
 
     @Override

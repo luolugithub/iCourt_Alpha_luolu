@@ -3,6 +3,7 @@ package com.icourt.alpha.fragment;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
@@ -16,12 +17,14 @@ import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.RepoAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.adapterObserver.RefreshViewEmptyObserver;
-import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.constants.SFileConfig;
 import com.icourt.alpha.entity.bean.RepoEntity;
-import com.icourt.alpha.http.callback.SFileCallBack;
 import com.icourt.alpha.http.callback.SimpleCallBack2;
+import com.icourt.alpha.http.observer.BaseObserver;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
+import com.icourt.alpha.utils.DateUtils;
+import com.icourt.alpha.utils.StringUtils;
+import com.icourt.alpha.view.ClearEditText;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 import com.icourt.alpha.widget.filter.ListFilter;
 
@@ -30,7 +33,14 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
+import io.reactivex.Observable;
+import io.reactivex.ObservableSource;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.annotations.NonNull;
+import io.reactivex.functions.Function;
+import io.reactivex.schedulers.Schedulers;
 import retrofit2.Call;
+import retrofit2.HttpException;
 import retrofit2.Response;
 
 import static com.icourt.alpha.constants.SFileConfig.PERMISSION_R;
@@ -46,7 +56,7 @@ import static com.icourt.alpha.constants.SFileConfig.REPO_SHARED_ME;
  * date createTime：2017/8/19
  * version 2.1.0
  */
-public class RepoSelectListFragment extends BaseFragment
+public class RepoSelectListFragment extends RepoBaseFragment
         implements BaseRecyclerAdapter.OnItemClickListener {
     public static final String KEY_REPO_TYPE = "repoType";
     public static final String KEY_REPO_FILTER_ONLY_READ = "filter_only_read";
@@ -201,38 +211,53 @@ public class RepoSelectListFragment extends BaseFragment
      * @param filterOnlyReadRepo 是否过滤只读权限的repo
      */
     private void getDocumentRoot(@Nullable String officeAdminId, final boolean filterOnlyReadRepo) {
-        Call<List<RepoEntity>> listCall = null;
+        Observable<List<RepoEntity>> listCall = null;
         final int pageSize = Integer.MAX_VALUE;
         switch (repoType) {
             case REPO_MINE:
-                listCall = getSFileApi().documentRootQuery(1, pageSize, null, null, null);
+                listCall = getSFileApi().documentRootQueryObservable(1, pageSize, null, null, null);
                 break;
             case REPO_SHARED_ME:
-                listCall = getSFileApi().documentRootQuery(1, pageSize, officeAdminId, null, "shared");
+                listCall = getSFileApi().documentRootQueryObservable(1, pageSize, officeAdminId, null, "shared");
                 break;
             case REPO_LAWFIRM:
-                listCall = getSFileApi().documentRootQuery();
+                listCall = getSFileApi().documentRootQueryObservable();
                 break;
             case REPO_PROJECT:
-                listCall = getSFileApi().documentRootQuery(1, pageSize, null, officeAdminId, "shared");
+                listCall = getSFileApi().documentRootQueryObservable(1, pageSize, null, officeAdminId, "shared");
                 break;
         }
-        callEnqueue(listCall, new SFileCallBack<List<RepoEntity>>() {
+        if (listCall == null) return;
+        listCall.flatMap(new Function<List<RepoEntity>, ObservableSource<List<RepoEntity>>>() {
             @Override
-            public void onSuccess(Call<List<RepoEntity>> call, Response<List<RepoEntity>> response) {
-                stopRefresh();
-                if (filterOnlyReadRepo) {
-                    filterOnlyReadPermissionRepo(response.body());
-                }
-                repoAdapter.bindData(true, response.body());
+            public ObservableSource<List<RepoEntity>> apply(@NonNull List<RepoEntity> repoEntities) throws Exception {
+                return saveEncryptedData(repoEntities);
             }
+        }).compose(this.<List<RepoEntity>>bindToLifecycle())
+                .subscribeOn(Schedulers.newThread())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new BaseObserver<List<RepoEntity>>() {
+                    @Override
+                    public void onNext(@NonNull List<RepoEntity> repoEntities) {
+                        stopRefresh();
+                        if (filterOnlyReadRepo) {
+                            filterOnlyReadPermissionRepo(repoEntities);
+                        }
+                        repoAdapter.bindData(true, repoEntities);
+                    }
 
-            @Override
-            public void onFailure(Call<List<RepoEntity>> call, Throwable t) {
-                super.onFailure(call, t);
-                stopRefresh();
-            }
-        });
+                    @Override
+                    public void onError(@NonNull Throwable throwable) {
+                        super.onError(throwable);
+                        stopRefresh();
+                    }
+
+                    @Override
+                    public void onComplete() {
+                        super.onComplete();
+                        stopRefresh();
+                    }
+                });
     }
 
     /**
@@ -268,6 +293,10 @@ public class RepoSelectListFragment extends BaseFragment
     public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
         RepoEntity item = repoAdapter.getItem(position);
         if (item == null) return;
+        if (item.isNeedDecrypt()) {
+            showDecryptDialog(item);
+            return;
+        }
         if (onFragmentCallBackListener != null) {
             Bundle bundle = new Bundle();
             bundle.putSerializable(KEY_FRAGMENT_RESULT, item);
@@ -275,4 +304,85 @@ public class RepoSelectListFragment extends BaseFragment
             onFragmentCallBackListener.onFragmentCallBack(this, 1, bundle);
         }
     }
+
+    /**
+     * 展示资料库解锁的对话框
+     *
+     * @param item
+     */
+    private void showDecryptDialog(final RepoEntity item) {
+        View dialogView = View.inflate(getContext(), R.layout.dialog_repo_decriypt, null);
+        final AlertDialog alertDialog = new AlertDialog.Builder(getContext())
+                .setView(dialogView)
+                .create();
+        final ClearEditText repoPwdEt = dialogView.findViewById(R.id.repo_pwd_et);
+        View.OnClickListener onClickListener = new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                switch (view.getId()) {
+                    case R.id.cancel_tv:
+                        alertDialog.dismiss();
+                        break;
+                    case R.id.ok_tv: {
+                        if (StringUtils.isEmpty(repoPwdEt.getText())) {
+                            showToast("密码不能为空");
+                            return;
+                        }
+                        decryptRepo(alertDialog, item, repoPwdEt.getText().toString());
+                    }
+                    break;
+                }
+            }
+        };
+        dialogView.findViewById(R.id.cancel_tv).setOnClickListener(onClickListener);
+        dialogView.findViewById(R.id.ok_tv).setOnClickListener(onClickListener);
+        alertDialog.show();
+    }
+
+    /**
+     * 解密资料库
+     *
+     * @param alertDialog
+     * @param item
+     * @param pwd
+     */
+    private void decryptRepo(@Nullable final AlertDialog alertDialog, final RepoEntity item, String pwd) {
+        if (item == null) return;
+        showLoadingDialog(null);
+        callEnqueue(
+                getSFileApi().repoDecrypt(item.repo_id, pwd),
+                new SimpleCallBack2<String>() {
+                    @Override
+                    public void onSuccess(Call<String> call, Response<String> response) {
+                        dismissLoadingDialog();
+                        if (alertDialog != null) {
+                            alertDialog.dismiss();
+                        }
+                        if (StringUtils.equalsIgnoreCase("success", response.body(), false)) {
+                            //1.更新适配器
+                            item.decryptMillisecond = DateUtils.millis();
+                            repoAdapter.updateItem(item);
+
+                            //2.更新本地
+                            updateEncryptedRecord(item.repo_id, item.encrypted, item.decryptMillisecond);
+                            showTopSnackBar("解密成功");
+                        } else {
+                            bugSync("资料库解密返回失败", response.body());
+                            showTopSnackBar("解密返回失败:" + response.body());
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<String> call, Throwable t) {
+                        dismissLoadingDialog();
+                        if (t instanceof HttpException &&
+                                ((HttpException) t).code() == 400) {
+                            showToast("密码错误");
+                        } else {
+                            super.onFailure(call, t);
+                        }
+                    }
+                });
+    }
+
 }
