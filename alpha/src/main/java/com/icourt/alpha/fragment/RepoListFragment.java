@@ -307,6 +307,10 @@ public class RepoListFragment extends BaseFragment
                     }
                 } catch (Throwable e) {
                     e.printStackTrace();
+                    bugSync("更新资料库缓存失败",
+                            new StringBuilder("data:")
+                                    .append(repoEntities)
+                                    .toString());
                 } finally {
                     if (encryptionDbService != null) {
                         encryptionDbService.releaseService();
@@ -377,7 +381,7 @@ public class RepoListFragment extends BaseFragment
                             showToast("密码不能为空");
                             return;
                         }
-                        decryptRepo(alertDialog,item,repoPwdEt.getText().toString());
+                        decryptRepo(alertDialog, item, repoPwdEt.getText().toString());
                     }
                     break;
                 }
@@ -449,6 +453,13 @@ public class RepoListFragment extends BaseFragment
             repoEncryptionDbService.insertOrUpdate(new RepoEncryptionEntity(repoId, encrypted, decryptMillisecond).convert2Model());
         } catch (Exception e) {
             e.printStackTrace();
+            bugSync("更新资料库缓存失败",
+                    new StringBuilder("repoId:")
+                            .append(repoId)
+                            .append("encrypted:")
+                            .append(encrypted).append("decryptMillisecond:")
+                            .append(decryptMillisecond)
+                            .toString());
         } finally {
             if (repoEncryptionDbService != null) {
                 repoEncryptionDbService.releaseService();

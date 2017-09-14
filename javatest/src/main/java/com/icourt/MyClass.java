@@ -60,6 +60,8 @@ public class MyClass {
 
 
     public static void main(String[] args) throws Exception {
+        List<String> d = null;
+        log("-------->app:" + new StringBuilder("sas").append(d).toString());
         List<String> list = Arrays.asList("v说", ",", ".", ".DD");
         log("--------->sort before:" + list);
         Collections.sort(list, new ChinaComparator());
