@@ -232,7 +232,7 @@ public class ProjectDetailActivity extends BaseActivity implements OnFragmentCal
                 if (detailTablayout.getSelectedTabPosition() == 2) {
                     titleActionClick();
                 } else {
-                    showBottomMeau();
+                    showBottomMenu();
                 }
                 break;
         }
@@ -261,7 +261,7 @@ public class ProjectDetailActivity extends BaseActivity implements OnFragmentCal
     /**
      * 显示底部更多菜单
      */
-    private void showBottomMeau() {
+    private void showBottomMenu() {
         switch (detailTablayout.getSelectedTabPosition()) {
             case 0:     //概览
                 if (myStar != 1) {
@@ -271,11 +271,12 @@ public class ProjectDetailActivity extends BaseActivity implements OnFragmentCal
                 }
                 break;
             case 1:     //任务
-                showTaskMeau();
+                showTaskMenu();
                 break;
             case 2:     //计时
                 break;
             case 3:     //文档
+                showDocumentMenu();
                 if (projectFileBoxFragment != null) {
                     projectFileBoxFragment.onParentTitleActionClick2(getActivity(), titleAction2, 0, null);
                 }
@@ -286,7 +287,7 @@ public class ProjectDetailActivity extends BaseActivity implements OnFragmentCal
     /**
      * 显示任务更多菜单
      */
-    private void showTaskMeau() {
+    private void showTaskMenu() {
         new BottomActionDialog(getContext(),
                 null,
                 Arrays.asList("已完成的任务", "管理任务组"),

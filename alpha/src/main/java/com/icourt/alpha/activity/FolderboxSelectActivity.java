@@ -324,7 +324,7 @@ public class FolderboxSelectActivity extends BaseActivity implements BaseRecycle
         if (TextUtils.isEmpty(filePath)) return;
         File file = new File(filePath);
         String fileName = file.getName();
-        String key = "file\";filename=\"" + fileName;
+        String key = String.format("file\";filename=\"%s", fileName);
         Map<String, RequestBody> params = new HashMap<>();
         params.put("parent_dir", TextUtils.isEmpty(rootName) ? RequestUtils.createTextBody("/") : RequestUtils.createTextBody(rootName));
         params.put(key, RequestUtils.createStreamBody(file));

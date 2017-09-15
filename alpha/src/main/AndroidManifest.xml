@@ -300,6 +300,18 @@
         <activity
             android:name=".activity.AlphaSpeciaSetActivity"
             android:screenOrientation="portrait" />
+        <activity
+            android:name=".activity.ProjectBasicTextInfoActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".activity.ProjectMembersActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".activity.ProjectJudgeActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".activity.ProjecTacceptanceActivity"
+            android:screenOrientation="portrait" />
 
         <activity
             android:name=".activity.FolderListActivity"

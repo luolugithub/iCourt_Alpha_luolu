@@ -10,17 +10,42 @@ import java.io.Serializable;
  * version 2.0.0
  */
 
-public class ProjectBasicItemEntity implements Serializable{
-
-    public static final int PROJECT_NAME_TYPE = 1;//项目名称
-    public static final int PROJECT_TYPE_TYPE = 2;//项目类型
-    public static final int PROJECT_DEPARTMENT_TYPE = 3;//负责部门
-    public static final int PROJECT_CLIENT_TYPE = 4;//客户
-    public static final int PROJECT_OTHER_PERSON_TYPE = 5;//其他当事人
-    public static final int PROJECT_TIME_TYPE = 6;//项目时间
-    public static final int PROJECT_ANYUAN_LAWYER_TYPE = 7;//案源律师
+public class ProjectBasicItemEntity implements Serializable {
 
     public String key;
     public String value;
     public int type;
+    public String personId;
+    public ProjectProcessesEntity.ExtraBean extraBean;
+    public ProjectProcessesEntity.PositionBean positionBean;
+
+    public ProjectBasicItemEntity() {
+    }
+
+    public ProjectBasicItemEntity(String key, String value, int type) {
+        this.key = key;
+        this.value = value;
+        this.type = type;
+    }
+
+    public ProjectBasicItemEntity(String key, String value, int type, String personId) {
+        this.key = key;
+        this.value = value;
+        this.type = type;
+        this.personId = personId;
+    }
+
+    public ProjectBasicItemEntity(String key, String value, int type, ProjectProcessesEntity.ExtraBean extraBean) {
+        this.key = key;
+        this.value = value;
+        this.type = type;
+        this.extraBean = extraBean;
+    }
+
+    public ProjectBasicItemEntity(String key, String value, int type, ProjectProcessesEntity.PositionBean positionBean) {
+        this.key = key;
+        this.value = value;
+        this.type = type;
+        this.positionBean = positionBean;
+    }
 }

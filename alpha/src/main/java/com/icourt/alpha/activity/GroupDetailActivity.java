@@ -639,7 +639,7 @@ public class GroupDetailActivity extends BaseActivity
      * @param hiddenChatBtn
      */
     public void showContactDialogFragment(String accid, boolean hiddenChatBtn) {
-        String tag = "ContactDialogFragment";
+        String tag = ContactDialogFragment.class.getSimpleName();
         FragmentTransaction mFragTransaction = getSupportFragmentManager().beginTransaction();
         Fragment fragment = getSupportFragmentManager().findFragmentByTag(tag);
         if (fragment != null) {

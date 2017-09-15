@@ -114,6 +114,7 @@ import sj.keyboard.widget.FuncLayout;
 import static com.icourt.alpha.constants.Const.CHAT_TYPE_P2P;
 import static com.icourt.alpha.constants.Const.CHAT_TYPE_TEAM;
 import static com.netease.nimlib.sdk.msg.constant.MsgStatusEnum.unread;
+import static com.netease.nimlib.sdk.msg.constant.SessionTypeEnum.P2P;
 import static com.netease.nimlib.sdk.msg.model.QueryDirectionEnum.QUERY_OLD;
 
 /**
@@ -1030,7 +1031,7 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
     private IMMessage getLocationMessage() {
         switch (getIMChatType()) {
             case CHAT_TYPE_P2P:
-                return MessageBuilder.createEmptyMessage(getIMChatId(), SessionTypeEnum.P2P, getLocationMsgId());
+                return MessageBuilder.createEmptyMessage(getIMChatId(), P2P, getLocationMsgId());
             case CHAT_TYPE_TEAM:
                 return MessageBuilder.createEmptyMessage(getIMChatId(), SessionTypeEnum.Team, getLocationMsgId());
             default: {
@@ -1181,10 +1182,10 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
                 if (chatAdapter.getItemCount() > 0) {
                     IMMessageCustomBody item = chatAdapter.getItem(0);
                     if (item != null) {
-                        return MessageBuilder.createEmptyMessage(getIMChatId(), SessionTypeEnum.P2P, item.send_time);
+                        return MessageBuilder.createEmptyMessage(getIMChatId(), P2P, item.send_time);
                     }
                 }
-                return MessageBuilder.createEmptyMessage(getIMChatId(), SessionTypeEnum.P2P, 0);
+                return MessageBuilder.createEmptyMessage(getIMChatId(), P2P, 0);
             case CHAT_TYPE_TEAM:
                 if (chatAdapter.getItemCount() > 0) {
                     IMMessageCustomBody item = chatAdapter.getItem(0);
@@ -1605,7 +1606,7 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
      * @param hiddenChatBtn
      */
     public void showContactDialogFragment(String accid, boolean hiddenChatBtn) {
-        String tag = "ContactDialogFragment";
+        String tag = ContactDialogFragment.class.getSimpleName();
         FragmentTransaction mFragTransaction = getSupportFragmentManager().beginTransaction();
         Fragment fragment = getSupportFragmentManager().findFragmentByTag(tag);
         if (fragment != null) {

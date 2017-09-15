@@ -4,6 +4,7 @@
     android:layout_height="wrap_content"
     android:background="@color/white"
     android:orientation="horizontal"
+    android:gravity="center_vertical"
     android:padding="@dimen/dp15">
 
     <TextView
@@ -19,6 +20,7 @@
         android:id="@+id/range_value_tv"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginLeft="@dimen/dp15"
         android:layout_weight="1"
         android:ellipsize="end"
         android:gravity="right"
@@ -30,7 +32,6 @@
     <ImageView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="@dimen/dp10"
-        android:src="@mipmap/arrow_right"
-        android:visibility="gone" />
+        android:layout_marginLeft="@dimen/dp5"
+        android:src="@mipmap/arrow_right" />
 </LinearLayout>

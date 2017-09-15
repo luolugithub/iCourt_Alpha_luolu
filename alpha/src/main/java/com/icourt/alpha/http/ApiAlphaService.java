@@ -22,6 +22,7 @@ import com.icourt.alpha.entity.bean.RepoMatterEntity;
 import com.icourt.alpha.entity.bean.SFileLinkInfoEntity;
 import com.icourt.alpha.entity.bean.SFileShareUserInfo;
 import com.icourt.alpha.entity.bean.SFileTokenEntity;
+import com.icourt.alpha.entity.bean.ProjectProcessesEntity;
 import com.icourt.alpha.entity.bean.SearchEngineEntity;
 import com.icourt.alpha.entity.bean.SelectGroupBean;
 import com.icourt.alpha.entity.bean.TaskAttachmentEntity;
@@ -1487,6 +1488,16 @@ public interface ApiAlphaService {
      */
     @PUT("ilaw/api/v2/timing/timing/{id}/bubble")
     Call<ResEntity<String>> timerOverTimingRemindClose(@Path("id") String id, @Query("operType") int operType, @Query("clientId") String clientId);
+
+    /**
+     * 获取项目下程序信息
+     * 文档地址：https://dev.alphalawyer.cn/ilaw/swagger/index.html#!/matters-api/getProcessListUsingGET_1
+     *
+     * @param matterId
+     * @return
+     */
+    @GET("ilaw/api/v1/matters/{matterId}/processes")
+    Call<ResEntity<List<ProjectProcessesEntity>>> projectProcessesQuery(@Path("matterId") String matterId);
 }
 
 

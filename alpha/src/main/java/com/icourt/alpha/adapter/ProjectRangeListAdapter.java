@@ -4,8 +4,10 @@ import android.view.View;
 import android.widget.TextView;
 
 import com.icourt.alpha.R;
+import com.icourt.alpha.activity.ProjectBasicTextInfoActivity;
 import com.icourt.alpha.adapter.baseadapter.BaseArrayRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
+import com.icourt.alpha.constants.Const;
 import com.icourt.alpha.entity.bean.RangeItemEntity;
 
 /**
@@ -17,6 +19,11 @@ import com.icourt.alpha.entity.bean.RangeItemEntity;
  */
 
 public class ProjectRangeListAdapter extends BaseArrayRecyclerAdapter<RangeItemEntity> implements BaseRecyclerAdapter.OnItemClickListener, BaseRecyclerAdapter.OnItemLongClickListener {
+
+    public ProjectRangeListAdapter() {
+        this.setOnItemClickListener(this);
+    }
+
     @Override
     public int bindView(int viewtype) {
         return R.layout.adapter_project_range_item_layout;
@@ -32,7 +39,14 @@ public class ProjectRangeListAdapter extends BaseArrayRecyclerAdapter<RangeItemE
 
     @Override
     public void onItemClick(BaseRecyclerAdapter adapter, ViewHolder holder, View view, int position) {
-
+        RangeItemEntity entity = getItem(position);
+        switch (entity.itemType) {
+            case Const.PROJECT_CASE_TYPE:
+            case Const.PROJECT_CASENUMBER_TYPE:
+            case Const.PROJECT_COMPETENT_TYPE:
+                ProjectBasicTextInfoActivity.launch(view.getContext(), entity.itemName, entity.itemValue, entity.itemType);
+                break;
+        }
     }
 
     @Override
