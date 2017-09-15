@@ -1,5 +1,6 @@
 package com.icourt.alpha.fragment;
 
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AlertDialog;
@@ -30,7 +31,6 @@ import com.icourt.alpha.utils.ActionConstants;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.DensityUtil;
 import com.icourt.alpha.utils.StringUtils;
-import com.icourt.alpha.view.ClearEditText;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 import com.icourt.alpha.widget.dialog.BottomActionDialog;
 
@@ -331,7 +331,19 @@ public class RepoListFragment extends RepoBaseFragment
      * @param item
      */
     private void showDecryptDialog(final RepoEntity item) {
-        View dialogView = View.inflate(getContext(), R.layout.dialog_repo_decriypt, null);
+        new AlertDialog.Builder(getContext())
+                .setTitle(R.string.repo_encrypted)
+                .setMessage(R.string.repo_encrypted_unsupport)
+                .setPositiveButton(R.string.str_ok, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        dialogInterface.dismiss();
+                    }
+                })
+                .show();
+
+        // 暂时不解密
+        /*View dialogView = View.inflate(getContext(), R.layout.dialog_repo_decriypt, null);
         final AlertDialog alertDialog = new AlertDialog.Builder(getContext())
                 .setView(dialogView)
                 .create();
@@ -356,7 +368,7 @@ public class RepoListFragment extends RepoBaseFragment
         };
         dialogView.findViewById(R.id.cancel_tv).setOnClickListener(onClickListener);
         dialogView.findViewById(R.id.ok_tv).setOnClickListener(onClickListener);
-        alertDialog.show();
+        alertDialog.show();*/
     }
 
     /**
