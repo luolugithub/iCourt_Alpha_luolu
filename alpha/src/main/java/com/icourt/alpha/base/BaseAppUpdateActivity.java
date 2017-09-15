@@ -138,6 +138,7 @@ public class BaseAppUpdateActivity extends BaseUmengActivity implements
         updateNoticeDialog = new AlertDialog.Builder(this).create();
         updateNoticeDialog.show();
         Window window = updateNoticeDialog.getWindow();
+        window.setBackgroundDrawableResource(android.R.color.transparent);
         window.setContentView(R.layout.dialog_update_app_layout);
         TextView lastVersionTv = (TextView) window.findViewById(R.id.last_version_tv);
         TextView uploadTimeTv = (TextView) window.findViewById(R.id.last_version_uploadtime_tv);
@@ -154,7 +155,6 @@ public class BaseAppUpdateActivity extends BaseUmengActivity implements
         versionDescAdapter.bindData(true, appVersionEntity.versionDescs);
 
         updateNoticeDialog.setCancelable(shouldUpdate(appVersionEntity));
-
         if (isLookDesc) {
             noUpdateTv.setVisibility(View.GONE);
             updateTv.setVisibility(View.VISIBLE);
