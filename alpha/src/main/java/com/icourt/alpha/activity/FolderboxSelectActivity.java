@@ -23,6 +23,7 @@ import com.icourt.alpha.adapter.baseadapter.adapterObserver.RefreshViewEmptyObse
 import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.entity.bean.FileBoxBean;
 import com.icourt.alpha.entity.bean.RepoIdResEntity;
+import com.icourt.alpha.http.callback.SFileCallBack;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.callback.SimpleCallBack2;
 import com.icourt.alpha.http.httpmodel.ResEntity;
@@ -41,7 +42,6 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 import okhttp3.RequestBody;
 import retrofit2.Call;
-import retrofit2.Callback;
 import retrofit2.Response;
 
 /**
@@ -181,9 +181,9 @@ public class FolderboxSelectActivity extends BaseActivity implements BaseRecycle
     @Override
     protected void getData(final boolean isRefresh) {
         super.getData(isRefresh);
-        getSFileApi().projectQueryFileBoxByDir(seaFileRepoId, rootName).enqueue(new Callback<List<FileBoxBean>>() {
+        getSFileApi().projectQueryFileBoxByDir(seaFileRepoId, rootName).enqueue(new SFileCallBack<List<FileBoxBean>>() {
             @Override
-            public void onResponse(Call<List<FileBoxBean>> call, Response<List<FileBoxBean>> response) {
+            public void onSuccess(Call<List<FileBoxBean>> call, Response<List<FileBoxBean>> response) {
                 stopRefresh();
                 if (response.body() != null) {
                     projectFileBoxAdapter.bindData(isRefresh, getFolders(response.body()));
@@ -194,6 +194,7 @@ public class FolderboxSelectActivity extends BaseActivity implements BaseRecycle
 
             @Override
             public void onFailure(Call<List<FileBoxBean>> call, Throwable t) {
+                super.onFailure(call, t);
                 stopRefresh();
                 enableEmptyView(null);
                 showTopSnackBar("获取文档列表失败");
@@ -292,9 +293,9 @@ public class FolderboxSelectActivity extends BaseActivity implements BaseRecycle
             return;
         }
         showLoadingDialog("正在上传...");
-        getSFileApi().projectUploadUrlQuery(seaFileRepoId).enqueue(new Callback<JsonElement>() {
+        getSFileApi().projectUploadUrlQuery(seaFileRepoId).enqueue(new SFileCallBack<JsonElement>() {
             @Override
-            public void onResponse(Call<JsonElement> call, Response<JsonElement> response) {
+            public void onSuccess(Call<JsonElement> call, Response<JsonElement> response) {
                 if (response.body() != null) {
                     String uploadUrl = response.body().getAsString();
                     uploadFile(uploadUrl, filePath);
@@ -305,9 +306,10 @@ public class FolderboxSelectActivity extends BaseActivity implements BaseRecycle
             }
 
             @Override
-            public void onFailure(Call<JsonElement> call, Throwable throwable) {
+            public void onFailure(Call<JsonElement> call, Throwable t) {
+                super.onFailure(call, t);
                 dismissLoadingDialog();
-                showTopSnackBar("上传失败");
+                showTopSnackBar("获取上传文件地址失败");
             }
 
         });
@@ -328,9 +330,9 @@ public class FolderboxSelectActivity extends BaseActivity implements BaseRecycle
         Map<String, RequestBody> params = new HashMap<>();
         params.put("parent_dir", TextUtils.isEmpty(rootName) ? RequestUtils.createTextBody("/") : RequestUtils.createTextBody(rootName));
         params.put(key, RequestUtils.createStreamBody(file));
-        getSFileApi().sfileUploadFile(uploadUrl, params).enqueue(new Callback<JsonElement>() {
+        getSFileApi().sfileUploadFile(uploadUrl, params).enqueue(new SFileCallBack<JsonElement>() {
             @Override
-            public void onResponse(Call<JsonElement> call, Response<JsonElement> response) {
+            public void onSuccess(Call<JsonElement> call, Response<JsonElement> response) {
                 dismissLoadingDialog();
                 showTopSnackBar("上传成功");
                 ProjectSelectActivity.lauchClose(FolderboxSelectActivity.this);
@@ -340,8 +342,9 @@ public class FolderboxSelectActivity extends BaseActivity implements BaseRecycle
 
             @Override
             public void onFailure(Call<JsonElement> call, Throwable t) {
+                super.onFailure(call, t);
                 dismissLoadingDialog();
-                showTopSnackBar("上传失败");
+                showTopSnackBar("文件上传失败");
             }
         });
     }

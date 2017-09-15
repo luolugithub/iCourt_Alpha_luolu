@@ -161,5 +161,7 @@
         <item>@string/sfile_link_limit_date_14</item>
     </string-array>
 
+    <string name="repo_encrypted">资料库被加密</string>
+    <string name="repo_encrypted_unsupport">请前往电脑端 AlphaBox 操作</string>
 
 </resources>

@@ -52,15 +52,6 @@ public class RepoAdapter extends BaseArrayRecyclerAdapter<RepoEntity> {
         ImageView document_detail_iv = holder.obtainView(R.id.document_detail_iv);
         holder.bindChildClick(document_expand_iv);
         holder.bindChildClick(document_detail_iv);
-        if (!repoEntity.encrypted) {//非加密的
-            document_type_iv.setImageResource(R.mipmap.ic_document);
-        } else {
-            if (repoEntity.isNeedDecrypt()) {//解密时间超时
-                document_type_iv.setImageResource(R.mipmap.vault_locked);
-            } else {
-                document_type_iv.setImageResource(R.mipmap.vault_unlocked);
-            }
-        }
         switch (type) {
             case REPO_MINE:
                 document_expand_iv.setVisibility(View.VISIBLE);
@@ -75,6 +66,18 @@ public class RepoAdapter extends BaseArrayRecyclerAdapter<RepoEntity> {
         document_expand_iv.setImageResource(type == 0 ? R.mipmap.ic_open_menu : R.mipmap.icon_about_16);
         document_title_tv.setText(repoEntity.repo_name);
         document_desc_tv.setText(String.format("%s, %s", FileUtils.bFormat(repoEntity.size), DateUtils.getStandardSimpleFormatTime(repoEntity.getUpdateTime())));
+
+        if (!repoEntity.encrypted) {//非加密的
+            document_type_iv.setImageResource(R.mipmap.ic_document);
+        } else {
+            if (repoEntity.isNeedDecrypt()) {//解密时间超时
+                document_type_iv.setImageResource(R.mipmap.vault_locked);
+                document_expand_iv.setVisibility(View.GONE);
+                document_detail_iv.setVisibility(View.GONE);
+            } else {
+                document_type_iv.setImageResource(R.mipmap.vault_unlocked);
+            }
+        }
     }
 
 }
