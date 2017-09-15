@@ -14,7 +14,7 @@ import com.icourt.alpha.entity.bean.AppVersionEntity;
  * date createTime：2017/9/14
  * version 2.1.0
  */
-public class VersionDescAdapter extends BaseArrayRecyclerAdapter<AppVersionEntity.VersionDescBean> {
+public class VersionDescAdapter extends BaseArrayRecyclerAdapter<AppVersionEntity.VersionDescsBean> {
 
     @Override
     public int bindView(int viewtype) {
@@ -22,12 +22,12 @@ public class VersionDescAdapter extends BaseArrayRecyclerAdapter<AppVersionEntit
     }
 
     @Override
-    public void onBindHoder(ViewHolder holder, AppVersionEntity.VersionDescBean versionDescBean, int position) {
+    public void onBindHoder(ViewHolder holder, AppVersionEntity.VersionDescsBean versionDescBean, int position) {
         if (versionDescBean == null) return;
         TextView typeView = holder.obtainView(R.id.version_type_tv);
         TextView descView = holder.obtainView(R.id.version_desc_tv);
         typeView.setText(String.format("[%s]", versionDescBean.type));
-        descView.setText(versionDescBean.desc);
+        descView.setText(versionDescBean.versionDesc);
         if (TextUtils.equals("新增", versionDescBean.type)) {
             typeView.setTextColor(0xFF63bc7d);
         } else if (TextUtils.equals("优化", versionDescBean.type)) {

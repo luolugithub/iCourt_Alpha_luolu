@@ -66,7 +66,7 @@ public interface ApiAlphaService {
      *
      * @return
      */
-    @GET("api/v2/versions/lastest")
+    @GET("api/v2/versions/update")
     Call<ResEntity<AppVersionEntity>> getNewVersionAppInfo();
 
     /**

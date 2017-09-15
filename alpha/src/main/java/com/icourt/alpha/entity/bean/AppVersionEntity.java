@@ -11,37 +11,54 @@ import java.util.List;
  * version 1.0.0
  */
 public class AppVersionEntity implements Serializable {
+
     /**
-     * id : 2
-     * createUserId : 01CEB4E16D2411E6A5C200163E0020D1
-     * gmtCreate : 1504875962000
-     * modifyUserId : 01CEB4E16D2411E6A5C200163E0020D1
-     * gmtModified : 1504768865000
-     * appVersion : 1.1.0
-     * buildVersion : b-1.1.0
-     * effectVersion : ALL
-     * versionDesc : 我们杀了一个产品经理祭天
-     * upgradeStrategy : 1
+     * id : 10
      * osType : 1
-     * upgradeUrl : http://www.baidu.com
+     * appVersion : 3.0
+     * buildVersion : b-3.0
+     * versionDescs : [{"id":11,"appVersionId":10,"type":"新增","versionDesc":"新增...什么鬼","createUserId":"01CEB4E16D2411E6A5C200163E0020D1","gmtCreate":1505378752000,"modifyUserId":"01CEB4E16D2411E6A5C200163E0020D1","gmtModified":1505378752000},{"id":12,"appVersionId":10,"type":"修复","versionDesc":"修复了...什么鬼","createUserId":"01CEB4E16D2411E6A5C200163E0020D1","gmtCreate":1505378752000,"modifyUserId":"01CEB4E16D2411E6A5C200163E0020D1","gmtModified":1505378752000},{"id":13,"appVersionId":10,"type":"其他","versionDesc":"其他...什么鬼","createUserId":"01CEB4E16D2411E6A5C200163E0020D1","gmtCreate":1505378752000,"modifyUserId":"01CEB4E16D2411E6A5C200163E0020D1","gmtModified":1505378752000}]
+     * upgradeStrategy : 2
+     * upgradeUrl : http://www.google.com.hk
+     * createUserId : 01CEB4E16D2411E6A5C200163E0020D1
+     * gmtCreate : 1505376773000
+     * modifyUserId : 01CEB4E16D2411E6A5C200163E0020D1
+     * gmtModified : 1505378752000
      */
 
-    public String id;
-    public String createUserId;//创建人Id
-    public long gmtCreate;//创建时间
-    public String modifyUserId;//修改人Id
-    public long gmtModified;//修改时间
-    public String appVersion;//版本号
-    public String buildVersion;//build版本号
-    public String effectVersion;//影响版本号，如果为空则影响所有版本
-    public List<VersionDescBean> versionDescs;//升级描述
-    public int upgradeStrategy;//升级策略：1、常规可选升级；2、强制更新
-    public int osType;//终端类型：1、Android；2、iOS
+    public int id;
+    public String osType;//终端类型：1代表Android；2代表IOS
+    public String appVersion;//版本 ,
+    public String buildVersion;//Build版本
+    public int upgradeStrategy;//升级策略  1、常规可选升级；2、强制更新
     public String upgradeUrl;//升级包地址
+    public String createUserId;//创建人ID
+    public long gmtCreate;//创建时间
+    public String modifyUserId;//修改人ID
+    public long gmtModified;//修改时间
+    public List<VersionDescsBean> versionDescs;//升级描述
 
-    public class VersionDescBean implements Serializable {
 
-        public String type;
-        public String desc;
+    public static class VersionDescsBean {
+        /**
+         * id : 11
+         * appVersionId : 10
+         * type : 新增
+         * versionDesc : 新增...什么鬼
+         * createUserId : 01CEB4E16D2411E6A5C200163E0020D1
+         * gmtCreate : 1505378752000
+         * modifyUserId : 01CEB4E16D2411E6A5C200163E0020D1
+         * gmtModified : 1505378752000
+         */
+
+        public int id;
+        public int appVersionId;
+        public String type;//描述类型
+        public String versionDesc;//描述内容
+        public String createUserId;
+        public long gmtCreate;
+        public String modifyUserId;
+        public long gmtModified;
+
     }
 }

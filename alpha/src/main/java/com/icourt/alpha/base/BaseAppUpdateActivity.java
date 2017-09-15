@@ -44,7 +44,6 @@ import com.umeng.analytics.MobclickAgent;
 import java.io.File;
 
 import retrofit2.Call;
-import retrofit2.HttpException;
 import retrofit2.Response;
 
 /**
@@ -57,6 +56,7 @@ import retrofit2.Response;
 public class BaseAppUpdateActivity extends BaseUmengActivity implements
         UpdateAppDialogNoticeImp {
     public static final String UPDATE_APP_VERSION_KEY = "update_app_version_key";//版本更新版本号
+    private static final String CUSTOM_APK_JOINT_NAME = "alphaNewApp";//自定义apk name拼接字符串 :为确保每次url不同
     private AlertDialog updateNoticeDialog;
     private ProgressDialog updateProgressDialog;
     public static final int REQUEST_FILE_PERMISSION = 9999;
@@ -89,23 +89,20 @@ public class BaseAppUpdateActivity extends BaseUmengActivity implements
             public void onSuccess(Call<ResEntity<AppVersionEntity>> call, Response<ResEntity<AppVersionEntity>> response) {
                 if (response.body().result == null) return;
                 AppVersionEntity appVersionEntity = response.body().result;
+                // TODO: 17/9/15    测试下载url
+                appVersionEntity.upgradeUrl = "https://devbox.alphalawyer.cn/seafhttp/files/37ef8760-6e41-419c-96bf-8c720e6f216a/alpha-BaiDu-innertest-v2.0.4_2017-09-06%2014%3A13.apk";
                 if (!TextUtils.equals(appVersionEntity.appVersion, SpUtils.getInstance().getStringData(UPDATE_APP_VERSION_KEY, ""))) {
-                    //如果effectVersion（影响版本号）为null 或者 effectVersion 和本地版本好一致则显示更新对话框
-                    if (TextUtils.isEmpty(appVersionEntity.effectVersion) || TextUtils.equals(appVersionEntity.effectVersion, BuildConfig.VERSION_NAME)) {
-                        showAppUpdateDialog(getActivity(), response.body().result, title);
+                    //upgradeStrategy!=-1则显示更新对话框
+                    if (appVersionEntity.upgradeStrategy != -1) {
+                        showAppUpdateDialog(getActivity(), appVersionEntity, title);
                     }
                 }
             }
 
             @Override
             public void onFailure(Call<ResEntity<AppVersionEntity>> call, Throwable t) {
-                if (t instanceof HttpException) {
-                    HttpException hx = (HttpException) t;
-                    if (hx.code() == 401) {
-                        showTopSnackBar("fir token 更改");
-                        return;
-                    }
-                }
+                showTopSnackBar(t.getMessage());
+                bugSync("检查最新版本失败", t);
                 super.onFailure(call, t);
             }
         });
@@ -114,8 +111,7 @@ public class BaseAppUpdateActivity extends BaseUmengActivity implements
     @Override
     public boolean hasLocalApkFile(String url) {
         try {
-            String ROOTPATH = Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator;
-            String apkPath = ROOTPATH + Md5Utils.md5(url, url) + ".apk";
+            String apkPath = String.format("%s/%s.apk", getApkSavePath(), Md5Utils.md5(url, url));
             File file = new File(apkPath);
             return file.exists();
         } catch (Exception e) {
@@ -127,38 +123,7 @@ public class BaseAppUpdateActivity extends BaseUmengActivity implements
     public final void showAppUpdateDialog(@NonNull final Context context, @NonNull final AppVersionEntity appVersionEntity, String title) {
         if (isDestroyOrFinishing()) return;
         if (updateNoticeDialog != null && updateNoticeDialog.isShowing()) return;
-        if (!shouldUpdate(appVersionEntity)) return;
         showUpdateDescDialog(context, appVersionEntity, false);
-//        AlertDialog.Builder builder = new AlertDialog.Builder(context)
-//                .setTitle(title)
-//                .setMessage(TextUtils.isEmpty(appVersionEntity.versionDesc) ? "有一个新版本,请立即更新吧" : appVersionEntity.versionDesc); //设置内容
-//        builder.setPositiveButton("更新", new DialogInterface.OnClickListener() {
-//            @Override
-//            public void onClick(DialogInterface dialog, int which) {
-//                if (hasFilePermission(context)) {
-//                    MobclickAgent.onEvent(context, UMMobClickAgent.dialog_update_btn_click_id);
-////                    getUpdateProgressDialog().setMax(appVersionEntity.binary != null ? (int) appVersionEntity.binary.fsize : 1_000);//下载进度条
-//                    String updateUrl = UrlUtils.appendParam(appVersionEntity.upgradeUrl, "alphaNewApp", appVersionEntity.appVersion);
-//                    showAppDownloadingDialog(getActivity(), updateUrl);
-//                } else {
-//                    requestFilePermission(context, REQUEST_FILE_PERMISSION);
-//                }
-//            }
-//        });
-//        if (shouldForceUpdate(appVersionEntity)) {
-//            builder.setCancelable(false);
-//        } else {
-//            builder.setNegativeButton("取消", new DialogInterface.OnClickListener() {
-//                @Override
-//                public void onClick(DialogInterface dialog, int which) {
-//                    SpUtils.getInstance().remove(UPDATE_APP_VERSION_KEY);
-//                    SpUtils.getInstance().putData(UPDATE_APP_VERSION_KEY, appVersionEntity.appVersion);
-//                    dialog.dismiss();
-//                }
-//            });
-//        }
-//        updateNoticeDialog = builder.create();
-//        updateNoticeDialog.show();
     }
 
     /**
@@ -170,9 +135,9 @@ public class BaseAppUpdateActivity extends BaseUmengActivity implements
     public void showUpdateDescDialog(@NonNull final Context context, @NonNull final AppVersionEntity appVersionEntity, final boolean isLookDesc) {
         if (appVersionEntity == null) return;
 
-        final AlertDialog alertDialog = new AlertDialog.Builder(this).create();
-        alertDialog.show();
-        Window window = alertDialog.getWindow();
+        updateNoticeDialog = new AlertDialog.Builder(this).create();
+        updateNoticeDialog.show();
+        Window window = updateNoticeDialog.getWindow();
         window.setContentView(R.layout.dialog_update_app_layout);
         TextView lastVersionTv = (TextView) window.findViewById(R.id.last_version_tv);
         TextView uploadTimeTv = (TextView) window.findViewById(R.id.last_version_uploadtime_tv);
@@ -188,6 +153,8 @@ public class BaseAppUpdateActivity extends BaseUmengActivity implements
         recyclerView.setAdapter(versionDescAdapter);
         versionDescAdapter.bindData(true, appVersionEntity.versionDescs);
 
+        updateNoticeDialog.setCancelable(shouldUpdate(appVersionEntity));
+
         if (isLookDesc) {
             noUpdateTv.setVisibility(View.GONE);
             updateTv.setVisibility(View.VISIBLE);
@@ -201,18 +168,18 @@ public class BaseAppUpdateActivity extends BaseUmengActivity implements
             public void onClick(View v) {
                 SpUtils.getInstance().remove(UPDATE_APP_VERSION_KEY);
                 SpUtils.getInstance().putData(UPDATE_APP_VERSION_KEY, appVersionEntity.appVersion);
-                alertDialog.dismiss();
+                updateNoticeDialog.dismiss();
             }
         });
         updateTv.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (isLookDesc) {
-                    alertDialog.dismiss();
+                    updateNoticeDialog.dismiss();
                 } else {
                     if (hasFilePermission(context)) {
                         MobclickAgent.onEvent(context, UMMobClickAgent.dialog_update_btn_click_id);
-                        String updateUrl = UrlUtils.appendParam(appVersionEntity.upgradeUrl, "alphaNewApp", appVersionEntity.appVersion);
+                        String updateUrl = UrlUtils.appendParam(appVersionEntity.upgradeUrl, CUSTOM_APK_JOINT_NAME, appVersionEntity.appVersion);
                         showAppDownloadingDialog(getActivity(), updateUrl);
                     } else {
                         requestFilePermission(context, REQUEST_FILE_PERMISSION);
@@ -292,6 +259,7 @@ public class BaseAppUpdateActivity extends BaseUmengActivity implements
             if (totalBytes > 0) {
                 getUpdateProgressDialog().setMax(totalBytes);
             }
+            if (updateNoticeDialog.isShowing()) updateNoticeDialog.dismiss();
             getUpdateProgressDialog().setProgress(soFarBytes);
             getUpdateProgressDialog().show();
         }
@@ -344,15 +312,16 @@ public class BaseAppUpdateActivity extends BaseUmengActivity implements
 
         @Override
         protected void warn(BaseDownloadTask task) {
-            log("--------->warn");
         }
     };
 
     private void startDownloadApk(String apkUrl) {
         if (TextUtils.isEmpty(apkUrl)) return;
+        log("apkUrl ----  " + apkUrl);
         if (getUpdateProgressDialog().isShowing()) return;
         if (Environment.isExternalStorageEmulated()) {
-            String path = getApkSavePath() + Md5Utils.md5(apkUrl, apkUrl) + ".apk";
+            String path = String.format("%s/%s.apk", getApkSavePath(), Md5Utils.md5(apkUrl, apkUrl));
+            log("path ----  " + path);
             FileDownloader
                     .getImpl()
                     .create(apkUrl)
@@ -374,7 +343,7 @@ public class BaseAppUpdateActivity extends BaseUmengActivity implements
         pathBuilder.append(ActionConstants.FILE_DOWNLOAD_PATH);
         pathBuilder.append(File.separator);
         pathBuilder.append(ActionConstants.APK_DOWNLOAD_PATH);
-        pathBuilder.append(File.separator);
+        log("pathBuilder ----  " + pathBuilder.toString());
         return pathBuilder.toString();
     }
 

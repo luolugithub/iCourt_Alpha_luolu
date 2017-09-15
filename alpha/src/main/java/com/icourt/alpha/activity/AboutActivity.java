@@ -26,7 +26,6 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import retrofit2.Call;
-import retrofit2.HttpException;
 import retrofit2.Response;
 
 import static com.umeng.socialize.utils.DeviceConfig.context;
@@ -101,13 +100,8 @@ public class AboutActivity extends BaseAppUpdateActivity {
 
             @Override
             public void onFailure(Call<ResEntity<AppVersionEntity>> call, Throwable t) {
-                if (t instanceof HttpException) {
-                    HttpException hx = (HttpException) t;
-                    if (hx.code() == 401) {
-                        showTopSnackBar("fir token 更改");
-                        return;
-                    }
-                }
+                showTopSnackBar(t.getMessage());
+                bugSync("检查最新版本失败", t);
                 super.onFailure(call, t);
             }
         });
@@ -123,9 +117,6 @@ public class AboutActivity extends BaseAppUpdateActivity {
                 if (appVersionEntity == null) return;
                 if (hasFilePermission(context)) {
                     MobclickAgent.onEvent(context, UMMobClickAgent.dialog_update_btn_click_id);
-                    appVersionEntity.upgradeUrl = "https://alphalawyer.cn/#withoutlo/sharelink/6704547496CB11E78479446A2ED9DCBD";
-                    appVersionEntity.upgradeUrl = "https://test.alphalawyer.cn/#withoutlo/sharelink/E78071F4984511E78DD400163E0691A5";
-                    appVersionEntity.upgradeUrl = "https://test.alphalawyer.cn/#withoutlo/sharelink/DA5FAC16984511E78DD400163E0691A5";
                     showAppDownloadingDialog(getActivity(), appVersionEntity.upgradeUrl);
                 } else {
                     requestFilePermission(context, REQUEST_FILE_PERMISSION);
