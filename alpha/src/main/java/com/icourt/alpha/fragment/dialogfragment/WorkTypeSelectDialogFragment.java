@@ -107,8 +107,9 @@ public class WorkTypeSelectDialogFragment extends BaseDialogFragment implements 
     @Override
     protected void getData(final boolean isRefresh) {
         super.getData(isRefresh);
-        getApi().queryWorkTypes(getArguments().getString("projectId"))
-                .enqueue(new SimpleCallBack<List<WorkType>>() {
+        callEnqueue(
+                getApi().queryWorkTypes(getArguments().getString("projectId")),
+                new SimpleCallBack<List<WorkType>>() {
                     @Override
                     public void onSuccess(Call<ResEntity<List<WorkType>>> call, Response<ResEntity<List<WorkType>>> response) {
                         workTypeAdapter.bindData(isRefresh, response.body().result);

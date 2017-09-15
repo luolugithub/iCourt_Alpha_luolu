@@ -184,8 +184,9 @@ public class ProjectSimpleSelectDialogFragment
         if (TextUtils.isEmpty(projectName)) return;
         projectAdapter.clearSelected();
         //pms独有 带权限
-        getApi().timingProjectQuery(0, "0,2,7", projectName)
-                .enqueue(new SimpleCallBack<List<ProjectEntity>>() {
+        callEnqueue(
+                getApi().timingProjectQuery(0, "0,2,7", projectName),
+                new SimpleCallBack<List<ProjectEntity>>() {
                     @Override
                     public void onSuccess(Call<ResEntity<List<ProjectEntity>>> call, Response<ResEntity<List<ProjectEntity>>> response) {
                         projectAdapter.clearData();
@@ -212,8 +213,9 @@ public class ProjectSimpleSelectDialogFragment
         /**
          * 默认获取的关注的非完结的项目 带权限的
          */
-        getApi().timingProjectQuery(0, "0,2,7")
-                .enqueue(new SimpleCallBack<List<ProjectEntity>>() {
+        callEnqueue(
+                getApi().timingProjectQuery(0, "0,2,7"),
+                new SimpleCallBack<List<ProjectEntity>>() {
                     @Override
                     public void onSuccess(Call<ResEntity<List<ProjectEntity>>> call, Response<ResEntity<List<ProjectEntity>>> response) {
                         dismissLoadingDialog();
