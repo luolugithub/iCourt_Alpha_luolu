@@ -1,10 +1,6 @@
 package com.icourt.alpha.adapter;
 
-import android.text.Spannable;
-import android.text.SpannableString;
 import android.text.TextUtils;
-import android.text.method.LinkMovementMethod;
-import android.text.util.Linkify;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.EditText;
@@ -56,14 +52,7 @@ public class TaskCheckItemAdapter extends MultiSelectRecyclerAdapter<TaskCheckIt
         }
         checkedTextView.setClickable(valid);
         deleteView.setVisibility(valid ? View.VISIBLE : View.GONE);
-        nameView.setMovementMethod(LinkMovementMethod.getInstance());
-        Spannable spannable = new SpannableString(itemEntity.name);
-        Linkify.addLinks(spannable, Linkify.WEB_URLS);
-
-        final CharSequence text = TextUtils.concat(spannable, "\u200B");
-        nameView.setText(text);
-        holder.bindChildClick(checkedTextView);
-        holder.bindChildClick(deleteView);
+        nameView.setText(itemEntity.name);
         nameView.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View view, boolean hasFocus) {
@@ -93,6 +82,8 @@ public class TaskCheckItemAdapter extends MultiSelectRecyclerAdapter<TaskCheckIt
                 return false;
             }
         });
+        holder.bindChildClick(checkedTextView);
+        holder.bindChildClick(deleteView);
     }
 
 
