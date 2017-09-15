@@ -19,6 +19,7 @@ import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.adapterObserver.RefreshViewEmptyObserver;
 import com.icourt.alpha.constants.SFileConfig;
 import com.icourt.alpha.entity.bean.RepoEntity;
+import com.icourt.alpha.http.callback.SFileCallBack;
 import com.icourt.alpha.http.callback.SimpleCallBack2;
 import com.icourt.alpha.http.observer.BaseObserver;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
@@ -351,7 +352,7 @@ public class RepoSelectListFragment extends RepoBaseFragment
         showLoadingDialog(null);
         callEnqueue(
                 getSFileApi().repoDecrypt(item.repo_id, pwd),
-                new SimpleCallBack2<String>() {
+                new SFileCallBack<String>() {
                     @Override
                     public void onSuccess(Call<String> call, Response<String> response) {
                         dismissLoadingDialog();

@@ -52,6 +52,11 @@ import retrofit2.Response;
 
 public class ProjectDetailActivity extends BaseActivity implements OnFragmentCallBackListener {
 
+    public static final String KEY_PROJECT_ID = "projectId";
+    public static final String KEY_PROJECT_NAME = "projectName";
+    public static final String KEY_PROJECT_MYSTAR = "myStar";
+    public static final String KEY_PROJECT_PROCESSES = "key_project_processes";
+
     @BindView(R.id.titleBack)
     ImageView titleBack;
     @BindView(R.id.titleContent)
@@ -77,8 +82,8 @@ public class ProjectDetailActivity extends BaseActivity implements OnFragmentCal
         if (context == null) return;
         if (TextUtils.isEmpty(projectId)) return;
         Intent intent = new Intent(context, ProjectDetailActivity.class);
-        intent.putExtra("projectId", projectId);
-        intent.putExtra("projectName", proectName);
+        intent.putExtra(KEY_PROJECT_ID, projectId);
+        intent.putExtra(KEY_PROJECT_NAME, proectName);
         context.startActivity(intent);
     }
 
@@ -94,9 +99,9 @@ public class ProjectDetailActivity extends BaseActivity implements OnFragmentCal
     protected void initView() {
         super.initView();
         MobclickAgent.onEvent(this, UMMobClickAgent.look_project_click_id);
-        projectId = getIntent().getStringExtra("projectId");
-        projectName = getIntent().getStringExtra("projectName");
-        myStar = getIntent().getIntExtra("myStar", -1);
+        projectId = getIntent().getStringExtra(KEY_PROJECT_ID);
+        projectName = getIntent().getStringExtra(KEY_PROJECT_NAME);
+        myStar = getIntent().getIntExtra(KEY_PROJECT_MYSTAR, -1);
         if (!TextUtils.isEmpty(projectName)) {
             setTitle(projectName);
         }
@@ -123,7 +128,6 @@ public class ProjectDetailActivity extends BaseActivity implements OnFragmentCal
         detailTablayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
-                log("tab.getPosition() --------  " + tab.getPosition());
                 isShowTitleAction(tab.getPosition());
             }
 
@@ -354,7 +358,7 @@ public class ProjectDetailActivity extends BaseActivity implements OnFragmentCal
     @Override
     public void onFragmentCallBack(Fragment fragment, int type, Bundle params) {
         if (fragment instanceof ProjectDetailFragment) {
-            myStar = params.getInt("myStar");
+            myStar = params.getInt(KEY_PROJECT_MYSTAR);
             if (baseFragmentAdapter.getItem(detailViewpager.getCurrentItem()) == fragment) {
                 if (myStar != 1) {
                     titleAction2.setImageResource(R.mipmap.header_icon_star_line);

@@ -19,6 +19,7 @@ import com.icourt.alpha.adapter.baseadapter.adapterObserver.RefreshViewEmptyObse
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.entity.bean.FileBoxBean;
 import com.icourt.alpha.entity.bean.RepoIdResEntity;
+import com.icourt.alpha.http.callback.SFileCallBack;
 import com.icourt.alpha.http.callback.SimpleCallBack2;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.utils.ItemDecorationUtils;
@@ -31,7 +32,6 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
 import retrofit2.Call;
-import retrofit2.Callback;
 import retrofit2.Response;
 
 /**
@@ -141,9 +141,9 @@ public class FileDirListFragment extends BaseFragment implements BaseRecyclerAda
     @Override
     protected void getData(final boolean isRefresh) {
         super.getData(isRefresh);
-        getSFileApi().projectQueryFileBoxByDir(seaFileRepoId, rootName).enqueue(new Callback<List<FileBoxBean>>() {
+        getSFileApi().projectQueryFileBoxByDir(seaFileRepoId, rootName).enqueue(new SFileCallBack<List<FileBoxBean>>() {
             @Override
-            public void onResponse(Call<List<FileBoxBean>> call, Response<List<FileBoxBean>> response) {
+            public void onSuccess(Call<List<FileBoxBean>> call, Response<List<FileBoxBean>> response) {
                 stopRefresh();
                 if (response.body() != null) {
                     projectFileBoxAdapter.bindData(isRefresh, getFolders(response.body()));
@@ -159,6 +159,7 @@ public class FileDirListFragment extends BaseFragment implements BaseRecyclerAda
 
             @Override
             public void onFailure(Call<List<FileBoxBean>> call, Throwable t) {
+                super.onFailure(call, t);
                 stopRefresh();
                 enableEmptyView(null);
                 showTopSnackBar("获取文档列表失败");
