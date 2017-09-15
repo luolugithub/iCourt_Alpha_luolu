@@ -1,6 +1,7 @@
 package com.icourt.alpha.fragment;
 
 import android.Manifest;
+import android.content.Context;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -18,6 +19,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -27,6 +29,7 @@ import android.widget.TextView;
 import com.google.gson.JsonParseException;
 import com.google.gson.reflect.TypeToken;
 import com.icourt.alpha.R;
+import com.icourt.alpha.activity.MainActivity;
 import com.icourt.alpha.activity.SearchTabActivity;
 import com.icourt.alpha.adapter.SearchEngineAdapter;
 import com.icourt.alpha.adapter.SearchHistoryAdapter;
@@ -46,6 +49,7 @@ import com.icourt.alpha.utils.JsonUtils;
 import com.icourt.alpha.utils.SpUtils;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.utils.UMMobClickAgent;
+import com.icourt.alpha.view.SoftKeyboardSizeWatchLayout;
 import com.icourt.alpha.view.recyclerviewDivider.DividerItemDecoration;
 import com.umeng.analytics.MobclickAgent;
 
@@ -73,6 +77,7 @@ public class TabSearchFragment extends BaseFragment implements OnFragmentCallBac
     Unbinder unbinder;
     SearchEngineAdapter searchEngineAdapter;
     SearchHistoryAdapter searchHistoryAdapter;
+
     @BindView(R.id.search_edit)
     EditText searchEdit;
     @BindView(R.id.search_input_clear_btn)
@@ -310,12 +315,29 @@ public class TabSearchFragment extends BaseFragment implements OnFragmentCallBac
     }
 
 
-    @OnClick({R.id.search_input_clear_btn,
+    @OnClick({R.id.search_edit,
+            R.id.search_input_clear_btn,
             R.id.search_history_clear_btn,
             R.id.search_audio_btn})
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
+            case R.id.search_edit:
+                if (getActivity() instanceof MainActivity) {
+                    MainActivity activity = (MainActivity) getActivity();
+                    activity.dismissOverTimingRemindDialogFragment(true);
+                    searchEdit.setFocusable(true);
+                    searchEdit.setFocusableInTouchMode(true);
+                    searchEdit.requestFocus();
+                    searchEdit.requestFocusFromTouch();
+                    searchEdit.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            SystemUtils.showSoftKeyBoard(getActivity(), searchEdit);
+                        }
+                    });
+                }
+                break;
             case R.id.search_input_clear_btn:
                 searchEdit.setText("");
                 break;
