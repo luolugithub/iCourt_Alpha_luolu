@@ -7,8 +7,8 @@
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
         android:gravity="center_vertical"
+        android:orientation="horizontal"
         android:padding="@dimen/dp15">
 
         <ImageView
@@ -23,12 +23,12 @@
             android:layout_height="wrap_content"
             android:layout_marginLeft="12dp"
             android:layout_weight="1"
-            android:autoLink="web"
-            android:textColorLink="#ed6c00"
+            android:autoLink="none"
             android:background="@null"
-            android:text="1111"
             android:imeOptions="actionNone"
+            android:text="1111"
             android:textColor="@color/alpha_font_color_black"
+            android:textColorLink="#ed6c00"
             android:textSize="15sp" />
 
         <ImageView
