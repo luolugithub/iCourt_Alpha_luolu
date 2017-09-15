@@ -19,18 +19,25 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.andview.refreshview.XRefreshView;
+import com.icourt.alpha.BuildConfig;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.SFileSearchAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
+import com.icourt.alpha.adapter.baseadapter.adapterObserver.DataChangeAdapterObserver;
 import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.entity.bean.SFileSearchEntity;
 import com.icourt.alpha.entity.bean.SFileSearchPage;
 import com.icourt.alpha.fragment.dialogfragment.FileDetailDialogFragment;
 import com.icourt.alpha.http.callback.SFileCallBack;
+import com.icourt.alpha.utils.IMUtils;
+import com.icourt.alpha.utils.SFileTokenUtils;
 import com.icourt.alpha.utils.SystemUtils;
+import com.icourt.alpha.utils.UrlUtils;
 import com.icourt.alpha.view.ClearEditText;
 import com.icourt.alpha.view.SoftKeyboardSizeWatchLayout;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
+
+import java.util.ArrayList;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -41,7 +48,7 @@ import retrofit2.Response;
 import static com.icourt.alpha.constants.SFileConfig.PERMISSION_R;
 
 /**
- * Description
+ * Description  资料库文件搜索页面
  * Company Beijing icourt
  * author  youxuan  E-mail:xuanyouwu@163.com
  * date createTime：2017/8/20
@@ -50,9 +57,9 @@ import static com.icourt.alpha.constants.SFileConfig.PERMISSION_R;
 public class SFileSearchActivity extends BaseActivity
         implements BaseRecyclerAdapter.OnItemClickListener, BaseRecyclerAdapter.OnItemChildClickListener {
 
+    private static final String transitionName = "searchLayout1";
     SFileSearchAdapter sFileSearchAdapter;
     int pageIndex = 1;
-    private static final String transitionName = "searchLayout1";
     @BindView(R.id.refreshLayout)
     RefreshLayout refreshLayout;
     @BindView(R.id.et_search_name)
@@ -96,9 +103,17 @@ public class SFileSearchActivity extends BaseActivity
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             etSearchName.setTransitionName(transitionName);
         }
-        etSearchName.setHint("在所有资料库内搜索");
+        etSearchName.setHint(R.string.sfile_search_range);
+        contentEmptyText.setText(R.string.sfile_searched_no_results);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setAdapter(sFileSearchAdapter = new SFileSearchAdapter());
+        sFileSearchAdapter.registerAdapterDataObserver(new DataChangeAdapterObserver() {
+            @Override
+            protected void updateUI() {
+                refreshLayout.setPullRefreshEnable(sFileSearchAdapter.getItemCount() > 0);
+                contentEmptyText.setVisibility(sFileSearchAdapter.getItemCount() <= 0 ? View.VISIBLE : View.GONE);
+            }
+        });
         sFileSearchAdapter.setOnItemClickListener(this);
         sFileSearchAdapter.setOnItemChildClickListener(this);
         recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
@@ -184,21 +199,19 @@ public class SFileSearchActivity extends BaseActivity
             stopRefresh();
             return;
         }
-        getSFileApi().fileSearch(
-                pageIndex,
-                etSearchName.getText().toString(),
-                "custom",
-                "all")
-                .enqueue(new SFileCallBack<SFileSearchPage>() {
+        callEnqueue(
+                getSFileApi().fileSearch(
+                        pageIndex,
+                        etSearchName.getText().toString(),
+                        "custom",
+                        "all"),
+                new SFileCallBack<SFileSearchPage>() {
                     @Override
                     public void onSuccess(Call<SFileSearchPage> call, Response<SFileSearchPage> response) {
                         sFileSearchAdapter.bindData(isRefresh, response.body().results);
                         pageIndex += 1;
                         stopRefresh();
                         enableLoadMore(response.body().has_more);
-                        if (contentEmptyText != null) {
-                            contentEmptyText.setVisibility(isRefresh && sFileSearchAdapter.getItemCount() <= 0 ? View.VISIBLE : View.GONE);
-                        }
                     }
 
                     @Override
@@ -244,8 +257,42 @@ public class SFileSearchActivity extends BaseActivity
     public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
         SFileSearchEntity item = sFileSearchAdapter.getItem(position);
         if (item != null) {
-            lookDetail(item);
+            if (IMUtils.isPIC(item.name)) {
+                ArrayList<String> bigImageUrls = new ArrayList<>();
+                ArrayList<String> smallImageUrls = new ArrayList<>();
+                for (int i = 0; i < sFileSearchAdapter.getItemCount(); i++) {
+                    SFileSearchEntity folderDocumentEntity = sFileSearchAdapter.getData(position);
+                    if (folderDocumentEntity == null) continue;
+                    if (IMUtils.isPIC(folderDocumentEntity.name)) {
+                        bigImageUrls.add(getSFileImageUrl(folderDocumentEntity.repo_id, folderDocumentEntity.fullpath, Integer.MAX_VALUE));
+                        smallImageUrls.add(getSFileImageUrl(folderDocumentEntity.repo_id, folderDocumentEntity.fullpath, 800));
+                    }
+                }
+                int indexOf = bigImageUrls.indexOf(getSFileImageUrl(item.repo_id, item.name, Integer.MAX_VALUE));
+                ImageViewerActivity.launch(
+                        getContext(),
+                        smallImageUrls,
+                        bigImageUrls,
+                        indexOf);
+            } else {
+                FileDownloadActivity.launch(
+                        getContext(),
+                        item.repo_id,
+                        item.name,
+                        item.size,
+                        UrlUtils.encodeUrl(item.fullpath),
+                        null);
+            }
         }
+    }
+
+    protected String getSFileImageUrl(String repoName, String fullPath, int size) {
+        return String.format("%silaw/api/v2/documents/thumbnailImage?repoId=%s&seafileToken=%s&size=%s&p=%s",
+                BuildConfig.API_URL,
+                repoName,
+                SFileTokenUtils.getSFileToken(),
+                size,
+                UrlUtils.encodeUrl(fullPath));
     }
 
     private String getDirPath(String fullPath) {
@@ -266,7 +313,7 @@ public class SFileSearchActivity extends BaseActivity
     private void lookDetail(SFileSearchEntity item) {
         if (item == null) return;
         if (item.is_dir) {
-            showTopSnackBar("搜索结果中无法预览文件夹");
+            showTopSnackBar(R.string.sfile_searched_folder_un_click);
         } else {
             FileDetailDialogFragment.show(
                     item.repo_id,
