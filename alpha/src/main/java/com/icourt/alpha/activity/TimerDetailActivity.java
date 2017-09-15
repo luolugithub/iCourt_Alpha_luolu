@@ -255,11 +255,15 @@ public class TimerDetailActivity extends BaseTimerActivity
             R.id.use_time_date,
             R.id.start_time_min_tv,
             R.id.stop_time_min_tv,
-            R.id.titleAction})
+            R.id.titleAction,
+            R.id.titleBack})
     @Override
     public void onClick(View view) {
         super.onClick(view);
         switch (view.getId()) {
+            case R.id.titleBack:
+                saveTiming();
+                break;
             case R.id.titleAction:
                 new BottomActionDialog(getContext(),
                         null,
@@ -428,12 +432,6 @@ public class TimerDetailActivity extends BaseTimerActivity
         return super.dispatchTouchEvent(ev);
     }
 
-    @Override
-    protected void onPause() {
-        saveTiming();
-        super.onPause();
-    }
-
     private void saveTiming() {
         //实时保存
         if (itemEntity != null) {
@@ -551,5 +549,11 @@ public class TimerDetailActivity extends BaseTimerActivity
 
         }
         saveTiming();
+    }
+
+    @Override
+    public void onBackPressed() {
+        saveTiming();
+        super.onBackPressed();
     }
 }
