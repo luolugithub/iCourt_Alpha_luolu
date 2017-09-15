@@ -257,7 +257,7 @@ public class TaskDetailActivity extends BaseActivity
                 }
                 break;
             case R.id.titleAction2://更多
-                showBottomMeau();
+                showBottomMenu();
                 break;
             case R.id.task_name:
                 if (taskItemEntity != null)
@@ -289,7 +289,18 @@ public class TaskDetailActivity extends BaseActivity
             case R.id.task_start_iamge://开始计时
                 if (isStrat) {
                     MobclickAgent.onEvent(getContext(), UMMobClickAgent.stop_timer_click_id);
-                    TimerManager.getInstance().stopTimer();
+                    TimerManager.getInstance().stopTimer(new SimpleCallBack<TimeEntity.ItemEntity>() {
+                        @Override
+                        public void onSuccess(Call<ResEntity<TimeEntity.ItemEntity>> call, Response<ResEntity<TimeEntity.ItemEntity>> response) {
+                            TimeEntity.ItemEntity timer = TimerManager.getInstance().getTimer();
+                            TimerDetailActivity.launch(getContext(), timer);
+                        }
+
+                        @Override
+                        public void onFailure(Call<ResEntity<TimeEntity.ItemEntity>> call, Throwable t) {
+                            super.onFailure(call, t);
+                        }
+                    });
                 } else {
                     showLoadingDialog(null);
                     final TimeEntity.ItemEntity itemEntity = getTimer(taskItemEntity);
@@ -485,7 +496,7 @@ public class TaskDetailActivity extends BaseActivity
     /**
      * 显示底部菜单
      */
-    private void showBottomMeau() {
+    private void showBottomMenu() {
         if (taskItemEntity == null) return;
         List<String> titles = null;
         if (taskItemEntity.valid) {
@@ -940,7 +951,7 @@ public class TaskDetailActivity extends BaseActivity
                 myStar = TaskEntity.ATTENTIONED;
                 taskItemEntity.attentioned = TaskEntity.ATTENTIONED;
                 titleAction.setImageResource(R.mipmap.header_icon_star_solid);
-                EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_ADD_ITEM_ACITON, taskItemEntity));
+                EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION, taskItemEntity));
             }
 
             @Override
@@ -984,7 +995,7 @@ public class TaskDetailActivity extends BaseActivity
             @Override
             public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
                 dismissLoadingDialog();
-                EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_DELETE_ACTION, taskItemEntity));
+                EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION, taskItemEntity));
                 TaskDetailActivity.this.finish();
             }
 

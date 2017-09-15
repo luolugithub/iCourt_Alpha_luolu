@@ -71,7 +71,7 @@ public class TimerDetailActivity extends BaseTimerActivity
 
     private static final String KEY_TIME = "key_time";
 
-    private static final long HOUR_TIME_24 = 24 * 60 * 60;
+    private static final long HOUR_TIME_24 = TimeUnit.DAYS.toSeconds(1);
 
 
     TimeEntity.ItemEntity itemEntity;
@@ -296,7 +296,7 @@ public class TimerDetailActivity extends BaseTimerActivity
                     if (TextUtils.isEmpty(itemEntity.matterPkId)) {
                         showProjectSelectDialogFragment(null);
                     } else {
-                        showBottomMeau();
+                        showBottomMenu();
                     }
                 }
                 break;
@@ -318,7 +318,7 @@ public class TimerDetailActivity extends BaseTimerActivity
     /**
      * 显示底部菜单
      */
-    private void showBottomMeau() {
+    private void showBottomMenu() {
         new BottomActionDialog(getContext(),
                 null,
                 Arrays.asList("选择项目", "查看项目"),

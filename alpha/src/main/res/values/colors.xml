@@ -354,6 +354,9 @@
     <color name="chat_bottom_photo_meau_bg">#303030</color>
     <color name="chat_unread_bg">#e74c3c</color>
     <color name="chat_list_tag_top_bg">#E0E0E0</color>
+    <color name="task_divider_text_color">#909090</color>
+    <color name="task_divider_line_color">#e7e7e7</color>
+    <color name="task_divider_count_color">#b9b9b9</color>
 
 
 </resources>

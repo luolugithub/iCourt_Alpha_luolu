@@ -22,10 +22,12 @@ import com.icourt.alpha.entity.bean.RepoMatterEntity;
 import com.icourt.alpha.entity.bean.SFileLinkInfoEntity;
 import com.icourt.alpha.entity.bean.SFileShareUserInfo;
 import com.icourt.alpha.entity.bean.SFileTokenEntity;
+import com.icourt.alpha.entity.bean.ProjectProcessesEntity;
 import com.icourt.alpha.entity.bean.SearchEngineEntity;
 import com.icourt.alpha.entity.bean.SelectGroupBean;
 import com.icourt.alpha.entity.bean.TaskAttachmentEntity;
 import com.icourt.alpha.entity.bean.TaskCheckItemEntity;
+import com.icourt.alpha.entity.bean.TaskCountEntity;
 import com.icourt.alpha.entity.bean.TaskEntity;
 import com.icourt.alpha.entity.bean.TaskGroupEntity;
 import com.icourt.alpha.entity.bean.TaskMemberWrapEntity;
@@ -221,7 +223,7 @@ public interface ApiAlphaService {
      * @return
      */
     @Deprecated
-    @GET("api/v2/taskflow/queryTaskByDue")
+    @GET("ilaw/api/v2/taskflow/queryTaskByDue")
     Call<ResEntity<PageEntity<TaskEntity>>> getAllTask();
 
 
@@ -233,7 +235,7 @@ public interface ApiAlphaService {
      * @return
      */
     @Deprecated
-    @GET("api/v2/taskflow/queryTaskByDue")
+    @GET("ilaw/api/v2/taskflow/queryTaskByDue")
     Call<ResEntity<PageEntity<TaskEntity.TaskItemEntity>>> getAllTask(@Query("dueStart") String dueStart,
                                                                       @Query("dueEnd") String dueEnd,
                                                                       @Query("assignTos") List<String> assignTos,
@@ -1420,7 +1422,7 @@ public interface ApiAlphaService {
      * @return
      */
     @GET("ilaw/api/v2/taskflow/state/count")
-    Call<ResEntity<JsonElement>> taskStateCountQuery();
+    Call<ResEntity<TaskCountEntity>> taskStateCountQuery();
 
     /**
      * 获取各个状态、类型的项目数量
@@ -1429,7 +1431,7 @@ public interface ApiAlphaService {
      * @param matterTypes 项目类型: [0:争议解决 1:非诉专项 2:常年顾问 3:内部事务], 多个以英文逗号分隔
      * @return
      */
-    @GET("api/v1/matters/state/count")
+    @GET("ilaw/api/v1/matters/state/count")
     Call<ResEntity<JsonElement>> matterStateCountQuery(@Query("matterTypes") String matterTypes);
 
     /**
@@ -1438,7 +1440,7 @@ public interface ApiAlphaService {
      *
      * @return
      */
-    @GET("api/v2/taskflow/newtasks")
+    @GET("ilaw/api/v2/taskflow/newtasks")
     Call<ResEntity<List<String>>> newTasksCountQuery();
 
     /**
@@ -1448,7 +1450,7 @@ public interface ApiAlphaService {
      * @param taskId
      * @return
      */
-    @PUT("api/v2/taskflow/revivalTaskFlowById")
+    @PUT("ilaw/api/v2/taskflow/revivalTaskFlowById")
     Call<ResEntity<JsonElement>> taskRecoverById(@Query("id") String taskId);
 
     /**
@@ -1458,7 +1460,7 @@ public interface ApiAlphaService {
      * @param ids
      * @return
      */
-    @DELETE("api/v2/taskflow/clearTaskFlowByIds")
+    @DELETE("ilaw/api/v2/taskflow/clearTaskFlowByIds")
     Call<ResEntity<JsonElement>> clearDeletedTask(@Query("ids") List<String> ids);
 
     /**
@@ -1468,7 +1470,7 @@ public interface ApiAlphaService {
      * @param taskId
      * @return
      */
-    @GET("api/v2/timing/timing/findByTaskId")
+    @GET("ilaw/api/v2/timing/timing/findByTaskId")
     Call<ResEntity<TimeEntity>> taskTimesByIdQuery(@Query("taskId") String taskId);
 
     /**
@@ -1477,8 +1479,25 @@ public interface ApiAlphaService {
      * @param requestBody
      * @return
      */
-    @POST("ilaw//api/v2/task/attachment/addFromLibrary")
+    @POST("ilaw/ilaw//api/v2/task/attachment/addFromLibrary")
     Call<ResEntity<String>> taskAddAttachmentFromRepo(@Body RequestBody requestBody);
+
+    /**
+     * 设置 持续计时过久提醒 关闭
+     * @return
+     */
+    @PUT("ilaw/api/v2/timing/timing/{id}/bubble")
+    Call<ResEntity<String>> timerOverTimingRemindClose(@Path("id") String id, @Query("operType") int operType, @Query("clientId") String clientId);
+
+    /**
+     * 获取项目下程序信息
+     * 文档地址：https://dev.alphalawyer.cn/ilaw/swagger/index.html#!/matters-api/getProcessListUsingGET_1
+     *
+     * @param matterId
+     * @return
+     */
+    @GET("ilaw/api/v1/matters/{matterId}/processes")
+    Call<ResEntity<List<ProjectProcessesEntity>>> projectProcessesQuery(@Path("matterId") String matterId);
 }
 
 

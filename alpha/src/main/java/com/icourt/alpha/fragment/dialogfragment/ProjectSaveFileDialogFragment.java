@@ -348,16 +348,15 @@ public class ProjectSaveFileDialogFragment extends BaseDialogFragment
                     uploadFile(uploadUrl, filePath, rootName);
                 } else {
                     dismissLoadingDialog();
-                    showTopSnackBar("上传失败");
+                    showToast("上传失败");
                 }
             }
 
             @Override
             public void onFailure(Call<JsonElement> call, Throwable throwable) {
                 dismissLoadingDialog();
-                showTopSnackBar("上传失败");
+                showToast("上传失败");
             }
-
         });
     }
 
@@ -380,7 +379,7 @@ public class ProjectSaveFileDialogFragment extends BaseDialogFragment
             @Override
             public void onResponse(Call<JsonElement> call, Response<JsonElement> response) {
                 dismissLoadingDialog();
-                showTopSnackBar("上传成功");
+                showToast("上传成功");
                 dismiss();
             }
 

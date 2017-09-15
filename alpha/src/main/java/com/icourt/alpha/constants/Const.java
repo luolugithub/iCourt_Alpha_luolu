@@ -176,4 +176,62 @@ public class Const {
     public static final String SELECT_ENTERPRISE_DATE_TAG_ACTION = "select_enterprise_date_tag_action";//选择机构重要日期action
     public static final String SELECT_ENTERPRISE_PARPER_TAG_ACTION = "select_enterprise_parper_tag_action";//选择机构证件action
     public static final String SELECT_ENTERPRISE_LIAISONS_TAG_ACTION = "select_enterprise_liaisons_tag_action";//选择机构联络人action
+
+    //项目概览对应type
+    public static final int PROJECT_NAME_TYPE = 1;//项目名称
+    public static final int PROJECT_TYPE_TYPE = 2;//项目类型
+    public static final int PROJECT_NUMBER_TYPE = 3;//项目编号
+    public static final int PROJECT_CLIENT_TYPE = 4;//客户
+    public static final int PROJECT_DEPARTMENT_TYPE = 5;//负责部门
+    public static final int PROJECT_ANYUAN_LAWYER_TYPE = 6;//案源律师
+    public static final int PROJECT_TIME_TYPE = 7;//项目时间
+    public static final int PROJECT_MEMBER_TYPE = 8;//项目成员
+    public static final int PROJECT_REMARK_TYPE = 9;//项目备注
+
+    public static final int PROJECT_CASEPROCESS_TYPE = 10;//程序
+    public static final int PROJECT_CASE_TYPE = 11;//案由
+    public static final int PROJECT_CASENUMBER_TYPE = 12;//案号
+    public static final int PROJECT_COMPETENT_TYPE = 13;//法院
+    public static final int PROJECT_JUDGE_TYPE = 14;//法官
+    public static final int PROJECT_CLERK_TYPE = 15;//书记员
+    public static final int PROJECT_OTHER_PERSON_TYPE = 16;//其他当事人
+    public static final int PROJECT_PERSON_TYPE = 17;//当事人
+    public static final int PROJECT_ARBITRATORS_TYPE = 18;//仲裁员
+    public static final int PROJECT_SECRETARIES_TYPE = 19;//仲裁秘书
+    public static final int PROJECT_PRICE_TYPE = 20;//标的
+    public static final int PROJECT_CASENO_TYPE = 21;//案由号码
+    public static final int PROJECT_ACCEPTANCE_TYPE = 22;//acceptance  type
+
+    //项目类型 0争议解决，1非诉专项,2常年顾问，3所内事务
+    public static final int PROJECT_DISPUTE_TYPE = 0;//争议解决
+    public static final int PROJECT_NON_LAWSUIT_TYPE = 1;//非诉专项
+    public static final int PROJECT_COUNSELOR_TYPE = 2;//常年顾问
+    public static final int PROJECT_TRANSACTION_TYPE = 3;//所内事务
+
+    //程序类型
+    public static final int LEGAL_CIVIL_TYPE = 1;//程序类型：民事
+    public static final int LEGAL_PENAL_TYPE = 2;//程序类型：刑事
+    public static final int LEGAL_ADMINISTRATIVE_TYPE = 3;//程序类型：行政
+
+    @IntDef({PROJECT_NAME_TYPE,
+            PROJECT_TYPE_TYPE,
+            PROJECT_NUMBER_TYPE,
+            PROJECT_REMARK_TYPE,
+            PROJECT_CASE_TYPE,
+            PROJECT_CASENUMBER_TYPE})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface PROJECT_INFO_TEXT_TYPE { //查看text内容（名称、类型、编号、案由...）
+
+    }
+
+    @IntDef({PROJECT_NAME_TYPE,
+            PROJECT_TYPE_TYPE,
+            PROJECT_NUMBER_TYPE,
+            PROJECT_REMARK_TYPE,
+            PROJECT_CASE_TYPE,
+            PROJECT_CASENUMBER_TYPE})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface PROJECT_INFO_LIST_TYPE {//查看具体事物内容（成员、法官、书记员...）
+
+    }
 }

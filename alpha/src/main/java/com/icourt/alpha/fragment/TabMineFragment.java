@@ -435,6 +435,7 @@ public class TabMineFragment extends BaseFragment {
                         for (GroupBean groupBean : myGroups) {
                             stringBuffer.append(groupBean.getName() + ",");
                         }
+                        if (officeNameTv == null) return;
                         officeNameTv.setText(stringBuffer.toString().substring(0, stringBuffer.toString().length() - 1));
                     }
                 }

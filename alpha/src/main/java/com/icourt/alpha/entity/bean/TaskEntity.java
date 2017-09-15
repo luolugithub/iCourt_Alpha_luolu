@@ -2,6 +2,7 @@ package com.icourt.alpha.entity.bean;
 
 import android.text.TextUtils;
 
+import com.chad.library.adapter.base.entity.MultiItemEntity;
 import com.google.gson.annotations.SerializedName;
 import com.icourt.alpha.db.convertor.IConvertModel;
 
@@ -25,7 +26,11 @@ public class TaskEntity implements Serializable {
     public int groupTaskCount;//分组内任务个数
     public List<TaskItemEntity> items;
 
-    public static class TaskItemEntity implements Serializable {
+    public static class TaskItemEntity implements Serializable, MultiItemEntity {
+        public String groupName;//任务所在分组名称
+        public String groupId;//分组id
+        public int groupTaskCount;//分组有多少个任务
+
         public String id;
         public String name;//任务名称
         public String parentId;//任务组id
@@ -54,6 +59,16 @@ public class TaskEntity implements Serializable {
 
         public List<AttendeeUserEntity> attendeeUsers;//任务相关人
         public List<String> right;//权限
+
+        /**
+         * 返回数据标记是任务还是任务组，给Adapter进行使用
+         *
+         * @return
+         */
+        @Override
+        public int getItemType() {
+            return type;
+        }
 
         public static class MatterEntity
                 implements Serializable, IConvertModel<ProjectEntity> {

@@ -654,7 +654,7 @@ public class ImagePagerActivity extends BaseUmengActivity implements BasePagerAd
                 return url.substring(indexOf, url.length());
             }
         }
-        return SystemClock.elapsedRealtime() + ".png";
+        return String.format("%s.png", SystemClock.elapsedRealtime());
     }
 
     /**
@@ -697,7 +697,7 @@ public class ImagePagerActivity extends BaseUmengActivity implements BasePagerAd
                     public void subscribe(ObservableEmitter<String> e) throws Exception {
                         if (e.isDisposed()) return;
                         boolean b = FileUtils.saveBitmap(getContext(), name, FileUtils.drawableToBitmap(drawable));
-                        String changeSendfilePath = FileUtils.dirFilePath + File.separator + name + ".png";
+                        String changeSendfilePath = String.format("%s%s%s.png", FileUtils.dirFilePath, File.separator, name);
                         if (b) {
                             e.onNext(changeSendfilePath);
                         } else {
@@ -735,8 +735,10 @@ public class ImagePagerActivity extends BaseUmengActivity implements BasePagerAd
         if (fragment != null) {
             mFragTransaction.remove(fragment);
         }
-        ProjectSaveFileDialogFragment.newInstance(filePath, ProjectSaveFileDialogFragment.ALPHA_TYPE)
-                .show(mFragTransaction, tag);
+//        ProjectSaveFileDialogFragment.newInstance(filePath, ProjectSaveFileDialogFragment.ALPHA_TYPE)
+//                .show(mFragTransaction, tag);
+        mFragTransaction.add(ProjectSaveFileDialogFragment.newInstance(filePath,ProjectSaveFileDialogFragment.OTHER_TYPE), tag);
+        mFragTransaction.commitAllowingStateLoss();
     }
 
     /**

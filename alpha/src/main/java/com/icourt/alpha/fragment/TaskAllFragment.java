@@ -37,43 +37,29 @@ import butterknife.Unbinder;
  * version 1.0.0
  */
 public class TaskAllFragment extends BaseFragment implements OnTasksChangeListener {
-    public static final int TYPE_ALL_TASK = 1;
-    public static final int TYPE_ALL_TASK_CALENDAR = 2;
-    final ArrayList<TaskEntity.TaskItemEntity> taskItemEntityList = new ArrayList<>();
 
-    @Override
-    public void onTasksChanged(List<TaskEntity.TaskItemEntity> taskItemEntities) {
-        if (taskItemEntities != null) {
-            //数据发生改变 替换
-            if (taskItemEntities.hashCode() != taskItemEntityList.hashCode()) {
-                taskItemEntityList.clear();
-                taskItemEntityList.addAll(taskItemEntities);
+    public static final int TYPE_ALL_TASK = 1;//任务列表
+    public static final int TYPE_ALL_TASK_CALENDAR = 2;//带日历的任务列表
 
-                updateCalendarRefresh();
-            }
-
-        }
-    }
-
-    @Override
-    public void onTaskChanged(TaskEntity.TaskItemEntity taskItemEntity) {
-    }
+    private static final String CHILD_FRAGMENT = "childFragment";//用来传递子Fragment的tag。
 
     @IntDef({TYPE_ALL_TASK, TYPE_ALL_TASK_CALENDAR})
     @Retention(RetentionPolicy.SOURCE)
     public @interface ChildFragmentType {
     }
 
+    final ArrayList<TaskEntity.TaskItemEntity> taskItemEntityList = new ArrayList<>();//用来记录当前显示的Fragment的任务列表数据。
+    Fragment currFragment;//当前的Fragment
+    final SparseArray<Fragment> fragmentSparseArray = new SparseArray<>();//用来缓存Fragment的集合。
 
+    Unbinder unbinder;
     @BindView(R.id.main_fl_content)
     FrameLayout mainFlContent;
-    Unbinder unbinder;
-
 
     public static TaskAllFragment newInstance() {
         TaskAllFragment taskAllFragment = new TaskAllFragment();
         Bundle args = new Bundle();
-        args.putInt("childFragment", TYPE_ALL_TASK);
+        args.putInt(CHILD_FRAGMENT, TYPE_ALL_TASK);//默认初始化是任务列表
         taskAllFragment.setArguments(args);
         return taskAllFragment;
     }
@@ -87,11 +73,20 @@ public class TaskAllFragment extends BaseFragment implements OnTasksChangeListen
         return view;
     }
 
-    Fragment currFragment;
-    final SparseArray<Fragment> fragmentSparseArray = new SparseArray<>();
+    @Override
+    protected void initView() {
+        currFragment = addOrShowFragment(getFragment(TYPE_ALL_TASK, 0), currFragment, R.id.main_fl_content);
+    }
 
-    private Fragment getFragment(int type, int stateType) {
-        if (type == TYPE_ALL_TASK) {
+    /**
+     * 获取要显示的子Fragment
+     *
+     * @param type      获取的子Fragment的type
+     * @param stateType 子Fragment的状态
+     * @return
+     */
+    private Fragment getFragment(@ChildFragmentType int type, int stateType) {
+        if (type == TYPE_ALL_TASK) {//如果是任务列表的话，每次都刷新。
             return TaskListFragment.newInstance(0, stateType);
         }
         Fragment fragment = fragmentSparseArray.get(type);
@@ -109,16 +104,24 @@ public class TaskAllFragment extends BaseFragment implements OnTasksChangeListen
         return fragmentSparseArray.get(type);
     }
 
+    /**
+     * 将Fragment缓存
+     *
+     * @param type
+     * @param fragment
+     */
     private void putFragment(int type, Fragment fragment) {
         fragmentSparseArray.put(type, fragment);
     }
 
-    @Override
-    protected void initView() {
-        currFragment = addOrShowFragment(getFragment(TYPE_ALL_TASK, 0), currFragment, R.id.main_fl_content);
-    }
-
-
+    /**
+     * 添加/显示Fragment
+     *
+     * @param targetFragment  将要添加／显示的fragment
+     * @param currentFragment 正在显示的fragment
+     * @param containerViewId 替换的viewid
+     * @return
+     */
     @Override
     protected Fragment addOrShowFragment(@NonNull Fragment targetFragment, Fragment currentFragment, @IdRes int containerViewId) {
         return addOrShowFragmentAnim(targetFragment, currentFragment, containerViewId, true);
@@ -142,13 +145,20 @@ public class TaskAllFragment extends BaseFragment implements OnTasksChangeListen
         return targetFragment;
     }
 
+    /**
+     * 更新Fragment
+     *
+     * @param targetFrgament
+     * @param type
+     * @param bundle
+     */
     @Override
     public void notifyFragmentUpdate(Fragment targetFrgament, @ChildFragmentType int type, Bundle bundle) {
         super.notifyFragmentUpdate(targetFrgament, type, bundle);
-        getArguments().putInt("childFragment", type);
+        getArguments().putInt(CHILD_FRAGMENT, type);
         int stateType = 0;
         if (bundle != null) {
-            stateType = bundle.getInt("stateType");
+            stateType = bundle.getInt(TaskListFragment.STATE_TYPE);
         }
         currFragment = addOrShowFragmentAnim(
                 getFragment(type, stateType),
@@ -157,14 +167,30 @@ public class TaskAllFragment extends BaseFragment implements OnTasksChangeListen
                 type == TYPE_ALL_TASK_CALENDAR);
 
         switch (type) {
-            case TYPE_ALL_TASK_CALENDAR:
+            case TYPE_ALL_TASK_CALENDAR://说明是更新日历的任务列表
                 updateCalendarRefresh();
                 break;
-            case TYPE_ALL_TASK:
-//                BaseFragment fragment = (BaseFragment) getFragment(TYPE_ALL_TASK);
-//                if (fragment != null) fragment.notifyFragmentUpdate(fragment, 100, bundle);
+            case TYPE_ALL_TASK://说明是更新未完成／已完成／已取消的任务列表
                 break;
         }
+    }
+
+    @Override
+    public void onTasksChanged(List<TaskEntity.TaskItemEntity> taskItemEntities) {
+        if (taskItemEntities != null) {
+            //数据发生改变 替换
+            if (taskItemEntities.hashCode() != taskItemEntityList.hashCode()) {
+                taskItemEntityList.clear();
+                taskItemEntityList.addAll(taskItemEntities);
+
+                updateCalendarRefresh();
+            }
+
+        }
+    }
+
+    @Override
+    public void onTaskChanged(TaskEntity.TaskItemEntity taskItemEntity) {
     }
 
     /**
@@ -177,9 +203,14 @@ public class TaskAllFragment extends BaseFragment implements OnTasksChangeListen
         ((INotifyFragment) fragment).notifyFragmentUpdate(fragment, 0, args);
     }
 
+    /**
+     * 获取当前Fragment的type
+     *
+     * @return
+     */
     @ChildFragmentType
     public int getChildFragmentType() {
-        switch (getArguments().getInt("childFragment", TYPE_ALL_TASK)) {
+        switch (getArguments().getInt(CHILD_FRAGMENT, TYPE_ALL_TASK)) {
             case TYPE_ALL_TASK:
                 return TYPE_ALL_TASK;
             case TYPE_ALL_TASK_CALENDAR:
