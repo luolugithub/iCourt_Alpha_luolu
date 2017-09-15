@@ -343,8 +343,6 @@ public class TimerManager {
                             } else {
                                 TimerManager.getInstance().resumeTimer(response.body().result);
                             }
-                            int noRemind = response.body().result.noRemind;//计时超过2小时的提醒，是否不再提醒
-                            setOverTimingRemind(noRemind == 0);
                         }
                     }
 
