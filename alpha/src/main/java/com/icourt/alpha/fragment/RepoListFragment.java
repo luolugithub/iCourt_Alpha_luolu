@@ -385,7 +385,9 @@ public class RepoListFragment extends RepoBaseFragment
 
                             //2.更新本地
                             updateEncryptedRecord(item.repo_id, item.encrypted, item.decryptMillisecond);
-                            showTopSnackBar("解密成功");
+
+                            //3.进入到文件目录列表
+                            lookFolderList(item);
                         } else {
                             bugSync("资料库解密返回失败", response.body());
                             showTopSnackBar("解密返回失败:" + response.body());
@@ -406,7 +408,6 @@ public class RepoListFragment extends RepoBaseFragment
     }
 
 
-
     @Override
     public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
         RepoEntity item = repoAdapter.getItem(position);
@@ -415,6 +416,16 @@ public class RepoListFragment extends RepoBaseFragment
             showDecryptDialog(item);
             return;
         }
+        lookFolderList(item);
+    }
+
+    /**
+     * 查看文档目录子文件列表
+     *
+     * @param item
+     */
+    private void lookFolderList(RepoEntity item) {
+        if (item == null) return;
         String repo_permission = item.permission;
         if (repoType == REPO_MINE) {
             repo_permission = PERMISSION_RW;
@@ -429,6 +440,7 @@ public class RepoListFragment extends RepoBaseFragment
                 item.repo_name,
                 "/");
     }
+
 
     @Override
     public boolean onItemLongClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, final View view, final int position) {
