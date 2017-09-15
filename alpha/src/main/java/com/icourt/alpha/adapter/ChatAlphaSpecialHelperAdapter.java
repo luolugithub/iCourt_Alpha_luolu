@@ -19,6 +19,7 @@ import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.GlideUtils;
 import com.icourt.alpha.view.recyclerviewDivider.ITimeDividerInterface;
 
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -100,7 +101,12 @@ public class ChatAlphaSpecialHelperAdapter
                     msg_time_tv.setText("");
                     msg_time_tv.setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0);
                 } else {
-                    msg_time_tv.setText(DateUtils.getyyyy_YEAR_MM_MONTH_dd_DAY_HHmm(alphaSecialHeplerMsgEntity.dueTime));
+                    if (isAllDayTask(alphaSecialHeplerMsgEntity.dueTime)) {
+                        //全天任务 eg. yyyy年MM月dd日
+                        msg_time_tv.setText(DateUtils.getTimeDateFormatYear(alphaSecialHeplerMsgEntity.dueTime));
+                    } else {
+                        msg_time_tv.setText(DateUtils.getyyyy_YEAR_MM_MONTH_dd_DAY_HHmm(alphaSecialHeplerMsgEntity.dueTime));
+                    }
                     msg_time_tv.setCompoundDrawablesWithIntrinsicBounds(R.mipmap.ic_message_due_14, 0, 0, 0);
                 }
             }
@@ -142,6 +148,26 @@ public class ChatAlphaSpecialHelperAdapter
             msg_from_tv.setVisibility(View.GONE);
         }
         addTimeDividerArray(alphaSecialHeplerMsgEntity, position);
+    }
+
+    /**
+     * 是否是全天任务
+     *
+     * @param milliseconds
+     * @return
+     */
+    private boolean isAllDayTask(long milliseconds) {
+        try {
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTimeInMillis(milliseconds);
+            int hour = calendar.get(Calendar.HOUR_OF_DAY);
+            int minute = calendar.get(Calendar.MINUTE);
+            int second = calendar.get(Calendar.SECOND);
+            return (hour == 23 && minute == 59 && second == 59);
+        } catch (Throwable e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 
     /**

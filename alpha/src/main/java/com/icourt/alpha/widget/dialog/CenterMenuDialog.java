@@ -66,10 +66,11 @@ public class CenterMenuDialog extends Dialog implements View.OnClickListener {
         return onItemClickListener;
     }
 
-    public void setOnItemClickListener(BaseRecyclerAdapter.OnItemClickListener onItemClickListener) {
+    public CenterMenuDialog setOnItemClickListener(BaseRecyclerAdapter.OnItemClickListener onItemClickListener) {
         this.onItemClickListener = onItemClickListener;
-        if(menuAdapter!=null)
+        if (menuAdapter != null)
             menuAdapter.setOnItemClickListener(onItemClickListener);
+        return this;
     }
 
     private MenuAdapter menuAdapter;

@@ -12,14 +12,14 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.andview.refreshview.XRefreshView;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.ProjectFileBoxAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.adapterObserver.RefreshViewEmptyObserver;
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.entity.bean.FileBoxBean;
+import com.icourt.alpha.entity.bean.RepoIdResEntity;
+import com.icourt.alpha.http.callback.SimpleCallBack2;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.utils.ItemDecorationUtils;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
@@ -49,7 +49,7 @@ public class FileDirListFragment extends BaseFragment implements BaseRecyclerAda
     @BindView(R.id.refreshLayout)
     RefreshLayout refreshLayout;
     ProjectFileBoxAdapter projectFileBoxAdapter;
-    String projectId, authToken, seaFileRepoId, filePath, rootName;
+    String projectId, seaFileRepoId, filePath, rootName;
 
     OnFragmentCallBackListener onFragmentCallBackListener;
 
@@ -63,11 +63,10 @@ public class FileDirListFragment extends BaseFragment implements BaseRecyclerAda
         }
     }
 
-    public static FileDirListFragment newInstance(@NonNull String projectId, @NonNull String authToken, @NonNull String filePath, @NonNull String rootName, String seaFileRepoId) {
+    public static FileDirListFragment newInstance(@NonNull String projectId, @NonNull String filePath, @NonNull String rootName, String seaFileRepoId) {
         FileDirListFragment fileDirListFragment = new FileDirListFragment();
         Bundle args = new Bundle();
         args.putString("projectId", projectId);
-        args.putString("authToken", authToken);
         args.putString("filePath", filePath);
         args.putString("rootName", rootName);
         args.putString("seaFileRepoId", seaFileRepoId);
@@ -88,7 +87,6 @@ public class FileDirListFragment extends BaseFragment implements BaseRecyclerAda
         projectId = getArguments().getString("projectId");
         seaFileRepoId = getArguments().getString("seaFileRepoId");
         filePath = getArguments().getString("filePath");
-        authToken = getArguments().getString("authToken");
         rootName = getArguments().getString("rootName");
         refreshLayout.setNoticeEmpty(R.mipmap.icon_placeholder_project, "暂无文件夹");
         refreshLayout.setMoveForHorizontal(true);
@@ -143,7 +141,7 @@ public class FileDirListFragment extends BaseFragment implements BaseRecyclerAda
     @Override
     protected void getData(final boolean isRefresh) {
         super.getData(isRefresh);
-        getSFileApi().projectQueryFileBoxByDir("Token " + authToken, seaFileRepoId, rootName).enqueue(new Callback<List<FileBoxBean>>() {
+        getSFileApi().projectQueryFileBoxByDir(seaFileRepoId, rootName).enqueue(new Callback<List<FileBoxBean>>() {
             @Override
             public void onResponse(Call<List<FileBoxBean>> call, Response<List<FileBoxBean>> response) {
                 stopRefresh();
@@ -172,29 +170,22 @@ public class FileDirListFragment extends BaseFragment implements BaseRecyclerAda
      * 获取根目录id
      */
     private void getDocumentId() {
-        getApi().projectQueryDocumentId(projectId).enqueue(new Callback<JsonObject>() {
+        callEnqueue(getApi().projectQueryDocumentId(projectId), new SimpleCallBack2<RepoIdResEntity>() {
             @Override
-            public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
-                if (response.code() == 200) {
-                    if (response.body() != null) {
-                        if (response.body().has("seaFileRepoId")) {
-                            JsonElement element = response.body().get("seaFileRepoId");
-                            if (!TextUtils.isEmpty(element.toString()) && !TextUtils.equals("null", element.toString())) {
-                                seaFileRepoId = element.getAsString();
-                                getData(true);
-                            } else {
-                                onFailure(call, new retrofit2.HttpException(response));
-                            }
-                        }
-                    }
+            public void onSuccess(Call<RepoIdResEntity> call, Response<RepoIdResEntity> response) {
+                if (!TextUtils.isEmpty(response.body().seaFileRepoId)) {
+                    seaFileRepoId = response.body().seaFileRepoId;
+                    getData(true);
                 } else {
-                    onFailure(call, new retrofit2.HttpException(response));
+                    stopRefresh();
+                    bugSync("项目repo 获取null", "projectid:" + projectId);
+                    showTopSnackBar("seaFileRepoId 返回null");
                 }
             }
 
             @Override
-            public void onFailure(Call<JsonObject> call, Throwable throwable) {
-                showTopSnackBar("获取文档根目录id失败");
+            public void onFailure(Call<RepoIdResEntity> call, Throwable t) {
+                super.onFailure(call, t);
                 stopRefresh();
                 enableEmptyView(null);
             }
@@ -243,7 +234,6 @@ public class FileDirListFragment extends BaseFragment implements BaseRecyclerAda
                 bundle.putString("rootName", rootName + "/" + projectFileBoxAdapter.getItem(adapter.getRealPos(position)).name);
             }
             bundle.putString("dirName", projectFileBoxAdapter.getItem(adapter.getRealPos(position)).name);
-            bundle.putString("authToken", authToken);
             bundle.putString("seaFileRepoId", seaFileRepoId);
 
             onFragmentCallBackListener.onFragmentCallBack(FileDirListFragment.this, 1, bundle);

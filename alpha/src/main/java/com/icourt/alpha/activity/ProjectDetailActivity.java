@@ -21,7 +21,7 @@ import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.entity.event.ProjectActionEvent;
 import com.icourt.alpha.fragment.ProjectDetailFragment;
-import com.icourt.alpha.fragment.ProjectFileBoxFragment;
+import com.icourt.alpha.fragment.ProjectFileFragment;
 import com.icourt.alpha.fragment.ProjectTaskFragment;
 import com.icourt.alpha.fragment.ProjectTimeFragment;
 import com.icourt.alpha.http.callback.SimpleCallBack;
@@ -33,7 +33,6 @@ import com.umeng.analytics.MobclickAgent;
 
 import org.greenrobot.eventbus.EventBus;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -71,11 +70,8 @@ public class ProjectDetailActivity extends BaseActivity implements OnFragmentCal
     String projectId, projectName;
     int myStar;
     BaseFragmentAdapter baseFragmentAdapter;
-    ProjectFileBoxFragment projectFileBoxFragment;
+    ProjectFileFragment projectFileBoxFragment;
     boolean isCanlookAddTask = false, isCanAddTimer = false, isCanlookAddDocument = false;
-    private boolean nameIsUp = false, timeIsUp = false, sizeIsUp = false;
-    long sumTime;
-    List<String> list = new ArrayList<>();
 
     public static void launch(@NonNull Context context, @NonNull String projectId, @NonNull String proectName) {
         if (context == null) return;
@@ -122,7 +118,7 @@ public class ProjectDetailActivity extends BaseActivity implements OnFragmentCal
                         ProjectDetailFragment.newInstance(projectId),
                         ProjectTaskFragment.newInstance(projectId),
                         ProjectTimeFragment.newInstance(projectId),
-                        projectFileBoxFragment = ProjectFileBoxFragment.newInstance(projectId, isCanlookAddDocument)
+                        projectFileBoxFragment = ProjectFileFragment.newInstance(projectId)
                 ));
         detailTablayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
@@ -146,9 +142,6 @@ public class ProjectDetailActivity extends BaseActivity implements OnFragmentCal
         }
         detailViewpager.setCurrentItem(1);
         isShowTitleAction(1);
-        list.add("按文件名升序排序");
-        list.add("按文件大小升序排序");
-        list.add("按修改时间升序排序");
     }
 
     /**
@@ -259,7 +252,7 @@ public class ProjectDetailActivity extends BaseActivity implements OnFragmentCal
                 break;
             case 3:     //文档
                 if (projectFileBoxFragment != null) {
-                    projectFileBoxFragment.showBottomMeau();
+                    projectFileBoxFragment.onParentTitleActionClick(getActivity(), titleAction, 0, null);
                 }
                 break;
         }
@@ -283,7 +276,9 @@ public class ProjectDetailActivity extends BaseActivity implements OnFragmentCal
             case 2:     //计时
                 break;
             case 3:     //文档
-                showDocumentMeau();
+                if (projectFileBoxFragment != null) {
+                    projectFileBoxFragment.onParentTitleActionClick2(getActivity(), titleAction2, 0, null);
+                }
                 break;
         }
     }
@@ -294,7 +289,7 @@ public class ProjectDetailActivity extends BaseActivity implements OnFragmentCal
     private void showTaskMeau() {
         new BottomActionDialog(getContext(),
                 null,
-                Arrays.asList("已完成任务", "管理任务组"),
+                Arrays.asList("已完成的任务", "管理任务组"),
                 new BottomActionDialog.OnActionItemClickListener() {
                     @Override
                     public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
@@ -311,79 +306,6 @@ public class ProjectDetailActivity extends BaseActivity implements OnFragmentCal
                 }).show();
     }
 
-    /**
-     * 显示文档更多菜单
-     */
-    private void showDocumentMeau() {
-
-        new BottomActionDialog(getContext(),
-                null,
-                list,
-                new BottomActionDialog.OnActionItemClickListener() {
-                    @Override
-                    public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
-                        dialog.dismiss();
-                        switch (position) {
-                            case 0:
-                                if (projectFileBoxFragment != null) {
-                                    projectFileBoxFragment.sortFileByNameList(nameIsUp);
-                                    nameIsUp = !nameIsUp;
-                                    timeIsUp = false;
-                                    sizeIsUp = false;
-                                    list.clear();
-                                    if (nameIsUp) {
-                                        list.add("按文件名降序排序");
-                                        list.add("按文件大小升序排序");
-                                        list.add("按修改时间升序排序");
-                                    } else {
-                                        list.add("按文件名升序排序");
-                                        list.add("按文件大小升序排序");
-                                        list.add("按修改时间升序排序");
-                                    }
-                                }
-                                break;
-                            case 1:
-                                if (projectFileBoxFragment != null) {
-                                    projectFileBoxFragment.sortFileBySizeList(sizeIsUp);
-                                    sizeIsUp = !sizeIsUp;
-                                    nameIsUp = false;
-                                    timeIsUp = false;
-                                    list.clear();
-                                    if (sizeIsUp) {
-                                        list.add("按文件名升序排序");
-                                        list.add("按文件大小降序排序");
-                                        list.add("按修改时间升序排序");
-                                    } else {
-                                        list.add("按文件名升序排序");
-                                        list.add("按文件大小升序排序");
-                                        list.add("按修改时间升序排序");
-                                    }
-                                }
-                                break;
-
-                            case 2:
-                                if (projectFileBoxFragment != null) {
-                                    projectFileBoxFragment.sortFileByTimeList(timeIsUp);
-                                    timeIsUp = !timeIsUp;
-                                    nameIsUp = false;
-                                    sizeIsUp = false;
-                                    list.clear();
-                                    if (timeIsUp) {
-                                        list.add("按文件名升序排序");
-                                        list.add("按文件大小升序排序");
-                                        list.add("按修改时间降序排序");
-                                    } else {
-                                        list.add("按文件名升序排序");
-                                        list.add("按文件大小升序排序");
-                                        list.add("按修改时间升序排序");
-                                    }
-                                }
-                                break;
-
-                        }
-                    }
-                }).show();
-    }
 
     /**
      * 添加关注

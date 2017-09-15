@@ -299,6 +299,18 @@ public class JsonUtils {
         return value;
     }
 
+    public static boolean getBoolValue(JsonObject jsonObject, String key) {
+        try {
+            if (jsonObject.has(key)) {
+                return jsonObject.get(key).getAsBoolean();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+
 
 }
 

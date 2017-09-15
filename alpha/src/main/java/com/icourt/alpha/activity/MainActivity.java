@@ -45,6 +45,7 @@ import com.icourt.alpha.entity.event.ServerTimingEvent;
 import com.icourt.alpha.entity.event.TimingEvent;
 import com.icourt.alpha.entity.event.UnReadEvent;
 import com.icourt.alpha.fragment.TabCustomerFragment;
+import com.icourt.alpha.fragment.TabDocumentsFragment;
 import com.icourt.alpha.fragment.TabMineFragment;
 import com.icourt.alpha.fragment.TabNewsFragment;
 import com.icourt.alpha.fragment.TabProjectFragment;
@@ -61,6 +62,7 @@ import com.icourt.alpha.service.DaemonService;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.DensityUtil;
 import com.icourt.alpha.utils.LoginInfoUtils;
+import com.icourt.alpha.utils.SFileTokenUtils;
 import com.icourt.alpha.utils.SimpleViewGestureListener;
 import com.icourt.alpha.utils.SpUtils;
 import com.icourt.alpha.utils.SystemUtils;
@@ -95,6 +97,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import butterknife.OnLongClick;
+import me.leolin.shortcutbadger.ShortcutBadger;
 import q.rorbin.badgeview.Badge;
 import q.rorbin.badgeview.QBadgeView;
 import retrofit2.Call;
@@ -126,6 +129,7 @@ public class MainActivity extends BaseAppUpdateActivity
     public static final int TYPE_FRAGMENT_TIMING = 4;
     public static final int TYPE_FRAGMENT_CUSTOMER = 5;
     public static final int TYPE_FRAGMENT_SEARCH = 6;
+    public static final int TYPE_FRAGMENT_DOCUMENTS = 7;
 
     @IntDef({
             TYPE_FRAGMENT_NEWS,
@@ -134,7 +138,8 @@ public class MainActivity extends BaseAppUpdateActivity
             TYPE_FRAGMENT_MINE,
             TYPE_FRAGMENT_TIMING,
             TYPE_FRAGMENT_CUSTOMER,
-            TYPE_FRAGMENT_SEARCH})
+            TYPE_FRAGMENT_SEARCH,
+            TYPE_FRAGMENT_DOCUMENTS})
     @Retention(RetentionPolicy.SOURCE)
     public @interface ChildFragmentType {
 
@@ -146,7 +151,8 @@ public class MainActivity extends BaseAppUpdateActivity
             new ItemsEntity("我的", TYPE_FRAGMENT_MINE, R.drawable.tab_mine),
             new ItemsEntity("计时", TYPE_FRAGMENT_TIMING, R.drawable.tab_timer),
             new ItemsEntity("客户", TYPE_FRAGMENT_CUSTOMER, R.drawable.tab_customer),
-            new ItemsEntity("搜索", TYPE_FRAGMENT_SEARCH, R.drawable.tab_search));
+            new ItemsEntity("搜索", TYPE_FRAGMENT_SEARCH, R.drawable.tab_search),
+            new ItemsEntity("文档", TYPE_FRAGMENT_DOCUMENTS, R.drawable.tab_document));
 
     //可改变的tab
     private final List<ItemsEntity> tabChangeableData = new ArrayList<>();
@@ -278,6 +284,7 @@ public class MainActivity extends BaseAppUpdateActivity
         ButterKnife.bind(this);
         gotoChatByNotifaction();
         initView();
+        SFileTokenUtils.syncServerSFileToken();
     }
 
     /**
@@ -333,18 +340,24 @@ public class MainActivity extends BaseAppUpdateActivity
                     new ItemsEntity("项目", TYPE_FRAGMENT_PROJECT, R.drawable.tab_project),
                     new ItemsEntity("我的", TYPE_FRAGMENT_MINE, R.drawable.tab_mine),
                     new ItemsEntity("计时", TYPE_FRAGMENT_TIMING, R.drawable.tab_timer),
-                    new ItemsEntity("搜索", TYPE_FRAGMENT_SEARCH, R.drawable.tab_search)));
+                    new ItemsEntity("搜索", TYPE_FRAGMENT_SEARCH, R.drawable.tab_search),
+                    new ItemsEntity("文档", TYPE_FRAGMENT_DOCUMENTS, R.drawable.tab_document))
+            );
         } else if (hasCustomerPermission()) {
             tabChangeableData.addAll(Arrays.asList(
                     new ItemsEntity("客户", TYPE_FRAGMENT_CUSTOMER, R.drawable.tab_customer),
                     new ItemsEntity("我的", TYPE_FRAGMENT_MINE, R.drawable.tab_mine),
                     new ItemsEntity("计时", TYPE_FRAGMENT_TIMING, R.drawable.tab_timer),
-                    new ItemsEntity("搜索", TYPE_FRAGMENT_SEARCH, R.drawable.tab_search)));
+                    new ItemsEntity("搜索", TYPE_FRAGMENT_SEARCH, R.drawable.tab_search),
+                    new ItemsEntity("文档", TYPE_FRAGMENT_DOCUMENTS, R.drawable.tab_document))
+            );
         } else {
             tabChangeableData.addAll(Arrays.asList(
                     new ItemsEntity("计时", TYPE_FRAGMENT_TIMING, R.drawable.tab_timer),
                     new ItemsEntity("搜索", TYPE_FRAGMENT_SEARCH, R.drawable.tab_search),
-                    new ItemsEntity("我的", TYPE_FRAGMENT_MINE, R.drawable.tab_mine)));
+                    new ItemsEntity("我的", TYPE_FRAGMENT_MINE, R.drawable.tab_mine),
+                    new ItemsEntity("文档", TYPE_FRAGMENT_DOCUMENTS, R.drawable.tab_document))
+            );
         }
     }
 
@@ -440,6 +453,8 @@ public class MainActivity extends BaseAppUpdateActivity
                 return TYPE_FRAGMENT_TIMING;
             case TYPE_FRAGMENT_MINE:
                 return TYPE_FRAGMENT_MINE;
+            case TYPE_FRAGMENT_DOCUMENTS:
+                return TYPE_FRAGMENT_DOCUMENTS;
         }
         return TYPE_FRAGMENT_PROJECT;
     }
@@ -697,6 +712,9 @@ public class MainActivity extends BaseAppUpdateActivity
                 case TYPE_FRAGMENT_MINE:
                     fragment = TabMineFragment.newInstance();
                     break;
+                case TYPE_FRAGMENT_DOCUMENTS:
+                    fragment = TabDocumentsFragment.newInstance();
+                    break;
             }
         }
         putTabFragment(type, fragment);
@@ -842,6 +860,7 @@ public class MainActivity extends BaseAppUpdateActivity
      */
     private void updateBadge(Badge badge, int num) {
         if (badge != null && num >= 0) {
+            ShortcutBadger.applyCount(getBaseContext(), num);
             if (num > 99) {
                 //显示99+
                 badge.setBadgeText("99+");

@@ -2,7 +2,7 @@ package com.icourt.alpha.http.httpmodel;
 
 import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
-import com.icourt.alpha.widget.json.BooleanTypeAdapter;
+import com.icourt.json.BooleanTypeAdapter;
 
 /**
  * @author xuanyouwu

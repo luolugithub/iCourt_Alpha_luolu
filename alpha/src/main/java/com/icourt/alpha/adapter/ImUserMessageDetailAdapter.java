@@ -17,7 +17,6 @@ import com.icourt.alpha.adapter.baseadapter.BaseArrayRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.icourt.alpha.entity.bean.IMMessageCustomBody;
-import com.icourt.alpha.utils.ActionConstants;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.FileUtils;
 import com.icourt.alpha.utils.GlideUtils;
@@ -168,13 +167,7 @@ public class ImUserMessageDetailAdapter extends BaseArrayRecyclerAdapter<IMMessa
      * @return
      */
     public static int getFileIcon40(String fileName) {
-        if (!TextUtils.isEmpty(fileName) && fileName.length() > 0) {
-            String type = fileName.substring(fileName.lastIndexOf(".") + 1);
-            if (ActionConstants.resourcesMap40.containsKey(type)) {
-                return ActionConstants.resourcesMap40.get(type);
-            }
-        }
-        return R.mipmap.filetype_default_40;
+        return FileUtils.getSFileIcon(fileName);
     }
 
     /**

@@ -17,8 +17,6 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.ProjectAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
@@ -39,7 +37,6 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 import butterknife.Unbinder;
 import retrofit2.Call;
-import retrofit2.Callback;
 import retrofit2.Response;
 
 /**
@@ -64,7 +61,6 @@ public class ProjectSaveListFragment extends BaseFragment implements BaseRecycle
     @BindView(R.id.header_comm_search_input_ll)
     LinearLayout headerCommSearchInputLl;
 
-    String authToken;
 
     public static ProjectSaveListFragment newInstance() {
         return new ProjectSaveListFragment();
@@ -145,7 +141,7 @@ public class ProjectSaveListFragment extends BaseFragment implements BaseRecycle
             }
         });
         headerCommSearchInputLl.setVisibility(View.GONE);
-        getFileBoxToken();
+        getData(true);
     }
 
     @OnClick({R.id.header_comm_search_cancel_tv})
@@ -165,36 +161,6 @@ public class ProjectSaveListFragment extends BaseFragment implements BaseRecycle
         }
     }
 
-    /**
-     * 获取文档token
-     */
-    private void getFileBoxToken() {
-        getApi().projectQueryFileBoxToken().enqueue(new Callback<JsonObject>() {
-            @Override
-            public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
-                if (response.code() == 200) {
-                    if (response.body() != null) {
-                        if (response.body().has("authToken")) {
-                            JsonElement element = response.body().get("authToken");
-                            if (!TextUtils.isEmpty(element.toString()) && !TextUtils.equals("null", element.toString())) {
-                                authToken = element.getAsString();
-                                getData(true);
-                            } else {
-                                onFailure(call, new retrofit2.HttpException(response));
-                            }
-                        }
-                    }
-                } else {
-                    onFailure(call, new retrofit2.HttpException(response));
-                }
-            }
-
-            @Override
-            public void onFailure(Call<JsonObject> call, Throwable throwable) {
-                showTopSnackBar("获取文档token失败");
-            }
-        });
-    }
 
     @Override
     protected void getData(boolean isRefresh) {
@@ -273,7 +239,6 @@ public class ProjectSaveListFragment extends BaseFragment implements BaseRecycle
 
             bundle.putString("projectId", projectAdapter.getItem(adapter.getRealPos(position)).pkId);
             bundle.putString("projectName", projectAdapter.getItem(adapter.getRealPos(position)).name);
-            bundle.putString("authToken", authToken);
 
             onFragmentCallBackListener.onFragmentCallBack(ProjectSaveListFragment.this, 1, bundle);
         }
