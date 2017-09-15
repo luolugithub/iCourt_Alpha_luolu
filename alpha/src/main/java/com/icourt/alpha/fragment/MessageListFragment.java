@@ -632,15 +632,15 @@ public class MessageListFragment extends BaseRecentContactFragment
     public void setUserVisibleHint(boolean isVisibleToUser) {
         super.setUserVisibleHint(isVisibleToUser);
         if (isVisibleToUser && imSessionAdapter != null) {
-            getData(true);
+            updateTeams();
         }
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        //test();
-        getData(true);
+        updateTeams();
+
         //主动登陆一次
         StatusCode status = NIMClient.getStatus();
         if (status == StatusCode.UNLOGIN
@@ -680,18 +680,7 @@ public class MessageListFragment extends BaseRecentContactFragment
      */
     @Override
     protected void getData(boolean isRefresh) {
-        getTeams(new RequestCallbackWrapper<List<Team>>() {
-            @Override
-            public void onResult(int code, List<Team> result, Throwable exception) {
-                if (result != null) {
-                    localTeams.clear();
-                    localTeams.addAll(result);
-                    imSessionAdapter.notifyDataSetChanged();
-                }
-            }
-        });
-
-
+        updateTeams();
         // 查询最近联系人列表数据
         NIMClient.getService(MsgService.class)
                 .queryRecentContacts()
@@ -706,6 +695,19 @@ public class MessageListFragment extends BaseRecentContactFragment
                     }
                 });
 
+    }
+
+    private void updateTeams() {
+        getTeams(new RequestCallbackWrapper<List<Team>>() {
+            @Override
+            public void onResult(int code, List<Team> result, Throwable exception) {
+                if (result != null) {
+                    localTeams.clear();
+                    localTeams.addAll(result);
+                    imSessionAdapter.notifyDataSetChanged();
+                }
+            }
+        });
     }
 
 
