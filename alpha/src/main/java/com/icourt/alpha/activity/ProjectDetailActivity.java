@@ -276,7 +276,6 @@ public class ProjectDetailActivity extends BaseActivity implements OnFragmentCal
             case 2:     //计时
                 break;
             case 3:     //文档
-                showDocumentMenu();
                 if (projectFileBoxFragment != null) {
                     projectFileBoxFragment.onParentTitleActionClick2(getActivity(), titleAction2, 0, null);
                 }
