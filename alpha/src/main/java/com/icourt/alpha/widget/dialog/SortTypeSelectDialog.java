@@ -87,7 +87,7 @@ public class SortTypeSelectDialog extends Dialog implements View.OnClickListener
         btOk = findViewById(R.id.bt_ok);
 
         dialogRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        dialogRecyclerView.addItemDecoration(ItemDecorationUtils.getCommFullDivider(getContext(), false));
+        dialogRecyclerView.addItemDecoration(ItemDecorationUtils.getCommMagin10Divider(getContext(), false));
         dialogRecyclerView.setAdapter(fileSoryTypeAdapter = new FileSoryTypeAdapter());
         fileSoryTypeAdapter.bindData(true, menus);
         fileSoryTypeAdapter.setOnItemClickListener(new BaseRecyclerAdapter.OnItemClickListener() {

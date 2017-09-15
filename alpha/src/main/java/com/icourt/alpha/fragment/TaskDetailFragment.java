@@ -153,8 +153,7 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
             } catch (Exception e) {
                 taskDescTv.setText(taskItemEntity.description);
                 e.printStackTrace();
-                taskDescTv.setText(taskItemEntity.description);
-                bugSync("任务详情转码失败", e);
+                bugSync("任务详情转码失败", taskItemEntity.description);
             }
         } else {
             taskDescTv.setHint((valid && !isFinish) ? "添加任务详情" : "未录入任务详情");

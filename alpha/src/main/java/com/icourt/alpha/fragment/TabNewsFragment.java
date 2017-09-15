@@ -9,7 +9,6 @@ import android.support.v4.view.ViewPager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 
 import com.icourt.alpha.R;
 import com.icourt.alpha.activity.GroupCreateActivity;
@@ -50,8 +49,6 @@ public class TabNewsFragment extends BaseFragment
     Unbinder unbinder;
     @BindView(R.id.tabLayout)
     TabLayout tabLayout;
-    @BindView(R.id.ivActionAdd)
-    ImageView ivActionAdd;
     @BindView(R.id.viewPager)
     ViewPager viewPager;
     OnFragmentCallBackListener parentFragmentCallBackListener;
@@ -117,14 +114,13 @@ public class TabNewsFragment extends BaseFragment
         }
     }
 
-    @OnClick({R.id.ivActionAdd})
+    @OnClick({R.id.titleAction})
     @Override
     public void onClick(View v) {
         super.onClick(v);
         switch (v.getId()) {
-            case R.id.ivActionAdd:
+            case R.id.titleAction:
                 GroupCreateActivity.launch(getContext());
-                // TestActivity.launch(getContext());
                 break;
         }
     }

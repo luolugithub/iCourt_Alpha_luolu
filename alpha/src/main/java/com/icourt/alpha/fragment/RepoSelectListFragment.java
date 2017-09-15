@@ -1,6 +1,7 @@
 package com.icourt.alpha.fragment;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AlertDialog;
@@ -19,12 +20,12 @@ import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.adapterObserver.RefreshViewEmptyObserver;
 import com.icourt.alpha.constants.SFileConfig;
 import com.icourt.alpha.entity.bean.RepoEntity;
+import com.icourt.alpha.http.callback.SFileCallBack;
 import com.icourt.alpha.http.callback.SimpleCallBack2;
 import com.icourt.alpha.http.observer.BaseObserver;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.StringUtils;
-import com.icourt.alpha.view.ClearEditText;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 import com.icourt.alpha.widget.filter.ListFilter;
 
@@ -311,7 +312,18 @@ public class RepoSelectListFragment extends RepoBaseFragment
      * @param item
      */
     private void showDecryptDialog(final RepoEntity item) {
-        View dialogView = View.inflate(getContext(), R.layout.dialog_repo_decriypt, null);
+        new AlertDialog.Builder(getContext())
+                .setTitle(R.string.repo_encrypted)
+                .setMessage(R.string.repo_encrypted_unsupport)
+                .setPositiveButton(R.string.str_ok, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        dialogInterface.dismiss();
+                    }
+                })
+                .show();
+        //二期开发解密功能
+       /* View dialogView = View.inflate(getContext(), R.layout.dialog_repo_decriypt, null);
         final AlertDialog alertDialog = new AlertDialog.Builder(getContext())
                 .setView(dialogView)
                 .create();
@@ -336,7 +348,7 @@ public class RepoSelectListFragment extends RepoBaseFragment
         };
         dialogView.findViewById(R.id.cancel_tv).setOnClickListener(onClickListener);
         dialogView.findViewById(R.id.ok_tv).setOnClickListener(onClickListener);
-        alertDialog.show();
+        alertDialog.show();*/
     }
 
     /**
@@ -351,7 +363,7 @@ public class RepoSelectListFragment extends RepoBaseFragment
         showLoadingDialog(null);
         callEnqueue(
                 getSFileApi().repoDecrypt(item.repo_id, pwd),
-                new SimpleCallBack2<String>() {
+                new SFileCallBack<String>() {
                     @Override
                     public void onSuccess(Call<String> call, Response<String> response) {
                         dismissLoadingDialog();
