@@ -28,4 +28,6 @@
 
     <string name="str_delete_sucess">删除成功</string>
     <string name="str_camera">相机</string>
+    <string name="str_title">标题</string>
+    <string name="str_save">保存</string>
 </resources>

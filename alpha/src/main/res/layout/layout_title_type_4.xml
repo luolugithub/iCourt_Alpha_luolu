@@ -35,7 +35,7 @@
             android:ellipsize="end"
             android:gravity="center"
             android:maxLines="1"
-            android:text="标题133"
+            android:text="@string/str_title"
             android:textColor="@color/alpha_font_color_title"
             android:textSize="@dimen/alpha_font_size_title"
             android:textStyle="bold" />

@@ -24,7 +24,7 @@
             android:gravity="center"
             android:paddingLeft="10dp"
             android:paddingRight="10dp"
-            android:text="取消"
+            android:text="@string/str_cancel"
             android:textColor="@color/alpha_font_color_orange"
             android:textSize="@dimen/alpha_font_size_comm" />
 
@@ -41,7 +41,7 @@
             android:layout_toRightOf="@id/titleBack"
             android:layout_toLeftOf="@id/titleAction"
             android:maxLines="1"
-            android:text="标题"
+            android:text="@string/str_title"
             android:textColor="@color/alpha_font_color_title"
             android:textSize="@dimen/alpha_font_size_title"
             android:textStyle="bold" />
@@ -55,7 +55,7 @@
             android:gravity="center"
             android:paddingLeft="10dp"
             android:paddingRight="10dp"
-            android:text="保存"
+            android:text="@string/str_save"
             android:textColor="@color/sl_enable_orange_2_gray"
             android:textSize="@dimen/alpha_font_size_comm" />
     </RelativeLayout>
