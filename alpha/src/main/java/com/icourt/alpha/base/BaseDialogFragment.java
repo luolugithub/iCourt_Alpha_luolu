@@ -761,7 +761,7 @@ public abstract class BaseDialogFragment extends DialogFragment
                 dismissAllowingStateLoss();
             } catch (Throwable ex) {
                 ex.printStackTrace();
-                bugSync("DialogFragment dismissAllowingStateLoss Exception", e);
+                bugSync("DialogFragment dismissAllowingStateLoss Exception", ex);
             }
         }
     }
