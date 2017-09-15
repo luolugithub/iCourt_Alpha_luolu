@@ -18,9 +18,9 @@
             android:gravity="center"
             android:maxLines="1"
             android:text="智能搜索"
-            android:textStyle="bold"
             android:textColor="@color/alpha_font_color_title"
-            android:textSize="@dimen/alpha_font_size_title" />
+            android:textSize="@dimen/alpha_font_size_title"
+            android:textStyle="bold" />
     </android.support.design.widget.AppBarLayout>
 
     <View
@@ -105,6 +105,10 @@
                     android:layout_marginRight="10dp"
                     android:nestedScrollingEnabled="false"
                     android:overScrollMode="never" />
+
+                <include
+                    layout="@layout/layout_empty_tv"
+                    android:visibility="gone" />
             </RelativeLayout>
 
 

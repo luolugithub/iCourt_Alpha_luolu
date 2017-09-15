@@ -31,4 +31,5 @@
     <string name="str_title">标题</string>
     <string name="str_save">保存</string>
     <string name="str_sd_unavailable">sd卡不可用</string>
+    <string name="str_click_refresh">点击刷新</string>
 </resources>
