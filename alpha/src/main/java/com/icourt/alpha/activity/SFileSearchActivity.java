@@ -280,7 +280,7 @@ public class SFileSearchActivity extends BaseActivity
                         item.repo_id,
                         item.name,
                         item.size,
-                        UrlUtils.encodeUrl(item.fullpath),
+                        item.fullpath,
                         null);
             }
         }

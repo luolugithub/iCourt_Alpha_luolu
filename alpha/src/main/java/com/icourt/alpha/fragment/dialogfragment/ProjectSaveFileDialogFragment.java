@@ -371,21 +371,23 @@ public class ProjectSaveFileDialogFragment extends BaseDialogFragment
         Map<String, RequestBody> params = new HashMap<>();
         params.put("parent_dir", TextUtils.isEmpty(rootName) ? RequestUtils.createTextBody("/") : RequestUtils.createTextBody(rootName));
         params.put(key, RequestUtils.createStreamBody(file));
-        getSFileApi().sfileUploadFile(uploadUrl, params).enqueue(new SFileCallBack<JsonElement>() {
-            @Override
-            public void onSuccess(Call<JsonElement> call, Response<JsonElement> response) {
-                dismissLoadingDialog();
-                showToast("上传成功");
-                dismiss();
-            }
+        callEnqueue(
+                getSFileApi().sfileUploadFile(uploadUrl, params),
+                new SFileCallBack<JsonElement>() {
+                    @Override
+                    public void onSuccess(Call<JsonElement> call, Response<JsonElement> response) {
+                        dismissLoadingDialog();
+                        showToast("上传成功");
+                        dismissAllowingStateLoss();
+                    }
 
-            @Override
-            public void onFailure(Call<JsonElement> call, Throwable t) {
-                super.onFailure(call, t);
-                dismissLoadingDialog();
-                showTopSnackBar("文件上传失败");
-            }
-        });
+                    @Override
+                    public void onFailure(Call<JsonElement> call, Throwable t) {
+                        super.onFailure(call, t);
+                        dismissLoadingDialog();
+                        showTopSnackBar("文件上传失败");
+                    }
+                });
     }
 
 }
