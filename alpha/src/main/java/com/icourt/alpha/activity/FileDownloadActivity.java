@@ -291,7 +291,7 @@ public class FileDownloadActivity extends BaseActivity {
      */
     private void downloadFile(String url) {
         if (!FileUtils.sdAvailable()) {
-            showTopSnackBar("sd卡不可用!");
+            showTopSnackBar(R.string.str_sd_unavailable);
             return;
         }
         if (TextUtils.isEmpty(url)) {
@@ -362,7 +362,7 @@ public class FileDownloadActivity extends BaseActivity {
     private void showBottomMenuDialog() {
         new BottomActionDialog(getContext(),
                 null,
-                Arrays.asList("转发给同事", "保存到项目文件夹", "用其他应用打开"),
+                Arrays.asList("转发给同事", "保存到项目资料库", "用其他应用打开"),
                 new BottomActionDialog.OnActionItemClickListener() {
                     @Override
                     public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
