@@ -100,6 +100,7 @@ public class FolderListActivity extends FolderBaseActivity
         OnDialogFragmentDismissListener {
 
     private static final int MAX_LENGTH_FILE_NAME = 100;
+    private static final int REQUEST_CODE_CHOOSE_FILE = 1002;
     @BindView(R.id.titleBack)
     ImageView titleBack;
     @BindView(R.id.titleContent)
@@ -141,8 +142,9 @@ public class FolderListActivity extends FolderBaseActivity
     int fileSortType = FILE_SORT_TYPE_DEFAULT;
     final ArrayList<String> bigImageUrls = new ArrayList<>();
     final ArrayList<String> smallImageUrls = new ArrayList<>();
+    boolean isEncrypted;
 
-    private static final int REQUEST_CODE_CHOOSE_FILE = 1002;
+
     CompoundButton.OnCheckedChangeListener onCheckedChangeListener = new CompoundButton.OnCheckedChangeListener() {
         @Override
         public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
@@ -170,13 +172,15 @@ public class FolderListActivity extends FolderBaseActivity
      * @param seaFileRepoId  repoid
      * @param repoTitle      repo 标题
      * @param seaFileDirPath repo目录路径
+     * @param isEncrypted    repo是否是加密的
      */
     public static void launch(@NonNull Context context,
                               @SFileConfig.REPO_TYPE int repoType,
                               @SFileConfig.FILE_PERMISSION String repoPermission,
                               String seaFileRepoId,
                               String repoTitle,
-                              String seaFileDirPath) {
+                              String seaFileDirPath,
+                              boolean isEncrypted) {
         if (context == null) return;
         Intent intent = new Intent(context, FolderListActivity.class);
         intent.putExtra(KEY_SEA_FILE_REPO_TYPE, repoType);
@@ -184,6 +188,7 @@ public class FolderListActivity extends FolderBaseActivity
         intent.putExtra(KEY_SEA_FILE_REPO_PERMISSION, repoPermission);
         intent.putExtra(KEY_SEA_FILE_REPO_ID, seaFileRepoId);
         intent.putExtra(KEY_SEA_FILE_DIR_PATH, seaFileDirPath);
+        intent.putExtra(KEY_SEA_FILE_REPO_IS_ENCRYPTED, isEncrypted);
         context.startActivity(intent);
     }
 
@@ -200,6 +205,7 @@ public class FolderListActivity extends FolderBaseActivity
     @Override
     protected void initView() {
         super.initView();
+        isEncrypted = getIntent().getBooleanExtra(KEY_SEA_FILE_REPO_IS_ENCRYPTED, false);
         EventBus.getDefault().register(this);
         setTitle(getRepoTitle());
         ImageView titleActionImage = getTitleActionImage();
@@ -330,7 +336,7 @@ public class FolderListActivity extends FolderBaseActivity
                         //取消批量操作界面
                         onClick(titleEditCancelView);
 
-                        sortFile(wrapData(getSeaFileRepoId(),getSeaFileDirPath(),response.body()));
+                        sortFile(wrapData(getSeaFileRepoId(), getSeaFileDirPath(), response.body()));
                         stopRefresh();
                     }
 
@@ -770,10 +776,11 @@ public class FolderListActivity extends FolderBaseActivity
                             getRepoPermission(),
                             getSeaFileRepoId(),
                             item.name,
-                            String.format("%s%s/", getSeaFileDirPath(), item.name));
+                            String.format("%s%s/", getSeaFileDirPath(), item.name),
+                            isEncrypted);
                 } else {
-                    //图片 直接预览
-                    if (IMUtils.isPIC(item.name)) {
+                    //图片 直接预览 (加密的资料库 缩略图显示不了)
+                    if (!isEncrypted && IMUtils.isPIC(item.name)) {
                         int indexOf = bigImageUrls.indexOf(getSFileImageUrl(item.name, Integer.MAX_VALUE));
                         ImageViewerActivity.launch(
                                 getContext(),

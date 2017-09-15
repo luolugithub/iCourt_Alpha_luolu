@@ -438,7 +438,8 @@ public class RepoListFragment extends RepoBaseFragment
                 SFileConfig.convert2filePermission(repo_permission),
                 item.repo_id,
                 item.repo_name,
-                "/");
+                "/",
+                item.encrypted);
     }
 
 
