@@ -480,8 +480,8 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
         Fragment currFragment = alltaskFragment.currFragment;
         if (currFragment instanceof TaskListFragment) {
             TaskListFragment taskListFragment = (TaskListFragment) currFragment;
-            int visibility = taskListFragment.nextTaskCardview.getVisibility();
-            return (visibility == View.GONE || visibility == View.INVISIBLE);
+            int visibility = taskListFragment.nextTaskLayout.getVisibility();
+            return visibility == View.VISIBLE;
         }
         return false;
     }

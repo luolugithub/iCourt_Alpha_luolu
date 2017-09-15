@@ -153,6 +153,7 @@
     <string name="timer_not_add_name_text">暂未添加描述</string>
     <string name="timer_not_add_prohect_text">暂未绑定项目</string>
     <string name="timer_edit_save_text">保存</string>
+    <string name="timer_over_timing_remind_text">已持续计时 %d 小时，注意劳逸结合哟</string>
     <array name="timer_list_null_text_arr">
         <item>初看春花红|转眼已成冬</item>
         <item>一年容易又到头|韶光逝去无影踪</item>

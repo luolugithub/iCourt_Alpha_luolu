@@ -1480,6 +1480,13 @@ public interface ApiAlphaService {
      */
     @POST("ilaw/ilaw//api/v2/task/attachment/addFromLibrary")
     Call<ResEntity<String>> taskAddAttachmentFromRepo(@Body RequestBody requestBody);
+
+    /**
+     * 设置 持续计时过久提醒 关闭
+     * @return
+     */
+    @PUT("ilaw/api/v2/timing/timing/{id}/bubble")
+    Call<ResEntity<String>> timerOverTimingRemindClose(@Path("id") String id, @Query("operType") int operType, @Query("clientId") String clientId);
 }
 
 

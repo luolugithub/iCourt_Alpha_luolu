@@ -9,7 +9,7 @@
 
     <include layout="@layout/layout_title_type_2" />
 
-    <com.andview.refreshview.XScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    <com.andview.refreshview.XScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:overScrollMode="never"
@@ -20,6 +20,11 @@
             android:layout_height="wrap_content"
             android:background="@android:color/white"
             android:orientation="vertical">
+
+            <include
+                android:layout_width="match_parent"
+                android:layout_height="42dp"
+                layout="@layout/layout_over_timing_remind" />
 
             <TextView
                 android:id="@+id/timing_tv"
@@ -91,6 +96,4 @@
             <include layout="@layout/layout_timer_action_link" />
         </LinearLayout>
     </com.andview.refreshview.XScrollView>
-
-
 </LinearLayout>
