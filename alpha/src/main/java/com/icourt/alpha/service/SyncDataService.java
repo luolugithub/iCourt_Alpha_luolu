@@ -115,6 +115,7 @@ public class SyncDataService extends IntentService {
             }
         } catch (Exception e) {
             e.printStackTrace();
+            BugUtils.bugSync("同步客户异常", e);
             LogUtils.d("----------->SyncDataService syncClients 失败:" + e);
         }
     }

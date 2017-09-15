@@ -373,14 +373,6 @@ public class TaskCheckItemFragment extends BaseFragment
                 EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION));
                 itemEntity.name = name;
                 taskCheckItemAdapter.updateItem(itemEntity);
-//                if (editText != null) {
-//                    itemEntity.name = editText.getText().toString();
-//                    taskCheckItemAdapter.updateItem(itemEntity);
-//                    if (editText.hasFocus()) {
-//                        editText.setFocusable(false);
-//                        editText.clearFocus();
-//                    }
-//                }
             }
 
             @Override
@@ -388,7 +380,6 @@ public class TaskCheckItemFragment extends BaseFragment
                 super.onFailure(call, t);
                 dismissLoadingDialog();
                 taskCheckItemAdapter.updateItem(itemEntity);
-//                editText.setText(itemEntity.name);
             }
         });
     }

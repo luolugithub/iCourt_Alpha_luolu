@@ -62,6 +62,9 @@ import retrofit2.Call;
 import retrofit2.Response;
 
 import static com.icourt.alpha.activity.MainActivity.KEY_CUSTOMER_PERMISSION;
+import static com.icourt.alpha.activity.ProjectDetailActivity.KEY_PROJECT_ID;
+import static com.icourt.alpha.activity.ProjectDetailActivity.KEY_PROJECT_MYSTAR;
+import static com.icourt.alpha.activity.ProjectDetailActivity.KEY_PROJECT_PROCESSES;
 
 /**
  * Description 项目概览
@@ -73,7 +76,6 @@ import static com.icourt.alpha.activity.MainActivity.KEY_CUSTOMER_PERMISSION;
 
 public class ProjectDetailFragment extends BaseFragment implements BaseRecyclerAdapter.OnItemClickListener {
 
-    private static final String KEY_PROJECT_ID = "key_project_id";
     Unbinder unbinder;
     @BindView(R.id.project_member_recyclerview)
     RecyclerView projectMemberRecyclerview;
@@ -168,9 +170,9 @@ public class ProjectDetailFragment extends BaseFragment implements BaseRecyclerA
             if (onFragmentCallBackListener != null) {
                 Bundle bundle = new Bundle();
                 if (TextUtils.isEmpty(projectDetailBean.myStar)) {
-                    bundle.putInt("myStar", 0);
+                    bundle.putInt(KEY_PROJECT_MYSTAR, 0);
                 } else {
-                    bundle.putInt("myStar", Integer.valueOf(projectDetailBean.myStar));
+                    bundle.putInt(KEY_PROJECT_MYSTAR, Integer.valueOf(projectDetailBean.myStar));
                 }
                 onFragmentCallBackListener.onFragmentCallBack(this, 0, bundle);
             }
@@ -385,7 +387,7 @@ public class ProjectDetailFragment extends BaseFragment implements BaseRecyclerA
         } else {
             if (projectRangeFragment != null) {
                 Bundle bundle = new Bundle();
-                bundle.putSerializable("key_project_processes", projectProcessesEntity);
+                bundle.putSerializable(KEY_PROJECT_PROCESSES, projectProcessesEntity);
                 projectRangeFragment.notifyFragmentUpdate(projectRangeFragment, 0, bundle);
             }
         }

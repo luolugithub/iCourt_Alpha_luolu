@@ -30,6 +30,7 @@ import com.icourt.alpha.base.BaseDialogFragment;
 import com.icourt.alpha.entity.bean.RepoIdResEntity;
 import com.icourt.alpha.fragment.FileDirListFragment;
 import com.icourt.alpha.fragment.ProjectSaveListFragment;
+import com.icourt.alpha.http.callback.SFileCallBack;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.callback.SimpleCallBack2;
 import com.icourt.alpha.http.httpmodel.ResEntity;
@@ -51,7 +52,6 @@ import butterknife.OnClick;
 import butterknife.Unbinder;
 import okhttp3.RequestBody;
 import retrofit2.Call;
-import retrofit2.Callback;
 import retrofit2.Response;
 
 /**
@@ -282,14 +282,11 @@ public class ProjectSaveFileDialogFragment extends BaseDialogFragment
         if (params == null) return;
         projectId = params.getString("projectId");
         seaFileRepoId = params.getString("seaFileRepoId");
-        log("projectId --- " + projectId);
-        log("seaFileRepoId --- " + seaFileRepoId);
         if (TextUtils.isEmpty(projectId)) return;
         checkAddTaskAndDocumentPms(projectId);
         titleBack.setVisibility(View.VISIBLE);
         if (fragment instanceof ProjectSaveListFragment) {
             String projectName = params.getString("projectName");
-            log("projectName --- " + projectName);
 
             //1.保存标题
             titleArray.put(getChildFragmentManager().getBackStackEntryCount(), projectName);
@@ -301,8 +298,6 @@ public class ProjectSaveFileDialogFragment extends BaseDialogFragment
             //文件夹嵌套
             String dirName = params.getString("dirName");
             rootName = params.getString("rootName");
-            log("dirName --- " + dirName);
-            log("rootName --- " + rootName);
 
             if (TextUtils.isEmpty(rootName)) return;
             //1.保存标题
@@ -340,22 +335,23 @@ public class ProjectSaveFileDialogFragment extends BaseDialogFragment
             return;
         }
         showLoadingDialog("正在上传...");
-        getSFileApi().projectUploadUrlQuery(seaFileRepoId).enqueue(new Callback<JsonElement>() {
+        getSFileApi().projectUploadUrlQuery(seaFileRepoId).enqueue(new SFileCallBack<JsonElement>() {
             @Override
-            public void onResponse(Call<JsonElement> call, Response<JsonElement> response) {
+            public void onSuccess(Call<JsonElement> call, Response<JsonElement> response) {
                 if (response.body() != null) {
                     String uploadUrl = response.body().getAsString();
                     uploadFile(uploadUrl, filePath, rootName);
                 } else {
                     dismissLoadingDialog();
-                    showToast("上传失败");
+                    showToast("获取上传文件地址失败");
                 }
             }
 
             @Override
             public void onFailure(Call<JsonElement> call, Throwable throwable) {
+                super.onFailure(call, throwable);
                 dismissLoadingDialog();
-                showToast("上传失败");
+                showToast("获取上传文件地址失败");
             }
         });
     }
@@ -375,9 +371,9 @@ public class ProjectSaveFileDialogFragment extends BaseDialogFragment
         Map<String, RequestBody> params = new HashMap<>();
         params.put("parent_dir", TextUtils.isEmpty(rootName) ? RequestUtils.createTextBody("/") : RequestUtils.createTextBody(rootName));
         params.put(key, RequestUtils.createStreamBody(file));
-        getSFileApi().sfileUploadFile(uploadUrl, params).enqueue(new Callback<JsonElement>() {
+        getSFileApi().sfileUploadFile(uploadUrl, params).enqueue(new SFileCallBack<JsonElement>() {
             @Override
-            public void onResponse(Call<JsonElement> call, Response<JsonElement> response) {
+            public void onSuccess(Call<JsonElement> call, Response<JsonElement> response) {
                 dismissLoadingDialog();
                 showToast("上传成功");
                 dismiss();
@@ -385,8 +381,9 @@ public class ProjectSaveFileDialogFragment extends BaseDialogFragment
 
             @Override
             public void onFailure(Call<JsonElement> call, Throwable t) {
+                super.onFailure(call, t);
                 dismissLoadingDialog();
-                showTopSnackBar("上传失败");
+                showTopSnackBar("文件上传失败");
             }
         });
     }
