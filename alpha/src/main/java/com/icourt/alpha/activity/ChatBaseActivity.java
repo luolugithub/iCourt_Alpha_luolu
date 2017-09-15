@@ -302,7 +302,6 @@ public abstract class ChatBaseActivity
     }
 
 
-
     private void registerObservers(boolean register) {
         MsgServiceObserve service = NIMClient.getService(MsgServiceObserve.class);
         service.observeMessageReceipt(messageReceiptObserver, register);
@@ -1012,9 +1011,12 @@ public abstract class ChatBaseActivity
                 case MSG_TYPE_VOICE://暂时不用处理
                     break;
             }
+            //已经被钉的消息 不能撤回
+            if (isDinged(iMMessageCustomBody.id)) {
+                menuItems.remove("撤回");
+            }
             showMsgActionDialog(iMMessageCustomBody, menuItems);
         }
-
         return true;
     }
 
@@ -1322,13 +1324,13 @@ public abstract class ChatBaseActivity
                             if (code == 508) {
                                 showTopSnackBar("消息撤回时间超限");
                             } else {
-                                showTopSnackBar("消息撤回:" + code);
+                                showTopSnackBar(String.format("消息撤回:%d", code));
                             }
                         }
 
                         @Override
                         public void onException(Throwable exception) {
-                            showTopSnackBar("消息撤回异常:" + exception);
+                            showTopSnackBar(String.format("消息撤回异常:%s", exception));
                         }
                     });
         }

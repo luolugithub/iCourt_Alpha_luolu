@@ -25,6 +25,7 @@ import com.icourt.alpha.http.ApiAlphaService;
 import com.icourt.alpha.http.ApiChatService;
 import com.icourt.alpha.http.ApiProjectService;
 import com.icourt.alpha.http.ApiSFileService;
+import com.icourt.alpha.http.IContextCallQueue;
 import com.icourt.alpha.http.RetrofitServiceFactory;
 import com.icourt.alpha.interfaces.INotifyFragment;
 import com.icourt.alpha.interfaces.ProgressHUDImp;
@@ -33,6 +34,7 @@ import com.icourt.alpha.utils.LoginInfoUtils;
 import com.icourt.alpha.utils.SnackbarUtils;
 import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.utils.ToastUtils;
+import com.icourt.api.RequestUtils;
 import com.kaopiz.kprogresshud.KProgressHUD;
 import com.trello.rxlifecycle2.LifecycleProvider;
 import com.trello.rxlifecycle2.LifecycleTransformer;
@@ -40,8 +42,14 @@ import com.trello.rxlifecycle2.RxLifecycle;
 import com.trello.rxlifecycle2.android.FragmentEvent;
 import com.trello.rxlifecycle2.android.RxLifecycleAndroid;
 
+import java.lang.ref.WeakReference;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
+
 import io.reactivex.Observable;
 import io.reactivex.subjects.BehaviorSubject;
+import retrofit2.Call;
+import retrofit2.Callback;
 
 /**
  * Description fragment基类封装
@@ -54,9 +62,12 @@ import io.reactivex.subjects.BehaviorSubject;
 public abstract class BaseFragment
         extends BasePermissionFragment
         implements ProgressHUDImp,
+        IContextCallQueue,
         View.OnClickListener,
         INotifyFragment,
         LifecycleProvider<FragmentEvent> {
+    Queue<WeakReference<Call>> contextCallQueue = new ConcurrentLinkedQueue<>();
+
     protected static final String KEY_FRAGMENT_RESULT = "FragmentResult";
     protected static final String KEY_FRAGMENT_UPDATE_KEY = "fragment_update_key";
     private final BehaviorSubject<FragmentEvent> lifecycleSubject = BehaviorSubject.create();
@@ -128,6 +139,7 @@ public abstract class BaseFragment
     @Override
     @CallSuper
     public void onDestroyView() {
+        cancelAllCall();
         lifecycleSubject.onNext(FragmentEvent.DESTROY_VIEW);
         super.onDestroyView();
     }
@@ -393,13 +405,24 @@ public abstract class BaseFragment
      *
      * @return
      */
-    private KProgressHUD getSvProgressHUD() {
+    @NonNull
+    protected final KProgressHUD getSvProgressHUD() {
         if (progressHUD == null) {
             progressHUD = KProgressHUD.create(getActivity())
                     .setDimAmount(0.5f)
                     .setStyle(KProgressHUD.Style.SPIN_INDETERMINATE);
         }
         return progressHUD;
+    }
+
+    /**
+     * 展示加载对话框
+     *
+     * @param id
+     */
+    @UiThread
+    public final void showLoadingDialog(@StringRes int id) {
+        this.showLoadingDialog(getString(id));
     }
 
     /***
@@ -578,6 +601,55 @@ public abstract class BaseFragment
         if (!TextUtils.isEmpty(tag) && throwable != null) {
             bugSync(tag, StringUtils.throwable2string(throwable));
         }
+    }
+
+
+    /**
+     * 加入队列
+     *
+     * @param call
+     * @param callback
+     * @param <T>
+     * @return
+     */
+    @Override
+    public <T> Call<T> callEnqueue(@NonNull Call<T> call, Callback<T> callback) {
+        if (isDetached()) return null;
+        if (call != null) {
+            contextCallQueue.offer(new WeakReference<Call>(call));
+            return RequestUtils.callEnqueue(call, callback);
+        }
+        return call;
+    }
+
+    /**
+     * 取消当前页面所有请求
+     */
+    @Override
+    public void cancelAllCall() {
+        while (contextCallQueue.peek() != null) {
+            WeakReference<Call> poll = contextCallQueue.poll();
+            if (poll != null) {
+                RequestUtils.cancelCall(poll.get());
+            }
+        }
+    }
+
+    /**
+     * 取消单个请求
+     *
+     * @param call
+     * @param <T>
+     */
+    @Override
+    public <T> void cancelCall(@NonNull Call<T> call) {
+        for (WeakReference<Call> poll : contextCallQueue) {
+            if (poll != null && call == poll.get()) {
+                contextCallQueue.remove(poll);
+                break;
+            }
+        }
+        RequestUtils.cancelCall(call);
     }
 
 }

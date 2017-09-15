@@ -23,6 +23,7 @@ import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.entity.bean.TaskGroupEntity;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
+import com.icourt.alpha.utils.ItemDecorationUtils;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 
 import java.util.List;
@@ -95,6 +96,7 @@ public class ProjectTaskGroupActivity extends BaseActivity implements BaseRecycl
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setHasFixedSize(true);
 
+        recyclerView.addItemDecoration(ItemDecorationUtils.getCommFull05Divider(this,true));
         recyclerView.setAdapter(projectTaskGroupAdapter = new ProjectTaskGroupAdapter(false));
         projectTaskGroupAdapter.registerAdapterDataObserver(new RefreshViewEmptyObserver(refreshLayout, projectTaskGroupAdapter));
         projectTaskGroupAdapter.setOnItemClickListener(this);

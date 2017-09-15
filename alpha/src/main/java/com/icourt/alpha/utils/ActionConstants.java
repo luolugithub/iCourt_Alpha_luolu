@@ -12,83 +12,52 @@ import java.util.Map;
 @Deprecated
 public class ActionConstants {
     public static final String APK_NAME = "alpha_release.apk";
-    public static Map<String, Integer> resourcesMap = new HashMap<String, Integer>() {
+
+
+    public static Map<String, Integer> resourcesDocumentIcon = new HashMap<String, Integer>() {
         {
-            put("doc", R.mipmap.filetype_doc_20);
-            put("wps", R.mipmap.filetype_doc_20);
-            put("rtf", R.mipmap.filetype_doc_20);
-            put("docx", R.mipmap.filetype_doc_20);
+            put("doc", R.mipmap.filetype_doc);
+            put("wps", R.mipmap.filetype_doc);
+            put("rtf", R.mipmap.filetype_doc);
+            put("docx", R.mipmap.filetype_doc);
 
-            put("jpg", R.mipmap.filetype_image_20);
-            put("jpeg", R.mipmap.filetype_image_20);
-            put("png", R.mipmap.filetype_image_20);
-            put("gif", R.mipmap.filetype_image_20);
-            put("pic", R.mipmap.filetype_image_20);
+            put("jpg", R.mipmap.filetype_image);
+            put("jpeg", R.mipmap.filetype_image);
+            put("png", R.mipmap.filetype_image);
+            put("gif", R.mipmap.filetype_image);
+            put("pic", R.mipmap.filetype_image);
 
-            put("pdf", R.mipmap.filetype_pdf_20);
-            put("ppt", R.mipmap.filetype_ppt_20);
-            put("pptx", R.mipmap.filetype_ppt_20);
+            put("pdf", R.mipmap.filetype_pdf);
+            put("ppt", R.mipmap.filetype_ppt);
+            put("pptx", R.mipmap.filetype_ppt);
 
-            put("xls", R.mipmap.filetype_excel_20);
-            put("xlsx", R.mipmap.filetype_excel_20);
-            put("xlsm", R.mipmap.filetype_excel_20);
+            put("numbers", R.mipmap.filetype_number);
+            put("pages", R.mipmap.filetype_pages);
+            put("key", R.mipmap.filetype_keynote);
 
-            put("zip", R.mipmap.filetype_zip_20);
-            put("rar", R.mipmap.filetype_zip_20);
+            put("xls", R.mipmap.filetype_excel);
+            put("xlsx", R.mipmap.filetype_excel);
+            put("xlsm", R.mipmap.filetype_excel);
 
-            put("mp3", R.mipmap.filetype_music_20);
-            put("wav", R.mipmap.filetype_music_20);
+            put("zip", R.mipmap.filetype_zip);
+            put("rar", R.mipmap.filetype_zip);
+            put("apk", R.mipmap.filetype_zip);
 
-            put("mp4", R.mipmap.filetype_video_20);
-            put("avi", R.mipmap.filetype_video_20);
-            put("ram", R.mipmap.filetype_video_20);
-            put("rm", R.mipmap.filetype_video_20);
-            put("mpg", R.mipmap.filetype_video_20);
-            put("mpeg", R.mipmap.filetype_video_20);
-            put("wmv", R.mipmap.filetype_video_20);
+            put("mp3", R.mipmap.filetype_music);
+            put("wav", R.mipmap.filetype_music);
 
-            put("httpd/unix-directory", R.mipmap.filetype_folder_20);
+            put("mp4", R.mipmap.filetype_video);
+            put("avi", R.mipmap.filetype_video);
+            put("ram", R.mipmap.filetype_video);
+            put("rm", R.mipmap.filetype_video);
+            put("mpg", R.mipmap.filetype_video);
+            put("mpeg", R.mipmap.filetype_video);
+            put("wmv", R.mipmap.filetype_video);
+
+            put("httpd/unix-directory", R.mipmap.folder);
         }
     };
 
-    public static Map<String, Integer> resourcesMap40 = new HashMap<String, Integer>() {
-        {
-            put("doc", R.mipmap.filetype_doc_40);
-            put("wps", R.mipmap.filetype_doc_40);
-            put("rtf", R.mipmap.filetype_doc_40);
-            put("docx", R.mipmap.filetype_doc_40);
-
-            put("jpg", R.mipmap.filetype_image_40);
-            put("jpeg", R.mipmap.filetype_image_40);
-            put("png", R.mipmap.filetype_image_40);
-            put("gif", R.mipmap.filetype_image_40);
-            put("pic", R.mipmap.filetype_image_40);
-
-            put("pdf", R.mipmap.filetype_pdf_40);
-            put("ppt", R.mipmap.filetype_ppt_40);
-            put("pptx", R.mipmap.filetype_ppt_40);
-
-            put("xls", R.mipmap.filetype_excel_40);
-            put("xlsx", R.mipmap.filetype_excel_40);
-            put("xlsm", R.mipmap.filetype_excel_40);
-
-            put("zip", R.mipmap.filetype_zip_40);
-            put("rar", R.mipmap.filetype_zip_40);
-
-            put("mp3", R.mipmap.filetype_music_40);
-            put("wav", R.mipmap.filetype_music_40);
-
-            put("mp4", R.mipmap.filetype_video_40);
-            put("avi", R.mipmap.filetype_video_40);
-            put("ram", R.mipmap.filetype_video_40);
-            put("rm", R.mipmap.filetype_video_40);
-            put("mpg", R.mipmap.filetype_video_40);
-            put("mpeg", R.mipmap.filetype_video_40);
-            put("wmv", R.mipmap.filetype_video_40);
-
-            put("httpd/unix-directory", R.mipmap.filetype_folder_40);
-        }
-    };
 
     public static final int DEFAULT_PAGE_SIZE = 20;//每页加载数量
 

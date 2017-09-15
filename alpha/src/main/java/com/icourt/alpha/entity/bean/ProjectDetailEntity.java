@@ -60,6 +60,7 @@ public class ProjectDetailEntity implements Serializable {
     public String pkId;//主键
     public String name;//项目名称
     public String status;//项目状态：[0:预立案 1:申请立案 2:开案（正在办理） 3:申请结案 4:结案5、申请归档 6:已归档 7:终止代理] ,
+    public String matterNo;//项目编号
     public long openDate;//开案日期
     public long closeDate;//结案日期
     public long terminationDate;//终止日期
@@ -71,7 +72,7 @@ public class ProjectDetailEntity implements Serializable {
     public long updTime;//修改时间
     public int matterType;//项目模板(类型)(0争议解决，1非诉专项,2常年顾问，3所内事务)
     public String matterCase;//案由 id
-    public String caseProcess;//程序 id
+    public String caseProcess;//程序 (根据程序来判断项目类型,1一审，2 二审，3再审，4仲裁，5劳动仲裁，6，其他)(4和5代表这个项目是仲裁项目，其它都是非仲裁项目)
     public String matterNumber;//案号
     public String competentCourt;//管辖法院
     public long beginDate;//开始时间
@@ -97,8 +98,8 @@ public class ProjectDetailEntity implements Serializable {
     public List<ClientsBean> clients;//客户
     public List<LitigantsBean> litigants;//其它当事人
     public List<GroupsBean> groups;//所属团队
-    public List<MembersBean> participants;//项目成员
-    public String logDescription;//日志描述
+    public List<MembersBean> members;//项目成员
+    public String remark;//日志描述
 
 
     //律师
@@ -115,7 +116,7 @@ public class ProjectDetailEntity implements Serializable {
         public String attorneyPkid;
         public String attorneyName;
         public String attorneyPic;
-        public String attorneyType;
+        public String attorneyType;//律师类型[R:主办律师A：协办律师S:案源律师O:参与人C:负责人] ,
 
     }
 

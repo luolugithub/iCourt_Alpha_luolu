@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/alpha_background_window"
+    android:orientation="vertical">
+
+    <com.sothree.slidinguppanel.SlidingUpPanelLayout xmlns:sothree="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/sliding_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:gravity="bottom"
+        sothree:umanoDragView="@+id/dragView"
+        sothree:umanoOverlay="true"
+        sothree:umanoPanelHeight="25dp"
+        sothree:umanoScrollableView="@+id/recyclerView"
+        sothree:umanoShadowHeight="1dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/alpha_height_title"
+                android:background="@color/alpha_background_title"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <CheckedTextView
+                    android:id="@id/titleBack"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_marginLeft="5dp"
+                    android:background="?attr/selectableItemBackground"
+                    android:gravity="center"
+                    android:paddingLeft="10dp"
+                    android:paddingRight="10dp"
+                    android:text="@string/str_cancel"
+                    android:textColor="@color/alpha_font_color_orange"
+                    android:textSize="@dimen/alpha_font_size_comm" />
+
+                <TextView
+                    android:id="@id/titleContent"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_centerInParent="true"
+                    android:layout_marginLeft="55dp"
+                    android:layout_marginRight="55dp"
+                    android:layout_weight="1"
+                    android:ellipsize="end"
+                    android:gravity="center"
+                    android:maxLines="1"
+                    android:text="从我的文档选取"
+                    android:textColor="@color/alpha_font_color_title"
+                    android:textSize="@dimen/alpha_font_size_title"
+                    android:textStyle="bold" />
+
+            </RelativeLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/alpha_height_divider"
+                android:background="@color/alpha_divider_color" />
+
+            <RelativeLayout
+                android:id="@+id/dir_path_title_layout"
+                android:layout_width="match_parent"
+                android:layout_height="44dp"
+                android:paddingLeft="13dp"
+                android:paddingRight="13dp">
+
+                <TextView
+                    android:id="@+id/foldr_go_parent_tv"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:drawableLeft="@mipmap/arrow_left"
+                    android:drawablePadding="5dp"
+                    android:gravity="center_vertical"
+                    android:text="上一级"
+                    android:textColor="@color/alpha_font_color_gray" />
+
+                <TextView
+                    android:id="@+id/foldr_parent_tv"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_centerInParent="true"
+                    android:layout_marginLeft="80dp"
+                    android:layout_marginRight="80dp"
+                    android:ellipsize="end"
+                    android:gravity="center_vertical"
+                    android:maxLines="1"
+                    android:text="上一级文件夹标题"
+                    android:textColor="@color/alpha_font_color_gray" />
+
+            </RelativeLayout>
+
+            <FrameLayout
+                android:id="@+id/main_fl_content"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:paddingBottom="25dp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/dragView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@android:color/white"
+            android:clickable="true"
+            android:focusable="false"
+            android:orientation="vertical">
+
+            <ImageView
+                android:id="@+id/panel_indicator"
+                android:layout_width="match_parent"
+                android:layout_height="25dp"
+                android:src="@mipmap/panel_open" />
+
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <android.support.v7.widget.RecyclerView
+                    android:id="@+id/recyclerView"
+                    android:layout_width="match_parent"
+                    android:layout_height="380dp"
+                    android:scrollbarStyle="outsideOverlay"
+                    android:scrollbars="vertical" />
+
+                <include layout="@layout/layout_empty_tv" />
+            </FrameLayout>
+
+
+        </LinearLayout>
+    </com.sothree.slidinguppanel.SlidingUpPanelLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@android:color/white"
+            android:gravity="center_horizontal"
+            android:orientation="vertical">
+
+
+            <TextView
+                android:id="@+id/selected_num_tv"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="?attr/selectableItemBackground"
+                android:gravity="center"
+                android:paddingBottom="10dp"
+                android:paddingTop="10dp"
+                android:text="@string/sfile_file_already_selected"
+                android:textSize="@dimen/alpha_font_size_mini_lowest" />
+
+            <TextView
+                android:id="@+id/ok_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginBottom="16dp"
+                android:background="@drawable/sl_circle_orangle_gray"
+                android:elevation="2dp"
+                android:ems="10"
+                android:enabled="false"
+                android:gravity="center"
+                android:padding="8dp"
+                android:text="确定"
+                android:textColor="@android:color/white"
+                android:textSize="@dimen/alpha_font_size_mini" />
+
+        </LinearLayout>
+    </LinearLayout>
+</LinearLayout>

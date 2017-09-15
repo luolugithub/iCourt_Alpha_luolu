@@ -304,9 +304,9 @@ public class TaskCreateActivity extends BaseActivity implements ProjectSelectDia
                 int minute = calendar.get(Calendar.MINUTE);
                 int second = calendar.get(Calendar.SECOND);
                 if ((hour == 23 && minute == 59 && second == 59) || (hour == 0 && minute == 0)) {
-                    taskDuetimeTv.setText(DateUtils.getMMMdd(dueTime) + "(" + DateUtils.getWeekOfDateFromZ(dueTime) + ")");
+                    taskDuetimeTv.setText(String.format("%s(%s)", DateUtils.getMMMdd(dueTime), DateUtils.getWeekOfDateFromZ(dueTime)));
                 } else {
-                    taskDuetimeTv.setText(DateUtils.getMMMdd(dueTime) + "(" + DateUtils.getWeekOfDateFromZ(dueTime) + ") " + DateUtils.getHHmm(dueTime));
+                    taskDuetimeTv.setText(String.format("%s(%s)%s", DateUtils.getMMMdd(dueTime), DateUtils.getWeekOfDateFromZ(dueTime), DateUtils.getHHmm(dueTime)));
                 }
                 taskReminderEntity = (TaskReminderEntity) params.getSerializable("taskReminder");
 

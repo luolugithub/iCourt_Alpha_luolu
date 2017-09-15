@@ -7,6 +7,7 @@ import android.graphics.PixelFormat;
 import android.graphics.drawable.Drawable;
 import android.os.Environment;
 import android.os.ParcelFileDescriptor;
+import android.support.annotation.DrawableRes;
 import android.text.TextUtils;
 
 import com.icourt.alpha.R;
@@ -105,17 +106,26 @@ public class FileUtils {
             {"", "*/*"}
     };
 
+
     /**
      * 获取跟目录
      *
      * @return
      */
     public static String getSDPath() {
-        return Environment.getExternalStorageDirectory() + "/";
+        return Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator;
     }
 
     /**
      * 获取 友好提示文件单位
+     * <p>
+     * <p>
+     * 大小单位逐级使用 B, K, M, G, T
+     * 大小为 0 时（比如某文件夹内无内容）显示为 0B
+     * 最多保留小数点后两位，四舍五入
+     * 四舍五入后小数点后末尾为 “00” 时省略 “00”，只有一个 “0” 时不省略，如
+     * 13.00M 显示为 13M
+     * 13.80M 依然显示为 13.80M
      *
      * @param b B
      * @return
@@ -124,16 +134,21 @@ public class FileUtils {
         long kb = 1024;
         long mb = kb * 1024;
         long gb = mb * 1024;
-        if (b >= gb) {
-            return String.format("%.1f G", (float) b / gb);
+        long tb = gb * 1024;
+        if (b >= tb) {
+            float f = (float) b / tb;
+            return String.format(b % tb == 0 ? "%.0fT" : "%.2fT", f);
+        } else if (b >= gb) {
+            float f = (float) b / gb;
+            return String.format(b % gb == 0 ? "%.0fG" : "%.2fG", f);
         } else if (b >= mb) {
             float f = (float) b / mb;
-            return String.format(f > 100 ? "%.0f M" : "%.1f M", f);
+            return String.format(b % mb == 0 ? "%.0fM" : "%.2fM", f);
         } else if (b >= kb) {
             float f = (float) b / kb;
-            return String.format(f > 100 ? "%.0f K" : "%.1f K", f);
+            return String.format(b % kb == 0 ? "%.0fK" : "%.2fK", f);
         } else
-            return String.format("%d B", b);
+            return String.format("%dB", b);
     }
 
     /**
@@ -190,32 +205,30 @@ public class FileUtils {
      *
      * @param fileName
      * @return
+     * @link{ getSFileIcon}
      */
+    @Deprecated
     public static int getFileIcon40(String fileName) {
-        if (!TextUtils.isEmpty(fileName) && fileName.length() > 0) {
-            String type = fileName.substring(fileName.lastIndexOf(".") + 1);
-            if (ActionConstants.resourcesMap40.containsKey(type)) {
-                return ActionConstants.resourcesMap40.get(type);
-            }
-        }
-        return R.mipmap.filetype_default_40;
+        return getSFileIcon(fileName);
     }
 
     /**
-     * 获取文件对应图标 20
+     * 获取sfile文件的图标
      *
      * @param fileName
      * @return
      */
-    public static int getFileIcon20(String fileName) {
+    @DrawableRes
+    public static int getSFileIcon(String fileName) {
         if (!TextUtils.isEmpty(fileName) && fileName.length() > 0) {
             String type = fileName.substring(fileName.lastIndexOf(".") + 1);
-            if (ActionConstants.resourcesMap.containsKey(type)) {
-                return ActionConstants.resourcesMap.get(type);
+            if (ActionConstants.resourcesDocumentIcon.containsKey(type)) {
+                return ActionConstants.resourcesDocumentIcon.get(type);
             }
         }
-        return R.mipmap.filetype_default_20;
+        return R.mipmap.filetype_default;
     }
+
 
     /**
      * @data 创建时间:16/12/7
@@ -289,13 +302,74 @@ public class FileUtils {
         return type;
     }
 
+
+    /**
+     * 获取文件名 并且没有后缀 不转换大小写
+     *
+     * @return
+     */
+    public static String getFileNameWithoutSuffix(String fileName) {
+        if (!TextUtils.isEmpty(fileName)) {
+            int dotIndex = fileName.lastIndexOf(".");
+            if (dotIndex > 0
+                    && dotIndex < fileName.length() - 1) {
+                return fileName.substring(0, dotIndex);
+            }
+        }
+        return fileName;
+    }
+
+    /**
+     * 获取文件名
+     *
+     * @return
+     */
+    public static String getFileName(String path) {
+        if (!TextUtils.isEmpty(path)) {
+            int separatorIndex = path.lastIndexOf(File.separator);
+            if (separatorIndex > 0
+                    && separatorIndex < path.length() - 1) {
+                return path.substring(separatorIndex + 1, path.length());
+            }
+        }
+        return path;
+    }
+
     /**
      * 获取文件后缀名
      *
      * @param fileName
      * @return
      */
+    public static String getFileSuffix(String fileName) {
+        if (!TextUtils.isEmpty(fileName)) {
+            int dotIndex = fileName.lastIndexOf(".");
+            if (dotIndex > 0
+                    && dotIndex < fileName.length() - 1) {
+                return fileName.substring(dotIndex, fileName.length());
+            }
+        }
+        return "";
+    }
+
+    /**
+     * 是否是gif图片
+     *
+     * @param path
+     * @return
+     */
+    public static boolean isGif(String path) {
+        return TextUtils.equals(getFileSuffix(path), ".gif");
+    }
+
+    /**
+     * 获取文件类型
+     *
+     * @param fileName
+     * @return
+     */
     public static String getFileType(String fileName) {
+        if (TextUtils.isEmpty(fileName)) return null;
         //获取后缀名前的分隔符"."在fName中的位置。
         int dotIndex = fileName.lastIndexOf(".");
         if (dotIndex < 0) {
@@ -352,7 +426,23 @@ public class FileUtils {
      * 保存方法
      */
     public static boolean saveBitmap(Context context, String picName, Bitmap bitmap) {
-        File f = new File(dirFilePath, picName + ".png");
+        return saveBitmap(context, dirFilePath, picName, bitmap);
+    }
+
+    /**
+     * 保存drawable 到sd卡中...
+     *
+     * @param context
+     * @param dir
+     * @param picName
+     * @param bitmap
+     * @return
+     */
+    public static boolean saveBitmap(Context context,
+                                     String dir,
+                                     String picName,
+                                     Bitmap bitmap) {
+        File f = new File(dir, picName);
         if (f.exists()) {
             f.delete();
         }

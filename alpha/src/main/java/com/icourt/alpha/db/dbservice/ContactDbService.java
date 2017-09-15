@@ -20,7 +20,7 @@ import io.realm.RealmResults;
  * date createTime：2017/4/11
  * version 1.0.0
  */
-public class ContactDbService extends BaseRealmService<ContactDbModel, ContactDao> {
+public class ContactDbService extends BaseRealmService<ContactDao> {
     public ContactDbService(String uid) {
         super(new ContactDao(uid));
     }

@@ -20,7 +20,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
             android:layout_marginTop="@dimen/dp40"
-            android:src="@mipmap/filetype_pdf_40" />
+            android:src="@mipmap/filetype_default" />
 
         <TextView
             android:id="@+id/file_name_view"

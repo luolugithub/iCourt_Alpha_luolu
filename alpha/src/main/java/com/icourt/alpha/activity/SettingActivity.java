@@ -18,7 +18,7 @@ import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.GlideUtils;
 import com.icourt.alpha.utils.LoginInfoUtils;
-import com.icourt.alpha.utils.TextFormater;
+import com.icourt.alpha.utils.StringUtils;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -98,7 +98,7 @@ public class SettingActivity extends BaseActivity {
             showTopSnackBar("请输入正确的邮箱格式");
             return;
         }*/
-        if (!TextFormater.isMobileNO(phone)) {
+        if (!StringUtils.isMobileNO(phone)) {
             showTopSnackBar("请输入正确的手机格式");
             return;
         }

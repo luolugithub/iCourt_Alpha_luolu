@@ -36,6 +36,8 @@ public class TimerManager {
 
     private static final String KEY_TIMER = "key_timer_entity_%s";
     private static final String KEY_TIMER_TASK_ID = "key_timer_entity_task_id_%s";
+    public static final int OVER_TIME_REMIND_NO_REMIND = 1;//设置不再提醒
+    public static final int OVER_TIME_REMIND_BUBBLE_OFF = 2;//设置关闭气泡
 
     private TimerManager() {
 
@@ -353,7 +355,95 @@ public class TimerManager {
     }
 
     /**
-     * 更新原计时对象
+     * 请求网络 关闭持续计时过久时的提醒覆层 或者 不再提醒标记
+     *
+     * @param operType 1设置不再提醒；2设置关闭气泡。
+     */
+    public void setOverTimingRemindClose(final int operType) {
+        if (TextUtils.isEmpty(getTimerId())) {
+            return;
+        }
+        AlphaUserInfo loginUserInfo = LoginInfoUtils.getLoginUserInfo();
+        String clientId = loginUserInfo == null ? "" : loginUserInfo.localUniqueId;
+        RetrofitServiceFactory
+                .getAlphaApiService()
+                .timerOverTimingRemindClose(getTimerId(), operType, clientId)
+                .enqueue(new SimpleCallBack<String>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<String>> call, Response<ResEntity<String>> response) {
+                        if (response.body().succeed) {
+                            if (operType == OVER_TIME_REMIND_BUBBLE_OFF) {//设置关闭气泡提醒
+                                setOverBubbleRemind(false);
+                            } else if (operType == OVER_TIME_REMIND_NO_REMIND) {//设置不再提醒
+                                setOverTimingRemind(false);
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<ResEntity<String>> call, Throwable t) {
+                        super.onFailure(call, t);
+                    }
+                });
+    }
+
+    /**
+     * 设置超过2小时是否再提醒
+     *
+     * @param remind true:提醒；false：不提醒
+     */
+    public void setOverTimingRemind(boolean remind) {
+        if (getTimer() != null) {
+            if (remind) {
+                getTimer().noRemind = 0;
+            } else {
+                getTimer().noRemind = 1;
+            }
+        }
+    }
+
+    /**
+     * 是否超过2小时，是否再提醒
+     *
+     * @return true:提醒；false：不提醒
+     */
+    public boolean isOverTimingRemind() {
+        if (getTimer() != null) {
+            return getTimer().noRemind == 0;
+        }
+        return true;
+    }
+
+    /**
+     * 设置泡泡是否再提醒
+     *
+     * @param remind true:提醒；false：不提醒
+     */
+    public void setOverBubbleRemind(boolean remind) {
+        if (getTimer() != null) {
+            if (remind) {
+                getTimer().bubbleOff = 0;
+            } else {
+                getTimer().bubbleOff = 1;
+            }
+        }
+    }
+
+    /**
+     * 是否超过2小时，泡泡是否再提醒
+     *
+     * @return true:提醒；false：不提醒
+     */
+    public boolean isBubbleRemind() {
+        if (getTimer() != null) {
+            return getTimer().bubbleOff == 0;
+        }
+        return true;
+    }
+
+
+    /**
+     * 更新原计时对象（之前已经有对象正在计时了）
      *
      * @return
      */

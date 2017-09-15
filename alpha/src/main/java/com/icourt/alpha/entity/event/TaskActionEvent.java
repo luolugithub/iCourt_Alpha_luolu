@@ -17,13 +17,14 @@ import java.lang.annotation.RetentionPolicy;
 
 public class TaskActionEvent {
 
-    public static final int TASK_DELETE_ACTION = 1;
+    public static final int TASK_DELETE_ACTION = 1;//删除任务的广播
     public static final int TASK_UPDATE_DESC_ACTION = 2;
     public static final int TASK_REFRESG_ACTION = 3;
     public static final int TASK_UPDATE_NAME_ACTION = 4;
     public static final int TASK_UPDATE_PROJECT_ACTION = 5;
     public static final int TASK_UPDATE_ITEM = 6;
     public static final int TASK_ADD_ITEM_ACITON = 7;
+    public static final int TASK_PROJECT_END_OPERATE = 8;//项目里已完成任务列表的任务进行操作了，发送通知，项目下面的任务列表需要进行刷新操作。
 
     @IntDef({TASK_DELETE_ACTION,
             TASK_UPDATE_DESC_ACTION,
@@ -31,7 +32,8 @@ public class TaskActionEvent {
             TASK_UPDATE_NAME_ACTION,
             TASK_UPDATE_PROJECT_ACTION,
             TASK_UPDATE_ITEM,
-            TASK_ADD_ITEM_ACITON})
+            TASK_ADD_ITEM_ACITON,
+            TASK_PROJECT_END_OPERATE})
     @Retention(RetentionPolicy.SOURCE)
     public @interface TASK_ACTION {
 

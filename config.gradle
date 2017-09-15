@@ -12,10 +12,10 @@ ext {
     ]
 
     alphaAPIUrl = [
-            api_url_debug  : "\"https://dev.alphalawyer.cn/ilaw/\"",//开发
-            api_url_test   : "\"https://test.alphalawyer.cn/ilaw/\"",//内测 //带权限的域名https://testpms.alphalawyer.cn/ilaw/
-            api_url_preview: "\"https://pre.alphalawyer.cn/ilaw/\"",//预览
-            api_url_release: "\"https://alphalawyer.cn/ilaw/\""//正式
+            api_url_debug  : "\"https://dev.alphalawyer.cn/\"",//开发
+            api_url_test   : "\"https://test.alphalawyer.cn/\"",//内测 //带权限的域名https://testpms.alphalawyer.cn/ilaw/
+            api_url_preview: "\"https://pre.alphalawyer.cn/\"",//预览
+            api_url_release: "\"https://alphalawyer.cn/\""//正式
     ]
     //聊天api
     alphaChatAPIUrl = [
@@ -82,7 +82,7 @@ ext {
 
             // ------------- reyclerview ------------
             recyclerview              : "com.android.support:recyclerview-v7:${dependVersion.support}",
-            recyclerview_animators    : "jp.wasabeef:recyclerview-animators:2.2.5",
+            recyclerview_animators    : "jp.wasabeef:recyclerview-animators:2.2.6",
             recyclerview_divider      : "com.yqritc:recyclerview-flexibledivider:1.4.0",
 
             // ------------- 网络请求 -------------
@@ -120,7 +120,11 @@ ext {
             // ------------- 约束控件 -------------
             constraintLayout          : 'com.android.support.constraint:constraint-layout:1.0.0-alpha7',
             topsnackbar               : 'com.androidadvance:topsnackbar:1.1.1',
-            xrefreshview              : "com.huxq17.xrefreshview:xrefreshview:3.6.9"
+            xrefreshview              : "com.huxq17.xrefreshview:xrefreshview:3.6.9",
+
+            //-------------- RecyclerViewAdapter -------------
+            recyclerview_adapter      : 'com.github.CymChad:BaseRecyclerViewAdapterHelper:2.9.28',
+
 
     ]
 

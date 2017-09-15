@@ -47,6 +47,7 @@ public class AlphaClient extends SimpleClient implements HttpLoggingInterceptor.
 
     private static String officeId;
     private static String token;
+    private static String sFileToken;
 
     public static void setToken(String tk) {
         token = tk;
@@ -62,6 +63,14 @@ public class AlphaClient extends SimpleClient implements HttpLoggingInterceptor.
 
     public static void setOfficeId(String ofId) {
         officeId = ofId;
+    }
+
+    public static String getSFileToken() {
+        return String.valueOf(sFileToken);
+    }
+
+    public static void setSFileToken(String sftk) {
+        sFileToken = sftk;
     }
 
     private AlphaClient(Context context, String api_url) {
@@ -95,6 +104,7 @@ public class AlphaClient extends SimpleClient implements HttpLoggingInterceptor.
     public Response intercept(Chain chain) throws IOException {
         Request request = chain.request();
         Request requestBuilder = request.newBuilder()
+                .addHeader("Authorization", String.format("Token %s", getSFileToken()))
                 .addHeader("Cookie", "officeId=" + getOfficeId())
                 .addHeader("token", getToken())
                 .addHeader("osVer", String.valueOf(Build.VERSION.SDK_INT))
@@ -104,10 +114,6 @@ public class AlphaClient extends SimpleClient implements HttpLoggingInterceptor.
                 .addHeader("buildVer", String.valueOf(BuildConfig.VERSION_CODE))
                 .build();
         Response response = chain.proceed(requestBuilder);
-        String cookeHeader = response.header("Set-Cookie", "");
-        if (!TextUtils.isEmpty(cookeHeader)) {
-            HConst.cookie = cookeHeader.split(";")[0];
-        }
         return response;
     }
 }

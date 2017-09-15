@@ -257,7 +257,7 @@ public class TaskDetailActivity extends BaseActivity
                 }
                 break;
             case R.id.titleAction2://更多
-                showBottomMeau();
+                showBottomMenu();
                 break;
             case R.id.task_name:
                 if (taskItemEntity != null)
@@ -289,7 +289,18 @@ public class TaskDetailActivity extends BaseActivity
             case R.id.task_start_iamge://开始计时
                 if (isStrat) {
                     MobclickAgent.onEvent(getContext(), UMMobClickAgent.stop_timer_click_id);
-                    TimerManager.getInstance().stopTimer();
+                    TimerManager.getInstance().stopTimer(new SimpleCallBack<TimeEntity.ItemEntity>() {
+                        @Override
+                        public void onSuccess(Call<ResEntity<TimeEntity.ItemEntity>> call, Response<ResEntity<TimeEntity.ItemEntity>> response) {
+                            TimeEntity.ItemEntity timer = TimerManager.getInstance().getTimer();
+                            TimerDetailActivity.launch(getContext(), timer);
+                        }
+
+                        @Override
+                        public void onFailure(Call<ResEntity<TimeEntity.ItemEntity>> call, Throwable t) {
+                            super.onFailure(call, t);
+                        }
+                    });
                 } else {
                     showLoadingDialog(null);
                     final TimeEntity.ItemEntity itemEntity = getTimer(taskItemEntity);
@@ -485,7 +496,7 @@ public class TaskDetailActivity extends BaseActivity
     /**
      * 显示底部菜单
      */
-    private void showBottomMeau() {
+    private void showBottomMenu() {
         if (taskItemEntity == null) return;
         List<String> titles = null;
         if (taskItemEntity.valid) {
@@ -662,9 +673,25 @@ public class TaskDetailActivity extends BaseActivity
      *
      * @return
      */
-    private boolean hasTaskAddDocument() {
+    private boolean hasDocumentAddPermission() {
         if (taskItemEntity != null && taskItemEntity.right != null) {
-            return taskItemEntity.right.contains("MAT:matter.document:readwrite") || taskItemEntity.right.contains("MAT:matter.document:read");
+            return taskItemEntity.valid
+                    && taskItemEntity.right.contains("MAT:matter.document:readwrite");
+        }
+        return false;
+    }
+
+    /**
+     * 是否有文件浏览权限
+     * 可读 可读写
+     *
+     * @return
+     */
+    private boolean hasDocumentLookPermission() {
+        if (taskItemEntity != null
+                && taskItemEntity.right != null) {
+            return taskItemEntity.right.contains("MAT:matter.document:readwrite")
+                    || taskItemEntity.right.contains("MAT:matter.document:read");
         }
         return false;
     }
@@ -752,13 +779,24 @@ public class TaskDetailActivity extends BaseActivity
             } else {
                 taskTime.setText(getHm(taskItemEntity.timingSum));
             }
-            String checkTargetStr = String.format("%s/%s", taskItemEntity.doneItemCount, taskItemEntity.itemCount);
-            String checkOriginStr = "检查项 " + checkTargetStr;
-            SpannableString checkTextForegroundColorSpan = SpannableUtils.getTextForegroundColorSpan(checkOriginStr, checkTargetStr, 0xFFCACACA);
 
-            String attachTargetStr = String.valueOf(taskItemEntity.attachmentCount);
-            String attachOriginStr = "附件 " + attachTargetStr;
-            SpannableString attachTextForegroundColorSpan = SpannableUtils.getTextForegroundColorSpan(attachOriginStr, attachTargetStr, 0xFFCACACA);
+            SpannableString checkTextForegroundColorSpan = null;
+            if (taskItemEntity.itemCount > 0) {
+                String checkTargetStr = String.format("%s/%s", taskItemEntity.doneItemCount, taskItemEntity.itemCount);
+                String checkOriginStr = "检查项 " + checkTargetStr;
+                checkTextForegroundColorSpan = SpannableUtils.getTextForegroundColorSpan(checkOriginStr, checkTargetStr, 0xFFCACACA);
+            } else {
+                checkTextForegroundColorSpan = new SpannableString("检查项");
+            }
+
+            SpannableString attachTextForegroundColorSpan = null;
+            if (taskItemEntity.attachmentCount > 0) {
+                String attachTargetStr = String.valueOf(taskItemEntity.attachmentCount);
+                String attachOriginStr = "附件 " + attachTargetStr;
+                attachTextForegroundColorSpan = SpannableUtils.getTextForegroundColorSpan(attachOriginStr, attachTargetStr, 0xFFCACACA);
+            } else {
+                attachTextForegroundColorSpan = new SpannableString("附件");
+            }
 
             tabTitles.put(0, "任务详情");
             tabTitles.put(1, checkTextForegroundColorSpan);
@@ -769,7 +807,13 @@ public class TaskDetailActivity extends BaseActivity
             baseFragmentAdapter.bindData(true, Arrays.asList(
                     taskDetailFragment == null ? taskDetailFragment = TaskDetailFragment.newInstance(taskItemEntity) : taskDetailFragment,
                     TaskCheckItemFragment.newInstance(taskItemEntity.id, hasTaskEditPermission(), taskItemEntity.valid),
-                    TaskAttachmentFragment.newInstance(taskItemEntity.id, (hasTaskEditPermission() && hasTaskAddDocument()), taskItemEntity.valid)
+                    TaskAttachmentFragment.newInstance(
+                            taskItemEntity.id,
+                            taskItemEntity.matterId,
+                            taskItemEntity.matter != null ? taskItemEntity.matter.name : "",
+                            hasDocumentLookPermission(),
+                            hasDocumentAddPermission(),
+                            hasTaskEditPermission())
             ));
 
             updateDetailFargment();
@@ -907,7 +951,7 @@ public class TaskDetailActivity extends BaseActivity
                 myStar = TaskEntity.ATTENTIONED;
                 taskItemEntity.attentioned = TaskEntity.ATTENTIONED;
                 titleAction.setImageResource(R.mipmap.header_icon_star_solid);
-                EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_ADD_ITEM_ACITON, taskItemEntity));
+                EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION, taskItemEntity));
             }
 
             @Override
@@ -951,7 +995,7 @@ public class TaskDetailActivity extends BaseActivity
             @Override
             public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
                 dismissLoadingDialog();
-                EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_DELETE_ACTION, taskItemEntity));
+                EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION, taskItemEntity));
                 TaskDetailActivity.this.finish();
             }
 
@@ -1195,12 +1239,15 @@ public class TaskDetailActivity extends BaseActivity
     }
 
     @Override
-    public void onUpdateDocument(String documentCount) {
-        String attachTargetStr = documentCount;
-        String attachOriginStr = "附件 " + attachTargetStr;
-        SpannableString attachTextForegroundColorSpan = SpannableUtils.getTextForegroundColorSpan(attachOriginStr, attachTargetStr, 0xFFCACACA);
-        tabTitles.put(2, attachTextForegroundColorSpan);
-
+    public void onUpdateDocument(int documentCount) {
+        if (documentCount > 0) {
+            String attachTargetStr = String.valueOf(documentCount);
+            String attachOriginStr = "附件 " + attachTargetStr;
+            SpannableString attachTextForegroundColorSpan = SpannableUtils.getTextForegroundColorSpan(attachOriginStr, attachTargetStr, 0xFFCACACA);
+            tabTitles.put(2, attachTextForegroundColorSpan);
+        } else {
+            tabTitles.put(2, "附件");
+        }
         baseFragmentAdapter.bindTitle(true, Arrays.asList(tabTitles.get(0, ""),
                 tabTitles.get(1, ""),
                 tabTitles.get(2, "")));

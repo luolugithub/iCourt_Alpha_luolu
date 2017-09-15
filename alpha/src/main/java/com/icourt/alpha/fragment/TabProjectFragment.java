@@ -109,6 +109,7 @@ public class TabProjectFragment extends BaseFragment implements TopMiddlePopup.O
             switch (i) {
                 case 0:
                     titleTv.setTextColor(0xFF313131);
+                    titleTv.setPadding(DensityUtil.dip2px(getContext(),8), 0, 0, 0);
                     titleTv.setText("进行中");
                     downIv.setVisibility(View.VISIBLE);
                     tab.getCustomView().setOnClickListener(new OnTabClickListener());

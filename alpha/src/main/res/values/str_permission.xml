@@ -37,4 +37,14 @@
     <string name="label_cancel">取消</string>
     <string name="label_ok">确定</string>
 
+
+    <!-- 权限拒绝提示 -->
+    <string name="permission_denied_storage">文件读写权限被拒绝,请打开权限!</string>
+    <string name="permission_denied_camera">拍照权限权限被拒绝,请打开权限!</string>
+
+
+    <!-- 权限申请友好提示语 -->
+    <string name="permission_rationale_camera">Alpha需要拍照权限!</string>
+    <string name="permission_rationale_storage">Alpha需要文件读写权限!</string>
+
 </resources>

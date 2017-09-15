@@ -9,7 +9,6 @@ import android.graphics.Matrix;
 import android.media.ExifInterface;
 import android.net.Uri;
 import android.provider.MediaStore;
-import android.text.TextUtils;
 import android.util.Base64;
 
 import com.icourt.alpha.R;
@@ -347,56 +346,6 @@ public class ImageUtils {
         return new ArrayList<>(linkedHashSet);
     }
 
-    /**
-     * 获取讨论组头像
-     *
-     * @param name
-     * @return
-     */
-    public static int getGroupPhoto(String name) {
-        if (!TextUtils.isEmpty(name)) {
-            Character oneChar, twoChar;
-            int oneIndex, twoIndex;
-            List<String> list = TextFormater.firstList();
-            if (name.length() > 1) {
-                char s1 = name.charAt(0);
-                oneChar = TextFormater.getFirstLetter(s1);
-                if (!list.contains(String.valueOf(oneChar))) {
-                    oneIndex = 27;
-                    twoIndex = 0;
-                }
-                char s2 = name.charAt(1);
-                twoChar = TextFormater.getFirstLetter(s2);
-                if (!list.contains(String.valueOf(twoChar))) {
-                    twoIndex = 0;
-                }
-                oneIndex = list.indexOf(String.valueOf(oneChar));
-                twoIndex = list.indexOf(String.valueOf(twoChar));
-                if ("i".equals(String.valueOf(oneChar))) {
-                    return groupPhotos[2];
-                }
-
-
-                int index = (oneIndex + twoIndex) / 7;
-                if (index >= groupPhotos.length) {
-                    index = index / 7;
-                }
-                return groupPhotos[index];
-            } else if (name.length() == 1) {
-                oneChar = TextFormater.getFirstLetter(name.charAt(0));
-                oneIndex = list.indexOf(String.valueOf(oneChar));
-                if ("i".equals(String.valueOf(oneChar))) {
-                    return groupPhotos[2];
-                }
-                int index = oneIndex / 7;
-                if (index >= groupPhotos.length) {
-                    index = index / 7;
-                }
-                return groupPhotos[index];
-            }
-        }
-        return 0;
-    }
 
     /**
      * 添加到图库 拍照后的照片保存在内存中 在此，将内存中图片添加到图库（也就是SD卡中）,这样可以在手机的图库程序中看到程序拍摄的照片

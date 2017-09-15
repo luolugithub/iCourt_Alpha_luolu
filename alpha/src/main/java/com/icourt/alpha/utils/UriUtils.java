@@ -23,6 +23,7 @@ public class UriUtils {
 
     /**
      * 专为Android4.4设计的从Uri获取文件绝对路径，以前的方法已不好使
+     * 注意先 获取文件读写权限
      */
     public static String getPath(final Context context, final Uri uri) {
         try {

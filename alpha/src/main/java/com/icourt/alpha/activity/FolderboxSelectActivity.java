@@ -16,14 +16,15 @@ import android.widget.TextView;
 
 import com.andview.refreshview.XRefreshView;
 import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.ProjectFileBoxAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.adapterObserver.RefreshViewEmptyObserver;
 import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.entity.bean.FileBoxBean;
+import com.icourt.alpha.entity.bean.RepoIdResEntity;
 import com.icourt.alpha.http.callback.SimpleCallBack;
+import com.icourt.alpha.http.callback.SimpleCallBack2;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.ItemDecorationUtils;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
@@ -66,18 +67,16 @@ public class FolderboxSelectActivity extends BaseActivity implements BaseRecycle
     @BindView(R.id.refreshLayout)
     RefreshLayout refreshLayout;
     ProjectFileBoxAdapter projectFileBoxAdapter;
-    String projectId, authToken, seaFileRepoId, filePath, rootName;
+    String projectId, seaFileRepoId, filePath, rootName;
     boolean isCanlookAddDocument;
 
     public static void launch(@NonNull Context context,
                               @NonNull String projectId,
-                              @NonNull String authToken,
                               @NonNull String seaFileRepoId,
                               @NonNull String filePath,
                               @NonNull String rootName) {
         if (context == null) return;
         Intent intent = new Intent(context, FolderboxSelectActivity.class);
-        intent.putExtra("authToken", authToken);
         intent.putExtra("projectId", projectId);
         intent.putExtra("seaFileRepoId", seaFileRepoId);
         intent.putExtra("filePath", filePath);
@@ -100,7 +99,6 @@ public class FolderboxSelectActivity extends BaseActivity implements BaseRecycle
         projectId = getIntent().getStringExtra("projectId");
         seaFileRepoId = getIntent().getStringExtra("seaFileRepoId");
         filePath = getIntent().getStringExtra("filePath");
-        authToken = getIntent().getStringExtra("authToken");
         rootName = getIntent().getStringExtra("rootName");
         refreshLayout.setNoticeEmpty(R.mipmap.icon_placeholder_project, "暂无文件夹");
         refreshLayout.setMoveForHorizontal(true);
@@ -183,7 +181,7 @@ public class FolderboxSelectActivity extends BaseActivity implements BaseRecycle
     @Override
     protected void getData(final boolean isRefresh) {
         super.getData(isRefresh);
-        getSFileApi().projectQueryFileBoxByDir("Token " + authToken, seaFileRepoId, rootName).enqueue(new Callback<List<FileBoxBean>>() {
+        getSFileApi().projectQueryFileBoxByDir(seaFileRepoId, rootName).enqueue(new Callback<List<FileBoxBean>>() {
             @Override
             public void onResponse(Call<List<FileBoxBean>> call, Response<List<FileBoxBean>> response) {
                 stopRefresh();
@@ -207,32 +205,25 @@ public class FolderboxSelectActivity extends BaseActivity implements BaseRecycle
      * 获取根目录id
      */
     private void getDocumentId() {
-        getApi().projectQueryDocumentId(projectId).enqueue(new Callback<JsonObject>() {
-            @Override
-            public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
-                if (response.code() == 200) {
-                    if (response.body() != null) {
-                        if (response.body().has("seaFileRepoId")) {
-                            JsonElement element = response.body().get("seaFileRepoId");
-                            if (!TextUtils.isEmpty(element.toString()) && !TextUtils.equals("null", element.toString())) {
-                                seaFileRepoId = element.getAsString();
-                                getData(true);
-                            } else {
-                                onFailure(call, new retrofit2.HttpException(response));
-                            }
+        getApi().projectQueryDocumentId(projectId)
+                .enqueue(new SimpleCallBack2<RepoIdResEntity>() {
+                    @Override
+                    public void onSuccess(Call<RepoIdResEntity> call, Response<RepoIdResEntity> response) {
+                        if (!TextUtils.isEmpty(response.body().seaFileRepoId)) {
+                            seaFileRepoId = response.body().seaFileRepoId;
+                            getData(true);
+                        } else {
+                            bugSync("项目repo 获取null", "projectid:" + projectId);
+                            showTopSnackBar("seaFileRepoId 返回null");
                         }
                     }
-                } else {
-                    onFailure(call, new retrofit2.HttpException(response));
-                }
-            }
 
-            @Override
-            public void onFailure(Call<JsonObject> call, Throwable throwable) {
-                showTopSnackBar("获取文档根目录id失败");
-                enableEmptyView(null);
-            }
-        });
+                    @Override
+                    public void onFailure(Call<RepoIdResEntity> call, Throwable t) {
+                        super.onFailure(call, t);
+                        enableEmptyView(null);
+                    }
+                });
     }
 
     private List<FileBoxBean> getFolders(List<FileBoxBean> fileBoxBeens) {
@@ -272,9 +263,17 @@ public class FolderboxSelectActivity extends BaseActivity implements BaseRecycle
         if (!TextUtils.isEmpty(fileBoxBean.type)) {
             if (TextUtils.equals("dir", fileBoxBean.type)) {
                 if (TextUtils.isEmpty(rootName)) {
-                    FolderboxSelectActivity.launch(this, projectId, authToken, seaFileRepoId, filePath, "/" + fileBoxBean.name);
+                    FolderboxSelectActivity.launch(this,
+                            projectId,
+                            seaFileRepoId,
+                            filePath,
+                            "/" + fileBoxBean.name);
                 } else {
-                    FolderboxSelectActivity.launch(this, projectId, authToken, seaFileRepoId, filePath, rootName + "/" + fileBoxBean.name);
+                    FolderboxSelectActivity.launch(this,
+                            projectId,
+                            seaFileRepoId,
+                            filePath,
+                            rootName + "/" + fileBoxBean.name);
                 }
             }
         }
@@ -293,7 +292,7 @@ public class FolderboxSelectActivity extends BaseActivity implements BaseRecycle
             return;
         }
         showLoadingDialog("正在上传...");
-        getSFileApi().projectUploadUrlQuery("Token " + authToken, seaFileRepoId).enqueue(new Callback<JsonElement>() {
+        getSFileApi().projectUploadUrlQuery(seaFileRepoId).enqueue(new Callback<JsonElement>() {
             @Override
             public void onResponse(Call<JsonElement> call, Response<JsonElement> response) {
                 if (response.body() != null) {
@@ -325,11 +324,11 @@ public class FolderboxSelectActivity extends BaseActivity implements BaseRecycle
         if (TextUtils.isEmpty(filePath)) return;
         File file = new File(filePath);
         String fileName = file.getName();
-        String key = "file\";filename=\"" + fileName;
+        String key = String.format("file\";filename=\"%s", fileName);
         Map<String, RequestBody> params = new HashMap<>();
         params.put("parent_dir", TextUtils.isEmpty(rootName) ? RequestUtils.createTextBody("/") : RequestUtils.createTextBody(rootName));
         params.put(key, RequestUtils.createStreamBody(file));
-        getSFileApi().projectUploadFile("Token " + authToken, uploadUrl, params).enqueue(new Callback<JsonElement>() {
+        getSFileApi().sfileUploadFile(uploadUrl, params).enqueue(new Callback<JsonElement>() {
             @Override
             public void onResponse(Call<JsonElement> call, Response<JsonElement> response) {
                 dismissLoadingDialog();

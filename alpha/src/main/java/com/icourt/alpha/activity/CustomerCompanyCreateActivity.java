@@ -32,8 +32,8 @@ import com.icourt.alpha.entity.bean.SelectGroupBean;
 import com.icourt.alpha.entity.event.UpdateCustomerEvent;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
+import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.utils.SystemUtils;
-import com.icourt.alpha.utils.TextFormater;
 import com.icourt.api.RequestUtils;
 
 import org.greenrobot.eventbus.EventBus;
@@ -581,16 +581,16 @@ public class CustomerCompanyCreateActivity extends BaseActivity {
                 String time = null;
                 String month = null, day = null;
                 if (i1 + 1 < 10) {
-                    month = "0" + (i1 + 1);
+                    month = String.format("0%d", i1 + 1);
                 } else {
-                    month = (i1 + 1) + "";
+                    month = String.valueOf((i1 + 1));
                 }
                 if (i2 < 10) {
-                    day = "0" + i2;
+                    day = String.format("0%d", i2);
                 } else {
-                    day = i2 + "";
+                    day = String.valueOf((i2));
                 }
-                time = i + "年" + month + "月" + day + "日";
+                time = String.format("%d年%s月%s日", i, month, day);
                 textView.setText(time);
             }
         }, c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH));
@@ -1085,7 +1085,7 @@ public class CustomerCompanyCreateActivity extends BaseActivity {
                 String value = ((TextView) entry.getValue().findViewById(R.id.activity_add_contact_item_valuename_text)).getText().toString().trim();
                 if (value != null && value.length() > 0) {
                     if ("mails".equals(type)) {
-                        if (!TextFormater.isMailNO(value)) {
+                        if (!StringUtils.isMailNO(value)) {
                             showTopSnackBar("请输入正确的邮箱地址");
                             return null;
                         }
