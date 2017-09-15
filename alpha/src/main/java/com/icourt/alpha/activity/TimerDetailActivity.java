@@ -71,7 +71,7 @@ public class TimerDetailActivity extends BaseTimerActivity
 
     private static final String KEY_TIME = "key_time";
 
-    private static final long HOUR_TIME_24 = 24 * 60 * 60;
+    private static final long HOUR_TIME_24 = TimeUnit.DAYS.toSeconds(1);
 
 
     TimeEntity.ItemEntity itemEntity;
