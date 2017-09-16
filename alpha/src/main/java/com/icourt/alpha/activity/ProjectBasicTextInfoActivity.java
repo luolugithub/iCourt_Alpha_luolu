@@ -86,24 +86,24 @@ public class ProjectBasicTextInfoActivity extends BaseActivity {
     private String getTitleText() {
         switch (type) {
             case PROJECT_NAME_TYPE:
-                return "项目名称";
+                return getString(R.string.project_name);
             case PROJECT_TYPE_TYPE:
-                return "项目类型";
+                return getString(R.string.project_type);
             case PROJECT_NUMBER_TYPE:
-                return "项目编号";
+                return getString(R.string.project_number);
             case PROJECT_REMARK_TYPE:
-                return "项目备注";
+                return getString(R.string.project_remark);
             case Const.PROJECT_CASEPROCESS_TYPE://程序名称
-                return "程序名称";
+                return getString(R.string.project_range_name);
             case Const.PROJECT_PRICE_TYPE:
-                return "标的";
+                return getString(R.string.project_priceStr);
             case PROJECT_CASE_TYPE:
-                return "案由";
+                return getString(R.string.project_case);
             case PROJECT_CASENUMBER_TYPE:
-                return "案号";
+                return getString(R.string.project_case_code);
             case PROJECT_COMPETENT_TYPE:
-                return "法院";
+                return getString(R.string.project_court);
         }
-        return "项目信息";
+        return getString(R.string.project_info);
     }
 }

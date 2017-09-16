@@ -99,17 +99,17 @@ public class MyProjectFragment extends BaseFragment {
         if (projectType == TYPE_ALL_PROJECT) {
             attorneyType = "";
             myStar = "";
-            refreshLayout.setNoticeEmpty(R.mipmap.icon_placeholder_project, "暂无项目");
+            refreshLayout.setNoticeEmpty(R.mipmap.icon_placeholder_project, getString(R.string.project_no));
         } else if (projectType == TYPE_MY_ATTENTION_PROJECT) {
             attorneyType = "";
             myStar = "1";
             status = -1;
             matterType = "";
-            refreshLayout.setNoticeEmpty(R.mipmap.icon_placeholder_project, "暂无关注项目");
+            refreshLayout.setNoticeEmpty(R.mipmap.icon_placeholder_project, getString(R.string.project_no_star));
         } else if (projectType == TYPE_MY_PARTIC_PROJECT) {
             attorneyType = "O";
             myStar = "";
-            refreshLayout.setNoticeEmpty(R.mipmap.icon_placeholder_project, "暂无参与项目");
+            refreshLayout.setNoticeEmpty(R.mipmap.icon_placeholder_project, getString(R.string.project_no_participation));
         }
         refreshLayout.setMoveForHorizontal(true);
         recyclerView.setLayoutManager(linearLayoutManager = new LinearLayoutManager(getContext()));

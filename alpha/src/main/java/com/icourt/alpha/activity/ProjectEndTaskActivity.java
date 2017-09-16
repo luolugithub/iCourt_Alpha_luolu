@@ -62,7 +62,7 @@ public class ProjectEndTaskActivity extends BaseActivity {
     @Override
     protected void initView() {
         super.initView();
-        setTitle("查看已完成任务");
+        setTitle(getString(R.string.project_look_finished_task));
         projectId = getIntent().getStringExtra(ProjectEndTaskFragment.KEY_PROJECT_ID);
         ProjectEndTaskFragment projectEndTaskFragment = ProjectEndTaskFragment.newInstance(getActivity(), projectId);
         addOrShowFragmentAnim(projectEndTaskFragment, R.id.container, true);

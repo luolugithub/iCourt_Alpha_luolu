@@ -42,6 +42,9 @@ import retrofit2.Response;
 
 public class ProjectSelectActivity extends BaseActivity implements BaseRecyclerAdapter.OnItemClickListener {
     private static final String CLOSE_ACTION = "close_action";//关闭当前页面
+    private static final String KEY_SEAFILEREPOID = "key_seaFileRepoId";
+    private static final String KEY_AUTHTOKEN = "key_authToken";
+    private static final String KEY_FILEPATH= "key_filePath";
     String seaFileRepoId, filePath;
     @BindView(R.id.titleBack)
     ImageView titleBack;
@@ -61,9 +64,9 @@ public class ProjectSelectActivity extends BaseActivity implements BaseRecyclerA
                               @NonNull String filePath) {
         if (context == null) return;
         Intent intent = new Intent(context, ProjectSelectActivity.class);
-        intent.putExtra("authToken", authToken);
-        intent.putExtra("seaFileRepoId", seaFileRepoId);
-        intent.putExtra("filePath", filePath);
+        intent.putExtra(KEY_AUTHTOKEN, authToken);
+        intent.putExtra(KEY_SEAFILEREPOID, seaFileRepoId);
+        intent.putExtra(KEY_FILEPATH, filePath);
         context.startActivity(intent);
     }
 
@@ -104,11 +107,11 @@ public class ProjectSelectActivity extends BaseActivity implements BaseRecyclerA
     @Override
     protected void initView() {
         super.initView();
-        setTitle("我参与的项目");
-        seaFileRepoId = getIntent().getStringExtra("seaFileRepoId");
-        filePath = getIntent().getStringExtra("filePath");
+        setTitle(getString(R.string.project_my_participation));
+        seaFileRepoId = getIntent().getStringExtra(KEY_SEAFILEREPOID);
+        filePath = getIntent().getStringExtra(KEY_FILEPATH);
 
-        refreshLayout.setNoticeEmpty(R.mipmap.icon_placeholder_project, "暂无项目");
+        refreshLayout.setNoticeEmpty(R.mipmap.icon_placeholder_project, getString(R.string.project_no));
         refreshLayout.setMoveForHorizontal(true);
 
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
