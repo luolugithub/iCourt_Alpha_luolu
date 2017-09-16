@@ -23,12 +23,13 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
+                android:paddingLeft="@dimen/dp5"
                 android:background="@color/alpha_background_title"
                 app:tabMode="scrollable" />
 
             <ImageView
                 android:id="@+id/titleCalendar"
-                android:layout_width="38dp"
+                android:layout_width="42dp"
                 android:layout_height="match_parent"
                 android:background="?attr/selectableItemBackground"
                 android:padding="10dp"
@@ -37,7 +38,7 @@
 
             <ImageView
                 android:id="@id/titleAction"
-                android:layout_width="38dp"
+                android:layout_width="42dp"
                 android:layout_height="match_parent"
                 android:background="?attr/selectableItemBackground"
                 android:padding="10dp"
@@ -46,7 +47,7 @@
 
             <ImageView
                 android:id="@id/titleAction2"
-                android:layout_width="38dp"
+                android:layout_width="42dp"
                 android:layout_height="match_parent"
                 android:background="?attr/selectableItemBackground"
                 android:padding="10dp"
