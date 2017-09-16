@@ -15,6 +15,7 @@
         android:drawablePadding="@dimen/dp10"
         android:drawableTop="@mipmap/icon_add_36"
         android:padding="@dimen/dp10"
-        android:text="添加附件" />
+        android:text="@string/task_add_attachment"
+        android:textSize="@dimen/alpha_font_size_mini" />
 
 </RelativeLayout>

@@ -141,6 +141,7 @@
                 android:layout_height="wrap_content"
                 android:layout_centerInParent="true"
                 android:background="@drawable/orange_circle_bg"
+                android:elevation="@dimen/dp2"
                 android:ems="6"
                 android:gravity="center"
                 android:paddingBottom="8dp"

@@ -33,5 +33,6 @@
     <string name="task_can_not_revert">该操作不可恢复，确定清空？</string>
     <string name="task_none_finished_task">暂无已完成任务</string>
     <string name="task_my_allot_task">我分配的任务</string>
+    <string name="task_add_attachment">添加附件</string>
 
 </resources>

@@ -3,39 +3,52 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:gravity="center_vertical"
-    android:orientation="horizontal"
-    android:paddingBottom="7dp"
+    android:orientation="vertical"
     android:paddingLeft="15dp"
-    android:paddingRight="15dp"
-    android:paddingTop="7dp">
+    android:paddingRight="15dp">
 
-    <ImageView
-        android:id="@+id/user_icon_iv"
-        android:layout_width="32dp"
-        android:layout_height="32dp"
-        android:src="@mipmap/avatar_default_80" />
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingBottom="7dp"
+        android:paddingTop="7dp">
 
-    <TextView
-        android:id="@+id/user_name_tv"
-        android:layout_width="wrap_content"
-        android:layout_height="32dp"
-        android:layout_marginLeft="13dp"
-        android:layout_weight="1"
-        android:ellipsize="end"
-        android:gravity="center_vertical"
-        android:maxLines="1"
-        android:paddingRight="10dp"
-        android:text="阿三哥"
-        android:textColor="@color/alpha_font_color_black" />
+        <ImageView
+            android:id="@+id/user_icon_iv"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:src="@mipmap/avatar_default_80" />
 
-    <TextView
-        android:id="@+id/user_action_tv"
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:drawablePadding="7dp"
-        android:gravity="center_vertical"
-        android:drawableRight="@mipmap/arrow_bottom"
-        android:text="可读写" />
+        <TextView
+            android:id="@+id/user_name_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="32dp"
+            android:layout_marginLeft="13dp"
+            android:layout_weight="1"
+            android:ellipsize="end"
+            android:gravity="center_vertical"
+            android:maxLines="1"
+            android:paddingRight="10dp"
+            android:text="阿三哥"
+            android:textColor="@color/alpha_font_color_black" />
+
+        <TextView
+            android:id="@+id/user_action_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:drawablePadding="7dp"
+            android:drawableRight="@mipmap/arrow_bottom"
+            android:gravity="center_vertical"
+            android:textColor="@color/alpha_font_color_gray"
+            android:text="可读写" />
+    </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/alpha_height_divider"
+        android:layout_marginLeft="45dp"
+        android:background="@color/alpha_divider_color" />
 
 
 </LinearLayout>
