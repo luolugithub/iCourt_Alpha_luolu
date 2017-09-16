@@ -152,24 +152,26 @@ public class ProjectDetailActivity extends BaseActivity implements OnFragmentCal
      * 获取项目权限
      */
     private void checkAddTaskAndDocumentPms() {
-        getApi().permissionQuery(getLoginUserId(), "MAT", projectId).enqueue(new SimpleCallBack<List<String>>() {
-            @Override
-            public void onSuccess(Call<ResEntity<List<String>>> call, Response<ResEntity<List<String>>> response) {
+        callEnqueue(
+                getApi().permissionQuery(getLoginUserId(), "MAT", projectId),
+                new SimpleCallBack<List<String>>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<List<String>>> call, Response<ResEntity<List<String>>> response) {
 
-                if (response.body().result != null) {
-                    if (response.body().result.contains("MAT:matter.task:add")) {
-                        isCanlookAddTask = true;
+                        if (response.body().result != null) {
+                            if (response.body().result.contains("MAT:matter.task:add")) {
+                                isCanlookAddTask = true;
+                            }
+                            if (response.body().result.contains("MAT:matter.document:readwrite")) {
+                                isCanlookAddDocument = true;
+                            }
+                            if (response.body().result.contains("MAT:matter.timeLog:add")) {
+                                isCanAddTimer = true;
+                            }
+                            isShowTitleAction(1);
+                        }
                     }
-                    if (response.body().result.contains("MAT:matter.document:readwrite")) {
-                        isCanlookAddDocument = true;
-                    }
-                    if (response.body().result.contains("MAT:matter.timeLog:add")) {
-                        isCanAddTimer = true;
-                    }
-                    isShowTitleAction(1);
-                }
-            }
-        });
+                });
     }
 
     /**
@@ -316,21 +318,23 @@ public class ProjectDetailActivity extends BaseActivity implements OnFragmentCal
      */
     private void addStar() {
         showLoadingDialog(null);
-        getApi().projectAddStar(projectId).enqueue(new SimpleCallBack<JsonElement>() {
-            @Override
-            public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
-                dismissLoadingDialog();
-                myStar = 1;
-                titleAction2.setImageResource(R.mipmap.header_icon_star_solid);
-                EventBus.getDefault().post(new ProjectActionEvent(ProjectActionEvent.PROJECT_REFRESG_ACTION));
-            }
+        callEnqueue(
+                getApi().projectAddStar(projectId),
+                new SimpleCallBack<JsonElement>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
+                        dismissLoadingDialog();
+                        myStar = 1;
+                        titleAction2.setImageResource(R.mipmap.header_icon_star_solid);
+                        EventBus.getDefault().post(new ProjectActionEvent(ProjectActionEvent.PROJECT_REFRESG_ACTION));
+                    }
 
-            @Override
-            public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
-                super.onFailure(call, t);
-                dismissLoadingDialog();
-            }
-        });
+                    @Override
+                    public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
+                        super.onFailure(call, t);
+                        dismissLoadingDialog();
+                    }
+                });
     }
 
     /**
@@ -338,21 +342,23 @@ public class ProjectDetailActivity extends BaseActivity implements OnFragmentCal
      */
     private void deleteStar() {
         showLoadingDialog(null);
-        getApi().projectDeleteStar(projectId).enqueue(new SimpleCallBack<JsonElement>() {
-            @Override
-            public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
-                dismissLoadingDialog();
-                myStar = 0;
-                titleAction2.setImageResource(R.mipmap.header_icon_star_line);
-                EventBus.getDefault().post(new ProjectActionEvent(ProjectActionEvent.PROJECT_REFRESG_ACTION));
-            }
+        callEnqueue(
+                getApi().projectDeleteStar(projectId),
+                new SimpleCallBack<JsonElement>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
+                        dismissLoadingDialog();
+                        myStar = 0;
+                        titleAction2.setImageResource(R.mipmap.header_icon_star_line);
+                        EventBus.getDefault().post(new ProjectActionEvent(ProjectActionEvent.PROJECT_REFRESG_ACTION));
+                    }
 
-            @Override
-            public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
-                super.onFailure(call, t);
-                dismissLoadingDialog();
-            }
-        });
+                    @Override
+                    public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
+                        super.onFailure(call, t);
+                        dismissLoadingDialog();
+                    }
+                });
     }
 
     @Override

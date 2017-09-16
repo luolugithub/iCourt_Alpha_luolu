@@ -125,8 +125,9 @@ public class MyAtedActivity extends BaseActivity {
                 }
             }
         }
-        getChatApi().getAtMeMsg(msg_id)
-                .enqueue(new SimpleCallBack<List<IMMessageCustomBody>>() {
+        callEnqueue(
+                getChatApi().getAtMeMsg(msg_id),
+                new SimpleCallBack<List<IMMessageCustomBody>>() {
                     @Override
                     public void onSuccess(Call<ResEntity<List<IMMessageCustomBody>>> call, Response<ResEntity<List<IMMessageCustomBody>>> response) {
                         myAtedAdapter.bindData(isRefresh, response.body().result);

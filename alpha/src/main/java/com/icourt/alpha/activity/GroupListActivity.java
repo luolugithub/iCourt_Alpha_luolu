@@ -216,29 +216,31 @@ public class GroupListActivity extends BaseActivity implements BaseRecyclerAdapt
                 groupsCall = getChatApi().groupsQuery(0, true);
                 break;
         }
-        groupsCall.enqueue(new SimpleCallBack<List<GroupEntity>>() {
-            @Override
-            public void onSuccess(Call<ResEntity<List<GroupEntity>>> call, Response<ResEntity<List<GroupEntity>>> response) {
-                stopRefresh();
-                if (response.body().result != null) {
-                    IndexUtils.setSuspensions(getContext(), response.body().result);
-                    try {
-                        Collections.sort(response.body().result, new PinyinComparator<GroupEntity>());
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        bugSync("排序异常", e);
+        callEnqueue(
+                groupsCall,
+                new SimpleCallBack<List<GroupEntity>>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<List<GroupEntity>>> call, Response<ResEntity<List<GroupEntity>>> response) {
+                        stopRefresh();
+                        if (response.body().result != null) {
+                            IndexUtils.setSuspensions(getContext(), response.body().result);
+                            try {
+                                Collections.sort(response.body().result, new PinyinComparator<GroupEntity>());
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                                bugSync("排序异常", e);
+                            }
+                            groupAdapter.bindData(true, response.body().result);
+                            updateIndexBar(groupAdapter.getData());
+                        }
                     }
-                    groupAdapter.bindData(true, response.body().result);
-                    updateIndexBar(groupAdapter.getData());
-                }
-            }
 
-            @Override
-            public void onFailure(Call<ResEntity<List<GroupEntity>>> call, Throwable t) {
-                super.onFailure(call, t);
-                stopRefresh();
-            }
-        });
+                    @Override
+                    public void onFailure(Call<ResEntity<List<GroupEntity>>> call, Throwable t) {
+                        super.onFailure(call, t);
+                        stopRefresh();
+                    }
+                });
     }
 
 

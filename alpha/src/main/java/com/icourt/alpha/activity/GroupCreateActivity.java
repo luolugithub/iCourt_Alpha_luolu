@@ -241,8 +241,9 @@ public class GroupCreateActivity extends BaseActivity implements OnFragmentCallB
         }
         groupJsonObject.add("members", memberArray);
 
-        getChatApi().groupCreate(RequestUtils.createJsonBody(groupJsonObject.toString()))
-                .enqueue(new SimpleCallBack<GroupEntity>() {
+        callEnqueue(
+                getChatApi().groupCreate(RequestUtils.createJsonBody(groupJsonObject.toString())),
+                new SimpleCallBack<GroupEntity>() {
                     @Override
                     public void onSuccess(Call<ResEntity<GroupEntity>> call, Response<ResEntity<GroupEntity>> response) {
                         dismissLoadingDialog();
