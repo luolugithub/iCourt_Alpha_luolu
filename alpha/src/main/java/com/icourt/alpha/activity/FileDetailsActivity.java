@@ -189,9 +189,9 @@ public class FileDetailsActivity extends BaseActivity {
     protected void getData(boolean isRefresh) {
         super.getData(isRefresh);
 
-        getChatApi()
-                .msgStatus(item.id)
-                .enqueue(new SimpleCallBack<MsgStatusEntity>() {
+        callEnqueue(getChatApi()
+                .msgStatus(item.id),
+                new SimpleCallBack<MsgStatusEntity>() {
                     @Override
                     public void onSuccess(Call<ResEntity<MsgStatusEntity>> call, Response<ResEntity<MsgStatusEntity>> response) {
                         if (response.body().result == null) return;

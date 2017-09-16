@@ -274,7 +274,7 @@ public class ChatMsgClassfyActivity extends BaseActivity implements BaseRecycler
                 }
                 break;
         }
-        call.enqueue(new SimpleCallBack<List<IMMessageCustomBody>>() {
+        callEnqueue(call,new SimpleCallBack<List<IMMessageCustomBody>>() {
             @Override
             public void onSuccess(Call<ResEntity<List<IMMessageCustomBody>>> call, Response<ResEntity<List<IMMessageCustomBody>>> response) {
                 imUserMessageAdapter.bindData(isRefresh, response.body().result);

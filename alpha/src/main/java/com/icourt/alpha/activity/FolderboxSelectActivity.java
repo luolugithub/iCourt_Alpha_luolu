@@ -151,7 +151,8 @@ public class FolderboxSelectActivity extends BaseActivity implements BaseRecycle
      * 获取项目权限
      */
     private void checkAddTaskAndDocumentPms() {
-        getApi().permissionQuery(getLoginUserId(), "MAT", projectId).enqueue(new SimpleCallBack<List<String>>() {
+        callEnqueue(getApi().permissionQuery(getLoginUserId(), "MAT", projectId),
+                new SimpleCallBack<List<String>>() {
             @Override
             public void onSuccess(Call<ResEntity<List<String>>> call, Response<ResEntity<List<String>>> response) {
 
@@ -181,7 +182,8 @@ public class FolderboxSelectActivity extends BaseActivity implements BaseRecycle
     @Override
     protected void getData(final boolean isRefresh) {
         super.getData(isRefresh);
-        getSFileApi().projectQueryFileBoxByDir(seaFileRepoId, rootName).enqueue(new SFileCallBack<List<FileBoxBean>>() {
+        callEnqueue(getSFileApi().projectQueryFileBoxByDir(seaFileRepoId, rootName),
+                new SFileCallBack<List<FileBoxBean>>() {
             @Override
             public void onSuccess(Call<List<FileBoxBean>> call, Response<List<FileBoxBean>> response) {
                 stopRefresh();
@@ -206,8 +208,8 @@ public class FolderboxSelectActivity extends BaseActivity implements BaseRecycle
      * 获取根目录id
      */
     private void getDocumentId() {
-        getApi().projectQueryDocumentId(projectId)
-                .enqueue(new SimpleCallBack2<RepoIdResEntity>() {
+        callEnqueue(getApi().projectQueryDocumentId(projectId),
+                new SimpleCallBack2<RepoIdResEntity>() {
                     @Override
                     public void onSuccess(Call<RepoIdResEntity> call, Response<RepoIdResEntity> response) {
                         if (!TextUtils.isEmpty(response.body().seaFileRepoId)) {
@@ -293,7 +295,8 @@ public class FolderboxSelectActivity extends BaseActivity implements BaseRecycle
             return;
         }
         showLoadingDialog("正在上传...");
-        getSFileApi().projectUploadUrlQuery(seaFileRepoId).enqueue(new SFileCallBack<JsonElement>() {
+        callEnqueue(getSFileApi().projectUploadUrlQuery(seaFileRepoId),
+                new SFileCallBack<JsonElement>() {
             @Override
             public void onSuccess(Call<JsonElement> call, Response<JsonElement> response) {
                 if (response.body() != null) {
@@ -330,7 +333,8 @@ public class FolderboxSelectActivity extends BaseActivity implements BaseRecycle
         Map<String, RequestBody> params = new HashMap<>();
         params.put("parent_dir", TextUtils.isEmpty(rootName) ? RequestUtils.createTextBody("/") : RequestUtils.createTextBody(rootName));
         params.put(key, RequestUtils.createStreamBody(file));
-        getSFileApi().sfileUploadFile(uploadUrl, params).enqueue(new SFileCallBack<JsonElement>() {
+        callEnqueue(getSFileApi().sfileUploadFile(uploadUrl, params),
+                new SFileCallBack<JsonElement>() {
             @Override
             public void onSuccess(Call<JsonElement> call, Response<JsonElement> response) {
                 dismissLoadingDialog();

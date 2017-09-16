@@ -61,8 +61,7 @@ public class BaseAppUpdateActivity extends BaseUmengActivity implements
     @Override
     public final void checkAppUpdate(@NonNull BaseCallBack<AppVersionEntity> callBack) {
         if (callBack == null) return;
-        getApi().getNewVersionAppInfo(BuildConfig.APK_UPDATE_URL)
-                .enqueue(callBack);
+        callEnqueue(getApi().getNewVersionAppInfo(BuildConfig.APK_UPDATE_URL), callBack);
     }
 
     @Override
