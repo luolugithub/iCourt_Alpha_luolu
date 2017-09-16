@@ -243,9 +243,9 @@ public class ProjectDetailFragment extends BaseFragment implements BaseRecyclerA
         if (projectDetailBean.clients == null || projectDetailBean.clients.size() <= 0) return;
         ProjectBasicItemEntity itemEntity = new ProjectBasicItemEntity();
         if (projectDetailBean.clients.size() > 1) {
-            itemEntity.key = String.format(getString(R.string.project_client_format), projectDetailBean.clients.size());
+            itemEntity.key = String.format(getString(R.string.project_clients_format), projectDetailBean.clients.size());
         } else {
-            itemEntity.key = getString(R.string.project_client);
+            itemEntity.key = getString(R.string.project_clients);
         }
         StringBuffer buffer = new StringBuffer();
         for (ProjectDetailEntity.ClientsBean client : projectDetailBean.clients) {

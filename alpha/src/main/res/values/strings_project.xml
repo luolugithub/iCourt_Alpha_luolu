@@ -22,15 +22,15 @@
     <string name="project_number">项目编号</string>
     <string name="project_remark">项目备注</string>
     <string name="project_date">项目时间</string>
-    <string name="project_members_format">项目成员（%s)</string>
+    <string name="project_members_format">项目成员(%s)</string>
     <string name="project_members">项目成员</string>
-    <string name="project_client_format">客户 (%s)</string>
-    <string name="project_client">客户</string>
-    <string name="project_litigants_format">当事人 (%s)</string>
+    <string name="project_clients_format">客户(%s)</string>
+    <string name="project_clients">客户</string>
+    <string name="project_litigants_format">当事人(%s)</string>
     <string name="project_litigants">当事人</string>
-    <string name="project_groups_format">负责部门 (%s)</string>
+    <string name="project_groups_format">负责部门(%s)</string>
     <string name="project_groups">负责部门</string>
-    <string name="project_attorneys_format">案源律师 (%s)</string>
+    <string name="project_attorneys_format">案源律师(%s)</string>
     <string name="project_attorneys">案源律师</string>
     <string name="project_info">项目信息</string>
 
