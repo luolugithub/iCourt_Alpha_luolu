@@ -773,7 +773,7 @@ public class FolderListActivity extends FolderBaseActivity
                 if (item.isDir()) {
                     FolderListActivity.launch(getContext(),
                             getRepoType(),
-                            getRepoPermission(),
+                            SFileConfig.convert2filePermission(item.permission),
                             getSeaFileRepoId(),
                             item.name,
                             String.format("%s%s/", getSeaFileDirPath(), item.name),
