@@ -358,21 +358,6 @@ public class ProjectTaskFragment extends BaseTaskFragment implements BaseQuickAd
         }
     }
 
-    /**
-     * 根据任务id，获取任务在Adapter中的位置
-     *
-     * @param taskId
-     * @return
-     */
-    private int getItemPosition(String taskId) {
-        for (int i = 0; i < taskAdapter.getData().size(); i++) {
-            TaskEntity.TaskItemEntity taskItemEntity = taskAdapter.getData().get(i);
-            if (taskItemEntity.type == 0 && TextUtils.equals(taskItemEntity.id, taskId)) {
-                return i;
-            }
-        }
-        return -1;
-    }
 
     @Override
     protected void startTimingBack(TaskEntity.TaskItemEntity requestEntity, Response<TimeEntity.ItemEntity> response) {
