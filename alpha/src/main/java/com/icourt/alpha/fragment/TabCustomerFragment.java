@@ -191,8 +191,9 @@ public class TabCustomerFragment extends BaseFragment implements BaseRecyclerAda
     @Override
     protected void getData(final boolean isRefresh) {
         super.getData(isRefresh);
-        getApi().getCustomers(100000)
-                .enqueue(new SimpleCallBack<List<CustomerEntity>>() {
+        callEnqueue(
+                getApi().getCustomers(100000),
+                new SimpleCallBack<List<CustomerEntity>>() {
                     @Override
                     public void onSuccess(Call<ResEntity<List<CustomerEntity>>> call, Response<ResEntity<List<CustomerEntity>>> response) {
                         stopRefresh();

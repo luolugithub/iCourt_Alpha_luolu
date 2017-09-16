@@ -487,34 +487,28 @@ public class TaskListFragment extends BaseTaskFragment implements
         } else {
             orderBy = "updateTime";
         }
-        getApi().taskListQuery(0,
-                getLoginUserId(),
-                stateType,
-                attentionType,
-                orderBy,
-                1,
-                -1,
-                0).enqueue(new SimpleCallBack<TaskEntity>() {
-            @Override
-            public void onSuccess(Call<ResEntity<TaskEntity>> call, Response<ResEntity<TaskEntity>> response) {
-                stopRefresh();
-                getTaskGroupData(response.body().result);
-                if (response.body().result != null) {
-                    if (type == TYPE_ALL && onTasksChangeListener != null) {
-                        //暂时注释掉，因为现在每次切换到任务列表，都重新构建了TaskListFragment
+        callEnqueue(
+                getApi().taskListQuery(0, getLoginUserId(), stateType, attentionType, orderBy, 1, -1, 0),
+                new SimpleCallBack<TaskEntity>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<TaskEntity>> call, Response<ResEntity<TaskEntity>> response) {
+                        stopRefresh();
+                        getTaskGroupData(response.body().result);
+                        if (response.body().result != null) {
+                            if (type == TYPE_ALL && onTasksChangeListener != null) {
+                                //暂时注释掉，因为现在每次切换到任务列表，都重新构建了TaskListFragment
 //                        onTasksChangeListener.onTasksChanged(response.body().result.items);
+                            }
+                        }
                     }
-                }
-            }
 
-            @Override
-            public void onFailure(Call<ResEntity<TaskEntity>> call, Throwable t) {
-                super.onFailure(call, t);
-                stopRefresh();
-                enableEmptyView(null);
-            }
-        });
-
+                    @Override
+                    public void onFailure(Call<ResEntity<TaskEntity>> call, Throwable t) {
+                        super.onFailure(call, t);
+                        stopRefresh();
+                        enableEmptyView(null);
+                    }
+                });
     }
 
     /**
@@ -699,24 +693,27 @@ public class TaskListFragment extends BaseTaskFragment implements
      * 获取新任务数量
      */
     private void getNewTasksCount() {
-        getApi().newTasksCountQuery().enqueue(new SimpleCallBack<List<String>>() {
-            @Override
-            public void onSuccess(Call<ResEntity<List<String>>> call, Response<ResEntity<List<String>>> response) {
-                if (response.body().result != null) {
-                    int totalCount = response.body().result.size();
-                    if (totalCount > 0) {
-                        newTaskCardview.setVisibility(View.VISIBLE);
-                        newTaskCardview.setClickable(true);
-                        nextTaskLayout.setVisibility(View.GONE);
-                        newTaskCountTv.setText(String.valueOf(totalCount));
-                    } else {
-                        newTaskCardview.setVisibility(View.GONE);
-                        nextTaskLayout.setVisibility(View.GONE);
-                        newTaskEntities.clear();
+        callEnqueue(
+                getApi().newTasksCountQuery(),
+                new SimpleCallBack<List<String>>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<List<String>>> call, Response<ResEntity<List<String>>> response) {
+                        if (response.body().result != null) {
+                            int totalCount = response.body().result.size();
+                            if (totalCount > 0) {
+                                newTaskCardview.setVisibility(View.VISIBLE);
+                                newTaskCardview.setClickable(true);
+                                nextTaskLayout.setVisibility(View.GONE);
+                                newTaskCountTv.setText(String.valueOf(totalCount));
+                            } else {
+                                newTaskCardview.setVisibility(View.GONE);
+                                nextTaskLayout.setVisibility(View.GONE);
+                                newTaskEntities.clear();
+                            }
+                        }
                     }
                 }
-            }
-        });
+        );
     }
 
     /**
@@ -732,20 +729,23 @@ public class TaskListFragment extends BaseTaskFragment implements
             }
             if (ids.size() > 0) {
                 showLoadingDialog(null);
-                getApi().clearDeletedTask(ids).enqueue(new SimpleCallBack<JsonElement>() {
-                    @Override
-                    public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
-                        dismissLoadingDialog();
-                        taskAdapter.clearData();
-                        enableEmptyView(taskAdapter.getData());
-                    }
+                callEnqueue(
+                        getApi().clearDeletedTask(ids),
+                        new SimpleCallBack<JsonElement>() {
+                            @Override
+                            public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
+                                dismissLoadingDialog();
+                                taskAdapter.clearData();
+                                enableEmptyView(taskAdapter.getData());
+                            }
 
-                    @Override
-                    public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
-                        super.onFailure(call, t);
-                        dismissLoadingDialog();
-                    }
-                });
+                            @Override
+                            public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
+                                super.onFailure(call, t);
+                                dismissLoadingDialog();
+                            }
+                        }
+                );
             }
         }
     }
@@ -758,22 +758,25 @@ public class TaskListFragment extends BaseTaskFragment implements
     private void recoverTaskById(final TaskEntity.TaskItemEntity itemEntity) {
         if (itemEntity == null) return;
         showLoadingDialog(null);
-        getApi().taskRecoverById(itemEntity.id).enqueue(new SimpleCallBack<JsonElement>() {
-            @Override
-            public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
-                dismissLoadingDialog();
-                if (taskAdapter != null) {
-                    taskAdapter.removeItem(itemEntity);
-                    enableEmptyView(taskAdapter.getData());
-                }
-            }
+        callEnqueue(
+                getApi().taskRecoverById(itemEntity.id),
+                new SimpleCallBack<JsonElement>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
+                        dismissLoadingDialog();
+                        if (taskAdapter != null) {
+                            taskAdapter.removeItem(itemEntity);
+                            enableEmptyView(taskAdapter.getData());
+                        }
+                    }
 
-            @Override
-            public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
-                super.onFailure(call, t);
-                dismissLoadingDialog();
-            }
-        });
+                    @Override
+                    public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
+                        super.onFailure(call, t);
+                        dismissLoadingDialog();
+                    }
+                }
+        );
     }
 
     @Override
@@ -843,35 +846,38 @@ public class TaskListFragment extends BaseTaskFragment implements
      */
     public void checkNewTaskRead(final List<String> ids) {
         if (newTaskEntities == null) return;
-        getApi().checkAllNewTask(ids).enqueue(new SimpleCallBack<JsonElement>() {
-            @Override
-            public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
-                dismissLoadingDialog();
-                if (ids != null) {
-                    if (ids.size() == 1) {
-                        if (newTaskEntities.size() > 0)
-                            newTaskEntities.remove(0);
-                        if (newTaskEntities.size() > 1) {
-                            nextTaskLayout.setVisibility(View.VISIBLE);
+        callEnqueue(
+                getApi().checkAllNewTask(ids),
+                new SimpleCallBack<JsonElement>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
+                        dismissLoadingDialog();
+                        if (ids != null) {
+                            if (ids.size() == 1) {
+                                if (newTaskEntities.size() > 0)
+                                    newTaskEntities.remove(0);
+                                if (newTaskEntities.size() > 1) {
+                                    nextTaskLayout.setVisibility(View.VISIBLE);
+                                }
+                                newTaskCountTv.setText(String.valueOf(newTaskEntities.size()));
+                                nextTaskTv.setText(getString(R.string.task_next, String.valueOf(newTaskEntities.size())));
+                            } else {
+                                newTaskEntities.clear();
+                            }
+                            if (newTaskEntities.size() == 0) {
+                                newTaskCardview.setVisibility(View.GONE);
+                                nextTaskLayout.setVisibility(View.GONE);
+                            }
                         }
-                        newTaskCountTv.setText(String.valueOf(newTaskEntities.size()));
-                        nextTaskTv.setText(getString(R.string.task_next, String.valueOf(newTaskEntities.size())));
-                    } else {
-                        newTaskEntities.clear();
                     }
-                    if (newTaskEntities.size() == 0) {
-                        newTaskCardview.setVisibility(View.GONE);
-                        nextTaskLayout.setVisibility(View.GONE);
+
+                    @Override
+                    public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
+                        super.onFailure(call, t);
+                        dismissLoadingDialog();
                     }
                 }
-            }
-
-            @Override
-            public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
-                super.onFailure(call, t);
-                dismissLoadingDialog();
-            }
-        });
+        );
     }
 
     /**

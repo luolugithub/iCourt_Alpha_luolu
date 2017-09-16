@@ -245,8 +245,9 @@ public class TabSearchFragment extends BaseFragment implements OnFragmentCallBac
     protected void getData(boolean isRefresh) {
         super.getData(isRefresh);
         getFromLocal();
-        getApi().getSearchEngines()
-                .enqueue(new SimpleCallBack<List<SearchEngineEntity>>() {
+        callEnqueue(
+                getApi().getSearchEngines(),
+                new SimpleCallBack<List<SearchEngineEntity>>() {
                     @Override
                     public void onSuccess(Call<ResEntity<List<SearchEngineEntity>>> call, Response<ResEntity<List<SearchEngineEntity>>> response) {
                         if (response.body().result != null) {

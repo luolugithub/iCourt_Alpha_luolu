@@ -249,24 +249,27 @@ public class TaskOtherListFragment extends BaseTaskFragment implements BaseQuick
         }
         pageIndex = -1;
         pageSize = 10000;
-        getApi().taskListItemQuery(getAssignTos(), stateType, 0, orderBy, pageIndex, pageSize, 0).enqueue(new SimpleCallBack<TaskEntity>() {
-            @Override
-            public void onSuccess(Call<ResEntity<TaskEntity>> call, Response<ResEntity<TaskEntity>> response) {
-                if (response.body().result != null) {
-                    getTaskGroupData(response.body().result);
-                    if (isRefresh)
-                        enableEmptyView(response.body().result.items);
-                    stopRefresh();
-                }
-            }
+        callEnqueue(
+                getApi().taskListItemQuery(getAssignTos(), stateType, 0, orderBy, pageIndex, pageSize, 0),
+                new SimpleCallBack<TaskEntity>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<TaskEntity>> call, Response<ResEntity<TaskEntity>> response) {
+                        if (response.body().result != null) {
+                            getTaskGroupData(response.body().result);
+                            if (isRefresh)
+                                enableEmptyView(response.body().result.items);
+                            stopRefresh();
+                        }
+                    }
 
-            @Override
-            public void onFailure(Call<ResEntity<TaskEntity>> call, Throwable t) {
-                super.onFailure(call, t);
-                stopRefresh();
-                enableEmptyView(null);
-            }
-        });
+                    @Override
+                    public void onFailure(Call<ResEntity<TaskEntity>> call, Throwable t) {
+                        super.onFailure(call, t);
+                        stopRefresh();
+                        enableEmptyView(null);
+                    }
+                }
+        );
     }
 
     /**
