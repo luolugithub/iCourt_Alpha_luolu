@@ -119,12 +119,6 @@ public class FileBaseActivity extends BaseActivity {
                                                                  @android.support.annotation.NonNull List<FolderDocumentEntity> datas) {
         return Observable
                 .just(datas)
-                .filter(new Predicate<List<FolderDocumentEntity>>() {
-                    @Override
-                    public boolean test(@NonNull List<FolderDocumentEntity> folderDocumentEntities) throws Exception {
-                        return !folderDocumentEntities.isEmpty();
-                    }
-                })
                 .map(new Function<List<FolderDocumentEntity>, List<FolderDocumentEntity>>() {
                     @Override
                     public List<FolderDocumentEntity> apply(@NonNull List<FolderDocumentEntity> folderDocumentEntities) throws Exception {
@@ -143,6 +137,7 @@ public class FileBaseActivity extends BaseActivity {
 
     /**
      * 包装 repoid 和dirpath
+     *
      * @param seaFileRepoId
      * @param seaFileDirPath
      * @param items
