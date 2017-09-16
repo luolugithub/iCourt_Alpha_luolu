@@ -55,6 +55,7 @@ public class UpdateUserInfoActivity extends BaseActivity {
     public static final int UPDATE_NAME_TYPE = 3;//修改姓名
 
     private static final int UPDATE_NAME_MAX_LENGTH = 64;//修改姓名时 最大长度
+    private static final int UPDATE_PHONE_MAX_LENGTH = 15;//修改电话时 最大长度
 
     private static final String KEY_TYPE = "key_type";
     private static final String KEY_STRING_VALUE = "key_string_value";
@@ -136,6 +137,7 @@ public class UpdateUserInfoActivity extends BaseActivity {
                 setTitle("电话号码");
                 myCenterUpdateHintText.setText("电话号码");
                 updateStateLayout.setVisibility(View.VISIBLE);
+                myCenterUpdateEdittext.setFilters(new InputFilter[]{new InputFilter.LengthFilter(15)});
                 myCenterUpdateEdittext.setKeyListener(new NumberKeyListener() {
                     @Override
                     protected char[] getAcceptedChars() {
@@ -174,27 +176,18 @@ public class UpdateUserInfoActivity extends BaseActivity {
         myCenterUpdateEdittext.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-                if (getType() == UPDATE_PHONE_TYPE) {
-                    setRightLayoutVisible(s.toString().replace(" ", ""));
-                } else {
-                    setRightLayoutVisible(s.toString());
-                }
+                setRightLayoutVisible(myCenterUpdateEdittext.getText());
             }
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                formatPhoneTextChanged(s, count);
+                formatPhoneTextChanged(myCenterUpdateEdittext.getText(), count);
             }
 
             @Override
             public void afterTextChanged(Editable s) {
-                myCenterUpdateEdittext.setSelection(myCenterUpdateEdittext.getText().length());
-                if (getType() == UPDATE_PHONE_TYPE) {
-                    setRightLayoutVisible(s.toString().replace(" ", ""));
-                } else {
-                    setRightLayoutVisible(s.toString());
-                    setNameEditMaxLength();
-                }
+                setRightLayoutVisible(myCenterUpdateEdittext.getText());
+                setNameEditMaxLength();
             }
         });
     }
@@ -218,14 +211,14 @@ public class UpdateUserInfoActivity extends BaseActivity {
      *
      * @param content
      */
-    private void setRightLayoutVisible(String content) {
-        if (content.toString().length() > 0) {
+    private void setRightLayoutVisible(CharSequence content) {
+        if (!TextUtils.isEmpty(content)) {
             updateRightLayout.setVisibility(View.VISIBLE);
             switch (getType()) {
                 case UPDATE_EMAIL_TYPE:
                     updateStateLayout.setVisibility(View.VISIBLE);
                     myCenterUpdateClearView.setVisibility(View.VISIBLE);
-                    boolean isMail = StringUtils.isMailNO(content);
+                    boolean isMail = StringUtils.isMailNO(content.toString());
                     myCenterUpdateStateView.setImageResource(isMail ? R.mipmap.header_icon_star_solid : R.mipmap.header_icon_star_line);
                     myCenterUpdateErrorHintText.setVisibility(isMail ? View.GONE : View.VISIBLE);
                     myCenterUpdateErrorHintText.setText("请使用有效的邮箱地址");
@@ -234,7 +227,7 @@ public class UpdateUserInfoActivity extends BaseActivity {
                 case UPDATE_PHONE_TYPE:
                     updateStateLayout.setVisibility(View.VISIBLE);
                     myCenterUpdateClearView.setVisibility(View.VISIBLE);
-                    boolean isMobile = StringUtils.isMobileNO86(content);
+                    boolean isMobile = StringUtils.isMobileNO86(content.toString());
                     myCenterUpdateStateView.setImageResource(isMobile ? R.mipmap.header_icon_star_solid : R.mipmap.header_icon_star_line);
                     myCenterUpdateErrorHintText.setVisibility(isMobile ? View.GONE : View.VISIBLE);
                     myCenterUpdateErrorHintText.setText("请使用有效的中国大陆手机号");
@@ -295,7 +288,7 @@ public class UpdateUserInfoActivity extends BaseActivity {
         if (TextUtils.isEmpty(value)) return;
         switch (getType()) {
             case UPDATE_PHONE_TYPE:
-                upDatePhone(userId, value.replace(" ", ""));
+                upDatePhone(userId, value);
                 break;
             case UPDATE_EMAIL_TYPE:
                 upDateEmail(userId, value);
@@ -400,24 +393,24 @@ public class UpdateUserInfoActivity extends BaseActivity {
      */
     private void formatPhoneTextChanged(CharSequence s, int count) {
         if (TextUtils.isEmpty(s)) return;
+        log("CharSequence s ---- " + s);
         if (getType() == UPDATE_PHONE_TYPE) {
             int length = s.toString().length();
             String firstChar = String.valueOf(s.charAt(0));
             if (TextUtils.equals(firstChar, "+")) {
-                myCenterUpdateEdittext.setFilters(new InputFilter[]{new InputFilter.LengthFilter(15)});
                 if (count == 0) { //删除数字
                     if (length == 4) {
                         myCenterUpdateEdittext.setText(s.subSequence(0, 3));
+                        myCenterUpdateEdittext.setSelection(myCenterUpdateEdittext.getText().length());
                     }
                 } else if (count == 1) {//添加数字
-                    if (length == 4) {
+                    if (length == 4 || (length == 14 && !s.toString().contains(" "))) {
                         String part1 = s.subSequence(0, 3).toString();
                         String part2 = s.subSequence(3, length).toString();
                         myCenterUpdateEdittext.setText(part1 + " " + part2);
+                        myCenterUpdateEdittext.setSelection(myCenterUpdateEdittext.getText().length());
                     }
                 }
-            } else {
-                myCenterUpdateEdittext.setFilters(new InputFilter[]{new InputFilter.LengthFilter(11)});
             }
             if (length > 0) {
                 updateRightLayout.setVisibility(View.VISIBLE);

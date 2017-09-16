@@ -179,10 +179,11 @@ public class StringUtils {
      * @return
      */
     public static boolean isMobileNO(String mobiles) {
-        String telRegex = "(010\\d{8})|(0[2-9]\\d{9})|(13\\d{9})|(14[57]\\d{8})|(15\\d{9})|(17\\d{9})|(18\\d{9})";
         if (TextUtils.isEmpty(mobiles)) return false;
-        else return mobiles.matches(telRegex);
+        String telRegex = "(010\\d{8})|(0[2-9]\\d{9})|(13\\d{9})|(14[57]\\d{8})|(15\\d{9})|(17\\d{9})|(18\\d{9})";
+        return mobiles.matches(telRegex);
     }
+
     /**
      * 判断手机号
      *
@@ -190,10 +191,11 @@ public class StringUtils {
      * @return
      */
     public static boolean isMobileNO86(String mobiles) {
-        String telRegex = "((\\+86)|(86))?(13\\d{9})|(14[57]\\d{8})|(15\\d{9})|(17\\d{9})|(18\\d{9})";
         if (TextUtils.isEmpty(mobiles)) return false;
-        else return mobiles.matches(telRegex);
+        String telRegex = "((\\+86)+[ ]+((13\\d{9})|(14[57]\\d{8})|(15\\d{9})|(17\\d{9})|(18\\d{9})))|(13\\d{9})|(14[57]\\d{8})|(15\\d{9})|(17\\d{9})|(18\\d{9})";
+        return mobiles.matches(telRegex);
     }
+
     /**
      * 判断邮箱
      *
