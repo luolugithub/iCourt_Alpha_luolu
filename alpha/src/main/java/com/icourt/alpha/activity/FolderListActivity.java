@@ -873,7 +873,8 @@ public class FolderListActivity extends FolderBaseActivity
                                     item,
                                     getSeaFileRepoId(),
                                     getSeaFileDirPath());
-                        } else if (TextUtils.equals(action, getString(R.string.sfile_file_share))) {
+                        } else if (TextUtils.equals(action, getString(R.string.sfile_file_share))
+                                || TextUtils.equals(action, getString(R.string.sfile_folder_share))) {
                             if (item.isDir()) {
                                 FolderDetailDialogFragment.show(
                                         getSeaFileRepoId(),
