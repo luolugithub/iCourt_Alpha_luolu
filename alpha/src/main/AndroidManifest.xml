@@ -115,9 +115,6 @@
             android:windowSoftInputMode="adjustUnspecified|adjustResize|stateHidden" />
 
         <activity
-            android:name=".activity.TestActivity"
-            android:screenOrientation="portrait" />
-        <activity
             android:name=".activity.AboutActivity"
             android:screenOrientation="portrait" />
         <activity
