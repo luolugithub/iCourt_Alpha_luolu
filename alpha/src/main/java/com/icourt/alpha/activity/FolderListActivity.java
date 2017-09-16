@@ -535,7 +535,7 @@ public class FolderListActivity extends FolderBaseActivity
                     public void onSortTypeSelected(@FileSortComparator.FileSortType int sortType) {
                         if (fileSortType != sortType) {
                             fileSortType = sortType;
-                            showLoadingDialog(R.string.str_sorting);
+                            showLoadingDialog(R.string.str_executing);
                             sortFile(getAllData());
                         }
                     }
@@ -873,7 +873,8 @@ public class FolderListActivity extends FolderBaseActivity
                                     item,
                                     getSeaFileRepoId(),
                                     getSeaFileDirPath());
-                        } else if (TextUtils.equals(action, getString(R.string.sfile_file_share))) {
+                        } else if (TextUtils.equals(action, getString(R.string.sfile_file_share))
+                                || TextUtils.equals(action, getString(R.string.sfile_folder_share))) {
                             if (item.isDir()) {
                                 FolderDetailDialogFragment.show(
                                         getSeaFileRepoId(),

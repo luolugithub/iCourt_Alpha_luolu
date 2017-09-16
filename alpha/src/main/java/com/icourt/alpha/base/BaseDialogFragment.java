@@ -711,7 +711,60 @@ public abstract class BaseDialogFragment extends DialogFragment
     }
 
 
+    /**
+     * 容易出现状态丢失
+     *
+     * @param transaction
+     * @param tag
+     * @return
+     */
+    @Override
+    public int show(FragmentTransaction transaction, String tag) {
+        try {
+            return super.show(transaction, tag);
+        } catch (IllegalStateException e) {
+            e.printStackTrace();
+            bugSync("DialogFragment Transaction show Exception", e);
+        }
+        return -1;
+    }
 
+    /**
+     * 容易出现状态丢失
+     *
+     * @param manager
+     * @param tag
+     */
+    @Override
+    public void show(FragmentManager manager, String tag) {
+        try {
+            super.show(manager, tag);
+        } catch (IllegalStateException e) {
+            e.printStackTrace();
+            bugSync("DialogFragment manager show Exception", e);
+        }
+    }
+
+    /**
+     * 不建议用这个
+     *
+     * @link{ "dismissAllowingStateLoss()" }
+     */
+    @Override
+    public void dismiss() {
+        try {
+            super.dismiss();
+        } catch (IllegalStateException e) {
+            e.printStackTrace();
+            bugSync("DialogFragment dismiss Exception", e);
+            try {
+                dismissAllowingStateLoss();
+            } catch (Throwable ex) {
+                ex.printStackTrace();
+                bugSync("DialogFragment dismissAllowingStateLoss Exception", ex);
+            }
+        }
+    }
 
     /**
      * 检查权限
