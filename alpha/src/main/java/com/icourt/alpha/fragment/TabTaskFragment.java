@@ -2,6 +2,7 @@ package com.icourt.alpha.fragment;
 
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.TabLayout;
@@ -15,15 +16,14 @@ import android.widget.ImageView;
 import android.widget.PopupWindow;
 import android.widget.TextView;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 import com.icourt.alpha.R;
-import com.icourt.alpha.activity.MyAllotTaskActivity;
+import com.icourt.alpha.activity.TaskOtherActivity;
 import com.icourt.alpha.activity.TaskCreateActivity;
 import com.icourt.alpha.adapter.baseadapter.BaseFragmentAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.entity.bean.FilterDropEntity;
+import com.icourt.alpha.entity.bean.TaskCountEntity;
 import com.icourt.alpha.entity.bean.TaskMemberEntity;
 import com.icourt.alpha.fragment.dialogfragment.TaskMemberSelectDialogFragment;
 import com.icourt.alpha.http.callback.SimpleCallBack;
@@ -56,10 +56,6 @@ import retrofit2.Response;
  */
 public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackListener, TopMiddlePopup.OnItemClickListener {
 
-    public int select_position = 0;//选择的筛选选项
-    public boolean isAwayScroll = false; //切换时是否滚动，在'已完成和已删除'状态下，点击新任务提醒。
-    public boolean isShowCalendar;//是否显示日历页面
-
     @BindView(R.id.tabLayout)
     TabLayout tabLayout;
     @BindView(R.id.titleAction)
@@ -68,19 +64,22 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
     AppBarLayout titleView;
     @BindView(R.id.viewPager)
     NoScrollViewPager viewPager;
-    Unbinder unbinder;
-    BaseFragmentAdapter baseFragmentAdapter;
     @BindView(R.id.titleAction2)
     ImageView titleAction2;
     @BindView(R.id.titleCalendar)
     ImageView titleCalendar;
-    TaskListFragment attentionTaskFragment;
-    TaskAllFragment alltaskFragment;
-    TopMiddlePopup topMiddlePopup;
-    List<FilterDropEntity> dropEntities = new ArrayList<>();
-    FilterDropEntity doingEntity = new FilterDropEntity("未完成", "0", 0);//未完成
-    FilterDropEntity doneEntity = new FilterDropEntity("已完成", "0", 1);//已完成
-    FilterDropEntity deleteEntity = new FilterDropEntity("已删除", "0", 3);//已删除
+
+    Unbinder unbinder;
+
+    BaseFragmentAdapter baseFragmentAdapter;
+    TaskAllFragment alltaskFragment; //用来显示未完成、已完成、已删除的任务列表的碎片
+    TaskListFragment attentionTaskFragment; //我关注的任务列表
+    TopMiddlePopup topMiddlePopup;//用来显示顶部未完成、已完成、已删除的弹出窗
+    List<FilterDropEntity> dropEntities = new ArrayList<>();//存储弹出窗所需要的数据的集合
+
+    public int selectPosition = 0;//选择的筛选选项的position：0，未完成；1，已完成；2，已删除。
+    public boolean isAwayScroll = false; //切换时是否滚动，在'已完成和已删除'状态下，点击新任务提醒。
+    public boolean isShowCalendar;//是否显示日历页面
 
     private Handler handler = new Handler();
 
@@ -99,23 +98,23 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
 
     @Override
     protected void initView() {
-        select_position = 0;
+
+        setTaskPopCount("0", "0", "0");//初始化任务的pop所要显示的数据
+        topMiddlePopup = new TopMiddlePopup(getContext(), DensityUtil.getWidthInDp(getContext()), (int) (DensityUtil.getHeightInPx(getContext()) - DensityUtil.dip2px(getContext(), 75)), this);
+        topMiddlePopup.setMyItems(dropEntities);
+        getTasksStateCount();//获取任务的pop所要显示的数据
+        selectPosition = 0;//默认选中未完成的筛选器
+
         baseFragmentAdapter = new BaseFragmentAdapter(getChildFragmentManager());
         viewPager.setNoScroll(false);
         viewPager.setAdapter(baseFragmentAdapter);
         tabLayout.setupWithViewPager(viewPager);
-//        baseFragmentAdapter.bindTitle(true, Arrays.asList("全部", "我关注的"));
         baseFragmentAdapter.bindData(true,
                 Arrays.asList(
                         alltaskFragment = TaskAllFragment.newInstance(),
                         attentionTaskFragment = TaskListFragment.newInstance(TaskListFragment.TYPE_MY_ATTENTION, 0)));
 
-        topMiddlePopup = new TopMiddlePopup(getContext(), DensityUtil.getWidthInDp(getContext()), (int) (DensityUtil.getHeightInPx(getContext()) - DensityUtil.dip2px(getContext(), 75)), this);
-        dropEntities.add(doingEntity);
-        dropEntities.add(doneEntity);
-        dropEntities.add(deleteEntity);
-        topMiddlePopup.setMyItems(dropEntities);
-        getTasksStateCount();
+
         for (int i = 0; i < baseFragmentAdapter.getCount(); i++) {
             TabLayout.Tab tab = tabLayout.getTabAt(i);
             tab.setCustomView(R.layout.task_unfinish_tab_custom_view);
@@ -124,13 +123,14 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
             switch (i) {
                 case 0:
                     titleTv.setTextColor(0xFF313131);
-                    titleTv.setText("未完成");
+                    titleTv.setPadding(DensityUtil.dip2px(getContext(), 8), 0, 0, 0);
+                    titleTv.setText(getString(R.string.task_unfinished));
                     downIv.setVisibility(View.VISIBLE);
                     tab.getCustomView().setOnClickListener(new OnTabClickListener());
                     break;
                 case 1:
                     titleTv.setTextColor(0xFF979797);
-                    titleTv.setText("我关注的");
+                    titleTv.setText(getString(R.string.task_my_attention));
                     downIv.setVisibility(View.GONE);
                     break;
             }
@@ -148,24 +148,24 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
                     TextView titleTv_0 = tabLayout.getTabAt(0).getCustomView().findViewById(R.id.tab_custom_title_tv);
                     TextView titleTv_1 = tabLayout.getTabAt(1).getCustomView().findViewById(R.id.tab_custom_title_tv);
                     switch (position) {
-                        case 0:
+                        case 0://未完成、已完成、已删除
                             titleTv_0.setTextColor(0xFF313131);
                             titleTv_1.setTextColor(0xFF979797);
-                            titleCalendar.setVisibility(select_position == 0 ? View.VISIBLE : View.GONE);
+                            titleCalendar.setVisibility(selectPosition == 0 ? View.VISIBLE : View.GONE);
                             if (topMiddlePopup != null && topMiddlePopup.getAdapter() != null) {
-                                FilterDropEntity filterDropEntity = topMiddlePopup.getAdapter().getItem(select_position);
+                                FilterDropEntity filterDropEntity = topMiddlePopup.getAdapter().getItem(selectPosition);
                                 if (filterDropEntity != null) {
-                                    setFirstTabText(filterDropEntity.name, select_position);
+                                    setFirstTabText(filterDropEntity.name, selectPosition);
                                     updateListData(filterDropEntity.stateType);
                                 }
                             }
                             break;
-                        case 1:
+                        case 1://我关注的
                             titleTv_0.setTextColor(0xFF979797);
                             titleTv_1.setTextColor(0xFF313131);
                             setFirstTabImage(false);
                             Bundle bundle = new Bundle();
-                            bundle.putInt("stateType", 0);
+                            bundle.putInt(TaskListFragment.STATE_TYPE, 0);
                             attentionTaskFragment.notifyFragmentUpdate(attentionTaskFragment, TaskListFragment.TYPE_MY_ATTENTION, bundle);
                             break;
                     }
@@ -186,6 +186,23 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
     }
 
     /**
+     * 设置弹出切换任务列表的pop，并且显示对应的数量
+     *
+     * @param doingCount  未完成的任务的数量
+     * @param doneCount   已完成的任务的数量
+     * @param deleteCount 已删除的任务的数量
+     */
+    private void setTaskPopCount(@NonNull String doingCount, @NonNull String doneCount, @NonNull String deleteCount) {
+        dropEntities.clear();
+        FilterDropEntity doingEntity = new FilterDropEntity(getString(R.string.task_unfinished), doingCount, 0);
+        FilterDropEntity doneEntity = new FilterDropEntity(getString(R.string.task_finished), doneCount, 1);
+        FilterDropEntity deleteEntity = new FilterDropEntity(getString(R.string.task_deleted), deleteCount, 3);
+        dropEntities.add(doingEntity);
+        dropEntities.add(doneEntity);
+        dropEntities.add(deleteEntity);
+    }
+
+    /**
      * 设置第一个tab的文本内容
      *
      * @param content
@@ -196,14 +213,14 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
         if (tabLayout.getTabAt(0).getCustomView() == null) return;
         TextView titleTv = tabLayout.getTabAt(0).getCustomView().findViewById(R.id.tab_custom_title_tv);
         titleTv.setText(content);
-        select_position = position;
-        topMiddlePopup.getAdapter().setSelectedPos(select_position);
+        selectPosition = position;
+        topMiddlePopup.getAdapter().setSelectedPos(selectPosition);
     }
 
     @Override
     public void onItemClick(TopMiddlePopup topMiddlePopup, BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
         topMiddlePopup.dismiss();
-        if (select_position != position) {
+        if (selectPosition != position) {
             FilterDropEntity filterDropEntity = (FilterDropEntity) adapter.getItem(position);
             setFirstTabText(filterDropEntity.name, position);
             updateListData(filterDropEntity.stateType);
@@ -214,13 +231,13 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
     /**
      * 更新全部任务列表
      *
-     * @param stateType
+     * @param stateType -1，全部任务；0，未完成；1，已完成；3，已删除。
      */
     public void updateListData(int stateType) {
         Bundle bundle = new Bundle();
-        bundle.putInt("stateType", stateType);
+        bundle.putInt(TaskListFragment.STATE_TYPE, stateType);
         int type = TaskAllFragment.TYPE_ALL_TASK;
-        if (stateType == 0) {
+        if (stateType == 0) {//说明该任务状态是全部的任务状态
             titleCalendar.setVisibility(View.VISIBLE);
             if (isShowCalendar) {
                 type = TaskAllFragment.TYPE_ALL_TASK_CALENDAR;
@@ -241,7 +258,7 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
             if (tabLayout.getTabAt(0) != null) {
                 if (view.isSelected()) {
                     postDismissPop();
-                    topMiddlePopup.show(titleView, dropEntities, select_position);
+                    topMiddlePopup.show(titleView, dropEntities, selectPosition);
                     setFirstTabImage(true);
                     if (topMiddlePopup.isShowing()) {
                         getTasksStateCount();
@@ -273,24 +290,17 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
     }
 
     /**
-     * 获取各个状态的任务数量
+     * 获取各个状态的任务数量（未完成／已完成／已删除）
      */
     private void getTasksStateCount() {
-        getApi().taskStateCountQuery().enqueue(new SimpleCallBack<JsonElement>() {
-            @Override
-            public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
-                JsonElement jsonElement = response.body().result;
-                if (jsonElement != null) {
-                    if (jsonElement.isJsonObject()) {
-                        JsonObject jsonObject = jsonElement.getAsJsonObject();
-                        if (jsonObject != null) {
-                            doingEntity.count = jsonObject.get("doingCount").getAsString();
-                            doneEntity.count = jsonObject.get("doneCount").getAsString();
-                            deleteEntity.count = jsonObject.get("deletedCount").getAsString();
-                            dropEntities.clear();
-                            dropEntities.add(doingEntity);
-                            dropEntities.add(doneEntity);
-                            dropEntities.add(deleteEntity);
+        callEnqueue(
+                getApi().taskStateCountQuery(),
+                new SimpleCallBack<TaskCountEntity>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<TaskCountEntity>> call, Response<ResEntity<TaskCountEntity>> response) {
+                        TaskCountEntity taskCountEntity = response.body().result;
+                        if (taskCountEntity != null) {
+                            setTaskPopCount(taskCountEntity.doingCount, taskCountEntity.doneCount, taskCountEntity.deletedCount);
                             if (topMiddlePopup != null && topMiddlePopup.isShowing()) {
                                 if (topMiddlePopup.getAdapter() != null) {
                                     topMiddlePopup.getAdapter().bindData(true, dropEntities);
@@ -298,14 +308,7 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
                             }
                         }
                     }
-                }
-            }
-
-            @Override
-            public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
-                super.onFailure(call, t);
-            }
-        });
+                });
     }
 
     /**
@@ -348,13 +351,13 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
                             viewPager.setNoScroll(false);
                             titleCalendar.setImageResource(R.mipmap.ic_calendar);
                             if (topMiddlePopup.getAdapter() != null) {
-                                FilterDropEntity filterDropEntity = topMiddlePopup.getAdapter().getItem(select_position);
+                                FilterDropEntity filterDropEntity = topMiddlePopup.getAdapter().getItem(selectPosition);
                                 int stateType = 0;
                                 if (filterDropEntity != null) {
                                     stateType = filterDropEntity.stateType;
                                 }
                                 Bundle bundle = new Bundle();
-                                bundle.putInt("stateType", stateType);
+                                bundle.putInt(TaskListFragment.STATE_TYPE, stateType);
                                 taskAllFragment.notifyFragmentUpdate(taskAllFragment, TaskAllFragment.TYPE_ALL_TASK, bundle);
                             }
                             break;
@@ -366,10 +369,10 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
                 break;
             case R.id.titleAction2:
                 List<String> titles = null;
-                if (select_position != 2 || tabLayout.getSelectedTabPosition() == 1) {
-                    titles = Arrays.asList("查看他人任务");
+                if (selectPosition != 2 || tabLayout.getSelectedTabPosition() == 1) {
+                    titles = Arrays.asList(getString(R.string.task_look_others_task));
                 } else {
-                    titles = Arrays.asList("查看他人任务", "清空所有已删除任务");
+                    titles = Arrays.asList(getString(R.string.task_look_others_task), getString(R.string.task_clear_deleted_task));
                 }
                 new BottomActionDialog(getContext(),
                         null,
@@ -399,8 +402,8 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
      */
     private void showTwiceSureDialog() {
         new BottomActionDialog(getContext(),
-                "该操作不可恢复，确定清空？",
-                Arrays.asList("确定"),
+                getString(R.string.task_can_not_revert),
+                Arrays.asList(getString(R.string.task_confirm)),
                 0,
                 0xFFFF0000,
                 new BottomActionDialog.OnActionItemClickListener() {
@@ -439,15 +442,22 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
         }
     }
 
+    /**
+     * 跳转到其他选择碎片之后的回调，比如：选择查看其他人的任务所弹出的选择联系人的fragment。
+     *
+     * @param fragment
+     * @param type
+     * @param params
+     */
     @Override
     public void onFragmentCallBack(Fragment fragment, int type, Bundle params) {
-        if (fragment instanceof TaskMemberSelectDialogFragment && params != null) {
+        if (fragment instanceof TaskMemberSelectDialogFragment && params != null) {//从选择他人界面的回调
             Serializable serializable = params.getSerializable(KEY_FRAGMENT_RESULT);
             if (serializable instanceof TaskMemberEntity) {
                 TaskMemberEntity taskMemberEntity = (TaskMemberEntity) serializable;
                 ArrayList<String> ids = new ArrayList<>();
                 ids.add(taskMemberEntity.userId);
-                MyAllotTaskActivity.launch(getContext(), TaskOtherListFragment.SELECT_OTHER_TYPE, ids);
+                TaskOtherActivity.launch(getContext(), TaskOtherListFragment.SELECT_OTHER_TYPE, ids);
             }
         }
     }
@@ -456,7 +466,7 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
      * 清空所有已删除的任务
      */
     private void clearAllDeletedTask() {
-        if (select_position == 2) {
+        if (selectPosition == 2) {//已删除的任务列表
             if (alltaskFragment.currFragment instanceof TaskListFragment) {
                 TaskListFragment fragment = (TaskListFragment) alltaskFragment.currFragment;
                 fragment.clearAllDeletedTask();
@@ -473,8 +483,8 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
         Fragment currFragment = alltaskFragment.currFragment;
         if (currFragment instanceof TaskListFragment) {
             TaskListFragment taskListFragment = (TaskListFragment) currFragment;
-            int visibility = taskListFragment.nextTaskCardview.getVisibility();
-            return (visibility == View.GONE || visibility == View.INVISIBLE);
+            int visibility = taskListFragment.nextTaskLayout.getVisibility();
+            return visibility == View.VISIBLE;
         }
         return false;
     }

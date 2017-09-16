@@ -117,13 +117,15 @@ public class TaskGroupListFragment extends BaseFragment implements BaseRecyclerA
         String projectId = getProjectId();
         if (TextUtils.isEmpty(projectId)) return;
         projectTaskGroupAdapter.clearSelected();
-        getApi().projectQueryTaskGroupList(projectId)
-                .enqueue(new SimpleCallBack<List<TaskGroupEntity>>() {
+        callEnqueue(
+                getApi().projectQueryTaskGroupList(projectId),
+                new SimpleCallBack<List<TaskGroupEntity>>() {
                     @Override
                     public void onSuccess(Call<ResEntity<List<TaskGroupEntity>>> call, Response<ResEntity<List<TaskGroupEntity>>> response) {
                         projectTaskGroupAdapter.bindData(true, response.body().result);
                     }
-                });
+                }
+        );
     }
 
     @Override

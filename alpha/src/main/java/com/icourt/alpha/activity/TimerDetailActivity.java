@@ -71,7 +71,7 @@ public class TimerDetailActivity extends BaseTimerActivity
 
     private static final String KEY_TIME = "key_time";
 
-    private static final long HOUR_TIME_24 = 24 * 60 * 60;
+    private static final long HOUR_TIME_24 = TimeUnit.DAYS.toSeconds(1);
 
 
     TimeEntity.ItemEntity itemEntity;
@@ -255,11 +255,15 @@ public class TimerDetailActivity extends BaseTimerActivity
             R.id.use_time_date,
             R.id.start_time_min_tv,
             R.id.stop_time_min_tv,
-            R.id.titleAction})
+            R.id.titleAction,
+            R.id.titleBack})
     @Override
     public void onClick(View view) {
         super.onClick(view);
         switch (view.getId()) {
+            case R.id.titleBack:
+                saveTiming();
+                break;
             case R.id.titleAction:
                 new BottomActionDialog(getContext(),
                         null,
@@ -296,7 +300,7 @@ public class TimerDetailActivity extends BaseTimerActivity
                     if (TextUtils.isEmpty(itemEntity.matterPkId)) {
                         showProjectSelectDialogFragment(null);
                     } else {
-                        showBottomMeau();
+                        showBottomMenu();
                     }
                 }
                 break;
@@ -318,7 +322,7 @@ public class TimerDetailActivity extends BaseTimerActivity
     /**
      * 显示底部菜单
      */
-    private void showBottomMeau() {
+    private void showBottomMenu() {
         new BottomActionDialog(getContext(),
                 null,
                 Arrays.asList("选择项目", "查看项目"),
@@ -428,12 +432,6 @@ public class TimerDetailActivity extends BaseTimerActivity
         return super.dispatchTouchEvent(ev);
     }
 
-    @Override
-    protected void onPause() {
-        saveTiming();
-        super.onPause();
-    }
-
     private void saveTiming() {
         //实时保存
         if (itemEntity != null) {
@@ -471,8 +469,9 @@ public class TimerDetailActivity extends BaseTimerActivity
             jsonBody.addProperty("clientId", clientId);
             jsonBody.addProperty("taskPkId", itemEntity.taskPkId);
             jsonBody.addProperty("workTypeId", itemEntity.workTypeId);
-            getApi().timingUpdate(RequestUtils.createJsonBody(jsonBody.toString()))
-                    .enqueue(new SimpleCallBack<JsonElement>() {
+            callEnqueue(
+                    getApi().timingUpdate(RequestUtils.createJsonBody(jsonBody.toString())),
+                    new SimpleCallBack<JsonElement>() {
                         @Override
                         public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
 
@@ -551,5 +550,11 @@ public class TimerDetailActivity extends BaseTimerActivity
 
         }
         saveTiming();
+    }
+
+    @Override
+    public void onBackPressed() {
+        saveTiming();
+        super.onBackPressed();
     }
 }

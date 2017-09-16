@@ -1,8 +1,6 @@
 package com.icourt.alpha.db;
 
-import android.support.annotation.CallSuper;
-
-import io.realm.RealmModel;
+import io.realm.RealmObject;
 
 /**
  * Description
@@ -11,7 +9,7 @@ import io.realm.RealmModel;
  * date createTime：2017/4/6
  * version 1.0.0
  */
-public abstract class BaseRealmService<T extends RealmModel, D extends BaseDao<T>> {
+public abstract class BaseRealmService<D extends BaseDao<? extends RealmObject>> {
     protected D dao;
 
     public BaseRealmService(D d) {

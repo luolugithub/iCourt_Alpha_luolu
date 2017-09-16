@@ -21,7 +21,7 @@ import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.entity.event.ProjectActionEvent;
 import com.icourt.alpha.fragment.ProjectDetailFragment;
-import com.icourt.alpha.fragment.ProjectFileBoxFragment;
+import com.icourt.alpha.fragment.ProjectFileFragment;
 import com.icourt.alpha.fragment.ProjectTaskFragment;
 import com.icourt.alpha.fragment.ProjectTimeFragment;
 import com.icourt.alpha.http.callback.SimpleCallBack;
@@ -33,7 +33,6 @@ import com.umeng.analytics.MobclickAgent;
 
 import org.greenrobot.eventbus.EventBus;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -53,6 +52,11 @@ import retrofit2.Response;
 
 public class ProjectDetailActivity extends BaseActivity implements OnFragmentCallBackListener {
 
+    public static final String KEY_PROJECT_ID = "projectId";
+    public static final String KEY_PROJECT_NAME = "projectName";
+    public static final String KEY_PROJECT_MYSTAR = "myStar";
+    public static final String KEY_PROJECT_PROCESSES = "key_project_processes";
+
     @BindView(R.id.titleBack)
     ImageView titleBack;
     @BindView(R.id.titleContent)
@@ -71,18 +75,15 @@ public class ProjectDetailActivity extends BaseActivity implements OnFragmentCal
     String projectId, projectName;
     int myStar;
     BaseFragmentAdapter baseFragmentAdapter;
-    ProjectFileBoxFragment projectFileBoxFragment;
+    ProjectFileFragment projectFileBoxFragment;
     boolean isCanlookAddTask = false, isCanAddTimer = false, isCanlookAddDocument = false;
-    private boolean nameIsUp = false, timeIsUp = false, sizeIsUp = false;
-    long sumTime;
-    List<String> list = new ArrayList<>();
 
     public static void launch(@NonNull Context context, @NonNull String projectId, @NonNull String proectName) {
         if (context == null) return;
         if (TextUtils.isEmpty(projectId)) return;
         Intent intent = new Intent(context, ProjectDetailActivity.class);
-        intent.putExtra("projectId", projectId);
-        intent.putExtra("projectName", proectName);
+        intent.putExtra(KEY_PROJECT_ID, projectId);
+        intent.putExtra(KEY_PROJECT_NAME, proectName);
         context.startActivity(intent);
     }
 
@@ -98,9 +99,9 @@ public class ProjectDetailActivity extends BaseActivity implements OnFragmentCal
     protected void initView() {
         super.initView();
         MobclickAgent.onEvent(this, UMMobClickAgent.look_project_click_id);
-        projectId = getIntent().getStringExtra("projectId");
-        projectName = getIntent().getStringExtra("projectName");
-        myStar = getIntent().getIntExtra("myStar", -1);
+        projectId = getIntent().getStringExtra(KEY_PROJECT_ID);
+        projectName = getIntent().getStringExtra(KEY_PROJECT_NAME);
+        myStar = getIntent().getIntExtra(KEY_PROJECT_MYSTAR, -1);
         if (!TextUtils.isEmpty(projectName)) {
             setTitle(projectName);
         }
@@ -122,12 +123,11 @@ public class ProjectDetailActivity extends BaseActivity implements OnFragmentCal
                         ProjectDetailFragment.newInstance(projectId),
                         ProjectTaskFragment.newInstance(projectId),
                         ProjectTimeFragment.newInstance(projectId),
-                        projectFileBoxFragment = ProjectFileBoxFragment.newInstance(projectId, isCanlookAddDocument)
+                        projectFileBoxFragment = ProjectFileFragment.newInstance(projectId)
                 ));
         detailTablayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
-                log("tab.getPosition() --------  " + tab.getPosition());
                 isShowTitleAction(tab.getPosition());
             }
 
@@ -146,33 +146,32 @@ public class ProjectDetailActivity extends BaseActivity implements OnFragmentCal
         }
         detailViewpager.setCurrentItem(1);
         isShowTitleAction(1);
-        list.add("按文件名升序排序");
-        list.add("按文件大小升序排序");
-        list.add("按修改时间升序排序");
     }
 
     /**
      * 获取项目权限
      */
     private void checkAddTaskAndDocumentPms() {
-        getApi().permissionQuery(getLoginUserId(), "MAT", projectId).enqueue(new SimpleCallBack<List<String>>() {
-            @Override
-            public void onSuccess(Call<ResEntity<List<String>>> call, Response<ResEntity<List<String>>> response) {
+        callEnqueue(
+                getApi().permissionQuery(getLoginUserId(), "MAT", projectId),
+                new SimpleCallBack<List<String>>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<List<String>>> call, Response<ResEntity<List<String>>> response) {
 
-                if (response.body().result != null) {
-                    if (response.body().result.contains("MAT:matter.task:add")) {
-                        isCanlookAddTask = true;
+                        if (response.body().result != null) {
+                            if (response.body().result.contains("MAT:matter.task:add")) {
+                                isCanlookAddTask = true;
+                            }
+                            if (response.body().result.contains("MAT:matter.document:readwrite")) {
+                                isCanlookAddDocument = true;
+                            }
+                            if (response.body().result.contains("MAT:matter.timeLog:add")) {
+                                isCanAddTimer = true;
+                            }
+                            isShowTitleAction(1);
+                        }
                     }
-                    if (response.body().result.contains("MAT:matter.document:readwrite")) {
-                        isCanlookAddDocument = true;
-                    }
-                    if (response.body().result.contains("MAT:matter.timeLog:add")) {
-                        isCanAddTimer = true;
-                    }
-                    isShowTitleAction(1);
-                }
-            }
-        });
+                });
     }
 
     /**
@@ -239,7 +238,7 @@ public class ProjectDetailActivity extends BaseActivity implements OnFragmentCal
                 if (detailTablayout.getSelectedTabPosition() == 2) {
                     titleActionClick();
                 } else {
-                    showBottomMeau();
+                    showBottomMenu();
                 }
                 break;
         }
@@ -259,7 +258,7 @@ public class ProjectDetailActivity extends BaseActivity implements OnFragmentCal
                 break;
             case 3:     //文档
                 if (projectFileBoxFragment != null) {
-                    projectFileBoxFragment.showBottomMeau();
+                    projectFileBoxFragment.onParentTitleActionClick(getActivity(), titleAction, 0, null);
                 }
                 break;
         }
@@ -268,7 +267,7 @@ public class ProjectDetailActivity extends BaseActivity implements OnFragmentCal
     /**
      * 显示底部更多菜单
      */
-    private void showBottomMeau() {
+    private void showBottomMenu() {
         switch (detailTablayout.getSelectedTabPosition()) {
             case 0:     //概览
                 if (myStar != 1) {
@@ -278,12 +277,14 @@ public class ProjectDetailActivity extends BaseActivity implements OnFragmentCal
                 }
                 break;
             case 1:     //任务
-                showTaskMeau();
+                showTaskMenu();
                 break;
             case 2:     //计时
                 break;
             case 3:     //文档
-                showDocumentMeau();
+                if (projectFileBoxFragment != null) {
+                    projectFileBoxFragment.onParentTitleActionClick2(getActivity(), titleAction2, 0, null);
+                }
                 break;
         }
     }
@@ -291,10 +292,10 @@ public class ProjectDetailActivity extends BaseActivity implements OnFragmentCal
     /**
      * 显示任务更多菜单
      */
-    private void showTaskMeau() {
+    private void showTaskMenu() {
         new BottomActionDialog(getContext(),
                 null,
-                Arrays.asList("已完成任务", "管理任务组"),
+                Arrays.asList("已完成的任务", "管理任务组"),
                 new BottomActionDialog.OnActionItemClickListener() {
                     @Override
                     public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
@@ -311,100 +312,29 @@ public class ProjectDetailActivity extends BaseActivity implements OnFragmentCal
                 }).show();
     }
 
-    /**
-     * 显示文档更多菜单
-     */
-    private void showDocumentMeau() {
-
-        new BottomActionDialog(getContext(),
-                null,
-                list,
-                new BottomActionDialog.OnActionItemClickListener() {
-                    @Override
-                    public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
-                        dialog.dismiss();
-                        switch (position) {
-                            case 0:
-                                if (projectFileBoxFragment != null) {
-                                    projectFileBoxFragment.sortFileByNameList(nameIsUp);
-                                    nameIsUp = !nameIsUp;
-                                    timeIsUp = false;
-                                    sizeIsUp = false;
-                                    list.clear();
-                                    if (nameIsUp) {
-                                        list.add("按文件名降序排序");
-                                        list.add("按文件大小升序排序");
-                                        list.add("按修改时间升序排序");
-                                    } else {
-                                        list.add("按文件名升序排序");
-                                        list.add("按文件大小升序排序");
-                                        list.add("按修改时间升序排序");
-                                    }
-                                }
-                                break;
-                            case 1:
-                                if (projectFileBoxFragment != null) {
-                                    projectFileBoxFragment.sortFileBySizeList(sizeIsUp);
-                                    sizeIsUp = !sizeIsUp;
-                                    nameIsUp = false;
-                                    timeIsUp = false;
-                                    list.clear();
-                                    if (sizeIsUp) {
-                                        list.add("按文件名升序排序");
-                                        list.add("按文件大小降序排序");
-                                        list.add("按修改时间升序排序");
-                                    } else {
-                                        list.add("按文件名升序排序");
-                                        list.add("按文件大小升序排序");
-                                        list.add("按修改时间升序排序");
-                                    }
-                                }
-                                break;
-
-                            case 2:
-                                if (projectFileBoxFragment != null) {
-                                    projectFileBoxFragment.sortFileByTimeList(timeIsUp);
-                                    timeIsUp = !timeIsUp;
-                                    nameIsUp = false;
-                                    sizeIsUp = false;
-                                    list.clear();
-                                    if (timeIsUp) {
-                                        list.add("按文件名升序排序");
-                                        list.add("按文件大小升序排序");
-                                        list.add("按修改时间降序排序");
-                                    } else {
-                                        list.add("按文件名升序排序");
-                                        list.add("按文件大小升序排序");
-                                        list.add("按修改时间升序排序");
-                                    }
-                                }
-                                break;
-
-                        }
-                    }
-                }).show();
-    }
 
     /**
      * 添加关注
      */
     private void addStar() {
         showLoadingDialog(null);
-        getApi().projectAddStar(projectId).enqueue(new SimpleCallBack<JsonElement>() {
-            @Override
-            public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
-                dismissLoadingDialog();
-                myStar = 1;
-                titleAction2.setImageResource(R.mipmap.header_icon_star_solid);
-                EventBus.getDefault().post(new ProjectActionEvent(ProjectActionEvent.PROJECT_REFRESG_ACTION));
-            }
+        callEnqueue(
+                getApi().projectAddStar(projectId),
+                new SimpleCallBack<JsonElement>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
+                        dismissLoadingDialog();
+                        myStar = 1;
+                        titleAction2.setImageResource(R.mipmap.header_icon_star_solid);
+                        EventBus.getDefault().post(new ProjectActionEvent(ProjectActionEvent.PROJECT_REFRESG_ACTION));
+                    }
 
-            @Override
-            public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
-                super.onFailure(call, t);
-                dismissLoadingDialog();
-            }
-        });
+                    @Override
+                    public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
+                        super.onFailure(call, t);
+                        dismissLoadingDialog();
+                    }
+                });
     }
 
     /**
@@ -412,27 +342,29 @@ public class ProjectDetailActivity extends BaseActivity implements OnFragmentCal
      */
     private void deleteStar() {
         showLoadingDialog(null);
-        getApi().projectDeleteStar(projectId).enqueue(new SimpleCallBack<JsonElement>() {
-            @Override
-            public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
-                dismissLoadingDialog();
-                myStar = 0;
-                titleAction2.setImageResource(R.mipmap.header_icon_star_line);
-                EventBus.getDefault().post(new ProjectActionEvent(ProjectActionEvent.PROJECT_REFRESG_ACTION));
-            }
+        callEnqueue(
+                getApi().projectDeleteStar(projectId),
+                new SimpleCallBack<JsonElement>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
+                        dismissLoadingDialog();
+                        myStar = 0;
+                        titleAction2.setImageResource(R.mipmap.header_icon_star_line);
+                        EventBus.getDefault().post(new ProjectActionEvent(ProjectActionEvent.PROJECT_REFRESG_ACTION));
+                    }
 
-            @Override
-            public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
-                super.onFailure(call, t);
-                dismissLoadingDialog();
-            }
-        });
+                    @Override
+                    public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
+                        super.onFailure(call, t);
+                        dismissLoadingDialog();
+                    }
+                });
     }
 
     @Override
     public void onFragmentCallBack(Fragment fragment, int type, Bundle params) {
         if (fragment instanceof ProjectDetailFragment) {
-            myStar = params.getInt("myStar");
+            myStar = params.getInt(KEY_PROJECT_MYSTAR);
             if (baseFragmentAdapter.getItem(detailViewpager.getCurrentItem()) == fragment) {
                 if (myStar != 1) {
                     titleAction2.setImageResource(R.mipmap.header_icon_star_line);

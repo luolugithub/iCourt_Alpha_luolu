@@ -2,6 +2,8 @@ package com.icourt.alpha.utils;
 
 import android.text.TextUtils;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -178,5 +180,20 @@ public class UrlUtils {
             e.printStackTrace();
         }
         return null;
+    }
+
+    /**
+     * @param url
+     * @return
+     */
+    public static final String encodeUrl(String url) {
+        try {
+            if (!TextUtils.isEmpty(url)) {
+                return URLEncoder.encode(url, "utf-8");
+            }
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        return url;
     }
 }

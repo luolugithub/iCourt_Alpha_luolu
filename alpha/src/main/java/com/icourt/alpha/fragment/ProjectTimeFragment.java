@@ -133,7 +133,12 @@ public class ProjectTimeFragment extends BaseFragment implements BaseRecyclerAda
         if (isRefresh) {
             pageIndex = 1;
         }
-        getApi().projectQueryTimerList(projectId, pageIndex, ActionConstants.DEFAULT_PAGE_SIZE).enqueue(new SimpleCallBack<TimeEntity>() {
+        callEnqueue(
+                getApi().projectQueryTimerList(
+                        projectId,
+                        pageIndex,
+                        ActionConstants.DEFAULT_PAGE_SIZE),
+                new SimpleCallBack<TimeEntity>() {
             @Override
             public void onSuccess(Call<ResEntity<TimeEntity>> call, Response<ResEntity<TimeEntity>> response) {
                 stopRefresh();
@@ -162,7 +167,8 @@ public class ProjectTimeFragment extends BaseFragment implements BaseRecyclerAda
      * 获取项目总计时
      */
     private void getSumTimeByMatterId() {
-        getApi().getSumTimeByMatterId(projectId).enqueue(new SimpleCallBack<JsonElement>() {
+        callEnqueue(getApi().getSumTimeByMatterId(projectId),
+                new SimpleCallBack<JsonElement>() {
             @Override
             public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
                 if (response.body().result != null) {

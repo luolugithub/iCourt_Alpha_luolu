@@ -45,8 +45,8 @@ public class BaseTimerActivity extends BaseActivity {
                         if (loginUserInfo != null) {
                             clientId = loginUserInfo.localUniqueId;
                         }
-                        getApi().timingDelete(id, clientId)
-                                .enqueue(new SimpleCallBack<JsonElement>() {
+                        callEnqueue(getApi().timingDelete(id, clientId),
+                                new SimpleCallBack<JsonElement>() {
                                     @Override
                                     public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
                                         dismissLoadingDialog();

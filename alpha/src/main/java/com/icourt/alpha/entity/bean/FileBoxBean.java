@@ -9,6 +9,7 @@ import java.io.Serializable;
  * @data 创建时间:17/3/24
  */
 
+@Deprecated
 public class FileBoxBean implements Serializable {
 
     public String id;

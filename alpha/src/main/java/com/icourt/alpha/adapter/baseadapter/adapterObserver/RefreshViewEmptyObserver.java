@@ -1,5 +1,6 @@
 package com.icourt.alpha.adapter.baseadapter.adapterObserver;
 
+import android.support.annotation.CallSuper;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 
@@ -24,6 +25,7 @@ public class RefreshViewEmptyObserver extends DataChangeAdapterObserver {
         this.adapter = adapter;
     }
 
+    @CallSuper
     @Override
     protected void updateUI() {
         if (refreshLayout != null) {

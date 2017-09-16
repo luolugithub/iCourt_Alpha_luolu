@@ -6,6 +6,9 @@
 
     <include layout="@layout/layout_title_type_0" />
 
-    <include layout="@layout/activity_base_refresh_recyclerview" />
+    <FrameLayout
+        android:id="@+id/container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
 
 </LinearLayout>

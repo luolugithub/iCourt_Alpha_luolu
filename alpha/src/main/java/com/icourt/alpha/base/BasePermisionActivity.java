@@ -1,10 +1,13 @@
 package com.icourt.alpha.base;
 
+import android.Manifest;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.os.Build;
+import android.support.annotation.CallSuper;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.annotation.StringRes;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
@@ -12,16 +15,19 @@ import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 
 import com.icourt.alpha.R;
+import com.icourt.alpha.base.permission.IAlphaPermission;
+import com.icourt.alpha.base.permission.IAlphaSelectPhoto;
+import com.icourt.alpha.utils.SnackbarUtils;
 
-/**
- * Description  权限基类
- * Company Beijing icourt
- * author  youxuan  E-mail:xuanyouwu@163.com
- * date createTime：2017/4/5
- * version 1.0.0
- */
-public class BasePermisionActivity extends AppCompatActivity {
-    private AlertDialog mAlertDialog;
+import cn.finalteam.galleryfinal.FunctionConfig;
+import cn.finalteam.galleryfinal.GalleryFinal;
+
+public class BasePermisionActivity extends AppCompatActivity
+        implements
+        IAlphaPermission,
+        IAlphaSelectPhoto {
+
+    private AlertDialog mPermissionAlertDialog;
 
     /**
      * 检查权限
@@ -57,6 +63,17 @@ public class BasePermisionActivity extends AppCompatActivity {
             }
         }
         return true;
+    }
+
+    /**
+     * 权限申请
+     *
+     * @param permission
+     * @param rationaleId
+     * @param requestCode
+     */
+    protected void reqPermission(final String permission, @StringRes int rationaleId, final int requestCode) {
+        reqPermission(permission, getString(rationaleId), requestCode);
     }
 
     /**
@@ -104,7 +121,116 @@ public class BasePermisionActivity extends AppCompatActivity {
         builder.setMessage(message);
         builder.setPositiveButton(positiveText, onPositiveButtonClickListener);
         builder.setNegativeButton(negativeText, onNegativeButtonClickListener);
-        mAlertDialog = builder.show();
+        mPermissionAlertDialog = builder.show();
     }
 
+    @Override
+    public boolean checkCameraPermission() {
+        return checkPermission(Manifest.permission.CAMERA);
+    }
+
+    @Override
+    public boolean checkAcessFilePermission() {
+        return checkPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE);
+    }
+
+    @Override
+    public void requestCameraPermission() {
+        reqPermission(Manifest.permission.CAMERA, R.string.permission_rationale_camera, PERMISSION_REQ_CODE_CAMERA);
+    }
+
+    @Override
+    public void requestAcessFilePermission() {
+        reqPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, R.string.permission_rationale_storage, PERMISSION_REQ_CODE_ACCESS_FILE);
+    }
+
+    @CallSuper
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        switch (requestCode) {
+            case PERMISSION_REQ_CODE_CAMERA:
+                if (grantResults != null
+                        && grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_DENIED) {
+                    SnackbarUtils.showTopSnackBar(
+                            this,
+                            getString(R.string.permission_denied_camera));
+                }
+                break;
+            case PERMISSION_REQ_CODE_ACCESS_FILE:
+                if (grantResults != null
+                        && grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_DENIED) {
+                    SnackbarUtils.showTopSnackBar(
+                            this,
+                            getString(R.string.permission_denied_storage));
+                }
+                break;
+            default:
+                super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+                break;
+        }
+    }
+
+    @Override
+    public void checkAndSelectMutiPhotos(GalleryFinal.OnHanlderResultCallback onHanlderResultCallback) {
+        if (checkAcessFilePermission()) {
+            selectMutiPhotos(onHanlderResultCallback);
+        } else {
+            requestAcessFilePermission();
+        }
+    }
+
+    @Override
+    public void selectMutiPhotos(GalleryFinal.OnHanlderResultCallback onHanlderResultCallback) {
+        FunctionConfig config = new FunctionConfig.Builder()
+                .setMutiSelectMaxSize(9)
+                .build();
+        GalleryFinal.openGalleryMuti(REQ_CODE_GALLERY_MUTI, config, onHanlderResultCallback);
+    }
+
+    @Override
+    public void checkAndSelectSingleFromPhotos(GalleryFinal.OnHanlderResultCallback onHanlderResultCallback) {
+        if (checkAcessFilePermission()) {
+            selectSingleFromPhotos(onHanlderResultCallback);
+        } else {
+            requestAcessFilePermission();
+        }
+    }
+
+    @Override
+    public void selectSingleFromPhotos(GalleryFinal.OnHanlderResultCallback onHanlderResultCallback) {
+        FunctionConfig config = new FunctionConfig.Builder()
+                .setEnableEdit(false)
+                .setEnableCrop(false)
+                .build();
+        GalleryFinal.openGallerySingle(REQ_CODE_GALLERY_SINGLE, config, onHanlderResultCallback);
+    }
+
+    @Override
+    public void selectFromCamera(GalleryFinal.OnHanlderResultCallback onHanlderResultCallback) {
+        FunctionConfig config = new FunctionConfig.Builder()
+                .setEnableEdit(false)
+                .setEnableCrop(false)
+                .build();
+        GalleryFinal.openCamera(REQ_CODE_CAMERA, config, onHanlderResultCallback);
+    }
+
+    @Override
+    public void checkAndSelectFromCamera(GalleryFinal.OnHanlderResultCallback onHanlderResultCallback) {
+        if (checkCameraPermission()) {
+            selectFromCamera(onHanlderResultCallback);
+        } else {
+            requestCameraPermission();
+        }
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if (mPermissionAlertDialog != null
+                && mPermissionAlertDialog.isShowing()) {
+            mPermissionAlertDialog.dismiss();
+        }
+    }
 }

@@ -24,7 +24,7 @@
 
         <android.support.design.widget.TabLayout
             android:id="@+id/tabLayout"
-            style="@style/AlphaTabLayout"
+            style="@style/AlphaTitleAppBarLayout"
             android:layout_width="match_parent"
             android:layout_height="@dimen/alpha_height_title"
             android:layout_gravity="bottom"

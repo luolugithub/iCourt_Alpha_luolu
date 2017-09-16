@@ -232,7 +232,7 @@ public class TabTimingFragment extends BaseFragment implements BaseRecyclerAdapt
         if (pageIndex <= 0) {
             preWeekStart = DateUtils.getMMMdd(weekStartTimeMillSecond);
             preWeekEnd = DateUtils.getMMMdd(weekEndTimeMillSecond);
-            customerXRefreshViewHeader.setHeaderRefreshTitle("加载本周");
+            customerXRefreshViewHeader.setHeaderRefreshTitle("下拉刷新");
         } else {
             preWeekStart = DateUtils.getMMMdd(weekStartTimeMillSecond + weekMillSecond);
             preWeekEnd = DateUtils.getMMMdd(weekEndTimeMillSecond + weekMillSecond);
@@ -260,8 +260,9 @@ public class TabTimingFragment extends BaseFragment implements BaseRecyclerAdapt
      * @param weekEndTime
      */
     private void timingListQueryByTime(String weekStartTime, String weekEndTime) {
-        getApi().timingListQueryByTime(getLoginUserId(), weekStartTime, weekEndTime, 0, 1000)
-                .enqueue(new SimpleCallBack<TimeEntity>() {
+        callEnqueue(
+                getApi().timingListQueryByTime(getLoginUserId(), weekStartTime, weekEndTime, 0, 1000),
+                new SimpleCallBack<TimeEntity>() {
                     @Override
                     public void onSuccess(Call<ResEntity<TimeEntity>> call, Response<ResEntity<TimeEntity>> response) {
                         if (response.body().result != null) {
@@ -277,7 +278,8 @@ public class TabTimingFragment extends BaseFragment implements BaseRecyclerAdapt
                         super.onFailure(call, t);
                         stopRefresh();
                     }
-                });
+                }
+        );
     }
 
     /**
@@ -287,8 +289,9 @@ public class TabTimingFragment extends BaseFragment implements BaseRecyclerAdapt
      * @param weekEndTime
      */
     private void getWeekTimingCount(String weekStartTime, String weekEndTime) {
-        getApi().queryTimingCountByTime(weekStartTime, weekEndTime)
-                .enqueue(new SimpleCallBack<ItemPageEntity<TimingCountEntity>>() {
+        callEnqueue(
+                getApi().queryTimingCountByTime(weekStartTime, weekEndTime)
+                , new SimpleCallBack<ItemPageEntity<TimingCountEntity>>() {
                     @Override
                     public void onSuccess(Call<ResEntity<ItemPageEntity<TimingCountEntity>>> call, Response<ResEntity<ItemPageEntity<TimingCountEntity>>> response) {
                         if (response.body().result != null && timingTodayTotal != null) {

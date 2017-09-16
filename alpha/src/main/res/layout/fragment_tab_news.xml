@@ -5,40 +5,8 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <android.support.design.widget.AppBarLayout
-        android:id="@id/titleView"
-        style="@style/AlphaTitleAppBarLayout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+    <include layout="@layout/layout_title_type_6"/>
 
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@color/alpha_background_title"
-            android:gravity="center_vertical"
-            android:orientation="horizontal">
-
-            <android.support.design.widget.TabLayout
-                android:id="@+id/tabLayout"
-                style="@style/AlphaTitleTabLayout"
-                android:layout_width="wrap_content"
-                android:layout_height="@dimen/alpha_height_title"
-                app:tabMinWidth="70dp"
-                app:tabMode="scrollable" />
-
-            <ImageView
-                android:id="@+id/ivActionAdd"
-                android:layout_width="38dp"
-                android:layout_height="wrap_content"
-                android:layout_alignParentRight="true"
-                android:padding="10dp"
-                android:layout_marginRight="@dimen/dp10"
-                android:layout_centerVertical="true"
-                android:scaleType="fitCenter"
-                android:src="@mipmap/header_icon_add" />
-
-        </RelativeLayout>
-    </android.support.design.widget.AppBarLayout>
 
     <android.support.v4.view.ViewPager
         android:id="@+id/viewPager"

@@ -43,6 +43,7 @@ public class CenterMenuDialog extends Dialog implements View.OnClickListener {
     CharSequence title;
     View dialog_title_divider;
     BaseRecyclerAdapter.OnItemClickListener onItemClickListener;
+    private MenuAdapter menuAdapter;
 
     public CenterMenuDialog(@NonNull Context context, CharSequence title, List<? extends ItemsEntityImp> data) {
         super(context);
@@ -66,13 +67,16 @@ public class CenterMenuDialog extends Dialog implements View.OnClickListener {
         return onItemClickListener;
     }
 
-    public void setOnItemClickListener(BaseRecyclerAdapter.OnItemClickListener onItemClickListener) {
-        this.onItemClickListener = onItemClickListener;
-        if(menuAdapter!=null)
-            menuAdapter.setOnItemClickListener(onItemClickListener);
+    public MenuAdapter getMenuAdapter() {
+        return menuAdapter;
     }
 
-    private MenuAdapter menuAdapter;
+    public CenterMenuDialog setOnItemClickListener(BaseRecyclerAdapter.OnItemClickListener onItemClickListener) {
+        this.onItemClickListener = onItemClickListener;
+        if (menuAdapter != null)
+            menuAdapter.setOnItemClickListener(onItemClickListener);
+        return this;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

@@ -234,28 +234,30 @@ public class TabMineFragment extends BaseFragment {
 
     @Override
     protected void getData(boolean isRefresh) {
-        getChatApi().userInfoQuery().enqueue(new SimpleCallBack<AlphaUserInfo>() {
-            @Override
-            public void onSuccess(Call<ResEntity<AlphaUserInfo>> call, Response<ResEntity<AlphaUserInfo>> response) {
-                AlphaUserInfo info = response.body().result;
-                AlphaUserInfo alphaUserInfo = getLoginUserInfo();
-                if (alphaUserInfo != null && info != null) {
+        callEnqueue(
+                getChatApi().userInfoQuery(),
+                new SimpleCallBack<AlphaUserInfo>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<AlphaUserInfo>> call, Response<ResEntity<AlphaUserInfo>> response) {
+                        AlphaUserInfo info = response.body().result;
+                        AlphaUserInfo alphaUserInfo = getLoginUserInfo();
+                        if (alphaUserInfo != null && info != null) {
 //                    info.setGroups(alphaUserInfo.getGroups());
-                    alphaUserInfo.setMail(info.getMail());
-                    alphaUserInfo.setPhone(info.getPhone());
-                    alphaUserInfo.setName(info.getName());
-                    alphaUserInfo.setPic(info.getPic());
-                    saveLoginUserInfo(alphaUserInfo);
-                }
-                setDataToView(info);
-            }
+                            alphaUserInfo.setMail(info.getMail());
+                            alphaUserInfo.setPhone(info.getPhone());
+                            alphaUserInfo.setName(info.getName());
+                            alphaUserInfo.setPic(info.getPic());
+                            saveLoginUserInfo(alphaUserInfo);
+                        }
+                        setDataToView(info);
+                    }
 
-            @Override
-            public void onFailure(Call<ResEntity<AlphaUserInfo>> call, Throwable t) {
-                super.onFailure(call, t);
-                setDataToView(getLoginUserInfo());
-            }
-        });
+                    @Override
+                    public void onFailure(Call<ResEntity<AlphaUserInfo>> call, Throwable t) {
+                        super.onFailure(call, t);
+                        setDataToView(getLoginUserInfo());
+                    }
+                });
         getMyDoneTask();
         getGroupList();
     }
@@ -264,39 +266,43 @@ public class TabMineFragment extends BaseFragment {
      * 获取我的今日计时、本月计时、本月完成任务
      */
     private void getMyDoneTask() {
-
-        getApi().getUserData(getLoginUserId()).enqueue(new SimpleCallBack<UserDataEntity>() {
-            @Override
-            public void onSuccess(Call<ResEntity<UserDataEntity>> call, Response<ResEntity<UserDataEntity>> response) {
-                if (response.body().result != null) {
-                    if (todayDuractionTv == null) return;
-                    todayDuractionTv.setText(getHm(response.body().result.timingCountToday));
-                    monthDuractionTv.setText(getHm(response.body().result.timingCountMonth));
-                    doneTaskTv.setText(response.body().result.taskMonthConutDone + "");
-                }
-            }
-        });
+        callEnqueue(
+                getApi().getUserData(getLoginUserId()),
+                new SimpleCallBack<UserDataEntity>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<UserDataEntity>> call, Response<ResEntity<UserDataEntity>> response) {
+                        if (response.body().result != null) {
+                            if (todayDuractionTv == null) return;
+                            todayDuractionTv.setText(getHm(response.body().result.timingCountToday));
+                            monthDuractionTv.setText(getHm(response.body().result.timingCountMonth));
+                            doneTaskTv.setText(response.body().result.taskMonthConutDone + "");
+                        }
+                    }
+                });
     }
 
     /**
      * 获取负责团队列表
      */
     private void getGroupList() {
-        getApi().lawyerGroupListQuery().enqueue(new SimpleCallBack<List<GroupBean>>() {
-            @Override
-            public void onSuccess(Call<ResEntity<List<GroupBean>>> call, Response<ResEntity<List<GroupBean>>> response) {
-                List<GroupBean> myGroups = response.body().result;
-                StringBuffer stringBuffer = new StringBuffer();
-                if (myGroups != null) {
-                    if (myGroups.size() > 0) {
-                        for (GroupBean groupBean : myGroups) {
-                            stringBuffer.append(groupBean.getName() + ",");
+        callEnqueue(
+                getApi().lawyerGroupListQuery(),
+                new SimpleCallBack<List<GroupBean>>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<List<GroupBean>>> call, Response<ResEntity<List<GroupBean>>> response) {
+                        List<GroupBean> myGroups = response.body().result;
+                        StringBuffer stringBuffer = new StringBuffer();
+                        if (myGroups != null) {
+                            if (myGroups.size() > 0) {
+                                for (GroupBean groupBean : myGroups) {
+                                    stringBuffer.append(groupBean.getName() + ",");
+                                }
+                                if (officeNameTv == null) return;
+                                officeNameTv.setText(stringBuffer.toString().substring(0, stringBuffer.toString().length() - 1));
+                            }
                         }
-                        officeNameTv.setText(stringBuffer.toString().substring(0, stringBuffer.toString().length() - 1));
                     }
-                }
-            }
-        });
+                });
     }
 
     public String getHm(long times) {

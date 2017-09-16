@@ -36,12 +36,19 @@ public class TimeEntity implements Serializable {
         public static final int TIMER_STATE_START = 0;
         public static final int TIMER_STATE_STOP = 1;
 
+        public static final int STATE_BUBBLE_ON = 0;
+        public static final int STATE_BUBBLE_OFF = 1;
+
+        public static final int STATE_NO_REMIND_ON = 1;
+        public static final int STATE_NO_REMIND_OFF = 0;
+
+
         public String suspensionTag;
 
-        public String pkId;
+        public String pkId;//计时主键
         public String name;
         public String matterPkId = "";
-        public String taskPkId = "";
+        public String taskPkId = "";//任务ID
         public long startTime;//计时的起始点
         public long endTime;
         public long useTime;
@@ -59,6 +66,9 @@ public class TimeEntity implements Serializable {
         public String highLightName;
         public boolean timingValid;
         public String taskName;
+
+        public int noRemind;//不再提醒标志位 1：不再提醒；0：提醒。
+        public int bubbleOff;//气泡关闭标志位 1：不再弹泡泡；0：弹泡泡。
 
         @Override
         public boolean equals(Object o) {
@@ -93,6 +103,7 @@ public class TimeEntity implements Serializable {
                     ", endTime=" + endTime +
                     ", useTime=" + useTime +
                     ", createUserId='" + createUserId + '\'' +
+                    ", userPic='" + userPic + '\'' +
                     ", createTime=" + createTime +
                     ", workDate=" + workDate +
                     ", state=" + state +
@@ -104,8 +115,10 @@ public class TimeEntity implements Serializable {
                     ", username='" + username + '\'' +
                     ", highLightName='" + highLightName + '\'' +
                     ", timingValid=" + timingValid +
+                    ", taskName='" + taskName + '\'' +
+                    ", noReming=" + noRemind +
+                    ", bubbleOff=" + bubbleOff +
                     '}';
         }
     }
-
 }

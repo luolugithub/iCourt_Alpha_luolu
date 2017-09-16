@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 标准的字符串资源 str_开头-->
+    <string name="str_ok">确定</string>
+    <string name="str_close">关闭</string>
+    <string name="str_cancel">取消</string>
+
+
+    <string name="str_delete">删除</string>
+    <string name="str_finish">完成</string>
+    <string name="str_rename">重命名</string>
+
+
+    <string name="str_copy">复制</string>
+    <string name="str_move">移动</string>
+
+    <string name="str_check_all">全选</string>
+    <string name="str_check_reverse">反选</string>
+
+
+    <string name="str_executing">\u3000处理中\u3000</string>
+    <string name="str_uploading">上传中...</string>
+    <string name="str_cancelling">取消中...</string>
+    <string name="str_deleting">删除中...</string>
+    <string name="str_sorting">排序中...</string>
+    <string name="str_creating">创建中...</string>
+
+
+    <string name="str_delete_sucess">删除成功</string>
+    <string name="str_camera">相机</string>
+    <string name="str_title">标题</string>
+    <string name="str_save">保存</string>
+    <string name="str_sd_unavailable">sd卡不可用</string>
+    <string name="str_click_refresh">点击刷新</string>
+</resources>

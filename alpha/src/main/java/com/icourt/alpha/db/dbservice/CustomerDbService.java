@@ -19,7 +19,7 @@ import io.realm.RealmResults;
  * date createTime：2017/4/11
  * version 1.0.0
  */
-public class CustomerDbService extends BaseRealmService<CustomerDbModel, CustomerDao> {
+public class CustomerDbService extends BaseRealmService<CustomerDao> {
     public CustomerDbService(String uid) {
         super(new CustomerDao(uid));
     }

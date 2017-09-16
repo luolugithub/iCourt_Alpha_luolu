@@ -1,10 +1,6 @@
 package com.icourt.alpha.adapter;
 
-import android.text.Spannable;
-import android.text.SpannableString;
 import android.text.TextUtils;
-import android.text.method.LinkMovementMethod;
-import android.text.util.Linkify;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.EditText;
@@ -56,20 +52,17 @@ public class TaskCheckItemAdapter extends MultiSelectRecyclerAdapter<TaskCheckIt
         }
         checkedTextView.setClickable(valid);
         deleteView.setVisibility(valid ? View.VISIBLE : View.GONE);
-        nameView.setMovementMethod(LinkMovementMethod.getInstance());
-        Spannable spannable = new SpannableString(itemEntity.name);
-        Linkify.addLinks(spannable, Linkify.WEB_URLS);
-
-        final CharSequence text = TextUtils.concat(spannable, "\u200B");
-        nameView.setText(text);
-        holder.bindChildClick(checkedTextView);
-        holder.bindChildClick(deleteView);
+        nameView.setText(itemEntity.name);
         nameView.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View view, boolean hasFocus) {
                 if (!hasFocus) {
+                    if (TextUtils.equals(nameView.getText().toString(), itemEntity.name)) {
+                        //如果内容没有改变，就不走接口了。
+                        return;
+                    }
                     if (onLoseFocusListener != null) {
-                        onLoseFocusListener.loseFocus(holder, position);
+                        onLoseFocusListener.loseFocus(itemEntity, position, nameView.getText().toString());
                     }
                 }
             }
@@ -89,11 +82,13 @@ public class TaskCheckItemAdapter extends MultiSelectRecyclerAdapter<TaskCheckIt
                 return false;
             }
         });
+        holder.bindChildClick(checkedTextView);
+        holder.bindChildClick(deleteView);
     }
 
 
     public interface OnLoseFocusListener {
-        void loseFocus(ViewHolder holder, int position);
+        void loseFocus(TaskCheckItemEntity.ItemEntity itemEntity, int position, String name);
     }
 
 }

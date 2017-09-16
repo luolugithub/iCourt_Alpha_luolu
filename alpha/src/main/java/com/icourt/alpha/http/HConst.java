@@ -10,8 +10,6 @@ import com.icourt.alpha.BuildConfig;
  */
 public class HConst {
 
-    public static String cookie = "";
-
     /**
      * 网络缓存最大值
      */

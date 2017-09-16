@@ -18,6 +18,7 @@ import com.icourt.alpha.utils.FileUtils;
  * version 2.0.0
  */
 
+@Deprecated
 public class ProjectFileBoxAdapter extends BaseArrayRecyclerAdapter<FileBoxBean> {
 
     private static final int FILE_TYPE = 0;//文件
@@ -67,11 +68,10 @@ public class ProjectFileBoxAdapter extends BaseArrayRecyclerAdapter<FileBoxBean>
     private void setFileTypeData(ViewHolder holder, FileBoxBean fileBoxBean) {
         ImageView imageView = holder.obtainView(R.id.file_image);
         TextView fileName = holder.obtainView(R.id.file_name_tv);
-        TextView uploadDay = holder.obtainView(R.id.file_upload_time_day_tv);
         TextView uploadName = holder.obtainView(R.id.file_upload_name_tv);
         TextView uploadHour = holder.obtainView(R.id.file_upload_time_hour_tv);
 
-        imageView.setImageResource(FileUtils.getFileIcon20(fileBoxBean.name));
+        imageView.setImageResource(FileUtils.getSFileIcon(fileBoxBean.name));
         fileName.setText(fileBoxBean.name);
         uploadName.setText(FileUtils.bFormat(fileBoxBean.size));
         if (fileBoxBean.mtime > 0) {

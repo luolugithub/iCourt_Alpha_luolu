@@ -109,6 +109,7 @@ public class TabProjectFragment extends BaseFragment implements TopMiddlePopup.O
             switch (i) {
                 case 0:
                     titleTv.setTextColor(0xFF313131);
+                    titleTv.setPadding(DensityUtil.dip2px(getContext(), 8), 0, 0, 0);
                     titleTv.setText("进行中");
                     downIv.setVisibility(View.VISIBLE);
                     tab.getCustomView().setOnClickListener(new OnTabClickListener());
@@ -216,34 +217,36 @@ public class TabProjectFragment extends BaseFragment implements TopMiddlePopup.O
      * 获取各个状态的任务数量
      */
     private void getMatterStateCount(String matterTypes) {
-        getApi().matterStateCountQuery(matterTypes).enqueue(new SimpleCallBack<JsonElement>() {
-            @Override
-            public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
-                JsonElement jsonElement = response.body().result;
-                if (jsonElement != null) {
-                    JsonObject jsonObject = jsonElement.getAsJsonObject();
-                    if (jsonObject != null) {
-                        doingEntity.count = jsonObject.get("openCount").getAsString();
-                        doneEntity.count = jsonObject.get("closeCount").getAsString();
-                        pendingEntity.count = jsonObject.get("terminationCount").getAsString();
-                        dropEntities.clear();
-                        dropEntities.add(doingEntity);
-                        dropEntities.add(doneEntity);
-                        dropEntities.add(pendingEntity);
-                        if (topMiddlePopup != null && topMiddlePopup.isShowing()) {
-                            if (topMiddlePopup.getAdapter() != null) {
-                                topMiddlePopup.getAdapter().bindData(true, dropEntities);
+        callEnqueue(
+                getApi().matterStateCountQuery(matterTypes),
+                new SimpleCallBack<JsonElement>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
+                        JsonElement jsonElement = response.body().result;
+                        if (jsonElement != null) {
+                            JsonObject jsonObject = jsonElement.getAsJsonObject();
+                            if (jsonObject != null) {
+                                doingEntity.count = jsonObject.get("openCount").getAsString();
+                                doneEntity.count = jsonObject.get("closeCount").getAsString();
+                                pendingEntity.count = jsonObject.get("terminationCount").getAsString();
+                                dropEntities.clear();
+                                dropEntities.add(doingEntity);
+                                dropEntities.add(doneEntity);
+                                dropEntities.add(pendingEntity);
+                                if (topMiddlePopup != null && topMiddlePopup.isShowing()) {
+                                    if (topMiddlePopup.getAdapter() != null) {
+                                        topMiddlePopup.getAdapter().bindData(true, dropEntities);
+                                    }
+                                }
                             }
                         }
                     }
-                }
-            }
 
-            @Override
-            public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
-                super.onFailure(call, t);
-            }
-        });
+                    @Override
+                    public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
+                        super.onFailure(call, t);
+                    }
+                });
     }
 
     /**

@@ -12,6 +12,7 @@ import com.icourt.alpha.entity.bean.SearchEngineEntity;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.widget.comparators.LongFieldEntityComparator;
+import com.icourt.alpha.widget.comparators.ORDER;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -26,7 +27,7 @@ import java.util.Collections;
  */
 public class SearchEngineAdapter extends MultiSelectRecyclerAdapter<SearchEngineEntity> implements BaseRecyclerAdapter.OnItemClickListener {
 
-    private LongFieldEntityComparator<SearchEngineEntity> longFieldEntityComparator = new LongFieldEntityComparator<>(LongFieldEntityComparator.ORDER.ASC);
+    private LongFieldEntityComparator<SearchEngineEntity> longFieldEntityComparator = new LongFieldEntityComparator<>(ORDER.ASC);
 
     public SearchEngineAdapter() {
         this.setOnItemClickListener(this);

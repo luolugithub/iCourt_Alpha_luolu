@@ -6,6 +6,8 @@ import java.io.File;
 
 import okhttp3.MediaType;
 import okhttp3.RequestBody;
+import retrofit2.Call;
+import retrofit2.Callback;
 
 /**
  * Description
@@ -72,7 +74,7 @@ public class RequestUtils {
      */
     public static String createStreamKey(File file) {
         if (file != null && file.exists()) {
-            return "file\"; filename=\"" + file.getName() + "\"";
+            return "file\"; filename=\"" + file.getName();
         }
         return "file\"; filename=\"";
     }
@@ -110,5 +112,38 @@ public class RequestUtils {
         return RequestBody
                 .create(okhttp3.MediaType.parse("application/json; charset=utf-8"),
                         TextUtils.isEmpty(json) ? "" : json);
+    }
+
+    /**
+     * 执行call请求
+     *
+     * @param call
+     * @param callback
+     * @param <T>
+     * @return
+     */
+    public static <T> Call<T> callEnqueue(Call<T> call, Callback<T> callback) {
+        if (call != null && !call.isExecuted()) {
+            call.enqueue(callback);
+        }
+        return call;
+    }
+
+    /**
+     * 执行call请求
+     *
+     * @param call
+     * @param <T>
+     * @return
+     */
+    public static <T> Call<T> cancelCall(Call<T> call) {
+        if (call != null) {
+            try {
+                call.cancel();
+            } catch (Throwable e) {
+                e.printStackTrace();
+            }
+        }
+        return call;
     }
 }

@@ -113,6 +113,11 @@ public class TouchImageView extends ImageView {
         super(context, attrs, defStyle);
         sharedConstructing(context);
     }
+    @TargetApi(21)
+    public TouchImageView(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
+        super(context, attrs, defStyleAttr, defStyleRes);
+        sharedConstructing(context);
+    }
 
     private void sharedConstructing(Context context) {
         super.setClickable(true);

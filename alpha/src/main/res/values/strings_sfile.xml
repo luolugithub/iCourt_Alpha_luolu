@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- 资料库 sfile相关的字符串资源 -->
+    <string name="repo_empty">暂无资料库</string>
+    <string name="repo_share_empty">没有共享给我的资料库</string>
+    <string name="repo_lawfirm_empty">尚未建立资料库</string>
+    <string name="repo_type_no_writable_repo">本类型下没有可读写权限的资料库</string>
+
+    <string name="repo_change_history">修改历史</string>
+    <string name="repo_inner_share">内部共享</string>
+    <string name="repo_recycle_bin">回收站</string>
+    <string name="repo_details">查看资料库详情</string>
+
+    <string-array name="repo_type_array">
+        <item>我的</item>
+        <item>共享给我的</item>
+        <item>律所</item>
+        <item>项目</item>
+    </string-array>
+
+    <string-array name="repo_action_menus_rw_array">
+        <item>@string/repo_details</item>
+        <item>重命名</item>
+        <item>@string/repo_inner_share</item>
+        <item>@string/str_delete</item>
+    </string-array>
+
+    <string-array name="repo_action_menus_r_array">
+        <item>查看资料库详情</item>
+        <item>@string/str_rename</item>
+        <item>内部共享</item>
+    </string-array>
+
+    <string name="repo_delete_confirm">删除后不可恢复, 确定删除吗?</string>
+    <string name="repo_delete_ing">资料库删除中...</string>
+    <string name="repo_delete_success">资料库删除成功</string>
+    <string name="repo_delete_fail">资料库删除失败</string>
+
+    <string name="sfile_folder_empty">本目录下没有文件</string>
+    <string name="sfile_folder_statistics" formatted="false">%s个文件夹, %s个文件</string>
+    <string name="sfile_file_already_selected" formatted="false">已选择: %s</string>
+
+    <string name="sfile_menu_repo_details">查看资料库详情</string>
+    <string name="sfile_menu_recycle_bin">回收站</string>
+    <string name="sfile_menu_batch_operation">批量操作</string>
+
+    <string-array name="sfile_folder_menus_rw_array">
+        <item>@string/sfile_menu_batch_operation</item>
+        <item>@string/sfile_menu_repo_details</item>
+        <item>@string/sfile_menu_recycle_bin</item>
+    </string-array>
+
+    <string-array name="sfile_folder_menus_r_array">
+        <item>@string/sfile_menu_repo_details</item>
+        <item>@string/sfile_menu_recycle_bin</item>
+    </string-array>
+
+    <string name="sfile_create_folder">新建文件夹</string>
+    <string name="sfile_upload">上传文件</string>
+    <string name="sfile_upload_fail">上传文件失败</string>
+    <string name="sfile_select_from_album">从相册选取</string>
+    <string name="sfile_select_from_camera">拍照</string>
+
+    <string-array name="sfile_folder_action_menus_array">
+        <item>@string/sfile_create_folder</item>
+        <item>@string/sfile_upload</item>
+        <item>@string/sfile_select_from_album</item>
+        <item>@string/sfile_select_from_camera</item>
+    </string-array>
+    <string name="sfile_delete_confirm">删除后可以从回收站找回,确定删除?</string>
+
+    <string name="sfile_file_details">查看文件详情</string>
+    <string name="sfile_folder_details">查看文件夹详情</string>
+    <string name="sfile_file_rename">@string/str_rename</string>
+    <string name="sfile_file_share">共享</string>
+    <string name="sfile_folder_share">内部共享</string>
+    <string name="sfile_file_copy">@string/str_copy</string>
+    <string name="sfile_file_move">@string/str_move</string>
+    <string name="sfile_file_delete">@string/str_delete</string>
+
+    <string-array name="sfile_file_menus_array">
+        <item>@string/sfile_file_details</item>
+        <item>@string/sfile_file_rename</item>
+        <item>@string/sfile_file_share</item>
+        <item>@string/sfile_file_copy</item>
+        <item>@string/sfile_file_move</item>
+        <item>@string/sfile_file_delete</item>
+    </string-array>
+    <string-array name="sfile_folder_menus_array">
+        <item>@string/sfile_folder_details</item>
+        <item>@string/sfile_file_rename</item>
+        <item>@string/sfile_folder_share</item>
+        <item>@string/sfile_file_copy</item>
+        <item>@string/sfile_file_move</item>
+        <item>@string/sfile_file_delete</item>
+    </string-array>
+
+    <string name="sfile_not_exist">文件不存在</string>
+    <string name="sfile_un_select">尚未选择文件</string>
+    <string name="sfile_length_limit_format" formatted="false">文件名不能超过%s个字符</string>
+    <string name="sfile_name_contain_special_characters" formatted="false">文件名包含特殊字符 \"%s\"</string>
+    <string name="sfile_change_history_empty">尚未有修改记录</string>
+    <string name="sfile_change_history_revert_confirm">将资料库恢复到该次修改前到状态</string>
+    <string name="sfile_change_history_revert">撤销修改</string>
+    <string name="sfile_revert_success">撤销成功</string>
+    <string name="sfile_revert_fail">撤销失败</string>
+    <string name="sfile_user_transform_to_alpha_user">alpha用户转换中...</string>
+    <string name="sfile_add_share_member">添加共享成员</string>
+    <string name="sfile_delete_share_member">取消共享</string>
+
+    <string name="sfile_permission_r">只读</string>
+    <string name="sfile_permission_rw">可读写</string>
+    <string name="sfile_recycle_bin_empty">回收站里没有文件</string>
+    <string name="sfile_recycle_bin_folder_not_clickable">无法浏览回收站里的文件夹</string>
+    <string name="sfile_recycle_bin_file_not_clickable">无法浏览回收站里的文件</string>
+    <string name="sfile_recovery">恢复</string>
+    <string name="sfile_recovering"> 恢复中 </string>
+    <string name="sfile_recovery_success">文件恢复成功</string>
+    <string name="sfile_recovery_fail">文件恢复失败</string>
+
+
+    <string name="sfile_backspace_confirm">回滚到历史版本</string>
+    <string name="sfile_backspacing">回退中...</string>
+    <string name="sfile_backspace_success">回退成功</string>
+    <string name="sfile_backspace_fail">回退失败</string>
+
+    <string name="sfile_version_list_empty">暂无历史版本</string>
+
+
+    <string name="sfile_link_already_copied">已复制</string>
+    <string name="sfile_link_delete_confirm">删除链接会导致已分享的链接失效</string>
+
+    <string name="sfile_link_upload_create">生成上传链接</string>
+    <string name="sfile_link_create_fail">创建共享链接失败</string>
+    <string name="sfile_link_upload_created">已生成上传链接</string>
+    <string name="sfile_link_upload_delete">删除上传链接</string>
+    <string name="sfile_link_download_create">生成下载链接</string>
+    <string name="sfile_link_download_created">已生成下载链接</string>
+    <string name="sfile_link_download_delete">删除下载链接</string>
+
+    <string name="sfile_link_access_password">访问密码</string>
+    <string name="sfile_link_access_password_confirm">是否需要访问密码?</string>
+    <string name="sfile_link_password_auto_generation">自动生成</string>
+    <string name="sfile_link_password_null">不需要</string>
+    <string name="sfile_link_password_generation">生成</string>
+
+
+    <string name="sfile_link_limit_date">过期时间</string>
+    <string name="sfile_link_limit_upload_date">上传链接有效期</string>
+    <string name="sfile_link_limit_download_date">下载链接有效期</string>
+    <string name="sfile_link_limit_date_0">永不过期</string>
+    <string name="sfile_link_limit_date_1">1天有效期</string>
+    <string name="sfile_link_limit_date_5">5天有效期</string>
+    <string name="sfile_link_limit_date_7">7天有效期</string>
+    <string name="sfile_link_limit_date_14">14天有效期</string>
+
+    <string-array name="sfile_link_limit_date_array">
+        <item>@string/sfile_link_limit_date_0</item>
+        <item>@string/sfile_link_limit_date_1</item>
+        <item>@string/sfile_link_limit_date_5</item>
+        <item>@string/sfile_link_limit_date_7</item>
+        <item>@string/sfile_link_limit_date_14</item>
+    </string-array>
+
+    <string name="repo_encrypted">资料库被加密</string>
+    <string name="repo_encrypted_unsupport">请前往电脑端 AlphaBox 操作</string>
+    <string name="sfile_searched_no_results">没有找到匹配的结果</string>
+    <string name="sfile_search_range">在所有资料库内搜索</string>
+    <string name="sfile_searched_folder_un_click">搜索结果中无法预览文件夹</string>
+
+</resources>

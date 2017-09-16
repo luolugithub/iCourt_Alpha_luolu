@@ -283,8 +283,9 @@ public class GroupMemberListActivity
     protected void getData(final boolean isRefresh) {
         super.getData(isRefresh);
         showLoadingDialog(null);
-        getChatApi().groupQueryAllMemberIds(getIntent().getStringExtra(KEY_TID))
-                .enqueue(new SimpleCallBack<List<String>>() {
+        callEnqueue(
+                getChatApi().groupQueryAllMemberIds(getIntent().getStringExtra(KEY_TID)),
+                new SimpleCallBack<List<String>>() {
                     @Override
                     public void onSuccess(Call<ResEntity<List<String>>> call, Response<ResEntity<List<String>>> response) {
                         dismissLoadingDialog();
@@ -488,7 +489,7 @@ public class GroupMemberListActivity
      * @param hiddenChatBtn
      */
     public void showContactDialogFragment(String accid, boolean hiddenChatBtn) {
-        String tag = "ContactDialogFragment";
+        String tag = ContactDialogFragment.class.getSimpleName();
         FragmentTransaction mFragTransaction = getSupportFragmentManager().beginTransaction();
         Fragment fragment = getSupportFragmentManager().findFragmentByTag(tag);
         if (fragment != null) {

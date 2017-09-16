@@ -136,6 +136,20 @@ public class GlideUtils {
         }
     }
 
+    /**
+     * @param context
+     * @param path
+     * @param imageView
+     */
+    public static void loadSFilePic(Context context, String path, ImageView imageView) {
+        if (imageView == null) return;
+        if (canLoadImage(context)) {
+            Glide.with(context)
+                    .load(path)
+                    .error(R.mipmap.filetype_image)
+                    .into(imageView);
+        }
+    }
 
     /**
      * 为图片着色

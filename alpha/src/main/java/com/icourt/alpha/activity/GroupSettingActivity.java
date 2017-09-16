@@ -253,8 +253,9 @@ public class GroupSettingActivity extends BaseActivity {
         if (target == null) return;
         if (groupDetailEntity == null) return;
         showLoadingDialog(null);
-        getChatApi().groupTransferAdmin(groupDetailEntity.tid, target.accid)
-                .enqueue(new SimpleCallBack<Boolean>() {
+        callEnqueue(
+                getChatApi().groupTransferAdmin(groupDetailEntity.tid, target.accid),
+                new SimpleCallBack<Boolean>() {
                     @Override
                     public void onSuccess(Call<ResEntity<Boolean>> call, Response<ResEntity<Boolean>> response) {
                         dismissLoadingDialog();
@@ -291,8 +292,9 @@ public class GroupSettingActivity extends BaseActivity {
             param.addProperty("chat_history", false);
         }
         showLoadingDialog(null);
-        getChatApi().groupUpdate(groupDetailEntity.tid, RequestUtils.createJsonBody(param.toString()))
-                .enqueue(new SimpleCallBack<JsonElement>() {
+        callEnqueue(
+                getChatApi().groupUpdate(groupDetailEntity.tid, RequestUtils.createJsonBody(param.toString())),
+                new SimpleCallBack<JsonElement>() {
                     @Override
                     public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
                         dismissLoadingDialog();

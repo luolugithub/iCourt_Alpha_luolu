@@ -150,8 +150,9 @@ public class FileImportTeamFragment extends BaseFragment implements BaseRecycler
     @Override
     protected void getData(boolean isRefresh) {
         super.getData(isRefresh);
-        getChatApi().groupsQuery(0, true)
-                .enqueue(new SimpleCallBack<List<GroupEntity>>() {
+        callEnqueue(
+                getChatApi().groupsQuery(0, true),
+                new SimpleCallBack<List<GroupEntity>>() {
                     @Override
                     public void onSuccess(Call<ResEntity<List<GroupEntity>>> call, Response<ResEntity<List<GroupEntity>>> response) {
                         groupEntities.clear();
@@ -219,8 +220,9 @@ public class FileImportTeamFragment extends BaseFragment implements BaseRecycler
                     e.printStackTrace();
                 }
                 final int finalI = i;
-                getChatApi().msgAdd(RequestUtils.createJsonBody(jsonBody))
-                        .enqueue(new SimpleCallBack<IMMessageCustomBody>() {
+                callEnqueue(
+                        getChatApi().msgAdd(RequestUtils.createJsonBody(jsonBody)),
+                        new SimpleCallBack<IMMessageCustomBody>() {
                             @Override
                             public void onSuccess(Call<ResEntity<IMMessageCustomBody>> call, Response<ResEntity<IMMessageCustomBody>> response) {
                                 if (finalI == selectedData.size() - 1) {
@@ -318,8 +320,9 @@ public class FileImportTeamFragment extends BaseFragment implements BaseRecycler
                     params.put(RequestUtils.createStreamKey(lastPathSegment), RequestUtils.createStreamBody(bytes));
                 }
                 final int finalI = i;
-                getChatApi().msgImageAdd(params)
-                        .enqueue(new SimpleCallBack<IMMessageCustomBody>() {
+                callEnqueue(
+                        getChatApi().msgImageAdd(params),
+                        new SimpleCallBack<IMMessageCustomBody>() {
                             @Override
                             public void onSuccess(Call<ResEntity<IMMessageCustomBody>> call, Response<ResEntity<IMMessageCustomBody>> response) {
                                 if (finalI == selectedData.size() - 1) {

@@ -13,12 +13,33 @@ import java.util.List;
  */
 public class ListFilter<T extends IFilterEntity> implements BaseFilter<T> {
 
+    public interface ObjectFilterListener<T> {
+        boolean isFilter(@Nullable T t);
+    }
+
+
+    /**
+     * 过滤某个实体
+     *
+     * @param datas
+     * @param objectFilterListener
+     * @param <T>
+     */
+    public static synchronized final <T> void filterItems(List<T> datas, ObjectFilterListener<T> objectFilterListener) {
+        if (datas != null && objectFilterListener != null) {
+            for (int i = datas.size() - 1; i >= 0; i--) {
+                T t = datas.get(i);
+                if (objectFilterListener.isFilter(t)) {
+                    datas.remove(i);
+                }
+            }
+        }
+    }
 
     @Nullable
     @Override
     public List<T> filter(@Nullable List<T> data, int type) {
         if (data != null) {
-            //过滤机器人
             for (int i = data.size() - 1; i >= 0; i--) {
                 T t = data.get(i);
                 if (t != null && t.isFilter(type)) {

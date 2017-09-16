@@ -66,6 +66,10 @@ public abstract class BaseCallBack<T> implements Callback<T> {
     @CallSuper
     @Override
     public void onFailure(Call<T> call, Throwable t) {
+        if (call != null && call.isCanceled()) {
+            LogUtils.d("http", "------->canceled");
+            return;
+        }
         if (t instanceof ResponseException) {
             defNotify(((ResponseException) t).message);
 

@@ -149,7 +149,7 @@ public class CommentListActivity extends BaseActivity implements BaseRecyclerAda
         TextView contentTv = (TextView) footerview.findViewById(R.id.content_tv);
         if (taskItemEntity != null) {
             if (taskItemEntity.createUser != null)
-                contentTv.setText(taskItemEntity.createUser.userName + " 创建了任务 " + DateUtils.getTimeDateFormatMm(taskItemEntity.createTime));
+                contentTv.setText(String.format("%s 创建了任务 %s", taskItemEntity.createUser.userName, DateUtils.getTimeDateFormatMm(taskItemEntity.createTime)));
             bottomLayout.setVisibility(taskItemEntity.valid ? View.VISIBLE : View.GONE);
         }
         headerFooterAdapter.addFooter(footerview);
@@ -233,14 +233,19 @@ public class CommentListActivity extends BaseActivity implements BaseRecyclerAda
             pageIndex = 1;
         }
         if (taskItemEntity == null) return;
-        getApi().commentListQuery(100, taskItemEntity.id, pageIndex, ActionConstants.DEFAULT_PAGE_SIZE).enqueue(new SimpleCallBack<CommentEntity>() {
+        callEnqueue(getApi().commentListQuery(
+                100,
+                taskItemEntity.id,
+                pageIndex,
+                ActionConstants.DEFAULT_PAGE_SIZE),
+                new SimpleCallBack<CommentEntity>() {
             @Override
             public void onSuccess(Call<ResEntity<CommentEntity>> call, Response<ResEntity<CommentEntity>> response) {
                 stopRefresh();
                 commentListAdapter.bindData(isRefresh, response.body().result.items);
                 pageIndex += 1;
                 commentCount = commentListAdapter.getItemCount();
-                commentTv.setText(commentCount + "条动态");
+                commentTv.setText(String.format("%s条动态", commentCount));
             }
 
             @Override
@@ -293,7 +298,8 @@ public class CommentListActivity extends BaseActivity implements BaseRecyclerAda
             return;
         }
         showLoadingDialog(null);
-        getApi().commentCreate(100, taskItemEntity.id, content).enqueue(new SimpleCallBack<JsonElement>() {
+        callEnqueue(getApi().commentCreate(100, taskItemEntity.id, content),
+                new SimpleCallBack<JsonElement>() {
             @Override
             public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
                 dismissLoadingDialog();
@@ -305,7 +311,7 @@ public class CommentListActivity extends BaseActivity implements BaseRecyclerAda
                 recyclerview.scrollToPosition(0);
                 commentTv.setVisibility(View.VISIBLE);
                 sendTv.setVisibility(View.GONE);
-                commentTv.setText(commentListAdapter.getItemCount() + "条动态");
+                commentTv.setText(String.format("%s条动态", commentListAdapter.getItemCount()));
                 EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION));
             }
 
@@ -342,7 +348,7 @@ public class CommentListActivity extends BaseActivity implements BaseRecyclerAda
      * @param hiddenChatBtn
      */
     public void showContactDialogFragment(String accid, boolean hiddenChatBtn) {
-        String tag = "ContactDialogFragment";
+        String tag = ContactDialogFragment.class.getSimpleName();
         FragmentTransaction mFragTransaction = getSupportFragmentManager().beginTransaction();
         Fragment fragment = getSupportFragmentManager().findFragmentByTag(tag);
         if (fragment != null) {
@@ -375,9 +381,9 @@ public class CommentListActivity extends BaseActivity implements BaseRecyclerAda
             if (TextUtils.isEmpty(entity.createUser.userId)) return false;
             if (TextUtils.isEmpty(getLoginUserId())) return false;
             if (TextUtils.equals(entity.createUser.userId.toLowerCase(), getLoginUserId().toLowerCase())) {
-                showSelfBottomMeau(entity);
+                showSelfBottomMenu(entity);
             } else {
-                showOthersBottomMeau(entity);
+                showOthersBottomMenu(entity);
             }
         }
         return true;
@@ -386,7 +392,7 @@ public class CommentListActivity extends BaseActivity implements BaseRecyclerAda
     /**
      * 显示我的底部菜单
      */
-    private void showSelfBottomMeau(final CommentEntity.CommentItemEntity commentItemEntity) {
+    private void showSelfBottomMenu(final CommentEntity.CommentItemEntity commentItemEntity) {
         if (commentItemEntity == null) return;
         new BottomActionDialog(getContext(),
                 null,
@@ -410,7 +416,7 @@ public class CommentListActivity extends BaseActivity implements BaseRecyclerAda
     /**
      * 显示他人底部菜单
      */
-    private void showOthersBottomMeau(final CommentEntity.CommentItemEntity commentItemEntity) {
+    private void showOthersBottomMenu(final CommentEntity.CommentItemEntity commentItemEntity) {
         if (commentItemEntity == null) return;
         new BottomActionDialog(getContext(),
                 null,
@@ -476,13 +482,13 @@ public class CommentListActivity extends BaseActivity implements BaseRecyclerAda
     private void deleteComment(final CommentEntity.CommentItemEntity commentItemEntity) {
         if (commentItemEntity == null) return;
         showLoadingDialog(null);
-        getApi().taskDeleteComment(commentItemEntity.id).enqueue(new SimpleCallBack<JsonElement>() {
+        callEnqueue(getApi().taskDeleteComment(commentItemEntity.id),new SimpleCallBack<JsonElement>() {
             @Override
             public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
                 dismissLoadingDialog();
                 if (commentListAdapter != null) {
                     commentListAdapter.removeItem(commentItemEntity);
-                    commentTv.setText(commentListAdapter.getItemCount() + "条动态");
+                    commentTv.setText(String.format("%s条动态", commentListAdapter.getItemCount()));
                     EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION));
                 }
             }

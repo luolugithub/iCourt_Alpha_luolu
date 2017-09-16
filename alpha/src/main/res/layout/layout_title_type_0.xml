@@ -4,22 +4,23 @@
     android:id="@id/titleView"
     style="@style/AlphaTitleAppBarLayout"
     android:layout_width="match_parent"
+    android:background="@color/alpha_background_title"
     android:layout_height="wrap_content">
 
     <!-- 【标题布局 请勿轻易修改】 -->
     <LinearLayout xmlns:app="http://schemas.android.com/apk/res-auto"
         android:layout_width="match_parent"
         android:layout_height="@dimen/alpha_height_title"
-        android:background="@color/alpha_background_title"
         android:gravity="center_vertical"
         android:orientation="horizontal"
+        android:paddingLeft="5dp"
+        android:paddingRight="5dp"
         app:layout_scrollFlags="scroll|enterAlways|snap">
 
         <ImageView
             android:id="@id/titleBack"
-            android:layout_width="38dp"
+            android:layout_width="42dp"
             android:layout_height="match_parent"
-            android:layout_marginLeft="5dp"
             android:background="?attr/selectableItemBackground"
             android:padding="10dp"
             android:src="@mipmap/header_icon_back" />
@@ -29,12 +30,12 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_marginLeft="10dp"
-            android:layout_marginRight="53dp"
+            android:layout_marginRight="52dp"
             android:layout_weight="1"
             android:ellipsize="end"
             android:gravity="center"
             android:maxLines="1"
-            android:text="标题"
+            android:text="@string/str_title"
             android:textStyle="bold"
             android:textColor="@color/alpha_font_color_title"
             android:textSize="@dimen/alpha_font_size_title" />

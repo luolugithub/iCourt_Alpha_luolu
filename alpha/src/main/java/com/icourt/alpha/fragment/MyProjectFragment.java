@@ -145,7 +145,7 @@ public class MyProjectFragment extends BaseFragment {
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.rl_comm_search:
-                SearchProjectActivity.launchProject(getContext(), projectType, SearchProjectActivity.SEARCH_PROJECT);
+                SearchProjectActivity.launchProject(getContext(), projectType);
                 break;
             default:
                 super.onClick(v);
@@ -193,8 +193,17 @@ public class MyProjectFragment extends BaseFragment {
         if (status >= 0) {
             sta = String.valueOf(status);
         }
-        getApi().projectQueryAll(pageIndex, ActionConstants.DEFAULT_PAGE_SIZE, "name", "", sta, matterType, attorneyType, myStar)
-                .enqueue(new SimpleCallBack<List<ProjectEntity>>() {
+        callEnqueue(
+                getApi().projectQueryAll(
+                        pageIndex,
+                        ActionConstants.DEFAULT_PAGE_SIZE,
+                        "name",
+                        "",
+                        sta,
+                        matterType,
+                        attorneyType,
+                        myStar),
+                new SimpleCallBack<List<ProjectEntity>>() {
                     @Override
                     public void onSuccess(Call<ResEntity<List<ProjectEntity>>> call, Response<ResEntity<List<ProjectEntity>>> response) {
                         projectListAdapter.bindData(isRefresh, response.body().result);

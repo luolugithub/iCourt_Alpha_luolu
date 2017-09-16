@@ -241,9 +241,6 @@
             android:screenOrientation="portrait"
             android:windowSoftInputMode="stateVisible|adjustResize" />
         <activity
-            android:name=".activity.FileBoxListActivity"
-            android:screenOrientation="portrait" />
-        <activity
             android:name=".activity.ProjectSelectActivity"
             android:screenOrientation="portrait" />
         <activity
@@ -292,18 +289,72 @@
             android:screenOrientation="portrait"
             android:windowSoftInputMode="adjustUnspecified|adjustResize|stateHidden" />
         <activity
-            android:name=".activity.MyAllotTaskActivity"
-            android:configChanges="orientation|keyboardHidden|screenSize"
-            android:screenOrientation="portrait" />
-        <activity
-            android:name=".activity.MyFinishTaskActivity"
+            android:name=".activity.TaskOtherActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:screenOrientation="portrait" />
         <activity
             android:name=".activity.SearchProjectActivity"
             android:screenOrientation="portrait" />
         <activity
+            android:name=".activity.SearchTaskActivity"
+            android:screenOrientation="portrait" />
+        <activity
             android:name=".activity.AlphaSpeciaSetActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".activity.ProjectBasicTextInfoActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".activity.ProjectMembersActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".activity.ProjectJudgeActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".activity.ProjecTacceptanceActivity"
+            android:screenOrientation="portrait" />
+
+        <activity
+            android:name=".activity.FolderListActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:screenOrientation="portrait" />
+
+        <activity
+            android:name=".activity.RepoCreateActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="stateVisible" />
+
+        <activity
+            android:name=".activity.RepoRenameActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="stateVisible" />
+        <activity
+            android:name=".activity.FolderCreateActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="stateVisible" />
+
+        <activity
+            android:name=".activity.FolderRenameActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="stateVisible" />
+        <activity
+            android:name=".activity.FileDownloadActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".activity.ImageViewerActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:screenOrientation="portrait" />
+
+        <activity
+            android:name=".activity.SFileSearchActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".activity.FileSimpleListActivity"
             android:screenOrientation="portrait" />
         <activity
             android:name=".activity.SetingActivity"

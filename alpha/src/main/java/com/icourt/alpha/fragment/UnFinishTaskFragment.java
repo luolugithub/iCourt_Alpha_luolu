@@ -150,8 +150,9 @@ public class UnFinishTaskFragment extends BaseFragment implements BaseRecyclerAd
         super.getData(isRefresh);
         taskSelectAdapter.clearSelected();
         if (!TextUtils.isEmpty(projectId)) {
-            getApi().projectQueryTaskList(null,projectId, 0, 0, 1, -1)
-                    .enqueue(new SimpleCallBack<TaskEntity>() {
+            callEnqueue(
+                    getApi().projectQueryTaskList(null, projectId, 0, 0, 1, -1),
+                    new SimpleCallBack<TaskEntity>() {
                         @Override
                         public void onSuccess(Call<ResEntity<TaskEntity>> call, Response<ResEntity<TaskEntity>> response) {
                             if (response.body().result != null) {
@@ -159,34 +160,20 @@ public class UnFinishTaskFragment extends BaseFragment implements BaseRecyclerAd
                                 setSelectedTask();
                             }
                         }
-
+                    }
+            );
+        } else {
+            callEnqueue(
+                    getApi().taskListQuery(0, getLoginUserId(), 0, 0, "dueTime", 1, -1, 0),
+                    new SimpleCallBack<TaskEntity>() {
                         @Override
-                        public void onFailure(Call<ResEntity<TaskEntity>> call, Throwable t) {
-                            super.onFailure(call, t);
+                        public void onSuccess(Call<ResEntity<TaskEntity>> call, Response<ResEntity<TaskEntity>> response) {
+                            if (response.body().result != null) {
+                                taskSelectAdapter.bindData(isRefresh, response.body().result.items);
+                                setSelectedTask();
+                            }
                         }
                     });
-        } else {
-            getApi().taskListQuery(0,
-                    getLoginUserId(),
-                    0,
-                    0,
-                    "dueTime",
-                    1,
-                    -1,
-                    0).enqueue(new SimpleCallBack<TaskEntity>() {
-                @Override
-                public void onSuccess(Call<ResEntity<TaskEntity>> call, Response<ResEntity<TaskEntity>> response) {
-                    if (response.body().result != null) {
-                        taskSelectAdapter.bindData(isRefresh, response.body().result.items);
-                        setSelectedTask();
-                    }
-                }
-
-                @Override
-                public void onFailure(Call<ResEntity<TaskEntity>> call, Throwable t) {
-                    super.onFailure(call, t);
-                }
-            });
         }
     }
 
@@ -213,8 +200,9 @@ public class UnFinishTaskFragment extends BaseFragment implements BaseRecyclerAd
         taskSelectAdapter.clearSelected();
         if (!TextUtils.isEmpty(projectId)) {
             //pms 环境有
-            getApi().taskQueryByName(null, taskName, 0, 0, projectId)
-                    .enqueue(new SimpleCallBack<TaskEntity>() {
+            callEnqueue(
+                    getApi().taskQueryByName(null, taskName, 0, 0, projectId),
+                    new SimpleCallBack<TaskEntity>() {
                         @Override
                         public void onSuccess(Call<ResEntity<TaskEntity>> call, Response<ResEntity<TaskEntity>> response) {
                             if (response.body().result != null) {
@@ -225,8 +213,9 @@ public class UnFinishTaskFragment extends BaseFragment implements BaseRecyclerAd
                     });
         } else {
             //pms 环境有
-            getApi().taskQueryByName(getLoginUserId(), taskName, 0, 0)
-                    .enqueue(new SimpleCallBack<TaskEntity>() {
+            callEnqueue(
+                    getApi().taskQueryByName(getLoginUserId(), taskName, 0, 0),
+                    new SimpleCallBack<TaskEntity>() {
                         @Override
                         public void onSuccess(Call<ResEntity<TaskEntity>> call, Response<ResEntity<TaskEntity>> response) {
                             if (response.body().result != null) {
@@ -234,7 +223,8 @@ public class UnFinishTaskFragment extends BaseFragment implements BaseRecyclerAd
                                 setSelectedTask();
                             }
                         }
-                    });
+                    }
+            );
         }
 
     }

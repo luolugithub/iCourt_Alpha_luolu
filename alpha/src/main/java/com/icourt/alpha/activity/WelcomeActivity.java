@@ -14,6 +14,7 @@ import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.icourt.alpha.http.AlphaClient;
 import com.icourt.alpha.service.LocalService;
 import com.icourt.alpha.service.RemoteService;
+import com.icourt.alpha.utils.SFileTokenUtils;
 import com.netease.nimlib.sdk.NimIntent;
 import com.netease.nimlib.sdk.msg.model.IMMessage;
 
@@ -73,6 +74,7 @@ public class WelcomeActivity extends BaseActivity implements Animation.Animation
             AlphaUserInfo loginUserInfo = getLoginUserInfo();
             AlphaClient.setToken(loginUserInfo.getToken());
             AlphaClient.setOfficeId(loginUserInfo.getOfficeId());
+            AlphaClient.setSFileToken(SFileTokenUtils.getSFileToken());
             if (isNotifaction) {
                 Intent intent = getIntent();
                 if (intent.hasExtra(NimIntent.EXTRA_NOTIFY_CONTENT)) {
