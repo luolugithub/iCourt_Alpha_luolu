@@ -382,7 +382,7 @@ public class ProjectSaveFileDialogFragment extends BaseDialogFragment
                     public void onSuccess(Call<JsonElement> call, Response<JsonElement> response) {
                         dismissLoadingDialog();
                         showToast("上传成功");
-                        dismiss();
+                        dismissAllowingStateLoss();
                     }
 
                     @Override

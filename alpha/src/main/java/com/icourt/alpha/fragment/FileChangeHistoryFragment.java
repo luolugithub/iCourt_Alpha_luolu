@@ -305,7 +305,7 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
         if (item == null) return;
         new BottomActionDialog(
                 getContext(),
-                getString(R.string.sfile_change_history_revert_confirm),
+                null,
                 Arrays.asList(getString(R.string.sfile_change_history_revert)),
                 new BottomActionDialog.OnActionItemClickListener() {
                     @Override

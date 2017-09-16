@@ -1,9 +1,7 @@
 package com.icourt.alpha.activity;
 
-import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
@@ -70,7 +68,6 @@ import static com.icourt.alpha.utils.FileUtils.isFileExists;
  * version 2.1.0
  */
 public class ImageViewerActivity extends BaseUmengActivity {
-    private static final int CODE_PERMISSION_FILE = 1009;
     private static final String KEY_BIG_URLS = "key_big_urls";//多个大图地址
     private static final String KEY_SMALL_URLS = "key_small_urls";//多个小图地址
     private static final String KEY_SELECT_POS = "key_select_pos";//多个图片地址 跳转到某一条
@@ -407,8 +404,8 @@ public class ImageViewerActivity extends BaseUmengActivity {
      */
     private void transformFriends(Drawable drawable) {
         if (drawable == null) return;
-        if (!checkPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-            reqPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, "我们需要文件写入权限!", CODE_PERMISSION_FILE);
+        if (!checkAcessFilePermission()) {
+            requestAcessFilePermission();
             return;
         }
         //先保存
@@ -459,10 +456,10 @@ public class ImageViewerActivity extends BaseUmengActivity {
      * 检查权限或者下载
      */
     private void checkPermissionOrDownload() {
-        if (checkPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+        if (checkAcessFilePermission()) {
             downloadFile(imagePagerAdapter.getItem(viewPager.getCurrentItem()));
         } else {
-            reqPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, "下载文件需要文件写入权限!", CODE_PERMISSION_FILE);
+            requestAcessFilePermission();
         }
     }
 
@@ -523,8 +520,8 @@ public class ImageViewerActivity extends BaseUmengActivity {
      */
     private void savedImport2Project(final Drawable drawable) {
         if (drawable == null) return;
-        if (!checkPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-            reqPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, "我们需要文件写入权限!", CODE_PERMISSION_FILE);
+        if (!checkAcessFilePermission()) {
+            requestAcessFilePermission();
             return;
         }
         showLoadingDialog(null);
@@ -604,21 +601,6 @@ public class ImageViewerActivity extends BaseUmengActivity {
                 .show(mFragTransaction, tag);
     }
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        if (grantResults == null) return;
-        if (grantResults.length <= 0) return;
-        switch (requestCode) {
-            case CODE_PERMISSION_FILE:
-                if (grantResults[0] == PackageManager.PERMISSION_DENIED) {
-                    showTopSnackBar("文件写入权限被拒绝!");
-                }
-                break;
-            default:
-                super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-                break;
-        }
-    }
 
     @Override
     protected void onDestroy() {
