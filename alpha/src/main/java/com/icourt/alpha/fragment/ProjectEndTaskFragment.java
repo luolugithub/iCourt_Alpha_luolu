@@ -340,9 +340,6 @@ public class ProjectEndTaskFragment extends BaseTaskFragment implements BaseQuic
     @Override
     protected void taskUpdateBack(@ChangeType int actionType, @NonNull TaskEntity.TaskItemEntity itemEntity) {
         taskAdapter.updateItem(itemEntity);
-        if (actionType == CHANGE_STATUS) {
-            postTaskOperateEvent();
-        }
     }
 
     @Override
@@ -355,13 +352,6 @@ public class ProjectEndTaskFragment extends BaseTaskFragment implements BaseQuic
         } else {//开始计时的广播
             taskAdapter.notifyDataSetChanged();
         }
-    }
-
-    /**
-     * 发送任务被操作了的通知
-     */
-    private void postTaskOperateEvent() {
-        EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_PROJECT_END_OPERATE));
     }
 
     @Override

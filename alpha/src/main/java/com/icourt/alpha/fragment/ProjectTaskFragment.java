@@ -125,14 +125,16 @@ public class ProjectTaskFragment extends BaseTaskFragment implements BaseQuickAd
                 super.onLoadMore(isSilence);
             }
         });
-        refreshLayout.startRefresh();
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        if (taskAdapter != null)
-            taskAdapter.notifyDataSetChanged();
+        if (isFirstTimeIntoPage) {
+            refreshLayout.startRefresh();
+        } else {
+            getData(true);
+        }
     }
 
     @Override
@@ -155,22 +157,22 @@ public class ProjectTaskFragment extends BaseTaskFragment implements BaseQuickAd
         callEnqueue(
                 getApi().permissionQuery(getLoginUserId(), "MAT", projectId),
                 new SimpleCallBack<List<String>>() {
-            @Override
-            public void onSuccess(Call<ResEntity<List<String>>> call, Response<ResEntity<List<String>>> response) {
+                    @Override
+                    public void onSuccess(Call<ResEntity<List<String>>> call, Response<ResEntity<List<String>>> response) {
 
-                if (response.body().result != null) {
-                    if (response.body().result.contains("MAT:matter.task:edit")) {
-                        isEditTask = true;
+                        if (response.body().result != null) {
+                            if (response.body().result.contains("MAT:matter.task:edit")) {
+                                isEditTask = true;
+                            }
+                            if (response.body().result.contains("MAT:matter.task:delete")) {
+                                isDeleteTask = true;
+                            }
+                            if (response.body().result.contains("MAT:matter.timeLog:add")) {
+                                isAddTime = true;
+                            }
+                        }
                     }
-                    if (response.body().result.contains("MAT:matter.task:delete")) {
-                        isDeleteTask = true;
-                    }
-                    if (response.body().result.contains("MAT:matter.timeLog:add")) {
-                        isAddTime = true;
-                    }
-                }
-            }
-        });
+                });
     }
 
     @Override
@@ -183,19 +185,19 @@ public class ProjectTaskFragment extends BaseTaskFragment implements BaseQuickAd
                 1,
                 -1),
                 new SimpleCallBack<TaskEntity>() {
-            @Override
-            public void onSuccess(Call<ResEntity<TaskEntity>> call, Response<ResEntity<TaskEntity>> response) {
-                //请求成功之后，要将数据进行分组。
-                getTaskGroupDatas(response.body().result);
-            }
+                    @Override
+                    public void onSuccess(Call<ResEntity<TaskEntity>> call, Response<ResEntity<TaskEntity>> response) {
+                        //请求成功之后，要将数据进行分组。
+                        getTaskGroupDatas(response.body().result);
+                    }
 
-            @Override
-            public void onFailure(Call<ResEntity<TaskEntity>> call, Throwable t) {
-                super.onFailure(call, t);
-                stopRefresh();
-                enableEmptyView(null);
-            }
-        });
+                    @Override
+                    public void onFailure(Call<ResEntity<TaskEntity>> call, Throwable t) {
+                        super.onFailure(call, t);
+                        stopRefresh();
+                        enableEmptyView(null);
+                    }
+                });
     }
 
     /**
@@ -352,8 +354,6 @@ public class ProjectTaskFragment extends BaseTaskFragment implements BaseQuickAd
     public void onUpdateTaskEvent(TaskActionEvent event) {
         if (event == null) return;
         if (event.action == TaskActionEvent.TASK_REFRESG_ACTION) {
-            getData(true);
-        } else if (event.action == TaskActionEvent.TASK_PROJECT_END_OPERATE) {//项目里已完成的任务列表进行操作了。
             getData(true);
         }
     }

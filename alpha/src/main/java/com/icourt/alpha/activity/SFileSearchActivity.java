@@ -19,18 +19,25 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.andview.refreshview.XRefreshView;
+import com.icourt.alpha.BuildConfig;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.SFileSearchAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
+import com.icourt.alpha.adapter.baseadapter.adapterObserver.DataChangeAdapterObserver;
 import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.entity.bean.SFileSearchEntity;
 import com.icourt.alpha.entity.bean.SFileSearchPage;
 import com.icourt.alpha.fragment.dialogfragment.FileDetailDialogFragment;
 import com.icourt.alpha.http.callback.SFileCallBack;
+import com.icourt.alpha.utils.IMUtils;
+import com.icourt.alpha.utils.SFileTokenUtils;
 import com.icourt.alpha.utils.SystemUtils;
+import com.icourt.alpha.utils.UrlUtils;
 import com.icourt.alpha.view.ClearEditText;
 import com.icourt.alpha.view.SoftKeyboardSizeWatchLayout;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
+
+import java.util.ArrayList;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;

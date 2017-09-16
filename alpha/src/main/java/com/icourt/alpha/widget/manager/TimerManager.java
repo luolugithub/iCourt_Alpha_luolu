@@ -40,8 +40,8 @@ public class TimerManager {
     private static final String KEY_TIMER = "key_timer_entity_%s";
     private static final String KEY_TIMER_TASK_ID = "key_timer_entity_task_id_%s";
 
-    public static final int OVER_TIME_REMIND_NO_REMIND = 1;//设置不再提醒
-    public static final int OVER_TIME_REMIND_BUBBLE_OFF = 2;//设置关闭气泡
+    public static final int OVER_TIME_REMIND_NO_REMIND = 1;//计时超过2小时，设置不再提醒
+    public static final int OVER_TIME_REMIND_BUBBLE_OFF = 2;//计时超过2小时，设置关闭气泡
 
     @IntDef({
             OVER_TIME_REMIND_NO_REMIND,
