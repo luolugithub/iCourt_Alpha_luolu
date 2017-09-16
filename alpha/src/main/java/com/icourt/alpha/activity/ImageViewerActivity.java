@@ -341,7 +341,7 @@ public class ImageViewerActivity extends BaseUmengActivity {
                 public void run() {
                     viewPager.setCurrentItem(selectPos, false);
                 }
-            }, 50);
+            }, 20);
         }
         setTitle(FileUtils.getFileName(smallUrls.get(0)));
     }
