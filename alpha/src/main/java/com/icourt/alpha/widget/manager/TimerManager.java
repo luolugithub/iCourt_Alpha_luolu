@@ -1,6 +1,7 @@
 package com.icourt.alpha.widget.manager;
 
 import android.support.annotation.CheckResult;
+import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
@@ -17,6 +18,8 @@ import com.icourt.alpha.utils.StringUtils;
 
 import org.greenrobot.eventbus.EventBus;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -36,8 +39,18 @@ public class TimerManager {
 
     private static final String KEY_TIMER = "key_timer_entity_%s";
     private static final String KEY_TIMER_TASK_ID = "key_timer_entity_task_id_%s";
+
     public static final int OVER_TIME_REMIND_NO_REMIND = 1;//设置不再提醒
     public static final int OVER_TIME_REMIND_BUBBLE_OFF = 2;//设置关闭气泡
+
+    @IntDef({
+            OVER_TIME_REMIND_NO_REMIND,
+            OVER_TIME_REMIND_BUBBLE_OFF
+    })
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface OverTimeRemindType {
+
+    }
 
     private TimerManager() {
 
@@ -359,7 +372,7 @@ public class TimerManager {
      *
      * @param operType 1设置不再提醒；2设置关闭气泡。
      */
-    public void setOverTimingRemindClose(final int operType) {
+    public void setOverTimingRemindClose(@OverTimeRemindType final int operType) {
         if (TextUtils.isEmpty(getTimerId())) {
             return;
         }

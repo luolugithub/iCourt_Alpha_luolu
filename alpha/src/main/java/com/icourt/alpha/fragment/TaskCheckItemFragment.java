@@ -57,21 +57,17 @@ public class TaskCheckItemFragment extends BaseFragment
         implements BaseRecyclerAdapter.OnItemClickListener,
         BaseRecyclerAdapter.OnItemChildClickListener,
         TaskCheckItemAdapter.OnLoseFocusListener {
+
     private static final String KEY_TASK_ID = "key_task_id";
     private static final String KEY_HAS_PERMISSION = "key_has_permission";
     private static final String KEY_VALID = "key_valid";
-    Unbinder unbinder;
+
     @BindView(R.id.recyclerview)
     RecyclerView recyclerview;
-
-    String taskId;
-    TaskCheckItemAdapter taskCheckItemAdapter;
     @BindView(R.id.check_item_edit)
     EditText checkItemEdit;
     @BindView(R.id.check_item_add)
     ImageView checkItemAdd;
-    OnUpdateTaskListener updateTaskListener;
-    boolean hasPermission, valid;
     @BindView(R.id.add_item_layout)
     LinearLayout addItemLayout;
     @BindView(R.id.empty_layout)
@@ -82,6 +78,12 @@ public class TaskCheckItemFragment extends BaseFragment
     NestedScrollView nestedScrollView;
     @BindView(R.id.empty_text)
     TextView emptyText;
+
+    Unbinder unbinder;
+    String taskId;
+    TaskCheckItemAdapter taskCheckItemAdapter;
+    OnUpdateTaskListener updateTaskListener;
+    boolean hasPermission, valid;
 
     public static TaskCheckItemFragment newInstance(@NonNull String taskId, boolean hasPermission, boolean valid) {
         TaskCheckItemFragment taskCheckItemFragment = new TaskCheckItemFragment();
@@ -126,11 +128,10 @@ public class TaskCheckItemFragment extends BaseFragment
         recyclerview.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerview.setAdapter(taskCheckItemAdapter = new TaskCheckItemAdapter());
         taskCheckItemAdapter.setValid(valid);
-//        recyclerview.addItemDecoration(ItemDecorationUtils.getCommFull05Divider(getContext(), true, R.color.alpha_divider_color));
         getData(false);
         if (hasPermission) {
             addItemLayout.setVisibility(valid ? View.VISIBLE : View.GONE);
-            emptyText.setText("暂无检查项");
+            emptyText.setText(R.string.task_no_check_item);
             taskCheckItemAdapter.setOnItemChildClickListener(this);
             taskCheckItemAdapter.setOnItemClickListener(this);
             if (valid)
@@ -142,13 +143,13 @@ public class TaskCheckItemFragment extends BaseFragment
                         if (!TextUtils.isEmpty(checkItemEdit.getText().toString()))
                             addCheckItem();
                         else
-                            showTopSnackBar("请输入检查项名称");
+                            showTopSnackBar(R.string.task_please_input_check_name);
                     }
                     return true;
                 }
             });
         } else {
-            emptyText.setText("暂无权限查看");
+            emptyText.setText(R.string.task_no_permission_see_check);
             emptyLayout.setVisibility(View.VISIBLE);
             addItemLayout.setVisibility(View.GONE);
         }
@@ -201,6 +202,9 @@ public class TaskCheckItemFragment extends BaseFragment
         );
     }
 
+    /**
+     * 修改检查项的数量
+     */
     private void updateCheckItemCount() {
         if (getParentFragment() instanceof OnFragmentCallBackListener) {
             updateTaskListener = (OnUpdateTaskListener) getParentFragment();
@@ -264,7 +268,7 @@ public class TaskCheckItemFragment extends BaseFragment
                     @Override
                     public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
                         super.onFailure(call, t);
-                        showTopSnackBar("添加检查项失败");
+                        showTopSnackBar(R.string.task_add_check_fail);
                     }
                 }
         );
