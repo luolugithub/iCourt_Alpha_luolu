@@ -152,7 +152,9 @@ public class ProjectTaskFragment extends BaseTaskFragment implements BaseQuickAd
      * 获取权限列表
      */
     private void checkAddTaskAndDocumentPms(String projectId) {
-        getApi().permissionQuery(getLoginUserId(), "MAT", projectId).enqueue(new SimpleCallBack<List<String>>() {
+        callEnqueue(
+                getApi().permissionQuery(getLoginUserId(), "MAT", projectId),
+                new SimpleCallBack<List<String>>() {
             @Override
             public void onSuccess(Call<ResEntity<List<String>>> call, Response<ResEntity<List<String>>> response) {
 
@@ -173,7 +175,14 @@ public class ProjectTaskFragment extends BaseTaskFragment implements BaseQuickAd
 
     @Override
     protected void getData(boolean isRefresh) {
-        getApi().taskListQueryByMatterId(0, "dueTime", projectId, -1, 1, -1).enqueue(new SimpleCallBack<TaskEntity>() {
+        callEnqueue(getApi().taskListQueryByMatterId(
+                0,
+                "dueTime",
+                projectId,
+                -1,
+                1,
+                -1),
+                new SimpleCallBack<TaskEntity>() {
             @Override
             public void onSuccess(Call<ResEntity<TaskEntity>> call, Response<ResEntity<TaskEntity>> response) {
                 //请求成功之后，要将数据进行分组。

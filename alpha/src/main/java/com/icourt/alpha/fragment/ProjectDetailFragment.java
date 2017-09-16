@@ -338,7 +338,9 @@ public class ProjectDetailFragment extends BaseFragment implements BaseRecyclerA
 
     @Override
     protected void getData(boolean isRefresh) {
-        getApi().projectDetail(projectId).enqueue(new SimpleCallBack<List<ProjectDetailEntity>>() {
+        callEnqueue(
+                getApi().projectDetail(projectId),
+                new SimpleCallBack<List<ProjectDetailEntity>>() {
             @Override
             public void onSuccess(Call<ResEntity<List<ProjectDetailEntity>>> call, Response<ResEntity<List<ProjectDetailEntity>>> response) {
                 stopRefresh();
@@ -357,7 +359,8 @@ public class ProjectDetailFragment extends BaseFragment implements BaseRecyclerA
      * @param projectId
      */
     private void getRangeData(String projectId) {
-        getApi().projectProcessesQuery(projectId).enqueue(new SimpleCallBack<List<ProjectProcessesEntity>>() {
+        callEnqueue(getApi().projectProcessesQuery(projectId),
+                new SimpleCallBack<List<ProjectProcessesEntity>>() {
             public void onSuccess(Call<ResEntity<List<ProjectProcessesEntity>>> call, Response<ResEntity<List<ProjectProcessesEntity>>> response) {
                 if (procedureLayout != null) {
                     if (response.body().result != null && response.body().result.size() > 0) {

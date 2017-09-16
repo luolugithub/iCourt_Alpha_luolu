@@ -216,7 +216,9 @@ public class TaskAllotSelectDialogFragment extends BaseDialogFragment implements
         super.getData(isRefresh);
         taskOwerListAdapter.clearData();
         taskOwerListAdapter.getSelectedArray().clear();
-        getApi().taskOwerListQuery(projectId, "").enqueue(new SimpleCallBack<List<TaskEntity.TaskItemEntity.AttendeeUserEntity>>() {
+        callEnqueue(
+                getApi().taskOwerListQuery(projectId, ""),
+                new SimpleCallBack<List<TaskEntity.TaskItemEntity.AttendeeUserEntity>>() {
             @Override
             public void onSuccess(Call<ResEntity<List<TaskEntity.TaskItemEntity.AttendeeUserEntity>>> call, Response<ResEntity<List<TaskEntity.TaskItemEntity.AttendeeUserEntity>>> response) {
                 if (response.body().result != null) {

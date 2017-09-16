@@ -280,12 +280,12 @@ public class FileVersionListFragment extends SeaFileBaseFragment implements Base
     private void restoreFile(FileVersionEntity item) {
         if (item == null) return;
         showLoadingDialog(R.string.sfile_backspacing);
-        getSFileApi().fileRetroversion(
+        callEnqueue(getSFileApi().fileRetroversion(
                 getArguments().getString(KEY_SEA_FILE_FROM_REPO_ID),
                 getArguments().getString(KEY_SEA_FILE_FROM_FILE_PATH),
                 item.id,
-                "revert")
-                .enqueue(new SFileCallBack<JsonObject>() {
+                "revert"),
+                new SFileCallBack<JsonObject>() {
                     @Override
                     public void onSuccess(Call<JsonObject> call, Response<JsonObject> response) {
                         dismissLoadingDialog();

@@ -165,8 +165,8 @@ public class ProjectSaveListFragment extends BaseFragment implements BaseRecycle
     @Override
     protected void getData(boolean isRefresh) {
         super.getData(isRefresh);
-        getApi().projectPmsSelectListQuery("MAT:matter.document:readwrite")
-                .enqueue(new SimpleCallBack<List<ProjectEntity>>() {
+        callEnqueue(getApi().projectPmsSelectListQuery("MAT:matter.document:readwrite"),
+                new SimpleCallBack<List<ProjectEntity>>() {
                     @Override
                     public void onSuccess(Call<ResEntity<List<ProjectEntity>>> call, Response<ResEntity<List<ProjectEntity>>> response) {
                         dismissLoadingDialog();

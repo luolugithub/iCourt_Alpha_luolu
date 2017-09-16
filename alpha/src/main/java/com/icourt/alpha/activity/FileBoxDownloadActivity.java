@@ -367,8 +367,8 @@ public class FileBoxDownloadActivity extends BaseActivity {
         if (p.contains("//")) {
             p = p.replace("//", "/");
         }
-        getSFileApi().sFileDownloadUrlQuery(seaFileRepoId, p)
-                .enqueue(new SFileCallBack<String>() {
+        callEnqueue(getSFileApi().sFileDownloadUrlQuery(seaFileRepoId, p),
+                new SFileCallBack<String>() {
                     @Override
                     public void onSuccess(Call<String> call, Response<String> response) {
                         if (response.body() != null) {
@@ -383,7 +383,8 @@ public class FileBoxDownloadActivity extends BaseActivity {
      * 获取im文件下载地址
      */
     private void getIMFileUrl() {
-        getChatApi().fileUrlQuery(seaFileRepoId, imPath, rootName).enqueue(new SimpleCallBack<JsonElement>() {
+        callEnqueue(getChatApi().fileUrlQuery(seaFileRepoId, imPath, rootName),
+                new SimpleCallBack<JsonElement>() {
             @Override
             public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
                 if (response.body() != null) {

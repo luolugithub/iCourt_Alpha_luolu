@@ -126,11 +126,11 @@ public class CustomerPersonDetailActivity extends BaseActivity {
      * 检查ha
      */
     private void checkHasCustomerPemissions() {
-        getApi().permissionQuery(
+        callEnqueue(getApi().permissionQuery(
                 getLoginUserId(),
                 "CON",
-                getIntent().getStringExtra("contact_id"))
-                .enqueue(new SimpleCallBack<List<String>>() {
+                getIntent().getStringExtra("contact_id")),
+                new SimpleCallBack<List<String>>() {
                     @Override
                     public void onSuccess(Call<ResEntity<List<String>>> call, Response<ResEntity<List<String>>> response) {
                         if (response.body().result == null) return;
@@ -645,7 +645,8 @@ public class CustomerPersonDetailActivity extends BaseActivity {
      */
     private void getContact() {
         showLoadingDialog(null);
-        getApi().customerDetailQuery(contact_id).enqueue(new SimpleCallBack<List<ContactDeatilBean>>() {
+        callEnqueue(getApi().customerDetailQuery(contact_id),
+                new SimpleCallBack<List<ContactDeatilBean>>() {
             @Override
             public void onSuccess(Call<ResEntity<List<ContactDeatilBean>>> call, Response<ResEntity<List<ContactDeatilBean>>> response) {
                 dismissLoadingDialog();
@@ -670,7 +671,8 @@ public class CustomerPersonDetailActivity extends BaseActivity {
      * 获取企业联络人
      */
     private void getLiaisons(String id) {
-        getApi().customerLiaisonsQuery(id).enqueue(new SimpleCallBack<List<ContactDeatilBean>>() {
+        callEnqueue(getApi().customerLiaisonsQuery(id),
+                new SimpleCallBack<List<ContactDeatilBean>>() {
             @Override
             public void onSuccess(Call<ResEntity<List<ContactDeatilBean>>> call, Response<ResEntity<List<ContactDeatilBean>>> response) {
                 liaisonsList = response.body().result;
@@ -686,7 +688,8 @@ public class CustomerPersonDetailActivity extends BaseActivity {
      */
     private void addStarContact(String contact_id) {
         showLoadingDialog(null);
-        getApi().customerAddStar(contact_id).enqueue(new SimpleCallBack<JsonElement>() {
+        callEnqueue(getApi().customerAddStar(contact_id),
+                new SimpleCallBack<JsonElement>() {
             @Override
             public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
                 dismissLoadingDialog();
@@ -710,7 +713,8 @@ public class CustomerPersonDetailActivity extends BaseActivity {
      */
     private void deleteStarContact(String contact_id) {
         showLoadingDialog(null);
-        getApi().customerDeleteStar(contact_id).enqueue(new SimpleCallBack<JsonElement>() {
+        callEnqueue(getApi().customerDeleteStar(contact_id),
+                new SimpleCallBack<JsonElement>() {
             @Override
             public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
                 dismissLoadingDialog();

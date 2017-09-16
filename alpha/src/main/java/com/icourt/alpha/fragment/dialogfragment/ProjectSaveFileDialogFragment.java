@@ -247,25 +247,27 @@ public class ProjectSaveFileDialogFragment extends BaseDialogFragment
      * 获取项目权限
      */
     private void checkAddTaskAndDocumentPms(String projectId) {
-        getApi().permissionQuery(getLoginUserId(), "MAT", projectId).enqueue(new SimpleCallBack<List<String>>() {
-            @Override
-            public void onSuccess(Call<ResEntity<List<String>>> call, Response<ResEntity<List<String>>> response) {
-                if (response.body().result != null) {
-                    if (response.body().result.contains("MAT:matter.document:readwrite")) {
-                        showOrHiddenSaveBtn(true);
-                    } else {
-                        showOrHiddenSaveBtn(false);
+        callEnqueue(
+                getApi().permissionQuery(getLoginUserId(), "MAT", projectId),
+                new SimpleCallBack<List<String>>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<List<String>>> call, Response<ResEntity<List<String>>> response) {
+                        if (response.body().result != null) {
+                            if (response.body().result.contains("MAT:matter.document:readwrite")) {
+                                showOrHiddenSaveBtn(true);
+                            } else {
+                                showOrHiddenSaveBtn(false);
+                            }
+                        } else {
+                            showOrHiddenSaveBtn(false);
+                        }
                     }
-                } else {
-                    showOrHiddenSaveBtn(false);
-                }
-            }
 
-            @Override
-            public void onFailure(Call<ResEntity<List<String>>> call, Throwable t) {
-                super.onFailure(call, t);
-            }
-        });
+                    @Override
+                    public void onFailure(Call<ResEntity<List<String>>> call, Throwable t) {
+                        super.onFailure(call, t);
+                    }
+                });
     }
 
     /**
@@ -335,25 +337,27 @@ public class ProjectSaveFileDialogFragment extends BaseDialogFragment
             return;
         }
         showLoadingDialog("正在上传...");
-        getSFileApi().projectUploadUrlQuery(seaFileRepoId).enqueue(new SFileCallBack<JsonElement>() {
-            @Override
-            public void onSuccess(Call<JsonElement> call, Response<JsonElement> response) {
-                if (response.body() != null) {
-                    String uploadUrl = response.body().getAsString();
-                    uploadFile(uploadUrl, filePath, rootName);
-                } else {
-                    dismissLoadingDialog();
-                    showToast("获取上传文件地址失败");
-                }
-            }
+        callEnqueue(
+                getSFileApi().projectUploadUrlQuery(seaFileRepoId),
+                new SFileCallBack<JsonElement>() {
+                    @Override
+                    public void onSuccess(Call<JsonElement> call, Response<JsonElement> response) {
+                        if (response.body() != null) {
+                            String uploadUrl = response.body().getAsString();
+                            uploadFile(uploadUrl, filePath, rootName);
+                        } else {
+                            dismissLoadingDialog();
+                            showToast("获取上传文件地址失败");
+                        }
+                    }
 
-            @Override
-            public void onFailure(Call<JsonElement> call, Throwable throwable) {
-                super.onFailure(call, throwable);
-                dismissLoadingDialog();
-                showToast("获取上传文件地址失败");
-            }
-        });
+                    @Override
+                    public void onFailure(Call<JsonElement> call, Throwable throwable) {
+                        super.onFailure(call, throwable);
+                        dismissLoadingDialog();
+                        showToast("获取上传文件地址失败");
+                    }
+                });
     }
 
 
@@ -371,21 +375,23 @@ public class ProjectSaveFileDialogFragment extends BaseDialogFragment
         Map<String, RequestBody> params = new HashMap<>();
         params.put("parent_dir", TextUtils.isEmpty(rootName) ? RequestUtils.createTextBody("/") : RequestUtils.createTextBody(rootName));
         params.put(key, RequestUtils.createStreamBody(file));
-        getSFileApi().sfileUploadFile(uploadUrl, params).enqueue(new SFileCallBack<JsonElement>() {
-            @Override
-            public void onSuccess(Call<JsonElement> call, Response<JsonElement> response) {
-                dismissLoadingDialog();
-                showToast("上传成功");
-                dismiss();
-            }
+        callEnqueue(
+                getSFileApi().sfileUploadFile(uploadUrl, params),
+                new SFileCallBack<JsonElement>() {
+                    @Override
+                    public void onSuccess(Call<JsonElement> call, Response<JsonElement> response) {
+                        dismissLoadingDialog();
+                        showToast("上传成功");
+                        dismiss();
+                    }
 
-            @Override
-            public void onFailure(Call<JsonElement> call, Throwable t) {
-                super.onFailure(call, t);
-                dismissLoadingDialog();
-                showTopSnackBar("文件上传失败");
-            }
-        });
+                    @Override
+                    public void onFailure(Call<JsonElement> call, Throwable t) {
+                        super.onFailure(call, t);
+                        dismissLoadingDialog();
+                        showTopSnackBar("文件上传失败");
+                    }
+                });
     }
 
 }

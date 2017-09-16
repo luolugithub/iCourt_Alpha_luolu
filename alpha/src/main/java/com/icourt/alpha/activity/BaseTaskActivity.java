@@ -93,7 +93,7 @@ public abstract class BaseTaskActivity extends BaseActivity {
      */
     protected void updateTaskState(final TaskEntity.TaskItemEntity itemEntity) {
         showLoadingDialog(null);
-        getApi().taskUpdateNew(RequestUtils.createJsonBody(getTaskStateJson(itemEntity))).enqueue(new SimpleCallBack<TaskEntity.TaskItemEntity>() {
+        callEnqueue(getApi().taskUpdateNew(RequestUtils.createJsonBody(getTaskStateJson(itemEntity))),new SimpleCallBack<TaskEntity.TaskItemEntity>() {
             @Override
             public void onSuccess(Call<ResEntity<TaskEntity.TaskItemEntity>> call, Response<ResEntity<TaskEntity.TaskItemEntity>> response) {
                 dismissLoadingDialog();
@@ -117,7 +117,7 @@ public abstract class BaseTaskActivity extends BaseActivity {
      */
     protected void updateTaskProjectOrGroup(final TaskEntity.TaskItemEntity itemEntity, ProjectEntity projectEntity, TaskGroupEntity taskGroupEntity, final TaskReminderEntity taskReminderEntity) {
         showLoadingDialog(null);
-        getApi().taskUpdateNew(RequestUtils.createJsonBody(getTaskProjectOrGroupJson(itemEntity, projectEntity, taskGroupEntity))).enqueue(new SimpleCallBack<TaskEntity.TaskItemEntity>() {
+        callEnqueue(getApi().taskUpdateNew(RequestUtils.createJsonBody(getTaskProjectOrGroupJson(itemEntity, projectEntity, taskGroupEntity))),new SimpleCallBack<TaskEntity.TaskItemEntity>() {
             @Override
             public void onSuccess(Call<ResEntity<TaskEntity.TaskItemEntity>> call, Response<ResEntity<TaskEntity.TaskItemEntity>> response) {
                 dismissLoadingDialog();
@@ -150,7 +150,7 @@ public abstract class BaseTaskActivity extends BaseActivity {
         if (taskItemEntity == null) return;
         String json = getReminderJson(taskReminderEntity);
         if (TextUtils.isEmpty(json)) return;
-        getApi().taskReminderAdd(taskItemEntity.id, RequestUtils.createJsonBody(json)).enqueue(new SimpleCallBack<TaskReminderEntity>() {
+        callEnqueue(getApi().taskReminderAdd(taskItemEntity.id, RequestUtils.createJsonBody(json)),new SimpleCallBack<TaskReminderEntity>() {
             @Override
             public void onSuccess(Call<ResEntity<TaskReminderEntity>> call, Response<ResEntity<TaskReminderEntity>> response) {
 
@@ -172,7 +172,7 @@ public abstract class BaseTaskActivity extends BaseActivity {
     protected void deleteTask(final TaskEntity.TaskItemEntity itemEntity) {
         showLoadingDialog(null);
         MobclickAgent.onEvent(context, UMMobClickAgent.delete_task_click_id);
-        getApi().taskDelete(itemEntity.id).enqueue(new SimpleCallBack<JsonElement>() {
+        callEnqueue(getApi().taskDelete(itemEntity.id),new SimpleCallBack<JsonElement>() {
             @Override
             public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
                 dismissLoadingDialog();

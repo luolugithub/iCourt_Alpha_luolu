@@ -249,8 +249,9 @@ public class FileImportContactFragment extends BaseFragment implements BaseRecyc
                 }
 
                 final int finalI = i;
-                getChatApi().msgAdd(RequestUtils.createJsonBody(jsonBody))
-                        .enqueue(new SimpleCallBack<IMMessageCustomBody>() {
+                callEnqueue(
+                        getChatApi().msgAdd(RequestUtils.createJsonBody(jsonBody)),
+                        new SimpleCallBack<IMMessageCustomBody>() {
                             @Override
                             public void onSuccess(Call<ResEntity<IMMessageCustomBody>> call, Response<ResEntity<IMMessageCustomBody>> response) {
                                 if (finalI == selectedData.size() - 1) {
@@ -344,8 +345,9 @@ public class FileImportContactFragment extends BaseFragment implements BaseRecyc
                 }
 
                 final int finalI = i;
-                getChatApi().msgImageAdd(params)
-                        .enqueue(new SimpleCallBack<IMMessageCustomBody>() {
+                callEnqueue(
+                        getChatApi().msgImageAdd(params),
+                        new SimpleCallBack<IMMessageCustomBody>() {
                             @Override
                             public void onSuccess(Call<ResEntity<IMMessageCustomBody>> call, Response<ResEntity<IMMessageCustomBody>> response) {
                                 if (finalI == selectedData.size() - 1) {

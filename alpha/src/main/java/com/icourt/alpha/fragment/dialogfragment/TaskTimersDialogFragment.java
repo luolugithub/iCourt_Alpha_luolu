@@ -153,7 +153,9 @@ public class TaskTimersDialogFragment extends BaseDialogFragment implements Base
     @Override
     protected void getData(final boolean isRefresh) {
         if (taskItemEntity == null) return;
-        getApi().taskTimesByIdQuery(taskItemEntity.id).enqueue(new SimpleCallBack<TimeEntity>() {
+        callEnqueue(
+                getApi().taskTimesByIdQuery(taskItemEntity.id),
+                new SimpleCallBack<TimeEntity>() {
             @Override
             public void onSuccess(Call<ResEntity<TimeEntity>> call, Response<ResEntity<TimeEntity>> response) {
                 stopRefresh();

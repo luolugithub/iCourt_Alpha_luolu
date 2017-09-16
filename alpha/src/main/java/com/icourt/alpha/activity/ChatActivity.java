@@ -1109,8 +1109,13 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
      */
     private void getMsgFromServer(long msgId) {
         String type = "around";
-        getChatApi().msgQueryAll(type, 20, msgId, getIMChatType(), getIMChatId())
-                .enqueue(new SimpleCallBack<List<IMMessageCustomBody>>() {
+        callEnqueue(getChatApi().msgQueryAll(
+                type,
+                20,
+                msgId,
+                getIMChatType(),
+                getIMChatId()),
+                new SimpleCallBack<List<IMMessageCustomBody>>() {
                     @Override
                     public void onSuccess(Call<ResEntity<List<IMMessageCustomBody>>> call, Response<ResEntity<List<IMMessageCustomBody>>> response) {
                         if (response.body().result != null) {
@@ -1147,8 +1152,13 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
                 msg_id = item.id;
             }
         }
-        getChatApi().msgQueryAll(type, 20, msg_id, getIMChatType(), getIMChatId())
-                .enqueue(new SimpleCallBack<List<IMMessageCustomBody>>() {
+        callEnqueue(getChatApi().msgQueryAll(
+                type,
+                20,
+                msg_id,
+                getIMChatType(),
+                getIMChatId()),
+                new SimpleCallBack<List<IMMessageCustomBody>>() {
                     @Override
                     public void onSuccess(Call<ResEntity<List<IMMessageCustomBody>>> call, Response<ResEntity<List<IMMessageCustomBody>>> response) {
                         if (response.body().result != null) {

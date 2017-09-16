@@ -194,8 +194,9 @@ public class TaskMemberSelectDialogFragment extends BaseDialogFragment {
     protected void getData(final boolean isRefresh) {
         super.getData(isRefresh);
         //有权限
-        getApi().getPremissionTaskMembers()
-                .enqueue(new SimpleCallBack<List<TaskMemberWrapEntity>>() {
+        callEnqueue(
+                getApi().getPremissionTaskMembers(),
+                new SimpleCallBack<List<TaskMemberWrapEntity>>() {
                     @Override
                     public void onSuccess(Call<ResEntity<List<TaskMemberWrapEntity>>> call, Response<ResEntity<List<TaskMemberWrapEntity>>> response) {
                         if (response.body().result != null && !response.body().result.isEmpty()) {
