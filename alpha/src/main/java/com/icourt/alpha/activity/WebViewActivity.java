@@ -59,9 +59,6 @@ import butterknife.Unbinder;
  * date createTime：2017/5/12
  * version 1.0.0
  */
-public class WebViewActivity extends BaseActivity {
-    private static final String KEY_TITLE = "key_title";
-    private static final String KEY_URL = "key_url";
 public class WebViewActivity extends BaseActivity implements DownloadListener {
     @BindView(R.id.bottom_back_iv)
     ImageButton bottomBackIv;
@@ -71,6 +68,8 @@ public class WebViewActivity extends BaseActivity implements DownloadListener {
     ImageButton bottomRefreshIv;
     @BindView(R.id.bottom_share_iv)
     ImageButton bottomShareIv;
+    private static final String KEY_TITLE = "key_title";
+    private static final String KEY_URL = "key_url";
 
     public static void launch(@NonNull Context context, String url) {
         if (context == null) return;
@@ -89,14 +88,6 @@ public class WebViewActivity extends BaseActivity implements DownloadListener {
     @BindView(R.id.titleView)
     AppBarLayout titleView;
 
-    public static void launch(@NonNull Context context, String url) {
-        if (context == null) return;
-        if (TextUtils.isEmpty(url)) return;
-        Intent intent = new Intent(context, WebViewActivity.class);
-        intent.putExtra(KEY_URL, url);
-        context.startActivity(intent);
-    }
-
     public static void launch(@NonNull Context context, String title, String url) {
         if (context == null) return;
         if (TextUtils.isEmpty(url)) return;
@@ -107,7 +98,6 @@ public class WebViewActivity extends BaseActivity implements DownloadListener {
     }
 
     private static final int REQUEST_FILE_PERMISSION = 9999;
-    private static final String KEY_URL = "url";
     @BindView(R.id.webView)
     WebView webView;
     @BindView(R.id.progressLayout)

@@ -14,7 +14,6 @@ import com.bumptech.glide.Glide;
 import com.icourt.alpha.BuildConfig;
 import com.icourt.alpha.R;
 import com.icourt.alpha.activity.ChatMsgClassfyActivity;
-import com.icourt.alpha.activity.MyFinishTaskActivity;
 import com.icourt.alpha.activity.SetingActivity;
 import com.icourt.alpha.activity.UserInfoActivity;
 import com.icourt.alpha.base.BaseFragment;
@@ -217,7 +216,7 @@ public class TabMineFragment extends BaseFragment {
                 showTopSnackBar("本月计时");
                 break;
             case R.id.done_task_layout://本月完成任务
-                MyFinishTaskActivity.launch(getContext());
+                
                 break;
             case R.id.my_center_set_layout://设置
                 SetingActivity.launch(getContext());
