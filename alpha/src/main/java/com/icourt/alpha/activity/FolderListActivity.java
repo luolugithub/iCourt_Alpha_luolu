@@ -535,7 +535,7 @@ public class FolderListActivity extends FolderBaseActivity
                     public void onSortTypeSelected(@FileSortComparator.FileSortType int sortType) {
                         if (fileSortType != sortType) {
                             fileSortType = sortType;
-                            showLoadingDialog(R.string.str_sorting);
+                            showLoadingDialog(R.string.str_executing);
                             sortFile(getAllData());
                         }
                     }

@@ -333,7 +333,7 @@ public class FileSimpleListActivity extends FolderBaseActivity
                     public void onSortTypeSelected(@FileSortComparator.FileSortType int sortType) {
                         if (fileSortType != sortType) {
                             fileSortType = sortType;
-                            showLoadingDialog(R.string.str_sorting);
+                            showLoadingDialog(R.string.str_executing);
                             sortFile(new ArrayList<FolderDocumentEntity>(folderAdapter.getData()));
                         }
                     }

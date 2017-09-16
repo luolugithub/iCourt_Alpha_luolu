@@ -239,7 +239,7 @@ public class ProjectFileFragment extends SeaFileBaseFragment
                 .subscribe(new BaseObserver<List<FolderDocumentEntity>>() {
                     @Override
                     public void onNext(@NonNull List<FolderDocumentEntity> fileBoxBeen) {
-                        sortFile(wrapData(getSeaFileRepoId(),getSeaFileDirPath(),fileBoxBeen));
+                        sortFile(wrapData(getSeaFileRepoId(), getSeaFileDirPath(), fileBoxBeen));
                     }
 
                     @Override
@@ -367,7 +367,7 @@ public class ProjectFileFragment extends SeaFileBaseFragment
                     public void onSortTypeSelected(@FileSortComparator.FileSortType int sortType) {
                         if (fileSortType != sortType) {
                             fileSortType = sortType;
-                            showLoadingDialog(R.string.str_sorting);
+                            showLoadingDialog(R.string.str_executing);
                             sortFile(new ArrayList<FolderDocumentEntity>(folderAdapter.getData()));
                         }
                     }

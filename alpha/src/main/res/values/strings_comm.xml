@@ -18,7 +18,7 @@
     <string name="str_check_reverse">反选</string>
 
 
-    <string name="str_executing">  处理中  </string>
+    <string name="str_executing">\u3000处理中\u3000</string>
     <string name="str_uploading">上传中...</string>
     <string name="str_cancelling">取消中...</string>
     <string name="str_deleting">删除中...</string>

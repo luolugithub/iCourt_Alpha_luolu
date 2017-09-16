@@ -5,6 +5,7 @@
     <string name="repo_empty">暂无资料库</string>
     <string name="repo_share_empty">没有共享给我的资料库</string>
     <string name="repo_lawfirm_empty">尚未建立资料库</string>
+    <string name="repo_type_no_writable_repo">本类型下没有可读写权限的资料库</string>
 
     <string name="repo_change_history">修改历史</string>
     <string name="repo_inner_share">内部共享</string>
