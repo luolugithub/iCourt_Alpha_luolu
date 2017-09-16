@@ -469,8 +469,9 @@ public class TimerDetailActivity extends BaseTimerActivity
             jsonBody.addProperty("clientId", clientId);
             jsonBody.addProperty("taskPkId", itemEntity.taskPkId);
             jsonBody.addProperty("workTypeId", itemEntity.workTypeId);
-            getApi().timingUpdate(RequestUtils.createJsonBody(jsonBody.toString()))
-                    .enqueue(new SimpleCallBack<JsonElement>() {
+            callEnqueue(
+                    getApi().timingUpdate(RequestUtils.createJsonBody(jsonBody.toString())),
+                    new SimpleCallBack<JsonElement>() {
                         @Override
                         public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
 

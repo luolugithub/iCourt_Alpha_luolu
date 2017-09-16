@@ -16,6 +16,7 @@ public class FolderBaseActivity extends FileBaseActivity {
     protected static final String KEY_SEA_FILE_REPO_PERMISSION = "seaFileRepoPermission";//repo的权限
     protected static final String KEY_SEA_FILE_REPO_TYPE = "seaFileRepoType";//repo类型
     protected static final String KEY_SEA_FILE_REPO_TITLE = "seaFileRepoTitle";//repo标题
+    protected static final String KEY_SEA_FILE_REPO_IS_ENCRYPTED = "seaFileRepoIsEncrypt";//repo是否是加密的
 
 
     protected String getSeaFileRepoId() {

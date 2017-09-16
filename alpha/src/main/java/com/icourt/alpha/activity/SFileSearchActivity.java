@@ -184,12 +184,9 @@ public class SFileSearchActivity extends BaseActivity
             stopRefresh();
             return;
         }
-        getSFileApi().fileSearch(
-                pageIndex,
-                etSearchName.getText().toString(),
-                "custom",
-                "all")
-                .enqueue(new SFileCallBack<SFileSearchPage>() {
+        callEnqueue(
+                getSFileApi().fileSearch(pageIndex, etSearchName.getText().toString(), "custom", "all"),
+                new SFileCallBack<SFileSearchPage>() {
                     @Override
                     public void onSuccess(Call<SFileSearchPage> call, Response<SFileSearchPage> response) {
                         sFileSearchAdapter.bindData(isRefresh, response.body().results);

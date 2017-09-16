@@ -193,8 +193,9 @@ public class GroupSearchActivity extends BaseActivity implements BaseRecyclerAda
     protected void getData(final boolean isRefresh) {
         super.getData(isRefresh);
         String keyWord = etSearchName.getText().toString();
-        getChatApi().groupQueryByName(keyWord)
-                .enqueue(new SimpleCallBack<List<GroupEntity>>() {
+        callEnqueue(
+                getChatApi().groupQueryByName(keyWord),
+                new SimpleCallBack<List<GroupEntity>>() {
                     @Override
                     public void onSuccess(Call<ResEntity<List<GroupEntity>>> call, Response<ResEntity<List<GroupEntity>>> response) {
                         groupAdapter.bindData(true, response.body().result);
@@ -209,7 +210,7 @@ public class GroupSearchActivity extends BaseActivity implements BaseRecyclerAda
         super.onClick(v);
         switch (v.getId()) {
             case R.id.tv_search_cancel:
-                SystemUtils.hideSoftKeyBoard(getActivity(),etSearchName, true);
+                SystemUtils.hideSoftKeyBoard(getActivity(), etSearchName, true);
                 finish();
                 break;
         }

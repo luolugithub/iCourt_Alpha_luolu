@@ -123,7 +123,7 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
             switch (i) {
                 case 0:
                     titleTv.setTextColor(0xFF313131);
-                    titleTv.setPadding(DensityUtil.dip2px(getContext(),8), 0, 0, 0);
+                    titleTv.setPadding(DensityUtil.dip2px(getContext(), 8), 0, 0, 0);
                     titleTv.setText(getString(R.string.task_unfinished));
                     downIv.setVisibility(View.VISIBLE);
                     tab.getCustomView().setOnClickListener(new OnTabClickListener());
@@ -293,20 +293,22 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
      * 获取各个状态的任务数量（未完成／已完成／已删除）
      */
     private void getTasksStateCount() {
-        getApi().taskStateCountQuery().enqueue(new SimpleCallBack<TaskCountEntity>() {
-            @Override
-            public void onSuccess(Call<ResEntity<TaskCountEntity>> call, Response<ResEntity<TaskCountEntity>> response) {
-                TaskCountEntity taskCountEntity = response.body().result;
-                if (taskCountEntity != null) {
-                    setTaskPopCount(taskCountEntity.doingCount, taskCountEntity.doneCount, taskCountEntity.deletedCount);
-                    if (topMiddlePopup != null && topMiddlePopup.isShowing()) {
-                        if (topMiddlePopup.getAdapter() != null) {
-                            topMiddlePopup.getAdapter().bindData(true, dropEntities);
+        callEnqueue(
+                getApi().taskStateCountQuery(),
+                new SimpleCallBack<TaskCountEntity>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<TaskCountEntity>> call, Response<ResEntity<TaskCountEntity>> response) {
+                        TaskCountEntity taskCountEntity = response.body().result;
+                        if (taskCountEntity != null) {
+                            setTaskPopCount(taskCountEntity.doingCount, taskCountEntity.doneCount, taskCountEntity.deletedCount);
+                            if (topMiddlePopup != null && topMiddlePopup.isShowing()) {
+                                if (topMiddlePopup.getAdapter() != null) {
+                                    topMiddlePopup.getAdapter().bindData(true, dropEntities);
+                                }
+                            }
                         }
                     }
-                }
-            }
-        });
+                });
     }
 
     /**

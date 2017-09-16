@@ -247,8 +247,9 @@ public class GroupMemberDelActivity extends BaseActivity implements BaseRecycler
             }
         }
         showLoadingDialog(null);
-        getChatApi().groupMemberRemoves(getIntent().getStringExtra(KEY_TID), RequestUtils.createJsonBody(jsonArray.toString()))
-                .enqueue(new SimpleCallBack<JsonElement>() {
+        callEnqueue(
+                getChatApi().groupMemberRemoves(getIntent().getStringExtra(KEY_TID), RequestUtils.createJsonBody(jsonArray.toString())),
+                new SimpleCallBack<JsonElement>() {
                     @Override
                     public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
                         dismissLoadingDialog();

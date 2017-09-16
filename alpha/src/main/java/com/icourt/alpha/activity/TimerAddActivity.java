@@ -402,8 +402,9 @@ public class TimerAddActivity extends BaseTimerActivity
             }
             showLoadingDialog(null);
             MobclickAgent.onEvent(getContext(), UMMobClickAgent.creat_timer_click_id);
-            getApi().timingAdd(RequestUtils.createJsonBody(jsonObject.toString()))
-                    .enqueue(new SimpleCallBack<String>() {
+            callEnqueue(
+                    getApi().timingAdd(RequestUtils.createJsonBody(jsonObject.toString())),
+                    new SimpleCallBack<String>() {
                         @Override
                         public void onSuccess(Call<ResEntity<String>> call, Response<ResEntity<String>> response) {
                             dismissLoadingDialog();

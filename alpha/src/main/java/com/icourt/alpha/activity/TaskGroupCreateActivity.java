@@ -173,22 +173,24 @@ public class TaskGroupCreateActivity extends BaseActivity {
      */
     private void createGroup() {
         showLoadingDialog(null);
-        getApi().taskGroupCreate(RequestUtils.createJsonBody(getAddGroupJson())).enqueue(new SimpleCallBack<TaskGroupEntity>() {
-            @Override
-            public void onSuccess(Call<ResEntity<TaskGroupEntity>> call, Response<ResEntity<TaskGroupEntity>> response) {
-                dismissLoadingDialog();
-                if (response.body().result != null) {
-                    ProjectTaskGroupActivity.launchSetResult(TaskGroupCreateActivity.this, response.body().result);
-                    TaskGroupCreateActivity.this.finish();
-                }
-            }
+        callEnqueue(
+                getApi().taskGroupCreate(RequestUtils.createJsonBody(getAddGroupJson())),
+                new SimpleCallBack<TaskGroupEntity>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<TaskGroupEntity>> call, Response<ResEntity<TaskGroupEntity>> response) {
+                        dismissLoadingDialog();
+                        if (response.body().result != null) {
+                            ProjectTaskGroupActivity.launchSetResult(TaskGroupCreateActivity.this, response.body().result);
+                            TaskGroupCreateActivity.this.finish();
+                        }
+                    }
 
-            @Override
-            public void onFailure(Call<ResEntity<TaskGroupEntity>> call, Throwable t) {
-                super.onFailure(call, t);
-                dismissLoadingDialog();
-            }
-        });
+                    @Override
+                    public void onFailure(Call<ResEntity<TaskGroupEntity>> call, Throwable t) {
+                        super.onFailure(call, t);
+                        dismissLoadingDialog();
+                    }
+                });
     }
 
     /**
@@ -196,23 +198,25 @@ public class TaskGroupCreateActivity extends BaseActivity {
      */
     private void updateGroup() {
         showLoadingDialog(null);
-        getApi().taskUpdate(RequestUtils.createJsonBody(updateGroupJson())).enqueue(new SimpleCallBack<JsonElement>() {
-            @Override
-            public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
-                dismissLoadingDialog();
-                if (response.body().result != null) {
-                    entity.name = groupNameEdittext.getText().toString();
-                    ProjectTaskGroupActivity.launchSetResult(TaskGroupCreateActivity.this, entity);
-                    TaskGroupCreateActivity.this.finish();
-                }
-            }
+        callEnqueue(
+                getApi().taskUpdate(RequestUtils.createJsonBody(updateGroupJson())),
+                new SimpleCallBack<JsonElement>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
+                        dismissLoadingDialog();
+                        if (response.body().result != null) {
+                            entity.name = groupNameEdittext.getText().toString();
+                            ProjectTaskGroupActivity.launchSetResult(TaskGroupCreateActivity.this, entity);
+                            TaskGroupCreateActivity.this.finish();
+                        }
+                    }
 
-            @Override
-            public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
-                super.onFailure(call, t);
-                dismissLoadingDialog();
-            }
-        });
+                    @Override
+                    public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
+                        super.onFailure(call, t);
+                        dismissLoadingDialog();
+                    }
+                });
     }
 
     /**

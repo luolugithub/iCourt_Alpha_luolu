@@ -342,8 +342,9 @@ public class ImagePagerActivity extends BaseUmengActivity implements BasePagerAd
      * 获取被钉的ids列表
      */
     private void getMsgDingedIds() {
-        getChatApi().msgQueryAllDingIds(getIMChatType(), getIMChatId())
-                .enqueue(new SimpleCallBack<List<Long>>() {
+        callEnqueue(
+                getChatApi().msgQueryAllDingIds(getIMChatType(), getIMChatId()),
+                new SimpleCallBack<List<Long>>() {
                     @Override
                     public void onSuccess(Call<ResEntity<List<Long>>> call, Response<ResEntity<List<Long>>> response) {
                         if (response.body().result != null) {
@@ -383,8 +384,9 @@ public class ImagePagerActivity extends BaseUmengActivity implements BasePagerAd
      * 获取已经收藏的id列表
      */
     private void getMsgCollectedIds() {
-        getChatApi().msgQueryAllCollectedIds(getIMChatType(), getIMChatId())
-                .enqueue(new SimpleCallBack<List<Long>>() {
+        callEnqueue(
+                getChatApi().msgQueryAllCollectedIds(getIMChatType(), getIMChatId()),
+                new SimpleCallBack<List<Long>>() {
                     @Override
                     public void onSuccess(Call<ResEntity<List<Long>>> call, Response<ResEntity<List<Long>>> response) {
                         if (response.body().result != null) {
@@ -533,8 +535,9 @@ public class ImagePagerActivity extends BaseUmengActivity implements BasePagerAd
      */
 
     protected final void msgActionCollect(final long msgId) {
-        getChatApi().msgCollect(msgId, getIMChatType(), getIMChatId())
-                .enqueue(new SimpleCallBack<Boolean>() {
+        callEnqueue(
+                getChatApi().msgCollect(msgId, getIMChatType(), getIMChatId()),
+                new SimpleCallBack<Boolean>() {
                     @Override
                     public void onSuccess(Call<ResEntity<Boolean>> call, Response<ResEntity<Boolean>> response) {
                         if (response.body().result != null && response.body().result.booleanValue()) {
@@ -553,8 +556,9 @@ public class ImagePagerActivity extends BaseUmengActivity implements BasePagerAd
      * @param msgId
      */
     protected final void msgActionCollectCancel(final long msgId) {
-        getChatApi().msgCollectCancel(msgId, getIMChatType(), getIMChatId())
-                .enqueue(new SimpleCallBack<Boolean>() {
+        callEnqueue(
+                getChatApi().msgCollectCancel(msgId, getIMChatType(), getIMChatId()),
+                new SimpleCallBack<Boolean>() {
                     @Override
                     public void onSuccess(Call<ResEntity<Boolean>> call, Response<ResEntity<Boolean>> response) {
                         if (response.body().result != null && response.body().result.booleanValue()) {
@@ -589,8 +593,9 @@ public class ImagePagerActivity extends BaseUmengActivity implements BasePagerAd
             e.printStackTrace();
         }
         showLoadingDialog(null);
-        getChatApi().msgAdd(RequestUtils.createJsonBody(jsonBody))
-                .enqueue(new SimpleCallBack<IMMessageCustomBody>() {
+        callEnqueue(
+                getChatApi().msgAdd(RequestUtils.createJsonBody(jsonBody)),
+                new SimpleCallBack<IMMessageCustomBody>() {
                     @Override
                     public void onSuccess(Call<ResEntity<IMMessageCustomBody>> call, Response<ResEntity<IMMessageCustomBody>> response) {
                         dismissLoadingDialog();
@@ -737,7 +742,7 @@ public class ImagePagerActivity extends BaseUmengActivity implements BasePagerAd
         }
 //        ProjectSaveFileDialogFragment.newInstance(filePath, ProjectSaveFileDialogFragment.ALPHA_TYPE)
 //                .show(mFragTransaction, tag);
-        mFragTransaction.add(ProjectSaveFileDialogFragment.newInstance(filePath,ProjectSaveFileDialogFragment.OTHER_TYPE), tag);
+        mFragTransaction.add(ProjectSaveFileDialogFragment.newInstance(filePath, ProjectSaveFileDialogFragment.OTHER_TYPE), tag);
         mFragTransaction.commitAllowingStateLoss();
     }
 

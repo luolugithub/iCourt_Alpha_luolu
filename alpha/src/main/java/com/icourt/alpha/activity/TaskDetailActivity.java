@@ -632,20 +632,22 @@ public class TaskDetailActivity extends BaseActivity
     @Override
     protected void getData(boolean isRefresh) {
         //有返回权限
-        getApi().taskQueryDetailWithRight(taskId).enqueue(new SimpleCallBack<TaskEntity.TaskItemEntity>() {
-            @Override
-            public void onSuccess(Call<ResEntity<TaskEntity.TaskItemEntity>> call, Response<ResEntity<TaskEntity.TaskItemEntity>> response) {
-                dismissLoadingDialog();
-                taskItemEntity = response.body().result;
-                setDataToView(response.body().result);
-            }
+        callEnqueue(
+                getApi().taskQueryDetailWithRight(taskId),
+                new SimpleCallBack<TaskEntity.TaskItemEntity>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<TaskEntity.TaskItemEntity>> call, Response<ResEntity<TaskEntity.TaskItemEntity>> response) {
+                        dismissLoadingDialog();
+                        taskItemEntity = response.body().result;
+                        setDataToView(response.body().result);
+                    }
 
-            @Override
-            public void onFailure(Call<ResEntity<TaskEntity.TaskItemEntity>> call, Throwable t) {
-                super.onFailure(call, t);
-                dismissLoadingDialog();
-            }
-        });
+                    @Override
+                    public void onFailure(Call<ResEntity<TaskEntity.TaskItemEntity>> call, Throwable t) {
+                        super.onFailure(call, t);
+                        dismissLoadingDialog();
+                    }
+                });
     }
 
     /**
@@ -885,29 +887,31 @@ public class TaskDetailActivity extends BaseActivity
     private void recoverTaskById(String taskId) {
         if (TextUtils.isEmpty(taskId)) return;
         showLoadingDialog(null);
-        getApi().taskRecoverById(taskId).enqueue(new SimpleCallBack<JsonElement>() {
-            @Override
-            public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
-                dismissLoadingDialog();
-                taskCheckbox.setCompoundDrawablesWithIntrinsicBounds(R.drawable.sl_checkbox, 0, 0, 0);
-                if (taskItemEntity.state) {
-                    taskCheckbox.setChecked(true);
-                } else {
-                    taskCheckbox.setChecked(false);
-                }
-                taskUserArrowIv.setVisibility(View.VISIBLE);
-                taskStartIamge.setVisibility(View.VISIBLE);
-                taskItemEntity.valid = true;
-                updateDetailFargment();
-                EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_DELETE_ACTION, taskItemEntity));
-            }
+        callEnqueue(
+                getApi().taskRecoverById(taskId),
+                new SimpleCallBack<JsonElement>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
+                        dismissLoadingDialog();
+                        taskCheckbox.setCompoundDrawablesWithIntrinsicBounds(R.drawable.sl_checkbox, 0, 0, 0);
+                        if (taskItemEntity.state) {
+                            taskCheckbox.setChecked(true);
+                        } else {
+                            taskCheckbox.setChecked(false);
+                        }
+                        taskUserArrowIv.setVisibility(View.VISIBLE);
+                        taskStartIamge.setVisibility(View.VISIBLE);
+                        taskItemEntity.valid = true;
+                        updateDetailFargment();
+                        EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_DELETE_ACTION, taskItemEntity));
+                    }
 
-            @Override
-            public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
-                super.onFailure(call, t);
-                dismissLoadingDialog();
-            }
-        });
+                    @Override
+                    public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
+                        super.onFailure(call, t);
+                        dismissLoadingDialog();
+                    }
+                });
     }
 
     /**
@@ -919,20 +923,22 @@ public class TaskDetailActivity extends BaseActivity
         ids.add(taskId);
         if (ids.size() > 0) {
             showLoadingDialog(null);
-            getApi().clearDeletedTask(ids).enqueue(new SimpleCallBack<JsonElement>() {
-                @Override
-                public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
-                    dismissLoadingDialog();
-                    EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION));
-                    finish();
-                }
+            callEnqueue(
+                    getApi().clearDeletedTask(ids),
+                    new SimpleCallBack<JsonElement>() {
+                        @Override
+                        public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
+                            dismissLoadingDialog();
+                            EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION));
+                            finish();
+                        }
 
-                @Override
-                public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
-                    super.onFailure(call, t);
-                    dismissLoadingDialog();
-                }
-            });
+                        @Override
+                        public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
+                            super.onFailure(call, t);
+                            dismissLoadingDialog();
+                        }
+                    });
         }
     }
 
@@ -944,22 +950,24 @@ public class TaskDetailActivity extends BaseActivity
         showLoadingDialog(null);
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("taskId", taskId);
-        getApi().taskAddStar(RequestUtils.createJsonBody(jsonObject.toString())).enqueue(new SimpleCallBack<JsonElement>() {
-            @Override
-            public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
-                dismissLoadingDialog();
-                myStar = TaskEntity.ATTENTIONED;
-                taskItemEntity.attentioned = TaskEntity.ATTENTIONED;
-                titleAction.setImageResource(R.mipmap.header_icon_star_solid);
-                EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION, taskItemEntity));
-            }
+        callEnqueue(
+                getApi().taskAddStar(RequestUtils.createJsonBody(jsonObject.toString())),
+                new SimpleCallBack<JsonElement>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
+                        dismissLoadingDialog();
+                        myStar = TaskEntity.ATTENTIONED;
+                        taskItemEntity.attentioned = TaskEntity.ATTENTIONED;
+                        titleAction.setImageResource(R.mipmap.header_icon_star_solid);
+                        EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION, taskItemEntity));
+                    }
 
-            @Override
-            public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
-                super.onFailure(call, t);
-                dismissLoadingDialog();
-            }
-        });
+                    @Override
+                    public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
+                        super.onFailure(call, t);
+                        dismissLoadingDialog();
+                    }
+                });
     }
 
     /**
@@ -967,22 +975,24 @@ public class TaskDetailActivity extends BaseActivity
      */
     private void deleteStar() {
         showLoadingDialog(null);
-        getApi().taskDeleteStar(taskId).enqueue(new SimpleCallBack<JsonElement>() {
-            @Override
-            public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
-                dismissLoadingDialog();
-                myStar = TaskEntity.UNATTENTIONED;
-                titleAction.setImageResource(R.mipmap.header_icon_star_line);
-                taskItemEntity.attentioned = TaskEntity.ATTENTIONED;
-                EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION, taskItemEntity));
-            }
+        callEnqueue(
+                getApi().taskDeleteStar(taskId),
+                new SimpleCallBack<JsonElement>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
+                        dismissLoadingDialog();
+                        myStar = TaskEntity.UNATTENTIONED;
+                        titleAction.setImageResource(R.mipmap.header_icon_star_line);
+                        taskItemEntity.attentioned = TaskEntity.ATTENTIONED;
+                        EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION, taskItemEntity));
+                    }
 
-            @Override
-            public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
-                super.onFailure(call, t);
-                dismissLoadingDialog();
-            }
-        });
+                    @Override
+                    public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
+                        super.onFailure(call, t);
+                        dismissLoadingDialog();
+                    }
+                });
     }
 
     /**
@@ -991,20 +1001,22 @@ public class TaskDetailActivity extends BaseActivity
     private void deleteTask() {
         showLoadingDialog(null);
         MobclickAgent.onEvent(this, UMMobClickAgent.delete_task_click_id);
-        getApi().taskDelete(taskId).enqueue(new SimpleCallBack<JsonElement>() {
-            @Override
-            public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
-                dismissLoadingDialog();
-                EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION, taskItemEntity));
-                TaskDetailActivity.this.finish();
-            }
+        callEnqueue(
+                getApi().taskDelete(taskId),
+                new SimpleCallBack<JsonElement>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
+                        dismissLoadingDialog();
+                        EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION, taskItemEntity));
+                        TaskDetailActivity.this.finish();
+                    }
 
-            @Override
-            public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
-                super.onFailure(call, t);
-                dismissLoadingDialog();
-            }
-        });
+                    @Override
+                    public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
+                        super.onFailure(call, t);
+                        dismissLoadingDialog();
+                    }
+                });
     }
 
     /**
@@ -1016,32 +1028,34 @@ public class TaskDetailActivity extends BaseActivity
      */
     private void updateTask(TaskEntity.TaskItemEntity itemEntity, final boolean state, final CheckBox checkbox) {
         showLoadingDialog(null);
-        getApi().taskUpdateNew(RequestUtils.createJsonBody(getTaskJson(itemEntity, state))).enqueue(new SimpleCallBack<TaskEntity.TaskItemEntity>() {
-            @Override
-            public void onSuccess(Call<ResEntity<TaskEntity.TaskItemEntity>> call, Response<ResEntity<TaskEntity.TaskItemEntity>> response) {
-                dismissLoadingDialog();
-                if (response.body().result != null) {
-                    EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION, response.body().result));
-                }
-                if (checkbox != null)
-                    checkbox.setChecked(state);
-                taskItemEntity = response.body().result;
-                setDataToView(response.body().result);
-            }
+        callEnqueue(
+                getApi().taskUpdateNew(RequestUtils.createJsonBody(getTaskJson(itemEntity, state))),
+                new SimpleCallBack<TaskEntity.TaskItemEntity>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<TaskEntity.TaskItemEntity>> call, Response<ResEntity<TaskEntity.TaskItemEntity>> response) {
+                        dismissLoadingDialog();
+                        if (response.body().result != null) {
+                            EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION, response.body().result));
+                        }
+                        if (checkbox != null)
+                            checkbox.setChecked(state);
+                        taskItemEntity = response.body().result;
+                        setDataToView(response.body().result);
+                    }
 
-            @Override
-            public void onFailure(Call<ResEntity<TaskEntity.TaskItemEntity>> call, Throwable t) {
-                super.onFailure(call, t);
-                dismissLoadingDialog();
-                if (checkbox != null)
-                    checkbox.setChecked(!state);
-            }
+                    @Override
+                    public void onFailure(Call<ResEntity<TaskEntity.TaskItemEntity>> call, Throwable t) {
+                        super.onFailure(call, t);
+                        dismissLoadingDialog();
+                        if (checkbox != null)
+                            checkbox.setChecked(!state);
+                    }
 
-            @Override
-            public void defNotify(String noticeStr) {
-                showTopSnackBar(noticeStr);
-            }
-        });
+                    @Override
+                    public void defNotify(String noticeStr) {
+                        showTopSnackBar(noticeStr);
+                    }
+                });
     }
 
     /**

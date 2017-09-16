@@ -210,22 +210,18 @@ public class TaskListCalendarFragment extends BaseFragment {
 
     private void getTaskData() {
         //重新获取一遍数据
-        getApi().taskListQuery(0,
-                getLoginUserId(),
-                0,
-                0,
-                "dueTime",
-                1,
-                -1,
-                0).enqueue(new SimpleCallBack<TaskEntity>() {
-            @Override
-            public void onSuccess(Call<ResEntity<TaskEntity>> call, Response<ResEntity<TaskEntity>> response) {
-                if (response.body().result != null) {
-                    updateClendarTasks(response.body().result.items);
-                    getNewTasksCount();
+        callEnqueue(
+                getApi().taskListQuery(0, getLoginUserId(), 0, 0, "dueTime", 1, -1, 0),
+                new SimpleCallBack<TaskEntity>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<TaskEntity>> call, Response<ResEntity<TaskEntity>> response) {
+                        if (response.body().result != null) {
+                            updateClendarTasks(response.body().result.items);
+                            getNewTasksCount();
+                        }
+                    }
                 }
-            }
-        });
+        );
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -243,22 +239,25 @@ public class TaskListCalendarFragment extends BaseFragment {
      * 获取新任务数量
      */
     private void getNewTasksCount() {
-        getApi().newTasksCountQuery().enqueue(new SimpleCallBack<List<String>>() {
-            @Override
-            public void onSuccess(Call<ResEntity<List<String>>> call, Response<ResEntity<List<String>>> response) {
-                if (response.body().result != null) {
-                    int totalCount = response.body().result.size();
-                    if (newTaskCardview != null) {
-                        if (totalCount > 0) {
-                            newTaskCardview.setVisibility(View.VISIBLE);
-                            newTaskCountTv.setText(String.valueOf(totalCount));
-                        } else {
-                            newTaskCardview.setVisibility(View.GONE);
+        callEnqueue(
+                getApi().newTasksCountQuery(),
+                new SimpleCallBack<List<String>>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<List<String>>> call, Response<ResEntity<List<String>>> response) {
+                        if (response.body().result != null) {
+                            int totalCount = response.body().result.size();
+                            if (newTaskCardview != null) {
+                                if (totalCount > 0) {
+                                    newTaskCardview.setVisibility(View.VISIBLE);
+                                    newTaskCountTv.setText(String.valueOf(totalCount));
+                                } else {
+                                    newTaskCardview.setVisibility(View.GONE);
+                                }
+                            }
                         }
                     }
                 }
-            }
-        });
+        );
     }
 
     /**

@@ -155,12 +155,14 @@ public class UpdatePhoneOrMailActivity extends BaseActivity {
      * @param phone
      */
     private void upDatePhone(String phone) {
-        getApi().updateUserEmail(phone).enqueue(new SimpleCallBack<String>() {
-            @Override
-            public void onSuccess(Call<ResEntity<String>> call, Response<ResEntity<String>> response) {
-                UpdatePhoneOrMailActivity.this.finish();
-            }
-        });
+        callEnqueue(
+                getApi().updateUserEmail(phone),
+                new SimpleCallBack<String>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<String>> call, Response<ResEntity<String>> response) {
+                        UpdatePhoneOrMailActivity.this.finish();
+                    }
+                });
     }
 
     /**
@@ -169,11 +171,13 @@ public class UpdatePhoneOrMailActivity extends BaseActivity {
      * @param email
      */
     private void upDateEmail(String email) {
-        getApi().updateUserEmail(email).enqueue(new SimpleCallBack<String>() {
-            @Override
-            public void onSuccess(Call<ResEntity<String>> call, Response<ResEntity<String>> response) {
-                UpdatePhoneOrMailActivity.this.finish();
-            }
-        });
+        callEnqueue(
+                getApi().updateUserEmail(email),
+                new SimpleCallBack<String>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<String>> call, Response<ResEntity<String>> response) {
+                        UpdatePhoneOrMailActivity.this.finish();
+                    }
+                });
     }
 }

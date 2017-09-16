@@ -317,8 +317,9 @@ public class TimerTimingActivity extends BaseTimerActivity
             jsonBody.addProperty("taskPkId", TextUtils.isEmpty(itemEntity.taskPkId) ? "" : itemEntity.taskPkId);
             jsonBody.addProperty("workTypeId", TextUtils.isEmpty(itemEntity.workTypeId) ? "" : itemEntity.workTypeId);
             showLoadingDialog(null);
-            getApi().timingUpdate(RequestUtils.createJsonBody(jsonBody.toString()))
-                    .enqueue(new SimpleCallBack<JsonElement>() {
+            callEnqueue(
+                    getApi().timingUpdate(RequestUtils.createJsonBody(jsonBody.toString())),
+                    new SimpleCallBack<JsonElement>() {
                         @Override
                         public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
                             dismissLoadingDialog();
