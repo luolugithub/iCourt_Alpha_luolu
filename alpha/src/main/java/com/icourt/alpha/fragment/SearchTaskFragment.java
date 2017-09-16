@@ -222,7 +222,13 @@ public class SearchTaskFragment extends BaseTaskFragment implements BaseQuickAda
         int statusType = -1;//搜索全部状态的任务
         searchTaskType = 0;//我关注的，新任务，都搜索全部
         if (!TextUtils.isEmpty(assignTos)) {
-            getApi().taskQueryByName(assignTos, keyword, statusType, searchTaskType, projectId).enqueue(new SimpleCallBack<TaskEntity>() {
+            callEnqueue(getApi().taskQueryByName(
+                    assignTos,
+                    keyword,
+                    statusType,
+                    searchTaskType,
+                    projectId),
+                    new SimpleCallBack<TaskEntity>() {
                 @Override
                 public void onSuccess(Call<ResEntity<TaskEntity>> call, Response<ResEntity<TaskEntity>> response) {
                     if (response.body().result != null && recyclerView != null) {
@@ -231,7 +237,12 @@ public class SearchTaskFragment extends BaseTaskFragment implements BaseQuickAda
                 }
             });
         } else {
-            getApi().taskQueryByNameFromMatter(keyword, statusType, searchTaskType, projectId).enqueue(new SimpleCallBack<TaskEntity>() {
+            callEnqueue(getApi().taskQueryByNameFromMatter(
+                    keyword,
+                    statusType,
+                    searchTaskType,
+                    projectId),
+                    new SimpleCallBack<TaskEntity>() {
                 @Override
                 public void onSuccess(Call<ResEntity<TaskEntity>> call, Response<ResEntity<TaskEntity>> response) {
                     if (response.body().result != null && recyclerView != null) {
@@ -250,7 +261,8 @@ public class SearchTaskFragment extends BaseTaskFragment implements BaseQuickAda
     private void recoverTaskById(final TaskEntity.TaskItemEntity itemEntity) {
         if (itemEntity == null) return;
         showLoadingDialog(null);
-        getApi().taskRecoverById(itemEntity.id).enqueue(new SimpleCallBack<JsonElement>() {
+        callEnqueue(getApi().taskRecoverById(itemEntity.id),
+                new SimpleCallBack<JsonElement>() {
             @Override
             public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
                 dismissLoadingDialog();

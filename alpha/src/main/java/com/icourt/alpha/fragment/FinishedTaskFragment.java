@@ -150,8 +150,14 @@ public class FinishedTaskFragment extends BaseFragment implements BaseRecyclerAd
         super.getData(isRefresh);
         taskSelectAdapter.clearSelected();
         if (!TextUtils.isEmpty(projectId)) {
-            getApi().projectQueryTaskList(null,projectId, 1, 0, 1, -1)
-                    .enqueue(new SimpleCallBack<TaskEntity>() {
+            callEnqueue(
+                    getApi().projectQueryTaskList(null,
+                            projectId,
+                            1,
+                            0,
+                            1,
+                            -1),
+                    new SimpleCallBack<TaskEntity>() {
                         @Override
                         public void onSuccess(Call<ResEntity<TaskEntity>> call, Response<ResEntity<TaskEntity>> response) {
                             if (response.body().result != null) {
@@ -166,14 +172,15 @@ public class FinishedTaskFragment extends BaseFragment implements BaseRecyclerAd
                         }
                     });
         } else {
-            getApi().taskListQuery(0,
+            callEnqueue(getApi().taskListQuery(0,
                     getLoginUserId(),
                     1,
                     0,
                     "dueTime",
                     1,
                     -1,
-                    0).enqueue(new SimpleCallBack<TaskEntity>() {
+                    0),
+                    new SimpleCallBack<TaskEntity>() {
                 @Override
                 public void onSuccess(Call<ResEntity<TaskEntity>> call, Response<ResEntity<TaskEntity>> response) {
                     if (response.body().result != null) {
@@ -213,8 +220,13 @@ public class FinishedTaskFragment extends BaseFragment implements BaseRecyclerAd
         taskSelectAdapter.clearSelected();
         if (!TextUtils.isEmpty(projectId)) {
             //pms 环境有
-            getApi().taskQueryByName(null, taskName, 1, 0, projectId)
-                    .enqueue(new SimpleCallBack<TaskEntity>() {
+            callEnqueue(
+                    getApi().taskQueryByName(null,
+                            taskName,
+                            1,
+                            0,
+                            projectId),
+                    new SimpleCallBack<TaskEntity>() {
                         @Override
                         public void onSuccess(Call<ResEntity<TaskEntity>> call, Response<ResEntity<TaskEntity>> response) {
                             if (response.body().result != null) {
@@ -225,8 +237,12 @@ public class FinishedTaskFragment extends BaseFragment implements BaseRecyclerAd
                     });
         } else {
             //pms 环境有
-            getApi().taskQueryByName(getLoginUserId(), taskName, 1, 0)
-                    .enqueue(new SimpleCallBack<TaskEntity>() {
+            callEnqueue(
+                    getApi().taskQueryByName(getLoginUserId(),
+                            taskName,
+                            1,
+                            0),
+                    new SimpleCallBack<TaskEntity>() {
                         @Override
                         public void onSuccess(Call<ResEntity<TaskEntity>> call, Response<ResEntity<TaskEntity>> response) {
                             if (response.body().result != null) {

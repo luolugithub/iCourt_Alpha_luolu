@@ -133,9 +133,9 @@ public class AtMeFragment extends BaseFragment {
         if (isRefresh) {
             call = getChatApi().getAtMeMsg();
         } else {
-            call=getChatApi().getAtMeMsg(getEndlyId());
+            call = getChatApi().getAtMeMsg(getEndlyId());
         }
-        call.enqueue(new SimpleCallBack<List<IMMessageCustomBody>>() {
+        callEnqueue(call, new SimpleCallBack<List<IMMessageCustomBody>>() {
             @Override
             public void onSuccess(Call<ResEntity<List<IMMessageCustomBody>>> call, Response<ResEntity<List<IMMessageCustomBody>>> response) {
                 myAtedAdapter.bindData(isRefresh, response.body().result);

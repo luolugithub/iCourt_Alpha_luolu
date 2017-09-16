@@ -207,8 +207,9 @@ public class ContactListFragment extends BaseFragment implements BaseRecyclerAda
      */
     @Override
     protected void getData(boolean isRefresh) {
-        getChatApi().usersQuery()
-                .enqueue(new SimpleCallBack<List<GroupContactBean>>() {
+        callEnqueue(
+                getChatApi().usersQuery(),
+                new SimpleCallBack<List<GroupContactBean>>() {
                     @Override
                     public void onSuccess(Call<ResEntity<List<GroupContactBean>>> call, Response<ResEntity<List<GroupContactBean>>> response) {
                         if (response.body().result != null) {
@@ -291,7 +292,7 @@ public class ContactListFragment extends BaseFragment implements BaseRecyclerAda
      * @param data
      */
     private void insertAsynContact(List<GroupContactBean> data) {
-        if (data == null||data.isEmpty()) return;
+        if (data == null || data.isEmpty()) return;
         try {
             contactDbService.deleteAll();
             contactDbService.insertOrUpdateAsyn(new ArrayList<IConvertModel<ContactDbModel>>(data));

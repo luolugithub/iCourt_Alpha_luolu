@@ -169,7 +169,15 @@ public class ProjectEndTaskFragment extends BaseTaskFragment implements BaseQuic
         if (isRefresh) {
             pageIndex = 1;
         }
-        getApi().taskListQueryByMatterId(1, "updateTime", projectId, 0, pageIndex, ActionConstants.DEFAULT_PAGE_SIZE).enqueue(new SimpleCallBack<TaskEntity>() {
+        callEnqueue(
+                getApi().taskListQueryByMatterId(
+                        1,
+                        "updateTime",
+                        projectId,
+                        0,
+                        pageIndex,
+                        ActionConstants.DEFAULT_PAGE_SIZE),
+                new SimpleCallBack<TaskEntity>() {
             @Override
             public void onSuccess(Call<ResEntity<TaskEntity>> call, Response<ResEntity<TaskEntity>> response) {
                 stopRefresh();
@@ -203,7 +211,11 @@ public class ProjectEndTaskFragment extends BaseTaskFragment implements BaseQuic
      * 获取权限列表
      */
     private void checkAddTaskAndDocumentPms(String projectId) {
-        getApi().permissionQuery(getLoginUserId(), "MAT", projectId).enqueue(new SimpleCallBack<List<String>>() {
+        callEnqueue(getApi().permissionQuery(
+                getLoginUserId(),
+                "MAT",
+                projectId),
+                new SimpleCallBack<List<String>>() {
             @Override
             public void onSuccess(Call<ResEntity<List<String>>> call, Response<ResEntity<List<String>>> response) {
 
