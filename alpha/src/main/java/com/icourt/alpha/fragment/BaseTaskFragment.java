@@ -288,8 +288,12 @@ public abstract class BaseTaskFragment extends BaseFragment implements OnFragmen
         );
     }
 
+
     /**
      * 展示选择负责人对话框
+     *
+     * @param projectId     项目的id
+     * @param attendeeUsers 项目下的负责人
      */
     protected void showTaskAllotSelectDialogFragment(String projectId, List<TaskEntity.TaskItemEntity.AttendeeUserEntity> attendeeUsers) {
         String tag = TaskAllotSelectDialogFragment.class.getSimpleName();
@@ -320,6 +324,9 @@ public abstract class BaseTaskFragment extends BaseFragment implements OnFragmen
 
     /**
      * 展示选择到期时间对话框
+     *
+     * @param dueTime 到期时间
+     * @param taskId  任务id
      */
     protected void showDateSelectDialogFragment(long dueTime, String taskId) {
         String tag = DateSelectDialogFragment.class.getSimpleName();
@@ -388,6 +395,9 @@ public abstract class BaseTaskFragment extends BaseFragment implements OnFragmen
         mCenterMenuDialog.setOnItemClickListener(new CustOnItemClickListener(mCenterMenuDialog, taskItemEntity));
     }
 
+    /**
+     * 长按弹出窗的每个item的点击处理类
+     */
     private class CustOnItemClickListener implements BaseRecyclerAdapter.OnItemClickListener {
         CenterMenuDialog centerMenuDialog;
         TaskEntity.TaskItemEntity taskItemEntity;
@@ -454,7 +464,7 @@ public abstract class BaseTaskFragment extends BaseFragment implements OnFragmen
     }
 
     /**
-     * 显示多人任务提醒/删除任务提醒
+     * 显示多人任务提醒/删除任务提醒的Dialog
      *
      * @param context
      * @param message
@@ -619,7 +629,7 @@ public abstract class BaseTaskFragment extends BaseFragment implements OnFragmen
     }
 
     /**
-     * 获取提醒json
+     * 获取提醒json（添加任务提醒的时候调用该方法）
      *
      * @param taskReminderEntity
      * @return

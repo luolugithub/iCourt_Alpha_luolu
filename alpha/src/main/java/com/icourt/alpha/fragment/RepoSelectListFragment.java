@@ -139,6 +139,9 @@ public class RepoSelectListFragment extends RepoBaseFragment
                 refreshLayout.setNoticeEmptyText(R.string.repo_empty);
                 break;
         }
+        if (filterOnlyReadRepo) {
+            refreshLayout.setNoticeEmptyText(R.string.repo_type_no_writable_repo);
+        }
         repoAdapter.registerAdapterDataObserver(new RefreshViewEmptyObserver(refreshLayout, repoAdapter));
         refreshLayout.setXRefreshViewListener(new XRefreshView.SimpleXRefreshListener() {
             @Override

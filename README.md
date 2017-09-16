@@ -11,7 +11,8 @@
  9. 接口文档地址:https://dev.alphalawyer.cn/ilaw/swagger/index.html#/ 
  
 #merge requests  
-   不允许提交到主要分支,fork一份代码,建立自己的本地分支(格式:开发分支+mr+名称简称 如:permission_mr_wyx),并提交request;  
+   分支名称规则： br_dev_版本号(2.1.0)_模块名称(chat)_个人名字简写(xyw)  eg.  br_dev_2.1.0_chat_xyw   
+   默认情况:都从dev分支开;不能独立操作test,master分支  
    插件:GitLab Projects
  4
 #fir账号

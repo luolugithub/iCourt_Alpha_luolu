@@ -5,6 +5,7 @@
     <string name="repo_empty">暂无资料库</string>
     <string name="repo_share_empty">没有共享给我的资料库</string>
     <string name="repo_lawfirm_empty">尚未建立资料库</string>
+    <string name="repo_type_no_writable_repo">本类型下没有可读写权限的资料库</string>
 
     <string name="repo_change_history">修改历史</string>
     <string name="repo_inner_share">内部共享</string>
@@ -73,6 +74,7 @@
     <string name="sfile_folder_details">查看文件夹详情</string>
     <string name="sfile_file_rename">@string/str_rename</string>
     <string name="sfile_file_share">共享</string>
+    <string name="sfile_folder_share">内部共享</string>
     <string name="sfile_file_copy">@string/str_copy</string>
     <string name="sfile_file_move">@string/str_move</string>
     <string name="sfile_file_delete">@string/str_delete</string>
@@ -88,7 +90,7 @@
     <string-array name="sfile_folder_menus_array">
         <item>@string/sfile_folder_details</item>
         <item>@string/sfile_file_rename</item>
-        <item>@string/sfile_file_share</item>
+        <item>@string/sfile_folder_share</item>
         <item>@string/sfile_file_copy</item>
         <item>@string/sfile_file_move</item>
         <item>@string/sfile_file_delete</item>
@@ -163,5 +165,8 @@
 
     <string name="repo_encrypted">资料库被加密</string>
     <string name="repo_encrypted_unsupport">请前往电脑端 AlphaBox 操作</string>
+    <string name="sfile_searched_no_results">没有找到匹配的结果</string>
+    <string name="sfile_search_range">在所有资料库内搜索</string>
+    <string name="sfile_searched_folder_un_click">搜索结果中无法预览文件夹</string>
 
 </resources>

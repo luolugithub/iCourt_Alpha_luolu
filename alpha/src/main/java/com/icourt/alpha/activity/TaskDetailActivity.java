@@ -99,8 +99,6 @@ public class TaskDetailActivity extends BaseActivity
     private static final int SHOW_FINISH_DIALOG = 1;//完成任务提示对话框
     private static final int START_COMMENT_FORRESULT_CODE = 0;//跳转评论code
 
-    String taskId;
-    BaseFragmentAdapter baseFragmentAdapter;
     @BindView(R.id.titleBack)
     ImageView titleBack;
     @BindView(R.id.titleContent)
@@ -139,18 +137,10 @@ public class TaskDetailActivity extends BaseActivity
     LinearLayout taskTimeParentLayout;
     @BindView(R.id.comment_tv)
     TextView commentTv;
-
-    int myStar = -1;
-    boolean isStrat = false;
-    TaskEntity.TaskItemEntity taskItemEntity;
-    TaskUsersAdapter usersAdapter;
     @BindView(R.id.comment_layout)
     LinearLayout commentLayout;
-
-    final SparseArray<CharSequence> tabTitles = new SparseArray<>();
     @BindView(R.id.task_tieming_image)
     ImageView taskTiemingImage;
-    TaskDetailFragment taskDetailFragment;
     @BindView(R.id.task_users_arrow_iv)
     ImageView taskUsersArrowIv;
     @BindView(R.id.task_user_arrow_iv)
@@ -159,6 +149,17 @@ public class TaskDetailActivity extends BaseActivity
     TextView commentEditTv;
     @BindView(R.id.task_time_sum_layout)
     LinearLayout taskTimeSumLayout;
+
+    String taskId;
+    BaseFragmentAdapter baseFragmentAdapter;
+    int myStar = -1;
+    boolean isStrat = false;
+    TaskEntity.TaskItemEntity taskItemEntity;
+    TaskUsersAdapter usersAdapter;
+    TaskDetailFragment taskDetailFragment;
+
+    final SparseArray<CharSequence> tabTitles = new SparseArray<>();
+
 //    boolean isEditTask = false;//编辑任务权限
 //    boolean isDeleteTask = false;//删除任务权限
 //    boolean isAddTime = false;//添加计时权限
