@@ -281,7 +281,8 @@ public class SFileSearchActivity extends BaseActivity
                         item.name,
                         item.size,
                         item.fullpath,
-                        null);
+                        null,
+                        FileDownloadActivity.FILE_FROM_REPO);
             }
         }
     }

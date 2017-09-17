@@ -389,7 +389,8 @@ public class TaskAttachmentFragment extends SeaFileBaseFragment
                 FileUtils.getFileName(item.pathInfoVo.filePath),
                 item.fileSize,
                 item.pathInfoVo.filePath,
-                null);
+                null,
+                FileDownloadActivity.FILE_FROM_TASK);
     }
 
 

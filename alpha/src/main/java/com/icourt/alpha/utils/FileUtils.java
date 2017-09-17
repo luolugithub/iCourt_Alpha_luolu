@@ -321,6 +321,22 @@ public class FileUtils {
     }
 
     /**
+     * 获取文件的父路径
+     *
+     * @param filePath
+     * @return
+     */
+    public static final String getFileParentDir(String filePath) {
+        if (!TextUtils.isEmpty(filePath)) {
+            int separatorIndex = filePath.lastIndexOf(File.separator);
+            if (separatorIndex > 0) {
+                return filePath.substring(0, separatorIndex);
+            }
+        }
+        return File.separator;
+    }
+
+    /**
      * 获取文件名
      *
      * @return

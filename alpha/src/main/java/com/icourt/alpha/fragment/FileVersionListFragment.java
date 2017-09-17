@@ -238,7 +238,8 @@ public class FileVersionListFragment extends SeaFileBaseFragment implements Base
                 getFileName(),
                 item.rev_file_size,
                 fromRepoFilePath,
-                item.id);
+                item.id,
+                FileDownloadActivity.FILE_FROM_REPO);
     }
 
     @Override

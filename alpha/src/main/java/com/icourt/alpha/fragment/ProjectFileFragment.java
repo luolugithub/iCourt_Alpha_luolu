@@ -544,7 +544,8 @@ public class ProjectFileFragment extends SeaFileBaseFragment
                         item.name,
                         item.size,
                         String.format("%s%s", getSeaFileDirPath(), item.name),
-                        null);
+                        null,
+                        FileDownloadActivity.FILE_FROM_PROJECT);
             }
         }
     }
