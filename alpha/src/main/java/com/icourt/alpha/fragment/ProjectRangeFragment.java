@@ -173,8 +173,8 @@ public class ProjectRangeFragment extends BaseFragment implements BaseRecyclerAd
     /**
      * 获取caseCodes名称
      *
-     * @param caseCodes
-     * @return
+     * @param caseCodes  caseCodes集合
+     * @return caseCodes名称
      */
     private String getCaseCodeName(List<ProjectProcessesEntity.CaseCodesBean> caseCodes) {
         if (caseCodes == null || caseCodes.size() <= 0) return "";
@@ -189,8 +189,8 @@ public class ProjectRangeFragment extends BaseFragment implements BaseRecyclerAd
     /**
      * 获取acceptance名称
      *
-     * @param values
-     * @return
+     * @param values acceptance集合
+     * @return acceptance名称
      */
     private String getExtraName(List<ProjectProcessesEntity.ExtraBean.ValuesBean> values) {
         if (values == null || values.size() <= 0) return "";
@@ -228,10 +228,9 @@ public class ProjectRangeFragment extends BaseFragment implements BaseRecyclerAd
                 if (itemEntity.positionBean == null) return;
                 if (!hasCustomerPermission()) return;
                 if (customerDbService == null) return;
-                CustomerEntity customerEntity = null;
                 CustomerDbModel customerDbModel = customerDbService.queryFirst("pkid", itemEntity.positionBean.contactPkid);
                 if (customerDbModel == null) return;
-                customerEntity = customerDbModel.convert2Model();
+                CustomerEntity customerEntity = customerDbModel.convert2Model();
                 if (customerEntity == null) return;
                 if (!TextUtils.isEmpty(customerEntity.contactType)) {
                     MobclickAgent.onEvent(getContext(), UMMobClickAgent.look_client_click_id);
@@ -250,7 +249,7 @@ public class ProjectRangeFragment extends BaseFragment implements BaseRecyclerAd
     /**
      * 是否有查看联系人权限
      *
-     * @return
+     * @return true:有权限 false：无权限
      */
     private boolean hasCustomerPermission() {
         return SpUtils.getInstance().getBooleanData(KEY_CUSTOMER_PERMISSION, false);

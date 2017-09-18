@@ -160,7 +160,7 @@ public class ProjectDetailFragment extends BaseFragment implements BaseRecyclerA
     /**
      * 设置数据
      *
-     * @param projectDetailBean
+     * @param projectDetailBean 项目model
      */
     private void setDataToView(ProjectDetailEntity projectDetailBean) {
         if (projectMemberLayout == null) return;
@@ -220,10 +220,10 @@ public class ProjectDetailFragment extends BaseFragment implements BaseRecyclerA
     /**
      * 设置单一的数据类型：value为string
      *
-     * @param basicItemEntities
-     * @param key
-     * @param value
-     * @param type
+     * @param basicItemEntities 列表默认model
+     * @param key 列表显示title
+     * @param value 列表显示值
+     * @param type 类型
      */
     private void setKeyValueData(List<ProjectBasicItemEntity> basicItemEntities, String key, String value, int type) {
         if (TextUtils.isEmpty(value)) return;
@@ -237,7 +237,7 @@ public class ProjectDetailFragment extends BaseFragment implements BaseRecyclerA
     /**
      * 设置客户信息
      *
-     * @param basicItemEntities
+     * @param basicItemEntities 列表默认model集合
      */
     private void setClientData(List<ProjectBasicItemEntity> basicItemEntities) {
         if (projectDetailBean.clients == null || projectDetailBean.clients.size() <= 0) return;
@@ -247,11 +247,11 @@ public class ProjectDetailFragment extends BaseFragment implements BaseRecyclerA
         } else {
             itemEntity.key = getString(R.string.project_clients);
         }
-        StringBuffer buffer = new StringBuffer();
+        StringBuilder builder = new StringBuilder();
         for (ProjectDetailEntity.ClientsBean client : projectDetailBean.clients) {
-            buffer.append(client.contactName).append("、");
+            builder.append(client.contactName).append("、");
         }
-        itemEntity.value = buffer.toString();
+        itemEntity.value = builder.toString();
         if (itemEntity.value.length() > 0) {
             itemEntity.value = itemEntity.value.substring(0, itemEntity.value.length() - 1);
         }
@@ -262,7 +262,7 @@ public class ProjectDetailFragment extends BaseFragment implements BaseRecyclerA
     /**
      * 设置当事人信息
      *
-     * @param basicItemEntities
+     * @param basicItemEntities 列表默认model集合
      */
     private void setLitigantData(List<ProjectBasicItemEntity> basicItemEntities) {
         if (projectDetailBean.litigants == null || projectDetailBean.litigants.size() <= 0) return;
@@ -272,11 +272,11 @@ public class ProjectDetailFragment extends BaseFragment implements BaseRecyclerA
         } else {
             itemEntity.key = getString(R.string.project_litigants);
         }
-        StringBuffer buffer = new StringBuffer();
+        StringBuilder builder = new StringBuilder();
         for (ProjectDetailEntity.LitigantsBean litigant : projectDetailBean.litigants) {
-            buffer.append(litigant.contactName).append(",");
+            builder.append(litigant.contactName).append(",");
         }
-        itemEntity.value = buffer.toString();
+        itemEntity.value = builder.toString();
         if (itemEntity.value.length() > 0) {
             itemEntity.value = itemEntity.value.substring(0, itemEntity.value.length() - 1);
         }
@@ -287,7 +287,7 @@ public class ProjectDetailFragment extends BaseFragment implements BaseRecyclerA
     /**
      * 设置部门信息
      *
-     * @param basicItemEntities
+     * @param basicItemEntities 列表默认model集合
      */
     private void setGroupsData(List<ProjectBasicItemEntity> basicItemEntities) {
         if (projectDetailBean.groups == null || projectDetailBean.groups.size() <= 0) return;
@@ -297,11 +297,11 @@ public class ProjectDetailFragment extends BaseFragment implements BaseRecyclerA
         } else {
             itemEntity.key = getString(R.string.project_groups);
         }
-        StringBuffer buffer = new StringBuffer();
+        StringBuilder builder = new StringBuilder();
         for (ProjectDetailEntity.GroupsBean group : projectDetailBean.groups) {
-            buffer.append(group.name).append("、");
+            builder.append(group.name).append("、");
         }
-        itemEntity.value = buffer.toString();
+        itemEntity.value = builder.toString();
         if (itemEntity.value.length() > 0) {
             itemEntity.value = itemEntity.value.substring(0, itemEntity.value.length() - 1);
         }
@@ -313,7 +313,7 @@ public class ProjectDetailFragment extends BaseFragment implements BaseRecyclerA
     /**
      * 设置案源律师数据
      *
-     * @param basicItemEntities
+     * @param basicItemEntities 列表默认model集合
      */
     private void setAttorneysData(List<ProjectBasicItemEntity> basicItemEntities) {
         if (projectDetailBean.attorneys == null || projectDetailBean.attorneys.size() <= 0) return;
@@ -323,11 +323,11 @@ public class ProjectDetailFragment extends BaseFragment implements BaseRecyclerA
         } else {
             itemEntity.key = getString(R.string.project_attorneys);
         }
-        StringBuffer buffer = new StringBuffer();
+        StringBuilder builder = new StringBuilder();
         for (ProjectDetailEntity.AttorneysBean attorneysBean : projectDetailBean.attorneys) {
-            buffer.append(attorneysBean.attorneyName).append("、");
+            builder.append(attorneysBean.attorneyName).append("、");
         }
-        itemEntity.value = buffer.toString();
+        itemEntity.value = builder.toString();
         if (itemEntity.value.length() > 0) {
             itemEntity.value = itemEntity.value.substring(0, itemEntity.value.length() - 1);
         }
