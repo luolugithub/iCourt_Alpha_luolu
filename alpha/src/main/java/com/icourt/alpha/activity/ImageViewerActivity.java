@@ -389,7 +389,7 @@ public class ImageViewerActivity extends BaseUmengActivity {
                                 transformFriends(drawable);
                                 break;
                             case 2:
-                                shareImage2WeiXin(drawable);
+                                shareImage();
                                 break;
                             case 3:
                                 savedImport2Project(drawable);
@@ -400,9 +400,59 @@ public class ImageViewerActivity extends BaseUmengActivity {
                 .show();
     }
 
-    protected void shareImage2WeiXin(@NonNull Drawable drawable) {
-        if (drawable == null) return;
-        shareImage2WeiXin(FileUtils.drawableToBitmap(drawable));
+    protected void shareImage() {
+        if (checkAcessFilePermission()) {
+            String url = imagePagerAdapter.getItem(viewPager.getCurrentItem());
+            String savedPath = getPicSavePath(url);
+            if (isFileExists(savedPath)) {
+                shareFileWithAndroid(savedPath);
+            } else {
+                //下载完成后 再保存到资料库
+                showLoadingDialog(null);
+                downloadFile(url, new FileDownloadListener() {
+
+                    @Override
+                    protected void pending(BaseDownloadTask task, int soFarBytes, int totalBytes) {
+                    }
+
+                    @Override
+                    protected void progress(BaseDownloadTask task, int soFarBytes, int totalBytes) {
+                    }
+
+                    @Override
+                    protected void completed(BaseDownloadTask task) {
+                        dismissLoadingDialog();
+                        if (task != null && !TextUtils.isEmpty(task.getPath())) {
+                            try {
+                                sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(new File(task.getPath()))));
+                            } catch (NullPointerException e) {
+                                e.printStackTrace();
+                            }
+                            shareFileWithAndroid(task.getPath());
+                        }
+                    }
+
+                    @Override
+                    protected void paused(BaseDownloadTask task, int soFarBytes, int totalBytes) {
+                        dismissLoadingDialog();
+                    }
+
+                    @Override
+                    protected void error(BaseDownloadTask task, Throwable e) {
+                        dismissLoadingDialog();
+                        log("----------->图片下载异常:" + StringUtils.throwable2string(e));
+                        showTopSnackBar(String.format("下载异常!" + StringUtils.throwable2string(e)));
+                    }
+
+                    @Override
+                    protected void warn(BaseDownloadTask task) {
+                        dismissLoadingDialog();
+                    }
+                });
+            }
+        } else {
+            requestAcessFilePermission();
+        }
     }
 
     /**
@@ -463,7 +513,7 @@ public class ImageViewerActivity extends BaseUmengActivity {
      */
     private void checkPermissionOrDownload() {
         if (checkAcessFilePermission()) {
-            downloadFile(imagePagerAdapter.getItem(viewPager.getCurrentItem()));
+            downloadFile(imagePagerAdapter.getItem(viewPager.getCurrentItem()), picDownloadListener);
         } else {
             requestAcessFilePermission();
         }
@@ -474,7 +524,7 @@ public class ImageViewerActivity extends BaseUmengActivity {
      *
      * @param url
      */
-    private void downloadFile(String url) {
+    private void downloadFile(String url, FileDownloadListener fileDownloadListener) {
         if (TextUtils.isEmpty(url)) {
             showTopSnackBar("下载地址为null");
             return;
@@ -491,7 +541,7 @@ public class ImageViewerActivity extends BaseUmengActivity {
                 .getImpl()
                 .create(url)
                 .setPath(getPicSavePath(url))
-                .setListener(picDownloadListener).start();
+                .setListener(fileDownloadListener).start();
     }
 
     private String getPicSavePath(String url) {

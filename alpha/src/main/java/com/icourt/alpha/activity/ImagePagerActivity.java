@@ -468,7 +468,56 @@ public class ImagePagerActivity extends BaseUmengActivity implements BasePagerAd
                                 dialog.dismiss();
                                 switch (position) {
                                     case 0:
-                                        shareImage2WeiXin(drawable);
+                                        if (checkAcessFilePermission()) {
+                                            if (isFileExists(getCurrImageUrl())) {
+                                                shareFileWithAndroid(getPicSavePath(getCurrImageUrl()));
+                                            } else {
+                                                //下载完成后 再保存到资料库
+                                                showLoadingDialog(null);
+                                                downloadFile(getCurrImageUrl(), new FileDownloadListener() {
+
+                                                    @Override
+                                                    protected void pending(BaseDownloadTask task, int soFarBytes, int totalBytes) {
+                                                    }
+
+                                                    @Override
+                                                    protected void progress(BaseDownloadTask task, int soFarBytes, int totalBytes) {
+                                                    }
+
+                                                    @Override
+                                                    protected void completed(BaseDownloadTask task) {
+                                                        dismissLoadingDialog();
+                                                        if (task != null && !TextUtils.isEmpty(task.getPath())) {
+                                                            try {
+                                                                sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(new File(task.getPath()))));
+                                                            } catch (NullPointerException e) {
+                                                                e.printStackTrace();
+                                                            }
+                                                            shareFileWithAndroid(task.getPath());
+                                                        }
+                                                    }
+
+                                                    @Override
+                                                    protected void paused(BaseDownloadTask task, int soFarBytes, int totalBytes) {
+                                                        dismissLoadingDialog();
+                                                    }
+
+                                                    @Override
+                                                    protected void error(BaseDownloadTask task, Throwable e) {
+                                                        dismissLoadingDialog();
+                                                        log("----------->图片下载异常:" + StringUtils.throwable2string(e));
+                                                        showTopSnackBar(String.format("下载异常!" + StringUtils.throwable2string(e)));
+                                                    }
+
+                                                    @Override
+                                                    protected void warn(BaseDownloadTask task) {
+                                                        dismissLoadingDialog();
+                                                    }
+                                                });
+                                            }
+                                        } else {
+                                            requestAcessFilePermission();
+                                        }
                                         break;
                                     case 1:
                                         showContactShareDialogFragment(finalSFileImageInfoEntity.chatMsgId);
@@ -576,6 +625,7 @@ public class ImagePagerActivity extends BaseUmengActivity implements BasePagerAd
         }
         return false;
     }
+
 
     /**
      * 收藏消息

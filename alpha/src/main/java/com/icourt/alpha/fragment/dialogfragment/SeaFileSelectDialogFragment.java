@@ -208,6 +208,10 @@ public class SeaFileSelectDialogFragment extends BaseDialogFragment
                 @Override
                 public void onSuccess(Call<RepoIdResEntity> call, Response<RepoIdResEntity> response) {
                     dismissLoadingDialog();
+                    if (TextUtils.isEmpty(response.body().seaFileRepoId)) {
+                        showToast("服务器返回的资料库id为null");
+                        bugSync("项目repo 获取null", "projectid:" + projectId);
+                    }
                     //对应项目下的第一级文件
                     SeaFileSelectParam seaFileSelectParam = new SeaFileSelectParam(
                             REPO_PROJECT,
@@ -516,7 +520,7 @@ public class SeaFileSelectDialogFragment extends BaseDialogFragment
         if (!selectedFolderDocumentEntities.contains(folderDocumentEntity)) {
             selectedFolderDocumentEntities.add(folderDocumentEntity);
         }
-        selectedFolderDocumentAdapter.addItem(0, folderDocumentEntity);
+        selectedFolderDocumentAdapter.addItem(folderDocumentEntity);
     }
 
     @Override
