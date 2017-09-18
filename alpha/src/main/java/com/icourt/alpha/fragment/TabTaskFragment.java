@@ -467,7 +467,9 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
      */
     private void clearAllDeletedTask() {
         if (selectPosition == 2) {//已删除的任务列表
-            if (alltaskFragment.currFragment instanceof TaskListFragment) {
+            if (alltaskFragment != null
+                    && alltaskFragment.currFragment != null
+                    && alltaskFragment.currFragment instanceof TaskListFragment) {
                 TaskListFragment fragment = (TaskListFragment) alltaskFragment.currFragment;
                 fragment.clearAllDeletedTask();
             }
@@ -480,11 +482,13 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
      * @return
      */
     public boolean isShowingNextTaskView() {
-        Fragment currFragment = alltaskFragment.currFragment;
-        if (currFragment instanceof TaskListFragment) {
-            TaskListFragment taskListFragment = (TaskListFragment) currFragment;
-            int visibility = taskListFragment.nextTaskLayout.getVisibility();
-            return visibility == View.VISIBLE;
+        if (alltaskFragment != null) {
+            Fragment currFragment = alltaskFragment.currFragment;
+            if (currFragment != null && currFragment instanceof TaskListFragment) {
+                TaskListFragment taskListFragment = (TaskListFragment) currFragment;
+                int visibility = taskListFragment.nextTaskLayout.getVisibility();
+                return visibility == View.VISIBLE;
+            }
         }
         return false;
     }

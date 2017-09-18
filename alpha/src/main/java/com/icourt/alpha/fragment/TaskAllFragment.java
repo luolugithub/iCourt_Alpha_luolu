@@ -38,23 +38,24 @@ import butterknife.Unbinder;
  */
 public class TaskAllFragment extends BaseFragment implements OnTasksChangeListener {
 
+    private static final String CHILD_FRAGMENT = "childFragment";//用来传递子Fragment的tag。
+
     public static final int TYPE_ALL_TASK = 1;//任务列表
     public static final int TYPE_ALL_TASK_CALENDAR = 2;//带日历的任务列表
-
-    private static final String CHILD_FRAGMENT = "childFragment";//用来传递子Fragment的tag。
 
     @IntDef({TYPE_ALL_TASK, TYPE_ALL_TASK_CALENDAR})
     @Retention(RetentionPolicy.SOURCE)
     public @interface ChildFragmentType {
     }
 
-    final ArrayList<TaskEntity.TaskItemEntity> taskItemEntityList = new ArrayList<>();//用来记录当前显示的Fragment的任务列表数据。
-    Fragment currFragment;//当前的Fragment
-    final SparseArray<Fragment> fragmentSparseArray = new SparseArray<>();//用来缓存Fragment的集合。
-
     Unbinder unbinder;
+
     @BindView(R.id.main_fl_content)
     FrameLayout mainFlContent;
+
+    ArrayList<TaskEntity.TaskItemEntity> taskItemEntityList = new ArrayList<>();//用来记录当前显示的Fragment的任务列表数据。
+    Fragment currFragment;//当前的Fragment
+    SparseArray<Fragment> fragmentSparseArray = new SparseArray<>();//用来缓存Fragment的集合。
 
     public static TaskAllFragment newInstance() {
         TaskAllFragment taskAllFragment = new TaskAllFragment();
@@ -82,7 +83,7 @@ public class TaskAllFragment extends BaseFragment implements OnTasksChangeListen
      * 获取要显示的子Fragment
      *
      * @param type      获取的子Fragment的type
-     * @param stateType 子Fragment的状态
+     * @param stateType 子Fragment的状态 -1，全部任务；0，未完成；1，已完成；3，已删除。
      * @return
      */
     private Fragment getFragment(@ChildFragmentType int type, int stateType) {
@@ -96,7 +97,6 @@ public class TaskAllFragment extends BaseFragment implements OnTasksChangeListen
                     putFragment(type, TaskListFragment.newInstance(0, stateType));
                     break;
                 case TYPE_ALL_TASK_CALENDAR:
-//                     putFragment(type, TaskListCalendarFragment.newInstance(taskItemEntityList));
                     putFragment(type, TaskListCalendarFragment.newInstance(null));
                     break;
             }
@@ -191,6 +191,7 @@ public class TaskAllFragment extends BaseFragment implements OnTasksChangeListen
 
     @Override
     public void onTaskChanged(TaskEntity.TaskItemEntity taskItemEntity) {
+
     }
 
     /**
