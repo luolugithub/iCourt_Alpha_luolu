@@ -257,6 +257,10 @@ public class SFileSearchActivity extends BaseActivity
     public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
         SFileSearchEntity item = sFileSearchAdapter.getItem(position);
         if (item != null) {
+            if (item.is_dir) {
+                showTopSnackBar("搜索结果中无法预览文件夹");
+                return;
+            }
             if (IMUtils.isPIC(item.name)) {
                 ArrayList<String> bigImageUrls = new ArrayList<>();
                 ArrayList<String> smallImageUrls = new ArrayList<>();

@@ -1,14 +1,13 @@
 package com.icourt.alpha.activity;
 
-import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.annotation.IntDef;
+import android.support.annotation.IntRange;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.AppBarLayout;
@@ -68,12 +67,13 @@ public class FileDownloadActivity extends BaseActivity {
     private static final String KEY_SEA_FILE_FULL_PATH = "key_sea_file_full_path";
     private static final String KEY_SEA_FILE_VERSION_ID = "key_sea_file_commit_id";
     private static final String KEY_SEA_FILE_FROM = "key_sea_file_from";
-    private static final int CODE_PERMISSION_FILE = 1009;
 
     public static final int FILE_FROM_TASK = 1;         //任务下载附件
     public static final int FILE_FROM_PROJECT = 2;      //项目下载附件
     public static final int FILE_FROM_IM = 3;           //享聊下载附件
     public static final int FILE_FROM_REPO = 4;         //资料库下载附件
+    @BindView(R.id.download_notice_tv)
+    TextView downloadNoticeTv;
 
     @IntDef({FILE_FROM_TASK,
             FILE_FROM_PROJECT,
@@ -148,6 +148,7 @@ public class FileDownloadActivity extends BaseActivity {
 
         @Override
         protected void pending(BaseDownloadTask task, int soFarBytes, int totalBytes) {
+            updateViewState(0);
             if (downloadProgressbar != null) {
                 downloadProgressbar.setMaxProgress(100);
             }
@@ -231,13 +232,20 @@ public class FileDownloadActivity extends BaseActivity {
             openImageView();
             updateViewState(2);
         } else {
-            updateViewState(0);
-            //检查文件写入权限
-            if (checkPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-                getData(true);
-            } else {
-                reqPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, "下载文件需要文件写入权限!", CODE_PERMISSION_FILE);
+            updateViewState(-1);
+            //非图片 不主动下载
+            if (IMUtils.isPIC(seaFileFullPath)) {
+                startDownload();
             }
+        }
+    }
+
+    private void startDownload() {
+        //检查文件写入权限
+        if (checkAcessFilePermission()) {
+            getData(true);
+        } else {
+            requestAcessFilePermission();
         }
     }
 
@@ -259,7 +267,6 @@ public class FileDownloadActivity extends BaseActivity {
     protected void getData(boolean isRefresh) {
         super.getData(isRefresh);
         showLoadingDialog(null);
-
         switch (fileFrom) {
             case FILE_FROM_IM: {//享聊的下载地址要单独获取 用资料库下载地址 提示没权限
                 callEnqueue(
@@ -312,16 +319,25 @@ public class FileDownloadActivity extends BaseActivity {
     }
 
     /**
-     * @param state 0下载中 1暂停中 2:下载完成
+     * @param state -1未下载 0下载中 1暂停中 2:下载完成
      */
-    private void updateViewState(int state) {
+    private void updateViewState(@IntRange(from = -1, to = 2) int state) {
         switch (state) {
+            case -1:
+                titleAction.setEnabled(false);
+                titleAction.setImageResource(R.mipmap.more_disabled);
+                fileOpenTv.setVisibility(View.GONE);
+                downloadLayout.setVisibility(View.GONE);
+                downloadContinueTv.setVisibility(View.GONE);
+                downloadNoticeTv.setVisibility(View.VISIBLE);
+                break;
             case 0:
                 titleAction.setEnabled(false);
                 titleAction.setImageResource(R.mipmap.more_disabled);
                 fileOpenTv.setVisibility(View.GONE);
                 downloadLayout.setVisibility(View.VISIBLE);
                 downloadContinueTv.setVisibility(View.GONE);
+                downloadNoticeTv.setVisibility(View.GONE);
                 break;
             case 1:
                 titleAction.setEnabled(false);
@@ -329,6 +345,7 @@ public class FileDownloadActivity extends BaseActivity {
                 fileOpenTv.setVisibility(View.GONE);
                 downloadLayout.setVisibility(View.GONE);
                 downloadContinueTv.setVisibility(View.VISIBLE);
+                downloadNoticeTv.setVisibility(View.GONE);
                 break;
             case 2:
                 titleAction.setEnabled(true);
@@ -336,6 +353,7 @@ public class FileDownloadActivity extends BaseActivity {
                 fileOpenTv.setVisibility(View.VISIBLE);
                 downloadLayout.setVisibility(View.GONE);
                 downloadContinueTv.setVisibility(View.GONE);
+                downloadNoticeTv.setVisibility(View.GONE);
                 break;
         }
     }
@@ -387,12 +405,16 @@ public class FileDownloadActivity extends BaseActivity {
 
     @OnClick({R.id.download_continue_tv,
             R.id.file_open_tv,
-            R.id.download_cancel_tv})
+            R.id.download_cancel_tv,
+            R.id.download_notice_tv})
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.titleAction:
                 showBottomMenuDialog();
+                break;
+            case R.id.download_notice_tv:
+                startDownload();
                 break;
             case R.id.download_continue_tv:
                 updateViewState(0);
@@ -509,24 +531,6 @@ public class FileDownloadActivity extends BaseActivity {
         }
     }
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        if (grantResults == null) return;
-        if (grantResults.length <= 0) return;
-        switch (requestCode) {
-            case CODE_PERMISSION_FILE:
-                if (grantResults[0] == PackageManager.PERMISSION_DENIED) {
-                    showToast("文件写入权限被拒绝!");
-                    finish();
-                } else {
-                    getData(true);
-                }
-                break;
-            default:
-                super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-                break;
-        }
-    }
 
     @Override
     protected void onDestroy() {
