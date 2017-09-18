@@ -183,22 +183,24 @@ public abstract class BaseTaskFragment extends BaseFragment implements OnFragmen
     protected void updateTaskState(final TaskEntity.TaskItemEntity itemEntity, final boolean state) {
         showLoadingDialog(null);
         itemEntity.state = state;
-        getApi().taskUpdateNew(RequestUtils.createJsonBody(getTaskStateJson(itemEntity))).enqueue(new SimpleCallBack<TaskEntity.TaskItemEntity>() {
-            @Override
-            public void onSuccess(Call<ResEntity<TaskEntity.TaskItemEntity>> call, Response<ResEntity<TaskEntity.TaskItemEntity>> response) {
-                dismissLoadingDialog();
-                if (response.body().result != null)
-                    taskUpdateBack(CHANGE_STATUS, response.body().result);
-            }
+        callEnqueue(
+                getApi().taskUpdateNew(RequestUtils.createJsonBody(getTaskStateJson(itemEntity))),
+                new SimpleCallBack<TaskEntity.TaskItemEntity>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<TaskEntity.TaskItemEntity>> call, Response<ResEntity<TaskEntity.TaskItemEntity>> response) {
+                        dismissLoadingDialog();
+                        if (response.body().result != null)
+                            taskUpdateBack(CHANGE_STATUS, response.body().result);
+                    }
 
-            @Override
-            public void onFailure(Call<ResEntity<TaskEntity.TaskItemEntity>> call, Throwable t) {
-                super.onFailure(call, t);
-                dismissLoadingDialog();
-                //因为是引用，要将数据置回相反的状态。
-                itemEntity.state = !state;
-            }
-        });
+                    @Override
+                    public void onFailure(Call<ResEntity<TaskEntity.TaskItemEntity>> call, Throwable t) {
+                        super.onFailure(call, t);
+                        dismissLoadingDialog();
+                        //因为是引用，要将数据置回相反的状态。
+                        itemEntity.state = !state;
+                    }
+                });
     }
 
 
@@ -209,25 +211,27 @@ public abstract class BaseTaskFragment extends BaseFragment implements OnFragmen
      */
     protected void updateTaskProjectOrGroup(@ChangeType final int type, final TaskEntity.TaskItemEntity itemEntity, ProjectEntity projectEntity, TaskGroupEntity taskGroupEntity, final TaskReminderEntity taskReminderEntity) {
         showLoadingDialog(null);
-        getApi().taskUpdateNew(RequestUtils.createJsonBody(getTaskProjectOrGroupJson(itemEntity, projectEntity, taskGroupEntity))).enqueue(new SimpleCallBack<TaskEntity.TaskItemEntity>() {
-            @Override
-            public void onSuccess(Call<ResEntity<TaskEntity.TaskItemEntity>> call, Response<ResEntity<TaskEntity.TaskItemEntity>> response) {
-                dismissLoadingDialog();
-                if (response.body().result != null) {
-                    if (taskReminderEntity != null) {
-                        addReminders(response.body().result, taskReminderEntity);
+        callEnqueue(
+                getApi().taskUpdateNew(RequestUtils.createJsonBody(getTaskProjectOrGroupJson(itemEntity, projectEntity, taskGroupEntity))),
+                new SimpleCallBack<TaskEntity.TaskItemEntity>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<TaskEntity.TaskItemEntity>> call, Response<ResEntity<TaskEntity.TaskItemEntity>> response) {
+                        dismissLoadingDialog();
+                        if (response.body().result != null) {
+                            if (taskReminderEntity != null) {
+                                addReminders(response.body().result, taskReminderEntity);
+                            }
+                            taskUpdateBack(type, response.body().result);
+                        }
+
                     }
-                    taskUpdateBack(type, response.body().result);
-                }
 
-            }
-
-            @Override
-            public void onFailure(Call<ResEntity<TaskEntity.TaskItemEntity>> call, Throwable t) {
-                super.onFailure(call, t);
-                dismissLoadingDialog();
-            }
-        });
+                    @Override
+                    public void onFailure(Call<ResEntity<TaskEntity.TaskItemEntity>> call, Throwable t) {
+                        super.onFailure(call, t);
+                        dismissLoadingDialog();
+                    }
+                });
     }
 
 
@@ -242,17 +246,19 @@ public abstract class BaseTaskFragment extends BaseFragment implements OnFragmen
         if (taskItemEntity == null) return;
         String json = getReminderJson(taskReminderEntity);
         if (TextUtils.isEmpty(json)) return;
-        getApi().taskReminderAdd(taskItemEntity.id, RequestUtils.createJsonBody(json)).enqueue(new SimpleCallBack<TaskReminderEntity>() {
-            @Override
-            public void onSuccess(Call<ResEntity<TaskReminderEntity>> call, Response<ResEntity<TaskReminderEntity>> response) {
+        callEnqueue(
+                getApi().taskReminderAdd(taskItemEntity.id, RequestUtils.createJsonBody(json)),
+                new SimpleCallBack<TaskReminderEntity>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<TaskReminderEntity>> call, Response<ResEntity<TaskReminderEntity>> response) {
 
-            }
+                    }
 
-            @Override
-            public void onFailure(Call<ResEntity<TaskReminderEntity>> call, Throwable t) {
-                super.onFailure(call, t);
-            }
-        });
+                    @Override
+                    public void onFailure(Call<ResEntity<TaskReminderEntity>> call, Throwable t) {
+                        super.onFailure(call, t);
+                    }
+                });
     }
 
 
@@ -264,23 +270,30 @@ public abstract class BaseTaskFragment extends BaseFragment implements OnFragmen
     protected void deleteTask(final TaskEntity.TaskItemEntity itemEntity) {
         showLoadingDialog(null);
         MobclickAgent.onEvent(context, UMMobClickAgent.delete_task_click_id);
-        getApi().taskDelete(itemEntity.id).enqueue(new SimpleCallBack<JsonElement>() {
-            @Override
-            public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
-                dismissLoadingDialog();
-                taskDeleteBack(itemEntity);
-            }
+        callEnqueue(
+                getApi().taskDelete(itemEntity.id),
+                new SimpleCallBack<JsonElement>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
+                        dismissLoadingDialog();
+                        taskDeleteBack(itemEntity);
+                    }
 
-            @Override
-            public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
-                super.onFailure(call, t);
-                dismissLoadingDialog();
-            }
-        });
+                    @Override
+                    public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
+                        super.onFailure(call, t);
+                        dismissLoadingDialog();
+                    }
+                }
+        );
     }
+
 
     /**
      * 展示选择负责人对话框
+     *
+     * @param projectId     项目的id
+     * @param attendeeUsers 项目下的负责人
      */
     protected void showTaskAllotSelectDialogFragment(String projectId, List<TaskEntity.TaskItemEntity.AttendeeUserEntity> attendeeUsers) {
         String tag = TaskAllotSelectDialogFragment.class.getSimpleName();
@@ -311,6 +324,9 @@ public abstract class BaseTaskFragment extends BaseFragment implements OnFragmen
 
     /**
      * 展示选择到期时间对话框
+     *
+     * @param dueTime 到期时间
+     * @param taskId  任务id
      */
     protected void showDateSelectDialogFragment(long dueTime, String taskId) {
         String tag = DateSelectDialogFragment.class.getSimpleName();
@@ -379,6 +395,9 @@ public abstract class BaseTaskFragment extends BaseFragment implements OnFragmen
         mCenterMenuDialog.setOnItemClickListener(new CustOnItemClickListener(mCenterMenuDialog, taskItemEntity));
     }
 
+    /**
+     * 长按弹出窗的每个item的点击处理类
+     */
     private class CustOnItemClickListener implements BaseRecyclerAdapter.OnItemClickListener {
         CenterMenuDialog centerMenuDialog;
         TaskEntity.TaskItemEntity taskItemEntity;
@@ -445,7 +464,7 @@ public abstract class BaseTaskFragment extends BaseFragment implements OnFragmen
     }
 
     /**
-     * 显示多人任务提醒/删除任务提醒
+     * 显示多人任务提醒/删除任务提醒的Dialog
      *
      * @param context
      * @param message
@@ -610,7 +629,7 @@ public abstract class BaseTaskFragment extends BaseFragment implements OnFragmen
     }
 
     /**
-     * 获取提醒json
+     * 获取提醒json（添加任务提醒的时候调用该方法）
      *
      * @param taskReminderEntity
      * @return

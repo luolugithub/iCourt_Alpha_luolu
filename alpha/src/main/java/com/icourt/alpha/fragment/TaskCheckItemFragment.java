@@ -57,21 +57,17 @@ public class TaskCheckItemFragment extends BaseFragment
         implements BaseRecyclerAdapter.OnItemClickListener,
         BaseRecyclerAdapter.OnItemChildClickListener,
         TaskCheckItemAdapter.OnLoseFocusListener {
+
     private static final String KEY_TASK_ID = "key_task_id";
     private static final String KEY_HAS_PERMISSION = "key_has_permission";
     private static final String KEY_VALID = "key_valid";
-    Unbinder unbinder;
+
     @BindView(R.id.recyclerview)
     RecyclerView recyclerview;
-
-    String taskId;
-    TaskCheckItemAdapter taskCheckItemAdapter;
     @BindView(R.id.check_item_edit)
     EditText checkItemEdit;
     @BindView(R.id.check_item_add)
     ImageView checkItemAdd;
-    OnUpdateTaskListener updateTaskListener;
-    boolean hasPermission, valid;
     @BindView(R.id.add_item_layout)
     LinearLayout addItemLayout;
     @BindView(R.id.empty_layout)
@@ -82,6 +78,12 @@ public class TaskCheckItemFragment extends BaseFragment
     NestedScrollView nestedScrollView;
     @BindView(R.id.empty_text)
     TextView emptyText;
+
+    Unbinder unbinder;
+    String taskId;
+    TaskCheckItemAdapter taskCheckItemAdapter;
+    OnUpdateTaskListener updateTaskListener;
+    boolean hasPermission, valid;
 
     public static TaskCheckItemFragment newInstance(@NonNull String taskId, boolean hasPermission, boolean valid) {
         TaskCheckItemFragment taskCheckItemFragment = new TaskCheckItemFragment();
@@ -126,11 +128,10 @@ public class TaskCheckItemFragment extends BaseFragment
         recyclerview.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerview.setAdapter(taskCheckItemAdapter = new TaskCheckItemAdapter());
         taskCheckItemAdapter.setValid(valid);
-//        recyclerview.addItemDecoration(ItemDecorationUtils.getCommFull05Divider(getContext(), true, R.color.alpha_divider_color));
         getData(false);
         if (hasPermission) {
             addItemLayout.setVisibility(valid ? View.VISIBLE : View.GONE);
-            emptyText.setText("暂无检查项");
+            emptyText.setText(R.string.task_no_check_item);
             taskCheckItemAdapter.setOnItemChildClickListener(this);
             taskCheckItemAdapter.setOnItemClickListener(this);
             if (valid)
@@ -142,13 +143,13 @@ public class TaskCheckItemFragment extends BaseFragment
                         if (!TextUtils.isEmpty(checkItemEdit.getText().toString()))
                             addCheckItem();
                         else
-                            showTopSnackBar("请输入检查项名称");
+                            showTopSnackBar(R.string.task_please_input_check_name);
                     }
                     return true;
                 }
             });
         } else {
-            emptyText.setText("暂无权限查看");
+            emptyText.setText(R.string.task_no_permission_see_check);
             emptyLayout.setVisibility(View.VISIBLE);
             addItemLayout.setVisibility(View.GONE);
         }
@@ -168,36 +169,42 @@ public class TaskCheckItemFragment extends BaseFragment
 
     @Override
     protected void getData(boolean isRefresh) {
-        getApi().taskCheckItemQuery(taskId).enqueue(new SimpleCallBack<TaskCheckItemEntity>() {
-            @Override
-            public void onSuccess(Call<ResEntity<TaskCheckItemEntity>> call, Response<ResEntity<TaskCheckItemEntity>> response) {
-                if (getActivity() != null && !getActivity().isFinishing())
-                    dismissLoadingDialog();
-                if (listLayout != null) {
-                    if (response.body().result.items != null) {
-                        taskCheckItemAdapter.bindData(false, response.body().result.items);
-                        if (!hasPermission) {
-                            listLayout.setVisibility(View.GONE);
-                            emptyLayout.setVisibility(View.VISIBLE);
-                        } else {
-                            listLayout.setVisibility(View.VISIBLE);
-                            emptyLayout.setVisibility(View.GONE);
+        callEnqueue(
+                getApi().taskCheckItemQuery(taskId),
+                new SimpleCallBack<TaskCheckItemEntity>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<TaskCheckItemEntity>> call, Response<ResEntity<TaskCheckItemEntity>> response) {
+                        if (getActivity() != null && !getActivity().isFinishing())
+                            dismissLoadingDialog();
+                        if (listLayout != null) {
+                            if (response.body().result.items != null) {
+                                taskCheckItemAdapter.bindData(false, response.body().result.items);
+                                if (!hasPermission) {
+                                    listLayout.setVisibility(View.GONE);
+                                    emptyLayout.setVisibility(View.VISIBLE);
+                                } else {
+                                    listLayout.setVisibility(View.VISIBLE);
+                                    emptyLayout.setVisibility(View.GONE);
+                                }
+                            } else {
+                                listLayout.setVisibility(View.GONE);
+                                emptyLayout.setVisibility(View.VISIBLE);
+                            }
                         }
-                    } else {
-                        listLayout.setVisibility(View.GONE);
-                        emptyLayout.setVisibility(View.VISIBLE);
+                    }
+
+                    @Override
+                    public void onFailure(Call<ResEntity<TaskCheckItemEntity>> call, Throwable t) {
+                        super.onFailure(call, t);
+                        dismissLoadingDialog();
                     }
                 }
-            }
-
-            @Override
-            public void onFailure(Call<ResEntity<TaskCheckItemEntity>> call, Throwable t) {
-                super.onFailure(call, t);
-                dismissLoadingDialog();
-            }
-        });
+        );
     }
 
+    /**
+     * 修改检查项的数量
+     */
     private void updateCheckItemCount() {
         if (getParentFragment() instanceof OnFragmentCallBackListener) {
             updateTaskListener = (OnUpdateTaskListener) getParentFragment();
@@ -240,28 +247,31 @@ public class TaskCheckItemFragment extends BaseFragment
      */
     private void addCheckItem() {
         final TaskCheckItemEntity.ItemEntity itemEntity = getCheckItem();
-        getApi().taskCheckItemCreate(RequestUtils.createJsonBody(new Gson().toJson(itemEntity))).enqueue(new SimpleCallBack<JsonElement>() {
-            @Override
-            public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
-                if (response.body() != null) {
-                    if (response.body().result != null) {
-                        String id = response.body().result.getAsString();
-                        itemEntity.id = id;
-                        taskCheckItemAdapter.addItem(itemEntity);
-                        if (checkItemEdit != null)
-                            checkItemEdit.setText("");
-                        EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION));
-                        updateCheckItemCount();
+        callEnqueue(
+                getApi().taskCheckItemCreate(RequestUtils.createJsonBody(new Gson().toJson(itemEntity))),
+                new SimpleCallBack<JsonElement>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
+                        if (response.body() != null) {
+                            if (response.body().result != null) {
+                                String id = response.body().result.getAsString();
+                                itemEntity.id = id;
+                                taskCheckItemAdapter.addItem(itemEntity);
+                                if (checkItemEdit != null)
+                                    checkItemEdit.setText("");
+                                EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION));
+                                updateCheckItemCount();
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
+                        super.onFailure(call, t);
+                        showTopSnackBar(R.string.task_add_check_fail);
                     }
                 }
-            }
-
-            @Override
-            public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
-                super.onFailure(call, t);
-                showTopSnackBar("添加检查项失败");
-            }
-        });
+        );
     }
 
     /**
@@ -337,22 +347,25 @@ public class TaskCheckItemFragment extends BaseFragment
      * @param itemEntity
      */
     private void finisCheckItem(final TaskCheckItemEntity.ItemEntity itemEntity, final int position) {
-        getApi().taskCheckItemUpdate(RequestUtils.createJsonBody(new Gson().toJson(itemEntity).toString())).enqueue(new SimpleCallBack<JsonElement>() {
-            @Override
-            public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
-                dismissLoadingDialog();
-                EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION));
-                taskCheckItemAdapter.setSelected(position, itemEntity.state);
-                taskCheckItemAdapter.updateItem(itemEntity);
-                updateCheckItemCount();
-            }
+        callEnqueue(
+                getApi().taskCheckItemUpdate(RequestUtils.createJsonBody(new Gson().toJson(itemEntity).toString())),
+                new SimpleCallBack<JsonElement>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
+                        dismissLoadingDialog();
+                        EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION));
+                        taskCheckItemAdapter.setSelected(position, itemEntity.state);
+                        taskCheckItemAdapter.updateItem(itemEntity);
+                        updateCheckItemCount();
+                    }
 
-            @Override
-            public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
-                super.onFailure(call, t);
-                dismissLoadingDialog();
-            }
-        });
+                    @Override
+                    public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
+                        super.onFailure(call, t);
+                        dismissLoadingDialog();
+                    }
+                }
+        );
     }
 
     /**
@@ -366,22 +379,25 @@ public class TaskCheckItemFragment extends BaseFragment
         jsonObject.addProperty("id", itemEntity.id);
         jsonObject.addProperty("name", name);
 
-        getApi().taskCheckItemUpdate(RequestUtils.createJsonBody(jsonObject.toString())).enqueue(new SimpleCallBack<JsonElement>() {
-            @Override
-            public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
-                dismissLoadingDialog();
-                EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION));
-                itemEntity.name = name;
-                taskCheckItemAdapter.updateItem(itemEntity);
-            }
+        callEnqueue(
+                getApi().taskCheckItemUpdate(RequestUtils.createJsonBody(jsonObject.toString())),
+                new SimpleCallBack<JsonElement>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
+                        dismissLoadingDialog();
+                        EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION));
+                        itemEntity.name = name;
+                        taskCheckItemAdapter.updateItem(itemEntity);
+                    }
 
-            @Override
-            public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
-                super.onFailure(call, t);
-                dismissLoadingDialog();
-                taskCheckItemAdapter.updateItem(itemEntity);
-            }
-        });
+                    @Override
+                    public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
+                        super.onFailure(call, t);
+                        dismissLoadingDialog();
+                        taskCheckItemAdapter.updateItem(itemEntity);
+                    }
+                }
+        );
     }
 
     /**
@@ -391,22 +407,24 @@ public class TaskCheckItemFragment extends BaseFragment
      */
     private void deleteCheckItem(final TaskCheckItemEntity.ItemEntity itemEntity, final int position) {
         if (itemEntity == null) return;
-        getApi().taskCheckItemDelete(itemEntity.id).enqueue(new SimpleCallBack<JsonElement>() {
-            @Override
-            public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
-                dismissLoadingDialog();
-                EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION));
-                taskCheckItemAdapter.removeItem(itemEntity);
-                taskCheckItemAdapter.getSelectedArray().delete(position);
-                updateCheckItemCount();
-            }
+        callEnqueue(
+                getApi().taskCheckItemDelete(itemEntity.id),
+                new SimpleCallBack<JsonElement>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
+                        dismissLoadingDialog();
+                        EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION));
+                        taskCheckItemAdapter.removeItem(itemEntity);
+                        taskCheckItemAdapter.getSelectedArray().delete(position);
+                        updateCheckItemCount();
+                    }
 
-            @Override
-            public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
-                super.onFailure(call, t);
-                dismissLoadingDialog();
-            }
-        });
+                    @Override
+                    public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
+                        super.onFailure(call, t);
+                        dismissLoadingDialog();
+                    }
+                }
+        );
     }
-
 }

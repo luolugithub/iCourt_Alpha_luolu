@@ -88,12 +88,11 @@ public class TaskOtherListFragment extends BaseTaskFragment implements BaseQuick
 
     }
 
-
-    public static final int TASK_TODAY_TYPE = 1;//今天任务（暂时保留字段）
-    public static final int TASK_BEABOUT_TYPE = 2;//即将到期任务（暂时保留字段）
-    public static final int TASK_FUTURE_TYPE = 3;//未来任务（暂时保留字段）
-    public static final int TASK_NODUE_TYPE = 4;//未指定到期任务（暂时保留字段）
-    public static final int TASK_DATED_TYPE = 5;//已过期任务（暂时保留字段）
+    public static final int TASK_TYPE_TODAY = 1;//今天任务（暂时保留字段）
+    public static final int TASK_TYPE_BEABOUT = 2;//即将到期任务（暂时保留字段）
+    public static final int TASK_TYPE_FUTURE = 3;//未来任务（暂时保留字段）
+    public static final int TASK_TYPE_NODUE = 4;//未指定到期任务（暂时保留字段）
+    public static final int TASK_TYPE_DATED = 5;//已过期任务（暂时保留字段）
 
     private boolean isFirstTimeIntoPage = true;//用来判断是不是第一次进入该界面，如果是，滚动到一条任务，隐藏搜索栏。
 
@@ -182,7 +181,16 @@ public class TaskOtherListFragment extends BaseTaskFragment implements BaseQuick
                 getData(false);
             }
         });
-        refreshLayout.startRefresh();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (isFirstTimeIntoPage) {
+            refreshLayout.startRefresh();
+        } else {
+            getData(true);
+        }
     }
 
     @Override
@@ -249,24 +257,27 @@ public class TaskOtherListFragment extends BaseTaskFragment implements BaseQuick
         }
         pageIndex = -1;
         pageSize = 10000;
-        getApi().taskListItemQuery(getAssignTos(), stateType, 0, orderBy, pageIndex, pageSize, 0).enqueue(new SimpleCallBack<TaskEntity>() {
-            @Override
-            public void onSuccess(Call<ResEntity<TaskEntity>> call, Response<ResEntity<TaskEntity>> response) {
-                if (response.body().result != null) {
-                    getTaskGroupData(response.body().result);
-                    if (isRefresh)
-                        enableEmptyView(response.body().result.items);
-                    stopRefresh();
-                }
-            }
+        callEnqueue(
+                getApi().taskListItemQuery(getAssignTos(), stateType, 0, orderBy, pageIndex, pageSize, 0),
+                new SimpleCallBack<TaskEntity>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<TaskEntity>> call, Response<ResEntity<TaskEntity>> response) {
+                        if (response.body().result != null) {
+                            getTaskGroupData(response.body().result);
+                            if (isRefresh)
+                                enableEmptyView(response.body().result.items);
+                            stopRefresh();
+                        }
+                    }
 
-            @Override
-            public void onFailure(Call<ResEntity<TaskEntity>> call, Throwable t) {
-                super.onFailure(call, t);
-                stopRefresh();
-                enableEmptyView(null);
-            }
-        });
+                    @Override
+                    public void onFailure(Call<ResEntity<TaskEntity>> call, Throwable t) {
+                        super.onFailure(call, t);
+                        stopRefresh();
+                        enableEmptyView(null);
+                    }
+                }
+        );
     }
 
     /**
@@ -503,64 +514,12 @@ public class TaskOtherListFragment extends BaseTaskFragment implements BaseQuick
     }
 
     /**
-     * 删除子item
-     *
-     * @param itemEntity
-     */
-    private void removeChildItem(TaskEntity.TaskItemEntity itemEntity) {
-        if (itemEntity == null) return;
-        taskAdapter.removeItem(itemEntity);
-    }
-
-    /**
      * 更新子item
      *
      * @param itemEntity
      */
     private void updateChildItem(TaskEntity.TaskItemEntity itemEntity) {
         taskAdapter.updateItem(itemEntity);
-    }
-
-    /**
-     * 根据任务id，获取任务在Adapter中的位置
-     *
-     * @param taskId
-     * @return
-     */
-    private int getItemPosition(String taskId) {
-        for (int i = 0; i < taskAdapter.getData().size(); i++) {
-            TaskEntity.TaskItemEntity taskItemEntity = taskAdapter.getData().get(i);
-            if (taskItemEntity.type == 0 && TextUtils.equals(taskItemEntity.id, taskId)) {
-                return i;
-            }
-        }
-        return -1;
-    }
-
-    /**
-     * 更新item
-     *
-     * @param taskId
-     */
-    private void updateUnFinishChildTimeing(String taskId, boolean isTiming) {
-        int itemPos = getItemPosition(taskId);
-        if (itemPos >= 0) {
-            TaskEntity.TaskItemEntity entity = taskAdapter.getItem(itemPos);
-            if (entity != null) {
-                if (lastEntity != null)
-                    if (!TextUtils.equals(entity.id, lastEntity.id)) {
-                        lastEntity.isTiming = false;
-                        taskAdapter.notifyDataSetChanged();
-                    }
-                if (entity.isTiming != isTiming) {
-                    entity.isTiming = isTiming;
-                    taskAdapter.updateItem(entity);
-                    lastEntity = entity;
-                }
-            }
-        } else {
-            taskAdapter.notifyDataSetChanged();
-        }
     }
 
     @Override

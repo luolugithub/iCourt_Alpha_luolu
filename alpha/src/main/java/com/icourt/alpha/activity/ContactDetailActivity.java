@@ -199,8 +199,8 @@ public class ContactDetailActivity extends BaseActivity {
     protected void getData(boolean isRefresh) {
         super.getData(isRefresh);
         showLoadingDialog(null);
-        getChatApi().sessionQueryAllsetTopIds()
-                .enqueue(new SimpleCallBack<List<String>>() {
+        callEnqueue(getChatApi().sessionQueryAllsetTopIds(),
+                new SimpleCallBack<List<String>>() {
                     @Override
                     public void onSuccess(Call<ResEntity<List<String>>> call, Response<ResEntity<List<String>>> response) {
                         dismissLoadingDialog();
@@ -246,8 +246,8 @@ public class ContactDetailActivity extends BaseActivity {
      */
     private void setTop() {
         if (groupContactBean == null) return;
-        getChatApi().sessionSetTop(Const.CHAT_TYPE_P2P, groupContactBean.accid)
-                .enqueue(new SimpleCallBack<Boolean>() {
+        callEnqueue(getChatApi().sessionSetTop(Const.CHAT_TYPE_P2P, groupContactBean.accid),
+                new SimpleCallBack<Boolean>() {
                     @Override
                     public void onSuccess(Call<ResEntity<Boolean>> call, Response<ResEntity<Boolean>> response) {
                         if (response.body().result != null && response.body().result.booleanValue()) {
@@ -277,8 +277,8 @@ public class ContactDetailActivity extends BaseActivity {
      */
     private void setTopCancel() {
         if (groupContactBean == null) return;
-        getChatApi().sessionSetTopCancel(Const.CHAT_TYPE_P2P, groupContactBean.accid)
-                .enqueue(new SimpleCallBack<Boolean>() {
+        callEnqueue(getChatApi().sessionSetTopCancel(Const.CHAT_TYPE_P2P, groupContactBean.accid),
+                new SimpleCallBack<Boolean>() {
                     @Override
                     public void onSuccess(Call<ResEntity<Boolean>> call, Response<ResEntity<Boolean>> response) {
                         if (response.body().result != null && response.body().result.booleanValue()) {

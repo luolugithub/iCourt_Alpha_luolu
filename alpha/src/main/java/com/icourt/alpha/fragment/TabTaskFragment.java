@@ -123,7 +123,7 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
             switch (i) {
                 case 0:
                     titleTv.setTextColor(0xFF313131);
-                    titleTv.setPadding(DensityUtil.dip2px(getContext(),8), 0, 0, 0);
+                    titleTv.setPadding(DensityUtil.dip2px(getContext(), 8), 0, 0, 0);
                     titleTv.setText(getString(R.string.task_unfinished));
                     downIv.setVisibility(View.VISIBLE);
                     tab.getCustomView().setOnClickListener(new OnTabClickListener());
@@ -293,20 +293,22 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
      * 获取各个状态的任务数量（未完成／已完成／已删除）
      */
     private void getTasksStateCount() {
-        getApi().taskStateCountQuery().enqueue(new SimpleCallBack<TaskCountEntity>() {
-            @Override
-            public void onSuccess(Call<ResEntity<TaskCountEntity>> call, Response<ResEntity<TaskCountEntity>> response) {
-                TaskCountEntity taskCountEntity = response.body().result;
-                if (taskCountEntity != null) {
-                    setTaskPopCount(taskCountEntity.doingCount, taskCountEntity.doneCount, taskCountEntity.deletedCount);
-                    if (topMiddlePopup != null && topMiddlePopup.isShowing()) {
-                        if (topMiddlePopup.getAdapter() != null) {
-                            topMiddlePopup.getAdapter().bindData(true, dropEntities);
+        callEnqueue(
+                getApi().taskStateCountQuery(),
+                new SimpleCallBack<TaskCountEntity>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<TaskCountEntity>> call, Response<ResEntity<TaskCountEntity>> response) {
+                        TaskCountEntity taskCountEntity = response.body().result;
+                        if (taskCountEntity != null) {
+                            setTaskPopCount(taskCountEntity.doingCount, taskCountEntity.doneCount, taskCountEntity.deletedCount);
+                            if (topMiddlePopup != null && topMiddlePopup.isShowing()) {
+                                if (topMiddlePopup.getAdapter() != null) {
+                                    topMiddlePopup.getAdapter().bindData(true, dropEntities);
+                                }
+                            }
                         }
                     }
-                }
-            }
-        });
+                });
     }
 
     /**
@@ -465,7 +467,9 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
      */
     private void clearAllDeletedTask() {
         if (selectPosition == 2) {//已删除的任务列表
-            if (alltaskFragment.currFragment instanceof TaskListFragment) {
+            if (alltaskFragment != null
+                    && alltaskFragment.currFragment != null
+                    && alltaskFragment.currFragment instanceof TaskListFragment) {
                 TaskListFragment fragment = (TaskListFragment) alltaskFragment.currFragment;
                 fragment.clearAllDeletedTask();
             }
@@ -478,11 +482,13 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
      * @return
      */
     public boolean isShowingNextTaskView() {
-        Fragment currFragment = alltaskFragment.currFragment;
-        if (currFragment instanceof TaskListFragment) {
-            TaskListFragment taskListFragment = (TaskListFragment) currFragment;
-            int visibility = taskListFragment.nextTaskLayout.getVisibility();
-            return visibility == View.VISIBLE;
+        if (alltaskFragment != null) {
+            Fragment currFragment = alltaskFragment.currFragment;
+            if (currFragment != null && currFragment instanceof TaskListFragment) {
+                TaskListFragment taskListFragment = (TaskListFragment) currFragment;
+                int visibility = taskListFragment.nextTaskLayout.getVisibility();
+                return visibility == View.VISIBLE;
+            }
         }
         return false;
     }

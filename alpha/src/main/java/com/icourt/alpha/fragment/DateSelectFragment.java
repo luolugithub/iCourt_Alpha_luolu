@@ -434,7 +434,9 @@ public class DateSelectFragment extends BaseFragment {
      */
     private void getTaskReminder(final TaskEntity.TaskItemEntity itemEntity) {
         if (itemEntity == null) return;
-        getApi().taskReminderQuery(itemEntity.id).enqueue(new SimpleCallBack<TaskReminderEntity>() {
+        callEnqueue(
+                getApi().taskReminderQuery(itemEntity.id),
+                new SimpleCallBack<TaskReminderEntity>() {
             @Override
             public void onSuccess(Call<ResEntity<TaskReminderEntity>> call, Response<ResEntity<TaskReminderEntity>> response) {
                 dismissLoadingDialog();
@@ -465,7 +467,9 @@ public class DateSelectFragment extends BaseFragment {
     private void getTaskDetail(final String taskId) {
         if (TextUtils.isEmpty(taskId)) return;
         showLoadingDialog(null);
-        getApi().taskQueryDetailWithRight(taskId).enqueue(new SimpleCallBack<TaskEntity.TaskItemEntity>() {
+        callEnqueue(
+                getApi().taskQueryDetailWithRight(taskId),
+                new SimpleCallBack<TaskEntity.TaskItemEntity>() {
             @Override
             public void onSuccess(Call<ResEntity<TaskEntity.TaskItemEntity>> call, Response<ResEntity<TaskEntity.TaskItemEntity>> response) {
                 TaskEntity.TaskItemEntity itemEntity = response.body().result;

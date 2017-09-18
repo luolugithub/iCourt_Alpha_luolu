@@ -178,19 +178,19 @@ public class ProjectDetailFragment extends BaseFragment implements BaseRecyclerA
             }
 
             List<ProjectBasicItemEntity> basicItemEntities = new ArrayList<>();
-            setKeyValueData(basicItemEntities, "项目类型", projectDetailBean.matterTypeName, Const.PROJECT_TYPE_TYPE);
-            setKeyValueData(basicItemEntities, "项目名称", projectDetailBean.name, Const.PROJECT_NAME_TYPE);
-            setKeyValueData(basicItemEntities, "项目编号", projectDetailBean.matterNo, Const.PROJECT_NUMBER_TYPE);
+            setKeyValueData(basicItemEntities, getString(R.string.project_type), projectDetailBean.matterTypeName, Const.PROJECT_TYPE_TYPE);
+            setKeyValueData(basicItemEntities, getString(R.string.project_name), projectDetailBean.name, Const.PROJECT_NAME_TYPE);
+            setKeyValueData(basicItemEntities, getString(R.string.project_number), projectDetailBean.matterNo, Const.PROJECT_NUMBER_TYPE);
             setClientData(basicItemEntities);//客户
             if (projectDetailBean.matterType != Const.PROJECT_TRANSACTION_TYPE) { //所内事务不显示当事人item
                 setLitigantData(basicItemEntities);//当事人
             }
             setGroupsData(basicItemEntities);//负责部门
             setAttorneysData(basicItemEntities);//案源律师
-            setKeyValueData(basicItemEntities, "项目备注", projectDetailBean.remark, Const.PROJECT_REMARK_TYPE);
+            setKeyValueData(basicItemEntities, getString(R.string.project_remark), projectDetailBean.remark, Const.PROJECT_REMARK_TYPE);
 
             if (projectDetailBean.beginDate > 0 && projectDetailBean.endDate > 0) {
-                setKeyValueData(basicItemEntities, "项目时间", String.format("%s - %s",
+                setKeyValueData(basicItemEntities, getString(R.string.project_date), String.format("%s - %s",
                         DateUtils.getTimeDateFormatYearDot(projectDetailBean.beginDate),
                         DateUtils.getTimeDateFormatYearDot(projectDetailBean.endDate)), Const.PROJECT_TIME_TYPE);
             }
@@ -202,7 +202,7 @@ public class ProjectDetailFragment extends BaseFragment implements BaseRecyclerA
             if (projectDetailBean.members != null) {//项目成员
                 if (projectDetailBean.members.size() > 0) {
                     projectMemberLayout.setVisibility(View.VISIBLE);
-                    projectMemberCount.setText(String.format("项目成员（%s)", projectDetailBean.members.size()));
+                    projectMemberCount.setText(String.format(getString(R.string.project_members_format), projectDetailBean.members.size()));
                     projectMemberAdapter.bindData(true, projectDetailBean.members);
                 }
             } else {
@@ -243,9 +243,9 @@ public class ProjectDetailFragment extends BaseFragment implements BaseRecyclerA
         if (projectDetailBean.clients == null || projectDetailBean.clients.size() <= 0) return;
         ProjectBasicItemEntity itemEntity = new ProjectBasicItemEntity();
         if (projectDetailBean.clients.size() > 1) {
-            itemEntity.key = String.format("客户 (%s)", projectDetailBean.clients.size());
+            itemEntity.key = String.format(getString(R.string.project_clients_format), projectDetailBean.clients.size());
         } else {
-            itemEntity.key = "客户";
+            itemEntity.key = getString(R.string.project_clients);
         }
         StringBuffer buffer = new StringBuffer();
         for (ProjectDetailEntity.ClientsBean client : projectDetailBean.clients) {
@@ -268,9 +268,9 @@ public class ProjectDetailFragment extends BaseFragment implements BaseRecyclerA
         if (projectDetailBean.litigants == null || projectDetailBean.litigants.size() <= 0) return;
         ProjectBasicItemEntity itemEntity = new ProjectBasicItemEntity();
         if (projectDetailBean.litigants.size() > 1) {
-            itemEntity.key = String.format("当事人 (%s)", projectDetailBean.litigants.size());
+            itemEntity.key = String.format(getString(R.string.project_litigants_format), projectDetailBean.litigants.size());
         } else {
-            itemEntity.key = "当事人";
+            itemEntity.key = getString(R.string.project_litigants);
         }
         StringBuffer buffer = new StringBuffer();
         for (ProjectDetailEntity.LitigantsBean litigant : projectDetailBean.litigants) {
@@ -293,9 +293,9 @@ public class ProjectDetailFragment extends BaseFragment implements BaseRecyclerA
         if (projectDetailBean.groups == null || projectDetailBean.groups.size() <= 0) return;
         ProjectBasicItemEntity itemEntity = new ProjectBasicItemEntity();
         if (projectDetailBean.groups.size() > 1) {
-            itemEntity.key = String.format("负责部门 (%s)", projectDetailBean.groups.size());
+            itemEntity.key = String.format(getString(R.string.project_groups_format), projectDetailBean.groups.size());
         } else {
-            itemEntity.key = "负责部门";
+            itemEntity.key = getString(R.string.project_groups);
         }
         StringBuffer buffer = new StringBuffer();
         for (ProjectDetailEntity.GroupsBean group : projectDetailBean.groups) {
@@ -319,9 +319,9 @@ public class ProjectDetailFragment extends BaseFragment implements BaseRecyclerA
         if (projectDetailBean.attorneys == null || projectDetailBean.attorneys.size() <= 0) return;
         ProjectBasicItemEntity itemEntity = new ProjectBasicItemEntity();
         if (projectDetailBean.attorneys.size() > 1) {
-            itemEntity.key = String.format("案源律师 (%s)", projectDetailBean.attorneys.size());
+            itemEntity.key = String.format(getString(R.string.project_attorneys_format), projectDetailBean.attorneys.size());
         } else {
-            itemEntity.key = "案源律师";
+            itemEntity.key = getString(R.string.project_attorneys);
         }
         StringBuffer buffer = new StringBuffer();
         for (ProjectDetailEntity.AttorneysBean attorneysBean : projectDetailBean.attorneys) {
@@ -338,7 +338,9 @@ public class ProjectDetailFragment extends BaseFragment implements BaseRecyclerA
 
     @Override
     protected void getData(boolean isRefresh) {
-        getApi().projectDetail(projectId).enqueue(new SimpleCallBack<List<ProjectDetailEntity>>() {
+        callEnqueue(
+                getApi().projectDetail(projectId),
+                new SimpleCallBack<List<ProjectDetailEntity>>() {
             @Override
             public void onSuccess(Call<ResEntity<List<ProjectDetailEntity>>> call, Response<ResEntity<List<ProjectDetailEntity>>> response) {
                 stopRefresh();
@@ -357,7 +359,8 @@ public class ProjectDetailFragment extends BaseFragment implements BaseRecyclerA
      * @param projectId
      */
     private void getRangeData(String projectId) {
-        getApi().projectProcessesQuery(projectId).enqueue(new SimpleCallBack<List<ProjectProcessesEntity>>() {
+        callEnqueue(getApi().projectProcessesQuery(projectId),
+                new SimpleCallBack<List<ProjectProcessesEntity>>() {
             public void onSuccess(Call<ResEntity<List<ProjectProcessesEntity>>> call, Response<ResEntity<List<ProjectProcessesEntity>>> response) {
                 if (procedureLayout != null) {
                     if (response.body().result != null && response.body().result.size() > 0) {
@@ -415,7 +418,7 @@ public class ProjectDetailFragment extends BaseFragment implements BaseRecyclerA
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.project_add_routine:
-                showTopSnackBar("添加程序信息");
+                showTopSnackBar(R.string.project_add_range_content);
                 break;
             case R.id.project_member_layout:
             case R.id.project_member_childlayout:

@@ -169,57 +169,67 @@ public class ProjectEndTaskFragment extends BaseTaskFragment implements BaseQuic
         if (isRefresh) {
             pageIndex = 1;
         }
-        getApi().taskListQueryByMatterId(1, "updateTime", projectId, 0, pageIndex, ActionConstants.DEFAULT_PAGE_SIZE).enqueue(new SimpleCallBack<TaskEntity>() {
-            @Override
-            public void onSuccess(Call<ResEntity<TaskEntity>> call, Response<ResEntity<TaskEntity>> response) {
-                stopRefresh();
-                if (response.body().result != null && recyclerView != null) {
-                    taskAdapter.setNewData(response.body().result.items);
-                    if (isRefresh) {//如果是下拉刷新情况，才判断要不要显示空页面
-                        enableEmptyView(taskAdapter.getData());
+        callEnqueue(
+                getApi().taskListQueryByMatterId(
+                        1,
+                        "updateTime",
+                        projectId,
+                        0,
+                        pageIndex,
+                        ActionConstants.DEFAULT_PAGE_SIZE),
+                new SimpleCallBack<TaskEntity>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<TaskEntity>> call, Response<ResEntity<TaskEntity>> response) {
+                        stopRefresh();
+                        if (response.body().result != null && recyclerView != null) {
+                            taskAdapter.setNewData(response.body().result.items);
+                            if (isRefresh) {//如果是下拉刷新情况，才判断要不要显示空页面
+                                enableEmptyView(taskAdapter.getData());
+                            }
+                            //第一次进入 隐藏搜索框
+                            if (isFirstTimeIntoPage && taskAdapter.getData().size() > 0) {
+                                linearLayoutManager.scrollToPositionWithOffset(taskAdapter.getHeaderLayoutCount(), 0);
+                                isFirstTimeIntoPage = false;
+                            }
+                            pageIndex += 1;
+                            enableLoadMore(response.body().result.items);
+                        }
                     }
-                    //第一次进入 隐藏搜索框
-                    if (isFirstTimeIntoPage && taskAdapter.getData().size() > 0) {
-                        linearLayoutManager.scrollToPositionWithOffset(taskAdapter.getHeaderLayoutCount(), 0);
-                        isFirstTimeIntoPage = false;
-                    }
-                    pageIndex += 1;
-                    enableLoadMore(response.body().result.items);
-                }
-            }
 
-            @Override
-            public void onFailure(Call<ResEntity<TaskEntity>> call, Throwable t) {
-                super.onFailure(call, t);
-                stopRefresh();
-                if (isRefresh) {//如果是下拉刷新情况，才判断要不要显示空页面
-                    enableEmptyView(taskAdapter.getData());
-                }
-            }
-        });
+                    @Override
+                    public void onFailure(Call<ResEntity<TaskEntity>> call, Throwable t) {
+                        super.onFailure(call, t);
+                        stopRefresh();
+                        if (isRefresh) {//如果是下拉刷新情况，才判断要不要显示空页面
+                            enableEmptyView(taskAdapter.getData());
+                        }
+                    }
+                });
     }
 
     /**
      * 获取权限列表
      */
     private void checkAddTaskAndDocumentPms(String projectId) {
-        getApi().permissionQuery(getLoginUserId(), "MAT", projectId).enqueue(new SimpleCallBack<List<String>>() {
-            @Override
-            public void onSuccess(Call<ResEntity<List<String>>> call, Response<ResEntity<List<String>>> response) {
+        callEnqueue(
+                getApi().permissionQuery(getLoginUserId(), "MAT", projectId),
+                new SimpleCallBack<List<String>>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<List<String>>> call, Response<ResEntity<List<String>>> response) {
 
-                if (response.body().result != null) {
-                    if (response.body().result.contains("MAT:matter.task:edit")) {
-                        isEditTask = true;
+                        if (response.body().result != null) {
+                            if (response.body().result.contains("MAT:matter.task:edit")) {
+                                isEditTask = true;
+                            }
+                            if (response.body().result.contains("MAT:matter.task:delete")) {
+                                isDeleteTask = true;
+                            }
+                            if (response.body().result.contains("MAT:matter.timeLog:add")) {
+                                isAddTime = true;
+                            }
+                        }
                     }
-                    if (response.body().result.contains("MAT:matter.task:delete")) {
-                        isDeleteTask = true;
-                    }
-                    if (response.body().result.contains("MAT:matter.timeLog:add")) {
-                        isAddTime = true;
-                    }
-                }
-            }
-        });
+                });
     }
 
     /**
@@ -328,9 +338,6 @@ public class ProjectEndTaskFragment extends BaseTaskFragment implements BaseQuic
     @Override
     protected void taskUpdateBack(@ChangeType int actionType, @NonNull TaskEntity.TaskItemEntity itemEntity) {
         taskAdapter.updateItem(itemEntity);
-        if (actionType == CHANGE_STATUS) {
-            postTaskOperateEvent();
-        }
     }
 
     @Override
@@ -343,13 +350,6 @@ public class ProjectEndTaskFragment extends BaseTaskFragment implements BaseQuic
         } else {//开始计时的广播
             taskAdapter.notifyDataSetChanged();
         }
-    }
-
-    /**
-     * 发送任务被操作了的通知
-     */
-    private void postTaskOperateEvent() {
-        EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_PROJECT_END_OPERATE));
     }
 
     @Override

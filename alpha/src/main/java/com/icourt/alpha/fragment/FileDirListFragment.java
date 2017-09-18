@@ -141,7 +141,9 @@ public class FileDirListFragment extends BaseFragment implements BaseRecyclerAda
     @Override
     protected void getData(final boolean isRefresh) {
         super.getData(isRefresh);
-        getSFileApi().projectQueryFileBoxByDir(seaFileRepoId, rootName).enqueue(new SFileCallBack<List<FileBoxBean>>() {
+        callEnqueue(
+                getSFileApi().projectQueryFileBoxByDir(seaFileRepoId, rootName),
+                new SFileCallBack<List<FileBoxBean>>() {
             @Override
             public void onSuccess(Call<List<FileBoxBean>> call, Response<List<FileBoxBean>> response) {
                 stopRefresh();

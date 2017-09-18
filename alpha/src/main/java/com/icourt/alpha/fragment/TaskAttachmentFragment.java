@@ -218,7 +218,8 @@ public class TaskAttachmentFragment extends BaseFragment
     @Override
     protected void getData(boolean isRefresh) {
         super.getData(isRefresh);
-        callEnqueue(getApi().taskAttachMentListQuery(taskId),
+        callEnqueue(
+                getApi().taskAttachMentListQuery(taskId),
                 new SimpleCallBack<List<TaskAttachmentEntity>>() {
                     @Override
                     public void onSuccess(Call<ResEntity<List<TaskAttachmentEntity>>> call, Response<ResEntity<List<TaskAttachmentEntity>>> response) {
@@ -302,7 +303,7 @@ public class TaskAttachmentFragment extends BaseFragment
         if (fragment != null) {
             mFragTransaction.remove(fragment);
         }
-        SeaFileSelectDialogFragment.newInstance(taskId, projectId,projectName)
+        SeaFileSelectDialogFragment.newInstance(taskId, projectId, projectName)
                 .show(mFragTransaction, tag);
     }
 
@@ -436,7 +437,8 @@ public class TaskAttachmentFragment extends BaseFragment
         if (entity == null) return;
         if (entity.pathInfoVo == null) return;
         showLoadingDialog(R.string.str_deleting);
-        callEnqueue(getApi().taskDocumentDelete(taskId, entity.pathInfoVo.filePath),
+        callEnqueue(
+                getApi().taskDocumentDelete(taskId, entity.pathInfoVo.filePath),
                 new SimpleCallBack<JsonElement>() {
                     @Override
                     public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {

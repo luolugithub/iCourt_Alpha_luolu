@@ -180,16 +180,16 @@ public class FileVersionListFragment extends SeaFileBaseFragment implements Base
                                         0,
                                         response.body().commits);
                             }
+                            List<FileVersionEntity> dispFileVersionEntities = new ArrayList<FileVersionEntity>();
                             //图片不加载历史版本
                             if (!IMUtils.isPIC(fromRepoFilePath)) {
                                 //填充布局  最新版本不计入历史版本
-                                List<FileVersionEntity> dispFileVersionEntities = new ArrayList<FileVersionEntity>();
                                 if (response.body().commits.size() > 1) {
                                     dispFileVersionEntities.addAll(
                                             response.body().commits.subList(1, response.body().commits.size()));
                                 }
-                                fileVersionAdapter.bindData(isRefresh, dispFileVersionEntities);
                             }
+                            fileVersionAdapter.bindData(isRefresh, dispFileVersionEntities);
                         }
                         stopRefresh();
                     }
@@ -280,12 +280,12 @@ public class FileVersionListFragment extends SeaFileBaseFragment implements Base
     private void restoreFile(FileVersionEntity item) {
         if (item == null) return;
         showLoadingDialog(R.string.sfile_backspacing);
-        getSFileApi().fileRetroversion(
+        callEnqueue(getSFileApi().fileRetroversion(
                 getArguments().getString(KEY_SEA_FILE_FROM_REPO_ID),
                 getArguments().getString(KEY_SEA_FILE_FROM_FILE_PATH),
                 item.id,
-                "revert")
-                .enqueue(new SFileCallBack<JsonObject>() {
+                "revert"),
+                new SFileCallBack<JsonObject>() {
                     @Override
                     public void onSuccess(Call<JsonObject> call, Response<JsonObject> response) {
                         dismissLoadingDialog();

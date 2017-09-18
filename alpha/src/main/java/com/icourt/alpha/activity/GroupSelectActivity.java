@@ -131,33 +131,35 @@ public class GroupSelectActivity extends BaseActivity implements BaseRecyclerAda
     protected void getData(boolean isRefresh) {
         super.getData(isRefresh);
         if (getLoginUserInfo() == null) return;
-        getApi().officeGroupsQuery().enqueue(new SimpleCallBack<List<SelectGroupBean>>() {
-            @Override
-            public void onSuccess(Call<ResEntity<List<SelectGroupBean>>> call, Response<ResEntity<List<SelectGroupBean>>> response) {
-                stopRefresh();
-                if (response.body().result != null && response.body().result.size() <= 0) {
-                    response.body().result.addAll(groupBeanList);
-                }
-                selectGroupAdapter.bindData(true, response.body().result);
+        callEnqueue(
+                getApi().officeGroupsQuery(),
+                new SimpleCallBack<List<SelectGroupBean>>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<List<SelectGroupBean>>> call, Response<ResEntity<List<SelectGroupBean>>> response) {
+                        stopRefresh();
+                        if (response.body().result != null && response.body().result.size() <= 0) {
+                            response.body().result.addAll(groupBeanList);
+                        }
+                        selectGroupAdapter.bindData(true, response.body().result);
 
-                if (response.body().result != null && groupBeanList != null) {
-                    for (int i = 0; i < response.body().result.size(); i++) {
-                        for (int j = 0; j < groupBeanList.size(); j++) {
-                            if (TextUtils.equals(response.body().result.get(i).groupId, groupBeanList.get(j).groupId)) {
-                                selectGroupAdapter.setSelected(i, true);
-                                break;
+                        if (response.body().result != null && groupBeanList != null) {
+                            for (int i = 0; i < response.body().result.size(); i++) {
+                                for (int j = 0; j < groupBeanList.size(); j++) {
+                                    if (TextUtils.equals(response.body().result.get(i).groupId, groupBeanList.get(j).groupId)) {
+                                        selectGroupAdapter.setSelected(i, true);
+                                        break;
+                                    }
+                                }
                             }
                         }
                     }
-                }
-            }
 
-            @Override
-            public void onFailure(Call<ResEntity<List<SelectGroupBean>>> call, Throwable t) {
-                super.onFailure(call, t);
-                stopRefresh();
-            }
-        });
+                    @Override
+                    public void onFailure(Call<ResEntity<List<SelectGroupBean>>> call, Throwable t) {
+                        super.onFailure(call, t);
+                        stopRefresh();
+                    }
+                });
     }
 
     private void stopRefresh() {

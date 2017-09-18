@@ -229,10 +229,10 @@ public class FileSimpleListActivity extends FolderBaseActivity
     @Override
     protected void getData(boolean isRefresh) {
         super.getData(isRefresh);
-        getSFileApi().projectQueryFileBoxByDir2(
+        callEnqueue(getSFileApi().projectQueryFileBoxByDir2(
                 getSeaFileRepoId(),
-                getSeaFileDirPath())
-                .enqueue(new SFileCallBack<List<FolderDocumentEntity>>() {
+                getSeaFileDirPath()),
+                new SFileCallBack<List<FolderDocumentEntity>>() {
                     @Override
                     public void onSuccess(Call<List<FolderDocumentEntity>> call, Response<List<FolderDocumentEntity>> response) {
                         sortFile(wrapData(getSeaFileRepoId(),getSeaFileDirPath(),response.body()));
@@ -333,7 +333,7 @@ public class FileSimpleListActivity extends FolderBaseActivity
                     public void onSortTypeSelected(@FileSortComparator.FileSortType int sortType) {
                         if (fileSortType != sortType) {
                             fileSortType = sortType;
-                            showLoadingDialog(R.string.str_sorting);
+                            showLoadingDialog(R.string.str_executing);
                             sortFile(new ArrayList<FolderDocumentEntity>(folderAdapter.getData()));
                         }
                     }

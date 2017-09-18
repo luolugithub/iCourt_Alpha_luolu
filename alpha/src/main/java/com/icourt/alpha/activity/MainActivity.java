@@ -759,8 +759,9 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
     protected final void refreshToken() {
         final AlphaUserInfo loginUserInfo = getLoginUserInfo();
         if (loginUserInfo == null) return;
-        getApi().refreshToken(loginUserInfo.getRefreshToken())
-                .enqueue(new SimpleCallBack<AlphaUserInfo>() {
+        callEnqueue(
+                getApi().refreshToken(loginUserInfo.getRefreshToken()),
+                new SimpleCallBack<AlphaUserInfo>() {
                     @Override
                     public void onSuccess(Call<ResEntity<AlphaUserInfo>> call, Response<ResEntity<AlphaUserInfo>> response) {
                         if (response.body().result != null) {
@@ -1050,8 +1051,9 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
      */
     private void getPermission() {
         //联系人查看的权限
-        getApi().permissionQuery(getLoginUserId(), "CON")
-                .enqueue(new SimpleCallBack<Boolean>() {
+        callEnqueue(
+                getApi().permissionQuery(getLoginUserId(), "CON"),
+                new SimpleCallBack<Boolean>() {
                     @Override
                     public void onSuccess(Call<ResEntity<Boolean>> call, Response<ResEntity<Boolean>> response) {
                         if (response.body().result != null) {
@@ -1105,8 +1107,9 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
                 });
 
         //项目查看的权限
-        getApi().permissionQuery(getLoginUserId(), "MAT")
-                .enqueue(new SimpleCallBack<Boolean>() {
+        callEnqueue(
+                getApi().permissionQuery(getLoginUserId(), "MAT"),
+                new SimpleCallBack<Boolean>() {
                     @Override
                     public void onSuccess(Call<ResEntity<Boolean>> call, Response<ResEntity<Boolean>> response) {
                         if (response.body().result != null) {

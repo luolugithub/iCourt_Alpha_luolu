@@ -104,8 +104,9 @@ public class LoginBaseActivity extends BaseUmengActivity {
         JsonObject weixinLoginParam = getWeixinLoginParam(openid, unionid);
         if (weixinLoginParam == null) return;
         showLoadingDialog(null);
-        getApi().loginWithWeiXin(RequestUtils.createJsonBody(weixinLoginParam.toString()))
-                .enqueue(new SimpleCallBack<AlphaUserInfo>() {
+        callEnqueue(
+                getApi().loginWithWeiXin(RequestUtils.createJsonBody(weixinLoginParam.toString())),
+                new SimpleCallBack<AlphaUserInfo>() {
                     @Override
                     public void onSuccess(Call<ResEntity<AlphaUserInfo>> call, Response<ResEntity<AlphaUserInfo>> response) {
                         if (response.body().result != null) {
@@ -135,8 +136,9 @@ public class LoginBaseActivity extends BaseUmengActivity {
     private void getChatEaseAccount(@NonNull final AlphaUserInfo result) {
         log("-------->token:" + result != null ? result.getToken() : "");
         showLoadingDialog(null);
-        getChatApi().getChatToken()
-                .enqueue(new SimpleCallBack<LoginIMToken>() {
+        callEnqueue(
+                getChatApi().getChatToken(),
+                new SimpleCallBack<LoginIMToken>() {
                     @Override
                     public void onSuccess(Call<ResEntity<LoginIMToken>> call, Response<ResEntity<LoginIMToken>> response) {
                         if (response.body().result == null) {
@@ -253,9 +255,9 @@ public class LoginBaseActivity extends BaseUmengActivity {
         JsonObject pwdLoginParam = getPwdLoginParam(user, pwd);
         if (pwdLoginParam == null) return;
         showLoadingDialog(null);
-        getApi()
-                .loginWithPwd(RequestUtils.createJsonBody(pwdLoginParam.toString()))
-                .enqueue(new BaseCallBack<AlphaUserInfo>() {
+        callEnqueue(
+                getApi().loginWithPwd(RequestUtils.createJsonBody(pwdLoginParam.toString())),
+                new BaseCallBack<AlphaUserInfo>() {
                     @Override
                     protected void dispatchHttpSuccess(Call<AlphaUserInfo> call, Response<AlphaUserInfo> response) {
                         if (response.body() != null && response.body().succeed) {

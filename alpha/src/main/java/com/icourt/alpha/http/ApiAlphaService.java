@@ -1476,11 +1476,12 @@ public interface ApiAlphaService {
      * @param requestBody
      * @return
      */
-    @POST("ilaw/ilaw//api/v2/task/attachment/addFromLibrary")
+    @POST("ilaw/api/v2/task/attachment/addFromLibrary")
     Call<ResEntity<String>> taskAddAttachmentFromRepo(@Body RequestBody requestBody);
 
     /**
      * 设置 持续计时过久提醒 关闭
+     *
      * @return
      */
     @PUT("ilaw/api/v2/timing/timing/{id}/bubble")

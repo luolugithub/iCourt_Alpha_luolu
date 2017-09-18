@@ -41,7 +41,6 @@ import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.IDCardValidate;
 import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.utils.SystemUtils;
-import com.icourt.alpha.utils.TextFormater;
 import com.icourt.api.RequestUtils;
 
 import org.greenrobot.eventbus.EventBus;
@@ -944,7 +943,7 @@ public class CustomerPersonCreateActivity extends BaseActivity {
      * 获取负责团队列表
      */
     private void getGroupList() {
-        getApi().lawyerGroupListQuery().enqueue(new SimpleCallBack<List<GroupBean>>() {
+        callEnqueue(getApi().lawyerGroupListQuery(),new SimpleCallBack<List<GroupBean>>() {
             @Override
             public void onSuccess(Call<ResEntity<List<GroupBean>>> call, Response<ResEntity<List<GroupBean>>> response) {
                 List<GroupBean> myGroups = response.body().result;
@@ -969,7 +968,8 @@ public class CustomerPersonCreateActivity extends BaseActivity {
      * 获取企业联络人
      */
     private void getLiaisons(String id) {
-        getApi().liaisonsQuery(id).enqueue(new SimpleCallBack<List<ContactDeatilBean>>() {
+        callEnqueue(getApi().liaisonsQuery(id),
+                new SimpleCallBack<List<ContactDeatilBean>>() {
             @Override
             public void onSuccess(Call<ResEntity<List<ContactDeatilBean>>> call, Response<ResEntity<List<ContactDeatilBean>>> response) {
                 oldLiaisonsList = response.body().result;
@@ -1046,7 +1046,8 @@ public class CustomerPersonCreateActivity extends BaseActivity {
      * 修改团队信息
      */
     private void updataGroup() {
-        getApi().customerGroupInfoUpdate(RequestUtils.createJsonBody(getUpdateGroupJson())).enqueue(new SimpleCallBack<JsonElement>() {
+        callEnqueue(getApi().customerGroupInfoUpdate(RequestUtils.createJsonBody(getUpdateGroupJson())),
+                new SimpleCallBack<JsonElement>() {
             @Override
             public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
 
@@ -1067,7 +1068,8 @@ public class CustomerPersonCreateActivity extends BaseActivity {
         String json = getUpdateContactJson();
         if (TextUtils.isEmpty(json)) return;
         showLoadingDialog(null);
-        getApi().customerUpdate(RequestUtils.createJsonBody(json)).enqueue(new SimpleCallBack<List<ContactDeatilBean>>() {
+        callEnqueue(getApi().customerUpdate(RequestUtils.createJsonBody(json)),
+                new SimpleCallBack<List<ContactDeatilBean>>() {
             @Override
             public void onSuccess(Call<ResEntity<List<ContactDeatilBean>>> call, Response<ResEntity<List<ContactDeatilBean>>> response) {
                 dismissLoadingDialog();
@@ -1095,7 +1097,8 @@ public class CustomerPersonCreateActivity extends BaseActivity {
         String json = getAddContactJson();
         if (TextUtils.isEmpty(json)) return;
         showLoadingDialog(null);
-        getApi().customerCreate(RequestUtils.createJsonBody(json)).enqueue(new SimpleCallBack<List<ContactDeatilBean>>() {
+        callEnqueue(getApi().customerCreate(RequestUtils.createJsonBody(json)),
+                new SimpleCallBack<List<ContactDeatilBean>>() {
             @Override
             public void onSuccess(Call<ResEntity<List<ContactDeatilBean>>> call, Response<ResEntity<List<ContactDeatilBean>>> response) {
                 showToast("添加联系人成功");

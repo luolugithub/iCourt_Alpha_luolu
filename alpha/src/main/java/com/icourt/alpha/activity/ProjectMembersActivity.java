@@ -50,6 +50,8 @@ import static com.icourt.alpha.constants.Const.PROJECT_MEMBER_TYPE;
  */
 public class ProjectMembersActivity extends BaseAppUpdateActivity {
 
+    private static final String KEY_LIST = "key_list";
+    private static final String KEY_TYPE = "key_type";
     @BindView(R.id.titleBack)
     ImageView titleBack;
     @BindView(R.id.titleContent)
@@ -72,8 +74,8 @@ public class ProjectMembersActivity extends BaseAppUpdateActivity {
     public static void launch(@NonNull Context context, List list, int type) {
         if (context == null) return;
         Intent intent = new Intent(context, ProjectMembersActivity.class);
-        intent.putExtra("list", (Serializable) list);
-        intent.putExtra("type", type);
+        intent.putExtra(KEY_LIST, (Serializable) list);
+        intent.putExtra(KEY_TYPE, type);
         context.startActivity(intent);
     }
 
@@ -90,9 +92,9 @@ public class ProjectMembersActivity extends BaseAppUpdateActivity {
     private String getTitleText() {
         switch (type) {
             case PROJECT_ANYUAN_LAWYER_TYPE:
-                return "案源律师";
+                return getString(R.string.project_attorneys);
             case PROJECT_MEMBER_TYPE:
-                return "项目成员";
+                return getString(R.string.project_members);
         }
         return "";
     }
@@ -100,8 +102,8 @@ public class ProjectMembersActivity extends BaseAppUpdateActivity {
     @Override
     protected void initView() {
         super.initView();
-        list = (List) getIntent().getSerializableExtra("list");
-        type = getIntent().getIntExtra("type", -1);
+        list = (List) getIntent().getSerializableExtra(KEY_LIST);
+        type = getIntent().getIntExtra(KEY_TYPE, -1);
         setTitle(getTitleText());
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getContext());
         recyclerView.setLayoutManager(linearLayoutManager);
@@ -228,7 +230,7 @@ public class ProjectMembersActivity extends BaseAppUpdateActivity {
         if (fragment != null) {
             mFragTransaction.remove(fragment);
         }
-        ContactDialogFragment.newInstance(accid, "成员资料", hiddenChatBtn)
+        ContactDialogFragment.newInstance(accid, getString(R.string.project_member_info), hiddenChatBtn)
                 .show(mFragTransaction, tag);
     }
 }

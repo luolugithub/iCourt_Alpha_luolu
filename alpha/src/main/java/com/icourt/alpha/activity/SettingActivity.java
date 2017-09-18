@@ -103,22 +103,24 @@ public class SettingActivity extends BaseActivity {
             return;
         }
         showLoadingDialog(null);
-        getApi().updateUserInfo(alphaUserInfo.getUserId(), phone, email).enqueue(new SimpleCallBack<JsonElement>() {
-            @Override
-            public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
-                dismissLoadingDialog();
-                alphaUserInfo.setPhone(phone);
-                alphaUserInfo.setMail(email);
-                LoginInfoUtils.clearLoginUserInfo();
-                LoginInfoUtils.saveLoginUserInfo(alphaUserInfo);
-                SettingActivity.this.finish();
-            }
+        callEnqueue(
+                getApi().updateUserInfo(alphaUserInfo.getUserId(), phone, email),
+                new SimpleCallBack<JsonElement>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
+                        dismissLoadingDialog();
+                        alphaUserInfo.setPhone(phone);
+                        alphaUserInfo.setMail(email);
+                        LoginInfoUtils.clearLoginUserInfo();
+                        LoginInfoUtils.saveLoginUserInfo(alphaUserInfo);
+                        SettingActivity.this.finish();
+                    }
 
-            @Override
-            public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
-                super.onFailure(call, t);
-                dismissLoadingDialog();
-            }
-        });
+                    @Override
+                    public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
+                        super.onFailure(call, t);
+                        dismissLoadingDialog();
+                    }
+                });
     }
 }

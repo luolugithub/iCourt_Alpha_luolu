@@ -233,7 +233,12 @@ public class CommentListActivity extends BaseActivity implements BaseRecyclerAda
             pageIndex = 1;
         }
         if (taskItemEntity == null) return;
-        getApi().commentListQuery(100, taskItemEntity.id, pageIndex, ActionConstants.DEFAULT_PAGE_SIZE).enqueue(new SimpleCallBack<CommentEntity>() {
+        callEnqueue(getApi().commentListQuery(
+                100,
+                taskItemEntity.id,
+                pageIndex,
+                ActionConstants.DEFAULT_PAGE_SIZE),
+                new SimpleCallBack<CommentEntity>() {
             @Override
             public void onSuccess(Call<ResEntity<CommentEntity>> call, Response<ResEntity<CommentEntity>> response) {
                 stopRefresh();
@@ -293,7 +298,8 @@ public class CommentListActivity extends BaseActivity implements BaseRecyclerAda
             return;
         }
         showLoadingDialog(null);
-        getApi().commentCreate(100, taskItemEntity.id, content).enqueue(new SimpleCallBack<JsonElement>() {
+        callEnqueue(getApi().commentCreate(100, taskItemEntity.id, content),
+                new SimpleCallBack<JsonElement>() {
             @Override
             public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
                 dismissLoadingDialog();
@@ -476,7 +482,7 @@ public class CommentListActivity extends BaseActivity implements BaseRecyclerAda
     private void deleteComment(final CommentEntity.CommentItemEntity commentItemEntity) {
         if (commentItemEntity == null) return;
         showLoadingDialog(null);
-        getApi().taskDeleteComment(commentItemEntity.id).enqueue(new SimpleCallBack<JsonElement>() {
+        callEnqueue(getApi().taskDeleteComment(commentItemEntity.id),new SimpleCallBack<JsonElement>() {
             @Override
             public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
                 dismissLoadingDialog();

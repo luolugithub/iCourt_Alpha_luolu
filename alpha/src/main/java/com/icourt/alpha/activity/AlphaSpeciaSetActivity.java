@@ -78,8 +78,8 @@ public class AlphaSpeciaSetActivity extends BaseActivity {
      * 获取所有置顶的会话ids
      */
     private void getSetTopSessions() {
-        getChatApi().sessionQueryAllsetTopIds()
-                .enqueue(new SimpleCallBack<List<String>>() {
+        callEnqueue(getChatApi().sessionQueryAllsetTopIds(),
+                new SimpleCallBack<List<String>>() {
                     @Override
                     public void onSuccess(Call<ResEntity<List<String>>> call, Response<ResEntity<List<String>>> response) {
                         if (response.body().result != null) {
@@ -121,8 +121,8 @@ public class AlphaSpeciaSetActivity extends BaseActivity {
      */
     private void setGroupTopCancel() {
         showLoadingDialog(null);
-        getChatApi().sessionSetTopCancel(CHAT_TYPE_P2P, getIMChatId())
-                .enqueue(new SimpleCallBack<Boolean>() {
+        callEnqueue(getChatApi().sessionSetTopCancel(CHAT_TYPE_P2P, getIMChatId()),
+                new SimpleCallBack<Boolean>() {
                     @Override
                     public void onSuccess(Call<ResEntity<Boolean>> call, Response<ResEntity<Boolean>> response) {
                         dismissLoadingDialog();
@@ -148,8 +148,8 @@ public class AlphaSpeciaSetActivity extends BaseActivity {
      */
     private void setGroupTop() {
         showLoadingDialog(null);
-        getChatApi().sessionSetTop(CHAT_TYPE_P2P, getIMChatId())
-                .enqueue(new SimpleCallBack<Boolean>() {
+        callEnqueue(getChatApi().sessionSetTop(CHAT_TYPE_P2P, getIMChatId()),
+                new SimpleCallBack<Boolean>() {
                     @Override
                     public void onSuccess(Call<ResEntity<Boolean>> call, Response<ResEntity<Boolean>> response) {
                         dismissLoadingDialog();

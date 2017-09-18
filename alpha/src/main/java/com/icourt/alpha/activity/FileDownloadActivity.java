@@ -234,11 +234,11 @@ public class FileDownloadActivity extends BaseActivity {
     protected void getData(boolean isRefresh) {
         super.getData(isRefresh);
         showLoadingDialog(null);
-        getSFileApi().sFileDownloadUrlQuery(
+        callEnqueue(getSFileApi().sFileDownloadUrlQuery(
                 seaFileRepoId,
                 seaFileFullPath,
-                versionId)
-                .enqueue(new SFileCallBack<String>() {
+                versionId),
+                new SFileCallBack<String>() {
                     @Override
                     public void onSuccess(Call<String> call, Response<String> response) {
                         dismissLoadingDialog();

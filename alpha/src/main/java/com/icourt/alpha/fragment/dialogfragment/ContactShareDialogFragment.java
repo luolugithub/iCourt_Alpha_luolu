@@ -226,14 +226,15 @@ public class ContactShareDialogFragment extends BaseDialogFragment
                 }
             }
 
-            getChatApi().msgTrans(RequestUtils.createJsonBody(param.toString()))
-                    .enqueue(new SimpleCallBack<JsonElement>() {
+            callEnqueue(
+                    getChatApi().msgTrans(RequestUtils.createJsonBody(param.toString())),
+                    new SimpleCallBack<JsonElement>() {
 
                         @Override
                         public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
                             dismissLoadingDialog();
                             showTopSnackBar("转发成功");
-                            dismiss();
+                            dismissAllowingStateLoss();
                         }
 
                         @Override

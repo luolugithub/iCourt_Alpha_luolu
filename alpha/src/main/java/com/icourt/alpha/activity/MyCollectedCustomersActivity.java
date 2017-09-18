@@ -105,8 +105,9 @@ public class MyCollectedCustomersActivity extends BaseActivity implements BaseRe
     @Override
     protected void getData(final boolean isRefresh) {
         super.getData(isRefresh);
-        getApi().getCustomers(0, 100000, 1)
-                .enqueue(new SimpleCallBack<List<CustomerEntity>>() {
+        callEnqueue(
+                getApi().getCustomers(0, 100000, 1),
+                new SimpleCallBack<List<CustomerEntity>>() {
                     @Override
                     public void onSuccess(Call<ResEntity<List<CustomerEntity>>> call, Response<ResEntity<List<CustomerEntity>>> response) {
                         stopRefresh();
