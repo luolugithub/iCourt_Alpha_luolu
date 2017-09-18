@@ -126,15 +126,6 @@ public class FolderDocumentEntity implements ISeaFileImage,
     }
 
     @Override
-    public int hashCode() {
-        int result = 17;
-        result = result * 31 + System.identityHashCode(repoId);
-        result = result * 31 + System.identityHashCode(parent_dir);
-        result = result * 31 + System.identityHashCode(name);
-        return result;
-    }
-
-    @Override
     public String toString() {
         return "FolderDocumentEntity{" +
                 "id='" + id + '\'' +

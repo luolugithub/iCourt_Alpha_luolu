@@ -17,6 +17,7 @@ import com.icourt.alpha.widget.filter.SFileNameFilter;
 import org.greenrobot.eventbus.EventBus;
 
 import retrofit2.Call;
+import retrofit2.HttpException;
 import retrofit2.Response;
 
 /**
@@ -116,6 +117,10 @@ public class RepoRenameActivity extends RepoCreateActivity {
                         public void onFailure(Call<String> call, Throwable t) {
                             dismissLoadingDialog();
                             super.onFailure(call, t);
+                            if (t instanceof HttpException
+                                    && ((HttpException) t).code() == 400) {
+                                showToast("资料库名字可能太长啦");
+                            }
                         }
                     });
         }

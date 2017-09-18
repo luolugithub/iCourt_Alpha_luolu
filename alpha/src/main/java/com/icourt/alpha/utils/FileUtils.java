@@ -11,6 +11,7 @@ import android.support.annotation.DrawableRes;
 import android.text.TextUtils;
 
 import com.icourt.alpha.R;
+import com.icourt.alpha.constants.SFileConfig;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -222,8 +223,8 @@ public class FileUtils {
     public static int getSFileIcon(String fileName) {
         if (!TextUtils.isEmpty(fileName) && fileName.length() > 0) {
             String type = fileName.substring(fileName.lastIndexOf(".") + 1);
-            if (ActionConstants.resourcesDocumentIcon.containsKey(type)) {
-                return ActionConstants.resourcesDocumentIcon.get(type);
+            if (SFileConfig.resourcesDocumentIcon.containsKey(type)) {
+                return SFileConfig.resourcesDocumentIcon.get(type);
             }
         }
         return R.mipmap.filetype_default;
@@ -317,6 +318,22 @@ public class FileUtils {
             }
         }
         return fileName;
+    }
+
+    /**
+     * 获取文件的父路径
+     *
+     * @param filePath
+     * @return
+     */
+    public static final String getFileParentDir(String filePath) {
+        if (!TextUtils.isEmpty(filePath)) {
+            int separatorIndex = filePath.lastIndexOf(File.separator);
+            if (separatorIndex > 0) {
+                return filePath.substring(0, separatorIndex);
+            }
+        }
+        return File.separator;
     }
 
     /**

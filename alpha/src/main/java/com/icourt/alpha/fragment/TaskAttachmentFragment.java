@@ -24,7 +24,6 @@ import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.HeaderFooterAdapter;
 import com.icourt.alpha.adapter.baseadapter.adapterObserver.DataChangeAdapterObserver;
 import com.icourt.alpha.base.BaseDialogFragment;
-import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.entity.bean.TaskAttachmentEntity;
 import com.icourt.alpha.entity.event.TaskActionEvent;
 import com.icourt.alpha.fragment.dialogfragment.SeaFileSelectDialogFragment;
@@ -73,7 +72,7 @@ import retrofit2.Response;
  * version 2.0.0
  */
 
-public class TaskAttachmentFragment extends BaseFragment
+public class TaskAttachmentFragment extends SeaFileBaseFragment
         implements BaseRecyclerAdapter.OnItemClickListener,
         BaseRecyclerAdapter.OnItemLongClickListener, OnDialogFragmentDismissListener {
     private static final String KEY_TASK_ID = "key_task_id";
@@ -192,7 +191,7 @@ public class TaskAttachmentFragment extends BaseFragment
         footerAddView = HeaderFooterAdapter.inflaterView(getContext(), R.layout.footer_add_attachment, recyclerView);
         TextView attachmentTv = footerAddView.findViewById(R.id.add_attachment_view);
         if (attachmentTv != null) {
-            attachmentTv.setText("添加附件");
+            attachmentTv.setText(R.string.task_add_attachment);
         }
         registerClick(attachmentTv);
         headerFooterAdapter.addFooter(footerAddView);
@@ -390,7 +389,8 @@ public class TaskAttachmentFragment extends BaseFragment
                 FileUtils.getFileName(item.pathInfoVo.filePath),
                 item.fileSize,
                 item.pathInfoVo.filePath,
-                null);
+                null,
+                FileDownloadActivity.FILE_FROM_TASK);
     }
 
 

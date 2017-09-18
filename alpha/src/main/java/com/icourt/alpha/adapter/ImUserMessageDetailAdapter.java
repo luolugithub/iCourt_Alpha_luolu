@@ -10,7 +10,7 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.icourt.alpha.R;
-import com.icourt.alpha.activity.FileBoxDownloadActivity;
+import com.icourt.alpha.activity.FileDownloadActivity;
 import com.icourt.alpha.activity.ImagePagerActivity;
 import com.icourt.alpha.activity.WebViewActivity;
 import com.icourt.alpha.adapter.baseadapter.BaseArrayRecyclerAdapter;
@@ -362,11 +362,14 @@ public class ImUserMessageDetailAdapter extends BaseArrayRecyclerAdapter<IMMessa
             case MSG_TYPE_FILE:
                 //文件
                 if (item.ext != null) {
-                    FileBoxDownloadActivity.launchIMFile(view.getContext(),
-                            item.ext.path,
+                    FileDownloadActivity.launch(
+                            view.getContext(),
                             item.ext.repo_id,
                             item.ext.name,
-                            FileBoxDownloadActivity.IM_DOWNLOAD_FILE_ACTION);
+                            item.ext.size,
+                            String.format("%s/%s", item.ext.path, item.ext.name),
+                            null,
+                            FileDownloadActivity.FILE_FROM_IM);
                 }
                 break;
         }

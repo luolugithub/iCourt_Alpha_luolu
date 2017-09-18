@@ -68,7 +68,8 @@ public class FolderTargetListDialogFragment
 
     protected static final String KEY_SEA_FILE_DST_REPO_ID = "seaFileDstRepoId";//目标仓库id
     protected static final String KEY_SEA_FILE_DST_DIR_PATH = "seaFileDstDirPath";//目标仓库路径
-    protected static final String KEY_FOLDER_ACTION_TYPE = "folderActionType";//文件操作类型
+    protected static final String KEY_FOLDER_ACTION_TYPE = "folderActionType"; //文件操作类型
+    protected static final String KEY_SEA_FILE_LOCAL_PATH = "fileLocalPath";   //文件保存到地点
 
 
     private static final String KEY_REPO_TYPE = "repoType";
@@ -97,6 +98,37 @@ public class FolderTargetListDialogFragment
             String dstRepoId,
             String dstRepoDirPath,
             ArrayList<String> selectedFolderNames) {
+        return newInstance(
+                folderActionType,
+                repoType,
+                fromRepoId,
+                fromRepoDirPath,
+                dstRepoId,
+                dstRepoDirPath,
+                selectedFolderNames,
+                null);
+    }
+
+    /**
+     * @param folderActionType
+     * @param repoType
+     * @param fromRepoId
+     * @param fromRepoDirPath
+     * @param dstRepoId           如果为空 就到资料库类型选择页面
+     * @param dstRepoDirPath
+     * @param selectedFolderNames
+     * @param fileLocalPath       文件地址
+     * @return
+     */
+    public static FolderTargetListDialogFragment newInstance(
+            @Const.FILE_ACTION_TYPE int folderActionType,
+            @SFileConfig.REPO_TYPE int repoType,
+            String fromRepoId,
+            String fromRepoDirPath,
+            String dstRepoId,
+            String dstRepoDirPath,
+            ArrayList<String> selectedFolderNames,
+            String fileLocalPath) {
         FolderTargetListDialogFragment fragment = new FolderTargetListDialogFragment();
         Bundle args = new Bundle();
         args.putInt(KEY_FOLDER_ACTION_TYPE, folderActionType);
@@ -108,6 +140,7 @@ public class FolderTargetListDialogFragment
         args.putString(KEY_SEA_FILE_DST_DIR_PATH, dstRepoDirPath);
 
         args.putStringArrayList(KEY_SEA_FILE_SELCTED_FILES, selectedFolderNames);
+        args.putString(KEY_SEA_FILE_LOCAL_PATH, fileLocalPath);
         fragment.setArguments(args);
         return fragment;
     }
@@ -421,7 +454,8 @@ public class FolderTargetListDialogFragment
                         getSeaFileFromDirPath(),
                         getSeaFileDstRepoId(),
                         getSeaFileDstDirPath(),
-                        selectedFolderNames),
+                        selectedFolderNames,
+                        getArguments().getString(KEY_SEA_FILE_LOCAL_PATH, "")),
                 currFragment,
                 R.id.main_fl_content);
         if (canBack2ParentDir()) {

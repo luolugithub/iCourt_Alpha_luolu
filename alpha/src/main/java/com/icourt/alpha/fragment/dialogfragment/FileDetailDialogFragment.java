@@ -212,7 +212,8 @@ public class FileDetailDialogFragment extends FileDetailsBaseDialogFragment
                             fileName,
                             item.rev_file_size,
                             String.format("%s%s", fromRepoDirPath, fileName),
-                            item.id);
+                            item.id,
+                            FileDownloadActivity.FILE_FROM_REPO);
                 } else {
 
                 }

@@ -59,6 +59,7 @@ import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 
 import static com.icourt.alpha.utils.FileUtils.isFileExists;
+import static com.icourt.alpha.utils.GlideUtils.canLoadImage;
 
 /**
  * Description  图片查看器 区别于娱乐模式的查看
@@ -181,9 +182,14 @@ public class ImageViewerActivity extends BaseUmengActivity {
             });
             touchImageView.setOnViewTapListener(this);
             if (FileUtils.isGif(s)) {
-                GlideUtils.loadSFilePic(getContext(), s, touchImageView);
-            } else {
                 if (GlideUtils.canLoadImage(getContext())) {
+                    Glide.with(getContext())
+                            .load(s)
+                            .error(R.mipmap.filetype_image)
+                            .into(touchImageView);
+                }
+            } else {
+                if (canLoadImage(getContext())) {
                     Glide.with(getContext())
                             .load(s)
                             .diskCacheStrategy(DiskCacheStrategy.SOURCE)
@@ -243,7 +249,7 @@ public class ImageViewerActivity extends BaseUmengActivity {
                     .subscribe(new io.reactivex.functions.Consumer<Boolean>() {
                         @Override
                         public void accept(Boolean aBoolean) throws Exception {
-                            if (!GlideUtils.canLoadImage(getContext())) return;
+                            if (!canLoadImage(getContext())) return;
 
                             //大图 已经缓存
                             if (aBoolean != null && aBoolean.booleanValue()) {
@@ -268,7 +274,7 @@ public class ImageViewerActivity extends BaseUmengActivity {
          */
         private void loadBigImage(final String bigUrl, ImageView imageView, final View imgLookOriginalTv) {
             imgLookOriginalTv.setVisibility(View.GONE);
-            if (GlideUtils.canLoadImage(getContext())) {
+            if (canLoadImage(getContext())) {
                 Glide.with(getContext())
                         .load(bigUrl)
                         .placeholder(imageView.getDrawable())
@@ -341,7 +347,7 @@ public class ImageViewerActivity extends BaseUmengActivity {
                 public void run() {
                     viewPager.setCurrentItem(selectPos, false);
                 }
-            }, 50);
+            }, 20);
         }
         setTitle(FileUtils.getFileName(smallUrls.get(0)));
     }
