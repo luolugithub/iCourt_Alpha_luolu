@@ -29,7 +29,9 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.andview.refreshview.XRefreshView;
+import com.google.gson.Gson;
 import com.google.gson.JsonParseException;
+import com.google.gson.reflect.TypeToken;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.ChatAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
@@ -38,6 +40,7 @@ import com.icourt.alpha.db.convertor.IConvertModel;
 import com.icourt.alpha.db.convertor.ListConvertor;
 import com.icourt.alpha.db.dbmodel.ContactDbModel;
 import com.icourt.alpha.db.dbservice.ContactDbService;
+import com.icourt.alpha.entity.bean.ConstantMobileEntity;
 import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.icourt.alpha.entity.bean.IMMessageCustomBody;
 import com.icourt.alpha.entity.bean.SFileImageInfoEntity;
@@ -80,11 +83,15 @@ import com.sj.emoji.EmojiSpan;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 
 import butterknife.BindView;
@@ -93,7 +100,12 @@ import butterknife.OnClick;
 import cn.finalteam.galleryfinal.FunctionConfig;
 import cn.finalteam.galleryfinal.GalleryFinal;
 import cn.finalteam.galleryfinal.model.PhotoInfo;
+import io.reactivex.Observable;
+import io.reactivex.ObservableEmitter;
+import io.reactivex.ObservableOnSubscribe;
+import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.functions.Consumer;
+import io.reactivex.schedulers.Schedulers;
 import io.realm.RealmChangeListener;
 import io.realm.RealmResults;
 import retrofit2.Call;
@@ -366,6 +378,45 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
             default:
                 return getIntent().getStringExtra(KEY_TID);
         }
+    }
+
+    /**
+     * 获取asset下phone.json的所有固定的号码
+     *
+     * @return key:号码，value：名称。
+     */
+    private void getConstantMobile() {
+        Observable.create(new ObservableOnSubscribe<Map<String, String>>() {
+            @Override
+            public void subscribe(@io.reactivex.annotations.NonNull ObservableEmitter<Map<String, String>> e) throws Exception {
+                Map<String, String> map = new HashMap<>();
+                InputStream is;
+                ByteArrayOutputStream bos;
+                is = getAssets().open("phone.json");
+                bos = new ByteArrayOutputStream();
+                byte[] bytes = new byte[4 * 1024];
+                int len;
+                while ((len = is.read(bytes)) != -1) {
+                    bos.write(bytes, 0, len);
+                }
+                final String json = new String(bos.toByteArray());
+                Gson gson = new Gson();
+                final List<ConstantMobileEntity> list = gson.fromJson(json, new TypeToken<ArrayList<ConstantMobileEntity>>() {
+                }.getType());
+                for (ConstantMobileEntity mobileEntity : list) {
+                    map.put(mobileEntity.phone, mobileEntity.name);
+                }
+                e.onNext(map);
+            }
+        }).compose(this.<Map<String, String>>bindToLifecycle())
+                .subscribeOn(Schedulers.newThread())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Consumer<Map<String, String>>() {
+                    @Override
+                    public void accept(@io.reactivex.annotations.NonNull Map<String, String> stringStringMap) throws Exception {
+                        chatAdapter.setMobileEntityMap(stringStringMap);
+                    }
+                });
     }
 
 
@@ -816,6 +867,7 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
         chatAdapter.setOnItemLongClickListener(this);
         chatAdapter.setOnItemChildClickListener(this);
         chatAdapter.setOnItemChildLongClickListener(this);
+        getConstantMobile();
         recyclerView.addItemDecoration(new ChatItemDecoration(getContext(), chatAdapter));
         refreshLayout.setXRefreshViewListener(new XRefreshView.SimpleXRefreshListener() {
             @Override

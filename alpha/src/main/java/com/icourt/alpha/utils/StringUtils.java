@@ -242,4 +242,54 @@ public class StringUtils {
         else return mail.matches(telRegex);
     }
 
+    /**
+     * 获取URL的匹配的正则字符串
+     *
+     * @return
+     */
+    public static String getUrlPattern() {
+        return "(http|ftp|https):\\/\\/[\\w\\-_]+(\\.[\\w\\-_]+)+([\\w\\-\\.,@?^=%&amp;:/~\\+#]*[\\w\\-\\@?^=%&amp;/~\\+#])?";
+    }
+
+    /**
+     * 获取匹配+86手机号/电话号的正则
+     * 所有连续的 7 - 13 位阿拉伯数字
+     * （注意：这里匹配出来的号码是后面有可能包含一个其他非数字的字符串，所以有可能要进行截取）
+     *
+     * @return
+     */
+    public static String get86PhonePattern() {
+        return "\\+86\\s?[0-9]{7,13}\\D?";
+    }
+
+    /**
+     * 获取匹配手机号/电话号的正则
+     * 所有连续的 7 - 13 位阿拉伯数字
+     * （注意：这里匹配出来的号码是前后有可能包含一个其他非数字的字符串，所以有可能要再次进行截取）
+     *
+     * @return
+     */
+    public static String getPhonePattern() {
+        return "\\D?[0-9]{7,13}\\D?";
+    }
+
+    /**
+     * 获取匹配5位纯数字的正则
+     * （作为第三方如：联通的号码之前的过滤条件）
+     *
+     * @return
+     */
+    public static String getConstantMobilePattern() {
+        return "[0-9]{5}";
+    }
+
+    /**
+     * 获取匹配的是不是数字的正则
+     *
+     * @return
+     */
+    public static String getNumberPattern() {
+        return "[0-9]";
+    }
+
 }
