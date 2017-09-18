@@ -19,6 +19,7 @@ import android.widget.TextView;
 import com.icourt.alpha.BuildConfig;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.VersionDescAdapter;
+import com.icourt.alpha.adapter.baseadapter.HeaderFooterAdapter;
 import com.icourt.alpha.entity.bean.AppVersionEntity;
 import com.icourt.alpha.http.callback.BaseCallBack;
 import com.icourt.alpha.http.callback.SimpleCallBack;
@@ -150,8 +151,11 @@ public class BaseAppUpdateActivity extends BaseUmengActivity implements
         uploadTimeTv.setText(DateUtils.getTimeDateFormatYearDot(appVersionEntity.gmtCreate));
 
         recyclerView.setLayoutManager(new LinearLayoutManager(context));
-        VersionDescAdapter versionDescAdapter = new VersionDescAdapter();
-        recyclerView.setAdapter(versionDescAdapter);
+        VersionDescAdapter versionDescAdapter = null;
+        HeaderFooterAdapter headerFooterAdapter = new HeaderFooterAdapter<>(
+                versionDescAdapter = new VersionDescAdapter());
+        addFooterView(headerFooterAdapter,recyclerView);
+        recyclerView.setAdapter(headerFooterAdapter);
         versionDescAdapter.bindData(true, appVersionEntity.versionDescs);
 
         updateNoticeDialog.setCancelable(shouldUpdate(appVersionEntity));
@@ -188,7 +192,12 @@ public class BaseAppUpdateActivity extends BaseUmengActivity implements
             }
         });
     }
-
+    private void addFooterView(HeaderFooterAdapter headerFooterAdapter,RecyclerView recyclerView) {
+        View footerView = HeaderFooterAdapter.inflaterView(getContext(), R.layout.footer_update_dialog_list_layout, recyclerView);
+        TextView footerTv = (TextView)footerView.findViewById(R.id.footer_textview);
+        headerFooterAdapter.addFooter(footerView);
+        footerTv.setText("升级是小阿的信仰，我们下次见！");
+    }
     /**
      * 是否强制更新
      * VERSION_CODE 如果大于本地版本 就强制更新
