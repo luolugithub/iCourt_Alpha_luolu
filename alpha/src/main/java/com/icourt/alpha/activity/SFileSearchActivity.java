@@ -258,7 +258,7 @@ public class SFileSearchActivity extends BaseActivity
         SFileSearchEntity item = sFileSearchAdapter.getItem(position);
         if (item != null) {
             if (item.is_dir) {
-                showTopSnackBar("搜索结果中无法预览文件夹");
+                showTopSnackBar(R.string.sfile_searched_folder_un_click);
                 return;
             }
             if (IMUtils.isPIC(item.name)) {
