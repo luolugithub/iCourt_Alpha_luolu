@@ -70,7 +70,7 @@ public class FolderCreateActivity extends SFileEditBaseActivity {
 
     @Override
     protected int getMaxInputLimitNum() {
-        return 100;
+        return 80;
     }
 
     @Override
