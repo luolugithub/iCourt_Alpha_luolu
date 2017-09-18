@@ -516,7 +516,7 @@ public class SeaFileSelectDialogFragment extends BaseDialogFragment
         if (!selectedFolderDocumentEntities.contains(folderDocumentEntity)) {
             selectedFolderDocumentEntities.add(folderDocumentEntity);
         }
-        selectedFolderDocumentAdapter.addItem(0, folderDocumentEntity);
+        selectedFolderDocumentAdapter.addItem(folderDocumentEntity);
     }
 
     @Override
