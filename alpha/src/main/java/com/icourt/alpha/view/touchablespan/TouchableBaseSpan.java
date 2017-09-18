@@ -14,16 +14,31 @@
 
 package com.icourt.alpha.view.touchablespan;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.Handler;
 import android.support.annotation.IntDef;
+import android.support.v4.content.ContextCompat;
 import android.text.TextPaint;
+import android.text.TextUtils;
 import android.text.style.ClickableSpan;
 import android.view.View;
 
+import com.icourt.alpha.R;
+import com.icourt.alpha.activity.WebViewActivity;
+import com.icourt.alpha.utils.SnackbarUtils;
+import com.icourt.alpha.utils.SystemUtils;
+import com.icourt.alpha.utils.ToastUtils;
+import com.icourt.alpha.widget.dialog.AlertListDialog;
+
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.ArrayList;
+import java.util.List;
 
 public class TouchableBaseSpan extends ClickableSpan {
 
@@ -40,14 +55,17 @@ public class TouchableBaseSpan extends ClickableSpan {
 
     private String mText;
 
+    private String mUserName;
+
     private int mLinkType;
 
     public boolean touched = false;
 
-    public TouchableBaseSpan(Context context, @LinkType int linkType, String text) {
+    public TouchableBaseSpan(Context context, @LinkType int linkType, String text, String userName) {
         this.mContext = context;
         this.mText = text;
         this.mLinkType = linkType;
+        this.mUserName = userName;
     }
 
     /**
@@ -61,8 +79,8 @@ public class TouchableBaseSpan extends ClickableSpan {
 
         ds.setUnderlineText(false);
 //        ds.setFakeBoldText(link.isBold());
-        ds.setColor(touched ? Color.BLUE : Color.GREEN);
-        ds.bgColor = touched ? Color.BLUE : Color.TRANSPARENT;
+        ds.setColor(touched ? ContextCompat.getColor(mContext, R.color.alpha_font_color_orange) : ContextCompat.getColor(mContext, R.color.alpha_font_color_orange));
+        ds.bgColor = touched ? ContextCompat.getColor(mContext, R.color.blanchedalmond) : Color.TRANSPARENT;
 //        if(link.getTypeface() != null)
 //            ds.setTypeface(link.getTypeface());
     }
@@ -82,9 +100,39 @@ public class TouchableBaseSpan extends ClickableSpan {
         }, 500);
 
         if (mLinkType == TYPE_URL) {
-
+            WebViewActivity.launch(mContext, mText);
         } else if (mLinkType == TYPE_PHONE) {
-
+            final List<String> menuList = new ArrayList<>();
+            menuList.add("呼叫");
+            menuList.add("复制");
+            menuList.add("添加到手机通讯录");
+            new AlertListDialog.ListBuilder(mContext)
+                    .setDividerColorRes(R.color.alpha_divider_color)
+                    .setDividerHeightRes(R.dimen.alpha_height_divider)
+                    .setItems(menuList.toArray(new String[menuList.size()]), new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            String actionName = menuList.get(which);
+                            if (TextUtils.equals(actionName, "呼叫")) {
+                                //跳转到拨号界面，同时传递电话号码
+                                Intent dialIntent = new Intent(Intent.ACTION_DIAL, Uri.parse("tel:" + mText));
+                                mContext.startActivity(dialIntent);
+                            } else if (TextUtils.equals(actionName, "复制")) {
+                                msgActionCopy(mText);
+                            } else if (TextUtils.equals(actionName, "添加到手机通讯录")) {
+                                Intent intent = new Intent(Intent.ACTION_INSERT, Uri.withAppendedPath(Uri.parse("content://com.android.contacts"), "contacts"));
+                                intent.setType("vnd.android.cursor.dir/person");
+                                intent.setType("vnd.android.cursor.item/contact");
+                                intent.setType("vnd.android.cursor.dir/raw_contact");
+                                if (!TextUtils.isEmpty(mUserName))
+                                    intent.putExtra(android.provider.ContactsContract.Intents.Insert.NAME, mUserName);
+                                if (!TextUtils.isEmpty(mText)) {
+                                    intent.putExtra(android.provider.ContactsContract.Intents.Insert.PHONE, mText);
+                                }
+                                mContext.startActivity(intent);
+                            }
+                        }
+                    }).show();
         }
     }
 
@@ -113,6 +161,21 @@ public class TouchableBaseSpan extends ClickableSpan {
      */
     public void setTouched(boolean touched) {
         this.touched = touched;
+    }
+
+    /**
+     * 消息复制
+     *
+     * @param charSequence
+     */
+    protected final void msgActionCopy(CharSequence charSequence) {
+        if (TextUtils.isEmpty(charSequence)) return;
+        SystemUtils.copyToClipboard(mContext, "msg", charSequence);
+        if (mContext instanceof Activity) {
+            SnackbarUtils.showTopSnackBar((Activity) mContext, "复制成功");
+        } else {
+            ToastUtils.showToast("复制成功");
+        }
     }
 
 }

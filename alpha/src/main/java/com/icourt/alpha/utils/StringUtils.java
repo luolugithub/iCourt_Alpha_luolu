@@ -280,7 +280,7 @@ public class StringUtils {
      * @return
      */
     public static String getConstantMobilePattern() {
-        return "[0-9]{5}";
+        return ".*[0-9]{5}.*";
     }
 
     /**
