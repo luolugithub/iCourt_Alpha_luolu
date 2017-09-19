@@ -78,11 +78,8 @@ public class TouchableBaseSpan extends ClickableSpan {
         super.updateDrawState(ds);
 
         ds.setUnderlineText(false);
-//        ds.setFakeBoldText(link.isBold());
         ds.setColor(touched ? ContextCompat.getColor(mContext, R.color.alpha_font_color_orange) : ContextCompat.getColor(mContext, R.color.alpha_font_color_orange));
         ds.bgColor = touched ? ContextCompat.getColor(mContext, R.color.blanchedalmond) : Color.TRANSPARENT;
-//        if(link.getTypeface() != null)
-//            ds.setTypeface(link.getTypeface());
     }
 
     /**
@@ -103,9 +100,9 @@ public class TouchableBaseSpan extends ClickableSpan {
             WebViewActivity.launch(mContext, mText);
         } else if (mLinkType == TYPE_PHONE) {
             final List<String> menuList = new ArrayList<>();
-            menuList.add("呼叫");
-            menuList.add("复制");
-            menuList.add("添加到手机通讯录");
+            menuList.add(mContext.getString(R.string.str_call));
+            menuList.add(mContext.getString(R.string.str_copy));
+            menuList.add(mContext.getString(R.string.str_add_to_contacts));
             new AlertListDialog.ListBuilder(mContext)
                     .setDividerColorRes(R.color.alpha_divider_color)
                     .setDividerHeightRes(R.dimen.alpha_height_divider)
@@ -113,13 +110,13 @@ public class TouchableBaseSpan extends ClickableSpan {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
                             String actionName = menuList.get(which);
-                            if (TextUtils.equals(actionName, "呼叫")) {
+                            if (TextUtils.equals(actionName, mContext.getString(R.string.str_call))) {
                                 //跳转到拨号界面，同时传递电话号码
                                 Intent dialIntent = new Intent(Intent.ACTION_DIAL, Uri.parse("tel:" + mText));
                                 mContext.startActivity(dialIntent);
-                            } else if (TextUtils.equals(actionName, "复制")) {
+                            } else if (TextUtils.equals(actionName, mContext.getString(R.string.str_copy))) {
                                 msgActionCopy(mText);
-                            } else if (TextUtils.equals(actionName, "添加到手机通讯录")) {
+                            } else if (TextUtils.equals(actionName, mContext.getString(R.string.str_add_to_contacts))) {
                                 Intent intent = new Intent(Intent.ACTION_INSERT, Uri.withAppendedPath(Uri.parse("content://com.android.contacts"), "contacts"));
                                 intent.setType("vnd.android.cursor.dir/person");
                                 intent.setType("vnd.android.cursor.item/contact");
@@ -168,14 +165,13 @@ public class TouchableBaseSpan extends ClickableSpan {
      *
      * @param charSequence
      */
-    protected final void msgActionCopy(CharSequence charSequence) {
+    private void msgActionCopy(CharSequence charSequence) {
         if (TextUtils.isEmpty(charSequence)) return;
         SystemUtils.copyToClipboard(mContext, "msg", charSequence);
         if (mContext instanceof Activity) {
-            SnackbarUtils.showTopSnackBar((Activity) mContext, "复制成功");
+            SnackbarUtils.showTopSnackBar((Activity) mContext, mContext.getString(R.string.str_copy_success));
         } else {
-            ToastUtils.showToast("复制成功");
+            ToastUtils.showToast(mContext.getString(R.string.str_copy_success));
         }
     }
-
 }
