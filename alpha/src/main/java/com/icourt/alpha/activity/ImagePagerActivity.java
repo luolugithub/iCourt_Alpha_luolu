@@ -5,17 +5,12 @@ import android.app.ActivityOptions;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
-import android.os.SystemClock;
 import android.support.annotation.CheckResult;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.ViewCompat;
 import android.support.v4.view.ViewPager;
 import android.text.TextUtils;
@@ -35,19 +30,13 @@ import com.icourt.alpha.BuildConfig;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.baseadapter.BasePagerAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
-import com.icourt.alpha.base.BaseUmengActivity;
 import com.icourt.alpha.constants.Const;
-import com.icourt.alpha.constants.SFileConfig;
+import com.icourt.alpha.constants.DownloadConfig;
 import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.icourt.alpha.entity.bean.IMMessageCustomBody;
 import com.icourt.alpha.entity.bean.SFileImageInfoEntity;
-import com.icourt.alpha.fragment.dialogfragment.ContactShareDialogFragment;
-import com.icourt.alpha.fragment.dialogfragment.FolderTargetListDialogFragment;
-import com.icourt.alpha.fragment.dialogfragment.ProjectSaveFileDialogFragment;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
-import com.icourt.alpha.utils.ActionConstants;
-import com.icourt.alpha.utils.FileUtils;
 import com.icourt.alpha.utils.GlideUtils;
 import com.icourt.alpha.utils.JsonUtils;
 import com.icourt.alpha.utils.Md5Utils;
@@ -55,9 +44,6 @@ import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.view.HackyViewPager;
 import com.icourt.alpha.widget.dialog.BottomActionDialog;
 import com.icourt.api.RequestUtils;
-import com.liulishuo.filedownloader.BaseDownloadTask;
-import com.liulishuo.filedownloader.FileDownloadListener;
-import com.liulishuo.filedownloader.FileDownloader;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -75,7 +61,6 @@ import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
 import io.reactivex.ObservableOnSubscribe;
 import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
 import retrofit2.Call;
 import retrofit2.Response;
@@ -92,7 +77,7 @@ import static com.icourt.alpha.constants.Const.CHAT_TYPE_TEAM;
  * 图片浏览器
  */
 
-public class ImagePagerActivity extends BaseUmengActivity implements BasePagerAdapter.OnPagerItemClickListener, BasePagerAdapter.OnPagerItemLongClickListener {
+public class ImagePagerActivity extends ImageViewBaseActivity implements BasePagerAdapter.OnPagerItemClickListener, BasePagerAdapter.OnPagerItemLongClickListener {
     //收藏的消息列表
     protected final Set<Long> msgCollectedIdsList = new HashSet<>();
     //钉的消息列表
@@ -114,44 +99,6 @@ public class ImagePagerActivity extends BaseUmengActivity implements BasePagerAd
     ArrayList<SFileImageInfoEntity> sFileImageInfoEntities;
     Handler handler = new Handler();
     int realPos;
-    private FileDownloadListener picDownloadListener = new FileDownloadListener() {
-
-        @Override
-        protected void pending(BaseDownloadTask task, int soFarBytes, int totalBytes) {
-        }
-
-        @Override
-        protected void progress(BaseDownloadTask task, int soFarBytes, int totalBytes) {
-        }
-
-        @Override
-        protected void completed(BaseDownloadTask task) {
-            showTopSnackBar("保存成功!");
-            if (task != null && !TextUtils.isEmpty(task.getPath())) {
-                try {
-                    sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(new File(task.getPath()))));
-                } catch (NullPointerException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-
-        @Override
-        protected void paused(BaseDownloadTask task, int soFarBytes, int totalBytes) {
-        }
-
-        @Override
-        protected void error(BaseDownloadTask task, Throwable e) {
-            log("----------->图片下载异常:" + StringUtils.throwable2string(e));
-            showTopSnackBar(String.format("下载异常!" + StringUtils.throwable2string(e)));
-        }
-
-        @Override
-        protected void warn(BaseDownloadTask task) {
-
-        }
-    };
-
     /**
      * @param context
      * @param urls
@@ -420,7 +367,9 @@ public class ImagePagerActivity extends BaseUmengActivity implements BasePagerAd
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.download_img:
-                checkPermissionOrDownload();
+                final String url = getCurrImageUrl();
+                final String picSavePath = getPicSavePath(url);
+                downloadFile(url, picSavePath);
                 break;
             default:
                 super.onClick(v);
@@ -456,6 +405,10 @@ public class ImagePagerActivity extends BaseUmengActivity implements BasePagerAd
             final Drawable drawable = imageView.getDrawable();
             if (drawable == null) return false;
             final SFileImageInfoEntity finalSFileImageInfoEntity = sFileImageInfoEntity;
+
+            final String url = getCurrImageUrl();
+            final String picSavePath = getPicSavePath(url);
+
             if (finalSFileImageInfoEntity != null) {
                 final boolean isCollected = isCollected(sFileImageInfoEntity.chatMsgId);
                 final boolean isDinged = isDinged(sFileImageInfoEntity.chatMsgId);
@@ -468,59 +421,10 @@ public class ImagePagerActivity extends BaseUmengActivity implements BasePagerAd
                                 dialog.dismiss();
                                 switch (position) {
                                     case 0:
-                                        if (checkAcessFilePermission()) {
-                                            if (isFileExists(getCurrImageUrl())) {
-                                                shareFileWithAndroid(getPicSavePath(getCurrImageUrl()));
-                                            } else {
-                                                //下载完成后 再保存到资料库
-                                                showLoadingDialog(null);
-                                                downloadFile(getCurrImageUrl(), new FileDownloadListener() {
-
-                                                    @Override
-                                                    protected void pending(BaseDownloadTask task, int soFarBytes, int totalBytes) {
-                                                    }
-
-                                                    @Override
-                                                    protected void progress(BaseDownloadTask task, int soFarBytes, int totalBytes) {
-                                                    }
-
-                                                    @Override
-                                                    protected void completed(BaseDownloadTask task) {
-                                                        dismissLoadingDialog();
-                                                        if (task != null && !TextUtils.isEmpty(task.getPath())) {
-                                                            try {
-                                                                sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(new File(task.getPath()))));
-                                                            } catch (NullPointerException e) {
-                                                                e.printStackTrace();
-                                                            }
-                                                            shareFileWithAndroid(task.getPath());
-                                                        }
-                                                    }
-
-                                                    @Override
-                                                    protected void paused(BaseDownloadTask task, int soFarBytes, int totalBytes) {
-                                                        dismissLoadingDialog();
-                                                    }
-
-                                                    @Override
-                                                    protected void error(BaseDownloadTask task, Throwable e) {
-                                                        dismissLoadingDialog();
-                                                        log("----------->图片下载异常:" + StringUtils.throwable2string(e));
-                                                        showTopSnackBar(String.format("下载异常!" + StringUtils.throwable2string(e)));
-                                                    }
-
-                                                    @Override
-                                                    protected void warn(BaseDownloadTask task) {
-                                                        dismissLoadingDialog();
-                                                    }
-                                                });
-                                            }
-                                        } else {
-                                            requestAcessFilePermission();
-                                        }
+                                        shareHttpFile(url, picSavePath);
                                         break;
                                     case 1:
-                                        showContactShareDialogFragment(finalSFileImageInfoEntity.chatMsgId);
+                                        shareHttpFile2Friends(url, picSavePath);
                                         break;
                                     case 2:
                                         if (isCollected) {
@@ -533,56 +437,7 @@ public class ImagePagerActivity extends BaseUmengActivity implements BasePagerAd
                                         msgActionDing(!isDinged, finalSFileImageInfoEntity.chatMsgId);
                                         break;
                                     case 4:
-                                        if (checkAcessFilePermission()) {
-                                            if (isFileExists(getCurrImageUrl())) {
-                                                savedImport2repo(sFileImageInfoEntity, getPicSavePath(getCurrImageUrl()));
-                                            } else {
-                                                //下载完成后 再保存到资料库
-                                                showLoadingDialog(null);
-                                                downloadFile(getCurrImageUrl(), new FileDownloadListener() {
-
-                                                    @Override
-                                                    protected void pending(BaseDownloadTask task, int soFarBytes, int totalBytes) {
-                                                    }
-
-                                                    @Override
-                                                    protected void progress(BaseDownloadTask task, int soFarBytes, int totalBytes) {
-                                                    }
-
-                                                    @Override
-                                                    protected void completed(BaseDownloadTask task) {
-                                                        dismissLoadingDialog();
-                                                        if (task != null && !TextUtils.isEmpty(task.getPath())) {
-                                                            try {
-                                                                sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(new File(task.getPath()))));
-                                                            } catch (NullPointerException e) {
-                                                                e.printStackTrace();
-                                                            }
-                                                            savedImport2repo(sFileImageInfoEntity, task.getPath());
-                                                        }
-                                                    }
-
-                                                    @Override
-                                                    protected void paused(BaseDownloadTask task, int soFarBytes, int totalBytes) {
-                                                        dismissLoadingDialog();
-                                                    }
-
-                                                    @Override
-                                                    protected void error(BaseDownloadTask task, Throwable e) {
-                                                        dismissLoadingDialog();
-                                                        log("----------->图片下载异常:" + StringUtils.throwable2string(e));
-                                                        showTopSnackBar(String.format("下载异常!" + StringUtils.throwable2string(e)));
-                                                    }
-
-                                                    @Override
-                                                    protected void warn(BaseDownloadTask task) {
-                                                        dismissLoadingDialog();
-                                                    }
-                                                });
-                                            }
-                                        } else {
-                                            requestAcessFilePermission();
-                                        }
+                                        shareHttpFile2repo(url, picSavePath);
                                         break;
                                 }
                             }
@@ -597,25 +452,16 @@ public class ImagePagerActivity extends BaseUmengActivity implements BasePagerAd
                                 dialog.dismiss();
                                 switch (position) {
                                     case 0:
-                                        checkPermissionOrDownload();
+                                        downloadFile(url, picSavePath);
                                         break;
                                     case 1:
-                                        if (getIMMsgId() <= 0 && urls != null && urls.length > 0) {
-                                            showContactShareDialogFragment(urls[0]);
-                                        } else {
-                                            showContactShareDialogFragment(getIMMsgId());
-                                        }
+                                        shareHttpFile2Friends(url, picSavePath);
                                         break;
                                     case 2:
-                                        shareImage2WeiXin(drawable);
+                                        shareHttpFile(url, picSavePath);
                                         break;
                                     case 3:
-                                        if (checkAcessFilePermission()) {
-                                            String fileName = getFileName(adapter.getItem(position));
-                                            savedImport2repo(drawable, fileName);
-                                        } else {
-                                            requestAcessFilePermission();
-                                        }
+                                        shareHttpFile2repo(url, picSavePath);
                                         break;
                                 }
                             }
@@ -719,192 +565,13 @@ public class ImagePagerActivity extends BaseUmengActivity implements BasePagerAd
                 });
     }
 
-    /**
-     * 展示联系人转发对话框
-     *
-     * @param id msgid
-     */
-    public void showContactShareDialogFragment(long id) {
-        String tag = ContactShareDialogFragment.class.getSimpleName();
-        FragmentTransaction mFragTransaction = getSupportFragmentManager().beginTransaction();
-        Fragment fragment = getSupportFragmentManager().findFragmentByTag(tag);
-        if (fragment != null) {
-            mFragTransaction.remove(fragment);
-        }
-        ContactShareDialogFragment.newInstance(id, true)
-                .show(mFragTransaction, tag);
-    }
-
-    /**
-     * 展示联系人转发对话框
-     *
-     * @param filePath
-     */
-    public void showContactShareDialogFragment(String filePath) {
-        String tag = ContactShareDialogFragment.class.getSimpleName();
-        FragmentTransaction mFragTransaction = getSupportFragmentManager().beginTransaction();
-        Fragment fragment = getSupportFragmentManager().findFragmentByTag(tag);
-        if (fragment != null) {
-            mFragTransaction.remove(fragment);
-        }
-        ContactShareDialogFragment.newInstanceFile(filePath, true)
-                .show(mFragTransaction, tag);
-    }
-
-    private String getFileName(String url) {
-        if (!TextUtils.isEmpty(url)) {
-            int indexOf = url.lastIndexOf("/");
-            if (indexOf >= 0 && indexOf < url.length() - 1) {
-                return url.substring(indexOf, url.length());
-            }
-        }
-        return String.format("%s.png", SystemClock.elapsedRealtime());
-    }
-
-    /**
-     * 保存到我的文档
-     *
-     * @param finalSFileImageInfoEntity
-     */
-    private void savedImport2repo(SFileImageInfoEntity finalSFileImageInfoEntity, String localFilePath) {
-        if (finalSFileImageInfoEntity == null) return;
-        String tag = FolderTargetListDialogFragment.class.getSimpleName();
-        FragmentTransaction mFragTransaction = getSupportFragmentManager().beginTransaction();
-        Fragment fragment = getSupportFragmentManager().findFragmentByTag(tag);
-        if (fragment != null) {
-            mFragTransaction.remove(fragment);
-        }
-        ArrayList<String> selectedFileNames = new ArrayList<>();
-        selectedFileNames.add(finalSFileImageInfoEntity.name);
-        FolderTargetListDialogFragment.newInstance(
-                Const.FILE_ACTION_ADD,
-                SFileConfig.REPO_MINE,
-                finalSFileImageInfoEntity.repo_id,
-                finalSFileImageInfoEntity.path,
-                null,
-                null,
-                selectedFileNames,
-                localFilePath)
-                .show(mFragTransaction, tag);
-    }
-
-    /**
-     * 保存到我的文档
-     *
-     * @param drawable
-     * @param name
-     */
-    private void savedImport2repo(final Drawable drawable, final String name) {
-        if (drawable == null) return;
-        showLoadingDialog(null);
-        Observable
-                .create(new ObservableOnSubscribe<String>() {
-                    @Override
-                    public void subscribe(ObservableEmitter<String> e) throws Exception {
-                        if (e.isDisposed()) return;
-                        boolean b = FileUtils.saveBitmap(getContext(), name, FileUtils.drawableToBitmap(drawable));
-                        String changeSendfilePath = String.format("%s%s%s.png", FileUtils.dirFilePath, File.separator, name);
-                        if (b) {
-                            e.onNext(changeSendfilePath);
-                        } else {
-                            e.onError(new NullPointerException());
-                        }
-                        e.onComplete();
-                    }
-                })
-                .compose(this.<String>bindToLifecycle())
-                .subscribeOn(Schedulers.newThread())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Consumer<String>() {
-                    @Override
-                    public void accept(String s) throws Exception {
-                        dismissLoadingDialog();
-                        showProjectSaveFileDialogFragment(s);
-                    }
-                }, new Consumer<Throwable>() {
-                    @Override
-                    public void accept(Throwable throwable) throws Exception {
-                        dismissLoadingDialog();
-                    }
-                });
-    }
-
-    /**
-     * 展示项目转发对话框
-     *
-     * @param filePath
-     */
-    public void showProjectSaveFileDialogFragment(String filePath) {
-        String tag = ProjectSaveFileDialogFragment.class.getSimpleName();
-        FragmentTransaction mFragTransaction = getSupportFragmentManager().beginTransaction();
-        Fragment fragment = getSupportFragmentManager().findFragmentByTag(tag);
-        if (fragment != null) {
-            mFragTransaction.remove(fragment);
-        }
-//        ProjectSaveFileDialogFragment.newInstance(filePath, ProjectSaveFileDialogFragment.ALPHA_TYPE)
-//                .show(mFragTransaction, tag);
-        mFragTransaction.add(ProjectSaveFileDialogFragment.newInstance(filePath, ProjectSaveFileDialogFragment.OTHER_TYPE), tag);
-        mFragTransaction.commitAllowingStateLoss();
-    }
-
-    /**
-     * 检查权限或者下载
-     */
-    private void checkPermissionOrDownload() {
-        if (checkAcessFilePermission()) {
-            downloadFile(getCurrImageUrl(), picDownloadListener);
-        } else {
-            requestAcessFilePermission();
-        }
-    }
-
-    /**
-     * 图片下载
-     *
-     * @param url
-     */
-    private void downloadFile(String url, FileDownloadListener fileDownloadListener) {
-        if (TextUtils.isEmpty(url)) {
-            showTopSnackBar("下载地址为null");
-            return;
-        }
-        if (!FileUtils.sdAvailable()) {
-            showTopSnackBar("sd卡不可用!");
-            return;
-        }
-        if (isFileExists(url)) {
-            showTopSnackBar("文件已保存");
-            return;
-        }
-        FileDownloader
-                .getImpl()
-                .create(url)
-                .setPath(getPicSavePath(url))
-                .setListener(fileDownloadListener).start();
-    }
 
     private String getPicSavePath(String url) {
         if (url.startsWith("http")) {
-            StringBuilder pathBuilder = new StringBuilder(Environment.getExternalStorageDirectory().getAbsolutePath());
-            pathBuilder.append(File.separator);
-            pathBuilder.append(ActionConstants.FILE_DOWNLOAD_PATH);
-            pathBuilder.append(File.separator);
-            pathBuilder.append(Md5Utils.md5(url, url));
-            pathBuilder.append(".png");
-            return pathBuilder.toString();
+            return DownloadConfig.getCommFileDownloadPath(getLoginUserId(), Md5Utils.md5(url, url) + ".png");
         } else {
             return url;
         }
-    }
-
-    /**
-     * 是否文件已经存在
-     *
-     * @param url
-     * @return
-     */
-    private boolean isFileExists(String url) {
-        return FileUtils.isFileExists(getPicSavePath(url));
     }
 
 //    @Override

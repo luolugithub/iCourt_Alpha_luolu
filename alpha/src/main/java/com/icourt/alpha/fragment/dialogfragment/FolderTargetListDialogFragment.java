@@ -254,6 +254,9 @@ public class FolderTargetListDialogFragment
     @Override
     protected void getData(boolean isRefresh) {
         super.getData(isRefresh);
+        if (TextUtils.isEmpty(getSeaFileFromRepoId())) {
+            return;
+        }
         callEnqueue(getSFileApi().repoDetailsQuery(getSeaFileFromRepoId()),
                 new SFileCallBack<RepoEntity>() {
                     @Override

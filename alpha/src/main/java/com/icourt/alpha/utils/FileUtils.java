@@ -11,6 +11,7 @@ import android.support.annotation.DrawableRes;
 import android.text.TextUtils;
 
 import com.icourt.alpha.R;
+import com.icourt.alpha.constants.DownloadConfig;
 import com.icourt.alpha.constants.SFileConfig;
 
 import java.io.ByteArrayOutputStream;
@@ -31,7 +32,7 @@ import static com.icourt.alpha.utils.ImageUtils.addPictureToGallery;
  * version 1.0.0
  */
 public class FileUtils {
-    public static final String dirFilePath = FileUtils.getSDPath() + ActionConstants.FILE_DOWNLOAD_PATH;
+    public static final String dirFilePath = FileUtils.getSDPath() + DownloadConfig.FILE_DOWNLOAD_ROOT_DIR;
 
     public static final String ALPHA_PAGENAME_FILE = "com.icourt.alpha";
     public static final String THUMB_IMAGE_ROOT_PATH = getSDPath() + "/" + ALPHA_PAGENAME_FILE + "/image";
@@ -170,8 +171,13 @@ public class FileUtils {
      */
     public static final boolean isFileExists(String path) {
         if (TextUtils.isEmpty(path)) return false;
-        File file = new File(path);
-        return file != null && file.exists();
+        try {
+            File file = new File(path);
+            return file != null && file.exists();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 
     /**
@@ -265,18 +271,6 @@ public class FileUtils {
         return new File(filePath);
     }
 
-    //判断文件是否存在
-    public static boolean fileIsExists(String strFile) {
-        try {
-            File f = new File(strFile);
-            if (!f.exists()) {
-                return false;
-            }
-        } catch (Exception e) {
-            return false;
-        }
-        return true;
-    }
 
     /**
      * 根据文件后缀名获得对应的MIME类型。
@@ -344,7 +338,7 @@ public class FileUtils {
     public static String getFileName(String path) {
         if (!TextUtils.isEmpty(path)) {
             int separatorIndex = path.lastIndexOf(File.separator);
-            if (separatorIndex > 0
+            if (separatorIndex >= 0
                     && separatorIndex < path.length() - 1) {
                 return path.substring(separatorIndex + 1, path.length());
             }
@@ -439,12 +433,6 @@ public class FileUtils {
         return buffer;
     }
 
-    /**
-     * 保存方法
-     */
-    public static boolean saveBitmap(Context context, String picName, Bitmap bitmap) {
-        return saveBitmap(context, dirFilePath, picName, bitmap);
-    }
 
     /**
      * 保存drawable 到sd卡中...

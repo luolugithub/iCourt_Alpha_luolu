@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.support.annotation.IntDef;
 import android.support.annotation.IntRange;
 import android.support.annotation.NonNull;
@@ -25,12 +24,13 @@ import com.icourt.alpha.BuildConfig;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.base.BaseActivity;
+import com.icourt.alpha.constants.DownloadConfig;
+import com.icourt.alpha.entity.bean.SeaFileImage;
 import com.icourt.alpha.fragment.dialogfragment.ContactShareDialogFragment;
 import com.icourt.alpha.fragment.dialogfragment.ProjectSaveFileDialogFragment;
 import com.icourt.alpha.http.callback.SFileCallBack;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
-import com.icourt.alpha.utils.ActionConstants;
 import com.icourt.alpha.utils.FileUtils;
 import com.icourt.alpha.utils.IMUtils;
 import com.icourt.alpha.utils.StringUtils;
@@ -251,12 +251,11 @@ public class FileDownloadActivity extends BaseActivity {
 
     private void openImageView() {
         if (IMUtils.isPIC(fileCachePath)) {
-            ArrayList<String> smallImageUrl = new ArrayList<>();
-            smallImageUrl.add(fileCachePath);
+            ArrayList<SeaFileImage> seaFileImages = new ArrayList<>();
+            seaFileImages.add(new SeaFileImage(seaFileRepoId, seaFileFullPath));
             ImageViewerActivity.launch(
                     getContext(),
-                    smallImageUrl,
-                    null,
+                    seaFileImages,
                     0
             );
             finish();
@@ -388,18 +387,13 @@ public class FileDownloadActivity extends BaseActivity {
      * @return
      */
     private String buildSavePath() {
-        StringBuilder pathBuilder = new StringBuilder(Environment.getExternalStorageDirectory().getAbsolutePath());
-        pathBuilder.append(File.separator);
-        pathBuilder.append(ActionConstants.FILE_DOWNLOAD_PATH);
-        pathBuilder.append(File.separator);
-        if (TextUtils.isEmpty(versionId)) {
-            pathBuilder.append(fileTitle);
-        } else {
-            String fileNameWithoutSuffix = FileUtils.getFileNameWithoutSuffix(fileTitle);
-            String fileSuffix = FileUtils.getFileSuffix(fileTitle);
-            pathBuilder.append(String.format("%s_%s%s", fileNameWithoutSuffix, versionId.hashCode(), fileSuffix));
+        String fileFullPath = seaFileFullPath;
+        if (!TextUtils.isEmpty(versionId)) {
+            String fileNameWithoutSuffix = FileUtils.getFileNameWithoutSuffix(fileFullPath);
+            String fileSuffix = FileUtils.getFileSuffix(fileFullPath);
+            fileFullPath = String.format("%s_%s%s", fileNameWithoutSuffix, versionId.hashCode(), fileSuffix);
         }
-        return pathBuilder.toString();
+        return DownloadConfig.getSeaFileDownloadPath(getLoginUserId(), seaFileRepoId, fileFullPath);
     }
 
 

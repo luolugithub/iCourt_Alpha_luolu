@@ -2,6 +2,8 @@ package com.icourt.alpha.entity.bean;
 
 import android.text.TextUtils;
 
+import java.io.Serializable;
+
 /**
  * Description
  * Company Beijing icourt
@@ -9,7 +11,7 @@ import android.text.TextUtils;
  * date createTime：2017/8/20
  * version 2.1.0
  */
-public class SFileSearchEntity {
+public class SFileSearchEntity implements ISeaFileImage,Serializable {
     /**
      * "repo_id": "f362f49f-084b-4940-ae01-49097dbbddee",
      * "name": "screen_image.jpg",
@@ -36,4 +38,13 @@ public class SFileSearchEntity {
         return !TextUtils.isEmpty(content_highlight);
     }
 
+    @Override
+    public String getSeaFileImageFullPath() {
+        return fullpath;
+    }
+
+    @Override
+    public String getSeaFileImageRepoId() {
+        return repo_id;
+    }
 }

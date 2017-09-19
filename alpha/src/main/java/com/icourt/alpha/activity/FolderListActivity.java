@@ -26,7 +26,6 @@ import android.widget.TextView;
 import com.andview.refreshview.XRefreshView;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.icourt.alpha.BuildConfig;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.FolderDocumentAdapter;
 import com.icourt.alpha.adapter.FolderDocumentWrapAdapter;
@@ -47,11 +46,9 @@ import com.icourt.alpha.http.callback.SFileCallBack;
 import com.icourt.alpha.http.observer.BaseObserver;
 import com.icourt.alpha.interfaces.OnDialogFragmentDismissListener;
 import com.icourt.alpha.utils.IMUtils;
-import com.icourt.alpha.utils.SFileTokenUtils;
 import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.utils.UriUtils;
-import com.icourt.alpha.utils.UrlUtils;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 import com.icourt.alpha.widget.comparators.FileSortComparator;
 import com.icourt.alpha.widget.dialog.BottomActionDialog;
@@ -74,7 +71,6 @@ import cn.finalteam.galleryfinal.GalleryFinal;
 import cn.finalteam.galleryfinal.model.PhotoInfo;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
-import io.reactivex.functions.Function;
 import io.reactivex.schedulers.Schedulers;
 import retrofit2.Call;
 import retrofit2.Response;
@@ -140,8 +136,6 @@ public class FolderListActivity extends FolderBaseActivity
     CheckBox bottomBarAllSelectCb;
 
     int fileSortType = FILE_SORT_TYPE_DEFAULT;
-    final ArrayList<String> bigImageUrls = new ArrayList<>();
-    final ArrayList<String> smallImageUrls = new ArrayList<>();
     boolean isEncrypted;
 
 
@@ -547,22 +541,6 @@ public class FolderListActivity extends FolderBaseActivity
      */
     private void sortFile(List<FolderDocumentEntity> datas) {
         seaFileSort(fileSortType, datas)
-                .map(new Function<List<FolderDocumentEntity>, List<FolderDocumentEntity>>() {
-                    @Override
-                    public List<FolderDocumentEntity> apply(@NonNull List<FolderDocumentEntity> folderDocumentEntities) throws Exception {
-                        bigImageUrls.clear();
-                        smallImageUrls.clear();
-                        for (int i = 0; i < folderDocumentEntities.size(); i++) {
-                            FolderDocumentEntity folderDocumentEntity = folderDocumentEntities.get(i);
-                            if (folderDocumentEntity == null) continue;
-                            if (IMUtils.isPIC(folderDocumentEntity.name)) {
-                                bigImageUrls.add(getSFileImageUrl(folderDocumentEntity.name, Integer.MAX_VALUE));
-                                smallImageUrls.add(getSFileImageUrl(folderDocumentEntity.name, 800));
-                            }
-                        }
-                        return folderDocumentEntities;
-                    }
-                })
                 .compose(this.<List<FolderDocumentEntity>>bindToLifecycle())
                 .subscribeOn(Schedulers.newThread())
                 .observeOn(AndroidSchedulers.mainThread())
@@ -781,11 +759,19 @@ public class FolderListActivity extends FolderBaseActivity
                 } else {
                     //图片 直接预览 (加密的资料库 缩略图显示不了)
                     if (!isEncrypted && IMUtils.isPIC(item.name)) {
-                        int indexOf = bigImageUrls.indexOf(getSFileImageUrl(item.name, Integer.MAX_VALUE));
+
+                        ArrayList<FolderDocumentEntity> imageDatas = new ArrayList<>();
+                        for (int i = 0; i < folderDocumentAdapter.getItemCount(); i++) {
+                            FolderDocumentEntity folderDocumentEntity = folderDocumentAdapter.getItem(i);
+                            if (folderDocumentEntity == null) continue;
+                            if (IMUtils.isPIC(folderDocumentEntity.name)) {
+                                imageDatas.add(folderDocumentEntity);
+                            }
+                        }
+                        int indexOf = imageDatas.indexOf(item);
                         ImageViewerActivity.launch(
                                 getContext(),
-                                smallImageUrls,
-                                bigImageUrls,
+                                imageDatas,
                                 indexOf);
                     } else {
                         FileDownloadActivity.launch(
@@ -800,16 +786,6 @@ public class FolderListActivity extends FolderBaseActivity
                 }
             }
         }
-    }
-
-
-    protected String getSFileImageUrl(String name, int size) {
-        return String.format("%silaw/api/v2/documents/thumbnailImage?repoId=%s&seafileToken=%s&size=%s&p=%s",
-                BuildConfig.API_URL,
-                getSeaFileRepoId(),
-                SFileTokenUtils.getSFileToken(),
-                size,
-                UrlUtils.encodeUrl(String.format("%s%s", getSeaFileDirPath(), name)));
     }
 
 
