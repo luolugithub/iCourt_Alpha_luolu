@@ -9,6 +9,8 @@ import com.icourt.alpha.adapter.baseadapter.BaseArrayRecyclerAdapter;
 import com.icourt.alpha.entity.bean.SFileShareUserInfo;
 import com.icourt.alpha.utils.GlideUtils;
 
+import static com.icourt.alpha.constants.SFileConfig.PERMISSION_RW;
+
 /**
  * Description
  * Company Beijing icourt
@@ -33,7 +35,10 @@ public class FileInnerShareAdapter extends BaseArrayRecyclerAdapter<SFileShareUs
         if (sFileShareUserInfo == null) return;
         ImageView user_icon_iv = holder.obtainView(R.id.user_icon_iv);
 
-        GlideUtils.loadUser(user_icon_iv.getContext(),sFileShareUserInfo.userInfo!=null?sFileShareUserInfo.userInfo.pic:"",user_icon_iv);
+        GlideUtils.loadUser(
+                user_icon_iv.getContext(),
+                sFileShareUserInfo.userInfo != null ? sFileShareUserInfo.userInfo.pic : "",
+                user_icon_iv);
 
 
         TextView user_name_tv = holder.obtainView(R.id.user_name_tv);
@@ -41,7 +46,7 @@ public class FileInnerShareAdapter extends BaseArrayRecyclerAdapter<SFileShareUs
         user_name_tv.setText(sFileShareUserInfo.userInfo != null ?
                 sFileShareUserInfo.userInfo.nickName : "");
 
-        user_action_tv.setText(TextUtils.equals(sFileShareUserInfo.permission, "rw") ? "可读写" : "只读");
+        user_action_tv.setText(TextUtils.equals(sFileShareUserInfo.permission, PERMISSION_RW) ? "可读写" : "只读");
         holder.bindChildClick(user_action_tv);
         user_action_tv.setCompoundDrawablesWithIntrinsicBounds(0, 0, canEdit ? R.mipmap.arrow_bottom : 0, 0);
     }

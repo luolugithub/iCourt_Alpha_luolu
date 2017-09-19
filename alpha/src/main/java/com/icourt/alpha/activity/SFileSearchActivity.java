@@ -257,6 +257,10 @@ public class SFileSearchActivity extends BaseActivity
     public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
         SFileSearchEntity item = sFileSearchAdapter.getItem(position);
         if (item != null) {
+            if (item.is_dir) {
+                showTopSnackBar(R.string.sfile_searched_folder_un_click);
+                return;
+            }
             if (IMUtils.isPIC(item.name)) {
                 ArrayList<String> bigImageUrls = new ArrayList<>();
                 ArrayList<String> smallImageUrls = new ArrayList<>();
@@ -281,7 +285,8 @@ public class SFileSearchActivity extends BaseActivity
                         item.name,
                         item.size,
                         item.fullpath,
-                        null);
+                        null,
+                        FileDownloadActivity.FILE_FROM_REPO);
             }
         }
     }

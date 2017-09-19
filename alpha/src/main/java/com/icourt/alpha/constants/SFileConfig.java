@@ -5,8 +5,12 @@ import android.support.annotation.StringDef;
 import android.support.v4.util.ArrayMap;
 import android.text.TextUtils;
 
+import com.icourt.alpha.R;
+
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.HashMap;
+import java.util.Map;
 
 import static com.icourt.alpha.constants.Const.VIEW_TYPE_GRID;
 import static com.icourt.alpha.constants.Const.VIEW_TYPE_ITEM;
@@ -24,6 +28,49 @@ public class SFileConfig {
     public static final int REPO_SHARED_ME = 1;
     public static final int REPO_LAWFIRM = 2;
     public static final int REPO_PROJECT = 3;
+    public static Map<String, Integer> resourcesDocumentIcon = new HashMap<String, Integer>() {
+        {
+            put("doc", R.mipmap.filetype_doc);
+            put("wps", R.mipmap.filetype_doc);
+            put("rtf", R.mipmap.filetype_doc);
+            put("docx", R.mipmap.filetype_doc);
+
+            put("jpg", R.mipmap.filetype_image);
+            put("jpeg", R.mipmap.filetype_image);
+            put("png", R.mipmap.filetype_image);
+            put("gif", R.mipmap.filetype_image);
+            put("pic", R.mipmap.filetype_image);
+
+            put("pdf", R.mipmap.filetype_pdf);
+            put("ppt", R.mipmap.filetype_ppt);
+            put("pptx", R.mipmap.filetype_ppt);
+
+            put("numbers", R.mipmap.filetype_number);
+            put("pages", R.mipmap.filetype_pages);
+            put("key", R.mipmap.filetype_keynote);
+
+            put("xls", R.mipmap.filetype_excel);
+            put("xlsx", R.mipmap.filetype_excel);
+            put("xlsm", R.mipmap.filetype_excel);
+
+            put("zip", R.mipmap.filetype_zip);
+            put("rar", R.mipmap.filetype_zip);
+            put("apk", R.mipmap.filetype_zip);
+
+            put("mp3", R.mipmap.filetype_music);
+            put("wav", R.mipmap.filetype_music);
+
+            put("mp4", R.mipmap.filetype_video);
+            put("avi", R.mipmap.filetype_video);
+            put("ram", R.mipmap.filetype_video);
+            put("rm", R.mipmap.filetype_video);
+            put("mpg", R.mipmap.filetype_video);
+            put("mpeg", R.mipmap.filetype_video);
+            put("wmv", R.mipmap.filetype_video);
+
+            put("httpd/unix-directory", R.mipmap.folder);
+        }
+    };
 
     /**
      * 0： "我的资料库",

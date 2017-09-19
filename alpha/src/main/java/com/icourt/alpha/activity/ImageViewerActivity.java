@@ -59,6 +59,7 @@ import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 
 import static com.icourt.alpha.utils.FileUtils.isFileExists;
+import static com.icourt.alpha.utils.GlideUtils.canLoadImage;
 
 /**
  * Description  图片查看器 区别于娱乐模式的查看
@@ -181,9 +182,14 @@ public class ImageViewerActivity extends BaseUmengActivity {
             });
             touchImageView.setOnViewTapListener(this);
             if (FileUtils.isGif(s)) {
-                GlideUtils.loadSFilePic(getContext(), s, touchImageView);
-            } else {
                 if (GlideUtils.canLoadImage(getContext())) {
+                    Glide.with(getContext())
+                            .load(s)
+                            .error(R.mipmap.filetype_image)
+                            .into(touchImageView);
+                }
+            } else {
+                if (canLoadImage(getContext())) {
                     Glide.with(getContext())
                             .load(s)
                             .diskCacheStrategy(DiskCacheStrategy.SOURCE)
@@ -243,7 +249,7 @@ public class ImageViewerActivity extends BaseUmengActivity {
                     .subscribe(new io.reactivex.functions.Consumer<Boolean>() {
                         @Override
                         public void accept(Boolean aBoolean) throws Exception {
-                            if (!GlideUtils.canLoadImage(getContext())) return;
+                            if (!canLoadImage(getContext())) return;
 
                             //大图 已经缓存
                             if (aBoolean != null && aBoolean.booleanValue()) {
@@ -268,7 +274,7 @@ public class ImageViewerActivity extends BaseUmengActivity {
          */
         private void loadBigImage(final String bigUrl, ImageView imageView, final View imgLookOriginalTv) {
             imgLookOriginalTv.setVisibility(View.GONE);
-            if (GlideUtils.canLoadImage(getContext())) {
+            if (canLoadImage(getContext())) {
                 Glide.with(getContext())
                         .load(bigUrl)
                         .placeholder(imageView.getDrawable())
@@ -341,7 +347,7 @@ public class ImageViewerActivity extends BaseUmengActivity {
                 public void run() {
                     viewPager.setCurrentItem(selectPos, false);
                 }
-            }, 50);
+            }, 20);
         }
         setTitle(FileUtils.getFileName(smallUrls.get(0)));
     }
@@ -383,7 +389,7 @@ public class ImageViewerActivity extends BaseUmengActivity {
                                 transformFriends(drawable);
                                 break;
                             case 2:
-                                shareImage2WeiXin(drawable);
+                                shareImage();
                                 break;
                             case 3:
                                 savedImport2Project(drawable);
@@ -394,9 +400,59 @@ public class ImageViewerActivity extends BaseUmengActivity {
                 .show();
     }
 
-    protected void shareImage2WeiXin(@NonNull Drawable drawable) {
-        if (drawable == null) return;
-        shareImage2WeiXin(FileUtils.drawableToBitmap(drawable));
+    protected void shareImage() {
+        if (checkAcessFilePermission()) {
+            String url = imagePagerAdapter.getItem(viewPager.getCurrentItem());
+            String savedPath = getPicSavePath(url);
+            if (isFileExists(savedPath)) {
+                shareFileWithAndroid(savedPath);
+            } else {
+                //下载完成后 再保存到资料库
+                showLoadingDialog(null);
+                downloadFile(url, new FileDownloadListener() {
+
+                    @Override
+                    protected void pending(BaseDownloadTask task, int soFarBytes, int totalBytes) {
+                    }
+
+                    @Override
+                    protected void progress(BaseDownloadTask task, int soFarBytes, int totalBytes) {
+                    }
+
+                    @Override
+                    protected void completed(BaseDownloadTask task) {
+                        dismissLoadingDialog();
+                        if (task != null && !TextUtils.isEmpty(task.getPath())) {
+                            try {
+                                sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(new File(task.getPath()))));
+                            } catch (NullPointerException e) {
+                                e.printStackTrace();
+                            }
+                            shareFileWithAndroid(task.getPath());
+                        }
+                    }
+
+                    @Override
+                    protected void paused(BaseDownloadTask task, int soFarBytes, int totalBytes) {
+                        dismissLoadingDialog();
+                    }
+
+                    @Override
+                    protected void error(BaseDownloadTask task, Throwable e) {
+                        dismissLoadingDialog();
+                        log("----------->图片下载异常:" + StringUtils.throwable2string(e));
+                        showTopSnackBar(String.format("下载异常!" + StringUtils.throwable2string(e)));
+                    }
+
+                    @Override
+                    protected void warn(BaseDownloadTask task) {
+                        dismissLoadingDialog();
+                    }
+                });
+            }
+        } else {
+            requestAcessFilePermission();
+        }
     }
 
     /**
@@ -457,7 +513,7 @@ public class ImageViewerActivity extends BaseUmengActivity {
      */
     private void checkPermissionOrDownload() {
         if (checkAcessFilePermission()) {
-            downloadFile(imagePagerAdapter.getItem(viewPager.getCurrentItem()));
+            downloadFile(imagePagerAdapter.getItem(viewPager.getCurrentItem()), picDownloadListener);
         } else {
             requestAcessFilePermission();
         }
@@ -468,7 +524,7 @@ public class ImageViewerActivity extends BaseUmengActivity {
      *
      * @param url
      */
-    private void downloadFile(String url) {
+    private void downloadFile(String url, FileDownloadListener fileDownloadListener) {
         if (TextUtils.isEmpty(url)) {
             showTopSnackBar("下载地址为null");
             return;
@@ -485,7 +541,7 @@ public class ImageViewerActivity extends BaseUmengActivity {
                 .getImpl()
                 .create(url)
                 .setPath(getPicSavePath(url))
-                .setListener(picDownloadListener).start();
+                .setListener(fileDownloadListener).start();
     }
 
     private String getPicSavePath(String url) {

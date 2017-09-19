@@ -3,6 +3,7 @@ package com.icourt.alpha.entity.bean;
 import android.text.TextUtils;
 
 import com.google.gson.annotations.SerializedName;
+import com.icourt.alpha.constants.Const;
 
 import java.io.Serializable;
 import java.util.List;
@@ -37,9 +38,11 @@ public class ProjectEntity implements Serializable {
      * myStar : 0
      */
     @SerializedName(value = "pkId", alternate = {"id"})
-    public String pkId="";
+    public String pkId = "";
     public String name;
     public String status;
+
+    @Const.PROJECT_TYPE
     public String matterType;//项目模板(类型)(0争议解决，1非诉专项,2常年顾问，3所内事务)
     public String matterTypeName;
     public String statusName;

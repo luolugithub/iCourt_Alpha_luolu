@@ -21,7 +21,7 @@ public class SFileNameFilter extends EmojiFilter {
 
     private static final String noticeStr = "文件名不能包含 \\ / : * ? \" < > | 和 emoji";
     // 特殊字符不能作为资料库名称：'\\', '/', ':', '*', '?', '"', '<', '>', '|', '\b', '\t'
-    private static final String patternStr = "[\\\\|/|:|：|*|?|？|\"|“|”|<|>|\\||\t]";
+    private static final String patternStr = "[\\\\|/|:|*|?|\"|<|>|\\||\t]";
     private static final Pattern pattern = Pattern.compile(patternStr, Pattern.CASE_INSENSITIVE);
 
     /**

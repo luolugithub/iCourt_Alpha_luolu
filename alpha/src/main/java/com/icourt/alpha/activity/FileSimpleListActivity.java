@@ -235,7 +235,7 @@ public class FileSimpleListActivity extends FolderBaseActivity
                 new SFileCallBack<List<FolderDocumentEntity>>() {
                     @Override
                     public void onSuccess(Call<List<FolderDocumentEntity>> call, Response<List<FolderDocumentEntity>> response) {
-                        sortFile(wrapData(getSeaFileRepoId(),getSeaFileDirPath(),response.body()));
+                        sortFile(wrapData(getSeaFileRepoId(), getSeaFileDirPath(), response.body()));
                         stopRefresh();
                     }
 
@@ -497,7 +497,8 @@ public class FileSimpleListActivity extends FolderBaseActivity
                         item.name,
                         item.size,
                         String.format("%s%s", getSeaFileDirPath(), item.name),
-                        null);
+                        null,
+                        FileDownloadActivity.FILE_FROM_REPO);
             }
         }
     }
