@@ -1,13 +1,11 @@
 package com.icourt.alpha.activity;
 
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.AppBarLayout;
-import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.ImageView;
@@ -15,18 +13,21 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.icourt.alpha.R;
+import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.base.BaseAppUpdateActivity;
 import com.icourt.alpha.entity.bean.AppVersionEntity;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.callback.AppUpdateCallBack;
 import com.icourt.alpha.utils.UMMobClickAgent;
+import com.icourt.alpha.widget.dialog.BottomActionDialog;
 import com.icourt.alpha.widget.manager.DataCleanManager;
 import com.umeng.analytics.MobclickAgent;
 import com.umeng.socialize.UMAuthListener;
 import com.umeng.socialize.UMShareAPI;
 import com.umeng.socialize.bean.SHARE_MEDIA;
 
+import java.util.Arrays;
 import java.util.Map;
 
 import butterknife.BindView;
@@ -129,16 +130,7 @@ public class SetingActivity extends BaseAppUpdateActivity {
         super.onClick(v);
         switch (v.getId()) {
             case R.id.setting_clear_cache_layout:
-                new AlertDialog.Builder(getContext())
-                        .setMessage("确认清除?")
-                        .setPositiveButton("确定", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                DataCleanManager.clearAllCache(getActivity());
-                                settingClearCacheTextview.setText("0K");
-                            }
-                        }).setNegativeButton("取消", null)
-                        .show();
+                showClearCacheDialog();
                 break;
             case R.id.setting_helper_layout:
                 getHelperUrl();
@@ -178,20 +170,48 @@ public class SetingActivity extends BaseAppUpdateActivity {
     }
 
     /**
-     * 显示退出登录对话框
+     * 显示退出登录sheet
      */
     private void showLoginOutConfirmDialog() {
-        new AlertDialog.Builder(getActivity())
-                .setTitle("提示")
-                .setMessage(getResources().getStringArray(R.array.my_center_isloginout_text_arr)[Math.random() > 0.5 ? 1 : 0].replace("|", "\n"))
-                .setPositiveButton("确认", new DialogInterface.OnClickListener() {
+        new BottomActionDialog(getContext(),
+                "确定退出?",
+                Arrays.asList("确定"),
+                0,
+                0xFFFF0000,
+                new BottomActionDialog.OnActionItemClickListener() {
                     @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        loginOut();
+                    public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
+                        dialog.dismiss();
+                        switch (position) {
+                            case 0:
+                                loginOut();
+                                break;
+                        }
                     }
-                })
-                .setNegativeButton("取消", null)
-                .create().show();
+                }).show();
+    }
+
+    /**
+     * 显示清除缓存sheet
+     */
+    private void showClearCacheDialog() {
+        new BottomActionDialog(getContext(),
+                "确定清除?",
+                Arrays.asList("确定"),
+                0,
+                0xFFFF0000,
+                new BottomActionDialog.OnActionItemClickListener() {
+                    @Override
+                    public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
+                        dialog.dismiss();
+                        switch (position) {
+                            case 0:
+                                DataCleanManager.clearAllCache(getActivity());
+                                settingClearCacheTextview.setText("0K");
+                                break;
+                        }
+                    }
+                }).show();
     }
 
     /**
