@@ -1,5 +1,7 @@
 package com.icourt.alpha.entity.bean;
 
+import java.io.Serializable;
+
 /**
  * Description
  * Company Beijing icourt
@@ -7,12 +9,13 @@ package com.icourt.alpha.entity.bean;
  * date createTime：2017/9/12
  * version 2.1.0
  */
-public class SeaFileImage implements ISeaFileImage {
+public class SeaFileImage implements ISeaFileImage, Serializable {
 
-    private String seaFileImageFullPath;
+
     private String seaFileImageRepoId;
+    private String seaFileImageFullPath;
 
-    public SeaFileImage(String seaFileImageFullPath, String seaFileImageRepoId) {
+    public SeaFileImage(String seaFileImageRepoId, String seaFileImageFullPath) {
         this.seaFileImageFullPath = seaFileImageFullPath;
         this.seaFileImageRepoId = seaFileImageRepoId;
     }
