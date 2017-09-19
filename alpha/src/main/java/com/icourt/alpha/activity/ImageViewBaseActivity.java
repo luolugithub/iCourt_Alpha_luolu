@@ -115,18 +115,20 @@ public class ImageViewBaseActivity extends BaseUmengActivity {
 
     /**
      * 下载文件
+     *
      * @param url
      * @param cacheFullPath
      */
     protected final void downloadFile(String url, String cacheFullPath) {
-       downloadFile(url,cacheFullPath,new LoadingDownloadListener(){
-           @Override
-           protected void completed(BaseDownloadTask task) {
-               super.completed(task);
-               showTopSnackBar("保存成功!");
-           }
-       });
+        downloadFile(url, cacheFullPath, new LoadingDownloadListener() {
+            @Override
+            protected void completed(BaseDownloadTask task) {
+                super.completed(task);
+                showTopSnackBar("保存成功!");
+            }
+        });
     }
+
     /**
      * 文件下载
      * 1.新请求权限
@@ -145,7 +147,7 @@ public class ImageViewBaseActivity extends BaseUmengActivity {
                 showTopSnackBar(R.string.str_sd_unavailable);
                 return;
             }
-            if (isFileExists(url)) {
+            if (isFileExists(cacheFullPath)) {
                 showTopSnackBar("文件已保存");
                 return;
             }

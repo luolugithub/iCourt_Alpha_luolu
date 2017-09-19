@@ -1,6 +1,7 @@
 package com.icourt.alpha.constants;
 
 import android.os.Environment;
+import android.text.TextUtils;
 
 import com.icourt.alpha.utils.BugUtils;
 import com.icourt.alpha.utils.StringUtils;
@@ -56,6 +57,7 @@ public class DownloadConfig {
      */
     public static final String getSeaFileDownloadPath(String userId, String seaFileRepoId, String seaFileFullPath) {
         try {
+            seaFileFullPath = getFormatedFileName(seaFileFullPath);
             return new StringBuilder(Environment.getExternalStorageDirectory().getAbsolutePath())
                     .append(File.separator)
                     .append(FILE_DOWNLOAD_ROOT_DIR)
@@ -84,6 +86,21 @@ public class DownloadConfig {
     }
 
     /**
+     * //去掉"//"
+     *
+     * @param name
+     * @return
+     */
+    private static final String getFormatedFileName(String name) {
+        String illegalSeparator = String.format("%s%s", File.separator, File.separator);
+        if (!TextUtils.isEmpty(name)
+                && name.contains(illegalSeparator)) {
+            name = name.replace(illegalSeparator, File.separator);
+        }
+        return name;
+    }
+
+    /**
      * 获取一般文件保存路径
      *
      * @param userId
@@ -92,6 +109,7 @@ public class DownloadConfig {
      */
     public static final String getCommFileDownloadPath(String userId, String fileName) {
         try {
+            fileName = getFormatedFileName(fileName);
             return new StringBuilder(Environment.getExternalStorageDirectory().getAbsolutePath())
                     .append(File.separator)
                     .append(FILE_DOWNLOAD_ROOT_DIR)

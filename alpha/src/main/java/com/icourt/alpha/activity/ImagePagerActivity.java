@@ -99,6 +99,7 @@ public class ImagePagerActivity extends ImageViewBaseActivity implements BasePag
     ArrayList<SFileImageInfoEntity> sFileImageInfoEntities;
     Handler handler = new Handler();
     int realPos;
+
     /**
      * @param context
      * @param urls
@@ -350,26 +351,15 @@ public class ImagePagerActivity extends ImageViewBaseActivity implements BasePag
                 });
     }
 
-    /**
-     * 获取当前image url
-     *
-     * @return
-     */
-    private String getCurrImageUrl() {
-        if (urls != null && urls.length > 0) {
-            return urls[imagePager.getCurrentItem()];
-        }
-        return null;
-    }
 
     @OnClick({R.id.download_img})
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.download_img:
-                final String url = getCurrImageUrl();
-                final String picSavePath = getPicSavePath(url);
-                downloadFile(url, picSavePath);
+                final String originalImageUrl = getDownloadUrl(imagePager.getCurrentItem());
+                final String picSavePath = getPicSavePath(imagePager.getCurrentItem());
+                downloadFile(originalImageUrl, picSavePath);
                 break;
             default:
                 super.onClick(v);
@@ -406,8 +396,8 @@ public class ImagePagerActivity extends ImageViewBaseActivity implements BasePag
             if (drawable == null) return false;
             final SFileImageInfoEntity finalSFileImageInfoEntity = sFileImageInfoEntity;
 
-            final String url = getCurrImageUrl();
-            final String picSavePath = getPicSavePath(url);
+            final String originalImageUrl = getDownloadUrl(imagePager.getCurrentItem());
+            final String picSavePath = getPicSavePath(imagePager.getCurrentItem());
 
             if (finalSFileImageInfoEntity != null) {
                 final boolean isCollected = isCollected(sFileImageInfoEntity.chatMsgId);
@@ -421,10 +411,10 @@ public class ImagePagerActivity extends ImageViewBaseActivity implements BasePag
                                 dialog.dismiss();
                                 switch (position) {
                                     case 0:
-                                        shareHttpFile(url, picSavePath);
+                                        shareHttpFile(originalImageUrl, picSavePath);
                                         break;
                                     case 1:
-                                        shareHttpFile2Friends(url, picSavePath);
+                                        shareHttpFile2Friends(originalImageUrl, picSavePath);
                                         break;
                                     case 2:
                                         if (isCollected) {
@@ -437,7 +427,7 @@ public class ImagePagerActivity extends ImageViewBaseActivity implements BasePag
                                         msgActionDing(!isDinged, finalSFileImageInfoEntity.chatMsgId);
                                         break;
                                     case 4:
-                                        shareHttpFile2repo(url, picSavePath);
+                                        shareHttpFile2repo(originalImageUrl, picSavePath);
                                         break;
                                 }
                             }
@@ -452,16 +442,16 @@ public class ImagePagerActivity extends ImageViewBaseActivity implements BasePag
                                 dialog.dismiss();
                                 switch (position) {
                                     case 0:
-                                        downloadFile(url, picSavePath);
+                                        downloadFile(originalImageUrl, picSavePath);
                                         break;
                                     case 1:
-                                        shareHttpFile2Friends(url, picSavePath);
+                                        shareHttpFile2Friends(originalImageUrl, picSavePath);
                                         break;
                                     case 2:
-                                        shareHttpFile(url, picSavePath);
+                                        shareHttpFile(originalImageUrl, picSavePath);
                                         break;
                                     case 3:
-                                        shareHttpFile2repo(url, picSavePath);
+                                        shareHttpFile2repo(originalImageUrl, picSavePath);
                                         break;
                                 }
                             }
@@ -566,12 +556,21 @@ public class ImagePagerActivity extends ImageViewBaseActivity implements BasePag
     }
 
 
-    private String getPicSavePath(String url) {
-        if (url.startsWith("http")) {
-            return DownloadConfig.getCommFileDownloadPath(getLoginUserId(), Md5Utils.md5(url, url) + ".png");
-        } else {
-            return url;
+    /**
+     * 获取保存路径
+     *
+     * @param pos
+     * @return
+     */
+    private String getPicSavePath(int pos) {
+        if (sFileImageInfoEntities != null && pos < sFileImageInfoEntities.size()) {
+            SFileImageInfoEntity sFileImageInfoEntity = sFileImageInfoEntities.get(pos);
+            if (sFileImageInfoEntity != null) {
+                return DownloadConfig.getSeaFileDownloadPath(getLoginUserId(), sFileImageInfoEntity.repo_id, String.format("%s/%s", sFileImageInfoEntity.path, sFileImageInfoEntity.name));
+            }
         }
+        String downloadUrl = getDownloadUrl(pos);
+        return DownloadConfig.getCommFileDownloadPath(getLoginUserId(), Md5Utils.md5(downloadUrl, downloadUrl) + ".png");
     }
 
 //    @Override
@@ -835,7 +834,7 @@ public class ImagePagerActivity extends ImageViewBaseActivity implements BasePag
          * @param pos
          * @return
          */
-        private String getBigUrl(int pos) {
+        public String getBigUrl(int pos) {
             if (sFileImageInfoEntities != null
                     && sFileImageInfoEntities.size() > pos) {
                 SFileImageInfoEntity sFileImageInfoEntity = sFileImageInfoEntities.get(pos);
@@ -869,7 +868,35 @@ public class ImagePagerActivity extends ImageViewBaseActivity implements BasePag
             }
             super.destroyItem(container, position, object);
         }
+    }
 
+    /**
+     * 获取下载地址
+     *
+     * @param pos
+     * @return
+     */
+    private String getDownloadUrl(int pos) {
+        if (sFileImageInfoEntities != null
+                && sFileImageInfoEntities.size() > pos) {
+            SFileImageInfoEntity sFileImageInfoEntity = sFileImageInfoEntities.get(pos);
+            if (sFileImageInfoEntity == null) {
+                return pagerAdapter.getItem(pos);
+            }
+            StringBuilder bigUrlBuilder = new StringBuilder(BuildConfig.API_CHAT_URL);
+            bigUrlBuilder.append("im/v1/msgs/files/download/refer");
+            bigUrlBuilder.append("?");
+            bigUrlBuilder.append("repo_id=");
+            bigUrlBuilder.append(sFileImageInfoEntity.repo_id);
+            bigUrlBuilder.append("&path=");
+            bigUrlBuilder.append(sFileImageInfoEntity.path);
+            bigUrlBuilder.append("&name=");
+            bigUrlBuilder.append(sFileImageInfoEntity.name);
+            bigUrlBuilder.append("&token=");
+            bigUrlBuilder.append(getUserToken());
+            return bigUrlBuilder.toString();
+        }
+        return pagerAdapter.getItem(pos);
     }
 
 
