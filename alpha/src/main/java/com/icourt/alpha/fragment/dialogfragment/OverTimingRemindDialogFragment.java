@@ -6,6 +6,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.text.TextUtils;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -40,7 +41,7 @@ import butterknife.Unbinder;
  */
 
 public class OverTimingRemindDialogFragment extends BaseDialogFragment implements Handler.Callback {
-    public static final String USE_TIME = "useTime";
+    public static final String USE_TIME_CONTENT = "useTimeContent";
     private static final int H_MSG_DISMISS = 1;
 
     @BindView(R.id.over_timing_title_tv)
@@ -55,24 +56,26 @@ public class OverTimingRemindDialogFragment extends BaseDialogFragment implement
      * @param useTime 单位Second
      * @return
      */
-    public static OverTimingRemindDialogFragment newInstance(@NonNull long useTime) {
+    public static OverTimingRemindDialogFragment newInstance(@NonNull String useTime) {
         OverTimingRemindDialogFragment fragment = new OverTimingRemindDialogFragment();
         Bundle args = new Bundle();
-        args.putLong(USE_TIME, useTime);
+        args.putString(USE_TIME_CONTENT, useTime);
         fragment.setArguments(args);
         return fragment;
     }
 
     /**
-     * @param useTime 单位Second
+     * @param content 要显示的内容
      * @return
      */
-    public void updateTimeText(@NonNull long useTime) {
-        if (overTimingTitleTv != null && useTime != 0) {
-            String overTimingString = String.format(getContext().getResources()
-                    .getString(R.string.timer_over_timing_remind_text), TimeUnit.SECONDS.toHours(useTime));
-            overTimingTitleTv.setText(overTimingString);
+    public void updateTimeText(@NonNull String content) {
+        if (overTimingTitleTv != null && !TextUtils.isEmpty(content)) {
+            overTimingTitleTv.setText(content);
         }
+//        if (overTimingTitleTv != null && useTime != 0) {
+//            String overTimingString = getString(R.string.timer_over_timing_remind_text, TimeUnit.SECONDS.toHours(useTime));
+//            overTimingTitleTv.setText(overTimingString);
+//        }
     }
 
     @Nullable
@@ -122,12 +125,14 @@ public class OverTimingRemindDialogFragment extends BaseDialogFragment implement
             }
         }
 
-        long useTime = getArguments().getLong(USE_TIME);
-        if (useTime != 0) {
-            String overTimingString = String.format(getContext().getResources()
-                    .getString(R.string.timer_over_timing_remind_text), TimeUnit.SECONDS.toHours(useTime));
-            overTimingTitleTv.setText(overTimingString);
+        String content = getArguments().getString(USE_TIME_CONTENT);
+        if (!TextUtils.isEmpty(content)) {
+            overTimingTitleTv.setText(content);
         }
+//        if (useTime != 0) {
+//            String overTimingString = getContext().getResources().getString(R.string.timer_over_timing_remind_text, TimeUnit.SECONDS.toHours(useTime));
+//            overTimingTitleTv.setText(overTimingString);
+//        }
     }
 
     @OnClick({R.id.over_timing_title_tv,

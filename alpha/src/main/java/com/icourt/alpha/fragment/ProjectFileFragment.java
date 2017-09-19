@@ -223,7 +223,11 @@ public class ProjectFileFragment extends SeaFileBaseFragment
                 .filter(new Predicate<String>() {//4----->校验repoid不能为空
                     @Override
                     public boolean test(@NonNull String s) throws Exception {
-                        return !TextUtils.isEmpty(s);
+                        boolean canNext = !TextUtils.isEmpty(s);
+                        if (!canNext) {
+                            bugSync("项目repo 获取null", "projectid:" + projectId);
+                        }
+                        return canNext;
                     }
                 })
                 .flatMap(new Function<String, ObservableSource<List<FolderDocumentEntity>>>() {//5--->获取该repo下面的文件
@@ -544,7 +548,8 @@ public class ProjectFileFragment extends SeaFileBaseFragment
                         item.name,
                         item.size,
                         String.format("%s%s", getSeaFileDirPath(), item.name),
-                        null);
+                        null,
+                        FileDownloadActivity.FILE_FROM_PROJECT);
             }
         }
     }

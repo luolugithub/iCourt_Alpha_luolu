@@ -55,6 +55,9 @@ import static com.icourt.alpha.activity.MainActivity.KEY_CUSTOMER_PERMISSION;
  * version 1.0.0
  */
 public class ProjectJudgeActivity extends BaseActivity {
+    private static final String KEY_LIST = "key_list";
+    private static final String KEY_TYPE = "key_type";
+    private static final String KEY_MKEY = "key_mkey";
 
     @BindView(R.id.titleBack)
     ImageView titleBack;
@@ -80,9 +83,9 @@ public class ProjectJudgeActivity extends BaseActivity {
     public static void launch(@NonNull Context context, String key,List list, int type) {
         if (context == null) return;
         Intent intent = new Intent(context, ProjectJudgeActivity.class);
-        intent.putExtra("list", (Serializable) list);
-        intent.putExtra("type", type);
-        intent.putExtra("key", key);
+        intent.putExtra(KEY_LIST, (Serializable) list);
+        intent.putExtra(KEY_TYPE, type);
+        intent.putExtra(KEY_MKEY, key);
         context.startActivity(intent);
     }
 
@@ -98,9 +101,9 @@ public class ProjectJudgeActivity extends BaseActivity {
     @Override
     protected void initView() {
         super.initView();
-        list = (List) getIntent().getSerializableExtra("list");
-        type = getIntent().getIntExtra("type", -1);
-        key = getIntent().getStringExtra("key");
+        list = (List) getIntent().getSerializableExtra(KEY_LIST);
+        type = getIntent().getIntExtra(KEY_TYPE, -1);
+        key = getIntent().getStringExtra(KEY_MKEY);
         customerDbService = new CustomerDbService(LoginInfoUtils.getLoginUserId());
         setTitle(key);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getContext());

@@ -146,6 +146,7 @@ public class GlideUtils {
         if (canLoadImage(context)) {
             Glide.with(context)
                     .load(path)
+                    .placeholder(R.mipmap.filetype_image)
                     .error(R.mipmap.filetype_image)
                     .into(imageView);
         }

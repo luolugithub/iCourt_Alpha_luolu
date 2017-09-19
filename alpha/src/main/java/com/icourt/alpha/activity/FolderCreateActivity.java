@@ -15,6 +15,7 @@ import com.icourt.alpha.widget.filter.SFileNameFilter;
 import com.icourt.api.RequestUtils;
 
 import retrofit2.Call;
+import retrofit2.HttpException;
 import retrofit2.Response;
 
 /**
@@ -69,7 +70,7 @@ public class FolderCreateActivity extends SFileEditBaseActivity {
 
     @Override
     protected int getMaxInputLimitNum() {
-        return 100;
+        return 80;
     }
 
     @Override
@@ -95,6 +96,10 @@ public class FolderCreateActivity extends SFileEditBaseActivity {
                         public void onFailure(Call<RepoEntity> call, Throwable t) {
                             dismissLoadingDialog();
                             super.onFailure(call, t);
+                            if (t instanceof HttpException
+                                    && ((HttpException) t).code() == 400) {
+                                showToast("文件夹名字可能太长啦");
+                            }
                         }
                     });
         }

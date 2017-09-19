@@ -116,7 +116,7 @@ public class ProjectDetailActivity extends BaseActivity implements OnFragmentCal
         detailViewpager.setAdapter(baseFragmentAdapter);
         detailTablayout.setupWithViewPager(detailViewpager);
         baseFragmentAdapter.bindTitle(true, Arrays.asList(
-                "概览", "任务", "计时", "文档"
+                getString(R.string.project_tab_detail), getString(R.string.project_tab_task), getString(R.string.project_tab_time), getString(R.string.project_tab_document)
         ));
         baseFragmentAdapter.bindData(true,
                 Arrays.asList(
@@ -295,7 +295,7 @@ public class ProjectDetailActivity extends BaseActivity implements OnFragmentCal
     private void showTaskMenu() {
         new BottomActionDialog(getContext(),
                 null,
-                Arrays.asList("已完成的任务", "管理任务组"),
+                Arrays.asList(getString(R.string.project_finished_task), getString(R.string.project_manage_group)),
                 new BottomActionDialog.OnActionItemClickListener() {
                     @Override
                     public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
