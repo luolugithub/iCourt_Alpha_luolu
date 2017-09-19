@@ -66,6 +66,10 @@
                     android:drawablePadding="@dimen/dp10"
                     android:padding="@dimen/dp10"
                     android:text="Alpha-Service"
+                    android:enabled="true"
+                    android:textIsSelectable="true"
+                    android:focusable="true"
+                    android:longClickable="true"
                     android:textColor="@color/alpha_font_color_black"
                     android:textSize="16sp" />
 
@@ -77,6 +81,10 @@
                     android:drawableLeft="@mipmap/setting_email"
                     android:drawablePadding="@dimen/dp10"
                     android:padding="@dimen/dp10"
+                    android:enabled="true"
+                    android:textIsSelectable="true"
+                    android:focusable="true"
+                    android:longClickable="true"
                     android:text="orange@icourt.cc"
                     android:textColor="@color/alpha_font_color_black"
                     android:textSize="16sp" />

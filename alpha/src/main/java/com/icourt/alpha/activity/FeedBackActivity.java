@@ -19,7 +19,6 @@ import com.icourt.alpha.utils.SystemUtils;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import butterknife.OnClick;
 
 /**
  * Description 意见反馈页面
@@ -62,8 +61,8 @@ public class FeedBackActivity extends BaseActivity {
         setTitle("意见反馈");
     }
 
-    @OnClick({R.id.feedback_wechat_tv,
-            R.id.feedback_email_tv})
+//    @OnClick({R.id.feedback_wechat_tv,   打开微信
+//            R.id.feedback_email_tv})     发送邮件
     @Override
     public void onClick(View v) {
         super.onClick(v);
