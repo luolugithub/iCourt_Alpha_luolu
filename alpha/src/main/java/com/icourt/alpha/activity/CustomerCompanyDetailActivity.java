@@ -212,6 +212,12 @@ public class CustomerCompanyDetailActivity extends BaseActivity {
                     addGroupItemView(contactDeatilBean.getGroups());
                 }
             }
+            if (contactDeatilBean.getTels() != null) {
+                if (contactDeatilBean.getTels().size() > 0) {
+                    activityPersonContactDetailOtherParentLayout.setVisibility(View.VISIBLE);
+                    addTelsView(contactDeatilBean.getTels());
+                }
+            }
             if (contactDeatilBean.getMails() != null) {
                 if (contactDeatilBean.getMails().size() > 0) {
                     activityPersonContactDetailOtherParentLayout.setVisibility(View.VISIBLE);
@@ -266,7 +272,18 @@ public class CustomerCompanyDetailActivity extends BaseActivity {
             } else {
                 valueView.setVisibility(View.GONE);
             }
-        } else if (object instanceof ContactDeatilBean.AddressesBean) {
+        } else if (object instanceof ContactDeatilBean.TelsBean) {
+            keyView.setAutoLinkMask(Linkify.ALL);
+            keyView.setMovementMethod(LinkMovementMethod.getInstance());
+            ContactDeatilBean.TelsBean tel = (ContactDeatilBean.TelsBean) object;
+            keyView.setText(tel.getItemValue());
+            if (!TextUtils.isEmpty(tel.getItemSubType())) {
+                valueView.setVisibility(View.VISIBLE);
+                valueView.setText(tel.getItemSubType());
+            } else {
+                valueView.setVisibility(View.GONE);
+            }
+        }else if (object instanceof ContactDeatilBean.AddressesBean) {
             ContactDeatilBean.AddressesBean address = (ContactDeatilBean.AddressesBean) object;
             keyView.setText(address.getItemValue());
             if (!TextUtils.isEmpty(address.getItemSubType())) {
@@ -316,6 +333,26 @@ public class CustomerCompanyDetailActivity extends BaseActivity {
             }
         }
         activityPersonContactDetailGroupLayout.addView(parentView);
+    }
+
+    /**
+     * 添加电话view
+     */
+    private void addTelsView(List<ContactDeatilBean.TelsBean> tels) {
+        View parentView = layoutInflater.inflate(R.layout.person_contact_detail_item_layout, null);
+        TextView formView = (TextView) parentView.findViewById(R.id.person_contact_detail_item_form_name_view);
+        LinearLayout formValueView = (LinearLayout) parentView.findViewById(R.id.person_contact_detail_item_form_value_view);
+        if (tels != null) {
+            formView.setText("电话");
+            for (int i = 0; i < tels.size(); i++) {
+                if (i == tels.size() - 1) {
+                    formValueView.addView(getItemSonView(tels.get(i), false));
+                } else {
+                    formValueView.addView(getItemSonView(tels.get(i), true));
+                }
+            }
+            activityPersonContactDetailOtherParentLayout.addView(parentView);
+        }
     }
 
     /**
