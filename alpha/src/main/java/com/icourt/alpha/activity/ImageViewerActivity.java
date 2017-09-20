@@ -33,22 +33,16 @@ import com.icourt.alpha.utils.GlideUtils;
 import com.icourt.alpha.utils.SFileTokenUtils;
 import com.icourt.alpha.utils.UrlUtils;
 import com.icourt.alpha.widget.dialog.BottomActionDialog;
+import com.liulishuo.filedownloader.BaseDownloadTask;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.concurrent.TimeUnit;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import cn.finalteam.galleryfinal.widget.zoonview.PhotoView;
 import cn.finalteam.galleryfinal.widget.zoonview.PhotoViewAttacher;
-import io.reactivex.Observable;
-import io.reactivex.ObservableEmitter;
-import io.reactivex.ObservableOnSubscribe;
-import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.schedulers.Schedulers;
 
 import static com.icourt.alpha.utils.GlideUtils.canLoadImage;
 
@@ -155,17 +149,29 @@ public class ImageViewerActivity extends ImageViewBaseActivity {
             return getSFileImageUrl(iSeaFile.getSeaFileRepoId(), iSeaFile.getSeaFileFullPath(), Integer.MAX_VALUE);
         }
 
+        /**
+         * 原图是否存在
+         *
+         * @param iSeaFile
+         * @return
+         */
+        private boolean isOriginalImageExists(ISeaFile iSeaFile) {
+            //已经缓存了原图
+            return FileUtils.isFileExists(getPicSavePath(iSeaFile));
+        }
+
 
         @Override
-        public void bindDataToItem(ISeaFile o, ViewGroup container, View itemView, int pos) {
+        public void bindDataToItem(final ISeaFile o, ViewGroup container, View itemView, int pos) {
             final PhotoView touchImageView = itemView.findViewById(R.id.imageView);
             touchImageView.setMaximumScale(5.0f);
             final View imgLookOriginalTv = itemView.findViewById(R.id.img_look_original_tv);
-            final String bigUrl = getOriginalImageUrl(o);
+            final String OriginalImageUrl = getOriginalImageUrl(o);
             imgLookOriginalTv.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    loadBigImage(bigUrl, touchImageView, imgLookOriginalTv);
+                    //加载原图
+                    loadOriginalImage(o, touchImageView, imgLookOriginalTv);
                 }
             });
             touchImageView.setOnViewTapListener(this);
@@ -174,21 +180,13 @@ public class ImageViewerActivity extends ImageViewBaseActivity {
             String picSavePath = getPicSavePath(o);
             if (FileUtils.isFileExists(picSavePath)) {
                 imgLookOriginalTv.setVisibility(View.GONE);
-                Glide.with(getContext())
-                        .load(picSavePath)
-                        .error(R.mipmap.filetype_image)
-                        .into(touchImageView);
+                GlideUtils.loadSFilePicWithoutPlaceholder(getContext(), picSavePath, touchImageView);
                 return;
             }
 
             String thumbImageUrl = getThumbImageUrl(o);
             if (FileUtils.isGif(o.getSeaFileFullPath())) {
-                if (GlideUtils.canLoadImage(getContext())) {
-                    Glide.with(getContext())
-                            .load(thumbImageUrl)
-                            .error(R.mipmap.filetype_image)
-                            .into(touchImageView);
-                }
+                GlideUtils.loadSFilePicWithoutPlaceholder(getContext(), thumbImageUrl, touchImageView);
             } else {
                 if (canLoadImage(getContext())) {
                     Glide.with(getContext())
@@ -203,11 +201,12 @@ public class ImageViewerActivity extends ImageViewBaseActivity {
 
                                 @Override
                                 public boolean onResourceReady(GlideDrawable resource, String model, Target<GlideDrawable> target, boolean isFromMemoryCache, boolean isFirstResource) {
-                                    //有原图
-                                    if (!TextUtils.isEmpty(bigUrl)
+                                    //有原图  全屏模式才展示查看原图
+                                    if (isFullScreenMode()
+                                            && !TextUtils.isEmpty(OriginalImageUrl)
                                             && resource != null
                                             && (resource.getIntrinsicHeight() >= 800 || resource.getIntrinsicWidth() >= 800)) {
-                                        checkAndLoadBigImage(bigUrl, touchImageView, imgLookOriginalTv);
+                                        checkAndLoadBigImage(o, touchImageView, imgLookOriginalTv);
                                     } else {
                                         imgLookOriginalTv.setVisibility(View.GONE);
                                     }
@@ -224,66 +223,38 @@ public class ImageViewerActivity extends ImageViewBaseActivity {
 
         /**
          * 检查和加载原图
-         *
-         * @param bigUrl
-         * @param imageView
          */
-        private void checkAndLoadBigImage(final String bigUrl, final ImageView imageView, final View imgLookOriginalTv) {
-            Observable.create(new ObservableOnSubscribe<Boolean>() {
-                @Override
-                public void subscribe(ObservableEmitter<Boolean> e) throws Exception {
-                    if (e.isDisposed()) return;
-                    File file = null;
-                    try {
-                        file = Glide.with(getContext())
-                                .load(bigUrl)
-                                .downloadOnly(Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL)
-                                .get(200, TimeUnit.MILLISECONDS);
-                    } catch (Exception ex) {
-                        ex.printStackTrace();
-                    }
-                    e.onNext(file != null && file.exists());
-                    e.onComplete();
-                }
-            }).compose(ImageViewerActivity.this.<Boolean>bindToLifecycle())
-                    .subscribeOn(Schedulers.newThread())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(new io.reactivex.functions.Consumer<Boolean>() {
-                        @Override
-                        public void accept(Boolean aBoolean) throws Exception {
-                            if (!canLoadImage(getContext())) return;
-
-                            //大图 已经缓存
-                            if (aBoolean != null && aBoolean.booleanValue()) {
-                                loadBigImage(bigUrl, imageView, imgLookOriginalTv);
-                            } else {
-                                if (isFullScreenMode()) {
-                                    imgLookOriginalTv.setVisibility(View.VISIBLE);
-                                } else {
-                                    imgLookOriginalTv.setVisibility(View.GONE);
-                                }
-                            }
-                        }
-                    });
+        private void checkAndLoadBigImage(final ISeaFile iSeaFile, final ImageView imageView, final View imgLookOriginalTv) {
+            if (imageView == null) return;
+            //已经缓存了原图
+            final String picSavePath = getPicSavePath(iSeaFile);
+            if (FileUtils.isFileExists(picSavePath)) {
+                imgLookOriginalTv.setVisibility(View.GONE);
+                GlideUtils.loadSFilePicWithoutPlaceholder(getContext(), picSavePath, imageView);
+                return;
+            } else {//下载
+                imgLookOriginalTv.setVisibility(View.VISIBLE);
+            }
         }
 
         /**
-         * 加载大图
+         * 加载原图
          *
-         * @param bigUrl
+         * @param iSeaFile
          * @param imageView
          * @param imgLookOriginalTv
          */
-        private void loadBigImage(final String bigUrl, ImageView imageView, final View imgLookOriginalTv) {
+        private void loadOriginalImage(final ISeaFile iSeaFile, final ImageView imageView, final View imgLookOriginalTv) {
             imgLookOriginalTv.setVisibility(View.GONE);
-            if (canLoadImage(getContext())) {
-                Glide.with(getContext())
-                        .load(bigUrl)
-                        .placeholder(imageView.getDrawable())
-                        .error(R.mipmap.filetype_image)
-                        .dontAnimate()
-                        .into(imageView);
-            }
+            final String picSavePath = getPicSavePath(iSeaFile);
+            String originalImageUrl = imagePagerAdapter.getOriginalImageUrl(iSeaFile);
+            downloadFile(originalImageUrl, picSavePath, new LoadingDownloadListener() {
+                @Override
+                protected void completed(BaseDownloadTask task) {
+                    super.completed(task);
+                    GlideUtils.loadSFilePicWithoutPlaceholder(getContext(), picSavePath, imageView);
+                }
+            });
         }
 
         @Override

@@ -759,10 +759,11 @@ public class FolderListActivity extends FolderBaseActivity
                 } else {
                     //图片 直接预览 (加密的资料库 缩略图显示不了)
                     if (!isEncrypted && IMUtils.isPIC(item.name)) {
-
+                        List<FolderDocumentEntity> allData = getAllData();
                         ArrayList<FolderDocumentEntity> imageDatas = new ArrayList<>();
-                        for (int i = 0; i < folderDocumentAdapter.getItemCount(); i++) {
-                            FolderDocumentEntity folderDocumentEntity = folderDocumentAdapter.getItem(i);
+
+                        for (int i = 0; i < allData.size(); i++) {
+                            FolderDocumentEntity folderDocumentEntity = allData.get(i);
                             if (folderDocumentEntity == null) continue;
                             if (IMUtils.isPIC(folderDocumentEntity.name)) {
                                 imageDatas.add(folderDocumentEntity);
