@@ -100,7 +100,8 @@ public class TimerManager {
     public static TimerManager getInstance() {
         if (timerManager == null) {
             synchronized (TimerManager.class) {
-                timerManager = new TimerManager();
+                if (timerManager == null)
+                    timerManager = new TimerManager();
             }
         }
         return timerManager;
