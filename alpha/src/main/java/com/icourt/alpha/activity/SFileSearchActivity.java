@@ -275,11 +275,7 @@ public class SFileSearchActivity extends BaseActivity
             } else {
                 FileDownloadActivity.launch(
                         getContext(),
-                        item.repo_id,
-                        item.name,
-                        item.size,
-                        item.fullpath,
-                        null,
+                        item,
                         FileDownloadActivity.FILE_FROM_REPO);
             }
         }

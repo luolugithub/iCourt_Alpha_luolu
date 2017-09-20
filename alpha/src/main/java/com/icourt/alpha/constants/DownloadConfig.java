@@ -3,7 +3,9 @@ package com.icourt.alpha.constants;
 import android.os.Environment;
 import android.text.TextUtils;
 
+import com.icourt.alpha.entity.bean.ISeaFile;
 import com.icourt.alpha.utils.BugUtils;
+import com.icourt.alpha.utils.FileUtils;
 import com.icourt.alpha.utils.StringUtils;
 
 import java.io.File;
@@ -50,24 +52,29 @@ public class DownloadConfig {
      * 先获取文件读写权限
      * 获取seaFile 保存路径
      *
-     * @param userId          用户id
-     * @param seaFileRepoId   repoid仓库id
-     * @param seaFileFullPath seafile全路径
+     * @param userId   用户id
+     * @param iSeaFile
      * @return
      */
-    public static final String getSeaFileDownloadPath(String userId, String seaFileRepoId, String seaFileFullPath) {
+    public static final String getSeaFileDownloadPath(String userId, ISeaFile iSeaFile) {
         try {
-            seaFileFullPath = getFormatedFileName(seaFileFullPath);
-            return new StringBuilder(Environment.getExternalStorageDirectory().getAbsolutePath())
+            //如果有版本 标记版本号
+            String fileFullPath = iSeaFile.getSeaFileFullPath();
+            if (!TextUtils.isEmpty(iSeaFile.getSeaFileVersionId())) {
+                String fileNameWithoutSuffix = FileUtils.getFileNameWithoutSuffix(fileFullPath);
+                String fileSuffix = FileUtils.getFileSuffix(fileFullPath);
+                fileFullPath = String.format("%s_%s%s", fileNameWithoutSuffix, iSeaFile.getSeaFileVersionId().hashCode(), fileSuffix);
+            }
+            return getFormatedFileName(new StringBuilder(Environment.getExternalStorageDirectory().getAbsolutePath())
                     .append(File.separator)
                     .append(FILE_DOWNLOAD_ROOT_DIR)
                     .append(File.separator)
                     .append(userId)
                     .append(File.separator)
-                    .append(seaFileRepoId)
+                    .append(iSeaFile.getSeaFileRepoId())
                     .append(File.separator)
-                    .append(seaFileFullPath)
-                    .toString();
+                    .append(fileFullPath)
+                    .toString());
         } catch (Exception e) {
             e.printStackTrace();
             BugUtils.bugSync("getSeaFileDownloadDir exception",
@@ -75,9 +82,9 @@ public class DownloadConfig {
                             .append("userId:")
                             .append(userId)
                             .append("\nseaFileRepoId:")
-                            .append(seaFileRepoId)
+                            .append(iSeaFile.getSeaFileRepoId())
                             .append("\nseaFileDir:")
-                            .append(seaFileFullPath)
+                            .append(iSeaFile.getSeaFileFullPath())
                             .append("\nexception:")
                             .append(StringUtils.throwable2string(e))
                             .toString());
@@ -109,15 +116,14 @@ public class DownloadConfig {
      */
     public static final String getCommFileDownloadPath(String userId, String fileName) {
         try {
-            fileName = getFormatedFileName(fileName);
-            return new StringBuilder(Environment.getExternalStorageDirectory().getAbsolutePath())
+            return getFormatedFileName(new StringBuilder(Environment.getExternalStorageDirectory().getAbsolutePath())
                     .append(File.separator)
                     .append(FILE_DOWNLOAD_ROOT_DIR)
                     .append(File.separator)
                     .append(userId)
                     .append(File.separator)
                     .append(fileName)
-                    .toString();
+                    .toString());
         } catch (Exception e) {
             e.printStackTrace();
             BugUtils.bugSync("getCommFileDownloadPath exception",

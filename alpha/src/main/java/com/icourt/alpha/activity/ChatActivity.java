@@ -1551,11 +1551,7 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
                             //item.ext.name;
                             FileDownloadActivity.launch(
                                     getContext(),
-                                    item.ext.repo_id,
-                                    item.ext.name,
-                                    item.ext.size,
-                                    String.format("%s/%s", item.ext.path, item.ext.name),
-                                    null,
+                                    item.ext,
                                     FileDownloadActivity.FILE_FROM_IM
                             );
                         }
@@ -1575,11 +1571,7 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
                                         //item.ext.ext.name;
                                         FileDownloadActivity.launch(
                                                 getContext(),
-                                                item.ext.ext.repo_id,
-                                                item.ext.ext.name,
-                                                item.ext.ext.size,
-                                                String.format("%s/%s", item.ext.ext.path, item.ext.ext.name),
-                                                null,
+                                                item.ext.ext,
                                                 FileDownloadActivity.FILE_FROM_IM
                                         );
                                     }

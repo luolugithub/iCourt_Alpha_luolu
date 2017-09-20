@@ -27,7 +27,7 @@ import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.baseadapter.BasePagerAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.constants.DownloadConfig;
-import com.icourt.alpha.entity.bean.ISeaFileImage;
+import com.icourt.alpha.entity.bean.ISeaFile;
 import com.icourt.alpha.utils.FileUtils;
 import com.icourt.alpha.utils.GlideUtils;
 import com.icourt.alpha.utils.SFileTokenUtils;
@@ -71,7 +71,7 @@ public class ImageViewerActivity extends ImageViewBaseActivity {
 
 
     public static void launch(@NonNull Context context,
-                              ArrayList<? extends ISeaFileImage> seaFileImages,
+                              ArrayList<? extends ISeaFile> seaFileImages,
                               int selectPos) {
         if (context == null) return;
         if (seaFileImages == null || seaFileImages.isEmpty()) return;
@@ -97,7 +97,7 @@ public class ImageViewerActivity extends ImageViewBaseActivity {
     int selectPos;
     ImagePagerAdapter imagePagerAdapter;
     Handler mHandler = new Handler();
-    ArrayList<ISeaFileImage> seaFileImages;
+    ArrayList<ISeaFile> seaFileImages;
 
     /**
      * 获取图片缩略图
@@ -120,37 +120,17 @@ public class ImageViewerActivity extends ImageViewBaseActivity {
     /**
      * 图片查看适配器
      */
-    class ImagePagerAdapter extends BasePagerAdapter<ISeaFileImage> implements PhotoViewAttacher.OnViewTapListener {
+    class ImagePagerAdapter extends BasePagerAdapter<ISeaFile> implements PhotoViewAttacher.OnViewTapListener {
 
         /**
          * 获取缩略图地址
          *
-         * @param iSeaFileImage
+         * @param iSeaFile
          * @return
          */
-        public String getThumbImageUrl(ISeaFileImage iSeaFileImage) {
-            if (iSeaFileImage == null) return null;
-            return getSFileImageUrl(iSeaFileImage.getSeaFileImageRepoId(), iSeaFileImage.getSeaFileImageFullPath(), 800);
-        }
-
-        /**
-         * 获取大图的地址
-         *
-         * @return
-         */
-        public String getBigImageUrl(ISeaFileImage iSeaFileImage) {
-            if (iSeaFileImage == null) return null;
-            return getSFileImageUrl(iSeaFileImage.getSeaFileImageRepoId(), iSeaFileImage.getSeaFileImageFullPath(), Integer.MAX_VALUE);
-        }
-
-        /**
-         * 获取大图的地址
-         *
-         * @return
-         */
-        public String getBigImageUrl(int pos) {
-            ISeaFileImage iSeaFileImage = getItem(pos);
-            return getBigImageUrl(iSeaFileImage);
+        public String getThumbImageUrl(ISeaFile iSeaFile) {
+            if (iSeaFile == null) return null;
+            return getSFileImageUrl(iSeaFile.getSeaFileRepoId(), iSeaFile.getSeaFileFullPath(), 800);
         }
 
         /**
@@ -160,26 +140,28 @@ public class ImageViewerActivity extends ImageViewBaseActivity {
          * @return
          */
         public String getOriginalImageUrl(int pos) {
-            return getBigImageUrl(pos);
+            ISeaFile iSeaFile = getItem(pos);
+            return getOriginalImageUrl(iSeaFile);
         }
 
         /**
          * 获取原图地址
          *
-         * @param iSeaFileImage
+         * @param iSeaFile
          * @return
          */
-        public String getOriginalImageUrl(ISeaFileImage iSeaFileImage) {
-            return getBigImageUrl(iSeaFileImage);
+        public String getOriginalImageUrl(ISeaFile iSeaFile) {
+            if (iSeaFile == null) return null;
+            return getSFileImageUrl(iSeaFile.getSeaFileRepoId(), iSeaFile.getSeaFileFullPath(), Integer.MAX_VALUE);
         }
 
 
         @Override
-        public void bindDataToItem(ISeaFileImage o, ViewGroup container, View itemView, int pos) {
+        public void bindDataToItem(ISeaFile o, ViewGroup container, View itemView, int pos) {
             final PhotoView touchImageView = itemView.findViewById(R.id.imageView);
             touchImageView.setMaximumScale(5.0f);
             final View imgLookOriginalTv = itemView.findViewById(R.id.img_look_original_tv);
-            final String bigUrl = getBigImageUrl(o);
+            final String bigUrl = getOriginalImageUrl(o);
             imgLookOriginalTv.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
@@ -187,8 +169,20 @@ public class ImageViewerActivity extends ImageViewBaseActivity {
                 }
             });
             touchImageView.setOnViewTapListener(this);
+
+            //已经缓存了原图
+            String picSavePath = getPicSavePath(o);
+            if (FileUtils.isFileExists(picSavePath)) {
+                imgLookOriginalTv.setVisibility(View.GONE);
+                Glide.with(getContext())
+                        .load(picSavePath)
+                        .error(R.mipmap.filetype_image)
+                        .into(touchImageView);
+                return;
+            }
+
             String thumbImageUrl = getThumbImageUrl(o);
-            if (FileUtils.isGif(o.getSeaFileImageFullPath())) {
+            if (FileUtils.isGif(o.getSeaFileFullPath())) {
                 if (GlideUtils.canLoadImage(getContext())) {
                     Glide.with(getContext())
                             .load(thumbImageUrl)
@@ -336,7 +330,7 @@ public class ImageViewerActivity extends ImageViewBaseActivity {
     protected void initView() {
         super.initView();
         titleAction.setImageResource(R.mipmap.header_icon_more);
-        seaFileImages = (ArrayList<ISeaFileImage>) getIntent().getSerializableExtra(KEY_SEA_FILE_IMAGES);
+        seaFileImages = (ArrayList<ISeaFile>) getIntent().getSerializableExtra(KEY_SEA_FILE_IMAGES);
         selectPos = getIntent().getIntExtra(KEY_SELECT_POS, 0);
         viewPager.setAdapter(imagePagerAdapter = new ImagePagerAdapter());
         imagePagerAdapter.setCanupdateItem(true);
@@ -345,7 +339,7 @@ public class ImageViewerActivity extends ImageViewBaseActivity {
             @Override
             public void onPageSelected(int position) {
                 super.onPageSelected(position);
-                setTitle(FileUtils.getFileName(seaFileImages.get(position).getSeaFileImageFullPath()));
+                setTitle(FileUtils.getFileName(seaFileImages.get(position).getSeaFileFullPath()));
             }
         });
         if (selectPos < imagePagerAdapter.getCount()) {
@@ -356,7 +350,7 @@ public class ImageViewerActivity extends ImageViewBaseActivity {
                 }
             }, 20);
         }
-        setTitle(FileUtils.getFileName(FileUtils.getFileName(seaFileImages.get(0).getSeaFileImageFullPath())));
+        setTitle(FileUtils.getFileName(FileUtils.getFileName(seaFileImages.get(0).getSeaFileFullPath())));
     }
 
     @OnClick({R.id.titleAction,
@@ -369,7 +363,7 @@ public class ImageViewerActivity extends ImageViewBaseActivity {
                 break;
             case R.id.download_img:
                 //下载原图
-                ISeaFileImage item = imagePagerAdapter.getItem(viewPager.getCurrentItem());
+                ISeaFile item = imagePagerAdapter.getItem(viewPager.getCurrentItem());
                 if (item != null) {
                     String originalImageUrl = imagePagerAdapter.getOriginalImageUrl(item);
                     downloadFile(originalImageUrl, getPicSavePath(item));
@@ -387,7 +381,7 @@ public class ImageViewerActivity extends ImageViewBaseActivity {
         final Drawable drawable = imageView.getDrawable();
         if (drawable == null) return;
 
-        ISeaFileImage item = imagePagerAdapter.getItem(viewPager.getCurrentItem());
+        ISeaFile item = imagePagerAdapter.getItem(viewPager.getCurrentItem());
         if (item == null) {
             return;
         }
@@ -429,11 +423,8 @@ public class ImageViewerActivity extends ImageViewBaseActivity {
      * @param item
      * @return
      */
-    private String getPicSavePath(@NonNull ISeaFileImage item) {
-        if (item != null) {
-            return DownloadConfig.getSeaFileDownloadPath(getLoginUserId(), item.getSeaFileImageRepoId(), item.getSeaFileImageFullPath());
-        }
-        return null;
+    private String getPicSavePath(@NonNull ISeaFile item) {
+        return DownloadConfig.getSeaFileDownloadPath(getLoginUserId(), item);
     }
 
 

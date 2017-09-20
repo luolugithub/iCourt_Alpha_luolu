@@ -481,11 +481,7 @@ public class FileSimpleListActivity extends FolderBaseActivity
             } else {
                 FileDownloadActivity.launch(
                         getContext(),
-                        getSeaFileRepoId(),
-                        item.name,
-                        item.size,
-                        String.format("%s%s", getSeaFileDirPath(), item.name),
-                        null,
+                        item,
                         FileDownloadActivity.FILE_FROM_REPO);
             }
         }

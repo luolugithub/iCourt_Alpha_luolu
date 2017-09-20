@@ -206,13 +206,10 @@ public class FileDetailDialogFragment extends FileDetailsBaseDialogFragment
                 if (!fileVersionEntities.isEmpty()) {
                     FileVersionEntity item = fileVersionEntities.get(0);
                     if (item == null) return;
+                    item.seaFileFullPath = String.format("%s/%s", fromRepoDirPath, fileName);
                     FileDownloadActivity.launch(
                             getContext(),
-                            item.repo_id,
-                            fileName,
-                            item.rev_file_size,
-                            String.format("%s%s", fromRepoDirPath, fileName),
-                            item.id,
+                            item,
                             FileDownloadActivity.FILE_FROM_REPO);
                 } else {
 

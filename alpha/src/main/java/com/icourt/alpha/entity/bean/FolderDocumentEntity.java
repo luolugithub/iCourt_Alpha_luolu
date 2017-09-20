@@ -12,8 +12,6 @@ import com.icourt.alpha.widget.json.SeaFileTimeJsonAdapter;
 import com.icourt.json.BooleanTypeAdapter;
 import com.icourt.json.LongTypeAdapter;
 
-import java.io.Serializable;
-
 /**
  * Description  文件或者文件夹实体
  * Company Beijing icourt
@@ -21,8 +19,7 @@ import java.io.Serializable;
  * date createTime：2017/8/10
  * version 2.1.0
  */
-public class FolderDocumentEntity implements ISeaFileImage,
-        Serializable, IFilterEntity, ISuspensionInterface {
+public class FolderDocumentEntity implements ISeaFile, IFilterEntity, ISuspensionInterface {
     public static final int TYPE_FILE = 1;
     /**
      * "lock_time": 0,
@@ -146,12 +143,22 @@ public class FolderDocumentEntity implements ISeaFileImage,
     }
 
     @Override
-    public String getSeaFileImageFullPath() {
+    public String getSeaFileFullPath() {
         return String.format("%s%s", parent_dir, name);
     }
 
     @Override
-    public String getSeaFileImageRepoId() {
+    public String getSeaFileVersionId() {
+        return null;
+    }
+
+    @Override
+    public long getSeaFileSize() {
+        return size;
+    }
+
+    @Override
+    public String getSeaFileRepoId() {
         return repoId;
     }
 

@@ -25,7 +25,7 @@ import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.constants.DownloadConfig;
-import com.icourt.alpha.entity.bean.SeaFileImage;
+import com.icourt.alpha.entity.bean.ISeaFile;
 import com.icourt.alpha.fragment.dialogfragment.ContactShareDialogFragment;
 import com.icourt.alpha.fragment.dialogfragment.ProjectSaveFileDialogFragment;
 import com.icourt.alpha.http.callback.SFileCallBack;
@@ -61,12 +61,8 @@ import retrofit2.Response;
  */
 public class FileDownloadActivity extends BaseActivity {
 
-    private static final String KEY_SEA_FILE_REPOID = "key_sea_file_repoid";
-    private static final String KEY_SEA_FILE_TITLE = "key_sea_file_title";
-    private static final String KEY_SEA_FILE_SIZE = "key_sea_file_size";
-    private static final String KEY_SEA_FILE_FULL_PATH = "key_sea_file_full_path";
-    private static final String KEY_SEA_FILE_VERSION_ID = "key_sea_file_commit_id";
     private static final String KEY_SEA_FILE_FROM = "key_sea_file_from";
+    private static final String KEY_SEA_FILE = "key_sea_file";
 
     public static final int FILE_FROM_TASK = 1;         //任务下载附件
     public static final int FILE_FROM_PROJECT = 2;      //项目下载附件
@@ -111,38 +107,20 @@ public class FileDownloadActivity extends BaseActivity {
     private String fileCachePath = "";//保存路径
     private String fileDownloadUrl = "";//下载的地址
 
-    /**
-     * @param context
-     * @param seaFileRepoId   文件对应仓库id
-     * @param fileTitle       文件对应标题
-     * @param fileSize        文件大小
-     * @param seaFileFullPath 文件全路径 eg. "/aa/bb.doc"
-     * @param versionId       文件历史版本提交的id 可空
-     */
-    public static void launch(@NonNull Context context,
-                              @NonNull String seaFileRepoId,
-                              @NonNull String fileTitle,
-                              long fileSize,
-                              @NonNull String seaFileFullPath,
-                              @Nullable String versionId,
-                              @FILE_FROM int fileFrom) {
+
+    public static <T extends ISeaFile> void launch(@NonNull Context context, T seaFile, @FILE_FROM int fileFrom) {
         if (context == null) return;
+        if (seaFile == null) return;
         Intent intent = new Intent(context, FileDownloadActivity.class);
-        intent.putExtra(KEY_SEA_FILE_REPOID, seaFileRepoId);
-        intent.putExtra(KEY_SEA_FILE_TITLE, fileTitle);
-        intent.putExtra(KEY_SEA_FILE_SIZE, fileSize);
-        intent.putExtra(KEY_SEA_FILE_FULL_PATH, seaFileFullPath);
-        intent.putExtra(KEY_SEA_FILE_VERSION_ID, versionId);
+        intent.putExtra(KEY_SEA_FILE, seaFile);
         intent.putExtra(KEY_SEA_FILE_FROM, fileFrom);
         context.startActivity(intent);
     }
 
-    String seaFileRepoId;
-    String fileTitle;
-    long fileSize;
-    String seaFileFullPath;
-    String versionId;
+
     int fileFrom;
+    ISeaFile iSeaFile;
+    String fileName;
 
     private FileDownloadListener fileDownloadListener = new FileDownloadListener() {
 
@@ -210,18 +188,15 @@ public class FileDownloadActivity extends BaseActivity {
     protected void initView() {
         super.initView();
 
-        seaFileRepoId = getIntent().getStringExtra(KEY_SEA_FILE_REPOID);
-        fileTitle = getIntent().getStringExtra(KEY_SEA_FILE_TITLE);
-        fileSize = getIntent().getLongExtra(KEY_SEA_FILE_SIZE, 0);
-        seaFileFullPath = getIntent().getStringExtra(KEY_SEA_FILE_FULL_PATH);
-        versionId = getIntent().getStringExtra(KEY_SEA_FILE_VERSION_ID);
+        iSeaFile = (ISeaFile) getIntent().getSerializableExtra(KEY_SEA_FILE);
         fileFrom = getIntent().getIntExtra(KEY_SEA_FILE_FROM, FILE_FROM_REPO);
         fileCachePath = buildSavePath();
 
-        setTitle(fileTitle);
-        fileSizeTv.setText(String.format("(%s)", FileUtils.bFormat(fileSize)));
-        fileNameTv.setText(fileTitle);
-        fileTypeIcon.setImageResource(FileUtils.getSFileIcon(fileTitle));
+        fileName = FileUtils.getFileName(iSeaFile.getSeaFileFullPath());
+        setTitle(fileName);
+        fileSizeTv.setText(String.format("(%s)", FileUtils.bFormat(iSeaFile.getSeaFileSize())));
+        fileNameTv.setText(fileName);
+        fileTypeIcon.setImageResource(FileUtils.getSFileIcon(fileName));
         ImageView titleActionImage = getTitleActionImage();
         if (titleActionImage != null) {
             titleActionImage.setImageResource(R.mipmap.header_icon_more);
@@ -234,7 +209,7 @@ public class FileDownloadActivity extends BaseActivity {
         } else {
             updateViewState(-1);
             //非图片 不主动下载
-            if (IMUtils.isPIC(seaFileFullPath)) {
+            if (IMUtils.isPIC(fileName)) {
                 startDownload();
             }
         }
@@ -251,8 +226,8 @@ public class FileDownloadActivity extends BaseActivity {
 
     private void openImageView() {
         if (IMUtils.isPIC(fileCachePath)) {
-            ArrayList<SeaFileImage> seaFileImages = new ArrayList<>();
-            seaFileImages.add(new SeaFileImage(seaFileRepoId, seaFileFullPath));
+            ArrayList<ISeaFile> seaFileImages = new ArrayList<>();
+            seaFileImages.add(iSeaFile);
             ImageViewerActivity.launch(
                     getContext(),
                     seaFileImages,
@@ -270,9 +245,9 @@ public class FileDownloadActivity extends BaseActivity {
             case FILE_FROM_IM: {//享聊的下载地址要单独获取 用资料库下载地址 提示没权限
                 callEnqueue(
                         getChatApi().fileUrlQuery(
-                                seaFileRepoId,
-                                FileUtils.getFileParentDir(seaFileFullPath),
-                                fileTitle),
+                                iSeaFile.getSeaFileRepoId(),
+                                FileUtils.getFileParentDir(iSeaFile.getSeaFileFullPath()),
+                                fileName),
                         new SimpleCallBack<JsonElement>() {
                             @Override
                             public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
@@ -294,9 +269,9 @@ public class FileDownloadActivity extends BaseActivity {
             default: {
                 callEnqueue(
                         getSFileApi().sFileDownloadUrlQuery(
-                                seaFileRepoId,
-                                seaFileFullPath,
-                                versionId),
+                                iSeaFile.getSeaFileRepoId(),
+                                iSeaFile.getSeaFileFullPath(),
+                                iSeaFile.getSeaFileVersionId()),
                         new SFileCallBack<String>() {
                             @Override
                             public void onSuccess(Call<String> call, Response<String> response) {
@@ -387,13 +362,7 @@ public class FileDownloadActivity extends BaseActivity {
      * @return
      */
     private String buildSavePath() {
-        String fileFullPath = seaFileFullPath;
-        if (!TextUtils.isEmpty(versionId)) {
-            String fileNameWithoutSuffix = FileUtils.getFileNameWithoutSuffix(fileFullPath);
-            String fileSuffix = FileUtils.getFileSuffix(fileFullPath);
-            fileFullPath = String.format("%s_%s%s", fileNameWithoutSuffix, versionId.hashCode(), fileSuffix);
-        }
-        return DownloadConfig.getSeaFileDownloadPath(getLoginUserId(), seaFileRepoId, fileFullPath);
+        return DownloadConfig.getSeaFileDownloadPath(getLoginUserId(), iSeaFile);
     }
 
 

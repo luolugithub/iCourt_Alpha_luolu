@@ -33,7 +33,6 @@ import com.icourt.alpha.http.observer.BaseObserver;
 import com.icourt.alpha.interfaces.OnDialogFragmentDismissListener;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.interfaces.OnUpdateTaskListener;
-import com.icourt.alpha.utils.FileUtils;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.utils.UriUtils;
 import com.icourt.alpha.widget.dialog.BottomActionDialog;
@@ -385,11 +384,7 @@ public class TaskAttachmentFragment extends SeaFileBaseFragment
         if (item.pathInfoVo == null) return;
         FileDownloadActivity.launch(
                 getContext(),
-                item.pathInfoVo.repoId,
-                FileUtils.getFileName(item.pathInfoVo.filePath),
-                item.fileSize,
-                item.pathInfoVo.filePath,
-                null,
+                item,
                 FileDownloadActivity.FILE_FROM_TASK);
     }
 

@@ -1,6 +1,6 @@
 package com.icourt.alpha.entity.bean;
 
-import java.io.Serializable;
+import android.support.annotation.Nullable;
 
 /**
  * Description
@@ -9,7 +9,7 @@ import java.io.Serializable;
  * date createTime：2017/5/31
  * version 1.0.0
  */
-public class SFileImageInfoEntity implements Serializable {
+public class SFileImageInfoEntity implements ISeaFile {
     public SFileImageInfoEntity(long size, String path, String name, String repo_id, String thumb, int width, int height) {
         this.size = size;
         this.path = path;
@@ -29,4 +29,25 @@ public class SFileImageInfoEntity implements Serializable {
     public int height;
 
     public long chatMsgId;//聊天msg id
+
+    @Override
+    public String getSeaFileRepoId() {
+        return repo_id;
+    }
+
+    @Override
+    public String getSeaFileFullPath() {
+        return String.format("%s/%s",path,name);
+    }
+
+    @Nullable
+    @Override
+    public String getSeaFileVersionId() {
+        return null;
+    }
+
+    @Override
+    public long getSeaFileSize() {
+        return size;
+    }
 }

@@ -364,11 +364,7 @@ public class ImUserMessageDetailAdapter extends BaseArrayRecyclerAdapter<IMMessa
                 if (item.ext != null) {
                     FileDownloadActivity.launch(
                             view.getContext(),
-                            item.ext.repo_id,
-                            item.ext.name,
-                            item.ext.size,
-                            String.format("%s/%s", item.ext.path, item.ext.name),
-                            null,
+                            item.ext,
                             FileDownloadActivity.FILE_FROM_IM);
                 }
                 break;

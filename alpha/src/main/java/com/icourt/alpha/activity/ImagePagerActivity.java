@@ -566,7 +566,7 @@ public class ImagePagerActivity extends ImageViewBaseActivity implements BasePag
         if (sFileImageInfoEntities != null && pos < sFileImageInfoEntities.size()) {
             SFileImageInfoEntity sFileImageInfoEntity = sFileImageInfoEntities.get(pos);
             if (sFileImageInfoEntity != null) {
-                return DownloadConfig.getSeaFileDownloadPath(getLoginUserId(), sFileImageInfoEntity.repo_id, String.format("%s/%s", sFileImageInfoEntity.path, sFileImageInfoEntity.name));
+                return DownloadConfig.getSeaFileDownloadPath(getLoginUserId(), sFileImageInfoEntity);
             }
         }
         String downloadUrl = getDownloadUrl(pos);

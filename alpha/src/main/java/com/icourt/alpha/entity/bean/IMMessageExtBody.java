@@ -3,7 +3,6 @@ package com.icourt.alpha.entity.bean;
 import com.icourt.alpha.constants.Const;
 import com.icourt.alpha.db.convertor.IConvertModel;
 
-import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -13,7 +12,7 @@ import java.util.List;
  * date createTime：2017/4/28
  * version 1.0.0
  */
-public final class IMMessageExtBody implements Serializable, IConvertModel<SFileImageInfoEntity> {
+public final class IMMessageExtBody implements ISeaFile, IConvertModel<SFileImageInfoEntity> {
     public IMMessageExtBody() {
 
     }
@@ -156,5 +155,25 @@ public final class IMMessageExtBody implements Serializable, IConvertModel<SFile
     @Override
     public SFileImageInfoEntity convert2Model() {
         return new SFileImageInfoEntity(size, path, name, repo_id, thumb, width, height);
+    }
+
+    @Override
+    public String getSeaFileRepoId() {
+        return repo_id;
+    }
+
+    @Override
+    public String getSeaFileFullPath() {
+        return String.format("%s/%s", path, name);
+    }
+
+    @Override
+    public String getSeaFileVersionId() {
+        return null;
+    }
+
+    @Override
+    public long getSeaFileSize() {
+        return size;
     }
 }
