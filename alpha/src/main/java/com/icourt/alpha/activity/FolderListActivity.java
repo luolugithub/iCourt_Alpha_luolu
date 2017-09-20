@@ -134,6 +134,7 @@ public class FolderListActivity extends FolderBaseActivity
     LinearLayout bottomBarLayout;
     @BindView(R.id.bottom_bar_all_select_cb)
     CheckBox bottomBarAllSelectCb;
+    ImageView headerSearchDirectionIv;
 
     int fileSortType = FILE_SORT_TYPE_DEFAULT;
     boolean isEncrypted;
@@ -250,7 +251,9 @@ public class FolderListActivity extends FolderBaseActivity
                     } else {
                         footerView.setText(getString(R.string.sfile_folder_statistics, String.valueOf(dirNum), String.valueOf(fileNum)));
                     }
-
+                }
+                if (headerSearchDirectionIv != null) {
+                    headerSearchDirectionIv.setImageResource(folderDocumentAdapter.getAdapterViewType() == VIEW_TYPE_ITEM ? R.mipmap.list : R.mipmap.thumb);
                 }
             }
         });
@@ -293,7 +296,8 @@ public class FolderListActivity extends FolderBaseActivity
 
     private void addHeadView() {
         headerView = HeaderFooterAdapter.inflaterView(getContext(), R.layout.header_search_folder_document, recyclerView);
-        registerClick(headerView.findViewById(R.id.header_search_direction_iv));
+        headerSearchDirectionIv = headerView.findViewById(R.id.header_search_direction_iv);
+        registerClick(headerSearchDirectionIv);
         registerClick(headerView.findViewById(R.id.header_search_sort_iv));
         registerClick(headerView.findViewById(R.id.header_comm_search_ll));
         headerFooterAdapter.addHeader(headerView);
