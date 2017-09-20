@@ -364,7 +364,7 @@ public class ImageViewerActivity extends ImageViewBaseActivity {
                                 shareHttpFile(originalImageUrl, picSavePath);
                                 break;
                             case 3:
-                                shareHttpFile2repo(originalImageUrl, picSavePath);
+                                shareHttpFile2Project(originalImageUrl, picSavePath);
                                 break;
                         }
                     }

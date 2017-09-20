@@ -13,6 +13,7 @@ import com.icourt.alpha.constants.Const;
 import com.icourt.alpha.constants.SFileConfig;
 import com.icourt.alpha.fragment.dialogfragment.ContactShareDialogFragment;
 import com.icourt.alpha.fragment.dialogfragment.FolderTargetListDialogFragment;
+import com.icourt.alpha.fragment.dialogfragment.ProjectSaveFileDialogFragment;
 import com.icourt.alpha.utils.FileUtils;
 import com.icourt.alpha.utils.StringUtils;
 import com.liulishuo.filedownloader.BaseDownloadTask;
@@ -251,6 +252,47 @@ public class ImageViewBaseActivity extends BaseUmengActivity {
                 selectedFileNames,
                 localFilePath)
                 .show(mFragTransaction, tag);
+    }
+
+    /**
+     * 分享到项目
+     *
+     * @param url
+     * @param cacheFullPath
+     */
+    protected final void shareHttpFile2Project(String url, final String cacheFullPath) {
+        if (checkAcessFilePermission()) {
+            if (isFileExists(cacheFullPath)) {
+                shareImport2Project(cacheFullPath);
+            } else {
+                //下载完成后 再保存到资料库
+                downloadFile(url,
+                        cacheFullPath,
+                        loadingDownloadListener = new LoadingDownloadListener() {
+                            @Override
+                            protected void completed(BaseDownloadTask task) {
+                                super.completed(task);
+                                shareImport2Project(cacheFullPath);
+                            }
+                        });
+            }
+        } else {
+            requestAcessFilePermission();
+        }
+    }
+
+    /**
+     * 保存到项目
+     */
+    private void shareImport2Project(String localFilePath) {
+        String tag = ProjectSaveFileDialogFragment.class.getSimpleName();
+        FragmentTransaction mFragTransaction = getSupportFragmentManager().beginTransaction();
+        Fragment fragment = getSupportFragmentManager().findFragmentByTag(tag);
+        if (fragment != null) {
+            mFragTransaction.remove(fragment);
+        }
+        mFragTransaction.add(ProjectSaveFileDialogFragment.newInstance(localFilePath, ProjectSaveFileDialogFragment.OTHER_TYPE), tag);
+        mFragTransaction.commitAllowingStateLoss();
     }
 
     @CallSuper

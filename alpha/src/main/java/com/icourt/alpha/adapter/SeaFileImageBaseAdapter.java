@@ -24,6 +24,7 @@ public abstract class SeaFileImageBaseAdapter<T extends ISeaFile> extends BaseAr
     public SeaFileImageBaseAdapter(boolean selectable) {
         this.selectable = selectable;
     }
+
     public SeaFileImageBaseAdapter() {
     }
 
@@ -59,7 +60,7 @@ public abstract class SeaFileImageBaseAdapter<T extends ISeaFile> extends BaseAr
                 iSeaFile.getSeaFileRepoId(),
                 SFileTokenUtils.getSFileToken(),
                 UrlUtils.encodeUrl(iSeaFile.getSeaFileFullPath()),
-                150);
+                400);
     }
 
     /**
