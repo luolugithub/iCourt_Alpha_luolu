@@ -356,6 +356,7 @@ public class TimerManager {
                             } else {
                                 TimerManager.getInstance().resumeTimer(response.body().result);
                             }
+                            broadTimingEvent(response.body().result.pkId, TimingEvent.TIMING_SYNC_SUCCESS);
                         }
                     }
 
