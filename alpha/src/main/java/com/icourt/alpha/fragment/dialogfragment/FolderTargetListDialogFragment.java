@@ -19,6 +19,7 @@ import com.icourt.alpha.R;
 import com.icourt.alpha.base.BaseDialogFragment;
 import com.icourt.alpha.constants.Const;
 import com.icourt.alpha.constants.SFileConfig;
+import com.icourt.alpha.entity.bean.ISeaFile;
 import com.icourt.alpha.entity.bean.RepoEntity;
 import com.icourt.alpha.entity.bean.RepoTypeEntity;
 import com.icourt.alpha.fragment.FolderTargetListFragment;
@@ -78,7 +79,7 @@ public class FolderTargetListDialogFragment
 
     Fragment currFragment;
     RepoEntity repoEntity;
-    ArrayList<String> selectedFolderNames;
+    ArrayList<? extends ISeaFile> selectedFolderFiles;
 
     /**
      * @param folderActionType
@@ -87,7 +88,7 @@ public class FolderTargetListDialogFragment
      * @param fromRepoDirPath
      * @param dstRepoId           如果为空 就到资料库类型选择页面
      * @param dstRepoDirPath
-     * @param selectedFolderNames
+     * @param selectedFolderFiles
      * @return
      */
     public static FolderTargetListDialogFragment newInstance(
@@ -97,7 +98,7 @@ public class FolderTargetListDialogFragment
             String fromRepoDirPath,
             String dstRepoId,
             String dstRepoDirPath,
-            ArrayList<String> selectedFolderNames) {
+            ArrayList<? extends ISeaFile> selectedFolderFiles) {
         return newInstance(
                 folderActionType,
                 repoType,
@@ -105,7 +106,7 @@ public class FolderTargetListDialogFragment
                 fromRepoDirPath,
                 dstRepoId,
                 dstRepoDirPath,
-                selectedFolderNames,
+                selectedFolderFiles,
                 null);
     }
 
@@ -116,7 +117,7 @@ public class FolderTargetListDialogFragment
      * @param fromRepoDirPath
      * @param dstRepoId           如果为空 就到资料库类型选择页面
      * @param dstRepoDirPath
-     * @param selectedFolderNames
+     * @param selectedFolderFiles
      * @param fileLocalPath       文件地址
      * @return
      */
@@ -127,7 +128,7 @@ public class FolderTargetListDialogFragment
             String fromRepoDirPath,
             String dstRepoId,
             String dstRepoDirPath,
-            ArrayList<String> selectedFolderNames,
+            ArrayList<? extends ISeaFile> selectedFolderFiles,
             String fileLocalPath) {
         FolderTargetListDialogFragment fragment = new FolderTargetListDialogFragment();
         Bundle args = new Bundle();
@@ -139,7 +140,7 @@ public class FolderTargetListDialogFragment
         args.putString(KEY_SEA_FILE_DST_REPO_ID, dstRepoId);
         args.putString(KEY_SEA_FILE_DST_DIR_PATH, dstRepoDirPath);
 
-        args.putStringArrayList(KEY_SEA_FILE_SELCTED_FILES, selectedFolderNames);
+        args.putSerializable(KEY_SEA_FILE_SELCTED_FILES, selectedFolderFiles);
         args.putString(KEY_SEA_FILE_LOCAL_PATH, fileLocalPath);
         fragment.setArguments(args);
         return fragment;
@@ -216,7 +217,7 @@ public class FolderTargetListDialogFragment
 
     @Override
     protected void initView() {
-        selectedFolderNames = getArguments().getStringArrayList(KEY_SEA_FILE_SELCTED_FILES);
+        selectedFolderFiles = (ArrayList<ISeaFile>) getArguments().getSerializable(KEY_SEA_FILE_SELCTED_FILES);
         switch (getFileActionType()) {
             case FILE_ACTION_COPY:
                 titleContent.setText("复制到");
@@ -457,7 +458,7 @@ public class FolderTargetListDialogFragment
                         getSeaFileFromDirPath(),
                         getSeaFileDstRepoId(),
                         getSeaFileDstDirPath(),
-                        selectedFolderNames,
+                        selectedFolderFiles,
                         getArguments().getString(KEY_SEA_FILE_LOCAL_PATH, "")),
                 currFragment,
                 R.id.main_fl_content);

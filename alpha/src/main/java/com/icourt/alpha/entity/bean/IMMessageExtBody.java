@@ -174,6 +174,11 @@ public final class IMMessageExtBody implements ISeaFile, IConvertModel<ChatFileI
     }
 
     @Override
+    public String getSeaFileId() {
+        return null;
+    }
+
+    @Override
     public String getSeaFileRepoId() {
         return repo_id;
     }

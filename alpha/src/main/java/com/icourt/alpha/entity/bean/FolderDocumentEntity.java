@@ -163,6 +163,11 @@ public class FolderDocumentEntity implements ISeaFile, IFilterEntity, ISuspensio
     }
 
     @Override
+    public String getSeaFileId() {
+        return id;
+    }
+
+    @Override
     public String getSeaFileRepoId() {
         return repoId;
     }

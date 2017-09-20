@@ -17,6 +17,13 @@ public interface ISeaFile extends Serializable {
 
 
     /**
+     * id
+     *
+     * @return
+     */
+    String getSeaFileId();
+
+    /**
      * 仓库id
      *
      * @return

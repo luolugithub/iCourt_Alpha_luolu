@@ -57,6 +57,11 @@ public class SFileSearchEntity implements ISeaFile {
     }
 
     @Override
+    public String getSeaFileId() {
+        return null;
+    }
+
+    @Override
     public String getSeaFileRepoId() {
         return repo_id;
     }

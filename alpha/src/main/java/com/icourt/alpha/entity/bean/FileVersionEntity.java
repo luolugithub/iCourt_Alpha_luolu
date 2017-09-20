@@ -54,6 +54,11 @@ public class FileVersionEntity implements ILongFieldEntity, ISeaFile {
     }
 
     @Override
+    public String getSeaFileId() {
+        return id;
+    }
+
+    @Override
     public String getSeaFileRepoId() {
         return repo_id;
     }

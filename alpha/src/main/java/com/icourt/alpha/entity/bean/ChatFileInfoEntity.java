@@ -35,6 +35,11 @@ public class ChatFileInfoEntity implements IChatImageFile {
 
 
     @Override
+    public String getSeaFileId() {
+        return null;
+    }
+
+    @Override
     public String getSeaFileRepoId() {
         return repo_id;
     }

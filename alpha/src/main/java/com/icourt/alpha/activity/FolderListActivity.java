@@ -921,12 +921,6 @@ public class FolderListActivity extends FolderBaseActivity
         if (fragment != null) {
             mFragTransaction.remove(fragment);
         }
-        ArrayList<String> selectedFileNames = new ArrayList<>();
-        for (int i = 0; i < folderDocumentEntities.size(); i++) {
-            FolderDocumentEntity folderDocumentEntity = folderDocumentEntities.get(i);
-            if (folderDocumentEntity == null) continue;
-            selectedFileNames.add(folderDocumentEntity.name);
-        }
         FolderTargetListDialogFragment.newInstance(
                 folderActionType,
                 getRepoType(),
@@ -934,7 +928,7 @@ public class FolderListActivity extends FolderBaseActivity
                 getSeaFileDirPath(),
                 getSeaFileRepoId(),
                 getSeaFileDirPath(),
-                selectedFileNames)
+                folderDocumentEntities)
                 .show(mFragTransaction, tag);
     }
 

@@ -11,6 +11,7 @@ import com.icourt.alpha.R;
 import com.icourt.alpha.base.BaseUmengActivity;
 import com.icourt.alpha.constants.Const;
 import com.icourt.alpha.constants.SFileConfig;
+import com.icourt.alpha.entity.bean.ISeaFile;
 import com.icourt.alpha.fragment.dialogfragment.ContactShareDialogFragment;
 import com.icourt.alpha.fragment.dialogfragment.FolderTargetListDialogFragment;
 import com.icourt.alpha.fragment.dialogfragment.ProjectSaveFileDialogFragment;
@@ -241,7 +242,6 @@ public class ImageViewBaseActivity extends BaseUmengActivity {
         if (fragment != null) {
             mFragTransaction.remove(fragment);
         }
-        ArrayList<String> selectedFileNames = new ArrayList<>();
         FolderTargetListDialogFragment.newInstance(
                 Const.FILE_ACTION_ADD,
                 SFileConfig.REPO_MINE,
@@ -249,7 +249,7 @@ public class ImageViewBaseActivity extends BaseUmengActivity {
                 null,
                 null,
                 null,
-                selectedFileNames,
+                new ArrayList<ISeaFile>(),
                 localFilePath)
                 .show(mFragTransaction, tag);
     }
