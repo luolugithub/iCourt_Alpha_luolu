@@ -79,8 +79,6 @@ public class TimerTimingActivity extends BaseTimerActivity
 
     public static final String KEY_TIME = "key_time";
 
-
-    TimeEntity.ItemEntity itemEntity;
     @BindView(R.id.titleBack)
     ImageView titleBack;
     @BindView(R.id.titleContent)
@@ -117,6 +115,8 @@ public class TimerTimingActivity extends BaseTimerActivity
     TextView overTimingTitleTv;
     @BindView(R.id.over_timing_close_tv)
     TextView overTimingCloseTv;
+
+    TimeEntity.ItemEntity itemEntity;
 
     public static void launch(@NonNull Context context,
                               @NonNull TimeEntity.ItemEntity timeEntity) {

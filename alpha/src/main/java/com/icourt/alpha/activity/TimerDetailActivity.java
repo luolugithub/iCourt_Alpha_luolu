@@ -60,7 +60,7 @@ import retrofit2.Response;
 /**
  * Description  计时详情
  * Company Beijing icourt
- * author  lu.zhao  E-mail:zhaolu@icourt.cc
+ * author  lu.zhao  E-mail:zhaolu@icourt.ccdeleteTiming
  * date createTime：17/5/10
  * version 2.0.0
  */
@@ -73,8 +73,6 @@ public class TimerDetailActivity extends BaseTimerActivity
 
     private static final long HOUR_TIME_24 = TimeUnit.DAYS.toSeconds(1);
 
-
-    TimeEntity.ItemEntity itemEntity;
     @BindView(R.id.titleBack)
     ImageView titleBack;
     @BindView(R.id.titleContent)
@@ -109,7 +107,10 @@ public class TimerDetailActivity extends BaseTimerActivity
     TextView taskNameTv;
     @BindView(R.id.task_layout)
     LinearLayout taskLayout;
-    Calendar selectedStartDate, selectedEndDate;
+
+    TimeEntity.ItemEntity itemEntity;//用来记录从上个界面传递过来计时相关的参数。
+    Calendar selectedStartDate;//选中的开始时间
+    Calendar selectedEndDate;//选中的结束时间
 
     public static void launch(@NonNull Context context,
                               @NonNull TimeEntity.ItemEntity timeEntity) {
@@ -119,7 +120,6 @@ public class TimerDetailActivity extends BaseTimerActivity
         intent.putExtra(KEY_TIME, timeEntity);
         context.startActivity(intent);
     }
-
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -246,7 +246,6 @@ public class TimerDetailActivity extends BaseTimerActivity
         });
     }
 
-
     @OnClick({R.id.minus_time_image,
             R.id.add_time_image,
             R.id.project_layout,
@@ -338,7 +337,6 @@ public class TimerDetailActivity extends BaseTimerActivity
                                 if (itemEntity != null)
                                     ProjectDetailActivity.launch(getContext(), itemEntity.matterPkId, itemEntity.matterName);
                                 break;
-
                         }
                     }
                 }).show();
