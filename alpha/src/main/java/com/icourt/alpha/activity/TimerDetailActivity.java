@@ -315,8 +315,10 @@ public class TimerDetailActivity extends BaseTimerActivity
             case R.id.task_layout://关联任务
                 showTaskSelectDialogFragment(itemEntity.matterPkId, itemEntity.taskPkId);
                 break;
+            default:
+                super.onClick(view);
+                break;
         }
-        super.onClick(view);
     }
 
     /**
