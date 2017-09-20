@@ -105,7 +105,8 @@ public class TopMiddlePopup extends PopupWindow implements BaseRecyclerAdapter.O
         this.setContentView(myMenuView);
         this.setWidth(ViewGroup.LayoutParams.MATCH_PARENT);
         this.setHeight(myHeight);
-        this.setFocusable(true);
+        this.setOutsideTouchable(true);
+        this.setFocusable(false);
 //        this.setAnimationStyle(R.style.AnimTop);
         ColorDrawable dw = new ColorDrawable(0x33000000);
         this.setBackgroundDrawable(dw);
