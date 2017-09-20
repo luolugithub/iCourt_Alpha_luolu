@@ -74,7 +74,7 @@
     <string name="sfile_folder_details">查看文件夹详情</string>
     <string name="sfile_file_rename">@string/str_rename</string>
     <string name="sfile_file_share">共享</string>
-    <string name="sfile_folder_share">内部共享</string>
+    <string name="sfile_folder_share">共享</string>
     <string name="sfile_file_copy">@string/str_copy</string>
     <string name="sfile_file_move">@string/str_move</string>
     <string name="sfile_file_delete">@string/str_delete</string>

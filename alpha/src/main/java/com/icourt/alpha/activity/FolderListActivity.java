@@ -989,7 +989,7 @@ public class FolderListActivity extends FolderBaseActivity
         new BottomActionDialog(
                 getContext(),
                 getString(R.string.sfile_delete_confirm),
-                Arrays.asList(getString(R.string.str_delete)),
+                Arrays.asList(getString(R.string.str_ok)),
                 l).show();
     }
 
