@@ -259,7 +259,7 @@ public class TimerDetailActivity extends BaseTimerActivity
             R.id.titleBack})
     @Override
     public void onClick(View view) {
-        super.onClick(view);
+
         switch (view.getId()) {
             case R.id.titleBack:
                 saveTiming();
@@ -316,7 +316,7 @@ public class TimerDetailActivity extends BaseTimerActivity
                 showTaskSelectDialogFragment(itemEntity.matterPkId, itemEntity.taskPkId);
                 break;
         }
-
+        super.onClick(view);
     }
 
     /**
