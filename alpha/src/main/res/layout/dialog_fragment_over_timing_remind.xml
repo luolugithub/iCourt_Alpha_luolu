@@ -10,14 +10,16 @@
         android:id="@+id/over_timing_title_tv"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:ellipsize="end"
-        android:maxLines="1"
-        android:textSize="12sp"
         android:layout_gravity="center_vertical"
         android:layout_marginBottom="7dp"
         android:layout_marginLeft="19dp"
-        app:minTextSize="8sp"
-        android:text="@string/timer_over_timing_remind_text" />
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:paddingBottom="5dp"
+        android:paddingTop="5dp"
+        android:text="@string/timer_over_timing_remind_text"
+        android:textSize="12sp"
+        app:minTextSize="8sp" />
 
     <ImageView
         android:id="@+id/over_timing_close_iv"
@@ -25,6 +27,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="right|center_vertical"
         android:layout_marginBottom="7dp"
-        android:layout_marginRight="18dp"
-        android:background="@mipmap/icon_close_14"/>
+        android:layout_marginRight="12dp"
+        android:padding="5dp"
+        android:src="@mipmap/icon_close_14" />
 </FrameLayout>
