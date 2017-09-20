@@ -153,19 +153,14 @@ public class OverTimingRemindDialogFragment extends BaseDialogFragment implement
         }
     }
 
-    public void dismiss(boolean isSyncServer) {
-        this.isSyncServer = isSyncServer;
-        dismiss();
-    }
-
     /**
      * 关闭提醒泡泡
      *
      * @param isSyncServer 是否告诉服务器关闭提醒泡泡
      */
-    public void dismissAllowingStateLoss(boolean isSyncServer) {
+    public void dismiss(boolean isSyncServer) {
         this.isSyncServer = isSyncServer;
-        dismissAllowingStateLoss();
+        super.dismiss();
     }
 
     @Override

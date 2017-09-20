@@ -1274,7 +1274,7 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
         String tag = OverTimingRemindDialogFragment.class.getSimpleName();
         OverTimingRemindDialogFragment fragment = (OverTimingRemindDialogFragment) getSupportFragmentManager().findFragmentByTag(tag);
         if (fragment != null) {
-            fragment.dismissAllowingStateLoss(isSyncServer);
+            fragment.dismiss(isSyncServer);
         }
         tabTimingIcon.setImageResource(R.mipmap.ic_tab_timing);
     }
