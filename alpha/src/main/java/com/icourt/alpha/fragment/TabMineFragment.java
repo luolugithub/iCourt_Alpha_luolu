@@ -26,6 +26,7 @@ import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.GlideUtils;
 import com.icourt.alpha.utils.LoginInfoUtils;
+import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.utils.transformations.BlurTransformation;
 
 import org.greenrobot.eventbus.EventBus;
@@ -216,7 +217,7 @@ public class TabMineFragment extends BaseFragment {
                 showTopSnackBar("本月计时");
                 break;
             case R.id.done_task_layout://本月完成任务
-                
+
                 break;
             case R.id.my_center_set_layout://设置
                 SetingActivity.launch(getContext());
@@ -272,9 +273,19 @@ public class TabMineFragment extends BaseFragment {
                     public void onSuccess(Call<ResEntity<UserDataEntity>> call, Response<ResEntity<UserDataEntity>> response) {
                         if (response.body().result != null) {
                             if (todayDuractionTv == null) return;
-                            todayDuractionTv.setText(getHm(response.body().result.timingCountToday));
-                            monthDuractionTv.setText(getHm(response.body().result.timingCountMonth));
-                            doneTaskTv.setText(response.body().result.taskMonthConutDone + "");
+                            UserDataEntity userDataEntity = response.body().result;
+                            todayDuractionTv.setText(getHm(userDataEntity.timingCountToday));
+                            monthDuractionTv.setText(getHm(userDataEntity.timingCountMonth));
+                            doneTaskTv.setText(String.valueOf(userDataEntity.taskMonthConutDone));
+
+                            todayDuractionTv.setTextColor(userDataEntity.timingCountToday <= 0 ? SystemUtils.getColor(getContext(), R.color.alpha_font_color_gray) : SystemUtils.getColor(getContext(), R.color.alpha_font_color_orange));
+                            todayDuractionLayout.setClickable(userDataEntity.timingCountToday > 0);
+
+                            monthDuractionTv.setTextColor(userDataEntity.timingCountMonth <= 0 ? SystemUtils.getColor(getContext(), R.color.alpha_font_color_gray) : SystemUtils.getColor(getContext(), R.color.alpha_font_color_orange));
+                            monthDuractionLayout.setClickable(userDataEntity.timingCountMonth > 0);
+
+                            doneTaskTv.setTextColor(userDataEntity.taskMonthConutDone <= 0 ? SystemUtils.getColor(getContext(), R.color.alpha_font_color_gray) : SystemUtils.getColor(getContext(), R.color.alpha_font_color_orange));
+                            doneTaskLayout.setClickable(userDataEntity.taskMonthConutDone > 0);
                         }
                     }
                 });
