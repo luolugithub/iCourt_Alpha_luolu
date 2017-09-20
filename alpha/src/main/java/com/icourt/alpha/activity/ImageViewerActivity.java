@@ -206,7 +206,7 @@ public class ImageViewerActivity extends ImageViewBaseActivity {
                                             && !TextUtils.isEmpty(OriginalImageUrl)
                                             && resource != null
                                             && (resource.getIntrinsicHeight() >= 800 || resource.getIntrinsicWidth() >= 800)) {
-                                        checkAndLoadBigImage(o, touchImageView, imgLookOriginalTv);
+                                        imgLookOriginalTv.setVisibility(View.VISIBLE);
                                     } else {
                                         imgLookOriginalTv.setVisibility(View.GONE);
                                     }
@@ -221,21 +221,6 @@ public class ImageViewerActivity extends ImageViewBaseActivity {
         }
 
 
-        /**
-         * 检查和加载原图
-         */
-        private void checkAndLoadBigImage(final ISeaFile iSeaFile, final ImageView imageView, final View imgLookOriginalTv) {
-            if (imageView == null) return;
-            //已经缓存了原图
-            final String picSavePath = getPicSavePath(iSeaFile);
-            if (FileUtils.isFileExists(picSavePath)) {
-                imgLookOriginalTv.setVisibility(View.GONE);
-                GlideUtils.loadSFilePicWithoutPlaceholder(getContext(), picSavePath, imageView);
-                return;
-            } else {//下载
-                imgLookOriginalTv.setVisibility(View.VISIBLE);
-            }
-        }
 
         /**
          * 加载原图

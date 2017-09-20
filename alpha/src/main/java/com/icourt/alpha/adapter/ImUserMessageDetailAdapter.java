@@ -15,6 +15,7 @@ import com.icourt.alpha.activity.ImagePagerActivity;
 import com.icourt.alpha.activity.WebViewActivity;
 import com.icourt.alpha.adapter.baseadapter.BaseArrayRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
+import com.icourt.alpha.entity.bean.ChatFileInfoEntity;
 import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.icourt.alpha.entity.bean.IMMessageCustomBody;
 import com.icourt.alpha.utils.DateUtils;
@@ -28,6 +29,7 @@ import com.netease.nimlib.sdk.RequestCallback;
 import com.netease.nimlib.sdk.team.TeamService;
 import com.netease.nimlib.sdk.team.model.Team;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static com.icourt.alpha.R.id.file_img;
@@ -238,8 +240,20 @@ public class ImUserMessageDetailAdapter extends BaseArrayRecyclerAdapter<IMMessa
             case file_img:
                 IMMessageCustomBody item = getItem(getRealPos(position));
                 if (item != null && item.ext != null) {
-                    ImagePagerActivity.launch(view.getContext(),
-                            new String[]{item.ext.thumb}, 0, item.id);
+                    ArrayList<ChatFileInfoEntity> chatFileInfoEntities = new ArrayList<>();
+
+                    ChatFileInfoEntity chatFileInfoEntity = item.ext.convert2Model();
+                    chatFileInfoEntity.setChatMsgId(item.id);
+
+                    chatFileInfoEntities.add(chatFileInfoEntity);
+
+                    ImagePagerActivity.launch(
+                            view.getContext(),
+                            chatFileInfoEntities,
+                            0,
+                            item.ope,
+                            item.to,
+                            view);
                 }
                 break;
         }

@@ -9,7 +9,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.CheckResult;
-import android.support.annotation.NonNull;
+import android.support.annotation.IntRange;
 import android.support.annotation.Nullable;
 import android.support.v4.view.ViewCompat;
 import android.support.v4.view.ViewPager;
@@ -19,7 +19,6 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.bumptech.glide.DrawableRequestBuilder;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.load.resource.drawable.GlideDrawable;
@@ -33,35 +32,30 @@ import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.constants.Const;
 import com.icourt.alpha.constants.DownloadConfig;
 import com.icourt.alpha.entity.bean.AlphaUserInfo;
+import com.icourt.alpha.entity.bean.ChatFileInfoEntity;
 import com.icourt.alpha.entity.bean.IMMessageCustomBody;
-import com.icourt.alpha.entity.bean.SFileImageInfoEntity;
+import com.icourt.alpha.entity.bean.ISeaFile;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
+import com.icourt.alpha.utils.FileUtils;
 import com.icourt.alpha.utils.GlideUtils;
 import com.icourt.alpha.utils.JsonUtils;
-import com.icourt.alpha.utils.Md5Utils;
 import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.view.HackyViewPager;
 import com.icourt.alpha.widget.dialog.BottomActionDialog;
 import com.icourt.api.RequestUtils;
+import com.liulishuo.filedownloader.BaseDownloadTask;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-import io.reactivex.Observable;
-import io.reactivex.ObservableEmitter;
-import io.reactivex.ObservableOnSubscribe;
-import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.schedulers.Schedulers;
 import retrofit2.Call;
 import retrofit2.Response;
 
@@ -84,120 +78,47 @@ public class ImagePagerActivity extends ImageViewBaseActivity implements BasePag
     protected final Set<Long> msgDingedIdsList = new HashSet<>();
 
 
-    private static final String KEY_URLS = "key_urls";
     private static final String KEY_S_FILE_INFO = "key_s_file_info";
-    private static final String KEY_POS = "key_pos";
     private static final String KEY_CHAT_TYPE = "key_chat_type";
     private static final String KEY_CHAT_ID = "key_chat_id";
-    private static final String KEY_MSG_ID = "key_msg_id";
+    private static final String KEY_POS = "key_pos";
     @BindView(R.id.imagePager)
     HackyViewPager imagePager;
     @BindView(R.id.tvPagerTitle)
     TextView tvPagerTitle;
     ImagePagerAdapter pagerAdapter;
-    String[] urls;
-    ArrayList<SFileImageInfoEntity> sFileImageInfoEntities;
+    ArrayList<ChatFileInfoEntity> sFileImageInfoEntities;
     Handler handler = new Handler();
     int realPos;
 
-    /**
-     * @param context
-     * @param urls
-     * @param pos     从0开始
-     */
-    public static void launch(Context context, String[] urls, int pos) {
-        if (context == null) return;
-        if (urls == null) return;
-        if (urls.length == 0) return;
-        if (pos >= 0 && pos < urls.length) {
-            Intent intent = new Intent(context, ImagePagerActivity.class);
-            intent.putExtra(KEY_URLS, urls);
-            intent.putExtra(KEY_POS, pos);
-            context.startActivity(intent);
-        }
-    }
 
     /**
-     * @param context
-     * @param urls
-     */
-    public static void launch(Context context, String[] urls) {
-        launch(context, urls, 0);
-    }
-
-    /**
-     * @param context
-     * @param urls
-     */
-    public static void launch(Context context, String[] urls, int pos, long chatMsgId) {
-        if (context == null) return;
-        if (urls == null) return;
-        if (urls.length == 0) return;
-        if (pos >= 0 && pos < urls.length) {
-            Intent intent = new Intent(context, ImagePagerActivity.class);
-            intent.putExtra(KEY_URLS, urls);
-            intent.putExtra(KEY_POS, pos);
-            intent.putExtra(KEY_MSG_ID, chatMsgId);
-            context.startActivity(intent);
-        }
-    }
-
-    /**
-     * @param context
-     * @param urls
-     */
-    public static void launch(Context context, List<String> urls) {
-        launch(context, urls, 0);
-    }
-
-    /**
-     * @param context
-     * @param urls
-     * @param pos     从0开始
-     */
-    public static void launch(Context context, List<String> urls, int pos) {
-        if (context == null) return;
-        if (urls == null) return;
-        if (urls.size() == 0) return;
-        String[] urlsArr = (String[]) urls.toArray(new String[urls.size()]);
-        launch(context, urlsArr, pos);
-    }
-
-    /**
-     * 先展示中图 查看原图
+     * 显示图片
      *
      * @param context
-     * @param mediumUrls             中等图片
-     * @param sFileImageInfoEntities sfile对应详细信息
+     * @param sFileImageInfoEntities
+     * @param selectedPos
+     * @param transitionView
      */
     public static void launch(Context context,
-                              @NonNull List<String> mediumUrls,
-                              @Nullable ArrayList<SFileImageInfoEntity> sFileImageInfoEntities,
-                              int pos,
-                              @Nullable View transitionView,
-                              @Const.CHAT_TYPE int chatType,
-                              String chatId) {
-        if (context == null) return;
-        if (mediumUrls == null) return;
-        if (mediumUrls.size() == 0) return;
+                              @Nullable ArrayList<ChatFileInfoEntity> sFileImageInfoEntities,
+                              @IntRange(from = 0, to = Integer.MAX_VALUE) int selectedPos,
+                              int chatType,
+                              String chatId,
+                              @Nullable View transitionView) {
+        if (sFileImageInfoEntities == null || sFileImageInfoEntities.isEmpty()) return;
+        if (selectedPos >= sFileImageInfoEntities.size()) {
+            selectedPos = sFileImageInfoEntities.size() - 1;
+        }
         Intent intent = new Intent(context, ImagePagerActivity.class);
-        String[] urlsArr = (String[]) mediumUrls.toArray(new String[mediumUrls.size()]);
-        intent.putExtra(KEY_URLS, urlsArr);
-        if (pos < 0) {
-            pos = 0;
-        } else if (pos >= mediumUrls.size()) {
-            pos = mediumUrls.size() - 1;
-        }
-        intent.putExtra(KEY_POS, pos);
-        intent.putExtra(KEY_CHAT_ID, chatId);
+        intent.putExtra(KEY_POS, selectedPos);
+        intent.putExtra(KEY_S_FILE_INFO, sFileImageInfoEntities);
         intent.putExtra(KEY_CHAT_TYPE, chatType);
-        if (sFileImageInfoEntities != null) {
-            intent.putExtra(KEY_S_FILE_INFO, sFileImageInfoEntities);
-        }
+        intent.putExtra(KEY_CHAT_ID, chatId);
         if (context instanceof Activity
                 && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP
                 && transitionView != null) {
-            String transitionName = mediumUrls.get(pos);
+            String transitionName = sFileImageInfoEntities.get(selectedPos).getChatMiddlePic();
             if (TextUtils.isEmpty(transitionName)) {
                 transitionName = "transitionView";
             }
@@ -208,6 +129,7 @@ public class ImagePagerActivity extends ImageViewBaseActivity implements BasePag
             context.startActivity(intent);
         }
     }
+
 
     private static void setTransitionView(View transitionView, String transitionName) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP
@@ -232,11 +154,10 @@ public class ImagePagerActivity extends ImageViewBaseActivity implements BasePag
     @Override
     protected void initView() {
         super.initView();
-        urls = getIntent().getStringArrayExtra(KEY_URLS);
-        sFileImageInfoEntities = (ArrayList<SFileImageInfoEntity>) getIntent().getSerializableExtra(KEY_S_FILE_INFO);
+        sFileImageInfoEntities = (ArrayList<ChatFileInfoEntity>) getIntent().getSerializableExtra(KEY_S_FILE_INFO);
         realPos = getIntent().getIntExtra(KEY_POS, 0);
         pagerAdapter = new ImagePagerAdapter();
-        pagerAdapter.bindData(true, Arrays.asList(urls));
+        pagerAdapter.bindData(true, sFileImageInfoEntities);
         pagerAdapter.setOnPagerItemClickListener(this);
         pagerAdapter.setOnPagerItemLongClickListener(this);
         tvPagerTitle.setVisibility(View.GONE);
@@ -280,10 +201,6 @@ public class ImagePagerActivity extends ImageViewBaseActivity implements BasePag
 
     protected String getIMChatId() {
         return getIntent().getStringExtra(KEY_CHAT_ID);
-    }
-
-    protected Long getIMMsgId() {
-        return getIntent().getLongExtra(KEY_MSG_ID, 0);
     }
 
     /**
@@ -357,8 +274,9 @@ public class ImagePagerActivity extends ImageViewBaseActivity implements BasePag
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.download_img:
-                final String originalImageUrl = getDownloadUrl(imagePager.getCurrentItem());
-                final String picSavePath = getPicSavePath(imagePager.getCurrentItem());
+                //下载原图
+                final String originalImageUrl = pagerAdapter.getOriginalImageUrl(imagePager.getCurrentItem());
+                final String picSavePath = getPicSavePath(getSFileImageInfoEntity(imagePager.getCurrentItem()));
                 downloadFile(originalImageUrl, picSavePath);
                 break;
             default:
@@ -390,18 +308,18 @@ public class ImagePagerActivity extends ImageViewBaseActivity implements BasePag
     @Override
     public boolean OnItemLongClick(BasePagerAdapter adapter, final View v, final int pos) {
         if (v instanceof ImageView) {
-            final SFileImageInfoEntity sFileImageInfoEntity = getSFileImageInfoEntity(pos);
+            final ChatFileInfoEntity chatFileInfoEntity = getSFileImageInfoEntity(pos);
             ImageView imageView = (ImageView) v;
             final Drawable drawable = imageView.getDrawable();
             if (drawable == null) return false;
-            final SFileImageInfoEntity finalSFileImageInfoEntity = sFileImageInfoEntity;
+            final ChatFileInfoEntity finalChatFileInfoEntity = chatFileInfoEntity;
 
-            final String originalImageUrl = getDownloadUrl(imagePager.getCurrentItem());
-            final String picSavePath = getPicSavePath(imagePager.getCurrentItem());
+            final String originalImageUrl = pagerAdapter.getOriginalImageUrl(pos);
+            final String picSavePath = getPicSavePath(getSFileImageInfoEntity(pos));
 
-            if (finalSFileImageInfoEntity != null) {
-                final boolean isCollected = isCollected(sFileImageInfoEntity.chatMsgId);
-                final boolean isDinged = isDinged(sFileImageInfoEntity.chatMsgId);
+            if (finalChatFileInfoEntity != null) {
+                final boolean isCollected = isCollected(chatFileInfoEntity.getChatMsgId());
+                final boolean isDinged = isDinged(chatFileInfoEntity.getChatMsgId());
                 new BottomActionDialog(getContext(),
                         null,
                         Arrays.asList("分享", "转发给同事", isCollected ? "取消收藏" : "收藏", isDinged ? "取消钉" : "钉", "保存到我的文档"),
@@ -418,13 +336,13 @@ public class ImagePagerActivity extends ImageViewBaseActivity implements BasePag
                                         break;
                                     case 2:
                                         if (isCollected) {
-                                            msgActionCollectCancel(finalSFileImageInfoEntity.chatMsgId);
+                                            msgActionCollectCancel(finalChatFileInfoEntity.getChatMsgId());
                                         } else {
-                                            msgActionCollect(finalSFileImageInfoEntity.chatMsgId);
+                                            msgActionCollect(finalChatFileInfoEntity.getChatMsgId());
                                         }
                                         break;
                                     case 3:
-                                        msgActionDing(!isDinged, finalSFileImageInfoEntity.chatMsgId);
+                                        msgActionDing(!isDinged, finalChatFileInfoEntity.getChatMsgId());
                                         break;
                                     case 4:
                                         shareHttpFile2repo(originalImageUrl, picSavePath);
@@ -559,18 +477,11 @@ public class ImagePagerActivity extends ImageViewBaseActivity implements BasePag
     /**
      * 获取保存路径
      *
-     * @param pos
+     * @param iSeaFile
      * @return
      */
-    private String getPicSavePath(int pos) {
-        if (sFileImageInfoEntities != null && pos < sFileImageInfoEntities.size()) {
-            SFileImageInfoEntity sFileImageInfoEntity = sFileImageInfoEntities.get(pos);
-            if (sFileImageInfoEntity != null) {
-                return DownloadConfig.getSeaFileDownloadPath(getLoginUserId(), sFileImageInfoEntity);
-            }
-        }
-        String downloadUrl = getDownloadUrl(pos);
-        return DownloadConfig.getCommFileDownloadPath(getLoginUserId(), Md5Utils.md5(downloadUrl, downloadUrl) + ".png");
+    private String getPicSavePath(ISeaFile iSeaFile) {
+        return DownloadConfig.getSeaFileDownloadPath(getLoginUserId(), iSeaFile);
     }
 
 //    @Override
@@ -582,25 +493,54 @@ public class ImagePagerActivity extends ImageViewBaseActivity implements BasePag
 //    }
 
     @CheckResult
-    private SFileImageInfoEntity getSFileImageInfoEntity(int pos) {
-        if (sFileImageInfoEntities != null
-                && pos < sFileImageInfoEntities.size()) {
-            return sFileImageInfoEntities.get(pos);
-        }
-        return null;
+    private ChatFileInfoEntity getSFileImageInfoEntity(int pos) {
+        return sFileImageInfoEntities.get(pos);
     }
 
-    class ImagePagerAdapter extends BasePagerAdapter<String> {
+    class ImagePagerAdapter extends BasePagerAdapter<ChatFileInfoEntity> {
 
         @Override
         public int bindView(int pos) {
             return R.layout.adapter_item_image_pager;
         }
 
+        /**
+         * 获取原图地址
+         *
+         * @param iSeaFile
+         * @return
+         */
+        public String getOriginalImageUrl(ISeaFile iSeaFile) {
+            if (iSeaFile == null) return null;
+            StringBuilder bigUrlBuilder = new StringBuilder(BuildConfig.API_CHAT_URL);
+            bigUrlBuilder.append("im/v1/msgs/files/download/refer");
+            bigUrlBuilder.append("?");
+            bigUrlBuilder.append("repo_id=");
+            bigUrlBuilder.append(iSeaFile.getSeaFileRepoId());
+            bigUrlBuilder.append("&path=");
+            bigUrlBuilder.append(FileUtils.getFileParentDir(iSeaFile.getSeaFileFullPath()));
+            bigUrlBuilder.append("&name=");
+            bigUrlBuilder.append(FileUtils.getFileName(iSeaFile.getSeaFileFullPath()));
+            bigUrlBuilder.append("&token=");
+            bigUrlBuilder.append(getUserToken());
+            return bigUrlBuilder.toString();
+        }
+
+        /**
+         * 获取原图地址
+         *
+         * @param pos
+         * @return
+         */
+        public String getOriginalImageUrl(int pos) {
+            ChatFileInfoEntity item = getItem(pos);
+            return getOriginalImageUrl(item);
+        }
+
         @Override
-        public void bindDataToItem(final String s, ViewGroup container, View itemView, final int pos) {
+        public void bindDataToItem(final ChatFileInfoEntity chatFileInfoEntity, ViewGroup container, View itemView, final int pos) {
             final ImageView touchImageView = itemView.findViewById(R.id.imageView);
-            setTransitionView(touchImageView, s);
+            setTransitionView(touchImageView, chatFileInfoEntity.getChatMiddlePic());
             touchImageView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -616,97 +556,76 @@ public class ImagePagerActivity extends ImageViewBaseActivity implements BasePag
                     return false;
                 }
             });
+
             final TextView img_look_original_tv = (TextView) itemView.findViewById(R.id.img_look_original_tv);
             img_look_original_tv.setVisibility(View.GONE);
-            final String bigUrl = getBigUrl(pos);
             img_look_original_tv.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    //putItem(pos, bigUrl);
-                    loadOriginalPic(img_look_original_tv, bigUrl, touchImageView);
+                    loadOriginalImage(chatFileInfoEntity, touchImageView, img_look_original_tv);
                 }
             });
-            img_look_original_tv.setVisibility(View.GONE);
+
+            final String thumbUrl = chatFileInfoEntity.getChatThumbPic();
+            final String middleUrl = chatFileInfoEntity.getChatMiddlePic();
+            final String picSavePath = getPicSavePath(chatFileInfoEntity);
+
+            //已经有原图
+            if (FileUtils.isFileExists(picSavePath)) {
+                GlideUtils.loadSFilePic(getContext(), picSavePath, touchImageView);
+                return;
+            }
+
             if (GlideUtils.canLoadImage(getContext())) {
-                log("---------->load url:pos:" + pos + "  url:" + s);
                 handler.postDelayed(new Runnable() {
                     @Override
                     public void run() {
                         if (!GlideUtils.canLoadImage(getContext())) return;
+                        //1.先加载缩略图
+                        //2.加载中等图片
+                        //3.加载原图
+                        Glide.with(getContext())
+                                .load(thumbUrl)
+                                .diskCacheStrategy(DiskCacheStrategy.SOURCE)
+                                .listener(new RequestListener<String, GlideDrawable>() {
+                                    @Override
+                                    public boolean onException(Exception e, String model, Target<GlideDrawable> target, boolean isFirstResource) {
+                                        loadMiddleImage(img_look_original_tv,
+                                                middleUrl,
+                                                touchImageView);
+                                        return false;
+                                    }
 
-                        final SFileImageInfoEntity sFileImageInfoEntity = getSFileImageInfoEntity(pos);
-                        if (sFileImageInfoEntity != null
-                                && !TextUtils.isEmpty(sFileImageInfoEntity.thumb)) {
-                            Glide.with(getContext())
-                                    .load(sFileImageInfoEntity.thumb)
-                                    .diskCacheStrategy(DiskCacheStrategy.SOURCE)
-                                    .listener(new RequestListener<String, GlideDrawable>() {
-                                        @Override
-                                        public boolean onException(Exception e, String model, Target<GlideDrawable> target, boolean isFirstResource) {
-                                            loadBigImage(img_look_original_tv,
-                                                    null,
-                                                    null,
-                                                    s,
-                                                    bigUrl,
-                                                    touchImageView);
-                                            return true;
-                                        }
-
-                                        @Override
-                                        public boolean onResourceReady(GlideDrawable resource, String model, Target<GlideDrawable> target, boolean isFromMemoryCache, boolean isFirstResource) {
-                                            loadBigImage(img_look_original_tv,
-                                                    resource,
-                                                    resource,
-                                                    s,
-                                                    bigUrl,
-                                                    touchImageView);
-                                            return true;
-                                        }
-                                    }).dontAnimate()
-                                    .into(touchImageView);
-
-                        } else {
-                            loadBigImage(img_look_original_tv,
-                                    null,
-                                    null,
-                                    s,
-                                    bigUrl,
-                                    touchImageView);
-                        }
+                                    @Override
+                                    public boolean onResourceReady(GlideDrawable resource, String model, Target<GlideDrawable> target, boolean isFromMemoryCache, boolean isFirstResource) {
+                                        loadMiddleImage(img_look_original_tv,
+                                                middleUrl,
+                                                touchImageView);
+                                        return false;
+                                    }
+                                })
+                                .dontAnimate()
+                                .into(touchImageView);
                     }
                 }, new Random().nextInt(50));
             }
         }
 
         /**
-         * 加载大图
+         * 加载中图
          *
-         * @param img_look_original_tv 加载原图的按钮
-         * @param url                  大图地址
-         * @param bigUrl               原图地址
+         * @param img_look_original_tv
+         * @param middleUrl
          * @param imageView
          */
-        private void loadBigImage(final View img_look_original_tv,
-                                  Drawable placeholder,
-                                  Drawable errorDrawable,
-                                  String url,
-                                  final String bigUrl,
-                                  final ImageView imageView) {
+        private void loadMiddleImage(final View img_look_original_tv,
+                                     final String middleUrl,
+                                     final ImageView imageView) {
             if (!GlideUtils.canLoadImage(getContext())) return;
-            final DrawableRequestBuilder<String> drawableRequestBuilder = Glide.with(getContext())
-                    .load(url)
-                    .diskCacheStrategy(DiskCacheStrategy.SOURCE);
-            if (placeholder != null) {
-                drawableRequestBuilder.placeholder(placeholder);
-            } else {
-                drawableRequestBuilder.thumbnail(0.1f);
-            }
-            if (errorDrawable != null) {
-                drawableRequestBuilder.error(errorDrawable);
-            } else {
-                drawableRequestBuilder.error(R.mipmap.default_img_failed);
-            }
-            drawableRequestBuilder
+            Glide.with(getContext())
+                    .load(middleUrl)
+                    .diskCacheStrategy(DiskCacheStrategy.SOURCE)
+                    .error(R.mipmap.filetype_image)
                     .listener(new RequestListener<String, GlideDrawable>() {
                         @Override
                         public boolean onException(Exception e, String model, Target<GlideDrawable> target, boolean isFirstResource) {
@@ -717,46 +636,16 @@ public class ImagePagerActivity extends ImageViewBaseActivity implements BasePag
                         @Override
                         public boolean onResourceReady(GlideDrawable resource, String model, Target<GlideDrawable> target, boolean isFromMemoryCache, boolean isFirstResource) {
                             //有sfile原图 原图的分界线是高度>=800
-                            if (!TextUtils.isEmpty(bigUrl)
-                                    && resource != null
+                            if (resource != null
                                     && resource.getIntrinsicHeight() >= 800) {
-                                Observable.create(new ObservableOnSubscribe<Boolean>() {
-                                    @Override
-                                    public void subscribe(ObservableEmitter<Boolean> e) throws Exception {
-                                        if (e.isDisposed()) return;
-                                        File file = null;
-                                        try {
-                                            file = Glide.with(getContext())
-                                                    .load(bigUrl)
-                                                    .downloadOnly(Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL)
-                                                    .get(200, TimeUnit.MILLISECONDS);
-                                        } catch (Exception ex) {
-                                            ex.printStackTrace();
-                                        }
-                                        e.onNext(file != null && file.exists());
-                                        e.onComplete();
-                                    }
-                                }).compose(ImagePagerActivity.this.<Boolean>bindToLifecycle())
-                                        .subscribeOn(Schedulers.newThread())
-                                        .observeOn(AndroidSchedulers.mainThread())
-                                        .subscribe(new io.reactivex.functions.Consumer<Boolean>() {
-                                            @Override
-                                            public void accept(Boolean aBoolean) throws Exception {
-                                                if (!GlideUtils.canLoadImage(getContext())) return;
-
-                                                if (aBoolean != null && aBoolean.booleanValue()) {
-                                                    loadOriginalPic2(img_look_original_tv, bigUrl, imageView);
-                                                } else {
-                                                    img_look_original_tv.setVisibility(View.VISIBLE);
-                                                }
-                                            }
-                                        });
+                                img_look_original_tv.setVisibility(View.VISIBLE);
                             } else {
                                 img_look_original_tv.setVisibility(View.GONE);
                             }
                             return false;
                         }
-                    }).dontAnimate()
+                    })
+                    .dontAnimate()
                     .into(imageView);
         }
 
@@ -771,89 +660,21 @@ public class ImagePagerActivity extends ImageViewBaseActivity implements BasePag
         /**
          * 加载原图
          *
-         * @param img_look_original_tv
-         * @param originalUrl
+         * @param iSeaFile
          * @param imageView
+         * @param imgLookOriginalTv
          */
-        private void loadOriginalPic(final View img_look_original_tv, String originalUrl, ImageView imageView) {
-            if (imageView == null) return;
-            if (TextUtils.isEmpty(originalUrl)) return;
-            if (img_look_original_tv == null) return;
-            log("---------->load Original url:" + originalUrl);
-            if (!GlideUtils.canLoadImage(getContext()))
-                return;
-            //加载原图
-            showLoadingDialog(null);
-            Glide.with(getContext())
-                    .load(originalUrl)
-                    .diskCacheStrategy(DiskCacheStrategy.SOURCE)
-                    .placeholder(imageView.getDrawable())
-                    .listener(new RequestListener<String, GlideDrawable>() {
-                        @Override
-                        public boolean onException(Exception e, String model, Target<GlideDrawable> target, boolean isFirstResource) {
-                            dismissLoadingDialog();
-                            img_look_original_tv.setVisibility(View.GONE);
-                            return false;
-                        }
-
-                        @Override
-                        public boolean onResourceReady(GlideDrawable resource, String model, Target<GlideDrawable> target, boolean isFromMemoryCache, boolean isFirstResource) {
-                            dismissLoadingDialog();
-                            img_look_original_tv.setVisibility(View.GONE);
-                            return false;
-                        }
-                    })
-                    .into(imageView);
-        }
-
-        /**
-         * @param img_look_original_tv
-         * @param originalUrl
-         * @param imageView
-         */
-        private void loadOriginalPic2(final View img_look_original_tv, String originalUrl, ImageView imageView) {
-            if (imageView == null) return;
-            if (TextUtils.isEmpty(originalUrl)) return;
-            if (img_look_original_tv == null) return;
-            log("---------->load Original url2:" + originalUrl);
-            if (!GlideUtils.canLoadImage(getContext()))
-                return;
-            //加载原图
-            img_look_original_tv.setVisibility(View.GONE);
-            Glide.with(getContext())
-                    .load(originalUrl)
-                    .diskCacheStrategy(DiskCacheStrategy.SOURCE)
-                    .placeholder(imageView.getDrawable())
-                    .into(imageView);
-        }
-
-
-        /**
-         * 获取大图地址
-         *
-         * @param pos
-         * @return
-         */
-        public String getBigUrl(int pos) {
-            if (sFileImageInfoEntities != null
-                    && sFileImageInfoEntities.size() > pos) {
-                SFileImageInfoEntity sFileImageInfoEntity = sFileImageInfoEntities.get(pos);
-                if (sFileImageInfoEntity != null && sFileImageInfoEntity.size > 500_000) {
-                    StringBuilder bigUrlBuilder = new StringBuilder(BuildConfig.API_CHAT_URL);
-                    bigUrlBuilder.append("im/v1/msgs/files/download/refer");
-                    bigUrlBuilder.append("?");
-                    bigUrlBuilder.append("repo_id=");
-                    bigUrlBuilder.append(sFileImageInfoEntity.repo_id);
-                    bigUrlBuilder.append("&path=");
-                    bigUrlBuilder.append(sFileImageInfoEntity.path);
-                    bigUrlBuilder.append("&name=");
-                    bigUrlBuilder.append(sFileImageInfoEntity.name);
-                    bigUrlBuilder.append("&token=");
-                    bigUrlBuilder.append(getUserToken());
-                    return bigUrlBuilder.toString();
+        private void loadOriginalImage(final ISeaFile iSeaFile, final ImageView imageView, final View imgLookOriginalTv) {
+            imgLookOriginalTv.setVisibility(View.GONE);
+            final String picSavePath = getPicSavePath(iSeaFile);
+            String originalImageUrl = pagerAdapter.getOriginalImageUrl(iSeaFile);
+            downloadFile(originalImageUrl, picSavePath, new LoadingDownloadListener() {
+                @Override
+                protected void completed(BaseDownloadTask task) {
+                    super.completed(task);
+                    GlideUtils.loadSFilePicWithoutPlaceholder(getContext(), picSavePath, imageView);
                 }
-            }
-            return null;
+            });
         }
 
 
@@ -868,35 +689,6 @@ public class ImagePagerActivity extends ImageViewBaseActivity implements BasePag
             }
             super.destroyItem(container, position, object);
         }
-    }
-
-    /**
-     * 获取下载地址
-     *
-     * @param pos
-     * @return
-     */
-    private String getDownloadUrl(int pos) {
-        if (sFileImageInfoEntities != null
-                && sFileImageInfoEntities.size() > pos) {
-            SFileImageInfoEntity sFileImageInfoEntity = sFileImageInfoEntities.get(pos);
-            if (sFileImageInfoEntity == null) {
-                return pagerAdapter.getItem(pos);
-            }
-            StringBuilder bigUrlBuilder = new StringBuilder(BuildConfig.API_CHAT_URL);
-            bigUrlBuilder.append("im/v1/msgs/files/download/refer");
-            bigUrlBuilder.append("?");
-            bigUrlBuilder.append("repo_id=");
-            bigUrlBuilder.append(sFileImageInfoEntity.repo_id);
-            bigUrlBuilder.append("&path=");
-            bigUrlBuilder.append(sFileImageInfoEntity.path);
-            bigUrlBuilder.append("&name=");
-            bigUrlBuilder.append(sFileImageInfoEntity.name);
-            bigUrlBuilder.append("&token=");
-            bigUrlBuilder.append(getUserToken());
-            return bigUrlBuilder.toString();
-        }
-        return pagerAdapter.getItem(pos);
     }
 
 
