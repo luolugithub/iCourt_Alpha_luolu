@@ -2,6 +2,8 @@ package com.icourt.alpha.entity.bean;
 
 import android.support.annotation.Nullable;
 
+import com.icourt.alpha.constants.SFileConfig;
+
 import java.io.Serializable;
 
 /**
@@ -43,4 +45,13 @@ public interface ISeaFile extends Serializable {
      * @return
      */
     long getSeaFileSize();
+
+
+    /**
+     * 权限
+     *
+     * @return
+     */
+    @SFileConfig.FILE_PERMISSION
+    String getSeaFilePermission();
 }

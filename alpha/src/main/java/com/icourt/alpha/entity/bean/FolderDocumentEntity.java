@@ -158,6 +158,11 @@ public class FolderDocumentEntity implements ISeaFile, IFilterEntity, ISuspensio
     }
 
     @Override
+    public String getSeaFilePermission() {
+        return permission;
+    }
+
+    @Override
     public String getSeaFileRepoId() {
         return repoId;
     }

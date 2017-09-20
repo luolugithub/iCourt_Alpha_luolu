@@ -74,6 +74,11 @@ public class FileVersionEntity implements ILongFieldEntity, ISeaFile {
         return rev_file_size;
     }
 
+    @Override
+    public String getSeaFilePermission() {
+        return null;
+    }
+
     public static class SFileUserInfo implements Serializable {
         public String name;
     }

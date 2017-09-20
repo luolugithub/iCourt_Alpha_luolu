@@ -192,4 +192,9 @@ public final class IMMessageExtBody implements ISeaFile, IConvertModel<ChatFileI
     public long getSeaFileSize() {
         return size;
     }
+
+    @Override
+    public String getSeaFilePermission() {
+        return null;
+    }
 }

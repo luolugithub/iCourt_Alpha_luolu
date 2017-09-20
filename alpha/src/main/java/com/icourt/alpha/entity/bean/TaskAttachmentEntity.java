@@ -34,6 +34,11 @@ public class TaskAttachmentEntity implements ISeaFile {
     }
 
     @Override
+    public String getSeaFilePermission() {
+        return null;
+    }
+
+    @Override
     public String getSeaFileRepoId() {
         return pathInfoVo != null ? pathInfoVo.repoId : "";
     }

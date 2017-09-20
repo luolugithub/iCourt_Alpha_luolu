@@ -22,12 +22,14 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.load.resource.drawable.GlideDrawable;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
+import com.google.gson.JsonObject;
 import com.icourt.alpha.BuildConfig;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.baseadapter.BasePagerAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.constants.DownloadConfig;
 import com.icourt.alpha.entity.bean.ISeaFile;
+import com.icourt.alpha.http.callback.SFileCallBack;
 import com.icourt.alpha.utils.FileUtils;
 import com.icourt.alpha.utils.GlideUtils;
 import com.icourt.alpha.utils.SFileTokenUtils;
@@ -43,7 +45,10 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 import cn.finalteam.galleryfinal.widget.zoonview.PhotoView;
 import cn.finalteam.galleryfinal.widget.zoonview.PhotoViewAttacher;
+import retrofit2.Call;
+import retrofit2.Response;
 
+import static com.icourt.alpha.constants.SFileConfig.PERMISSION_RW;
 import static com.icourt.alpha.utils.GlideUtils.canLoadImage;
 
 /**
@@ -221,7 +226,6 @@ public class ImageViewerActivity extends ImageViewBaseActivity {
         }
 
 
-
         /**
          * 加载原图
          *
@@ -288,9 +292,7 @@ public class ImageViewerActivity extends ImageViewBaseActivity {
         titleAction.setImageResource(R.mipmap.header_icon_more);
         seaFileImages = (ArrayList<ISeaFile>) getIntent().getSerializableExtra(KEY_SEA_FILE_IMAGES);
         selectPos = getIntent().getIntExtra(KEY_SELECT_POS, 0);
-        viewPager.setAdapter(imagePagerAdapter = new ImagePagerAdapter());
-        imagePagerAdapter.setCanupdateItem(true);
-        imagePagerAdapter.bindData(true, seaFileImages);
+        initAdapter();
         viewPager.addOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
             @Override
             public void onPageSelected(int position) {
@@ -307,6 +309,12 @@ public class ImageViewerActivity extends ImageViewBaseActivity {
             }, 20);
         }
         setTitle(FileUtils.getFileName(FileUtils.getFileName(seaFileImages.get(0).getSeaFileFullPath())));
+    }
+
+    private void initAdapter() {
+        viewPager.setAdapter(imagePagerAdapter = new ImagePagerAdapter());
+        imagePagerAdapter.setCanupdateItem(true);
+        imagePagerAdapter.bindData(true, seaFileImages);
     }
 
     @OnClick({R.id.titleAction,
@@ -337,7 +345,7 @@ public class ImageViewerActivity extends ImageViewBaseActivity {
         final Drawable drawable = imageView.getDrawable();
         if (drawable == null) return;
 
-        ISeaFile item = imagePagerAdapter.getItem(viewPager.getCurrentItem());
+        final ISeaFile item = imagePagerAdapter.getItem(viewPager.getCurrentItem());
         if (item == null) {
             return;
         }
@@ -345,31 +353,81 @@ public class ImageViewerActivity extends ImageViewBaseActivity {
         //使用原图
         final String originalImageUrl = imagePagerAdapter.getOriginalImageUrl(item);
         final String picSavePath = getPicSavePath(item);
-
+        ArrayList<String> menus = new ArrayList<>(Arrays.asList("保存图片", "转发给同事", "分享", "保存到项目资料库"));
+        if (TextUtils.equals(item.getSeaFilePermission(), PERMISSION_RW)) {//有删除的权限
+            menus.add(getString(R.string.str_delete));
+        }
         new BottomActionDialog(getContext(),
                 null,
-                Arrays.asList("保存图片", "转发给同事", "分享", "保存到项目资料库"),
+                menus,
                 new BottomActionDialog.OnActionItemClickListener() {
                     @Override
                     public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
                         dialog.dismiss();
-                        switch (position) {
-                            case 0:
-                                downloadFile(originalImageUrl, picSavePath);
-                                break;
-                            case 1:
-                                shareHttpFile2Friends(originalImageUrl, picSavePath);
-                                break;
-                            case 2:
-                                shareHttpFile(originalImageUrl, picSavePath);
-                                break;
-                            case 3:
-                                shareHttpFile2Project(originalImageUrl, picSavePath);
-                                break;
+                        String action = adapter.getItem(position);
+                        if (TextUtils.equals(action, "保存图片")) {
+                            downloadFile(originalImageUrl, picSavePath);
+                        } else if (TextUtils.equals(action, "转发给同事")) {
+                            shareHttpFile2Friends(originalImageUrl, picSavePath);
+                        } else if (TextUtils.equals(action, "分享")) {
+                            shareHttpFile(originalImageUrl, picSavePath);
+                        } else if (TextUtils.equals(action, "保存到项目资料库")) {
+                            shareHttpFile2Project(originalImageUrl, picSavePath);
+                        } else if (TextUtils.equals(action, getString(R.string.str_delete))) {
+                            showDeleteConfirmDialog();
                         }
                     }
                 })
                 .show();
+    }
+
+    /**
+     * 展示删除确认对话框
+     */
+    private void showDeleteConfirmDialog() {
+        new BottomActionDialog(
+                getContext(),
+                getString(R.string.sfile_delete_confirm),
+                Arrays.asList(getString(R.string.str_ok)),
+                new BottomActionDialog.OnActionItemClickListener() {
+                    @Override
+                    public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
+                        dialog.dismiss();
+                        deleteFile();
+                    }
+                }).show();
+    }
+
+    /**
+     * 删除文件
+     */
+    private void deleteFile() {
+        final int currentItem = viewPager.getCurrentItem();
+        final ISeaFile item = imagePagerAdapter.getItem(currentItem);
+        showLoadingDialog(R.string.str_executing);
+        callEnqueue(getSFileApi().fileDelete(
+                item.getSeaFileRepoId(),
+                item.getSeaFileFullPath()),
+                new SFileCallBack<JsonObject>() {
+                    @Override
+                    public void onSuccess(Call<JsonObject> call, Response<JsonObject> response) {
+                        dismissLoadingDialog();
+                        if (imagePagerAdapter.getCount() > 1) {
+                            seaFileImages.remove(currentItem);
+                            initAdapter();
+                            viewPager.setCurrentItem(Math.min(currentItem + 1, seaFileImages.size() - 1));
+                        } else {
+                            //只剩一个 就关闭整个页面
+                            finish();
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<JsonObject> call, Throwable t) {
+                        super.onFailure(call, t);
+                        dismissLoadingDialog();
+                    }
+                });
     }
 
 
