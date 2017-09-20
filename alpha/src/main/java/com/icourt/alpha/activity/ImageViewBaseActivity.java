@@ -196,7 +196,7 @@ public class ImageViewBaseActivity extends BaseUmengActivity {
     protected final void shareHttpFile2Friends(String url, final String cacheFullPath) {
         if (checkAcessFilePermission()) {
             if (isFileExists(cacheFullPath)) {
-                shareFileWithAndroid(cacheFullPath);
+                showContactShareDialogFragment(cacheFullPath);
             } else {
                 //下载完成后 再保存到资料库
                 downloadFile(url,

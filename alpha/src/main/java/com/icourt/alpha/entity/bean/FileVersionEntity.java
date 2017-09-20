@@ -66,7 +66,7 @@ public class FileVersionEntity implements ILongFieldEntity, ISeaFile {
     @Nullable
     @Override
     public String getSeaFileVersionId() {
-        return null;
+        return id;
     }
 
     @Override
