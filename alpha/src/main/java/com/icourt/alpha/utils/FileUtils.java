@@ -323,6 +323,13 @@ public class FileUtils {
         if (!TextUtils.isEmpty(filePath)) {
             int separatorIndex = filePath.lastIndexOf(File.separator);
             if (separatorIndex > 0) {
+                if (separatorIndex == filePath.length() - 1) {
+                    String temp = filePath.substring(0, filePath.length() - 2);
+                    separatorIndex = temp.lastIndexOf(File.separator);
+                    if (separatorIndex > 0) {
+                        return filePath.substring(0, separatorIndex);
+                    }
+                }
                 return filePath.substring(0, separatorIndex);
             }
         }
@@ -469,6 +476,7 @@ public class FileUtils {
 
     /**
      * 删除文件
+     *
      * @param filePath
      */
     public static void deleteFile(@Nullable String filePath) {
@@ -480,7 +488,7 @@ public class FileUtils {
                 }
             } catch (Exception e) {
                 e.printStackTrace();
-                BugUtils.bugSync("删除文件异常",new StringBuilder("path\n")
+                BugUtils.bugSync("删除文件异常", new StringBuilder("path\n")
                         .append(filePath)
                         .append("exception\n")
                         .append(StringUtils.throwable2string(e))

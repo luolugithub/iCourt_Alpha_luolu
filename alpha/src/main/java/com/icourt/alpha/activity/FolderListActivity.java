@@ -45,6 +45,7 @@ import com.icourt.alpha.http.IDefNotify;
 import com.icourt.alpha.http.callback.SFileCallBack;
 import com.icourt.alpha.http.observer.BaseObserver;
 import com.icourt.alpha.interfaces.OnDialogFragmentDismissListener;
+import com.icourt.alpha.utils.FileUtils;
 import com.icourt.alpha.utils.IMUtils;
 import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.utils.SystemUtils;
@@ -485,13 +486,13 @@ public class FolderListActivity extends FolderBaseActivity
     private void showActionMoreDialog() {
 
         ArrayList<String> menus = new ArrayList<>();
-
+        menus.add(getString(R.string.sfile_menu_repo_details));
         //如果是非根目录 显示文件夹详情按钮
         boolean isRepoRoot = TextUtils.isEmpty(getSeaFileDirPath())
                 || TextUtils.equals(getSeaFileDirPath(), "/");
-        if (isRepoRoot) {
-            menus.add(getString(R.string.sfile_menu_repo_details));
-        } else {
+        //只有我的资料库 有文件夹详情
+        if (!isRepoRoot
+                && getRepoType() == SFileConfig.REPO_MINE) {
             menus.add(getString(R.string.sfile_folder_details));
         }
         //有读写权限 并且列表不为空
@@ -524,8 +525,8 @@ public class FolderListActivity extends FolderBaseActivity
                             FolderDetailDialogFragment.show(
                                     getRepoType(),
                                     getSeaFileRepoId(),
-                                    getSeaFileDirPath(),
-                                    "",
+                                    FileUtils.getFileParentDir(getSeaFileDirPath()),
+                                    getRepoTitle(),
                                     0,
                                     getRepoPermission(),
                                     getSupportFragmentManager());
@@ -848,17 +849,31 @@ public class FolderListActivity extends FolderBaseActivity
     private void showFolderActionMenu(BaseRecyclerAdapter adapter, int position) {
         final FolderDocumentEntity item = (FolderDocumentEntity) adapter.getItem(position);
         if (item == null) return;
-        ArrayList<String> menus = new ArrayList<>(Arrays.asList(getResources().getStringArray(R.array.sfile_file_menus_array)));
+        ArrayList<String> menus = new ArrayList<>();
         if (item.isDir()) {
-            menus.clear();
-            menus.addAll(Arrays.asList(getResources().getStringArray(R.array.sfile_folder_menus_array)));
+            //非我的资料库 不能展示查看文件夹详情与共享
+            if (getRepoType() == SFileConfig.REPO_MINE) {
+                menus.add(getString(R.string.sfile_folder_details));
+            }
+            menus.add(getString(R.string.sfile_file_rename));
+            if (getRepoType() == SFileConfig.REPO_MINE) {
+                menus.add(getString(R.string.sfile_folder_share));
+            }
+            menus.add(getString(R.string.sfile_file_copy));
+            menus.add(getString(R.string.sfile_file_move));
+            menus.add(getString(R.string.sfile_file_delete));
+        } else {
+            menus.add(getString(R.string.sfile_file_details));
+            menus.add(getString(R.string.sfile_file_rename));
+            //已经共享给我 不能再共享给别人了
+            if (getRepoType() != SFileConfig.REPO_SHARED_ME) {
+                menus.add(getString(R.string.sfile_file_share));
+            }
+            menus.add(getString(R.string.sfile_file_copy));
+            menus.add(getString(R.string.sfile_file_move));
+            menus.add(getString(R.string.sfile_file_delete));
         }
 
-        //已经共享给我 不能再共享给别人了
-        if (getRepoType() == SFileConfig.REPO_SHARED_ME) {
-            menus.remove(getString(R.string.sfile_folder_share));
-            menus.remove(getString(R.string.sfile_file_share));
-        }
         new BottomActionDialog(
                 getContext(),
                 null,
