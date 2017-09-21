@@ -61,6 +61,7 @@ public class TaskCheckItemFragment extends BaseFragment
     private static final String KEY_TASK_ID = "key_task_id";
     private static final String KEY_HAS_PERMISSION = "key_has_permission";
     private static final String KEY_VALID = "key_valid";
+    private static final String KEY_IS_CHECK_ITEM = "key_is_check_item";
 
     @BindView(R.id.recyclerview)
     RecyclerView recyclerview;
@@ -118,12 +119,6 @@ public class TaskCheckItemFragment extends BaseFragment
         taskId = getArguments().getString(KEY_TASK_ID);
         hasPermission = getArguments().getBoolean(KEY_HAS_PERMISSION);
         valid = getArguments().getBoolean(KEY_VALID);
-        nestedScrollView.setOnScrollChangeListener(new NestedScrollView.OnScrollChangeListener() {
-            @Override
-            public void onScrollChange(NestedScrollView v, int scrollX, int scrollY, int oldScrollX, int oldScrollY) {
-
-            }
-        });
         recyclerview.setNestedScrollingEnabled(false);
         recyclerview.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerview.setAdapter(taskCheckItemAdapter = new TaskCheckItemAdapter());
@@ -178,7 +173,7 @@ public class TaskCheckItemFragment extends BaseFragment
                             dismissLoadingDialog();
                         if (listLayout != null) {
                             if (response.body().result.items != null) {
-                                taskCheckItemAdapter.bindData(false, response.body().result.items);
+                                taskCheckItemAdapter.bindData(true, response.body().result.items);
                                 if (!hasPermission) {
                                     listLayout.setVisibility(View.GONE);
                                     emptyLayout.setVisibility(View.VISIBLE);
@@ -228,7 +223,6 @@ public class TaskCheckItemFragment extends BaseFragment
      */
     @Override
     public void notifyFragmentUpdate(Fragment targetFrgament, int type, Bundle bundle) {
-        super.notifyFragmentUpdate(targetFrgament, type, bundle);
         if (type == 100 && bundle != null) {
             hasPermission = bundle.getBoolean(KEY_HAS_PERMISSION, false);
             if (listLayout == null) return;
@@ -238,6 +232,11 @@ public class TaskCheckItemFragment extends BaseFragment
             } else {
                 listLayout.setVisibility(View.VISIBLE);
                 emptyLayout.setVisibility(View.GONE);
+            }
+        } else if (type == 101 && bundle != null) {
+            boolean isSelectedCheckItem = bundle.getBoolean(KEY_IS_CHECK_ITEM, false);
+            if (isSelectedCheckItem) {
+                SystemUtils.showSoftKeyBoard(getContext(),checkItemEdit);
             }
         }
     }

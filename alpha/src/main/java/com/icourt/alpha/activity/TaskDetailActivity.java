@@ -159,6 +159,7 @@ public class TaskDetailActivity extends BaseActivity
     TaskEntity.TaskItemEntity taskItemEntity;
     TaskUsersAdapter usersAdapter;
     TaskDetailFragment taskDetailFragment;
+    TaskCheckItemFragment taskCheckItemFragment;
 
     final SparseArray<CharSequence> tabTitles = new SparseArray<>();
 
@@ -190,6 +191,7 @@ public class TaskDetailActivity extends BaseActivity
 
     /**
      * 新建任务之后跳转到详情并默认选中检查项tab
+     *
      * @param context
      * @param taskId
      * @param isSelectedCheckItem
@@ -220,6 +222,7 @@ public class TaskDetailActivity extends BaseActivity
             public void onTabSelected(TabLayout.Tab tab) {
                 if (tab == null) return;
                 tab.setText(tabTitles.get(tab.getPosition(), ""));
+                if (isSelectedCheckItem && tab.getPosition() == 1) return;
                 SystemUtils.hideSoftKeyBoard(TaskDetailActivity.this);
                 taskTablayout.setFocusable(true);
                 taskTablayout.setFocusableInTouchMode(true);
@@ -238,7 +241,7 @@ public class TaskDetailActivity extends BaseActivity
             }
         });
         titleAction2.setImageResource(R.mipmap.header_icon_more);
-        getData(false);
+//        getData(false);
     }
 
     @Override
@@ -832,17 +835,19 @@ public class TaskDetailActivity extends BaseActivity
             baseFragmentAdapter.bindTitle(true, Arrays.asList(tabTitles.get(0, ""),
                     tabTitles.get(1, ""),
                     tabTitles.get(2, "")));
-            baseFragmentAdapter.bindData(true, Arrays.asList(
-                    taskDetailFragment == null ? taskDetailFragment = TaskDetailFragment.newInstance(taskItemEntity) : taskDetailFragment,
-                    TaskCheckItemFragment.newInstance(taskItemEntity.id, hasTaskEditPermission(), taskItemEntity.valid),
-                    TaskAttachmentFragment.newInstance(
-                            taskItemEntity.id,
-                            taskItemEntity.matterId,
-                            taskItemEntity.matter != null ? taskItemEntity.matter.name : "",
-                            hasDocumentLookPermission(),
-                            hasDocumentAddPermission(),
-                            hasTaskEditPermission())
-            ));
+            if (baseFragmentAdapter.getCount() <= 0) {
+                baseFragmentAdapter.bindData(true, Arrays.asList(
+                        taskDetailFragment == null ? taskDetailFragment = TaskDetailFragment.newInstance(taskItemEntity) : taskDetailFragment,
+                        taskCheckItemFragment == null ? taskCheckItemFragment = TaskCheckItemFragment.newInstance(taskItemEntity.id, hasTaskEditPermission(), taskItemEntity.valid) : taskCheckItemFragment,
+                        TaskAttachmentFragment.newInstance(
+                                taskItemEntity.id,
+                                taskItemEntity.matterId,
+                                taskItemEntity.matter != null ? taskItemEntity.matter.name : "",
+                                hasDocumentLookPermission(),
+                                hasDocumentAddPermission(),
+                                hasTaskEditPermission())
+                ));
+            }
 
             updateDetailFargment();
 
@@ -886,6 +891,7 @@ public class TaskDetailActivity extends BaseActivity
                     taskTablayout.getTabAt(1).select();
                 }
                 viewpager.setCurrentItem(1);
+                updateCheckItemFragment();
             }
         }
     }
@@ -894,11 +900,23 @@ public class TaskDetailActivity extends BaseActivity
      * 更新任务详情fragment
      */
     private void updateDetailFargment() {
+        if (taskDetailFragment == null) return;
         Bundle bundle = new Bundle();
         bundle.putBoolean("isFinish", taskItemEntity.state);
         bundle.putBoolean("valid", taskItemEntity.valid);
         bundle.putSerializable("taskItemEntity", taskItemEntity);
         taskDetailFragment.notifyFragmentUpdate(taskDetailFragment, 100, bundle);
+    }
+
+    /**
+     * 更新检查项fragment
+     */
+    private void updateCheckItemFragment() {
+        log("更新检查项fragment ------------ ");
+        if (taskCheckItemFragment == null) return;
+        Bundle bundle = new Bundle();
+        bundle.putBoolean("key_is_check_item", isSelectedCheckItem);
+        taskCheckItemFragment.notifyFragmentUpdate(taskCheckItemFragment, 101, bundle);
     }
 
     /**
