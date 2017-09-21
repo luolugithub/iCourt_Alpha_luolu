@@ -118,7 +118,7 @@
                 android:id="@+id/panel_indicator"
                 android:layout_width="match_parent"
                 android:layout_height="25dp"
-                android:src="@mipmap/panel_open" />
+                android:src="@mipmap/panel_close" />
 
             <FrameLayout
                 android:layout_width="match_parent"
