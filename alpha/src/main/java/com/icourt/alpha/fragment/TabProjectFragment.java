@@ -135,6 +135,7 @@ public class TabProjectFragment extends BaseFragment implements TopMiddlePopup.O
 
             @Override
             public void onPageSelected(int position) {
+                postDismissPop();
                 titleAction.setVisibility(position == 0 ? View.VISIBLE : View.GONE);
                 if (tabLayout.getTabAt(0).getCustomView() != null && tabLayout.getTabAt(1).getCustomView() != null) {
                     TextView titleTv_0 = tabLayout.getTabAt(0).getCustomView().findViewById(R.id.tab_custom_title_tv);
@@ -165,16 +166,26 @@ public class TabProjectFragment extends BaseFragment implements TopMiddlePopup.O
         public void onClick(View view) {
             if (tabLayout.getTabAt(0) != null) {
                 if (view.isSelected()) {
-                    postDismissPop();
-                    topMiddlePopup.show(titleView, dropEntities, select_position);
-                    setFirstTabImage(true);
                     if (topMiddlePopup.isShowing()) {
+                        postDismissPop();
+                    } else {
+                        topMiddlePopup.show(titleView, dropEntities, select_position);
+                        setFirstTabImage(true);
                         getMatterStateCount(getMatterTypes());
                     }
                 } else {
                     tabLayout.getTabAt(0).select();
                 }
             }
+        }
+    }
+
+    @Override
+    public void onHiddenChanged(boolean hidden) {
+        super.onHiddenChanged(hidden);
+        //当Fragment不可见的时候，要隐藏弹出的PopWindow。
+        if (hidden) {
+            postDismissPop();
         }
     }
 
@@ -188,13 +199,11 @@ public class TabProjectFragment extends BaseFragment implements TopMiddlePopup.O
             public void run() {
                 if (topMiddlePopup != null) {
                     if (topMiddlePopup.isShowing()) {
-                        if (!isVisible()) {
-                            topMiddlePopup.dismiss();
-                        }
+                        topMiddlePopup.dismiss();
                     }
                 }
             }
-        }, 100);
+        }, 10);
     }
 
     /**
@@ -282,6 +291,7 @@ public class TabProjectFragment extends BaseFragment implements TopMiddlePopup.O
 
     @OnClick({R.id.titleAction, R.id.titleAction2})
     public void onViewClicked(View view) {
+        postDismissPop();
         switch (view.getId()) {
             case R.id.titleAction:
                 showProjectTypeSelectDialogFragment();
