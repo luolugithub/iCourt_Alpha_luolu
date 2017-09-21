@@ -348,6 +348,7 @@ public class TaskCreateActivity extends BaseActivity implements ProjectSelectDia
                                 } else {
                                     dismissLoadingDialog();
                                     EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION));
+                                    TaskDetailActivity.launchTabSelectCheckItem(TaskCreateActivity.this, response.body().result.id, true);
                                     finish();
                                 }
                             }
@@ -412,7 +413,7 @@ public class TaskCreateActivity extends BaseActivity implements ProjectSelectDia
      * @param taskItemEntity
      * @param taskReminderEntity
      */
-    private void addReminders(TaskEntity.TaskItemEntity taskItemEntity, final TaskReminderEntity taskReminderEntity) {
+    private void addReminders(final TaskEntity.TaskItemEntity taskItemEntity, final TaskReminderEntity taskReminderEntity) {
         if (taskReminderEntity == null) return;
         if (taskItemEntity == null) return;
         String json = getReminderJson(taskReminderEntity);
@@ -424,6 +425,7 @@ public class TaskCreateActivity extends BaseActivity implements ProjectSelectDia
                     public void onSuccess(Call<ResEntity<TaskReminderEntity>> call, Response<ResEntity<TaskReminderEntity>> response) {
                         dismissLoadingDialog();
                         EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION));
+                        TaskDetailActivity.launchTabSelectCheckItem(TaskCreateActivity.this, taskItemEntity.id, true);
                         finish();
                     }
 

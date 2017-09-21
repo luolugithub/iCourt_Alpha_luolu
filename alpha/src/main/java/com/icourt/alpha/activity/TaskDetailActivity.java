@@ -95,6 +95,7 @@ public class TaskDetailActivity extends BaseActivity
         OnUpdateTaskListener {
 
     private static final String KEY_TASK_ID = "key_task_id";
+    private static final String KEY_IS_CHECKITEM = "key_is_checkitem";
     private static final int SHOW_DELETE_DIALOG = 0;//删除提示对话框
     private static final int SHOW_FINISH_DIALOG = 1;//完成任务提示对话框
     private static final int START_COMMENT_FORRESULT_CODE = 0;//跳转评论code
@@ -154,6 +155,7 @@ public class TaskDetailActivity extends BaseActivity
     BaseFragmentAdapter baseFragmentAdapter;
     int myStar = -1;
     boolean isStrat = false;
+    boolean isSelectedCheckItem = false;//是否默认选中检查项tab
     TaskEntity.TaskItemEntity taskItemEntity;
     TaskUsersAdapter usersAdapter;
     TaskDetailFragment taskDetailFragment;
@@ -186,6 +188,21 @@ public class TaskDetailActivity extends BaseActivity
         context.startActivity(intent);
     }
 
+    /**
+     * 新建任务之后跳转到详情并默认选中检查项tab
+     * @param context
+     * @param taskId
+     * @param isSelectedCheckItem
+     */
+    public static void launchTabSelectCheckItem(@NonNull Context context, @NonNull String taskId, boolean isSelectedCheckItem) {
+        if (context == null) return;
+        if (TextUtils.isEmpty(taskId)) return;
+        Intent intent = new Intent(context, TaskDetailActivity.class);
+        intent.putExtra(KEY_TASK_ID, taskId);
+        intent.putExtra(KEY_IS_CHECKITEM, isSelectedCheckItem);
+        context.startActivity(intent);
+    }
+
     @Override
     protected void initView() {
         super.initView();
@@ -193,9 +210,11 @@ public class TaskDetailActivity extends BaseActivity
         EventBus.getDefault().register(this);
         MobclickAgent.onEvent(this, UMMobClickAgent.look_task_click_id);
         taskId = getIntent().getStringExtra(KEY_TASK_ID);
+        isSelectedCheckItem = getIntent().getBooleanExtra(KEY_IS_CHECKITEM, false);
         baseFragmentAdapter = new BaseFragmentAdapter(getSupportFragmentManager());
         viewpager.setAdapter(baseFragmentAdapter);
         taskTablayout.setupWithViewPager(viewpager);
+
         taskTablayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
@@ -862,6 +881,12 @@ public class TaskDetailActivity extends BaseActivity
             taskUserArrowIv.setVisibility(taskItemEntity.valid && !taskItemEntity.state ? View.VISIBLE : View.GONE);
             taskStartIamge.setVisibility(taskItemEntity.valid ? View.VISIBLE : View.GONE);
             commentEditTv.setVisibility(taskItemEntity.valid ? View.VISIBLE : View.GONE);
+            if (isSelectedCheckItem) {
+                if (taskTablayout.getTabAt(1) != null) {
+                    taskTablayout.getTabAt(1).select();
+                }
+                viewpager.setCurrentItem(1);
+            }
         }
     }
 
