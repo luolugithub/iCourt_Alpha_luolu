@@ -17,6 +17,7 @@ public class TaskAttachmentEntity implements ISeaFile {
     public String fileExt;
     public long fileSize;
     public PathInfoVoEntity pathInfoVo;
+    public String filePermission;//rw,r
 
     @Override
     public String getSeaFileFullPath() {
@@ -35,7 +36,7 @@ public class TaskAttachmentEntity implements ISeaFile {
 
     @Override
     public String getSeaFilePermission() {
-        return null;
+        return filePermission;
     }
 
     @Override
