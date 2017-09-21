@@ -182,7 +182,7 @@ public class FileLinkFragment extends BaseFragment {
 
             fileAccessTimeLimitTv.setText(getString(R.string.sfile_link_limit_date_7));
             fileShareLinkTv.setText("");
-            fileAccessPwdTv.setText(R.string.sfile_link_password_generation);
+            fileAccessPwdTv.setText(R.string.sfile_link_password_auto_generation);
             if (linkType == LINK_TYPE_DOWNLOAD) {
                 fileShareLinkTitleTv.setText(R.string.sfile_link_download_create);
             } else {

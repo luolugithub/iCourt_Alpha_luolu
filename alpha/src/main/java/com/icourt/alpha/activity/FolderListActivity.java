@@ -484,16 +484,28 @@ public class FolderListActivity extends FolderBaseActivity
     }
 
     private void showActionMoreDialog() {
-        List<String> strings;
+
+        ArrayList<String> menus = new ArrayList<>();
+
+        //如果是非根目录 显示文件夹详情按钮
+        boolean isRepoRoot = TextUtils.isEmpty(getSeaFileDirPath())
+                || TextUtils.equals(getSeaFileDirPath(), "/");
+
+        if (isRepoRoot) {
+            menus.add(getString(R.string.sfile_menu_repo_details));
+        } else {
+            menus.add(getString(R.string.sfile_folder_details));
+        }
         if (folderDocumentAdapter.getItemCount() <= 0
                 || !TextUtils.equals(getRepoPermission(), PERMISSION_RW)) {
-            strings = Arrays.asList(getResources().getStringArray(R.array.sfile_folder_menus_r_array));
+            menus.add(getString(R.string.sfile_menu_batch_operation));
+            menus.add(getString(R.string.sfile_menu_recycle_bin));
         } else {
-            strings = Arrays.asList(getResources().getStringArray(R.array.sfile_folder_menus_rw_array));
+            menus.add(getString(R.string.sfile_menu_recycle_bin));
         }
         new BottomActionDialog(getContext(),
                 null,
-                strings,
+                menus,
                 new BottomActionDialog.OnActionItemClickListener() {
                     @Override
                     public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
@@ -507,6 +519,14 @@ public class FolderListActivity extends FolderBaseActivity
                             RepoDetailsDialogFragment.show(
                                     getRepoType(),
                                     getSeaFileRepoId(),
+                                    0,
+                                    getRepoPermission(),
+                                    getSupportFragmentManager());
+                        } else if (TextUtils.equals(action, getString(R.string.sfile_folder_details))) {
+                            FolderDetailDialogFragment.show(
+                                    getSeaFileRepoId(),
+                                    getSeaFileDirPath(),
+                                    "",
                                     0,
                                     getRepoPermission(),
                                     getSupportFragmentManager());
@@ -858,7 +878,6 @@ public class FolderListActivity extends FolderBaseActivity
                                         getSeaFileRepoId(),
                                         getSeaFileDirPath(),
                                         item.name,
-                                        item.size,
                                         0,
                                         getRepoPermission(),
                                         getSupportFragmentManager());
@@ -896,7 +915,6 @@ public class FolderListActivity extends FolderBaseActivity
                     getSeaFileRepoId(),
                     getSeaFileDirPath(),
                     item.name,
-                    item.size,
                     0,
                     getRepoPermission(),
                     getSupportFragmentManager());

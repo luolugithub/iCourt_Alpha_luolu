@@ -20,6 +20,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.icourt.alpha.BuildConfig;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
@@ -27,6 +28,7 @@ import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.constants.DownloadConfig;
 import com.icourt.alpha.entity.bean.ISeaFile;
 import com.icourt.alpha.fragment.dialogfragment.ContactShareDialogFragment;
+import com.icourt.alpha.fragment.dialogfragment.FileDetailDialogFragment;
 import com.icourt.alpha.fragment.dialogfragment.ProjectSaveFileDialogFragment;
 import com.icourt.alpha.http.callback.SFileCallBack;
 import com.icourt.alpha.http.callback.SimpleCallBack;
@@ -51,6 +53,8 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 import retrofit2.Call;
 import retrofit2.Response;
+
+import static com.icourt.alpha.constants.SFileConfig.PERMISSION_RW;
 
 /**
  * Description 文件下载界面
@@ -401,26 +405,94 @@ public class FileDownloadActivity extends BaseActivity {
      * 展示更多菜单
      */
     private void showBottomMenuDialog() {
+        ArrayList<String> menus = new ArrayList<>(Arrays.asList(getString(R.string.sfile_file_details), "转发给同事", "保存到项目资料库", "用其他应用打开"));
+        if (TextUtils.equals(iSeaFile.getSeaFilePermission(), PERMISSION_RW)) {
+            menus.add(getString(R.string.str_delete));
+        }
         new BottomActionDialog(getContext(),
                 null,
-                Arrays.asList("转发给同事", "保存到项目资料库", "用其他应用打开"),
+                menus,
                 new BottomActionDialog.OnActionItemClickListener() {
                     @Override
                     public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
                         dialog.dismiss();
                         switch (position) {
                             case 0:
-                                showContactShareDialogFragment(fileCachePath);
+                                FileDetailDialogFragment.show(
+                                        iSeaFile.getSeaFileRepoId(),
+                                        FileUtils.getFileParentDir(iSeaFile.getSeaFileFullPath()),
+                                        fileName,
+                                        iSeaFile.getSeaFileSize(),
+                                        0,
+                                        iSeaFile.getSeaFilePermission(),
+                                        getSupportFragmentManager());
                                 break;
                             case 1:
-                                showProjectSaveFileDialogFragment(fileCachePath);
+                                showContactShareDialogFragment(fileCachePath);
                                 break;
                             case 2:
+                                showProjectSaveFileDialogFragment(fileCachePath);
+                                break;
+                            case 3:
                                 showOpenableThirdPartyAppDialog();
+                                break;
+                            case 4:
+                                showDeleteConfirmDialog();
                                 break;
                         }
                     }
                 }).show();
+    }
+
+    /**
+     * 展示删除确认对话框
+     */
+    private void showDeleteConfirmDialog() {
+        new BottomActionDialog(
+                getContext(),
+                getString(R.string.sfile_delete_confirm),
+                Arrays.asList(getString(R.string.str_ok)),
+                new BottomActionDialog.OnActionItemClickListener() {
+                    @Override
+                    public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
+                        dialog.dismiss();
+                        deleteFile();
+                    }
+                }).show();
+    }
+
+    /**
+     * 删除文件
+     */
+    private void deleteFile() {
+        final ISeaFile item = iSeaFile;
+        showLoadingDialog(R.string.str_executing);
+        callEnqueue(getSFileApi().fileDelete(
+                item.getSeaFileRepoId(),
+                item.getSeaFileFullPath()),
+                new SFileCallBack<JsonObject>() {
+                    @Override
+                    public void onSuccess(Call<JsonObject> call, Response<JsonObject> response) {
+                        dismissLoadingDialog();
+                        deletCachedSeaFile(item);
+                        finish();
+                    }
+
+                    @Override
+                    public void onFailure(Call<JsonObject> call, Throwable t) {
+                        super.onFailure(call, t);
+                        dismissLoadingDialog();
+                    }
+                });
+    }
+
+    /**
+     * 删除缓存的seafile
+     *
+     * @param item
+     */
+    private void deletCachedSeaFile(ISeaFile item) {
+        FileUtils.deleteFile(DownloadConfig.getSeaFileDownloadPath(getLoginUserId(), item));
     }
 
     /**

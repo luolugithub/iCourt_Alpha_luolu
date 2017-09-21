@@ -8,10 +8,10 @@ import android.graphics.drawable.Drawable;
 import android.os.Environment;
 import android.os.ParcelFileDescriptor;
 import android.support.annotation.DrawableRes;
+import android.support.annotation.Nullable;
 import android.text.TextUtils;
 
 import com.icourt.alpha.R;
-import com.icourt.alpha.constants.DownloadConfig;
 import com.icourt.alpha.constants.SFileConfig;
 
 import java.io.ByteArrayOutputStream;
@@ -32,7 +32,6 @@ import static com.icourt.alpha.utils.ImageUtils.addPictureToGallery;
  * version 1.0.0
  */
 public class FileUtils {
-    public static final String dirFilePath = FileUtils.getSDPath() + DownloadConfig.FILE_DOWNLOAD_ROOT_DIR;
 
     public static final String ALPHA_PAGENAME_FILE = "com.icourt.alpha";
     public static final String THUMB_IMAGE_ROOT_PATH = getSDPath() + "/" + ALPHA_PAGENAME_FILE + "/image";
@@ -466,6 +465,28 @@ public class FileUtils {
             return false;
         }
 
+    }
+
+    /**
+     * 删除文件
+     * @param filePath
+     */
+    public static void deleteFile(@Nullable String filePath) {
+        if (TextUtils.isEmpty(filePath)) {
+            try {
+                File file = new File(filePath);
+                if (file.exists() && file.isFile()) {
+                    file.delete();
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                BugUtils.bugSync("删除文件异常",new StringBuilder("path\n")
+                        .append(filePath)
+                        .append("exception\n")
+                        .append(StringUtils.throwable2string(e))
+                        .toString());
+            }
+        }
     }
 
 }

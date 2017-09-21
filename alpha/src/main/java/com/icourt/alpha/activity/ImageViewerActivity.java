@@ -29,6 +29,7 @@ import com.icourt.alpha.adapter.baseadapter.BasePagerAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.constants.DownloadConfig;
 import com.icourt.alpha.entity.bean.ISeaFile;
+import com.icourt.alpha.fragment.dialogfragment.FileDetailDialogFragment;
 import com.icourt.alpha.http.callback.SFileCallBack;
 import com.icourt.alpha.utils.FileUtils;
 import com.icourt.alpha.utils.GlideUtils;
@@ -353,7 +354,7 @@ public class ImageViewerActivity extends ImageViewBaseActivity {
         //使用原图
         final String originalImageUrl = imagePagerAdapter.getOriginalImageUrl(item);
         final String picSavePath = getPicSavePath(item);
-        ArrayList<String> menus = new ArrayList<>(Arrays.asList("保存图片", "转发给同事", "分享", "保存到项目资料库"));
+        ArrayList<String> menus = new ArrayList<>(Arrays.asList(getString(R.string.sfile_file_details), "保存图片", "转发给同事", "分享", "保存到项目资料库"));
         if (TextUtils.equals(item.getSeaFilePermission(), PERMISSION_RW)) {//有删除的权限
             menus.add(getString(R.string.str_delete));
         }
@@ -365,7 +366,17 @@ public class ImageViewerActivity extends ImageViewBaseActivity {
                     public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
                         dialog.dismiss();
                         String action = adapter.getItem(position);
-                        if (TextUtils.equals(action, "保存图片")) {
+                        if (TextUtils.equals(action, getString(R.string.sfile_file_details))) {
+                            FileDetailDialogFragment.show(
+                                    item.getSeaFileRepoId(),
+                                    FileUtils.getFileParentDir(item.getSeaFileFullPath()),
+                                    FileUtils.getFileName(item.getSeaFileFullPath()),
+                                    item.getSeaFileSize(),
+                                    0,
+                                    item.getSeaFilePermission(),
+                                    getSupportFragmentManager());
+
+                        } else if (TextUtils.equals(action, "保存图片")) {
                             downloadFile(originalImageUrl, picSavePath);
                         } else if (TextUtils.equals(action, "转发给同事")) {
                             shareHttpFile2Friends(originalImageUrl, picSavePath);
@@ -412,6 +423,7 @@ public class ImageViewerActivity extends ImageViewBaseActivity {
                     @Override
                     public void onSuccess(Call<JsonObject> call, Response<JsonObject> response) {
                         dismissLoadingDialog();
+                        deletCachedSeaFile(item);
                         if (imagePagerAdapter.getCount() > 1) {
                             seaFileImages.remove(currentItem);
                             initAdapter();
@@ -428,6 +440,15 @@ public class ImageViewerActivity extends ImageViewBaseActivity {
                         dismissLoadingDialog();
                     }
                 });
+    }
+
+    /**
+     * 删除缓存的seafile
+     *
+     * @param item
+     */
+    private void deletCachedSeaFile(ISeaFile item) {
+        FileUtils.deleteFile(DownloadConfig.getSeaFileDownloadPath(getLoginUserId(), item));
     }
 
 
