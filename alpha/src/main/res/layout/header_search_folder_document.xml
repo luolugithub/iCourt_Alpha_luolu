@@ -13,7 +13,7 @@
         android:paddingLeft="16dp"
         android:paddingRight="10dp"
         android:paddingTop="16dp"
-        android:src="@mipmap/list" />
+        android:src="@mipmap/thumb" />
 
     <FrameLayout
         android:layout_width="0dp"

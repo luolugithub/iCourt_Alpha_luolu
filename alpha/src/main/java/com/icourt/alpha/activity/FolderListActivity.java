@@ -251,7 +251,8 @@ public class FolderListActivity extends FolderBaseActivity
                     }
                 }
                 if (headerSearchDirectionIv != null) {
-                    headerSearchDirectionIv.setImageResource(folderDocumentAdapter.getAdapterViewType() == VIEW_TYPE_ITEM ? R.mipmap.list : R.mipmap.thumb);
+                    headerSearchDirectionIv.setImageResource(folderDocumentAdapter.getAdapterViewType() == VIEW_TYPE_ITEM
+                            ? R.mipmap.thumb : R.mipmap.list);
                 }
             }
         });
