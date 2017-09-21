@@ -71,7 +71,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="@dimen/dp10"
-                android:src="@mipmap/setting_user" />
+                android:src="@mipmap/setting_user_name" />
 
 
             <TextView

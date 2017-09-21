@@ -13,8 +13,8 @@
     <string name="mine_sure">确定</string>
     <string name="mine_feed_back">意见反馈</string>
     <string name="mine_about">关于</string>
-    <string name="mine_phone">电话号码</string>
-    <string name="mine_mail_address">邮箱地址</string>
+    <string name="mine_phone">手机号</string>
+    <string name="mine_mail_address">邮箱</string>
     <string name="mine_name">姓名</string>
     <string name="mine_use_true_mail">请使用有效的邮箱地址</string>
     <string name="mine_use_true_phone">请使用有效的中国大陆手机号</string>

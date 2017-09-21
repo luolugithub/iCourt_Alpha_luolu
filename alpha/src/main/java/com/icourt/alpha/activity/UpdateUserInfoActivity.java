@@ -86,6 +86,8 @@ public class UpdateUserInfoActivity extends BaseActivity {
     TextView myCenterUpdateErrorHintText;
     @BindView(R.id.my_center_update_name_hint_text)
     TextView myCenterUpdateNameHintText;
+    @BindView(R.id.left_image_view)
+    ImageView leftImageView;
 
     @IntDef({UPDATE_PHONE_TYPE,
             UPDATE_EMAIL_TYPE,
@@ -136,6 +138,7 @@ public class UpdateUserInfoActivity extends BaseActivity {
             case UPDATE_PHONE_TYPE:
                 setTitle(R.string.mine_phone);
                 myCenterUpdateHintText.setText(R.string.mine_phone);
+                leftImageView.setImageResource(R.mipmap.setting_phone);
                 updateStateLayout.setVisibility(View.VISIBLE);
                 myCenterUpdateEdittext.setFilters(new InputFilter[]{new InputFilter.LengthFilter(15)});
                 myCenterUpdateEdittext.setKeyListener(new NumberKeyListener() {
@@ -153,12 +156,14 @@ public class UpdateUserInfoActivity extends BaseActivity {
             case UPDATE_EMAIL_TYPE:
                 setTitle(R.string.mine_mail_address);
                 myCenterUpdateHintText.setText(R.string.mine_mail_address);
+                leftImageView.setImageResource(R.mipmap.setting_email);
                 updateStateLayout.setVisibility(View.VISIBLE);
                 myCenterUpdateEdittext.setInputType(InputType.TYPE_TEXT_VARIATION_WEB_EMAIL_ADDRESS);
                 break;
             case UPDATE_NAME_TYPE:
                 setTitle(R.string.mine_name);
                 myCenterUpdateHintText.setText(R.string.mine_name);
+                leftImageView.setImageResource(R.mipmap.setting_user_name);
                 updateStateLayout.setVisibility(View.GONE);
                 myCenterUpdateEdittext.setInputType(InputType.TYPE_CLASS_TEXT);
                 myCenterUpdateEdittext.setFilters(new InputFilter[]{new InputFilter.LengthFilter(UPDATE_NAME_MAX_LENGTH)});
@@ -218,7 +223,7 @@ public class UpdateUserInfoActivity extends BaseActivity {
                     updateStateLayout.setVisibility(View.VISIBLE);
                     myCenterUpdateClearView.setVisibility(View.VISIBLE);
                     boolean isMail = StringUtils.isMailNO(content.toString());
-                    myCenterUpdateStateView.setImageResource(isMail ? R.mipmap.header_icon_star_solid : R.mipmap.header_icon_star_line);
+                    myCenterUpdateStateView.setImageResource(isMail ? R.mipmap.verify_ok : R.mipmap.verify_no);
                     myCenterUpdateErrorHintText.setVisibility(isMail ? View.GONE : View.VISIBLE);
                     myCenterUpdateErrorHintText.setText(R.string.mine_use_true_mail);
                     setSaveViewState(isMail);
@@ -227,7 +232,7 @@ public class UpdateUserInfoActivity extends BaseActivity {
                     updateStateLayout.setVisibility(View.VISIBLE);
                     myCenterUpdateClearView.setVisibility(View.VISIBLE);
                     boolean isMobile = StringUtils.isMobileNO86(content.toString());
-                    myCenterUpdateStateView.setImageResource(isMobile ? R.mipmap.header_icon_star_solid : R.mipmap.header_icon_star_line);
+                    myCenterUpdateStateView.setImageResource(isMobile ? R.mipmap.verify_ok : R.mipmap.verify_no);
                     myCenterUpdateErrorHintText.setVisibility(isMobile ? View.GONE : View.VISIBLE);
                     myCenterUpdateErrorHintText.setText(R.string.mine_use_true_phone);
                     setSaveViewState(isMobile);
