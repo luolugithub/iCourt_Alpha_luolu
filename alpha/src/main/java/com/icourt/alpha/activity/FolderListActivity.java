@@ -849,14 +849,21 @@ public class FolderListActivity extends FolderBaseActivity
     private void showFolderActionMenu(BaseRecyclerAdapter adapter, int position) {
         final FolderDocumentEntity item = (FolderDocumentEntity) adapter.getItem(position);
         if (item == null) return;
-        List<String> strings = Arrays.asList(getResources().getStringArray(R.array.sfile_file_menus_array));
+        ArrayList<String> menus = new ArrayList<>(Arrays.asList(getResources().getStringArray(R.array.sfile_file_menus_array)));
         if (item.isDir()) {
-            strings = Arrays.asList(getResources().getStringArray(R.array.sfile_folder_menus_array));
+            menus.clear();
+            menus.addAll(Arrays.asList(getResources().getStringArray(R.array.sfile_folder_menus_array)));
+        }
+
+        //已经共享给我 不能再共享给别人了
+        if (getRepoType() == SFileConfig.REPO_SHARED_ME) {
+            menus.remove(getString(R.string.sfile_folder_share));
+            menus.remove(getString(R.string.sfile_file_share));
         }
         new BottomActionDialog(
                 getContext(),
                 null,
-                strings,
+                menus,
                 new BottomActionDialog.OnActionItemClickListener() {
                     @Override
                     public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
