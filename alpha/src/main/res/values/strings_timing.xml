@@ -2,4 +2,7 @@
 <resources>
     <!-- 计时模块 字符串资源定义 timing_开头 -->
 
+    <string name="timing_select_time">选择时间</string>
+    <string name="timing_cancel">取消</string>
+    <string name="timing_finish">完成</string>
 </resources>

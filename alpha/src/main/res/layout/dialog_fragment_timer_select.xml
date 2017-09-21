@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    app:cardCornerRadius="6dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="451dp"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="13.5dp"
+            android:text="@string/timing_select_time"
+            android:textColor="@color/search_history_keyword_color" />
+
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="30dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="20dp"
+            android:background="@drawable/bg_circle_rect_white_gray_line"
+            android:orientation="horizontal"
+            android:padding="0.5dp">
+
+            <CheckedTextView
+                android:id="@+id/tv_date_day"
+                style="@style/timeingSelectStyle"
+                android:background="@drawable/bg_left_circle_white_gray"
+                android:text="日" />
+
+
+            <ImageView
+                android:layout_width="0.5dp"
+                android:layout_height="match_parent"
+                android:background="@color/timer_select_divider_color" />
+
+            <CheckedTextView
+                android:id="@+id/tv_date_week"
+                style="@style/timeingSelectStyle"
+                android:background="@drawable/bg_rect_white_gray"
+                android:text="周" />
+
+            <ImageView
+                android:layout_width="0.5dp"
+                android:layout_height="match_parent"
+                android:background="@color/timer_select_divider_color" />
+
+
+            <CheckedTextView
+                android:id="@+id/tv_date_month"
+                style="@style/timeingSelectStyle"
+                android:background="@drawable/bg_rect_white_gray"
+                android:text="月" />
+
+            <ImageView
+                android:layout_width="0.5dp"
+                android:layout_height="match_parent"
+                android:background="@color/timer_select_divider_color" />
+
+
+            <CheckedTextView
+                android:id="@+id/tv_date_year"
+                style="@style/timeingSelectStyle"
+                android:background="@drawable/bg_right_circle_white_gray"
+                android:text="年" />
+        </LinearLayout>
+
+        <com.icourt.alpha.view.NoScrollViewPager
+            android:id="@+id/viewpager"
+            android:layout_width="match_parent"
+            android:layout_height="315dp" />
+
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <TextView
+                android:id="@+id/tv_cancel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_marginLeft="20dp"
+                android:padding="3dp"
+                android:text="@string/timing_cancel"
+                android:textColor="@color/timer_select_cancle_color"
+                android:textSize="16sp" />
+
+
+            <TextView
+                android:id="@+id/tv_finish"
+                android:layout_width="88dp"
+                android:layout_height="36dp"
+                android:layout_centerInParent="true"
+                android:background="@drawable/bg_round_orange"
+                android:gravity="center"
+                android:text="@string/timing_finish"
+                android:textColor="@color/white" />
+        </RelativeLayout>
+    </LinearLayout>
+</android.support.v7.widget.CardView>
