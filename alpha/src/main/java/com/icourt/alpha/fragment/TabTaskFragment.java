@@ -161,9 +161,9 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
                             }
                             break;
                         case 1://我关注的
+                            postDismissPop();
                             titleTv_0.setTextColor(0xFF979797);
                             titleTv_1.setTextColor(0xFF313131);
-                            setFirstTabImage(false);
                             Bundle bundle = new Bundle();
                             bundle.putInt(TaskListFragment.STATE_TYPE, 0);
                             attentionTaskFragment.notifyFragmentUpdate(attentionTaskFragment, TaskListFragment.TYPE_MY_ATTENTION, bundle);
@@ -219,7 +219,7 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
 
     @Override
     public void onItemClick(TopMiddlePopup topMiddlePopup, BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
-        topMiddlePopup.dismiss();
+        postDismissPop();
         if (selectPosition != position) {
             FilterDropEntity filterDropEntity = (FilterDropEntity) adapter.getItem(position);
             setFirstTabText(filterDropEntity.name, position);
@@ -257,16 +257,26 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
         public void onClick(View view) {
             if (tabLayout.getTabAt(0) != null) {
                 if (view.isSelected()) {
-                    postDismissPop();
-                    topMiddlePopup.show(titleView, dropEntities, selectPosition);
-                    setFirstTabImage(true);
                     if (topMiddlePopup.isShowing()) {
+                        postDismissPop();
+                    } else {
+                        topMiddlePopup.show(titleView, dropEntities, selectPosition);
+                        setFirstTabImage(true);
                         getTasksStateCount();
                     }
                 } else {
                     tabLayout.getTabAt(0).select();
                 }
             }
+        }
+    }
+
+    @Override
+    public void onHiddenChanged(boolean hidden) {
+        super.onHiddenChanged(hidden);
+        //当Fragment不可见的时候，要隐藏弹出的PopWindow。
+        if (hidden) {
+            postDismissPop();
         }
     }
 
@@ -280,13 +290,11 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
             public void run() {
                 if (topMiddlePopup != null) {
                     if (topMiddlePopup.isShowing()) {
-                        if (!isVisible()) {
-                            topMiddlePopup.dismiss();
-                        }
+                        topMiddlePopup.dismiss();
                     }
                 }
             }
-        }, 100);
+        }, 10);
     }
 
     /**
@@ -333,6 +341,7 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
     @Override
     public void onClick(View v) {
         super.onClick(v);
+        postDismissPop();
         switch (v.getId()) {
             case R.id.titleCalendar:
                 if (!RAUtils.isLegal(RAUtils.DURATION_DEFAULT)) return;
@@ -492,4 +501,5 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
         }
         return false;
     }
+
 }
