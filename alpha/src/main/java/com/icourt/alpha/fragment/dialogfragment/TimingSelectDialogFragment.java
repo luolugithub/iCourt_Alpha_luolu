@@ -27,6 +27,7 @@ import java.util.Arrays;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 import butterknife.Unbinder;
 
 /**
@@ -106,6 +107,7 @@ public class TimingSelectDialogFragment extends BaseDialogFragment {
 
             }
         });
+        selectDateItem(0);
     }
 
     private void selectDateItem(int position) {
@@ -134,6 +136,31 @@ public class TimingSelectDialogFragment extends BaseDialogFragment {
                 tvDateMonth.setChecked(false);
                 tvDateYear.setChecked(true);
                 break;
+        }
+    }
+
+    @OnClick({R.id.tv_date_day, R.id.tv_date_week, R.id.tv_date_month, R.id.tv_date_year})
+    public void onClick(View view) {
+        switch (view.getId()) {
+            case R.id.tv_date_day:
+                viewpager.setCurrentItem(0);
+                break;
+            case R.id.tv_date_week:
+                viewpager.setCurrentItem(1);
+                break;
+            case R.id.tv_date_month:
+                viewpager.setCurrentItem(2);
+                break;
+            case R.id.tv_date_year:
+                viewpager.setCurrentItem(3);
+                break;
+            case R.id.tv_cancel:
+                dismiss();
+                break;
+            case R.id.tv_finish:
+
+                break;
+
         }
     }
 
