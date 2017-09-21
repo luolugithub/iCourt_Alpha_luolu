@@ -59,7 +59,7 @@ public class UpdateUserInfoActivity extends BaseActivity {
 
     private static final String KEY_TYPE = "key_type";
     private static final String KEY_STRING_VALUE = "key_string_value";
-
+    char[] numberChars = {'1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '+'};
     @BindView(R.id.titleBack)
     ImageView titleBack;
     @BindView(R.id.titleContent)
@@ -134,14 +134,13 @@ public class UpdateUserInfoActivity extends BaseActivity {
         alphaUserInfo = getLoginUserInfo();
         switch (getType()) {
             case UPDATE_PHONE_TYPE:
-                setTitle("电话号码");
-                myCenterUpdateHintText.setText("电话号码");
+                setTitle(R.string.mine_phone);
+                myCenterUpdateHintText.setText(R.string.mine_phone);
                 updateStateLayout.setVisibility(View.VISIBLE);
                 myCenterUpdateEdittext.setFilters(new InputFilter[]{new InputFilter.LengthFilter(15)});
                 myCenterUpdateEdittext.setKeyListener(new NumberKeyListener() {
                     @Override
                     protected char[] getAcceptedChars() {
-                        char[] numberChars = {'1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '+'};
                         return numberChars;
                     }
 
@@ -152,14 +151,14 @@ public class UpdateUserInfoActivity extends BaseActivity {
                 });
                 break;
             case UPDATE_EMAIL_TYPE:
-                setTitle("邮箱地址");
-                myCenterUpdateHintText.setText("邮箱地址");
+                setTitle(R.string.mine_mail_address);
+                myCenterUpdateHintText.setText(R.string.mine_mail_address);
                 updateStateLayout.setVisibility(View.VISIBLE);
                 myCenterUpdateEdittext.setInputType(InputType.TYPE_TEXT_VARIATION_WEB_EMAIL_ADDRESS);
                 break;
             case UPDATE_NAME_TYPE:
-                setTitle("姓名");
-                myCenterUpdateHintText.setText("姓名");
+                setTitle(R.string.mine_name);
+                myCenterUpdateHintText.setText(R.string.mine_name);
                 updateStateLayout.setVisibility(View.GONE);
                 myCenterUpdateEdittext.setInputType(InputType.TYPE_CLASS_TEXT);
                 myCenterUpdateEdittext.setFilters(new InputFilter[]{new InputFilter.LengthFilter(UPDATE_NAME_MAX_LENGTH)});
@@ -221,7 +220,7 @@ public class UpdateUserInfoActivity extends BaseActivity {
                     boolean isMail = StringUtils.isMailNO(content.toString());
                     myCenterUpdateStateView.setImageResource(isMail ? R.mipmap.header_icon_star_solid : R.mipmap.header_icon_star_line);
                     myCenterUpdateErrorHintText.setVisibility(isMail ? View.GONE : View.VISIBLE);
-                    myCenterUpdateErrorHintText.setText("请使用有效的邮箱地址");
+                    myCenterUpdateErrorHintText.setText(R.string.mine_use_true_mail);
                     setSaveViewState(isMail);
                     break;
                 case UPDATE_PHONE_TYPE:
@@ -230,7 +229,7 @@ public class UpdateUserInfoActivity extends BaseActivity {
                     boolean isMobile = StringUtils.isMobileNO86(content.toString());
                     myCenterUpdateStateView.setImageResource(isMobile ? R.mipmap.header_icon_star_solid : R.mipmap.header_icon_star_line);
                     myCenterUpdateErrorHintText.setVisibility(isMobile ? View.GONE : View.VISIBLE);
-                    myCenterUpdateErrorHintText.setText("请使用有效的中国大陆手机号");
+                    myCenterUpdateErrorHintText.setText(R.string.mine_use_true_phone);
                     setSaveViewState(isMobile);
                     break;
                 case UPDATE_NAME_TYPE:
@@ -306,10 +305,6 @@ public class UpdateUserInfoActivity extends BaseActivity {
      * @param email
      */
     private void upDateEmail(String userId, final String email) {
-        if (!StringUtils.isMailNO(email)) {
-            showTopSnackBar("请输入正确的邮箱格式");
-            return;
-        }
         showLoadingDialog(null);
         getApi().updateUserEmail(userId, email).enqueue(new SimpleCallBack<JsonElement>() {
             @Override
@@ -336,10 +331,6 @@ public class UpdateUserInfoActivity extends BaseActivity {
      * @param phone
      */
     private void upDatePhone(String userId, final String phone) {
-        if (!StringUtils.isMobileNO86(phone)) {
-            showTopSnackBar("请输入正确的手机格式");
-            return;
-        }
         showLoadingDialog(null);
         getApi().updateUserPhone(userId, phone).enqueue(new SimpleCallBack<JsonElement>() {
             @Override

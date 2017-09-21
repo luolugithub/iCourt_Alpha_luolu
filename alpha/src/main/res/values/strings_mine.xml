@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 我的 -->
+    <string name="mine_today_time">今日计时</string>
+    <string name="mine_month_time">本月计时</string>
+    <string name="mine_personage_set">个人设置</string>
+    <string name="mine_setting">设置</string>
+    <string name="mine_update_fail">更新失败</string>
+    <string name="mine_update_succeed">更新成功</string>
+    <string name="mine_helper_center">帮助中心</string>
+    <string name="mine_sure_loginout">确定退出?</string>
+    <string name="mine_sure_clear">确定清除?</string>
+    <string name="mine_sure">确定</string>
+    <string name="mine_feed_back">意见反馈</string>
+    <string name="mine_about">关于</string>
+    <string name="mine_phone">电话号码</string>
+    <string name="mine_mail_address">邮箱地址</string>
+    <string name="mine_name">姓名</string>
+    <string name="mine_use_true_mail">请使用有效的邮箱地址</string>
+    <string name="mine_use_true_phone">请使用有效的中国大陆手机号</string>
+</resources>

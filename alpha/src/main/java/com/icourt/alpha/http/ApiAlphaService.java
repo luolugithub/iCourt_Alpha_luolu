@@ -83,7 +83,7 @@ public interface ApiAlphaService {
     /**
      * 修改律师电话信息
      *
-     * @param phone 手机号码 不包含+86国际代码的字符串
+     * @param phone 手机号码 包含+86国际代码的字符串
      * @return
      */
     @POST("ilaw/api/v1/auth/update")

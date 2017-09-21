@@ -87,7 +87,7 @@ public class SetingActivity extends BaseAppUpdateActivity {
     @Override
     protected void initView() {
         super.initView();
-        setTitle("设置");
+        setTitle(R.string.mine_setting);
         mShareAPI = UMShareAPI.get(getContext());
         try {
             settingClearCacheTextview.setText(DataCleanManager.getTotalCacheSize(getContext()));
@@ -157,7 +157,7 @@ public class SetingActivity extends BaseAppUpdateActivity {
             public void onSuccess(Call<ResEntity<String>> call, Response<ResEntity<String>> response) {
                 dismissLoadingDialog();
                 if (!TextUtils.isEmpty(response.body().message)) {
-                    WebViewActivity.launch(SetingActivity.this, "帮助中心", response.body().message);
+                    WebViewActivity.launch(SetingActivity.this, getString(R.string.mine_helper_center), response.body().message);
                 }
             }
 
@@ -174,8 +174,8 @@ public class SetingActivity extends BaseAppUpdateActivity {
      */
     private void showLoginOutConfirmDialog() {
         new BottomActionDialog(getContext(),
-                "确定退出?",
-                Arrays.asList("确定"),
+                getString(R.string.mine_sure_loginout),
+                Arrays.asList(getString(R.string.mine_sure)),
                 0,
                 0xFFFF0000,
                 new BottomActionDialog.OnActionItemClickListener() {
@@ -196,8 +196,8 @@ public class SetingActivity extends BaseAppUpdateActivity {
      */
     private void showClearCacheDialog() {
         new BottomActionDialog(getContext(),
-                "确定清除?",
-                Arrays.asList("确定"),
+                getString(R.string.mine_sure_clear),
+                Arrays.asList(getString(R.string.mine_sure)),
                 0,
                 0xFFFF0000,
                 new BottomActionDialog.OnActionItemClickListener() {

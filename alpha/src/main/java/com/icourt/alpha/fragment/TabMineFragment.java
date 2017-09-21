@@ -211,10 +211,10 @@ public class TabMineFragment extends BaseFragment {
                 UserInfoActivity.launch(getContext());
                 break;
             case R.id.today_duraction_layout://今日计时
-                showTopSnackBar("今日计时");
+                showTopSnackBar(R.string.mine_today_time);
                 break;
             case R.id.month_duraction_layout://本月计时
-                showTopSnackBar("本月计时");
+                showTopSnackBar(R.string.mine_month_time);
                 break;
             case R.id.done_task_layout://本月完成任务
 
@@ -224,7 +224,6 @@ public class TabMineFragment extends BaseFragment {
                 break;
             case R.id.my_center_collect_layout://收藏
                 ChatMsgClassfyActivity.launchMyCollected(getContext());
-//                MyCollectedMsgActivity.launchMyCollected(getContext());
                 break;
             case R.id.menu_test:
 //                test1();

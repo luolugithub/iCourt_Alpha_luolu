@@ -108,7 +108,7 @@ public class UserInfoActivity extends BaseActivity {
     @Override
     protected void initView() {
         super.initView();
-        setTitle("个人设置");
+        setTitle(R.string.mine_personage_set);
         alphaUserInfo = getLoginUserInfo();
         if (alphaUserInfo != null) {
             GlideUtils.loadUser(this, alphaUserInfo.getPic(), photoImage);
@@ -158,7 +158,7 @@ public class UserInfoActivity extends BaseActivity {
     private void showBottomAddMeau() {
         new BottomActionDialog(getContext(),
                 null,
-                Arrays.asList("拍照", "从手机相册选择"),
+                Arrays.asList(getString(R.string.title_popup_camera), getString(R.string.title_popup_photo_album)),
                 new BottomActionDialog.OnActionItemClickListener() {
                     @Override
                     public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
@@ -188,7 +188,7 @@ public class UserInfoActivity extends BaseActivity {
                     .build();
             GalleryFinal.openCamera(REQUEST_CODE_CAMERA, config, mOnHanlderResultCallback);
         } else {
-            reqPermission(Manifest.permission.CAMERA, "我们需要拍照权限!", REQ_CODE_PERMISSION_CAMERA);
+            reqPermission(Manifest.permission.CAMERA, R.string.permission_rationale_camera, REQ_CODE_PERMISSION_CAMERA);
         }
     }
 
@@ -205,7 +205,7 @@ public class UserInfoActivity extends BaseActivity {
                     .build();
             GalleryFinal.openGallerySingle(REQUEST_CODE_GALLERY, config, mOnHanlderResultCallback);
         } else {
-            reqPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, "我们需要文件读写权限!", REQ_CODE_PERMISSION_ACCESS_FILE);
+            reqPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, R.string.permission_rationale_storage, REQ_CODE_PERMISSION_ACCESS_FILE);
         }
     }
 
@@ -219,7 +219,7 @@ public class UserInfoActivity extends BaseActivity {
                     .build();
             GalleryFinal.openCrop(REQUEST_CODE_CROP, config, photoPath, mOnHanlderResultCallback);
         } else {
-            reqPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, "我们需要文件读写权限!", REQ_CODE_PERMISSION_ACCESS_FILE);
+            reqPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, R.string.permission_rationale_storage, REQ_CODE_PERMISSION_ACCESS_FILE);
         }
     }
 
@@ -241,7 +241,7 @@ public class UserInfoActivity extends BaseActivity {
                             break;
                     }
                 } else {
-                    showToast("图片不存在");
+                    showToast(R.string.sfile_not_exist);
                 }
             }
         }
@@ -300,13 +300,13 @@ public class UserInfoActivity extends BaseActivity {
                     @Override
                     public void onError(@io.reactivex.annotations.NonNull Throwable throwable) {
                         dismissLoadingDialog();
-                        showTopSnackBar("更新失败");
+                        showTopSnackBar(R.string.mine_update_fail);
                     }
 
                     @Override
                     public void onComplete() {
                         dismissLoadingDialog();
-                        showTopSnackBar("更新成功");
+                        showTopSnackBar(R.string.mine_update_succeed);
                     }
                 });
     }

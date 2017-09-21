@@ -58,7 +58,7 @@ public class FeedBackActivity extends BaseActivity {
     @Override
     protected void initView() {
         super.initView();
-        setTitle("意见反馈");
+        setTitle(R.string.mine_feed_back);
     }
 
 //    @OnClick({R.id.feedback_wechat_tv,   打开微信
