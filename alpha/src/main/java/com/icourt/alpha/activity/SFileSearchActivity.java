@@ -24,6 +24,7 @@ import com.icourt.alpha.adapter.SFileSearchAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.adapterObserver.DataChangeAdapterObserver;
 import com.icourt.alpha.base.BaseActivity;
+import com.icourt.alpha.constants.SFileConfig;
 import com.icourt.alpha.entity.bean.SFileSearchEntity;
 import com.icourt.alpha.entity.bean.SFileSearchPage;
 import com.icourt.alpha.fragment.dialogfragment.FileDetailDialogFragment;
@@ -303,6 +304,7 @@ public class SFileSearchActivity extends BaseActivity
             showTopSnackBar(R.string.sfile_searched_folder_un_click);
         } else {
             FileDetailDialogFragment.show(
+                    SFileConfig.REPO_UNKNOW,
                     item.repo_id,
                     getDirPath(item.fullpath),
                     item.name,

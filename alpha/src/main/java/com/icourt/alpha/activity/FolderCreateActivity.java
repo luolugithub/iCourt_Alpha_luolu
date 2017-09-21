@@ -7,6 +7,7 @@ import android.text.InputFilter;
 import android.widget.EditText;
 
 import com.google.gson.JsonObject;
+import com.icourt.alpha.R;
 import com.icourt.alpha.entity.bean.RepoEntity;
 import com.icourt.alpha.http.callback.SFileCallBack;
 import com.icourt.alpha.utils.SpUtils;
@@ -66,6 +67,7 @@ public class FolderCreateActivity extends SFileEditBaseActivity {
                 new SFileNameFilter()});
         inputNameEt.setText(SpUtils.getInstance().getStringData(KEY_CACHE_FOLDER, ""));
         inputNameEt.setSelection(inputNameEt.getText().length());
+        inputTypeIv.setImageResource(R.mipmap.folder);
     }
 
     @Override

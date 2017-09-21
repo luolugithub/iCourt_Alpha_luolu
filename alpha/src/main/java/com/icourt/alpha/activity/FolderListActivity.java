@@ -144,10 +144,8 @@ public class FolderListActivity extends FolderBaseActivity
         @Override
         public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
             if (b) {
-                List<List<FolderDocumentEntity>> data = folderDocumentAdapter.getData();
-                for (List<FolderDocumentEntity> documentEntities : data) {
-                    selectedFolderDocuments.addAll(documentEntities);
-                }
+                selectedFolderDocuments.clear();
+                selectedFolderDocuments.addAll(getAllData());
                 folderDocumentAdapter.notifyDataSetChanged();
             } else {
                 if (!selectedFolderDocuments.isEmpty()) {
@@ -490,19 +488,18 @@ public class FolderListActivity extends FolderBaseActivity
         //如果是非根目录 显示文件夹详情按钮
         boolean isRepoRoot = TextUtils.isEmpty(getSeaFileDirPath())
                 || TextUtils.equals(getSeaFileDirPath(), "/");
-
         if (isRepoRoot) {
             menus.add(getString(R.string.sfile_menu_repo_details));
         } else {
             menus.add(getString(R.string.sfile_folder_details));
         }
-        if (folderDocumentAdapter.getItemCount() <= 0
-                || !TextUtils.equals(getRepoPermission(), PERMISSION_RW)) {
+        //有读写权限 并且列表不为空
+        if (TextUtils.equals(getRepoPermission(), PERMISSION_RW)
+                && folderDocumentAdapter.getItemCount() > 0) {
             menus.add(getString(R.string.sfile_menu_batch_operation));
-            menus.add(getString(R.string.sfile_menu_recycle_bin));
-        } else {
-            menus.add(getString(R.string.sfile_menu_recycle_bin));
         }
+        menus.add(getString(R.string.sfile_menu_recycle_bin));
+
         new BottomActionDialog(getContext(),
                 null,
                 menus,
@@ -524,6 +521,7 @@ public class FolderListActivity extends FolderBaseActivity
                                     getSupportFragmentManager());
                         } else if (TextUtils.equals(action, getString(R.string.sfile_folder_details))) {
                             FolderDetailDialogFragment.show(
+                                    getRepoType(),
                                     getSeaFileRepoId(),
                                     getSeaFileDirPath(),
                                     "",
@@ -882,6 +880,7 @@ public class FolderListActivity extends FolderBaseActivity
                                 || TextUtils.equals(action, getString(R.string.sfile_folder_share))) {
                             if (item.isDir()) {
                                 FolderDetailDialogFragment.show(
+                                        getRepoType(),
                                         getSeaFileRepoId(),
                                         getSeaFileDirPath(),
                                         item.name,
@@ -890,6 +889,7 @@ public class FolderListActivity extends FolderBaseActivity
                                         getSupportFragmentManager());
                             } else {
                                 FileDetailDialogFragment.show(
+                                        getRepoType(),
                                         getSeaFileRepoId(),
                                         getSeaFileDirPath(),
                                         item.name,
@@ -919,6 +919,7 @@ public class FolderListActivity extends FolderBaseActivity
         if (item == null) return;
         if (item.isDir()) {
             FolderDetailDialogFragment.show(
+                    getRepoType(),
                     getSeaFileRepoId(),
                     getSeaFileDirPath(),
                     item.name,
@@ -927,6 +928,7 @@ public class FolderListActivity extends FolderBaseActivity
                     getSupportFragmentManager());
         } else {
             FileDetailDialogFragment.show(
+                    getRepoType(),
                     getSeaFileRepoId(),
                     getSeaFileDirPath(),
                     item.name,

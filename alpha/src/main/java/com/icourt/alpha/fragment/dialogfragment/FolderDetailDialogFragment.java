@@ -38,12 +38,14 @@ import retrofit2.Response;
 public class FolderDetailDialogFragment extends FileDetailsBaseDialogFragment {
     protected static final String KEY_LOCATION_TAB_INDEX = "locationPage";//定位的tab
 
-    public static void show(@NonNull String fromRepoId,
-                            String fromRepoFileDirPath,
-                            String fileName,
-                            @IntRange(from = 0, to = 2) int locationTabIndex,
-                            @SFileConfig.FILE_PERMISSION String repoPermission,
-                            @NonNull FragmentManager fragmentManager) {
+    public static void show(
+            @SFileConfig.REPO_TYPE int repoType,
+            @NonNull String fromRepoId,
+            String fromRepoFileDirPath,
+            String fileName,
+            @IntRange(from = 0, to = 2) int locationTabIndex,
+            @SFileConfig.FILE_PERMISSION String repoPermission,
+            @NonNull FragmentManager fragmentManager) {
         if (fragmentManager == null) return;
         String tag = FileDetailDialogFragment.class.getSimpleName();
         FragmentTransaction mFragTransaction = fragmentManager.beginTransaction();
@@ -51,10 +53,11 @@ public class FolderDetailDialogFragment extends FileDetailsBaseDialogFragment {
         if (fragment != null) {
             mFragTransaction.remove(fragment);
         }
-        show(newInstance(fromRepoId, fromRepoFileDirPath, fileName, locationTabIndex, repoPermission), tag, mFragTransaction);
+        show(newInstance(repoType, fromRepoId, fromRepoFileDirPath, fileName, locationTabIndex, repoPermission), tag, mFragTransaction);
     }
 
     public static FolderDetailDialogFragment newInstance(
+            @SFileConfig.REPO_TYPE int repoType,
             String fromRepoId,
             String fromRepoFileDirPath,
             String fileName,
@@ -62,6 +65,7 @@ public class FolderDetailDialogFragment extends FileDetailsBaseDialogFragment {
             @SFileConfig.FILE_PERMISSION String repoPermission) {
         FolderDetailDialogFragment fragment = new FolderDetailDialogFragment();
         Bundle args = new Bundle();
+        args.putInt(KEY_SEA_FILE_FROM_REPO_TYPE, repoType);
         args.putString(KEY_SEA_FILE_FROM_REPO_ID, fromRepoId);
         args.putString(KEY_SEA_FILE_DIR_PATH, fromRepoFileDirPath);
         args.putString(KEY_SEA_FILE_NAME, fileName);
@@ -133,7 +137,7 @@ public class FolderDetailDialogFragment extends FileDetailsBaseDialogFragment {
                                 }
                             }
                             FolderDocumentEntity folderDocumentEntity = response.body().get(0);
-                            if (folderDocumentEntity != null&& !TextUtils.isEmpty(folderDocumentEntity.modifier_name)) {
+                            if (folderDocumentEntity != null && !TextUtils.isEmpty(folderDocumentEntity.modifier_name)) {
                                 fileUpdateInfoTv.setText("");
                                 fileCreateInfoTv.setText(String.format("%s 更新于 %s", StringUtils.getEllipsizeText(folderDocumentEntity.modifier_name, 8), DateUtils.getyyyyMMddHHmm(folderDocumentEntity.mtime * 1_000)));
                             } else {

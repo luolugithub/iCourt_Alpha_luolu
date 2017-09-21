@@ -28,6 +28,7 @@ import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.baseadapter.BasePagerAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.constants.DownloadConfig;
+import com.icourt.alpha.constants.SFileConfig;
 import com.icourt.alpha.entity.bean.ISeaFile;
 import com.icourt.alpha.fragment.dialogfragment.FileDetailDialogFragment;
 import com.icourt.alpha.http.callback.SFileCallBack;
@@ -368,6 +369,7 @@ public class ImageViewerActivity extends ImageViewBaseActivity {
                         String action = adapter.getItem(position);
                         if (TextUtils.equals(action, getString(R.string.sfile_file_details))) {
                             FileDetailDialogFragment.show(
+                                    SFileConfig.REPO_UNKNOW,
                                     item.getSeaFileRepoId(),
                                     FileUtils.getFileParentDir(item.getSeaFileFullPath()),
                                     FileUtils.getFileName(item.getSeaFileFullPath()),

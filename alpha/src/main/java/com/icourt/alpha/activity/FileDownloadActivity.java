@@ -26,6 +26,7 @@ import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.constants.DownloadConfig;
+import com.icourt.alpha.constants.SFileConfig;
 import com.icourt.alpha.entity.bean.ISeaFile;
 import com.icourt.alpha.fragment.dialogfragment.ContactShareDialogFragment;
 import com.icourt.alpha.fragment.dialogfragment.FileDetailDialogFragment;
@@ -419,6 +420,7 @@ public class FileDownloadActivity extends BaseActivity {
                         switch (position) {
                             case 0:
                                 FileDetailDialogFragment.show(
+                                        SFileConfig.REPO_UNKNOW,
                                         iSeaFile.getSeaFileRepoId(),
                                         FileUtils.getFileParentDir(iSeaFile.getSeaFileFullPath()),
                                         fileName,
