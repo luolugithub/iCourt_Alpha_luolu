@@ -100,7 +100,7 @@ public interface ApiAlphaService {
      * @param name
      * @return
      */
-    @POST("api/v1/auth/update")
+    @POST("ilaw/api/v1/auth/update")
     @FormUrlEncoded
     Call<ResEntity<JsonElement>> updateUserName(@Field("id") String id,
                                                 @Field("name") String name);

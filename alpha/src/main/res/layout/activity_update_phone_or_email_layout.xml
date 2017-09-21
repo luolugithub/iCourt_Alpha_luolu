@@ -50,14 +50,6 @@
             android:gravity="center"
             android:orientation="horizontal">
 
-            <ImageView
-                android:id="@+id/my_center_update_clear_view"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:paddingLeft="@dimen/dp10"
-                android:paddingRight="@dimen/dp10"
-                android:src="@mipmap/icon_close_14" />
-
             <LinearLayout
                 android:id="@+id/update_state_layout"
                 android:layout_width="wrap_content"
@@ -70,9 +62,19 @@
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
                     android:paddingLeft="@dimen/dp10"
-                    android:paddingRight="@dimen/dp15"
+                    android:paddingRight="@dimen/dp10"
                     android:src="@mipmap/verify_no" />
             </LinearLayout>
+
+            <ImageView
+                android:id="@+id/my_center_update_clear_view"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_marginRight="@dimen/dp5"
+                android:paddingLeft="@dimen/dp10"
+                android:paddingRight="@dimen/dp10"
+                android:src="@mipmap/close_white_32" />
+
         </LinearLayout>
     </LinearLayout>
 
