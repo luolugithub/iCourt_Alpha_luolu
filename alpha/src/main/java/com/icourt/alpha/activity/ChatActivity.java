@@ -1501,6 +1501,7 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
                     View chat_image_iv = holder.obtainView(R.id.chat_image_iv);
                     ImagePagerActivity.launch(
                             view.getContext(),
+                            ImagePagerActivity.IMAGE_FROM_CHAT_WINDOW,
                             sFileImageInfoEntities,
                             pos,
                             getIMChatType(),
@@ -1534,6 +1535,7 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
 
                 sFileImageInfoEntities.add(chatFileInfoEntity);
                 ImagePagerActivity.launch(getContext(),
+                        ImagePagerActivity.IMAGE_FROM_CHAT_WINDOW,
                         sFileImageInfoEntities,
                         0,
                         getIMChatType(),
