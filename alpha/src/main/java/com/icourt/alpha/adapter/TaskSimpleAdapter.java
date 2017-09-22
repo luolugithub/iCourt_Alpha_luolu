@@ -59,7 +59,6 @@ public class TaskSimpleAdapter extends MultiSelectRecyclerAdapter<TaskEntity.Tas
     public TaskSimpleAdapter() {
         this.setOnItemChildClickListener(this);
         this.setOnItemClickListener(this);
-        this.setOnItemLongClickListener(this);
     }
 
     private OnShowFragmenDialogListener onShowFragmenDialogListener;

@@ -107,9 +107,8 @@ public class ProjectTaskFragment extends BaseTaskFragment implements BaseQuickAd
         taskAdapter = new TaskAdapter();
         taskAdapter.addHeaderView(headerView);
         taskAdapter.registerAdapterDataObserver(new RefreshViewEmptyObserver(refreshLayout, taskAdapter));
-        taskAdapter.setOnItemLongClickListener(this);
-        taskAdapter.setOnItemChildClickListener(this);
         taskAdapter.setOnItemClickListener(this);
+        taskAdapter.setOnItemChildClickListener(this);
         recyclerView.setAdapter(taskAdapter);
 
         refreshLayout.setXRefreshViewListener(new XRefreshView.SimpleXRefreshListener() {

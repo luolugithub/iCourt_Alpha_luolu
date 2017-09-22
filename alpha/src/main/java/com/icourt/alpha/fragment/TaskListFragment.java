@@ -229,7 +229,6 @@ public class TaskListFragment extends BaseTaskFragment implements
         recyclerView.setAdapter(taskAdapter);
         taskAdapter.setOnItemClickListener(this);
         taskAdapter.setOnItemChildClickListener(this);
-        taskAdapter.setOnItemLongClickListener(this);
 
         refreshLayout.setXRefreshViewListener(new XRefreshView.SimpleXRefreshListener() {
             @Override

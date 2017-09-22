@@ -103,7 +103,6 @@ public class ProjectEndTaskFragment extends BaseTaskFragment implements BaseQuic
         taskAdapter.addHeaderView(headerView);
         taskAdapter.setOnItemClickListener(this);
         taskAdapter.setOnItemChildClickListener(this);
-        taskAdapter.setOnItemLongClickListener(this);
         taskAdapter.registerAdapterDataObserver(new RefreshViewEmptyObserver(refreshLayout, taskAdapter));
         recyclerView.setAdapter(taskAdapter);
 
