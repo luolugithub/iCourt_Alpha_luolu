@@ -186,11 +186,16 @@ public class ProjectJudgeActivity extends BaseActivity {
         if (!hasCustomerPermission()) return;
         if (customerDbService == null) return;
         ProjectDetailEntity.LitigantsBean litigantsBean = (ProjectDetailEntity.LitigantsBean) projectJudgeAdapter.getItem(position);
-        CustomerEntity customerEntity = null;
         CustomerDbModel customerDbModel = customerDbService.queryFirst("pkid", litigantsBean.contactPkid);
-        if (customerDbModel == null) return;
-        customerEntity = customerDbModel.convert2Model();
-        if (customerEntity == null) return;
+        if (customerDbModel == null) {
+            showTopSnackBar(R.string.project_not_look_info_premission);
+            return;
+        }
+        CustomerEntity customerEntity = customerDbModel.convert2Model();
+        if (customerEntity == null) {
+            showTopSnackBar(R.string.project_not_look_info_premission);
+            return;
+        }
         if (!TextUtils.isEmpty(customerEntity.contactType)) {
             MobclickAgent.onEvent(getContext(), UMMobClickAgent.look_client_click_id);
             //公司

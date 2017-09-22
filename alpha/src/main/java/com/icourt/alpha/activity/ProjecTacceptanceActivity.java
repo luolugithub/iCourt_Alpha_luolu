@@ -150,9 +150,15 @@ public class ProjecTacceptanceActivity extends BaseActivity implements BaseRecyc
         if (!hasCustomerPermission()) return;
         if (customerDbService == null) return;
         CustomerDbModel customerDbModel = customerDbService.queryFirst("pkid", valuesBean.id);
-        if (customerDbModel == null) return;
+        if (customerDbModel == null) {
+            showTopSnackBar(R.string.project_not_look_info_premission);
+            return;
+        }
         CustomerEntity customerEntity = customerDbModel.convert2Model();
-        if (customerEntity == null) return;
+        if (customerEntity == null) {
+            showTopSnackBar(R.string.project_not_look_info_premission);
+            return;
+        }
         if (!TextUtils.isEmpty(customerEntity.contactType)) {
             MobclickAgent.onEvent(getContext(), UMMobClickAgent.look_client_click_id);
             //公司
