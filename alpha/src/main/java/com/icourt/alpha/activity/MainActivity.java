@@ -16,7 +16,6 @@ import android.support.v4.app.NotificationManagerCompat;
 import android.support.v4.util.ArrayMap;
 import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
-import android.util.Log;
 import android.util.SparseArray;
 import android.view.Gravity;
 import android.view.KeyEvent;
@@ -235,6 +234,7 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
         public static final int TYPE_CHECK_APP_UPDATE = 102;//检查更新
         public static final int TYPE_CHECK_TIMING_UPDATE = 103;//检查计时
         public static final int TYPE_OVER_TIMING_REMIND_AUTO_CLOSE = 104;//持续计时过久时的提醒覆层关闭
+        public static final int TYPE_OVER_TIMING_REMIND = 105;//计时超时提醒
 
         /**
          * 刷新登陆token
@@ -261,6 +261,17 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
             this.sendEmptyMessageDelayed(TYPE_CHECK_TIMING_UPDATE, 1_000);
         }
 
+        /**
+         * 添加超时提醒
+         */
+        public void addOverTimingRemind(String remindContent) {
+            this.removeMessages(TYPE_OVER_TIMING_REMIND);
+            Message obtain = Message.obtain();
+            obtain.what = TYPE_OVER_TIMING_REMIND;
+            obtain.obj = remindContent;
+            this.sendMessageDelayed(obtain, 100);
+        }
+
         @Override
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
@@ -276,6 +287,10 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
                     break;
                 case TYPE_OVER_TIMING_REMIND_AUTO_CLOSE:
                     dismissOverTimingRemindDialogFragment(true);
+                    break;
+                case TYPE_OVER_TIMING_REMIND:
+                    String remindContent = (String) msg.obj;
+                    showOverTimingRemindDialogFragment(remindContent);
                     break;
             }
         }
@@ -830,7 +845,7 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
      * @param event
      */
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onServerTimingEvent(ServerTimingEvent event) {
+    public void onServerTimingEvent(final ServerTimingEvent event) {
         if (event == null) return;
         if (TextUtils.equals(event.clientId, getlocalUniqueId())) return;
         if (isInterceptServerTimingEvent()) return;
@@ -860,7 +875,8 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
                 if (event.scene != null) {
                     switch (event.scene) {
                         case ServerTimingEvent.TIMING_SYNC_TOO_LONG://计时超长的通知（这个通知每2小时通知一次）
-                            showOrUpdateOverTimingRemindDialogFragment(TimerManager.getInstance().getTimingSeconds());
+                            //使用handler来发送超时提醒，为了防止一次性收到多个超时提醒，导致弹出多个提示窗。
+                            mHandler.addOverTimingRemind(event.content);
                             break;
                         case ServerTimingEvent.TIMING_SYNC_CLOSE_BUBBLE://关闭该计时任务超长提醒泡泡的通知
                             dismissOverTimingRemindDialogFragment(false);
@@ -941,7 +957,7 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
                 dismissOverTimingRemindDialogFragment(false);
                 break;
             case OverTimingRemindEvent.ACTION_SHOW_TIMING_REMIND:
-                showOrUpdateOverTimingRemindDialogFragment(event.timeSec);
+                mHandler.addOverTimingRemind(getOverTimingRemindContent(event.timeSec));
                 break;
             case OverTimingRemindEvent.ACTION_SYNC_BUBBLE_CLOSE_TO_SERVER:
                 TimerManager.getInstance().setOverTimingRemindClose(TimerManager.OVER_TIME_REMIND_BUBBLE_OFF);
@@ -962,7 +978,7 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
                 //如果添加的计时大于2个小时，弹出提示
                 if (TimeUnit.SECONDS.toHours(TimerManager.getInstance().getTimingSeconds()) > 2) {
                     if (TimerManager.getInstance().isOverTimingRemind() && TimerManager.getInstance().isBubbleRemind()) {
-                        showOrUpdateOverTimingRemindDialogFragment(TimerManager.getInstance().getTimingSeconds());
+                        mHandler.addOverTimingRemind(getOverTimingRemindContent(TimerManager.getInstance().getTimingSeconds()));
                     }
                 } else {
                     dismissTimingDialogFragment();
@@ -991,6 +1007,13 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
                 tabTimingIcon.clearAnimation();
                 timingAnim = null;
                 dismissOverTimingRemindDialogFragment(true);
+                break;
+            case TimingEvent.TIMING_SYNC_SUCCESS:
+                if (TimeUnit.SECONDS.toHours(TimerManager.getInstance().getTimingSeconds()) > 2) {
+                    if (TimerManager.getInstance().isBubbleRemind() && TimerManager.getInstance().isOverTimingRemind()) {
+                        mHandler.addOverTimingRemind(getOverTimingRemindContent(TimerManager.getInstance().getTimingSeconds()));
+                    }
+                }
                 break;
         }
     }
@@ -1205,9 +1228,18 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
     }
 
     /**
+     * 获取提醒文本的文字描述
+     *
+     * @param seconds
+     */
+    private String getOverTimingRemindContent(long seconds) {
+        return getString(R.string.timer_over_timing_remind_text, TimeUnit.SECONDS.toHours(seconds));
+    }
+
+    /**
      * 显示 持续计时过久时的提醒覆层
      */
-    public void showOrUpdateOverTimingRemindDialogFragment(long useTime) {
+    public void showOverTimingRemindDialogFragment(String content) {
         if (isDestroyOrFinishing()) {//如果界面即将销毁，那么就不执行下去
             return;
         }
@@ -1218,14 +1250,14 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
                 return;
             }
         }
-        String tag = OverTimingRemindDialogFragment.class.getSimpleName();
         FragmentTransaction mFragTransaction = getSupportFragmentManager().beginTransaction();
+        String tag = OverTimingRemindDialogFragment.class.getSimpleName();
         OverTimingRemindDialogFragment fragment = (OverTimingRemindDialogFragment)
                 getSupportFragmentManager().findFragmentByTag(tag);
         if (fragment != null) {
-            fragment.updateTimeText(useTime);
+            fragment.updateTimeText(content);
         } else {
-            fragment = OverTimingRemindDialogFragment.newInstance(useTime);
+            fragment = OverTimingRemindDialogFragment.newInstance(content);
             fragment.show(mFragTransaction, tag);
         }
         dismissTimingDialogFragment();
@@ -1242,9 +1274,9 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
         String tag = OverTimingRemindDialogFragment.class.getSimpleName();
         OverTimingRemindDialogFragment fragment = (OverTimingRemindDialogFragment) getSupportFragmentManager().findFragmentByTag(tag);
         if (fragment != null) {
-            fragment.dismissAllowingStateLoss(isSyncServer);
-            tabTimingIcon.setImageResource(R.mipmap.ic_tab_timing);
+            fragment.dismiss(isSyncServer);
         }
+        tabTimingIcon.setImageResource(R.mipmap.ic_tab_timing);
     }
 
     @Override

@@ -89,7 +89,11 @@ public class SearchProjectActivity extends BaseActivity implements BaseRecyclerA
             @Override
             protected void updateUI() {
                 if (contentEmptyText != null) {
-                    contentEmptyText.setVisibility(projectListAdapter.getItemCount() > 0 ? View.GONE : View.VISIBLE);
+                    if (!TextUtils.isEmpty(etSearchName.getText())) {
+                        contentEmptyText.setVisibility(projectListAdapter.getItemCount() > 0 ? View.GONE : View.VISIBLE);
+                    } else {
+                        contentEmptyText.setVisibility(View.GONE);
+                    }
                 }
             }
         });
