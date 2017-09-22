@@ -94,7 +94,7 @@ public class RepoNavigationFragment extends BaseFragment
         footerView.setText(footerNotice);
 
         recyclerView.setAdapter(headerFooterAdapter);
-        String[] repoArray = getResources().getStringArray(R.array.repo_type_array);
+        String[] repoArray = getResources().getStringArray(R.array.repo_type_details_array);
         repoTypeAdapter.bindData(
                 true,
                 Arrays.asList(new RepoTypeEntity(SFileConfig.REPO_MINE, repoArray[0]),

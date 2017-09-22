@@ -19,6 +19,13 @@
         <item>项目</item>
     </string-array>
 
+    <string-array name="repo_type_details_array">
+        <item>我的资料库</item>
+        <item>共享给我的资料库</item>
+        <item>律所资料库</item>
+        <item>项目资料库</item>
+    </string-array>
+
     <string-array name="repo_action_menus_rw_array">
         <item>@string/repo_details</item>
         <item>重命名</item>

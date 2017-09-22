@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.annotation.IntDef;
 import android.support.annotation.IntRange;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -24,13 +23,13 @@ import com.google.gson.JsonObject;
 import com.icourt.alpha.BuildConfig;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
-import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.constants.DownloadConfig;
 import com.icourt.alpha.constants.SFileConfig;
 import com.icourt.alpha.entity.bean.ISeaFile;
 import com.icourt.alpha.fragment.dialogfragment.ContactShareDialogFragment;
 import com.icourt.alpha.fragment.dialogfragment.FileDetailDialogFragment;
-import com.icourt.alpha.fragment.dialogfragment.ProjectSaveFileDialogFragment;
+import com.icourt.alpha.http.HttpThrowableUtils;
+import com.icourt.alpha.http.IDefNotify;
 import com.icourt.alpha.http.callback.SFileCallBack;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
@@ -44,8 +43,6 @@ import com.liulishuo.filedownloader.FileDownloadListener;
 import com.liulishuo.filedownloader.FileDownloader;
 
 import java.io.File;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -55,6 +52,8 @@ import butterknife.OnClick;
 import retrofit2.Call;
 import retrofit2.Response;
 
+import static com.icourt.alpha.constants.SFileConfig.FILE_FROM_IM;
+import static com.icourt.alpha.constants.SFileConfig.FILE_FROM_TASK;
 import static com.icourt.alpha.constants.SFileConfig.PERMISSION_RW;
 
 /**
@@ -64,26 +63,13 @@ import static com.icourt.alpha.constants.SFileConfig.PERMISSION_RW;
  * date createTime：2017/8/24
  * version 2.1.0
  */
-public class FileDownloadActivity extends BaseActivity {
+public class FileDownloadActivity extends ImageViewBaseActivity {
 
     private static final String KEY_SEA_FILE_FROM = "key_sea_file_from";
     private static final String KEY_SEA_FILE = "key_sea_file";
 
-    public static final int FILE_FROM_TASK = 1;         //任务下载附件
-    public static final int FILE_FROM_PROJECT = 2;      //项目下载附件
-    public static final int FILE_FROM_IM = 3;           //享聊下载附件
-    public static final int FILE_FROM_REPO = 4;         //资料库下载附件
     @BindView(R.id.download_notice_tv)
     TextView downloadNoticeTv;
-
-    @IntDef({FILE_FROM_TASK,
-            FILE_FROM_PROJECT,
-            FILE_FROM_IM,
-            FILE_FROM_REPO})
-    @Retention(RetentionPolicy.SOURCE)
-    public @interface FILE_FROM {
-    }
-
     @BindView(R.id.file_open_tv)
     TextView fileOpenTv;
     @BindView(R.id.titleBack)
@@ -113,7 +99,7 @@ public class FileDownloadActivity extends BaseActivity {
     private String fileDownloadUrl = "";//下载的地址
 
 
-    public static <T extends ISeaFile> void launch(@NonNull Context context, T seaFile, @FILE_FROM int fileFrom) {
+    public static <T extends ISeaFile> void launch(@NonNull Context context, T seaFile, @SFileConfig.FILE_FROM int fileFrom) {
         if (context == null) return;
         if (seaFile == null) return;
         Intent intent = new Intent(context, FileDownloadActivity.class);
@@ -170,7 +156,12 @@ public class FileDownloadActivity extends BaseActivity {
         @Override
         protected void error(BaseDownloadTask task, Throwable e) {
             log("------------->下载异常:" + StringUtils.throwable2string(e));
-            showTopSnackBar(String.format("下载异常!" + StringUtils.throwable2string(e)));
+            HttpThrowableUtils.handleHttpThrowable(new IDefNotify() {
+                @Override
+                public void defNotify(String noticeStr) {
+                    showTopSnackBar(noticeStr);
+                }
+            }, e);
             bugSync("下载异常", e);
         }
 
@@ -194,7 +185,7 @@ public class FileDownloadActivity extends BaseActivity {
         super.initView();
 
         iSeaFile = (ISeaFile) getIntent().getSerializableExtra(KEY_SEA_FILE);
-        fileFrom = getIntent().getIntExtra(KEY_SEA_FILE_FROM, FILE_FROM_REPO);
+        fileFrom = getIntent().getIntExtra(KEY_SEA_FILE_FROM, SFileConfig.FILE_FROM_REPO);
         fileCachePath = buildSavePath();
 
         fileName = FileUtils.getFileName(iSeaFile.getSeaFileFullPath());
@@ -235,6 +226,7 @@ public class FileDownloadActivity extends BaseActivity {
             seaFileImages.add(iSeaFile);
             ImageViewerActivity.launch(
                     getContext(),
+                    SFileConfig.convert2FileFrom(fileFrom),
                     seaFileImages,
                     0
             );
@@ -247,7 +239,7 @@ public class FileDownloadActivity extends BaseActivity {
         super.getData(isRefresh);
         showLoadingDialog(null);
         switch (fileFrom) {
-            case FILE_FROM_IM: {//享聊的下载地址要单独获取 用资料库下载地址 提示没权限
+            case SFileConfig.FILE_FROM_IM: {//享聊的下载地址要单独获取 用资料库下载地址 提示没权限
                 callEnqueue(
                         getChatApi().fileUrlQuery(
                                 iSeaFile.getSeaFileRepoId(),
@@ -406,9 +398,14 @@ public class FileDownloadActivity extends BaseActivity {
      * 展示更多菜单
      */
     private void showBottomMenuDialog() {
-        ArrayList<String> menus = new ArrayList<>(Arrays.asList(getString(R.string.sfile_file_details), "转发给同事", "保存到项目资料库", "用其他应用打开"));
+        ArrayList<String> menus = new ArrayList<>(Arrays.asList(getString(R.string.sfile_file_details), "转发给同事", "保存到项目", "用其他应用打开"));
         if (TextUtils.equals(iSeaFile.getSeaFilePermission(), PERMISSION_RW)) {
             menus.add(getString(R.string.str_delete));
+        }
+        //聊天文件 任务附件 暂时不要文件详情
+        if (fileFrom == FILE_FROM_TASK
+                || fileFrom == FILE_FROM_IM) {
+            menus.remove(getString(R.string.sfile_file_details));
         }
         new BottomActionDialog(getContext(),
                 null,
@@ -417,30 +414,25 @@ public class FileDownloadActivity extends BaseActivity {
                     @Override
                     public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
                         dialog.dismiss();
-                        switch (position) {
-                            case 0:
-                                FileDetailDialogFragment.show(
-                                        SFileConfig.REPO_UNKNOW,
-                                        iSeaFile.getSeaFileRepoId(),
-                                        FileUtils.getFileParentDir(iSeaFile.getSeaFileFullPath()),
-                                        fileName,
-                                        iSeaFile.getSeaFileSize(),
-                                        0,
-                                        iSeaFile.getSeaFilePermission(),
-                                        getSupportFragmentManager());
-                                break;
-                            case 1:
-                                showContactShareDialogFragment(fileCachePath);
-                                break;
-                            case 2:
-                                showProjectSaveFileDialogFragment(fileCachePath);
-                                break;
-                            case 3:
-                                showOpenableThirdPartyAppDialog();
-                                break;
-                            case 4:
-                                showDeleteConfirmDialog();
-                                break;
+                        String action = adapter.getItem(position);
+                        if (TextUtils.equals(action, getString(R.string.sfile_file_details))) {
+                            FileDetailDialogFragment.show(
+                                    SFileConfig.REPO_UNKNOW,
+                                    iSeaFile.getSeaFileRepoId(),
+                                    FileUtils.getFileParentDir(iSeaFile.getSeaFileFullPath()),
+                                    fileName,
+                                    iSeaFile.getSeaFileSize(),
+                                    0,
+                                    iSeaFile.getSeaFilePermission(),
+                                    getSupportFragmentManager());
+                        } else if (TextUtils.equals(action, "转发给同事")) {
+                            showContactShareDialogFragment(fileCachePath);
+                        } else if (TextUtils.equals(action, "保存到项目")) {
+                            shareHttpFile2Project(null, fileCachePath);
+                        } else if (TextUtils.equals(action, "用其他应用打开")) {
+                            showOpenableThirdPartyAppDialog();
+                        } else if (TextUtils.equals(action, getString(R.string.str_delete))) {
+                            showDeleteConfirmDialog();
                         }
                     }
                 }).show();
@@ -513,21 +505,6 @@ public class FileDownloadActivity extends BaseActivity {
                 .show(mFragTransaction, tag);
     }
 
-    /**
-     * 展示项目转发对话框
-     *
-     * @param filePath
-     */
-    public void showProjectSaveFileDialogFragment(String filePath) {
-        String tag = ProjectSaveFileDialogFragment.class.getSimpleName();
-        FragmentTransaction mFragTransaction = getSupportFragmentManager().beginTransaction();
-        Fragment fragment = getSupportFragmentManager().findFragmentByTag(tag);
-        if (fragment != null) {
-            mFragTransaction.remove(fragment);
-        }
-        ProjectSaveFileDialogFragment.newInstance(filePath, ProjectSaveFileDialogFragment.ALPHA_TYPE)
-                .show(mFragTransaction, tag);
-    }
 
     /**
      * 用其他程序打开

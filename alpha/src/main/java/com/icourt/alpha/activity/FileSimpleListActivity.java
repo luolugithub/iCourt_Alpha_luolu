@@ -42,6 +42,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -341,6 +342,7 @@ public class FileSimpleListActivity extends FolderBaseActivity
      */
     private void sortFile(List<FolderDocumentEntity> datas) {
         seaFileSort(fileSortType, datas)
+                .delay(500, TimeUnit.MILLISECONDS)
                 .compose(this.<List<FolderDocumentEntity>>bindToLifecycle())
                 .subscribeOn(Schedulers.newThread())
                 .observeOn(AndroidSchedulers.mainThread())
@@ -476,13 +478,14 @@ public class FileSimpleListActivity extends FolderBaseActivity
                 int indexOf = imageDatas.indexOf(item);
                 ImageViewerActivity.launch(
                         getContext(),
+                        SFileConfig.FILE_FROM_PROJECT,
                         imageDatas,
                         indexOf);
             } else {
                 FileDownloadActivity.launch(
                         getContext(),
                         item,
-                        FileDownloadActivity.FILE_FROM_REPO);
+                        SFileConfig.FILE_FROM_REPO);
             }
         }
     }

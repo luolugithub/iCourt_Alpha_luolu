@@ -9,8 +9,11 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.CheckResult;
+import android.support.annotation.IntDef;
 import android.support.annotation.IntRange;
 import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.ViewCompat;
 import android.support.v4.view.ViewPager;
 import android.text.TextUtils;
@@ -35,6 +38,7 @@ import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.icourt.alpha.entity.bean.ChatFileInfoEntity;
 import com.icourt.alpha.entity.bean.IMMessageCustomBody;
 import com.icourt.alpha.entity.bean.ISeaFile;
+import com.icourt.alpha.fragment.dialogfragment.ContactShareDialogFragment;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.FileUtils;
@@ -47,7 +51,6 @@ import com.icourt.api.RequestUtils;
 import com.liulishuo.filedownloader.BaseDownloadTask;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
@@ -82,6 +85,7 @@ public class ImagePagerActivity extends ImageViewBaseActivity implements BasePag
     private static final String KEY_CHAT_TYPE = "key_chat_type";
     private static final String KEY_CHAT_ID = "key_chat_id";
     private static final String KEY_POS = "key_pos";
+    private static final String KEY_IMAGE_FROM = "key_image_from";
     @BindView(R.id.imagePager)
     HackyViewPager imagePager;
     @BindView(R.id.tvPagerTitle)
@@ -90,7 +94,21 @@ public class ImagePagerActivity extends ImageViewBaseActivity implements BasePag
     ArrayList<ChatFileInfoEntity> sFileImageInfoEntities;
     Handler handler = new Handler();
     int realPos;
+    int imageFrom;
 
+    public static final int IMAGE_FROM_CHAT_WINDOW = 1;
+    public static final int IMAGE_FROM_CHAT_FILE = 2;
+    public static final int IMAGE_FROM_DING = 3;
+    public static final int IMAGE_FROM_COLLECT = 4;
+
+    @IntDef({
+            IMAGE_FROM_CHAT_WINDOW,
+            IMAGE_FROM_CHAT_FILE,
+            IMAGE_FROM_DING,
+            IMAGE_FROM_COLLECT,
+    })
+    public @interface ImageFrom {
+    }
 
     /**
      * 显示图片
@@ -100,7 +118,9 @@ public class ImagePagerActivity extends ImageViewBaseActivity implements BasePag
      * @param selectedPos
      * @param transitionView
      */
+
     public static void launch(Context context,
+                              @ImageFrom int imageFrom,
                               @Nullable ArrayList<ChatFileInfoEntity> sFileImageInfoEntities,
                               @IntRange(from = 0, to = Integer.MAX_VALUE) int selectedPos,
                               int chatType,
@@ -111,6 +131,7 @@ public class ImagePagerActivity extends ImageViewBaseActivity implements BasePag
             selectedPos = sFileImageInfoEntities.size() - 1;
         }
         Intent intent = new Intent(context, ImagePagerActivity.class);
+        intent.putExtra(KEY_IMAGE_FROM, imageFrom);
         intent.putExtra(KEY_POS, selectedPos);
         intent.putExtra(KEY_S_FILE_INFO, sFileImageInfoEntities);
         intent.putExtra(KEY_CHAT_TYPE, chatType);
@@ -154,6 +175,7 @@ public class ImagePagerActivity extends ImageViewBaseActivity implements BasePag
     @Override
     protected void initView() {
         super.initView();
+        imageFrom = getIntent().getIntExtra(KEY_IMAGE_FROM, 0);
         sFileImageInfoEntities = (ArrayList<ChatFileInfoEntity>) getIntent().getSerializableExtra(KEY_S_FILE_INFO);
         realPos = getIntent().getIntExtra(KEY_POS, 0);
         pagerAdapter = new ImagePagerAdapter();
@@ -320,57 +342,43 @@ public class ImagePagerActivity extends ImageViewBaseActivity implements BasePag
             if (finalChatFileInfoEntity != null) {
                 final boolean isCollected = isCollected(chatFileInfoEntity.getChatMsgId());
                 final boolean isDinged = isDinged(chatFileInfoEntity.getChatMsgId());
+                ArrayList<String> menus = new ArrayList<>();
+                switch (imageFrom) {
+                    case IMAGE_FROM_CHAT_WINDOW:
+                        menus.add("转发给同事");
+                        menus.add("分享");
+                        menus.add(isCollected ? "取消收藏" : "收藏");
+                        menus.add(isDinged ? "取消钉" : "钉");
+                        menus.add("保存到文档");
+                        break;
+                    default:
+                        menus.add("转发给同事");
+                        menus.add("分享");
+                        menus.add("保存到文档");
+                        break;
+                }
                 new BottomActionDialog(getContext(),
                         null,
-                        Arrays.asList("分享", "转发给同事", isCollected ? "取消收藏" : "收藏", isDinged ? "取消钉" : "钉", "保存到我的文档"),
+                        menus,
                         new BottomActionDialog.OnActionItemClickListener() {
                             @Override
                             public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
                                 dialog.dismiss();
-                                switch (position) {
-                                    case 0:
-                                        shareHttpFile(originalImageUrl, picSavePath);
-                                        break;
-                                    case 1:
-                                        shareHttpFile2Friends(originalImageUrl, picSavePath);
-                                        break;
-                                    case 2:
-                                        if (isCollected) {
-                                            msgActionCollectCancel(finalChatFileInfoEntity.getChatMsgId());
-                                        } else {
-                                            msgActionCollect(finalChatFileInfoEntity.getChatMsgId());
-                                        }
-                                        break;
-                                    case 3:
-                                        msgActionDing(!isDinged, finalChatFileInfoEntity.getChatMsgId());
-                                        break;
-                                    case 4:
-                                        shareHttpFile2repo(originalImageUrl, picSavePath);
-                                        break;
-                                }
-                            }
-                        }).show();
-            } else {
-                new BottomActionDialog(getContext(),
-                        null,
-                        Arrays.asList("保存图片", "转发给同事", "分享", "保存到我的文档"),
-                        new BottomActionDialog.OnActionItemClickListener() {
-                            @Override
-                            public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
-                                dialog.dismiss();
-                                switch (position) {
-                                    case 0:
-                                        downloadFile(originalImageUrl, picSavePath);
-                                        break;
-                                    case 1:
-                                        shareHttpFile2Friends(originalImageUrl, picSavePath);
-                                        break;
-                                    case 2:
-                                        shareHttpFile(originalImageUrl, picSavePath);
-                                        break;
-                                    case 3:
-                                        shareHttpFile2repo(originalImageUrl, picSavePath);
-                                        break;
+                                String action = adapter.getItem(position);
+                                if (TextUtils.equals(action, "转发给同事")) {
+                                    showContactShareDialogFragment(finalChatFileInfoEntity.getChatMsgId());
+                                } else if (TextUtils.equals(action, "分享")) {
+                                    shareHttpFile(originalImageUrl, picSavePath);
+                                } else if (TextUtils.equals(action, "取消收藏")) {
+                                    msgActionCollectCancel(finalChatFileInfoEntity.getChatMsgId());
+                                } else if (TextUtils.equals(action, "收藏")) {
+                                    msgActionCollect(finalChatFileInfoEntity.getChatMsgId());
+                                } else if (TextUtils.equals(action, "取消钉")) {
+                                    msgActionDing(!isDinged, finalChatFileInfoEntity.getChatMsgId());
+                                } else if (TextUtils.equals(action, "钉")) {
+                                    msgActionDing(!isDinged, finalChatFileInfoEntity.getChatMsgId());
+                                } else if (TextUtils.equals(action, "保存到文档")) {
+                                    shareHttpFile2repo(originalImageUrl, picSavePath);
                                 }
                             }
                         }).show();
@@ -378,6 +386,23 @@ public class ImagePagerActivity extends ImageViewBaseActivity implements BasePag
             return true;
         }
         return false;
+    }
+
+    /**
+     * 展示联系人转发对话框
+     * 软拷贝
+     *
+     * @param id msgid
+     */
+    public void showContactShareDialogFragment(long id) {
+        String tag = ContactShareDialogFragment.class.getSimpleName();
+        FragmentTransaction mFragTransaction = getSupportFragmentManager().beginTransaction();
+        Fragment fragment = getSupportFragmentManager().findFragmentByTag(tag);
+        if (fragment != null) {
+            mFragTransaction.remove(fragment);
+        }
+        ContactShareDialogFragment.newInstance(id, true)
+                .show(mFragTransaction, tag);
     }
 
 
@@ -572,7 +597,7 @@ public class ImagePagerActivity extends ImageViewBaseActivity implements BasePag
 
             //已经有原图
             if (FileUtils.isFileExists(picSavePath)) {
-                GlideUtils.loadSFilePic(getContext(), picSavePath, touchImageView);
+                GlideUtils.loadSFilePicWithoutPlaceholder(getContext(), picSavePath, touchImageView);
                 return;
             }
 
@@ -645,6 +670,7 @@ public class ImagePagerActivity extends ImageViewBaseActivity implements BasePag
                             return false;
                         }
                     })
+                    .error(R.mipmap.filetype_image)
                     .dontAnimate()
                     .into(imageView);
         }

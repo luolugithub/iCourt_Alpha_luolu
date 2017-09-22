@@ -209,7 +209,7 @@ public class FileDetailDialogFragment extends FileDetailsBaseDialogFragment
                     FileDownloadActivity.launch(
                             getContext(),
                             item,
-                            FileDownloadActivity.FILE_FROM_REPO);
+                            SFileConfig.FILE_FROM_REPO);
                 } else {
 
                 }

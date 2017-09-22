@@ -14,7 +14,8 @@ import com.icourt.alpha.constants.SFileConfig;
 import com.icourt.alpha.entity.bean.ISeaFile;
 import com.icourt.alpha.fragment.dialogfragment.ContactShareDialogFragment;
 import com.icourt.alpha.fragment.dialogfragment.FolderTargetListDialogFragment;
-import com.icourt.alpha.fragment.dialogfragment.ProjectSaveFileDialogFragment;
+import com.icourt.alpha.http.HttpThrowableUtils;
+import com.icourt.alpha.http.IDefNotify;
 import com.icourt.alpha.utils.FileUtils;
 import com.icourt.alpha.utils.StringUtils;
 import com.liulishuo.filedownloader.BaseDownloadTask;
@@ -70,9 +71,14 @@ public class ImageViewBaseActivity extends BaseUmengActivity {
         protected void error(BaseDownloadTask task, Throwable e) {
             super.error(task, e);
             dismissLoadingDialog();
+            HttpThrowableUtils.handleHttpThrowable(new IDefNotify() {
+                @Override
+                public void defNotify(String noticeStr) {
+                    showTopSnackBar(noticeStr);
+                }
+            }, e);
             log("----------->图片下载异常:" + StringUtils.throwable2string(e));
             bugSync("下载异常", e);
-            showTopSnackBar(String.format("下载异常!" + StringUtils.throwable2string(e)));
         }
 
         @CallSuper
@@ -172,7 +178,7 @@ public class ImageViewBaseActivity extends BaseUmengActivity {
     protected final void shareHttpFile2repo(String url, String cacheFullPath) {
         if (checkAcessFilePermission()) {
             if (isFileExists(cacheFullPath)) {
-                shareImport2repo(cacheFullPath);
+                shareImport2repo(cacheFullPath,SFileConfig.REPO_UNKNOW);
             } else {
                 //下载完成后 再保存到资料库
                 downloadFile(url, cacheFullPath, loadingDownloadListener = new LoadingDownloadListener() {
@@ -180,7 +186,7 @@ public class ImageViewBaseActivity extends BaseUmengActivity {
                     protected void completed(BaseDownloadTask task) {
                         super.completed(task);
                         if (task != null) {
-                            shareImport2repo(task.getPath());
+                            shareImport2repo(task.getPath(),SFileConfig.REPO_UNKNOW);
                         }
                     }
                 });
@@ -235,7 +241,7 @@ public class ImageViewBaseActivity extends BaseUmengActivity {
     /**
      * 保存到我的文档
      */
-    private void shareImport2repo(String localFilePath) {
+    private void shareImport2repo(String localFilePath, @SFileConfig.REPO_TYPE int repoType) {
         String tag = FolderTargetListDialogFragment.class.getSimpleName();
         FragmentTransaction mFragTransaction = getSupportFragmentManager().beginTransaction();
         Fragment fragment = getSupportFragmentManager().findFragmentByTag(tag);
@@ -244,7 +250,7 @@ public class ImageViewBaseActivity extends BaseUmengActivity {
         }
         FolderTargetListDialogFragment.newInstance(
                 Const.FILE_ACTION_ADD,
-                SFileConfig.REPO_MINE,
+                repoType,
                 null,
                 null,
                 null,
@@ -263,7 +269,7 @@ public class ImageViewBaseActivity extends BaseUmengActivity {
     protected final void shareHttpFile2Project(String url, final String cacheFullPath) {
         if (checkAcessFilePermission()) {
             if (isFileExists(cacheFullPath)) {
-                shareImport2Project(cacheFullPath);
+                shareImport2repo(cacheFullPath,SFileConfig.REPO_PROJECT);
             } else {
                 //下载完成后 再保存到资料库
                 downloadFile(url,
@@ -272,7 +278,7 @@ public class ImageViewBaseActivity extends BaseUmengActivity {
                             @Override
                             protected void completed(BaseDownloadTask task) {
                                 super.completed(task);
-                                shareImport2Project(cacheFullPath);
+                                shareImport2repo(cacheFullPath,SFileConfig.REPO_PROJECT);
                             }
                         });
             }
@@ -281,19 +287,6 @@ public class ImageViewBaseActivity extends BaseUmengActivity {
         }
     }
 
-    /**
-     * 保存到项目
-     */
-    private void shareImport2Project(String localFilePath) {
-        String tag = ProjectSaveFileDialogFragment.class.getSimpleName();
-        FragmentTransaction mFragTransaction = getSupportFragmentManager().beginTransaction();
-        Fragment fragment = getSupportFragmentManager().findFragmentByTag(tag);
-        if (fragment != null) {
-            mFragTransaction.remove(fragment);
-        }
-        ProjectSaveFileDialogFragment.newInstance(localFilePath, ProjectSaveFileDialogFragment.ALPHA_TYPE)
-                .show(mFragTransaction, tag);
-    }
 
     @CallSuper
     @Override

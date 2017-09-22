@@ -5,7 +5,6 @@ import android.os.Environment;
 import com.icourt.alpha.utils.FileUtils;
 
 import java.io.File;
-import java.math.BigDecimal;
 
 import static com.icourt.alpha.constants.DownloadConfig.FILE_DOWNLOAD_ROOT_DIR;
 
@@ -20,6 +19,7 @@ public class DataCleanManager {
 
     /**
      * 获取本地缓存文件
+     *
      * @param userId
      * @return
      */
@@ -34,6 +34,7 @@ public class DataCleanManager {
 
     /**
      * 获取本地缓存大小
+     *
      * @param userId
      * @return
      * @throws Exception
@@ -45,6 +46,7 @@ public class DataCleanManager {
 
     /**
      * 清除userid 用户本地缓存文件
+     *
      * @param userId
      * @return
      */
@@ -96,43 +98,4 @@ public class DataCleanManager {
         }
         return size;
     }
-
-    /**
-     * 格式化单位
-     *
-     * @param size
-     * @return
-     */
-    public static String getFormatSize(double size) {
-        double kiloByte = size / 1024;
-        if (kiloByte < 1) {
-//            return size + "Byte";
-            return "0K";
-        }
-
-        double megaByte = kiloByte / 1024;
-        if (megaByte < 1) {
-            BigDecimal result1 = new BigDecimal(Double.toString(kiloByte));
-            return result1.setScale(2, BigDecimal.ROUND_HALF_UP)
-                    .toPlainString() + "K";
-        }
-
-        double gigaByte = megaByte / 1024;
-        if (gigaByte < 1) {
-            BigDecimal result2 = new BigDecimal(Double.toString(megaByte));
-            return result2.setScale(2, BigDecimal.ROUND_HALF_UP)
-                    .toPlainString() + "M";
-        }
-
-        double teraBytes = gigaByte / 1024;
-        if (teraBytes < 1) {
-            BigDecimal result3 = new BigDecimal(Double.toString(gigaByte));
-            return result3.setScale(2, BigDecimal.ROUND_HALF_UP)
-                    .toPlainString() + "G";
-        }
-        BigDecimal result4 = new BigDecimal(teraBytes);
-        return result4.setScale(2, BigDecimal.ROUND_HALF_UP).toPlainString()
-                + "T";
-    }
-
 }
