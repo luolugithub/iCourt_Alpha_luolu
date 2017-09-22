@@ -374,7 +374,16 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
                 }
                 break;
             case R.id.titleAction:
-                TaskCreateActivity.launch(getContext(), null, null);
+                if (viewPager.getCurrentItem() == 0) {
+                    if (alltaskFragment != null
+                            && TaskAllFragment.TYPE_ALL_TASK_CALENDAR == alltaskFragment.getChildFragmentType()
+                            && alltaskFragment.currFragment != null) {
+                        TaskListCalendarFragment calendarFragment = (TaskListCalendarFragment) alltaskFragment.currFragment;
+                        TaskCreateActivity.launch(getContext(), null, calendarFragment.getSelectedDateMillis());
+                    } else {
+                        TaskCreateActivity.launch(getContext(), null, 0);
+                    }
+                }
                 break;
             case R.id.titleAction2:
                 List<String> titles = null;

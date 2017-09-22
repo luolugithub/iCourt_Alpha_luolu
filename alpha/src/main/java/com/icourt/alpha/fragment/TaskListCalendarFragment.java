@@ -24,6 +24,7 @@ import com.icourt.alpha.entity.bean.TaskEntity;
 import com.icourt.alpha.entity.event.TaskActionEvent;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
+import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.DensityUtil;
 import com.icourt.alpha.view.GestureDetectorLayout;
 import com.jeek.calendar.widget.calendar.CalendarUtils;
@@ -39,6 +40,7 @@ import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -103,6 +105,8 @@ public class TaskListCalendarFragment extends BaseFragment {
 
     private int MAXDAILYPAGE = 5000;
     private int dailyTaskPagePOS;
+
+    private long selectedDateMillis;
 
 
     public static Fragment newInstance(ArrayList<TaskEntity.TaskItemEntity> data) {
@@ -446,8 +450,14 @@ public class TaskListCalendarFragment extends BaseFragment {
 
     private void updateTitle(int year, int month, int day) {
         titleContent.setText(String.format("%s年%s月", year, month));
+        Calendar instance = Calendar.getInstance();
+        instance.set(year, month, day);
+        selectedDateMillis = instance.getTimeInMillis();
     }
 
+    public long getSelectedDateMillis() {
+        return selectedDateMillis;
+    }
 
     /**
      * 动态计算

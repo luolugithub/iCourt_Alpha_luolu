@@ -1166,7 +1166,7 @@ public abstract class ChatBaseActivity
                                     response.body().result.startTime);
                         } else {
                             TaskCreateActivity.launch(getContext(),
-                                    textContentFinal, null);
+                                    textContentFinal, 0);
                         }
                     }
 
@@ -1175,7 +1175,7 @@ public abstract class ChatBaseActivity
                         super.onFailure(call, t);
                         dismissLoadingDialog();
                         TaskCreateActivity.launch(getContext(),
-                                textContentFinal, null);
+                                textContentFinal, 0);
                     }
 
                     @Override

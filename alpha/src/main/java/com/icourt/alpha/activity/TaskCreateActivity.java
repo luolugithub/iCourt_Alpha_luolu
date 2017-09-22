@@ -68,7 +68,7 @@ import static com.icourt.alpha.base.BaseDialogFragment.KEY_FRAGMENT_RESULT;
  */
 public class TaskCreateActivity extends BaseActivity implements ProjectSelectDialogFragment.OnProjectTaskGroupSelectListener, OnFragmentCallBackListener, BaseRecyclerAdapter.OnItemClickListener {
 
-    String content, startTime;
+
     @BindView(R.id.titleBack)
     CheckedTextView titleBack;
     @BindView(R.id.titleContent)
@@ -97,6 +97,7 @@ public class TaskCreateActivity extends BaseActivity implements ProjectSelectDia
     LinearLayout owerLayout;
 
     List<TaskEntity.TaskItemEntity.AttendeeUserEntity> attendeeUserEntities = new ArrayList<>();
+    String content;
     String projectId, taskGroupId;
     long dueTime;
     TaskUsersAdapter usersAdapter;
@@ -113,6 +114,14 @@ public class TaskCreateActivity extends BaseActivity implements ProjectSelectDia
         Intent intent = new Intent(context, TaskCreateActivity.class);
         intent.putExtra("content", content);
         intent.putExtra("startTime", startTime);
+        context.startActivity(intent);
+    }
+
+    public static void launch(@NonNull Context context, @NonNull String content, long dueTime) {
+        if (context == null) return;
+        Intent intent = new Intent(context, TaskCreateActivity.class);
+        intent.putExtra("content", content);
+        intent.putExtra("dueTime", dueTime);
         context.startActivity(intent);
     }
 
@@ -144,7 +153,8 @@ public class TaskCreateActivity extends BaseActivity implements ProjectSelectDia
         super.initView();
         setTitle("新建任务");
         content = getIntent().getStringExtra("content");
-        startTime = getIntent().getStringExtra("startTime");
+//        startTime = getIntent().getStringExtra("startTime");
+        dueTime = getIntent().getLongExtra("dueTime", 0);
         projectId = getIntent().getStringExtra("projectId");
         projectName = getIntent().getStringExtra("projectName");
         if (!TextUtils.isEmpty(content)) {
@@ -156,9 +166,12 @@ public class TaskCreateActivity extends BaseActivity implements ProjectSelectDia
             }
             taskNameEt.setSelection(taskNameEt.getText().length());
         }
-        if (!TextUtils.isEmpty(startTime)) {
-            taskDuetimeTv.setText(startTime);
+        if (dueTime > 0) {
+            setDueTime();
         }
+//        if (!TextUtils.isEmpty(startTime)) {
+//            taskDuetimeTv.setText(startTime);
+//        }
         if (!TextUtils.isEmpty(projectName)) {
             projectNameTv.setText(projectName);
         }
@@ -298,16 +311,7 @@ public class TaskCreateActivity extends BaseActivity implements ProjectSelectDia
         if (params != null) {
             if (fragment instanceof DateSelectDialogFragment) {
                 dueTime = params.getLong(KEY_FRAGMENT_RESULT);
-                Calendar calendar = Calendar.getInstance();
-                calendar.setTimeInMillis(dueTime);
-                int hour = calendar.get(Calendar.HOUR_OF_DAY);
-                int minute = calendar.get(Calendar.MINUTE);
-                int second = calendar.get(Calendar.SECOND);
-                if ((hour == 23 && minute == 59 && second == 59) || (hour == 0 && minute == 0)) {
-                    taskDuetimeTv.setText(String.format("%s(%s)", DateUtils.getMMMdd(dueTime), DateUtils.getWeekOfDateFromZ(dueTime)));
-                } else {
-                    taskDuetimeTv.setText(String.format("%s(%s)%s", DateUtils.getMMMdd(dueTime), DateUtils.getWeekOfDateFromZ(dueTime), DateUtils.getHHmm(dueTime)));
-                }
+                setDueTime();
                 taskReminderEntity = (TaskReminderEntity) params.getSerializable("taskReminder");
 
             } else if (fragment instanceof TaskAllotSelectDialogFragment) {
@@ -324,6 +328,22 @@ public class TaskCreateActivity extends BaseActivity implements ProjectSelectDia
                     }
                 }
             }
+        }
+    }
+
+    /**
+     * 设置到期时间
+     */
+    private void setDueTime() {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(dueTime);
+        int hour = calendar.get(Calendar.HOUR_OF_DAY);
+        int minute = calendar.get(Calendar.MINUTE);
+        int second = calendar.get(Calendar.SECOND);
+        if ((hour == 23 && minute == 59 && second == 59) || (hour == 0 && minute == 0)) {
+            taskDuetimeTv.setText(String.format("%s(%s)", DateUtils.getMMMdd(dueTime), DateUtils.getWeekOfDateFromZ(dueTime)));
+        } else {
+            taskDuetimeTv.setText(String.format("%s(%s)%s", DateUtils.getMMMdd(dueTime), DateUtils.getWeekOfDateFromZ(dueTime), DateUtils.getHHmm(dueTime)));
         }
     }
 
