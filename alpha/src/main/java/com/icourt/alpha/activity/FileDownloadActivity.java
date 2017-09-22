@@ -30,6 +30,8 @@ import com.icourt.alpha.entity.bean.ISeaFile;
 import com.icourt.alpha.fragment.dialogfragment.ContactShareDialogFragment;
 import com.icourt.alpha.fragment.dialogfragment.FileDetailDialogFragment;
 import com.icourt.alpha.fragment.dialogfragment.ProjectSaveFileDialogFragment;
+import com.icourt.alpha.http.HttpThrowableUtils;
+import com.icourt.alpha.http.IDefNotify;
 import com.icourt.alpha.http.callback.SFileCallBack;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
@@ -154,7 +156,12 @@ public class FileDownloadActivity extends BaseActivity {
         @Override
         protected void error(BaseDownloadTask task, Throwable e) {
             log("------------->下载异常:" + StringUtils.throwable2string(e));
-            showTopSnackBar(String.format("下载异常!" + StringUtils.throwable2string(e)));
+            HttpThrowableUtils.handleHttpThrowable(new IDefNotify() {
+                @Override
+                public void defNotify(String noticeStr) {
+                    showTopSnackBar(noticeStr);
+                }
+            }, e);
             bugSync("下载异常", e);
         }
 

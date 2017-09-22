@@ -15,6 +15,8 @@ import com.icourt.alpha.entity.bean.ISeaFile;
 import com.icourt.alpha.fragment.dialogfragment.ContactShareDialogFragment;
 import com.icourt.alpha.fragment.dialogfragment.FolderTargetListDialogFragment;
 import com.icourt.alpha.fragment.dialogfragment.ProjectSaveFileDialogFragment;
+import com.icourt.alpha.http.HttpThrowableUtils;
+import com.icourt.alpha.http.IDefNotify;
 import com.icourt.alpha.utils.FileUtils;
 import com.icourt.alpha.utils.StringUtils;
 import com.liulishuo.filedownloader.BaseDownloadTask;
@@ -70,9 +72,14 @@ public class ImageViewBaseActivity extends BaseUmengActivity {
         protected void error(BaseDownloadTask task, Throwable e) {
             super.error(task, e);
             dismissLoadingDialog();
+            HttpThrowableUtils.handleHttpThrowable(new IDefNotify() {
+                @Override
+                public void defNotify(String noticeStr) {
+                    showTopSnackBar(noticeStr);
+                }
+            }, e);
             log("----------->图片下载异常:" + StringUtils.throwable2string(e));
             bugSync("下载异常", e);
-            showTopSnackBar(String.format("下载异常!" + StringUtils.throwable2string(e)));
         }
 
         @CallSuper
