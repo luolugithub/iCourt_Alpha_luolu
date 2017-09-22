@@ -54,6 +54,7 @@ import butterknife.OnClick;
 import retrofit2.Call;
 import retrofit2.Response;
 
+import static com.icourt.alpha.constants.SFileConfig.FILE_FROM_TASK;
 import static com.icourt.alpha.constants.SFileConfig.PERMISSION_RW;
 
 /**
@@ -401,6 +402,10 @@ public class FileDownloadActivity extends BaseActivity {
         ArrayList<String> menus = new ArrayList<>(Arrays.asList(getString(R.string.sfile_file_details), "转发给同事", "保存到项目资料库", "用其他应用打开"));
         if (TextUtils.equals(iSeaFile.getSeaFilePermission(), PERMISSION_RW)) {
             menus.add(getString(R.string.str_delete));
+        }
+        //任务附件 暂时不要文件详情
+        if (fileFrom == FILE_FROM_TASK) {
+            menus.remove(getString(R.string.sfile_file_details));
         }
         new BottomActionDialog(getContext(),
                 null,

@@ -365,9 +365,8 @@ public class ImageViewerActivity extends ImageViewBaseActivity {
         if (TextUtils.equals(item.getSeaFilePermission(), PERMISSION_RW)) {//有删除的权限
             menus.add(getString(R.string.str_delete));
         }
-        //任务附件 与项目文档下面 暂时不要文件详情
-        if (fileFrom == SFileConfig.FILE_FROM_TASK
-                || fileFrom == SFileConfig.FILE_FROM_PROJECT) {
+        //任务附件 暂时不要文件详情
+        if (fileFrom == SFileConfig.FILE_FROM_TASK) {
             menus.remove(getString(R.string.sfile_file_details));
         }
         new BottomActionDialog(getContext(),
