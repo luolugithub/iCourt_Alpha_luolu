@@ -104,6 +104,9 @@ public class SeaFileSelectDialogFragment extends BaseDialogFragment
     TextView contentEmptyText;
     @BindView(R.id.panel_indicator)
     ImageView panelIndicator;
+    @BindView(R.id.bottom_action_view)
+    LinearLayout bottomActionView;
+    private SlidingUpPanelLayout.SimplePanelSlideListener simplePanelSlideListener;
 
     public static SeaFileSelectDialogFragment newInstance(@NonNull String taskId,
                                                           @Nullable String projectId,
@@ -258,10 +261,31 @@ public class SeaFileSelectDialogFragment extends BaseDialogFragment
         }
     }
 
+
+
+    private void showPanel(final boolean isShow) {
+        slidingLayout.removePanelSlideListener(simplePanelSlideListener);
+        slidingLayout.addPanelSlideListener(simplePanelSlideListener = new SlidingUpPanelLayout.SimplePanelSlideListener() {
+            @Override
+            public void onPanelStateChanged(View panel, SlidingUpPanelLayout.PanelState previousState, SlidingUpPanelLayout.PanelState newState) {
+                if (newState == SlidingUpPanelLayout.PanelState.COLLAPSED) {
+                    bottomActionView.setVisibility(View.VISIBLE);
+                    dragView.setVisibility(View.VISIBLE);
+                } else if (newState == SlidingUpPanelLayout.PanelState.HIDDEN) {
+                    dragView.setVisibility(View.GONE);
+                    bottomActionView.setVisibility(View.GONE);
+                }
+                //panelIndicator.setImageResource(newState == SlidingUpPanelLayout.PanelState.EXPANDED ? R.mipmap.panel_close : R.mipmap.panel_open);
+            }
+        });
+        slidingLayout.setPanelState(isShow ? SlidingUpPanelLayout.PanelState.COLLAPSED : SlidingUpPanelLayout.PanelState.HIDDEN);
+    }
+
     /**
      * 替换资料库类型界面
      */
     private void replaceRepoTypeFragment() {
+        showPanel(false);
         this.iSeaFileSelectParams = null;
         dirPathTitleLayout.setVisibility(View.GONE);
         currFragment = addOrShowFragment(
@@ -477,6 +501,7 @@ public class SeaFileSelectDialogFragment extends BaseDialogFragment
      * 替换资料库选择页面
      */
     private void replaceRepoListFragmemt() {
+        showPanel(false);
         dirPathTitleLayout.setVisibility(View.VISIBLE);
         this.iSeaFileSelectParams = null;
         foldrParentTv.setText(selectRepoTypeEntity.title);
@@ -490,6 +515,7 @@ public class SeaFileSelectDialogFragment extends BaseDialogFragment
      * 替换文档目录视图
      */
     private void replaceFolderFragment(SeaFileSelectParam iSeaFileSelectParams) {
+        showPanel(true);
         this.iSeaFileSelectParams = iSeaFileSelectParams;
         dirPathTitleLayout.setVisibility(View.VISIBLE);
         if (canBack2ParentDir()) {
