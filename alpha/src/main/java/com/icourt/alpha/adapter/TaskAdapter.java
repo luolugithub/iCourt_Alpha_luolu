@@ -6,6 +6,7 @@ import android.text.TextUtils;
 import android.view.View;
 import android.widget.CheckedTextView;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.chad.library.adapter.base.BaseMultiItemQuickAdapter;
@@ -13,6 +14,7 @@ import com.chad.library.adapter.base.BaseViewHolder;
 import com.icourt.alpha.R;
 import com.icourt.alpha.entity.bean.TaskEntity;
 import com.icourt.alpha.utils.DateUtils;
+import com.icourt.alpha.utils.DensityUtil;
 import com.icourt.alpha.utils.LogUtils;
 import com.icourt.alpha.widget.manager.TimerManager;
 
@@ -67,6 +69,10 @@ public class TaskAdapter extends BaseMultiItemQuickAdapter<TaskEntity.TaskItemEn
         TextView checkListView = baseViewHolder.getView(R.id.task_check_list_tv);
         TextView documentNumView = baseViewHolder.getView(R.id.task_file_num_tv);
         TextView commentNumView = baseViewHolder.getView(R.id.task_comment_num_tv);
+
+        LinearLayout parentLayout = baseViewHolder.getView(R.id.item_bottom_parent_layout);
+        LinearLayout otherLayout = baseViewHolder.getView(R.id.item_bottom_other_layout);
+
         RecyclerView recyclerView = baseViewHolder.getView(R.id.tasl_member_recyclerview);
 
         taskNameView.setText(taskItemEntity.name);
@@ -110,6 +116,12 @@ public class TaskAdapter extends BaseMultiItemQuickAdapter<TaskEntity.TaskItemEn
         } else {
             recyclerView.setVisibility(View.VISIBLE);
         }
+        //动态计算任务底部宽度，是否显示负责人头像： 暂时不做
+//        if (isShowUserRecyclerView(parentLayout,otherLayout,recyclerView)) {
+//            recyclerView.setVisibility(View.VISIBLE);
+//        } else {
+//            recyclerView.setVisibility(View.INVISIBLE);
+//        }
         String timerTaskid = TimerManager.getInstance().getTimerTaskId();
         taskItemEntity.isTiming = !TextUtils.isEmpty(timerTaskid) && TextUtils.equals(timerTaskid, taskItemEntity.id);
         startTimmingViewSelect(startTimmingView, taskItemEntity.isTiming);
@@ -124,6 +136,24 @@ public class TaskAdapter extends BaseMultiItemQuickAdapter<TaskEntity.TaskItemEn
 
         baseViewHolder.addOnClickListener(R.id.task_item_checkbox);
         baseViewHolder.addOnClickListener(R.id.task_item_start_timming);
+    }
+
+    /**
+     * 动态计算任务底部宽度，是否显示负责人头像： 暂时不做
+     * @param parentLayout
+     * @param otherLayout
+     * @param recyclerView
+     * @return
+     */
+    private boolean isShowUserRecyclerView(LinearLayout parentLayout, LinearLayout otherLayout, RecyclerView recyclerView) {
+        if (recyclerView == null) return false;
+        if (recyclerView.getAdapter() == null) return false;
+        int itemCount = recyclerView.getAdapter().getItemCount();
+        int parentWidth = parentLayout.getWidth();
+        int otherWidth = otherLayout.getWidth();
+
+        int recyclerViewWidth = itemCount * 26 - (itemCount - 1) * 8;
+        return (parentWidth - otherWidth - DensityUtil.dip2px(recyclerView.getContext(), 5) > recyclerViewWidth);
     }
 
     /**
