@@ -217,28 +217,15 @@ public class FileVersionListFragment extends SeaFileBaseFragment implements Base
         unbinder.unbind();
     }
 
-    private String getFileName() {
-        String string = fromRepoFilePath;
-        if (!TextUtils.isEmpty(string)) {
-            String[] split = string.split("/");
-            if (split != null && split.length > 0) {
-                return split[split.length - 1];
-            }
-        }
-        return string;
-    }
 
     @Override
     public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
         FileVersionEntity item = fileVersionAdapter.getItem(position);
         if (item == null) return;
+        item.seaFileFullPath=fromRepoFilePath;
         FileDownloadActivity.launch(
                 getContext(),
-                item.repo_id,
-                getFileName(),
-                item.rev_file_size,
-                fromRepoFilePath,
-                item.id,
+                item,
                 FileDownloadActivity.FILE_FROM_REPO);
     }
 

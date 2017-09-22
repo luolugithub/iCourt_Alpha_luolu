@@ -210,7 +210,7 @@ public class FileTrashListFragment extends SeaFileBaseFragment
                     String.format("%s%s", item.parent_dir, item.name),
                     item.commit_id);
         }
-        showLoadingDialog(R.string.sfile_recovering);
+        showLoadingDialog(R.string.str_executing);
         callEnqueue(jsonObjectCall,
                 new SFileCallBack<JsonObject>() {
                     @Override

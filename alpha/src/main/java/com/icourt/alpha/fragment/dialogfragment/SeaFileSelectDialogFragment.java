@@ -191,7 +191,7 @@ public class SeaFileSelectDialogFragment extends BaseDialogFragment
         slidingLayout.addPanelSlideListener(new SlidingUpPanelLayout.SimplePanelSlideListener() {
             @Override
             public void onPanelStateChanged(View panel, SlidingUpPanelLayout.PanelState previousState, SlidingUpPanelLayout.PanelState newState) {
-                panelIndicator.setImageResource(newState == SlidingUpPanelLayout.PanelState.EXPANDED ? R.mipmap.panel_close : R.mipmap.panel_open);
+                //panelIndicator.setImageResource(newState == SlidingUpPanelLayout.PanelState.EXPANDED ? R.mipmap.panel_close : R.mipmap.panel_open);
             }
         });
 

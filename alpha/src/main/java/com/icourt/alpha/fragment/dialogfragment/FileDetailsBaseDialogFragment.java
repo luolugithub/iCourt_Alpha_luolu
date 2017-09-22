@@ -32,6 +32,7 @@ import butterknife.Unbinder;
  * version 2.1.0
  */
 public class FileDetailsBaseDialogFragment extends BaseDialogFragment {
+    protected static final String KEY_SEA_FILE_FROM_REPO_TYPE = "seaFileFromRepoType";//原仓库类型
     protected static final String KEY_SEA_FILE_FROM_REPO_ID = "seaFileFromRepoId";//原仓库id
     protected static final String KEY_SEA_FILE_DIR_PATH = "seaFileDirPath";//原文件目录
     protected static final String KEY_SEA_FILE_REPO_PERMISSION = "seaFileRepoPermission";//repo的权限
@@ -91,6 +92,16 @@ public class FileDetailsBaseDialogFragment extends BaseDialogFragment {
     protected String getRepoPermission() {
         String stringPermission = getArguments().getString(KEY_SEA_FILE_REPO_PERMISSION, "");
         return SFileConfig.convert2filePermission(stringPermission);
+    }
+
+    /**
+     * 获取资料库类型
+     *
+     * @return
+     */
+    @SFileConfig.REPO_TYPE
+    protected int getRepoType() {
+        return SFileConfig.convert2RepoType(getArguments().getInt(KEY_SEA_FILE_FROM_REPO_TYPE));
     }
 
     @OnClick({R.id.titleAction})

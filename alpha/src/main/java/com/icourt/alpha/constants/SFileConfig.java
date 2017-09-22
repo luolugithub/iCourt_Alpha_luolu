@@ -28,6 +28,7 @@ public class SFileConfig {
     public static final int REPO_SHARED_ME = 1;
     public static final int REPO_LAWFIRM = 2;
     public static final int REPO_PROJECT = 3;
+    public static final int REPO_UNKNOW = -1;//不明确类型的
     public static Map<String, Integer> resourcesDocumentIcon = new HashMap<String, Integer>() {
         {
             put("doc", R.mipmap.filetype_doc);
@@ -81,7 +82,8 @@ public class SFileConfig {
     @IntDef({REPO_MINE,
             REPO_SHARED_ME,
             REPO_LAWFIRM,
-            REPO_PROJECT})
+            REPO_PROJECT,
+            REPO_UNKNOW})
     @Retention(RetentionPolicy.SOURCE)
     public @interface REPO_TYPE {
 
@@ -104,8 +106,10 @@ public class SFileConfig {
                 return REPO_LAWFIRM;
             case REPO_PROJECT:
                 return REPO_PROJECT;
+            case REPO_UNKNOW:
+                return REPO_UNKNOW;
             default:
-                return REPO_MINE;
+                return REPO_UNKNOW;
         }
     }
 

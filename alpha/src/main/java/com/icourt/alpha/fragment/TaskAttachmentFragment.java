@@ -19,6 +19,7 @@ import android.widget.TextView;
 import com.google.gson.JsonElement;
 import com.icourt.alpha.R;
 import com.icourt.alpha.activity.FileDownloadActivity;
+import com.icourt.alpha.activity.ImageViewerActivity;
 import com.icourt.alpha.adapter.TaskAttachmentAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.HeaderFooterAdapter;
@@ -33,7 +34,7 @@ import com.icourt.alpha.http.observer.BaseObserver;
 import com.icourt.alpha.interfaces.OnDialogFragmentDismissListener;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.interfaces.OnUpdateTaskListener;
-import com.icourt.alpha.utils.FileUtils;
+import com.icourt.alpha.utils.IMUtils;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.utils.UriUtils;
 import com.icourt.alpha.widget.dialog.BottomActionDialog;
@@ -215,6 +216,14 @@ public class TaskAttachmentFragment extends SeaFileBaseFragment
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+        if (hasLookAttachmentPermission) {
+            getData(true);
+        }
+    }
+
+    @Override
     protected void getData(boolean isRefresh) {
         super.getData(isRefresh);
         callEnqueue(
@@ -222,6 +231,17 @@ public class TaskAttachmentFragment extends SeaFileBaseFragment
                 new SimpleCallBack<List<TaskAttachmentEntity>>() {
                     @Override
                     public void onSuccess(Call<ResEntity<List<TaskAttachmentEntity>>> call, Response<ResEntity<List<TaskAttachmentEntity>>> response) {
+                        if (response.body().result != null) {
+                            //填充文件权限
+                            // 暂时先不做 ，删除seafile文件 任务附件的大小变成0kb 没有消失
+                         /*   for (TaskAttachmentEntity taskAttachmentEntity : response.body().result) {
+                                if (taskAttachmentEntity == null) continue;
+                                if (TextUtils.isEmpty(taskAttachmentEntity.filePermission)) {
+                                    taskAttachmentEntity.filePermission =
+                                            hasDeleteAttachmentPermission ? PERMISSION_RW : PERMISSION_R;
+                                }
+                            }*/
+                        }
                         taskAttachmentAdapter.bindData(true, response.body().result);
                     }
                 });
@@ -383,14 +403,30 @@ public class TaskAttachmentFragment extends SeaFileBaseFragment
         TaskAttachmentEntity item = taskAttachmentAdapter.getItem(position);
         if (item == null) return;
         if (item.pathInfoVo == null) return;
-        FileDownloadActivity.launch(
-                getContext(),
-                item.pathInfoVo.repoId,
-                FileUtils.getFileName(item.pathInfoVo.filePath),
-                item.fileSize,
-                item.pathInfoVo.filePath,
-                null,
-                FileDownloadActivity.FILE_FROM_TASK);
+        //图片 直接预览
+        if (IMUtils.isPIC(item.getSeaFileFullPath())) {
+            List<TaskAttachmentEntity> allData = taskAttachmentAdapter.getData();
+
+            ArrayList<TaskAttachmentEntity> imageDatas = new ArrayList<>();
+            for (int i = 0; i < allData.size(); i++) {
+                TaskAttachmentEntity folderDocumentEntity = allData.get(i);
+                if (folderDocumentEntity == null) continue;
+                if (IMUtils.isPIC(folderDocumentEntity.getSeaFileFullPath())) {
+                    imageDatas.add(folderDocumentEntity);
+                }
+            }
+
+            int indexOf = imageDatas.indexOf(item);
+            ImageViewerActivity.launch(
+                    getContext(),
+                    imageDatas,
+                    indexOf);
+        } else {
+            FileDownloadActivity.launch(
+                    getContext(),
+                    item,
+                    FileDownloadActivity.FILE_FROM_TASK);
+        }
     }
 
 
