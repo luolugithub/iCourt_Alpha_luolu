@@ -361,13 +361,47 @@ public class ImageViewerActivity extends ImageViewBaseActivity {
         //使用原图
         final String originalImageUrl = imagePagerAdapter.getOriginalImageUrl(item);
         final String picSavePath = getPicSavePath(item);
-        ArrayList<String> menus = new ArrayList<>(Arrays.asList(getString(R.string.sfile_file_details), "保存图片", "转发给同事", "分享", "保存到项目资料库"));
+        ArrayList<String> menus = new ArrayList<>();
         if (TextUtils.equals(item.getSeaFilePermission(), PERMISSION_RW)) {//有删除的权限
-            menus.add(getString(R.string.str_delete));
-        }
-        //任务附件 暂时不要文件详情
-        if (fileFrom == SFileConfig.FILE_FROM_TASK) {
-            menus.remove(getString(R.string.sfile_file_details));
+            if (fileFrom == SFileConfig.FILE_FROM_TASK) {
+                //任务附件 暂时不要文件详情
+                menus.addAll(
+                        Arrays.asList(
+                                "转发给同事",
+                                "分享",
+                                "保存图片",
+                                "保存到文档",
+                                getString(R.string.str_delete)));
+            } else {
+                menus.addAll(
+                        Arrays.asList(
+                                getString(R.string.sfile_file_details),
+                                "转发给同事",
+                                "分享",
+                                "保存图片",
+                                "保存到项目",
+                                getString(R.string.str_delete)));
+            }
+        } else {
+            if (fileFrom == SFileConfig.FILE_FROM_TASK) {
+                //任务附件 暂时不要文件详情
+                //任务附件 暂时不要文件详情
+                menus.addAll(
+                        Arrays.asList(
+                                "转发给同事",
+                                "分享",
+                                "保存图片",
+                                "保存到文档"));
+            } else {
+                menus.addAll(
+                        Arrays.asList(
+                                getString(R.string.sfile_file_details),
+                                "转发给同事",
+                                "分享",
+                                "保存图片",
+                                "保存到项目"));
+            }
+
         }
         new BottomActionDialog(getContext(),
                 null,
@@ -394,8 +428,10 @@ public class ImageViewerActivity extends ImageViewBaseActivity {
                             shareHttpFile2Friends(originalImageUrl, picSavePath);
                         } else if (TextUtils.equals(action, "分享")) {
                             shareHttpFile(originalImageUrl, picSavePath);
-                        } else if (TextUtils.equals(action, "保存到项目资料库")) {
+                        } else if (TextUtils.equals(action, "保存到项目")) {
                             shareHttpFile2Project(originalImageUrl, picSavePath);
+                        } else if (TextUtils.equals(action, "保存到文档")) {
+                            shareHttpFile2repo(originalImageUrl, picSavePath);
                         } else if (TextUtils.equals(action, getString(R.string.str_delete))) {
                             showDeleteConfirmDialog();
                         }

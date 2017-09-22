@@ -41,6 +41,11 @@ import retrofit2.Response;
 import static com.icourt.alpha.constants.Const.FILE_ACTION_ADD;
 import static com.icourt.alpha.constants.Const.FILE_ACTION_COPY;
 import static com.icourt.alpha.constants.Const.FILE_ACTION_MOVE;
+import static com.icourt.alpha.constants.SFileConfig.REPO_LAWFIRM;
+import static com.icourt.alpha.constants.SFileConfig.REPO_MINE;
+import static com.icourt.alpha.constants.SFileConfig.REPO_PROJECT;
+import static com.icourt.alpha.constants.SFileConfig.REPO_SHARED_ME;
+import static com.icourt.alpha.constants.SFileConfig.REPO_UNKNOW;
 
 /**
  * Description  文件移动copy目标路径
@@ -192,7 +197,7 @@ public class FolderTargetListDialogFragment
      * @return
      */
     protected String getSeaFileDstDirPath() {
-        return getArguments().getString(KEY_SEA_FILE_DST_DIR_PATH, "");
+        return getArguments().getString(KEY_SEA_FILE_DST_DIR_PATH, "/");
     }
 
 
@@ -242,8 +247,10 @@ public class FolderTargetListDialogFragment
             }
         }
         //没有拷贝目标仓库
-        if (TextUtils.isEmpty(getSeaFileDstRepoId())) {
+        if (SFileConfig.convert2RepoType(getArguments().getInt(KEY_REPO_TYPE)) == SFileConfig.REPO_UNKNOW) {
             replaceRepoTypeFragment();
+        } else if (TextUtils.isEmpty(getSeaFileDstRepoId())) {
+            replaceRepoListFragmemt();
         } else {
             replaceFolderFragmemt(
                     getSeaFileDstRepoId(),
@@ -392,7 +399,23 @@ public class FolderTargetListDialogFragment
     private void replaceRepoListFragmemt() {
         updateTargetRepo(null, null);
         dirPathTitleLayout.setVisibility(View.VISIBLE);
-
+        switch (SFileConfig.convert2RepoType(getArguments().getInt(KEY_REPO_TYPE))) {
+            case REPO_MINE:
+                foldrParentTv.setText("我的资料库");
+                break;
+            case REPO_SHARED_ME:
+                foldrParentTv.setText("共享给我的资料库");
+                break;
+            case REPO_LAWFIRM:
+                foldrParentTv.setText("律所资料库");
+                break;
+            case REPO_PROJECT:
+                foldrParentTv.setText("项目资料库");
+                break;
+            case REPO_UNKNOW:
+                foldrParentTv.setText("");
+                break;
+        }
         currFragment = addOrShowFragment(
                 RepoSelectListFragment.newInstance(SFileConfig.convert2RepoType(getArguments().getInt(KEY_REPO_TYPE)), true),
                 currFragment,
