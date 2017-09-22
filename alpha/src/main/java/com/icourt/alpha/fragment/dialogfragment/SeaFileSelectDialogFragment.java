@@ -42,6 +42,7 @@ import com.icourt.alpha.http.callback.SimpleCallBack2;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.interfaces.OnSeaFileSelectListener;
+import com.icourt.alpha.utils.DensityUtil;
 import com.icourt.api.RequestUtils;
 import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 
@@ -262,7 +263,6 @@ public class SeaFileSelectDialogFragment extends BaseDialogFragment
     }
 
 
-
     private void showPanel(final boolean isShow) {
         slidingLayout.removePanelSlideListener(simplePanelSlideListener);
         slidingLayout.addPanelSlideListener(simplePanelSlideListener = new SlidingUpPanelLayout.SimplePanelSlideListener() {
@@ -271,9 +271,11 @@ public class SeaFileSelectDialogFragment extends BaseDialogFragment
                 if (newState == SlidingUpPanelLayout.PanelState.COLLAPSED) {
                     bottomActionView.setVisibility(View.VISIBLE);
                     dragView.setVisibility(View.VISIBLE);
+                    mainFlContent.setPadding(0, 0, 0, DensityUtil.dip2px(getContext(), 25));
                 } else if (newState == SlidingUpPanelLayout.PanelState.HIDDEN) {
                     dragView.setVisibility(View.GONE);
                     bottomActionView.setVisibility(View.GONE);
+                    mainFlContent.setPadding(0, 0, 0, 0);
                 }
                 //panelIndicator.setImageResource(newState == SlidingUpPanelLayout.PanelState.EXPANDED ? R.mipmap.panel_close : R.mipmap.panel_open);
             }
