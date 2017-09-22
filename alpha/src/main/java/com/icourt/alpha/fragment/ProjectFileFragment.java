@@ -47,6 +47,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -380,6 +381,7 @@ public class ProjectFileFragment extends SeaFileBaseFragment
      */
     private void sortFile(List<FolderDocumentEntity> datas) {
         seaFileSort(fileSortType, datas)
+                .delay(500, TimeUnit.MILLISECONDS)
                 .compose(this.<List<FolderDocumentEntity>>bindToLifecycle())
                 .subscribeOn(Schedulers.newThread())
                 .observeOn(AndroidSchedulers.mainThread())
