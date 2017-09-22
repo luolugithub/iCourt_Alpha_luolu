@@ -173,7 +173,7 @@ public class TabMineFragment extends BaseFragment {
                     userNameTv.setText(alphaUserInfo.getName());
 //                officeNameTv.setText(getUserGroup(alphaUserInfo.getGroups()));
                     try {
-                        myCenterClearCacheTextview.setText(DataCleanManager.getTotalCacheSize(getContext()));
+                        myCenterClearCacheTextview.setText(DataCleanManager.getTotalCacheSize(getLoginUserId()));
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -276,7 +276,7 @@ public class TabMineFragment extends BaseFragment {
                         .setPositiveButton("确定", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-                                DataCleanManager.clearAllCache(getActivity());
+                                DataCleanManager.clearAllCache(getLoginUserId());
                                 myCenterClearCacheTextview.setText("0K");
                                 showTopSnackBar(R.string.my_center_clear_cache_succee_text);
                             }
