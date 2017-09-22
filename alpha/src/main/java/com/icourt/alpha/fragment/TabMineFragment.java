@@ -277,7 +277,7 @@ public class TabMineFragment extends BaseFragment {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                                 DataCleanManager.clearAllCache(getLoginUserId());
-                                myCenterClearCacheTextview.setText("0K");
+                                myCenterClearCacheTextview.setText("0B");
                                 showTopSnackBar(R.string.my_center_clear_cache_succee_text);
                             }
                         }).setNegativeButton("取消", null)
