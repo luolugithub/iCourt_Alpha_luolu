@@ -260,6 +260,22 @@ public class TaskAttachmentFragment extends SeaFileBaseFragment
     }
 
     @Override
+    public void notifyFragmentUpdate(Fragment targetFrgament, int type, Bundle bundle) {
+        if (targetFrgament instanceof TaskAttachmentFragment) {
+            if (type == 100 && bundle != null) {
+                boolean isFinish = bundle.getBoolean("isFinish");
+                boolean valid = bundle.getBoolean("valid");
+                if (footerAddView != null)
+                    footerAddView.setVisibility(!isFinish && valid ? View.VISIBLE : View.GONE);
+                if (isFinish || !valid) {
+                    if (taskAttachmentAdapter != null)
+                        taskAttachmentAdapter.setOnItemLongClickListener(null);
+                }
+            }
+        }
+    }
+
+    @Override
     public void onDestroyView() {
         super.onDestroyView();
         unbinder.unbind();
