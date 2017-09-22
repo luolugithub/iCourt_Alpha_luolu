@@ -65,9 +65,6 @@ import okhttp3.RequestBody;
 import retrofit2.Call;
 import retrofit2.Response;
 
-import static com.icourt.alpha.constants.SFileConfig.PERMISSION_R;
-import static com.icourt.alpha.constants.SFileConfig.PERMISSION_RW;
-
 /**
  * Description  任务附件列表
  * Company Beijing icourt
@@ -236,14 +233,14 @@ public class TaskAttachmentFragment extends SeaFileBaseFragment
                     public void onSuccess(Call<ResEntity<List<TaskAttachmentEntity>>> call, Response<ResEntity<List<TaskAttachmentEntity>>> response) {
                         if (response.body().result != null) {
                             //填充文件权限
-                            for (TaskAttachmentEntity taskAttachmentEntity : response.body().result) {
+                            // 暂时先不做 ，删除seafile文件 任务附件的大小变成0kb 没有消失
+                         /*   for (TaskAttachmentEntity taskAttachmentEntity : response.body().result) {
                                 if (taskAttachmentEntity == null) continue;
                                 if (TextUtils.isEmpty(taskAttachmentEntity.filePermission)) {
                                     taskAttachmentEntity.filePermission =
                                             hasDeleteAttachmentPermission ? PERMISSION_RW : PERMISSION_R;
                                 }
-                            }
-
+                            }*/
                         }
                         taskAttachmentAdapter.bindData(true, response.body().result);
                     }

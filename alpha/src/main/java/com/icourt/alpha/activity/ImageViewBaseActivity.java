@@ -291,8 +291,8 @@ public class ImageViewBaseActivity extends BaseUmengActivity {
         if (fragment != null) {
             mFragTransaction.remove(fragment);
         }
-        mFragTransaction.add(ProjectSaveFileDialogFragment.newInstance(localFilePath, ProjectSaveFileDialogFragment.OTHER_TYPE), tag);
-        mFragTransaction.commitAllowingStateLoss();
+        ProjectSaveFileDialogFragment.newInstance(localFilePath, ProjectSaveFileDialogFragment.ALPHA_TYPE)
+                .show(mFragTransaction, tag);
     }
 
     @CallSuper
