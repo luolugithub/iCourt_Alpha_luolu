@@ -27,6 +27,7 @@ import com.icourt.alpha.adapter.baseadapter.HeaderFooterAdapter;
 import com.icourt.alpha.base.BaseAppUpdateActivity;
 import com.icourt.alpha.entity.bean.ProjectDetailEntity;
 import com.icourt.alpha.fragment.dialogfragment.ContactDialogFragment;
+import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.view.ClearEditText;
 
@@ -121,11 +122,11 @@ public class ProjectMembersActivity extends BaseAppUpdateActivity {
                     if (object instanceof ProjectDetailEntity.MembersBean) {
                         ProjectDetailEntity.MembersBean membersBean = (ProjectDetailEntity.MembersBean) object;
                         if (!TextUtils.isEmpty(membersBean.userId))
-                            showContactDialogFragment(membersBean.userId.toLowerCase(), false);
+                            showContactDialogFragment(membersBean.userId.toLowerCase());
                     } else if (object instanceof ProjectDetailEntity.AttorneysBean) {
                         ProjectDetailEntity.AttorneysBean attorneysBean = (ProjectDetailEntity.AttorneysBean) object;
                         if (!TextUtils.isEmpty(attorneysBean.attorneyPkid))
-                            showContactDialogFragment(attorneysBean.attorneyPkid.toLowerCase(), false);
+                            showContactDialogFragment(attorneysBean.attorneyPkid.toLowerCase());
                     }
                 }
             }
@@ -220,9 +221,8 @@ public class ProjectMembersActivity extends BaseAppUpdateActivity {
      * 展示联系人对话框
      *
      * @param accid
-     * @param hiddenChatBtn
      */
-    public void showContactDialogFragment(String accid, boolean hiddenChatBtn) {
+    public void showContactDialogFragment(String accid) {
         SystemUtils.hideSoftKeyBoard(this);
         String tag = ContactDialogFragment.class.getSimpleName();
         FragmentTransaction mFragTransaction = getSupportFragmentManager().beginTransaction();
@@ -230,7 +230,7 @@ public class ProjectMembersActivity extends BaseAppUpdateActivity {
         if (fragment != null) {
             mFragTransaction.remove(fragment);
         }
-        ContactDialogFragment.newInstance(accid, getString(R.string.project_member_info), hiddenChatBtn)
+        ContactDialogFragment.newInstance(accid, getString(R.string.project_member_info), StringUtils.equalsIgnoreCase(accid, getLoginUserId(), false))
                 .show(mFragTransaction, tag);
     }
 }
