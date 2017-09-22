@@ -443,9 +443,9 @@ public class TabTimingFragment extends BaseFragment implements BaseRecyclerAdapt
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.titleAction:
-                TimingSelectDialogFragment dialogFragment = new TimingSelectDialogFragment();
-                dialogFragment.show(getChildFragmentManager(), TimingSelectDialogFragment.class.getSimpleName());
-//                TimerAddActivity.launch(getContext());
+//                TimingSelectDialogFragment dialogFragment = new TimingSelectDialogFragment();
+//                dialogFragment.show(getChildFragmentManager(), TimingSelectDialogFragment.class.getSimpleName());
+                TimerAddActivity.launch(getContext());
                 break;
             default:
                 super.onClick(v);

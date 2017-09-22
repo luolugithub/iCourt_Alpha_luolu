@@ -13,6 +13,7 @@ import com.icourt.alpha.R;
 import com.icourt.alpha.base.BaseFragment;
 
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
@@ -22,6 +23,7 @@ import butterknife.ButterKnife;
 import butterknife.Unbinder;
 
 /**
+ * 计时模块时间选择器的日选择器
  * Created by zhaodanyang on 2017/9/21.
  */
 
@@ -62,6 +64,7 @@ public class TimingSelectDayFragment extends BaseFragment {
         compactcalendarView.setLocale(TimeZone.getDefault(), Locale.CHINESE);
         compactcalendarView.setUseThreeLetterAbbreviation(true);
         compactcalendarView.setDayColumnNames(new String[]{"一", "二", "三", "四", "五", "六", "日"});
+        final Calendar instance = Calendar.getInstance();
         compactcalendarView.setListener(new CompactCalendarView.CompactCalendarViewListener() {
             @Override
             public void onDayClick(Date date) {
@@ -71,8 +74,13 @@ public class TimingSelectDayFragment extends BaseFragment {
             @Override
             public void onMonthScroll(Date date) {
                 titleContent.setText(dateFormatForMonth.format(date));
+//                instance.setTime(date);
+//                if (instance.get(Calendar.YEAR) == 2017 && instance.get(Calendar.MONTH) > 8) {
+//                    compactcalendarView.showPreviousMonth();
+//                }
             }
         });
+        compactcalendarView.shouldScrollMonth(false);
         titleContent.setText(dateFormatForMonth.format(System.currentTimeMillis()));
 
         compactcalendarView.removeAllEvents();
