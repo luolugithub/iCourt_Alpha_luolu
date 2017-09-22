@@ -271,13 +271,14 @@ public class SFileSearchActivity extends BaseActivity
                 int indexOf = imageDatas.indexOf(item);
                 ImageViewerActivity.launch(
                         getContext(),
+                        SFileConfig.FILE_FROM_REPO,
                         imageDatas,
                         indexOf);
             } else {
                 FileDownloadActivity.launch(
                         getContext(),
                         item,
-                        FileDownloadActivity.FILE_FROM_REPO);
+                        SFileConfig.FILE_FROM_REPO);
             }
         }
     }

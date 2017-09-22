@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.annotation.IntDef;
 import android.support.annotation.IntRange;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -44,8 +43,6 @@ import com.liulishuo.filedownloader.FileDownloadListener;
 import com.liulishuo.filedownloader.FileDownloader;
 
 import java.io.File;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -69,21 +66,8 @@ public class FileDownloadActivity extends BaseActivity {
     private static final String KEY_SEA_FILE_FROM = "key_sea_file_from";
     private static final String KEY_SEA_FILE = "key_sea_file";
 
-    public static final int FILE_FROM_TASK = 1;         //任务下载附件
-    public static final int FILE_FROM_PROJECT = 2;      //项目下载附件
-    public static final int FILE_FROM_IM = 3;           //享聊下载附件
-    public static final int FILE_FROM_REPO = 4;         //资料库下载附件
     @BindView(R.id.download_notice_tv)
     TextView downloadNoticeTv;
-
-    @IntDef({FILE_FROM_TASK,
-            FILE_FROM_PROJECT,
-            FILE_FROM_IM,
-            FILE_FROM_REPO})
-    @Retention(RetentionPolicy.SOURCE)
-    public @interface FILE_FROM {
-    }
-
     @BindView(R.id.file_open_tv)
     TextView fileOpenTv;
     @BindView(R.id.titleBack)
@@ -113,7 +97,7 @@ public class FileDownloadActivity extends BaseActivity {
     private String fileDownloadUrl = "";//下载的地址
 
 
-    public static <T extends ISeaFile> void launch(@NonNull Context context, T seaFile, @FILE_FROM int fileFrom) {
+    public static <T extends ISeaFile> void launch(@NonNull Context context, T seaFile, @SFileConfig.FILE_FROM int fileFrom) {
         if (context == null) return;
         if (seaFile == null) return;
         Intent intent = new Intent(context, FileDownloadActivity.class);
@@ -194,7 +178,7 @@ public class FileDownloadActivity extends BaseActivity {
         super.initView();
 
         iSeaFile = (ISeaFile) getIntent().getSerializableExtra(KEY_SEA_FILE);
-        fileFrom = getIntent().getIntExtra(KEY_SEA_FILE_FROM, FILE_FROM_REPO);
+        fileFrom = getIntent().getIntExtra(KEY_SEA_FILE_FROM, SFileConfig.FILE_FROM_REPO);
         fileCachePath = buildSavePath();
 
         fileName = FileUtils.getFileName(iSeaFile.getSeaFileFullPath());
@@ -235,6 +219,7 @@ public class FileDownloadActivity extends BaseActivity {
             seaFileImages.add(iSeaFile);
             ImageViewerActivity.launch(
                     getContext(),
+                    SFileConfig.convert2FileFrom(fileFrom),
                     seaFileImages,
                     0
             );
@@ -247,7 +232,7 @@ public class FileDownloadActivity extends BaseActivity {
         super.getData(isRefresh);
         showLoadingDialog(null);
         switch (fileFrom) {
-            case FILE_FROM_IM: {//享聊的下载地址要单独获取 用资料库下载地址 提示没权限
+            case SFileConfig.FILE_FROM_IM: {//享聊的下载地址要单独获取 用资料库下载地址 提示没权限
                 callEnqueue(
                         getChatApi().fileUrlQuery(
                                 iSeaFile.getSeaFileRepoId(),

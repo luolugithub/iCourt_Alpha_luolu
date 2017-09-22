@@ -226,7 +226,7 @@ public class FileVersionListFragment extends SeaFileBaseFragment implements Base
         FileDownloadActivity.launch(
                 getContext(),
                 item,
-                FileDownloadActivity.FILE_FROM_REPO);
+                SFileConfig.FILE_FROM_REPO);
     }
 
     @Override

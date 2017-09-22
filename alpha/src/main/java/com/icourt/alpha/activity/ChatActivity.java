@@ -34,6 +34,7 @@ import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.ChatAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.constants.Const;
+import com.icourt.alpha.constants.SFileConfig;
 import com.icourt.alpha.db.convertor.IConvertModel;
 import com.icourt.alpha.db.convertor.ListConvertor;
 import com.icourt.alpha.db.dbmodel.ContactDbModel;
@@ -1554,7 +1555,7 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
                             FileDownloadActivity.launch(
                                     getContext(),
                                     item.ext,
-                                    FileDownloadActivity.FILE_FROM_IM
+                                    SFileConfig.FILE_FROM_IM
                             );
                         }
                         break;
@@ -1574,7 +1575,7 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
                                         FileDownloadActivity.launch(
                                                 getContext(),
                                                 item.ext.ext,
-                                                FileDownloadActivity.FILE_FROM_IM
+                                                SFileConfig.FILE_FROM_IM
                                         );
                                     }
                                     break;

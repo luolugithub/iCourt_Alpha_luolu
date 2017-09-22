@@ -15,6 +15,7 @@ import com.icourt.alpha.activity.ImagePagerActivity;
 import com.icourt.alpha.activity.WebViewActivity;
 import com.icourt.alpha.adapter.baseadapter.BaseArrayRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
+import com.icourt.alpha.constants.SFileConfig;
 import com.icourt.alpha.entity.bean.ChatFileInfoEntity;
 import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.icourt.alpha.entity.bean.IMMessageCustomBody;
@@ -379,7 +380,7 @@ public class ImUserMessageDetailAdapter extends BaseArrayRecyclerAdapter<IMMessa
                     FileDownloadActivity.launch(
                             view.getContext(),
                             item.ext,
-                            FileDownloadActivity.FILE_FROM_IM);
+                            SFileConfig.FILE_FROM_IM);
                 }
                 break;
         }

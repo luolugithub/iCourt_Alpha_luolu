@@ -25,6 +25,7 @@ import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.HeaderFooterAdapter;
 import com.icourt.alpha.adapter.baseadapter.adapterObserver.DataChangeAdapterObserver;
 import com.icourt.alpha.base.BaseDialogFragment;
+import com.icourt.alpha.constants.SFileConfig;
 import com.icourt.alpha.entity.bean.TaskAttachmentEntity;
 import com.icourt.alpha.entity.event.TaskActionEvent;
 import com.icourt.alpha.fragment.dialogfragment.SeaFileSelectDialogFragment;
@@ -435,13 +436,14 @@ public class TaskAttachmentFragment extends SeaFileBaseFragment
             int indexOf = imageDatas.indexOf(item);
             ImageViewerActivity.launch(
                     getContext(),
+                    SFileConfig.FILE_FROM_TASK,
                     imageDatas,
                     indexOf);
         } else {
             FileDownloadActivity.launch(
                     getContext(),
                     item,
-                    FileDownloadActivity.FILE_FROM_TASK);
+                    SFileConfig.FILE_FROM_TASK);
         }
     }
 

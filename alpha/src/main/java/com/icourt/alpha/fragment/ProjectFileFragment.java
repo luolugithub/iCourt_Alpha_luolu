@@ -527,13 +527,14 @@ public class ProjectFileFragment extends SeaFileBaseFragment
                 int indexOf = imageDatas.indexOf(item);
                 ImageViewerActivity.launch(
                         getContext(),
+                        SFileConfig.FILE_FROM_PROJECT,
                         imageDatas,
                         indexOf);
             } else {
                 FileDownloadActivity.launch(
                         getContext(),
                         item,
-                        FileDownloadActivity.FILE_FROM_PROJECT);
+                        SFileConfig.FILE_FROM_PROJECT);
             }
         }
     }
