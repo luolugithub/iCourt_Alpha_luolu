@@ -90,7 +90,7 @@ public class SetingActivity extends BaseAppUpdateActivity {
         setTitle(R.string.mine_setting);
         mShareAPI = UMShareAPI.get(getContext());
         try {
-            settingClearCacheTextview.setText(DataCleanManager.getTotalCacheSize(getContext()));
+            settingClearCacheTextview.setText(DataCleanManager.getTotalCacheSize(getLoginUserId()));
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -206,8 +206,8 @@ public class SetingActivity extends BaseAppUpdateActivity {
                         dialog.dismiss();
                         switch (position) {
                             case 0:
-                                DataCleanManager.clearAllCache(getActivity());
-                                settingClearCacheTextview.setText("0K");
+                                DataCleanManager.clearAllCache(getLoginUserId());
+                                settingClearCacheTextview.setText("0B");
                                 break;
                         }
                     }

@@ -85,6 +85,7 @@ public class WebViewActivity extends BaseActivity implements DownloadListener {
     ImageView titleAction;
     @BindView(R.id.titleView)
     AppBarLayout titleView;
+    String title;
 
     public static void launch(@NonNull Context context, String title, String url) {
         if (context == null) return;
@@ -145,6 +146,9 @@ public class WebViewActivity extends BaseActivity implements DownloadListener {
             log("-------->onPageFinished url:" + url);
             if (progressLayout != null) {
                 progressLayout.setVisibility(View.GONE);
+            }
+            if (TextUtils.equals(title, getString(R.string.mine_helper_center))) {
+                hideHelperCenterBtn(webView);
             }
             setBackForwardBtn();
         }
@@ -321,7 +325,7 @@ public class WebViewActivity extends BaseActivity implements DownloadListener {
                 .setMaxProgress(100)
                 .setLabel("下载中...");
 
-        String title = getIntent().getStringExtra(KEY_TITLE);
+        title = getIntent().getStringExtra(KEY_TITLE);
         setTitle(TextUtils.isEmpty(title) ? "Alpha" : title);
         ImageView titleActionImage = getTitleActionImage();
         if (titleActionImage != null) {
@@ -333,6 +337,7 @@ public class WebViewActivity extends BaseActivity implements DownloadListener {
         webSettings.setAppCacheEnabled(false);
         webSettings.setJavaScriptEnabled(true);
         webSettings.setUseWideViewPort(true);
+        webSettings.setLoadWithOverviewMode(true);
         webSettings.setAllowFileAccess(true);
         webSettings.setJavaScriptCanOpenWindowsAutomatically(true);
         webSettings.setDatabaseEnabled(true);
@@ -342,6 +347,24 @@ public class WebViewActivity extends BaseActivity implements DownloadListener {
         webView.setDownloadListener(this);
         progressLayout.setMaxProgress(100);
         webView.loadUrl(getIntent().getStringExtra(KEY_URL));
+    }
+
+    /**
+     * 隐藏帮助中心中的按钮（'提交问题'、'查看问题'、'退出'）
+     *
+     * @param view
+     */
+    private void hideHelperCenterBtn(final WebView view) {
+        //编写 javaScript方法
+        final String javascript = "javascript:function hideOther() {" +
+//                        "document.getElementsByClassName(\'flex-box\')[0].style.backgroundColor = \'red\'; " +//头部颜色
+                "document.getElementsByClassName(\'nav-list bottom\')[0].style.visibility = \'hidden\'; " +//退出
+                "document.getElementsByClassName(\'nav-list top\')[0].children[1].style.visibility = \'hidden\'; " +//提交问题
+                "document.getElementsByClassName(\'nav-list top\')[0].children[2].style.visibility = \'hidden\'; " +//查看问题
+                "document.getElementsByClassName(\'slideout-menu\')[0].children[0].style.visibility = \'hidden\'; }";//头像
+        //创建方法
+        view.loadUrl("javascript:" + javascript);
+        view.loadUrl("javascript:hideOther();");
     }
 
     private void pauseDownload() {

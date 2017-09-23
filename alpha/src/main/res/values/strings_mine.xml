@@ -18,4 +18,5 @@
     <string name="mine_name">姓名</string>
     <string name="mine_use_true_mail">请使用有效的邮箱地址</string>
     <string name="mine_use_true_phone">请使用有效的中国大陆手机号</string>
+    <string name="mine_not_find_email_app">未找到邮件发送的app!</string>
 </resources>
