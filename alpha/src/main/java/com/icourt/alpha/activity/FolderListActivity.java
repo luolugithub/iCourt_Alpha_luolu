@@ -868,8 +868,8 @@ public class FolderListActivity extends FolderBaseActivity
         } else {
             menus.add(getString(R.string.sfile_file_details));
             menus.add(getString(R.string.sfile_file_rename));
-            //已经共享给我 不能再共享给别人了
-            if (getRepoType() != SFileConfig.REPO_SHARED_ME) {
+            //1.已经共享给我 不能再共享给别人了  2.项目中不能分享 变成一对多啦 3:律所不需要分享
+            if (getRepoType() == SFileConfig.REPO_MINE) {
                 menus.add(getString(R.string.sfile_file_share));
             }
             menus.add(getString(R.string.sfile_file_copy));
