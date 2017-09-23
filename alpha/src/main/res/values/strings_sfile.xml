@@ -19,6 +19,13 @@
         <item>项目</item>
     </string-array>
 
+    <string-array name="repo_type_details_array">
+        <item>我的资料库</item>
+        <item>共享给我的资料库</item>
+        <item>律所资料库</item>
+        <item>项目资料库</item>
+    </string-array>
+
     <string-array name="repo_action_menus_rw_array">
         <item>@string/repo_details</item>
         <item>重命名</item>
@@ -45,16 +52,6 @@
     <string name="sfile_menu_recycle_bin">回收站</string>
     <string name="sfile_menu_batch_operation">批量操作</string>
 
-    <string-array name="sfile_folder_menus_rw_array">
-        <item>@string/sfile_menu_batch_operation</item>
-        <item>@string/sfile_menu_repo_details</item>
-        <item>@string/sfile_menu_recycle_bin</item>
-    </string-array>
-
-    <string-array name="sfile_folder_menus_r_array">
-        <item>@string/sfile_menu_repo_details</item>
-        <item>@string/sfile_menu_recycle_bin</item>
-    </string-array>
 
     <string name="sfile_create_folder">新建文件夹</string>
     <string name="sfile_upload">上传文件</string>
@@ -74,7 +71,7 @@
     <string name="sfile_folder_details">查看文件夹详情</string>
     <string name="sfile_file_rename">@string/str_rename</string>
     <string name="sfile_file_share">共享</string>
-    <string name="sfile_folder_share">内部共享</string>
+    <string name="sfile_folder_share">共享</string>
     <string name="sfile_file_copy">@string/str_copy</string>
     <string name="sfile_file_move">@string/str_move</string>
     <string name="sfile_file_delete">@string/str_delete</string>
@@ -168,5 +165,6 @@
     <string name="sfile_searched_no_results">没有找到匹配的结果</string>
     <string name="sfile_search_range">在所有资料库内搜索</string>
     <string name="sfile_searched_folder_un_click">搜索结果中无法预览文件夹</string>
+    <string name="sfile_un_openable_file_notice">下载后可尝试用其他App打开</string>
 
 </resources>

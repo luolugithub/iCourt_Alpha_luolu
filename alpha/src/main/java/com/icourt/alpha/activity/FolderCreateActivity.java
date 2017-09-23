@@ -7,6 +7,7 @@ import android.text.InputFilter;
 import android.widget.EditText;
 
 import com.google.gson.JsonObject;
+import com.icourt.alpha.R;
 import com.icourt.alpha.entity.bean.RepoEntity;
 import com.icourt.alpha.http.callback.SFileCallBack;
 import com.icourt.alpha.utils.SpUtils;
@@ -15,6 +16,7 @@ import com.icourt.alpha.widget.filter.SFileNameFilter;
 import com.icourt.api.RequestUtils;
 
 import retrofit2.Call;
+import retrofit2.HttpException;
 import retrofit2.Response;
 
 /**
@@ -65,11 +67,12 @@ public class FolderCreateActivity extends SFileEditBaseActivity {
                 new SFileNameFilter()});
         inputNameEt.setText(SpUtils.getInstance().getStringData(KEY_CACHE_FOLDER, ""));
         inputNameEt.setSelection(inputNameEt.getText().length());
+        inputTypeIv.setImageResource(R.mipmap.folder);
     }
 
     @Override
     protected int getMaxInputLimitNum() {
-        return 100;
+        return 80;
     }
 
     @Override
@@ -95,6 +98,10 @@ public class FolderCreateActivity extends SFileEditBaseActivity {
                         public void onFailure(Call<RepoEntity> call, Throwable t) {
                             dismissLoadingDialog();
                             super.onFailure(call, t);
+                            if (t instanceof HttpException
+                                    && ((HttpException) t).code() == 400) {
+                                showToast("文件夹名字可能太长啦");
+                            }
                         }
                     });
         }

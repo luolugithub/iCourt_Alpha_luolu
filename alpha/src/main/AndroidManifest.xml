@@ -115,9 +115,6 @@
             android:windowSoftInputMode="adjustUnspecified|adjustResize|stateHidden" />
 
         <activity
-            android:name=".activity.TestActivity"
-            android:screenOrientation="portrait" />
-        <activity
             android:name=".activity.AboutActivity"
             android:screenOrientation="portrait" />
         <activity
@@ -246,10 +243,6 @@
         <activity
             android:name=".activity.FolderboxSelectActivity"
             android:screenOrientation="portrait" />
-        <activity
-            android:name=".activity.FileBoxDownloadActivity"
-            android:screenOrientation="portrait"
-            android:windowSoftInputMode="stateAlwaysHidden" />
         <activity
             android:name=".activity.SearchPolymerizationActivity"
             android:screenOrientation="portrait"

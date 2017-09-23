@@ -1,13 +1,11 @@
 package com.icourt.alpha.activity;
 
-import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
+import android.support.annotation.IntRange;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.AppBarLayout;
@@ -20,14 +18,21 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.icourt.alpha.BuildConfig;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
-import com.icourt.alpha.base.BaseActivity;
+import com.icourt.alpha.constants.DownloadConfig;
+import com.icourt.alpha.constants.SFileConfig;
+import com.icourt.alpha.entity.bean.ISeaFile;
 import com.icourt.alpha.fragment.dialogfragment.ContactShareDialogFragment;
-import com.icourt.alpha.fragment.dialogfragment.ProjectSaveFileDialogFragment;
+import com.icourt.alpha.fragment.dialogfragment.FileDetailDialogFragment;
+import com.icourt.alpha.http.HttpThrowableUtils;
+import com.icourt.alpha.http.IDefNotify;
 import com.icourt.alpha.http.callback.SFileCallBack;
-import com.icourt.alpha.utils.ActionConstants;
+import com.icourt.alpha.http.callback.SimpleCallBack;
+import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.FileUtils;
 import com.icourt.alpha.utils.IMUtils;
 import com.icourt.alpha.utils.StringUtils;
@@ -47,6 +52,10 @@ import butterknife.OnClick;
 import retrofit2.Call;
 import retrofit2.Response;
 
+import static com.icourt.alpha.constants.SFileConfig.FILE_FROM_IM;
+import static com.icourt.alpha.constants.SFileConfig.FILE_FROM_TASK;
+import static com.icourt.alpha.constants.SFileConfig.PERMISSION_RW;
+
 /**
  * Description 文件下载界面
  * Company Beijing icourt
@@ -54,14 +63,13 @@ import retrofit2.Response;
  * date createTime：2017/8/24
  * version 2.1.0
  */
-public class FileDownloadActivity extends BaseActivity {
+public class FileDownloadActivity extends ImageViewBaseActivity {
 
-    private static final String KEY_SEA_FILE_REPOID = "key_sea_file_repoid";
-    private static final String KEY_SEA_FILE_TITLE = "key_sea_file_title";
-    private static final String KEY_SEA_FILE_SIZE = "key_sea_file_size";
-    private static final String KEY_SEA_FILE_FULL_PATH = "key_sea_file_full_path";
-    private static final String KEY_SEA_FILE_VERSION_ID = "key_sea_file_commit_id";
-    private static final int CODE_PERMISSION_FILE = 1009;
+    private static final String KEY_SEA_FILE_FROM = "key_sea_file_from";
+    private static final String KEY_SEA_FILE = "key_sea_file";
+
+    @BindView(R.id.download_notice_tv)
+    TextView downloadNoticeTv;
     @BindView(R.id.file_open_tv)
     TextView fileOpenTv;
     @BindView(R.id.titleBack)
@@ -90,40 +98,26 @@ public class FileDownloadActivity extends BaseActivity {
     private String fileCachePath = "";//保存路径
     private String fileDownloadUrl = "";//下载的地址
 
-    /**
-     * @param context
-     * @param seaFileRepoId   文件对应仓库id
-     * @param fileTitle       文件对应标题
-     * @param fileSize        文件大小
-     * @param seaFileFullPath 文件全路径 eg. "/aa/bb.doc"
-     * @param versionId       文件历史版本提交的id 可空
-     */
-    public static void launch(@NonNull Context context,
-                              @NonNull String seaFileRepoId,
-                              @NonNull String fileTitle,
-                              long fileSize,
-                              @NonNull String seaFileFullPath,
-                              @Nullable String versionId) {
+
+    public static <T extends ISeaFile> void launch(@NonNull Context context, T seaFile, @SFileConfig.FILE_FROM int fileFrom) {
         if (context == null) return;
+        if (seaFile == null) return;
         Intent intent = new Intent(context, FileDownloadActivity.class);
-        intent.putExtra(KEY_SEA_FILE_REPOID, seaFileRepoId);
-        intent.putExtra(KEY_SEA_FILE_TITLE, fileTitle);
-        intent.putExtra(KEY_SEA_FILE_SIZE, fileSize);
-        intent.putExtra(KEY_SEA_FILE_FULL_PATH, seaFileFullPath);
-        intent.putExtra(KEY_SEA_FILE_VERSION_ID, versionId);
+        intent.putExtra(KEY_SEA_FILE, seaFile);
+        intent.putExtra(KEY_SEA_FILE_FROM, fileFrom);
         context.startActivity(intent);
     }
 
-    String seaFileRepoId;
-    String fileTitle;
-    long fileSize;
-    String seaFileFullPath;
-    String versionId;
+
+    int fileFrom;
+    ISeaFile iSeaFile;
+    String fileName;
 
     private FileDownloadListener fileDownloadListener = new FileDownloadListener() {
 
         @Override
         protected void pending(BaseDownloadTask task, int soFarBytes, int totalBytes) {
+            updateViewState(0);
             if (downloadProgressbar != null) {
                 downloadProgressbar.setMaxProgress(100);
             }
@@ -162,7 +156,12 @@ public class FileDownloadActivity extends BaseActivity {
         @Override
         protected void error(BaseDownloadTask task, Throwable e) {
             log("------------->下载异常:" + StringUtils.throwable2string(e));
-            showTopSnackBar(String.format("下载异常!" + StringUtils.throwable2string(e)));
+            HttpThrowableUtils.handleHttpThrowable(new IDefNotify() {
+                @Override
+                public void defNotify(String noticeStr) {
+                    showTopSnackBar(noticeStr);
+                }
+            }, e);
             bugSync("下载异常", e);
         }
 
@@ -185,17 +184,15 @@ public class FileDownloadActivity extends BaseActivity {
     protected void initView() {
         super.initView();
 
-        seaFileRepoId = getIntent().getStringExtra(KEY_SEA_FILE_REPOID);
-        fileTitle = getIntent().getStringExtra(KEY_SEA_FILE_TITLE);
-        fileSize = getIntent().getLongExtra(KEY_SEA_FILE_SIZE, 0);
-        seaFileFullPath = getIntent().getStringExtra(KEY_SEA_FILE_FULL_PATH);
-        versionId = getIntent().getStringExtra(KEY_SEA_FILE_VERSION_ID);
+        iSeaFile = (ISeaFile) getIntent().getSerializableExtra(KEY_SEA_FILE);
+        fileFrom = getIntent().getIntExtra(KEY_SEA_FILE_FROM, SFileConfig.FILE_FROM_REPO);
         fileCachePath = buildSavePath();
 
-        setTitle(fileTitle);
-        fileSizeTv.setText(String.format("(%s)", FileUtils.bFormat(fileSize)));
-        fileNameTv.setText(fileTitle);
-        fileTypeIcon.setImageResource(FileUtils.getSFileIcon(fileTitle));
+        fileName = FileUtils.getFileName(iSeaFile.getSeaFileFullPath());
+        setTitle(fileName);
+        fileSizeTv.setText(String.format("(%s)", FileUtils.bFormat(iSeaFile.getSeaFileSize())));
+        fileNameTv.setText(fileName);
+        fileTypeIcon.setImageResource(FileUtils.getSFileIcon(fileName));
         ImageView titleActionImage = getTitleActionImage();
         if (titleActionImage != null) {
             titleActionImage.setImageResource(R.mipmap.header_icon_more);
@@ -206,24 +203,31 @@ public class FileDownloadActivity extends BaseActivity {
             openImageView();
             updateViewState(2);
         } else {
-            updateViewState(0);
-            //检查文件写入权限
-            if (checkPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-                getData(true);
-            } else {
-                reqPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, "下载文件需要文件写入权限!", CODE_PERMISSION_FILE);
+            updateViewState(-1);
+            //非图片 不主动下载
+            if (IMUtils.isPIC(fileName)) {
+                startDownload();
             }
+        }
+    }
+
+    private void startDownload() {
+        //检查文件写入权限
+        if (checkAcessFilePermission()) {
+            getData(true);
+        } else {
+            requestAcessFilePermission();
         }
     }
 
     private void openImageView() {
         if (IMUtils.isPIC(fileCachePath)) {
-            ArrayList<String> smallImageUrl = new ArrayList<>();
-            smallImageUrl.add(fileCachePath);
+            ArrayList<ISeaFile> seaFileImages = new ArrayList<>();
+            seaFileImages.add(iSeaFile);
             ImageViewerActivity.launch(
                     getContext(),
-                    smallImageUrl,
-                    null,
+                    SFileConfig.convert2FileFrom(fileFrom),
+                    seaFileImages,
                     0
             );
             finish();
@@ -234,38 +238,77 @@ public class FileDownloadActivity extends BaseActivity {
     protected void getData(boolean isRefresh) {
         super.getData(isRefresh);
         showLoadingDialog(null);
-        callEnqueue(getSFileApi().sFileDownloadUrlQuery(
-                seaFileRepoId,
-                seaFileFullPath,
-                versionId),
-                new SFileCallBack<String>() {
-                    @Override
-                    public void onSuccess(Call<String> call, Response<String> response) {
-                        dismissLoadingDialog();
-                        fileDownloadUrl = response.body();
-                        if (isDestroyOrFinishing()) return;
-                        downloadFile(fileDownloadUrl);
-                    }
+        switch (fileFrom) {
+            case SFileConfig.FILE_FROM_IM: {//享聊的下载地址要单独获取 用资料库下载地址 提示没权限
+                callEnqueue(
+                        getChatApi().fileUrlQuery(
+                                iSeaFile.getSeaFileRepoId(),
+                                FileUtils.getFileParentDir(iSeaFile.getSeaFileFullPath()),
+                                fileName),
+                        new SimpleCallBack<JsonElement>() {
+                            @Override
+                            public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
+                                dismissLoadingDialog();
+                                if (response.body() != null) {
+                                    String downloadUrl = response.body().message;
+                                    downloadFile(downloadUrl);
+                                }
+                            }
 
-                    @Override
-                    public void onFailure(Call<String> call, Throwable t) {
-                        super.onFailure(call, t);
-                        dismissLoadingDialog();
-                    }
-                });
+                            @Override
+                            public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
+                                super.onFailure(call, t);
+                                dismissLoadingDialog();
+                            }
+                        });
+            }
+            break;
+            default: {
+                callEnqueue(
+                        getSFileApi().sFileDownloadUrlQuery(
+                                iSeaFile.getSeaFileRepoId(),
+                                iSeaFile.getSeaFileFullPath(),
+                                iSeaFile.getSeaFileVersionId()),
+                        new SFileCallBack<String>() {
+                            @Override
+                            public void onSuccess(Call<String> call, Response<String> response) {
+                                dismissLoadingDialog();
+                                fileDownloadUrl = response.body();
+                                if (isDestroyOrFinishing()) return;
+                                downloadFile(fileDownloadUrl);
+                            }
+
+                            @Override
+                            public void onFailure(Call<String> call, Throwable t) {
+                                super.onFailure(call, t);
+                                dismissLoadingDialog();
+                            }
+                        });
+            }
+            break;
+        }
     }
 
     /**
-     * @param state 0下载中 1暂停中 2:下载完成
+     * @param state -1未下载 0下载中 1暂停中 2:下载完成
      */
-    private void updateViewState(int state) {
+    private void updateViewState(@IntRange(from = -1, to = 2) int state) {
         switch (state) {
+            case -1:
+                titleAction.setEnabled(false);
+                titleAction.setImageResource(R.mipmap.more_disabled);
+                fileOpenTv.setVisibility(View.GONE);
+                downloadLayout.setVisibility(View.GONE);
+                downloadContinueTv.setVisibility(View.GONE);
+                downloadNoticeTv.setVisibility(View.VISIBLE);
+                break;
             case 0:
                 titleAction.setEnabled(false);
                 titleAction.setImageResource(R.mipmap.more_disabled);
                 fileOpenTv.setVisibility(View.GONE);
                 downloadLayout.setVisibility(View.VISIBLE);
                 downloadContinueTv.setVisibility(View.GONE);
+                downloadNoticeTv.setVisibility(View.GONE);
                 break;
             case 1:
                 titleAction.setEnabled(false);
@@ -273,6 +316,7 @@ public class FileDownloadActivity extends BaseActivity {
                 fileOpenTv.setVisibility(View.GONE);
                 downloadLayout.setVisibility(View.GONE);
                 downloadContinueTv.setVisibility(View.VISIBLE);
+                downloadNoticeTv.setVisibility(View.GONE);
                 break;
             case 2:
                 titleAction.setEnabled(true);
@@ -280,6 +324,7 @@ public class FileDownloadActivity extends BaseActivity {
                 fileOpenTv.setVisibility(View.VISIBLE);
                 downloadLayout.setVisibility(View.GONE);
                 downloadContinueTv.setVisibility(View.GONE);
+                downloadNoticeTv.setVisibility(View.GONE);
                 break;
         }
     }
@@ -314,29 +359,22 @@ public class FileDownloadActivity extends BaseActivity {
      * @return
      */
     private String buildSavePath() {
-        StringBuilder pathBuilder = new StringBuilder(Environment.getExternalStorageDirectory().getAbsolutePath());
-        pathBuilder.append(File.separator);
-        pathBuilder.append(ActionConstants.FILE_DOWNLOAD_PATH);
-        pathBuilder.append(File.separator);
-        if (TextUtils.isEmpty(versionId)) {
-            pathBuilder.append(fileTitle);
-        } else {
-            String fileNameWithoutSuffix = FileUtils.getFileNameWithoutSuffix(fileTitle);
-            String fileSuffix = FileUtils.getFileSuffix(fileTitle);
-            pathBuilder.append(String.format("%s_%s%s", fileNameWithoutSuffix, versionId.hashCode(), fileSuffix));
-        }
-        return pathBuilder.toString();
+        return DownloadConfig.getSeaFileDownloadPath(getLoginUserId(), iSeaFile);
     }
 
 
     @OnClick({R.id.download_continue_tv,
             R.id.file_open_tv,
-            R.id.download_cancel_tv})
+            R.id.download_cancel_tv,
+            R.id.download_notice_tv})
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.titleAction:
                 showBottomMenuDialog();
+                break;
+            case R.id.download_notice_tv:
+                startDownload();
                 break;
             case R.id.download_continue_tv:
                 updateViewState(0);
@@ -360,26 +398,95 @@ public class FileDownloadActivity extends BaseActivity {
      * 展示更多菜单
      */
     private void showBottomMenuDialog() {
+        ArrayList<String> menus = new ArrayList<>(Arrays.asList(getString(R.string.sfile_file_details), "转发给同事", "保存到项目", "用其他应用打开"));
+        if (TextUtils.equals(iSeaFile.getSeaFilePermission(), PERMISSION_RW)) {
+            menus.add(getString(R.string.str_delete));
+        }
+        //聊天文件 任务附件 暂时不要文件详情
+        if (fileFrom == FILE_FROM_TASK
+                || fileFrom == FILE_FROM_IM) {
+            menus.remove(getString(R.string.sfile_file_details));
+        }
         new BottomActionDialog(getContext(),
                 null,
-                Arrays.asList("转发给同事", "保存到项目资料库", "用其他应用打开"),
+                menus,
                 new BottomActionDialog.OnActionItemClickListener() {
                     @Override
                     public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
                         dialog.dismiss();
-                        switch (position) {
-                            case 0:
-                                showContactShareDialogFragment(fileCachePath);
-                                break;
-                            case 1:
-                                showProjectSaveFileDialogFragment(fileCachePath);
-                                break;
-                            case 2:
-                                showOpenableThirdPartyAppDialog();
-                                break;
+                        String action = adapter.getItem(position);
+                        if (TextUtils.equals(action, getString(R.string.sfile_file_details))) {
+                            FileDetailDialogFragment.show(
+                                    SFileConfig.REPO_UNKNOW,
+                                    iSeaFile.getSeaFileRepoId(),
+                                    FileUtils.getFileParentDir(iSeaFile.getSeaFileFullPath()),
+                                    fileName,
+                                    iSeaFile.getSeaFileSize(),
+                                    0,
+                                    iSeaFile.getSeaFilePermission(),
+                                    getSupportFragmentManager());
+                        } else if (TextUtils.equals(action, "转发给同事")) {
+                            showContactShareDialogFragment(fileCachePath);
+                        } else if (TextUtils.equals(action, "保存到项目")) {
+                            shareHttpFile2Project(null, fileCachePath);
+                        } else if (TextUtils.equals(action, "用其他应用打开")) {
+                            showOpenableThirdPartyAppDialog();
+                        } else if (TextUtils.equals(action, getString(R.string.str_delete))) {
+                            showDeleteConfirmDialog();
                         }
                     }
                 }).show();
+    }
+
+    /**
+     * 展示删除确认对话框
+     */
+    private void showDeleteConfirmDialog() {
+        new BottomActionDialog(
+                getContext(),
+                getString(R.string.sfile_delete_confirm),
+                Arrays.asList(getString(R.string.str_ok)),
+                new BottomActionDialog.OnActionItemClickListener() {
+                    @Override
+                    public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
+                        dialog.dismiss();
+                        deleteFile();
+                    }
+                }).show();
+    }
+
+    /**
+     * 删除文件
+     */
+    private void deleteFile() {
+        final ISeaFile item = iSeaFile;
+        showLoadingDialog(R.string.str_executing);
+        callEnqueue(getSFileApi().fileDelete(
+                item.getSeaFileRepoId(),
+                item.getSeaFileFullPath()),
+                new SFileCallBack<JsonObject>() {
+                    @Override
+                    public void onSuccess(Call<JsonObject> call, Response<JsonObject> response) {
+                        dismissLoadingDialog();
+                        deletCachedSeaFile(item);
+                        finish();
+                    }
+
+                    @Override
+                    public void onFailure(Call<JsonObject> call, Throwable t) {
+                        super.onFailure(call, t);
+                        dismissLoadingDialog();
+                    }
+                });
+    }
+
+    /**
+     * 删除缓存的seafile
+     *
+     * @param item
+     */
+    private void deletCachedSeaFile(ISeaFile item) {
+        FileUtils.deleteFile(DownloadConfig.getSeaFileDownloadPath(getLoginUserId(), item));
     }
 
     /**
@@ -398,21 +505,6 @@ public class FileDownloadActivity extends BaseActivity {
                 .show(mFragTransaction, tag);
     }
 
-    /**
-     * 展示项目转发对话框
-     *
-     * @param filePath
-     */
-    public void showProjectSaveFileDialogFragment(String filePath) {
-        String tag = ProjectSaveFileDialogFragment.class.getSimpleName();
-        FragmentTransaction mFragTransaction = getSupportFragmentManager().beginTransaction();
-        Fragment fragment = getSupportFragmentManager().findFragmentByTag(tag);
-        if (fragment != null) {
-            mFragTransaction.remove(fragment);
-        }
-        ProjectSaveFileDialogFragment.newInstance(filePath, ProjectSaveFileDialogFragment.ALPHA_TYPE)
-                .show(mFragTransaction, tag);
-    }
 
     /**
      * 用其他程序打开
@@ -453,24 +545,6 @@ public class FileDownloadActivity extends BaseActivity {
         }
     }
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        if (grantResults == null) return;
-        if (grantResults.length <= 0) return;
-        switch (requestCode) {
-            case CODE_PERMISSION_FILE:
-                if (grantResults[0] == PackageManager.PERMISSION_DENIED) {
-                    showToast("文件写入权限被拒绝!");
-                    finish();
-                } else {
-                    getData(true);
-                }
-                break;
-            default:
-                super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-                break;
-        }
-    }
 
     @Override
     protected void onDestroy() {

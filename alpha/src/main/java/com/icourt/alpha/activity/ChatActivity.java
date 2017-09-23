@@ -34,13 +34,14 @@ import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.ChatAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.constants.Const;
+import com.icourt.alpha.constants.SFileConfig;
 import com.icourt.alpha.db.convertor.IConvertModel;
 import com.icourt.alpha.db.convertor.ListConvertor;
 import com.icourt.alpha.db.dbmodel.ContactDbModel;
 import com.icourt.alpha.db.dbservice.ContactDbService;
+import com.icourt.alpha.entity.bean.ChatFileInfoEntity;
 import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.icourt.alpha.entity.bean.IMMessageCustomBody;
-import com.icourt.alpha.entity.bean.SFileImageInfoEntity;
 import com.icourt.alpha.entity.event.GroupActionEvent;
 import com.icourt.alpha.entity.event.MemberEvent;
 import com.icourt.alpha.entity.event.NoDisturbingEvent;
@@ -82,7 +83,6 @@ import org.greenrobot.eventbus.ThreadMode;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -1480,29 +1480,33 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
             case R.id.chat_image_iv:
                 if (item.ext != null) {
                     ArrayList<String> mediumImageUrls = new ArrayList<>();
-                    ArrayList<SFileImageInfoEntity> sFileImageInfoEntities = new ArrayList<>();
+                    ArrayList<ChatFileInfoEntity> sFileImageInfoEntities = new ArrayList<>();
                     for (int i = 0; i < chatAdapter.getData().size(); i++) {
                         IMMessageCustomBody imMessageCustomBody = chatAdapter.getData().get(i);
-                        if (imMessageCustomBody != null && imMessageCustomBody.ext != null) {
-                            if (imMessageCustomBody.show_type == Const.MSG_TYPE_IMAGE && imMessageCustomBody.id > 0) {
-                                SFileImageInfoEntity sFileImageInfoEntity = imMessageCustomBody.ext.convert2Model();
+                        if (imMessageCustomBody != null
+                                && imMessageCustomBody.ext != null) {
+                            if (imMessageCustomBody.show_type == Const.MSG_TYPE_IMAGE
+                                    && imMessageCustomBody.id > 0) {
+                                ChatFileInfoEntity sFileImageInfoEntity = imMessageCustomBody.ext.convert2Model();
                                 if (sFileImageInfoEntity != null) {
-                                    mediumImageUrls.add(getChatMediumImageUrl(sFileImageInfoEntity.thumb));
-                                    sFileImageInfoEntity.chatMsgId = imMessageCustomBody.id;
+                                    mediumImageUrls.add(sFileImageInfoEntity.getChatMiddlePic());
+                                    sFileImageInfoEntity.setChatMsgId(imMessageCustomBody.id);
                                     sFileImageInfoEntities.add(sFileImageInfoEntity);
                                 }
                             }
                         }
                     }
-                    int pos = mediumImageUrls.indexOf(getChatMediumImageUrl(item.ext.thumb));
+                    int pos = mediumImageUrls.indexOf(item.ext.getChatMediumImageUrl());
                     if (mediumImageUrls.isEmpty()) return;
                     View chat_image_iv = holder.obtainView(R.id.chat_image_iv);
-                    ImagePagerActivity.launch(view.getContext(),
-                            mediumImageUrls, sFileImageInfoEntities,
+                    ImagePagerActivity.launch(
+                            view.getContext(),
+                            ImagePagerActivity.IMAGE_FROM_CHAT_WINDOW,
+                            sFileImageInfoEntities,
                             pos,
-                            chat_image_iv,
                             getIMChatType(),
-                            getIMChatId());
+                            getIMChatId(),
+                            chat_image_iv);
                 }
                 break;
             case R.id.chat_send_fail_iv:
@@ -1524,18 +1528,19 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
             case R.id.chat_ding_content_iamge_iv:
                 if (item.ext == null) return;
                 if (item.ext.ext == null) return;
-                SFileImageInfoEntity sFileImageInfoEntity = item.ext.ext.convert2Model();
-                sFileImageInfoEntity.chatMsgId = item.ext.id;
-                String chatMediumImageUrl = getChatMediumImageUrl(item.ext.ext.thumb);
-                ArrayList<SFileImageInfoEntity> sFileImageInfoEntities = new ArrayList<>();
-                sFileImageInfoEntities.add(sFileImageInfoEntity);
+                ChatFileInfoEntity chatFileInfoEntity = item.ext.ext.convert2Model();
+                chatFileInfoEntity.setChatMsgId(item.ext.id);
+
+                ArrayList<ChatFileInfoEntity> sFileImageInfoEntities = new ArrayList<>();
+
+                sFileImageInfoEntities.add(chatFileInfoEntity);
                 ImagePagerActivity.launch(getContext(),
-                        Arrays.asList(chatMediumImageUrl),
+                        ImagePagerActivity.IMAGE_FROM_CHAT_WINDOW,
                         sFileImageInfoEntities,
                         0,
-                        view,
                         getIMChatType(),
-                        getIMChatId());
+                        getIMChatId(),
+                        view);
                 break;
             case R.id.chat_ll_file:
                 switch (item.show_type) {
@@ -1549,7 +1554,11 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
                              "path":"xasxax"
                              */
                             //item.ext.name;
-                            FileBoxDownloadActivity.launchIMFile(this, item.ext.path, item.ext.repo_id, item.ext.name, FileBoxDownloadActivity.IM_DOWNLOAD_FILE_ACTION);
+                            FileDownloadActivity.launch(
+                                    getContext(),
+                                    item.ext,
+                                    SFileConfig.FILE_FROM_IM
+                            );
                         }
                         break;
                     case Const.MSG_TYPE_DING:
@@ -1565,7 +1574,11 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
                                          "path":"xasxax"
                                          */
                                         //item.ext.ext.name;
-                                        FileBoxDownloadActivity.launchIMFile(this, item.ext.ext.path, item.ext.ext.repo_id, item.ext.ext.name, FileBoxDownloadActivity.IM_DOWNLOAD_FILE_ACTION);
+                                        FileDownloadActivity.launch(
+                                                getContext(),
+                                                item.ext.ext,
+                                                SFileConfig.FILE_FROM_IM
+                                        );
                                     }
                                     break;
                             }
@@ -1576,20 +1589,6 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
         }
     }
 
-    /**
-     * 获取聊天中等图片
-     *
-     * @param url
-     * @return
-     */
-    private String getChatMediumImageUrl(String url) {
-        if (!TextUtils.isEmpty(url)
-                && url.contains("/imgs/1x/"))//有中等图片
-        {
-            return url.replace("/imgs/1x/", "/imgs/2x/");
-        }
-        return url;
-    }
 
     @Override
     public boolean onItemChildLongClick(BaseRecyclerAdapter

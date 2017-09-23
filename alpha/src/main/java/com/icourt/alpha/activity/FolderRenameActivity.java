@@ -20,6 +20,7 @@ import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.utils.UrlUtils;
 
 import retrofit2.Call;
+import retrofit2.HttpException;
 import retrofit2.Response;
 
 /**
@@ -145,6 +146,10 @@ public class FolderRenameActivity extends FolderCreateActivity {
                     public void onFailure(Call<String> call, Throwable t) {
                         super.onFailure(call, t);
                         dismissLoadingDialog();
+                        if (t instanceof HttpException
+                                && ((HttpException) t).code() == 400) {
+                            showToast("文件夹名字可能太长啦");
+                        }
                     }
                 });
             } else {
@@ -167,6 +172,10 @@ public class FolderRenameActivity extends FolderCreateActivity {
                             public void onFailure(Call<FolderDocumentEntity> call, Throwable t) {
                                 super.onFailure(call, t);
                                 dismissLoadingDialog();
+                                if (t instanceof HttpException
+                                        && ((HttpException) t).code() == 400) {
+                                    showToast("文件名字可能太长啦");
+                                }
                             }
                         });
             }
@@ -175,7 +184,7 @@ public class FolderRenameActivity extends FolderCreateActivity {
 
     @Override
     protected boolean onCancelSubmitInput(final EditText et) {
-        if (TextUtils.isEmpty(et.getText())) {
+        if (StringUtils.isEmpty(et.getText())) {
             finish();
             return false;
         }

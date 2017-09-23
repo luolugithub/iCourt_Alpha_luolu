@@ -46,6 +46,7 @@
                 android:layout_gravity="center_horizontal"
                 android:layout_margin="20dp"
                 android:background="@drawable/bg_round_orange"
+                android:elevation="2dp"
                 android:gravity="center"
                 android:minEms="5"
                 android:paddingBottom="5dp"
@@ -88,7 +89,8 @@
                     android:ellipsize="end"
                     android:gravity="right"
                     android:paddingRight="10dp"
-                    android:text="@string/sfile_link_password_auto_generation" />
+                    android:text="@string/sfile_link_password_auto_generation"
+                    android:textColor="@color/alpha_font_color_gray" />
             </LinearLayout>
 
             <View
@@ -124,7 +126,8 @@
                     android:ellipsize="end"
                     android:gravity="right"
                     android:hint="@string/sfile_link_limit_date_7"
-                    android:paddingRight="10dp" />
+                    android:paddingRight="10dp"
+                    android:textColor="@color/alpha_font_color_gray" />
             </LinearLayout>
 
             <View
@@ -142,6 +145,7 @@
                 android:layout_gravity="center_horizontal"
                 android:layout_marginTop="20dp"
                 android:background="@drawable/bg_round_orange"
+                android:elevation="2dp"
                 android:gravity="center"
                 android:paddingBottom="5dp"
                 android:paddingLeft="30dp"

@@ -30,8 +30,8 @@
                 android:layout_height="wrap_content"
                 android:gravity="center"
                 android:lines="1"
-                android:paddingTop="5dp"
                 android:paddingBottom="15dp"
+                android:paddingTop="5dp"
                 android:text="选择排序方式"
                 android:textColor="@color/alpha_font_color_black" />
 
@@ -72,6 +72,7 @@
                     android:layout_height="wrap_content"
                     android:layout_centerInParent="true"
                     android:background="@drawable/orange_circle_bg"
+                    android:elevation="@dimen/dp2"
                     android:ems="6"
                     android:gravity="center"
                     android:paddingBottom="8dp"

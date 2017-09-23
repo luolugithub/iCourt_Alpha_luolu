@@ -3,6 +3,7 @@ package com.icourt.alpha.base;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.CallSuper;
 import android.support.annotation.CheckResult;
@@ -189,6 +190,47 @@ public class BaseUmengActivity extends BaseActivity implements UMAuthListener {
         if (drawable == null) return;
         shareImage2WeiXin(FileUtils.drawableToBitmap(drawable));
     }
+
+    /**
+     * 分享文件
+     *
+     * @param filePath
+     */
+    protected void shareFileWithAndroid(String filePath) {
+        if (TextUtils.isEmpty(filePath)) {
+            showTopSnackBar(R.string.sfile_not_exist);
+            return;
+        }
+        shareFileWithAndroid(new File(filePath));
+    }
+
+    /**
+     * 分享文件
+     *
+     * @param file
+     */
+    protected void shareFileWithAndroid(File file) {
+        try {
+            if (file == null || !file.exists()) {
+                showTopSnackBar(R.string.sfile_not_exist);
+                return;
+            }
+            Intent intent = new Intent(Intent.ACTION_SEND);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            //设置intent的data和Type属性。
+            Uri uri = Uri.fromFile(file);
+            //添加这一句表示对目标应用临时授权该Uri所代表的文件
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION
+                    | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+            intent.putExtra(Intent.EXTRA_STREAM, uri);
+            intent.setType("*/*");
+            startActivity(Intent.createChooser(intent, "Alpha Share"));
+        } catch (Exception e) {
+            e.printStackTrace();
+            bugSync("外部分享文件失败", e);
+        }
+    }
+
 
     /**
      * 分享图片到微信

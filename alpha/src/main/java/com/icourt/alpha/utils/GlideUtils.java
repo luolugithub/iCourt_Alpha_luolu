@@ -146,7 +146,24 @@ public class GlideUtils {
         if (canLoadImage(context)) {
             Glide.with(context)
                     .load(path)
+                    .placeholder(R.mipmap.filetype_image)
                     .error(R.mipmap.filetype_image)
+                    .into(imageView);
+        }
+    }
+
+    /**
+     * @param context
+     * @param path
+     * @param imageView
+     */
+    public static void loadSFilePicWithoutPlaceholder(Context context, String path, ImageView imageView) {
+        if (imageView == null) return;
+        if (canLoadImage(context)) {
+            Glide.with(context)
+                    .load(path)
+                    .error(R.mipmap.filetype_image)
+                    .dontAnimate()
                     .into(imageView);
         }
     }

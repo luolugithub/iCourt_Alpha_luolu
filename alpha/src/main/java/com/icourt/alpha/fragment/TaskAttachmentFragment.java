@@ -19,12 +19,13 @@ import android.widget.TextView;
 import com.google.gson.JsonElement;
 import com.icourt.alpha.R;
 import com.icourt.alpha.activity.FileDownloadActivity;
+import com.icourt.alpha.activity.ImageViewerActivity;
 import com.icourt.alpha.adapter.TaskAttachmentAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.HeaderFooterAdapter;
 import com.icourt.alpha.adapter.baseadapter.adapterObserver.DataChangeAdapterObserver;
 import com.icourt.alpha.base.BaseDialogFragment;
-import com.icourt.alpha.base.BaseFragment;
+import com.icourt.alpha.constants.SFileConfig;
 import com.icourt.alpha.entity.bean.TaskAttachmentEntity;
 import com.icourt.alpha.entity.event.TaskActionEvent;
 import com.icourt.alpha.fragment.dialogfragment.SeaFileSelectDialogFragment;
@@ -34,7 +35,7 @@ import com.icourt.alpha.http.observer.BaseObserver;
 import com.icourt.alpha.interfaces.OnDialogFragmentDismissListener;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.interfaces.OnUpdateTaskListener;
-import com.icourt.alpha.utils.FileUtils;
+import com.icourt.alpha.utils.IMUtils;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.utils.UriUtils;
 import com.icourt.alpha.widget.dialog.BottomActionDialog;
@@ -73,7 +74,7 @@ import retrofit2.Response;
  * version 2.0.0
  */
 
-public class TaskAttachmentFragment extends BaseFragment
+public class TaskAttachmentFragment extends SeaFileBaseFragment
         implements BaseRecyclerAdapter.OnItemClickListener,
         BaseRecyclerAdapter.OnItemLongClickListener, OnDialogFragmentDismissListener {
     private static final String KEY_TASK_ID = "key_task_id";
@@ -192,7 +193,7 @@ public class TaskAttachmentFragment extends BaseFragment
         footerAddView = HeaderFooterAdapter.inflaterView(getContext(), R.layout.footer_add_attachment, recyclerView);
         TextView attachmentTv = footerAddView.findViewById(R.id.add_attachment_view);
         if (attachmentTv != null) {
-            attachmentTv.setText("添加附件");
+            attachmentTv.setText(R.string.task_add_attachment);
         }
         registerClick(attachmentTv);
         headerFooterAdapter.addFooter(footerAddView);
@@ -216,6 +217,14 @@ public class TaskAttachmentFragment extends BaseFragment
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+        if (hasLookAttachmentPermission) {
+            getData(true);
+        }
+    }
+
+    @Override
     protected void getData(boolean isRefresh) {
         super.getData(isRefresh);
         callEnqueue(
@@ -223,6 +232,17 @@ public class TaskAttachmentFragment extends BaseFragment
                 new SimpleCallBack<List<TaskAttachmentEntity>>() {
                     @Override
                     public void onSuccess(Call<ResEntity<List<TaskAttachmentEntity>>> call, Response<ResEntity<List<TaskAttachmentEntity>>> response) {
+                        if (response.body().result != null) {
+                            //填充文件权限
+                            // 暂时先不做 ，删除seafile文件 任务附件的大小变成0kb 没有消失
+                         /*   for (TaskAttachmentEntity taskAttachmentEntity : response.body().result) {
+                                if (taskAttachmentEntity == null) continue;
+                                if (TextUtils.isEmpty(taskAttachmentEntity.filePermission)) {
+                                    taskAttachmentEntity.filePermission =
+                                            hasDeleteAttachmentPermission ? PERMISSION_RW : PERMISSION_R;
+                                }
+                            }*/
+                        }
                         taskAttachmentAdapter.bindData(true, response.body().result);
                     }
                 });
@@ -237,6 +257,22 @@ public class TaskAttachmentFragment extends BaseFragment
             default:
                 super.onClick(v);
                 break;
+        }
+    }
+
+    @Override
+    public void notifyFragmentUpdate(Fragment targetFrgament, int type, Bundle bundle) {
+        if (targetFrgament instanceof TaskAttachmentFragment) {
+            if (type == 100 && bundle != null) {
+                boolean isFinish = bundle.getBoolean("isFinish");
+                boolean valid = bundle.getBoolean("valid");
+                if (footerAddView != null)
+                    footerAddView.setVisibility(!isFinish && valid ? View.VISIBLE : View.GONE);
+                if (isFinish || !valid) {
+                    if (taskAttachmentAdapter != null)
+                        taskAttachmentAdapter.setOnItemLongClickListener(null);
+                }
+            }
         }
     }
 
@@ -384,13 +420,31 @@ public class TaskAttachmentFragment extends BaseFragment
         TaskAttachmentEntity item = taskAttachmentAdapter.getItem(position);
         if (item == null) return;
         if (item.pathInfoVo == null) return;
-        FileDownloadActivity.launch(
-                getContext(),
-                item.pathInfoVo.repoId,
-                FileUtils.getFileName(item.pathInfoVo.filePath),
-                item.fileSize,
-                item.pathInfoVo.filePath,
-                null);
+        //图片 直接预览
+        if (IMUtils.isPIC(item.getSeaFileFullPath())) {
+            List<TaskAttachmentEntity> allData = taskAttachmentAdapter.getData();
+
+            ArrayList<TaskAttachmentEntity> imageDatas = new ArrayList<>();
+            for (int i = 0; i < allData.size(); i++) {
+                TaskAttachmentEntity folderDocumentEntity = allData.get(i);
+                if (folderDocumentEntity == null) continue;
+                if (IMUtils.isPIC(folderDocumentEntity.getSeaFileFullPath())) {
+                    imageDatas.add(folderDocumentEntity);
+                }
+            }
+
+            int indexOf = imageDatas.indexOf(item);
+            ImageViewerActivity.launch(
+                    getContext(),
+                    SFileConfig.FILE_FROM_TASK,
+                    imageDatas,
+                    indexOf);
+        } else {
+            FileDownloadActivity.launch(
+                    getContext(),
+                    item,
+                    SFileConfig.FILE_FROM_TASK);
+        }
     }
 
 

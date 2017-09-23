@@ -37,5 +37,6 @@
     <string name="task_please_input_check_name">请输入检查项名称</string>
     <string name="task_no_permission_see_check">暂无权限查看</string>
     <string name="task_add_check_fail">添加检查项失败</string>
+    <string name="task_add_attachment">添加附件</string>
 
 </resources>

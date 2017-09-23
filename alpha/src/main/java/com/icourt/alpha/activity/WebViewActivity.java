@@ -33,7 +33,7 @@ import android.widget.TextView;
 import com.icourt.alpha.R;
 import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.base.BaseApplication;
-import com.icourt.alpha.utils.ActionConstants;
+import com.icourt.alpha.constants.DownloadConfig;
 import com.icourt.alpha.utils.FileUtils;
 import com.icourt.alpha.utils.NetUtils;
 import com.icourt.alpha.utils.StringUtils;
@@ -44,8 +44,6 @@ import com.liulishuo.filedownloader.FileDownloadListener;
 import com.liulishuo.filedownloader.FileDownloader;
 import com.liulishuo.filedownloader.exception.FileDownloadHttpException;
 import com.liulishuo.filedownloader.exception.FileDownloadOutOfSpaceException;
-
-import java.io.File;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -465,21 +463,14 @@ public class WebViewActivity extends BaseActivity implements DownloadListener {
     private void startDownload(String url) {
         log("----------->startDownload:" + url);
         if (Environment.isExternalStorageEmulated()) {
-            String ROOTPATH = Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator;
-            StringBuilder pathBuilder = new StringBuilder();
-            pathBuilder.append(ROOTPATH);
-            pathBuilder.append(ActionConstants.FILE_DOWNLOAD_PATH);
-            pathBuilder.append(File.separator);
-            pathBuilder.append(FileUtils.getFileName(url));
-
             FileDownloader
                     .getImpl()
                     .create(url)
-                    .setPath(pathBuilder.toString())
+                    .setPath(DownloadConfig.getCommFileDownloadPath(getLoginUserId(), FileUtils.getFileName(url)))
                     .setListener(fileDownloadListener)
                     .start();
         } else {
-            showTopSnackBar("sd卡不可用!");
+            showTopSnackBar(R.string.str_sd_unavailable);
         }
     }
 

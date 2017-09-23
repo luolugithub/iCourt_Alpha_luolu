@@ -1,5 +1,6 @@
 package com.icourt.alpha.entity.bean;
 
+import android.support.annotation.Nullable;
 import android.support.annotation.StringDef;
 import android.text.TextUtils;
 
@@ -15,13 +16,44 @@ import java.lang.annotation.RetentionPolicy;
  * date createTime：2017/8/17
  * version 2.1.0
  */
-public class FileChangedHistoryEntity implements ILongFieldEntity {
+public class FileChangedHistoryEntity implements ILongFieldEntity,ISeaFile {
     public static final String OP_TYPE_CREATE = "create";
     public static final String OP_TYPE_MOVE = "move";
     public static final String OP_TYPE_DELETE = "delete";
     public static final String OP_TYPE_RECOVER = "recover";
     public static final String OP_TYPE_RENAME = "rename";
     public static final String OP_TYPE_EDIT = "edit";
+
+    @Override
+    public String getSeaFileId() {
+        return null;
+    }
+
+    @Override
+    public String getSeaFileRepoId() {
+        return repo_id;
+    }
+
+    @Override
+    public String getSeaFileFullPath() {
+        return path;
+    }
+
+    @Nullable
+    @Override
+    public String getSeaFileVersionId() {
+        return null;
+    }
+
+    @Override
+    public long getSeaFileSize() {
+        return size;
+    }
+
+    @Override
+    public String getSeaFilePermission() {
+        return null;
+    }
 
     @StringDef({
             OP_TYPE_CREATE,

@@ -10,11 +10,7 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.icourt.alpha.R;
-import com.icourt.alpha.activity.FileBoxDownloadActivity;
-import com.icourt.alpha.activity.ImagePagerActivity;
-import com.icourt.alpha.activity.WebViewActivity;
 import com.icourt.alpha.adapter.baseadapter.BaseArrayRecyclerAdapter;
-import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.icourt.alpha.entity.bean.IMMessageCustomBody;
 import com.icourt.alpha.utils.DateUtils;
@@ -30,7 +26,6 @@ import com.netease.nimlib.sdk.team.model.Team;
 
 import java.util.List;
 
-import static com.icourt.alpha.R.id.file_img;
 import static com.icourt.alpha.constants.Const.CHAT_TYPE_P2P;
 import static com.icourt.alpha.constants.Const.CHAT_TYPE_TEAM;
 import static com.icourt.alpha.constants.Const.MSG_TYPE_ALPHA;
@@ -50,7 +45,7 @@ import static com.icourt.alpha.constants.Const.MSG_TYPE_VOICE;
  * date createTime：2017/4/17
  * version 1.0.0
  */
-public class ImUserMessageDetailAdapter extends BaseArrayRecyclerAdapter<IMMessageCustomBody> implements BaseRecyclerAdapter.OnItemChildClickListener, BaseRecyclerAdapter.OnItemClickListener {
+public class ImUserMessageDetailAdapter extends BaseArrayRecyclerAdapter<IMMessageCustomBody> {
     private static final int VIEW_TYPE_TEXT = 0;
     private static final int VIEW_TYPE_FILE = 1;
     private static final int VIEW_TYPE_FILE_IMG = 2;
@@ -62,8 +57,6 @@ public class ImUserMessageDetailAdapter extends BaseArrayRecyclerAdapter<IMMessa
     private List<GroupContactBean> groupContactBeans;
 
     public ImUserMessageDetailAdapter(@NonNull List<GroupContactBean> contactBeanList, List<Team> teams) {
-        this.setOnItemChildClickListener(this);
-        this.setOnItemClickListener(this);
         this.teams = teams;
         this.groupContactBeans = contactBeanList;
     }
@@ -232,19 +225,6 @@ public class ImUserMessageDetailAdapter extends BaseArrayRecyclerAdapter<IMMessa
     }
 
 
-    @Override
-    public void onItemChildClick(BaseRecyclerAdapter adapter, ViewHolder holder, View view, int position) {
-        switch (view.getId()) {
-            case file_img:
-                IMMessageCustomBody item = getItem(getRealPos(position));
-                if (item != null && item.ext != null) {
-                    ImagePagerActivity.launch(view.getContext(),
-                            new String[]{item.ext.thumb}, 0, item.id);
-                }
-                break;
-        }
-    }
-
 
     @Override
     public void onBindHoder(ViewHolder holder, IMMessageCustomBody imMessageCustomBody, int position) {
@@ -349,26 +329,5 @@ public class ImUserMessageDetailAdapter extends BaseArrayRecyclerAdapter<IMMessa
         file_upload_time.setText(DateUtils.getFormatChatTimeSimple(imMessageCustomBody.send_time));
     }
 
-    @Override
-    public void onItemClick(BaseRecyclerAdapter adapter, ViewHolder holder, View view, int position) {
-        IMMessageCustomBody item = getItem(adapter.getRealPos(position));
-        if (item == null) return;
-        switch (item.show_type) {
-            case MSG_TYPE_LINK:
-                if (item.ext != null) {
-                    WebViewActivity.launch(view.getContext(), item.ext.url);
-                }
-                break;
-            case MSG_TYPE_FILE:
-                //文件
-                if (item.ext != null) {
-                    FileBoxDownloadActivity.launchIMFile(view.getContext(),
-                            item.ext.path,
-                            item.ext.repo_id,
-                            item.ext.name,
-                            FileBoxDownloadActivity.IM_DOWNLOAD_FILE_ACTION);
-                }
-                break;
-        }
-    }
+
 }
