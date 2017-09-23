@@ -335,7 +335,7 @@ public class FolderListActivity extends FolderBaseActivity
                         //取消批量操作界面
                         onClick(titleEditCancelView);
 
-                        sortFile(wrapData(getSeaFileRepoId(), getSeaFileDirPath(), response.body()));
+                        sortFile(wrapData(getSeaFileRepoId(), getSeaFileDirPath(), response.body()), false);
                         stopRefresh();
                     }
 
@@ -555,7 +555,7 @@ public class FolderListActivity extends FolderBaseActivity
                         if (fileSortType != sortType) {
                             fileSortType = sortType;
                             showLoadingDialog(R.string.str_executing);
-                            sortFile(getAllData());
+                            sortFile(getAllData(), true);
                         }
                     }
                 }).show();
@@ -563,10 +563,13 @@ public class FolderListActivity extends FolderBaseActivity
 
     /**
      * 排序
+     *
+     * @param datas
+     * @param delay 是否延迟
      */
-    private void sortFile(List<FolderDocumentEntity> datas) {
+    private void sortFile(List<FolderDocumentEntity> datas, boolean delay) {
         seaFileSort(fileSortType, datas)
-                .delay(500, TimeUnit.MILLISECONDS)
+                .delay(delay ? 500 : 0, TimeUnit.MILLISECONDS)
                 .compose(this.<List<FolderDocumentEntity>>bindToLifecycle())
                 .subscribeOn(Schedulers.newThread())
                 .observeOn(AndroidSchedulers.mainThread())
