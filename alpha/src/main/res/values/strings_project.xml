@@ -36,7 +36,7 @@
 
     <string name="project_range">程序</string>
     <string name="project_range_name">程序名称</string>
-    <string name="project_priceStr">标的</string>
+    <string name="project_priceStr">标的额</string>
     <string name="project_connected_price">涉案金额</string>
     <string name="project_case">案由</string>
     <string name="project_case_code">案号</string>
