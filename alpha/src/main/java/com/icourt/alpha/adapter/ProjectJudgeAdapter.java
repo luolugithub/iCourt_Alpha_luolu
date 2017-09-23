@@ -63,5 +63,6 @@ public class ProjectJudgeAdapter<T> extends BaseArrayRecyclerAdapter<T> {
             nameview.setText(caseCodesBean.crowdedName);
             phoneview.setVisibility(View.GONE);
         }
+        holder.bindChildClick(phoneview);
     }
 }

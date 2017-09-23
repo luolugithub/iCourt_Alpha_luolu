@@ -88,6 +88,7 @@ public class ProjectProcessesEntity implements Serializable {
             public String id;
             public String text;
             public String phone;
+            public String type;
 
         }
     }

@@ -157,6 +157,8 @@ public class TaskDetailActivity extends BaseActivity
     TaskEntity.TaskItemEntity taskItemEntity;
     TaskUsersAdapter usersAdapter;
     TaskDetailFragment taskDetailFragment;
+    TaskCheckItemFragment taskCheckItemFragment;
+    TaskAttachmentFragment taskAttachmentFragment;
 
     final SparseArray<CharSequence> tabTitles = new SparseArray<>();
 
@@ -206,6 +208,7 @@ public class TaskDetailActivity extends BaseActivity
                 taskTablayout.setFocusableInTouchMode(true);
                 taskTablayout.requestFocus();//请求焦点
                 taskTablayout.findFocus();//获取焦点
+                updateTabItemFragment();
             }
 
             @Override
@@ -684,7 +687,7 @@ public class TaskDetailActivity extends BaseActivity
      */
     private boolean hasDocumentAddPermission() {
         if (taskItemEntity != null && taskItemEntity.right != null) {
-            return taskItemEntity.valid
+            return !taskItemEntity.state && taskItemEntity.valid
                     && taskItemEntity.right.contains("MAT:matter.document:readwrite");
         }
         return false;
@@ -815,17 +818,19 @@ public class TaskDetailActivity extends BaseActivity
                     tabTitles.get(2, "")));
             baseFragmentAdapter.bindData(true, Arrays.asList(
                     taskDetailFragment == null ? taskDetailFragment = TaskDetailFragment.newInstance(taskItemEntity) : taskDetailFragment,
-                    TaskCheckItemFragment.newInstance(taskItemEntity.id, hasTaskEditPermission(), taskItemEntity.valid),
-                    TaskAttachmentFragment.newInstance(
+                    taskCheckItemFragment == null ? taskCheckItemFragment = TaskCheckItemFragment.newInstance(
+                            taskItemEntity,
+                            hasTaskEditPermission()) : taskCheckItemFragment,
+                    taskAttachmentFragment == null ? taskAttachmentFragment = TaskAttachmentFragment.newInstance(
                             taskItemEntity.id,
                             taskItemEntity.matterId,
                             taskItemEntity.matter != null ? taskItemEntity.matter.name : "",
                             hasDocumentLookPermission(),
                             hasDocumentAddPermission(),
-                            hasTaskEditPermission())
+                            hasTaskEditPermission()) : taskAttachmentFragment
             ));
 
-            updateDetailFargment();
+            updateTabItemFragment();
 
             if (taskItemEntity.attendeeUsers != null) {
                 if (taskItemEntity.attendeeUsers.size() > 0) {
@@ -866,14 +871,22 @@ public class TaskDetailActivity extends BaseActivity
     }
 
     /**
-     * 更新任务详情fragment
+     * 更新tab的每个fragment
      */
-    private void updateDetailFargment() {
+    private void updateTabItemFragment() {
         Bundle bundle = new Bundle();
         bundle.putBoolean("isFinish", taskItemEntity.state);
         bundle.putBoolean("valid", taskItemEntity.valid);
         bundle.putSerializable("taskItemEntity", taskItemEntity);
-        taskDetailFragment.notifyFragmentUpdate(taskDetailFragment, 100, bundle);
+        if (taskDetailFragment != null) {
+            taskDetailFragment.notifyFragmentUpdate(taskDetailFragment, 100, bundle);
+        }
+        if (taskCheckItemFragment != null) {
+            taskCheckItemFragment.notifyFragmentUpdate(taskCheckItemFragment, 100, bundle);
+        }
+        if (taskAttachmentFragment != null) {
+            taskAttachmentFragment.notifyFragmentUpdate(taskAttachmentFragment, 100, bundle);
+        }
     }
 
     /**
@@ -909,7 +922,7 @@ public class TaskDetailActivity extends BaseActivity
                         taskUserArrowIv.setVisibility(View.VISIBLE);
                         taskStartIamge.setVisibility(View.VISIBLE);
                         taskItemEntity.valid = true;
-                        updateDetailFargment();
+                        updateTabItemFragment();
                         EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_DELETE_ACTION, taskItemEntity));
                     }
 

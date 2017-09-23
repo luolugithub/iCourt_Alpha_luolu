@@ -9,14 +9,10 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.icourt.alpha.BuildConfig;
 import com.icourt.alpha.R;
-import com.icourt.alpha.adapter.baseadapter.BaseArrayRecyclerAdapter;
 import com.icourt.alpha.entity.bean.SFileSearchEntity;
 import com.icourt.alpha.utils.FileUtils;
-import com.icourt.alpha.utils.GlideUtils;
 import com.icourt.alpha.utils.IMUtils;
-import com.icourt.alpha.utils.SFileTokenUtils;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -28,7 +24,7 @@ import java.util.regex.Pattern;
  * date createTime：2017/8/20
  * version 2.1.0
  */
-public class SFileSearchAdapter extends BaseArrayRecyclerAdapter<SFileSearchEntity> {
+public class SFileSearchAdapter extends SeaFileImageBaseAdapter<SFileSearchEntity> {
 
 
     @Override
@@ -57,7 +53,7 @@ public class SFileSearchAdapter extends BaseArrayRecyclerAdapter<SFileSearchEnti
             folder_type_iv.setImageResource(R.mipmap.folder);
         } else {//文件是图片加载缩略图
             if (IMUtils.isPIC(sFileSearchEntity.name)) {
-                loadSFileImage(sFileSearchEntity.repo_id, sFileSearchEntity.fullpath, folder_type_iv);
+                loadSFileImage(sFileSearchEntity,folder_type_iv);
             } else {
                 folder_type_iv.setImageResource(FileUtils.getSFileIcon(sFileSearchEntity.name));
             }
@@ -113,29 +109,4 @@ public class SFileSearchAdapter extends BaseArrayRecyclerAdapter<SFileSearchEnti
         return spannableString;
     }
 
-    /**
-     * 加载图片
-     *
-     * @param seaFileRepoId
-     * @param view
-     */
-    protected void loadSFileImage(String seaFileRepoId, String fullPath, ImageView view) {
-        if (view == null) return;
-        GlideUtils.loadSFilePic(view.getContext(), getSFileImageThumbUrl(seaFileRepoId, fullPath), view);
-    }
-
-    /**
-     * 获取地址
-     *
-     * @param fullPath 全路径
-     * @return
-     */
-    protected String getSFileImageThumbUrl(String seaFileRepoId, String fullPath) {
-        return String.format("%silaw/api/v2/documents/thumbnailImage?repoId=%s&seafileToken=%s&p=%s&size=%s",
-                BuildConfig.API_URL,
-                seaFileRepoId,
-                SFileTokenUtils.getSFileToken(),
-                fullPath,
-                150);
-    }
 }

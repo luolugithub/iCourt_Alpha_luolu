@@ -5,7 +5,7 @@ import android.widget.ImageView;
 
 import com.icourt.alpha.BuildConfig;
 import com.icourt.alpha.adapter.baseadapter.BaseArrayRecyclerAdapter;
-import com.icourt.alpha.entity.bean.ISeaFileImage;
+import com.icourt.alpha.entity.bean.ISeaFile;
 import com.icourt.alpha.utils.FileUtils;
 import com.icourt.alpha.utils.GlideUtils;
 import com.icourt.alpha.utils.SFileTokenUtils;
@@ -18,12 +18,13 @@ import com.icourt.alpha.utils.UrlUtils;
  * date createTime：2017/9/12
  * version 2.1.0
  */
-public abstract class SeaFileImageBaseAdapter<T extends ISeaFileImage> extends BaseArrayRecyclerAdapter<T> {
+public abstract class SeaFileImageBaseAdapter<T extends ISeaFile> extends BaseArrayRecyclerAdapter<T> {
     boolean selectable;
 
     public SeaFileImageBaseAdapter(boolean selectable) {
         this.selectable = selectable;
     }
+
     public SeaFileImageBaseAdapter() {
     }
 
@@ -38,28 +39,28 @@ public abstract class SeaFileImageBaseAdapter<T extends ISeaFileImage> extends B
     /**
      * 加载图片
      *
-     * @param iSeaFileImage
+     * @param iSeaFile
      * @param view
      */
-    protected void loadSFileImage(ISeaFileImage iSeaFileImage, ImageView view) {
-        if (iSeaFileImage == null) return;
+    protected void loadSFileImage(ISeaFile iSeaFile, ImageView view) {
+        if (iSeaFile == null) return;
         if (view == null) return;
-        GlideUtils.loadSFilePic(view.getContext(), getSFileImageThumbUrl(iSeaFileImage), view);
+        GlideUtils.loadSFilePic(view.getContext(), getSFileImageThumbUrl(iSeaFile), view);
     }
 
     /**
      * 获取图片地址
      *
-     * @param iSeaFileImage
+     * @param iSeaFile
      * @return
      */
-    protected String getSFileImageThumbUrl(ISeaFileImage iSeaFileImage) {
+    protected String getSFileImageThumbUrl(ISeaFile iSeaFile) {
         return String.format("%silaw/api/v2/documents/thumbnailImage?repoId=%s&seafileToken=%s&p=%s&size=%s",
                 BuildConfig.API_URL,
-                iSeaFileImage.getSeaFileImageRepoId(),
+                iSeaFile.getSeaFileRepoId(),
                 SFileTokenUtils.getSFileToken(),
-                UrlUtils.encodeUrl(iSeaFileImage.getSeaFileImageFullPath()),
-                150);
+                UrlUtils.encodeUrl(iSeaFile.getSeaFileFullPath()),
+                400);
     }
 
     /**

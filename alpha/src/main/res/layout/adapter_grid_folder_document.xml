@@ -32,7 +32,7 @@
 
     </LinearLayout>
 
-    <ImageView
+    <com.icourt.alpha.view.SquareImageView
         android:id="@+id/document_pic_iv"
         android:layout_width="match_parent"
         android:layout_height="match_parent"

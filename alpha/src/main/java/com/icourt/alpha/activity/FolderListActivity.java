@@ -26,7 +26,6 @@ import android.widget.TextView;
 import com.andview.refreshview.XRefreshView;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.icourt.alpha.BuildConfig;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.FolderDocumentAdapter;
 import com.icourt.alpha.adapter.FolderDocumentWrapAdapter;
@@ -46,12 +45,11 @@ import com.icourt.alpha.http.IDefNotify;
 import com.icourt.alpha.http.callback.SFileCallBack;
 import com.icourt.alpha.http.observer.BaseObserver;
 import com.icourt.alpha.interfaces.OnDialogFragmentDismissListener;
+import com.icourt.alpha.utils.FileUtils;
 import com.icourt.alpha.utils.IMUtils;
-import com.icourt.alpha.utils.SFileTokenUtils;
 import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.utils.UriUtils;
-import com.icourt.alpha.utils.UrlUtils;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 import com.icourt.alpha.widget.comparators.FileSortComparator;
 import com.icourt.alpha.widget.dialog.BottomActionDialog;
@@ -66,6 +64,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -74,7 +73,6 @@ import cn.finalteam.galleryfinal.GalleryFinal;
 import cn.finalteam.galleryfinal.model.PhotoInfo;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
-import io.reactivex.functions.Function;
 import io.reactivex.schedulers.Schedulers;
 import retrofit2.Call;
 import retrofit2.Response;
@@ -138,10 +136,9 @@ public class FolderListActivity extends FolderBaseActivity
     LinearLayout bottomBarLayout;
     @BindView(R.id.bottom_bar_all_select_cb)
     CheckBox bottomBarAllSelectCb;
+    ImageView headerSearchDirectionIv;
 
     int fileSortType = FILE_SORT_TYPE_DEFAULT;
-    final ArrayList<String> bigImageUrls = new ArrayList<>();
-    final ArrayList<String> smallImageUrls = new ArrayList<>();
     boolean isEncrypted;
 
 
@@ -149,10 +146,8 @@ public class FolderListActivity extends FolderBaseActivity
         @Override
         public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
             if (b) {
-                List<List<FolderDocumentEntity>> data = folderDocumentAdapter.getData();
-                for (List<FolderDocumentEntity> documentEntities : data) {
-                    selectedFolderDocuments.addAll(documentEntities);
-                }
+                selectedFolderDocuments.clear();
+                selectedFolderDocuments.addAll(getAllData());
                 folderDocumentAdapter.notifyDataSetChanged();
             } else {
                 if (!selectedFolderDocuments.isEmpty()) {
@@ -256,7 +251,10 @@ public class FolderListActivity extends FolderBaseActivity
                     } else {
                         footerView.setText(getString(R.string.sfile_folder_statistics, String.valueOf(dirNum), String.valueOf(fileNum)));
                     }
-
+                }
+                if (headerSearchDirectionIv != null) {
+                    headerSearchDirectionIv.setImageResource(folderDocumentAdapter.getAdapterViewType() == VIEW_TYPE_ITEM
+                            ? R.mipmap.thumb : R.mipmap.list);
                 }
             }
         });
@@ -299,7 +297,8 @@ public class FolderListActivity extends FolderBaseActivity
 
     private void addHeadView() {
         headerView = HeaderFooterAdapter.inflaterView(getContext(), R.layout.header_search_folder_document, recyclerView);
-        registerClick(headerView.findViewById(R.id.header_search_direction_iv));
+        headerSearchDirectionIv = headerView.findViewById(R.id.header_search_direction_iv);
+        registerClick(headerSearchDirectionIv);
         registerClick(headerView.findViewById(R.id.header_search_sort_iv));
         registerClick(headerView.findViewById(R.id.header_comm_search_ll));
         headerFooterAdapter.addHeader(headerView);
@@ -486,16 +485,27 @@ public class FolderListActivity extends FolderBaseActivity
     }
 
     private void showActionMoreDialog() {
-        List<String> strings;
-        if (folderDocumentAdapter.getItemCount() <= 0
-                || !TextUtils.equals(getRepoPermission(), PERMISSION_RW)) {
-            strings = Arrays.asList(getResources().getStringArray(R.array.sfile_folder_menus_r_array));
-        } else {
-            strings = Arrays.asList(getResources().getStringArray(R.array.sfile_folder_menus_rw_array));
+
+        ArrayList<String> menus = new ArrayList<>();
+        menus.add(getString(R.string.sfile_menu_repo_details));
+        //如果是非根目录 显示文件夹详情按钮
+        boolean isRepoRoot = TextUtils.isEmpty(getSeaFileDirPath())
+                || TextUtils.equals(getSeaFileDirPath(), "/");
+        //只有我的资料库 有文件夹详情
+        if (!isRepoRoot
+                && getRepoType() == SFileConfig.REPO_MINE) {
+            menus.add(getString(R.string.sfile_folder_details));
         }
+        //有读写权限 并且列表不为空
+        if (TextUtils.equals(getRepoPermission(), PERMISSION_RW)
+                && folderDocumentAdapter.getItemCount() > 0) {
+            menus.add(getString(R.string.sfile_menu_batch_operation));
+        }
+        menus.add(getString(R.string.sfile_menu_recycle_bin));
+
         new BottomActionDialog(getContext(),
                 null,
-                strings,
+                menus,
                 new BottomActionDialog.OnActionItemClickListener() {
                     @Override
                     public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
@@ -509,6 +519,15 @@ public class FolderListActivity extends FolderBaseActivity
                             RepoDetailsDialogFragment.show(
                                     getRepoType(),
                                     getSeaFileRepoId(),
+                                    0,
+                                    getRepoPermission(),
+                                    getSupportFragmentManager());
+                        } else if (TextUtils.equals(action, getString(R.string.sfile_folder_details))) {
+                            FolderDetailDialogFragment.show(
+                                    getRepoType(),
+                                    getSeaFileRepoId(),
+                                    FileUtils.getFileParentDir(getSeaFileDirPath()),
+                                    getRepoTitle(),
                                     0,
                                     getRepoPermission(),
                                     getSupportFragmentManager());
@@ -547,22 +566,7 @@ public class FolderListActivity extends FolderBaseActivity
      */
     private void sortFile(List<FolderDocumentEntity> datas) {
         seaFileSort(fileSortType, datas)
-                .map(new Function<List<FolderDocumentEntity>, List<FolderDocumentEntity>>() {
-                    @Override
-                    public List<FolderDocumentEntity> apply(@NonNull List<FolderDocumentEntity> folderDocumentEntities) throws Exception {
-                        bigImageUrls.clear();
-                        smallImageUrls.clear();
-                        for (int i = 0; i < folderDocumentEntities.size(); i++) {
-                            FolderDocumentEntity folderDocumentEntity = folderDocumentEntities.get(i);
-                            if (folderDocumentEntity == null) continue;
-                            if (IMUtils.isPIC(folderDocumentEntity.name)) {
-                                bigImageUrls.add(getSFileImageUrl(folderDocumentEntity.name, Integer.MAX_VALUE));
-                                smallImageUrls.add(getSFileImageUrl(folderDocumentEntity.name, 800));
-                            }
-                        }
-                        return folderDocumentEntities;
-                    }
-                })
+                .delay(500, TimeUnit.MILLISECONDS)
                 .compose(this.<List<FolderDocumentEntity>>bindToLifecycle())
                 .subscribeOn(Schedulers.newThread())
                 .observeOn(AndroidSchedulers.mainThread())
@@ -781,35 +785,31 @@ public class FolderListActivity extends FolderBaseActivity
                 } else {
                     //图片 直接预览 (加密的资料库 缩略图显示不了)
                     if (!isEncrypted && IMUtils.isPIC(item.name)) {
-                        int indexOf = bigImageUrls.indexOf(getSFileImageUrl(item.name, Integer.MAX_VALUE));
+                        List<FolderDocumentEntity> allData = getAllData();
+                        ArrayList<FolderDocumentEntity> imageDatas = new ArrayList<>();
+
+                        for (int i = 0; i < allData.size(); i++) {
+                            FolderDocumentEntity folderDocumentEntity = allData.get(i);
+                            if (folderDocumentEntity == null) continue;
+                            if (IMUtils.isPIC(folderDocumentEntity.name)) {
+                                imageDatas.add(folderDocumentEntity);
+                            }
+                        }
+                        int indexOf = imageDatas.indexOf(item);
                         ImageViewerActivity.launch(
                                 getContext(),
-                                smallImageUrls,
-                                bigImageUrls,
+                                SFileConfig.FILE_FROM_REPO,
+                                imageDatas,
                                 indexOf);
                     } else {
                         FileDownloadActivity.launch(
                                 getContext(),
-                                getSeaFileRepoId(),
-                                item.name,
-                                item.size,
-                                String.format("%s%s", getSeaFileDirPath(), item.name),
-                                null,
-                                FileDownloadActivity.FILE_FROM_REPO);
+                                item,
+                                SFileConfig.FILE_FROM_REPO);
                     }
                 }
             }
         }
-    }
-
-
-    protected String getSFileImageUrl(String name, int size) {
-        return String.format("%silaw/api/v2/documents/thumbnailImage?repoId=%s&seafileToken=%s&size=%s&p=%s",
-                BuildConfig.API_URL,
-                getSeaFileRepoId(),
-                SFileTokenUtils.getSFileToken(),
-                size,
-                UrlUtils.encodeUrl(String.format("%s%s", getSeaFileDirPath(), name)));
     }
 
 
@@ -852,14 +852,35 @@ public class FolderListActivity extends FolderBaseActivity
     private void showFolderActionMenu(BaseRecyclerAdapter adapter, int position) {
         final FolderDocumentEntity item = (FolderDocumentEntity) adapter.getItem(position);
         if (item == null) return;
-        List<String> strings = Arrays.asList(getResources().getStringArray(R.array.sfile_file_menus_array));
+        ArrayList<String> menus = new ArrayList<>();
         if (item.isDir()) {
-            strings = Arrays.asList(getResources().getStringArray(R.array.sfile_folder_menus_array));
+            //非我的资料库 不能展示查看文件夹详情与共享
+            if (getRepoType() == SFileConfig.REPO_MINE) {
+                menus.add(getString(R.string.sfile_folder_details));
+            }
+            menus.add(getString(R.string.sfile_file_rename));
+            if (getRepoType() == SFileConfig.REPO_MINE) {
+                menus.add(getString(R.string.sfile_folder_share));
+            }
+            menus.add(getString(R.string.sfile_file_copy));
+            menus.add(getString(R.string.sfile_file_move));
+            menus.add(getString(R.string.sfile_file_delete));
+        } else {
+            menus.add(getString(R.string.sfile_file_details));
+            menus.add(getString(R.string.sfile_file_rename));
+            //已经共享给我 不能再共享给别人了
+            if (getRepoType() != SFileConfig.REPO_SHARED_ME) {
+                menus.add(getString(R.string.sfile_file_share));
+            }
+            menus.add(getString(R.string.sfile_file_copy));
+            menus.add(getString(R.string.sfile_file_move));
+            menus.add(getString(R.string.sfile_file_delete));
         }
+
         new BottomActionDialog(
                 getContext(),
                 null,
-                strings,
+                menus,
                 new BottomActionDialog.OnActionItemClickListener() {
                     @Override
                     public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
@@ -878,15 +899,16 @@ public class FolderListActivity extends FolderBaseActivity
                                 || TextUtils.equals(action, getString(R.string.sfile_folder_share))) {
                             if (item.isDir()) {
                                 FolderDetailDialogFragment.show(
+                                        getRepoType(),
                                         getSeaFileRepoId(),
                                         getSeaFileDirPath(),
                                         item.name,
-                                        item.size,
                                         0,
                                         getRepoPermission(),
                                         getSupportFragmentManager());
                             } else {
                                 FileDetailDialogFragment.show(
+                                        getRepoType(),
                                         getSeaFileRepoId(),
                                         getSeaFileDirPath(),
                                         item.name,
@@ -916,15 +938,16 @@ public class FolderListActivity extends FolderBaseActivity
         if (item == null) return;
         if (item.isDir()) {
             FolderDetailDialogFragment.show(
+                    getRepoType(),
                     getSeaFileRepoId(),
                     getSeaFileDirPath(),
                     item.name,
-                    item.size,
                     0,
                     getRepoPermission(),
                     getSupportFragmentManager());
         } else {
             FileDetailDialogFragment.show(
+                    getRepoType(),
                     getSeaFileRepoId(),
                     getSeaFileDirPath(),
                     item.name,
@@ -944,12 +967,6 @@ public class FolderListActivity extends FolderBaseActivity
         if (fragment != null) {
             mFragTransaction.remove(fragment);
         }
-        ArrayList<String> selectedFileNames = new ArrayList<>();
-        for (int i = 0; i < folderDocumentEntities.size(); i++) {
-            FolderDocumentEntity folderDocumentEntity = folderDocumentEntities.get(i);
-            if (folderDocumentEntity == null) continue;
-            selectedFileNames.add(folderDocumentEntity.name);
-        }
         FolderTargetListDialogFragment.newInstance(
                 folderActionType,
                 getRepoType(),
@@ -957,7 +974,7 @@ public class FolderListActivity extends FolderBaseActivity
                 getSeaFileDirPath(),
                 getSeaFileRepoId(),
                 getSeaFileDirPath(),
-                selectedFileNames)
+                folderDocumentEntities)
                 .show(mFragTransaction, tag);
     }
 
@@ -1016,7 +1033,7 @@ public class FolderListActivity extends FolderBaseActivity
         new BottomActionDialog(
                 getContext(),
                 getString(R.string.sfile_delete_confirm),
-                Arrays.asList(getString(R.string.str_delete)),
+                Arrays.asList(getString(R.string.str_ok)),
                 l).show();
     }
 

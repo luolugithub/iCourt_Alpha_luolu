@@ -47,6 +47,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -91,9 +92,6 @@ public class ProjectFileFragment extends SeaFileBaseFragment
     String path;
     int fileSortType = FILE_SORT_TYPE_DEFAULT;
 
-
-    final ArrayList<String> bigImageUrls = new ArrayList<>();
-    final ArrayList<String> smallImageUrls = new ArrayList<>();
     private GalleryFinal.OnHanlderResultCallback mOnHanlderResultCallback = new GalleryFinal.OnHanlderResultCallback() {
         @Override
         public void onHanlderSuccess(int reqeustCode, List<PhotoInfo> resultList) {
@@ -383,22 +381,7 @@ public class ProjectFileFragment extends SeaFileBaseFragment
      */
     private void sortFile(List<FolderDocumentEntity> datas) {
         seaFileSort(fileSortType, datas)
-                .map(new Function<List<FolderDocumentEntity>, List<FolderDocumentEntity>>() {
-                    @Override
-                    public List<FolderDocumentEntity> apply(@NonNull List<FolderDocumentEntity> folderDocumentEntities) throws Exception {
-                        bigImageUrls.clear();
-                        smallImageUrls.clear();
-                        for (int i = 0; i < folderDocumentEntities.size(); i++) {
-                            FolderDocumentEntity folderDocumentEntity = folderDocumentEntities.get(i);
-                            if (folderDocumentEntity == null) continue;
-                            if (IMUtils.isPIC(folderDocumentEntity.name)) {
-                                bigImageUrls.add(getSFileImageUrl(folderDocumentEntity.name, Integer.MAX_VALUE));
-                                smallImageUrls.add(getSFileImageUrl(folderDocumentEntity.name, 800));
-                            }
-                        }
-                        return folderDocumentEntities;
-                    }
-                })
+                .delay(500, TimeUnit.MILLISECONDS)
                 .compose(this.<List<FolderDocumentEntity>>bindToLifecycle())
                 .subscribeOn(Schedulers.newThread())
                 .observeOn(AndroidSchedulers.mainThread())
@@ -535,21 +518,25 @@ public class ProjectFileFragment extends SeaFileBaseFragment
         } else {
             //图片 直接预览
             if (IMUtils.isPIC(item.name)) {
-                int indexOf = bigImageUrls.indexOf(getSFileImageUrl(item.name, Integer.MAX_VALUE));
+                ArrayList<FolderDocumentEntity> imageDatas = new ArrayList<>();
+                for (int i = 0; i < folderAdapter.getItemCount(); i++) {
+                    FolderDocumentEntity folderDocumentEntity = folderAdapter.getItem(i);
+                    if (folderDocumentEntity == null) continue;
+                    if (IMUtils.isPIC(folderDocumentEntity.name)) {
+                        imageDatas.add(folderDocumentEntity);
+                    }
+                }
+                int indexOf = imageDatas.indexOf(item);
                 ImageViewerActivity.launch(
                         getContext(),
-                        smallImageUrls,
-                        bigImageUrls,
+                        SFileConfig.FILE_FROM_PROJECT,
+                        imageDatas,
                         indexOf);
             } else {
                 FileDownloadActivity.launch(
                         getContext(),
-                        getSeaFileRepoId(),
-                        item.name,
-                        item.size,
-                        String.format("%s%s", getSeaFileDirPath(), item.name),
-                        null,
-                        FileDownloadActivity.FILE_FROM_PROJECT);
+                        item,
+                        SFileConfig.FILE_FROM_PROJECT);
             }
         }
     }

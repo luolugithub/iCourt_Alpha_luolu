@@ -184,7 +184,7 @@ public class FolderRenameActivity extends FolderCreateActivity {
 
     @Override
     protected boolean onCancelSubmitInput(final EditText et) {
-        if (TextUtils.isEmpty(et.getText())) {
+        if (StringUtils.isEmpty(et.getText())) {
             finish();
             return false;
         }

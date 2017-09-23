@@ -21,9 +21,11 @@ import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.HeaderFooterAdapter;
 import com.icourt.alpha.adapter.baseadapter.adapterObserver.DataChangeAdapterObserver;
 import com.icourt.alpha.base.BaseDialogFragment;
+import com.icourt.alpha.constants.DownloadConfig;
 import com.icourt.alpha.constants.SFileConfig;
 import com.icourt.alpha.entity.bean.FileChangedHistoryEntity;
 import com.icourt.alpha.entity.bean.FolderDocumentEntity;
+import com.icourt.alpha.entity.bean.ISeaFile;
 import com.icourt.alpha.entity.bean.RepoMatterEntity;
 import com.icourt.alpha.http.callback.SFileCallBack;
 import com.icourt.alpha.http.callback.SimpleCallBack;
@@ -31,6 +33,7 @@ import com.icourt.alpha.http.callback.SimpleCallBack2;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.OnFragmentDataChangeListener;
 import com.icourt.alpha.utils.ActionConstants;
+import com.icourt.alpha.utils.FileUtils;
 import com.icourt.alpha.utils.JsonUtils;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 import com.icourt.alpha.widget.dialog.BottomActionDialog;
@@ -523,7 +526,7 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
      *
      * @param item
      */
-    private void deleteFile(FileChangedHistoryEntity item) {
+    private void deleteFile(final FileChangedHistoryEntity item) {
         showLoadingDialog(R.string.str_executing);
         callEnqueue(getSFileApi().fileDelete(
                 item.repo_id,
@@ -534,6 +537,7 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
                         dismissLoadingDialog();
                         if (JsonUtils.getBoolValue(response.body(), STRING_HTTP_SUCCESS)) {
                             showToast(R.string.sfile_revert_success);
+                            deletCachedSeaFile(item);
                             delayRefresh();
                         } else {
                             showToast(R.string.sfile_revert_fail);
@@ -552,6 +556,15 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
                         //super.defNotify(noticeStr);
                     }
                 });
+    }
+
+    /**
+     * 删除缓存的seafile
+     *
+     * @param item
+     */
+    private void deletCachedSeaFile(ISeaFile item) {
+        FileUtils.deleteFile(DownloadConfig.getSeaFileDownloadPath(getLoginUserId(), item));
     }
 
     /**
