@@ -4,7 +4,6 @@ import android.app.Dialog;
 import android.os.Bundle;
 import android.support.annotation.CallSuper;
 import android.support.annotation.Nullable;
-import android.support.design.widget.TabLayout;
 import android.support.v4.view.ViewPager;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -18,6 +17,7 @@ import android.widget.TextView;
 import com.icourt.alpha.R;
 import com.icourt.alpha.base.BaseDialogFragment;
 import com.icourt.alpha.constants.SFileConfig;
+import com.icourt.alpha.view.tab.AlphaTabLayout;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -55,7 +55,7 @@ public class FileDetailsBaseDialogFragment extends BaseDialogFragment {
     @BindView(R.id.file_update_info_tv)
     TextView fileUpdateInfoTv;
     @BindView(R.id.tabLayout)
-    TabLayout tabLayout;
+    AlphaTabLayout tabLayout;
     @BindView(R.id.viewPager)
     ViewPager viewPager;
     Unbinder unbinder;

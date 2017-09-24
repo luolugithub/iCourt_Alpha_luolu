@@ -28,4 +28,12 @@
     <!-- 布局的内容边距 常见左边距;右边距; -->
     <dimen name="alpha_padding_content">15dp</dimen>          <!-- 内容边距 -->
 
+
+    <!-- tab相关 -->
+    <color name="alpha_tab_title_txt_color">#979797</color>
+    <color name="alpha_tab_title_txt_selected_color">#313131</color>
+    <dimen name="alpha_tab_title_txt_size">17sp</dimen>
+    <color name="alpha_tab_title_indicator_color">@color/alpha_font_color_orange</color>
+    <dimen name="alpha_tab_title_indicator_height">2dp</dimen>
+
 </resources>

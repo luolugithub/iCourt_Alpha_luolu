@@ -3,7 +3,6 @@ package com.icourt.alpha.fragment;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
 import android.view.LayoutInflater;
@@ -19,9 +18,13 @@ import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.interfaces.OnPageFragmentCallBack;
 import com.icourt.alpha.interfaces.OnTabDoubleClickListener;
 import com.icourt.alpha.service.SyncDataService;
+import com.icourt.alpha.view.tab.AlphaTabLayout;
+import com.icourt.alpha.view.tab.AlphaTitleNavigatorAdapter;
 import com.icourt.alpha.widget.nim.GlobalMessageObserver;
 import com.netease.nimlib.sdk.NIMClient;
 import com.netease.nimlib.sdk.msg.MsgServiceObserve;
+
+import net.lucode.hackware.magicindicator.buildins.commonnavigator.CommonNavigator;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -48,7 +51,7 @@ public class TabNewsFragment extends BaseFragment
 
     Unbinder unbinder;
     @BindView(R.id.tabLayout)
-    TabLayout tabLayout;
+    AlphaTabLayout tabLayout;
     @BindView(R.id.viewPager)
     ViewPager viewPager;
     OnFragmentCallBackListener parentFragmentCallBackListener;
@@ -97,12 +100,33 @@ public class TabNewsFragment extends BaseFragment
     protected void initView() {
         EventBus.getDefault().register(this);
         viewPager.setAdapter(baseFragmentAdapter = new BaseFragmentAdapter(getChildFragmentManager()));
-        tabLayout.setupWithViewPager(viewPager);
         baseFragmentAdapter.bindTitle(true, Arrays.asList("消息", "@我的", "通讯录"));
         baseFragmentAdapter.bindData(true,
                 Arrays.asList(MessageListFragment.newInstance(),
                         AtMeFragment.newInstance(),
                         ContactListFragment.newInstance()));
+
+
+        CommonNavigator commonNavigator = new CommonNavigator(getContext());
+        commonNavigator.setAdapter(new AlphaTitleNavigatorAdapter() {
+            @Nullable
+            @Override
+            public CharSequence getTitle(int index) {
+                return baseFragmentAdapter.getPageTitle(index);
+            }
+
+            @Override
+            public int getCount() {
+                return baseFragmentAdapter.getCount();
+            }
+
+            @Override
+            public void onTabClick(View v, int pos) {
+                viewPager.setCurrentItem(pos, true);
+            }
+        });
+        tabLayout.setNavigator2(commonNavigator)
+                .setupWithViewPager(viewPager);
     }
 
     @Override
