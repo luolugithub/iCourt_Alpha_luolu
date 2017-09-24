@@ -3,6 +3,7 @@ package com.icourt.alpha.fragment.dialogfragment;
 import android.os.Bundle;
 import android.support.annotation.IntRange;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
@@ -19,7 +20,10 @@ import com.icourt.alpha.http.callback.SFileCallBack;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.FileUtils;
 import com.icourt.alpha.utils.StringUtils;
+import com.icourt.alpha.view.tab.AlphaTitleNavigatorAdapter;
 import com.icourt.alpha.widget.comparators.FileSortComparator;
+
+import net.lucode.hackware.magicindicator.buildins.commonnavigator.CommonNavigator;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -92,7 +96,26 @@ public class FolderDetailDialogFragment extends FileDetailsBaseDialogFragment {
         fileVersionTv.setVisibility(View.GONE);
 
         viewPager.setAdapter(baseFragmentAdapter = new BaseFragmentAdapter(getChildFragmentManager()));
-        tabLayout.setupWithViewPager(viewPager);
+        CommonNavigator commonNavigator = new CommonNavigator(getContext());
+        commonNavigator.setAdapter(new AlphaTitleNavigatorAdapter(1.0f) {
+            @Nullable
+            @Override
+            public CharSequence getTitle(int index) {
+                return baseFragmentAdapter.getPageTitle(index);
+            }
+
+            @Override
+            public int getCount() {
+                return baseFragmentAdapter.getCount();
+            }
+
+            @Override
+            public void onTabClick(View v, int pos) {
+                viewPager.setCurrentItem(pos, true);
+            }
+        });
+        tabLayout.setNavigator2(commonNavigator)
+                .setupWithViewPager(viewPager);
         baseFragmentAdapter.bindTitle(true, Arrays.asList("内部共享", "下载链接", "上传链接"));
         String folderPath = String.format("%s%s/", fromRepoDirPath, getArguments().getString(KEY_SEA_FILE_NAME, ""));
         baseFragmentAdapter.bindData(true,
