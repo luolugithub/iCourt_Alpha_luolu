@@ -1276,7 +1276,12 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
         if (fragment != null) {
             fragment.dismiss(isSyncServer);
         }
-        tabTimingIcon.setImageResource(R.mipmap.ic_tab_timing);
+        if (TimerManager.getInstance().hasTimer()) {
+            tabTimingIcon.setImageResource(R.mipmap.ic_tab_timing);
+        } else {
+            tabTimingIcon.setImageResource(R.mipmap.ic_time_start);
+
+        }
     }
 
     @Override

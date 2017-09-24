@@ -226,7 +226,9 @@ public class ProjectRangeFragment extends BaseFragment implements BaseRecyclerAd
                 break;
             case Const.PROJECT_OTHER_PERSON_TYPE://其他当事人
                 if (itemEntity.positionBean == null) return;
-                gotoCustiomer(itemEntity);
+                if (!TextUtils.isEmpty(itemEntity.positionBean.contactType) && !TextUtils.isEmpty(itemEntity.positionBean.contactPkid)) {
+                    gotoCustiomer(itemEntity);
+                }
                 break;
         }
     }
@@ -242,15 +244,22 @@ public class ProjectRangeFragment extends BaseFragment implements BaseRecyclerAd
 
     /**
      * 跳转到客户详情
+     *
      * @param itemEntity
      */
     private void gotoCustiomer(ProjectBasicItemEntity itemEntity) {
         if (!hasCustomerPermission()) return;
         if (customerDbService == null) return;
         CustomerDbModel customerDbModel = customerDbService.queryFirst("pkid", itemEntity.positionBean.contactPkid);
-        if (customerDbModel == null) return;
+        if (customerDbModel == null) {
+            showTopSnackBar(R.string.project_not_look_info_premission);
+            return;
+        }
         CustomerEntity customerEntity = customerDbModel.convert2Model();
-        if (customerEntity == null) return;
+        if (customerEntity == null) {
+            showTopSnackBar(R.string.project_not_look_info_premission);
+            return;
+        }
         if (!TextUtils.isEmpty(customerEntity.contactType)) {
             MobclickAgent.onEvent(getContext(), UMMobClickAgent.look_client_click_id);
             //公司

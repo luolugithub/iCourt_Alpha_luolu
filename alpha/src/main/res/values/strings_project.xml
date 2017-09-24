@@ -45,5 +45,6 @@
 
     <string name="project_add_range_content">添加程序信息</string>
     <string name="project_member_info">成员资料</string>
+    <string name="project_not_look_info_premission">您没有访问该客户的权限</string>
 
 </resources>

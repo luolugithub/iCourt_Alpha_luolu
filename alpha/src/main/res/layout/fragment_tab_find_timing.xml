@@ -94,9 +94,10 @@
                 android:textSize="24dp" />
         </LinearLayout>
 
+
         <lecho.lib.hellocharts.view.LineChartView
             android:id="@+id/timing_chart_view"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="150dp"
             android:paddingLeft="5dp"
             android:paddingRight="10dp"
