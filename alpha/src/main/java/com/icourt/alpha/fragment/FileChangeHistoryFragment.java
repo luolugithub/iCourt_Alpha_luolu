@@ -27,6 +27,7 @@ import com.icourt.alpha.entity.bean.FileChangedHistoryEntity;
 import com.icourt.alpha.entity.bean.FolderDocumentEntity;
 import com.icourt.alpha.entity.bean.ISeaFile;
 import com.icourt.alpha.entity.bean.RepoMatterEntity;
+import com.icourt.alpha.entity.event.FileRenameEvent;
 import com.icourt.alpha.http.callback.SFileCallBack;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.callback.SimpleCallBack2;
@@ -37,6 +38,8 @@ import com.icourt.alpha.utils.FileUtils;
 import com.icourt.alpha.utils.JsonUtils;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 import com.icourt.alpha.widget.dialog.BottomActionDialog;
+
+import org.greenrobot.eventbus.EventBus;
 
 import java.util.Arrays;
 import java.util.List;
@@ -389,9 +392,18 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
                 });
     }
 
-    private void renameFolderRevoke(FileChangedHistoryEntity item) {
+    private void renameFolderRevoke(final FileChangedHistoryEntity item) {
         if (item == null) return;
-        //eg.  "/aaaa/bbbb"---->"bbbb",
+        if (TextUtils.isEmpty(item.new_path)) {
+            //1. 提示
+            String notice = "服务器返回 new_path 为null";
+
+            //2.反馈上报
+            bugSync(notice, item.toString());
+            showToast(notice);
+            return;
+        }
+        //eg.  "/aaaa/b1"---->"/aaaa/b",
         String orginName = item.path;
         if (!TextUtils.isEmpty(item.path)) {
             String[] split = item.path.split("/");
@@ -402,13 +414,23 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
         showLoadingDialog(R.string.str_executing);
         callEnqueue(getSFileApi().folderRename(
                 item.repo_id,
-                TextUtils.isEmpty(item.new_path) ? item.path : item.new_path,
+                item.new_path,
                 "rename",
                 orginName),
                 new SFileCallBack<String>() {
                     @Override
                     public void onSuccess(Call<String> call, Response<String> response) {
                         dismissLoadingDialog();
+
+                        //3. 广播通知其他页面
+                        EventBus.getDefault().post(
+                                new FileRenameEvent(
+                                        item.getSeaFileRepoId(),
+                                        item.isDir(),
+                                        item.new_path,
+                                        item.path));
+
+
                         showToast(R.string.sfile_revert_success);
                         delayRefresh();
                     }
