@@ -33,4 +33,6 @@
     <string name="str_save">保存</string>
     <string name="str_sd_unavailable">sd卡不可用</string>
     <string name="str_click_refresh">点击刷新</string>
+
+    <string name="str_executing_error">操作失败</string>
 </resources>
