@@ -254,10 +254,16 @@ public class FolderTargetListFragment extends SeaFileBaseFragment
                         stopRefresh();
                         //过滤 非文件夹的文件
                         if (response.body() != null) {
+                            //1.过滤文件
                             new ListFilter<FolderDocumentEntity>().filter(response.body(), FolderDocumentEntity.TYPE_FILE);
 
+                            //2.填充资料库id和父目录
+                            wrapData(getSeaFileDstRepoId(), getSeaFileDstDirPath(), response.body());
+
+                            //3.过滤只读文件夹
                             filterOnlyReadFolder(response.body());
 
+                            //4.过滤自己
                             filterSameRepoFolder(response.body());
 
                         }
@@ -308,9 +314,12 @@ public class FolderTargetListFragment extends SeaFileBaseFragment
 
                 for (int j = 0; j < selectedFolderFiles.size(); j++) {
                     ISeaFile iSeaFile = selectedFolderFiles.get(j);
-                    //比较id  全路径为null  repoid 也为null
-                    if (TextUtils.equals(iSeaFile.getSeaFileId(), folderDocumentEntity.id)) {
+                    if (iSeaFile == null) continue;
+                    //同一个资料库下面
+                    if (TextUtils.equals(iSeaFile.getSeaFileRepoId(), folderDocumentEntity.getSeaFileRepoId())
+                            && TextUtils.equals(iSeaFile.getSeaFileFullPath(), folderDocumentEntity.getSeaFileFullPath())) {
                         datas.remove(i);
+                        break;
                     }
                 }
             }
@@ -511,23 +520,7 @@ public class FolderTargetListFragment extends SeaFileBaseFragment
     public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
         FolderDocumentEntity item = folderAdapter.getItem(position);
         if (item == null) return;
-        //注意:不能复制或者移动到当前文件所在目录
         String dstDirPath = String.format("%s%s/", getSeaFileDstDirPath(), item.name);
-        if (TextUtils.equals(getSeaFileFromRepoId(), getSeaFileDstRepoId())
-                && TextUtils.equals(getSeaFileFromDirPath(), dstDirPath)) {
-            switch (getFileActionType()) {
-                case FILE_ACTION_COPY:
-                    showToast("不能复制到当前目录");
-                    break;
-                case FILE_ACTION_MOVE:
-                    showToast("不能移动到当前目录");
-                    break;
-                default:
-                    showToast("不能选择当前目录");
-                    break;
-            }
-            return;
-        }
         if (onFragmentCallBackListener != null) {
             Bundle bundle = new Bundle();
             bundle.putString(KEY_SEA_FILE_DST_REPO_ID, getSeaFileDstRepoId());

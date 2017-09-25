@@ -22,6 +22,7 @@ import com.icourt.alpha.entity.bean.FolderDocumentEntity;
 import com.icourt.alpha.entity.bean.SeaFileTrashPageEntity;
 import com.icourt.alpha.http.callback.SFileCallBack;
 import com.icourt.alpha.utils.ActionConstants;
+import com.icourt.alpha.utils.JsonUtils;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 import com.icourt.alpha.widget.dialog.BottomActionDialog;
 
@@ -216,8 +217,7 @@ public class FileTrashListFragment extends SeaFileBaseFragment
                     @Override
                     public void onSuccess(Call<JsonObject> call, Response<JsonObject> response) {
                         dismissLoadingDialog();
-                        if (response.body().has("success")
-                                && response.body().get("success").getAsBoolean()) {
+                        if (JsonUtils.getBoolValue(response.body(),"success")) {
                             getData(true);
                             showToast(R.string.sfile_recovery_success);
                         } else {

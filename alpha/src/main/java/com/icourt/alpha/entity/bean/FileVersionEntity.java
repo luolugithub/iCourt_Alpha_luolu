@@ -88,4 +88,17 @@ public class FileVersionEntity implements ILongFieldEntity, ISeaFile {
         public String name;
     }
 
+    @Override
+    public String toString() {
+        return "FileVersionEntity{" +
+                "id='" + id + '\'' +
+                ", version=" + version +
+                ", ctime=" + ctime +
+                ", repo_id='" + repo_id + '\'' +
+                ", rev_file_size=" + rev_file_size +
+                ", rev_file_id='" + rev_file_id + '\'' +
+                ", user_info=" + user_info +
+                ", seaFileFullPath='" + seaFileFullPath + '\'' +
+                '}';
+    }
 }

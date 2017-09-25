@@ -36,6 +36,7 @@ import com.icourt.alpha.base.BaseDialogFragment;
 import com.icourt.alpha.constants.Const;
 import com.icourt.alpha.constants.SFileConfig;
 import com.icourt.alpha.entity.bean.FolderDocumentEntity;
+import com.icourt.alpha.entity.event.FileRenameEvent;
 import com.icourt.alpha.entity.event.SeaFolderEvent;
 import com.icourt.alpha.fragment.dialogfragment.FileDetailDialogFragment;
 import com.icourt.alpha.fragment.dialogfragment.FolderDetailDialogFragment;
@@ -393,6 +394,32 @@ public class FolderListActivity extends FolderBaseActivity
                 case FILE_ACTION_COPY:
                     getData(true);
                     break;
+            }
+        }
+    }
+
+    /**
+     * 文件重命名事件
+     * 1.更新文件夹参数的全路径
+     * 2.更新列表中的文件/文件夹名字 暂时不需要 onResume中刷着
+     *
+     * @param event
+     */
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onFileRenameEvent(FileRenameEvent event) {
+        if (event == null) return;
+        if (TextUtils.equals(event.seaFileRepoId, getSeaFileRepoId())) {
+            //更新其中的路径
+            getIntent().putExtra(KEY_SEA_FILE_DIR_PATH, getSeaFileDirPath().replaceFirst(event.oldFullPath, event.newFullPath));
+
+            //更新标题
+            if (!TextUtils.isEmpty(getSeaFileDirPath())) {
+                String[] pathSplit = getSeaFileDirPath().split("/");
+                //非根路径
+                if (pathSplit != null && pathSplit.length > 1) {
+                    getIntent().putExtra(KEY_SEA_FILE_REPO_TITLE, pathSplit[pathSplit.length - 1]);
+                    titleContent.setText(getRepoTitle());
+                }
             }
         }
     }
