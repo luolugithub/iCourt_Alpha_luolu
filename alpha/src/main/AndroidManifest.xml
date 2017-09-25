@@ -358,6 +358,9 @@
         <activity
             android:name=".activity.MyCollectedMsgActivity"
             android:screenOrientation="portrait" />
+        <activity
+            android:name=".activity.TaskMonthFinishActivity"
+            android:screenOrientation="portrait" />
 
         <meta-data
             android:name="com.icourt.alpha.utils.glide.MyGlideModule"

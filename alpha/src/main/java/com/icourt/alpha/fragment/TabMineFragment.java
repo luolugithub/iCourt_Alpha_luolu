@@ -15,6 +15,7 @@ import com.icourt.alpha.BuildConfig;
 import com.icourt.alpha.R;
 import com.icourt.alpha.activity.ChatMsgClassfyActivity;
 import com.icourt.alpha.activity.SetingActivity;
+import com.icourt.alpha.activity.TaskMonthFinishActivity;
 import com.icourt.alpha.activity.UserInfoActivity;
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.entity.bean.AlphaUserInfo;
@@ -217,7 +218,7 @@ public class TabMineFragment extends BaseFragment {
                 showTopSnackBar(R.string.mine_month_time);
                 break;
             case R.id.done_task_layout://本月完成任务
-
+                TaskMonthFinishActivity.launch(getContext());
                 break;
             case R.id.my_center_set_layout://设置
                 SetingActivity.launch(getContext());
