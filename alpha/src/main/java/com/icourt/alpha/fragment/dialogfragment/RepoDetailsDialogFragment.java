@@ -5,7 +5,6 @@ import android.os.Bundle;
 import android.support.annotation.IntRange;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
@@ -33,8 +32,12 @@ import com.icourt.alpha.interfaces.OnFragmentDataChangeListener;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.FileUtils;
 import com.icourt.alpha.utils.StringUtils;
+import com.icourt.alpha.view.tab.AlphaTabLayout;
+import com.icourt.alpha.view.tab.AlphaTitleNavigatorAdapter;
 import com.icourt.alpha.widget.comparators.LongFieldEntityComparator;
 import com.icourt.alpha.widget.comparators.ORDER;
+
+import net.lucode.hackware.magicindicator.buildins.commonnavigator.CommonNavigator;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -79,7 +82,7 @@ public class RepoDetailsDialogFragment extends BaseDialogFragment
     @BindView(R.id.file_update_info_tv)
     TextView fileUpdateInfoTv;
     @BindView(R.id.tabLayout)
-    TabLayout tabLayout;
+    AlphaTabLayout tabLayout;
     @BindView(R.id.viewPager)
     ViewPager viewPager;
     Unbinder unbinder;
@@ -164,7 +167,27 @@ public class RepoDetailsDialogFragment extends BaseDialogFragment
 
         viewPager.setOffscreenPageLimit(3);
         viewPager.setAdapter(baseFragmentAdapter = new BaseFragmentAdapter(getChildFragmentManager()));
-        tabLayout.setupWithViewPager(viewPager);
+        CommonNavigator commonNavigator = new CommonNavigator(getContext());
+        commonNavigator.setAdapter(new AlphaTitleNavigatorAdapter(1.0f) {
+            @Nullable
+            @Override
+            public CharSequence getTitle(int index) {
+                return baseFragmentAdapter.getPageTitle(index);
+            }
+
+            @Override
+            public int getCount() {
+                return baseFragmentAdapter.getCount();
+            }
+
+            @Override
+            public void onTabClick(View v, int pos) {
+                viewPager.setCurrentItem(pos, true);
+            }
+        });
+        tabLayout.setNavigator2(commonNavigator)
+                .setupWithViewPager(viewPager);
+
         switch (repoType) {
             case REPO_MINE:
                 baseFragmentAdapter.bindTitle(true, Arrays.asList(

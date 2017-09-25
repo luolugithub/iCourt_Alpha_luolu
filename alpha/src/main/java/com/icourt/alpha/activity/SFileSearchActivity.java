@@ -19,20 +19,18 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.andview.refreshview.XRefreshView;
-import com.icourt.alpha.BuildConfig;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.SFileSearchAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.adapterObserver.DataChangeAdapterObserver;
 import com.icourt.alpha.base.BaseActivity;
+import com.icourt.alpha.constants.SFileConfig;
 import com.icourt.alpha.entity.bean.SFileSearchEntity;
 import com.icourt.alpha.entity.bean.SFileSearchPage;
 import com.icourt.alpha.fragment.dialogfragment.FileDetailDialogFragment;
 import com.icourt.alpha.http.callback.SFileCallBack;
 import com.icourt.alpha.utils.IMUtils;
-import com.icourt.alpha.utils.SFileTokenUtils;
 import com.icourt.alpha.utils.SystemUtils;
-import com.icourt.alpha.utils.UrlUtils;
 import com.icourt.alpha.view.ClearEditText;
 import com.icourt.alpha.view.SoftKeyboardSizeWatchLayout;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
@@ -262,43 +260,29 @@ public class SFileSearchActivity extends BaseActivity
                 return;
             }
             if (IMUtils.isPIC(item.name)) {
-                ArrayList<String> bigImageUrls = new ArrayList<>();
-                ArrayList<String> smallImageUrls = new ArrayList<>();
+                ArrayList<SFileSearchEntity> imageDatas = new ArrayList<>();
                 for (int i = 0; i < sFileSearchAdapter.getItemCount(); i++) {
-                    SFileSearchEntity folderDocumentEntity = sFileSearchAdapter.getData(position);
+                    SFileSearchEntity folderDocumentEntity = sFileSearchAdapter.getItem(i);
                     if (folderDocumentEntity == null) continue;
                     if (IMUtils.isPIC(folderDocumentEntity.name)) {
-                        bigImageUrls.add(getSFileImageUrl(folderDocumentEntity.repo_id, folderDocumentEntity.fullpath, Integer.MAX_VALUE));
-                        smallImageUrls.add(getSFileImageUrl(folderDocumentEntity.repo_id, folderDocumentEntity.fullpath, 800));
+                        imageDatas.add(folderDocumentEntity);
                     }
                 }
-                int indexOf = bigImageUrls.indexOf(getSFileImageUrl(item.repo_id, item.name, Integer.MAX_VALUE));
+                int indexOf = imageDatas.indexOf(item);
                 ImageViewerActivity.launch(
                         getContext(),
-                        smallImageUrls,
-                        bigImageUrls,
+                        SFileConfig.FILE_FROM_REPO,
+                        imageDatas,
                         indexOf);
             } else {
                 FileDownloadActivity.launch(
                         getContext(),
-                        item.repo_id,
-                        item.name,
-                        item.size,
-                        item.fullpath,
-                        null,
-                        FileDownloadActivity.FILE_FROM_REPO);
+                        item,
+                        SFileConfig.FILE_FROM_REPO);
             }
         }
     }
 
-    protected String getSFileImageUrl(String repoName, String fullPath, int size) {
-        return String.format("%silaw/api/v2/documents/thumbnailImage?repoId=%s&seafileToken=%s&size=%s&p=%s",
-                BuildConfig.API_URL,
-                repoName,
-                SFileTokenUtils.getSFileToken(),
-                size,
-                UrlUtils.encodeUrl(fullPath));
-    }
 
     private String getDirPath(String fullPath) {
         if (!TextUtils.isEmpty(fullPath)) {
@@ -321,6 +305,7 @@ public class SFileSearchActivity extends BaseActivity
             showTopSnackBar(R.string.sfile_searched_folder_un_click);
         } else {
             FileDetailDialogFragment.show(
+                    SFileConfig.REPO_UNKNOW,
                     item.repo_id,
                     getDirPath(item.fullpath),
                     item.name,

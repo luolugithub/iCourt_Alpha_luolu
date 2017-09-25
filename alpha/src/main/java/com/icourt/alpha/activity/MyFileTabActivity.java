@@ -6,8 +6,8 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.AppBarLayout;
-import android.support.design.widget.TabLayout;
 import android.support.v4.view.ViewPager;
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -15,6 +15,10 @@ import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.baseadapter.BaseFragmentAdapter;
 import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.fragment.FileListFragment;
+import com.icourt.alpha.view.tab.AlphaTabLayout;
+import com.icourt.alpha.view.tab.AlphaTitleNavigatorAdapter;
+
+import net.lucode.hackware.magicindicator.buildins.commonnavigator.CommonNavigator;
 
 import java.util.Arrays;
 
@@ -36,7 +40,7 @@ public class MyFileTabActivity extends BaseActivity {
     @BindView(R.id.titleView)
     AppBarLayout titleView;
     @BindView(R.id.tabLayout)
-    TabLayout tabLayout;
+    AlphaTabLayout tabLayout;
     @BindView(R.id.viewPager)
     ViewPager viewPager;
     private BaseFragmentAdapter baseFragmentAdapter;
@@ -60,7 +64,28 @@ public class MyFileTabActivity extends BaseActivity {
         super.initView();
         setTitle("文件");
         viewPager.setAdapter(baseFragmentAdapter = new BaseFragmentAdapter(getSupportFragmentManager()));
-        tabLayout.setupWithViewPager(viewPager);
+        CommonNavigator commonNavigator = new CommonNavigator(getContext());
+        commonNavigator.setAdapter(new AlphaTitleNavigatorAdapter(1.0f) {
+
+            @Nullable
+            @Override
+            public CharSequence getTitle(int index) {
+                return baseFragmentAdapter.getPageTitle(index);
+            }
+
+            @Override
+            public int getCount() {
+                return baseFragmentAdapter.getCount();
+            }
+
+            @Override
+            public void onTabClick(View v, int pos) {
+                viewPager.setCurrentItem(pos, true);
+            }
+
+        });
+        tabLayout.setNavigator2(commonNavigator)
+                .setupWithViewPager(viewPager);
         baseFragmentAdapter.bindTitle(true, Arrays.asList("所有人", "我自己"));
         baseFragmentAdapter.bindData(true, Arrays.asList(FileListFragment.newInstance(FileListFragment.TYPE_ALL_FILE),
                 FileListFragment.newInstance(FileListFragment.TYPE_MY_FILE)));

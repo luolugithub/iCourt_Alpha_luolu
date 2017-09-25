@@ -3,7 +3,6 @@ package com.icourt.alpha.fragment;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.AppBarLayout;
-import android.support.design.widget.TabLayout;
 import android.support.v4.view.ViewPager;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,6 +14,10 @@ import com.icourt.alpha.activity.RepoCreateActivity;
 import com.icourt.alpha.adapter.baseadapter.BaseFragmentAdapter;
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.constants.SFileConfig;
+import com.icourt.alpha.view.tab.AlphaTabLayout;
+import com.icourt.alpha.view.tab.AlphaTitleNavigatorAdapter;
+
+import net.lucode.hackware.magicindicator.buildins.commonnavigator.CommonNavigator;
 
 import java.util.Arrays;
 
@@ -35,7 +38,7 @@ public class TabDocumentsFragment extends BaseFragment {
     Unbinder unbinder;
     BaseFragmentAdapter baseFragmentAdapter;
     @BindView(R.id.tabLayout)
-    TabLayout tabLayout;
+    AlphaTabLayout tabLayout;
     @BindView(R.id.titleAction)
     ImageView titleAction;
     @BindView(R.id.titleView)
@@ -58,7 +61,6 @@ public class TabDocumentsFragment extends BaseFragment {
     @Override
     protected void initView() {
         viewPager.setAdapter(baseFragmentAdapter = new BaseFragmentAdapter(getChildFragmentManager()));
-        tabLayout.setupWithViewPager(viewPager);
         baseFragmentAdapter.bindTitle(true,
                 Arrays.asList(getResources().getStringArray(R.array.repo_type_array)));
         baseFragmentAdapter.bindData(true,
@@ -74,6 +76,27 @@ public class TabDocumentsFragment extends BaseFragment {
                 titleAction.setVisibility(position > 0 ? View.GONE : View.VISIBLE);
             }
         });
+
+        CommonNavigator commonNavigator = new CommonNavigator(getContext());
+        commonNavigator.setAdapter(new AlphaTitleNavigatorAdapter() {
+            @Nullable
+            @Override
+            public CharSequence getTitle(int index) {
+                return baseFragmentAdapter.getPageTitle(index);
+            }
+
+            @Override
+            public int getCount() {
+                return baseFragmentAdapter.getCount();
+            }
+
+            @Override
+            public void onTabClick(View v, int pos) {
+                viewPager.setCurrentItem(pos, true);
+            }
+        });
+        tabLayout.setNavigator2(commonNavigator)
+                .setupWithViewPager(viewPager);
     }
 
     @OnClick({R.id.titleAction})

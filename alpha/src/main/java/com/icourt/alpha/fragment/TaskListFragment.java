@@ -10,6 +10,7 @@ import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -25,6 +26,7 @@ import com.andview.refreshview.XRefreshView;
 import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.google.gson.JsonElement;
 import com.icourt.alpha.R;
+import com.icourt.alpha.activity.MainActivity;
 import com.icourt.alpha.activity.SearchTaskActivity;
 import com.icourt.alpha.activity.TaskDetailActivity;
 import com.icourt.alpha.activity.TimerDetailActivity;
@@ -321,7 +323,7 @@ public class TaskListFragment extends BaseTaskFragment implements
                     } else {
                         if (newTaskEntities != null) {
                             if (newTaskEntities.size() > 1) {
-                                nextTaskLayout.setVisibility(View.VISIBLE);
+                                showNextTaskView(true);
                                 updateNextTaskState();
                                 v.setClickable(false);
                             } else if (newTaskEntities.size() == 1) {
@@ -538,7 +540,7 @@ public class TaskListFragment extends BaseTaskFragment implements
                             if (tabTaskFragment != null) {
                                 if (tabTaskFragment.isAwayScroll && stateType == 0) {
                                     if (newTaskEntities.size() > 1) {
-                                        nextTaskLayout.setVisibility(View.VISIBLE);
+                                        showNextTaskView(true);
                                     }
                                     nextTaskTv.setText(getString(R.string.task_next, String.valueOf(newTaskEntities.size())));
                                     updateNextTaskState();
@@ -547,7 +549,7 @@ public class TaskListFragment extends BaseTaskFragment implements
                                         newTaskCardview.setVisibility(View.VISIBLE);
                                         newTaskCardview.setClickable(true);
                                         newTaskCountTv.setText(String.valueOf(newTaskEntities.size()));
-                                        nextTaskLayout.setVisibility(View.GONE);
+                                        showNextTaskView(false);
                                     } else {
                                         newTaskCardview.setVisibility(View.GONE);
                                     }
@@ -702,11 +704,11 @@ public class TaskListFragment extends BaseTaskFragment implements
                             if (totalCount > 0) {
                                 newTaskCardview.setVisibility(View.VISIBLE);
                                 newTaskCardview.setClickable(true);
-                                nextTaskLayout.setVisibility(View.GONE);
+                                showNextTaskView(false);
                                 newTaskCountTv.setText(String.valueOf(totalCount));
                             } else {
                                 newTaskCardview.setVisibility(View.GONE);
-                                nextTaskLayout.setVisibility(View.GONE);
+                                showNextTaskView(false);
                                 newTaskEntities.clear();
                             }
                         }
@@ -856,7 +858,7 @@ public class TaskListFragment extends BaseTaskFragment implements
                                 if (newTaskEntities.size() > 0)
                                     newTaskEntities.remove(0);
                                 if (newTaskEntities.size() > 1) {
-                                    nextTaskLayout.setVisibility(View.VISIBLE);
+                                    showNextTaskView(true);
                                 }
                                 newTaskCountTv.setText(String.valueOf(newTaskEntities.size()));
                                 nextTaskTv.setText(getString(R.string.task_next, String.valueOf(newTaskEntities.size())));
@@ -865,7 +867,7 @@ public class TaskListFragment extends BaseTaskFragment implements
                             }
                             if (newTaskEntities.size() == 0) {
                                 newTaskCardview.setVisibility(View.GONE);
-                                nextTaskLayout.setVisibility(View.GONE);
+                                showNextTaskView(false);
                             }
                         }
                     }
@@ -899,6 +901,23 @@ public class TaskListFragment extends BaseTaskFragment implements
             }
         }
         getNewTasksCount();
+    }
+
+    /**
+     * 显示下一个新任务的提醒按钮
+     *
+     * @param show
+     */
+    private void showNextTaskView(boolean show) {
+        if (show) {
+            nextTaskLayout.setVisibility(View.VISIBLE);
+            FragmentActivity activity = getActivity();
+            if (activity instanceof MainActivity) {
+                ((MainActivity) activity).dismissOverTimingRemindDialogFragment(true);
+            }
+        } else {
+            nextTaskLayout.setVisibility(View.GONE);
+        }
     }
 
     @Override

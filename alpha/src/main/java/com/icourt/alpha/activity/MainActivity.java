@@ -64,7 +64,6 @@ import com.icourt.alpha.service.DaemonService;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.DensityUtil;
 import com.icourt.alpha.utils.JsonUtils;
-import com.icourt.alpha.utils.LogUtils;
 import com.icourt.alpha.utils.LoginInfoUtils;
 import com.icourt.alpha.utils.SFileTokenUtils;
 import com.icourt.alpha.utils.SimpleViewGestureListener;
@@ -270,7 +269,7 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
             Message obtain = Message.obtain();
             obtain.what = TYPE_OVER_TIMING_REMIND;
             obtain.obj = remindContent;
-            this.sendMessageDelayed(obtain, 20);
+            this.sendMessageDelayed(obtain, 100);
         }
 
         @Override
@@ -291,7 +290,7 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
                     break;
                 case TYPE_OVER_TIMING_REMIND:
                     String remindContent = (String) msg.obj;
-                    showOrUpdateOverTimingRemindDialogFragment(remindContent);
+                    showOverTimingRemindDialogFragment(remindContent);
                     break;
             }
         }
@@ -958,7 +957,7 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
                 dismissOverTimingRemindDialogFragment(false);
                 break;
             case OverTimingRemindEvent.ACTION_SHOW_TIMING_REMIND:
-                showOrUpdateOverTimingRemindDialogFragment(getOverTimingRemindContent(event.timeSec));
+                mHandler.addOverTimingRemind(getOverTimingRemindContent(event.timeSec));
                 break;
             case OverTimingRemindEvent.ACTION_SYNC_BUBBLE_CLOSE_TO_SERVER:
                 TimerManager.getInstance().setOverTimingRemindClose(TimerManager.OVER_TIME_REMIND_BUBBLE_OFF);
@@ -979,7 +978,7 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
                 //如果添加的计时大于2个小时，弹出提示
                 if (TimeUnit.SECONDS.toHours(TimerManager.getInstance().getTimingSeconds()) > 2) {
                     if (TimerManager.getInstance().isOverTimingRemind() && TimerManager.getInstance().isBubbleRemind()) {
-                        showOrUpdateOverTimingRemindDialogFragment(getOverTimingRemindContent(TimerManager.getInstance().getTimingSeconds()));
+                        mHandler.addOverTimingRemind(getOverTimingRemindContent(TimerManager.getInstance().getTimingSeconds()));
                     }
                 } else {
                     dismissTimingDialogFragment();
@@ -1008,6 +1007,13 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
                 tabTimingIcon.clearAnimation();
                 timingAnim = null;
                 dismissOverTimingRemindDialogFragment(true);
+                break;
+            case TimingEvent.TIMING_SYNC_SUCCESS:
+                if (TimeUnit.SECONDS.toHours(TimerManager.getInstance().getTimingSeconds()) > 2) {
+                    if (TimerManager.getInstance().isBubbleRemind() && TimerManager.getInstance().isOverTimingRemind()) {
+                        mHandler.addOverTimingRemind(getOverTimingRemindContent(TimerManager.getInstance().getTimingSeconds()));
+                    }
+                }
                 break;
         }
     }
@@ -1233,7 +1239,7 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
     /**
      * 显示 持续计时过久时的提醒覆层
      */
-    public void showOrUpdateOverTimingRemindDialogFragment(String content) {
+    public void showOverTimingRemindDialogFragment(String content) {
         if (isDestroyOrFinishing()) {//如果界面即将销毁，那么就不执行下去
             return;
         }
@@ -1268,8 +1274,13 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
         String tag = OverTimingRemindDialogFragment.class.getSimpleName();
         OverTimingRemindDialogFragment fragment = (OverTimingRemindDialogFragment) getSupportFragmentManager().findFragmentByTag(tag);
         if (fragment != null) {
-            fragment.dismissAllowingStateLoss(isSyncServer);
+            fragment.dismiss(isSyncServer);
+        }
+        if (TimerManager.getInstance().hasTimer()) {
             tabTimingIcon.setImageResource(R.mipmap.ic_tab_timing);
+        } else {
+            tabTimingIcon.setImageResource(R.mipmap.ic_time_start);
+
         }
     }
 

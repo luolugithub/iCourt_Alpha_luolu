@@ -3,10 +3,10 @@ package com.icourt.alpha.fragment.dialogfragment;
 import android.os.Bundle;
 import android.support.annotation.IntRange;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
-import android.text.TextUtils;
 import android.view.View;
 
 import com.icourt.alpha.BuildConfig;
@@ -27,8 +27,11 @@ import com.icourt.alpha.utils.IMUtils;
 import com.icourt.alpha.utils.SFileTokenUtils;
 import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.utils.UrlUtils;
+import com.icourt.alpha.view.tab.AlphaTitleNavigatorAdapter;
 import com.icourt.alpha.widget.comparators.LongFieldEntityComparator;
 import com.icourt.alpha.widget.comparators.ORDER;
+
+import net.lucode.hackware.magicindicator.buildins.commonnavigator.CommonNavigator;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -38,8 +41,6 @@ import java.util.List;
 import butterknife.OnClick;
 import retrofit2.Call;
 import retrofit2.Response;
-
-import static com.icourt.alpha.constants.SFileConfig.PERMISSION_RW;
 
 /**
  * Description   文件详情
@@ -56,13 +57,15 @@ public class FileDetailDialogFragment extends FileDetailsBaseDialogFragment
     protected static final String KEY_LOCATION_TAB_INDEX = "locationPage";//定位的tab
     final List<FileVersionEntity> fileVersionEntities = new ArrayList<>();
 
-    public static void show(@NonNull String fromRepoId,
-                            String fromRepoFilePath,
-                            String fileName,
-                            long fileSize,
-                            @IntRange(from = 0, to = 1) int locationTabIndex,
-                            @SFileConfig.FILE_PERMISSION String repoPermission,
-                            @NonNull FragmentManager fragmentManager) {
+    public static void show(
+            @SFileConfig.REPO_TYPE int repoType,
+            @NonNull String fromRepoId,
+            String fromRepoFilePath,
+            String fileName,
+            long fileSize,
+            @IntRange(from = 0, to = 1) int locationTabIndex,
+            @SFileConfig.FILE_PERMISSION String repoPermission,
+            @NonNull FragmentManager fragmentManager) {
         if (fragmentManager == null) return;
         String tag = FileDetailDialogFragment.class.getSimpleName();
         FragmentTransaction mFragTransaction = fragmentManager.beginTransaction();
@@ -70,11 +73,12 @@ public class FileDetailDialogFragment extends FileDetailsBaseDialogFragment
         if (fragment != null) {
             mFragTransaction.remove(fragment);
         }
-        show(newInstance(fromRepoId, fromRepoFilePath, fileName, fileSize, locationTabIndex, repoPermission), tag, mFragTransaction);
+        show(newInstance(repoType, fromRepoId, fromRepoFilePath, fileName, fileSize, locationTabIndex, repoPermission), tag, mFragTransaction);
     }
 
 
     public static FileDetailDialogFragment newInstance(
+            @SFileConfig.REPO_TYPE int repoType,
             String fromRepoId,
             String fromRepoFilePath,
             String fileName,
@@ -83,6 +87,7 @@ public class FileDetailDialogFragment extends FileDetailsBaseDialogFragment
             @SFileConfig.FILE_PERMISSION String repoPermission) {
         FileDetailDialogFragment fragment = new FileDetailDialogFragment();
         Bundle args = new Bundle();
+        args.putInt(KEY_SEA_FILE_FROM_REPO_TYPE, repoType);
         args.putString(KEY_SEA_FILE_FROM_REPO_ID, fromRepoId);
         args.putString(KEY_SEA_FILE_DIR_PATH, fromRepoFilePath);
         args.putInt(KEY_LOCATION_TAB_INDEX, locationTabIndex);
@@ -115,22 +120,39 @@ public class FileDetailDialogFragment extends FileDetailsBaseDialogFragment
 
 
         viewPager.setAdapter(baseFragmentAdapter = new BaseFragmentAdapter(getChildFragmentManager()));
-        tabLayout.setupWithViewPager(viewPager);
+        CommonNavigator commonNavigator = new CommonNavigator(getContext());
+        commonNavigator.setAdapter(new AlphaTitleNavigatorAdapter(1.0f) {
+            @Nullable
+            @Override
+            public CharSequence getTitle(int index) {
+                return baseFragmentAdapter.getPageTitle(index);
+            }
+
+            @Override
+            public int getCount() {
+                return baseFragmentAdapter.getCount();
+            }
+
+            @Override
+            public void onTabClick(View v, int pos) {
+                viewPager.setCurrentItem(pos, true);
+            }
+        });
+        tabLayout.setNavigator2(commonNavigator)
+                .setupWithViewPager(viewPager);
         baseFragmentAdapter.bindTitle(true, Arrays.asList("历史版本", "下载链接"));
         String filePath = String.format("%s%s", fromRepoDirPath, fileName);
-        //有读写权限
-        if (TextUtils.equals(getRepoPermission(), PERMISSION_RW)) {
+        //根据类型判断 除了我的资料库里面的文件有分享链接 其他都屏蔽
+        if (getRepoType() == SFileConfig.REPO_MINE) {
             baseFragmentAdapter.bindData(true,
                     Arrays.asList(FileVersionListFragment.newInstance(fromRepoId, filePath, getRepoPermission()),
                             FileLinkFragment.newInstance(fromRepoId,
                                     filePath,
                                     FileLinkFragment.LINK_TYPE_DOWNLOAD,
                                     getRepoPermission())));
-        } else {//只读权限
+        } else {
             baseFragmentAdapter.bindData(true,
-                    Arrays.asList(FileVersionListFragment.newInstance(fromRepoId,
-                            filePath,
-                            getRepoPermission())));
+                    Arrays.asList(FileVersionListFragment.newInstance(fromRepoId, filePath, getRepoPermission())));
         }
 
         int tabIndex = getArguments().getInt(KEY_LOCATION_TAB_INDEX);
@@ -206,14 +228,11 @@ public class FileDetailDialogFragment extends FileDetailsBaseDialogFragment
                 if (!fileVersionEntities.isEmpty()) {
                     FileVersionEntity item = fileVersionEntities.get(0);
                     if (item == null) return;
+                    item.seaFileFullPath = String.format("%s/%s", fromRepoDirPath, fileName);
                     FileDownloadActivity.launch(
                             getContext(),
-                            item.repo_id,
-                            fileName,
-                            item.rev_file_size,
-                            String.format("%s%s", fromRepoDirPath, fileName),
-                            item.id,
-                            FileDownloadActivity.FILE_FROM_REPO);
+                            item,
+                            SFileConfig.FILE_FROM_REPO);
                 } else {
 
                 }

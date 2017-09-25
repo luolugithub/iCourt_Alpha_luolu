@@ -15,11 +15,14 @@ import android.widget.TextView;
 
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.ImUserMessageDetailAdapter;
+import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.base.BaseActivity;
+import com.icourt.alpha.constants.SFileConfig;
 import com.icourt.alpha.db.convertor.IConvertModel;
 import com.icourt.alpha.db.convertor.ListConvertor;
 import com.icourt.alpha.db.dbmodel.ContactDbModel;
 import com.icourt.alpha.db.dbservice.ContactDbService;
+import com.icourt.alpha.entity.bean.ChatFileInfoEntity;
 import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.icourt.alpha.entity.bean.IMMessageCustomBody;
 import com.icourt.alpha.entity.bean.MsgStatusEntity;
@@ -51,8 +54,11 @@ import retrofit2.Response;
 import static com.icourt.alpha.activity.ChatMsgClassfyActivity.MSG_CLASSFY_CHAT_DING;
 import static com.icourt.alpha.activity.ChatMsgClassfyActivity.MSG_CLASSFY_CHAT_FILE;
 import static com.icourt.alpha.activity.ChatMsgClassfyActivity.MSG_CLASSFY_MY_COLLECTEED;
+import static com.icourt.alpha.activity.ImagePagerActivity.IMAGE_FROM_CHAT_FILE;
 import static com.icourt.alpha.constants.Const.CHAT_TYPE_P2P;
 import static com.icourt.alpha.constants.Const.CHAT_TYPE_TEAM;
+import static com.icourt.alpha.constants.Const.MSG_TYPE_FILE;
+import static com.icourt.alpha.constants.Const.MSG_TYPE_LINK;
 
 /**
  * Description
@@ -61,7 +67,7 @@ import static com.icourt.alpha.constants.Const.CHAT_TYPE_TEAM;
  * date createTime：2017/4/18
  * version 1.0.0
  */
-public class FileDetailsActivity extends BaseActivity {
+public class FileDetailsActivity extends BaseActivity implements BaseRecyclerAdapter.OnItemClickListener, BaseRecyclerAdapter.OnItemChildClickListener {
 
     private static final String KEY_FILE_INFO = "key_file_info";
     private static final String KEY_CLASSFY_TYPE = "KEY_CLASSFY_TYPE";
@@ -181,6 +187,8 @@ public class FileDetailsActivity extends BaseActivity {
             recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
             recyclerView.setHasFixedSize(true);
             recyclerView.setAdapter(imUserMessageDetailAdapter = new ImUserMessageDetailAdapter(localContactList, localTeams));
+            imUserMessageDetailAdapter.setOnItemClickListener(this);
+            imUserMessageDetailAdapter.setOnItemChildClickListener(this);
             imUserMessageDetailAdapter.bindData(true, Arrays.asList(item));
         }
     }
@@ -190,7 +198,7 @@ public class FileDetailsActivity extends BaseActivity {
         super.getData(isRefresh);
 
         callEnqueue(getChatApi()
-                .msgStatus(item.id),
+                        .msgStatus(item.id),
                 new SimpleCallBack<MsgStatusEntity>() {
                     @Override
                     public void onSuccess(Call<ResEntity<MsgStatusEntity>> call, Response<ResEntity<MsgStatusEntity>> response) {
@@ -266,5 +274,65 @@ public class FileDetailsActivity extends BaseActivity {
                         }
                     }
                 });
+    }
+
+    @Override
+    public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
+        IMMessageCustomBody item = imUserMessageDetailAdapter.getItem(adapter.getRealPos(position));
+        if (item == null) return;
+        switch (item.show_type) {
+            case MSG_TYPE_LINK:
+                if (item.ext != null) {
+                    WebViewActivity.launch(view.getContext(), item.ext.url);
+                }
+                break;
+            case MSG_TYPE_FILE:
+                //文件
+                if (item.ext != null) {
+                    FileDownloadActivity.launch(
+                            view.getContext(),
+                            item.ext,
+                            SFileConfig.FILE_FROM_IM);
+                }
+                break;
+        }
+    }
+
+    @Override
+    public void onItemChildClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
+        switch (view.getId()) {
+            case R.id.file_img:
+                IMMessageCustomBody item = imUserMessageDetailAdapter.getItem(imUserMessageDetailAdapter.getRealPos(position));
+                if (item != null && item.ext != null) {
+                    ArrayList<ChatFileInfoEntity> chatFileInfoEntities = new ArrayList<>();
+
+                    ChatFileInfoEntity chatFileInfoEntity = item.ext.convert2Model();
+                    chatFileInfoEntity.setChatMsgId(item.id);
+
+                    chatFileInfoEntities.add(chatFileInfoEntity);
+
+                    @ImagePagerActivity.ImageFrom int imageFrom = IMAGE_FROM_CHAT_FILE;
+                    switch (getMsgClassfyType()) {
+                        case MSG_CLASSFY_CHAT_DING:
+                            imageFrom = ImagePagerActivity.IMAGE_FROM_DING;
+                            break;
+                        case MSG_CLASSFY_CHAT_FILE:
+                            imageFrom = ImagePagerActivity.IMAGE_FROM_CHAT_FILE;
+                            break;
+                        case MSG_CLASSFY_MY_COLLECTEED:
+                            imageFrom = ImagePagerActivity.IMAGE_FROM_COLLECT;
+                            break;
+                    }
+                    ImagePagerActivity.launch(
+                            view.getContext(),
+                            imageFrom,
+                            chatFileInfoEntities,
+                            0,
+                            item.ope,
+                            item.to,
+                            view);
+                }
+                break;
+        }
     }
 }
