@@ -161,13 +161,16 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
             @Override
             public void onTabClick(View v, int pos) {
                 if (viewPager.getCurrentItem() == 0 && pos == 0) {//说明当前是第0个，并且点击了第0个，需要弹出筛选已完成、未完成、已删除的弹出窗。
-                    postDismissPop();
-                    topMiddlePopup.show(titleView, dropEntities, selectPosition);
-                    setFirstTabImage(true);
                     if (topMiddlePopup.isShowing()) {
+                        postDismissPop();
+                        getTasksStateCount();
+                    } else {
+                        topMiddlePopup.show(titleView, dropEntities, selectPosition);
+                        setFirstTabImage(true);
                         getTasksStateCount();
                     }
                 } else {
+                    postDismissPop();
                     viewPager.setCurrentItem(pos, true);
                 }
             }
@@ -195,6 +198,7 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
                             updateListData(filterDropEntity.stateType);
                         }
                     }
+
                 } else {//我关注的
                     setFirstTabImage(false);
                     Bundle bundle = new Bundle();
@@ -279,26 +283,6 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
             }
         }
         alltaskFragment.notifyFragmentUpdate(alltaskFragment, type, bundle);
-    }
-
-    private class OnTabClickListener implements View.OnClickListener {
-
-        @Override
-        public void onClick(View view) {
-            if (tabLayout.getTabAt(0) != null) {
-                if (view.isSelected()) {
-                    if (topMiddlePopup.isShowing()) {
-                        postDismissPop();
-                    } else {
-                        topMiddlePopup.show(titleView, dropEntities, selectPosition);
-                        setFirstTabImage(true);
-                        getTasksStateCount();
-                    }
-                } else {
-                    tabLayout.getTabAt(0).select();
-                }
-            }
-        }
     }
 
     @Override

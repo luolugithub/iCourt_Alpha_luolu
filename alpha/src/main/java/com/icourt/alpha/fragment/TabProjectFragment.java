@@ -141,13 +141,15 @@ public class TabProjectFragment extends BaseFragment implements TopMiddlePopup.O
             @Override
             public void onTabClick(View v, int pos) {
                 if (viewPager.getCurrentItem() == 0 && pos == 0) {//说明当前是第0个，并且点击了第0个，需要弹出筛选已完成、未完成、已删除的弹出窗。
-                    postDismissPop();
-                    topMiddlePopup.show(titleView, dropEntities, selectPosition);
-                    setFirstTabImage(true);
                     if (topMiddlePopup.isShowing()) {
+                        postDismissPop();
+                    } else {
+                        topMiddlePopup.show(titleView, dropEntities, selectPosition);
+                        setFirstTabImage(true);
                         getMatterStateCount(getMatterTypes());
                     }
                 } else {
+                    postDismissPop();
                     viewPager.setCurrentItem(pos, true);
                 }
             }
@@ -177,7 +179,6 @@ public class TabProjectFragment extends BaseFragment implements TopMiddlePopup.O
 
             @Override
             public void onPageSelected(int position) {
-                postDismissPop();
                 titleAction.setVisibility(position == 0 ? View.VISIBLE : View.GONE);
                 if (position == 0) {//进行中、已完结、已搁置
                     setFirstTabImage(false);
@@ -191,26 +192,6 @@ public class TabProjectFragment extends BaseFragment implements TopMiddlePopup.O
 
             }
         });
-    }
-
-    private class OnTabClickListener implements View.OnClickListener {
-
-        @Override
-        public void onClick(View view) {
-            if (tabLayout.getTabAt(0) != null) {
-                if (view.isSelected()) {
-                    if (topMiddlePopup.isShowing()) {
-                        postDismissPop();
-                    } else {
-                        topMiddlePopup.show(titleView, dropEntities, select_position);
-                        setFirstTabImage(true);
-                        getMatterStateCount(getMatterTypes());
-                    }
-                } else {
-                    tabLayout.getTabAt(0).select();
-                }
-            }
-        }
     }
 
     @Override
