@@ -194,21 +194,13 @@ public class ProjectDetailFragment extends BaseFragment implements BaseRecyclerA
             setAttorneysData(basicItemEntities);//案源律师
             setKeyValueData(basicItemEntities, getString(R.string.project_remark), projectDetailBean.remark, Const.PROJECT_REMARK_TYPE);
 
-            if (projectDetailBean.beginDate > 0 || projectDetailBean.endDate > 0) {
-                if (projectDetailBean.beginDate > 0 && projectDetailBean.endDate > 0) {
-                    setKeyValueData(basicItemEntities, getString(R.string.project_date), String.format("%s - %s",
-                            DateUtils.getTimeDateFormatYearDot(projectDetailBean.beginDate),
-                            DateUtils.getTimeDateFormatYearDot(projectDetailBean.endDate)), Const.PROJECT_TIME_TYPE);
-                } else {
-                    if (projectDetailBean.beginDate > 0 && projectDetailBean.endDate <= 0) {
-                        setKeyValueData(basicItemEntities, getString(R.string.project_date), String.format("%s",
-                                DateUtils.getTimeDateFormatYearDot(projectDetailBean.beginDate)), Const.PROJECT_TIME_TYPE);
-                    } else if (projectDetailBean.beginDate <= 0 && projectDetailBean.endDate > 0) {
-                        setKeyValueData(basicItemEntities, getString(R.string.project_date), String.format("%s",
-                                DateUtils.getTimeDateFormatYearDot(projectDetailBean.endDate)), Const.PROJECT_TIME_TYPE);
-                    }
-                }
-
+            if (projectDetailBean.beginDate > 0) {
+                setKeyValueData(basicItemEntities, getString(R.string.project_start_date), String.format("%s",
+                        DateUtils.getTimeDateFormatYearDot(projectDetailBean.beginDate)), Const.PROJECT_TIME_TYPE);
+            }
+            if (projectDetailBean.endDate > 0) {
+                setKeyValueData(basicItemEntities, getString(R.string.project_end_date), String.format("%s",
+                        DateUtils.getTimeDateFormatYearDot(projectDetailBean.endDate)), Const.PROJECT_TIME_TYPE);
             }
 
             projectBasicInfoAdapter.setClientsBeens(projectDetailBean.clients);

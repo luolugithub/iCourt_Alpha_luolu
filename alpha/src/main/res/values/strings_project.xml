@@ -23,6 +23,8 @@
     <string name="project_server_content">服务内容</string>
     <string name="project_remark">项目备注</string>
     <string name="project_date">项目时间</string>
+    <string name="project_start_date">开始时间</string>
+    <string name="project_end_date">结束时间</string>
     <string name="project_members_format">项目成员(%s)</string>
     <string name="project_members">项目成员</string>
     <string name="project_clients_format">客户(%s)</string>
