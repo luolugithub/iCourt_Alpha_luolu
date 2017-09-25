@@ -489,6 +489,7 @@ public abstract class BaseDialogFragment extends DialogFragment
      */
     @Override
     public void showLoadingDialog(@Nullable String notice) {
+        if(()) return;
         KProgressHUD currSVProgressHUD = getSvProgressHUD();
         currSVProgressHUD.setLabel(notice);
         if (!currSVProgressHUD.isShowing()) {

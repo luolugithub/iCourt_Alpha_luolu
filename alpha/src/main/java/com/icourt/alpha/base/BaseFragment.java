@@ -431,6 +431,7 @@ public abstract class BaseFragment
      */
     @Override
     public void showLoadingDialog(@Nullable String notice) {
+        if (isDetached()) return;
         KProgressHUD currSVProgressHUD = getSvProgressHUD();
         currSVProgressHUD.setLabel(notice);
         if (!currSVProgressHUD.isShowing()) {
@@ -443,8 +444,12 @@ public abstract class BaseFragment
      */
     @Override
     public void dismissLoadingDialog() {
-        if (isShowLoading()) {
-            progressHUD.dismiss();
+        try {
+            if (isShowLoading()) {
+                progressHUD.dismiss();
+            }
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
         }
     }
 

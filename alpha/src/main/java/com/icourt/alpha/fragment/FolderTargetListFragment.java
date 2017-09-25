@@ -314,11 +314,7 @@ public class FolderTargetListFragment extends SeaFileBaseFragment
 
                 for (int j = 0; j < selectedFolderFiles.size(); j++) {
                     ISeaFile iSeaFile = selectedFolderFiles.get(j);
-
-                    String seaFileRepoId = iSeaFile.getSeaFileRepoId();
-                    String seaFileRepoId1 = folderDocumentEntity.getSeaFileRepoId();
-                    String seaFileFullPath = iSeaFile.getSeaFileFullPath();
-                    String seaFileFullPath1 = folderDocumentEntity.getSeaFileFullPath();
+                    if (iSeaFile == null) continue;
                     //同一个资料库下面
                     if (TextUtils.equals(iSeaFile.getSeaFileRepoId(), folderDocumentEntity.getSeaFileRepoId())
                             && TextUtils.equals(iSeaFile.getSeaFileFullPath(), folderDocumentEntity.getSeaFileFullPath())) {
