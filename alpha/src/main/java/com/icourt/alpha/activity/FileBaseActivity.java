@@ -9,6 +9,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.constants.DownloadConfig;
+import com.icourt.alpha.constants.SFileConfig;
 import com.icourt.alpha.entity.bean.FolderDocumentEntity;
 import com.icourt.alpha.entity.bean.ISeaFile;
 import com.icourt.alpha.entity.bean.SFileUploadParamEntity;
@@ -161,6 +162,25 @@ public class FileBaseActivity extends BaseActivity {
                 if (TextUtils.isEmpty(folderDocumentEntity.repoId)) {
                     folderDocumentEntity.repoId = seaFileRepoId;
                 }
+            }
+        }
+        return items;
+    }
+
+    /**
+     * 填充权限
+     *
+     * @param permission
+     * @param items
+     * @return
+     */
+    protected List<FolderDocumentEntity> wrapData(@SFileConfig.FILE_PERMISSION String permission,
+                                                  @android.support.annotation.NonNull final List<FolderDocumentEntity> items) {
+        if (items != null) {
+            for (int i = 0; i < items.size(); i++) {
+                FolderDocumentEntity folderDocumentEntity = items.get(i);
+                if (folderDocumentEntity == null) continue;
+                folderDocumentEntity.permission = permission;
             }
         }
         return items;

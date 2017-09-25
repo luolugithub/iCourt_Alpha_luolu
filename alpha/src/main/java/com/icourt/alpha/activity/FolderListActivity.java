@@ -36,6 +36,7 @@ import com.icourt.alpha.base.BaseDialogFragment;
 import com.icourt.alpha.constants.Const;
 import com.icourt.alpha.constants.SFileConfig;
 import com.icourt.alpha.entity.bean.FolderDocumentEntity;
+import com.icourt.alpha.entity.bean.RepoAdmin;
 import com.icourt.alpha.entity.event.FileRenameEvent;
 import com.icourt.alpha.entity.event.SeaFolderEvent;
 import com.icourt.alpha.fragment.dialogfragment.FileDetailDialogFragment;
@@ -44,6 +45,8 @@ import com.icourt.alpha.fragment.dialogfragment.FolderTargetListDialogFragment;
 import com.icourt.alpha.fragment.dialogfragment.RepoDetailsDialogFragment;
 import com.icourt.alpha.http.IDefNotify;
 import com.icourt.alpha.http.callback.SFileCallBack;
+import com.icourt.alpha.http.callback.SimpleCallBack;
+import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.http.observer.BaseObserver;
 import com.icourt.alpha.interfaces.OnDialogFragmentDismissListener;
 import com.icourt.alpha.utils.FileUtils;
@@ -82,6 +85,7 @@ import static com.icourt.alpha.constants.Const.FILE_ACTION_COPY;
 import static com.icourt.alpha.constants.Const.FILE_ACTION_MOVE;
 import static com.icourt.alpha.constants.Const.VIEW_TYPE_GRID;
 import static com.icourt.alpha.constants.Const.VIEW_TYPE_ITEM;
+import static com.icourt.alpha.constants.SFileConfig.PERMISSION_R;
 import static com.icourt.alpha.constants.SFileConfig.PERMISSION_RW;
 import static com.icourt.alpha.widget.comparators.FileSortComparator.FILE_SORT_TYPE_DEFAULT;
 
@@ -141,6 +145,7 @@ public class FolderListActivity extends FolderBaseActivity
 
     int fileSortType = FILE_SORT_TYPE_DEFAULT;
     boolean isEncrypted;
+    boolean isRepoAdmin;
 
 
     CompoundButton.OnCheckedChangeListener onCheckedChangeListener = new CompoundButton.OnCheckedChangeListener() {
@@ -204,11 +209,8 @@ public class FolderListActivity extends FolderBaseActivity
         isEncrypted = getIntent().getBooleanExtra(KEY_SEA_FILE_REPO_IS_ENCRYPTED, false);
         EventBus.getDefault().register(this);
         setTitle(getRepoTitle());
-        ImageView titleActionImage = getTitleActionImage();
-        if (titleActionImage != null) {
-            titleActionImage.setImageResource(R.mipmap.header_icon_add);
-            setViewInVisible(titleActionImage, TextUtils.equals(getRepoPermission(), PERMISSION_RW));
-        }
+
+        updateTitleAction();
 
         ImageView titleActionImage2 = getTitleActionImage2();
         if (titleActionImage2 != null) {
@@ -281,6 +283,14 @@ public class FolderListActivity extends FolderBaseActivity
         getData(true);
     }
 
+    private void updateTitleAction() {
+        ImageView titleActionImage = getTitleActionImage();
+        if (titleActionImage != null) {
+            titleActionImage.setImageResource(R.mipmap.header_icon_add);
+            setViewInVisible(titleActionImage, TextUtils.equals(getRepoPermission(), PERMISSION_RW));
+        }
+    }
+
     private boolean isAllSelected() {
         List<FolderDocumentEntity> allData = getAllData();
         return !allData.isEmpty() && selectedFolderDocuments.size() == allData.size();
@@ -327,6 +337,41 @@ public class FolderListActivity extends FolderBaseActivity
     @Override
     protected void getData(final boolean isRefresh) {
         super.getData(isRefresh);
+        //需要拿到管理员
+        if (getRepoType() == SFileConfig.REPO_LAWFIRM) {
+            callEnqueue(
+                    getApi().getOfficeAdmins(getSeaFileRepoId()),
+                    new SimpleCallBack<List<RepoAdmin>>() {
+                        @Override
+                        public void onSuccess(Call<ResEntity<List<RepoAdmin>>> call, Response<ResEntity<List<RepoAdmin>>> response) {
+                            if (response.body().result != null) {
+                                isRepoAdmin = false;
+                                String loginUserId = getLoginUserId();
+                                for (RepoAdmin repoAdmin : response.body().result) {
+                                    if (repoAdmin == null) continue;
+                                    if (TextUtils.equals(repoAdmin.userId, loginUserId)) {
+                                        isRepoAdmin = true;
+                                        break;
+                                    }
+                                }
+                                getIntent().putExtra(KEY_SEA_FILE_REPO_PERMISSION, isRepoAdmin ? PERMISSION_RW : PERMISSION_R);
+                                updateTitleAction();
+                            }
+                            getDocuments(isRefresh);
+                        }
+
+                        @Override
+                        public void onFailure(Call<ResEntity<List<RepoAdmin>>> call, Throwable t) {
+                            super.onFailure(call, t);
+                            getDocuments(isRefresh);
+                        }
+                    });
+        } else {
+            getDocuments(isRefresh);
+        }
+    }
+
+    private void getDocuments(final boolean isRefresh) {
         callEnqueue(getSFileApi().documentDirQuery(
                 getSeaFileRepoId(),
                 getSeaFileDirPath()),
