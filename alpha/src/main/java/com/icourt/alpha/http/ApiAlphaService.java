@@ -17,6 +17,7 @@ import com.icourt.alpha.entity.bean.MsgConvert2Task;
 import com.icourt.alpha.entity.bean.PageEntity;
 import com.icourt.alpha.entity.bean.ProjectDetailEntity;
 import com.icourt.alpha.entity.bean.ProjectEntity;
+import com.icourt.alpha.entity.bean.RepoAdmin;
 import com.icourt.alpha.entity.bean.RepoIdResEntity;
 import com.icourt.alpha.entity.bean.RepoMatterEntity;
 import com.icourt.alpha.entity.bean.SFileLinkInfoEntity;
@@ -1311,6 +1312,15 @@ public interface ApiAlphaService {
      */
     @GET("ilaw/api/v2/documents/getOfficeAdmin")
     Call<String> getOfficeAdmin(@Query("userId") String userId);
+
+    /**
+     * 返回某个律所资料库对应的管理员uids
+     *
+     * @param repoId
+     * @return
+     */
+    @GET("ilaw/api/v2/documents/officeLibs/{repoId}/admins")
+    Call<ResEntity<List<RepoAdmin>>> getOfficeAdmins(@Path("repoId") String repoId);
 
 
     /**
