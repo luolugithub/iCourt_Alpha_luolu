@@ -11,7 +11,7 @@ import com.bigkoo.pickerview.lib.WheelView;
 import com.bigkoo.pickerview.listener.OnItemSelectedListener;
 import com.icourt.alpha.R;
 import com.icourt.alpha.base.BaseFragment;
-import com.icourt.alpha.entity.bean.WeekDateEntity;
+import com.icourt.alpha.entity.bean.TimingWeekEntity;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.LogUtils;
 
@@ -21,7 +21,6 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
-import java.util.TimeZone;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -59,7 +58,7 @@ public class TimingSelectWeekFragment extends BaseFragment {
 
             }
         });
-        final List<WeekDateEntity> list = new ArrayList<>();
+        final List<TimingWeekEntity> list = new ArrayList<>();
         try {
             //当前周的开始时间
             long weekStartTime = 0;
@@ -83,10 +82,10 @@ public class TimingSelectWeekFragment extends BaseFragment {
                 LogUtils.i("haha开始时间：" + DateUtils.getyyyyMMddHHmm(weekStartTime));
                 LogUtils.i("haha结束时间：" + DateUtils.getyyyyMMddHHmm(weekEndTime));
 
-                WeekDateEntity weekDateEntity = new WeekDateEntity();
-                weekDateEntity.startTimeMillios = weekStartTime;
-                weekDateEntity.endTimeMillios = weekEndTime;
-                list.add(weekDateEntity);
+                TimingWeekEntity timingWeekEntity = new TimingWeekEntity();
+                timingWeekEntity.startTimeMillios = weekStartTime;
+                timingWeekEntity.endTimeMillios = weekEndTime;
+                list.add(timingWeekEntity);
                 cal.setTime(new Date(weekEndTime + 1));
             }
         } catch (ParseException e) {
@@ -100,7 +99,7 @@ public class TimingSelectWeekFragment extends BaseFragment {
         wheelView.setOnItemSelectedListener(new OnItemSelectedListener() {
             @Override
             public void onItemSelected(int i) {
-                WeekDateEntity item = adapter.getItem(i);
+                TimingWeekEntity item = adapter.getItem(i);
                 LogUtils.i("haha，时间段所在年份" + item.getYear());
                 if (item.endTimeMillios > System.currentTimeMillis()) {
                     wheelView.setCurrentItem(list.size() - 10);
@@ -110,10 +109,10 @@ public class TimingSelectWeekFragment extends BaseFragment {
     }
 
 
-    private class TimeWheelAdapter implements WheelAdapter<WeekDateEntity> {
-        List<WeekDateEntity> timeList = new ArrayList<>();
+    private class TimeWheelAdapter implements WheelAdapter<TimingWeekEntity> {
+        List<TimingWeekEntity> timeList = new ArrayList<>();
 
-        public TimeWheelAdapter(List<WeekDateEntity> data) {
+        public TimeWheelAdapter(List<TimingWeekEntity> data) {
             this.timeList = data;
         }
 
@@ -123,12 +122,12 @@ public class TimingSelectWeekFragment extends BaseFragment {
         }
 
         @Override
-        public WeekDateEntity getItem(int i) {
+        public TimingWeekEntity getItem(int i) {
             return timeList.get(i);
         }
 
         @Override
-        public int indexOf(WeekDateEntity o) {
+        public int indexOf(TimingWeekEntity o) {
             return timeList.indexOf(o);
         }
 

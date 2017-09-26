@@ -10,6 +10,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.AppBarLayout;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
@@ -37,6 +38,7 @@ import com.icourt.alpha.entity.event.OverTimingRemindEvent;
 import com.icourt.alpha.entity.event.TimingEvent;
 import com.icourt.alpha.fragment.dialogfragment.ProjectSimpleSelectDialogFragment;
 import com.icourt.alpha.fragment.dialogfragment.TaskSelectDialogFragment;
+import com.icourt.alpha.fragment.dialogfragment.TimingChangeDialogFragment;
 import com.icourt.alpha.fragment.dialogfragment.WorkTypeSelectDialogFragment;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
@@ -89,6 +91,8 @@ public class TimerTimingActivity extends BaseTimerActivity
     AppBarLayout titleView;
     @BindView(R.id.timing_tv)
     TextView timingTv;
+    @BindView(R.id.tv_start_date)
+    TextView tvStartDate;
     @BindView(R.id.start_time_tv)
     TextView startTimeTv;
     @BindView(R.id.stop_time_tv)
@@ -180,6 +184,7 @@ public class TimerTimingActivity extends BaseTimerActivity
 
     private void initTimingView() {
         if (itemEntity != null) {
+            tvStartDate.setText(DateUtils.getTimeDateFormatYear(itemEntity.startTime));
             timingTv.setText(toTime(itemEntity.useTime / 1000));
             startTimeTv.setText(DateUtils.getHHmm(itemEntity.startTime));
             timeNameTv.setText(itemEntity.name);
@@ -211,6 +216,7 @@ public class TimerTimingActivity extends BaseTimerActivity
     }
 
     @OnClick({
+            R.id.tv_start_date,
             R.id.project_layout,
             R.id.worktype_layout,
             R.id.task_layout,
@@ -221,6 +227,16 @@ public class TimerTimingActivity extends BaseTimerActivity
     public void onClick(View view) {
         super.onClick(view);
         switch (view.getId()) {
+            case R.id.tv_start_date:
+
+                String tag = TimingChangeDialogFragment.class.getSimpleName();
+                FragmentTransaction mFragTransaction = getSupportFragmentManager().beginTransaction();
+                Fragment fragment = getSupportFragmentManager().findFragmentByTag(tag);
+                if (fragment != null) {
+                    mFragTransaction.remove(fragment);
+                }
+                TimingChangeDialogFragment.newInstance("选择计时开始时间", itemEntity.startTime).show(mFragTransaction, tag);
+                break;
             case R.id.titleAction:
                 finish();
                 break;

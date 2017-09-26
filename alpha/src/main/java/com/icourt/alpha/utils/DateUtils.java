@@ -678,4 +678,46 @@ public class DateUtils {
         calendar.set(Calendar.MILLISECOND, 0);
         return calendar.getTimeInMillis();
     }
+
+    /**
+     * 获取日期和星期的组合
+     *
+     * @param millis
+     * @return
+     */
+    public static String getMMddWeek(long millis) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(millis);
+        SimpleDateFormat formatter = new SimpleDateFormat("MM月dd日");
+        String format = formatter.format(calendar.getTime());
+        int day = calendar.get(Calendar.DAY_OF_WEEK);
+        StringBuilder builder = new StringBuilder(format);
+        builder.append(" ");
+        switch (day) {
+            case Calendar.SUNDAY:
+                builder.append("周日");
+                break;
+            case Calendar.MONDAY:
+                builder.append("周一");
+                break;
+            case Calendar.TUESDAY:
+                builder.append("周二");
+                break;
+            case Calendar.WEDNESDAY:
+                builder.append("周三");
+                break;
+            case Calendar.THURSDAY:
+                builder.append("周四");
+                break;
+            case Calendar.FRIDAY:
+                builder.append("周五");
+                break;
+            case Calendar.SATURDAY:
+                builder.append("周六");
+                break;
+
+        }
+        return builder.toString();
+    }
+
 }

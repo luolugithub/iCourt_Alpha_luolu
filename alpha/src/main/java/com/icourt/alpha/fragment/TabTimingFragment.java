@@ -27,7 +27,6 @@ import com.icourt.alpha.entity.bean.ItemPageEntity;
 import com.icourt.alpha.entity.bean.TimeEntity;
 import com.icourt.alpha.entity.bean.TimingCountEntity;
 import com.icourt.alpha.entity.event.TimingEvent;
-import com.icourt.alpha.fragment.dialogfragment.TimingSelectDialogFragment;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.DateUtils;

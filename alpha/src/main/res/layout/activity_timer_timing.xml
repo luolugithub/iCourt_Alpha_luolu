@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/root_view"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:focusable="true"
-    android:id="@+id/root_view"
     android:focusableInTouchMode="true"
     android:orientation="vertical">
 
@@ -22,19 +22,40 @@
             android:orientation="vertical">
 
             <include
+                layout="@layout/layout_over_timing_remind"
                 android:layout_width="match_parent"
-                android:layout_height="42dp"
-                layout="@layout/layout_over_timing_remind" />
+                android:layout_height="42dp" />
 
             <TextView
                 android:id="@+id/timing_tv"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_margin="45dp"
+                android:layout_marginBottom="20dp"
+                android:layout_marginLeft="45dp"
+                android:layout_marginRight="45dp"
+                android:layout_marginTop="45dp"
                 android:gravity="center"
                 android:text="00:00:00"
                 android:textColor="@color/alpha_font_color_title"
                 android:textSize="50sp" />
+
+
+            <TextView
+                android:id="@+id/stop_time_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginBottom="20dp"
+                android:background="@drawable/bg_stop_timing"
+                android:drawableLeft="@drawable/orange_side_dot_bg"
+                android:drawablePadding="10dp"
+                android:paddingBottom="7dp"
+                android:paddingLeft="20dp"
+                android:paddingRight="20dp"
+                android:paddingTop="9dp"
+                android:text="停止"
+                android:textColor="@color/alpha_font_color_black"
+                android:textSize="13sp" />
 
             <View
                 android:layout_width="match_parent"
@@ -47,45 +68,47 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
+                android:paddingBottom="10dp"
                 android:paddingLeft="15dp"
-                android:paddingRight="15dp">
+                android:paddingRight="15dp"
+                android:paddingTop="10dp">
 
                 <TextView
+                    android:id="@+id/tv_start_date"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:ellipsize="end"
                     android:maxLines="1"
-                    android:paddingBottom="10dp"
-                    android:paddingTop="10dp"
-                    android:text="开始时间" />
+                    android:text="开始时间"
+                    android:textColor="@color/time_week_text_color"
+                    android:textSize="14sp" />
+
+                <android.support.v4.widget.Space
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1" />
 
                 <TextView
                     android:id="@+id/start_time_tv"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginLeft="10dp"
-                    android:paddingBottom="10dp"
-                    android:paddingTop="10dp"
+                    android:layout_marginRight="20dp"
                     android:text="9:00"
                     android:textColor="@color/alpha_font_color_black"
                     android:textSize="18sp" />
 
-                <android.support.v4.widget.Space
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1" />
+                <ImageView
+                    android:layout_width="15dp"
+                    android:layout_height="0.5dp"
+                    android:layout_gravity="center_vertical"
+                    android:background="@color/alpha_divider_color" />
 
                 <TextView
-                    android:id="@+id/stop_time_tv"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:drawableLeft="@drawable/orange_side_dot_bg"
-                    android:drawablePadding="10dp"
-                    android:paddingBottom="10dp"
-                    android:paddingTop="10dp"
-                    android:text="停止"
-                    android:textColor="@color/alpha_font_color_black"
-                    android:textSize="18sp" />
+                    android:layout_marginLeft="20dp"
+                    android:layout_marginRight="30dp"
+                    android:text="现在" />
             </LinearLayout>
 
             <View

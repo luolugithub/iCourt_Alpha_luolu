@@ -2,7 +2,6 @@ package com.icourt.alpha.fragment;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,8 +10,6 @@ import com.bigkoo.pickerview.adapter.WheelAdapter;
 import com.bigkoo.pickerview.lib.WheelView;
 import com.icourt.alpha.R;
 import com.icourt.alpha.base.BaseFragment;
-import com.icourt.alpha.entity.bean.WeekDateEntity;
-import com.icourt.alpha.utils.DateUtils;
 
 import java.util.ArrayList;
 import java.util.List;

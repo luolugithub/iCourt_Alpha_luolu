@@ -16,7 +16,7 @@ import java.util.Locale;
  * version 2.1.1
  */
 
-public class WeekDateEntity {
+public class TimingWeekEntity {
 
     public long startTimeMillios;//周的开始时间毫秒数
 
