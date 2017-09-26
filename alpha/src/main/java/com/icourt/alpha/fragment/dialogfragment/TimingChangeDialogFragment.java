@@ -10,19 +10,15 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.bigkoo.pickerview.adapter.WheelAdapter;
 import com.bigkoo.pickerview.lib.WheelView;
 import com.icourt.alpha.R;
 import com.icourt.alpha.base.BaseDialogFragment;
-import com.icourt.alpha.entity.bean.TaskEntity;
 import com.icourt.alpha.entity.bean.TimingDateEntity;
 import com.icourt.alpha.utils.DensityUtil;
-import com.icourt.alpha.utils.LogUtils;
 
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -36,7 +32,6 @@ import butterknife.Unbinder;
 import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
 import io.reactivex.ObservableOnSubscribe;
-import io.reactivex.Scheduler;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
@@ -131,6 +126,13 @@ public class TimingChangeDialogFragment extends BaseDialogFragment {
         minuteList = new ArrayList<>();
 
         dateWheelAdapter = new DateWheelAdapter();
+        ArrayList<TimingDateEntity> tempMenus = new ArrayList<>();
+        for (int i = 0; i < 10; i++) {
+            TimingDateEntity timingDateEntity = new TimingDateEntity();
+            timingDateEntity.timeMillios = SystemClock.elapsedRealtime();
+            tempMenus.add(timingDateEntity);
+        }
+        dateWheelAdapter.setTimeList(tempMenus);
         wheelviewDate.setAdapter(dateWheelAdapter);
 
 //        for (int i = 0; i < 24; i++) {
@@ -146,7 +148,8 @@ public class TimingChangeDialogFragment extends BaseDialogFragment {
             @Override
             public void subscribe(@io.reactivex.annotations.NonNull ObservableEmitter<List<TimingDateEntity>> e) throws Exception {
                 Calendar cal = Calendar.getInstance();
-                cal.setTime(new SimpleDateFormat("yyyy-MM-dd").parse("2015-01-01"));
+                cal.setTime(new SimpleDateFormat("yyyy-MM-dd").parse("2010-01-01"));
+
                 while (cal.getTimeInMillis() < System.currentTimeMillis()) {
                     TimingDateEntity dateEntity = new TimingDateEntity();
                     dateEntity.timeMillios = cal.getTimeInMillis();
@@ -156,14 +159,13 @@ public class TimingChangeDialogFragment extends BaseDialogFragment {
                 e.onNext(dayList);
                 e.onComplete();
             }
-        })
+        }).delay(1, TimeUnit.SECONDS)
                 .compose(this.<List<TimingDateEntity>>bindToLifecycle())
                 .subscribeOn(Schedulers.newThread())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Consumer<List<TimingDateEntity>>() {
                     @Override
                     public void accept(@io.reactivex.annotations.NonNull final List<TimingDateEntity> timingDateEntities) throws Exception {
-                        LogUtils.i("---------setAdapter开始时间：" + System.currentTimeMillis() + "\n" + Thread.currentThread().getName());
                         dateWheelAdapter.setTimeList(timingDateEntities);
                         wheelviewDate.invalidate();
 

@@ -79,6 +79,7 @@
                     android:layout_height="wrap_content"
                     android:ellipsize="end"
                     android:maxLines="1"
+                    android:padding="10dp"
                     android:text="开始时间"
                     android:textColor="@color/time_week_text_color"
                     android:textSize="14sp" />
