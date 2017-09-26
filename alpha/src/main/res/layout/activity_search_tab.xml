@@ -22,9 +22,8 @@
         android:orientation="vertical"
         app:layout_behavior="com.icourt.alpha.view.behavior.FooterBehaviorDependAppBar">
 
-        <android.support.design.widget.TabLayout
+        <com.icourt.alpha.view.tab.AlphaTabLayout
             android:id="@+id/tabLayout"
-            style="@style/AlphaTitleAppBarLayout"
             android:layout_width="match_parent"
             android:layout_height="@dimen/alpha_height_title"
             android:layout_gravity="bottom"

@@ -8,7 +8,6 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.CoordinatorLayout;
-import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
 import android.text.TextUtils;
@@ -27,6 +26,13 @@ import com.icourt.alpha.fragment.SearchWebViewFragment;
 import com.icourt.alpha.interfaces.INotifyFragment;
 import com.icourt.alpha.interfaces.IWebViewPage;
 import com.icourt.alpha.interfaces.OnWebViewFragmentListener;
+import com.icourt.alpha.utils.DensityUtil;
+import com.icourt.alpha.view.tab.AlphaTabLayout;
+import com.icourt.alpha.view.tab.AlphaTitleNavigatorAdapter;
+
+import net.lucode.hackware.magicindicator.buildins.commonnavigator.CommonNavigator;
+import net.lucode.hackware.magicindicator.buildins.commonnavigator.abs.IPagerIndicator;
+import net.lucode.hackware.magicindicator.buildins.commonnavigator.indicators.LinePagerIndicator;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -57,7 +63,7 @@ public class SearchTabActivity extends BaseActivity implements OnWebViewFragment
     @BindView(R.id.viewPager)
     ViewPager viewPager;
     @BindView(R.id.tabLayout)
-    TabLayout tabLayout;
+    AlphaTabLayout tabLayout;
     @BindView(R.id.bottom_back_iv)
     ImageButton bottomBackIv;
     @BindView(R.id.bottom_forward_iv)
@@ -102,8 +108,6 @@ public class SearchTabActivity extends BaseActivity implements OnWebViewFragment
         if (titleActionImage != null) {
             titleActionImage.setImageResource(R.mipmap.browser_open);
         }
-        tabLayout.setTabMode(TabLayout.MODE_SCROLLABLE);
-        tabLayout.setSelectedTabIndicatorHeight(0);
 
         viewPager.setAdapter(baseFragmentAdapter = new BaseFragmentAdapter(getSupportFragmentManager()));
         viewPager.addOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
@@ -130,19 +134,37 @@ public class SearchTabActivity extends BaseActivity implements OnWebViewFragment
 
         baseFragmentAdapter.bindTitle(true, titles);
         baseFragmentAdapter.bindData(true, fragments);
-        tabLayout.setupWithViewPager(viewPager);
+        CommonNavigator commonNavigator = new CommonNavigator(getContext());
+        commonNavigator.setAdapter(new AlphaTitleNavigatorAdapter() {
 
-        for (int i = 0; i < baseFragmentAdapter.getCount(); i++) {
-            TabLayout.Tab itemTab = tabLayout.getTabAt(i);
-            if (itemTab != null) {
-                itemTab.setCustomView(R.layout.item_tab_layout_custom);
-                TextView itemTv = (TextView) itemTab.getCustomView().findViewById(R.id.item_text);
-                itemTv.setText(baseFragmentAdapter.getPageTitle(i));
-                if (i == 0) {
-                    itemTab.select();
-                }
+            @Nullable
+            @Override
+            public CharSequence getTitle(int index) {
+                return baseFragmentAdapter.getPageTitle(index);
             }
-        }
+
+            @Override
+            public int getCount() {
+                return baseFragmentAdapter.getCount();
+            }
+
+            @Override
+            public void onTabClick(View v, int pos) {
+                viewPager.setCurrentItem(pos, true);
+            }
+
+            @Override
+            public IPagerIndicator getIndicator(Context context) {
+                IPagerIndicator indicator = super.getIndicator(context);
+                if (indicator instanceof LinePagerIndicator) {
+                    ((LinePagerIndicator) indicator).setYOffset(DensityUtil.dip2px(context, 48));
+                }
+                return indicator;
+            }
+        });
+        tabLayout.setNavigator2(commonNavigator)
+                .setupWithViewPager(viewPager);
+
         //要求提前加载三页
        /* if (baseFragmentAdapter.getCount() >= 3) {
             viewPager.setOffscreenPageLimit(3);

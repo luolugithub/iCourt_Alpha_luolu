@@ -36,6 +36,8 @@ import com.icourt.alpha.base.BaseDialogFragment;
 import com.icourt.alpha.constants.Const;
 import com.icourt.alpha.constants.SFileConfig;
 import com.icourt.alpha.entity.bean.FolderDocumentEntity;
+import com.icourt.alpha.entity.bean.RepoAdmin;
+import com.icourt.alpha.entity.event.FileRenameEvent;
 import com.icourt.alpha.entity.event.SeaFolderEvent;
 import com.icourt.alpha.fragment.dialogfragment.FileDetailDialogFragment;
 import com.icourt.alpha.fragment.dialogfragment.FolderDetailDialogFragment;
@@ -43,6 +45,8 @@ import com.icourt.alpha.fragment.dialogfragment.FolderTargetListDialogFragment;
 import com.icourt.alpha.fragment.dialogfragment.RepoDetailsDialogFragment;
 import com.icourt.alpha.http.IDefNotify;
 import com.icourt.alpha.http.callback.SFileCallBack;
+import com.icourt.alpha.http.callback.SimpleCallBack;
+import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.http.observer.BaseObserver;
 import com.icourt.alpha.interfaces.OnDialogFragmentDismissListener;
 import com.icourt.alpha.utils.FileUtils;
@@ -81,6 +85,7 @@ import static com.icourt.alpha.constants.Const.FILE_ACTION_COPY;
 import static com.icourt.alpha.constants.Const.FILE_ACTION_MOVE;
 import static com.icourt.alpha.constants.Const.VIEW_TYPE_GRID;
 import static com.icourt.alpha.constants.Const.VIEW_TYPE_ITEM;
+import static com.icourt.alpha.constants.SFileConfig.PERMISSION_R;
 import static com.icourt.alpha.constants.SFileConfig.PERMISSION_RW;
 import static com.icourt.alpha.widget.comparators.FileSortComparator.FILE_SORT_TYPE_DEFAULT;
 
@@ -140,6 +145,7 @@ public class FolderListActivity extends FolderBaseActivity
 
     int fileSortType = FILE_SORT_TYPE_DEFAULT;
     boolean isEncrypted;
+    boolean isRepoAdmin;
 
 
     CompoundButton.OnCheckedChangeListener onCheckedChangeListener = new CompoundButton.OnCheckedChangeListener() {
@@ -203,11 +209,8 @@ public class FolderListActivity extends FolderBaseActivity
         isEncrypted = getIntent().getBooleanExtra(KEY_SEA_FILE_REPO_IS_ENCRYPTED, false);
         EventBus.getDefault().register(this);
         setTitle(getRepoTitle());
-        ImageView titleActionImage = getTitleActionImage();
-        if (titleActionImage != null) {
-            titleActionImage.setImageResource(R.mipmap.header_icon_add);
-            setViewInVisible(titleActionImage, TextUtils.equals(getRepoPermission(), PERMISSION_RW));
-        }
+
+        updateTitleAction();
 
         ImageView titleActionImage2 = getTitleActionImage2();
         if (titleActionImage2 != null) {
@@ -280,6 +283,14 @@ public class FolderListActivity extends FolderBaseActivity
         getData(true);
     }
 
+    private void updateTitleAction() {
+        ImageView titleActionImage = getTitleActionImage();
+        if (titleActionImage != null) {
+            titleActionImage.setImageResource(R.mipmap.header_icon_add);
+            setViewInVisible(titleActionImage, TextUtils.equals(getRepoPermission(), PERMISSION_RW));
+        }
+    }
+
     private boolean isAllSelected() {
         List<FolderDocumentEntity> allData = getAllData();
         return !allData.isEmpty() && selectedFolderDocuments.size() == allData.size();
@@ -326,6 +337,41 @@ public class FolderListActivity extends FolderBaseActivity
     @Override
     protected void getData(final boolean isRefresh) {
         super.getData(isRefresh);
+        //需要拿到管理员
+        if (getRepoType() == SFileConfig.REPO_LAWFIRM) {
+            callEnqueue(
+                    getApi().getOfficeAdmins(getSeaFileRepoId()),
+                    new SimpleCallBack<List<RepoAdmin>>() {
+                        @Override
+                        public void onSuccess(Call<ResEntity<List<RepoAdmin>>> call, Response<ResEntity<List<RepoAdmin>>> response) {
+                            if (response.body().result != null) {
+                                isRepoAdmin = false;
+                                String loginUserId = getLoginUserId();
+                                for (RepoAdmin repoAdmin : response.body().result) {
+                                    if (repoAdmin == null) continue;
+                                    if (TextUtils.equals(repoAdmin.userId, loginUserId)) {
+                                        isRepoAdmin = true;
+                                        break;
+                                    }
+                                }
+                                getIntent().putExtra(KEY_SEA_FILE_REPO_PERMISSION, isRepoAdmin ? PERMISSION_RW : PERMISSION_R);
+                                updateTitleAction();
+                            }
+                            getDocuments(isRefresh);
+                        }
+
+                        @Override
+                        public void onFailure(Call<ResEntity<List<RepoAdmin>>> call, Throwable t) {
+                            super.onFailure(call, t);
+                            getDocuments(isRefresh);
+                        }
+                    });
+        } else {
+            getDocuments(isRefresh);
+        }
+    }
+
+    private void getDocuments(final boolean isRefresh) {
         callEnqueue(getSFileApi().documentDirQuery(
                 getSeaFileRepoId(),
                 getSeaFileDirPath()),
@@ -335,7 +381,7 @@ public class FolderListActivity extends FolderBaseActivity
                         //取消批量操作界面
                         onClick(titleEditCancelView);
 
-                        sortFile(wrapData(getSeaFileRepoId(), getSeaFileDirPath(), response.body()));
+                        sortFile(wrapData(getSeaFileRepoId(), getSeaFileDirPath(), response.body()), false);
                         stopRefresh();
                     }
 
@@ -393,6 +439,32 @@ public class FolderListActivity extends FolderBaseActivity
                 case FILE_ACTION_COPY:
                     getData(true);
                     break;
+            }
+        }
+    }
+
+    /**
+     * 文件重命名事件
+     * 1.更新文件夹参数的全路径
+     * 2.更新列表中的文件/文件夹名字 暂时不需要 onResume中刷着
+     *
+     * @param event
+     */
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onFileRenameEvent(FileRenameEvent event) {
+        if (event == null) return;
+        if (TextUtils.equals(event.seaFileRepoId, getSeaFileRepoId())) {
+            //更新其中的路径
+            getIntent().putExtra(KEY_SEA_FILE_DIR_PATH, getSeaFileDirPath().replaceFirst(event.oldFullPath, event.newFullPath));
+
+            //更新标题
+            if (!TextUtils.isEmpty(getSeaFileDirPath())) {
+                String[] pathSplit = getSeaFileDirPath().split("/");
+                //非根路径
+                if (pathSplit != null && pathSplit.length > 1) {
+                    getIntent().putExtra(KEY_SEA_FILE_REPO_TITLE, pathSplit[pathSplit.length - 1]);
+                    titleContent.setText(getRepoTitle());
+                }
             }
         }
     }
@@ -555,7 +627,7 @@ public class FolderListActivity extends FolderBaseActivity
                         if (fileSortType != sortType) {
                             fileSortType = sortType;
                             showLoadingDialog(R.string.str_executing);
-                            sortFile(getAllData());
+                            sortFile(getAllData(), true);
                         }
                     }
                 }).show();
@@ -563,10 +635,13 @@ public class FolderListActivity extends FolderBaseActivity
 
     /**
      * 排序
+     *
+     * @param datas
+     * @param delay 是否延迟
      */
-    private void sortFile(List<FolderDocumentEntity> datas) {
+    private void sortFile(List<FolderDocumentEntity> datas, boolean delay) {
         seaFileSort(fileSortType, datas)
-                .delay(500, TimeUnit.MILLISECONDS)
+                .delay(delay ? 500 : 0, TimeUnit.MILLISECONDS)
                 .compose(this.<List<FolderDocumentEntity>>bindToLifecycle())
                 .subscribeOn(Schedulers.newThread())
                 .observeOn(AndroidSchedulers.mainThread())
@@ -868,8 +943,8 @@ public class FolderListActivity extends FolderBaseActivity
         } else {
             menus.add(getString(R.string.sfile_file_details));
             menus.add(getString(R.string.sfile_file_rename));
-            //已经共享给我 不能再共享给别人了
-            if (getRepoType() != SFileConfig.REPO_SHARED_ME) {
+            //1.已经共享给我 不能再共享给别人了  2.项目中不能分享 变成一对多啦 3:律所不需要分享
+            if (getRepoType() == SFileConfig.REPO_MINE) {
                 menus.add(getString(R.string.sfile_file_share));
             }
             menus.add(getString(R.string.sfile_file_copy));

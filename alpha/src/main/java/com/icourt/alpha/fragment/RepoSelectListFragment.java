@@ -318,7 +318,7 @@ public class RepoSelectListFragment extends RepoBaseFragment
         new AlertDialog.Builder(getContext())
                 .setTitle(R.string.repo_encrypted)
                 .setMessage(R.string.repo_encrypted_unsupport)
-                .setPositiveButton(R.string.str_ok, new DialogInterface.OnClickListener() {
+                .setPositiveButton(R.string.str_good, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
                         dialogInterface.dismiss();

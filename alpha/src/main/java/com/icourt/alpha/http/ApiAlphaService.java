@@ -17,12 +17,13 @@ import com.icourt.alpha.entity.bean.MsgConvert2Task;
 import com.icourt.alpha.entity.bean.PageEntity;
 import com.icourt.alpha.entity.bean.ProjectDetailEntity;
 import com.icourt.alpha.entity.bean.ProjectEntity;
+import com.icourt.alpha.entity.bean.RepoAdmin;
+import com.icourt.alpha.entity.bean.ProjectProcessesEntity;
 import com.icourt.alpha.entity.bean.RepoIdResEntity;
 import com.icourt.alpha.entity.bean.RepoMatterEntity;
 import com.icourt.alpha.entity.bean.SFileLinkInfoEntity;
 import com.icourt.alpha.entity.bean.SFileShareUserInfo;
 import com.icourt.alpha.entity.bean.SFileTokenEntity;
-import com.icourt.alpha.entity.bean.ProjectProcessesEntity;
 import com.icourt.alpha.entity.bean.SearchEngineEntity;
 import com.icourt.alpha.entity.bean.SelectGroupBean;
 import com.icourt.alpha.entity.bean.TaskAttachmentEntity;
@@ -963,6 +964,17 @@ public interface ApiAlphaService {
     Call<ResEntity<List<ContactDeatilBean>>> customerDetailQuery(@Path("id") String id);
 
     /**
+     * 获取联系人详情
+     * <p>
+     * 文档地址：http://testpms.alphalawyer.cn/ilaw/swagger/index.html#!/contact-api-v2/getContactDetailUsingGET
+     *
+     * @param id
+     * @return
+     */
+    @GET("ilaw/api/v2/contact/detail/{id}")
+    Observable<ResEntity<List<ContactDeatilBean>>> customerDetailQueryObservable(@Path("id") String id);
+
+    /**
      * 获取企业联络人
      * <p>
      * 文档地址：http://testpms.alphalawyer.cn/ilaw/swagger/index.html#!/contact-api-v2/getRelatedPersonUsingGET
@@ -972,6 +984,17 @@ public interface ApiAlphaService {
      */
     @GET("ilaw/api/v2/contact/relatedperson/{id}")
     Call<ResEntity<List<ContactDeatilBean>>> customerLiaisonsQuery(@Path("id") String id);
+
+    /**
+     * 获取企业联络人
+     * <p>
+     * 文档地址：http://testpms.alphalawyer.cn/ilaw/swagger/index.html#!/contact-api-v2/getRelatedPersonUsingGET
+     *
+     * @param id
+     * @return
+     */
+    @GET("ilaw/api/v2/contact/relatedperson/{id}")
+    Observable<ResEntity<List<ContactDeatilBean>>> customerLiaisonsQueryObservable(@Path("id") String id);
 
     /**
      * 联系人添加关注
@@ -1354,6 +1377,15 @@ public interface ApiAlphaService {
      */
     @GET("ilaw/api/v2/documents/getOfficeAdmin")
     Call<String> getOfficeAdmin(@Query("userId") String userId);
+
+    /**
+     * 返回某个律所资料库对应的管理员uids
+     *
+     * @param repoId
+     * @return
+     */
+    @GET("ilaw/api/v2/documents/officeLibs/{repoId}/admins")
+    Call<ResEntity<List<RepoAdmin>>> getOfficeAdmins(@Path("repoId") String repoId);
 
 
     /**

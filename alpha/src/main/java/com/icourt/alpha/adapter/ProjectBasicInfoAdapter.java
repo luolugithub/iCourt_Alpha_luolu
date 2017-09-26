@@ -121,6 +121,7 @@ public class ProjectBasicInfoAdapter extends BaseArrayRecyclerAdapter<ProjectBas
             case Const.PROJECT_TYPE_TYPE://项目类型
                 return R.mipmap.project_type_icon;
             case Const.PROJECT_REMARK_TYPE://项目备注
+            case Const.PROJECT_SERVER_CONTENT_TYPE://服务内容
                 return R.mipmap.project_detail_icon;
             case Const.PROJECT_DEPARTMENT_TYPE://负责部门
                 return R.mipmap.project_department_icon;

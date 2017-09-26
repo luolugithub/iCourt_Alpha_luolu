@@ -3,6 +3,7 @@ package com.icourt.alpha.fragment.dialogfragment;
 import android.os.Bundle;
 import android.support.annotation.IntRange;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
@@ -26,8 +27,11 @@ import com.icourt.alpha.utils.IMUtils;
 import com.icourt.alpha.utils.SFileTokenUtils;
 import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.utils.UrlUtils;
+import com.icourt.alpha.view.tab.AlphaTitleNavigatorAdapter;
 import com.icourt.alpha.widget.comparators.LongFieldEntityComparator;
 import com.icourt.alpha.widget.comparators.ORDER;
+
+import net.lucode.hackware.magicindicator.buildins.commonnavigator.CommonNavigator;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -116,7 +120,26 @@ public class FileDetailDialogFragment extends FileDetailsBaseDialogFragment
 
 
         viewPager.setAdapter(baseFragmentAdapter = new BaseFragmentAdapter(getChildFragmentManager()));
-        tabLayout.setupWithViewPager(viewPager);
+        CommonNavigator commonNavigator = new CommonNavigator(getContext());
+        commonNavigator.setAdapter(new AlphaTitleNavigatorAdapter(1.0f) {
+            @Nullable
+            @Override
+            public CharSequence getTitle(int index) {
+                return baseFragmentAdapter.getPageTitle(index);
+            }
+
+            @Override
+            public int getCount() {
+                return baseFragmentAdapter.getCount();
+            }
+
+            @Override
+            public void onTabClick(View v, int pos) {
+                viewPager.setCurrentItem(pos, true);
+            }
+        });
+        tabLayout.setNavigator2(commonNavigator)
+                .setupWithViewPager(viewPager);
         baseFragmentAdapter.bindTitle(true, Arrays.asList("历史版本", "下载链接"));
         String filePath = String.format("%s%s", fromRepoDirPath, fileName);
         //根据类型判断 除了我的资料库里面的文件有分享链接 其他都屏蔽
