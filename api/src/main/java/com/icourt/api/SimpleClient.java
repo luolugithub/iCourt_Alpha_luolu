@@ -26,7 +26,7 @@ import okhttp3.logging.HttpLoggingInterceptor;
  */
 public abstract class SimpleClient extends BaseClient implements Interceptor {
 
-    protected void attachBaseUrl(Context context, String baseUrl,HttpLoggingInterceptor httpLoggingInterceptor) {
+    protected void attachBaseUrl(Context context, String baseUrl, HttpLoggingInterceptor httpLoggingInterceptor) {
         //okhttp3 cookie 持久化
         // ClearableCookieJar cookieJar = new PersistentCookieJar(new SetCookieCache(), new SharedPrefsCookiePersistor(context));
 
@@ -38,9 +38,10 @@ public abstract class SimpleClient extends BaseClient implements Interceptor {
         builder.writeTimeout(apiConfig.SOCKET_WRITE_TIME_OUT, TimeUnit.MILLISECONDS);
         builder.connectTimeout(apiConfig.SOCKET_TIME_OUT, TimeUnit.MILLISECONDS);
         builder.readTimeout(apiConfig.SOCKET_RESPONSE_TIME_OUT, TimeUnit.MILLISECONDS);
-        builder.sslSocketFactory(createSSLSocketFactory());
+        builder.sslSocketFactory(createSSLSocketFactory(), new TrustAllManager());
         builder.hostnameVerifier(new TrustAllHostnameVerifier());
 
+        //正式证书
         /*int[] certificates = {R.raw.myssl};//cer文件
         String hosts[] = {HConst.BASE_DEBUG_URL, HConst.BASE_PREVIEW_URL, HConst.BASE_RELEASE_URL, HConst.BASE_RELEASE_SHARE_URL};
         builder.socketFactory(HttpsFactroy.getSSLSocketFactory(context, certificates));
