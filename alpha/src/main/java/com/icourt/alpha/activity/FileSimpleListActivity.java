@@ -15,7 +15,6 @@ import android.widget.TextView;
 
 import com.andview.refreshview.XRefreshView;
 import com.google.gson.JsonElement;
-import com.icourt.alpha.BuildConfig;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.FolderAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
@@ -27,11 +26,9 @@ import com.icourt.alpha.http.IDefNotify;
 import com.icourt.alpha.http.callback.SFileCallBack;
 import com.icourt.alpha.http.observer.BaseObserver;
 import com.icourt.alpha.utils.IMUtils;
-import com.icourt.alpha.utils.SFileTokenUtils;
 import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.utils.UriUtils;
-import com.icourt.alpha.utils.UrlUtils;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 import com.icourt.alpha.widget.comparators.FileSortComparator;
 import com.icourt.alpha.widget.dialog.BottomActionDialog;
@@ -360,14 +357,6 @@ public class FileSimpleListActivity extends FolderBaseActivity
                 });
     }
 
-    protected String getSFileImageUrl(String name, int size) {
-        return String.format("%silaw/api/v2/documents/thumbnailImage?repoId=%s&seafileToken=%s&size=%s&p=%s",
-                BuildConfig.API_URL,
-                getSeaFileRepoId(),
-                SFileTokenUtils.getSFileToken(),
-                size,
-                UrlUtils.encodeUrl(String.format("%s%s", getSeaFileDirPath(), name)));
-    }
 
 
     /**

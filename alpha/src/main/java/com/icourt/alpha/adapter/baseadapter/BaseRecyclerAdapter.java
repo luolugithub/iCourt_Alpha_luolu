@@ -361,8 +361,12 @@ public abstract class BaseRecyclerAdapter extends RecyclerView.Adapter<BaseRecyc
      * 取消加载对话框
      */
     public void dismissLoadingDialog() {
-        if (isShowLoading()) {
-            progressHUD.dismiss();
+        try {
+            if (isShowLoading()) {
+                progressHUD.dismiss();
+            }
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
         }
     }
 
