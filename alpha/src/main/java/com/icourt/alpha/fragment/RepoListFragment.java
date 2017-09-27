@@ -541,7 +541,7 @@ public class RepoListFragment extends RepoBaseFragment
     private void showDelConfirmDialog(final int pos) {
         new BottomActionDialog(getContext(),
                 getString(R.string.repo_delete_confirm),
-                Arrays.asList(getString(R.string.str_delete)), new BottomActionDialog.OnActionItemClickListener() {
+                Arrays.asList(getString(R.string.str_ok)), new BottomActionDialog.OnActionItemClickListener() {
             @Override
             public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
                 dialog.dismiss();
