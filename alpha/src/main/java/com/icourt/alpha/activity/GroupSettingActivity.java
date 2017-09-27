@@ -11,7 +11,6 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.AppBarLayout;
 import android.support.v7.app.AlertDialog;
 import android.view.View;
-import android.widget.CheckedTextView;
 import android.widget.LinearLayout;
 import android.widget.Switch;
 import android.widget.TextView;
@@ -25,7 +24,6 @@ import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.icourt.alpha.entity.bean.GroupDetailEntity;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
-import com.icourt.alpha.utils.StringUtils;
 import com.icourt.api.RequestUtils;
 
 import java.io.Serializable;
@@ -49,12 +47,8 @@ public class GroupSettingActivity extends BaseActivity {
     private static final int CODE_REQUEST_DESC = 102;
     private static final int CODE_REQUEST_TRANSFER_ADMIN = 103;
 
-    @BindView(R.id.titleBack)
-    CheckedTextView titleBack;
     @BindView(R.id.titleContent)
     TextView titleContent;
-    @BindView(R.id.titleAction)
-    CheckedTextView titleAction;
     @BindView(R.id.titleView)
     AppBarLayout titleView;
     @BindView(R.id.group_name_tv)
@@ -124,55 +118,28 @@ public class GroupSettingActivity extends BaseActivity {
                 groupSetLookSwitch.setChecked(false);
             }
         }
-
-        TextView titleActionTextView = getTitleActionTextView();
-        if (titleActionTextView != null) {
-            titleActionTextView.setText("完成");
-        }
     }
 
     @OnClick({R.id.group_name_ll,
             R.id.group_desc_ll,
             R.id.group_transfer_admin_ll,
-            R.id.group_set_private_switch})
+            R.id.group_set_private_switch,
+            R.id.group_set_invite_switch,
+            R.id.group_set_look_switch})
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.group_name_ll:
-                EditItemActivity.launchForResult(getActivity(),
-                        "讨论组名称",
-                        getTextString(groupNameTv, ""),
+                GroupChangeNameActivity.launchForResult(
+                        getActivity(),
                         CODE_REQUEST_NAME,
-                        3,
-                        3,
-                        true,
-                        50,
-                        false);
+                        groupDetailEntity);
                 break;
             case R.id.group_desc_ll:
-                EditItemActivity.launchForResult(getActivity(),
-                        "讨论组目标",
-                        getTextString(groupDescTv, ""),
+                GroupChangeDescActivity.launchForResult(
+                        getActivity(),
                         CODE_REQUEST_DESC,
-                        3,
-                        10,
-                        true,
-                        140, true);
-                break;
-            case R.id.titleAction:
-                if (StringUtils.isEmpty(getTextString(groupNameTv, ""))) {
-                    showTopSnackBar("讨论组名称为空");
-                    return;
-                }
-                if (getTextString(groupNameTv, "").length() < 1) {
-                    showTopSnackBar("讨论组名称太短");
-                    return;
-                }
-                if (getTextString(groupNameTv, "").length() > 50) {
-                    showTopSnackBar("讨论组名称太长");
-                    return;
-                }
-                updateGroupInfo();
+                        groupDetailEntity);
                 break;
             case R.id.group_transfer_admin_ll:
                 if (groupDetailEntity == null) return;
@@ -184,12 +151,24 @@ public class GroupSettingActivity extends BaseActivity {
                         null, true);
                 break;
             case R.id.group_set_private_switch:
+                groupDetailEntity.is_private=groupSetPrivateSwitch.isChecked();
                 groupSetPrivateChildPerLl.setVisibility(!groupSetPrivateSwitch.isChecked() ? View.GONE : View.VISIBLE);
                 if (groupSetPrivateSwitch.isChecked()) {
+                    groupDetailEntity.member_invite = true;
+                    groupDetailEntity.chat_history = false;
+
                     groupSetInviteSwitch.setChecked(groupDetailEntity.member_invite);
-                    //groupSetLookSwitch.setChecked(groupDetailEntity.chat_history);
-                    groupSetLookSwitch.setChecked(false);
+                    groupSetLookSwitch.setChecked(groupDetailEntity.chat_history);
                 }
+                updateGroupInfo();
+                break;
+            case R.id.group_set_invite_switch://邀请开关
+                groupDetailEntity.member_invite = groupSetInviteSwitch.isChecked();
+                updateGroupInfo();
+                break;
+            case R.id.group_set_look_switch://查看加入前的消息
+                groupDetailEntity.chat_history = groupSetLookSwitch.isChecked();
+                updateGroupInfo();
                 break;
             default:
                 super.onClick(v);
@@ -202,12 +181,20 @@ public class GroupSettingActivity extends BaseActivity {
         switch (requestCode) {
             case CODE_REQUEST_DESC:
                 if (resultCode == Activity.RESULT_OK && data != null) {
-                    groupDescTv.setText(data.getStringExtra(KEY_ACTIVITY_RESULT));
+                    Serializable serializableExtra = data.getSerializableExtra(KEY_ACTIVITY_RESULT);
+                    if (serializableExtra instanceof GroupDetailEntity) {
+                        groupDetailEntity.intro = ((GroupDetailEntity) serializableExtra).intro;
+                        groupDescTv.setText(groupDetailEntity.intro);
+                    }
                 }
                 break;
             case CODE_REQUEST_NAME:
                 if (resultCode == Activity.RESULT_OK && data != null) {
-                    groupNameTv.setText(data.getStringExtra(KEY_ACTIVITY_RESULT));
+                    Serializable serializableExtra = data.getSerializableExtra(KEY_ACTIVITY_RESULT);
+                    if (serializableExtra instanceof GroupDetailEntity) {
+                        groupDetailEntity.name = ((GroupDetailEntity) serializableExtra).name;
+                        groupNameTv.setText(groupDetailEntity.name);
+                    }
                 }
                 break;
             case CODE_REQUEST_TRANSFER_ADMIN:
@@ -283,9 +270,9 @@ public class GroupSettingActivity extends BaseActivity {
         param.addProperty("name", getTextString(groupNameTv, ""));
         param.addProperty("intro", getTextString(groupDescTv, ""));
         if (groupSetPrivateSwitch.isChecked()) {
-            param.addProperty("is_private", groupSetPrivateSwitch.isChecked());
-            param.addProperty("member_invite", groupSetInviteSwitch.isChecked());
-            param.addProperty("chat_history", groupSetLookSwitch.isChecked());
+            param.addProperty("is_private", groupDetailEntity.is_private);
+            param.addProperty("member_invite", groupDetailEntity.member_invite);
+            param.addProperty("chat_history", groupDetailEntity.chat_history);
         } else {
             param.addProperty("is_private", false);
             param.addProperty("member_invite", true);
@@ -298,7 +285,6 @@ public class GroupSettingActivity extends BaseActivity {
                     @Override
                     public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
                         dismissLoadingDialog();
-                        finish();
                     }
 
                     @Override
