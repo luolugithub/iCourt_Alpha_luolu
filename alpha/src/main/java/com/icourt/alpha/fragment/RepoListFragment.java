@@ -474,7 +474,7 @@ public class RepoListFragment extends RepoBaseFragment
                             lookDetail(pos);
                         } else if (TextUtils.equals(s, getString(R.string.str_rename))) {//重命名
                             renameDocument(pos);
-                        } else if (TextUtils.equals(s, getString(R.string.repo_inner_share))) {//内部共享
+                        } else if (TextUtils.equals(s, getString(R.string.repo_share))) {//共享
                             shareDocument(pos);
                         } else if (TextUtils.equals(s, getString(R.string.str_delete))) {//删除
                             showDelConfirmDialog(pos);
@@ -541,7 +541,7 @@ public class RepoListFragment extends RepoBaseFragment
     private void showDelConfirmDialog(final int pos) {
         new BottomActionDialog(getContext(),
                 getString(R.string.repo_delete_confirm),
-                Arrays.asList(getString(R.string.str_delete)), new BottomActionDialog.OnActionItemClickListener() {
+                Arrays.asList(getString(R.string.str_ok)), new BottomActionDialog.OnActionItemClickListener() {
             @Override
             public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
                 dialog.dismiss();

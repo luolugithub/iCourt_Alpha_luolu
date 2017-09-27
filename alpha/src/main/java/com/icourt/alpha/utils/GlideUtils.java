@@ -12,6 +12,7 @@ import android.support.v4.graphics.drawable.DrawableCompat;
 import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.icourt.alpha.R;
 import com.icourt.alpha.utils.transformations.GlideCircleTransform;
 
@@ -153,6 +154,9 @@ public class GlideUtils {
     }
 
     /**
+     * 适合本地加载  必须s设置  .diskCacheStrategy(DiskCacheStrategy.SOURCE)
+     * 否则本地gif有问题
+     *
      * @param context
      * @param path
      * @param imageView
@@ -163,6 +167,7 @@ public class GlideUtils {
             Glide.with(context)
                     .load(path)
                     .error(R.mipmap.filetype_image)
+                    .diskCacheStrategy(DiskCacheStrategy.SOURCE)
                     .dontAnimate()
                     .into(imageView);
         }
