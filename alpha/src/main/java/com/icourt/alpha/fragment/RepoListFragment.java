@@ -474,7 +474,7 @@ public class RepoListFragment extends RepoBaseFragment
                             lookDetail(pos);
                         } else if (TextUtils.equals(s, getString(R.string.str_rename))) {//重命名
                             renameDocument(pos);
-                        } else if (TextUtils.equals(s, getString(R.string.repo_inner_share))) {//内部共享
+                        } else if (TextUtils.equals(s, getString(R.string.repo_share))) {//共享
                             shareDocument(pos);
                         } else if (TextUtils.equals(s, getString(R.string.str_delete))) {//删除
                             showDelConfirmDialog(pos);
