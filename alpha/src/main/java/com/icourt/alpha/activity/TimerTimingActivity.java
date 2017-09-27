@@ -241,10 +241,10 @@ public class TimerTimingActivity extends BaseTimerActivity
         super.onClick(view);
         switch (view.getId()) {
             case R.id.tv_start_date:
-                showDateTimeSelectDialogFragment(getString(R.string.timing_please_select_start_time), itemEntity.startTime);
+                showDateTimeSelectDialogFragment(TimingChangeDialogFragment.TYPE_CHANGE_START_TIME, itemEntity.startTime, 0);
                 break;
             case R.id.start_time_tv:
-                showDateTimeSelectDialogFragment(getString(R.string.timing_please_select_start_time), itemEntity.startTime);
+                showDateTimeSelectDialogFragment(TimingChangeDialogFragment.TYPE_CHANGE_START_TIME, itemEntity.startTime, 0);
                 break;
             case R.id.titleAction:
                 finish();
@@ -293,22 +293,6 @@ public class TimerTimingActivity extends BaseTimerActivity
                 });
                 break;
         }
-    }
-
-    /**
-     * 显示选择时间的弹出窗
-     *
-     * @param title
-     * @param startTime
-     */
-    private void showDateTimeSelectDialogFragment(String title, long startTime) {
-        String tag = TimingChangeDialogFragment.class.getSimpleName();
-        FragmentTransaction mFragTransaction = getSupportFragmentManager().beginTransaction();
-        Fragment fragment = getSupportFragmentManager().findFragmentByTag(tag);
-        if (fragment != null) {
-            mFragTransaction.remove(fragment);
-        }
-        TimingChangeDialogFragment.newInstance(title, startTime).show(mFragTransaction, tag);
     }
 
     @Override
@@ -433,7 +417,7 @@ public class TimerTimingActivity extends BaseTimerActivity
             }
         } else if (fragment instanceof TimingChangeDialogFragment && params != null) {
             isChangeStartTime = true;
-            long timeMillis = params.getLong(TimingChangeDialogFragment.TAG_START_TIME);
+            long timeMillis = params.getLong(TimingChangeDialogFragment.TIME_RESULT_MILLIS);
             if (itemEntity != null) {
                 itemEntity.startTime = timeMillis;
             }
@@ -471,6 +455,11 @@ public class TimerTimingActivity extends BaseTimerActivity
             case TimingEvent.TIMING_STOP:
                 TimerDetailActivity.launch(getContext(), itemEntity);
                 finish();
+                break;
+            case TimingEvent.TIMING_SYNC_SUCCESS://计时同步成功后的回调
+                if (TimeUnit.SECONDS.toHours(TimerManager.getInstance().getTimingSeconds()) < 2) {//计时成功后的回调小于2小时，隐藏计时提醒的窗体
+                    viewMoveAnimation(false);
+                }
                 break;
         }
     }

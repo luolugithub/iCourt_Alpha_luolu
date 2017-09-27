@@ -75,19 +75,15 @@
 
                 <TextView
                     android:id="@+id/tv_start_date"
-                    android:layout_width="wrap_content"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
+                    android:layout_weight="1"
                     android:ellipsize="end"
                     android:maxLines="1"
                     android:padding="10dp"
                     android:text="开始时间"
                     android:textColor="@color/time_week_text_color"
                     android:textSize="14sp" />
-
-                <android.support.v4.widget.Space
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1" />
 
                 <TextView
                     android:id="@+id/start_time_tv"

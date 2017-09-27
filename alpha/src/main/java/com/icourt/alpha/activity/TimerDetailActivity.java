@@ -33,6 +33,7 @@ import com.icourt.alpha.entity.bean.WorkType;
 import com.icourt.alpha.fragment.dialogfragment.CalendaerSelectDialogFragment;
 import com.icourt.alpha.fragment.dialogfragment.ProjectSimpleSelectDialogFragment;
 import com.icourt.alpha.fragment.dialogfragment.TaskSelectDialogFragment;
+import com.icourt.alpha.fragment.dialogfragment.TimingChangeDialogFragment;
 import com.icourt.alpha.fragment.dialogfragment.WorkTypeSelectDialogFragment;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
@@ -286,14 +287,17 @@ public class TimerDetailActivity extends BaseTimerActivity
             case R.id.add_time_image://＋时间
                 circleTimerView.setCurrentTime(circleTimerView.getCurrentTime() + 15 * 60);
                 break;
-            case R.id.use_time_date:
-                showCalendaerSelectDialogFragment();
+            case R.id.use_time_date://显示计时开始时间的日期
+                showDateTimeSelectDialogFragment(TimingChangeDialogFragment.TYPE_CHANGE_START_TIME, itemEntity.startTime, itemEntity.endTime);
+//                showCalendaerSelectDialogFragment();
                 break;
-            case R.id.start_time_min_tv:
-                showDateSelectStart(startTimeMinTv);
+            case R.id.start_time_min_tv://显示计时开始时间的时分
+                showDateTimeSelectDialogFragment(TimingChangeDialogFragment.TYPE_CHANGE_START_TIME, itemEntity.startTime, itemEntity.endTime);
+//                showDateSelectStart(startTimeMinTv);
                 break;
-            case R.id.stop_time_min_tv:
-                showDateSelectEnd(stopTimeMinTv);
+            case R.id.stop_time_min_tv://显示计时结束时间的时分
+                showDateTimeSelectDialogFragment(TimingChangeDialogFragment.TYPE_CHANGE_END_TIME, itemEntity.startTime, itemEntity.endTime);
+//                showDateSelectEnd(stopTimeMinTv);
                 break;
             case R.id.project_layout://所属项目
                 if (itemEntity != null) {
@@ -549,6 +553,17 @@ public class TimerDetailActivity extends BaseTimerActivity
                 projectNameTv.setText(projectEntity.name);
             }
 
+        } else if (fragment instanceof TimingChangeDialogFragment) {
+            long resultTime = params.getLong(TimingChangeDialogFragment.TIME_RESULT_MILLIS);
+            long startTime = itemEntity.startTime;
+            long endTime = itemEntity.endTime;
+            if (type == TimingChangeDialogFragment.TYPE_CHANGE_START_TIME) {//修改开始时间
+                //修改开始时间，同时会修改结束时间（时长保持不变），但是开始时间必须早于结束时间。
+                itemEntity.startTime = resultTime;
+                itemEntity.endTime = resultTime + itemEntity.useTime;
+            } else {//修改结束时间
+                itemEntity.endTime = resultTime;
+            }
         }
         saveTiming(false);
     }

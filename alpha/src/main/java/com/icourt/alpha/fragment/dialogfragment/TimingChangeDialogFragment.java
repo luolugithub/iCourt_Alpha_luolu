@@ -3,6 +3,7 @@ package com.icourt.alpha.fragment.dialogfragment;
 import android.app.Dialog;
 import android.content.Context;
 import android.os.Bundle;
+import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.view.Gravity;
@@ -20,8 +21,9 @@ import com.icourt.alpha.base.BaseDialogFragment;
 import com.icourt.alpha.entity.bean.TimingDateEntity;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.utils.DensityUtil;
-import com.icourt.alpha.utils.LogUtils;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -50,11 +52,22 @@ import io.reactivex.schedulers.Schedulers;
 
 public class TimingChangeDialogFragment extends BaseDialogFragment {
 
-    private static final String TITLE = "title";
-    private static final String TIME_MILLIOS = "timeMillios";
+    private static final String TIME_START_MILLIS = "timeStartMillis";//用来传递开始时间的tag
+    private static final String TIME_END_MILLIS = "timeEndMillis";//用来传递结束时间的tag
 
-    public static final String TAG_START_TIME = "tagStartTime";
-    public static final int TYPE_CHANGE_START_TIME = 0;//说明是修改计时开始时间
+
+    public static final String TYPE_CHANGE_TYPE = "typeChangeType";//用来记录修改的类型，是枚举ChangeTimeType所指定的。
+
+    public static final String TIME_RESULT_MILLIS = "timeResultMillis";//用来将当前选中的时间返回给监听。
+
+    public static final int TYPE_CHANGE_START_TIME = 1;//说明是修改计时开始时间
+    public static final int TYPE_CHANGE_END_TIME = 2;//说明是修改计时开始时间
+
+    @IntDef({TYPE_CHANGE_START_TIME, TYPE_CHANGE_END_TIME})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface ChangeTimeType {
+
+    }
 
     @BindView(R.id.tv_title)
     TextView tvTitle;
@@ -71,7 +84,9 @@ public class TimingChangeDialogFragment extends BaseDialogFragment {
 
     private Unbinder bind;
 
-    private long startTimeMillis;//记录传递进来的时间
+    private int changeType;//修改时间的类型，对应枚举ChangeTimeType所指定的。
+    private long startTimeMillis;//记录传递进来的开始时间
+    private long endTimeMillis;//记录传递进来的结束时间
 
     private long currentTimeMillis;//记录当前选中的时间
 
@@ -85,11 +100,18 @@ public class TimingChangeDialogFragment extends BaseDialogFragment {
 
     private OnFragmentCallBackListener onFragmentCallBackListener;
 
-    public static TimingChangeDialogFragment newInstance(@NonNull String title, long timeMillios) {
+    /**
+     * @param type            所要修改的类型，开始时间？结束时间
+     * @param timeStartMillis 传递进来的开始时间时间戳
+     * @param timeEndMillis   传递进来的结束时间时间戳（如果是正在计时界面，这个值传0）
+     * @return
+     */
+    public static TimingChangeDialogFragment newInstance(@ChangeTimeType int type, long timeStartMillis, long timeEndMillis) {
         TimingChangeDialogFragment fragment = new TimingChangeDialogFragment();
         Bundle bundle = new Bundle();
-        bundle.putString(TITLE, title);
-        bundle.putLong(TIME_MILLIOS, timeMillios);
+        bundle.putInt(TYPE_CHANGE_TYPE, type);
+        bundle.putLong(TIME_START_MILLIS, timeStartMillis);
+        bundle.putLong(TIME_END_MILLIS, timeEndMillis);
         fragment.setArguments(bundle);
         return fragment;
     }
@@ -128,8 +150,14 @@ public class TimingChangeDialogFragment extends BaseDialogFragment {
 
         Bundle arguments = getArguments();
         if (arguments != null) {
-            tvTitle.setText(arguments.getString(TITLE));
-            startTimeMillis = getArguments().getLong(TIME_MILLIOS);
+            changeType = arguments.getInt(TYPE_CHANGE_TYPE);
+            if (changeType == TYPE_CHANGE_START_TIME) {//说明是修改开始时间
+                tvTitle.setText(getString(R.string.timing_please_select_start_time));
+            } else {//说明是修改结束时间
+                tvTitle.setText(getString(R.string.timing_please_select_end_time));
+            }
+            startTimeMillis = getArguments().getLong(TIME_START_MILLIS);
+            endTimeMillis = getArguments().getLong(TIME_END_MILLIS);
         }
 
         wheelviewDate.setTextSize(20);
@@ -224,7 +252,7 @@ public class TimingChangeDialogFragment extends BaseDialogFragment {
     }
 
     /**
-     * 校验日期、时间、分钟的选中状态是可选,也就是是否大于当前时间
+     * 校验日期、时间、分钟的选中状态是可选
      *
      * @param datePosition   日期在wheelview中的位置
      * @param hourPosition   小时在wheelview中的位置
@@ -232,6 +260,7 @@ public class TimingChangeDialogFragment extends BaseDialogFragment {
      * @return 是否满足
      */
     private void verifyData(int datePosition, int hourPosition, int minutePosition) {
+        //将当前选中的时间转换为时间戳
         Calendar instance = Calendar.getInstance();
         TimingDateEntity item = dateWheelAdapter.getItem(datePosition);
         instance.setTimeInMillis(item.timeMillios);
@@ -241,20 +270,59 @@ public class TimingChangeDialogFragment extends BaseDialogFragment {
         String hour = hourWheelAdapter.getItem(hourPosition);
         String minute = minuteWheelAdapter.getItem(minutePosition);
         instance.set(year, month, day, Integer.valueOf(hour), Integer.valueOf(minute), 0);
-        if (instance.getTimeInMillis() > System.currentTimeMillis()) {//如果选中的时间大于当前时间，则不满足
-            long millis = System.currentTimeMillis();
-            instance.setTimeInMillis(millis);
-            int currentYear = instance.get(Calendar.YEAR);
-            int currentMonth = instance.get(Calendar.MONTH);
-            int currentDay = instance.get(Calendar.DAY_OF_MONTH);
-            int currentHour = instance.get(Calendar.HOUR_OF_DAY);
-            int currentMinute = instance.get(Calendar.MINUTE);
-            //记录当前时间，精确到分钟，秒数置为0。
-            instance.set(currentYear, currentMonth, currentDay, currentHour, currentMinute, 0);
-            setTime(instance.getTimeInMillis());
-        } else {//说明满足条件，设置为当前日期。
-            currentTimeMillis = instance.getTimeInMillis();
+        //验证修改的是开始时间还是结束时间
+        if (changeType == TYPE_CHANGE_START_TIME) { //1.修改开始时间
+            if (endTimeMillis == 0) {//1.1正在进行时的开始时间不能晚于当前时间，如果用户选了晚于当前时间的时间，则自动滚动到当前时间。
+                if (instance.getTimeInMillis() > System.currentTimeMillis()) {//如果选中的时间大于当前时间，则不满足
+                    setTime(getCurrentTimeMillis());
+                } else {//说明满足条件，设置为当前选中时间。
+                    currentTimeMillis = instance.getTimeInMillis();
+                    lastDatePosition = datePosition;
+                    lastHourPosition = hourPosition;
+                    lastMinutePosition = minutePosition;
+                }
+            } else {//1.2已完成的计时或添加计时，开始时间必须早于结束时间，如果晚于结束时间，则自动滚动到结束时间的前一分钟。
+                if (instance.getTimeInMillis() > endTimeMillis) {//选中的开始时间大于结束时间，不满足，选中为结束时间的前一分钟。
+                    setTime(endTimeMillis - 60 * 1000);
+                } else {//说明满足条件，设置为当前选中时间。
+                    currentTimeMillis = instance.getTimeInMillis();
+                    lastDatePosition = datePosition;
+                    lastHourPosition = hourPosition;
+                    lastMinutePosition = minutePosition;
+                }
+            }
+        } else { //2.修改结束时间
+            //已完成的计时或添加计时，结束时间必须晚于开始时间，不能早于当前时间。
+            if (instance.getTimeInMillis() <= startTimeMillis) {//2.1若用户选择了等于或早于开始时间的时间，则自动滚动到开始时间的后一分钟。
+                setTime(startTimeMillis + 60 * 1000);
+            } else if (instance.getTimeInMillis() > System.currentTimeMillis()) { //2.2若用户选择了晚于当前时间的时间，则自动滚动到当前时间。
+                setTime(getCurrentTimeMillis());
+            } else {//说明满足条件，设置为当前选中时间。
+                currentTimeMillis = instance.getTimeInMillis();
+                lastDatePosition = datePosition;
+                lastHourPosition = hourPosition;
+                lastMinutePosition = minutePosition;
+            }
         }
+    }
+
+    /**
+     * 获取当前时间的时间戳（秒数为0）
+     *
+     * @return
+     */
+    private long getCurrentTimeMillis() {
+        Calendar instance = Calendar.getInstance();
+        long millis = System.currentTimeMillis();
+        instance.setTimeInMillis(millis);
+        int currentYear = instance.get(Calendar.YEAR);
+        int currentMonth = instance.get(Calendar.MONTH);
+        int currentDay = instance.get(Calendar.DAY_OF_MONTH);
+        int currentHour = instance.get(Calendar.HOUR_OF_DAY);
+        int currentMinute = instance.get(Calendar.MINUTE);
+        //记录当前时间，精确到分钟，秒数置为0。
+        instance.set(currentYear, currentMonth, currentDay, currentHour, currentMinute, 0);
+        return instance.getTimeInMillis();
     }
 
     @OnClick({R.id.tv_cancel, R.id.tv_finish})
@@ -265,14 +333,18 @@ public class TimingChangeDialogFragment extends BaseDialogFragment {
                 break;
             case R.id.tv_finish:
                 //如果传递进来的时间和当前选中的时间一致，则说明没有修改时间，点击完成就消失
-                if (startTimeMillis != currentTimeMillis) {
+                if (changeType == TYPE_CHANGE_START_TIME && startTimeMillis == currentTimeMillis) {
+                    dismiss();
+                } else if (changeType == TYPE_CHANGE_END_TIME && endTimeMillis == currentTimeMillis) {
+                    dismiss();
+                } else {
                     if (onFragmentCallBackListener != null) {
                         Bundle bundle = new Bundle();
-                        bundle.putLong(TAG_START_TIME, currentTimeMillis);
-                        onFragmentCallBackListener.onFragmentCallBack(this, TYPE_CHANGE_START_TIME, bundle);
+                        bundle.putLong(TIME_RESULT_MILLIS, currentTimeMillis);
+                        onFragmentCallBackListener.onFragmentCallBack(this, changeType, bundle);
                     }
+                    dismiss();
                 }
-                dismiss();
                 break;
         }
     }
@@ -284,6 +356,7 @@ public class TimingChangeDialogFragment extends BaseDialogFragment {
      */
 
     private void setTime(long millios) {
+        currentTimeMillis = millios;
         Calendar instance = Calendar.getInstance();
         instance.setTimeInMillis(millios);
         int year = instance.get(Calendar.YEAR);
@@ -299,7 +372,8 @@ public class TimingChangeDialogFragment extends BaseDialogFragment {
             TimingDateEntity dateEntity = dayList.get(i);
             calendar.setTimeInMillis(dateEntity.timeMillios);
             if (calendar.get(Calendar.YEAR) == year && calendar.get(Calendar.MONTH) == month && calendar.get(Calendar.DAY_OF_MONTH) == day) {
-                wheelviewDate.setCurrentItem(i);
+                if (wheelviewDate != null)
+                    wheelviewDate.setCurrentItem(i);
                 lastDatePosition = i;
                 break;
             }
@@ -308,7 +382,8 @@ public class TimingChangeDialogFragment extends BaseDialogFragment {
         List<String> hourList = hourWheelAdapter.getTimeList();
         for (int i = 0; i < hourList.size(); i++) {
             if (Integer.valueOf(hourList.get(i)) == hour) {
-                wheelviewHour.setCurrentItem(i);
+                if (wheelviewHour != null)
+                    wheelviewHour.setCurrentItem(i);
                 lastHourPosition = i;
                 break;
             }
@@ -317,12 +392,12 @@ public class TimingChangeDialogFragment extends BaseDialogFragment {
         List<String> minuteList = minuteWheelAdapter.getTimeList();
         for (int i = 0; i < minuteList.size(); i++) {
             if (Integer.valueOf(minuteList.get(i)) == minute) {
-                wheelviewMinute.setCurrentItem(i);
+                if (wheelviewMinute != null)
+                    wheelviewMinute.setCurrentItem(i);
                 lastMinutePosition = i;
                 break;
             }
         }
-        currentTimeMillis = millios;
     }
 
     private class TimeWheelAdapter implements WheelAdapter<String> {

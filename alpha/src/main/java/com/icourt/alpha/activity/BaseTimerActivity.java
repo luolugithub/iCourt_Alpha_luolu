@@ -13,6 +13,7 @@ import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.icourt.alpha.fragment.dialogfragment.CalendaerSelectDialogFragment;
 import com.icourt.alpha.fragment.dialogfragment.ProjectSimpleSelectDialogFragment;
 import com.icourt.alpha.fragment.dialogfragment.TaskSelectDialogFragment;
+import com.icourt.alpha.fragment.dialogfragment.TimingChangeDialogFragment;
 import com.icourt.alpha.fragment.dialogfragment.WorkTypeSelectDialogFragment;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
@@ -29,6 +30,12 @@ import retrofit2.Response;
  * version 1.0.0
  */
 public class BaseTimerActivity extends BaseActivity {
+
+    @Override
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+    }
+
     /**
      * 删除计时
      */
@@ -123,8 +130,22 @@ public class BaseTimerActivity extends BaseActivity {
                 .show(mFragTransaction, tag);
     }
 
-    @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    /**
+     * 显示选择时间的弹出窗
+     *
+     * @param type            所要修改的类型，开始时间？结束时间
+     * @param timeStartMillis 传递进来的开始时间时间戳
+     * @param timeEndMillis   传递进来的结束时间时间戳（如果是正在计时界面，这个值传0）
+     * @return
+     */
+    protected void showDateTimeSelectDialogFragment(@TimingChangeDialogFragment.ChangeTimeType int type, long timeStartMillis, long timeEndMillis) {
+        String tag = TimingChangeDialogFragment.class.getSimpleName();
+        FragmentTransaction mFragTransaction = getSupportFragmentManager().beginTransaction();
+        Fragment fragment = getSupportFragmentManager().findFragmentByTag(tag);
+        if (fragment != null) {
+            mFragTransaction.remove(fragment);
+        }
+        TimingChangeDialogFragment.newInstance(type, timeStartMillis, timeEndMillis).show(mFragTransaction, tag);
     }
+
 }
