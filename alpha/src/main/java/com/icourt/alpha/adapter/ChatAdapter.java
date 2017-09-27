@@ -13,11 +13,11 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.baseadapter.BaseArrayRecyclerAdapter;
+import com.icourt.alpha.adapter.baseadapter.adapterObserver.DataChangeAdapterObserver;
 import com.icourt.alpha.constants.Const;
 import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.icourt.alpha.entity.bean.IMMessageCustomBody;
-import com.icourt.alpha.utils.ActionConstants;
 import com.icourt.alpha.utils.BugUtils;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.FileUtils;
@@ -107,6 +107,33 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMMessageCustomBody> i
 
     AlphaUserInfo alphaUserInfo;
     private List<GroupContactBean> contactBeanList;//本地联系人
+    DataChangeAdapterObserver dataChangeAdapterObserver = new DataChangeAdapterObserver() {
+        @Override
+        protected void updateUI() {
+            //处理分割线的问题
+            timeShowArray.clear();
+            for (int i = 0; i < getItemCount(); i++) {
+                IMMessageCustomBody imMessageCustomBody = getItem(i);
+                if (imMessageCustomBody == null) continue;
+                if (timeShowArray.isEmpty()) {
+                    timeShowArray.add(imMessageCustomBody.send_time);
+                } else {
+                    if (!timeShowArray.contains(imMessageCustomBody.send_time)) {
+                        long maxTime = Collections.max(timeShowArray, longComparator).longValue();
+                        long targetTime = imMessageCustomBody.send_time;
+                        if (targetTime - maxTime >= TIME_DIVIDER) {
+                            timeShowArray.add(targetTime);
+                        } else {
+                            long minTime = Collections.min(timeShowArray, longComparator).longValue();
+                            if (minTime - targetTime >= TIME_DIVIDER) {
+                                timeShowArray.add(targetTime);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    };
 
     /**
      * 获取本地头像
@@ -158,6 +185,7 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMMessageCustomBody> i
     public ChatAdapter(List<GroupContactBean> contactBeanList) {
         this.contactBeanList = contactBeanList;
         alphaUserInfo = LoginInfoUtils.getLoginUserInfo();
+        this.registerAdapterDataObserver(dataChangeAdapterObserver);
     }
 
     private String getLoginUid() {
@@ -296,9 +324,6 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMMessageCustomBody> i
     @Override
     public void onBindHoder(ViewHolder holder, IMMessageCustomBody imMessageCustomBody, int position) {
         if (imMessageCustomBody == null) return;
-
-        //分割时间段
-        addTimeDividerArray(imMessageCustomBody, position);
 
         //加载头像
         setCommonUserIcon(holder, imMessageCustomBody, position);
@@ -475,31 +500,6 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMMessageCustomBody> i
 
 
     /**
-     * 处理时间分割线
-     *
-     * @param imMessageCustomBody
-     * @param position
-     */
-    private void addTimeDividerArray(IMMessageCustomBody imMessageCustomBody, int position) {
-        if (imMessageCustomBody == null) return;
-
-        //消息时间本身已经有序
-
-        if (timeShowArray.isEmpty()) {
-            timeShowArray.add(imMessageCustomBody.send_time);
-        } else {
-            if (!timeShowArray.contains(imMessageCustomBody.send_time)) {
-                if (imMessageCustomBody.send_time - Collections.max(timeShowArray, longComparator).longValue() >= TIME_DIVIDER) {
-                    timeShowArray.add(imMessageCustomBody.send_time);
-                } else if (Collections.min(timeShowArray, longComparator).longValue() - imMessageCustomBody.send_time >= TIME_DIVIDER) {
-                    timeShowArray.add(imMessageCustomBody.send_time);
-                }
-            }
-        }
-    }
-
-
-    /**
      * 设置头像 本地匹配头像
      *
      * @param holder
@@ -549,9 +549,10 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMMessageCustomBody> i
             }*/
             try {
                 textView.setText(imMessageCustomBody.content);
+                textView.setText(imMessageCustomBody.content + " t:" + DateUtils.getHHmm(imMessageCustomBody.send_time));
             } catch (Throwable e) {
                 BugUtils.bugSync("文本中Link崩溃2", e);
-                BugUtils.bugSync("文本中Link崩溃2:txt:",imMessageCustomBody.toString());
+                BugUtils.bugSync("文本中Link崩溃2:txt:", imMessageCustomBody.toString());
                 e.printStackTrace();
             }
         } else {

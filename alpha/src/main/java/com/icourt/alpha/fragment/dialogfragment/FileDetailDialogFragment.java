@@ -14,12 +14,10 @@ import com.icourt.alpha.R;
 import com.icourt.alpha.activity.FileDownloadActivity;
 import com.icourt.alpha.adapter.baseadapter.BaseFragmentAdapter;
 import com.icourt.alpha.constants.SFileConfig;
-import com.icourt.alpha.entity.bean.FileVersionCommits;
 import com.icourt.alpha.entity.bean.FileVersionEntity;
 import com.icourt.alpha.entity.bean.ISeaFile;
 import com.icourt.alpha.fragment.FileLinkFragment;
 import com.icourt.alpha.fragment.FileVersionListFragment;
-import com.icourt.alpha.http.callback.SFileCallBack;
 import com.icourt.alpha.interfaces.OnFragmentDataChangeListener;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.FileUtils;
@@ -40,8 +38,6 @@ import java.util.Collections;
 import java.util.List;
 
 import butterknife.OnClick;
-import retrofit2.Call;
-import retrofit2.Response;
 
 /**
  * Description   文件详情
@@ -158,7 +154,6 @@ public class FileDetailDialogFragment extends FileDetailsBaseDialogFragment
         if (tabIndex < baseFragmentAdapter.getCount()) {
             viewPager.setCurrentItem(tabIndex);
         }
-        getData(true);
     }
 
     /**
@@ -186,23 +181,6 @@ public class FileDetailDialogFragment extends FileDetailsBaseDialogFragment
         return FileUtils.getSFileIcon(fileName);
     }
 
-    @Override
-    protected void getData(boolean isRefresh) {
-        super.getData(isRefresh);
-        String filePath = iSeaFile.getSeaFileFullPath();
-        callEnqueue(getSFileApi().fileVersionQuery(iSeaFile.getSeaFileRepoId(), filePath),
-                new SFileCallBack<FileVersionCommits>() {
-                    @Override
-                    public void onSuccess(Call<FileVersionCommits> call, Response<FileVersionCommits> response) {
-                        if (response.body().commits != null) {
-                            int maxVersion = response.body().commits.size();
-                            if (fileVersionTv == null) return;
-                            fileVersionTv.setText(String.format("v%s", maxVersion));
-                        }
-                    }
-                });
-
-    }
 
     @Override
     public void onStop() {
@@ -226,8 +204,8 @@ public class FileDetailDialogFragment extends FileDetailsBaseDialogFragment
                 if (!fileVersionEntities.isEmpty()) {
                     FileVersionEntity item = fileVersionEntities.get(0);
                     if (item == null) return;
-                    item.seaFileFullPath =iSeaFile.getSeaFileFullPath();
-                    item.seaFilePermission=iSeaFile.getSeaFilePermission();
+                    item.seaFileFullPath = iSeaFile.getSeaFileFullPath();
+                    item.seaFilePermission = iSeaFile.getSeaFilePermission();
                     FileDownloadActivity.launch(
                             getContext(),
                             item,
@@ -245,6 +223,7 @@ public class FileDetailDialogFragment extends FileDetailsBaseDialogFragment
 
     @Override
     public void onFragmentDataChanged(Fragment fragment, int type, Object o) {
+        if (isDetached()) return;
         if (fragment instanceof FileVersionListFragment) {
             fileVersionEntities.clear();
             try {
@@ -275,6 +254,7 @@ public class FileDetailDialogFragment extends FileDetailsBaseDialogFragment
                     fileUpdateInfoTv.setText("");
                 }
             }
+            fileVersionTv.setText(String.format("v%s", fileVersionEntities.size()));
         }
     }
 }
