@@ -16,6 +16,7 @@ import com.icourt.alpha.adapter.baseadapter.BaseFragmentAdapter;
 import com.icourt.alpha.constants.SFileConfig;
 import com.icourt.alpha.entity.bean.FileVersionCommits;
 import com.icourt.alpha.entity.bean.FileVersionEntity;
+import com.icourt.alpha.entity.bean.ISeaFile;
 import com.icourt.alpha.fragment.FileLinkFragment;
 import com.icourt.alpha.fragment.FileVersionListFragment;
 import com.icourt.alpha.http.callback.SFileCallBack;
@@ -52,20 +53,18 @@ import retrofit2.Response;
 public class FileDetailDialogFragment extends FileDetailsBaseDialogFragment
         implements OnFragmentDataChangeListener {
     BaseFragmentAdapter baseFragmentAdapter;
-    String fromRepoId, fromRepoDirPath, fileName;
-    long fileSize;
     protected static final String KEY_LOCATION_TAB_INDEX = "locationPage";//定位的tab
+    protected static final String KEY_DATA = "data";
     final List<FileVersionEntity> fileVersionEntities = new ArrayList<>();
+    ISeaFile iSeaFile;
+
 
     public static void show(
             @SFileConfig.REPO_TYPE int repoType,
-            @NonNull String fromRepoId,
-            String fromRepoFilePath,
-            String fileName,
-            long fileSize,
+            ISeaFile iSeaFile,
             @IntRange(from = 0, to = 1) int locationTabIndex,
-            @SFileConfig.FILE_PERMISSION String repoPermission,
             @NonNull FragmentManager fragmentManager) {
+        if (iSeaFile == null) return;
         if (fragmentManager == null) return;
         String tag = FileDetailDialogFragment.class.getSimpleName();
         FragmentTransaction mFragTransaction = fragmentManager.beginTransaction();
@@ -73,27 +72,19 @@ public class FileDetailDialogFragment extends FileDetailsBaseDialogFragment
         if (fragment != null) {
             mFragTransaction.remove(fragment);
         }
-        show(newInstance(repoType, fromRepoId, fromRepoFilePath, fileName, fileSize, locationTabIndex, repoPermission), tag, mFragTransaction);
+        show(newInstance(repoType, iSeaFile, locationTabIndex), tag, mFragTransaction);
     }
 
 
     public static FileDetailDialogFragment newInstance(
             @SFileConfig.REPO_TYPE int repoType,
-            String fromRepoId,
-            String fromRepoFilePath,
-            String fileName,
-            long fileSize,
-            @IntRange(from = 0, to = 1) int locationTabIndex,
-            @SFileConfig.FILE_PERMISSION String repoPermission) {
+            ISeaFile iSeaFile,
+            @IntRange(from = 0, to = 1) int locationTabIndex) {
         FileDetailDialogFragment fragment = new FileDetailDialogFragment();
         Bundle args = new Bundle();
+        args.putSerializable(KEY_DATA, iSeaFile);
         args.putInt(KEY_SEA_FILE_FROM_REPO_TYPE, repoType);
-        args.putString(KEY_SEA_FILE_FROM_REPO_ID, fromRepoId);
-        args.putString(KEY_SEA_FILE_DIR_PATH, fromRepoFilePath);
         args.putInt(KEY_LOCATION_TAB_INDEX, locationTabIndex);
-        args.putString(KEY_SEA_FILE_REPO_PERMISSION, repoPermission);
-        args.putString(KEY_SEA_FILE_NAME, fileName);
-        args.putLong(KEY_SEA_FILE_SIZE, fileSize);
         fragment.setArguments(args);
         return fragment;
     }
@@ -101,20 +92,20 @@ public class FileDetailDialogFragment extends FileDetailsBaseDialogFragment
     @Override
     protected void initView() {
         super.initView();
-        fromRepoId = getArguments().getString(KEY_SEA_FILE_FROM_REPO_ID, "");
-        fromRepoDirPath = getArguments().getString(KEY_SEA_FILE_DIR_PATH, "");
-        fileName = getArguments().getString(KEY_SEA_FILE_NAME, "");
-        fileSize = getArguments().getLong(KEY_SEA_FILE_SIZE, 0);
+        iSeaFile = (ISeaFile) getArguments().getSerializable(KEY_DATA);
+        if (iSeaFile == null) {
+            dismiss();
+        }
 
-        fileTitleTv.setText(fileName);
-        fileSizeTv.setText(FileUtils.bFormat(fileSize));
+        fileTitleTv.setText(FileUtils.getFileName(iSeaFile.getSeaFileFullPath()));
+        fileSizeTv.setText(FileUtils.bFormat(iSeaFile.getSeaFileSize()));
         //图片格式 加载缩略图
-        if (IMUtils.isPIC(fileName)) {
+        if (IMUtils.isPIC(iSeaFile.getSeaFileFullPath())) {
             GlideUtils.loadSFilePic(getContext(),
-                    getSfileThumbnailImage(fileName),
+                    getSfileThumbnailImage(),
                     fileTypeIv);
         } else {
-            fileTypeIv.setImageResource(getFileIcon(fileName));
+            fileTypeIv.setImageResource(getFileIcon(iSeaFile.getSeaFileFullPath()));
         }
         titleContent.setText("文件详情");
 
@@ -141,18 +132,26 @@ public class FileDetailDialogFragment extends FileDetailsBaseDialogFragment
         tabLayout.setNavigator2(commonNavigator)
                 .setupWithViewPager(viewPager);
         baseFragmentAdapter.bindTitle(true, Arrays.asList("历史版本", "下载链接"));
-        String filePath = String.format("%s%s", fromRepoDirPath, fileName);
+        String filePath = iSeaFile.getSeaFileFullPath();
         //根据类型判断 除了我的资料库里面的文件有分享链接 其他都屏蔽
         if (getRepoType() == SFileConfig.REPO_MINE) {
             baseFragmentAdapter.bindData(true,
-                    Arrays.asList(FileVersionListFragment.newInstance(fromRepoId, filePath, getRepoPermission()),
-                            FileLinkFragment.newInstance(fromRepoId,
+                    Arrays.asList(
+                            FileVersionListFragment.newInstance(
+                                    iSeaFile.getSeaFileRepoId(),
+                                    filePath,
+                                    iSeaFile.getSeaFilePermission()),
+                            FileLinkFragment.newInstance(
+                                    iSeaFile.getSeaFileRepoId(),
                                     filePath,
                                     FileLinkFragment.LINK_TYPE_DOWNLOAD,
-                                    getRepoPermission())));
+                                    iSeaFile.getSeaFilePermission())));
         } else {
             baseFragmentAdapter.bindData(true,
-                    Arrays.asList(FileVersionListFragment.newInstance(fromRepoId, filePath, getRepoPermission())));
+                    Arrays.asList(FileVersionListFragment.newInstance(
+                            iSeaFile.getSeaFileRepoId(),
+                            filePath,
+                            iSeaFile.getSeaFilePermission())));
         }
 
         int tabIndex = getArguments().getInt(KEY_LOCATION_TAB_INDEX);
@@ -165,16 +164,15 @@ public class FileDetailDialogFragment extends FileDetailsBaseDialogFragment
     /**
      * 获取缩略图地址
      *
-     * @param name
      * @return
      */
-    private String getSfileThumbnailImage(String name) {
+    private String getSfileThumbnailImage() {
         //https://test.alphalawyer.cn/ilaw/api/v2/documents/thumbnailImage?repoId=d4f82446-a37f-478c-b6b5-ed0e779e1768&seafileToken=%20d6c69d6f4fc208483c243246c6973d8eb141501c&p=//1502507774237.png&size=250
         return String.format("%silaw/api/v2/documents/thumbnailImage?repoId=%s&seafileToken=%s&p=%s&size=%s",
                 BuildConfig.API_URL,
-                fromRepoId,
+                iSeaFile.getSeaFileRepoId(),
                 SFileTokenUtils.getSFileToken(),
-                UrlUtils.encodeUrl(String.format("%s%s", fromRepoDirPath, name)),
+                UrlUtils.encodeUrl(iSeaFile.getSeaFileFullPath()),
                 150);
     }
 
@@ -191,8 +189,8 @@ public class FileDetailDialogFragment extends FileDetailsBaseDialogFragment
     @Override
     protected void getData(boolean isRefresh) {
         super.getData(isRefresh);
-        String filePath = String.format("%s%s", fromRepoDirPath, fileName);
-        callEnqueue(getSFileApi().fileVersionQuery(fromRepoId, filePath),
+        String filePath = iSeaFile.getSeaFileFullPath();
+        callEnqueue(getSFileApi().fileVersionQuery(iSeaFile.getSeaFileRepoId(), filePath),
                 new SFileCallBack<FileVersionCommits>() {
                     @Override
                     public void onSuccess(Call<FileVersionCommits> call, Response<FileVersionCommits> response) {
@@ -228,7 +226,8 @@ public class FileDetailDialogFragment extends FileDetailsBaseDialogFragment
                 if (!fileVersionEntities.isEmpty()) {
                     FileVersionEntity item = fileVersionEntities.get(0);
                     if (item == null) return;
-                    item.seaFileFullPath = String.format("%s/%s", fromRepoDirPath, fileName);
+                    item.seaFileFullPath =iSeaFile.getSeaFileFullPath();
+                    item.seaFilePermission=iSeaFile.getSeaFilePermission();
                     FileDownloadActivity.launch(
                             getContext(),
                             item,

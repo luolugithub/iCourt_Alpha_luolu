@@ -418,12 +418,8 @@ public class FileDownloadActivity extends ImageViewBaseActivity {
                         if (TextUtils.equals(action, getString(R.string.sfile_file_details))) {
                             FileDetailDialogFragment.show(
                                     SFileConfig.REPO_UNKNOW,
-                                    iSeaFile.getSeaFileRepoId(),
-                                    FileUtils.getFileParentDir(iSeaFile.getSeaFileFullPath()),
-                                    fileName,
-                                    iSeaFile.getSeaFileSize(),
+                                    iSeaFile,
                                     0,
-                                    iSeaFile.getSeaFilePermission(),
                                     getSupportFragmentManager());
                         } else if (TextUtils.equals(action, "转发给同事")) {
                             showContactShareDialogFragment(fileCachePath);

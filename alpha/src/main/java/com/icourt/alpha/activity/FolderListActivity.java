@@ -984,12 +984,8 @@ public class FolderListActivity extends FolderBaseActivity
                             } else {
                                 FileDetailDialogFragment.show(
                                         getRepoType(),
-                                        getSeaFileRepoId(),
-                                        getSeaFileDirPath(),
-                                        item.name,
-                                        item.size,
+                                        item,
                                         1,
-                                        getRepoPermission(),
                                         getSupportFragmentManager());
                             }
                         } else if (TextUtils.equals(action, getString(R.string.sfile_file_copy))) {
@@ -1023,12 +1019,8 @@ public class FolderListActivity extends FolderBaseActivity
         } else {
             FileDetailDialogFragment.show(
                     getRepoType(),
-                    getSeaFileRepoId(),
-                    getSeaFileDirPath(),
-                    item.name,
-                    item.size,
+                    item,
                     0,
-                    getRepoPermission(),
                     getSupportFragmentManager());
         }
     }

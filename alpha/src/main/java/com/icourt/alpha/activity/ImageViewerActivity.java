@@ -414,12 +414,8 @@ public class ImageViewerActivity extends ImageViewBaseActivity {
                         if (TextUtils.equals(action, getString(R.string.sfile_file_details))) {
                             FileDetailDialogFragment.show(
                                     SFileConfig.REPO_UNKNOW,
-                                    item.getSeaFileRepoId(),
-                                    FileUtils.getFileParentDir(item.getSeaFileFullPath()),
-                                    FileUtils.getFileName(item.getSeaFileFullPath()),
-                                    item.getSeaFileSize(),
+                                    item,
                                     0,
-                                    item.getSeaFilePermission(),
                                     getSupportFragmentManager());
 
                         } else if (TextUtils.equals(action, "保存图片")) {
