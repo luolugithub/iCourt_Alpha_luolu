@@ -93,6 +93,8 @@ public class TimerDetailActivity extends BaseTimerActivity
     TextView startTimeMinTv;
     @BindView(R.id.stop_time_min_tv)
     TextView stopTimeMinTv;
+    @BindView(R.id.tv_surpass_day)
+    TextView tvSurpassDay;
     @BindView(R.id.time_name_tv)
     EditText timeNameTv;
     @BindView(R.id.project_name_tv)
