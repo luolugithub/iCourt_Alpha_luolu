@@ -132,6 +132,11 @@ public class TimerTimingActivity extends BaseTimerActivity
     }
 
     @Override
+    public void onAttachFragment(Fragment fragment) {
+        super.onAttachFragment(fragment);
+    }
+
+    @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_timer_timing);
@@ -184,9 +189,8 @@ public class TimerTimingActivity extends BaseTimerActivity
 
     private void initTimingView() {
         if (itemEntity != null) {
-            tvStartDate.setText(DateUtils.getTimeDateFormatYear(itemEntity.startTime));
+            setDisplayTiming();
             timingTv.setText(toTime(itemEntity.useTime / 1000));
-            startTimeTv.setText(DateUtils.getHHmm(itemEntity.startTime));
             timeNameTv.setText(itemEntity.name);
             timeNameTv.setSelection(timeNameTv.getText().length());
             projectNameTv.setText(TextUtils.isEmpty(itemEntity.matterName) ? "未设置" : itemEntity.matterName);
@@ -199,6 +203,14 @@ public class TimerTimingActivity extends BaseTimerActivity
                 drawables[0].setBounds(0, 0, px, px);
             }
         }
+    }
+
+    /**
+     * 设置显示日期、开始时间的显示内容
+     */
+    private void setDisplayTiming() {
+        tvStartDate.setText(DateUtils.getTimeDateFormatYear(itemEntity.startTime));
+        startTimeTv.setText(DateUtils.getHHmm(itemEntity.startTime));
     }
 
     /**
@@ -217,6 +229,7 @@ public class TimerTimingActivity extends BaseTimerActivity
 
     @OnClick({
             R.id.tv_start_date,
+            R.id.start_time_tv,
             R.id.project_layout,
             R.id.worktype_layout,
             R.id.task_layout,
@@ -228,14 +241,10 @@ public class TimerTimingActivity extends BaseTimerActivity
         super.onClick(view);
         switch (view.getId()) {
             case R.id.tv_start_date:
-
-                String tag = TimingChangeDialogFragment.class.getSimpleName();
-                FragmentTransaction mFragTransaction = getSupportFragmentManager().beginTransaction();
-                Fragment fragment = getSupportFragmentManager().findFragmentByTag(tag);
-                if (fragment != null) {
-                    mFragTransaction.remove(fragment);
-                }
-                TimingChangeDialogFragment.newInstance("选择计时开始时间", itemEntity.startTime).show(mFragTransaction, tag);
+                showDateTimeSelectDialogFragment(getString(R.string.timing_please_select_start_time), itemEntity.startTime);
+                break;
+            case R.id.start_time_tv:
+                showDateTimeSelectDialogFragment(getString(R.string.timing_please_select_start_time), itemEntity.startTime);
                 break;
             case R.id.titleAction:
                 finish();
@@ -286,9 +295,25 @@ public class TimerTimingActivity extends BaseTimerActivity
         }
     }
 
+    /**
+     * 显示选择时间的弹出窗
+     *
+     * @param title
+     * @param startTime
+     */
+    private void showDateTimeSelectDialogFragment(String title, long startTime) {
+        String tag = TimingChangeDialogFragment.class.getSimpleName();
+        FragmentTransaction mFragTransaction = getSupportFragmentManager().beginTransaction();
+        Fragment fragment = getSupportFragmentManager().findFragmentByTag(tag);
+        if (fragment != null) {
+            mFragTransaction.remove(fragment);
+        }
+        TimingChangeDialogFragment.newInstance(title, startTime).show(mFragTransaction, tag);
+    }
+
     @Override
     protected void onPause() {
-        saveTiming();
+        saveTiming(false);
         super.onPause();
     }
 
@@ -302,7 +327,12 @@ public class TimerTimingActivity extends BaseTimerActivity
         return super.dispatchTouchEvent(ev);
     }
 
-    private void saveTiming() {
+    /**
+     * 保存正在计时的修改内容
+     *
+     * @param isChangeStartTime 是否修改来开始时间
+     */
+    private void saveTiming(final boolean isChangeStartTime) {
         //实时保存
         if (itemEntity != null) {
             JsonObject jsonBody = null;
@@ -339,6 +369,10 @@ public class TimerTimingActivity extends BaseTimerActivity
                         @Override
                         public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
                             dismissLoadingDialog();
+                            if (isChangeStartTime) {//如果修改了开始时间，要让计时器同步一下服务器时间.
+                                setDisplayTiming();
+                                TimerManager.getInstance().timerQuerySync();
+                            }
                         }
 
                         @Override
@@ -352,6 +386,7 @@ public class TimerTimingActivity extends BaseTimerActivity
 
     @Override
     public void onFragmentCallBack(Fragment fragment, int type, Bundle params) {
+        boolean isChangeStartTime = false;
         if (fragment instanceof WorkTypeSelectDialogFragment && params != null) {
             Serializable serializable = params.getSerializable(BaseDialogFragment.KEY_FRAGMENT_RESULT);
             if (serializable instanceof WorkType) {
@@ -396,8 +431,14 @@ public class TimerTimingActivity extends BaseTimerActivity
                 itemEntity.matterName = projectEntity.name;
                 projectNameTv.setText(projectEntity.name);
             }
+        } else if (fragment instanceof TimingChangeDialogFragment && params != null) {
+            isChangeStartTime = true;
+            long timeMillis = params.getLong(TimingChangeDialogFragment.TAG_START_TIME);
+            if (itemEntity != null) {
+                itemEntity.startTime = timeMillis;
+            }
         }
-        saveTiming();
+        saveTiming(isChangeStartTime);
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)

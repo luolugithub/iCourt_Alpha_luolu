@@ -5,4 +5,5 @@
     <string name="timing_select_time">选择时间</string>
     <string name="timing_cancel">取消</string>
     <string name="timing_finish">完成</string>
+    <string name="timing_please_select_start_time">选择计时开始时间</string>
 </resources>
