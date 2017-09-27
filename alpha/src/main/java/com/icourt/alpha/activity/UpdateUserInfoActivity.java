@@ -185,7 +185,9 @@ public class UpdateUserInfoActivity extends BaseActivity {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                formatPhoneTextChanged(myCenterUpdateEdittext.getText(), count);
+                if (getType() == UPDATE_PHONE_TYPE) {
+                    formatPhoneTextChanged(myCenterUpdateEdittext.getText(), count);
+                }
             }
 
             @Override
@@ -218,27 +220,23 @@ public class UpdateUserInfoActivity extends BaseActivity {
     private void setRightLayoutVisible(CharSequence content) {
         if (!TextUtils.isEmpty(content)) {
             updateRightLayout.setVisibility(View.VISIBLE);
+            myCenterUpdateClearView.setVisibility(View.VISIBLE);
             switch (getType()) {
                 case UPDATE_EMAIL_TYPE:
                     updateStateLayout.setVisibility(View.VISIBLE);
-                    myCenterUpdateClearView.setVisibility(View.VISIBLE);
                     boolean isMail = StringUtils.isMailNO(content.toString());
-                    myCenterUpdateStateView.setImageResource(isMail ? R.mipmap.verify_ok : R.mipmap.verify_no);
-                    myCenterUpdateErrorHintText.setVisibility(isMail ? View.GONE : View.VISIBLE);
                     myCenterUpdateErrorHintText.setText(R.string.mine_use_true_mail);
+                    setStatreViewImage(isMail);
                     setSaveViewState(isMail);
                     break;
                 case UPDATE_PHONE_TYPE:
                     updateStateLayout.setVisibility(View.VISIBLE);
-                    myCenterUpdateClearView.setVisibility(View.VISIBLE);
                     boolean isMobile = StringUtils.isMobileNO86(content.toString());
-                    myCenterUpdateStateView.setImageResource(isMobile ? R.mipmap.verify_ok : R.mipmap.verify_no);
-                    myCenterUpdateErrorHintText.setVisibility(isMobile ? View.GONE : View.VISIBLE);
                     myCenterUpdateErrorHintText.setText(R.string.mine_use_true_phone);
+                    setStatreViewImage(isMobile);
                     setSaveViewState(isMobile);
                     break;
                 case UPDATE_NAME_TYPE:
-                    myCenterUpdateClearView.setVisibility(View.VISIBLE);
                     updateStateLayout.setVisibility(View.GONE);
                     setSaveViewState(true);
                     break;
@@ -247,6 +245,16 @@ public class UpdateUserInfoActivity extends BaseActivity {
             setSaveViewState(false);
             updateRightLayout.setVisibility(View.INVISIBLE);
         }
+    }
+
+    /**
+     * 设置状态按钮图标、错误提示是否隐藏
+     *
+     * @param isTrue
+     */
+    private void setStatreViewImage(boolean isTrue) {
+        myCenterUpdateStateView.setImageResource(isTrue ? R.mipmap.verify_ok : R.mipmap.verify_no);
+        myCenterUpdateErrorHintText.setVisibility(isTrue ? View.GONE : View.VISIBLE);
     }
 
     /**
@@ -282,6 +290,15 @@ public class UpdateUserInfoActivity extends BaseActivity {
     }
 
     /**
+     * 替换本地保持user信息
+     */
+    private void clearAndSaveUser() {
+        LoginInfoUtils.clearLoginUserInfo();
+        LoginInfoUtils.saveLoginUserInfo(alphaUserInfo);
+        UpdateUserInfoActivity.this.finish();
+    }
+
+    /**
      * 修改信息
      *
      * @param userId
@@ -311,22 +328,22 @@ public class UpdateUserInfoActivity extends BaseActivity {
      */
     private void upDateEmail(String userId, final String email) {
         showLoadingDialog(null);
-        getApi().updateUserEmail(userId, email).enqueue(new SimpleCallBack<JsonElement>() {
-            @Override
-            public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
-                dismissLoadingDialog();
-                alphaUserInfo.setMail(email);
-                LoginInfoUtils.clearLoginUserInfo();
-                LoginInfoUtils.saveLoginUserInfo(alphaUserInfo);
-                UpdateUserInfoActivity.this.finish();
-            }
+        callEnqueue(
+                getApi().updateUserEmail(userId, email),
+                new SimpleCallBack<JsonElement>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
+                        dismissLoadingDialog();
+                        alphaUserInfo.setMail(email);
+                        clearAndSaveUser();
+                    }
 
-            @Override
-            public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
-                super.onFailure(call, t);
-                dismissLoadingDialog();
-            }
-        });
+                    @Override
+                    public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
+                        super.onFailure(call, t);
+                        dismissLoadingDialog();
+                    }
+                });
     }
 
     /**
@@ -337,22 +354,22 @@ public class UpdateUserInfoActivity extends BaseActivity {
      */
     private void upDatePhone(String userId, final String phone) {
         showLoadingDialog(null);
-        getApi().updateUserPhone(userId, phone).enqueue(new SimpleCallBack<JsonElement>() {
-            @Override
-            public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
-                dismissLoadingDialog();
-                alphaUserInfo.setPhone(phone);
-                LoginInfoUtils.clearLoginUserInfo();
-                LoginInfoUtils.saveLoginUserInfo(alphaUserInfo);
-                UpdateUserInfoActivity.this.finish();
-            }
+        callEnqueue(
+                getApi().updateUserPhone(userId, phone),
+                new SimpleCallBack<JsonElement>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
+                        dismissLoadingDialog();
+                        alphaUserInfo.setPhone(phone);
+                        clearAndSaveUser();
+                    }
 
-            @Override
-            public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
-                super.onFailure(call, t);
-                dismissLoadingDialog();
-            }
-        });
+                    @Override
+                    public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
+                        super.onFailure(call, t);
+                        dismissLoadingDialog();
+                    }
+                });
     }
 
     /**
@@ -363,22 +380,22 @@ public class UpdateUserInfoActivity extends BaseActivity {
      */
     private void upDateName(String userId, final String name) {
         showLoadingDialog(null);
-        getApi().updateUserName(userId, name).enqueue(new SimpleCallBack<JsonElement>() {
-            @Override
-            public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
-                dismissLoadingDialog();
-                alphaUserInfo.setName(name);
-                LoginInfoUtils.clearLoginUserInfo();
-                LoginInfoUtils.saveLoginUserInfo(alphaUserInfo);
-                UpdateUserInfoActivity.this.finish();
-            }
+        callEnqueue(
+                getApi().updateUserName(userId, name),
+                new SimpleCallBack<JsonElement>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
+                        dismissLoadingDialog();
+                        alphaUserInfo.setName(name);
+                        clearAndSaveUser();
+                    }
 
-            @Override
-            public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
-                super.onFailure(call, t);
-                dismissLoadingDialog();
-            }
-        });
+                    @Override
+                    public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
+                        super.onFailure(call, t);
+                        dismissLoadingDialog();
+                    }
+                });
     }
 
     /**
@@ -389,28 +406,25 @@ public class UpdateUserInfoActivity extends BaseActivity {
      */
     private void formatPhoneTextChanged(CharSequence s, int count) {
         if (TextUtils.isEmpty(s)) return;
-        log("CharSequence s ---- " + s);
-        if (getType() == UPDATE_PHONE_TYPE) {
-            int length = s.toString().length();
-            String firstChar = String.valueOf(s.charAt(0));
-            if (TextUtils.equals(firstChar, "+")) {
-                if (count == 0) { //删除数字
-                    if (length == 4) {
-                        myCenterUpdateEdittext.setText(s.subSequence(0, 3));
-                        myCenterUpdateEdittext.setSelection(myCenterUpdateEdittext.getText().length());
-                    }
-                } else if (count == 1) {//添加数字
-                    if (length == 4 || (length == 14 && !s.toString().contains(" "))) {
-                        String part1 = s.subSequence(0, 3).toString();
-                        String part2 = s.subSequence(3, length).toString();
-                        myCenterUpdateEdittext.setText(part1 + " " + part2);
-                        myCenterUpdateEdittext.setSelection(myCenterUpdateEdittext.getText().length());
-                    }
+        int length = s.toString().length();
+        String firstChar = String.valueOf(s.charAt(0));
+        if (TextUtils.equals(firstChar, "+")) {
+            if (count == 0) { //删除数字
+                if (length == 4) {
+                    myCenterUpdateEdittext.setText(s.subSequence(0, 3));
+                    myCenterUpdateEdittext.setSelection(myCenterUpdateEdittext.getText().length());
+                }
+            } else if (count == 1) {//添加数字
+                if (length == 4 || (length == 14 && !s.toString().contains(" "))) {
+                    String part1 = s.subSequence(0, 3).toString();
+                    String part2 = s.subSequence(3, length).toString();
+                    myCenterUpdateEdittext.setText(part1 + " " + part2);
+                    myCenterUpdateEdittext.setSelection(myCenterUpdateEdittext.getText().length());
                 }
             }
-            if (length > 0) {
-                updateRightLayout.setVisibility(View.VISIBLE);
-            }
+        }
+        if (length > 0) {
+            updateRightLayout.setVisibility(View.VISIBLE);
         }
     }
 }

@@ -25,8 +25,6 @@ import com.icourt.alpha.entity.event.ServerTimingEvent;
 import com.icourt.alpha.entity.event.TimingEvent;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
-import com.icourt.alpha.http.observer.BaseObserver;
-import com.icourt.alpha.interfaces.callback.AppUpdateCallBack;
 import com.icourt.alpha.utils.GlideUtils;
 import com.icourt.alpha.utils.LoginInfoUtils;
 import com.icourt.alpha.utils.SystemUtils;
@@ -192,7 +190,6 @@ public class TabMineFragment extends BaseFragment {
         }
     }
 
-
     @OnClick({
             R.id.photo_image,
             R.id.user_info_layout,
@@ -280,17 +277,27 @@ public class TabMineFragment extends BaseFragment {
                             monthDuractionTv.setText(getHm(userDataEntity.timingCountMonth));
                             doneTaskTv.setText(String.valueOf(userDataEntity.taskMonthConutDone));
 
-                            todayDuractionTv.setTextColor(userDataEntity.timingCountToday <= 0 ? SystemUtils.getColor(getContext(), R.color.alpha_font_color_gray) : SystemUtils.getColor(getContext(), R.color.alpha_font_color_orange));
+                            todayDuractionTv.setTextColor(getDoneTextColor(userDataEntity.timingCountToday));
                             todayDuractionLayout.setClickable(userDataEntity.timingCountToday > 0);
 
-                            monthDuractionTv.setTextColor(userDataEntity.timingCountMonth <= 0 ? SystemUtils.getColor(getContext(), R.color.alpha_font_color_gray) : SystemUtils.getColor(getContext(), R.color.alpha_font_color_orange));
+                            monthDuractionTv.setTextColor(getDoneTextColor(userDataEntity.timingCountMonth));
                             monthDuractionLayout.setClickable(userDataEntity.timingCountMonth > 0);
 
-                            doneTaskTv.setTextColor(userDataEntity.taskMonthConutDone <= 0 ? SystemUtils.getColor(getContext(), R.color.alpha_font_color_gray) : SystemUtils.getColor(getContext(), R.color.alpha_font_color_orange));
+                            doneTaskTv.setTextColor(getDoneTextColor(userDataEntity.taskMonthConutDone));
                             doneTaskLayout.setClickable(userDataEntity.taskMonthConutDone > 0);
                         }
                     }
                 });
+    }
+
+    /**
+     * 获取完成数 字体颜色
+     *
+     * @param count
+     * @return
+     */
+    private int getDoneTextColor(long count) {
+        return count <= 0 ? SystemUtils.getColor(getContext(), R.color.alpha_font_color_gray) : SystemUtils.getColor(getContext(), R.color.alpha_font_color_orange);
     }
 
     /**
@@ -303,14 +310,14 @@ public class TabMineFragment extends BaseFragment {
                     @Override
                     public void onSuccess(Call<ResEntity<List<GroupBean>>> call, Response<ResEntity<List<GroupBean>>> response) {
                         List<GroupBean> myGroups = response.body().result;
-                        StringBuffer stringBuffer = new StringBuffer();
+                        StringBuilder stringBuilder = new StringBuilder();
                         if (myGroups != null) {
                             if (myGroups.size() > 0) {
                                 for (GroupBean groupBean : myGroups) {
-                                    stringBuffer.append(groupBean.getName() + ",");
+                                    stringBuilder.append(groupBean.getName()).append(",");
                                 }
                                 if (officeNameTv == null) return;
-                                officeNameTv.setText(stringBuffer.toString().substring(0, stringBuffer.toString().length() - 1));
+                                officeNameTv.setText(stringBuilder.toString().substring(0, stringBuilder.toString().length() - 1));
                             }
                         }
                     }

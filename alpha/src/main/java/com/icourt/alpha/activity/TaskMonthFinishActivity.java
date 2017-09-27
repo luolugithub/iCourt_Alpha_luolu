@@ -123,12 +123,14 @@ public class TaskMonthFinishActivity extends BaseActivity implements BaseQuickAd
                     @Override
                     public void onSuccess(Call<ResEntity<TaskEntity>> call, Response<ResEntity<TaskEntity>> response) {
                         stopRefresh();
-                        taskAdapter.setNewData(response.body().result.items);
-                        if (isRefresh)
+                        if (isRefresh) {
+                            taskAdapter.setNewData(response.body().result.items);
                             enableEmptyView(response.body().result.items);
-                        stopRefresh();
-                        pageIndex += 1;
-                        enableLoadMore(response.body().result.items);
+                        } else {
+                            taskAdapter.addData(response.body().result.items);
+                        }
+//                        pageIndex += 1;
+//                        enableLoadMore(response.body().result.items);
                     }
 
                     @Override

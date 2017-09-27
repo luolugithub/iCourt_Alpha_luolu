@@ -18,6 +18,7 @@ import com.icourt.alpha.base.BaseAppUpdateActivity;
 import com.icourt.alpha.entity.bean.AppVersionEntity;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
+import com.icourt.alpha.http.observer.BaseObserver;
 import com.icourt.alpha.interfaces.callback.AppUpdateCallBack;
 import com.icourt.alpha.utils.UMMobClickAgent;
 import com.icourt.alpha.widget.dialog.BottomActionDialog;
@@ -33,6 +34,11 @@ import java.util.Map;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import io.reactivex.Observable;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.Function;
+import io.reactivex.schedulers.Schedulers;
 import retrofit2.Call;
 import retrofit2.HttpException;
 import retrofit2.Response;
@@ -89,16 +95,12 @@ public class SetingActivity extends BaseAppUpdateActivity {
         super.initView();
         setTitle(R.string.mine_setting);
         mShareAPI = UMShareAPI.get(getContext());
-        try {
-            settingClearCacheTextview.setText(DataCleanManager.getTotalCacheSize(getLoginUserId()));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        getData(true);
+        getCacheFileSize();
     }
 
     @Override
     protected void getData(boolean isRefresh) {
-        super.getData(isRefresh);
         checkAppUpdate(new AppUpdateCallBack() {
             @Override
             public void onSuccess(Call<AppVersionEntity> call, Response<AppVersionEntity> response) {
@@ -206,13 +208,84 @@ public class SetingActivity extends BaseAppUpdateActivity {
                         dialog.dismiss();
                         switch (position) {
                             case 0:
-                                DataCleanManager.clearAllCache(getLoginUserId());
-                                settingClearCacheTextview.setText("0B");
+                                if (checkAcessFilePermission()) {
+                                    deleteCahceFile();
+                                } else {
+                                    requestAcessFilePermission();
+                                }
                                 break;
                         }
                     }
                 }).show();
     }
+
+    /**
+     * by youxuan
+     * 删除缓存
+     * * 考虑量级:1.资料库 2.任务项目文档 3.IM文件 多层路径
+     */
+    private void deleteCahceFile() {
+        Observable.just(getLoginUserId())
+                .map(new Function<String, Boolean>() {
+                    @Override
+                    public Boolean apply(@NonNull String s) throws Exception {
+                        return DataCleanManager.clearAllCache(s);
+                    }
+                })
+                .compose(this.<Boolean>bindToLifecycle())
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new BaseObserver<Boolean>() {
+                    @Override
+                    public void onSubscribe(@NonNull Disposable disposable) {
+                        super.onSubscribe(disposable);
+                        showLoadingDialog(null);
+                    }
+
+                    @Override
+                    public void onError(@NonNull Throwable throwable) {
+                        super.onError(throwable);
+                        dismissLoadingDialog();
+                    }
+
+                    @Override
+                    public void onNext(@NonNull Boolean aBoolean) {
+                    }
+
+                    @Override
+                    public void onComplete() {
+                        dismissLoadingDialog();
+                        settingClearCacheTextview.setText("0B");
+                        showTopSnackBar(R.string.my_center_clear_cache_succee_text);
+                        super.onComplete();
+                    }
+                });
+    }
+
+    /**
+     * by youxuan
+     * 获取缓存文件大小
+     * 考虑量级:1.资料库 2.任务项目文档 3.IM文件 多层路径
+     */
+    private void getCacheFileSize() {
+        Observable.just(getLoginUserId())
+                .map(new Function<String, String>() {
+                    @Override
+                    public String apply(@NonNull String s) throws Exception {
+                        return DataCleanManager.getTotalCacheSize(s);
+                    }
+                })
+                .compose(this.<String>bindToLifecycle())
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new BaseObserver<String>() {
+                    @Override
+                    public void onNext(@NonNull String sizeFormat) {
+                        settingClearCacheTextview.setText(sizeFormat);
+                    }
+                });
+    }
+
 
     /**
      * 退出登录

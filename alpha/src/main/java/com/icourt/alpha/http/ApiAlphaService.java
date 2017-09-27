@@ -761,12 +761,12 @@ public interface ApiAlphaService {
      * 文档地址：http://testpms.alphalawyer.cn/ilaw/swagger/index.html#!/taskflow-api/queryTaskFlowsUsingGET_1
      *
      * @param assignTos     分配给谁的，用户的id序列
+     * @param stateType     全部任务:－1    已完成:1     未完成:0
      * @param attentionType 全部:0    我关注的:1
      * @param orderBy       按指定类型排序或分组；matterId表示按项目排序;createTime表示按日期排序(默认);parentId表示按清单;assignTo表示按负责人排序
-     * @param stateType     全部任务:－1    已完成:1     未完成:0
-     * @param type          任务和任务组：-1;    任务：0;    任务组：1;
      * @param pageIndex
      * @param pageSize
+     * @param type          任务和任务组：-1;    任务：0;    任务组：1;
      * @return
      */
     @GET("ilaw/api/v2/taskflow")
